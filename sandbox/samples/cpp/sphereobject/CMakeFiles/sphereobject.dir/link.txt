@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC  -std=c++11 -Wno-deprecated-declarations  -shared -Wl,-soname,sphereobject.so -o sphereobject.so CMakeFiles/sphereobject.dir/sphereobject.cpp.o -Wl,-rpath,/home/syrix/programs/appleseedtask/appleseed/sandbox/lib/Release /home/syrix/programs/appleseedtask/appleseed/sandbox/lib/Release/libappleseed.so 

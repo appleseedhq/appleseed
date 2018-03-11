@@ -1,0 +1,81 @@
+/home/syrix/Downloads/CLion-2017.3.4/clion-2017.3.4/bin/cmake/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/syrix/programs/appleseedtask/appleseed
+CMake Deprecation Warning at CMakeLists.txt:40 (cmake_policy):
+  The OLD behavior for policy CMP0026 will be removed from a future version
+  of CMake.
+
+  The cmake-policies(7) manual explains that the OLD behaviors of all
+  policies are deprecated and that a policy should be set to OLD only under
+  specific short-term circumstances.  Projects should be ported to the NEW
+  behavior and not rely on setting a policy to OLD.
+
+
+-- The C compiler identification is GNU 7.2.0
+-- The CXX compiler identification is GNU 7.2.0
+-- Check for working C compiler: /usr/bin/cc
+-- Check for working C compiler: /usr/bin/cc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Check for working CXX compiler: /usr/bin/c++
+-- Check for working CXX compiler: /usr/bin/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+Target architecture: x86_64
+-- Using gcc 7 as the compiler
+-- Looking for pthread.h
+-- Looking for pthread.h - found
+-- Looking for pthread_create
+-- Looking for pthread_create - not found
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - found
+-- Found Threads: TRUE  
+CMake Error at /home/syrix/Downloads/CLion-2017.3.4/clion-2017.3.4/bin/cmake/share/cmake-3.9/Modules/FindBoost.cmake:1900 (message):
+  Unable to find the requested Boost libraries.
+
+  Boost version: 1.61.0
+
+  Boost include path:
+  /home/syrix/programs/appleseedtask/prebuilt-linux-deps-master/include/boost_1_61_0
+
+
+  Could not find the following static Boost libraries:
+
+          boost_atomic
+          boost_chrono
+          boost_date_time
+          boost_filesystem
+          boost_regex
+          boost_system
+          boost_thread
+          boost_wave
+
+  Some (but not all) of the required Boost libraries were found.  You may
+  need to install these additional Boost libraries.  Alternatively, set
+  BOOST_LIBRARYDIR to the directory containing Boost libraries or BOOST_ROOT
+  to the location of Boost.
+Call Stack (most recent call first):
+  CMakeLists.txt:198 (find_package)
+
+
+-- Found PythonLibs: /usr/lib/x86_64-linux-gnu/libpython2.7.so (found version "2.7.14") 
+-- Could NOT find Boost
+-- Could NOT find Boost
+-- Found OpenGL: /usr/lib/x86_64-linux-gnu/libGL.so  
+-- Looking for Q_WS_X11
+-- Looking for Q_WS_X11 - found
+-- Looking for Q_WS_WIN
+-- Looking for Q_WS_WIN - not found
+-- Looking for Q_WS_QWS
+-- Looking for Q_WS_QWS - not found
+-- Looking for Q_WS_MAC
+-- Looking for Q_WS_MAC - not found
+-- Found Qt4: /usr/bin/qmake (found version "4.8.7") 
+-- Found Doxygen: /usr/bin/doxygen (found version "1.8.13") found components:  doxygen dot 
+-- Configuring incomplete, errors occurred!
+See also "/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeOutput.log".
+See also "/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeError.log".

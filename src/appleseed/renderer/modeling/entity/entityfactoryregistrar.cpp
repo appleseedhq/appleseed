@@ -65,6 +65,8 @@ struct EntityFactoryRegistrar::Impl
 EntityFactoryRegistrar::EntityFactoryRegistrar()
   : impl(new Impl())
 {
+    //clearing register factory vector
+    register_factories.clear();
 }
 
 EntityFactoryRegistrar::~EntityFactoryRegistrar()

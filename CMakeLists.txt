@@ -156,7 +156,7 @@ set (CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 #--------------------------------------------------------------------------------------------------
 # Platform-specific settings.
 #--------------------------------------------------------------------------------------------------
-
+add_definitions (-D_GLIBCXX_USE_CXX11_ABI=0)
 # This must come after project () otherwise CMAKE_SYSTEM_NAME is undefined.
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     include (cmake/config/win-vs.txt)

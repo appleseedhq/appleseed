@@ -1,0 +1,166 @@
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_892f5/fast"
+/usr/bin/make -f CMakeFiles/cmTC_892f5.dir/build.make CMakeFiles/cmTC_892f5.dir/build
+make[1]: Entering directory '/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_892f5.dir/CheckSymbolExists.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_892f5.dir/CheckSymbolExists.c.o   -c /home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTC_892f5
+/home/syrix/Downloads/CLion-2017.3.4/clion-2017.3.4/bin/cmake/bin/cmake -E cmake_link_script CMakeFiles/cmTC_892f5.dir/link.txt --verbose=1
+/usr/bin/cc      -rdynamic CMakeFiles/cmTC_892f5.dir/CheckSymbolExists.c.o  -o cmTC_892f5 
+CMakeFiles/cmTC_892f5.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x1b): undefined reference to `pthread_create'
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_892f5.dir/build.make:97: recipe for target 'cmTC_892f5' failed
+make[1]: *** [cmTC_892f5] Error 1
+make[1]: Leaving directory '/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_892f5/fast' failed
+make: *** [cmTC_892f5/fast] Error 2
+
+File /home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_1df41/fast"
+/usr/bin/make -f CMakeFiles/cmTC_1df41.dir/build.make CMakeFiles/cmTC_1df41.dir/build
+make[1]: Entering directory '/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_1df41.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_1df41.dir/CheckFunctionExists.c.o   -c /home/syrix/Downloads/CLion-2017.3.4/clion-2017.3.4/bin/cmake/share/cmake-3.9/Modules/CheckFunctionExists.c
+Linking C executable cmTC_1df41
+/home/syrix/Downloads/CLion-2017.3.4/clion-2017.3.4/bin/cmake/bin/cmake -E cmake_link_script CMakeFiles/cmTC_1df41.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=pthread_create    -rdynamic CMakeFiles/cmTC_1df41.dir/CheckFunctionExists.c.o  -o cmTC_1df41 -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_1df41.dir/build.make:97: recipe for target 'cmTC_1df41' failed
+make[1]: *** [cmTC_1df41] Error 1
+make[1]: Leaving directory '/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_1df41/fast' failed
+make: *** [cmTC_1df41/fast] Error 2
+
+
+Determining if the Q_WS_WIN exist failed with the following output:
+Change Dir: /home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_04d0f/fast"
+/usr/bin/make -f CMakeFiles/cmTC_04d0f.dir/build.make CMakeFiles/cmTC_04d0f.dir/build
+make[1]: Entering directory '/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_04d0f.dir/CheckSymbolExists.cxx.o
+/usr/bin/c++   -I/usr/include/qt4   -o CMakeFiles/cmTC_04d0f.dir/CheckSymbolExists.cxx.o -c /home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx
+/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx: In function ‘int main(int, char**)’:
+/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:8:19: error: ‘Q_WS_WIN’ was not declared in this scope
+   return ((int*)(&Q_WS_WIN))[argc];
+                   ^~~~~~~~
+/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:8:19: note: suggested alternative: ‘Q_WS_X11’
+   return ((int*)(&Q_WS_WIN))[argc];
+                   ^~~~~~~~
+                   Q_WS_X11
+CMakeFiles/cmTC_04d0f.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_04d0f.dir/CheckSymbolExists.cxx.o' failed
+make[1]: *** [CMakeFiles/cmTC_04d0f.dir/CheckSymbolExists.cxx.o] Error 1
+make[1]: Leaving directory '/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_04d0f/fast' failed
+make: *** [cmTC_04d0f/fast] Error 2
+
+File /home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:
+/* */
+#include <QtCore/qglobal.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef Q_WS_WIN
+  return ((int*)(&Q_WS_WIN))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the Q_WS_QWS exist failed with the following output:
+Change Dir: /home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_e4cce/fast"
+/usr/bin/make -f CMakeFiles/cmTC_e4cce.dir/build.make CMakeFiles/cmTC_e4cce.dir/build
+make[1]: Entering directory '/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_e4cce.dir/CheckSymbolExists.cxx.o
+/usr/bin/c++   -I/usr/include/qt4   -o CMakeFiles/cmTC_e4cce.dir/CheckSymbolExists.cxx.o -c /home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx
+/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx: In function ‘int main(int, char**)’:
+/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:8:19: error: ‘Q_WS_QWS’ was not declared in this scope
+   return ((int*)(&Q_WS_QWS))[argc];
+                   ^~~~~~~~
+/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:8:19: note: suggested alternative: ‘Q_WS_X11’
+   return ((int*)(&Q_WS_QWS))[argc];
+                   ^~~~~~~~
+                   Q_WS_X11
+CMakeFiles/cmTC_e4cce.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_e4cce.dir/CheckSymbolExists.cxx.o' failed
+make[1]: *** [CMakeFiles/cmTC_e4cce.dir/CheckSymbolExists.cxx.o] Error 1
+make[1]: Leaving directory '/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_e4cce/fast' failed
+make: *** [cmTC_e4cce/fast] Error 2
+
+File /home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:
+/* */
+#include <QtCore/qglobal.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef Q_WS_QWS
+  return ((int*)(&Q_WS_QWS))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the Q_WS_MAC exist failed with the following output:
+Change Dir: /home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_65e6c/fast"
+/usr/bin/make -f CMakeFiles/cmTC_65e6c.dir/build.make CMakeFiles/cmTC_65e6c.dir/build
+make[1]: Entering directory '/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_65e6c.dir/CheckSymbolExists.cxx.o
+/usr/bin/c++   -I/usr/include/qt4   -o CMakeFiles/cmTC_65e6c.dir/CheckSymbolExists.cxx.o -c /home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx
+/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx: In function ‘int main(int, char**)’:
+/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:8:19: error: ‘Q_WS_MAC’ was not declared in this scope
+   return ((int*)(&Q_WS_MAC))[argc];
+                   ^~~~~~~~
+/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:8:19: note: suggested alternative: ‘Q_WS_X11’
+   return ((int*)(&Q_WS_MAC))[argc];
+                   ^~~~~~~~
+                   Q_WS_X11
+CMakeFiles/cmTC_65e6c.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_65e6c.dir/CheckSymbolExists.cxx.o' failed
+make[1]: *** [CMakeFiles/cmTC_65e6c.dir/CheckSymbolExists.cxx.o] Error 1
+make[1]: Leaving directory '/home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_65e6c/fast' failed
+make: *** [cmTC_65e6c/fast] Error 2
+
+File /home/syrix/programs/appleseedtask/appleseed/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:
+/* */
+#include <QtCore/qglobal.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef Q_WS_MAC
+  return ((int*)(&Q_WS_MAC))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+

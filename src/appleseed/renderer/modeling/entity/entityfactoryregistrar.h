@@ -28,6 +28,8 @@
 
 #ifndef APPLESEED_RENDERER_MODELING_ENTITY_ENTITYFACTORYREGISTRAR_H
 #define APPLESEED_RENDERER_MODELING_ENTITY_ENTITYFACTORYREGISTRAR_H
+//boost function
+#include <boost/function.hpp>
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entitytraits.h"
@@ -41,7 +43,8 @@
 
 // Standard headers.
 #include <cstddef>
-#include <functional>
+#include <vector>
+#include <utility>
 
 // Forward declarations.
 namespace foundation    { class SearchPaths; }
@@ -64,6 +67,10 @@ class APPLESEED_DLLSYMBOL EntityFactoryRegistrar
     // Destructor.
     virtual ~EntityFactoryRegistrar();
 
+    //collect plugins(register_factory) and entry_name for a later search in paths for each specific plugin type
+    template <typename Entity>
+    void collect_plugins(
+            const std::function<void (void*)>&  register_factory);
     // Register factories from plugins found in search paths.
     template <typename Entity>
     void register_factories_from_plugins(
@@ -76,6 +83,8 @@ class APPLESEED_DLLSYMBOL EntityFactoryRegistrar
   private:
     struct Impl;
     Impl* impl;
+    std::vector<std::pair<std::string ,boost::function<void(void*)>>> register_factories;
+
 
     // Store a plugin in order to keep it alive while the registrar exists.
     void store_plugin(renderer::Plugin* plugin);

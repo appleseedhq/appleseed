@@ -43,10 +43,12 @@
 
 // Boost headers.
 #include "boost/filesystem.hpp"
-
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
 // Standard headers.
 #include <string>
-
+#include<iostream>
+#include <utility>
 namespace renderer
 {
 
@@ -59,11 +61,21 @@ void EntityFactoryRegistrar::register_factories_from_plugins(
     const foundation::SearchPaths&          search_paths,
     const std::function<void (void*)>&      register_factory)
 {
+   
+
     namespace bf = boost::filesystem;
 
     const std::string entry_point_name =
         foundation::format("appleseed_create_{0}_factory", EntityTraits<Entity>::get_entity_type_name());
 
+
+         std::vector<std::pair<std::string ,boost::function<void(void*)>>> register_factories;
+
+         register_factories.push_back(std::make_pair(entry_point_name,register_factory));
+         //functions.push_back(register_factory);
+         std::cout<<"vector size is " <<register_factories.size()<<"\n";
+
+   
     // Iterate over all search paths.
     for (size_t i = 0, e = search_paths.get_path_count(); i < e; ++i)
     {
@@ -75,7 +87,10 @@ void EntityFactoryRegistrar::register_factories_from_plugins(
 
         // Only consider directories.
         if (!bf::exists(search_path) || !bf::is_directory(search_path))
+        {
+             std::cout<<"continue , skipping directory "<<std::endl;
             continue;
+        }
 
         const std::string entity_type_name =
             foundation::lower_case(EntityTraits<Entity>::get_human_readable_entity_type_name());
@@ -87,13 +102,15 @@ void EntityFactoryRegistrar::register_factories_from_plugins(
         // Iterate over all files in this directory.
         for (bf::directory_iterator j(search_path), f; j != f; ++j)
         {
+            //iterate over entities;
+
             // Only consider shared library files.
             if (!bf::is_regular_file(*j) ||
                 j->path().extension() != foundation::SharedLibrary::get_default_file_extension())
                 continue;
 
             const std::string plugin_path = j->path().string();
-
+            std::cout<<"path : "<<plugin_path<<std::endl;
             // Only consider libraries that can be loaded and define the right magic symbol.
             try
             {

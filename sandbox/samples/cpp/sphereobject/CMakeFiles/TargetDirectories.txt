@@ -1,0 +1,3 @@
+/home/syrix/programs/appleseedtask/appleseed/sandbox/samples/cpp/sphereobject/CMakeFiles/rebuild_cache.dir
+/home/syrix/programs/appleseedtask/appleseed/sandbox/samples/cpp/sphereobject/CMakeFiles/sphereobject.dir
+/home/syrix/programs/appleseedtask/appleseed/sandbox/samples/cpp/sphereobject/CMakeFiles/edit_cache.dir
