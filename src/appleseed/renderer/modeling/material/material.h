@@ -83,40 +83,40 @@ class APPLESEED_DLLSYMBOL Material
     // Return true if this material has an uniform alpha value equals to 1.0f.
     bool has_uniform_alpha_map_value_of_one() const;
 
-    // Return the name the surface shader bound to this material, or 0 if the material doesn't have one.
+    // Return the name the surface shader bound to this material, or nullptr if the material doesn't have one.
     const char* get_surface_shader_name() const;
 
-    // Return the name the BSDF bound to this material, or 0 if the material doesn't have one.
+    // Return the name the BSDF bound to this material, or nullptr if the material doesn't have one.
     const char* get_bsdf_name() const;
 
-    // Return the name the BSSRDF bound to this material, or 0 if the material doesn't have one.
+    // Return the name the BSSRDF bound to this material, or nullptr if the material doesn't have one.
     const char* get_bssrdf_name() const;
 
-    // Return the name the volume bound to this material, or 0 if the material doesn't have one.
+    // Return the name the volume bound to this material, or nullptr if the material doesn't have one.
     const char* get_volume_name() const;
 
-    // Return the name the EDF bound to this material, or 0 if the material doesn't have one.
+    // Return the name the EDF bound to this material, or nullptr if the material doesn't have one.
     const char* get_edf_name() const;
 
-    // Return the surface shader of the material, or 0 if the material doesn't have one.
+    // Return the surface shader of the material, or nullptr if the material doesn't have one.
     const SurfaceShader* get_uncached_surface_shader() const;
 
-    // Return the BSDF of the material, or 0 if the material doesn't have one.
+    // Return the BSDF of the material, or nullptr0 if the material doesn't have one.
     const BSDF* get_uncached_bsdf() const;
 
-    // Return the BSSRDF of the material, or 0 if the material doesn't have one.
+    // Return the BSSRDF of the material, or nullptr0 if the material doesn't have one.
     const BSSRDF* get_uncached_bssrdf() const;
 
-    // Return the EDF of the material, or 0 if the material doesn't have one.
+    // Return the EDF of the material, or nullptr if the material doesn't have one.
     const EDF* get_uncached_edf() const;
 
-    // Return the volume of the material, or 0 if the material doesn't have one.
+    // Return the volume of the material, or nullptr if the material doesn't have one.
     const Volume* get_uncached_volume() const;
 
-    // Return the source bound to the alpha map input, or 0 if the material doesn't have an alpha map.
+    // Return the source bound to the alpha map input, or nullptr if the material doesn't have an alpha map.
     const Source* get_uncached_alpha_map() const;
 
-    // Return the OSL surface shader of the material, or 0 if the material doesn't have one.
+    // Return the OSL surface shader of the material, or nullptr if the material doesn't have one.
     virtual const ShaderGroup* get_uncached_osl_surface() const;
 
     // Return true if the material emits light.

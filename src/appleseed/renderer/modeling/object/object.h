@@ -85,7 +85,7 @@ class APPLESEED_DLLSYMBOL Object
     // Return true if this object has an alpha map.
     virtual bool has_alpha_map() const;
 
-    // Return the source bound to the alpha map input, or 0 if the object doesn't have an alpha map.
+    // Return the source bound to the alpha map input, or nullptr if the object doesn't have an alpha map.
     const Source* get_alpha_map() const;
     virtual const Source* get_uncached_alpha_map() const;
 
