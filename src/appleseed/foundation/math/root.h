@@ -157,7 +157,11 @@ bool find_root_newton(
         const T delta = f(root) / d(root);
         root -= delta;
 
-        if (std::abs(delta) <= eps)
+        if ((root < a) || (root > b))
+        {
+            root = clamp(root, a, b);
+        }
+        else if (std::abs(delta) <= eps)
             return true;
     }
 
