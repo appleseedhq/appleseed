@@ -1,0 +1,102 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2018 Sergo Pogosyan, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/maya/as_maya_helpers.h"
+
+shader as_max_color_balance
+(
+    color in_constantColor = 1.0,
+    float in_constantFloat = 1.0,
+    float in_multiplier = 1.0,
+
+    float in_defaultFloat = 0.5,
+
+    int in_invert = 0,
+    int in_clamp_output = 0,
+
+    MAYA_COLORBALANCE_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    out_outColor = in_defaultColor;
+    out_outAlpha = in_defaultFloat;
+
+    maya_colorBalance(
+        in_colorGain,
+        in_colorOffset,
+        in_defaultColor,
+        in_alphaGain,
+        in_alphaOffset,
+        in_invert,
+        in_alphaIsLuminance,
+        out_outColor,
+        out_outAlpha);
+
+    if (in_multiplier == 0)
+    {
+        out_outColor = in_constantColor;
+        out_outAlpha = in_constantFloat;
+    }
+    else if (in_multiplier > 1)
+    {
+        out_outColor = out_outColor * in_multiplier;
+        out_outAlpha = out_outAlpha * in_multiplier;
+    }
+    else if (in_multiplier > 0)
+    {
+        out_outColor = mix(in_constantColor, out_outColor, in_multiplier);
+        out_outAlpha = mix(in_constantFloat, out_outAlpha, in_multiplier);
+    }
+    else if (in_multiplier < 0)
+    {
+        float abs_mult = max(1.0 + in_multiplier, 0.0);
+
+        out_outColor = (in_constantColor * abs_mult) * luminance((1 - out_outColor) * abs_mult);
+        out_outAlpha = (in_constantFloat * abs_mult) * luminance((1 - out_outAlpha) * abs_mult);
+    }
+
+    if (in_clamp_output)
+    {
+        out_outAlpha = clamp(out_outAlpha, 0.0, 1.0);
+        out_outColor = clamp(out_outColor, color(0), color(1));
+    }
+}

@@ -40,12 +40,9 @@ shader as_max_float_texture
     float        VBlur = 0.0,
     int          FirstChannel = 0,
     float        Fill = 0.0,
-    float        Multiplier = 1.0,
     output float FloatOut = 0.0
 )
 {
-    FloatOut = Multiplier;
-
     if (Filename != "")
     {
         color c = texture(
@@ -61,6 +58,6 @@ shader as_max_float_texture
             "firstchannel", FirstChannel,
             "fill", Fill);
 
-        FloatOut *= luminance(c);
+        FloatOut = luminance(c);
     }
 }
