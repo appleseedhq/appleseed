@@ -555,10 +555,10 @@ namespace
                 "  diaphragm blades              %s\n"
                 "  diaphragm angle               %f\n"
                 "  near z                        %f\n"
-                "  shutter open                  %f\n"
-                "  shutter close                 %f\n"
+                "  shutter open start            %f\n"
                 "  shutter open end              %f\n"
-                "  shutter close start           %f",
+                "  shutter close start           %f\n"
+                "  shutter close end             %f",
                 get_path().c_str(),
                 Model,
                 m_film_dimensions[0],

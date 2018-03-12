@@ -210,10 +210,10 @@ namespace
             RENDERER_LOG_INFO(
                 "camera \"%s\" settings:\n"
                 "  model                         %s\n"
-                "  shutter open                  %f\n"
-                "  shutter close                 %f\n"
+                "  shutter open start            %f\n"
                 "  shutter open end              %f\n"
-                "  shutter close start           %f",
+                "  shutter close start           %f\n"
+                "  shutter close end             %f",
                 get_path().c_str(),
                 Model,
                 m_shutter_open_time,
