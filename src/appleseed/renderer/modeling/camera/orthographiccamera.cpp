@@ -251,14 +251,18 @@ namespace
                 "  film height                   %f\n"
                 "  near z                        %f\n"
                 "  shutter open                  %f\n"
-                "  shutter close                 %f",
+                "  shutter close                 %f\n"
+                "  shutter open end              %f\n"
+                "  shutter close start           %f",
                 get_path().c_str(),
                 Model,
                 m_film_dimensions[0],
                 m_film_dimensions[1],
                 m_near_z,
                 m_shutter_open_time,
-                m_shutter_close_time);
+                m_shutter_close_time,
+                m_shutter_open_end_time,
+                m_shutter_close_start_time);
         }
 
         Vector3d ndc_to_camera(const Vector2d& point) const
