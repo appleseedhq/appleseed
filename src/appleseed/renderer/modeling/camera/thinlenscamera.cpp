@@ -572,9 +572,9 @@ namespace
                 m_diaphragm_tilt_angle,
                 m_near_z,
                 m_shutter_open_time,
-                m_shutter_close_time,
                 m_shutter_open_end_time,
-                m_shutter_close_start_time);
+                m_shutter_close_start_time,
+                m_shutter_close_time);
         }
 
         Vector3d ndc_to_camera(const Vector2d& point) const

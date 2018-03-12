@@ -217,9 +217,9 @@ namespace
                 get_path().c_str(),
                 Model,
                 m_shutter_open_time,
-                m_shutter_close_time,
                 m_shutter_open_end_time,
-                m_shutter_close_start_time);
+                m_shutter_close_start_time,
+                m_shutter_close_time);
         }
 
         static Vector3d ndc_to_camera(const Vector2d& point)
