@@ -67,6 +67,11 @@ namespace
       : public TileCallbackBase
     {
       public:
+        StdOutTileCallback(const bool single_plane = false)
+          : m_single_plane(single_plane)
+        {
+        }
+
         void release() override
         {
             // The factory always return the same tile callback instance.
@@ -124,14 +129,37 @@ namespace
 #ifdef _WIN32
             const int old_stdout_mode = _setmode(_fileno(stdout), _O_BINARY);
 #endif
+            send_header(*frame, tile_x, tile_y);
+            send_tile(*frame, tile_x, tile_y);
+#ifdef _WIN32
+            _setmode(_fileno(stdout), old_stdout_mode);
+#endif
+        }
 
+      private:
+        // Do not change the values of the enumerators as this WILL break client compabitility.
+        enum ChunkType
+        {
+            ChunkTypeTileData       = 1,
+            ChunkTypeTileHighlight  = 2
+        };
+
+        boost::mutex m_mutex;
+
+        const bool m_single_plane;
+
+        void send_header(
+            const Frame&        frame,
+            const size_t        tile_x,
+            const size_t        tile_y) const
+        {
             // Compute the coordinates in the image of the top-left corner of the tile.
-            const CanvasProperties& frame_props = frame->image().properties();
+            const CanvasProperties& frame_props = frame.image().properties();
             const size_t x = tile_x * frame_props.m_tile_width;
             const size_t y = tile_y * frame_props.m_tile_height;
 
             // Retrieve the source tile and its dimensions.
-            const Tile& tile = frame->image().tile(tile_x, tile_y);
+            const Tile& tile = frame.image().tile(tile_x, tile_y);
             const size_t w = tile.get_width();
             const size_t h = tile.get_height();
             const size_t c = tile.get_channel_count();
@@ -149,7 +177,16 @@ namespace
                 static_cast<uint32>(c),
             };
             fwrite(header, sizeof(header), 1, stdout);
+        }
 
+        void send_tile(
+            const Frame&        frame,
+            const size_t        tile_x,
+            const size_t        tile_y) const
+        {
+            const CanvasProperties& frame_props = frame.image().properties();
+
+            const Tile& tile = frame.image().tile(tile_x, tile_y);
             // Write tile pixels.
             if (frame_props.m_pixel_format != PixelFormatFloat)
             {
@@ -162,21 +199,7 @@ namespace
             }
 
             fflush(stdout);
-
-#ifdef _WIN32
-            _setmode(_fileno(stdout), old_stdout_mode);
-#endif
         }
-
-      private:
-        // Do not change the values of the enumerators as this WILL break client compabitility.
-        enum ChunkType
-        {
-            ChunkTypeTileData       = 1,
-            ChunkTypeTileHighlight  = 2
-        };
-
-        boost::mutex m_mutex;
     };
 }
 
@@ -186,7 +209,7 @@ namespace
 //
 
 StdOutTileCallbackFactory::StdOutTileCallbackFactory()
-  : m_callback(new StdOutTileCallback())
+  : m_callback(new StdOutTileCallback(true))
 {
 }
 
