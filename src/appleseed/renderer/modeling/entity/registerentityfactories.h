@@ -65,7 +65,7 @@ namespace renderer
         const std::string entity_type_name =
                 foundation::lower_case(EntityTraits<Entity>::get_human_readable_entity_type_name());
 
-        plugins_data.push_back(std::make_pair(std::make_pair(entry_point_name,entity_type_name), register_factory));
+        plugins_data.push_back(std::make_pair(std::make_pair(entry_point_name,entity_type_name), boost::bind(register_factory, _1)));
 
     }
 /*
@@ -147,6 +147,8 @@ void EntityFactoryRegistrar::register_factories_from_plugins(
 
             // Let the caller handle the discovered plugin.
             RENDERER_LOG_INFO("registering %s plugin %s...",plugins_data[i].first.second.c_str(), plugin_path.c_str());
+
+              plugins_data[i].second(plugin_entry_point);
 
            }
         }
