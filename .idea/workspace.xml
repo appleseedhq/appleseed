@@ -9,29 +9,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="187ff78b-b4c7-49ef-b2b9-d2c6fb681b81" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/aov/aovfactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/aov/aovfactoryregistrar.cpp" />
-      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/bsdf/bsdffactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/bsdf/bsdffactoryregistrar.cpp" />
-      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/bssrdf/bssrdffactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/bssrdf/bssrdffactoryregistrar.cpp" />
-      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/camera/camerafactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/camera/camerafactoryregistrar.cpp" />
-      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/edf/edffactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/edf/edffactoryregistrar.cpp" />
-      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/collectplugins.h" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/collectplugins.h" />
-      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/entityfactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/entityfactoryregistrar.cpp" />
-      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/entityfactoryregistrar.h" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/entityfactoryregistrar.h" />
-      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/registerentityfactories.h" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/registerentityfactories.h" />
-      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/environmentedf/environmentedffactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/environmentedf/environmentedffactoryregistrar.cpp" />
-      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/environmentshader/environmentshaderfactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/environmentshader/environmentshaderfactoryregistrar.cpp" />
-      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/light/lightfactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/light/lightfactoryregistrar.cpp" />
-      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/material/materialfactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/material/materialfactoryregistrar.cpp" />
-      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/object/objectfactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/object/objectfactoryregistrar.cpp" />
-      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/project/project.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/project/project.cpp" />
-      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/project/project.h" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/project/project.h" />
-      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/scene/assemblyfactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/scene/assemblyfactoryregistrar.cpp" />
-      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.cpp" />
-      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/texture/texturefactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/texture/texturefactoryregistrar.cpp" />
-      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/volume/volumefactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/volume/volumefactoryregistrar.cpp" />
-    </list>
+    <list default="true" id="187ff78b-b4c7-49ef-b2b9-d2c6fb681b81" name="Default" comment="" />
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -77,8 +55,8 @@
       <file leaf-file-name="project.cpp" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/project/project.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="506">
-              <caret line="233" column="36" lean-forward="true" selection-start-line="233" selection-start-column="36" selection-end-line="233" selection-end-column="36" />
+            <state relative-caret-position="254">
+              <caret line="219" column="43" lean-forward="false" selection-start-line="219" selection-start-column="43" selection-end-line="219" selection-end-column="43" />
               <folding />
             </state>
           </provider>
@@ -138,7 +116,7 @@
         <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/registerentityfactories.h">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="218">
-              <caret line="66" column="0" lean-forward="true" selection-start-line="66" selection-start-column="0" selection-end-line="66" selection-end-column="0" />
+              <caret line="66" column="0" lean-forward="false" selection-start-line="66" selection-start-column="0" selection-end-line="66" selection-end-column="0" />
               <folding>
                 <element signature="e#2669#2702#0" expanded="false" />
                 <element signature="e#2715#2727#0" expanded="true" />
@@ -289,16 +267,15 @@
       <updated>1520802122612</updated>
       <workItem from="1520802126077" duration="1000" />
       <workItem from="1520802287749" duration="5022000" />
-      <workItem from="1520960352161" duration="17856000" />
+      <workItem from="1520960352161" duration="18460000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="22879000" />
+    <option name="totallyTimeSpent" value="23483000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="251" y="27" width="1853" height="1055" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18888289" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -557,7 +534,7 @@
     <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/registerentityfactories.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="218">
-          <caret line="66" column="0" lean-forward="true" selection-start-line="66" selection-start-column="0" selection-end-line="66" selection-end-column="0" />
+          <caret line="66" column="0" lean-forward="false" selection-start-line="66" selection-start-column="0" selection-end-line="66" selection-end-column="0" />
           <folding>
             <element signature="e#2669#2702#0" expanded="false" />
             <element signature="e#2715#2727#0" expanded="true" />
@@ -567,8 +544,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/project/project.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="506">
-          <caret line="233" column="36" lean-forward="true" selection-start-line="233" selection-start-column="36" selection-end-line="233" selection-end-column="36" />
+        <state relative-caret-position="254">
+          <caret line="219" column="43" lean-forward="false" selection-start-line="219" selection-start-column="43" selection-end-line="219" selection-end-column="43" />
           <folding />
         </state>
       </provider>
