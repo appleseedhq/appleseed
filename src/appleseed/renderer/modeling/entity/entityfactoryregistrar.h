@@ -60,6 +60,13 @@ namespace renderer
 class APPLESEED_DLLSYMBOL EntityFactoryRegistrar
   : public foundation::NonCopyable
 {
+public:
+    //register_factories_from_plugins is kept public to allow  calling from project.cpp ( as it is a prototype for a different plugins loading architecture/technique)
+    // Register factories from plugins found in search paths.
+    template <typename T>
+    void register_factories_from_plugins(
+            const foundation::SearchPaths&      search_paths);
+    void clear_plugins_data();
   protected:
     // Constructor.
     EntityFactoryRegistrar();
@@ -71,11 +78,7 @@ class APPLESEED_DLLSYMBOL EntityFactoryRegistrar
     template <typename Entity>
     void collect_plugins(
             const std::function<void (void*)>&  register_factory);
-    // Register factories from plugins found in search paths.
-    template <typename Entity>
-    void register_factories_from_plugins(
-        const foundation::SearchPaths&      search_paths,
-        const std::function<void (void*)>&  register_factory);
+
 
     // Unload all plugins loaded by `register_factories_from_plugins()`.
     void unload_all_plugins();
@@ -83,12 +86,14 @@ class APPLESEED_DLLSYMBOL EntityFactoryRegistrar
   private:
     struct Impl;
     Impl* impl;
-    std::vector<std::pair<std::string ,boost::function<void(void*)>>> register_factories;
+    static std::vector<std::pair<std::pair<std::string,std::string>,boost::function<void(void*)>>> plugins_data;
 
 
     // Store a plugin in order to keep it alive while the registrar exists.
     void store_plugin(renderer::Plugin* plugin);
+
 };
+
 
 }       // namespace renderer
 

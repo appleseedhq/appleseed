@@ -80,13 +80,21 @@ void TextureFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
     register_factory(auto_release_ptr<FactoryType>(new MemoryTexture2dFactory()));
 
     // Register factories defined in plugins.
-    register_factories_from_plugins<Texture>(
+   /* register_factories_from_plugins<Texture>(
         search_paths,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<ITextureFactory* (*)()>(plugin_entry_point);
             register_factory(foundation::auto_release_ptr<ITextureFactory>(create_fn()));
         });
+*/
+    collect_plugins<Texture>(
+            [this](void* plugin_entry_point)
+            {
+                auto create_fn = reinterpret_cast<ITextureFactory* (*)()>(plugin_entry_point);
+                register_factory(foundation::auto_release_ptr<ITextureFactory>(create_fn()));
+            }
+    );
 }
 
 TextureFactoryArray TextureFactoryRegistrar::get_factories() const

@@ -9,7 +9,29 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="187ff78b-b4c7-49ef-b2b9-d2c6fb681b81" name="Default" comment="" />
+    <list default="true" id="187ff78b-b4c7-49ef-b2b9-d2c6fb681b81" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/aov/aovfactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/aov/aovfactoryregistrar.cpp" />
+      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/bsdf/bsdffactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/bsdf/bsdffactoryregistrar.cpp" />
+      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/bssrdf/bssrdffactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/bssrdf/bssrdffactoryregistrar.cpp" />
+      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/camera/camerafactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/camera/camerafactoryregistrar.cpp" />
+      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/edf/edffactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/edf/edffactoryregistrar.cpp" />
+      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/collectplugins.h" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/collectplugins.h" />
+      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/entityfactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/entityfactoryregistrar.cpp" />
+      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/entityfactoryregistrar.h" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/entityfactoryregistrar.h" />
+      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/registerentityfactories.h" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/registerentityfactories.h" />
+      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/environmentedf/environmentedffactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/environmentedf/environmentedffactoryregistrar.cpp" />
+      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/environmentshader/environmentshaderfactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/environmentshader/environmentshaderfactoryregistrar.cpp" />
+      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/light/lightfactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/light/lightfactoryregistrar.cpp" />
+      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/material/materialfactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/material/materialfactoryregistrar.cpp" />
+      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/object/objectfactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/object/objectfactoryregistrar.cpp" />
+      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/project/project.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/project/project.cpp" />
+      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/project/project.h" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/project/project.h" />
+      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/scene/assemblyfactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/scene/assemblyfactoryregistrar.cpp" />
+      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.cpp" />
+      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/texture/texturefactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/texture/texturefactoryregistrar.cpp" />
+      <change beforePath="$PROJECT_DIR$/src/appleseed/renderer/modeling/volume/volumefactoryregistrar.cpp" afterPath="$PROJECT_DIR$/src/appleseed/renderer/modeling/volume/volumefactoryregistrar.cpp" />
+    </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -19,13 +41,15 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file leaf-file-name="entityfactoryregistrar.h" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/entityfactoryregistrar.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="308">
-              <caret line="85" column="88" lean-forward="false" selection-start-line="85" selection-start-column="70" selection-end-line="85" selection-end-column="88" />
-              <folding />
+            <state relative-caret-position="402">
+              <caret line="95" column="0" lean-forward="false" selection-start-line="95" selection-start-column="0" selection-end-line="95" selection-end-column="0" />
+              <folding>
+                <element signature="e#2376#2388#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -33,8 +57,8 @@
       <file leaf-file-name="aovfactoryregistrar.h" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/aov/aovfactoryregistrar.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="308">
-              <caret line="74" column="21" lean-forward="false" selection-start-line="74" selection-start-column="9" selection-end-line="74" selection-end-column="21" />
+            <state relative-caret-position="164">
+              <caret line="60" column="33" lean-forward="false" selection-start-line="60" selection-start-column="11" selection-end-line="60" selection-end-column="33" />
               <folding />
             </state>
           </provider>
@@ -43,8 +67,58 @@
       <file leaf-file-name="aovfactoryregistrar.cpp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/aov/aovfactoryregistrar.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="486">
-              <caret line="108" column="6" lean-forward="false" selection-start-line="108" selection-start-column="6" selection-end-line="108" selection-end-column="6" />
+            <state relative-caret-position="144">
+              <caret line="80" column="0" lean-forward="false" selection-start-line="80" selection-start-column="0" selection-end-line="80" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="project.cpp" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/project/project.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="506">
+              <caret line="233" column="36" lean-forward="true" selection-start-line="233" selection-start-column="36" selection-end-line="233" selection-end-column="36" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="project.h" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/project/project.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="20">
+              <caret line="184" column="23" lean-forward="false" selection-start-line="184" selection-start-column="4" selection-end-line="184" selection-end-column="23" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="lightfactoryregistrar.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/light/lightfactoryregistrar.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="540">
+              <caret line="33" column="50" lean-forward="false" selection-start-line="33" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="collectplugins.h" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/collectplugins.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="398">
+              <caret line="32" column="37" lean-forward="false" selection-start-line="32" selection-start-column="33" selection-end-line="32" selection-end-column="37" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="configuration.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/project/configuration.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="0">
+              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -53,8 +127,8 @@
       <file leaf-file-name="entityfactoryregistrar.cpp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/entityfactoryregistrar.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="427">
-              <caret line="67" column="38" lean-forward="false" selection-start-line="67" selection-start-column="38" selection-end-line="67" selection-end-column="38" />
+            <state relative-caret-position="200">
+              <caret line="76" column="47" lean-forward="false" selection-start-line="76" selection-start-column="29" selection-end-line="76" selection-end-column="47" />
               <folding />
             </state>
           </provider>
@@ -63,24 +137,23 @@
       <file leaf-file-name="registerentityfactories.h" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/registerentityfactories.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="126">
-              <caret line="59" column="29" lean-forward="false" selection-start-line="59" selection-start-column="0" selection-end-line="59" selection-end-column="29" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="collectplugins.h" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/collectplugins.h">
-          <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="218">
-              <caret line="32" column="39" lean-forward="true" selection-start-line="32" selection-start-column="39" selection-end-line="32" selection-end-column="39" />
-              <folding />
+              <caret line="66" column="0" lean-forward="true" selection-start-line="66" selection-start-column="0" selection-end-line="66" selection-end-column="0" />
+              <folding>
+                <element signature="e#2669#2702#0" expanded="false" />
+                <element signature="e#2715#2727#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
     </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>entity_type_name</find>
+      <find>register_factories_from_plugins</find>
+    </findStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -88,11 +161,26 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/registerentityfactories.h" />
+        <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/volume/volumefactoryregistrar.cpp" />
+        <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/texture/texturefactoryregistrar.cpp" />
+        <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.cpp" />
+        <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/scene/assemblyfactoryregistrar.cpp" />
+        <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/object/objectfactoryregistrar.cpp" />
+        <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/material/materialfactoryregistrar.cpp" />
+        <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/environmentshader/environmentshaderfactoryregistrar.cpp" />
+        <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/environmentedf/environmentedffactoryregistrar.cpp" />
+        <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/edf/edffactoryregistrar.cpp" />
+        <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/camera/camerafactoryregistrar.cpp" />
+        <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/bssrdf/bssrdffactoryregistrar.cpp" />
+        <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/bsdf/bsdffactoryregistrar.cpp" />
+        <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/light/lightfactoryregistrar.cpp" />
+        <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/project/project.h" />
         <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/collectplugins.h" />
+        <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/aov/aovfactoryregistrar.cpp" />
         <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/entityfactoryregistrar.h" />
         <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/entityfactoryregistrar.cpp" />
-        <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/aov/aovfactoryregistrar.cpp" />
+        <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/project/project.cpp" />
+        <option value="$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/registerentityfactories.h" />
       </list>
     </option>
   </component>
@@ -163,15 +251,6 @@
               <item name="appleseed" type="462c0819:PsiDirectoryNode" />
               <item name="renderer" type="462c0819:PsiDirectoryNode" />
               <item name="modeling" type="462c0819:PsiDirectoryNode" />
-              <item name="aov" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="appleseed" type="dad4c3:CidrFilesViewHelper$MyProjectTreeStructure$1" />
-              <item name="appleseed" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="appleseed" type="462c0819:PsiDirectoryNode" />
-              <item name="renderer" type="462c0819:PsiDirectoryNode" />
-              <item name="modeling" type="462c0819:PsiDirectoryNode" />
               <item name="entity" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
@@ -209,21 +288,23 @@
       <option name="presentableId" value="Default" />
       <updated>1520802122612</updated>
       <workItem from="1520802126077" duration="1000" />
-      <workItem from="1520802287749" duration="4423000" />
+      <workItem from="1520802287749" duration="5022000" />
+      <workItem from="1520960352161" duration="17856000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="4424000" />
+    <option name="totallyTimeSpent" value="22879000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="67" y="25" width="1853" height="1055" extended-state="6" />
+    <frame x="251" y="27" width="1853" height="1055" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18888289" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.31151003" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -235,7 +316,6 @@
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
@@ -254,7 +334,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -262,54 +341,234 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-376">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/camera/camerafactoryregistrar.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/registerentityfactories.h">
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/object/objectfactoryregistrar.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="126">
-          <caret line="59" column="29" lean-forward="false" selection-start-line="59" selection-start-column="0" selection-end-line="59" selection-end-column="29" />
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/entityfactoryregistrar.cpp">
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/entityvector.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="427">
-          <caret line="67" column="38" lean-forward="false" selection-start-line="67" selection-start-column="38" selection-end-line="67" selection-end-column="38" />
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/entityfactoryregistrar.h">
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/edf/edffactoryregistrar.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="308">
-          <caret line="85" column="88" lean-forward="false" selection-start-line="85" selection-start-column="70" selection-end-line="85" selection-end-column="88" />
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/volume/volumefactoryregistrar.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="398">
+          <caret line="88" column="11" lean-forward="true" selection-start-line="88" selection-start-column="11" selection-end-line="88" selection-end-column="11" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/texture/texturefactoryregistrar.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="216">
+          <caret line="33" column="0" lean-forward="true" selection-start-line="33" selection-start-column="0" selection-end-line="33" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="164">
+          <caret line="33" column="0" lean-forward="true" selection-start-line="33" selection-start-column="0" selection-end-line="33" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/scene/assemblyfactoryregistrar.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="198">
+          <caret line="32" column="0" lean-forward="true" selection-start-line="32" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/object/objectfactoryregistrar.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="32" column="0" lean-forward="false" selection-start-line="32" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/material/materialfactoryregistrar.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="108">
+          <caret line="33" column="0" lean-forward="false" selection-start-line="33" selection-start-column="0" selection-end-line="33" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/environmentshader/environmentshaderfactoryregistrar.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="324">
+          <caret line="33" column="0" lean-forward="false" selection-start-line="33" selection-start-column="0" selection-end-line="33" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/environmentedf/environmentedffactoryregistrar.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="72">
+          <caret line="33" column="0" lean-forward="false" selection-start-line="33" selection-start-column="0" selection-end-line="33" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/camera/camerafactoryregistrar.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="108">
+          <caret line="30" column="29" lean-forward="false" selection-start-line="30" selection-start-column="29" selection-end-line="30" selection-end-column="29" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/bssrdf/bssrdffactoryregistrar.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="108">
+          <caret line="33" column="11" lean-forward="false" selection-start-line="33" selection-start-column="11" selection-end-line="33" selection-end-column="11" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/bsdf/bsdffactoryregistrar.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="144">
+          <caret line="50" column="0" lean-forward="false" selection-start-line="50" selection-start-column="0" selection-end-line="50" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/light/lightfactoryregistrar.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-324">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/edf/edffactoryregistrar.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="108">
+          <caret line="36" column="0" lean-forward="false" selection-start-line="36" selection-start-column="0" selection-end-line="36" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/kernel/lighting/lighttracing/lighttracingsamplegenerator.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="185">
+          <caret line="44" column="55" lean-forward="false" selection-start-line="44" selection-start-column="55" selection-end-line="44" selection-end-column="55" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/light/lightfactoryregistrar.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="540">
+          <caret line="33" column="50" lean-forward="false" selection-start-line="33" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/aov/aovfactoryregistrar.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="308">
-          <caret line="74" column="21" lean-forward="false" selection-start-line="74" selection-start-column="9" selection-end-line="74" selection-end-column="21" />
+        <state relative-caret-position="164">
+          <caret line="60" column="33" lean-forward="false" selection-start-line="60" selection-start-column="11" selection-end-line="60" selection-end-column="33" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/aov/aovfactoryregistrar.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="486">
-          <caret line="108" column="6" lean-forward="false" selection-start-line="108" selection-start-column="6" selection-end-line="108" selection-end-column="6" />
+        <state relative-caret-position="144">
+          <caret line="80" column="0" lean-forward="false" selection-start-line="80" selection-start-column="0" selection-end-line="80" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/project/project.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="20">
+          <caret line="184" column="23" lean-forward="false" selection-start-line="184" selection-start-column="4" selection-end-line="184" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/entityfactoryregistrar.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="402">
+          <caret line="95" column="0" lean-forward="false" selection-start-line="95" selection-start-column="0" selection-end-line="95" selection-end-column="0" />
+          <folding>
+            <element signature="e#2376#2388#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/entityfactoryregistrar.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="200">
+          <caret line="76" column="47" lean-forward="false" selection-start-line="76" selection-start-column="29" selection-end-line="76" selection-end-column="47" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/collectplugins.h">
       <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="398">
+          <caret line="32" column="37" lean-forward="false" selection-start-line="32" selection-start-column="33" selection-end-line="32" selection-end-column="37" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/project/configuration.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/entity/registerentityfactories.h">
+      <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="218">
-          <caret line="32" column="39" lean-forward="true" selection-start-line="32" selection-start-column="39" selection-end-line="32" selection-end-column="39" />
+          <caret line="66" column="0" lean-forward="true" selection-start-line="66" selection-start-column="0" selection-end-line="66" selection-end-column="0" />
+          <folding>
+            <element signature="e#2669#2702#0" expanded="false" />
+            <element signature="e#2715#2727#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/appleseed/renderer/modeling/project/project.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="506">
+          <caret line="233" column="36" lean-forward="true" selection-start-line="233" selection-start-column="36" selection-end-line="233" selection-end-column="36" />
           <folding />
         </state>
       </provider>

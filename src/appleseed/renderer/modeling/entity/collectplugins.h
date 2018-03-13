@@ -27,21 +27,15 @@
 #include<iostream>
 
 
+// this function is called by every plugin wants to register it's register_function and entry_point
+// to collect all plugins then traverse paths searching for plugins ( plugins in vector)
+namespace renderer {
+    void EntityFactoryRegistrar::test()
+    {
+        return;
+    }
 
-template <typename Entity>
-void EntityFactoryRegistrar::collect_plugins(
-        const std::function<void (void*)>&  register_factory)
-{
-
-    const std::string entry_point_name =
-            foundation::format("appleseed_create_{0}_factory", EntityTraits<Entity>::get_entity_type_name());
-
-
-    std::vector<std::pair<std::string ,boost::function<void(void*)>>> register_factories;
-
-    register_factories.push_back(std::make_pair(entry_point_name,register_factory));
-    //functions.push_back(register_factory);
-    std::cout<<"vector size is " <<register_factories.size()<<"\n";
 }
+
 
 #endif //APPLESEED_COLLECTPLUGINS_H

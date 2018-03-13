@@ -71,6 +71,9 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+//appleseed plugin register file
+#include "renderer/modeling/entity/registerentityfactories.h"
+
 // Standard headers.
 #include <cstddef>
 

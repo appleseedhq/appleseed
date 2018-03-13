@@ -79,6 +79,7 @@ void AOVFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
     impl->m_registrar.clear();
     unload_all_plugins();
 
+
     // Register built-in factories.
     register_factory(auto_release_ptr<FactoryType>(new DepthAOVFactory()));
     register_factory(auto_release_ptr<FactoryType>(new DiffuseAOVFactory()));
@@ -91,16 +92,16 @@ void AOVFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
     register_factory(auto_release_ptr<FactoryType>(new NormalAOVFactory()));
     register_factory(auto_release_ptr<FactoryType>(new PixelTimeAOVFactory()));
     register_factory(auto_release_ptr<FactoryType>(new UVAOVFactory()));
-/*
+
     // Register factories defined in plugins.
-    register_factories_from_plugins<AOV>(
+  /*  register_factories_from_plugins<AOV>(
         search_paths,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<IAOVFactory* (*)()>(plugin_entry_point);
             register_factory(foundation::auto_release_ptr<IAOVFactory>(create_fn()));
         });*/
-    collectplugins<AOV>(
+    collect_plugins<AOV>(
             [this](void* plugin_entry_point)
             {
                 auto create_fn = reinterpret_cast<IAOVFactory* (*)()>(plugin_entry_point);

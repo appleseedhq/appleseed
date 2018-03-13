@@ -77,13 +77,22 @@ void VolumeFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
     register_factory(auto_release_ptr<FactoryType>(new GenericVolumeFactory()));
 
     // Register factories defined in plugins.
-    register_factories_from_plugins<Volume>(
+   /* register_factories_from_plugins<Volume>(
         search_paths,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<IVolumeFactory* (*)()>(plugin_entry_point);
             register_factory(foundation::auto_release_ptr<IVolumeFactory>(create_fn()));
         });
+*/
+
+    collect_plugins<Volume>(
+            [this](void* plugin_entry_point)
+            {
+                auto create_fn = reinterpret_cast<IVolumeFactory* (*)()>(plugin_entry_point);
+                register_factory(foundation::auto_release_ptr<IVolumeFactory>(create_fn()));
+            }
+    );
 }
 
 VolumeFactoryArray VolumeFactoryRegistrar::get_factories() const
