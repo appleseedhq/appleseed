@@ -43,6 +43,10 @@ namespace renderer { class RendererServices; }
 namespace renderer
 {
 
+//
+// Simple wrapper around OSL's ShadingSystem.
+//
+
 class OSLShadingSystem
   : public OSL::ShadingSystem
 {
@@ -53,18 +57,23 @@ class OSLShadingSystem
     friend class OSLShadingSystemFactory;
 
     OSLShadingSystem(
-        RendererServices* renderer = nullptr,
-        OIIOTextureSystem* texturesystem = nullptr,
-        OIIOErrorHandler* err = nullptr);
+        RendererServices*   renderer = nullptr,
+        OIIOTextureSystem*  texturesystem = nullptr,
+        OIIOErrorHandler*   err = nullptr);
 };
+
+
+//
+// OSLShadingSystem factory.
+//
 
 class OSLShadingSystemFactory
 {
   public:
     static OSLShadingSystem* create(
-        RendererServices* renderer = nullptr,
-        OIIOTextureSystem* texturesystem = nullptr,
-        OIIOErrorHandler* err = nullptr);
+        RendererServices*   renderer = nullptr,
+        OIIOTextureSystem*  texturesystem = nullptr,
+        OIIOErrorHandler*   err = nullptr);
 };
 
 }       // namespace renderer
