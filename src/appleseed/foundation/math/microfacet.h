@@ -51,15 +51,15 @@ class MDF
     virtual ~MDF();
 
     virtual float D(
-        const Vector3f&     h,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const = 0;
 
     virtual float G(
-        const Vector3f&     incoming,
-        const Vector3f&     outgoing,
-        const Vector3f&     h,
+        const Vector3f&     wi,
+        const Vector3f&     wo,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const = 0;
@@ -80,7 +80,7 @@ class MDF
 
     virtual float pdf(
         const Vector3f&     v,
-        const Vector3f&     h,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const = 0;
@@ -108,15 +108,15 @@ class BlinnMDF
     BlinnMDF() {}
 
     float D(
-        const Vector3f&     h,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
     float G(
-        const Vector3f&     incoming,
-        const Vector3f&     outgoing,
-        const Vector3f&     h,
+        const Vector3f&     wi,
+        const Vector3f&     wo,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
@@ -137,7 +137,7 @@ class BlinnMDF
 
     float pdf(
         const Vector3f&     v,
-        const Vector3f&     h,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
@@ -174,15 +174,15 @@ class BeckmannMDF
     BeckmannMDF() {}
 
     float D(
-        const Vector3f&     h,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
     float G(
-        const Vector3f&     incoming,
-        const Vector3f&     outgoing,
-        const Vector3f&     h,
+        const Vector3f&     wi,
+        const Vector3f&     wo,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
@@ -207,7 +207,7 @@ class BeckmannMDF
 
     float pdf(
         const Vector3f&     v,
-        const Vector3f&     h,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
@@ -250,15 +250,15 @@ class GGXMDF
     GGXMDF() {}
 
     float D(
-        const Vector3f&     h,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
     float G(
-        const Vector3f&     incoming,
-        const Vector3f&     outgoing,
-        const Vector3f&     h,
+        const Vector3f&     wi,
+        const Vector3f&     wo,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
@@ -283,7 +283,7 @@ class GGXMDF
 
     float pdf(
         const Vector3f&     v,
-        const Vector3f&     h,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
@@ -314,15 +314,15 @@ class WardMDF
     WardMDF() {}
 
     float D(
-        const Vector3f&     h,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
     float G(
-        const Vector3f&     incoming,
-        const Vector3f&     outgoing,
-        const Vector3f&     h,
+        const Vector3f&     wi,
+        const Vector3f&     wo,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
@@ -343,7 +343,7 @@ class WardMDF
 
     float pdf(
         const Vector3f&     v,
-        const Vector3f&     h,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
@@ -369,15 +369,15 @@ class GTR1MDF
     GTR1MDF() {}
 
     float D(
-        const Vector3f&     h,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
     float G(
-        const Vector3f&     incoming,
-        const Vector3f&     outgoing,
-        const Vector3f&     h,
+        const Vector3f&     wi,
+        const Vector3f&     wo,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
@@ -398,7 +398,7 @@ class GTR1MDF
 
     float pdf(
         const Vector3f&     v,
-        const Vector3f&     h,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
@@ -429,15 +429,15 @@ class StdMDF
     StdMDF() {}
 
     float D(
-        const Vector3f&     h,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
     float G(
-        const Vector3f&     incoming,
-        const Vector3f&     outgoing,
-        const Vector3f&     h,
+        const Vector3f&     wi,
+        const Vector3f&     wo,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
@@ -458,7 +458,7 @@ class StdMDF
 
     float pdf(
         const Vector3f&     v,
-        const Vector3f&     h,
+        const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
