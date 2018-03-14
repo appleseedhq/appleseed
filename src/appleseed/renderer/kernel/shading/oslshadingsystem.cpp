@@ -37,10 +37,14 @@
 namespace renderer
 {
 
+//
+// OSLShadingSystem class implementation.
+//
+
 OSLShadingSystem::OSLShadingSystem(
-    RendererServices* renderer,
-    OIIOTextureSystem* texturesystem,
-    OIIOErrorHandler* err)
+    RendererServices*   renderer,
+    OIIOTextureSystem*  texturesystem,
+    OIIOErrorHandler*   err)
   : OSL::ShadingSystem(renderer, texturesystem, err)
 {
 }
@@ -50,10 +54,15 @@ void OSLShadingSystem::release()
     delete this;
 }
 
+
+//
+// OSLShadingSystemFactory class implementation.
+//
+
 OSLShadingSystem* OSLShadingSystemFactory::create(
-    RendererServices* renderer,
-    OIIOTextureSystem* texturesystem,
-    OIIOErrorHandler* err)
+    RendererServices*   renderer,
+    OIIOTextureSystem*  texturesystem,
+    OIIOErrorHandler*   err)
 {
     return new OSLShadingSystem(renderer, texturesystem, err);
 }
