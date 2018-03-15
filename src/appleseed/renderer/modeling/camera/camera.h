@@ -178,15 +178,6 @@ class APPLESEED_DLLSYMBOL Camera
     // Utility function to retrieve the focal length (in meters) from the camera parameters.
     double extract_focal_length(const double film_width) const;
 
-    // Utility function to retrieve the f-stop value from the camera parameters.
-    double extract_f_stop() const;
-
-    // Utility function to retrieve the focal distance (in meters) from the camera parameters.
-    void extract_focal_distance(
-        const bool                      autofocus_enabled,
-        foundation::Vector2d&           autofocus_target,
-        double&                         focal_distance) const;
-
     // Utility function to retrieve the abscissa (in meters) of the near plane from the camera parameters.
     double extract_near_z() const;
 
@@ -198,7 +189,6 @@ class APPLESEED_DLLSYMBOL Camera
     // Map a sample using inverse of CDF calculated from camera shutter graph. Used in initialize_ray().
     float map_to_shutter_curve(const float sample) const;
 
-  private:
     bool has_param(const char* name) const;
     bool has_params(const char* name1, const char* name2) const;
 
@@ -206,6 +196,7 @@ class APPLESEED_DLLSYMBOL Camera
         const char*                     name,
         const double                    default_value) const;
 
+  private:
     // Check shutter times and emit warnings if needed.
     void check_shutter_times_for_consistency() const;
 };
