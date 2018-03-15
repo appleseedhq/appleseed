@@ -64,6 +64,7 @@
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/iostreamop.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -458,6 +459,58 @@ namespace
                     "diaphragm_blades",
                     m_diaphragm_blade_count);
             }
+        }
+
+        // Utility function to retrieve the focal distance (in meters) from the camera parameters.
+        void extract_focal_distance(
+            const bool              autofocus_enabled,
+            Vector2d&               autofocus_target,
+            double&                 focal_distance) const
+        {
+            const Vector2d DefaultAFTarget(0.5);        // in NDC
+            const double DefaultFocalDistance = 1.0;    // in meters
+
+            if (autofocus_enabled)
+            {
+                if (has_param("autofocus_target"))
+                    autofocus_target = m_params.get_required<Vector2d>("autofocus_target", DefaultAFTarget);
+                else
+                {
+                    RENDERER_LOG_ERROR(
+                        "while defining camera \"%s\": no \"autofocus_target\" parameter found; "
+                        "using default value \"%f, %f\".",
+                        get_path().c_str(),
+                        DefaultAFTarget[0],
+                        DefaultAFTarget[1]);
+                    autofocus_target = DefaultAFTarget;
+                }
+
+                focal_distance = DefaultFocalDistance;
+            }
+            else
+            {
+                if (has_param("focal_distance"))
+                    focal_distance = m_params.get_required<double>("focal_distance", DefaultFocalDistance);
+                else
+                {
+                    RENDERER_LOG_ERROR(
+                        "while defining camera \"%s\": no \"focal_distance\" parameter found; "
+                        "using default value \"%f\".",
+                        get_path().c_str(),
+                        DefaultFocalDistance);
+                    focal_distance = DefaultFocalDistance;
+                }
+
+                autofocus_target = DefaultAFTarget;
+            }
+        }
+
+        // Utility function to retrieve the f-stop value from the camera parameters.
+        double extract_f_stop() const
+        {
+            const double DefaultFStop = 8.0;
+
+            return get_greater_than_zero("f_stop", DefaultFStop);
         }
 
         void extract_diaphragm_tilt_angle()

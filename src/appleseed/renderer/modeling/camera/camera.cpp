@@ -238,56 +238,6 @@ double Camera::extract_focal_length(const double film_width) const
     }
 }
 
-double Camera::extract_f_stop() const
-{
-    const double DefaultFStop = 8.0;
-
-    return get_greater_than_zero("f_stop", DefaultFStop);
-}
-
-void Camera::extract_focal_distance(
-    const bool              autofocus_enabled,
-    Vector2d&               autofocus_target,
-    double&                 focal_distance) const
-{
-    const Vector2d DefaultAFTarget(0.5);        // in NDC
-    const double DefaultFocalDistance = 1.0;    // in meters
-
-    if (autofocus_enabled)
-    {
-        if (has_param("autofocus_target"))
-            autofocus_target = m_params.get_required<Vector2d>("autofocus_target", DefaultAFTarget);
-        else
-        {
-            RENDERER_LOG_ERROR(
-                "while defining camera \"%s\": no \"autofocus_target\" parameter found; "
-                "using default value \"%f, %f\".",
-                get_path().c_str(),
-                DefaultAFTarget[0],
-                DefaultAFTarget[1]);
-            autofocus_target = DefaultAFTarget;
-        }
-
-        focal_distance = DefaultFocalDistance;
-    }
-    else
-    {
-        if (has_param("focal_distance"))
-            focal_distance = m_params.get_required<double>("focal_distance", DefaultFocalDistance);
-        else
-        {
-            RENDERER_LOG_ERROR(
-                "while defining camera \"%s\": no \"focal_distance\" parameter found; "
-                "using default value \"%f\".",
-                get_path().c_str(),
-                DefaultFocalDistance);
-            focal_distance = DefaultFocalDistance;
-        }
-
-        autofocus_target = DefaultAFTarget;
-    }
-}
-
 double Camera::extract_near_z() const
 {
     const double DefaultNearZ = -0.001;         // in meters
