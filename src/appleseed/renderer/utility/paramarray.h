@@ -109,7 +109,7 @@ class APPLESEED_DLLSYMBOL ParamArray
     template <typename T>
     T get_required(
         const char*             name,
-        const T&                default_value) const;
+        const T&                default_value = T()) const;
 
     //
     // Retrieve the value of an optional parameter.
