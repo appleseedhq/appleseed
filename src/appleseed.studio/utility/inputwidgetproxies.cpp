@@ -239,6 +239,7 @@ ColorPickerProxy::ColorPickerProxy(QLineEdit* line_edit, QToolButton* picker_but
   , m_picker_button(picker_button)
 {
     connect(m_line_edit, SIGNAL(returnPressed()), SIGNAL(signal_changed()));
+    connect(m_line_edit, SIGNAL(textChanged(const QString&)), SLOT(slot_set(const QString&)));
 }
 
 namespace

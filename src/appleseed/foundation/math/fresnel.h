@@ -650,7 +650,8 @@ T average_fresnel_reflectance_dielectric(const T eta)
         return (eta - T(1.0)) / (T(4.08567) + T(1.00071) * eta);
 
     const T eta2 = eta * eta;
-    return T(0.997118) + T(0.1014) * eta - T(0.965241) * eta2 - T(0.130607) * eta * eta2;
+    const T eta3 = eta * eta2;
+    return T(0.997118) + T(0.1014) * eta - T(0.965241) * eta2 - T(0.130607) * eta3;
 }
 
 template <typename SpectrumType>

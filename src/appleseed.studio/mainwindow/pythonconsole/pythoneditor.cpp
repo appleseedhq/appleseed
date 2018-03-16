@@ -80,7 +80,9 @@ void PythonEditor::keyPressEvent(QKeyEvent* event)
     {
         if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
             event->setModifiers(event->modifiers() & ~Qt::ShiftModifier);
+
         ZoomablePlainTextEdit::keyPressEvent(event);
+
         if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
             indent();
     }

@@ -231,6 +231,7 @@ Color<T, 3> operator*(
     const Color<T, 3>&      c,
     const Matrix<T, 3, 3>&  m);
 
+
 //
 // RGBA color class of arbitrary type.
 //

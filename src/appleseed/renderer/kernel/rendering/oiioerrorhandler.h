@@ -51,7 +51,12 @@ class OIIOErrorHandler
   : public OIIO::ErrorHandler
 {
   public:
+    OIIOErrorHandler();
+
     void operator()(int errcode, const std::string& msg) override;
+
+  private:
+    static const int ErrorCodeMask = 0xffff0000;
 };
 
 }       // namespace renderer

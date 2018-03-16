@@ -71,10 +71,17 @@ Tracer::Tracer(
     if (print_details)
     {
         if (m_assume_no_alpha_mapping && m_assume_no_participating_media)
-            RENDERER_LOG_DEBUG("the scene does not rely on alpha mapping "
-                               "and does not contain participating media; using probe tracing.");
-        else RENDERER_LOG_DEBUG("the scene uses alpha mapping "
-                                "or contains participating media; using standard tracing.");
+        {
+            RENDERER_LOG_INFO(
+                "the scene does not rely on alpha mapping "
+                "and does not contain participating media; using probe tracing.");
+        }
+        else
+        {
+            RENDERER_LOG_INFO(
+                "the scene uses alpha mapping "
+                "or contains participating media; using standard tracing.");
+        }
     }
 }
 

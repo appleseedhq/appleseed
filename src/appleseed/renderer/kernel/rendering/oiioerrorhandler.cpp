@@ -45,11 +45,16 @@ namespace renderer
 // OIIOErrorHandler class implementation.
 //
 
+OIIOErrorHandler::OIIOErrorHandler()
+{
+	verbosity(VERBOSE);
+}
+
 void OIIOErrorHandler::operator()(int errcode, const string& msg)
 {
     const string modified_msg = prefix_all_lines(trim_both(msg), "osl: ");
 
-    switch (errcode)
+    switch (errcode & ErrorCodeMask)
     {
       case EH_WARNING:
         RENDERER_LOG_WARNING("%s", modified_msg.c_str());
@@ -63,10 +68,12 @@ void OIIOErrorHandler::operator()(int errcode, const string& msg)
         RENDERER_LOG_FATAL("%s", modified_msg.c_str());
         break;
 
-      case EH_DEBUG:
-        RENDERER_LOG_DEBUG("%s", modified_msg.c_str());
+      case EH_MESSAGE:
+      case EH_INFO:
+        RENDERER_LOG_INFO("%s", modified_msg.c_str());
         break;
 
+      case EH_DEBUG:
       default:
         RENDERER_LOG_DEBUG("%s", modified_msg.c_str());
         break;

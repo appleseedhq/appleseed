@@ -33,8 +33,13 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/aov/aovaccumulator.h"
+#include "renderer/kernel/aov/tilestack.h"
+#include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
+#include "foundation/image/colorspace.h"
+#include "foundation/image/tile.h"
 #include "foundation/platform/types.h"
 
 using namespace foundation;
@@ -46,27 +51,83 @@ namespace renderer
 // PixelRendererBase class implementation.
 //
 
-PixelRendererBase::PixelRendererBase()
-  : m_invalid_pixel_count(0)
+const uint8 InvalidSampleHint = 1;
+const uint8 CorrectSampleHint = 2;
+
+PixelRendererBase::PixelRendererBase(
+    const Frame&        frame,
+    const size_t        thread_index,
+    const ParamArray&   params)
+  : m_params(params)
+  , m_invalid_pixel_count(0)
+  , m_invalid_sample_aov_index(~0)
 {
+    if (m_params.m_diagnostics)
+    {
+        m_invalid_sample_aov_index = frame.create_extra_aov_image("invalid_samples");
+
+        if ((thread_index == 0) && (m_invalid_sample_aov_index == size_t(~0)))
+        {
+            RENDERER_LOG_WARNING(
+                "could not create invalid samples aov, maximum number of aovs (" FMT_SIZE_T ") reached.",
+                MaxAOVCount);
+        }
+    }
+}
+
+bool PixelRendererBase::are_diagnostics_enabled() const
+{
+    return m_params.m_diagnostics;
 }
 
 void PixelRendererBase::on_tile_begin(
-    const Frame&    frame,
-    Tile&           tile,
-    TileStack&      aov_tiles)
+    const Frame&            frame,
+    Tile&                   tile,
+    TileStack&              aov_tiles)
 {
+    if (m_invalid_sample_aov_index != size_t(~0))
+    {
+        m_invalid_sample_diagnostic.reset(
+            new Tile(tile.get_width(), tile.get_height(), 1, PixelFormatUInt8));
+    }
 }
 
 void PixelRendererBase::on_tile_end(
-    const Frame&    frame,
-    Tile&           tile,
-    TileStack&      aov_tiles)
+    const Frame&            frame,
+    Tile&                   tile,
+    TileStack&              aov_tiles)
 {
+    if (m_invalid_sample_aov_index != size_t(~0))
+    {
+        const size_t width = tile.get_width();
+        const size_t height = tile.get_height();
+
+        for (size_t y = 0; y < height; ++y)
+        {
+            for (size_t x = 0; x < width; ++x)
+            {
+                Color<uint8, 1> sample_state;
+                m_invalid_sample_diagnostic->get_pixel(x, y, sample_state);
+
+                Color4f color(1.0f, 0.0f, 1.0f, 1.0f);
+
+                if (sample_state[0] == CorrectSampleHint)
+                {
+                    tile.get_pixel(x, y, color);
+                    // 20% of luminance
+                    color.rgb().set(luminance(color.rgb()) * 0.2f);
+                }
+
+                aov_tiles.set_pixel(x, y, m_invalid_sample_aov_index, color);
+            }
+        }
+    }
 }
 
 void PixelRendererBase::on_pixel_begin(
     const Vector2i&             pi,
+    const Vector2i&             pt,
+    const AABB2i&               tile_bbox,
     AOVAccumulatorContainer&    aov_accumulators)
 {
     m_invalid_sample_count = 0;
@@ -75,6 +136,8 @@ void PixelRendererBase::on_pixel_begin(
 
 void PixelRendererBase::on_pixel_end(
     const Vector2i&             pi,
+    const Vector2i&             pt,
+    const AABB2i&               tile_bbox,
     AOVAccumulatorContainer&    aov_accumulators)
 {
     aov_accumulators.on_pixel_end(pi);
@@ -99,12 +162,48 @@ void PixelRendererBase::on_pixel_end(
         {
             RENDERER_LOG_WARNING("more invalid samples found, omitting warning messages for brevity.");
         }
+
+    }
+
+    // Invalid samples diagnostic
+    if (m_params.m_diagnostics && tile_bbox.contains(pt))
+    {
+        Color<uint8, 1> sample_state;
+
+        if (m_invalid_sample_count > 0)
+            sample_state[0] = InvalidSampleHint;
+        else
+            sample_state[0] = CorrectSampleHint;
+
+        m_invalid_sample_diagnostic->set_pixel(pt.x, pt.y, sample_state);
     }
 }
 
 void PixelRendererBase::signal_invalid_sample()
 {
     ++m_invalid_sample_count;
+}
+
+
+//
+// PixelRendererBaseFactory class implementation.
+//
+
+Dictionary PixelRendererBaseFactory::get_params_metadata()
+{
+    Dictionary metadata;
+
+    metadata.dictionaries().insert(
+        "enable_diagnostics",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "false")
+            .insert("label", "Enable Diagnostics")
+            .insert(
+                "help",
+                "Enable pixel renderer diagnostics"));
+
+    return metadata;
 }
 
 }   // namespace renderer

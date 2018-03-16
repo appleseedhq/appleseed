@@ -168,23 +168,15 @@ class APPLESEED_DLLSYMBOL Camera
     float               m_open_linear_curve_slope;
     float               m_close_linear_curve_slope;
     float               m_shutter_pdf_max_height;
-    float               m_inverse_cdf_open_point; 
+    float               m_inverse_cdf_open_point;
     float               m_inverse_cdf_close_point;
+    bool                m_motion_blur_enabled;
 
     // Utility function to retrieve the film dimensions (in meters) from the camera parameters.
     foundation::Vector2d extract_film_dimensions() const;
 
     // Utility function to retrieve the focal length (in meters) from the camera parameters.
     double extract_focal_length(const double film_width) const;
-
-    // Utility function to retrieve the f-stop value from the camera parameters.
-    double extract_f_stop() const;
-
-    // Utility function to retrieve the focal distance (in meters) from the camera parameters.
-    void extract_focal_distance(
-        bool&                           autofocus_enabled,
-        foundation::Vector2d&           autofocus_target,
-        double&                         focal_distance) const;
 
     // Utility function to retrieve the abscissa (in meters) of the near plane from the camera parameters.
     double extract_near_z() const;
@@ -197,14 +189,18 @@ class APPLESEED_DLLSYMBOL Camera
     // Map a sample using inverse of CDF calculated from camera shutter graph. Used in initialize_ray().
     float map_to_shutter_curve(const float sample) const;
 
-  private:
     bool has_param(const char* name) const;
     bool has_params(const char* name1, const char* name2) const;
 
     double get_greater_than_zero(
         const char*                     name,
         const double                    default_value) const;
+
+  private:
+    // Check shutter times and emit warnings if needed.
+    void check_shutter_times_for_consistency() const;
 };
+
 
 //
 // An incomplete factory class whose main purpose is to factorize the code

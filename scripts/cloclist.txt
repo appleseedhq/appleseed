@@ -2,6 +2,7 @@
 ..\src\appleseed
 ..\src\appleseed.cli
 ..\src\appleseed.python
+..\src\appleseed.shaders
 ..\src\appleseed.shared
 ..\src\appleseed.studio
 ..\src\tools

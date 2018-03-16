@@ -35,6 +35,7 @@
 float sqr(float x) { return x * x; }
 vector sqr(vector x) { return x * x; }
 
+
 //
 // Reference:
 //
@@ -56,6 +57,7 @@ float gain(float value, float g)
         : 1 - bias(2 - (value * 2), 1 - g) * 0.5;
 }
 
+
 //
 // Reference:
 //
@@ -75,6 +77,7 @@ float fast_gain(float value, float g)
         ? fast_bias(value * 2, g) * 0.5
         : fast_bias(value * 2 - 1, 1 - g) * 0.5 + 0.5;
 }
+
 
 //
 // Reference:

@@ -100,12 +100,14 @@ namespace
             const Source*   radiance_source,
             const Source*   multiplier_source,
             const Source*   exposure_source,
+            const Source*   exposure_multiplier_source,
             const size_t    width,
             const size_t    height)
           : m_texture_cache(texture_cache)
           , m_radiance_source(radiance_source)
           , m_multiplier_source(multiplier_source)
           , m_exposure_source(exposure_source)
+          , m_exposure_multiplier_source(exposure_multiplier_source) 
           , m_rcp_width(1.0f / width)
           , m_rcp_height(1.0f / height)
         {
@@ -134,7 +136,10 @@ namespace
                 float exposure;
                 m_exposure_source->evaluate(m_texture_cache, SourceInputs(uv), exposure);
 
-                payload *= multiplier * pow(2.0f, exposure);
+                float exposure_multiplier;
+                m_exposure_multiplier_source->evaluate_uniform(exposure_multiplier);
+
+                payload *= multiplier * pow(2.0f, exposure * exposure_multiplier);
                 importance = luminance(payload);
             }
             else
@@ -149,6 +154,7 @@ namespace
         const Source*   m_radiance_source;
         const Source*   m_multiplier_source;
         const Source*   m_exposure_source;
+        const Source*   m_exposure_multiplier_source;
         const float     m_rcp_width;
         const float     m_rcp_height;
     };
@@ -170,6 +176,7 @@ namespace
             m_inputs.declare("radiance", InputFormatSpectralIlluminance);
             m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("exposure", InputFormatFloat, "0.0");
+            m_inputs.declare("exposure_multiplier", InputFormatFloat, "1.0");
 
             m_phi_shift = deg_to_rad(m_params.get_optional<float>("horizontal_shift", 0.0f));
             m_theta_shift = deg_to_rad(m_params.get_optional<float>("vertical_shift", 0.0f));
@@ -358,6 +365,7 @@ namespace
             Spectrum    m_radiance;                 // emitted radiance in W.m^-2.sr^-1
             float       m_radiance_multiplier;      // emitted radiance multiplier
             float       m_exposure;                 // emitted radiance multiplier in f-stops
+            float       m_exposure_multiplier;      // emitted radiance exposure multiplier
         };
 
         float   m_phi_shift;                        // horizontal shift in radians
@@ -394,6 +402,7 @@ namespace
                 radiance_source,
                 m_inputs.source("radiance_multiplier"),
                 m_inputs.source("exposure"),
+                m_inputs.source("exposure_multiplier"),
                 m_importance_map_width,
                 m_importance_map_height);
 
@@ -436,7 +445,7 @@ namespace
             if (is_finite(values.m_radiance))
             {
                 value = values.m_radiance;
-                value *= values.m_radiance_multiplier * pow(2.0f, values.m_exposure);
+                value *= values.m_radiance_multiplier * pow(2.0f, values.m_exposure * values.m_exposure_multiplier);
             }
             else value.set(0.0f);
         }
@@ -522,6 +531,23 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "0.0")
             .insert("help", "Environment exposure"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "exposure_multiplier")
+            .insert("label", "Exposure Multiplier")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-64.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "64.0")
+                    .insert("type", "soft"))
+            .insert("default", "1.0")
+            .insert("use", "optional")
+            .insert("help", "Environment exposure multiplier"));
 
     metadata.push_back(
         Dictionary()
