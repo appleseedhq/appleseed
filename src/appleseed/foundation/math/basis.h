@@ -57,7 +57,11 @@ class Basis3
     typedef Basis3<T> BasisType;
 
     // Constructors.
-    Basis3();                                       // leave all components uninitialized
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    Basis3() = default;                             // leave all components uninitialized
+#else
+    Basis3() {}                                     // leave all components uninitialized
+#endif
     explicit Basis3(const VectorType& normal);      // normal must be unit-length
     Basis3(
         const VectorType&   normal,                 // must be unit-length
@@ -134,11 +138,6 @@ typedef Basis3<double> Basis3d;
 //
 // Basis3 class implementation.
 //
-
-template <typename T>
-inline Basis3<T>::Basis3()
-{
-}
 
 template <typename T>
 inline Basis3<T>::Basis3(const VectorType& normal)
