@@ -101,7 +101,7 @@ void GlobalSampleAccumulationBuffer::store_samples(
         Color3f value(s->m_color.rgb());
         value *= m_filter_rcp_norm_factor;
 
-        m_fb.add(fx, fy, &value[0]);
+        m_fb.atomic_add(fx, fy, &value[0]);
     }
 }
 

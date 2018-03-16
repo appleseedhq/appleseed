@@ -185,7 +185,7 @@ void LocalSampleAccumulationBuffer::store_samples(
 
                 const float fx = s->m_position.x * level_width;
                 const float fy = s->m_position.y * level_height;
-                level->add(fx, fy, &s->m_color[0]);
+                level->atomic_add(fx, fy, &s->m_color[0]);
             }
         }
 

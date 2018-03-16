@@ -125,6 +125,12 @@ class FilteredTile
         const float         y,
         const float*        values);
 
+    // Thread-safe variant of add().
+    void atomic_add(
+        const float         x,
+        const float         y,
+        const float*        values);
+
   protected:
     const AABB2u            m_crop_window;
     const Filter2f&         m_filter;
