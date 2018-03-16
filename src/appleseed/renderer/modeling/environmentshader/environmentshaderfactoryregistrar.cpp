@@ -80,13 +80,21 @@ void EnvironmentShaderFactoryRegistrar::reinitialize(const SearchPaths& search_p
     register_factory(auto_release_ptr<FactoryType>(new EDFEnvironmentShaderFactory()));
 
     // Register factories defined in plugins.
-    register_factories_from_plugins<EnvironmentShader>(
+   /* register_factories_from_plugins<EnvironmentShader>(
         search_paths,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<IEnvironmentShaderFactory* (*)()>(plugin_entry_point);
             register_factory(foundation::auto_release_ptr<IEnvironmentShaderFactory>(create_fn()));
         });
+*/
+    collect_plugins<EnvironmentShader>(
+            [this](void* plugin_entry_point)
+            {
+                auto create_fn = reinterpret_cast<IEnvironmentShaderFactory* (*)()>(plugin_entry_point);
+                register_factory(foundation::auto_release_ptr<IEnvironmentShaderFactory>(create_fn()));
+            }
+    );
 }
 
 EnvironmentShaderFactoryArray EnvironmentShaderFactoryRegistrar::get_factories() const
