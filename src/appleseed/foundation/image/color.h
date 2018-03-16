@@ -66,7 +66,11 @@ class Color
     static const size_t Components = N;
 
     // Constructors.
-    Color();                                    // leave all components uninitialized
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    Color() = default;                          // leave all components uninitialized
+#else
+    Color() {}                                  // leave all components uninitialized
+#endif
     explicit Color(const ValueType val);        // set all components to `val`
 
     // Construct a color from another color of a different type.
@@ -187,7 +191,11 @@ class Color<T, 3>
     ValueType r, g, b;
 
     // Constructors.
-    Color();                                    // leave all components uninitialized
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    Color() = default;                          // leave all components uninitialized
+#else
+    Color() {}                                  // leave all components uninitialized
+#endif
     explicit Color(const ValueType val);        // set all components to `val`
     Color(                                      // set individual components
         const ValueType r,
@@ -248,7 +256,11 @@ class Color<T, 4>
     ValueType r, g, b, a;
 
     // Constructors.
-    Color();                                    // leave all components uninitialized
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    Color() = default;                          // leave all components uninitialized
+#else
+    Color() {}                                  // leave all components uninitialized
+#endif
     explicit Color(const ValueType val);        // set all components to `val`
     Color(
         const Color<T, 3>&  rgb,
@@ -310,11 +322,6 @@ typedef Color<double,   4> Color4d;
 //
 // N-dimensional color implementation.
 //
-
-template <typename T, size_t N>
-inline Color<T, N>::Color()
-{
-}
 
 template <typename T, size_t N>
 inline Color<T, N>::Color(const ValueType val)
@@ -860,11 +867,6 @@ inline bool is_finite(const Color<T, N>& c)
 //
 
 template <typename T>
-inline Color<T, 3>::Color()
-{
-}
-
-template <typename T>
 inline Color<T, 3>::Color(const ValueType val)
   : r(val)
   , g(val)
@@ -971,14 +973,10 @@ inline Color<T, 3> operator*(
     return res;
 }
 
+
 //
 // RGBA color implementation.
 //
-
-template <typename T>
-inline Color<T, 4>::Color()
-{
-}
 
 template <typename T>
 inline Color<T, 4>::Color(const ValueType val)

@@ -65,7 +65,11 @@ class Transform
     typedef Transform<T> TransformType;
 
     // Constructors.
-    Transform();                                // leave the transformation uninitialized
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    Transform() = default;                      // leave the transformation uninitialized
+#else
+    Transform() {}                              // leave the transformation uninitialized
+#endif
     explicit Transform(                         // throws a foundation::ExceptionSingularMatrix exception if local_to_parent is singular
         const MatrixType& local_to_parent);
     Transform(
@@ -175,7 +179,11 @@ class TransformInterpolator
     typedef Transform<T> TransformType;
 
     // Constructors.
-    TransformInterpolator();                    // leave the interpolator uninitialized
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    TransformInterpolator() = default;          // leave the interpolator uninitialized
+#else
+    TransformInterpolator() {}                  // leave the interpolator uninitialized
+#endif
     TransformInterpolator(
         const TransformType&    from,
         const TransformType&    to);
@@ -221,11 +229,6 @@ typedef TransformInterpolator<double> TransformInterpolatord;
 
 template <typename T>
 const Transform<T> Transform<T>::m_identity(Transform<T>::make_identity());
-
-template <typename T>
-inline Transform<T>::Transform()
-{
-}
 
 template <typename T>
 inline Transform<T>::Transform(const MatrixType& local_to_parent)
@@ -627,11 +630,6 @@ inline bool feq(const Transform<T>& lhs, const Transform<T>& rhs, const T eps)
 //
 // TransformInterpolator class implementation.
 //
-
-template <typename T>
-inline TransformInterpolator<T>::TransformInterpolator()
-{
-}
 
 template <typename T>
 inline TransformInterpolator<T>::TransformInterpolator(

@@ -67,7 +67,11 @@ class Quaternion
     VectorType  v;                                          // vector part
 
     // Constructors.
-    Quaternion();                                           // leave all components uninitialized
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    Quaternion() = default;                                 // leave all components uninitialized
+#else
+    Quaternion() {}                                         // leave all components uninitialized
+#endif
     Quaternion(const ValueType s, const VectorType& v);     // initializing constructor
 
     // Construct a quaternion from another quaternion of a different type.
@@ -177,11 +181,6 @@ typedef Quaternion<double> Quaterniond;
 //
 // Quaternion class implementation.
 //
-
-template <typename T>
-inline Quaternion<T>::Quaternion()
-{
-}
 
 template <typename T>
 inline Quaternion<T>::Quaternion(const ValueType s_, const VectorType& v_)

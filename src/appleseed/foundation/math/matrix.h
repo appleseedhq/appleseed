@@ -84,7 +84,11 @@ class Matrix
     static const size_t Components = M * N;
 
     // Constructors.
-    Matrix();                                               // leave all components uninitialized
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    Matrix() = default;                                     // leave all components uninitialized
+#else
+    Matrix() {}                                             // leave all components uninitialized
+#endif
     explicit Matrix(const ValueType val);                   // set all components to `val`
 
     // Construct a matrix from another matrix of a different type.
@@ -179,7 +183,11 @@ class Matrix<T, N, N>
     static const size_t Components = N * N;
 
     // Constructors.
-    Matrix();                                               // leave all components uninitialized
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    Matrix() = default;                                     // leave all components uninitialized
+#else
+    Matrix() {}                                             // leave all components uninitialized
+#endif
     explicit Matrix(const ValueType val);                   // set all components to `val`
 
     // Construct a matrix from another matrix of a different type.
@@ -247,7 +255,11 @@ class Matrix<T, 3, 3>
     static const size_t Components = 3 * 3;
 
     // Constructors.
-    Matrix();                                               // leave all components uninitialized
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    Matrix() = default;                                     // leave all components uninitialized
+#else
+    Matrix() {}                                             // leave all components uninitialized
+#endif
     explicit Matrix(const ValueType val);                   // set all components to `val`
 
     // Construct a matrix from another matrix of a different type.
@@ -368,7 +380,11 @@ class Matrix<T, 4, 4>
     static const size_t Components = 4 * 4;
 
     // Constructors.
-    Matrix();                                               // leave all components uninitialized
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    Matrix() = default;                                     // leave all components uninitialized
+#else
+    Matrix() {}                                             // leave all components uninitialized
+#endif
     explicit Matrix(const ValueType val);                   // set all components to `val`
 
     // Construct a matrix from another matrix of a different type.
@@ -489,11 +505,6 @@ typedef Matrix<double, 4, 4> Matrix4d;
 //
 // MxN matrix class implementation.
 //
-
-template <typename T, size_t M, size_t N>
-inline Matrix<T, M, N>::Matrix()
-{
-}
 
 template <typename T, size_t M, size_t N>
 inline Matrix<T, M, N>::Matrix(const ValueType val)
@@ -845,11 +856,6 @@ template <typename T, size_t N>
 const Matrix<T, N, N> Matrix<T, N, N>::m_identity(Matrix<T, N, N>::make_identity());
 
 template <typename T, size_t N>
-inline Matrix<T, N, N>::Matrix()
-{
-}
-
-template <typename T, size_t N>
 inline Matrix<T, N, N>::Matrix(const ValueType val)
 {
     for (size_t i = 0; i < Components; ++i)
@@ -1043,11 +1049,6 @@ Matrix<T, N, N> inverse(
 
 template <typename T>
 const Matrix<T, 3, 3> Matrix<T, 3, 3>::m_identity(Matrix<T, 3, 3>::make_identity());
-
-template <typename T>
-inline Matrix<T, 3, 3>::Matrix()
-{
-}
 
 template <typename T>
 inline Matrix<T, 3, 3>::Matrix(const ValueType val)
@@ -1578,11 +1579,6 @@ inline Vector<T, 3> operator*(
 
 template <typename T>
 const Matrix<T, 4, 4> Matrix<T, 4, 4>::m_identity(Matrix<T, 4, 4>::make_identity());
-
-template <typename T>
-inline Matrix<T, 4, 4>::Matrix()
-{
-}
 
 template <typename T>
 inline Matrix<T, 4, 4>::Matrix(const ValueType val)

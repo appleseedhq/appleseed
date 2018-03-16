@@ -73,7 +73,11 @@ class AABB
     VectorType min, max;
 
     // Constructors.
-    AABB();                             // leave all components uninitialized
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    AABB() = default;                   // leave all components uninitialized
+#else
+    AABB() {}                           // leave all components uninitialized
+#endif
     AABB(
         const VectorType& min,          // lower bound
         const VectorType& max);         // upper bound
@@ -217,11 +221,6 @@ typedef AABB<double, 4> AABB4d;
 //
 // N-dimensional axis-aligned bounding box class and operations.
 //
-
-template <typename T, size_t N>
-inline AABB<T, N>::AABB()
-{
-}
 
 template <typename T, size_t N>
 inline AABB<T, N>::AABB(

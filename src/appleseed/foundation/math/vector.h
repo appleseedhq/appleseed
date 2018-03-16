@@ -66,7 +66,11 @@ class Vector
     static const size_t Dimension = N;
 
     // Constructors.
-    Vector();                                   // leave all components uninitialized
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    Vector() = default;                         // leave all components uninitialized
+#else
+    Vector() {}                                 // leave all components uninitialized
+#endif
     explicit Vector(const ValueType val);       // set all components to `val`
 
     // Construct a vector from another vector of a different type.
@@ -249,7 +253,11 @@ class Vector<T, 2>
     ValueType x, y;
 
     // Constructors.
-    Vector();                                   // leave all components uninitialized
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    Vector() = default;                         // leave all components uninitialized
+#else
+    Vector() {}                                 // leave all components uninitialized
+#endif
     explicit Vector(const ValueType val);       // set all components to `val`
     Vector(                                     // set individual components
         const ValueType x,
@@ -301,7 +309,11 @@ class Vector<T, 3>
     ValueType x, y, z;
 
     // Constructors.
-    Vector();                                   // leave all components uninitialized
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    Vector() = default;                         // leave all components uninitialized
+#else
+    Vector() {}                                 // leave all components uninitialized
+#endif
     explicit Vector(const ValueType val);       // set all components to `val`
     Vector(                                     // set individual components
         const ValueType x,
@@ -364,7 +376,11 @@ class Vector<T, 4>
     ValueType x, y, z, w;
 
     // Constructors.
-    Vector();                                   // leave all components uninitialized
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    Vector() = default;                         // leave all components uninitialized
+#else
+    Vector() {}                                 // leave all components uninitialized
+#endif
     explicit Vector(const ValueType val);       // set all components to `val`
     Vector(                                     // set individual components
         const ValueType x,
@@ -437,11 +453,6 @@ struct ImathVecEquivalent<T, 3>
 //
 // N-dimensional vector implementation.
 //
-
-template <typename T, size_t N>
-inline Vector<T, N>::Vector()
-{
-}
 
 template <typename T, size_t N>
 inline Vector<T, N>::Vector(const ValueType val)
@@ -1046,11 +1057,6 @@ inline Vector<T, N> component_wise_max(const Vector<T, N>& lhs, const Vector<T, 
 //
 
 template <typename T>
-inline Vector<T, 2>::Vector()
-{
-}
-
-template <typename T>
 inline Vector<T, 2>::Vector(const ValueType val)
   : x(val)
   , y(val)
@@ -1128,11 +1134,6 @@ inline T det(const Vector<T, 2>& lhs, const Vector<T, 2>& rhs)
 //
 // 3D vector implementation.
 //
-
-template <typename T>
-inline Vector<T, 3>::Vector()
-{
-}
 
 template <typename T>
 inline Vector<T, 3>::Vector(const ValueType val)
@@ -1249,11 +1250,6 @@ inline Vector<T, 3> cross(const Vector<T, 3>& lhs, const Vector<T, 3>& rhs)
 //
 // 4D vector implementation.
 //
-
-template <typename T>
-inline Vector<T, 4>::Vector()
-{
-}
 
 template <typename T>
 inline Vector<T, 4>::Vector(const ValueType val)

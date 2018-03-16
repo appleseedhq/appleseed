@@ -72,7 +72,11 @@ class Ray
     ValueType   m_tmax;                     // end of the ray interval (exclusive)
 
     // Constructors.
-    Ray();                                  // leave all fields uninitialized
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    Ray() = default;                        // leave all fields uninitialized
+#else
+    Ray() {}                                // leave all fields uninitialized
+#endif
     Ray(
         const VectorType&   org,
         const VectorType&   dir,
@@ -148,7 +152,11 @@ class RayInfo
     Vector<uint32, N> m_sgn_dir;
 
     // Constructors.
-    RayInfo();                              // leave all fields uninitialized
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    RayInfo() = default;                    // leave all fields uninitialized
+#else
+    RayInfo() {}                            // leave all fields uninitialized
+#endif
     explicit RayInfo(const RayType& ray);   // initialize with a ray
 
     // Construct ray info from other ray info of a different type.
@@ -180,7 +188,11 @@ class RayInfo<double, 3>
     APPLESEED_SIMD4_ALIGN Vector<uint32, 4> m_sgn_dir;
 
     // Constructors.
-    RayInfo();                              // leave all fields uninitialized
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    RayInfo() = default;                    // leave all fields uninitialized
+#else
+    RayInfo() {}                            // leave all fields uninitialized
+#endif
     explicit RayInfo(const RayType& ray);   // initialize with a ray
 
     // Construct ray info from other ray info of a different type.
@@ -206,11 +218,6 @@ typedef RayInfo<double, 4> RayInfo4d;
 //
 // Ray class implementation.
 //
-
-template <typename T, size_t N>
-inline Ray<T, N>::Ray()
-{
-}
 
 template <typename T, size_t N>
 inline Ray<T, N>::Ray(
@@ -305,11 +312,6 @@ inline bool feq(const Ray<T, N>& lhs, const Ray<T, N>& rhs, const T eps)
 //
 
 template <typename T, size_t N>
-inline RayInfo<T, N>::RayInfo()
-{
-}
-
-template <typename T, size_t N>
 inline RayInfo<T, N>::RayInfo(const RayType& ray)
 {
     for (size_t i = 0; i < Dimension; ++i)
@@ -329,10 +331,6 @@ inline RayInfo<T, N>::RayInfo(const RayInfo<U, N>& rhs)
 }
 
 #ifdef APPLESEED_USE_SSE
-
-inline RayInfo<double, 3>::RayInfo()
-{
-}
 
 APPLESEED_FORCE_INLINE RayInfo<double, 3>::RayInfo(const RayType& ray)
 {
