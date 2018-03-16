@@ -166,21 +166,10 @@ JobQueue::RunningJobInfo JobQueue::acquire_scheduled_job()
 {
     boost::mutex::scoped_lock lock(impl->m_mutex);
 
-    return acquire_scheduled_job_unlocked();
+    return acquire_scheduled_job_no_lock();
 }
 
-JobQueue::RunningJobInfo JobQueue::wait_for_scheduled_job(AbortSwitch& abort_switch)
-{
-    boost::mutex::scoped_lock lock(impl->m_mutex);
-
-    // Wait for a scheduled job to be available.
-    while (!abort_switch.is_aborted() && impl->m_scheduled_jobs.empty())    // order matters
-        impl->m_event.wait(lock);
-
-    return acquire_scheduled_job_unlocked();
-}
-
-JobQueue::RunningJobInfo JobQueue::acquire_scheduled_job_unlocked()
+JobQueue::RunningJobInfo JobQueue::acquire_scheduled_job_no_lock()
 {
     // Bail out if there is no scheduled job.
     if (impl->m_scheduled_jobs.empty())
@@ -195,6 +184,17 @@ JobQueue::RunningJobInfo JobQueue::acquire_scheduled_job_unlocked()
     impl->m_event.notify_all();
 
     return RunningJobInfo(job_info, pred(impl->m_running_jobs.end()));
+}
+
+JobQueue::RunningJobInfo JobQueue::wait_for_scheduled_job(AbortSwitch& abort_switch)
+{
+    boost::mutex::scoped_lock lock(impl->m_mutex);
+
+    // Wait for a scheduled job to be available.
+    while (!abort_switch.is_aborted() && impl->m_scheduled_jobs.empty())    // order matters
+        impl->m_event.wait(lock);
+
+    return acquire_scheduled_job_no_lock();
 }
 
 void JobQueue::retire_running_job(const RunningJobInfo& running_job_info)
