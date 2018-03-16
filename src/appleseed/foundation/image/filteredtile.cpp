@@ -54,8 +54,6 @@ namespace foundation
 //   http://alvyray.com/Memos/CG/Microsoft/6_pixel.pdf
 //
 
-#define ATOMIC_UPDATES
-
 FilteredTile::FilteredTile(
     const size_t        width,
     const size_t        height,
@@ -118,21 +116,49 @@ void FilteredTile::add(
         for (int rx = footprint.min.x; rx <= footprint.max.x; ++rx)
         {
             const float weight = m_filter.evaluate(rx - dx, ry - dy);
-
-#ifdef ATOMIC_UPDATES
-            atomic_add(ptr++, weight);
-#else
             *ptr++ += weight;
-#endif
 
             for (size_t i = 0, e = m_channel_count - 1; i < e; ++i)
-            {
-#ifdef ATOMIC_UPDATES
-                atomic_add(ptr++, values[i] * weight);
-#else
                 *ptr++ += values[i] * weight;
-#endif
-            }
+        }
+    }
+}
+
+void FilteredTile::atomic_add(
+    const float         x,
+    const float         y,
+    const float*        values)
+{
+    // Convert (x, y) from continuous image space to discrete image space.
+    const float dx = x - 0.5f;
+    const float dy = y - 0.5f;
+
+    // Find the pixels affected by this sample.
+    AABB2i footprint;
+    footprint.min.x = truncate<int>(fast_ceil(dx - m_filter.get_xradius()));
+    footprint.min.y = truncate<int>(fast_ceil(dy - m_filter.get_yradius()));
+    footprint.max.x = truncate<int>(fast_floor(dx + m_filter.get_xradius()));
+    footprint.max.y = truncate<int>(fast_floor(dy + m_filter.get_yradius()));
+
+    // Don't affect pixels outside the crop window.
+    footprint = AABB2i::intersect(footprint, m_crop_window);
+
+    // Bail out if the point does not fall inside the crop window.
+    // Only check the x coordinate; the y coordinate is checked in the loop below.
+    if (footprint.min.x > footprint.max.x)
+        return;
+
+    for (int ry = footprint.min.y; ry <= footprint.max.y; ++ry)
+    {
+        float* APPLESEED_RESTRICT ptr = reinterpret_cast<float*>(pixel(footprint.min.x, ry));
+
+        for (int rx = footprint.min.x; rx <= footprint.max.x; ++rx)
+        {
+            const float weight = m_filter.evaluate(rx - dx, ry - dy);
+            foundation::atomic_add(ptr++, weight);
+
+            for (size_t i = 0, e = m_channel_count - 1; i < e; ++i)
+                foundation::atomic_add(ptr++, values[i] * weight);
         }
     }
 }
