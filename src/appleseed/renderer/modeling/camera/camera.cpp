@@ -80,18 +80,27 @@ bool Camera::on_render_begin(
     IAbortSwitch*           abort_switch)
 {
     m_shutter_open_time = m_params.get_optional<float>("shutter_open_time", 0.0f);
-    m_shutter_open_end_time = m_params.get_optional<float>("shutter_open_end_time", 0.0f);
-    m_shutter_close_start_time = m_params.get_optional<float>("shutter_close_start_time", 1.0f);
+    m_shutter_open_end_time = m_params.get_optional<float>("shutter_open_end_time", m_shutter_open_time);
     m_shutter_close_time = m_params.get_optional<float>("shutter_close_time", 1.0f);
+    m_shutter_close_start_time = m_params.get_optional<float>("shutter_close_start_time", m_shutter_close_time);
+
+    check_shutter_times_for_consistency();
+
     m_shutter_open_time_interval = m_shutter_close_time - m_shutter_open_time;
-    m_normalized_open_end_time = inverse_lerp(m_shutter_open_time, m_shutter_close_time, m_shutter_open_end_time);
-    m_normalized_open_end_time_half = m_normalized_open_end_time / 2;
-    m_normalized_close_start_time = inverse_lerp(m_shutter_open_time, m_shutter_close_time, m_shutter_close_start_time);
-    m_shutter_pdf_max_height = 2 / (1 + m_normalized_close_start_time - m_normalized_open_end_time);
-    m_open_linear_curve_slope = m_shutter_pdf_max_height / m_normalized_open_end_time;
-    m_close_linear_curve_slope = -m_shutter_pdf_max_height / (1 - m_normalized_close_start_time);
-    m_inverse_cdf_open_point = m_shutter_pdf_max_height * m_normalized_open_end_time_half;
-    m_inverse_cdf_close_point = m_shutter_pdf_max_height * (m_normalized_close_start_time - m_normalized_open_end_time_half);
+
+    m_motion_blur_enabled = m_shutter_open_time_interval > 0.0f;
+
+    if (m_motion_blur_enabled)
+    {
+        m_normalized_open_end_time = inverse_lerp(m_shutter_open_time, m_shutter_close_time, m_shutter_open_end_time);
+        m_normalized_open_end_time_half = m_normalized_open_end_time / 2.0f;
+        m_normalized_close_start_time = inverse_lerp(m_shutter_open_time, m_shutter_close_time, m_shutter_close_start_time);
+        m_shutter_pdf_max_height = 2.0f / (1.0f + m_normalized_close_start_time - m_normalized_open_end_time);
+        m_open_linear_curve_slope = m_shutter_pdf_max_height / m_normalized_open_end_time;
+        m_close_linear_curve_slope = -m_shutter_pdf_max_height / (1.0f - m_normalized_close_start_time);
+        m_inverse_cdf_open_point = m_shutter_pdf_max_height * m_normalized_open_end_time_half;
+        m_inverse_cdf_close_point = m_shutter_pdf_max_height * (m_normalized_close_start_time - m_normalized_open_end_time_half);
+    }
 
     return true;
 }
@@ -229,61 +238,6 @@ double Camera::extract_focal_length(const double film_width) const
     }
 }
 
-double Camera::extract_f_stop() const
-{
-    const double DefaultFStop = 8.0;
-
-    return get_greater_than_zero("f_stop", DefaultFStop);
-}
-
-void Camera::extract_focal_distance(
-    bool&                   autofocus_enabled,
-    Vector2d&               autofocus_target,
-    double&                 focal_distance) const
-{
-    const Vector2d DefaultAFTarget(0.5);        // in NDC
-    const double DefaultFocalDistance = 1.0;    // in meters
-
-    if (has_param("focal_distance"))
-    {
-        if (has_param("autofocus_target"))
-        {
-            RENDERER_LOG_WARNING(
-                "while defining camera \"%s\": autofocus is enabled; \"focal_distance\" parameter "
-                "will be ignored.",
-                get_path().c_str());
-
-            autofocus_enabled = true;
-            autofocus_target = m_params.get_required<Vector2d>("autofocus_target", DefaultAFTarget);
-            focal_distance = 0.0;
-        }
-        else
-        {
-            autofocus_enabled = false;
-            autofocus_target = DefaultAFTarget;
-            focal_distance = m_params.get_required<double>("focal_distance", DefaultFocalDistance);
-        }
-    }
-    else if (has_param("autofocus_target"))
-    {
-        autofocus_enabled = true;
-        autofocus_target = m_params.get_required<Vector2d>("autofocus_target", DefaultAFTarget);
-        focal_distance = 0.0;
-    }
-    else
-    {
-        RENDERER_LOG_ERROR(
-            "while defining camera \"%s\": no \"focal_distance\" or \"autofocus_target\" parameter found; "
-            "using default focal distance value \"%f\".",
-            get_path().c_str(),
-            DefaultFocalDistance);
-
-        autofocus_enabled = false;
-        autofocus_target = DefaultAFTarget;
-        focal_distance = DefaultFocalDistance;
-    }
-}
-
 double Camera::extract_near_z() const
 {
     const double DefaultNearZ = -0.001;         // in meters
@@ -306,7 +260,7 @@ double Camera::extract_near_z() const
 }
 
 namespace
-{   
+{
     //
     // Shutter curves. Used in Camera::map_to_shutter_curve().
     //
@@ -357,23 +311,19 @@ void Camera::initialize_ray(
     ray.m_flags = VisibilityFlags::CameraRay;
     ray.m_depth = 0;
 
-    if (m_shutter_open_time == m_shutter_close_time)
-    {
-        ray.m_time =
-            ShadingRay::Time::create_with_normalized_time(
-                0.0f,
-                m_shutter_open_time,
-                m_shutter_close_time);
-    }
-    else
+    float sample_time = 0.0f;
+
+    if (m_motion_blur_enabled)
     {
         sampling_context.split_in_place(1, 1);
-        ray.m_time =
-            ShadingRay::Time::create_with_normalized_time(
-                map_to_shutter_curve(sampling_context.next2<float>()),
-                m_shutter_open_time,
-                m_shutter_close_time);
+        sample_time = map_to_shutter_curve(sampling_context.next2<float>());
     }
+
+    ray.m_time =
+        ShadingRay::Time::create_with_normalized_time(
+            sample_time,
+            m_shutter_open_time,
+            m_shutter_close_time);
 }
 
 bool Camera::has_param(const char* name) const
@@ -406,6 +356,27 @@ double Camera::get_greater_than_zero(
     }
 
     return value;
+}
+
+void Camera::check_shutter_times_for_consistency() const
+{
+    if (m_shutter_open_end_time < m_shutter_open_time)
+        RENDERER_LOG_WARNING("shutter open time of camera \"%s\" is greater than shutter open end time", get_path().c_str());
+
+    if (m_shutter_close_start_time < m_shutter_open_end_time)
+        RENDERER_LOG_WARNING("shutter open end time of camera \"%s\" is greater than shutter close start time", get_path().c_str());
+
+    if (m_shutter_close_start_time < m_shutter_open_time)
+        RENDERER_LOG_WARNING("shutter open time of camera \"%s\" is greater than shutter close start time", get_path().c_str());
+
+    if (m_shutter_close_time < m_shutter_open_time)
+        RENDERER_LOG_WARNING("shutter open time of camera \"%s\" is greater than shutter close time", get_path().c_str());
+
+    if (m_shutter_close_time < m_shutter_open_end_time)
+        RENDERER_LOG_WARNING("shutter open end time of camera \"%s\" is greater than shutter close time", get_path().c_str());
+
+    if (m_shutter_close_time < m_shutter_close_start_time)
+        RENDERER_LOG_WARNING("shutter close start time of camera \"%s\" is greater than shutter close time", get_path().c_str());
 }
 
 

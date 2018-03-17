@@ -154,6 +154,8 @@ class APPLESEED_ALIGN(16) CompositeClosure
 
     const foundation::Basis3f& get_closure_shading_basis(const size_t index) const;
 
+    void override_closure_scalar_weight(const float weight);
+
     void compute_closure_shading_basis(
         const foundation::Vector3f& normal,
         const foundation::Basis3f&  original_shading_basis);
@@ -354,6 +356,12 @@ inline const foundation::Basis3f& CompositeClosure::get_closure_shading_basis(co
 {
     assert(index < get_closure_count());
     return m_bases[index];
+}
+
+inline void CompositeClosure::override_closure_scalar_weight(const float weight)
+{
+    assert(m_closure_count > 0);
+    m_scalar_weights[m_closure_count - 1] = weight;
 }
 
 

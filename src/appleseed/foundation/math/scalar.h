@@ -187,6 +187,10 @@ T fast_floor(const T x);
 template <typename T>
 T fast_ceil(const T x);
 
+// Return the integer and fractional parts of x.
+template <typename T, typename I>
+T floor_frac(const T x, I& int_part);
+
 // Round x to the nearest integer with Round Half Away from Zero tie breaking rule.
 // Reference: http://en.wikipedia.org/wiki/Rounding#Round_half_away_from_zero.
 template <typename Int, typename T>
@@ -669,6 +673,14 @@ inline T fast_ceil(const T x)
     return std::ceil(x);
 }
 
+template <typename T, typename I>
+inline T floor_frac(const T x, I& int_part)
+{
+    const T f = fast_floor(x);
+    int_part = static_cast<I>(f);
+    return x - f;
+}
+
 #ifdef APPLESEED_USE_SSE42
 
 template <>
@@ -828,7 +840,7 @@ template <typename T, typename U>
 inline T inverse_lerp(const T a, const T b, const U x)
 {
     assert(a != b);
-    
+
     return (x - a) / (b - a);
 }
 

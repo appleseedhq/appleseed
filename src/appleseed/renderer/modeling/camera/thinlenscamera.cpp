@@ -64,6 +64,7 @@
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/iostreamop.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -200,6 +201,8 @@ namespace
         {
             if (!Camera::on_render_begin(project, abort_switch))
                 return false;
+
+            m_autofocus_enabled = m_params.get_optional<bool>("autofocus_enabled", true);
 
             // Extract the film dimensions from the camera parameters.
             m_film_dimensions = extract_film_dimensions();
@@ -458,6 +461,58 @@ namespace
             }
         }
 
+        // Utility function to retrieve the focal distance (in meters) from the camera parameters.
+        void extract_focal_distance(
+            const bool              autofocus_enabled,
+            Vector2d&               autofocus_target,
+            double&                 focal_distance) const
+        {
+            const Vector2d DefaultAFTarget(0.5);        // in NDC
+            const double DefaultFocalDistance = 1.0;    // in meters
+
+            if (autofocus_enabled)
+            {
+                if (has_param("autofocus_target"))
+                    autofocus_target = m_params.get_required<Vector2d>("autofocus_target", DefaultAFTarget);
+                else
+                {
+                    RENDERER_LOG_ERROR(
+                        "while defining camera \"%s\": no \"autofocus_target\" parameter found; "
+                        "using default value \"%f, %f\".",
+                        get_path().c_str(),
+                        DefaultAFTarget[0],
+                        DefaultAFTarget[1]);
+                    autofocus_target = DefaultAFTarget;
+                }
+
+                focal_distance = DefaultFocalDistance;
+            }
+            else
+            {
+                if (has_param("focal_distance"))
+                    focal_distance = m_params.get_required<double>("focal_distance", DefaultFocalDistance);
+                else
+                {
+                    RENDERER_LOG_ERROR(
+                        "while defining camera \"%s\": no \"focal_distance\" parameter found; "
+                        "using default value \"%f\".",
+                        get_path().c_str(),
+                        DefaultFocalDistance);
+                    focal_distance = DefaultFocalDistance;
+                }
+
+                autofocus_target = DefaultAFTarget;
+            }
+        }
+
+        // Utility function to retrieve the f-stop value from the camera parameters.
+        double extract_f_stop() const
+        {
+            const double DefaultFStop = 8.0;
+
+            return get_greater_than_zero("f_stop", DefaultFStop);
+        }
+
         void extract_diaphragm_tilt_angle()
         {
             m_diaphragm_tilt_angle =
@@ -553,8 +608,10 @@ namespace
                 "  diaphragm blades              %s\n"
                 "  diaphragm angle               %f\n"
                 "  near z                        %f\n"
-                "  shutter open                  %f\n"
-                "  shutter close                 %f",
+                "  shutter open start            %f\n"
+                "  shutter open end              %f\n"
+                "  shutter close start           %f\n"
+                "  shutter close end             %f",
                 get_path().c_str(),
                 Model,
                 m_film_dimensions[0],
@@ -568,6 +625,8 @@ namespace
                 m_diaphragm_tilt_angle,
                 m_near_z,
                 m_shutter_open_time,
+                m_shutter_open_end_time,
+                m_shutter_close_start_time,
                 m_shutter_close_time);
         }
 
@@ -737,10 +796,23 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
+            .insert("name", "autofocus_enabled")
+            .insert("label", "Enable autofocus")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "true")
+            .insert("on_change", "rebuild_form"));
+
+    metadata.push_back(
+        Dictionary()
             .insert("name", "focal_distance")
             .insert("label", "Focal Distance")
             .insert("type", "text")
-            .insert("use", "optional"));
+            .insert("use", "optional")
+            .insert("default", "1.0")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("autofocus_enabled", "false")));
 
     metadata.push_back(
         Dictionary()
@@ -748,7 +820,10 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
             .insert("label", "Autofocus Target")
             .insert("type", "text")
             .insert("use", "optional")
-            .insert("default", "0.5 0.5"));
+            .insert("default", "0.5 0.5")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("autofocus_enabled", "true")));
 
     metadata.push_back(
         Dictionary()

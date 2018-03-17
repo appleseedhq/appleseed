@@ -69,6 +69,7 @@ APPLESEED_DECLARE_INPUT_VALUES(GlassBSDFInputValues)
     Spectrum        m_volume_absorption;
     float           m_volume_density;
     float           m_volume_scale;
+    float           m_energy_compensation;
 
     struct Precomputed
     {
@@ -78,6 +79,8 @@ APPLESEED_DECLARE_INPUT_VALUES(GlassBSDFInputValues)
         Spectrum    m_refraction_color;
         float       m_reflection_weight;
         float       m_refraction_weight;
+        float       m_fresnel_average;
+        float       m_fresnel_rcp_eta_average;
     };
 
     Precomputed     m_precomputed;
@@ -109,6 +112,10 @@ class APPLESEED_DLLSYMBOL GlassBSDFFactory
         const char*         name,
         const ParamArray&   params) const override;
 };
+
+// Write the computed tables to OpenEXR images and C++ arrays.
+// Used in Renderer_Modeling_BSDF_EnergyCompensation unit test.
+void write_glass_directional_albedo_tables(const char* directory);
 
 }       // namespace renderer
 

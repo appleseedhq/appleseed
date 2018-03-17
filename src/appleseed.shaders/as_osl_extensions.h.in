@@ -105,7 +105,10 @@ closure color as_glass(
     float       anisotropic,
     float       ior,
     color       volume_transmittance,
-    float       volume_transmittance_distance) BUILTIN;
+    float       volume_transmittance_distance
+    // keyword arguments:
+    //   float "energy_compensation" = 0
+    ) BUILTIN;
 
 closure color as_subsurface(
     string      profile,

@@ -1630,6 +1630,38 @@ namespace
             }
         }  
     };
+
+    //
+    // Update from revision 22 to revision 23.
+    //
+    
+    class UpdateFromRevision_22
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_22(Project& project)
+          : Updater(project, 22)
+        {
+        }
+
+        void update() override
+        {
+            if (Scene* scene = m_project.get_scene())
+            {
+                for (each<CameraContainer> i = scene->cameras(); i; ++i)
+                {
+                    Dictionary& camera_params = i->get_parameters();
+
+                    if (camera_params.strings().exist("autofocus_target"))
+                        camera_params.strings().insert("autofocus_enabled", true);
+
+                    // camera_params include "focal_distance"
+                    else
+                        camera_params.strings().insert("autofocus_enabled", false);                        
+                }
+            }
+        }  
+    };
 }
 
 bool ProjectFileUpdater::update(
@@ -1684,6 +1716,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(19);
       CASE_UPDATE_FROM_REVISION(20);
       CASE_UPDATE_FROM_REVISION(21);
+      CASE_UPDATE_FROM_REVISION(22);
 
       case ProjectFormatRevision:
         // Project is up-to-date.

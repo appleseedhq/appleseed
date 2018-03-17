@@ -114,6 +114,7 @@ struct Frame::Impl
     bool                    m_render_stamp_enabled;
     string                  m_render_stamp_format;
     DenoisingMode           m_denoising_mode;
+    bool                    m_save_extra_aovs;
 
     // Images.
     unique_ptr<Image>       m_image;
@@ -121,6 +122,7 @@ struct Frame::Impl
     AOVContainer            m_aovs;
     AOVContainer            m_internal_aovs;
     DenoiserAOV*            m_denoiser_aov;
+    vector<size_t>          m_extra_aovs;
 };
 
 Frame::Frame(
@@ -222,7 +224,8 @@ void Frame::print_settings()
         "  filter size                   %f\n"
         "  crop window                   (%s, %s)-(%s, %s)\n"
         "  denoising mode                %s\n"
-        "  render stamp                  %s",
+        "  render stamp                  %s\n"
+        "  save extra aovs               %s",
         camera_name ? camera_name : "none",
         pretty_uint(impl->m_frame_width).c_str(),
         pretty_uint(impl->m_frame_height).c_str(),
@@ -236,7 +239,8 @@ void Frame::print_settings()
         pretty_uint(impl->m_crop_window.max[1]).c_str(),
         impl->m_denoising_mode == DenoisingMode::Off ? "off" :
         impl->m_denoising_mode == DenoisingMode::WriteOutputs ? "write outputs" : "denoise",
-        impl->m_render_stamp_enabled ? "enabled" : "disabled");
+        impl->m_render_stamp_enabled ? "enabled" : "disabled",
+        impl->m_save_extra_aovs ? "enabled" : "disabled");
 }
 
 const char* Frame::get_active_camera_name() const
@@ -281,8 +285,13 @@ const AOVContainer& Frame::internal_aovs() const
 size_t Frame::create_extra_aov_image(const char* name) const
 {
     const size_t index = aov_images().get_index(name);
+
     if (index == size_t(~0) && aov_images().size() < MaxAOVCount)
-        return aov_images().append(name, 4, PixelFormatFloat);
+    {
+        const size_t add_index = aov_images().append(name, 4, PixelFormatFloat);
+        impl->m_extra_aovs.push_back(add_index);
+        return add_index;
+    }
 
     return index;
 }
@@ -687,6 +696,42 @@ namespace
 
         return true;
     }
+
+    bool write_extra_aovs(
+        const ImageStack&       images,
+        const vector<size_t>&   aov_indices,
+        const bf::path&         directory,
+        const string&           base_file_name,
+        const string&           extension)
+    {
+        bool success = true;
+
+        if (lower_case(extension) != ".exr")
+        {
+            RENDERER_LOG_ERROR("extra AOVs can only be saved as exr.");
+            return false;
+        }
+
+        for (size_t i = 0, e = aov_indices.size(); i < e; ++i)
+        {
+            const size_t image_index = aov_indices[i];
+            assert(image_index < images.size());
+
+            const Image& image = images.get_image(image_index);
+
+            // Compute image file path.
+            const string aov_name = images.get_name(image_index);
+            const string safe_aov_name = make_safe_filename(aov_name);
+            const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
+            const string aov_file_path = (directory / aov_file_name).string();
+
+            // Write AOV image.
+            if (!write_image(aov_file_path.c_str(), image))
+                success = false;
+        }
+
+        return success;
+    }
 }
 
 bool Frame::write_main_image(const char* file_path) const
@@ -705,7 +750,7 @@ bool Frame::write_main_image(const char* file_path) const
     // Write BCD histograms and covariances if enabled.
     if (impl->m_denoising_mode == DenoisingMode::WriteOutputs)
     {
-        if (ends_with(file_path, ".exr"))
+        if (ends_with(lower_case(file_path), ".exr"))
             impl->m_denoiser_aov->write_images(file_path);
         else
             RENDERER_LOG_ERROR("denoiser outputs can only be saved to exr images.");
@@ -720,27 +765,34 @@ bool Frame::write_aov_images(const char* file_path) const
 
     bool success = true;
 
-    if (!aovs().empty())
+    const bf::path boost_file_path(file_path);
+    const bf::path directory = boost_file_path.parent_path();
+    const string base_file_name = boost_file_path.stem().string();
+    const string extension = boost_file_path.extension().string();
+
+    for (size_t i = 0, e = aovs().size(); i < e; ++i)
     {
-        const bf::path boost_file_path(file_path);
-        const bf::path directory = boost_file_path.parent_path();
-        const string base_file_name = boost_file_path.stem().string();
-        const string extension = boost_file_path.extension().string();
+        const AOV* aov = aovs().get_by_index(i);
 
-        for (size_t i = 0, e = aovs().size(); i < e; ++i)
-        {
-            const AOV* aov = aovs().get_by_index(i);
+        // Compute AOV image file path.
+        const string aov_name = aov->get_name();
+        const string safe_aov_name = make_safe_filename(aov_name);
+        const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
+        const string aov_file_path = (directory / aov_file_name).string();
 
-            // Compute AOV image file path.
-            const string aov_name = aov->get_name();
-            const string safe_aov_name = make_safe_filename(aov_name);
-            const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
-            const string aov_file_path = (directory / aov_file_name).string();
+        // Write AOV image.
+        if (!write_image(aov_file_path.c_str(), aov->get_image(), aov))
+            success = false;
+    }
 
-            // Write AOV image.
-            if (!write_image(aov_file_path.c_str(), aov->get_image(), aov))
-                success = false;
-        }
+    if (impl->m_save_extra_aovs)
+    {
+        success = success && write_extra_aovs(
+            aov_images(),
+            impl->m_extra_aovs,
+            directory,
+            base_file_name,
+            extension);
     }
 
     return success;
@@ -776,6 +828,21 @@ bool Frame::write_main_and_aov_images() const
         }
     }
 
+    if (impl->m_save_extra_aovs)
+    {
+        const bf::path boost_file_path(filepath);
+        const bf::path directory = boost_file_path.parent_path();
+        const string base_file_name = boost_file_path.stem().string();
+        const string extension = boost_file_path.extension().string();
+
+        success = success && write_extra_aovs(
+            aov_images(),
+            impl->m_extra_aovs,
+            directory,
+            base_file_name,
+            extension);
+    }
+
     return success;
 }
 
@@ -795,12 +862,13 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
 
     writer.begin_multipart_exr();
 
+    static const char* ChannelNames[] = { "R", "G", "B", "A" };
+
     // Always save the main image as half floats.
     {
         const Image& image = *impl->m_image;
         const CanvasProperties& props = image.properties();
         images.emplace_back(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
-        static const char* ChannelNames[] = { "R", "G", "B", "A" };
         writer.append_part("beauty", images.back(), image_attributes, 4, ChannelNames);
     }
 
@@ -819,6 +887,21 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
         }
         else
             writer.append_part(aov_name.c_str(), image, image_attributes, aov->get_channel_count(), aov->get_channel_names());
+    }
+
+    if (impl->m_save_extra_aovs)
+    {
+        for (size_t i = 0, e = impl->m_extra_aovs.size(); i < e; ++i)
+        {
+            const size_t image_index = impl->m_extra_aovs[i];
+            assert(image_index < aov_images().size());
+
+            const Image& image = aov_images().get_image(image_index);
+            const CanvasProperties& props = image.properties();
+            const string aov_name = aov_images().get_name(image_index);
+            assert(props.m_channel_count == 4);
+            writer.append_part(aov_name.c_str(), image, image_attributes, props.m_channel_count, ChannelNames);
+        }
     }
 
     create_parent_directories(file_path);
@@ -955,6 +1038,9 @@ void Frame::extract_parameters()
             impl->m_denoising_mode = DenoisingMode::Off;
         }
     }
+
+    // Retrieve save extra AOVs parameter
+    impl->m_save_extra_aovs = m_params.get_optional<bool>("save_extra_aovs", false);
 }
 
 
@@ -1142,6 +1228,14 @@ DictionaryArray FrameFactory::get_input_metadata()
             .insert("visible_if",
                 Dictionary()
                     .insert("enable_render_stamp", "true")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "save_extra_aovs")
+            .insert("label", "Save Extra AOVs")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "false"));
 
     return metadata;
 }

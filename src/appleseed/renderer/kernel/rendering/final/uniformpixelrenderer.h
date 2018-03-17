@@ -31,7 +31,7 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_UNIFORMPIXELRENDERER_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/ipixelrenderer.h"
+#include "renderer/kernel/rendering/pixelrendererbase.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -42,6 +42,7 @@
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
+namespace renderer      { class Frame; }
 namespace renderer      { class ISampleRendererFactory; }
 
 namespace renderer
@@ -52,11 +53,12 @@ namespace renderer
 //
 
 class UniformPixelRendererFactory
-  : public IPixelRendererFactory
+  : public PixelRendererBaseFactory
 {
   public:
     // Constructor.
     UniformPixelRendererFactory(
+        const Frame&                frame,
         ISampleRendererFactory*     factory,
         const ParamArray&           params);
 
@@ -71,6 +73,7 @@ class UniformPixelRendererFactory
     static foundation::Dictionary get_params_metadata();
 
   private:
+    const Frame&                    m_frame;
     ISampleRendererFactory*         m_factory;
     ParamArray                      m_params;
 };

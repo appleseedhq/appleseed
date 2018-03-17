@@ -335,6 +335,7 @@ bool RendererComponents::create_pixel_renderer_factory()
         copy_param(params, m_params, "passes");
         m_pixel_renderer_factory.reset(
             new UniformPixelRendererFactory(
+                m_frame,
                 m_sample_renderer_factory.get(),
                 params));
 

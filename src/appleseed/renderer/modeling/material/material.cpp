@@ -89,24 +89,6 @@ Material::Material(
     m_inputs.declare("surface_shader", InputFormatEntity, "");
 }
 
-bool Material::has_alpha_map() const
-{
-    return get_non_empty(m_params, "alpha_map") != nullptr;
-}
-
-bool Material::has_uniform_alpha_map_value_of_one() const
-{
-    const Source* source = get_uncached_alpha_map();
-
-    if (!source || !source->is_uniform())
-        return false;
-
-    float alpha;
-    source->evaluate_uniform(alpha);
-
-    return alpha == 1.0f;
-}
-
 const char* Material::get_surface_shader_name() const
 {
     return get_non_empty(m_params, "surface_shader");
@@ -165,6 +147,24 @@ const Source* Material::get_uncached_alpha_map() const
 const ShaderGroup* Material::get_uncached_osl_surface() const
 {
     return nullptr;
+}
+
+bool Material::has_alpha_map() const
+{
+    return get_uncached_alpha_map() != nullptr;
+}
+
+bool Material::has_opaque_uniform_alpha_map() const
+{
+    const Source* source = get_uncached_alpha_map();
+
+    if (!source || !source->is_uniform())
+        return false;
+
+    float alpha;
+    source->evaluate_uniform(alpha);
+
+    return alpha == 1.0f;
 }
 
 bool Material::on_frame_begin(

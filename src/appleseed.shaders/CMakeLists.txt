@@ -154,6 +154,17 @@ source_group ("include\\appleseed\\transform" FILES
 # Source files.
 #--------------------------------------------------------------------------------------------------
 
+set (src_blenderseed_sources
+     src/blenderseed/as_closure2surface.osl
+)
+
+list (APPEND osl_sources
+    ${src_blenderseed_sources}
+)
+source_group ("src\\blenderseed" FILES
+    ${src_blenderseed_sources}
+)
+
 set (src_gaffer_color_sources
      src/gaffer/color/as_blackbody.osl
      src/gaffer/color/as_color_add.osl
@@ -315,6 +326,7 @@ set (src_max_sources
      src/max/as_max_blend_material.osl
      src/max/as_max_bump_map.osl
      src/max/as_max_closure2surface.osl
+     src/max/as_max_color_balance.osl
      src/max/as_max_color_texture.osl
      src/max/as_max_disney_material.osl
      src/max/as_max_float_texture.osl
@@ -425,6 +437,7 @@ set (src_appleseed_sources
      src/appleseed/as_attributes.osl
      src/appleseed/as_blackbody.osl
      src/appleseed/as_blend_color.osl
+     src/appleseed/as_blend_shader.osl
      src/appleseed/as_color_transform.osl
      src/appleseed/as_composite_color.osl
      src/appleseed/as_create_mask.osl
@@ -435,7 +448,6 @@ set (src_appleseed_sources
      src/appleseed/as_glass.osl
      src/appleseed/as_globals.osl
      src/appleseed/as_id_manifold.osl
-     src/appleseed/as_layer_shader.osl
      src/appleseed/as_luminance.osl
      src/appleseed/as_metal.osl
      src/appleseed/as_noise2d.osl

@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2018 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,24 +26,20 @@
 // THE SOFTWARE.
 //
 
-// appleseed.renderer headers.
-#include "renderer/modeling/bsdf/glassbsdf.h"
-#include "renderer/modeling/bsdf/microfacethelper.h"
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_ENERGYCOMPENSATIONTABLES_H
+#define APPLESEED_RENDERER_MODELING_BSDF_ENERGYCOMPENSATIONTABLES_H
 
-// appleseed.foundation headers.
-#include "foundation/utility/test.h"
-
-using namespace renderer;
-
-TEST_SUITE(Renderer_Modeling_BSDF_EnergyCompensation)
+namespace renderer
 {
-    TEST_CASE(WriteMicrofacetDirAlbedoTables)
-    {
-        write_microfacet_directional_albedo_tables("unit tests/outputs");
-    }
 
-    TEST_CASE(WriteGlassDirAlbedoTables)
-    {
-        write_glass_directional_albedo_tables("unit tests/outputs");
-    }
-}
+extern const float g_glossy_beckmann_albedo_table[1056];
+extern const float g_glossy_ggx_albedo_table[1056];
+
+extern const float g_glass_beckmann_albedo_table[4352];
+extern const float g_glass_beckmann_rcp_eta_albedo_table[4352];
+extern const float g_glass_ggx_albedo_table[4352];
+extern const float g_glass_ggx_rcp_eta_albedo_table[4352];
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_ENERGYCOMPENSATIONTABLES_H

@@ -101,7 +101,11 @@ shader as_id_manifold
         string widget = "mapper",
         string options = "Hash Only:0|Hash & Greyscale Value:1|Hash, Greyscale & Color ID:2",
         string label = "Output Mode",
-        string page = "Manifold.Output"
+        string page = "Manifold.Output",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 0,
+        int gafferNoduleLayoutVisible = 0
     ]],
 
     output int out_outHash = 0

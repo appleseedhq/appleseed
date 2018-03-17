@@ -39,6 +39,8 @@ shader as_texture
     string help = "Texture lookup node",
     string icon = "asTexture.png",
     int as_maya_type_id = 0x001279fa,
+    string as_max_class_id = "1220608380 1037264235",
+    string as_max_plugin_type = "texture",
     string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_texture.html#label-as-texture"
 ]]
 (

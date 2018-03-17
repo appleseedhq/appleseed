@@ -484,32 +484,23 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const 
 {
     const string name = metadata.get<string>("name");
 
-    double slider_min, slider_max;
     double validator_min, validator_max;
 
     if (metadata.dictionaries().exist("min"))
     {
         const Dictionary& min = metadata.dictionary("min");
-        slider_min = min.get<double>("value");
-        validator_min = min.get<string>("type") == "hard" ? slider_min : -numeric_limits<double>::max();
+        validator_min = min.get<string>("type") == "hard" ? min.get<double>("value") : -numeric_limits<double>::max();
     }
     else
-    {
-        slider_min = 0.0;
         validator_min = -numeric_limits<double>::max();
-    }
 
     if (metadata.dictionaries().exist("max"))
     {
         const Dictionary& max = metadata.dictionary("max");
-        slider_max = max.get<double>("value");
-        validator_max = max.get<string>("type") == "hard" ? slider_max : +numeric_limits<double>::max();
+        validator_max = max.get<string>("type") == "hard" ? max.get<double>("value") : +numeric_limits<double>::max();
     }
     else
-    {
-        slider_max = 1.0;
         validator_max = +numeric_limits<double>::max();
-    }
 
     const QString default_value = metadata.strings().exist("default") ? metadata.get<QString>("default") : "";
 
