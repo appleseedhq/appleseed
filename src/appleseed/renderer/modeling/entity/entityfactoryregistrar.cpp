@@ -65,11 +65,18 @@ struct EntityFactoryRegistrar::Impl
 EntityFactoryRegistrar::EntityFactoryRegistrar()
   : impl(new Impl())
 {
+    //clearing register factory vector
+
 }
 
 EntityFactoryRegistrar::~EntityFactoryRegistrar()
 {
     delete impl;
+}
+
+void EntityFactoryRegistrar::clear_plugins_data()
+{
+   plugins_data.clear();
 }
 
 void EntityFactoryRegistrar::unload_all_plugins()
@@ -81,5 +88,5 @@ void EntityFactoryRegistrar::store_plugin(Plugin* plugin)
 {
     impl->m_plugins.push_back(plugin);
 }
-
+    std::vector<std::pair<std::pair<std::string,std::string>,boost::function<void(void*)>>> EntityFactoryRegistrar::plugins_data;
 }   // namespace renderer

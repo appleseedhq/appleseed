@@ -28,6 +28,8 @@
 
 #ifndef APPLESEED_RENDERER_MODELING_ENTITY_ENTITYFACTORYREGISTRAR_H
 #define APPLESEED_RENDERER_MODELING_ENTITY_ENTITYFACTORYREGISTRAR_H
+//boost function
+#include <boost/function.hpp>
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entitytraits.h"
@@ -41,7 +43,8 @@
 
 // Standard headers.
 #include <cstddef>
-#include <functional>
+#include <vector>
+#include <utility>
 
 // Forward declarations.
 namespace foundation    { class SearchPaths; }
@@ -57,6 +60,13 @@ namespace renderer
 class APPLESEED_DLLSYMBOL EntityFactoryRegistrar
   : public foundation::NonCopyable
 {
+public:
+    //register_factories_from_plugins is kept public to allow  calling from project.cpp ( as it is a prototype for a different plugins loading architecture/technique)
+    // Register factories from plugins found in search paths.
+    template <typename T>
+    void register_factories_from_plugins(
+            const foundation::SearchPaths&      search_paths);
+    void clear_plugins_data();
   protected:
     // Constructor.
     EntityFactoryRegistrar();
@@ -64,11 +74,11 @@ class APPLESEED_DLLSYMBOL EntityFactoryRegistrar
     // Destructor.
     virtual ~EntityFactoryRegistrar();
 
-    // Register factories from plugins found in search paths.
+    //collect plugins(register_factory) and entry_name for a later search in paths for each specific plugin type
     template <typename Entity>
-    void register_factories_from_plugins(
-        const foundation::SearchPaths&      search_paths,
-        const std::function<void (void*)>&  register_factory);
+    void collect_plugins(
+            const std::function<void (void*)>&  register_factory);
+
 
     // Unload all plugins loaded by `register_factories_from_plugins()`.
     void unload_all_plugins();
@@ -76,10 +86,14 @@ class APPLESEED_DLLSYMBOL EntityFactoryRegistrar
   private:
     struct Impl;
     Impl* impl;
+    static std::vector<std::pair<std::pair<std::string,std::string>,boost::function<void(void*)>>> plugins_data;
+
 
     // Store a plugin in order to keep it alive while the registrar exists.
     void store_plugin(renderer::Plugin* plugin);
+
 };
+
 
 }       // namespace renderer
 
