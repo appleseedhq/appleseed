@@ -106,7 +106,9 @@ void EntityFactoryRegistrar::register_factories_from_plugins(
                 continue;
 
             const std::string plugin_path = j->path().string();
-           // std::cout<<"path : "<<plugin_path<<std::endl;
+            
+            //load plugin into memory 
+            foundation::SharedLibrary library(plugin_path.c_str());
             //iterate over all  plugins  ( because now we are in the path )
            for(int i =0 ; i<plugins_data.size(); i++){
             // Only consider libraries that can be loaded and define the right magic symbol.
@@ -118,7 +120,6 @@ void EntityFactoryRegistrar::register_factories_from_plugins(
             try
             {
 
-                foundation::SharedLibrary library(plugin_path.c_str());
 
                 library.get_symbol(plugins_data[i].first.first.c_str(), false);
 
