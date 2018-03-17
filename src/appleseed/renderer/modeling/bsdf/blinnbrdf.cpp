@@ -152,10 +152,6 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return;
 
-            const Vector3f& n = sample.m_shading_basis.get_normal();
-            const Vector3f& outgoing = sample.m_outgoing.get_value();
-            const float cos_on = abs(dot(outgoing, n));
-
             const InputValues* values = static_cast<const InputValues*>(data);
             const FresnelFun f(values->m_precomputed.m_outside_ior / values->m_ior);
 
@@ -166,7 +162,6 @@ namespace
                 values->m_exponent,
                 0.0f,
                 f,
-                cos_on,
                 sample);
 
             sample.m_value.m_beauty = sample.m_value.m_glossy;
@@ -186,10 +181,6 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
 
-            const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = abs(dot(incoming, n));
-            const float cos_on = abs(dot(outgoing, n));
-
             const InputValues* values = static_cast<const InputValues*>(data);
             const FresnelFun f(values->m_precomputed.m_outside_ior / values->m_ior);
 
@@ -203,8 +194,6 @@ namespace
                     outgoing,
                     incoming,
                     f,
-                    cos_in,
-                    cos_on,
                     value.m_glossy);
 
             value.m_beauty = value.m_glossy;
