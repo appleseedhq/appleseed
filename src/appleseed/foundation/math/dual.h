@@ -50,7 +50,12 @@ class Dual
     typedef T ValueType;
 
     // Constructors.
-    Dual();
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    Dual() = default;                         // leave all components uninitialized
+#else
+    Dual() {}                                 // leave all components uninitialized
+#endif
+
     explicit Dual(const T& value);
     Dual(const T& value, const T& dx, const T& dy);
 
@@ -94,12 +99,6 @@ typedef Dual<Vector3d>  Dual3d;
 //
 // Dual class implementation.
 //
-
-template <typename T>
-inline Dual<T>::Dual()
-  : m_has_derivatives(false)
-{
-}
 
 template <typename T>
 inline Dual<T>::Dual(const T& value)
