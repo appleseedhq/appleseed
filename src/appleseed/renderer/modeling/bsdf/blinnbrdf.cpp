@@ -155,7 +155,7 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
             const FresnelFun f(values->m_precomputed.m_outside_ior / values->m_ior);
 
-            MicrofacetBRDFHelper::sample(
+            MicrofacetBRDFHelper<false>::sample(
                 sampling_context,
                 m_mdf,
                 values->m_exponent,
@@ -185,7 +185,7 @@ namespace
             const FresnelFun f(values->m_precomputed.m_outside_ior / values->m_ior);
 
             const float pdf =
-                MicrofacetBRDFHelper::evaluate(
+                MicrofacetBRDFHelper<false>::evaluate(
                     m_mdf,
                     values->m_exponent,
                     values->m_exponent,
@@ -216,7 +216,7 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
 
             return
-                MicrofacetBRDFHelper::pdf(
+                MicrofacetBRDFHelper<false>::pdf(
                     m_mdf,
                     values->m_exponent,
                     values->m_exponent,

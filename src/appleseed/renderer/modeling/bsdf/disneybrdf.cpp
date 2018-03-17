@@ -445,7 +445,7 @@ namespace
                     alpha_x,
                     alpha_y);
                 const GGXMDF ggx_mdf;
-                MicrofacetBRDFHelper::sample(
+                MicrofacetBRDFHelper<false>::sample(
                     sampling_context,
                     ggx_mdf,
                     alpha_x,
@@ -460,7 +460,7 @@ namespace
             {
                 const float alpha = clearcoat_roughness(values);
                 const GTR1MDF gtr1_mdf;
-                MicrofacetBRDFHelper::sample(
+                MicrofacetBRDFHelper<false>::sample(
                     sampling_context,
                     gtr1_mdf,
                     alpha,
@@ -515,7 +515,7 @@ namespace
                 const GGXMDF ggx_mdf;
                 sample.m_probability +=
                     weights[SpecularComponent] *
-                    MicrofacetBRDFHelper::evaluate(
+                    MicrofacetBRDFHelper<false>::evaluate(
                         ggx_mdf,
                         alpha_x,
                         alpha_y,
@@ -535,7 +535,7 @@ namespace
                 const GTR1MDF gtr1_mdf;
                 sample.m_probability +=
                     weights[ClearcoatComponent] *
-                    MicrofacetBRDFHelper::evaluate(
+                    MicrofacetBRDFHelper<false>::evaluate(
                         gtr1_mdf,
                         alpha,
                         alpha,
@@ -608,7 +608,7 @@ namespace
                 const GGXMDF ggx_mdf;
                 pdf +=
                     weights[SpecularComponent] *
-                    MicrofacetBRDFHelper::evaluate(
+                    MicrofacetBRDFHelper<false>::evaluate(
                         ggx_mdf,
                         alpha_x,
                         alpha_y,
@@ -628,7 +628,7 @@ namespace
                 const GTR1MDF gtr1_mdf;
                 pdf +=
                     weights[ClearcoatComponent] *
-                    MicrofacetBRDFHelper::evaluate(
+                    MicrofacetBRDFHelper<false>::evaluate(
                         gtr1_mdf,
                         alpha,
                         alpha,
@@ -689,7 +689,7 @@ namespace
                 const GGXMDF ggx_mdf;
                 pdf +=
                     weights[SpecularComponent] *
-                    MicrofacetBRDFHelper::pdf(
+                    MicrofacetBRDFHelper<false>::pdf(
                         ggx_mdf,
                         alpha_x,
                         alpha_y,
@@ -705,7 +705,7 @@ namespace
                 const GTR1MDF gtr1_mdf;
                 pdf +=
                     weights[ClearcoatComponent] *
-                    MicrofacetBRDFHelper::pdf(
+                    MicrofacetBRDFHelper<false>::pdf(
                         gtr1_mdf,
                         alpha,
                         alpha,
