@@ -173,10 +173,6 @@ namespace
             const int                   modes,
             BSDFSample&                 sample) const override
         {
-            const Vector3f& n = sample.m_shading_basis.get_normal();
-            const Vector3f& outgoing = sample.m_outgoing.get_value();
-            const float cos_on = abs(dot(outgoing, n));
-
             const InputValues* values = static_cast<const InputValues*>(data);
 
             const FresnelDielectricFun f(
@@ -216,11 +212,15 @@ namespace
                             alpha_y,
                             1.0f,
                             f,
-                            cos_on,
                             sample);
 
-                        const float cos_in = dot(sample.m_shading_basis.get_normal(), sample.m_incoming.get_value());
-                        add_energy_compensation_term(mdf, values, cos_in, cos_on, sample.m_value.m_glossy);
+                        add_energy_compensation_term(
+                            mdf,
+                            values,
+                            sample.m_outgoing.get_value(),
+                            sample.m_incoming.get_value(),
+                            sample.m_shading_basis.get_normal(),
+                            sample.m_value.m_glossy);
                     }
                     break;
 
@@ -234,11 +234,15 @@ namespace
                             alpha_y,
                             1.0f,
                             f,
-                            cos_on,
                             sample);
 
-                        const float cos_in = dot(sample.m_shading_basis.get_normal(), sample.m_incoming.get_value());
-                        add_energy_compensation_term(mdf, values, cos_in, cos_on, sample.m_value.m_glossy);
+                        add_energy_compensation_term(
+                            mdf,
+                            values,
+                            sample.m_outgoing.get_value(),
+                            sample.m_incoming.get_value(),
+                            sample.m_shading_basis.get_normal(),
+                            sample.m_value.m_glossy);
                     }
                     break;
 
@@ -252,7 +256,6 @@ namespace
                             alpha_y,
                             highlight_falloff_to_gama(values->m_highlight_falloff),
                             f,
-                            cos_on,
                             sample);
                     }
                     break;
@@ -290,9 +293,6 @@ namespace
                     ? outgoing - 2.0f * dot(outgoing, n) * n
                     : outgoing;
 
-            const float cos_in = dot(flipped_incoming, n);
-            const float cos_on = dot(flipped_outgoing, n);
-
             const InputValues* values = static_cast<const InputValues*>(data);
 
             float alpha_x, alpha_y;
@@ -324,10 +324,15 @@ namespace
                         flipped_outgoing,
                         flipped_incoming,
                         f,
-                        cos_in,
-                        cos_on,
                         value.m_glossy);
-                    add_energy_compensation_term(mdf, values, cos_in, cos_on, value.m_glossy);
+
+                    add_energy_compensation_term(
+                        mdf,
+                        values,
+                        outgoing,
+                        incoming,
+                        shading_basis.get_normal(),
+                        value.m_glossy);
                 }
                 break;
 
@@ -343,10 +348,15 @@ namespace
                         flipped_outgoing,
                         flipped_incoming,
                         f,
-                        cos_in,
-                        cos_on,
                         value.m_glossy);
-                    add_energy_compensation_term(mdf, values, cos_in, cos_on, value.m_glossy);
+
+                    add_energy_compensation_term(
+                        mdf,
+                        values,
+                        outgoing,
+                        incoming,
+                        shading_basis.get_normal(),
+                        value.m_glossy);
                 }
                 break;
 
@@ -362,8 +372,6 @@ namespace
                         flipped_outgoing,
                         flipped_incoming,
                         f,
-                        cos_in,
-                        cos_on,
                         value.m_glossy);
                 }
                 break;
@@ -469,12 +477,16 @@ namespace
         static void add_energy_compensation_term(
             const MDF&                  mdf,
             const InputValues*          values,
-            const float                 cos_in,
-            const float                 cos_on,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const Vector3f&             n,
             Spectrum&                   value)
         {
             if (values->m_energy_compensation != 0.0f)
             {
+                const float cos_on = dot(outgoing, n);
+                const float cos_in = dot(incoming, n);
+
                 float fms;
                 float eavg;
                 microfacet_energy_compensation_term(
