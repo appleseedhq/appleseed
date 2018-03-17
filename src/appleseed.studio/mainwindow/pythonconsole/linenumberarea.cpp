@@ -95,7 +95,6 @@ void LineNumberArea::paintEvent(QPaintEvent* event)
     {
         if (block.isVisible() && bottom >= event->rect().top())
         {
-
             painter.setPen(QColor(100, 100, 100));
             painter.drawText(
                 0, top,
