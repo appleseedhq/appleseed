@@ -39,6 +39,7 @@
 #include "renderer/modeling/bsdf/glassbsdf.h"
 #include "renderer/modeling/bsdf/glossybrdf.h"
 #include "renderer/modeling/bsdf/metalbrdf.h"
+#include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
 #include "renderer/modeling/bsdf/plasticbrdf.h"
 #include "renderer/modeling/bsdf/sheenbrdf.h"
@@ -52,6 +53,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/cdf.h"
+#include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/arena.h"
 #include "foundation/utility/memory.h"
@@ -536,6 +538,7 @@ namespace
             float           ior;
             OSL::Color3     volume_transmittance;
             float           volume_transmittance_distance;
+            float           energy_compensation;
         };
 
         static const char* name()
@@ -551,6 +554,16 @@ namespace
         static int modes()
         {
             return ScatteringMode::Glossy | ScatteringMode::Specular;
+        }
+
+        static void prepare_closure(
+            OSL::RendererServices*      render_services,
+            int                         id,
+            void*                       data)
+        {
+            // Initialize keyword parameter defaults.
+            Params* params = new (data) Params();
+            params->energy_compensation = 0.0f;
         }
 
         static void register_closure(OSLShadingSystem& shading_system)
@@ -569,10 +582,11 @@ namespace
                 CLOSURE_FLOAT_PARAM(Params, ior),
                 CLOSURE_COLOR_PARAM(Params, volume_transmittance),
                 CLOSURE_FLOAT_PARAM(Params, volume_transmittance_distance),
+                CLOSURE_FLOAT_KEYPARAM(Params, energy_compensation, "energy_compensation"),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
+            shading_system.register_closure(name(), id(), params, &prepare_closure, nullptr);
 
             g_closure_convert_funs[id()] = &convert_closure;
 
@@ -626,6 +640,7 @@ namespace
             values->m_ior = max(p->ior, 0.001f);
             values->m_volume_transmittance.set(Color3f(p->volume_transmittance), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_volume_transmittance_distance = p->volume_transmittance_distance;
+            values->m_energy_compensation = saturate(p->energy_compensation);
             composite_closure.add_ior(weight, values->m_ior);
         }
     };
@@ -706,12 +721,26 @@ namespace
             GlossyBRDFInputValues* values;
             ClosureID cid;
 
+            const float roughness = saturate(p->roughness);
+            const float highlight_falloff = saturate(p->highlight_falloff);
+            const float ior = max(p->ior, 0.001f);
+            float w = luminance(weight);
+
             if (p->dist == g_ggx_str)
+            {
                 cid = GlossyGGXID;
+                w *= sample_weight<GGXMDF>(roughness, ior);
+            }
             else if (p->dist == g_beckmann_str)
+            {
                 cid = GlossyBeckmannID;
+                w *= sample_weight<BeckmannMDF>(roughness, ior);
+            }
             else if (p->dist == g_std_str)
+            {
                 cid = GlossySTDID;
+                w *= sample_weight_std(roughness, highlight_falloff, ior);
+            }
             else
             {
                 string msg("invalid microfacet distribution function: ");
@@ -727,15 +756,36 @@ namespace
                     p->N,
                     p->T,
                     arena);
+            composite_closure.override_closure_scalar_weight(w);
 
             values->m_reflectance.set(1.0f);
             values->m_reflectance_multiplier = 1.0f;
-            values->m_roughness = max(p->roughness, 0.0f);
-            values->m_highlight_falloff = saturate(p->highlight_falloff);
+            values->m_roughness = roughness;
+            values->m_highlight_falloff = highlight_falloff;
             values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
-            values->m_ior = max(p->ior, 0.001f);
+            values->m_ior = ior;
             values->m_fresnel_weight = 1.0f;
             values->m_energy_compensation = saturate(p->energy_compensation);
+        }
+
+        template <typename MDF>
+        static float sample_weight(const float roughness, const float ior)
+        {
+            const float eavg = get_average_albedo(MDF(), roughness);
+            const float favg = average_fresnel_reflectance_dielectric(ior);
+            return eavg * favg;
+        }
+
+        static float sample_weight_std(
+            const float roughness,
+            const float highlight_falloff,
+            const float ior)
+        {
+            const float eavg0 = get_average_albedo(GGXMDF(), roughness);
+            const float eavg1 = get_average_albedo(BeckmannMDF(), roughness);
+            const float eavg = lerp(eavg0, eavg1, highlight_falloff);
+            const float favg = average_fresnel_reflectance_dielectric(ior);
+            return eavg * favg;
         }
     };
 

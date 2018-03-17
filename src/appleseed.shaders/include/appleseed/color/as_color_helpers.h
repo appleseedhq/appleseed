@@ -39,6 +39,7 @@
 #define NCOMPS  3
 #endif
 
+
 //
 //  The luminance coefficients Y are provided by the RGB<>XYZ matrices, which
 //  depend on the CIE xy chromaticity coordinates of the RGB primaries and

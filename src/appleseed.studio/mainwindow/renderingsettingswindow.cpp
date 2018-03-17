@@ -464,6 +464,7 @@ namespace
             create_direct_link("uniform_sampler.samples",               "uniform_pixel_renderer.samples");
             create_direct_link("uniform_sampler.force_antialiasing",    "uniform_pixel_renderer.force_antialiasing");
             create_direct_link("uniform_sampler.decorrelate_pixels",    "uniform_pixel_renderer.decorrelate_pixels");
+            create_direct_link("uniform_sampler.enable_diagnostics",    "uniform_pixel_renderer.enable_diagnostics");
 
             create_direct_link("adaptive_sampler.min_samples",          "adaptive_pixel_renderer.min_samples");
             create_direct_link("adaptive_sampler.max_samples",          "adaptive_pixel_renderer.max_samples");
@@ -550,6 +551,10 @@ namespace
             m_uniform_sampler_decorrelate_pixels = create_checkbox("uniform_sampler.decorrelate_pixels", "Decorrelate Pixels");
             m_uniform_sampler_decorrelate_pixels->setToolTip(m_params_metadata.get_path("uniform_pixel_renderer.decorrelate_pixels.help"));
             layout->addWidget(m_uniform_sampler_decorrelate_pixels);
+
+            QCheckBox* enable_diagnostics = create_checkbox("uniform_sampler.enable_diagnostics", "Enable Diagnostic AOVs");
+            enable_diagnostics->setToolTip(m_params_metadata.get_path("uniform_pixel_renderer.enable_diagnostics.help"));
+            layout->addWidget(enable_diagnostics);
 
             connect(
                 m_image_plane_sampler_passes, SIGNAL(valueChanged(const int)),
@@ -790,13 +795,19 @@ namespace
             const bool              allow_unlimited = true)
         {
             const int DefaultMaxBounces = 8;
+            const int DefaultMaxDiffuseBounces = 3;
 
             const int max_bounces =
                 get_config<int>(config, construct_bounce_param_path(bounce_type), -1);
 
+            const string widget_max_bounce_key = widget_key_prefix + ".bounces.max_" + bounce_type + "_bounces";
+
             if (allow_unlimited)
                 set_widget(widget_key_prefix + ".bounces.unlimited_" + bounce_type + "_bounces", max_bounces == -1);
-            set_widget(widget_key_prefix + ".bounces.max_" + bounce_type + "_bounces", max_bounces == -1 ? DefaultMaxBounces : max_bounces);
+            if (bounce_type == "diffuse") 
+                set_widget(widget_max_bounce_key, max_bounces == -1 ? DefaultMaxDiffuseBounces : max_bounces);
+            else
+                set_widget(widget_max_bounce_key, max_bounces == -1 ? DefaultMaxBounces : max_bounces);
         }
 
         void save_separate_bounce_settings(

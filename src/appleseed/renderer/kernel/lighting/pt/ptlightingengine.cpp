@@ -1043,7 +1043,7 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
         "max_diffuse_bounces",
         Dictionary()
             .insert("type", "int")
-            .insert("default", "8")
+            .insert("default", "3")
             .insert("unlimited", "true")
             .insert("min", "0")
             .insert("label", "Max Diffuse Bounces")

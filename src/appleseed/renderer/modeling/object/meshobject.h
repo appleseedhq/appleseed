@@ -50,14 +50,10 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
-namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class SearchPaths; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
-namespace renderer      { class BaseGroup; }
-namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
-namespace renderer      { class Project; }
 namespace renderer      { class Source; }
 namespace renderer      { class Triangle; }
 
@@ -79,22 +75,6 @@ class APPLESEED_DLLSYMBOL MeshObject
 
     // Return a string identifying the model of this object.
     const char* get_model() const override;
-
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
-    bool on_frame_begin(
-        const Project&              project,
-        const BaseGroup*            parent,
-        OnFrameBeginRecorder&       recorder,
-        foundation::IAbortSwitch*   abort_switch = nullptr) override;
-
-    // This method is called once after rendering each frame (only if on_frame_begin() was called).
-    void on_frame_end(
-        const Project&              project,
-        const BaseGroup*            parent) override;
-
-    // Return true if this object has an alpha map.
-    bool has_alpha_map() const override;
 
     // Return the source bound to the alpha map input, or 0 if the object doesn't have an alpha map.
     const Source* get_uncached_alpha_map() const override;
