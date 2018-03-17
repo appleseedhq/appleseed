@@ -187,9 +187,11 @@ namespace
             if (values->m_roughness == 0.0f)
             {
                 if (ScatteringMode::has_specular(modes))
+                {
                     SpecularBRDFHelper::sample(f, sample);
+                    sample.m_value.m_beauty = sample.m_value.m_glossy;
+                }
 
-                sample.m_value.m_beauty = sample.m_value.m_glossy;
                 return;
             }
 
@@ -207,7 +209,7 @@ namespace
                   case GGX:
                     {
                         GGXMDF mdf;
-                        MicrofacetBRDFHelper::sample(
+                        MicrofacetBRDFHelper<false>::sample(
                             sampling_context,
                             mdf,
                             alpha_x,
@@ -229,7 +231,7 @@ namespace
                   case Beckmann:
                     {
                         BeckmannMDF mdf;
-                        MicrofacetBRDFHelper::sample(
+                        MicrofacetBRDFHelper<false>::sample(
                             sampling_context,
                             mdf,
                             alpha_x,
@@ -251,7 +253,7 @@ namespace
                   case Std:
                     {
                         StdMDF mdf;
-                        MicrofacetBRDFHelper::sample(
+                        MicrofacetBRDFHelper<false>::sample(
                             sampling_context,
                             mdf,
                             alpha_x,
@@ -305,7 +307,7 @@ namespace
               case GGX:
                 {
                     GGXMDF mdf;
-                    pdf = MicrofacetBRDFHelper::evaluate(
+                    pdf = MicrofacetBRDFHelper<false>::evaluate(
                         mdf,
                         alpha_x,
                         alpha_y,
@@ -329,7 +331,7 @@ namespace
               case Beckmann:
                 {
                     BeckmannMDF mdf;
-                    pdf = MicrofacetBRDFHelper::evaluate(
+                    pdf = MicrofacetBRDFHelper<false>::evaluate(
                         mdf,
                         alpha_x,
                         alpha_y,
@@ -353,7 +355,7 @@ namespace
               case Std:
                 {
                     StdMDF mdf;
-                    pdf = MicrofacetBRDFHelper::evaluate(
+                    pdf = MicrofacetBRDFHelper<false>::evaluate(
                         mdf,
                         alpha_x,
                         alpha_y,
@@ -402,7 +404,7 @@ namespace
               case GGX:
                 {
                     GGXMDF mdf;
-                    return MicrofacetBRDFHelper::pdf(
+                    return MicrofacetBRDFHelper<false>::pdf(
                         mdf,
                         alpha_x,
                         alpha_y,
@@ -416,7 +418,7 @@ namespace
               case Beckmann:
                 {
                     BeckmannMDF mdf;
-                    return MicrofacetBRDFHelper::pdf(
+                    return MicrofacetBRDFHelper<false>::pdf(
                         mdf,
                         alpha_x,
                         alpha_y,
@@ -430,7 +432,7 @@ namespace
               case Std:
                 {
                     StdMDF mdf;
-                    return MicrofacetBRDFHelper::pdf(
+                    return MicrofacetBRDFHelper<false>::pdf(
                         mdf,
                         alpha_x,
                         alpha_y,

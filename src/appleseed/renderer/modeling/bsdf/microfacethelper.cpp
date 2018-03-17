@@ -143,7 +143,7 @@ namespace
 
                 Vector3f wi;
                 float probability;
-                const float value = MicrofacetBRDFHelper::sample(mdf, s, alpha, wo, wi, probability);
+                const float value = MicrofacetBRDFHelper<false>::sample(mdf, s, alpha, wo, wi, probability);
 
                 // Skip samples with very low probability.
                 if (probability < 1e-6f)

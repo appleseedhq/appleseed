@@ -185,9 +185,11 @@ namespace
             if (values->m_roughness == 0.0f)
             {
                 if (ScatteringMode::has_specular(modes))
+                {
                     SpecularBRDFHelper::sample(f, sample);
+                    sample.m_value.m_beauty = sample.m_value.m_glossy;
+                }
 
-                sample.m_value.m_beauty = sample.m_value.m_glossy;
                 return;
             }
 
@@ -205,7 +207,7 @@ namespace
                   case GGX:
                     {
                         const GGXMDF mdf;
-                        MicrofacetBRDFHelper::sample(
+                        MicrofacetBRDFHelper<true>::sample(
                             sampling_context,
                             mdf,
                             alpha_x,
@@ -227,7 +229,7 @@ namespace
                   case Beckmann:
                     {
                         const BeckmannMDF mdf;
-                        MicrofacetBRDFHelper::sample(
+                        MicrofacetBRDFHelper<true>::sample(
                             sampling_context,
                             mdf,
                             alpha_x,
@@ -249,7 +251,7 @@ namespace
                   case Std:
                     {
                         const StdMDF mdf;
-                        MicrofacetBRDFHelper::sample(
+                        MicrofacetBRDFHelper<true>::sample(
                             sampling_context,
                             mdf,
                             alpha_x,
@@ -281,18 +283,6 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
 
-            const Vector3f& n = shading_basis.get_normal();
-
-            const Vector3f flipped_incoming =
-                dot(incoming, n) < 0.0f
-                    ? incoming - 2.0f * dot(incoming, n) * n
-                    : incoming;
-
-            const Vector3f flipped_outgoing =
-                dot(outgoing, n) < 0.0f
-                    ? outgoing - 2.0f * dot(outgoing, n) * n
-                    : outgoing;
-
             const InputValues* values = static_cast<const InputValues*>(data);
 
             float alpha_x, alpha_y;
@@ -315,14 +305,14 @@ namespace
               case GGX:
                 {
                     const GGXMDF mdf;
-                    pdf = MicrofacetBRDFHelper::evaluate(
+                    pdf = MicrofacetBRDFHelper<true>::evaluate(
                         mdf,
                         alpha_x,
                         alpha_y,
                         1.0f,
                         shading_basis,
-                        flipped_outgoing,
-                        flipped_incoming,
+                        outgoing,
+                        incoming,
                         f,
                         value.m_glossy);
 
@@ -339,14 +329,14 @@ namespace
               case Beckmann:
                 {
                     const BeckmannMDF mdf;
-                    pdf = MicrofacetBRDFHelper::evaluate(
+                    pdf = MicrofacetBRDFHelper<true>::evaluate(
                         mdf,
                         alpha_x,
                         alpha_y,
                         1.0f,
                         shading_basis,
-                        flipped_outgoing,
-                        flipped_incoming,
+                        outgoing,
+                        incoming,
                         f,
                         value.m_glossy);
 
@@ -363,14 +353,14 @@ namespace
               case Std:
                 {
                     const StdMDF mdf;
-                    pdf = MicrofacetBRDFHelper::evaluate(
+                    pdf = MicrofacetBRDFHelper<true>::evaluate(
                         mdf,
                         alpha_x,
                         alpha_y,
                         highlight_falloff_to_gama(values->m_highlight_falloff),
                         shading_basis,
-                        flipped_outgoing,
-                        flipped_incoming,
+                        outgoing,
+                        incoming,
                         f,
                         value.m_glossy);
                 }
@@ -399,18 +389,6 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
 
-            const Vector3f& n = shading_basis.get_normal();
-
-            const Vector3f flipped_incoming =
-                dot(incoming, n) < 0.0f
-                    ? incoming - 2.0f * dot(incoming, n) * n
-                    : incoming;
-
-            const Vector3f flipped_outgoing =
-                dot(outgoing, n) < 0.0f
-                    ? outgoing - 2.0f * dot(outgoing, n) * n
-                    : outgoing;
-
             const InputValues* values = static_cast<const InputValues*>(data);
 
             float alpha_x, alpha_y;
@@ -425,42 +403,42 @@ namespace
               case GGX:
                 {
                     const GGXMDF mdf;
-                    return MicrofacetBRDFHelper::pdf(
+                    return MicrofacetBRDFHelper<true>::pdf(
                         mdf,
                         alpha_x,
                         alpha_y,
                         1.0f,
                         shading_basis,
-                        flipped_outgoing,
-                        flipped_incoming);
+                        outgoing,
+                        incoming);
                 }
                 break;
 
               case Beckmann:
                 {
                     const BeckmannMDF mdf;
-                    return MicrofacetBRDFHelper::pdf(
+                    return MicrofacetBRDFHelper<true>::pdf(
                         mdf,
                         alpha_x,
                         alpha_y,
                         1.0f,
                         shading_basis,
-                        flipped_outgoing,
-                        flipped_incoming);
+                        outgoing,
+                        incoming);
                 }
                 break;
 
               case Std:
                 {
                     const StdMDF mdf;
-                    return MicrofacetBRDFHelper::pdf(
+                    return MicrofacetBRDFHelper<true>::pdf(
                         mdf,
                         alpha_x,
                         alpha_y,
                         highlight_falloff_to_gama(values->m_highlight_falloff),
                         shading_basis,
-                        flipped_outgoing,
-                        flipped_incoming);
+                        outgoing,
+                        incoming);
                 }
                 break;
 
