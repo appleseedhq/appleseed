@@ -89,13 +89,9 @@ void EntityFactoryRegistrar::discover_plugins(
         if (!bf::exists(search_path) || !bf::is_directory(search_path))
             continue;
 
-
-
         // Iterate over all files in this directory.
         for (bf::directory_iterator j(search_path), f; j != f; ++j)
         {
-
-            //iterate over entities;
 
             // Only consider shared library files.
             if (!bf::is_regular_file(*j) ||
@@ -105,7 +101,6 @@ void EntityFactoryRegistrar::discover_plugins(
             const std::string plugin_path = j->path().string();
             
             //load plugin into memory 
-            //foundation::SharedLibrary s(plugin_path.c_str());
             try
             {
                 unique_ptr<foundation::SharedLibrary> library(new foundation::SharedLibrary(plugin_path.c_str()));
@@ -116,9 +111,7 @@ void EntityFactoryRegistrar::discover_plugins(
                 RENDERER_LOG_DEBUG("could not open shared library %s: %s.",
                     plugin_path.c_str(), e.what());
                 continue;
-            }
-            //iterate over all  plugins  ( because now we are in the path )
-          
+            }          
         }
     }
 }
