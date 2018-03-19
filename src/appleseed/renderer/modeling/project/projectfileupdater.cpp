@@ -1662,6 +1662,45 @@ namespace
             }
         }  
     };
+
+    //
+    // Update from revision 23 to revision 24.
+    //
+
+    class UpdateFromRevision_23
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_23(Project& project)
+          : Updater(project, 23)
+        {
+        }
+
+        void update() override
+        {
+            for (each<ConfigurationContainer> i = m_project.configurations(); i; ++i)
+                update(*i);
+        }
+
+      private:
+        static void update(Configuration& configuration)
+        {
+            ParamArray& params = configuration.get_parameters();
+
+            if (params.dictionaries().exist("pt"))
+            {
+                Dictionary& pt_params = params.dictionary("pt");
+                if (!pt_params.strings().exist("max_bounces"))
+                    pt_params.insert("max_bounces", -1);
+                if (!pt_params.strings().exist("max_diffuse_bounces"))
+                    pt_params.insert("max_diffuse_bounces", -1);
+                if (!pt_params.strings().exist("max_glossy_bounces"))
+                    pt_params.insert("max_glossy_bounces", -1);
+                if (!pt_params.strings().exist("max_specular_bounces"))
+                    pt_params.insert("max_specular_bounces", -1);
+            }
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(
@@ -1717,6 +1756,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(20);
       CASE_UPDATE_FROM_REVISION(21);
       CASE_UPDATE_FROM_REVISION(22);
+      CASE_UPDATE_FROM_REVISION(23);
 
       case ProjectFormatRevision:
         // Project is up-to-date.
