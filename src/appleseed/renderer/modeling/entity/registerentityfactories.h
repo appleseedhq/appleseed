@@ -94,69 +94,6 @@ void EntityFactoryRegistrar::register_factories_from_plugins(
         RENDERER_LOG_INFO("registering %s plugin %s...", entity_type_name.c_str(), loaded_libraries[i].second.c_str());
         register_factory(plugin_entry_point);        
     }
-    // Iterate over all search paths.
-   /* for (size_t i = 0, e = search_paths.get_path_count(); i < e; ++i)
-    {
-        bf::path search_path(search_paths.get_path(i));
-
-        // Make the search path absolute if it isn't already.
-        if (!search_path.is_absolute() && search_paths.has_root_path())
-            search_path = search_paths.get_root_path().c_str() / search_path;
-
-        // Only consider directories.
-        if (!bf::exists(search_path) || !bf::is_directory(search_path))
-            continue;
-
-        const std::string entity_type_name =
-            foundation::lower_case(EntityTraits<Entity>::get_human_readable_entity_type_name());
-
-        RENDERER_LOG_DEBUG("scanning %s in search of %s plugins...",
-            search_path.string().c_str(),
-            entity_type_name.c_str());
-
-        // Iterate over all files in this directory.
-        for (bf::directory_iterator j(search_path), f; j != f; ++j)
-        {
-            // Only consider shared library files.
-            if (!bf::is_regular_file(*j) ||
-                j->path().extension() != foundation::SharedLibrary::get_default_file_extension())
-                continue;
-
-            const std::string plugin_path = j->path().string();
-
-            // Only consider libraries that can be loaded and define the right magic symbol.
-            try
-            {
-                foundation::SharedLibrary library(plugin_path.c_str());
-                library.get_symbol(entry_point_name.c_str(), false);
-            }
-            catch (const foundation::ExceptionCannotLoadSharedLib& e)
-            {
-                RENDERER_LOG_DEBUG("could not open shared library %s: %s.",
-                    plugin_path.c_str(), e.what());
-                continue;
-            }
-            catch (const foundation::ExceptionSharedLibCannotGetSymbol&)
-            {
-                RENDERER_LOG_DEBUG("shared library %s is not an appleseed %s plugin because it does not export a %s() function.",
-                    plugin_path.c_str(), entity_type_name.c_str(), entry_point_name.c_str());
-                continue;
-            }
-
-            // Load the plugin into the cache and retrieve its entry point.
-            foundation::auto_release_ptr<Plugin> plugin(PluginCache::load(plugin_path.c_str()));
-            void* plugin_entry_point = plugin->get_symbol(entry_point_name.c_str());
-            if (plugin_entry_point == nullptr)
-                continue;
-
-            // Store the plugin to keep it alive.
-            store_plugin(plugin.release());
-
-            // Let the caller handle the discovered plugin.
-            RENDERER_LOG_INFO("registering %s plugin %s...", entity_type_name.c_str(), plugin_path.c_str());
-            register_factory(plugin_entry_point);
-        }
-    }*/
 }
 
 }       // namespace renderer
