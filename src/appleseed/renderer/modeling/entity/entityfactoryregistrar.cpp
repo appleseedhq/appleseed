@@ -72,6 +72,57 @@ EntityFactoryRegistrar::~EntityFactoryRegistrar()
     delete impl;
 }
 
+void EntityFactoryRegistrar::discover_plugins(
+    const foundation::SearchPaths&          search_paths){
+    namespace bf = boost::filesystem;
+
+    // Iterate over all search paths.
+    for (size_t i = 0, e = search_paths.get_path_count(); i < e; ++i)
+    {
+        bf::path search_path(search_paths.get_path(i));
+
+        // Make the search path absolute if it isn't already.
+        if (!search_path.is_absolute() && search_paths.has_root_path())
+            search_path = search_paths.get_root_path().c_str() / search_path;
+
+        // Only consider directories.
+        if (!bf::exists(search_path) || !bf::is_directory(search_path))
+            continue;
+
+
+
+        // Iterate over all files in this directory.
+        for (bf::directory_iterator j(search_path), f; j != f; ++j)
+        {
+
+            //iterate over entities;
+
+            // Only consider shared library files.
+            if (!bf::is_regular_file(*j) ||
+                j->path().extension() != foundation::SharedLibrary::get_default_file_extension())
+                continue;
+
+            const std::string plugin_path = j->path().string();
+            
+            //load plugin into memory 
+            //foundation::SharedLibrary s(plugin_path.c_str());
+            try
+            {
+                unique_ptr<foundation::SharedLibrary> library(new foundation::SharedLibrary(plugin_path.c_str()));
+                loaded_libraries.push_back(std::make_pair(std::move(library),plugin_path));
+            }
+            catch (const foundation::ExceptionCannotLoadSharedLib& e)
+            {
+                RENDERER_LOG_DEBUG("could not open shared library %s: %s.",
+                    plugin_path.c_str(), e.what());
+                continue;
+            }
+            //iterate over all  plugins  ( because now we are in the path )
+          
+        }
+    }
+}
+
 void EntityFactoryRegistrar::unload_all_plugins()
 {
     impl->clear();
@@ -82,4 +133,5 @@ void EntityFactoryRegistrar::store_plugin(Plugin* plugin)
     impl->m_plugins.push_back(plugin);
 }
 
+std::vector<std::pair<std::unique_ptr<foundation::SharedLibrary>, std::string>> EntityFactoryRegistrar::loaded_libraries;
 }   // namespace renderer

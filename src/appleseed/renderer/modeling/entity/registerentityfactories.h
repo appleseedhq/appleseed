@@ -56,7 +56,6 @@ namespace renderer
 
 template <typename Entity>
 void EntityFactoryRegistrar::register_factories_from_plugins(
-    const foundation::SearchPaths&          search_paths,
     const std::function<void (void*)>&      register_factory)
 {
     namespace bf = boost::filesystem;
@@ -64,8 +63,39 @@ void EntityFactoryRegistrar::register_factories_from_plugins(
     const std::string entry_point_name =
         foundation::format("appleseed_create_{0}_factory", EntityTraits<Entity>::get_entity_type_name());
 
+    const std::string entity_type_name =
+            foundation::lower_case(EntityTraits<Entity>::get_human_readable_entity_type_name());
+
+    for (int i = 0; i < loaded_libraries.size(); i++)
+    {
+
+        // Only consider libraries that can be loaded and define the right magic symbol.
+        try
+        {
+            loaded_libraries[i].first->get_symbol(entry_point_name.c_str(), false);
+        }
+        catch (const foundation::ExceptionSharedLibCannotGetSymbol&)
+        {
+            RENDERER_LOG_DEBUG("shared library %s is not an appleseed %s plugin because it does not export a %s() function.",
+                loaded_libraries[i].second.c_str(), entity_type_name.c_str(), entry_point_name.c_str());
+            continue;
+        }
+
+        // Load the plugin into the cache and retrieve its entry point
+        foundation::auto_release_ptr<Plugin> plugin(PluginCache::load(loaded_libraries[i].second.c_str()));
+        void* plugin_entry_point = plugin->get_symbol(entry_point_name.c_str());
+        if (plugin_entry_point == nullptr)
+            continue;
+
+        // Store the plugin to keep it alive.
+        store_plugin(plugin.release());
+
+        // Let the caller handle the discovered plugin.
+        RENDERER_LOG_INFO("registering %s plugin %s...", entity_type_name.c_str(), loaded_libraries[i].second.c_str());
+        register_factory(plugin_entry_point);        
+    }
     // Iterate over all search paths.
-    for (size_t i = 0, e = search_paths.get_path_count(); i < e; ++i)
+   /* for (size_t i = 0, e = search_paths.get_path_count(); i < e; ++i)
     {
         bf::path search_path(search_paths.get_path(i));
 
@@ -126,7 +156,7 @@ void EntityFactoryRegistrar::register_factories_from_plugins(
             RENDERER_LOG_INFO("registering %s plugin %s...", entity_type_name.c_str(), plugin_path.c_str());
             register_factory(plugin_entry_point);
         }
-    }
+    }*/
 }
 
 }       // namespace renderer

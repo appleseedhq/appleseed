@@ -66,14 +66,13 @@ class APPLESEED_DLLSYMBOL CameraFactoryRegistrar
     typedef CameraFactoryArray FactoryArrayType;
 
     // Constructor.
-    explicit CameraFactoryRegistrar(
-        const foundation::SearchPaths& search_paths = foundation::SearchPaths());
+    explicit CameraFactoryRegistrar();
 
     // Destructor.
     ~CameraFactoryRegistrar();
 
     // Reinitialize the registrar; load plugins found in provided search paths.
-    void reinitialize(const foundation::SearchPaths& search_paths);
+    void reinitialize();
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;

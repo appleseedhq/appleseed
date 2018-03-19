@@ -58,10 +58,10 @@ struct EnvironmentShaderFactoryRegistrar::Impl
     Registrar<IEnvironmentShaderFactory> m_registrar;
 };
 
-EnvironmentShaderFactoryRegistrar::EnvironmentShaderFactoryRegistrar(const SearchPaths& search_paths)
+EnvironmentShaderFactoryRegistrar::EnvironmentShaderFactoryRegistrar()
   : impl(new Impl())
 {
-    reinitialize(search_paths);
+    reinitialize();
 }
 
 EnvironmentShaderFactoryRegistrar::~EnvironmentShaderFactoryRegistrar()
@@ -69,7 +69,7 @@ EnvironmentShaderFactoryRegistrar::~EnvironmentShaderFactoryRegistrar()
     delete impl;
 }
 
-void EnvironmentShaderFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
+void EnvironmentShaderFactoryRegistrar::reinitialize()
 {
     // The registrar must be cleared before the plugins are unloaded.
     impl->m_registrar.clear();
@@ -81,7 +81,6 @@ void EnvironmentShaderFactoryRegistrar::reinitialize(const SearchPaths& search_p
 
     // Register factories defined in plugins.
     register_factories_from_plugins<EnvironmentShader>(
-        search_paths,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<IEnvironmentShaderFactory* (*)()>(plugin_entry_point);

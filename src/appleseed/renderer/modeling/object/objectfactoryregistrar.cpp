@@ -57,10 +57,10 @@ struct ObjectFactoryRegistrar::Impl
     Registrar<IObjectFactory> m_registrar;
 };
 
-ObjectFactoryRegistrar::ObjectFactoryRegistrar(const SearchPaths& search_paths)
+ObjectFactoryRegistrar::ObjectFactoryRegistrar()
   : impl(new Impl())
 {
-    reinitialize(search_paths);
+    reinitialize();
 }
 
 ObjectFactoryRegistrar::~ObjectFactoryRegistrar()
@@ -68,7 +68,7 @@ ObjectFactoryRegistrar::~ObjectFactoryRegistrar()
     delete impl;
 }
 
-void ObjectFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
+void ObjectFactoryRegistrar::reinitialize()
 {
     // The registrar must be cleared before the plugins are unloaded.
     impl->m_registrar.clear();
@@ -80,7 +80,6 @@ void ObjectFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 
     // Register factories defined in plugins.
     register_factories_from_plugins<Object>(
-        search_paths,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<IObjectFactory* (*)()>(plugin_entry_point);

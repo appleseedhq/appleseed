@@ -66,14 +66,13 @@ class APPLESEED_DLLSYMBOL SurfaceShaderFactoryRegistrar
     typedef SurfaceShaderFactoryArray FactoryArrayType;
 
     // Constructor.
-    explicit SurfaceShaderFactoryRegistrar(
-        const foundation::SearchPaths& search_paths = foundation::SearchPaths());
+    explicit SurfaceShaderFactoryRegistrar();
 
     // Destructor.
     ~SurfaceShaderFactoryRegistrar();
 
     // Reinitialize the registrar; load plugins found in provided search paths.
-    void reinitialize(const foundation::SearchPaths& search_paths);
+    void reinitialize();
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;

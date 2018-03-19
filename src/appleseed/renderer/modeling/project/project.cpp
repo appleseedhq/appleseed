@@ -38,6 +38,8 @@
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
+#include "renderer/modeling/entity/entityfactoryregistrar.h"
+
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
@@ -208,20 +210,22 @@ void Project::add_default_configurations()
 
 void Project::reinitialize_factory_registrars()
 {
-    m_aov_factory_registrar.reinitialize(impl->m_search_paths);
-    m_assembly_factory_registrar.reinitialize(impl->m_search_paths);
-    m_bsdf_factory_registrar.reinitialize(impl->m_search_paths);
-    m_bssrdf_factory_registrar.reinitialize(impl->m_search_paths);
-    m_camera_factory_registrar.reinitialize(impl->m_search_paths);
-    m_edf_factory_registrar.reinitialize(impl->m_search_paths);
-    m_environment_edf_factory_registrar.reinitialize(impl->m_search_paths);
-    m_environment_shader_factory_registrar.reinitialize(impl->m_search_paths);
-    m_light_factory_registrar.reinitialize(impl->m_search_paths);
-    m_material_factory_registrar.reinitialize(impl->m_search_paths);
-    m_object_factory_registrar.reinitialize(impl->m_search_paths);
-    m_surface_shader_factory_registrar.reinitialize(impl->m_search_paths);
-    m_texture_factory_registrar.reinitialize(impl->m_search_paths);
-    m_volume_factory_registrar.reinitialize(impl->m_search_paths);
+    EntityFactoryRegistrar::discover_plugins(impl->m_search_paths);
+
+    m_aov_factory_registrar.reinitialize();
+    m_assembly_factory_registrar.reinitialize();
+    m_bsdf_factory_registrar.reinitialize();
+    m_bssrdf_factory_registrar.reinitialize();
+    m_camera_factory_registrar.reinitialize();
+    m_edf_factory_registrar.reinitialize();
+    m_environment_edf_factory_registrar.reinitialize();
+    m_environment_shader_factory_registrar.reinitialize();
+    m_light_factory_registrar.reinitialize();
+    m_material_factory_registrar.reinitialize();
+    m_object_factory_registrar.reinitialize();
+    m_surface_shader_factory_registrar.reinitialize();
+    m_texture_factory_registrar.reinitialize();
+    m_volume_factory_registrar.reinitialize();
 }
 
 bool Project::has_trace_context() const

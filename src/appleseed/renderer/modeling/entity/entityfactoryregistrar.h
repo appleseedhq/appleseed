@@ -30,18 +30,26 @@
 #define APPLESEED_RENDERER_MODELING_ENTITY_ENTITYFACTORYREGISTRAR_H
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/modeling/entity/entitytraits.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/platform/sharedlibrary.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Boost headers.
+#include "boost/filesystem.hpp"
+
 // Standard headers.
 #include <cstddef>
+#include <string>
+#include <vector>
 #include <functional>
+#include <memory>
 
 // Forward declarations.
 namespace foundation    { class SearchPaths; }
@@ -57,6 +65,10 @@ namespace renderer
 class APPLESEED_DLLSYMBOL EntityFactoryRegistrar
   : public foundation::NonCopyable
 {
+  public:
+    //search for plugins and load them
+    static void discover_plugins(
+        const foundation::SearchPaths&          search_paths);
   protected:
     // Constructor.
     EntityFactoryRegistrar();
@@ -67,7 +79,6 @@ class APPLESEED_DLLSYMBOL EntityFactoryRegistrar
     // Register factories from plugins found in search paths.
     template <typename Entity>
     void register_factories_from_plugins(
-        const foundation::SearchPaths&      search_paths,
         const std::function<void (void*)>&  register_factory);
 
     // Unload all plugins loaded by `register_factories_from_plugins()`.
@@ -76,6 +87,9 @@ class APPLESEED_DLLSYMBOL EntityFactoryRegistrar
   private:
     struct Impl;
     Impl* impl;
+
+    static std::vector<std::pair<std::unique_ptr<foundation::SharedLibrary>, std::string> > loaded_libraries;
+
 
     // Store a plugin in order to keep it alive while the registrar exists.
     void store_plugin(renderer::Plugin* plugin);

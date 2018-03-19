@@ -65,14 +65,13 @@ class APPLESEED_DLLSYMBOL ObjectFactoryRegistrar
     typedef ObjectFactoryArray FactoryArrayType;
 
     // Constructor.
-    explicit ObjectFactoryRegistrar(
-        const foundation::SearchPaths& search_paths = foundation::SearchPaths());
+    explicit ObjectFactoryRegistrar();
 
     // Destructor.
     ~ObjectFactoryRegistrar() override;
 
     // Reinitialize the registrar; load plugins found in provided search paths.
-    void reinitialize(const foundation::SearchPaths& search_paths);
+    void reinitialize();
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;

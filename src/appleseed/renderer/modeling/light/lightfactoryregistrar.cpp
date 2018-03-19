@@ -62,10 +62,10 @@ struct LightFactoryRegistrar::Impl
     Registrar<ILightFactory> m_registrar;
 };
 
-LightFactoryRegistrar::LightFactoryRegistrar(const SearchPaths& search_paths)
+LightFactoryRegistrar::LightFactoryRegistrar()
   : impl(new Impl())
 {
-    reinitialize(search_paths);
+    reinitialize();
 }
 
 LightFactoryRegistrar::~LightFactoryRegistrar()
@@ -73,7 +73,7 @@ LightFactoryRegistrar::~LightFactoryRegistrar()
     delete impl;
 }
 
-void LightFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
+void LightFactoryRegistrar::reinitialize()
 {
     // The registrar must be cleared before the plugins are unloaded.
     impl->m_registrar.clear();
@@ -89,7 +89,6 @@ void LightFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 
     // Register factories defined in plugins.
     register_factories_from_plugins<Light>(
-        search_paths,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<ILightFactory* (*)()>(plugin_entry_point);

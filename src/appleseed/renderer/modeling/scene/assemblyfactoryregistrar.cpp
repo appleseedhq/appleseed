@@ -58,10 +58,10 @@ struct AssemblyFactoryRegistrar::Impl
     Registrar<IAssemblyFactory> m_registrar;
 };
 
-AssemblyFactoryRegistrar::AssemblyFactoryRegistrar(const SearchPaths& search_paths)
+AssemblyFactoryRegistrar::AssemblyFactoryRegistrar()
   : impl(new Impl())
 {
-    reinitialize(search_paths);
+    reinitialize();
 }
 
 AssemblyFactoryRegistrar::~AssemblyFactoryRegistrar()
@@ -69,7 +69,7 @@ AssemblyFactoryRegistrar::~AssemblyFactoryRegistrar()
     delete impl;
 }
 
-void AssemblyFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
+void AssemblyFactoryRegistrar::reinitialize()
 {
     // The registrar must be cleared before the plugins are unloaded.
     impl->m_registrar.clear();
@@ -81,7 +81,6 @@ void AssemblyFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 
     // Register factories defined in plugins.
     register_factories_from_plugins<Assembly>(
-        search_paths,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<IAssemblyFactory* (*)()>(plugin_entry_point);

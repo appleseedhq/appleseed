@@ -72,10 +72,10 @@ struct BSDFFactoryRegistrar::Impl
     Registrar<IBSDFFactory> m_registrar;
 };
 
-BSDFFactoryRegistrar::BSDFFactoryRegistrar(const SearchPaths& search_paths)
+BSDFFactoryRegistrar::BSDFFactoryRegistrar()
   : impl(new Impl())
 {
-    reinitialize(search_paths);
+    reinitialize();
 }
 
 BSDFFactoryRegistrar::~BSDFFactoryRegistrar()
@@ -83,7 +83,7 @@ BSDFFactoryRegistrar::~BSDFFactoryRegistrar()
     delete impl;
 }
 
-void BSDFFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
+void BSDFFactoryRegistrar::reinitialize()
 {
     // The registrar must be cleared before the plugins are unloaded.
     impl->m_registrar.clear();
@@ -109,7 +109,6 @@ void BSDFFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 
     // Register factories defined in plugins.
     register_factories_from_plugins<BSDF>(
-        search_paths,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<IBSDFFactory* (*)()>(plugin_entry_point);

@@ -60,10 +60,10 @@ struct CameraFactoryRegistrar::Impl
     Registrar<ICameraFactory> m_registrar;
 };
 
-CameraFactoryRegistrar::CameraFactoryRegistrar(const SearchPaths& search_paths)
+CameraFactoryRegistrar::CameraFactoryRegistrar()
   : impl(new Impl())
 {
-    reinitialize(search_paths);
+    reinitialize();
 }
 
 CameraFactoryRegistrar::~CameraFactoryRegistrar()
@@ -71,7 +71,7 @@ CameraFactoryRegistrar::~CameraFactoryRegistrar()
     delete impl;
 }
 
-void CameraFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
+void CameraFactoryRegistrar::reinitialize()
 {
     // The registrar must be cleared before the plugins are unloaded.
     impl->m_registrar.clear();
@@ -85,7 +85,6 @@ void CameraFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 
     // Register factories defined in plugins.
     register_factories_from_plugins<Camera>(
-        search_paths,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<ICameraFactory* (*)()>(plugin_entry_point);

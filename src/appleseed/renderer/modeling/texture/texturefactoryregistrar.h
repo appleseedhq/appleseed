@@ -66,14 +66,13 @@ class APPLESEED_DLLSYMBOL TextureFactoryRegistrar
     typedef TextureFactoryArray FactoryArrayType;
 
     // Constructor.
-    explicit TextureFactoryRegistrar(
-        const foundation::SearchPaths& search_paths = foundation::SearchPaths());
+    explicit TextureFactoryRegistrar();
 
     // Destructor.
     ~TextureFactoryRegistrar();
 
     // Reinitialize the registrar; load plugins found in provided search paths.
-    void reinitialize(const foundation::SearchPaths& search_paths);
+    void reinitialize();
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;

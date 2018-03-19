@@ -58,10 +58,10 @@ struct TextureFactoryRegistrar::Impl
     Registrar<ITextureFactory> m_registrar;
 };
 
-TextureFactoryRegistrar::TextureFactoryRegistrar(const SearchPaths& search_paths)
+TextureFactoryRegistrar::TextureFactoryRegistrar()
   : impl(new Impl())
 {
-    reinitialize(search_paths);
+    reinitialize();
 }
 
 TextureFactoryRegistrar::~TextureFactoryRegistrar()
@@ -69,7 +69,7 @@ TextureFactoryRegistrar::~TextureFactoryRegistrar()
     delete impl;
 }
 
-void TextureFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
+void TextureFactoryRegistrar::reinitialize()
 {
     // The registrar must be cleared before the plugins are unloaded.
     impl->m_registrar.clear();
@@ -81,7 +81,6 @@ void TextureFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 
     // Register factories defined in plugins.
     register_factories_from_plugins<Texture>(
-        search_paths,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<ITextureFactory* (*)()>(plugin_entry_point);

@@ -66,14 +66,13 @@ class APPLESEED_DLLSYMBOL LightFactoryRegistrar
     typedef LightFactoryArray FactoryArrayType;
 
     // Constructor.
-    explicit LightFactoryRegistrar(
-        const foundation::SearchPaths& search_paths = foundation::SearchPaths());
+    explicit LightFactoryRegistrar();
 
     // Destructor.
     ~LightFactoryRegistrar();
 
     // Reinitialize the registrar; load plugins found in provided search paths.
-    void reinitialize(const foundation::SearchPaths& search_paths);
+    void reinitialize();
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;

@@ -65,14 +65,13 @@ class APPLESEED_DLLSYMBOL AOVFactoryRegistrar
     typedef AOVFactoryArray FactoryArrayType;
 
     // Constructor.
-    explicit AOVFactoryRegistrar(
-        const foundation::SearchPaths& search_paths = foundation::SearchPaths());
+    explicit AOVFactoryRegistrar();
 
     // Destructor.
     ~AOVFactoryRegistrar();
 
-    // Reinitialize the registrar; load plugins found in provided search paths.
-    void reinitialize(const foundation::SearchPaths& search_paths);
+    // Reinitialize the registrar;
+    void reinitialize();
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;

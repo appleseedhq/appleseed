@@ -65,14 +65,13 @@ class APPLESEED_DLLSYMBOL BSSRDFFactoryRegistrar
     typedef BSSRDFFactoryArray FactoryArrayType;
 
     // Constructor.
-    explicit BSSRDFFactoryRegistrar(
-        const foundation::SearchPaths& search_paths = foundation::SearchPaths());
+    explicit BSSRDFFactoryRegistrar();
 
     // Destructor.
     ~BSSRDFFactoryRegistrar() override;
 
     // Reinitialize the registrar; load plugins found in provided search paths.
-    void reinitialize(const foundation::SearchPaths& search_paths);
+    void reinitialize();
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;

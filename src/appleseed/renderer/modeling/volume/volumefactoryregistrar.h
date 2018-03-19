@@ -65,14 +65,13 @@ class APPLESEED_DLLSYMBOL VolumeFactoryRegistrar
     typedef VolumeFactoryArray FactoryArrayType;
 
     // Constructor.
-    explicit VolumeFactoryRegistrar(
-        const foundation::SearchPaths& search_paths = foundation::SearchPaths());
+    explicit VolumeFactoryRegistrar();
 
     // Destructor.
     ~VolumeFactoryRegistrar();
 
     // Reinitialize the registrar; load plugins found in provided search paths.
-    void reinitialize(const foundation::SearchPaths& search_paths);
+    void reinitialize();
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;

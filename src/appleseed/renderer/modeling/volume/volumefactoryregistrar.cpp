@@ -56,10 +56,10 @@ struct VolumeFactoryRegistrar::Impl
     Registrar<IVolumeFactory> m_registrar;
 };
 
-VolumeFactoryRegistrar::VolumeFactoryRegistrar(const SearchPaths& search_paths)
+VolumeFactoryRegistrar::VolumeFactoryRegistrar()
   : impl(new Impl())
 {
-    reinitialize(search_paths);
+    reinitialize();
 }
 
 VolumeFactoryRegistrar::~VolumeFactoryRegistrar()
@@ -67,7 +67,7 @@ VolumeFactoryRegistrar::~VolumeFactoryRegistrar()
     delete impl;
 }
 
-void VolumeFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
+void VolumeFactoryRegistrar::reinitialize()
 {
     // The registrar must be cleared before the plugins are unloaded.
     impl->m_registrar.clear();
@@ -78,7 +78,6 @@ void VolumeFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 
     // Register factories defined in plugins.
     register_factories_from_plugins<Volume>(
-        search_paths,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<IVolumeFactory* (*)()>(plugin_entry_point);

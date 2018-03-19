@@ -61,10 +61,10 @@ struct MaterialFactoryRegistrar::Impl
     Registrar<IMaterialFactory> m_registrar;
 };
 
-MaterialFactoryRegistrar::MaterialFactoryRegistrar(const SearchPaths& search_paths)
+MaterialFactoryRegistrar::MaterialFactoryRegistrar()
   : impl(new Impl())
 {
-    reinitialize(search_paths);
+    reinitialize();
 }
 
 MaterialFactoryRegistrar::~MaterialFactoryRegistrar()
@@ -72,7 +72,7 @@ MaterialFactoryRegistrar::~MaterialFactoryRegistrar()
     delete impl;
 }
 
-void MaterialFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
+void MaterialFactoryRegistrar::reinitialize()
 {
     // The registrar must be cleared before the plugins are unloaded.
     impl->m_registrar.clear();
@@ -87,7 +87,6 @@ void MaterialFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 
     // Register factories defined in plugins.
     register_factories_from_plugins<Material>(
-        search_paths,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<IMaterialFactory* (*)()>(plugin_entry_point);

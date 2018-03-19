@@ -58,10 +58,10 @@ struct EDFFactoryRegistrar::Impl
     Registrar<IEDFFactory> m_registrar;
 };
 
-EDFFactoryRegistrar::EDFFactoryRegistrar(const SearchPaths& search_paths)
+EDFFactoryRegistrar::EDFFactoryRegistrar()
   : impl(new Impl())
 {
-    reinitialize(search_paths);
+    reinitialize();
 }
 
 EDFFactoryRegistrar::~EDFFactoryRegistrar()
@@ -69,7 +69,7 @@ EDFFactoryRegistrar::~EDFFactoryRegistrar()
     delete impl;
 }
 
-void EDFFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
+void EDFFactoryRegistrar::reinitialize()
 {
     // The registrar must be cleared before the plugins are unloaded.
     impl->m_registrar.clear();
@@ -81,7 +81,6 @@ void EDFFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 
     // Register factories defined in plugins.
     register_factories_from_plugins<EDF>(
-        search_paths,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<IEDFFactory* (*)()>(plugin_entry_point);

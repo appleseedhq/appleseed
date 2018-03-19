@@ -64,10 +64,10 @@ struct EnvironmentEDFFactoryRegistrar::Impl
     Registrar<IEnvironmentEDFFactory> m_registrar;
 };
 
-EnvironmentEDFFactoryRegistrar::EnvironmentEDFFactoryRegistrar(const SearchPaths& search_paths)
+EnvironmentEDFFactoryRegistrar::EnvironmentEDFFactoryRegistrar()
   : impl(new Impl())
 {
-    reinitialize(search_paths);
+    reinitialize();
 }
 
 EnvironmentEDFFactoryRegistrar::~EnvironmentEDFFactoryRegistrar()
@@ -75,7 +75,7 @@ EnvironmentEDFFactoryRegistrar::~EnvironmentEDFFactoryRegistrar()
     delete impl;
 }
 
-void EnvironmentEDFFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
+void EnvironmentEDFFactoryRegistrar::reinitialize()
 {
     // The registrar must be cleared before the plugins are unloaded.
     impl->m_registrar.clear();
@@ -93,7 +93,6 @@ void EnvironmentEDFFactoryRegistrar::reinitialize(const SearchPaths& search_path
 
     // Register factories defined in plugins.
     register_factories_from_plugins<EnvironmentEDF>(
-        search_paths,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<IEnvironmentEDFFactory* (*)()>(plugin_entry_point);
