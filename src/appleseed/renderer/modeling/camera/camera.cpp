@@ -92,10 +92,8 @@ struct Camera::Impl
     Vector<float, 7>            m_shutter_curve_bezier_open_cdf;
     Vector<float, 7>            m_shutter_curve_bezier_close_cdf;
 
-    Impl()
-      : m_use_bezier_shutter_curve(false)
-    {
-    }
+    float                       m_inverse_cdf_open_point;
+    float                       m_inverse_cdf_close_point;
 };
 
 UniqueID Camera::get_class_uid()
@@ -189,12 +187,14 @@ bool Camera::on_render_begin(
                 impl->m_shutter_curve_bezier_close_cdf *
                 impl->m_shutter_curve_bezier_normalization_factor;
 
-            m_inverse_cdf_open_point = evaluate_polynomial(impl->m_shutter_curve_bezier_open_cdf, 1.0f);
-            m_inverse_cdf_close_point = evaluate_polynomial(impl->m_shutter_curve_bezier_close_cdf, 0.0f);
+            impl->m_inverse_cdf_open_point = evaluate_polynomial(impl->m_shutter_curve_bezier_open_cdf, 1.0f);
+            impl->m_inverse_cdf_close_point = evaluate_polynomial(impl->m_shutter_curve_bezier_close_cdf, 0.0f);
         }
         else
         {
             // Initialize linear shutter parameters.
+
+            impl->m_use_bezier_shutter_curve = false;
 
             const float cst_minus_oet_plus_one = m_shutter_close_start_time - m_shutter_open_end_time + 1.0f;
 
@@ -202,9 +202,8 @@ bool Camera::on_render_begin(
             impl->m_shutter_curve_linear_fully_opened_multiplier = cst_minus_oet_plus_one / 2.0f;
             impl->m_shutter_curve_linear_close_multiplier = cst_minus_oet_plus_one * (m_shutter_close_start_time - 1.0f);
 
-            m_inverse_cdf_open_point = m_shutter_open_end_time / cst_minus_oet_plus_one;
-
-            m_inverse_cdf_close_point =
+            impl->m_inverse_cdf_open_point = m_shutter_open_end_time / cst_minus_oet_plus_one;
+            impl->m_inverse_cdf_close_point =
                 (2.0f * m_shutter_close_start_time - m_shutter_open_end_time) /
                 cst_minus_oet_plus_one;
         }
@@ -487,6 +486,7 @@ void Camera::initialize_ray(
 
 float Camera::map_to_shutter_curve(const float sample) const
 {
+    assert(m_motion_blur_enabled);
     assert(sample < 1.0f);
 
     return impl->m_use_bezier_shutter_curve
@@ -552,12 +552,12 @@ float Camera::map_to_shutter_curve_impl_linear(const float sample) const
 {
     // The linear curve consists of multiple linear segments.
 
-    if (sample < m_inverse_cdf_open_point)
+    if (sample < impl->m_inverse_cdf_open_point)
     {
         // Shutter is opening.
         return sqrt(impl->m_shutter_curve_linear_open_multiplier * sample);
     }
-    else if (sample > m_inverse_cdf_close_point)
+    else if (sample > impl->m_inverse_cdf_close_point)
     {
         // Shutter is closing.
         return 1.0f - sqrt(impl->m_shutter_curve_linear_close_multiplier * (sample - 1.0f));
@@ -574,9 +574,9 @@ float Camera::map_to_shutter_curve_impl_bezier(const float sample) const
     // The parametric curve consists of two Bezier curves and constant segment between them.
     // See https://github.com/appleseedhq/appleseed-wiki/blob/master/documents/Shutter%20Curve.pdf for details.
 
-    if (sample < m_inverse_cdf_open_point)
+    if (sample < impl->m_inverse_cdf_open_point)
     {
-        // Sample opening curve.
+        // Shutter is opening.
         return
             inverse_sample_curve_patch(
                 impl->m_shutter_curve_bezier_open_cdf,
@@ -586,22 +586,24 @@ float Camera::map_to_shutter_curve_impl_bezier(const float sample) const
                 impl->m_shutter_curve_bezier_control_points_normalized[2],
                 m_normalized_open_end_time);
     }
-    else if (sample <= m_inverse_cdf_close_point)
+    else if (sample > impl->m_inverse_cdf_close_point)
     {
+        // Shutter is closing.
         return
-            (sample - m_inverse_cdf_open_point) /
-            impl->m_shutter_curve_bezier_normalization_factor + m_normalized_open_end_time;
+            inverse_sample_curve_patch(
+                impl->m_shutter_curve_bezier_close_cdf,
+                sample,
+                m_normalized_close_start_time,
+                impl->m_shutter_curve_bezier_control_points_normalized[4],
+                impl->m_shutter_curve_bezier_control_points_normalized[6],
+                1.0f);
     }
     else
     {
-        // Sample closing curve.
-        return inverse_sample_curve_patch(
-            impl->m_shutter_curve_bezier_close_cdf,
-            sample,
-            m_normalized_close_start_time,
-            impl->m_shutter_curve_bezier_control_points_normalized[4],
-            impl->m_shutter_curve_bezier_control_points_normalized[6],
-            1.0f);
+        // Shutter is fully opened.
+        return
+            (sample - impl->m_inverse_cdf_open_point) /
+            impl->m_shutter_curve_bezier_normalization_factor + m_normalized_open_end_time;
     }
 }
 
