@@ -74,6 +74,9 @@ class APPLESEED_DLLSYMBOL Camera
         const char*                     name,
         const ParamArray&               params);
 
+    // Destructor.
+    ~Camera();
+
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
@@ -81,17 +84,23 @@ class APPLESEED_DLLSYMBOL Camera
     TransformSequence& transform_sequence();
     const TransformSequence& transform_sequence() const;
 
-    // Get the shutter open time.
-    float get_shutter_open_time() const;
+    // Return the time at which the camera's shutter begins to open.
+    float get_shutter_open_begin_time() const;
 
-    // Get the shutter close time.
-    float get_shutter_close_time() const;
+    // Return the time at which the camera's shutter is fully open.
+    float get_shutter_open_end_time() const;
 
-    // Get the time at the middle of the shutter interval.
+    // Return the time at which the camera's shutter begins to close.
+    float get_shutter_close_begin_time() const;
+
+    // Return the time at which the camera's shutter is fully closed.
+    float get_shutter_close_end_time() const;
+
+    // Return the duration between when the shutter begins to open and when it is fully closed.
+    float get_shutter_time_interval() const;
+
+    // Return the time at the middle of the shutter interval.
     float get_shutter_middle_time() const;
-
-    // Get the amount of time the shutter is open.
-    float get_shutter_open_time_interval() const;
 
     // This method is called once before rendering.
     // Returns true on success, false otherwise.
@@ -157,39 +166,18 @@ class APPLESEED_DLLSYMBOL Camera
         foundation::Vector2d&           b_ndc) const = 0;
 
   protected:
+    struct Impl;
+    Impl* impl;
+
     TransformSequence   m_transform_sequence;
 
-    // Shutter related parameters.
-    float               m_shutter_open_time;
-    float               m_shutter_open_end_time;
-    float               m_shutter_close_start_time;
-    float               m_shutter_close_time;
-    float               m_shutter_open_time_interval;
-    float               m_normalized_open_end_time;
-    float               m_normalized_close_start_time;
-    float               m_inverse_cdf_open_point;
-    float               m_inverse_cdf_close_point;
+    // Shutter parameters.
+    float               m_shutter_open_begin_time;      // when the shutter begins to open
+    float               m_shutter_open_end_time;        // when the shutter is fully open
+    float               m_shutter_close_begin_time;     // when the shutter begins to close
+    float               m_shutter_close_end_time;       // when the shutter is fully closed
+    float               m_shutter_time_interval;        // duration between when the shutter begins to open and when it is fully closed
     bool                m_motion_blur_enabled;
-
-    // Linear shutter related parameters.
-    float               m_shutter_curve_linear_open_multiplier;
-    float               m_shutter_curve_linear_fully_opened_multiplier;
-    float               m_shutter_curve_linear_close_multiplier;
-
-    // Shutter Bezier curve related parameters.
-    // Control points are represented in form [t0 s0 t1 s1 t2 s2 t3 s3] where t stands for time
-    // and s stands for "shutter openness"
-    typedef foundation::Vector<float, 8> ShutterCurveControlPoints;
-
-    bool                        m_use_bezier_shutter_curve;
-    ShutterCurveControlPoints   m_shutter_curve_bezier_control_points_normalized;
-
-    // Normalization factor to make the area under the curve to be equal to 1
-    float                       m_shutter_curve_bezier_normalization_factor;
-
-    // Polynomials of open/close cdfs
-    foundation::Vector<float, 7>   m_shutter_curve_bezier_open_cdf;
-    foundation::Vector<float, 7>   m_shutter_curve_bezier_close_cdf;
 
     // Utility function to retrieve the film dimensions (in meters) from the camera parameters.
     foundation::Vector2d extract_film_dimensions() const;
@@ -200,6 +188,23 @@ class APPLESEED_DLLSYMBOL Camera
     // Utility function to retrieve the abscissa (in meters) of the near plane from the camera parameters.
     double extract_near_z() const;
 
+    // Check shutter times and emit warnings if needed.
+    void check_shutter_times_for_consistency() const;
+
+    void initialize_shutter_curve_bezier_cdfs(
+        const float                     ot,
+        const float                     oet,
+        const float                     cst,
+        const float                     ct,
+        const float                     t00,
+        const float                     t01,
+        const float                     t10,
+        const float                     t11,
+        const float                     s00,
+        const float                     s01,
+        const float                     s10,
+        const float                     s11);
+
     // Initialize a ray but does not set its origin or direction.
     void initialize_ray(
         SamplingContext&                sampling_context,
@@ -208,30 +213,11 @@ class APPLESEED_DLLSYMBOL Camera
     // Map a sample using inverse of CDF calculated from camera shutter graph. Used in initialize_ray().
     float map_to_shutter_curve(const float sample) const;
 
-    // Check shutter times and emit warnings if needed.
-    void check_shutter_times_for_consistency() const;
-
     // Map a sample to a composition of two lines and a constant. Used in map_to_shutter_curve().
     float map_to_shutter_curve_impl_linear(const float sample) const;
 
     // Map a sample to a composition of two Bezier curves and a constant. Used in map_to_shutter_curve().
     float map_to_shutter_curve_impl_bezier(const float sample) const;
-
-    void initialize_shutter_curve_bezier_cdfs(
-        const float ot,
-        const float oet,
-        const float cst,
-        const float ct,
-        const float t00,
-        const float t01,
-        const float t10,
-        const float t11,
-        const float s00,
-        const float s01,
-        const float s10,
-        const float s11);
-
-    float get_shutter_curve_bezier_normalization_factor() const;
 
     bool has_param(const char* name) const;
     bool has_params(const char* name1, const char* name2) const;
@@ -269,24 +255,34 @@ inline const TransformSequence& Camera::transform_sequence() const
     return m_transform_sequence;
 }
 
-inline float Camera::get_shutter_open_time() const
+inline float Camera::get_shutter_open_begin_time() const
 {
-    return m_shutter_open_time;
+    return m_shutter_open_begin_time;
 }
 
-inline float Camera::get_shutter_close_time() const
+inline float Camera::get_shutter_open_end_time() const
 {
-    return m_shutter_close_time;
+    return m_shutter_open_end_time;
+}
+
+inline float Camera::get_shutter_close_begin_time() const
+{
+    return m_shutter_close_begin_time;
+}
+
+inline float Camera::get_shutter_close_end_time() const
+{
+    return m_shutter_close_end_time;
+}
+
+inline float Camera::get_shutter_time_interval() const
+{
+    return m_shutter_time_interval;
 }
 
 inline float Camera::get_shutter_middle_time() const
 {
-    return 0.5f * (m_shutter_open_time + m_shutter_close_time);
-}
-
-inline float Camera::get_shutter_open_time_interval() const
-{
-    return m_shutter_open_time_interval;
+    return 0.5f * (m_shutter_open_begin_time + m_shutter_close_end_time);
 }
 
 }       // namespace renderer

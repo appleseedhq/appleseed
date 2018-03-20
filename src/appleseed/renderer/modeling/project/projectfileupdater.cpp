@@ -1654,10 +1654,11 @@ namespace
 
                     if (camera_params.strings().exist("autofocus_target"))
                         camera_params.strings().insert("autofocus_enabled", true);
-
-                    // camera_params include "focal_distance"
                     else
+                    {
+                        // camera_params include "focal_distance".
                         camera_params.strings().insert("autofocus_enabled", false);                        
+                    }
                 }
             }
         }  
@@ -1700,6 +1701,34 @@ namespace
                     pt_params.insert("max_specular_bounces", -1);
             }
         }
+    };
+
+    //
+    // Update from revision 24 to revision 25.
+    //
+    
+    class UpdateFromRevision_24
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_24(Project& project)
+          : Updater(project, 24)
+        {
+        }
+
+        void update() override
+        {
+            if (Scene* scene = m_project.get_scene())
+            {
+                for (each<CameraContainer> i = scene->cameras(); i; ++i)
+                {
+                    ParamArray& camera_params = i->get_parameters();
+                    move_if_exist(camera_params, "shutter_open_begin_time", "shutter_open_time");
+                    move_if_exist(camera_params, "shutter_close_begin_time", "shutter_close_start_time");
+                    move_if_exist(camera_params, "shutter_close_end_time", "shutter_close_time");
+                }
+            }
+        }  
     };
 }
 
@@ -1757,6 +1786,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(21);
       CASE_UPDATE_FROM_REVISION(22);
       CASE_UPDATE_FROM_REVISION(23);
+      CASE_UPDATE_FROM_REVISION(24);
 
       case ProjectFormatRevision:
         // Project is up-to-date.

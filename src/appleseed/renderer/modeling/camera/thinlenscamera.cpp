@@ -559,8 +559,8 @@ namespace
             ray.m_time =
                 ShadingRay::Time::create_with_normalized_time(
                     0.5f,
-                    get_shutter_open_time(),
-                    get_shutter_close_time());
+                    get_shutter_open_begin_time(),
+                    get_shutter_close_end_time());
             ray.m_flags = VisibilityFlags::ProbeRay;
             ray.m_depth = 0;
 
@@ -606,12 +606,12 @@ namespace
                 "  autofocus target              %f, %f\n"
                 "  diaphragm map                 %s\n"
                 "  diaphragm blades              %s\n"
-                "  diaphragm angle               %f\n"
-                "  near z                        %f\n"
-                "  shutter open start            %f\n"
-                "  shutter open end              %f\n"
-                "  shutter close start           %f\n"
-                "  shutter close end             %f",
+                "  diaphragm tilt angle          %f\n"
+                "  near-z                        %f\n"
+                "  shutter open begin time       %f\n"
+                "  shutter open end time         %f\n"
+                "  shutter close begin time      %f\n"
+                "  shutter close end time        %f",
                 get_path().c_str(),
                 Model,
                 m_film_dimensions[0],
@@ -624,10 +624,10 @@ namespace
                 pretty_uint(m_diaphragm_blade_count).c_str(),
                 m_diaphragm_tilt_angle,
                 m_near_z,
-                m_shutter_open_time,
+                m_shutter_open_begin_time,
                 m_shutter_open_end_time,
-                m_shutter_close_start_time,
-                m_shutter_close_time);
+                m_shutter_close_begin_time,
+                m_shutter_close_end_time);
         }
 
         Vector3d ndc_to_camera(const Vector2d& point) const
