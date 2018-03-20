@@ -171,8 +171,6 @@ class APPLESEED_DLLSYMBOL Camera
     float               m_shutter_close_start_time;
     float               m_shutter_close_time;
     float               m_shutter_open_time_interval;
-    float               m_normalized_open_end_time;
-    float               m_normalized_close_start_time;
     bool                m_motion_blur_enabled;
 
     // Utility function to retrieve the film dimensions (in meters) from the camera parameters.

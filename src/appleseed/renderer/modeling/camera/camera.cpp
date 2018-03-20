@@ -66,13 +66,19 @@ namespace
 
 struct Camera::Impl
 {
+    float               m_normalized_open_end_time;
+    float               m_normalized_close_start_time;
+
+    float               m_inverse_cdf_open_point;
+    float               m_inverse_cdf_close_point;
+
     //
     // Linear shutter parameters.
     //
 
-    float                       m_shutter_curve_linear_open_multiplier;
-    float                       m_shutter_curve_linear_fully_opened_multiplier;
-    float                       m_shutter_curve_linear_close_multiplier;
+    float               m_shutter_curve_linear_open_multiplier;
+    float               m_shutter_curve_linear_fully_opened_multiplier;
+    float               m_shutter_curve_linear_close_multiplier;
 
     //
     // Bezier shutter curve parameters.
@@ -80,20 +86,17 @@ struct Camera::Impl
 
     // Control points are represented in form [t0 s0 t1 s1 t2 s2 t3 s3]
     // where t stands for time and s stands for "shutter openness".
-    typedef Vector<float, 8> ShutterCurveControlPoints;
+    typedef Vector<float, 8> ShutterCurveCP;
 
-    bool                        m_use_bezier_shutter_curve;
-    ShutterCurveControlPoints   m_shutter_curve_bezier_control_points_normalized;
+    bool                m_use_bezier_shutter_curve;
+    ShutterCurveCP      m_shutter_curve_bezier_cp_normalized;
 
     // Normalization factor to make the area under the curve equal to 1.
-    float                       m_shutter_curve_bezier_normalization_factor;
+    float               m_shutter_curve_bezier_normalization_factor;
 
     // Polynomials of open/close CDFs.
-    Vector<float, 7>            m_shutter_curve_bezier_open_cdf;
-    Vector<float, 7>            m_shutter_curve_bezier_close_cdf;
-
-    float                       m_inverse_cdf_open_point;
-    float                       m_inverse_cdf_close_point;
+    Vector<float, 7>    m_shutter_curve_bezier_open_cdf;
+    Vector<float, 7>    m_shutter_curve_bezier_close_cdf;
 };
 
 UniqueID Camera::get_class_uid()
@@ -126,13 +129,13 @@ bool Camera::on_render_begin(
 
     check_shutter_times_for_consistency();
 
-    m_normalized_open_end_time =
+    impl->m_normalized_open_end_time =
         inverse_lerp(
             m_shutter_open_time,
             m_shutter_close_time,
             m_shutter_open_end_time);
 
-    m_normalized_close_start_time =
+    impl->m_normalized_close_start_time =
         inverse_lerp(
             m_shutter_open_time,
             m_shutter_close_time,
@@ -143,39 +146,37 @@ bool Camera::on_render_begin(
 
     if (m_motion_blur_enabled)
     {
-        if (has_param("shutter_curve_control_points"))
+        impl->m_use_bezier_shutter_curve = has_param("shutter_curve_control_points");
+
+        if (impl->m_use_bezier_shutter_curve)
         {
-            // Initialize Bezier shutter curve parameters.
-
-            impl->m_use_bezier_shutter_curve = true;
-
-            impl->m_shutter_curve_bezier_control_points_normalized =
-                m_params.get_required<Impl::ShutterCurveControlPoints>("shutter_curve_control_points");
+            impl->m_shutter_curve_bezier_cp_normalized =
+                m_params.get_required<Impl::ShutterCurveCP>("shutter_curve_control_points");
 
             // Normalize time points.
-            for (size_t i = 0; i < Impl::ShutterCurveControlPoints::Dimension; i += 2)
+            for (size_t i = 0; i < Impl::ShutterCurveCP::Dimension; i += 2)
             {
-                impl->m_shutter_curve_bezier_control_points_normalized[i] =
+                impl->m_shutter_curve_bezier_cp_normalized[i] =
                     inverse_lerp(
                         m_shutter_open_time,
                         m_shutter_close_time,
-                        impl->m_shutter_curve_bezier_control_points_normalized[i]);
+                        impl->m_shutter_curve_bezier_cp_normalized[i]);
             }
 
             // Use normalized time, so inverse sampling will end up with normalized time points.
             initialize_shutter_curve_bezier_cdfs(
-                0.0f,                                                           // ot
-                m_normalized_open_end_time,                                     // oet
-                m_normalized_close_start_time,                                  // cst
-                1.0f,                                                           // ct
-                impl->m_shutter_curve_bezier_control_points_normalized[0],      // t00
-                impl->m_shutter_curve_bezier_control_points_normalized[2],      // t01
-                impl->m_shutter_curve_bezier_control_points_normalized[4],      // t10
-                impl->m_shutter_curve_bezier_control_points_normalized[6],      // t11
-                impl->m_shutter_curve_bezier_control_points_normalized[1],      // s00
-                impl->m_shutter_curve_bezier_control_points_normalized[3],      // s01
-                impl->m_shutter_curve_bezier_control_points_normalized[5],      // s10
-                impl->m_shutter_curve_bezier_control_points_normalized[7]);     // s11
+                0.0f,                                               // ot
+                impl->m_normalized_open_end_time,                   // oet
+                impl->m_normalized_close_start_time,                // cst
+                1.0f,                                               // ct
+                impl->m_shutter_curve_bezier_cp_normalized[0],      // t00
+                impl->m_shutter_curve_bezier_cp_normalized[2],      // t01
+                impl->m_shutter_curve_bezier_cp_normalized[4],      // t10
+                impl->m_shutter_curve_bezier_cp_normalized[6],      // t11
+                impl->m_shutter_curve_bezier_cp_normalized[1],      // s00
+                impl->m_shutter_curve_bezier_cp_normalized[3],      // s01
+                impl->m_shutter_curve_bezier_cp_normalized[5],      // s10
+                impl->m_shutter_curve_bezier_cp_normalized[7]);     // s11
 
             impl->m_shutter_curve_bezier_normalization_factor = 1.0f / evaluate_polynomial(impl->m_shutter_curve_bezier_close_cdf, 1.0f);
 
@@ -192,10 +193,6 @@ bool Camera::on_render_begin(
         }
         else
         {
-            // Initialize linear shutter parameters.
-
-            impl->m_use_bezier_shutter_curve = false;
-
             const float cst_minus_oet_plus_one = m_shutter_close_start_time - m_shutter_open_end_time + 1.0f;
 
             impl->m_shutter_curve_linear_open_multiplier = cst_minus_oet_plus_one * m_shutter_open_end_time;
@@ -582,9 +579,9 @@ float Camera::map_to_shutter_curve_impl_bezier(const float sample) const
                 impl->m_shutter_curve_bezier_open_cdf,
                 sample,
                 0.0f,
-                impl->m_shutter_curve_bezier_control_points_normalized[0],
-                impl->m_shutter_curve_bezier_control_points_normalized[2],
-                m_normalized_open_end_time);
+                impl->m_shutter_curve_bezier_cp_normalized[0],
+                impl->m_shutter_curve_bezier_cp_normalized[2],
+                impl->m_normalized_open_end_time);
     }
     else if (sample > impl->m_inverse_cdf_close_point)
     {
@@ -593,9 +590,9 @@ float Camera::map_to_shutter_curve_impl_bezier(const float sample) const
             inverse_sample_curve_patch(
                 impl->m_shutter_curve_bezier_close_cdf,
                 sample,
-                m_normalized_close_start_time,
-                impl->m_shutter_curve_bezier_control_points_normalized[4],
-                impl->m_shutter_curve_bezier_control_points_normalized[6],
+                impl->m_normalized_close_start_time,
+                impl->m_shutter_curve_bezier_cp_normalized[4],
+                impl->m_shutter_curve_bezier_cp_normalized[6],
                 1.0f);
     }
     else
@@ -603,7 +600,7 @@ float Camera::map_to_shutter_curve_impl_bezier(const float sample) const
         // Shutter is fully opened.
         return
             (sample - impl->m_inverse_cdf_open_point) /
-            impl->m_shutter_curve_bezier_normalization_factor + m_normalized_open_end_time;
+            impl->m_shutter_curve_bezier_normalization_factor + impl->m_normalized_open_end_time;
     }
 }
 
