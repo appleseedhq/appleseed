@@ -210,16 +210,16 @@ namespace
             RENDERER_LOG_INFO(
                 "camera \"%s\" settings:\n"
                 "  model                         %s\n"
-                "  shutter open start            %f\n"
-                "  shutter open end              %f\n"
-                "  shutter close start           %f\n"
-                "  shutter close end             %f",
+                "  shutter open begin time       %f\n"
+                "  shutter open end time         %f\n"
+                "  shutter close begin time      %f\n"
+                "  shutter close end time        %f",
                 get_path().c_str(),
                 Model,
-                m_shutter_open_time,
+                m_shutter_open_begin_time,
                 m_shutter_open_end_time,
-                m_shutter_close_start_time,
-                m_shutter_close_time);
+                m_shutter_close_begin_time,
+                m_shutter_close_end_time);
         }
 
         static Vector3d ndc_to_camera(const Vector2d& point)

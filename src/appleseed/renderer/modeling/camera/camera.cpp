@@ -122,27 +122,27 @@ bool Camera::on_render_begin(
     const Project&          project,
     IAbortSwitch*           abort_switch)
 {
-    m_shutter_open_time = m_params.get_optional<float>("shutter_open_time", 0.0f);
-    m_shutter_open_end_time = m_params.get_optional<float>("shutter_open_end_time", m_shutter_open_time);
-    m_shutter_close_time = m_params.get_optional<float>("shutter_close_time", 1.0f);
-    m_shutter_close_start_time = m_params.get_optional<float>("shutter_close_start_time", m_shutter_close_time);
+    m_shutter_open_begin_time = m_params.get_optional<float>("shutter_open_begin_time", 0.0f);
+    m_shutter_open_end_time = m_params.get_optional<float>("shutter_open_end_time", m_shutter_open_begin_time);
+    m_shutter_close_end_time = m_params.get_optional<float>("shutter_close_end_time", 1.0f);
+    m_shutter_close_begin_time = m_params.get_optional<float>("shutter_close_begin_time", m_shutter_close_end_time);
 
     check_shutter_times_for_consistency();
 
     impl->m_normalized_open_end_time =
         inverse_lerp(
-            m_shutter_open_time,
-            m_shutter_close_time,
+            m_shutter_open_begin_time,
+            m_shutter_close_end_time,
             m_shutter_open_end_time);
 
     impl->m_normalized_close_start_time =
         inverse_lerp(
-            m_shutter_open_time,
-            m_shutter_close_time,
-            m_shutter_close_start_time);
+            m_shutter_open_begin_time,
+            m_shutter_close_end_time,
+            m_shutter_close_begin_time);
 
-    m_shutter_open_time_interval = m_shutter_close_time - m_shutter_open_time;
-    m_motion_blur_enabled = m_shutter_open_time_interval > 0.0f;
+    m_shutter_time_interval = m_shutter_close_end_time - m_shutter_open_begin_time;
+    m_motion_blur_enabled = m_shutter_time_interval > 0.0f;
 
     if (m_motion_blur_enabled)
     {
@@ -158,8 +158,8 @@ bool Camera::on_render_begin(
             {
                 impl->m_shutter_curve_bezier_cp_normalized[i] =
                     inverse_lerp(
-                        m_shutter_open_time,
-                        m_shutter_close_time,
+                        m_shutter_open_begin_time,
+                        m_shutter_close_end_time,
                         impl->m_shutter_curve_bezier_cp_normalized[i]);
             }
 
@@ -178,7 +178,8 @@ bool Camera::on_render_begin(
                 impl->m_shutter_curve_bezier_cp_normalized[5],      // s10
                 impl->m_shutter_curve_bezier_cp_normalized[7]);     // s11
 
-            impl->m_shutter_curve_bezier_normalization_factor = 1.0f / evaluate_polynomial(impl->m_shutter_curve_bezier_close_cdf, 1.0f);
+            impl->m_shutter_curve_bezier_normalization_factor =
+                1.0f / evaluate_polynomial(impl->m_shutter_curve_bezier_close_cdf, 1.0f);
 
             impl->m_shutter_curve_bezier_open_cdf =
                 impl->m_shutter_curve_bezier_open_cdf *
@@ -193,15 +194,15 @@ bool Camera::on_render_begin(
         }
         else
         {
-            const float cst_minus_oet_plus_one = m_shutter_close_start_time - m_shutter_open_end_time + 1.0f;
+            const float cst_minus_oet_plus_one = m_shutter_close_begin_time - m_shutter_open_end_time + 1.0f;
 
             impl->m_shutter_curve_linear_open_multiplier = cst_minus_oet_plus_one * m_shutter_open_end_time;
             impl->m_shutter_curve_linear_fully_opened_multiplier = cst_minus_oet_plus_one / 2.0f;
-            impl->m_shutter_curve_linear_close_multiplier = cst_minus_oet_plus_one * (m_shutter_close_start_time - 1.0f);
+            impl->m_shutter_curve_linear_close_multiplier = cst_minus_oet_plus_one * (m_shutter_close_begin_time - 1.0f);
 
             impl->m_inverse_cdf_open_point = m_shutter_open_end_time / cst_minus_oet_plus_one;
             impl->m_inverse_cdf_close_point =
-                (2.0f * m_shutter_close_start_time - m_shutter_open_end_time) /
+                (2.0f * m_shutter_close_begin_time - m_shutter_open_end_time) /
                 cst_minus_oet_plus_one;
         }
     }
@@ -351,7 +352,7 @@ double Camera::extract_near_z() const
     if (near_z > 0.0)
     {
         RENDERER_LOG_ERROR(
-            "while defining camera \"%s\": invalid near-Z value \"%f\", near-Z values must be negative or zero; "
+            "while defining camera \"%s\": invalid near-z value \"%f\", near-z values must be negative or zero; "
             "using default value \"%f\".",
             get_path().c_str(),
             near_z,
@@ -365,23 +366,18 @@ double Camera::extract_near_z() const
 
 void Camera::check_shutter_times_for_consistency() const
 {
-    if (m_shutter_open_end_time < m_shutter_open_time)
-        RENDERER_LOG_WARNING("shutter open time of camera \"%s\" is greater than shutter open end time", get_path().c_str());
+    const auto properly_ordered =
+        m_shutter_open_begin_time <= m_shutter_open_end_time &&
+        m_shutter_open_end_time <= m_shutter_close_begin_time &&
+        m_shutter_close_begin_time <= m_shutter_close_end_time;
 
-    if (m_shutter_close_start_time < m_shutter_open_end_time)
-        RENDERER_LOG_WARNING("shutter open end time of camera \"%s\" is greater than shutter close start time", get_path().c_str());
-
-    if (m_shutter_close_start_time < m_shutter_open_time)
-        RENDERER_LOG_WARNING("shutter open time of camera \"%s\" is greater than shutter close start time", get_path().c_str());
-
-    if (m_shutter_close_time < m_shutter_open_time)
-        RENDERER_LOG_WARNING("shutter open time of camera \"%s\" is greater than shutter close time", get_path().c_str());
-
-    if (m_shutter_close_time < m_shutter_open_end_time)
-        RENDERER_LOG_WARNING("shutter open end time of camera \"%s\" is greater than shutter close time", get_path().c_str());
-
-    if (m_shutter_close_time < m_shutter_close_start_time)
-        RENDERER_LOG_WARNING("shutter close start time of camera \"%s\" is greater than shutter close time", get_path().c_str());
+    if (!properly_ordered)
+    {
+        RENDERER_LOG_WARNING(
+            "while defining camera \"%s\": shutter times are not properly ordered; "
+            "order should be: open begin time <= open end time <= close begin time <= close end time.",
+            get_path().c_str());
+    }
 }
 
 void Camera::initialize_shutter_curve_bezier_cdfs(
@@ -477,8 +473,8 @@ void Camera::initialize_ray(
     ray.m_time =
         ShadingRay::Time::create_with_normalized_time(
             sample_time,
-            m_shutter_open_time,
-            m_shutter_close_time);
+            m_shutter_open_begin_time,
+            m_shutter_close_end_time);
 }
 
 float Camera::map_to_shutter_curve(const float sample) const
@@ -647,8 +643,8 @@ DictionaryArray CameraFactory::get_input_metadata()
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "shutter_open_time")
-            .insert("label", "Shutter Open Time")
+            .insert("name", "shutter_open_begin_time")
+            .insert("label", "Shutter Open Begin Time")
             .insert("type", "numeric")
             .insert("min",
                 Dictionary()
@@ -679,8 +675,8 @@ DictionaryArray CameraFactory::get_input_metadata()
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "shutter_close_start_time")
-            .insert("label", "Shutter Close Start Time")
+            .insert("name", "shutter_close_begin_time")
+            .insert("label", "Shutter Close Begin Time")
             .insert("type", "numeric")
             .insert("min",
                 Dictionary()
@@ -695,8 +691,8 @@ DictionaryArray CameraFactory::get_input_metadata()
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "shutter_close_time")
-            .insert("label", "Shutter Close Time")
+            .insert("name", "shutter_close_end_time")
+            .insert("label", "Shutter Close End Time")
             .insert("type", "numeric")
             .insert("min",
                 Dictionary()

@@ -917,13 +917,13 @@ void ShadingPoint::compute_world_space_point_velocity() const
 
         const Transformd& assembly_instance_transform0 =
             m_assembly_instance_transform_seq->evaluate(
-                camera->get_shutter_open_time(),
+                camera->get_shutter_open_begin_time(),
                 scratch);
         p0 = assembly_instance_transform0.point_to_parent(p0);
 
         const Transformd& assembly_instance_transform1 =
             m_assembly_instance_transform_seq->evaluate(
-                camera->get_shutter_close_time(),
+                camera->get_shutter_close_end_time(),
                 scratch);
         p1 = assembly_instance_transform1.point_to_parent(p1);
     }
@@ -1045,7 +1045,7 @@ void ShadingPoint::initialize_osl_shader_globals(
 
         // Time and its derivative.
         m_shader_globals.time = ray.m_time.m_absolute;
-        m_shader_globals.dtime = m_scene->get_active_camera()->get_shutter_open_time_interval();
+        m_shader_globals.dtime = m_scene->get_active_camera()->get_shutter_time_interval();
 
         // Velocity vector.
         m_shader_globals.dPdtime =

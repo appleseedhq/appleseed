@@ -84,17 +84,23 @@ class APPLESEED_DLLSYMBOL Camera
     TransformSequence& transform_sequence();
     const TransformSequence& transform_sequence() const;
 
-    // Get the shutter open time.
-    float get_shutter_open_time() const;
+    // Return the time at which the camera's shutter begins to open.
+    float get_shutter_open_begin_time() const;
 
-    // Get the shutter close time.
-    float get_shutter_close_time() const;
+    // Return the time at which the camera's shutter is fully open.
+    float get_shutter_open_end_time() const;
 
-    // Get the time at the middle of the shutter interval.
+    // Return the time at which the camera's shutter begins to close.
+    float get_shutter_close_begin_time() const;
+
+    // Return the time at which the camera's shutter is fully closed.
+    float get_shutter_close_end_time() const;
+
+    // Return the duration between when the shutter begins to open and when it is fully closed.
+    float get_shutter_time_interval() const;
+
+    // Return the time at the middle of the shutter interval.
     float get_shutter_middle_time() const;
-
-    // Get the amount of time the shutter is open.
-    float get_shutter_open_time_interval() const;
 
     // This method is called once before rendering.
     // Returns true on success, false otherwise.
@@ -166,11 +172,11 @@ class APPLESEED_DLLSYMBOL Camera
     TransformSequence   m_transform_sequence;
 
     // Shutter parameters.
-    float               m_shutter_open_time;
-    float               m_shutter_open_end_time;
-    float               m_shutter_close_start_time;
-    float               m_shutter_close_time;
-    float               m_shutter_open_time_interval;
+    float               m_shutter_open_begin_time;      // when the shutter begins to open
+    float               m_shutter_open_end_time;        // when the shutter is fully open
+    float               m_shutter_close_begin_time;     // when the shutter begins to close
+    float               m_shutter_close_end_time;       // when the shutter is fully closed
+    float               m_shutter_time_interval;        // duration between when the shutter begins to open and when it is fully closed
     bool                m_motion_blur_enabled;
 
     // Utility function to retrieve the film dimensions (in meters) from the camera parameters.
@@ -249,24 +255,34 @@ inline const TransformSequence& Camera::transform_sequence() const
     return m_transform_sequence;
 }
 
-inline float Camera::get_shutter_open_time() const
+inline float Camera::get_shutter_open_begin_time() const
 {
-    return m_shutter_open_time;
+    return m_shutter_open_begin_time;
 }
 
-inline float Camera::get_shutter_close_time() const
+inline float Camera::get_shutter_open_end_time() const
 {
-    return m_shutter_close_time;
+    return m_shutter_open_end_time;
+}
+
+inline float Camera::get_shutter_close_begin_time() const
+{
+    return m_shutter_close_begin_time;
+}
+
+inline float Camera::get_shutter_close_end_time() const
+{
+    return m_shutter_close_end_time;
+}
+
+inline float Camera::get_shutter_time_interval() const
+{
+    return m_shutter_time_interval;
 }
 
 inline float Camera::get_shutter_middle_time() const
 {
-    return 0.5f * (m_shutter_open_time + m_shutter_close_time);
-}
-
-inline float Camera::get_shutter_open_time_interval() const
-{
-    return m_shutter_open_time_interval;
+    return 0.5f * (m_shutter_open_begin_time + m_shutter_close_end_time);
 }
 
 }       // namespace renderer
