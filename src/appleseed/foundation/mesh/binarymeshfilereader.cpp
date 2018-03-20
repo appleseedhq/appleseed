@@ -31,7 +31,6 @@
 #include "binarymeshfilereader.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/math/vector.h"
 #include "foundation/mesh/imeshbuilder.h"
@@ -51,32 +50,6 @@ namespace foundation
 //
 // BinaryMeshFileReader class implementation.
 //
-
-namespace
-{
-    struct ExceptionEOF : public Exception {};
-
-    template <typename File>
-    inline void checked_read(File& file, void* outbuf, const size_t size)
-    {
-        if (size == 0)
-            return;
-
-        const size_t bytes_read = file.read(outbuf, size);
-
-        if (bytes_read == 0)
-            throw ExceptionEOF();
-
-        if (bytes_read < size)
-            throw ExceptionIOError();
-    }
-
-    template <typename File, typename T>
-    inline void checked_read(File& file, T& object)
-    {
-        checked_read(file, &object, sizeof(T));
-    }
-}
 
 BinaryMeshFileReader::BinaryMeshFileReader(const string& filename)
   : m_filename(filename)

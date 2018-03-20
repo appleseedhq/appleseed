@@ -31,6 +31,8 @@
 #define APPLESEED_FOUNDATION_UTILITY_BUFFEREDFILE_H
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exception.h"
+#include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 
@@ -201,6 +203,29 @@ class APPLESEED_DLLSYMBOL BufferedFile
     // Return true on success, false on error.
     bool flush_buffer();
 };
+
+
+//
+// Utility free functions.
+//
+
+struct ExceptionEOF : public Exception {};
+
+// Throws foundation::ExceptionEOF or foundation::ExceptionIOError.
+template <typename File>
+void checked_read(File& file, void* outbuf, const size_t size);
+
+// Throws foundation::ExceptionEOF or foundation::ExceptionIOError.
+template <typename File, typename T>
+void checked_read(File& file, T& object);
+
+// Throws foundation::ExceptionIOError.
+template <typename File>
+void checked_write(File& file, const void* inbuf, const size_t size);
+
+// Throws foundation::ExceptionIOError.
+template <typename File, typename T>
+void checked_write(File& file, const T& object);
 
 
 //
@@ -450,6 +475,47 @@ inline void BufferedFile::invalidate_buffer()
 
     m_buffer_end = 0;
     m_buffer_index = 0;
+}
+
+
+//
+// Utility free functions implementation.
+//
+
+template <typename File>
+inline void checked_read(File& file, void* outbuf, const size_t size)
+{
+    if (size == 0)
+        return;
+
+    const size_t bytes_read = file.read(outbuf, size);
+
+    if (bytes_read == 0)
+        throw ExceptionEOF();
+
+    if (bytes_read < size)
+        throw ExceptionIOError();
+}
+
+template <typename File, typename T>
+inline void checked_read(File& file, T& object)
+{
+    checked_read(file, &object, sizeof(T));
+}
+
+template <typename File>
+inline void checked_write(File& file, const void* inbuf, const size_t size)
+{
+    const size_t bytes_written = file.write(inbuf, size);
+
+    if (bytes_written < size)
+        throw ExceptionIOError();
+}
+
+template <typename File, typename T>
+inline void checked_write(File& file, const T& object)
+{
+    checked_write(file, &object, sizeof(T));
 }
 
 
