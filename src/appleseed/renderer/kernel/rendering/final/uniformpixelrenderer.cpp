@@ -102,25 +102,25 @@ namespace
             }
         }
 
+        void release() override
+        {
+            delete this;
+        }
+
         void print_settings() const override
         {
             RENDERER_LOG_INFO(
                 "uniform pixel renderer settings:\n"
-                "  sampling mode                 %s\n"
-                "  samples                       " FMT_SIZE_T "\n"
+                "  samples                       %s\n"
                 "  force antialiasing            %s\n"
                 "  decorrelate pixels            %s\n"
                 "  diagnostics                   %s",
-                m_params.m_sampling_mode == SamplingContext::Mode::QMCMode ? "qmc" : "rng",
-                m_params.m_samples,
+                pretty_uint(m_params.m_samples).c_str(),
                 m_params.m_force_aa ? "on" : "off",
                 m_params.m_decorrelate ? "on" : "off",
                 are_diagnostics_enabled() ? "on" : "off");
-        }
 
-        void release() override
-        {
-            delete this;
+            m_sample_renderer->print_settings();
         }
 
         void render_pixel(

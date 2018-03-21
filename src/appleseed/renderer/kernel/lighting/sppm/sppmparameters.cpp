@@ -146,8 +146,8 @@ void SPPMParameters::print() const
         "  rr min path length            %s",
         pretty_uint(m_light_photon_count).c_str(),
         pretty_uint(m_env_photon_count).c_str(),
-        m_photon_tracing_max_bounces == ~0 ? "infinite" : pretty_uint(m_photon_tracing_max_bounces).c_str(),
-        m_photon_tracing_rr_min_path_length == ~0 ? "infinite" : pretty_uint(m_photon_tracing_rr_min_path_length).c_str());
+        m_photon_tracing_max_bounces == ~0 ? "unlimited" : pretty_uint(m_photon_tracing_max_bounces).c_str(),
+        m_photon_tracing_rr_min_path_length == ~0 ? "unlimited" : pretty_uint(m_photon_tracing_rr_min_path_length).c_str());
 
     RENDERER_LOG_INFO(
         "sppm path tracing settings:\n"
@@ -158,8 +158,8 @@ void SPPMParameters::print() const
         "  max photons per estimate      %s\n"
         "  dl light samples              %s\n"
         "  dl light threshold            %s",
-        m_path_tracing_max_bounces == ~0 ? "infinite" : pretty_uint(m_path_tracing_max_bounces).c_str(),
-        m_path_tracing_rr_min_path_length == ~0 ? "infinite" : pretty_uint(m_path_tracing_rr_min_path_length).c_str(),
+        m_path_tracing_max_bounces == ~0 ? "unlimited" : pretty_uint(m_path_tracing_max_bounces).c_str(),
+        m_path_tracing_rr_min_path_length == ~0 ? "unlimited" : pretty_uint(m_path_tracing_rr_min_path_length).c_str(),
         pretty_scalar(m_initial_radius_percents, 3).c_str(),
         pretty_scalar(m_alpha, 1).c_str(),
         pretty_uint(m_max_photons_per_estimate).c_str(),

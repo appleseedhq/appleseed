@@ -177,15 +177,6 @@ namespace
                     m_ref_image.reset();
                 }
             }
-
-            RENDERER_LOG_INFO(
-                "rendering settings:\n"
-                "  spectrum mode                 %s\n"
-                "  sampling mode                 %s\n"
-                "  threads                       %s",
-                get_spectrum_mode_name(get_spectrum_mode(params)).c_str(),
-                get_sampling_context_mode_name(get_sampling_context_mode(params)).c_str(),
-                pretty_int(m_params.m_thread_count).c_str());
         }
 
         ~ProgressiveFrameRenderer() override
@@ -212,29 +203,35 @@ namespace
                 sample_generator->release();
         }
 
+        void release() override
+        {
+            delete this;
+        }
+
         void print_settings() const override
         {
             RENDERER_LOG_INFO(
-                "generic renderer settings:\n"
+                "progressive frame renderer settings:\n"
                 "  spectrum mode                 %s\n"
-                "  thread count                  " FMT_SIZE_T "\n"
-                "  max samples                   " FMT_UINT64 "\n"
+                "  sampling mode                 %s\n"
+                "  rendering threads             %s\n"
+                "  max samples                   %s\n"
                 "  max fps                       %f\n"
                 "  collect performance stats     %s\n"
                 "  collect luminance stats       %s\n"
                 "  reference image path          %s",
-                m_params.m_spectrum_mode == Spectrum::Mode::RGB ? "rgb" : "spectral",
-                m_params.m_thread_count,
-                m_params.m_max_sample_count,
+                get_spectrum_mode_name(m_params.m_spectrum_mode).c_str(),
+                get_sampling_context_mode_name(m_params.m_sampling_mode).c_str(),
+                pretty_uint(m_params.m_thread_count).c_str(),
+                m_params.m_max_sample_count == numeric_limits<uint64>::max()
+                    ? "unlimited"
+                    : pretty_uint(m_params.m_max_sample_count).c_str(),
                 m_params.m_max_fps,
                 m_params.m_perf_stats ? "on" : "off",
                 m_params.m_luminance_stats ? "on" : "off",
-                m_params.m_ref_image_path.c_str());
-        }
+                m_params.m_ref_image_path.empty() ? "n/a" : m_params.m_ref_image_path.c_str());
 
-        void release() override
-        {
-            delete this;
+            m_sample_generators.front()->print_settings();
         }
 
         void render() override
@@ -387,16 +384,18 @@ namespace
 
         struct Parameters
         {
-            const Spectrum::Mode    m_spectrum_mode;
-            const size_t            m_thread_count;         // number of rendering threads
-            const uint64            m_max_sample_count;     // maximum total number of samples to compute
-            const double            m_max_fps;              // maximum display frequency in frames/second
-            const bool              m_perf_stats;           // collect and print performance statistics?
-            const bool              m_luminance_stats;      // collect and print luminance statistics?
-            const string            m_ref_image_path;       // path to the reference image
+            const Spectrum::Mode        m_spectrum_mode;
+            const SamplingContext::Mode m_sampling_mode;
+            const size_t                m_thread_count;         // number of rendering threads
+            const uint64                m_max_sample_count;     // maximum total number of samples to compute
+            const double                m_max_fps;              // maximum display frequency in frames/second
+            const bool                  m_perf_stats;           // collect and print performance statistics?
+            const bool                  m_luminance_stats;      // collect and print luminance statistics?
+            const string                m_ref_image_path;       // path to the reference image
 
             explicit Parameters(const ParamArray& params)
               : m_spectrum_mode(get_spectrum_mode(params))
+              , m_sampling_mode(get_sampling_context_mode(params))
               , m_thread_count(get_rendering_thread_count(params))
               , m_max_sample_count(params.get_optional<uint64>("max_samples", numeric_limits<uint64>::max()))
               , m_max_fps(params.get_optional<double>("max_fps", 30.0))

@@ -90,6 +90,23 @@ namespace
             return Model;
         }
 
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                "camera \"%s\" settings:\n"
+                "  model                         %s\n"
+                "  shutter open begin time       %f\n"
+                "  shutter open end time         %f\n"
+                "  shutter close begin time      %f\n"
+                "  shutter close end time        %f",
+                get_path().c_str(),
+                Model,
+                m_shutter_open_begin_time,
+                m_shutter_open_end_time,
+                m_shutter_close_begin_time,
+                m_shutter_close_end_time);
+        }
+
         bool on_render_begin(
             const Project&      project,
             IAbortSwitch*       abort_switch) override
@@ -101,8 +118,6 @@ namespace
             const CanvasProperties& props = project.get_frame()->image().properties();
             m_half_pixel_width = 0.5 * props.m_rcp_canvas_width;
             m_half_pixel_height = 0.5 * props.m_rcp_canvas_height;
-
-            print_settings();
 
             return true;
         }
@@ -204,23 +219,6 @@ namespace
         // Precomputed values.
         double  m_half_pixel_width;     // half pixel width in meters, in camera space
         double  m_half_pixel_height;    // half pixel height in meters, in camera space
-
-        void print_settings() const
-        {
-            RENDERER_LOG_INFO(
-                "camera \"%s\" settings:\n"
-                "  model                         %s\n"
-                "  shutter open begin time       %f\n"
-                "  shutter open end time         %f\n"
-                "  shutter close begin time      %f\n"
-                "  shutter close end time        %f",
-                get_path().c_str(),
-                Model,
-                m_shutter_open_begin_time,
-                m_shutter_open_end_time,
-                m_shutter_close_begin_time,
-                m_shutter_close_end_time);
-        }
 
         static Vector3d ndc_to_camera(const Vector2d& point)
         {

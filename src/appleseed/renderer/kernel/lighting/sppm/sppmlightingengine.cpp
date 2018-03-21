@@ -143,6 +143,11 @@ namespace
             delete this;
         }
 
+        void print_settings() const override
+        {
+            m_params.print();
+        }
+
         void compute_lighting(
             SamplingContext&            sampling_context,
             const PixelContext&         pixel_context,
@@ -649,7 +654,6 @@ SPPMLightingEngineFactory::SPPMLightingEngineFactory(
   , m_backward_light_sampler(backward_light_sampler)
   , m_params(params)
 {
-    m_params.print();
 }
 
 void SPPMLightingEngineFactory::release()

@@ -216,7 +216,7 @@ void Frame::print_settings()
     const char* camera_name = get_active_camera_name();
 
     RENDERER_LOG_INFO(
-        "frame settings:\n"
+        "frame \"%s\" settings:\n"
         "  camera                        %s\n"
         "  resolution                    %s x %s\n"
         "  tile size                     %s x %s\n"
@@ -226,6 +226,7 @@ void Frame::print_settings()
         "  denoising mode                %s\n"
         "  render stamp                  %s\n"
         "  save extra aovs               %s",
+        get_path().c_str(),
         camera_name ? camera_name : "none",
         pretty_uint(impl->m_frame_width).c_str(),
         pretty_uint(impl->m_frame_height).c_str(),
@@ -239,8 +240,8 @@ void Frame::print_settings()
         pretty_uint(impl->m_crop_window.max[1]).c_str(),
         impl->m_denoising_mode == DenoisingMode::Off ? "off" :
         impl->m_denoising_mode == DenoisingMode::WriteOutputs ? "write outputs" : "denoise",
-        impl->m_render_stamp_enabled ? "enabled" : "disabled",
-        impl->m_save_extra_aovs ? "enabled" : "disabled");
+        impl->m_render_stamp_enabled ? "on" : "off",
+        impl->m_save_extra_aovs ? "on" : "off");
 }
 
 const char* Frame::get_active_camera_name() const

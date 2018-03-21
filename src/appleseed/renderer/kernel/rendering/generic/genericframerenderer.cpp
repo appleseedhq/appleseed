@@ -113,15 +113,6 @@ namespace
                 for (size_t i = 0; i < m_params.m_thread_count; ++i)
                     m_tile_callbacks.push_back(tile_callback_factory->create());
             }
-
-            RENDERER_LOG_INFO(
-                "rendering settings:\n"
-                "  spectrum mode                 %s\n"
-                "  sampling mode                 %s\n"
-                "  threads                       %s",
-                get_spectrum_mode_name(get_spectrum_mode(params)).c_str(),
-                get_sampling_context_mode_name(get_sampling_context_mode(params)).c_str(),
-                pretty_int(m_params.m_thread_count).c_str());
         }
 
         ~GenericFrameRenderer() override
@@ -150,17 +141,21 @@ namespace
         void print_settings() const override
         {
             RENDERER_LOG_INFO(
-                "generic renderer settings:\n"
+                "generic frame renderer settings:\n"
                 "  spectrum mode                 %s\n"
-                "  thread count                  " FMT_SIZE_T "\n"
+                "  sampling mode                 %s\n"
+                "  rendering threads             %s\n"
                 "  tile ordering                 %s\n"
-                "  passes                        " FMT_SIZE_T,
-                m_params.m_spectrum_mode == Spectrum::Mode::RGB ? "rgb" : "spectral",
-                m_params.m_thread_count,
+                "  passes                        %s",
+                get_spectrum_mode_name(m_params.m_spectrum_mode).c_str(),
+                get_sampling_context_mode_name(m_params.m_sampling_mode).c_str(),
+                pretty_uint(m_params.m_thread_count).c_str(),
                 m_params.m_tile_ordering == TileJobFactory::TileOrdering::LinearOrdering ? "linear" :
                 m_params.m_tile_ordering == TileJobFactory::TileOrdering::SpiralOrdering ? "spiral" :
                 m_params.m_tile_ordering == TileJobFactory::TileOrdering::HilbertOrdering ? "hilbert" : "random",
-                m_params.m_pass_count);
+                pretty_uint(m_params.m_pass_count).c_str());
+
+            m_tile_renderers.front()->print_settings();
         }
 
         void render() override
@@ -239,12 +234,14 @@ namespace
         struct Parameters
         {
             const Spectrum::Mode                m_spectrum_mode;
+            const SamplingContext::Mode         m_sampling_mode;
             const size_t                        m_thread_count;     // number of rendering threads
             const TileJobFactory::TileOrdering  m_tile_ordering;    // tile rendering order
             const size_t                        m_pass_count;       // number of rendering passes
 
             explicit Parameters(const ParamArray& params)
               : m_spectrum_mode(get_spectrum_mode(params))
+              , m_sampling_mode(get_sampling_context_mode(params))
               , m_thread_count(get_rendering_thread_count(params))
               , m_tile_ordering(get_tile_ordering(params))
               , m_pass_count(params.get_optional<size_t>("passes", 1))

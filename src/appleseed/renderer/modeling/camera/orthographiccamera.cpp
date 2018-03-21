@@ -93,6 +93,29 @@ namespace
             return Model;
         }
 
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                "camera \"%s\" settings:\n"
+                "  model                         %s\n"
+                "  film width                    %f\n"
+                "  film height                   %f\n"
+                "  near-z                        %f\n"
+                "  shutter open begin time       %f\n"
+                "  shutter open end time         %f\n"
+                "  shutter close begin time      %f\n"
+                "  shutter close end time        %f",
+                get_path().c_str(),
+                Model,
+                m_film_dimensions[0],
+                m_film_dimensions[1],
+                m_near_z,
+                m_shutter_open_begin_time,
+                m_shutter_open_end_time,
+                m_shutter_close_begin_time,
+                m_shutter_close_end_time);
+        }
+
         bool on_render_begin(
             const Project&      project,
             IAbortSwitch*       abort_switch) override
@@ -116,8 +139,6 @@ namespace
             // Precompute pixel area.
             const size_t pixel_count = project.get_frame()->image().properties().m_pixel_count;
             m_rcp_pixel_area = static_cast<float>(pixel_count / (m_film_dimensions[0] * m_film_dimensions[1]));
-
-            print_settings();
 
             return true;
         }
@@ -241,29 +262,6 @@ namespace
         double      m_rcp_film_width;       // film width reciprocal in camera space
         double      m_rcp_film_height;      // film height reciprocal in camera space
         float       m_rcp_pixel_area;       // reciprocal of pixel area in camera space
-
-        void print_settings() const
-        {
-            RENDERER_LOG_INFO(
-                "camera \"%s\" settings:\n"
-                "  model                         %s\n"
-                "  film width                    %f\n"
-                "  film height                   %f\n"
-                "  near-z                        %f\n"
-                "  shutter open begin time       %f\n"
-                "  shutter open end time         %f\n"
-                "  shutter close begin time      %f\n"
-                "  shutter close end time        %f",
-                get_path().c_str(),
-                Model,
-                m_film_dimensions[0],
-                m_film_dimensions[1],
-                m_near_z,
-                m_shutter_open_begin_time,
-                m_shutter_open_end_time,
-                m_shutter_close_begin_time,
-                m_shutter_close_end_time);
-        }
 
         Vector3d ndc_to_camera(const Vector2d& point) const
         {

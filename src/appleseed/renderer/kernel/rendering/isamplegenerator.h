@@ -52,6 +52,9 @@ class ISampleGenerator
   : public foundation::IUnknown
 {
   public:
+    // Print this component's settings to the renderer's global logger.
+    virtual void print_settings() const = 0;
+
     // Reset the sample generator to its initial state.
     virtual void reset() = 0;
 

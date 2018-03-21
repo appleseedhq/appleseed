@@ -154,11 +154,13 @@ namespace
             RENDERER_LOG_INFO(
                 "generic sample renderer settings:\n"
                 "  transparency threshold        %f\n"
-                "  max iterations                " FMT_SIZE_T "\n"
+                "  max iterations                %s\n"
                 "  report self intersections     %s",
                 m_params.m_transparency_threshold,
-                m_params.m_max_iterations,
+                pretty_uint(m_params.m_max_iterations).c_str(),
                 m_params.m_report_self_intersections ? "on" : "off");
+
+            m_lighting_engine->print_settings();
         }
 
         void render_sample(

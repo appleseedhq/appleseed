@@ -60,6 +60,11 @@ class NullLightingEngine
         delete this;
     }
 
+    // Print this component's settings to the renderer's global logger.
+    void print_settings() const override
+    {
+    }
+
     // Compute the lighting at a given point of the scene.
     virtual void compute_lighting(
         SamplingContext&        sampling_context,

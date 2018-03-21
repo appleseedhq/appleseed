@@ -95,6 +95,11 @@ namespace
             delete this;
         }
 
+        void print_settings() const override
+        {
+            m_sample_renderer->print_settings();
+        }
+
         void reset() override
         {
             SampleGeneratorBase::reset();

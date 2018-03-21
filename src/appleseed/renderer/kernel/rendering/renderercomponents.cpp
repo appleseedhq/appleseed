@@ -138,6 +138,12 @@ bool RendererComponents::create()
     return true;
 }
 
+void RendererComponents::print_settings() const
+{
+    if (m_frame_renderer.get() != nullptr)
+        m_frame_renderer->print_settings();
+}
+
 bool RendererComponents::create_lighting_engine_factory()
 {
     const string name = m_params.get_required<string>("lighting_engine", "pt");

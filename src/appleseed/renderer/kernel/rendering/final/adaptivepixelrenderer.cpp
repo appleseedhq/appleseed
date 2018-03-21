@@ -104,25 +104,25 @@ namespace
             }
         }
 
+        void release() override
+        {
+            delete this;
+        }
+
         void print_settings() const override
         {
             RENDERER_LOG_INFO(
                 "adaptive pixel renderer settings:\n"
-                "  sampling mode                 %s\n"
-                "  min samples                   " FMT_SIZE_T "\n"
-                "  max samples                   " FMT_SIZE_T "\n"
+                "  min samples                   %s\n"
+                "  max samples                   %s\n"
                 "  max variation                 %f\n"
                 "  diagnostics                   %s",
-                m_params.m_sampling_mode == SamplingContext::Mode::QMCMode ? "qmc" : "rng",
-                m_params.m_min_samples,
-                m_params.m_max_samples,
+                pretty_uint(m_params.m_min_samples).c_str(),
+                pretty_uint(m_params.m_max_samples).c_str(),
                 m_params.m_max_variation,
                 are_diagnostics_enabled() ? "on" : "off");
-        }
 
-        void release() override
-        {
-            delete this;
+            m_sample_renderer->print_settings();
         }
 
         void on_tile_begin(

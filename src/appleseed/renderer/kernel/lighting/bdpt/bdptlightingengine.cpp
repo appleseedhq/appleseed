@@ -59,13 +59,6 @@ namespace
         {
             explicit Parameters(const ParamArray& params)
             {
-
-            }
-
-            void print() const
-            {
-                RENDERER_LOG_INFO(
-                    "bdpt settings:\n");
             }
         };
 
@@ -84,6 +77,10 @@ namespace
         void release() override
         {
             delete this;
+        }
+
+        void print_settings() const override
+        {
         }
 
         void compute_lighting(
@@ -308,7 +305,6 @@ BDPTLightingEngineFactory::BDPTLightingEngineFactory(
   , m_light_sampler(light_sampler)
   , m_params(params)
 {
-    BDPTLightingEngine::Parameters(params).print();
 }
 
 void BDPTLightingEngineFactory::release()

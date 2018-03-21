@@ -55,6 +55,9 @@ class ILightingEngine
   : public foundation::IUnknown
 {
   public:
+    // Print this component's settings to the renderer's global logger.
+    virtual void print_settings() const = 0;
+
     // Compute the lighting at a given point of the scene.
     virtual void compute_lighting(
         SamplingContext&          sampling_context,
