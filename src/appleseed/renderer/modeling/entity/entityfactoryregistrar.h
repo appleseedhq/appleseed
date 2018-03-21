@@ -43,6 +43,7 @@
 
 // Boost headers.
 #include "boost/filesystem.hpp"
+#include "boost/make_shared.hpp"
 
 // Standard headers.
 #include <cstddef>
@@ -58,6 +59,9 @@ namespace renderer      { class Plugin; }
 namespace renderer
 {
 
+//define loaded libraries container structure
+typedef  std::vector<std::pair<std::unique_ptr<foundation::SharedLibrary>, std::string> >  loaded_libs_container;
+
 //
 // Base class for factory registrars.
 //
@@ -67,8 +71,9 @@ class APPLESEED_DLLSYMBOL EntityFactoryRegistrar
 {
   public:
     //search for plugins and load them
-    static void discover_plugins(
+    static boost::shared_ptr<loaded_libs_container> discover_plugins(
         const foundation::SearchPaths&          search_paths);
+  
   protected:
     // Constructor.
     EntityFactoryRegistrar();
@@ -79,7 +84,8 @@ class APPLESEED_DLLSYMBOL EntityFactoryRegistrar
     // Register factories from plugins found in search paths.
     template <typename Entity>
     void register_factories_from_plugins(
-        const std::function<void (void*)>&  register_factory);
+        const boost::shared_ptr<loaded_libs_container>  loaded_libraries,
+        const std::function<void (void*)>&        register_factory);
 
     // Unload all plugins loaded by `register_factories_from_plugins()`.
     void unload_all_plugins();
@@ -87,9 +93,6 @@ class APPLESEED_DLLSYMBOL EntityFactoryRegistrar
   private:
     struct Impl;
     Impl* impl;
-
-    static std::vector<std::pair<std::unique_ptr<foundation::SharedLibrary>, std::string> > loaded_libraries;
-
 
     // Store a plugin in order to keep it alive while the registrar exists.
     void store_plugin(renderer::Plugin* plugin);

@@ -59,9 +59,10 @@ struct TextureFactoryRegistrar::Impl
 };
 
 TextureFactoryRegistrar::TextureFactoryRegistrar()
-  : impl(new Impl())
+  : impl(new Impl()),
+    m_loaded_libraries(boost::make_shared<loaded_libs_container>())
 {
-    reinitialize();
+    reinitialize(m_loaded_libraries);
 }
 
 TextureFactoryRegistrar::~TextureFactoryRegistrar()
@@ -69,8 +70,11 @@ TextureFactoryRegistrar::~TextureFactoryRegistrar()
     delete impl;
 }
 
-void TextureFactoryRegistrar::reinitialize()
+void TextureFactoryRegistrar::reinitialize(
+    const boost::shared_ptr<loaded_libs_container> loaded_libraries)
 {
+    m_loaded_libraries = loaded_libraries;
+
     // The registrar must be cleared before the plugins are unloaded.
     impl->m_registrar.clear();
     unload_all_plugins();
@@ -81,6 +85,7 @@ void TextureFactoryRegistrar::reinitialize()
 
     // Register factories defined in plugins.
     register_factories_from_plugins<Texture>(
+        m_loaded_libraries,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<ITextureFactory* (*)()>(plugin_entry_point);

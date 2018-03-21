@@ -43,20 +43,25 @@
 
 // Boost headers.
 #include "boost/filesystem.hpp"
+#include "boost/make_shared.hpp"
 
 // Standard headers.
+#include <cstddef>
 #include <string>
+#include <vector>
+#include <functional>
+#include <memory>
 
 namespace renderer
 {
-
 //
 // EntityFactoryRegistrar::register_factories_from_plugins class implementation.
 //
 
 template <typename Entity>
 void EntityFactoryRegistrar::register_factories_from_plugins(
-    const std::function<void (void*)>&      register_factory)
+    const boost::shared_ptr<loaded_libs_container>  loaded_libraries,
+    const std::function<void (void*)>&              register_factory)
 {
     namespace bf = boost::filesystem;
 
@@ -66,23 +71,22 @@ void EntityFactoryRegistrar::register_factories_from_plugins(
     const std::string entity_type_name =
             foundation::lower_case(EntityTraits<Entity>::get_human_readable_entity_type_name());
 
-    for (int i = 0; i < loaded_libraries.size(); i++)
+    for (int i = 0; i < loaded_libraries->size(); i++)
     {
-
         // Only consider libraries that can be loaded and define the right magic symbol.
         try
         {
-            loaded_libraries[i].first->get_symbol(entry_point_name.c_str(), false);
+            loaded_libraries->at(i).first->get_symbol(entry_point_name.c_str(), false);
         }
         catch (const foundation::ExceptionSharedLibCannotGetSymbol&)
         {
             RENDERER_LOG_DEBUG("shared library %s is not an appleseed %s plugin because it does not export a %s() function.",
-                loaded_libraries[i].second.c_str(), entity_type_name.c_str(), entry_point_name.c_str());
+                loaded_libraries->at(i).second.c_str(), entity_type_name.c_str(), entry_point_name.c_str());
             continue;
         }
 
         // Load the plugin into the cache and retrieve its entry point
-        foundation::auto_release_ptr<Plugin> plugin(PluginCache::load(loaded_libraries[i].second.c_str()));
+        foundation::auto_release_ptr<Plugin> plugin(PluginCache::load(loaded_libraries->at(i).second.c_str()));
         void* plugin_entry_point = plugin->get_symbol(entry_point_name.c_str());
         if (plugin_entry_point == nullptr)
             continue;
@@ -91,7 +95,7 @@ void EntityFactoryRegistrar::register_factories_from_plugins(
         store_plugin(plugin.release());
 
         // Let the caller handle the discovered plugin.
-        RENDERER_LOG_INFO("registering %s plugin %s...", entity_type_name.c_str(), loaded_libraries[i].second.c_str());
+        RENDERER_LOG_INFO("registering %s plugin %s...", entity_type_name.c_str(), loaded_libraries->at(i).second.c_str());
         register_factory(plugin_entry_point);        
     }
 }

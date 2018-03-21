@@ -62,9 +62,10 @@ struct BSSRDFFactoryRegistrar::Impl
 };
 
 BSSRDFFactoryRegistrar::BSSRDFFactoryRegistrar()
-  : impl(new Impl())
+  : impl(new Impl()),
+    m_loaded_libraries(boost::make_shared<loaded_libs_container>())
 {
-    reinitialize();
+    reinitialize(m_loaded_libraries);
 }
 
 BSSRDFFactoryRegistrar::~BSSRDFFactoryRegistrar()
@@ -72,8 +73,11 @@ BSSRDFFactoryRegistrar::~BSSRDFFactoryRegistrar()
     delete impl;
 }
 
-void BSSRDFFactoryRegistrar::reinitialize()
+void BSSRDFFactoryRegistrar::reinitialize(
+    const boost::shared_ptr<loaded_libs_container> loaded_libraries)
 {
+    m_loaded_libraries = loaded_libraries;
+    
     // The registrar must be cleared before the plugins are unloaded.
     impl->m_registrar.clear();
     unload_all_plugins();
@@ -88,6 +92,7 @@ void BSSRDFFactoryRegistrar::reinitialize()
 
     // Register factories defined in plugins.
     register_factories_from_plugins<BSSRDF>(
+        m_loaded_libraries,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<IBSSRDFFactory* (*)()>(plugin_entry_point);

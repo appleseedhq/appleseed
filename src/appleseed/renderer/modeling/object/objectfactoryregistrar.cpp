@@ -58,9 +58,10 @@ struct ObjectFactoryRegistrar::Impl
 };
 
 ObjectFactoryRegistrar::ObjectFactoryRegistrar()
-  : impl(new Impl())
+  : impl(new Impl()),
+    m_loaded_libraries(boost::make_shared<loaded_libs_container>())
 {
-    reinitialize();
+    reinitialize(m_loaded_libraries);
 }
 
 ObjectFactoryRegistrar::~ObjectFactoryRegistrar()
@@ -68,8 +69,11 @@ ObjectFactoryRegistrar::~ObjectFactoryRegistrar()
     delete impl;
 }
 
-void ObjectFactoryRegistrar::reinitialize()
+void ObjectFactoryRegistrar::reinitialize(
+    const boost::shared_ptr<loaded_libs_container> loaded_libraries)
 {
+    m_loaded_libraries = loaded_libraries;
+    
     // The registrar must be cleared before the plugins are unloaded.
     impl->m_registrar.clear();
     unload_all_plugins();
@@ -80,6 +84,7 @@ void ObjectFactoryRegistrar::reinitialize()
 
     // Register factories defined in plugins.
     register_factories_from_plugins<Object>(
+        m_loaded_libraries,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<IObjectFactory* (*)()>(plugin_entry_point);

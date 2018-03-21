@@ -210,22 +210,23 @@ void Project::add_default_configurations()
 
 void Project::reinitialize_factory_registrars()
 {
-    EntityFactoryRegistrar::discover_plugins(impl->m_search_paths);
-
-    m_aov_factory_registrar.reinitialize();
-    m_assembly_factory_registrar.reinitialize();
-    m_bsdf_factory_registrar.reinitialize();
-    m_bssrdf_factory_registrar.reinitialize();
-    m_camera_factory_registrar.reinitialize();
-    m_edf_factory_registrar.reinitialize();
-    m_environment_edf_factory_registrar.reinitialize();
-    m_environment_shader_factory_registrar.reinitialize();
-    m_light_factory_registrar.reinitialize();
-    m_material_factory_registrar.reinitialize();
-    m_object_factory_registrar.reinitialize();
-    m_surface_shader_factory_registrar.reinitialize();
-    m_texture_factory_registrar.reinitialize();
-    m_volume_factory_registrar.reinitialize();
+    // load all libraries once and return a pointer to the container of loaded libraries
+    boost::shared_ptr<loaded_libs_container> loaded_libraries = EntityFactoryRegistrar::discover_plugins(impl->m_search_paths);
+    
+    m_aov_factory_registrar.reinitialize(loaded_libraries);
+    m_assembly_factory_registrar.reinitialize(loaded_libraries);
+    m_bsdf_factory_registrar.reinitialize(loaded_libraries);
+    m_bssrdf_factory_registrar.reinitialize(loaded_libraries);
+    m_camera_factory_registrar.reinitialize(loaded_libraries);
+    m_edf_factory_registrar.reinitialize(loaded_libraries);
+    m_environment_edf_factory_registrar.reinitialize(loaded_libraries);
+    m_environment_shader_factory_registrar.reinitialize(loaded_libraries);
+    m_light_factory_registrar.reinitialize(loaded_libraries);
+    m_material_factory_registrar.reinitialize(loaded_libraries);
+    m_object_factory_registrar.reinitialize(loaded_libraries);
+    m_surface_shader_factory_registrar.reinitialize(loaded_libraries);
+    m_texture_factory_registrar.reinitialize(loaded_libraries);
+    m_volume_factory_registrar.reinitialize(loaded_libraries);
 }
 
 bool Project::has_trace_context() const

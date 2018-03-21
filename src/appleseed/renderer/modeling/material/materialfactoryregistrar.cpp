@@ -62,9 +62,10 @@ struct MaterialFactoryRegistrar::Impl
 };
 
 MaterialFactoryRegistrar::MaterialFactoryRegistrar()
-  : impl(new Impl())
+  : impl(new Impl()),
+    m_loaded_libraries(boost::make_shared<loaded_libs_container>())
 {
-    reinitialize();
+    reinitialize(m_loaded_libraries);
 }
 
 MaterialFactoryRegistrar::~MaterialFactoryRegistrar()
@@ -72,8 +73,11 @@ MaterialFactoryRegistrar::~MaterialFactoryRegistrar()
     delete impl;
 }
 
-void MaterialFactoryRegistrar::reinitialize()
+void MaterialFactoryRegistrar::reinitialize(
+    const boost::shared_ptr<loaded_libs_container> loaded_libraries)
 {
+    m_loaded_libraries = loaded_libraries;
+
     // The registrar must be cleared before the plugins are unloaded.
     impl->m_registrar.clear();
     unload_all_plugins();
@@ -87,6 +91,7 @@ void MaterialFactoryRegistrar::reinitialize()
 
     // Register factories defined in plugins.
     register_factories_from_plugins<Material>(
+        m_loaded_libraries,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<IMaterialFactory* (*)()>(plugin_entry_point);

@@ -57,9 +57,10 @@ struct VolumeFactoryRegistrar::Impl
 };
 
 VolumeFactoryRegistrar::VolumeFactoryRegistrar()
-  : impl(new Impl())
+  : impl(new Impl()),
+    m_loaded_libraries(boost::make_shared<loaded_libs_container>())
 {
-    reinitialize();
+    reinitialize(m_loaded_libraries);
 }
 
 VolumeFactoryRegistrar::~VolumeFactoryRegistrar()
@@ -67,8 +68,11 @@ VolumeFactoryRegistrar::~VolumeFactoryRegistrar()
     delete impl;
 }
 
-void VolumeFactoryRegistrar::reinitialize()
+void VolumeFactoryRegistrar::reinitialize(
+    const boost::shared_ptr<loaded_libs_container> loaded_libraries)
 {
+    m_loaded_libraries = loaded_libraries;
+
     // The registrar must be cleared before the plugins are unloaded.
     impl->m_registrar.clear();
     unload_all_plugins();
@@ -78,6 +82,7 @@ void VolumeFactoryRegistrar::reinitialize()
 
     // Register factories defined in plugins.
     register_factories_from_plugins<Volume>(
+        m_loaded_libraries,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<IVolumeFactory* (*)()>(plugin_entry_point);

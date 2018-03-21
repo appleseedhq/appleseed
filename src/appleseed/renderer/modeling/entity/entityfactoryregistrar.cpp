@@ -37,6 +37,7 @@
 
 // Standard headers.
 #include <vector>
+#include <iostream>
 
 using namespace renderer;
 using namespace std;
@@ -72,10 +73,11 @@ EntityFactoryRegistrar::~EntityFactoryRegistrar()
     delete impl;
 }
 
-void EntityFactoryRegistrar::discover_plugins(
+boost::shared_ptr<loaded_libs_container> EntityFactoryRegistrar::discover_plugins(
     const foundation::SearchPaths&          search_paths){
     namespace bf = boost::filesystem;
-
+    loaded_libs_container loaded_libs;
+    boost::shared_ptr<loaded_libs_container> lb(boost::make_shared<loaded_libs_container>());
     // Iterate over all search paths.
     for (size_t i = 0, e = search_paths.get_path_count(); i < e; ++i)
     {
@@ -104,16 +106,21 @@ void EntityFactoryRegistrar::discover_plugins(
             try
             {
                 unique_ptr<foundation::SharedLibrary> library(new foundation::SharedLibrary(plugin_path.c_str()));
-                loaded_libraries.push_back(std::make_pair(std::move(library),plugin_path));
+                lb->push_back(std::make_pair(std::move(library),plugin_path));
             }
             catch (const foundation::ExceptionCannotLoadSharedLib& e)
             {
                 RENDERER_LOG_DEBUG("could not open shared library %s: %s.",
                     plugin_path.c_str(), e.what());
                 continue;
-            }          
+            } 
         }
     }
+    std::cout<<"in in in \n";
+    //boost::shared_ptr<loaded_libs_container> lb(new loaded_libs_container);
+    std::cout<<"size "<<lb->size();
+    std::cout<<"out out out \n";
+    return lb;
 }
 
 void EntityFactoryRegistrar::unload_all_plugins()
@@ -126,5 +133,5 @@ void EntityFactoryRegistrar::store_plugin(Plugin* plugin)
     impl->m_plugins.push_back(plugin);
 }
 
-std::vector<std::pair<std::unique_ptr<foundation::SharedLibrary>, std::string>> EntityFactoryRegistrar::loaded_libraries;
+//std::vector<std::pair<std::unique_ptr<foundation::SharedLibrary>, std::string>> EntityFactoryRegistrar::loaded_libraries;
 }   // namespace renderer

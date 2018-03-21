@@ -36,9 +36,15 @@
 #include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/searchpaths.h"
+#include "foundation/platform/sharedlibrary.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
+
+//standard headers
+#include <string>
+#include <vector>
+#include <memory>
 
 // Forward declarations.
 namespace renderer      { class IBSSRDFFactory; }
@@ -71,7 +77,8 @@ class APPLESEED_DLLSYMBOL BSSRDFFactoryRegistrar
     ~BSSRDFFactoryRegistrar() override;
 
     // Reinitialize the registrar; load plugins found in provided search paths.
-    void reinitialize();
+    void reinitialize(
+        const boost::shared_ptr<loaded_libs_container> loaded_libraries);
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;
@@ -82,6 +89,9 @@ class APPLESEED_DLLSYMBOL BSSRDFFactoryRegistrar
   private:
     struct Impl;
     Impl* impl;
+
+    //loaded libraries in memory
+    boost::shared_ptr<loaded_libs_container> m_loaded_libraries;
 
     // Register a factory.
     void register_factory(foundation::auto_release_ptr<FactoryType> factory);

@@ -67,12 +67,16 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
+#include "foundation/platform/sharedlibrary.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>
+
+//typedef
+typedef  std::vector<std::pair<std::unique_ptr<foundation::SharedLibrary>, std::string> >  loaded_libs_container;
 
 // Forward declarations.
 namespace foundation    { class SearchPaths; }

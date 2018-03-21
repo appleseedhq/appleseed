@@ -59,9 +59,10 @@ struct EnvironmentShaderFactoryRegistrar::Impl
 };
 
 EnvironmentShaderFactoryRegistrar::EnvironmentShaderFactoryRegistrar()
-  : impl(new Impl())
+  : impl(new Impl()),
+    m_loaded_libraries(boost::make_shared<loaded_libs_container>())
 {
-    reinitialize();
+    reinitialize(m_loaded_libraries);
 }
 
 EnvironmentShaderFactoryRegistrar::~EnvironmentShaderFactoryRegistrar()
@@ -69,8 +70,11 @@ EnvironmentShaderFactoryRegistrar::~EnvironmentShaderFactoryRegistrar()
     delete impl;
 }
 
-void EnvironmentShaderFactoryRegistrar::reinitialize()
+void EnvironmentShaderFactoryRegistrar::reinitialize(
+    const boost::shared_ptr<loaded_libs_container> loaded_libraries)
 {
+    m_loaded_libraries = loaded_libraries;
+
     // The registrar must be cleared before the plugins are unloaded.
     impl->m_registrar.clear();
     unload_all_plugins();
@@ -81,6 +85,7 @@ void EnvironmentShaderFactoryRegistrar::reinitialize()
 
     // Register factories defined in plugins.
     register_factories_from_plugins<EnvironmentShader>(
+        m_loaded_libraries,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<IEnvironmentShaderFactory* (*)()>(plugin_entry_point);
