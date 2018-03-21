@@ -70,8 +70,8 @@ EntityFactoryRegistrar::~EntityFactoryRegistrar()
 }
 
 boost::shared_ptr<loaded_libs_container> EntityFactoryRegistrar::discover_plugins(
-    const foundation::SearchPaths&          search_paths){
-
+    const foundation::SearchPaths&          search_paths)
+{
     namespace bf = boost::filesystem;
 
     boost::shared_ptr<loaded_libs_container> lb(boost::make_shared<loaded_libs_container>());
