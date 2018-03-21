@@ -76,7 +76,7 @@ class APPLESEED_DLLSYMBOL BSSRDFFactoryRegistrar
     // Destructor.
     ~BSSRDFFactoryRegistrar() override;
 
-    // Reinitialize the registrar; load plugins found in provided search paths.
+    // Reinitialize the registrar. load plugins found in provided search paths.
     void reinitialize(
         const boost::shared_ptr<loaded_libs_container> loaded_libraries);
 

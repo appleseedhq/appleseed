@@ -82,7 +82,7 @@ class APPLESEED_DLLSYMBOL EDFFactoryRegistrar
     // Destructor.
     ~EDFFactoryRegistrar();
 
-    // Reinitialize the registrar; load plugins found in provided search paths.
+    // Reinitialize the registrar. load plugins found in provided search paths.
      void reinitialize(
         const boost::shared_ptr<loaded_libs_container> loaded_libraries);
 
@@ -97,7 +97,7 @@ class APPLESEED_DLLSYMBOL EDFFactoryRegistrar
     struct Impl;
     Impl* impl;
 
-    // pointer to the loaded libraries in memory
+    // Pointer to the loaded libraries in memory.
     boost::shared_ptr<loaded_libs_container> m_loaded_libraries;
 
     // Register a factory.

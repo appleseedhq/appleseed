@@ -81,7 +81,7 @@ class APPLESEED_DLLSYMBOL VolumeFactoryRegistrar
     // Destructor.
     ~VolumeFactoryRegistrar();
 
-    // Reinitialize the registrar;
+    // Reinitialize the registrar.
     void reinitialize(
         const boost::shared_ptr<loaded_libs_container> loaded_libraries);
 
@@ -95,7 +95,7 @@ class APPLESEED_DLLSYMBOL VolumeFactoryRegistrar
     struct Impl;
     Impl* impl;
 
-    // pointer to the loaded libraries in memory
+    // Pointer to the loaded libraries in memory.
     boost::shared_ptr<loaded_libs_container> m_loaded_libraries;
     
     // Register a factory.
