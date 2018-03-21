@@ -258,6 +258,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     if (!bind_scene_entities_inputs())
         return IRendererController::AbortRendering;
 
+    // Build or update ray tracing acceleration structures.
     m_project.update_trace_context();
 
     // Create the texture store.

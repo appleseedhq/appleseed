@@ -55,7 +55,7 @@ class NullLightingEngine
 {
   public:
     // Delete this instance.
-    virtual void release() override
+    void release() override
     {
         delete this;
     }
@@ -66,7 +66,7 @@ class NullLightingEngine
     }
 
     // Compute the lighting at a given point of the scene.
-    virtual void compute_lighting(
+    void compute_lighting(
         SamplingContext&        sampling_context,
         const PixelContext&     pixel_context,
         const ShadingContext&   shading_context,

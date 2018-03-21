@@ -495,7 +495,6 @@ namespace
             }
         }
 
-        // Utility function to retrieve the focal distance (in meters) from the camera parameters.
         void extract_focal_distance(
             const bool              autofocus_enabled,
             Vector2d&               autofocus_target,
@@ -539,7 +538,6 @@ namespace
             }
         }
 
-        // Utility function to retrieve the f-stop value from the camera parameters.
         double extract_f_stop() const
         {
             const double DefaultFStop = 8.0;
@@ -683,9 +681,9 @@ namespace
         }
 
         Vector3d compute_ray_direction(
-            const Vector2d&     film_point,         // NDC
-            const Vector3d&     lens_point,         // world space
-            const Transformd&   transform) const
+            const Vector2d&         film_point,         // NDC
+            const Vector3d&         lens_point,         // world space
+            const Transformd&       transform) const
         {
             // Compute film point in camera space.
             const Vector3d film_point_cs = ndc_to_camera(film_point);
