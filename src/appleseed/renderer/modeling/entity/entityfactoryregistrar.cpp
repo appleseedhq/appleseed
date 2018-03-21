@@ -75,9 +75,11 @@ EntityFactoryRegistrar::~EntityFactoryRegistrar()
 
 boost::shared_ptr<loaded_libs_container> EntityFactoryRegistrar::discover_plugins(
     const foundation::SearchPaths&          search_paths){
+
     namespace bf = boost::filesystem;
-    loaded_libs_container loaded_libs;
+
     boost::shared_ptr<loaded_libs_container> lb(boost::make_shared<loaded_libs_container>());
+   
     // Iterate over all search paths.
     for (size_t i = 0, e = search_paths.get_path_count(); i < e; ++i)
     {
@@ -94,7 +96,6 @@ boost::shared_ptr<loaded_libs_container> EntityFactoryRegistrar::discover_plugin
         // Iterate over all files in this directory.
         for (bf::directory_iterator j(search_path), f; j != f; ++j)
         {
-
             // Only consider shared library files.
             if (!bf::is_regular_file(*j) ||
                 j->path().extension() != foundation::SharedLibrary::get_default_file_extension())
@@ -102,7 +103,7 @@ boost::shared_ptr<loaded_libs_container> EntityFactoryRegistrar::discover_plugin
 
             const std::string plugin_path = j->path().string();
             
-            //load plugin into memory 
+            // Load plugin into memory. 
             try
             {
                 unique_ptr<foundation::SharedLibrary> library(new foundation::SharedLibrary(plugin_path.c_str()));
@@ -116,10 +117,7 @@ boost::shared_ptr<loaded_libs_container> EntityFactoryRegistrar::discover_plugin
             } 
         }
     }
-    std::cout<<"in in in \n";
-    //boost::shared_ptr<loaded_libs_container> lb(new loaded_libs_container);
-    std::cout<<"size "<<lb->size();
-    std::cout<<"out out out \n";
+    
     return lb;
 }
 
@@ -133,5 +131,4 @@ void EntityFactoryRegistrar::store_plugin(Plugin* plugin)
     impl->m_plugins.push_back(plugin);
 }
 
-//std::vector<std::pair<std::unique_ptr<foundation::SharedLibrary>, std::string>> EntityFactoryRegistrar::loaded_libraries;
 }   // namespace renderer

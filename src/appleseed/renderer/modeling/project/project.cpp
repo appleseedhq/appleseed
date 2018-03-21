@@ -210,9 +210,9 @@ void Project::add_default_configurations()
 
 void Project::reinitialize_factory_registrars()
 {
-    // load all libraries once and return a pointer to the container of loaded libraries
+    // Load all libraries once and return a pointer to the container of loaded libraries.
     boost::shared_ptr<loaded_libs_container> loaded_libraries = EntityFactoryRegistrar::discover_plugins(impl->m_search_paths);
-    
+
     m_aov_factory_registrar.reinitialize(loaded_libraries);
     m_assembly_factory_registrar.reinitialize(loaded_libraries);
     m_bsdf_factory_registrar.reinitialize(loaded_libraries);
