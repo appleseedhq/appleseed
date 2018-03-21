@@ -84,8 +84,8 @@ class APPLESEED_DLLSYMBOL EntityFactoryRegistrar
     // Register factories from plugins found in search paths.
     template <typename Entity>
     void register_factories_from_plugins(
-        const boost::shared_ptr<loaded_libs_container>  loaded_libraries,
-        const std::function<void (void*)>&        register_factory);
+        const boost::shared_ptr<loaded_libs_container> loaded_libraries,
+        const std::function<void (void*)>&             register_factory);
 
     // Unload all plugins loaded by `register_factories_from_plugins()`.
     void unload_all_plugins();

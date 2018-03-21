@@ -85,7 +85,7 @@ void EntityFactoryRegistrar::register_factories_from_plugins(
             continue;
         }
 
-        // Load the plugin into the cache and retrieve its entry point
+        // Load the plugin into the cache and retrieve its entry point.
         foundation::auto_release_ptr<Plugin> plugin(PluginCache::load(loaded_libraries->at(i).second.c_str()));
         void* plugin_entry_point = plugin->get_symbol(entry_point_name.c_str());
         if (plugin_entry_point == nullptr)

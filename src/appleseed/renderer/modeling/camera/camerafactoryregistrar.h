@@ -39,7 +39,6 @@
 #include "foundation/utility/searchpaths.h"
 #include "foundation/platform/sharedlibrary.h"
 
-
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
@@ -79,7 +78,7 @@ class APPLESEED_DLLSYMBOL CameraFactoryRegistrar
     // Destructor.
     ~CameraFactoryRegistrar();
 
-    // Reinitialize the registrar; load plugins found in provided search paths.
+    // Reinitialize the registrar. load plugins found in provided search paths.
     void reinitialize(
         const boost::shared_ptr<loaded_libs_container> loaded_libraries);
 

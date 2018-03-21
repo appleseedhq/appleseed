@@ -35,10 +35,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/searchpaths.h"
 
-// Standard headers.
-#include <vector>
-#include <iostream>
-
 using namespace renderer;
 using namespace std;
 
