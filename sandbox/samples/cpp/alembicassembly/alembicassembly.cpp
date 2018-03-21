@@ -152,9 +152,9 @@ namespace
     //                  (floor)  ,<-'              '-->,  (ceil)
     // returned samples    ------|-----------|---------|--------->
     std::vector<AbcIndex_t> schema_to_sample_times(
-        const float shutter_open,
-        const float shutter_close,
-        const size_t num_samples,
+        const float                shutter_open,
+        const float                shutter_close,
+        const size_t               num_samples,
         const Abc::TimeSamplingPtr time_sampling)
     {
         assert(shutter_open <= shutter_close);
