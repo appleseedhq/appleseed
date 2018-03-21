@@ -195,6 +195,42 @@ namespace
             return Model;
         }
 
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                "camera \"%s\" settings:\n"
+                "  model                         %s\n"
+                "  film width                    %f\n"
+                "  film height                   %f\n"
+                "  focal length                  %f\n"
+                "  autofocus                     %s\n"
+                "  autofocus target              %f, %f\n"
+                "  diaphragm map                 %s\n"
+                "  diaphragm blades              %s\n"
+                "  diaphragm tilt angle          %f\n"
+                "  near-z                        %f\n"
+                "  shutter open begin time       %f\n"
+                "  shutter open end time         %f\n"
+                "  shutter close begin time      %f\n"
+                "  shutter close end time        %f",
+                get_path().c_str(),
+                Model,
+                m_film_dimensions[0],
+                m_film_dimensions[1],
+                m_focal_length,
+                m_autofocus_enabled ? "on" : "off",
+                m_autofocus_target[0],
+                m_autofocus_target[1],
+                m_diaphragm_map_bound ? "on" : "off",
+                pretty_uint(m_diaphragm_blade_count).c_str(),
+                m_diaphragm_tilt_angle,
+                m_near_z,
+                m_shutter_open_begin_time,
+                m_shutter_open_end_time,
+                m_shutter_close_begin_time,
+                m_shutter_close_end_time);
+        }
+
         bool on_render_begin(
             const Project&          project,
             IAbortSwitch*           abort_switch) override
@@ -244,8 +280,6 @@ namespace
                     m_diaphragm_tilt_angle,
                     &m_diaphragm_vertices.front());
             }
-
-            print_settings();
 
             return true;
         }
@@ -592,42 +626,6 @@ namespace
 
                 return 1.0e38;
             }
-        }
-
-        void print_settings() const
-        {
-            RENDERER_LOG_INFO(
-                "camera \"%s\" settings:\n"
-                "  model                         %s\n"
-                "  film width                    %f\n"
-                "  film height                   %f\n"
-                "  focal length                  %f\n"
-                "  autofocus                     %s\n"
-                "  autofocus target              %f, %f\n"
-                "  diaphragm map                 %s\n"
-                "  diaphragm blades              %s\n"
-                "  diaphragm tilt angle          %f\n"
-                "  near-z                        %f\n"
-                "  shutter open begin time       %f\n"
-                "  shutter open end time         %f\n"
-                "  shutter close begin time      %f\n"
-                "  shutter close end time        %f",
-                get_path().c_str(),
-                Model,
-                m_film_dimensions[0],
-                m_film_dimensions[1],
-                m_focal_length,
-                m_autofocus_enabled ? "on" : "off",
-                m_autofocus_target[0],
-                m_autofocus_target[1],
-                m_diaphragm_map_bound ? "on" : "off",
-                pretty_uint(m_diaphragm_blade_count).c_str(),
-                m_diaphragm_tilt_angle,
-                m_near_z,
-                m_shutter_open_begin_time,
-                m_shutter_open_end_time,
-                m_shutter_close_begin_time,
-                m_shutter_close_end_time);
         }
 
         Vector3d ndc_to_camera(const Vector2d& point) const

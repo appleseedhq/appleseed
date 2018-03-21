@@ -81,6 +81,8 @@ class RendererComponents
 
     bool create();
 
+    void print_settings() const;
+
     ShadingEngine& get_shading_engine();
 
     IFrameRenderer& get_frame_renderer();

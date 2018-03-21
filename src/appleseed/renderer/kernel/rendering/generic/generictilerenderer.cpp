@@ -113,6 +113,7 @@ namespace
 
         void print_settings() const override
         {
+            m_pixel_renderer->print_settings();
         }
 
         void render_tile(

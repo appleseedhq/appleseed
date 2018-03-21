@@ -147,20 +147,6 @@ namespace
             {
                 return x == 0 ? ~0 : x;
             }
-
-            void print() const
-            {
-                RENDERER_LOG_INFO(
-                    "light tracing settings:\n"
-                    "  ibl                           %s\n"
-                    "  caustics                      %s\n"
-                    "  max bounces                   %s\n"
-                    "  rr min path length            %s",
-                    m_enable_ibl ? "on" : "off",
-                    m_enable_caustics ? "on" : "off",
-                    m_max_bounces == ~0 ? "infinite" : pretty_uint(m_max_bounces).c_str(),
-                    m_rr_min_path_length == ~0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str());
-            }
         };
 
         LightTracingSampleGenerator(
@@ -217,6 +203,20 @@ namespace
         void release() override
         {
             delete this;
+        }
+
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                "light tracing settings:\n"
+                "  ibl                           %s\n"
+                "  caustics                      %s\n"
+                "  max bounces                   %s\n"
+                "  rr min path length            %s",
+                m_params.m_enable_ibl ? "on" : "off",
+                m_params.m_enable_caustics ? "on" : "off",
+                m_params.m_max_bounces == ~0 ? "unlimited" : pretty_uint(m_params.m_max_bounces).c_str(),
+                m_params.m_rr_min_path_length == ~0 ? "unlimited" : pretty_uint(m_params.m_rr_min_path_length).c_str());
         }
 
         void reset() override
@@ -904,7 +904,6 @@ LightTracingSampleGeneratorFactory::LightTracingSampleGeneratorFactory(
   , m_shading_system(shading_system)
   , m_params(params)
 {
-    LightTracingSampleGenerator::Parameters(params).print();
 }
 
 void LightTracingSampleGeneratorFactory::release()
