@@ -44,6 +44,7 @@
 #include "foundation/math/cdf.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/rr.h"
+#include "foundation/math/phasefunction.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -102,6 +103,7 @@ namespace
             m_inputs.declare("mfp_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("ior", InputFormatFloat);
             m_inputs.declare("fresnel_weight", InputFormatFloat, "1.0");
+            m_inputs.declare("volume_anisotropy", InputFormatFloat, "0.0");
             m_inputs.declare("surface_roughness", InputFormatFloat, "0.01");
             m_inputs.declare("highlight_falloff", InputFormatFloat, "0.4");
 
@@ -190,7 +192,8 @@ namespace
 
             for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
             {
-                precomputed.m_albedo[i] = albedo_from_reflectance(values->m_reflectance[i]);
+                precomputed.m_albedo[i] = albedo_from_reflectance_anisotropic(
+                    values->m_reflectance[i], values->m_volume_anisotropy);
                 precomputed.m_extinction[i] = rcp(values->m_mfp[i]);
 
                 // Compute diffusion length, required by Dwivedi sampling.
@@ -236,6 +239,13 @@ namespace
         static float albedo_from_reflectance(const float r)
         {
             return 1.0f - exp(r * (-5.09406f + r * (2.61188f - 4.31805f * r)));
+        }
+
+        static float albedo_from_reflectance_anisotropic(const float r, const float g)
+        {
+            const float s = 4.09712f + 4.20863f * r - sqrt(9.59271f + r * (41.6808f + 17.7126f * r));
+            const float s2 = s * s;
+            return (1.0f - s2) / (1.0f - g * s2);
         }
 
         static Vector3f sample_direction_given_cosine(
@@ -298,9 +308,12 @@ namespace
             const float rcp_diffusion_length = values->m_precomputed.m_rcp_diffusion_length;
             const float diffusion_length = rcp(rcp_diffusion_length);
 
+            // We use Henyey-Greenstein phase function for the volume bounces.
+            HenyeyPhaseFunction phase_function(-values->m_volume_anisotropy);
+
             // Compute the probability of classical sampling.
-            // The probability of classical sampling is high if phase function is anisotropic.
-            const float classical_sampling_prob = compute_classical_sampling_probability(0.0f);
+            // Currently we always use classical sampling.
+            const float classical_sampling_prob = 1.0f;
 
             // Initialize BSSRDF value.
             bssrdf_sample.m_value.set(1.0f);
@@ -308,6 +321,7 @@ namespace
 
             Vector3d scattering_point;
             Vector3f slab_normal;
+            Vector3f direction;
             bool transmitted = false;
             if (m_use_glass_bsdf)
             {
@@ -323,7 +337,8 @@ namespace
                     bsdf_sample,
                     volume_scattering_occured,
                     scattering_point,
-                    slab_normal))
+                    slab_normal,
+                    direction))
                 {
                     return false;
                 }
@@ -353,7 +368,8 @@ namespace
                     bsdf_sample,
                     volume_scattering_occured,
                     scattering_point,
-                    slab_normal))
+                    slab_normal,
+                    direction))
                 {
                     return false;
                 }
@@ -365,7 +381,7 @@ namespace
 
             // Initialize the number of iterations.
             size_t n_iteration = 0;
-            const size_t MaxIterationsCount = 64;
+            const size_t MaxIterationsCount = 256;
             const size_t MinRRIteration = 4;
 
             // Continue random walk until we reach the surface from inside.
@@ -374,7 +390,7 @@ namespace
                 if (n_iteration >= MinRRIteration && !test_rr(sampling_context, bssrdf_sample))
                     break;  // sample has not passed Rusian Roulette test
 
-                sampling_context.split_in_place(1, 2);
+                sampling_context.split_in_place(1, 1);
 
                 // Choose color channel used for distance sampling.
                 Spectrum channel_cdf, channel_pdf;
@@ -387,23 +403,26 @@ namespace
                 if (albedo[channel] == 0.0f || bssrdf_sample.m_value[channel] == 0.0f)
                     break;
 
-                // Determine if we do biased (Dwivedi) sampling or classical sampling.
-                const bool is_biased = classical_sampling_prob < sampling_context.next2<float>();
-
                 // Find next random-walk direction.
                 sampling_context.split_in_place(3, 1);
                 const Vector3f s = sampling_context.next2<Vector3f>();
-                Vector3f direction;
+                Vector3f new_direction;
                 float cosine;
+
+                // Determine if we do biased (Dwivedi) sampling or classical sampling.
+                sampling_context.split_in_place(1, 1);
+                const bool is_biased = classical_sampling_prob < sampling_context.next2<float>();
+
                 if (is_biased)
                 {
                     cosine = sample_cosine_dwivedi(diffusion_length, s[0]);
-                    direction = sample_direction_given_cosine(slab_normal, cosine, s[1]);
+                    new_direction = sample_direction_given_cosine(slab_normal, cosine, s[1]);
                 }
                 else
                 {
-                    direction = sample_sphere_uniform(Vector2f(s[0], s[1]));
-                    cosine = dot(direction, slab_normal);
+                    phase_function.sample(direction, Vector2f(s[0], s[1]), new_direction);
+                    new_direction = -new_direction;
+                    cosine = dot(new_direction, slab_normal);
                 }
 
                 // Update transmission by the albedo.
@@ -412,7 +431,7 @@ namespace
                 // Construct a new ray in the sampled direction.
                 ShadingRay new_ray(
                     scattering_point,
-                    Vector3d(direction),
+                    Vector3d(new_direction),
                     outgoing_point.get_time(),
                     VisibilityFlags::ShadowRay,
                     outgoing_point.get_ray().m_depth + 1);
@@ -445,17 +464,8 @@ namespace
                     transmitted,
                     transmission);
 
-                const float q_direction = 0.5f / evaluate_cosine_dwivedi(diffusion_length, cosine);
-                float q_distance = std::exp(-distance * extinction[channel] * cosine * rcp_diffusion_length);
-                if (!transmitted)
-                    q_distance /= extinction_bias;
-                const float q = q_direction * q_distance;  // PDF of classical sampling divided by PDF of biased samling
-
-                // MIS between classical and biased sampling.
-                const float mis_weight = rcp(mix(q, 1.0f, classical_sampling_prob));
-
                 bssrdf_sample.m_value *= transmission;
-                bssrdf_sample.m_value *= mis_weight * (is_biased ? q : 1.0f);
+                direction = new_direction;
             }
 
             if (!transmitted)
@@ -510,7 +520,8 @@ namespace
             BSDFSample&             bsdf_sample,
             bool&                   volume_scattering_occured,
             Vector3d&               scattering_point,
-            Vector3f&               slab_normal) const
+            Vector3f&               slab_normal,
+            Vector3f&               direction) const
         {
             // Initialize the number of iterations.
             size_t n_iteration = 0;
@@ -527,14 +538,14 @@ namespace
             // Trace path until the first volume scattering event occurs or until the ray is refracted.
             volume_scattering_occured = false;
             glass_inputs->m_reflection_tint.set(0.0f);
-            Vector3f current_outgoing_dir = outgoing_dir;
+            direction = -outgoing_dir;
             while (!volume_scattering_occured)
             {
                 ++n_iteration;
 
                 // Sample glass BSDF.
                 m_glass_bsdf->prepare_inputs(shading_context.get_arena(), *shading_point_ptr, glass_inputs);
-                bsdf_sample = BSDFSample(shading_point_ptr, Dual3f(current_outgoing_dir));
+                bsdf_sample = BSDFSample(shading_point_ptr, Dual3f(-direction));
                 m_glass_bsdf->sample(sampling_context, glass_inputs, false, true, ScatteringMode::All, bsdf_sample);
                 const bool crossing_interface =
                     dot(bsdf_sample.m_outgoing.get_value(), bsdf_sample.m_geometric_normal) *
@@ -566,11 +577,10 @@ namespace
 
                 // Trace the initial ray through the object completely.
                 shading_points[next_point_idx].clear();
-                const Vector3d direction(bsdf_sample.m_incoming.get_value());
-                current_outgoing_dir = Vector3f(-direction);
+                direction = bsdf_sample.m_incoming.get_value();
                 ShadingRay ray(
-                    shading_point_ptr->get_biased_point(direction),
-                    direction,
+                    shading_point_ptr->get_point(),
+                    Vector3d(direction),
                     outgoing_point.get_time(),
                     VisibilityFlags::SubsurfaceRay,
                     outgoing_point.get_ray().m_depth + 1);
@@ -620,7 +630,8 @@ namespace
             BSDFSample&             bsdf_sample,
             bool&                   volume_scattering_occured,
             Vector3d&               scattering_point,
-            Vector3f&               slab_normal) const
+            Vector3f&               slab_normal,
+            Vector3f&               direction) const
         {
             volume_scattering_occured = false;
 
@@ -629,6 +640,7 @@ namespace
             Vector3d initial_dir = sample_hemisphere_cosine(sampling_context.next2<Vector2d>());
             initial_dir.y = -initial_dir.y;
             initial_dir = outgoing_point.get_shading_basis().transform_to_parent(initial_dir);
+            direction = static_cast<Vector3f>(initial_dir);
 
             sampling_context.split_in_place(1, 2);
 
@@ -667,7 +679,7 @@ namespace
                 const bool outgoing_point_is_closer = distance < 0.5f * ray_length;
                 slab_normal = outgoing_point_is_closer
                     ? Vector3f(outgoing_point.get_geometric_normal())
-                    : Vector3f(-bssrdf_sample.m_incoming_point.get_geometric_normal());
+                    : Vector3f(bssrdf_sample.m_incoming_point.get_geometric_normal());
             }
 
             return true;
@@ -889,6 +901,22 @@ DictionaryArray RandomWalkBSSRDFFactory::get_input_metadata() const
                     .insert("type", "hard"))
             .insert("use", "optional")
             .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+        .insert("name", "volume_anisotropy")
+        .insert("label", "Volume Anisotropy")
+        .insert("type", "numeric")
+        .insert("min",
+            Dictionary()
+            .insert("value", "-1.0")
+            .insert("type", "hard"))
+        .insert("max",
+            Dictionary()
+            .insert("value", "1.0")
+            .insert("type", "hard"))
+        .insert("use", "optional")
+        .insert("default", "0.0"));
 
     metadata.push_back(
         Dictionary()

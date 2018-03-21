@@ -64,6 +64,7 @@ APPLESEED_DECLARE_INPUT_VALUES(RandomWalkBSSRDFInputValues)
     float           m_mfp_multiplier;
     float           m_ior;
     float           m_fresnel_weight;
+    float           m_volume_anisotropy;
     float           m_surface_roughness;
     float           m_highlight_falloff;
 
