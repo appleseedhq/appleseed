@@ -1145,7 +1145,7 @@ DictionaryArray FrameFactory::get_input_metadata()
     metadata.push_back(
         Dictionary()
             .insert("name", "spike_threshold")
-            .insert("label", "Spike Thereshold")
+            .insert("label", "Spike Threshold")
             .insert("type", "numeric")
             .insert("min",
                 Dictionary()
