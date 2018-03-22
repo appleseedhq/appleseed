@@ -212,7 +212,7 @@ namespace
                 "  ibl                           %s\n"
                 "  caustics                      %s\n"
                 "  max bounces                   %s\n"
-                "  rr min path length            %s",
+                "  russian roulette start bounce %s",
                 m_params.m_enable_ibl ? "on" : "off",
                 m_params.m_enable_caustics ? "on" : "off",
                 m_params.m_max_bounces == ~0 ? "unlimited" : pretty_uint(m_params.m_max_bounces).c_str(),

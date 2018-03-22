@@ -1446,7 +1446,7 @@ void MainWindow::initialize_ocio()
 
     // Default to an empty OCIO config if everything else fails.
     m_ocio_config = OCIO::GetCurrentConfig();
-    RENDERER_LOG_ERROR("Could not initialize OCIO config.");
+    RENDERER_LOG_ERROR("could not find an ocio configuration, using empty configuration.");
 }
 
 void MainWindow::slot_project_modified()
