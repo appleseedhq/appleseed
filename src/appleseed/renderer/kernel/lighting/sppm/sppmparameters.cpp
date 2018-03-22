@@ -143,7 +143,7 @@ void SPPMParameters::print() const
         "  light photons                 %s\n"
         "  environment photons           %s\n"
         "  max bounces                   %s\n"
-        "  rr min path length            %s",
+        "  russian roulette start bounce %s",
         pretty_uint(m_light_photon_count).c_str(),
         pretty_uint(m_env_photon_count).c_str(),
         m_photon_tracing_max_bounces == ~0 ? "unlimited" : pretty_uint(m_photon_tracing_max_bounces).c_str(),
@@ -152,7 +152,7 @@ void SPPMParameters::print() const
     RENDERER_LOG_INFO(
         "sppm path tracing settings:\n"
         "  max bounces                   %s\n"
-        "  rr min path length            %s\n"
+        "  russian roulette start bounce %s\n"
         "  initial radius                %s%%\n"
         "  alpha                         %s\n"
         "  max photons per estimate      %s\n"

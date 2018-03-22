@@ -193,7 +193,7 @@ namespace
                 "  max glossy bounces            %s\n"
                 "  max specular bounces          %s\n"
                 "  max volume bounces            %s\n"
-                "  rr min path length            %s\n"
+                "  russian roulette start bounce %s\n"
                 "  next event estimation         %s\n"
                 "  dl light samples              %s\n"
                 "  dl light threshold            %s\n"
