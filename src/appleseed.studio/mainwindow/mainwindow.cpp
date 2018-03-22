@@ -563,8 +563,10 @@ void MainWindow::update_recent_files_menu(const QStringList& files)
 
     for (int i = 0; i < recent_file_count; ++i)
     {
+        const int number = i + 1;
         const QString filepath = files[i];
-        const QString text = tr("&%1 %2").arg(i + 1).arg(filepath);
+        const QString format = number < 10 ? "&%1 %2" : "%1 %2";
+        const QString text = format.arg(number).arg(filepath);
 
         m_recently_opened[i]->setText(text);
         m_recently_opened[i]->setData(filepath);
