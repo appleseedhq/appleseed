@@ -1343,9 +1343,7 @@ namespace
 void MainWindow::slot_open_project_complete(const QString& filepath, const bool successful)
 {
     if (successful)
-    {
         on_project_change();
-    }
     else
     {
         show_project_file_loading_failed_message_box(this, filepath);
@@ -1826,14 +1824,13 @@ void MainWindow::slot_save_all_aovs()
 
 namespace
 {
-    void write_all_aovs(
+    void write_main_and_aov_images(
         const Project&  project,
         const bf::path& image_path)
     {
         bf::create_directories(image_path.parent_path());
 
         const Frame* frame = project.get_frame();
-
         frame->write_main_image(image_path.string().c_str());
         frame->write_aov_images(image_path.string().c_str());
     }
@@ -1849,12 +1846,12 @@ void MainWindow::slot_quicksave_all_aovs()
     const bf::path project_path(project.get_path());
     const bf::path quicksave_dir = project_path.parent_path() / "quicksaves";
 
-    write_all_aovs(
+    write_main_and_aov_images(
         project,
         bf::absolute(
             quicksave_dir / "quicksave.exr"));
 
-    write_all_aovs(
+    write_main_and_aov_images(
         project,
         bf::absolute(
             find_next_available_path(quicksave_dir / "quicksave####.exr")));

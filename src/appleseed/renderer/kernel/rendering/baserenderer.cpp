@@ -59,8 +59,8 @@ namespace renderer
 //
 
 BaseRenderer::BaseRenderer(
-    Project&                project,
-    const ParamArray&       params)
+    Project&            project,
+    const ParamArray&   params)
   : m_project(project)
   , m_params(params)
 {
@@ -133,9 +133,9 @@ const ParamArray& BaseRenderer::get_parameters() const
     return m_params;
 }
 
-bool BaseRenderer::initialize_shading_system(
-    TextureStore& texture_store,
-    IAbortSwitch& abort_switch)
+bool BaseRenderer::initialize_osl_shading_system(
+    TextureStore&       texture_store,
+    IAbortSwitch&       abort_switch)
 {
     initialize_oiio();
     return initialize_osl(texture_store, abort_switch);
@@ -176,7 +176,9 @@ void BaseRenderer::initialize_oiio()
     }
 }
 
-bool BaseRenderer::initialize_osl(TextureStore& texture_store, IAbortSwitch& abort_switch)
+bool BaseRenderer::initialize_osl(
+    TextureStore&       texture_store,
+    IAbortSwitch&       abort_switch)
 {
     m_renderer_services->initialize(texture_store);
 

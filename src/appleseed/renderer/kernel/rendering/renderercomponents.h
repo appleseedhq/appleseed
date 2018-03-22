@@ -94,10 +94,8 @@ class RendererComponents
     const Scene&                                        m_scene;
     const Frame&                                        m_frame;
     const TraceContext&                                 m_trace_context;
-    std::unique_ptr<ForwardLightSampler>
-                                                        m_forward_light_sampler;
-    std::unique_ptr<BackwardLightSampler>
-                                                        m_backward_light_sampler;
+    std::unique_ptr<ForwardLightSampler>                m_forward_light_sampler;
+    std::unique_ptr<BackwardLightSampler>               m_backward_light_sampler;
     ShadingEngine                                       m_shading_engine;
     TextureStore&                                       m_texture_store;
     OIIOTextureSystem&                                  m_texture_system;

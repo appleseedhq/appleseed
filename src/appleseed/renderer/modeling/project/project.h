@@ -131,6 +131,11 @@ class APPLESEED_DLLSYMBOL Project
     // Return nullptr if the project does not contain a scene.
     Scene* get_scene() const;
 
+    // Access the camera specified in the frame as active.
+    // Return nullptr if the scene does not contain cameras or if
+    // no cameras are specified in the frame.
+    Camera* get_uncached_active_camera() const;
+
     // Set the frame, replacing the existing frame.
     void set_frame(foundation::auto_release_ptr<Frame> frame);
 
@@ -144,11 +149,6 @@ class APPLESEED_DLLSYMBOL Project
     // Access the display.
     // Return nullptr if the project does not contain a display.
     Display* get_display() const;
-
-    // Access the camera specified in the frame as active.
-    // Return nullptr if the scene does not contain cameras or if
-    // no cameras are specified in the frame.
-    Camera* get_uncached_active_camera() const;
 
     // Access the configurations.
     ConfigurationContainer& configurations() const;
