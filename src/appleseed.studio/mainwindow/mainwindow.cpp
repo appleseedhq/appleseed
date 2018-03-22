@@ -1761,7 +1761,7 @@ void MainWindow::slot_render_widget_context_menu(const QPoint& point)
     menu->addAction("Save Frame...", this, SLOT(slot_save_frame()));
     menu->addAction("Save All AOVs...", this, SLOT(slot_save_all_aovs()));
     menu->addSeparator();
-    menu->addAction("Clear Frame", this, SLOT(slot_clear_frame()));
+    menu->addAction("Clear All", this, SLOT(slot_clear_frame()));
 
     menu->exec(point);
 }
