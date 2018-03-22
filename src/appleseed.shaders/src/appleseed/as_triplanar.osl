@@ -75,7 +75,7 @@ shader as_triplanar
         string page = "Projection",
         int divider = 1
     ]],
-    string in_space = "World"
+    string in_space = "World Space"
     [[
         string as_maya_attribute_name = "space",
         string as_maya_attribute_short_name = "spa",
