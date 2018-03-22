@@ -161,6 +161,20 @@ Scene* Project::get_scene() const
     return impl->m_scene.get();
 }
 
+Camera* Project::get_uncached_active_camera() const
+{
+    if (const Scene* scene = get_scene())
+    {
+        if (const Frame* frame = get_frame())
+        {
+            if (const char* camera_name = frame->get_active_camera_name())
+                return scene->cameras().get_by_name(camera_name);
+        }
+    }
+
+    return nullptr;
+}
+
 void Project::set_frame(auto_release_ptr<Frame> frame)
 {
     impl->m_frame = frame;
@@ -179,20 +193,6 @@ void Project::set_display(foundation::auto_release_ptr<Display> display)
 Display* Project::get_display() const
 {
     return impl->m_display.get();
-}
-
-Camera* Project::get_uncached_active_camera() const
-{
-    if (const Scene* scene = get_scene())
-    {
-        if (const Frame* frame = get_frame())
-        {
-            if (const char* camera_name = frame->get_active_camera_name())
-                return scene->cameras().get_by_name(camera_name);
-        }
-    }
-
-    return nullptr;
 }
 
 ConfigurationContainer& Project::configurations() const

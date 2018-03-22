@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -38,52 +39,63 @@
 namespace foundation
 {
 
-//
 // Evaluates a polynomial represented by a vector of coefficients (in monomial basis).
 // Yields p0 + p * (p1 + p * (p2 + p * (...+ p * p{N-1})...)).
-//
 template <typename T, typename P, size_t N>
-T evaluate_polynomial(const Vector<T, N>& coefficients, const P& param)
+T evaluate_polynomial(
+    const Vector<T, N>&     coefficients,
+    const P                 param);
+
+// Evaluates the derivative of a polynomial represented by a vector of coefficients (in monomial basis).
+// Yields p1 + p * (2 * p2 + p * (...+ N * p * p{N-1}))...)).
+template <typename T, typename P, size_t N>
+T evaluate_polynomial_derivative(
+    const Vector<T, N>&     coefficients,
+    const P                 param);
+
+
+//
+// Implementation.
+//
+
+template <typename T, typename P, size_t N>
+T evaluate_polynomial(
+    const Vector<T, N>&     coefficients,
+    const P                 param)
 {
     assert(N > 0);
 
     T value = coefficients[N - 1];
 
     for (size_t i = 1; i < N; ++i)
-    {
         value = param * value + coefficients[N - 1 - i];
-    }
 
     return value;
 }
 
-//
-// Evaluates the derivative of a polynomial represented by a vector of coefficients (in monomial basis).
-// Yields p1 + p * (2 * p2 + p * (...+ N * p * p{N-1}))...)).
-//
 template <typename T, typename P, size_t N>
-T evaluate_polynomial_derivative(const Vector<T, N>& coefficients, const P& param)
+T evaluate_polynomial_derivative(
+    const Vector<T, N>&     coefficients,
+    const P                 param)
 {
-    assert(N > 0);
+    assert(N >= 2);
 
     // Derivative of a constant is zero.
     if (N == 1)
-    {
         return T(0);
-    }
 
     // Here we suppose N >= 2.
     T value = T(N - 1) * coefficients[N - 1];
 
-    for (size_t i = 1; i < (N - 1); ++i)
+    for (size_t i = 1; i < N - 1; ++i)
     {
         const size_t idx = N - 1 - i;
-        value = param * value + P(idx) * coefficients[idx];
+        value = param * value + static_cast<P>(idx) * coefficients[idx];
     }
 
     return value;
 }
 
-} // namespace foundation
+}       // namespace foundation
 
-#endif
+#endif  // !APPLESEED_FOUNDATION_MATH_POLYNOMIAL_H

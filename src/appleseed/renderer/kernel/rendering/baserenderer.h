@@ -66,7 +66,8 @@ class APPLESEED_DLLSYMBOL BaseRenderer
     ParamArray& get_parameters();
     const ParamArray& get_parameters() const;
 
-    bool initialize_shading_system(
+    // Initialize OSL's shading system.
+    bool initialize_osl_shading_system(
         TextureStore&               texture_store,
         foundation::IAbortSwitch&   abort_switch);
 

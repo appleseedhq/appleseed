@@ -1067,12 +1067,12 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/lightsample.h
     renderer/kernel/lighting/lightsamplerbase.cpp
     renderer/kernel/lighting/lightsamplerbase.h
-    renderer/kernel/lighting/materialsamplers.cpp
-    renderer/kernel/lighting/materialsamplers.h
     renderer/kernel/lighting/lighttree.cpp
     renderer/kernel/lighting/lighttree.h
     renderer/kernel/lighting/lighttree_node.h
     renderer/kernel/lighting/lighttypes.h
+    renderer/kernel/lighting/materialsamplers.cpp
+    renderer/kernel/lighting/materialsamplers.h
     renderer/kernel/lighting/pathtracer.h
     renderer/kernel/lighting/pathvertex.cpp
     renderer/kernel/lighting/pathvertex.h
