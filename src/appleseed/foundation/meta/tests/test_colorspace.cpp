@@ -428,9 +428,9 @@ TEST_SUITE(Foundation_Image_ColorSpace)
         const Color3d srgb = linear_rgb_to_srgb(linear_rgb);
 
         EXPECT_FEQ_EPS(
-            Color3d(0.73535698305244945, 0.85430583154494000, 0.48452920448170694),
+            Color3d(0.735361, 0.854277, 0.484509),
             srgb,
-            1.0e-4);
+            1.0e-6);
     }
 
     TEST_CASE(TestsRGBToLinearRGBConversion)
@@ -441,7 +441,7 @@ TEST_SUITE(Foundation_Image_ColorSpace)
         EXPECT_FEQ_EPS(
             Color3d(0.499996, 0.69986, 0.199976),
             linear_rgb,
-            1.0e-4);
+            1.0e-6);
     }
 
     TEST_CASE(TestFastLinearRGBTosRGBConversion)
