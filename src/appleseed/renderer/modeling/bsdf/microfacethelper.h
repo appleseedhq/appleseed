@@ -149,6 +149,8 @@ class MicrofacetBRDFHelper
         f(wo, m, n, sample.m_value.m_glossy);
         sample.m_value.m_glossy *= D * G / (4.0f * cos_on * cos_in);
 
+        // Flip the outgoing vector to be in the same hemisphere as
+        // the shading normal if needed.
         if (Flip)
             wo.y = std::abs(wo.y);
 
@@ -179,8 +181,13 @@ class MicrofacetBRDFHelper
         foundation::Vector3f wo = shading_basis.transform_to_local(outgoing);
         foundation::Vector3f wi = shading_basis.transform_to_local(incoming);
 
+        // Flip the incoming and outgoing vectors to be in the same
+        // hemisphere as the shading normal if needed.
         if (Flip)
-            flip_directions(wo, wi);
+        {
+            wo.y = std::abs(wo.y);
+            wi.y = std::abs(wi.y);
+        }
 
         const foundation::Vector3f m = foundation::normalize(wi + wo);
 
@@ -219,8 +226,13 @@ class MicrofacetBRDFHelper
         foundation::Vector3f wo = shading_basis.transform_to_local(outgoing);
         foundation::Vector3f wi = shading_basis.transform_to_local(incoming);
 
+        // Flip the incoming and outgoing vectors to be in the same
+        // hemisphere as the shading normal if needed.
         if (Flip)
-            flip_directions(wo, wi);
+        {
+            wo.y = std::abs(wo.y);
+            wi.y = std::abs(wi.y);
+        }
 
         const foundation::Vector3f m = foundation::normalize(wi + wo);
         return
@@ -294,14 +306,6 @@ class MicrofacetBRDFHelper
         }
 
         return false;
-    }
-
-    static void flip_directions(
-        foundation::Vector3f&       wo,
-        foundation::Vector3f&       wi)
-    {
-        wo.y = std::abs(wo.y);
-        wi.y = std::abs(wi.y);
     }
 };
 
