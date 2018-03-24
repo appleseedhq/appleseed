@@ -104,7 +104,7 @@ class AssemblyTree
         Item(
             const renderer::Assembly*           assembly,
             const renderer::AssemblyInstance*   assembly_instance,
-            renderer::TransformSequence         transform_sequence)
+            const renderer::TransformSequence&  transform_sequence)
           : m_assembly(assembly)
           , m_assembly_uid(assembly->get_uid())
           , m_assembly_instance(assembly_instance)

@@ -31,7 +31,7 @@
 #include "itemregistry.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/entity/entity.h"
+#include "renderer/api/entity.h"
 
 // Standard headers.
 #include <cassert>

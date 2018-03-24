@@ -44,10 +44,8 @@
 #include "foundation/core/appleseed.h"
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
-#include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/image/color.h"
 #include "foundation/image/drawing.h"
-#include "foundation/image/exceptionunsupportedimageformat.h"
 #include "foundation/image/exrimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/image/imageattributes.h"
@@ -62,7 +60,6 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/iostreamop.h"
-#include "foundation/utility/otherwise.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 
@@ -71,7 +68,6 @@
 
 // Standard headers.
 #include <algorithm>
-#include <cmath>
 #include <memory>
 #include <string>
 
@@ -1244,7 +1240,9 @@ auto_release_ptr<Frame> FrameFactory::create(
     const char*         name,
     const ParamArray&   params)
 {
-    return auto_release_ptr<Frame>(new Frame(name, params, AOVContainer()));
+    return
+        auto_release_ptr<Frame>(
+            new Frame(name, params, AOVContainer()));
 }
 
 auto_release_ptr<Frame> FrameFactory::create(
@@ -1252,7 +1250,9 @@ auto_release_ptr<Frame> FrameFactory::create(
     const ParamArray&   params,
     const AOVContainer& aovs)
 {
-    return auto_release_ptr<Frame>(new Frame(name, params, aovs));
+    return
+        auto_release_ptr<Frame>(
+            new Frame(name, params, aovs));
 }
 
 }   // namespace renderer

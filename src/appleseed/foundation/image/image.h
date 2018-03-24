@@ -35,7 +35,6 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/icanvas.h"
 #include "foundation/image/pixel.h"
-#include "foundation/platform/compiler.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"

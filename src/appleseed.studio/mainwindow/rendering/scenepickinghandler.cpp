@@ -119,31 +119,27 @@ bool ScenePickingHandler::eventFilter(QObject* object, QEvent* event)
 {
     if (m_enabled)
     {
-        switch (event->type())
+        if (event->type() == QEvent::MouseButtonPress)
         {
-          case QEvent::MouseButtonPress:
+            const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
+            if (!(mouse_event->modifiers() & (Qt::AltModifier | Qt::ShiftModifier | Qt::ControlModifier)))
             {
-                const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
-                if (!(mouse_event->modifiers() & (Qt::AltModifier | Qt::ShiftModifier | Qt::ControlModifier)))
+                if (mouse_event->button() == Qt::LeftButton)
                 {
-                    if (mouse_event->button() == Qt::LeftButton)
+                    pick(mouse_event->pos());
+                    return true;
+                }
+                else if (mouse_event->button() == Qt::RightButton)
+                {
+                    ItemBase* item = pick(mouse_event->pos());
+                    if (item)
                     {
-                        pick(mouse_event->pos());
-                        return true;
+                        QMenu* menu = item->get_single_item_context_menu();
+                        menu->exec(mouse_event->globalPos());
                     }
-                    else if (mouse_event->button() == Qt::RightButton)
-                    {
-                        ItemBase* item = pick(mouse_event->pos());
-                        if (item)
-                        {
-                            QMenu* menu = item->get_single_item_context_menu();
-                            menu->exec(mouse_event->globalPos());
-                        }
-                        return true;
-                    }
+                    return true;
                 }
             }
-            break;
         }
     }
 

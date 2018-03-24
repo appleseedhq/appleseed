@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>images/appleseed-logo-256.png</file>
-        <file>patterns/texture.png</file>
         <file>widgets/checkbox_checked_disabled.png</file>
         <file>widgets/checkbox_checked_enabled.png</file>
         <file>widgets/checkbox_indeterminate_disabled.png</file>

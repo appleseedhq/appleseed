@@ -107,7 +107,7 @@ class APPLESEED_DLLSYMBOL Object
         const Project&              project,
         const BaseGroup*            parent) override;
 
-    // Return the alpha map return by get_uncached_alpha_map() and cached in on_frame_begin().
+    // Return the alpha map cached by on_frame_begin().
     const Source* get_alpha_map() const;
 
   private:

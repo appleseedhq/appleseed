@@ -49,7 +49,6 @@
 // Qt headers.
 #include <QComboBox>
 #include <QGridLayout>
-#include <QIcon>
 #include <QLabel>
 #include <QLayout>
 #include <QScrollArea>
@@ -59,8 +58,12 @@
 #include <QToolBar>
 #include <QToolButton>
 
+// Standard headers.
+#include <string>
+
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 namespace OCIO = OCIO_NAMESPACE;
 
 namespace appleseed {
@@ -78,14 +81,15 @@ RenderTab::RenderTab(
   , m_project(project)
   , m_ocio_config(ocio_config)
 {
-    create_render_widget();
-    create_toolbar();
-    create_scrollarea();
-
     setObjectName("render_widget_tab");
     setLayout(new QGridLayout());
     layout()->setSpacing(0);
     layout()->setMargin(0);
+
+    create_render_widget();
+    create_toolbar();
+    create_scrollarea();
+
     layout()->addWidget(m_toolbar);
     layout()->addWidget(m_scroll_area);
 
@@ -216,29 +220,29 @@ void RenderTab::create_toolbar()
     m_toolbar->setObjectName("render_toolbar");
     m_toolbar->setIconSize(QSize(18, 18));
 
-    // Create the Save All AOVs button in the render toolbar.
-    m_save_aovs_button = new QToolButton();
-    m_save_aovs_button->setIcon(load_icons("renderwidget_save_all_aovs"));
-    m_save_aovs_button->setToolTip("Save All AOVs...");
+    // Save All AOVs button.
+    QToolButton* save_aovs_button = new QToolButton();
+    save_aovs_button->setIcon(load_icons("rendertab_save_all_aovs"));
+    save_aovs_button->setToolTip("Save All AOVs...");
     connect(
-        m_save_aovs_button, SIGNAL(clicked()),
+        save_aovs_button, SIGNAL(clicked()),
         SIGNAL(signal_save_all_aovs()));
-    m_toolbar->addWidget(m_save_aovs_button);
+    m_toolbar->addWidget(save_aovs_button);
 
-    // Create the Quicksave All AOVs button in the render toolbar.
-    m_quick_save_aovs_button = new QToolButton();
-    m_quick_save_aovs_button->setIcon(load_icons("renderwidget_quicksave_all_aovs"));
-    m_quick_save_aovs_button->setToolTip("Quicksave All AOVs");
+    // Quicksave All AOVs button.
+    QToolButton* quick_save_aovs_button = new QToolButton();
+    quick_save_aovs_button->setIcon(load_icons("rendertab_quicksave_all_aovs"));
+    quick_save_aovs_button->setToolTip("Quicksave All AOVs");
     connect(
-        m_quick_save_aovs_button, SIGNAL(clicked()),
+        quick_save_aovs_button, SIGNAL(clicked()),
         SIGNAL(signal_quicksave_all_aovs()));
-    m_toolbar->addWidget(m_quick_save_aovs_button);
+    m_toolbar->addWidget(quick_save_aovs_button);
 
     m_toolbar->addSeparator();
 
-    // Create the Set Render Region button in the render toolbar.
+    // Set Render Region button.
     m_set_render_region_button = new QToolButton();
-    m_set_render_region_button->setIcon(load_icons("renderwidget_set_render_region"));
+    m_set_render_region_button->setIcon(load_icons("rendertab_set_render_region"));
     m_set_render_region_button->setShortcut(Qt::Key_R);
     m_set_render_region_button->setToolTip(combine_name_and_shortcut("Set Render Region", m_set_render_region_button->shortcut()));
     m_set_render_region_button->setCheckable(true);
@@ -247,9 +251,9 @@ void RenderTab::create_toolbar()
         SLOT(slot_toggle_render_region(const bool)));
     m_toolbar->addWidget(m_set_render_region_button);
 
-    // Create the Clear Render Region button in the render toolbar.
+    // Clear Render Region button.
     m_clear_render_region_button = new QToolButton();
-    m_clear_render_region_button->setIcon(load_icons("renderwidget_clear_render_region"));
+    m_clear_render_region_button->setIcon(load_icons("rendertab_clear_render_region"));
     m_clear_render_region_button->setShortcut(Qt::Key_C);
     m_clear_render_region_button->setToolTip(combine_name_and_shortcut("Clear Render Region", m_clear_render_region_button->shortcut()));
     connect(
@@ -257,9 +261,9 @@ void RenderTab::create_toolbar()
         SIGNAL(signal_clear_render_region()));
     m_toolbar->addWidget(m_clear_render_region_button);
 
-    // Create the Clear Frame button in the render toolbar.
+    // Clear Frame button.
     m_clear_frame_button = new QToolButton();
-    m_clear_frame_button->setIcon(load_icons("renderwidget_clear_frame"));
+    m_clear_frame_button->setIcon(load_icons("rendertab_clear_frame"));
     m_clear_frame_button->setShortcut(Qt::Key_X);
     m_clear_frame_button->setToolTip(combine_name_and_shortcut("Clear Frame", m_clear_frame_button->shortcut()));
     connect(
@@ -269,29 +273,29 @@ void RenderTab::create_toolbar()
 
     m_toolbar->addSeparator();
 
-    // Create the Reset Zoom button in the render toolbar.
-    m_reset_zoom_button = new QToolButton();
-    m_reset_zoom_button->setIcon(load_icons("renderwidget_reset_zoom"));
-    m_reset_zoom_button->setShortcut(Qt::Key_Asterisk);
-    m_reset_zoom_button->setToolTip(combine_name_and_shortcut("Reset Zoom", m_reset_zoom_button->shortcut()));
+    // Reset Zoom button.
+    QToolButton* reset_zoom_button = new QToolButton();
+    reset_zoom_button->setIcon(load_icons("rendertab_reset_zoom"));
+    reset_zoom_button->setShortcut(Qt::Key_Asterisk);
+    reset_zoom_button->setToolTip(combine_name_and_shortcut("Reset Zoom", reset_zoom_button->shortcut()));
     connect(
-        m_reset_zoom_button, SIGNAL(clicked()),
+        reset_zoom_button, SIGNAL(clicked()),
         SIGNAL(signal_reset_zoom()));
-    m_toolbar->addWidget(m_reset_zoom_button);
+    m_toolbar->addWidget(reset_zoom_button);
 
     m_toolbar->addSeparator();
 
-    // Create the Pixel Inspector button in the render toolbar.
-    m_pixel_inspector_button = new QToolButton();
-    m_pixel_inspector_button->setIcon(load_icons("renderwidget_toggle_pixel_inspector"));
-    m_pixel_inspector_button->setShortcut(Qt::Key_I);
-    m_pixel_inspector_button->setToolTip(combine_name_and_shortcut("Toggle Pixel Inspector", m_pixel_inspector_button->shortcut()));
-    m_pixel_inspector_button->setCheckable(true);
-    m_pixel_inspector_button->setChecked(false);
+    // Pixel Inspector button.
+    QToolButton* pixel_inspector_button = new QToolButton();
+    pixel_inspector_button->setIcon(load_icons("rendertab_toggle_pixel_inspector"));
+    pixel_inspector_button->setShortcut(Qt::Key_I);
+    pixel_inspector_button->setToolTip(combine_name_and_shortcut("Toggle Pixel Inspector", pixel_inspector_button->shortcut()));
+    pixel_inspector_button->setCheckable(true);
+    pixel_inspector_button->setChecked(false);
     connect(
-        m_pixel_inspector_button, SIGNAL(toggled(bool)),
+        pixel_inspector_button, SIGNAL(toggled(bool)),
         SLOT(slot_toggle_pixel_inspector(const bool)));
-    m_toolbar->addWidget(m_pixel_inspector_button);
+    m_toolbar->addWidget(pixel_inspector_button);
 
     m_toolbar->addSeparator();
 
@@ -314,11 +318,11 @@ void RenderTab::create_toolbar()
     m_toolbar->addWidget(display_label);
 
     // Create the display combobox.
-    m_display_transform_combo = new QComboBox();
+    QComboBox* m_display_transform_combo = new QComboBox();
     m_display_transform_combo->setObjectName("display_combo");
     {
         const char* display_name = m_ocio_config->getDefaultDisplay();
-        const std::string default_transform = m_ocio_config->getDefaultView(display_name);
+        const string default_transform = m_ocio_config->getDefaultView(display_name);
 
         int default_index = 0;
         for (int i = 0, e = m_ocio_config->getNumViews(display_name); i < e; ++i)
@@ -339,9 +343,9 @@ void RenderTab::create_toolbar()
 
     // Add stretchy spacer.
     // This places interactive widgets on the left and info on the right.
-    m_spacer = new QWidget();
-    m_spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    m_toolbar->addWidget(m_spacer);
+    QWidget* spacer = new QWidget();
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_toolbar->addWidget(spacer);
 
     // Create a label to display various information such as mouse coordinates, etc.
     m_info_label = new QLabel();
@@ -473,9 +477,10 @@ void RenderTab::recreate_handlers()
     m_clipboard_handler.reset(new RenderClipboardHandler(m_render_widget));
 
     // Set initial state.
+    m_pixel_inspector_handler->set_enabled(false);
+    m_camera_controller->set_enabled(false);
     m_scene_picking_handler->set_enabled(true);
     m_render_region_handler->set_enabled(false);
-    m_pixel_inspector_handler->set_enabled(false);
 }
 
 }   // namespace studio
