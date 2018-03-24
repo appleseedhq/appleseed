@@ -67,8 +67,8 @@ class PTLightingEngineFactory
     static foundation::Dictionary get_params_metadata();
 
   private:
-    const BackwardLightSampler&     m_light_sampler;
-    ParamArray                      m_params;
+    const BackwardLightSampler&         m_light_sampler;
+    ParamArray                          m_params;
 };
 
 }       // namespace renderer

@@ -354,7 +354,10 @@ class RenderSettingsPanel
         for (const_each<DirectLinkCollection> i = m_direct_links; i; ++i)
         {
             const string default_value_path = i->m_param_path + ".default";
-            const string default_value = m_params_metadata.get_path_optional<string>(default_value_path.c_str(), i->m_default_value);
+            const string default_value =
+                m_params_metadata.get_path_optional<string>(
+                    default_value_path.c_str(),
+                    i->m_default_value);
             const string value = get_config<string>(config, i->m_param_path, default_value);
             set_widget(i->m_widget_key, value);
         }
@@ -866,17 +869,17 @@ namespace
             create_pt_volume_settings(layout);
             create_pt_advanced_settings(layout);
 
-            create_direct_link("lighting_components.dl",                    "pt.enable_dl");
-            create_direct_link("lighting_components.ibl",                   "pt.enable_ibl");
-            create_direct_link("lighting_components.caustics",              "pt.enable_caustics");
-            create_direct_link("pt.bounces.rr_start_bounce",                "pt.rr_min_path_length");
-            create_direct_link("advanced.next_event_estimation",            "pt.next_event_estimation");
-            create_direct_link("advanced.dl.light_samples",                 "pt.dl_light_samples");
-            create_direct_link("advanced.dl.low_light_threshold",           "pt.dl_low_light_threshold");
-            create_direct_link("advanced.ibl.env_samples",                  "pt.ibl_env_samples");
-            create_direct_link("volume.distance_samples",                   "pt.volume_distance_samples");
-            create_direct_link("volume.optimize_for_lights_outside_volumes","pt.optimize_for_lights_outside_volumes");
-            create_direct_link("advanced.light_sampler.algorithm",          "light_sampler.algorithm");
+            create_direct_link("lighting_components.dl",                        "pt.enable_dl");
+            create_direct_link("lighting_components.ibl",                       "pt.enable_ibl");
+            create_direct_link("lighting_components.caustics",                  "pt.enable_caustics");
+            create_direct_link("pt.bounces.rr_start_bounce",                    "pt.rr_min_path_length");
+            create_direct_link("volume.distance_samples",                       "pt.volume_distance_samples");
+            create_direct_link("volume.optimize_for_lights_outside_volumes",    "pt.optimize_for_lights_outside_volumes");
+            create_direct_link("advanced.next_event_estimation",                "pt.next_event_estimation");
+            create_direct_link("advanced.dl.light_samples",                     "pt.dl_light_samples");
+            create_direct_link("advanced.dl.low_light_threshold",               "pt.dl_low_light_threshold");
+            create_direct_link("advanced.ibl.env_samples",                      "pt.ibl_env_samples");
+            create_direct_link("advanced.light_sampler.algorithm",              "light_sampler.algorithm");
 
             load_directly_linked_values(config);
 
@@ -906,29 +909,6 @@ namespace
         }
 
       private:
-        void create_pt_advanced_settings(QVBoxLayout* parent)
-        {
-            QGroupBox* groupbox = new QGroupBox("Advanced");
-            parent->addWidget(groupbox);
-
-            QVBoxLayout* layout = new QVBoxLayout();
-            groupbox->setLayout(layout);
-
-            QFormLayout* sublayout = create_form_layout();
-            layout->addLayout(sublayout);
-
-            QGroupBox* nee_groupbox = create_checkable_groupbox("advanced.next_event_estimation", "Next Event Estimation");
-            layout->addWidget(nee_groupbox);
-
-            QVBoxLayout* nee_layout = create_vertical_layout();
-            nee_groupbox->setLayout(nee_layout);
-
-            create_pt_advanced_lightsampler_settings(nee_layout);
-            create_pt_advanced_dl_settings(nee_layout);
-            create_pt_advanced_ibl_settings(nee_layout);
-            create_pt_advanced_max_ray_intensity_settings(nee_layout);
-        }
-
         void create_pt_volume_settings(QVBoxLayout* parent)
         {
             QGroupBox* groupbox = new QGroupBox("Participating Media");
@@ -946,25 +926,48 @@ namespace
                 m_params_metadata.get_path("pt.volume_distance_samples.help"));
             sublayout->addRow("Volume Distance Samples:", volume_distance_samples);
 
-            QCheckBox* optimize_for_lights_outside_volumes =
-                create_checkbox("volume.optimize_for_lights_outside_volumes", "Optimize for Lights Outside Volumes");
-            sublayout->addRow(optimize_for_lights_outside_volumes);
+            sublayout->addRow(
+                create_checkbox("volume.optimize_for_lights_outside_volumes", "Optimize for Lights Outside Volumes"));
         }
 
-        void create_pt_advanced_lightsampler_settings(QVBoxLayout* parent)
+        void create_pt_advanced_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = new QGroupBox("Advanced");
+            parent->addWidget(groupbox);
+
+            QVBoxLayout* layout = new QVBoxLayout();
+            groupbox->setLayout(layout);
+
+            create_pt_advanced_nee_settings(layout);
+        }
+
+        void create_pt_advanced_nee_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = create_checkable_groupbox("advanced.next_event_estimation", "Next Event Estimation");
+            parent->addWidget(groupbox);
+
+            QVBoxLayout* layout = create_vertical_layout();
+            groupbox->setLayout(layout);
+
+            create_pt_advanced_nee_lightsampler_settings(layout);
+            create_pt_advanced_nee_dl_settings(layout);
+            create_pt_advanced_nee_ibl_settings(layout);
+            create_pt_advanced_nee_max_ray_intensity_settings(layout);
+        }
+
+        void create_pt_advanced_nee_lightsampler_settings(QVBoxLayout* parent)
         {
             QFormLayout* sublayout = create_form_layout();
             parent->addLayout(sublayout);
 
-            QComboBox* light_sampling;
-            light_sampling = create_combobox("advanced.light_sampler.algorithm");
+            QComboBox* light_sampling = create_combobox("advanced.light_sampler.algorithm");
             light_sampling->setToolTip(m_params_metadata.get_path("light_sampler.algorithm.help"));
             light_sampling->addItem("CDF", "cdf");
             light_sampling->addItem("Light Tree", "lighttree");
             sublayout->addRow("Light Sampler:", light_sampling);
         }
 
-        void create_pt_advanced_dl_settings(QVBoxLayout* parent)
+        void create_pt_advanced_nee_dl_settings(QVBoxLayout* parent)
         {
             QGroupBox* groupbox = new QGroupBox("Direct Lighting");
             parent->addWidget(groupbox);
@@ -984,7 +987,7 @@ namespace
             sublayout->addRow("Low Light Threshold:", low_light_threshold);
         }
 
-        void create_pt_advanced_ibl_settings(QVBoxLayout* parent)
+        void create_pt_advanced_nee_ibl_settings(QVBoxLayout* parent)
         {
             QGroupBox* groupbox = new QGroupBox("Image-Based Lighting");
             parent->addWidget(groupbox);
@@ -1000,7 +1003,7 @@ namespace
             sublayout->addLayout(create_form_layout("Environment Samples:", env_samples));
         }
 
-        void create_pt_advanced_max_ray_intensity_settings(QVBoxLayout* parent)
+        void create_pt_advanced_nee_max_ray_intensity_settings(QVBoxLayout* parent)
         {
             QDoubleSpinBox* max_ray_intensity = create_double_input("advanced.max_ray_intensity", 0.0, 1.0e9, 3, 0.1);
             max_ray_intensity->setToolTip(m_params_metadata.get_path("pt.max_ray_intensity.help"));

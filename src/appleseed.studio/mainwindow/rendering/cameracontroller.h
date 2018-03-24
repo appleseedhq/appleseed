@@ -61,7 +61,7 @@ class CameraController
     // Constructor.
     // The camera controller is disabled by default.
     CameraController(
-        QWidget*            render_widget,
+        QWidget*            widget,
         renderer::Project&  project);
 
     // Destructor.
@@ -87,7 +87,7 @@ class CameraController
   private:
     typedef foundation::CameraController<double> ControllerType;
 
-    QWidget*                m_render_widget;
+    QWidget*                m_widget;
     renderer::Project&      m_project;
     bool                    m_enabled;
 

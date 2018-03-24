@@ -61,7 +61,6 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/system.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/log/logmessage.h"
@@ -76,7 +75,6 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
-#include <QIcon>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
@@ -88,7 +86,6 @@
 #include <QString>
 #include <QStringList>
 #include <Qt>
-#include <QToolButton>
 #include <QUrl>
 
 // Boost headers.
@@ -151,7 +148,7 @@ MainWindow::MainWindow(QWidget* parent)
     slot_load_settings();
 
     update_project_explorer();
-    remove_render_widgets();
+    remove_render_tabs();
     update_workspace();
 
     build_minimize_buttons();
@@ -209,7 +206,7 @@ bool MainWindow::open_project(const QString& filepath)
         m_rendering_manager.wait_until_rendering_end();
     }
 
-    remove_render_widgets();
+    remove_render_tabs();
 
     set_file_widgets_enabled(false, NotRendering);
     set_project_explorer_enabled(false);
@@ -223,7 +220,7 @@ bool MainWindow::open_project(const QString& filepath)
     }
     else
     {
-        recreate_render_widgets();
+        recreate_render_tabs();
         update_workspace();
     }
 
@@ -240,7 +237,7 @@ void MainWindow::open_project_async(const QString& filepath)
         m_rendering_manager.wait_until_rendering_end();
     }
 
-    remove_render_widgets();
+    remove_render_tabs();
 
     set_file_widgets_enabled(false, NotRendering);
     set_project_explorer_enabled(false);
@@ -436,10 +433,10 @@ void MainWindow::build_override_shading_menu_item()
 {
     QActionGroup* action_group = new QActionGroup(this);
 
+    // No Override.
     connect(
         m_ui->action_diagnostics_override_shading_no_override, SIGNAL(triggered()),
         SLOT(slot_clear_shading_override()));
-
     action_group->addAction(m_ui->action_diagnostics_override_shading_no_override);
 
     for (int i = 0; i < DiagnosticSurfaceShader::ShadingModeCount; ++i)
@@ -448,31 +445,16 @@ void MainWindow::build_override_shading_menu_item()
         const char* shading_mode_name = DiagnosticSurfaceShader::ShadingModeNames[i].m_value;
 
         QAction* action = new QAction(this);
-
-        action->setCheckable(true);
-
         action->setObjectName(
             QString::fromAscii("action_diagnostics_override_shading_") + shading_mode_value);
-
-        action->setText(
-            QApplication::translate(
-                objectName().toAscii().constData(),
-                shading_mode_name,
-                nullptr,
-                QApplication::UnicodeUTF8));
+        action->setCheckable(true);
+        action->setText(shading_mode_name);
 
         const int shortcut_number = i + 1;
-
         if (shortcut_number <= 9)
         {
-            const QString shortcut =
-                QApplication::translate(
-                    objectName().toAscii().constData(),
-                    QString::fromAscii("Ctrl+Shift+%1").arg(shortcut_number).toAscii().constData(),
-                    nullptr,
-                    QApplication::UnicodeUTF8);
-
-            action->setShortcut(shortcut);
+            action->setShortcut(
+                QKeySequence(QString::fromAscii("Ctrl+Shift+%1").arg(shortcut_number)));
         }
 
         action->setData(shading_mode_value);
@@ -482,7 +464,6 @@ void MainWindow::build_override_shading_menu_item()
             SLOT(slot_set_shading_override()));
 
         m_ui->menu_diagnostics_override_shading->addAction(action);
-
         action_group->addAction(action);
     }
 }
@@ -572,7 +553,7 @@ void MainWindow::update_recent_files_menu(const QStringList& files)
     {
         const int number = i + 1;
         const QString filepath = files[i];
-        const QString format = number < 10 ? "&%1 %2" : "%1 %2";
+        const QString format = number <= 9 ? "&%1 %2" : "%1 %2";
         const QString text = format.arg(number).arg(filepath);
 
         m_recently_opened[i]->setText(text);
@@ -717,10 +698,10 @@ void MainWindow::update_workspace()
 {
     update_window_title();
 
+    // Enable/disable menus and widgets appropriately.
     set_file_widgets_enabled(true, NotRendering);
     set_project_explorer_enabled(true);
     set_rendering_widgets_enabled(true, NotRendering);
-
     m_ui->attribute_editor_scrollarea_contents->setEnabled(true);
 }
 
@@ -905,15 +886,15 @@ void MainWindow::restore_state_after_project_open()
     }
 }
 
-void MainWindow::recreate_render_widgets()
+void MainWindow::recreate_render_tabs()
 {
-    remove_render_widgets();
+    remove_render_tabs();
 
     if (m_project_manager.is_project_open())
-        add_render_widget("RGB");
+        add_render_tab("RGB");
 }
 
-void MainWindow::remove_render_widgets()
+void MainWindow::remove_render_tabs()
 {
     for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
         delete i->second;
@@ -925,14 +906,16 @@ void MainWindow::remove_render_widgets()
         m_ui->tab_render_channels->removeTab(0);
 }
 
-void MainWindow::add_render_widget(const QString& label)
+void MainWindow::add_render_tab(const QString& label)
 {
-    // Create the render tab.
+    // Create render tab.
     RenderTab* render_tab =
         new RenderTab(
             *m_project_explorer,
             *m_project_manager.get_project(),
             m_ocio_config);
+
+    // Connect the render tab to the main window and the rendering manager.
     connect(
         render_tab, SIGNAL(signal_render_widget_context_menu(const QPoint&)),
         SLOT(slot_render_widget_context_menu(const QPoint&)));
@@ -973,7 +956,7 @@ void MainWindow::add_render_widget(const QString& label)
     // Add the render tab to the tab bar.
     const int tab_index = m_ui->tab_render_channels->addTab(render_tab, label);
 
-    // Update the mappings.
+    // Update mappings.
     m_render_tabs[label.toStdString()] = render_tab;
     m_tab_index_to_render_tab[tab_index] = render_tab;
 }
@@ -1048,7 +1031,7 @@ bool MainWindow::can_close_project()
 void MainWindow::on_project_change()
 {
     update_project_explorer();
-    recreate_render_widgets();
+    recreate_render_tabs();
 
     update_override_shading_menu_item();
 
@@ -1144,10 +1127,10 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
 {
     assert(m_project_manager.is_project_open());
 
-    // Enable/disable widgets appropriately.
+    // Enable/disable menus and widgets appropriately.
     set_file_widgets_enabled(false, rendering_mode);
-    set_rendering_widgets_enabled(true, rendering_mode);
     set_project_explorer_enabled(rendering_mode == InteractiveRendering);
+    set_rendering_widgets_enabled(true, rendering_mode);
     m_ui->attribute_editor_scrollarea_contents->setEnabled(rendering_mode == InteractiveRendering);
 
     // Stop monitoring the project file in Final rendering mode.
@@ -1162,14 +1145,14 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
 
     frame->clear_main_and_aov_images();
 
-    // In the UI, darken all render widgets.
+    // Darken render widgets.
     for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
     {
         i->second->darken();
         i->second->update();
     }
 
-    // Retrieve the right configuration.
+    // Retrieve the appropriate rendering configuration.
     const char* configuration_name =
         rendering_mode == InteractiveRendering ? "interactive" : "final";
     const ParamArray params = get_project_params(configuration_name);
@@ -1250,7 +1233,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     if (m_benchmark_window.get())
         m_benchmark_window->close();
 
-    remove_render_widgets();
+    remove_render_tabs();
 
     m_project_manager.close_project();
 
@@ -1370,7 +1353,7 @@ void MainWindow::slot_open_project_complete(const QString& filepath, const bool 
     else
     {
         show_project_file_loading_failed_message_box(this, filepath);
-        recreate_render_widgets();
+        recreate_render_tabs();
         update_workspace();
     }
 }

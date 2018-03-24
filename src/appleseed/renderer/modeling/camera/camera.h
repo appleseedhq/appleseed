@@ -37,9 +37,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/dual.h"
-#include "foundation/math/polynomial.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/uid.h"
 
 // appleseed.main headers.

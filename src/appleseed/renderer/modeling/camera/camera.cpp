@@ -38,6 +38,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/bezier.h"
+#include "foundation/math/polynomial.h"
 #include "foundation/math/root.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/api/apistring.h"

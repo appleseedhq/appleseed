@@ -48,13 +48,13 @@
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/surfaceshader/surfaceshadertraits.h"
-#include "renderer/modeling/volume/volumetraits.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 
 // Standard headers.
+#include <cstddef>
 #include <limits>
 
 using namespace foundation;
@@ -131,9 +131,9 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
     SamplingContext::RNGType rng;
     SamplingContext sampling_context(rng, SamplingContext::QMCMode);
 
-    const CanvasProperties& c = impl->m_project.get_frame()->image().properties();
-    const Vector2d ndc_dx(1.0 / (4.0 * c.m_canvas_width), 0.0);
-    const Vector2d ndc_dy(0.0, -1.0 / (4.0 * c.m_canvas_height));
+    const CanvasProperties& frame_props = impl->m_project.get_frame()->image().properties();
+    const Vector2d ndc_dx(1.0 / (4.0 * frame_props.m_canvas_width), 0.0);
+    const Vector2d ndc_dy(0.0, -1.0 / (4.0 * frame_props.m_canvas_height));
 
     ShadingRay ray;
     result.m_camera->spawn_ray(

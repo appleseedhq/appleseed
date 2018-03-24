@@ -58,14 +58,13 @@ namespace studio {
 // CameraController class implementation.
 //
 
-CameraController::CameraController(
-    QWidget*    render_widget,
-    Project&    project)
-  : m_render_widget(render_widget)
+CameraController::CameraController(QWidget* widget, Project& project)
+  : m_widget(widget)
   , m_project(project)
-  , m_enabled(false)
+  , m_enabled(true)
 {
     configure_controller();
+    m_widget->installEventFilter(this);
 }
 
 CameraController::~CameraController()
@@ -79,8 +78,8 @@ void CameraController::set_enabled(const bool enabled)
         return;
 
     if (enabled)
-        m_render_widget->installEventFilter(this);
-    else m_render_widget->removeEventFilter(this);
+        m_widget->installEventFilter(this);
+    else m_widget->removeEventFilter(this);
 
     m_enabled = enabled;
 }
@@ -260,8 +259,8 @@ void CameraController::configure_controller()
 
 Vector2d CameraController::get_mouse_position(const QMouseEvent* event) const
 {
-    const int width = m_render_widget->width();
-    const int height = m_render_widget->height();
+    const int width = m_widget->width();
+    const int height = m_widget->height();
 
     const double x =  static_cast<double>(event->x()) / width;
     const double y = -static_cast<double>(event->y()) / height;
