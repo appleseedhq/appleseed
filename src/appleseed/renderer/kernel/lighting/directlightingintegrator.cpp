@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/backwardlightsampler.h"
+#include "renderer/kernel/lighting/lightpathstream.h"
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
@@ -124,7 +125,8 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
     const Dual3d&               outgoing,
-    DirectShadingComponents&    radiance) const
+    DirectShadingComponents&    radiance,
+    LightPathStream*            light_path_stream) const
 {
     radiance.set(0.0f);
 
@@ -149,7 +151,8 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
                 sampling_context,
                 sample,
                 outgoing,
-                radiance);
+                radiance,
+                light_path_stream);
         }
     }
 
@@ -178,7 +181,8 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
                     sample,
                     mis_heuristic,
                     outgoing,
-                    lightset_radiance);
+                    lightset_radiance,
+                    light_path_stream);
             }
             else
             {
@@ -186,7 +190,8 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
                     sampling_context,
                     sample,
                     outgoing,
-                    lightset_radiance);
+                    lightset_radiance,
+                    light_path_stream);
             }
         }
 
@@ -200,7 +205,8 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
 void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling_low_variance(
     SamplingContext&            sampling_context,
     const Dual3d&               outgoing,
-    DirectShadingComponents&    radiance) const
+    DirectShadingComponents&    radiance,
+    LightPathStream*            light_path_stream) const
 {
     compute_outgoing_radiance_material_sampling(
         sampling_context,
@@ -213,7 +219,8 @@ void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling_low_v
         sampling_context,
         MISPower2,
         outgoing,
-        radiance_light_sampling);
+        radiance_light_sampling,
+        light_path_stream);
 
     radiance += radiance_light_sampling;
 }
@@ -332,7 +339,8 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     const LightSample&          sample,
     const MISHeuristic          mis_heuristic,
     const Dual3d&               outgoing,
-    DirectShadingComponents&    radiance) const
+    DirectShadingComponents&    radiance,
+    LightPathStream*            light_path_stream) const
 {
     const Material* material = sample.m_triangle->m_material;
     const Material::RenderData& material_data = material->get_render_data();
@@ -450,13 +458,24 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     edf_value *= transmission;
     edf_value *= (mis_weight * g) / (sample.m_probability * contribution_prob);
     madd(radiance, material_value, edf_value);
+
+    // Record light path event.
+    if (light_path_stream)
+    {
+        light_path_stream->sampled_emitting_triangle(
+            sample.m_triangle,
+            sample.m_point,
+            material_value.m_beauty,
+            edf_value);
+    }
 }
 
 void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     SamplingContext&            sampling_context,
     const LightSample&          sample,
     const Dual3d&               outgoing,
-    DirectShadingComponents&    radiance) const
+    DirectShadingComponents&    radiance,
+    LightPathStream*            light_path_stream) const
 {
     const Light* light = sample.m_light;
 
@@ -513,6 +532,16 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     light_value *= transmission;
     light_value *= attenuation / (sample.m_probability * probability);
     madd(radiance, material_value, light_value);
+
+    // Record light path event.
+    if (light_path_stream)
+    {
+        light_path_stream->sampled_non_physical_light(
+            light,
+            emission_position,
+            material_value.m_beauty,
+            light_value);
+    }
 }
 
 }   // namespace renderer

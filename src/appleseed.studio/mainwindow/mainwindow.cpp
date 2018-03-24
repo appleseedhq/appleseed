@@ -40,6 +40,7 @@
 #include "mainwindow/project/attributeeditor.h"
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/pythonconsole/pythonconsolewidget.h"
+#include "mainwindow/rendering/lightpathstab.h"
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
@@ -50,6 +51,7 @@
 // appleseed.renderer headers.
 #include "renderer/api/aov.h"
 #include "renderer/api/frame.h"
+#include "renderer/api/lighting.h"
 #include "renderer/api/log.h"
 #include "renderer/api/project.h"
 #include "renderer/api/rendering.h"
@@ -121,6 +123,7 @@ MainWindow::MainWindow(QWidget* parent)
   , m_project_explorer(nullptr)
   , m_attribute_editor(nullptr)
   , m_project_file_watcher(nullptr)
+  , m_light_paths_tab(nullptr)
 {
     initialize_ocio();
 
@@ -703,6 +706,12 @@ void MainWindow::update_workspace()
     set_project_explorer_enabled(true);
     set_rendering_widgets_enabled(true, NotRendering);
     m_ui->attribute_editor_scrollarea_contents->setEnabled(true);
+
+    // Add/remove light paths tab.
+    if (m_project_manager.is_project_open() &&
+        m_project_manager.get_project()->get_light_path_recorder().get_light_path_count() > 0)
+        add_light_paths_tab();
+    else remove_light_paths_tab();
 }
 
 void MainWindow::update_project_explorer()
@@ -842,19 +851,23 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const Rend
     const int current_tab_index = m_ui->tab_render_channels->currentIndex();
     if (current_tab_index != -1)
     {
-        RenderTab* render_tab = m_tab_index_to_render_tab[current_tab_index];
+        const auto render_tab_it = m_tab_index_to_render_tab.find(current_tab_index);
+        if (render_tab_it != m_tab_index_to_render_tab.end())
+        {
+            RenderTab* render_tab = render_tab_it->second;
 
-        // Clear frame.
-        render_tab->set_clear_frame_button_enabled(
-            is_enabled && is_project_open && rendering_mode == NotRendering);
+            // Clear frame.
+            render_tab->set_clear_frame_button_enabled(
+                is_enabled && is_project_open && rendering_mode == NotRendering);
 
-        // Set/clear rendering region.
-        render_tab->set_render_region_buttons_enabled(
-            is_enabled && is_project_open && rendering_mode != FinalRendering);
+            // Set/clear rendering region.
+            render_tab->set_render_region_buttons_enabled(
+                is_enabled && is_project_open && rendering_mode != FinalRendering);
 
-        // Scene picker.
-        render_tab->get_scene_picking_handler()->set_enabled(
-            is_enabled && is_project_open && rendering_mode != FinalRendering);
+            // Scene picker.
+            render_tab->get_scene_picking_handler()->set_enabled(
+                is_enabled && is_project_open && rendering_mode != FinalRendering);
+        }
     }
 }
 
@@ -959,6 +972,38 @@ void MainWindow::add_render_tab(const QString& label)
     // Update mappings.
     m_render_tabs[label.toStdString()] = render_tab;
     m_tab_index_to_render_tab[tab_index] = render_tab;
+}
+
+void MainWindow::add_light_paths_tab()
+{
+    if (m_light_paths_tab == nullptr)
+    {
+        // Create light paths tab.
+        m_light_paths_tab =
+            new LightPathsTab(
+                *m_project_manager.get_project(),
+                m_settings);
+
+        // Connect render tabs to the light paths tab.
+        for (const auto& kv : m_render_tabs)
+        {
+            connect(
+                kv.second, SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
+                m_light_paths_tab, SLOT(slot_entity_picked(renderer::ScenePicker::PickingResult)));
+        }
+
+        // Add the light paths tab to the tab bar.
+        m_ui->tab_render_channels->addTab(m_light_paths_tab, "Light Paths");
+    }
+}
+
+void MainWindow::remove_light_paths_tab()
+{
+    if (m_light_paths_tab != nullptr)
+    {
+        delete m_light_paths_tab;
+        m_light_paths_tab = nullptr;
+    }
 }
 
 ParamArray MainWindow::get_project_params(const char* configuration_name) const
@@ -1132,6 +1177,9 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
     set_project_explorer_enabled(rendering_mode == InteractiveRendering);
     set_rendering_widgets_enabled(true, rendering_mode);
     m_ui->attribute_editor_scrollarea_contents->setEnabled(rendering_mode == InteractiveRendering);
+
+    // Remove light paths tab.
+    remove_light_paths_tab();
 
     // Stop monitoring the project file in Final rendering mode.
     if (rendering_mode == FinalRendering)
@@ -1765,7 +1813,6 @@ void MainWindow::slot_render_widget_context_menu(const QPoint& point)
     menu->addAction("Save All AOVs...", this, SLOT(slot_save_all_aovs()));
     menu->addSeparator();
     menu->addAction("Clear All", this, SLOT(slot_clear_frame()));
-
     menu->exec(point);
 }
 
@@ -1874,8 +1921,10 @@ void MainWindow::slot_clear_frame()
 
 void MainWindow::slot_reset_zoom()
 {
-    const int current_tab_index = m_ui->tab_render_channels->currentIndex();
-    m_tab_index_to_render_tab[current_tab_index]->reset_zoom();
+    const auto current_tab_index = m_ui->tab_render_channels->currentIndex();
+    const auto render_tab_it = m_tab_index_to_render_tab.find(current_tab_index);
+    if (render_tab_it != m_tab_index_to_render_tab.end())
+        render_tab_it->second->reset_zoom();
 }
 
 void MainWindow::slot_filter_text_changed(const QString& pattern)

@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/intersection/tracecontext.h"
+#include "renderer/kernel/lighting/lightpathrecorder.h"
 #include "renderer/modeling/display/display.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
@@ -90,6 +91,7 @@ struct Project::Impl
     auto_release_ptr<Scene>     m_scene;
     auto_release_ptr<Frame>     m_frame;
     auto_release_ptr<Display>   m_display;
+    LightPathRecorder           m_light_path_recorder;
     ConfigurationContainer      m_configurations;
     SearchPaths                 m_search_paths;
     unique_ptr<TraceContext>    m_trace_context;
@@ -193,6 +195,11 @@ void Project::set_display(foundation::auto_release_ptr<Display> display)
 Display* Project::get_display() const
 {
     return impl->m_display.get();
+}
+
+LightPathRecorder& Project::get_light_path_recorder() const
+{
+    return impl->m_light_path_recorder;
 }
 
 ConfigurationContainer& Project::configurations() const
