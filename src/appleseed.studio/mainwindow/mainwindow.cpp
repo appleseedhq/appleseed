@@ -283,6 +283,7 @@ bool MainWindow::save_project(QString filepath)
         start_monitoring_project_file();
 
     update_workspace();
+    update_recent_files_menu(filepath);
 
     return successful;
 }
@@ -1378,7 +1379,6 @@ void MainWindow::slot_save_project_as()
         filepath = QDir::toNativeSeparators(filepath);
 
         save_project(filepath);
-        update_recent_files_menu(filepath);
     }
 }
 
