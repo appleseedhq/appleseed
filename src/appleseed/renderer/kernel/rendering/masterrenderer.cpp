@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/lighting/lightpathrecorder.h"
 #include "renderer/kernel/rendering/iframerenderer.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/renderercomponents.h"
@@ -258,9 +259,6 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame()
     if (!bind_scene_entities_inputs())
         return IRendererController::AbortRendering;
 
-    // Build or update ray tracing acceleration structures.
-    m_project.update_trace_context();
-
     // Create the texture store.
     TextureStore texture_store(
         *m_project.get_scene(),
@@ -274,7 +272,10 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame()
     if (abort_switch.is_aborted())
         return impl->m_renderer_controller->get_status();
 
-    // Perform pre-render rendering actions. Don't proceed if that failed.
+    // Build or update ray tracing acceleration structures.
+    m_project.update_trace_context();
+
+    // Perform pre-render rendering actions.
     if (!m_project.get_scene()->on_render_begin(m_project, &abort_switch))
         return IRendererController::AbortRendering;
 
@@ -298,6 +299,11 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame()
     // Perform post-render rendering actions.
     m_project.get_scene()->on_render_end(m_project);
 
+    const CanvasProperties& props = m_project.get_frame()->image().properties();
+    m_project.get_light_path_recorder().finalize(
+        props.m_canvas_width,
+        props.m_canvas_height);
+
     // Print texture store performance statistics.
     RENDERER_LOG_DEBUG("%s", texture_store.get_statistics().to_string().c_str());
 
@@ -310,6 +316,9 @@ IRendererController::Status MasterRenderer::render_frame(
 {
     while (true)
     {
+        // Discard recorded light paths.
+        m_project.get_light_path_recorder().clear();
+
         // The on_frame_begin() method of the renderer controller might alter the scene
         // (e.g. transform the camera), thus it needs to be called before the on_frame_begin()
         // of the scene which assumes the scene is up-to-date and ready to be rendered.

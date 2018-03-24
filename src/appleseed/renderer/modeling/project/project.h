@@ -86,6 +86,7 @@ namespace renderer      { class EnvironmentEDF; }
 namespace renderer      { class EnvironmentShader; }
 namespace renderer      { class Frame; }
 namespace renderer      { class Light; }
+namespace renderer      { class LightPathRecorder; }
 namespace renderer      { class Material; }
 namespace renderer      { class Object; }
 namespace renderer      { class Scene; }
@@ -149,6 +150,9 @@ class APPLESEED_DLLSYMBOL Project
     // Access the display.
     // Return nullptr if the project does not contain a display.
     Display* get_display() const;
+
+    // Access the light path recorder.
+    LightPathRecorder& get_light_path_recorder() const;
 
     // Access the configurations.
     ConfigurationContainer& configurations() const;

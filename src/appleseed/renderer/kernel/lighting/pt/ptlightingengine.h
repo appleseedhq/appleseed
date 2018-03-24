@@ -40,6 +40,7 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace renderer      { class BackwardLightSampler; }
+namespace renderer      { class LightPathRecorder; }
 
 namespace renderer
 {
@@ -55,6 +56,7 @@ class PTLightingEngineFactory
     // Constructor.
     PTLightingEngineFactory(
         const BackwardLightSampler&     light_sampler,
+        LightPathRecorder&              light_path_recorder,
         const ParamArray&               params);
 
     // Delete this instance.
@@ -68,6 +70,7 @@ class PTLightingEngineFactory
 
   private:
     const BackwardLightSampler&         m_light_sampler;
+    LightPathRecorder&                  m_light_path_recorder;
     ParamArray                          m_params;
 };
 

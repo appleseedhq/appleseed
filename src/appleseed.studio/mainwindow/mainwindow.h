@@ -160,6 +160,7 @@ class MainWindow
 
     RenderTabCollection                         m_render_tabs;
     std::map<int, RenderTab*>                   m_tab_index_to_render_tab;
+    LightPathsTab*                              m_light_paths_tab;
 
     struct StateBeforeProjectOpen
     {
@@ -202,6 +203,8 @@ class MainWindow
     void recreate_render_tabs();
     void remove_render_tabs();
     void add_render_tab(const QString& label);
+    void add_light_paths_tab();
+    void remove_light_paths_tab();
 
     // Project file handling.
     renderer::ParamArray get_project_params(const char* configuration_name) const;

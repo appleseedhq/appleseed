@@ -35,6 +35,8 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/directlightingintegrator.h"
 #include "renderer/kernel/lighting/imagebasedlighting.h"
+#include "renderer/kernel/lighting/lightpathrecorder.h"
+#include "renderer/kernel/lighting/lightpathstream.h"
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
@@ -94,9 +96,14 @@ namespace
       public:
         PTLightingEngine(
             const BackwardLightSampler&     light_sampler,
+            LightPathRecorder&              light_path_recorder,
             const ParamArray&               params)
           : m_params(params)
           , m_light_sampler(light_sampler)
+          , m_light_path_stream(
+              m_params.m_record_light_paths
+                  ? light_path_recorder.create_stream()
+                  : nullptr)
           , m_path_count(0)
           , m_inf_volume_ray_warnings(0)
         {
@@ -152,6 +159,14 @@ namespace
             const ShadingPoint&     shading_point,
             ShadingComponents&      radiance) override      // output radiance, in W.sr^-1.m^-2
         {
+            if (m_light_path_stream)
+            {
+                m_light_path_stream->begin_path(
+                    pixel_context,
+                    shading_point.get_scene().get_active_camera(),
+                    shading_point.get_ray().m_org);
+            }
+
             if (m_params.m_next_event_estimation)
             {
                 do_compute_lighting<PathVisitorNextEventEstimation, VolumeVisitorDistanceSampling>(
@@ -168,6 +183,9 @@ namespace
                     shading_point,
                     radiance);
             }
+
+            if (m_light_path_stream)
+                m_light_path_stream->end_path();
         }
 
         template <typename PathVisitor, typename VolumeVisitor>
@@ -183,7 +201,8 @@ namespace
                 sampling_context,
                 shading_context,
                 shading_point.get_scene(),
-                radiance);
+                radiance,
+                m_light_path_stream);
 
             VolumeVisitor volume_visitor(
                 m_params,
@@ -244,6 +263,8 @@ namespace
             const float     m_dl_light_sample_count;        // number of light samples used to estimate direct illumination
             const float     m_dl_low_light_threshold;       // light contribution threshold to disable shadow rays
             const float     m_ibl_env_sample_count;         // number of environment samples used to estimate IBL
+            float           m_rcp_dl_light_sample_count;
+            float           m_rcp_ibl_env_sample_count;
 
             const bool      m_has_max_ray_intensity;
             const float     m_max_ray_intensity;
@@ -251,8 +272,7 @@ namespace
             const size_t    m_distance_sample_count;        // number of distance samples for volume rendering
             const bool      m_enable_equiangular_sampling;  // optimize for lights that are located outside volumes
 
-            float           m_rcp_dl_light_sample_count;
-            float           m_rcp_ibl_env_sample_count;
+            const bool      m_record_light_paths;
 
             explicit Parameters(const ParamArray& params)
               : m_enable_dl(params.get_optional<bool>("enable_dl", true))
@@ -272,6 +292,7 @@ namespace
               , m_max_ray_intensity(params.get_optional<float>("max_ray_intensity", 0.0f))
               , m_distance_sample_count(params.get_optional<size_t>("volume_distance_samples", 2))
               , m_enable_equiangular_sampling(!params.get_optional<bool>("optimize_for_lights_outside_volumes", false))
+              , m_record_light_paths(params.get_optional<bool>("record_light_paths", false))
             {
                 // Precompute the reciprocal of the number of light samples.
                 m_rcp_dl_light_sample_count =
@@ -299,6 +320,7 @@ namespace
 
         const Parameters                m_params;
         const BackwardLightSampler&     m_light_sampler;
+        LightPathStream*                m_light_path_stream;
 
         uint64                          m_path_count;
         Population<uint64>              m_path_length;
@@ -342,6 +364,7 @@ namespace
             const ShadingContext&               m_shading_context;
             const EnvironmentEDF*               m_env_edf;
             ShadingComponents&                  m_path_radiance;
+            LightPathStream*                    m_light_path_stream;
             bool                                m_omit_emitted_light;
 
             PathVisitorBase(
@@ -350,13 +373,15 @@ namespace
                 SamplingContext&                sampling_context,
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
-                ShadingComponents&              path_radiance)
+                ShadingComponents&              path_radiance,
+                LightPathStream*                light_path_stream)
               : m_params(params)
               , m_light_sampler(light_sampler)
               , m_sampling_context(sampling_context)
               , m_shading_context(shading_context)
               , m_env_edf(scene.get_environment()->get_environment_edf())
               , m_path_radiance(path_radiance)
+              , m_light_path_stream(light_path_stream)
               , m_omit_emitted_light(false)
             {
             }
@@ -376,14 +401,16 @@ namespace
                 SamplingContext&                sampling_context,
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
-                ShadingComponents&              path_radiance)
+                ShadingComponents&              path_radiance,
+                LightPathStream*                light_path_stream)
               : PathVisitorBase(
                     params,
                     light_sampler,
                     sampling_context,
                     shading_context,
                     scene,
-                    path_radiance)
+                    path_radiance,
+                    light_path_stream)
             {
             }
 
@@ -429,6 +456,10 @@ namespace
                     Spectrum emitted_radiance(Spectrum::Illuminance);
                     vertex.compute_emitted_radiance(m_shading_context, emitted_radiance);
 
+                    // Record light path event.
+                    if (m_light_path_stream)
+                        m_light_path_stream->hit_emitter(vertex, emitted_radiance);
+
                     // Apply path throughput.
                     emitted_radiance *= vertex.m_throughput;
 
@@ -437,6 +468,12 @@ namespace
                         vertex.m_path_length,
                         vertex.m_aov_mode,
                         emitted_radiance);
+                }
+                else
+                {
+                    // Record light path event.
+                    if (m_light_path_stream)
+                        m_light_path_stream->hit_reflector(vertex);
                 }
             }
 
@@ -470,14 +507,16 @@ namespace
                 SamplingContext&                sampling_context,
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
-                ShadingComponents&              path_radiance)
+                ShadingComponents&              path_radiance,
+                LightPathStream*                light_path_stream)
               : PathVisitorBase(
                     params,
                     light_sampler,
                     sampling_context,
                     shading_context,
                     scene,
-                    path_radiance)
+                    path_radiance,
+                    light_path_stream)
               , m_is_indirect_lighting(false)
             {
             }
@@ -547,6 +586,10 @@ namespace
                     Spectrum emitted_radiance(0.0f);
                     add_emitted_light_contribution(vertex, emitted_radiance);
 
+                    // Record light path event.
+                    if (m_light_path_stream)
+                        m_light_path_stream->hit_emitter(vertex, emitted_radiance);
+
                     // Apply path throughput.
                     emitted_radiance *= vertex.m_throughput;
 
@@ -559,6 +602,12 @@ namespace
                         vertex.m_path_length,
                         vertex.m_aov_mode,
                         emitted_radiance);
+                }
+                else
+                {
+                    // Record light path event.
+                    if (m_light_path_stream)
+                        m_light_path_stream->hit_reflector(vertex);
                 }
             }
 
@@ -613,7 +662,8 @@ namespace
                             *vertex.m_bsdf,
                             vertex.m_bsdf_data,
                             vertex.m_scattering_modes,
-                            vertex_radiance);
+                            vertex_radiance,
+                            m_light_path_stream);
                     }
                 }
 
@@ -678,7 +728,8 @@ namespace
                 const BSDF&                 bsdf,
                 const void*                 bsdf_data,
                 const int                   scattering_modes,
-                DirectShadingComponents&    vertex_radiance)
+                DirectShadingComponents&    vertex_radiance,
+                LightPathStream*            light_path_stream)
             {
                 DirectShadingComponents dl_radiance;
 
@@ -711,7 +762,8 @@ namespace
                     m_sampling_context,
                     MISPower2,
                     outgoing,
-                    dl_radiance);
+                    dl_radiance,
+                    light_path_stream);
 
                 // Divide by the sample count when this number is less than 1.
                 if (m_params.m_rcp_dl_light_sample_count > 0.0f)
@@ -999,8 +1051,10 @@ namespace
 
 PTLightingEngineFactory::PTLightingEngineFactory(
     const BackwardLightSampler&     light_sampler,
+    LightPathRecorder&              light_path_recorder,
     const ParamArray&               params)
   : m_light_sampler(light_sampler)
+  , m_light_path_recorder(light_path_recorder)
   , m_params(params)
 {
 }
@@ -1015,6 +1069,7 @@ ILightingEngine* PTLightingEngineFactory::create()
     return
         new PTLightingEngine(
             m_light_sampler,
+            m_light_path_recorder,
             m_params);
 }
 
@@ -1133,6 +1188,14 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("default", "false")
             .insert("label", "Optimize for Lights Outside Volumes")
             .insert("help", "Optimize distance sampling for lights that are located outside volumes"));
+
+    metadata.dictionaries().insert(
+        "record_light_paths",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "false")
+            .insert("label", "Record Light Paths")
+            .insert("help", "Record light paths in memory to later allow visualizing them or saving them to disk"));
 
     return metadata;
 }

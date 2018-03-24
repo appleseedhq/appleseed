@@ -364,7 +364,8 @@ namespace
                 integrator.compute_outgoing_radiance_combined_sampling_low_variance(
                     vertex.m_sampling_context,
                     vertex.m_outgoing,
-                    dl_radiance);
+                    dl_radiance,
+                    nullptr);
 
                 // Divide by the sample count when this number is less than 1.
                 if (m_params.m_rcp_dl_light_sample_count > 0.0f)
