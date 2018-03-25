@@ -662,7 +662,7 @@ inline T linear_rgb_to_srgb(const T c)
 {
     return c <= T(0.0031308)
         ? T(12.92) * c
-        : T(1.055) * std::pow(c, T(1.0 / 2.4)) - T(0.055);
+        : T(1.055) * fast_pow(c, T(1.0 / 2.4)) - T(0.055);
 }
 
 template <typename T>
@@ -670,7 +670,7 @@ inline T srgb_to_linear_rgb(const T c)
 {
     return c <= T(0.04045)
         ? T(1.0 / 12.92) * c
-        : std::pow((c + T(0.055)) * T(1.0 / 1.055), T(2.4));
+        : fast_pow((c + T(0.055)) * T(1.0 / 1.055), T(2.4));
 }
 
 template <typename T>
