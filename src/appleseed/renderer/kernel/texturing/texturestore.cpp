@@ -118,7 +118,7 @@ namespace
             {
                 Color3f color;
                 tile.get_pixel(i, color);
-                tile.set_pixel(i, srgb_to_linear_rgb(color));
+                tile.set_pixel(i, fast_srgb_to_linear_rgb(color));
             }
         }
         else
@@ -127,7 +127,7 @@ namespace
             {
                 Color4f color;
                 tile.get_pixel(i, color);
-                color.rgb() = srgb_to_linear_rgb(color.rgb());
+                color.rgb() = fast_srgb_to_linear_rgb(color.rgb());
                 tile.set_pixel(i, color);
             }
         }
