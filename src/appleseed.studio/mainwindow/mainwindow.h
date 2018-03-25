@@ -229,7 +229,8 @@ class MainWindow
     void slot_new_project();
     void slot_open_project();
     void slot_open_recent();
-    void slot_clear_open_recent_files_menu();
+    void slot_clear_recent_project_files_menu();
+    void slot_clear_recent_nonexistent_project_files();
     void slot_open_cornellbox_builtin_project();
     void slot_reload_project();
     void slot_open_project_complete(const QString& filepath, const bool successful);

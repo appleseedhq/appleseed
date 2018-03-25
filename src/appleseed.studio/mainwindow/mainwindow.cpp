@@ -536,10 +536,15 @@ void MainWindow::build_recent_files_menu()
 
     m_ui->menu_open_recent->addSeparator();
 
-    QAction* clear_open_recent_menu = new QAction(this);
-    clear_open_recent_menu->setText("&Clear Menu");
-    connect(clear_open_recent_menu, SIGNAL(triggered()), SLOT(slot_clear_open_recent_files_menu()));
-    m_ui->menu_open_recent->addAction(clear_open_recent_menu);
+    QAction* clear_nonexistent_files = new QAction(this);
+    clear_nonexistent_files->setText("&Clear Non-existent Files");
+    connect(clear_nonexistent_files, SIGNAL(triggered()), SLOT(slot_clear_recent_nonexistent_project_files()));
+    m_ui->menu_open_recent->addAction(clear_nonexistent_files);
+
+    QAction* clear_menu = new QAction(this);
+    clear_menu->setText("&Clear Menu");
+    connect(clear_menu, SIGNAL(triggered()), SLOT(slot_clear_recent_project_files_menu()));
+    m_ui->menu_open_recent->addAction(clear_menu);
 }
 
 void MainWindow::update_recent_files_menu(const QString& filepath)
@@ -1295,12 +1300,28 @@ void MainWindow::slot_open_recent()
     }
 }
 
-void MainWindow::slot_clear_open_recent_files_menu()
+void MainWindow::slot_clear_recent_project_files_menu()
 {
     QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
     settings.setValue("recent_file_list", QStringList());
 
     update_recent_files_menu(QStringList());
+}
+
+void MainWindow::slot_clear_recent_nonexistent_project_files()
+{
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    QStringList files = settings.value("recent_file_list").toStringList();
+    QStringList existent_files;
+
+    for (int i = 0; i < files.size(); i++)
+    {
+        if (QFileInfo(files[i]).isFile())
+            existent_files << files[i];
+    }
+
+    settings.setValue("recent_file_list", existent_files);
+    update_recent_files_menu(existent_files);
 }
 
 void MainWindow::slot_open_cornellbox_builtin_project()
