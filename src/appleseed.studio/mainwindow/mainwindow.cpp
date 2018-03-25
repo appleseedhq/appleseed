@@ -282,8 +282,9 @@ bool MainWindow::save_project(QString filepath)
     if (m_project_file_watcher)
         start_monitoring_project_file();
 
+    if (successful)
+        update_recent_files_menu(filepath);
     update_workspace();
-    update_recent_files_menu(filepath);
 
     return successful;
 }
