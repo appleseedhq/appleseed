@@ -255,13 +255,13 @@ void TextRenderer::draw_string(
                 if (image_color_space == ColorSpaceSRGB)
                 {
                     // Convert background color from sRGB to linear RGB.
-                    background.rgb() = srgb_to_linear_rgb(background.rgb());
+                    background.rgb() = fast_srgb_to_linear_rgb(background.rgb());
                 }
 
                 Color4f pixel = color_srgb;
 
                 // Convert text color from sRGB to linear RGB.
-                pixel.rgb() = srgb_to_linear_rgb(pixel.rgb());
+                pixel.rgb() = fast_srgb_to_linear_rgb(pixel.rgb());
 
                 // Premultiply text color.
                 pixel *= pixel.a * alpha;

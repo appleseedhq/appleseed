@@ -142,7 +142,7 @@ void ColorSource::initialize_from_color3(const ColorEntity& color_entity)
         break;
 
       case ColorSpaceSRGB:
-        m_linear_rgb = srgb_to_linear_rgb(color);
+        m_linear_rgb = fast_srgb_to_linear_rgb(color);
         break;
 
       case ColorSpaceCIEXYZ:

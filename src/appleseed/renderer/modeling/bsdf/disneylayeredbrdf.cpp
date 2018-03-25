@@ -128,7 +128,7 @@ void* DisneyLayeredBRDF::evaluate_inputs(
     // Colors in SeExpr are always in the sRGB color space.
     // todo: convert colors earlier so that all math is done in linear space.
     values->m_base_color.set(
-        srgb_to_linear_rgb(base_color),
+        fast_srgb_to_linear_rgb(base_color),
         g_std_lighting_conditions,
         Spectrum::Reflectance);
 
