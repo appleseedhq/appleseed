@@ -95,6 +95,8 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
 {
     PickingResult result;
 
+    result.m_ndc = ndc;
+
     result.m_hit = false;
     result.m_primitive_type = ShadingPoint::PrimitiveNone;
     result.m_distance = numeric_limits<double>::max();
