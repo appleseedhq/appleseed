@@ -53,6 +53,7 @@ namespace foundation    { class DictionaryArray; }
 namespace foundation    { class SearchPaths; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
+namespace renderer      { class ObjectRasterizer; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Source; }
 namespace renderer      { class Triangle; }
@@ -84,6 +85,9 @@ class APPLESEED_DLLSYMBOL MeshObject
 
     // Return the region kit of the object.
     foundation::Lazy<RegionKit>& get_region_kit() override;
+
+    // Send this object to an object rasterizer.
+    void rasterize(ObjectRasterizer& drawer) const override;
 
     // Insert and access vertices.
     void reserve_vertices(const size_t count);

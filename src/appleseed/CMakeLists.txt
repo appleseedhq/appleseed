@@ -897,6 +897,7 @@ set (renderer_api_sources
     renderer/api/material.h
     renderer/api/object.h
     renderer/api/project.h
+    renderer/api/rasterization.h
     renderer/api/rendering.h
     renderer/api/scene.h
     renderer/api/shadergroup.h
@@ -1087,6 +1088,17 @@ list (APPEND appleseed_sources
 )
 source_group ("renderer\\kernel\\lighting" FILES
     ${renderer_kernel_lighting_sources}
+)
+
+set (renderer_kernel_rasterization_sources
+    renderer/kernel/rasterization/objectrasterizer.h
+    renderer/kernel/rasterization/rasterizationcamera.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_rasterization_sources}
+)
+source_group ("renderer\\kernel\\rasterization" FILES
+    ${renderer_kernel_rasterization_sources}
 )
 
 set (renderer_kernel_rendering_debug_sources
