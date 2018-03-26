@@ -48,6 +48,7 @@
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class BaseGroup; }
+namespace renderer      { class ObjectRasterizer; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
@@ -109,6 +110,9 @@ class APPLESEED_DLLSYMBOL Object
 
     // Return the alpha map cached by on_frame_begin().
     const Source* get_alpha_map() const;
+
+    // Send this object to an object rasterizer.
+    virtual void rasterize(ObjectRasterizer& rasterizer) const;
 
   private:
     const Source* m_alpha_map;

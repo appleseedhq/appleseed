@@ -107,4 +107,8 @@ void Object::on_frame_end(
     ConnectableEntity::on_frame_end(project, parent);
 }
 
+void Object::rasterize(ObjectRasterizer& rasterizer) const
+{
+}
+
 }   // namespace renderer

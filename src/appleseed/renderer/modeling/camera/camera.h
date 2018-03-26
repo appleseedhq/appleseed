@@ -51,6 +51,7 @@ namespace renderer      { class Frame; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
+namespace renderer      { class RasterizationCamera; }
 namespace renderer      { class ShadingRay; }
 
 namespace renderer
@@ -166,6 +167,9 @@ class APPLESEED_DLLSYMBOL Camera
         foundation::Vector2d&           a_ndc,
         foundation::Vector2d&           b_ndc) const = 0;
 
+    // Return a camera representation suitable for rasterization.
+    virtual RasterizationCamera get_rasterization_camera() const = 0;
+
   protected:
     struct Impl;
     Impl* impl;
@@ -185,6 +189,11 @@ class APPLESEED_DLLSYMBOL Camera
 
     // Utility function to retrieve the focal length (in meters) from the camera parameters.
     double extract_focal_length(const double film_width) const;
+
+    // Focal length <-> horizontal field of view conversion functions.
+    // Focal length and film width are expressed in meters; horizontal field of view is expressed in radians.
+    static double hfov_to_focal_length(const double film_width, const double hfov);
+    static double focal_length_to_hfov(const double film_width, const double focal_length);
 
     // Utility function to retrieve the abscissa (in meters) of the near plane from the camera parameters.
     double extract_near_z() const;
