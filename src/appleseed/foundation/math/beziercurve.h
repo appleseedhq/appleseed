@@ -887,12 +887,12 @@ bool BezierCurveIntersector<BezierCurveType>::converge(
         // Compute point on curve.
         const VectorType p = curve.evaluate_point(w);
 
-        // Compare Z distances.
-        if (p.z < ValueType(0.0) || p.z > t)
-            return false;
-
         // Compute curve width.
         const ValueType width = curve.evaluate_width(w);
+
+        // Compare Z distances.
+        if (p.z <= width || p.z > t)
+            return false;
 
         // Compare X-Y distances.
         if (dotxy(p, p) >= ValueType(0.25) * width * width)
