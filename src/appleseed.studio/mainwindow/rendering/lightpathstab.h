@@ -35,7 +35,7 @@
 #include "utility/mousecoordinatestracker.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/scenepicker.h"
+#include "renderer/api/rendering.h"
 
 // Qt headers.
 #include <QObject>
