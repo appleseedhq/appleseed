@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
+#include "renderer/kernel/aov/imagestack.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -69,6 +70,7 @@ namespace
       public:
         StdOutTileCallback(const bool single_plane = false)
           : m_single_plane(single_plane)
+          , m_header_sent(false)
         {
         }
 
@@ -88,32 +90,7 @@ namespace
 #ifdef _WIN32
             const int old_stdout_mode = _setmode(_fileno(stdout), _O_BINARY);
 #endif
-
-            // Compute the coordinates in the image of the top-left corner of the tile.
-            const CanvasProperties& frame_props = frame->image().properties();
-            const size_t x = tile_x * frame_props.m_tile_width;
-            const size_t y = tile_y * frame_props.m_tile_height;
-
-            // Retrieve the source tile and its dimensions.
-            const Tile& tile = frame->image().tile(tile_x, tile_y);
-            const size_t w = tile.get_width();
-            const size_t h = tile.get_height();
-
-            // Build and write tile header.
-            const size_t chunk_size = 4 * sizeof(uint32);
-            const uint32 header[] =
-            {
-                static_cast<uint32>(ChunkTypeTileHighlight),
-                static_cast<uint32>(chunk_size),
-                static_cast<uint32>(x),
-                static_cast<uint32>(y),
-                static_cast<uint32>(w),
-                static_cast<uint32>(h)
-            };
-            fwrite(header, sizeof(header), 1, stdout);
-
-            fflush(stdout);
-
+            send_highlight_tile(*frame, tile_x, tile_y);
 #ifdef _WIN32
             _setmode(_fileno(stdout), old_stdout_mode);
 #endif
@@ -129,8 +106,10 @@ namespace
 #ifdef _WIN32
             const int old_stdout_mode = _setmode(_fileno(stdout), _O_BINARY);
 #endif
-            send_header(*frame, tile_x, tile_y);
+            send_header(*frame);
             send_tile(*frame, tile_x, tile_y);
+
+            fflush(stdout);
 #ifdef _WIN32
             _setmode(_fileno(stdout), old_stdout_mode);
 #endif
@@ -140,15 +119,71 @@ namespace
         // Do not change the values of the enumerators as this WILL break client compabitility.
         enum ChunkType
         {
-            ChunkTypeTileData       = 1,
-            ChunkTypeTileHighlight  = 2
+            // Protocol v2
+            ChunkTypeTileHighlight          = 10,
+            ChunkTypeTilesHeader            = 11,
+            ChunkTypePlaneDefinition        = 12,
+            ChunkTypeTileData               = 13
         };
 
         boost::mutex m_mutex;
 
+        bool m_header_sent;
         const bool m_single_plane;
 
-        void send_header(
+        void send_header(const Frame& frame)
+        {
+            if (m_header_sent) return;
+
+            // Build and write tiles header.
+            // This header is sent only once and can contains aovs and frame informations.
+            const size_t chunk_size = 1 * sizeof(uint32);
+            const size_t plane_count = m_single_plane ? 1 : 1 + frame.aov_images().size();
+            const uint32 header[] =
+            {
+                static_cast<uint32>(ChunkTypeTilesHeader),
+                static_cast<uint32>(chunk_size),
+                static_cast<uint32>(plane_count),
+            };
+            fwrite(header, sizeof(header), 1, stdout);
+
+            send_plane_definition(frame.image(), "beauty", 0);
+
+            if (!m_single_plane)
+            {
+                for (size_t i = 0, e = frame.aov_images().size(); i < e; ++i)
+                {
+                    send_plane_definition(
+                                frame.aov_images().get_image(i),
+                                frame.aov_images().get_name(i),
+                                i + 1);
+                }
+            }
+
+            m_header_sent = true;
+        }
+
+        void send_plane_definition(
+            const Image&            img,
+            const char*             name,
+            const size_t            index) const
+        {
+            // Build and write aov header.
+            const size_t name_len = strlen(name);
+            const size_t chunk_size = 3 * sizeof(uint32) + name_len * sizeof(char);
+            const uint32 header[] =
+            {
+                static_cast<uint32>(ChunkTypePlaneDefinition),
+                static_cast<uint32>(chunk_size),
+                static_cast<uint32>(index),
+                static_cast<uint32>(name_len),
+                static_cast<uint32>(img.properties().m_channel_count)
+            };
+            fwrite(header, sizeof(header), 1, stdout);
+            fwrite(name, sizeof(char), name_len, stdout);
+        }
+
+        void send_highlight_tile(
             const Frame&        frame,
             const size_t        tile_x,
             const size_t        tile_y) const
@@ -162,19 +197,18 @@ namespace
             const Tile& tile = frame.image().tile(tile_x, tile_y);
             const size_t w = tile.get_width();
             const size_t h = tile.get_height();
-            const size_t c = tile.get_channel_count();
 
-            // Build and write tile header.
-            const size_t chunk_size = 5 * sizeof(uint32) + w * h * c * sizeof(float);
+            // Build and write highlight tile header.
+            // This header is sent for allowing to displaying marks arround the tile being renderer.
+            const size_t chunk_size = 4 * sizeof(uint32);
             const uint32 header[] =
             {
-                static_cast<uint32>(ChunkTypeTileData),
+                static_cast<uint32>(ChunkTypeTileHighlight),
                 static_cast<uint32>(chunk_size),
                 static_cast<uint32>(x),
                 static_cast<uint32>(y),
                 static_cast<uint32>(w),
-                static_cast<uint32>(h),
-                static_cast<uint32>(c),
+                static_cast<uint32>(h)
             };
             fwrite(header, sizeof(header), 1, stdout);
         }
@@ -184,11 +218,65 @@ namespace
             const size_t        tile_x,
             const size_t        tile_y) const
         {
-            const CanvasProperties& frame_props = frame.image().properties();
+            // We assume all AOV images have the same properties as the main image.
+            const CanvasProperties& props = frame.image().properties();
 
-            const Tile& tile = frame.image().tile(tile_x, tile_y);
-            // Write tile pixels.
-            if (frame_props.m_pixel_format != PixelFormatFloat)
+            // Send beauty tile.
+            do_send_tile(
+                props,
+                frame.image().tile(tile_x, tile_y),
+                tile_x,
+                tile_y,
+                0);
+
+            if (!m_single_plane)
+            {
+                // Send AOV tiles.
+                for (size_t i = 0, e = frame.aov_images().size(); i < e; ++i)
+                {
+                    do_send_tile(
+                        props,
+                        frame.aov_images().get_image(i).tile(tile_x, tile_y),
+                        tile_x,
+                        tile_y,
+                        i + 1);
+                }
+            }
+        }
+
+        void do_send_tile(
+            const CanvasProperties& properties,
+            const Tile&             tile,
+            const size_t            tile_x,
+            const size_t            tile_y,
+            const size_t            plane_index) const
+        {
+            const size_t x = tile_x * properties.m_tile_width;
+            const size_t y = tile_y * properties.m_tile_height;
+
+            // Retrieve the tile dimensions
+            const size_t w = tile.get_width();
+            const size_t h = tile.get_height();
+            const size_t c = tile.get_channel_count();
+
+            // Build and write tile header.
+            // This header contains information about the tile aov that will be written.
+            const size_t chunk_size = 6 * sizeof(uint32) + w * h * c * sizeof(float);
+            const uint32 header[] =
+            {
+                static_cast<uint32>(ChunkTypeTileData),
+                static_cast<uint32>(chunk_size),
+                static_cast<uint32>(plane_index),
+                static_cast<uint32>(x),
+                static_cast<uint32>(y),
+                static_cast<uint32>(w),
+                static_cast<uint32>(h),
+                static_cast<uint32>(c),
+            };
+            fwrite(header, sizeof(header), 1, stdout);
+
+            // Send tile pixels.
+            if (properties.m_pixel_format != PixelFormatFloat)
             {
                 const Tile tmp(tile, PixelFormatFloat);
                 fwrite(tmp.get_storage(), 1, tmp.get_size(), stdout);
@@ -197,8 +285,6 @@ namespace
             {
                 fwrite(tile.get_storage(), 1, tile.get_size(), stdout);
             }
-
-            fflush(stdout);
         }
     };
 }
