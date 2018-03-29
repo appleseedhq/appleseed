@@ -274,8 +274,8 @@ namespace
                 alpha_x,
                 alpha_y);
 
-            sampling_context.split_in_place(4, 1);
-            const Vector4f s = sampling_context.next2<Vector4f>();
+            sampling_context.split_in_place(3, 1);
+            const Vector3f s = sampling_context.next2<Vector3f>();
 
             const Vector3f wo = basis.transform_to_local(sample.m_outgoing.get_value());
             Vector3f wi;
@@ -389,7 +389,7 @@ namespace
         template <typename MDF, typename SpectrumType>
         static bool do_sample(
             const MDF&                  mdf,
-            const Vector4f&             s,
+            const Vector3f&             s,
             const bool                  adjoint,
             const Basis3f&              basis,
             const float                 alpha_x,
@@ -406,7 +406,7 @@ namespace
             float&                      probability)
         {
             // Compute the microfacet normal by sampling the MDF.
-            Vector3f m = mdf.sample(wo, Vector3f(s[0], s[1], s[2]), alpha_x, alpha_y, gamma);
+            Vector3f m = mdf.sample(wo, Vector2f(s[0], s[1]), alpha_x, alpha_y, gamma);
             assert(m.y > 0.0f);
 
             const float cos_wom = clamp(dot(wo, m), -1.0f, 1.0f);
@@ -420,7 +420,7 @@ namespace
             bool is_refraction;
 
             // Choose between reflection and refraction.
-            if (s[3] < r_probability)
+            if (s[2] < r_probability)
             {
                 is_refraction = false;
 
@@ -1254,9 +1254,9 @@ namespace
 
             for (size_t i = 0; i < SampleCount; ++i)
             {
-                // Generate a uniform sample in [0,1)^4.
-                const size_t Bases[] = { 2, 3, 4 };
-                const Vector4f s = hammersley_sequence<float, 4>(Bases, SampleCount, i);
+                // Generate a uniform sample in [0,1)^3.
+                const size_t Bases[] = { 2, 3 };
+                const Vector3f s = hammersley_sequence<float, 3>(Bases, SampleCount, i);
 
                 Vector3f wi;
                 float value = 0.0f;

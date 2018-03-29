@@ -73,7 +73,7 @@ class MDF
 
     virtual Vector3f sample(
         const Vector3f&     v,
-        const Vector3f&     s,
+        const Vector2f&     s,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const = 0;
@@ -130,7 +130,7 @@ class BlinnMDF
 
     Vector3f sample(
         const Vector3f&     v,
-        const Vector3f&     s,
+        const Vector2f&     s,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
@@ -196,7 +196,7 @@ class BeckmannMDF
 
     Vector3f sample(
         const Vector3f&     v,
-        const Vector3f&     s,
+        const Vector2f&     s,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
@@ -214,7 +214,7 @@ class BeckmannMDF
 
     Vector2f sample_slope(
         const float         cos_theta,
-        const Vector3f&     s,
+        const Vector2f&     s,
         const float         gamma) const;
 
     float lambda(
@@ -272,14 +272,10 @@ class GGXMDF
 
     Vector3f sample(
         const Vector3f&     v,
-        const Vector3f&     s,
+        const Vector2f&     s,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
-
-    Vector3f sample(
-        const Vector2f&     s,
-        const float         alpha) const;
 
     float pdf(
         const Vector3f&     v,
@@ -336,7 +332,7 @@ class WardMDF
 
     Vector3f sample(
         const Vector3f&     v,
-        const Vector3f&     s,
+        const Vector2f&     s,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
@@ -391,7 +387,7 @@ class GTR1MDF
 
     Vector3f sample(
         const Vector3f&     v,
-        const Vector3f&     s,
+        const Vector2f&     s,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
@@ -451,7 +447,7 @@ class StdMDF
 
     Vector3f sample(
         const Vector3f&     v,
-        const Vector3f&     s,
+        const Vector2f&     s,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;

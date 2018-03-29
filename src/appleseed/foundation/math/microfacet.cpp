@@ -98,25 +98,6 @@ namespace
         return sqrt(cos_phi_2_ax_2 + sin_phi_2_ay_2);
     }
 
-    Vector3f v_cavity_choose_microfacet_normal(
-        const Vector3f&     v,
-        const Vector3f&     m,
-        const float         s)
-    {
-        // Preconditions.
-        assert(is_normalized(v));
-
-        const Vector3f mirror_m(-m[0], m[1], -m[2]);
-        const float cos_vm = abs(dot(v, m));
-        const float cos_vmm = abs(dot(v, mirror_m));
-
-        if (cos_vmm == 0.0f)
-            return m;
-
-        const float w = cos_vmm / (cos_vm + cos_vmm);
-        return s < w ? mirror_m : m;
-    }
-
     template <typename Distribution>
     float pdf_visible_normals(
         const Distribution& mdf,
@@ -191,7 +172,7 @@ float BlinnMDF::G1(
 
 Vector3f BlinnMDF::sample(
     const Vector3f&     v,
-    const Vector3f&     s,
+    const Vector2f&     s,
     const float         alpha_x,
     const float         alpha_y,
     const float         gamma) const
@@ -202,10 +183,7 @@ Vector3f BlinnMDF::sample(
     float cos_phi, sin_phi;
     sample_phi(s[1], cos_phi, sin_phi);
 
-    const Vector3f m =
-        Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
-
-    return v_cavity_choose_microfacet_normal(v, m, s[2]);
+    return Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
 }
 
 float BlinnMDF::pdf(
@@ -306,7 +284,7 @@ float BeckmannMDF::lambda(
 
 Vector3f BeckmannMDF::sample(
     const Vector3f&     v,
-    const Vector3f&     s,
+    const Vector2f&     s,
     const float         alpha_x,
     const float         alpha_y,
     const float         gamma) const
@@ -344,22 +322,10 @@ Vector3f BeckmannMDF::sample(
     return normalize(m);
 }
 
-Vector3f BeckmannMDF::sample(const Vector2f& s, const float alpha) const
-{
-    const float tan_theta_alpha_2 = -square(alpha) * std::log(1.0f - s[0]);
-    const float cos_theta = 1.0f / sqrt(1.0f + tan_theta_alpha_2);
-    const float sin_theta = sqrt(1.0f - square(cos_theta));
-
-    float cos_phi, sin_phi;
-    sample_phi(s[1], cos_phi, sin_phi);
-
-    return Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
-}
-
 // This code comes from OpenShadingLanguage test render.
 Vector2f BeckmannMDF::sample_slope(
     const float         cos_theta,
-    const Vector3f&     s,
+    const Vector2f&     s,
     const float         gamma) const
 {
     const float threshold = 1e-06f;
@@ -507,7 +473,7 @@ float GGXMDF::lambda(
 
 Vector3f GGXMDF::sample(
     const Vector3f&     v,
-    const Vector3f&     s,
+    const Vector2f&     s,
     const float         alpha_x,
     const float         alpha_y,
     const float         gamma) const
@@ -551,18 +517,6 @@ Vector3f GGXMDF::sample(
         max(0.0f, h.y),
         h.z * alpha_y);
     return normalize(m);
-}
-
-Vector3f GGXMDF::sample(const Vector2f& s, const float alpha) const
-{
-    const float tan_theta_alpha_2 = square(alpha) * s[0] / (1.0f - s[0]);
-    const float cos_theta = 1.0f / sqrt(1.0f + tan_theta_alpha_2);
-    const float sin_theta = sqrt(1.0f - square(cos_theta));
-
-    float cos_phi, sin_phi;
-    sample_phi(s[1], cos_phi, sin_phi);
-
-    return Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
 }
 
 float GGXMDF::pdf(
@@ -636,7 +590,7 @@ float WardMDF::G1(
 
 Vector3f WardMDF::sample(
     const Vector3f&     v,
-    const Vector3f&     s,
+    const Vector2f&     s,
     const float         alpha_x,
     const float         alpha_y,
     const float         gamma) const
@@ -731,7 +685,7 @@ float GTR1MDF::lambda(
 
 Vector3f GTR1MDF::sample(
     const Vector3f&     v,
-    const Vector3f&     s,
+    const Vector2f&     s,
     const float         alpha_x,
     const float         alpha_y,
     const float         gamma) const
@@ -870,7 +824,7 @@ float StdMDF::pdf(
 
 Vector3f StdMDF::sample(
     const Vector3f&     v,
-    const Vector3f&     s,
+    const Vector2f&     s,
     const float         alpha_x,
     const float         alpha_y,
     const float         gamma) const

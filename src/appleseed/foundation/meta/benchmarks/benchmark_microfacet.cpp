@@ -55,10 +55,9 @@ BENCHMARK_SUITE(Foundation_Math_Microfacet)
 
         void sample(const float alpha_x, const float alpha_y)
         {
-            Vector3f s;
+            Vector2f s;
             s[0] = rand_float2(m_rng);
             s[1] = rand_float2(m_rng);
-            s[2] = rand_float2(m_rng);
 
             m_dummy_vec +=
                 MDFType().sample(
