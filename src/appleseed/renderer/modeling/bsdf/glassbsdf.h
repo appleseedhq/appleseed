@@ -74,13 +74,11 @@ APPLESEED_DECLARE_INPUT_VALUES(GlassBSDFInputValues)
     struct Precomputed
     {
         bool        m_backfacing;
-        float       m_eta;
+        float       m_outside_ior;
         Spectrum    m_reflection_color;
         Spectrum    m_refraction_color;
         float       m_reflection_weight;
         float       m_refraction_weight;
-        float       m_fresnel_average;
-        float       m_fresnel_rcp_eta_average;
     };
 
     Precomputed     m_precomputed;
