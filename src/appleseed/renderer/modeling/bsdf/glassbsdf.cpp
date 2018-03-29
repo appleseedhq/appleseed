@@ -214,12 +214,12 @@ namespace
             if (shading_point.is_entering())
             {
                 values->m_precomputed.m_backfacing = false;
-                values->m_precomputed.m_eta = shading_point.get_ray().get_current_ior() / values->m_ior;
+                values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
             }
             else
             {
                 values->m_precomputed.m_backfacing = true;
-                values->m_precomputed.m_eta = values->m_ior / shading_point.get_ray().get_previous_ior();
+                values->m_precomputed.m_outside_ior = shading_point.get_ray().get_previous_ior();
             }
 
             values->m_precomputed.m_reflection_color  = values->m_surface_transmittance;
@@ -235,15 +235,6 @@ namespace
             // Weights used when choosing reflection or refraction.
             values->m_precomputed.m_reflection_weight = max(max_value(values->m_precomputed.m_reflection_color), 0.0f);
             values->m_precomputed.m_refraction_weight = max(max_value(values->m_precomputed.m_refraction_color), 0.0f);
-
-            // Energy compensation.
-            if (values->m_energy_compensation != 0.0f)
-            {
-                values->m_precomputed.m_fresnel_average =
-                    average_fresnel_reflectance_dielectric(values->m_precomputed.m_eta);
-                values->m_precomputed.m_fresnel_rcp_eta_average =
-                    average_fresnel_reflectance_dielectric(1.0f / values->m_precomputed.m_eta);
-            }
         }
 
         void sample(
@@ -267,6 +258,16 @@ namespace
                           -sample.m_shading_basis.get_tangent_v())
                     : sample.m_shading_basis);
 
+            const Vector3f wo = basis.transform_to_local(sample.m_outgoing.get_value());
+
+            const float eta =
+                wo.y > 0.0f
+                    ? values->m_ior / values->m_precomputed.m_outside_ior
+                    : values->m_precomputed.m_outside_ior / values->m_ior;
+
+            if (APPLESEED_UNLIKELY(eta == 1.0f))
+                return;
+
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
                 values->m_roughness,
@@ -277,9 +278,7 @@ namespace
             sampling_context.split_in_place(3, 1);
             const Vector3f s = sampling_context.next2<Vector3f>();
 
-            const Vector3f wo = basis.transform_to_local(sample.m_outgoing.get_value());
             Vector3f wi;
-
             bool is_refraction;
 
             switch (m_mdf_type)
@@ -299,7 +298,7 @@ namespace
                         values->m_precomputed.m_reflection_weight,
                         values->m_precomputed.m_refraction_color,
                         values->m_precomputed.m_refraction_weight,
-                        values->m_precomputed.m_eta,
+                        eta,
                         wo,
                         wi,
                         sample.m_value.m_glossy,
@@ -330,7 +329,7 @@ namespace
                         values->m_precomputed.m_reflection_weight,
                         values->m_precomputed.m_refraction_color,
                         values->m_precomputed.m_refraction_weight,
-                        values->m_precomputed.m_eta,
+                        eta,
                         wo,
                         wi,
                         sample.m_value.m_glossy,
@@ -361,7 +360,7 @@ namespace
                         values->m_precomputed.m_reflection_weight,
                         values->m_precomputed.m_refraction_color,
                         values->m_precomputed.m_refraction_weight,
-                        values->m_precomputed.m_eta,
+                        eta,
                         wo,
                         wi,
                         sample.m_value.m_glossy,
@@ -372,7 +371,7 @@ namespace
               assert_otherwise;
             }
 
-            if (sample.m_probability < 1.0e-9f)
+            if (sample.m_probability < 1.0e-6f)
                 return;
 
             sample.m_value.m_beauty = sample.m_value.m_glossy;
@@ -382,7 +381,7 @@ namespace
             sample.m_incoming = Dual3f(basis.transform_to_parent(wi));
 
             if (is_refraction)
-                sample.compute_transmitted_differentials(values->m_precomputed.m_eta);
+                sample.compute_transmitted_differentials(1.0f / eta);
             else sample.compute_reflected_differentials();
         }
 
@@ -409,9 +408,12 @@ namespace
             Vector3f m = mdf.sample(wo, Vector2f(s[0], s[1]), alpha_x, alpha_y, gamma);
             assert(m.y > 0.0f);
 
+            const float rcp_eta = 1.0f / eta;
+
             const float cos_wom = clamp(dot(wo, m), -1.0f, 1.0f);
+
             float cos_theta_t;
-            const float F = fresnel_reflectance(cos_wom, eta, cos_theta_t);
+            const float F = fresnel_reflectance(cos_wom, rcp_eta, cos_theta_t);
             const float r_probability = choose_reflection_probability(
                 reflection_weight,
                 refraction_weight,
@@ -429,13 +431,16 @@ namespace
 
                 // If incoming and outgoing are on different sides of the surface, this is not a reflection.
                 if (wi.y * wo.y <= 0.0f)
+                {
+                    probability = 0.0f;
                     return true;
+                }
 
                 evaluate_reflection(
                     mdf,
                     reflection_color,
-                    wi,
                     wo,
+                    wi,
                     m,
                     alpha_x,
                     alpha_y,
@@ -454,21 +459,24 @@ namespace
                 // Compute the refracted direction.
                 wi =
                     cos_wom > 0.0f
-                        ? (eta * cos_wom - cos_theta_t) * m - eta * wo
-                        : (eta * cos_wom + cos_theta_t) * m - eta * wo;
+                        ? (rcp_eta * cos_wom - cos_theta_t) * m - rcp_eta * wo
+                        : (rcp_eta * cos_wom + cos_theta_t) * m - rcp_eta * wo;
                 wi = improve_normalization(wi);
 
                 // If incoming and outgoing are on the same side of the surface, this is not a refraction.
                 if (wi.y * wo.y > 0.0f)
+                {
+                    probability = 0.0f;
                     return false;
+                }
 
                 evaluate_refraction(
                     mdf,
                     eta,
                     refraction_color,
                     adjoint,
-                    wi,
                     wo,
+                    wi,
                     m,
                     alpha_x,
                     alpha_y,
@@ -476,9 +484,21 @@ namespace
                     1.0f - F,
                     value);
 
+                // Recompute the half vector to have a better
+                // match with the result of the pdf method.
+                const Vector3f m_pdf = half_refraction_vector(wo, wi, eta);
+
                 probability =
                     (1.0f - r_probability) *
-                    refraction_pdf(mdf, wi, wo, m, alpha_x, alpha_y, gamma, eta);
+                    refraction_pdf(
+                        mdf,
+                        wo,
+                        wi,
+                        m_pdf,
+                        alpha_x,
+                        alpha_y,
+                        gamma,
+                        eta);
             }
 
             return is_refraction;
@@ -583,6 +603,21 @@ namespace
                     ? Basis3f(-shading_basis.get_normal(), shading_basis.get_tangent_u(), -shading_basis.get_tangent_v())
                     : shading_basis);
 
+            const Vector3f wo = basis.transform_to_local(outgoing);
+
+            const float eta =
+                wo.y > 0.0f
+                    ? values->m_ior / values->m_precomputed.m_outside_ior
+                    : values->m_precomputed.m_outside_ior / values->m_ior;
+
+            if (APPLESEED_UNLIKELY(eta == 1.0f))
+            {
+                value.set(0.0f);
+                return 0.0f;
+            }
+
+            const float rcp_eta = 1.0f / eta;
+
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
                 values->m_roughness,
@@ -592,20 +627,20 @@ namespace
             const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             const Vector3f wi = basis.transform_to_local(incoming);
-            const Vector3f wo = basis.transform_to_local(outgoing);
 
             if (wi.y * wo.y >= 0.0f)
             {
                 // Reflection.
-                const Vector3f m = half_reflection_vector(wi, wo);
+                const Vector3f m = half_reflection_vector(wo, wi);
                 const float cos_wom = dot(wo, m);
-                const float F = fresnel_reflectance(cos_wom, values->m_precomputed.m_eta);
+
+                const float F = fresnel_reflectance(cos_wom, rcp_eta);
 
                 evaluate_reflection(
                     mdf,
                     values->m_precomputed.m_reflection_color,
-                    wi,
                     wo,
+                    wi,
                     m,
                     alpha_x,
                     alpha_y,
@@ -625,17 +660,18 @@ namespace
             else
             {
                 // Refraction.
-                const Vector3f m = half_refraction_vector(wi, wo, values->m_precomputed.m_eta);
+
+                const Vector3f m = half_refraction_vector(wo, wi, eta);
                 const float cos_wom = dot(wo, m);
-                const float F = fresnel_reflectance(cos_wom, values->m_precomputed.m_eta);
+                const float F = fresnel_reflectance(cos_wom, 1.0f / eta);
 
                 evaluate_refraction(
                     mdf,
-                    values->m_precomputed.m_eta,
+                    eta,
                     values->m_precomputed.m_refraction_color,
                     adjoint,
-                    wi,
                     wo,
+                    wi,
                     m,
                     alpha_x,
                     alpha_y,
@@ -651,7 +687,7 @@ namespace
 
                 return
                     (1.0f - r_probability) *
-                    refraction_pdf(mdf, wi, wo, m, alpha_x, alpha_y, gamma, values->m_precomputed.m_eta);
+                    refraction_pdf(mdf, wo, wi, m, alpha_x, alpha_y, gamma, eta);
             }
         }
 
@@ -726,6 +762,18 @@ namespace
                     ? Basis3f(-shading_basis.get_normal(), shading_basis.get_tangent_u(), -shading_basis.get_tangent_v())
                     : shading_basis);
 
+            const Vector3f wo = basis.transform_to_local(outgoing);
+
+            const float eta =
+                wo.y > 0.0f
+                    ? values->m_ior / values->m_precomputed.m_outside_ior
+                    : values->m_precomputed.m_outside_ior / values->m_ior;
+
+            if (APPLESEED_UNLIKELY(eta == 1.0f))
+                return 0.0f;
+
+            const float rcp_eta = 1.0f / eta;
+
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
                 values->m_roughness,
@@ -735,14 +783,14 @@ namespace
             const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             const Vector3f wi = basis.transform_to_local(incoming);
-            const Vector3f wo = basis.transform_to_local(outgoing);
 
             if (wi.y * wo.y >= 0.0f)
             {
                 // Reflection.
-                const Vector3f m = half_reflection_vector(wi, wo);
+                const Vector3f m = half_reflection_vector(wo, wi);
                 const float cos_wom = dot(wo, m);
-                const float F = fresnel_reflectance(cos_wom, values->m_precomputed.m_eta);
+
+                const float F = fresnel_reflectance(cos_wom, rcp_eta);
 
                 const float r_probability = choose_reflection_probability(
                     values->m_precomputed.m_reflection_weight,
@@ -756,9 +804,10 @@ namespace
             else
             {
                 // Refraction.
-                const Vector3f m = half_refraction_vector(wi, wo, values->m_precomputed.m_eta);
+
+                const Vector3f m = half_refraction_vector(wo, wi, eta);
                 const float cos_wom = dot(wo, m);
-                const float F = fresnel_reflectance(cos_wom, values->m_precomputed.m_eta);
+                const float F = fresnel_reflectance(cos_wom, rcp_eta);
 
                 const float r_probability = choose_reflection_probability(
                     values->m_precomputed.m_reflection_weight,
@@ -767,7 +816,7 @@ namespace
 
                 return
                     (1.0f - r_probability) *
-                    refraction_pdf(mdf, wi, wo, m, alpha_x, alpha_y, gamma, values->m_precomputed.m_eta);
+                    refraction_pdf(mdf, wo, wi, m, alpha_x, alpha_y, gamma, eta);
             }
         }
 
@@ -886,8 +935,8 @@ namespace
         }
 
         static Vector3f half_reflection_vector(
-            const Vector3f&             wi,
-            const Vector3f&             wo)
+            const Vector3f&             wo,
+            const Vector3f&             wi)
         {
             // [1] eq. 13.
             const Vector3f h = normalize(wi + wo);
@@ -898,9 +947,9 @@ namespace
         static void evaluate_reflection(
             const MDF&                  mdf,
             const SpectrumType&         reflection_color,
-            const Vector3f&             wi,
             const Vector3f&             wo,
-            const Vector3f&             h,
+            const Vector3f&             wi,
+            const Vector3f&             m,
             const float                 alpha_x,
             const float                 alpha_y,
             const float                 gamma,
@@ -915,8 +964,8 @@ namespace
                 return;
             }
 
-            const float D = mdf.D(h, alpha_x, alpha_y, gamma);
-            const float G = mdf.G(wi, wo, h, alpha_x, alpha_y, gamma);
+            const float D = mdf.D(m, alpha_x, alpha_y, gamma);
+            const float G = mdf.G(wi, wo, m, alpha_x, alpha_y, gamma);
 
             value = reflection_color;
             value *= F * D * G / denom;
@@ -925,7 +974,7 @@ namespace
         static float reflection_pdf(
             const MDF&                  mdf,
             const Vector3f&             wo,
-            const Vector3f&             h,
+            const Vector3f&             m,
             const float                 cos_oh,
             const float                 alpha_x,
             const float                 alpha_y,
@@ -936,12 +985,12 @@ namespace
                 return 0.0f;
 
             const float jacobian = 1.0f / (4.0f * abs(cos_oh));
-            return jacobian * mdf.pdf(wo, h, alpha_x, alpha_y, gamma);
+            return jacobian * mdf.pdf(wo, m, alpha_x, alpha_y, gamma);
         }
 
         static Vector3f half_refraction_vector(
-            const Vector3f&             wi,
             const Vector3f&             wo,
+            const Vector3f&             wi,
             const float                 eta)
         {
             // [1] eq. 16.
@@ -955,9 +1004,9 @@ namespace
             const float                 eta,
             const SpectrumType&         refraction_color,
             const bool                  adjoint,
-            const Vector3f&             wi,
             const Vector3f&             wo,
-            const Vector3f&             h,
+            const Vector3f&             wi,
+            const Vector3f&             m,
             const float                 alpha_x,
             const float                 alpha_y,
             const float                 gamma,
@@ -965,20 +1014,20 @@ namespace
             SpectrumType&               value)
         {
             // [1] eq. 21.
-            const float cos_ih = dot(h, wi);
-            const float cos_oh = dot(h, wo);
+            const float cos_ih = dot(m, wi);
+            const float cos_oh = dot(m, wo);
+            const float dots = (cos_ih * cos_oh) / (wi.y * wo.y);
 
             const float sqrt_denom = cos_oh + eta * cos_ih;
-            if (abs(sqrt_denom) < 1.0e-9f)
+            if (abs(sqrt_denom) < 1.0e-6f)
             {
                 set_to_zero(value);
                 return;
             }
 
-            const float D = mdf.D(h, alpha_x, alpha_y, gamma);
-            const float G = mdf.G(wi, wo, h, alpha_x, alpha_y, gamma);
+            const float D = mdf.D(m, alpha_x, alpha_y, gamma);
+            const float G = mdf.G(wi, wo, m, alpha_x, alpha_y, gamma);
 
-            const float dots = (cos_ih * cos_oh) / (wi.y * wo.y);
             float multiplier = abs(dots) * T * D * G / square(sqrt_denom);
 
             if (!adjoint)
@@ -990,24 +1039,24 @@ namespace
 
         static float refraction_pdf(
             const MDF&                  mdf,
-            const Vector3f&             wi,
             const Vector3f&             wo,
-            const Vector3f&             h,
+            const Vector3f&             wi,
+            const Vector3f&             m,
             const float                 alpha_x,
             const float                 alpha_y,
             const float                 gamma,
             const float                 eta)
         {
             // [1] eq. 17.
-            const float cos_ih = dot(h, wi);
-            const float cos_oh = dot(h, wo);
+            const float cos_ih = dot(m, wi);
+            const float cos_oh = dot(m, wo);
 
             const float sqrt_denom = cos_oh + eta * cos_ih;
-            if (abs(sqrt_denom) < 1.0e-9f)
+            if (abs(sqrt_denom) < 1.0e-6f)
                 return 0.0f;
 
             const float jacobian = abs(cos_ih) * square(eta / sqrt_denom);
-            return jacobian * mdf.pdf(wo, h, alpha_x, alpha_y, gamma);
+            return jacobian * mdf.pdf(wo, m, alpha_x, alpha_y, gamma);
         }
 
         static void set_to_zero(float& x)
@@ -1060,8 +1109,12 @@ namespace
 
             const float roughness = values->m_roughness;
 
-            const float eta = values->m_precomputed.m_eta;
-            const float rcp_eta = 1.0f / values->m_precomputed.m_eta;
+            const float eta =
+                cos_on > 0.0f
+                    ? values->m_ior / values->m_precomputed.m_outside_ior
+                    : values->m_precomputed.m_outside_ior / values->m_ior;
+
+            const float rcp_eta = 1.0f / eta;
 
             const float Eavg = get_avg_albedo(mdf, eta, roughness);
             const float Eavg_rcp_eta = get_avg_albedo(mdf, rcp_eta, roughness);
@@ -1070,8 +1123,8 @@ namespace
             if (Eavg == 1.0f || Eavg_rcp_eta == 1.0f)
                 return;
 
-            const float Favg = values->m_precomputed.m_fresnel_average;
-            const float Favg_rcp_eta = values->m_precomputed.m_fresnel_rcp_eta_average;
+            const float Favg = average_fresnel_reflectance_dielectric(eta);
+            const float Favg_rcp_eta = average_fresnel_reflectance_dielectric(rcp_eta);
 
             const bool is_entering = !values->m_precomputed.m_backfacing;
             const bool is_reflection = cos_in * cos_on >= 0.0f;
@@ -1280,7 +1333,7 @@ namespace
                     value,
                     probability);
 
-                if (probability == 0.0f)
+                if (probability < 1.0e-6f)
                     continue;
 
                 R += value * abs(wi.y) / probability;
