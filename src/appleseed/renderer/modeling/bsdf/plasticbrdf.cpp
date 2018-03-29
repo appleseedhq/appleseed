@@ -185,12 +185,12 @@ namespace
             // Compute the microfacet normal by sampling the MDF.
             const Vector3f& outgoing = sample.m_outgoing.get_value();
             const Vector3f wo = sample.m_shading_basis.transform_to_local(outgoing);
-            sampling_context.split_in_place(4, 1);
-            const Vector4f s = sampling_context.next2<Vector4f>();
+            sampling_context.split_in_place(3, 1);
+            const Vector3f s = sampling_context.next2<Vector3f>();
             const Vector3f m =
                 alpha == 0.0f
                     ? Vector3f(0.0f, 1.0f, 0.0f)
-                    : m_mdf->sample(wo, Vector3f(s[0], s[1], s[2]), alpha, alpha, gamma);
+                    : m_mdf->sample(wo, Vector2f(s[0], s[1]), alpha, alpha, gamma);
 
             const float F = fresnel_reflectance(wo, m, values->m_precomputed.m_eta);
             const float specular_probability = choose_specular_probability(*values, F);
@@ -199,7 +199,7 @@ namespace
 
             // Choose between specular/glossy and diffuse.
             if (ScatteringMode::has_glossy(modes) &&
-                (!ScatteringMode::has_diffuse(modes) || s[3] < specular_probability))
+                (!ScatteringMode::has_diffuse(modes) || s[2] < specular_probability))
             {
                 wi = improve_normalization(reflect(wo, m));
                 if (wi.y <= 0.0f)

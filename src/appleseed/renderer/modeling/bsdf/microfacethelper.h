@@ -113,8 +113,8 @@ class MicrofacetBRDFHelper
         BSDFSample&                     sample)
     {
         // Compute the incoming direction by sampling the MDF.
-        sampling_context.split_in_place(3, 1);
-        const foundation::Vector3f s = sampling_context.next2<foundation::Vector3f>();
+        sampling_context.split_in_place(2, 1);
+        const foundation::Vector2f s = sampling_context.next2<foundation::Vector2f>();
 
         const foundation::Vector3f& outgoing = sample.m_outgoing.get_value();
         foundation::Vector3f wo =
@@ -248,7 +248,7 @@ class MicrofacetBRDFHelper
     template <typename MDF>
     static float sample(
         const MDF&                      mdf,
-        const foundation::Vector3f&     s,
+        const foundation::Vector2f&     s,
         const float                     alpha,
         const foundation::Vector3f&     wo,
         foundation::Vector3f&           wi,

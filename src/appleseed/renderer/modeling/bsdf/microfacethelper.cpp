@@ -138,8 +138,8 @@ namespace
             for (size_t i = 0; i < sample_count; ++i)
             {
                 // Generate a uniform sample in [0,1)^3.
-                const size_t Bases[] = { 2, 3 };
-                const Vector3f s = hammersley_sequence<float, 3>(Bases, sample_count, i);
+                const size_t Bases[] = { 2 };
+                const Vector2f s = hammersley_sequence<float, 2>(Bases, sample_count, i);
 
                 Vector3f wi;
                 float probability;

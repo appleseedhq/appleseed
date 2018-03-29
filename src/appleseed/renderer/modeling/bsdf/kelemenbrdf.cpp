@@ -88,7 +88,7 @@ namespace
             return
                 WardMDF().sample(
                     Vector3f(0.0f, 0.0f, 0.0f),
-                    Vector3f(s[0], s[1], 0.0f),
+                    s,
                     m_alpha,
                     m_alpha,
                     0.0f);
