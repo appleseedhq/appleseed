@@ -195,7 +195,7 @@ MasterRenderer::RenderingResult::Status MasterRenderer::do_render()
     {
         impl->m_renderer_controller->on_rendering_begin();
 
-        const IRendererController::Status status = initialize_and_render_frame_sequence();
+        const IRendererController::Status status = initialize_and_render_frame();
 
         switch (status)
         {
@@ -241,7 +241,7 @@ namespace
     };
 }
 
-IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence()
+IRendererController::Status MasterRenderer::initialize_and_render_frame()
 {
     // Construct an abort switch that will allow to abort initialization or rendering.
     RendererControllerAbortSwitch abort_switch(*impl->m_renderer_controller);
@@ -293,8 +293,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     components.print_settings();
 
     // Execute the main rendering loop.
-    const IRendererController::Status status =
-        render_frame_sequence(components, abort_switch);
+    const auto status = render_frame(components, abort_switch);
 
     // Perform post-render rendering actions.
     m_project.get_scene()->on_render_end(m_project);
@@ -305,37 +304,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     return status;
 }
 
-bool MasterRenderer::check_scene() const
-{
-    if (m_project.get_scene() == nullptr)
-    {
-        RENDERER_LOG_ERROR("project does not contain a scene.");
-        return false;
-    }
-
-    if (m_project.get_frame() == nullptr)
-    {
-        RENDERER_LOG_ERROR("project does not contain a frame.");
-        return false;
-    }
-
-    if (m_project.get_uncached_active_camera() == nullptr)
-    {
-        RENDERER_LOG_ERROR("no active camera in project.");
-        return false;
-    }
-
-    return true;
-}
-
-bool MasterRenderer::bind_scene_entities_inputs() const
-{
-    InputBinder input_binder(*m_project.get_scene());
-    input_binder.bind();
-    return input_binder.get_error_count() == 0;
-}
-
-IRendererController::Status MasterRenderer::render_frame_sequence(
+IRendererController::Status MasterRenderer::render_frame(
     RendererComponents&     components,
     IAbortSwitch&           abort_switch)
 {
@@ -448,6 +417,36 @@ IRendererController::Status MasterRenderer::wait_for_event(IFrameRenderer& frame
 
         foundation::sleep(1);   // namespace qualifer required
     }
+}
+
+bool MasterRenderer::check_scene() const
+{
+    if (m_project.get_scene() == nullptr)
+    {
+        RENDERER_LOG_ERROR("project does not contain a scene.");
+        return false;
+    }
+
+    if (m_project.get_frame() == nullptr)
+    {
+        RENDERER_LOG_ERROR("project does not contain a frame.");
+        return false;
+    }
+
+    if (m_project.get_uncached_active_camera() == nullptr)
+    {
+        RENDERER_LOG_ERROR("no active camera in project.");
+        return false;
+    }
+
+    return true;
+}
+
+bool MasterRenderer::bind_scene_entities_inputs() const
+{
+    InputBinder input_binder(*m_project.get_scene());
+    input_binder.bind();
+    return input_binder.get_error_count() == 0;
 }
 
 void MasterRenderer::add_render_stamp(const double render_time)
