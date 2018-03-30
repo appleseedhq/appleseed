@@ -138,7 +138,7 @@ class DipoleBSSRDF
         const ShadingPoint&         shading_point,
         DipoleBSSRDFInputValues*    values) const;
 
-  private:
+  protected:
     bool m_has_sigma_sources;
 };
 
