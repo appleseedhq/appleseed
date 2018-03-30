@@ -616,15 +616,17 @@ endif ()
 # Documentation.
 #--------------------------------------------------------------------------------------------------
 
-find_package (Doxygen)
+if (WITH_DOXYGEN)
+    find_package (Doxygen)
 
-if (DOXYGEN_FOUND AND WITH_DOXYGEN)
-    configure_file (${PROJECT_SOURCE_DIR}/scripts/appleseed.doxyfile.in ${PROJECT_BINARY_DIR}/appleseed.doxyfile @ONLY)
-    add_custom_target (
-        doc ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/appleseed.doxyfile
-        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-        COMMENT "Generating API Reference with Doxygen" VERBATIM
-    )
+    if (DOXYGEN_FOUND)
+        configure_file (${PROJECT_SOURCE_DIR}/scripts/appleseed.doxyfile.in ${PROJECT_BINARY_DIR}/appleseed.doxyfile @ONLY)
+        add_custom_target (
+            doc ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/appleseed.doxyfile
+            WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+            COMMENT "Generating API Reference with Doxygen" VERBATIM
+        )
+    endif ()
 endif ()
 
 
