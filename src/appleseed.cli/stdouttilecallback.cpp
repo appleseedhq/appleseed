@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
-#include "renderer/kernel/aov/imagestack.h"
+#include "renderer/api/aov.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -68,9 +68,9 @@ namespace
       : public TileCallbackBase
     {
       public:
-        StdOutTileCallback(const bool single_plane = false)
-          : m_single_plane(single_plane)
-          , m_header_sent(false)
+        explicit StdOutTileCallback(TileOutputOptions export_options)
+          : m_header_sent(false)
+          , m_single_plane(export_options == BeautyOnly)
         {
         }
 
@@ -81,9 +81,9 @@ namespace
         }
 
         void on_tile_begin(
-            const Frame*    frame,
-            const size_t    tile_x,
-            const size_t    tile_y) override
+            const Frame*        frame,
+            const size_t        tile_x,
+            const size_t        tile_y) override
         {
             boost::mutex::scoped_lock lock(m_mutex);
 
@@ -97,9 +97,9 @@ namespace
         }
 
         void on_tile_end(
-            const Frame*    frame,
-            const size_t    tile_x,
-            const size_t    tile_y) override
+            const Frame*        frame,
+            const size_t        tile_x,
+            const size_t        tile_y) override
         {
             boost::mutex::scoped_lock lock(m_mutex);
 
@@ -136,7 +136,7 @@ namespace
             if (m_header_sent) return;
 
             // Build and write tiles header.
-            // This header is sent only once and can contains aovs and frame informations.
+            // This header is sent only once and can contains AOVs and frame informations.
             const size_t chunk_size = 1 * sizeof(uint32);
             const size_t plane_count = m_single_plane ? 1 : 1 + frame.aov_images().size();
             const uint32 header[] =
@@ -154,9 +154,9 @@ namespace
                 for (size_t i = 0, e = frame.aov_images().size(); i < e; ++i)
                 {
                     send_plane_definition(
-                                frame.aov_images().get_image(i),
-                                frame.aov_images().get_name(i),
-                                i + 1);
+                        frame.aov_images().get_image(i),
+                        frame.aov_images().get_name(i),
+                        i + 1);
                 }
             }
 
@@ -164,11 +164,11 @@ namespace
         }
 
         void send_plane_definition(
-            const Image&            img,
-            const char*             name,
-            const size_t            index) const
+            const Image&        img,
+            const char*         name,
+            const size_t        index) const
         {
-            // Build and write aov header.
+            // Build and write AOV header.
             const size_t name_len = strlen(name);
             const size_t chunk_size = 3 * sizeof(uint32) + name_len * sizeof(char);
             const uint32 header[] =
@@ -199,7 +199,7 @@ namespace
             const size_t h = tile.get_height();
 
             // Build and write highlight tile header.
-            // This header is sent for allowing to displaying marks arround the tile being renderer.
+            // This header is sent to allow highlighting tiles being renderer.
             const size_t chunk_size = 4 * sizeof(uint32);
             const uint32 header[] =
             {
@@ -246,21 +246,21 @@ namespace
 
         void do_send_tile(
             const CanvasProperties& properties,
-            const Tile&             tile,
-            const size_t            tile_x,
-            const size_t            tile_y,
-            const size_t            plane_index) const
+            const Tile&         tile,
+            const size_t        tile_x,
+            const size_t        tile_y,
+            const size_t        plane_index) const
         {
             const size_t x = tile_x * properties.m_tile_width;
             const size_t y = tile_y * properties.m_tile_height;
 
-            // Retrieve the tile dimensions
+            // Retrieve the tile dimensions.
             const size_t w = tile.get_width();
             const size_t h = tile.get_height();
             const size_t c = tile.get_channel_count();
 
             // Build and write tile header.
-            // This header contains information about the tile aov that will be written.
+            // This header contains information about the tile AOV that will be written.
             const size_t chunk_size = 6 * sizeof(uint32) + w * h * c * sizeof(float);
             const uint32 header[] =
             {
@@ -294,8 +294,8 @@ namespace
 // StdOutTileCallbackFactory class implementation.
 //
 
-StdOutTileCallbackFactory::StdOutTileCallbackFactory()
-  : m_callback(new StdOutTileCallback(true))
+StdOutTileCallbackFactory::StdOutTileCallbackFactory(TileOutputOptions export_options)
+  : m_callback(new StdOutTileCallback(export_options))
 {
 }
 
