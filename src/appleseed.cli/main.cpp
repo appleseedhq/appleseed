@@ -543,7 +543,9 @@ namespace
         }
         else if (g_cl.m_send_to_stdout.is_set())
         {
-            tile_callback_factory.reset(new StdOutTileCallbackFactory(TileOutputOptions::AllAOVs));
+            tile_callback_factory.reset(
+                new StdOutTileCallbackFactory(
+                    StdOutTileCallbackFactory::TileOutputOptions::AllAOVs));
         }
         else if (project->get_display() == nullptr)
         {

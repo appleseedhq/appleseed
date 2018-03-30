@@ -38,16 +38,16 @@
 namespace appleseed {
 namespace cli {
 
-enum TileOutputOptions
-{
-    BeautyOnly = 1,
-    AllAOVs = 2
-};
-
 class StdOutTileCallbackFactory
   : public renderer::ITileCallbackFactory
 {
   public:
+    enum class TileOutputOptions
+    {
+      BeautyOnly,
+      AllAOVs
+    };
+
     explicit StdOutTileCallbackFactory(TileOutputOptions export_options);
 
     void release() override;

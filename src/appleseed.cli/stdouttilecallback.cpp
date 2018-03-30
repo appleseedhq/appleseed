@@ -30,8 +30,8 @@
 #include "stdouttilecallback.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/frame.h"
 #include "renderer/api/aov.h"
+#include "renderer/api/frame.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -68,9 +68,9 @@ namespace
       : public TileCallbackBase
     {
       public:
-        explicit StdOutTileCallback(TileOutputOptions export_options)
+        explicit StdOutTileCallback(StdOutTileCallbackFactory::TileOutputOptions export_options)
           : m_header_sent(false)
-          , m_single_plane(export_options == BeautyOnly)
+          , m_export_options(export_options)
         {
         }
 
@@ -129,7 +129,7 @@ namespace
         boost::mutex m_mutex;
 
         bool m_header_sent;
-        const bool m_single_plane;
+        const StdOutTileCallbackFactory::TileOutputOptions m_export_options;
 
         void send_header(const Frame& frame)
         {
@@ -137,8 +137,9 @@ namespace
 
             // Build and write tiles header.
             // This header is sent only once and can contains AOVs and frame informations.
+            const bool beauty_only = (m_export_options == StdOutTileCallbackFactory::TileOutputOptions::BeautyOnly);
             const size_t chunk_size = 1 * sizeof(uint32);
-            const size_t plane_count = m_single_plane ? 1 : 1 + frame.aov_images().size();
+            const size_t plane_count = beauty_only ? 1 : 1 + frame.aov_images().size();
             const uint32 header[] =
             {
                 static_cast<uint32>(ChunkTypeTilesHeader),
@@ -149,7 +150,7 @@ namespace
 
             send_plane_definition(frame.image(), "beauty", 0);
 
-            if (!m_single_plane)
+            if (!beauty_only)
             {
                 for (size_t i = 0, e = frame.aov_images().size(); i < e; ++i)
                 {
@@ -199,7 +200,7 @@ namespace
             const size_t h = tile.get_height();
 
             // Build and write highlight tile header.
-            // This header is sent to allow highlighting tiles being renderer.
+            // This header is sent to allow highlighting tiles being rendered.
             const size_t chunk_size = 4 * sizeof(uint32);
             const uint32 header[] =
             {
@@ -229,7 +230,7 @@ namespace
                 tile_y,
                 0);
 
-            if (!m_single_plane)
+            if (m_export_options == StdOutTileCallbackFactory::TileOutputOptions::AllAOVs)
             {
                 // Send AOV tiles.
                 for (size_t i = 0, e = frame.aov_images().size(); i < e; ++i)
