@@ -44,8 +44,8 @@ class StdOutTileCallbackFactory
   public:
     enum class TileOutputOptions
     {
-      BeautyOnly,
-      AllAOVs
+        BeautyOnly,
+        AllAOVs
     };
 
     explicit StdOutTileCallbackFactory(TileOutputOptions export_options);
