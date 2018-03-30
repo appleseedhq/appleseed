@@ -511,7 +511,7 @@ namespace
 
         const float Eps = 1.0e-6f;
 
-        float root;
+        float root = 0.0f;
         bool success =
             find_root_newton(
                 f,
