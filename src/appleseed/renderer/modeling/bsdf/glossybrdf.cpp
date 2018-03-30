@@ -134,7 +134,7 @@ namespace
 
             values->m_precomputed.m_fresnel_average =
                 average_fresnel_reflectance_dielectric(
-                    values->m_precomputed.m_outside_ior / values->m_ior);
+                    values->m_ior / values->m_precomputed.m_outside_ior);
         }
 
         bool on_frame_begin(
