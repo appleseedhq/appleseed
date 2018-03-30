@@ -103,7 +103,81 @@ namespace
             DipoleBSSRDFInputValues* values =
                 static_cast<DipoleBSSRDFInputValues*>(data);
 
-            do_prepare_inputs<ComputeRdStandardDipole>(shading_point, values);
+            new (&values->m_precomputed) DipoleBSSRDFInputValues::Precomputed();
+
+            new (&values->m_base_values) SeparableBSSRDF::InputValues();
+            values->m_base_values.m_weight = values->m_weight;
+            values->m_base_values.m_fresnel_weight = values->m_fresnel_weight;
+
+            // Precompute the relative index of refraction.
+            values->m_base_values.m_eta = compute_eta(shading_point, values->m_ior);
+
+            if (!m_has_sigma_sources)
+            {
+                //
+                // Compute sigma_a, sigma_s and sigma_t from the diffuse surface reflectance
+                // and mean free path (mfp).
+                //
+
+                // Apply multipliers to input values.
+                values->m_reflectance *= values->m_reflectance_multiplier;
+                values->m_mfp *= values->m_mfp_multiplier;
+
+                // Clamp input values.
+                foundation::clamp_in_place(values->m_reflectance, 0.001f, 0.999f);
+                foundation::clamp_low_in_place(values->m_mfp, 1.0e-6f);
+
+                // Compute sigma_a and sigma_s.
+                for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+                {
+                    const float r = values->m_reflectance[i];
+
+                    const float alpha =
+                        1.0f - exp(r * (-5.09406f + r * (2.61188f - 4.31805f * r)));
+
+                    const float sigma_t = 1.0f / values->m_mfp[i];
+
+                    // Compute scattering coefficient.
+                    values->m_sigma_s[i] = alpha * sigma_t;
+
+                    // Compute absorption coefficient.
+                    values->m_sigma_a[i] = sigma_t - values->m_sigma_s[i];
+                }
+            }
+
+            //
+            // Compute sigma_tr from sigma_a and sigma_s.
+            //
+            // If you want to use the sigma_a and sigma_s values provided in [1],
+            // and if your scene is modeled in meters, you will need to *multiply*
+            // them by 1000. If your scene is modeled in centimers (e.g. the "size"
+            // of the object is 4 units) then you will need to multiply the sigmas
+            // by 100.
+            //
+
+            effective_extinction_coefficient(
+                values->m_sigma_a,
+                values->m_sigma_s,
+                values->m_g,
+                values->m_precomputed.m_sigma_tr);
+
+            // Precompute alpha'.
+            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+            {
+                const float sigma_s_prime = values->m_sigma_s[i] * (1.0f - values->m_g);
+                const float sigma_t_prime = sigma_s_prime + values->m_sigma_a[i];
+                values->m_precomputed.m_alpha_prime[i] = sigma_s_prime / sigma_t_prime;
+            }
+
+            // Build a CDF and PDF for channel sampling.
+            build_cdf_and_pdf(
+                values->m_precomputed.m_alpha_prime,
+                values->m_base_values.m_channel_cdf,
+                values->m_precomputed.m_channel_pdf);
+
+            // Precompute the radius of the sampling disk.
+            values->m_base_values.m_max_disk_radius =
+                dipole_max_radius(foundation::min_value(values->m_precomputed.m_sigma_tr));
         }
 
         void evaluate_profile(
@@ -133,6 +207,13 @@ namespace
             // at the incoming point so we need to cancel the 1/Pi term from
             // the Lambertian BRDF.
             value *= Pi<float>();
+
+            if (!m_has_sigma_sources)
+            {
+                // Scaling the result by alpha' is not correct but it helps
+                // to make the result closer to the other BSSRDF models.
+                value *= values->m_precomputed.m_alpha_prime;
+            }
         }
 
       private:
