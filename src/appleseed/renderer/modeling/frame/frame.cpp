@@ -542,7 +542,7 @@ namespace
                 const Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
 
                 writer.write(
-                    file_path.c_str(),
+                    file_path.string().c_str(),
                     half_image,
                     image_attributes,
                     aov->get_channel_count(),
@@ -551,7 +551,7 @@ namespace
             else
             {
                 writer.write(
-                    file_path.c_str(),
+                    file_path.string().c_str(),
                     image,
                     image_attributes,
                     aov->get_channel_count(),
@@ -561,7 +561,7 @@ namespace
         else
         {
             writer.write(
-                file_path.c_str(),
+                file_path.string().c_str(),
                 image,
                 image_attributes);
         }
@@ -619,7 +619,10 @@ namespace
         create_parent_directories(file_path);
 
         PNGImageFileWriter writer;
-        writer.write(file_path.c_str(), transformed_image, image_attributes);
+        writer.write(
+            file_path.string().c_str(),
+            transformed_image,
+            image_attributes);
     }
 
     bool write_image(
@@ -748,7 +751,7 @@ bool Frame::write_main_image(const char* file_path) const
         bf::path boost_file_path(file_path);
         boost_file_path.replace_extension(".exr");
 
-        impl->m_denoiser_aov->write_images(boost_file_path.c_str());
+        impl->m_denoiser_aov->write_images(boost_file_path.string().c_str());
     }
 
     return true;
@@ -819,7 +822,7 @@ bool Frame::write_main_and_aov_images() const
         // Write AOV image.
         if (!filepath.empty())
         {
-            if (!write_image(filepath.c_str(), aov->get_image(), aov))
+            if (!write_image(filepath.string().c_str(), aov->get_image(), aov))
                 success = false;
         }
     }
