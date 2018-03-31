@@ -378,10 +378,10 @@ void RenderingManager::slot_rendering_begin()
     run_sticky_actions();
     run_scheduled_actions();
 
-    m_rendering_timer.clear();
-
     if (m_rendering_mode == InteractiveRendering)
         m_render_tab->get_camera_controller()->set_enabled(true);
+
+    m_rendering_timer.clear();
 
     m_has_camera_changed = false;
 }
