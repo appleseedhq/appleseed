@@ -48,7 +48,7 @@ import zipfile
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.4.11"
+VERSION = "2.4.12"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
@@ -421,6 +421,7 @@ class WindowsPackageBuilder(PackageBuilder):
         progress("Windows-specific: Adding dependencies to staging directory")
         self.copy_qt_framework("QtCore")
         self.copy_qt_framework("QtGui")
+        self.copy_qt_framework("QtOpenGL")
         copy_glob(os.path.join(self.settings.platform_runtime_path, "*"), "appleseed/bin/")
 
     def copy_qt_framework(self, framework_name):
