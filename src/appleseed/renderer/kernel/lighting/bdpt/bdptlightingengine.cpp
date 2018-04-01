@@ -311,7 +311,7 @@ namespace
                 Spectrum geometry = ComputeGeometryTerm(shading_context, shading_point, camera_vertex, light_vertex);
 
                 DirectShadingComponents camera_eval_bsdf;
-                const float camera_eval_bsdf_prob = camera_vertex.m_bsdf->evaluate(
+                camera_vertex.m_bsdf->evaluate(
                     camera_vertex.m_bsdf_data,
                     false,   // Adjoint
                     false,
@@ -337,7 +337,7 @@ namespace
                 }
 
                 DirectShadingComponents camera_eval_bsdf;
-                const float camera_eval_bsdf_prob = camera_vertex.m_bsdf->evaluate(
+                camera_vertex.m_bsdf->evaluate(
                     camera_vertex.m_bsdf_data,
                     false,   // Adjoint
                     false,
@@ -349,7 +349,7 @@ namespace
                     camera_eval_bsdf);
 
                 DirectShadingComponents light_eval_bsdf;
-                const float light_eval_bsdf_prob = light_vertex.m_bsdf->evaluate(
+                light_vertex.m_bsdf->evaluate(
                     light_vertex.m_bsdf_data,
                     true,   // Adjoint
                     false,
