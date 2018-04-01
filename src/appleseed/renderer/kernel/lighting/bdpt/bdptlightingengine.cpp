@@ -593,6 +593,8 @@ namespace
                     shading_context,
                     shading_point,
                     false);
+
+            m_camera_path_length.insert(camera_path_length);
         }
 
         StatisticsVector get_statistics() const override
@@ -613,6 +615,7 @@ namespace
         float                       m_shutter_close_end_time;
 
         Population<uint64>          m_light_path_length;
+        Population<uint64>          m_camera_path_length;
 
 
         struct PathVisitor
