@@ -80,7 +80,7 @@ class ShadingContext
 
     TextureCache& get_texture_cache() const;
 
-    OIIOTextureSystem&   get_oiio_texture_system() const;
+    OIIOTextureSystem& get_oiio_texture_system() const;
 
     ILightingEngine* get_lighting_engine() const;
 

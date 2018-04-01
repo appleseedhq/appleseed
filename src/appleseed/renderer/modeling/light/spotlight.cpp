@@ -82,6 +82,7 @@ namespace
             m_inputs.declare("intensity", InputFormatSpectralIlluminance);
             m_inputs.declare("intensity_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("exposure", InputFormatFloat, "0.0");
+            m_inputs.declare("exposure_multiplier", InputFormatFloat, "1.0");
         }
 
         void release() override
@@ -106,6 +107,7 @@ namespace
             m_intensity_source = m_inputs.source("intensity");
             m_intensity_multiplier_source = m_inputs.source("intensity_multiplier");
             m_exposure_source = m_inputs.source("exposure");
+            m_exposure_multiplier_source = m_inputs.source("exposure_multiplier");
             check_non_zero_emission(m_intensity_source, m_intensity_multiplier_source);
 
             const double inner_half_angle = deg_to_rad(m_params.get_required<double>("inner_angle", 20.0) / 2.0);
@@ -176,11 +178,13 @@ namespace
             Spectrum    m_intensity;                // emitted intensity in W.sr^-1
             float       m_intensity_multiplier;     // emitted intensity multiplier
             float       m_exposure;                 // emitted intensity multiplier in f-stops
+            float       m_exposure_multiplier;      // emitted intensity exposure multiplier
         };
 
         const Source*   m_intensity_source;
         const Source*   m_intensity_multiplier_source;
         const Source*   m_exposure_source;
+        const Source*   m_exposure_multiplier_source;
 
         double          m_cos_inner_half_angle;
         double          m_cos_outer_half_angle;
@@ -217,7 +221,7 @@ namespace
             m_inputs.evaluate(shading_context.get_texture_cache(), SourceInputs(uv), &values);
 
             radiance = values.m_intensity;
-            radiance *= values.m_intensity_multiplier * pow(2.0f, values.m_exposure);
+            radiance *= values.m_intensity_multiplier * pow(2.0f, values.m_exposure * values.m_exposure_multiplier);
 
             if (cos_theta < m_cos_inner_half_angle)
             {
@@ -291,6 +295,23 @@ DictionaryArray SpotLightFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "0.0")
             .insert("help", "Light exposure"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "exposure_multiplier")
+            .insert("label", "Exposure Multiplier")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-64.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "64.0")
+                    .insert("type", "soft"))
+            .insert("default", "1.0")
+            .insert("use", "optional")
+            .insert("help", "Spotlight exposure multiplier"));
 
     metadata.push_back(
         Dictionary()

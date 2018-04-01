@@ -50,6 +50,7 @@
 // Standard headers.
 #include <cassert>
 #include <cmath>
+#include <limits>
 
 using namespace foundation;
 using namespace std;
@@ -208,7 +209,17 @@ float LightTree::recursive_node_update(
             // Retrieve the emitting triangle importance.
             const EDF* edf = triangle.m_material->get_uncached_edf();
             assert(edf != nullptr);
-            importance = edf->get_uncached_max_contribution() * edf->get_uncached_importance_multiplier();
+
+            const float max_contribution = edf->get_uncached_max_contribution();
+
+            // max_contribution is reported as std::numeric_limits<float>::max() when
+            // we can't compute the max_contribution easily (ex: textured lights)
+            // In such cases, we can use a default importance value of 1.0 to avoid
+            // infinite importance values in the light tree nodes.
+            if (max_contribution == numeric_limits<float>::max()) 
+                importance = 1.0f;
+            else
+                importance = max_contribution * edf->get_uncached_importance_multiplier();
     
             // Save the index of the light tree node containing the EMT in the look up table.
             tri_index_to_node_index[light_index] = node_index;

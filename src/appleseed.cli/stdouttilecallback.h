@@ -42,7 +42,13 @@ class StdOutTileCallbackFactory
   : public renderer::ITileCallbackFactory
 {
   public:
-    StdOutTileCallbackFactory();
+    enum class TileOutputOptions
+    {
+        BeautyOnly,
+        AllAOVs
+    };
+
+    explicit StdOutTileCallbackFactory(TileOutputOptions export_options);
 
     void release() override;
 

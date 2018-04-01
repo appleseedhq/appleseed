@@ -243,14 +243,14 @@ namespace
 
 IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence()
 {
+    // Construct an abort switch that will allow to abort initialization or rendering.
+    RendererControllerAbortSwitch abort_switch(*impl->m_renderer_controller);
+
     // Perform basic integrity checks on the scene.
     if (!check_scene())
         return IRendererController::AbortRendering;
 
-    // Construct an abort switch based on the renderer controller.
-    RendererControllerAbortSwitch abort_switch(*impl->m_renderer_controller);
-
-    // We start by expanding all procedural assemblies.
+    // Expand all procedural assemblies.
     if (!m_project.get_scene()->expand_procedural_assemblies(m_project, &abort_switch))
         return IRendererController::AbortRendering;
 
@@ -258,18 +258,19 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     if (!bind_scene_entities_inputs())
         return IRendererController::AbortRendering;
 
+    // Build or update ray tracing acceleration structures.
     m_project.update_trace_context();
-    m_project.get_frame()->print_settings();
 
     // Create the texture store.
     TextureStore texture_store(
         *m_project.get_scene(),
         m_params.child("texture_store"));
 
-    if (!initialize_shading_system(texture_store, abort_switch))
+    // Initialize OSL's shading system.
+    if (!initialize_osl_shading_system(texture_store, abort_switch))
         return IRendererController::AbortRendering;
 
-    // Don't proceed further if rendering was aborted.
+    // Don't proceed further if initialization was aborted.
     if (abort_switch.is_aborted())
         return impl->m_renderer_controller->get_status();
 
@@ -277,7 +278,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     if (!m_project.get_scene()->on_render_begin(m_project, &abort_switch))
         return IRendererController::AbortRendering;
 
-    // Create the renderer components.
+    // Create renderer components.
     RendererComponents components(
         m_project,
         m_params,
@@ -287,6 +288,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         *m_shading_system);
     if (!components.create())
         return IRendererController::AbortRendering;
+
+    // Print renderer component settings.
+    components.print_settings();
 
     // Execute the main rendering loop.
     const IRendererController::Status status =
@@ -337,9 +341,6 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
 {
     while (true)
     {
-        IFrameRenderer& frame_renderer = components.get_frame_renderer();
-        assert(!frame_renderer.is_rendering());
-
         // The on_frame_begin() method of the renderer controller might alter the scene
         // (e.g. transform the camera), thus it needs to be called before the on_frame_begin()
         // of the scene which assumes the scene is up-to-date and ready to be rendered.
@@ -355,6 +356,10 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
             return IRendererController::AbortRendering;
         }
 
+        // Print settings of key entities.
+        m_project.get_scene()->get_active_camera()->print_settings();
+        m_project.get_frame()->print_settings();
+
         // Don't proceed with rendering if scene preparation was aborted.
         if (abort_switch.is_aborted())
         {
@@ -362,6 +367,9 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
             impl->m_renderer_controller->on_frame_end();
             return impl->m_renderer_controller->get_status();
         }
+
+        IFrameRenderer& frame_renderer = components.get_frame_renderer();
+        assert(!frame_renderer.is_rendering());
 
         frame_renderer.start_rendering();
 

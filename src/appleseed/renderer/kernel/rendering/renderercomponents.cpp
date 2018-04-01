@@ -138,6 +138,12 @@ bool RendererComponents::create()
     return true;
 }
 
+void RendererComponents::print_settings() const
+{
+    if (m_frame_renderer.get() != nullptr)
+        m_frame_renderer->print_settings();
+}
+
 bool RendererComponents::create_lighting_engine_factory()
 {
     const string name = m_params.get_required<string>("lighting_engine", "pt");
@@ -341,6 +347,7 @@ bool RendererComponents::create_pixel_renderer_factory()
         copy_param(params, m_params, "passes");
         m_pixel_renderer_factory.reset(
             new UniformPixelRendererFactory(
+                m_frame,
                 m_sample_renderer_factory.get(),
                 params));
 

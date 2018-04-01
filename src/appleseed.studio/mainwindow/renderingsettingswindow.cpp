@@ -464,6 +464,7 @@ namespace
             create_direct_link("uniform_sampler.samples",               "uniform_pixel_renderer.samples");
             create_direct_link("uniform_sampler.force_antialiasing",    "uniform_pixel_renderer.force_antialiasing");
             create_direct_link("uniform_sampler.decorrelate_pixels",    "uniform_pixel_renderer.decorrelate_pixels");
+            create_direct_link("uniform_sampler.enable_diagnostics",    "uniform_pixel_renderer.enable_diagnostics");
 
             create_direct_link("adaptive_sampler.min_samples",          "adaptive_pixel_renderer.min_samples");
             create_direct_link("adaptive_sampler.max_samples",          "adaptive_pixel_renderer.max_samples");
@@ -550,6 +551,10 @@ namespace
             m_uniform_sampler_decorrelate_pixels = create_checkbox("uniform_sampler.decorrelate_pixels", "Decorrelate Pixels");
             m_uniform_sampler_decorrelate_pixels->setToolTip(m_params_metadata.get_path("uniform_pixel_renderer.decorrelate_pixels.help"));
             layout->addWidget(m_uniform_sampler_decorrelate_pixels);
+
+            QCheckBox* enable_diagnostics = create_checkbox("uniform_sampler.enable_diagnostics", "Enable Diagnostic AOVs");
+            enable_diagnostics->setToolTip(m_params_metadata.get_path("uniform_pixel_renderer.enable_diagnostics.help"));
+            layout->addWidget(enable_diagnostics);
 
             connect(
                 m_image_plane_sampler_passes, SIGNAL(valueChanged(const int)),
@@ -758,14 +763,15 @@ namespace
             layout->addRow("Russian Roulette Start Bounce:", russian_roulette_start);
         }
 
-        void load_bounce_settings(
+        void load_global_max_bounce_settings(
             const Configuration&    config,
             const string&           widget_key_prefix,
-            const string&           param_path)
+            const string&           param_path,
+            const int               default_max_bounces)
         {
             const int DefaultMaxBounces = 8;
 
-            const int max_bounces = get_config<int>(config, param_path, -1);
+            const int max_bounces = get_config<int>(config, param_path, default_max_bounces);
 
             set_widget(widget_key_prefix + ".bounces.unlimited_bounces", max_bounces == -1);
             set_widget(widget_key_prefix + ".bounces.max_bounces", max_bounces == -1 ? DefaultMaxBounces : max_bounces);
@@ -788,16 +794,23 @@ namespace
             const Configuration&    config,
             const string&           widget_key_prefix,
             const string&           bounce_type,
+            const int               default_max_bounces,
             const bool              allow_unlimited = true)
         {
             const int DefaultMaxBounces = 8;
+            const int DefaultMaxDiffuseBounces = 3;
 
             const int max_bounces =
-                get_config<int>(config, construct_bounce_param_path(bounce_type), -1);
+                get_config<int>(config, construct_bounce_param_path(bounce_type), default_max_bounces);
+
+            const string widget_max_bounce_key = widget_key_prefix + ".bounces.max_" + bounce_type + "_bounces";
 
             if (allow_unlimited)
                 set_widget(widget_key_prefix + ".bounces.unlimited_" + bounce_type + "_bounces", max_bounces == -1);
-            set_widget(widget_key_prefix + ".bounces.max_" + bounce_type + "_bounces", max_bounces == -1 ? DefaultMaxBounces : max_bounces);
+            if (bounce_type == "diffuse")
+                set_widget(widget_max_bounce_key, max_bounces == -1 ? DefaultMaxDiffuseBounces : max_bounces);
+            else
+                set_widget(widget_max_bounce_key, max_bounces == -1 ? DefaultMaxBounces : max_bounces);
         }
 
         void save_separate_bounce_settings(
@@ -868,11 +881,11 @@ namespace
 
             load_directly_linked_values(config);
 
-            load_bounce_settings(config, "pt", "pt.max_bounces");
-            load_separate_bounce_settings(config, "pt", "diffuse");
-            load_separate_bounce_settings(config, "pt", "glossy");
-            load_separate_bounce_settings(config, "pt", "specular");
-            load_separate_bounce_settings(config, "pt", "volume", false);
+            load_global_max_bounce_settings(config, "pt", "pt.max_bounces", 8);
+            load_separate_bounce_settings(config, "pt", "diffuse", 3);
+            load_separate_bounce_settings(config, "pt", "glossy", 8);
+            load_separate_bounce_settings(config, "pt", "specular", 8);
+            load_separate_bounce_settings(config, "pt", "volume", 8, false);
 
             set_widget("advanced.unlimited_ray_intensity", !config.get_parameters().exist_path("pt.max_ray_intensity"));
             set_widget("advanced.max_ray_intensity", get_config<double>(config, "pt.max_ray_intensity", 1.0));
@@ -1032,8 +1045,8 @@ namespace
 
             load_directly_linked_values(config);
 
-            load_bounce_settings(config, "photon_tracing", "sppm.photon_tracing_max_bounces");
-            load_bounce_settings(config, "radiance_estimation", "sppm.path_tracing_max_bounces");
+            load_global_max_bounce_settings(config, "photon_tracing", "sppm.photon_tracing_max_bounces", -1);
+            load_global_max_bounce_settings(config, "radiance_estimation", "sppm.path_tracing_max_bounces", -1);
 
             const string dl_mode = get_config<string>(config, "sppm.dl_mode", "rt");
             if (dl_mode == "rt")

@@ -52,6 +52,7 @@ class ITileRenderer
   : public foundation::IUnknown
 {
   public:
+    // Print this component's settings to the renderer's global logger.
     virtual void print_settings() const = 0;
 
     // Render a tile.

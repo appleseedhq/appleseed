@@ -40,15 +40,12 @@ shader as_max_color_texture
     float        VBlur = 0.0,
     int          FirstChannel = 0,
     float        Fill = 0.0,
-    color        Multiplier = 1.0,
     output color ColorOut = 0.0
 )
 {
-    ColorOut = Multiplier;
-
     if (Filename != "")
     {
-        ColorOut *= texture(
+        ColorOut = texture(
             Filename,
             U,
             V,

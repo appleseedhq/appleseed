@@ -282,6 +282,8 @@ bool MainWindow::save_project(QString filepath)
     if (m_project_file_watcher)
         start_monitoring_project_file();
 
+    if (successful)
+        update_recent_files_menu(filepath);
     update_workspace();
 
     return successful;
@@ -535,10 +537,15 @@ void MainWindow::build_recent_files_menu()
 
     m_ui->menu_open_recent->addSeparator();
 
-    QAction* clear_open_recent_menu = new QAction(this);
-    clear_open_recent_menu->setText("&Clear Menu");
-    connect(clear_open_recent_menu, SIGNAL(triggered()), SLOT(slot_clear_open_recent_files_menu()));
-    m_ui->menu_open_recent->addAction(clear_open_recent_menu);
+    QAction* clear_nonexistent_files = new QAction(this);
+    clear_nonexistent_files->setText("&Clear Non-existent Files");
+    connect(clear_nonexistent_files, SIGNAL(triggered()), SLOT(slot_clear_recent_nonexistent_project_files()));
+    m_ui->menu_open_recent->addAction(clear_nonexistent_files);
+
+    QAction* clear_menu = new QAction(this);
+    clear_menu->setText("&Clear Menu");
+    connect(clear_menu, SIGNAL(triggered()), SLOT(slot_clear_recent_project_files_menu()));
+    m_ui->menu_open_recent->addAction(clear_menu);
 }
 
 void MainWindow::update_recent_files_menu(const QString& filepath)
@@ -563,8 +570,10 @@ void MainWindow::update_recent_files_menu(const QStringList& files)
 
     for (int i = 0; i < recent_file_count; ++i)
     {
+        const int number = i + 1;
         const QString filepath = files[i];
-        const QString text = tr("&%1 %2").arg(i + 1).arg(filepath);
+        const QString format = number < 10 ? "&%1 %2" : "%1 %2";
+        const QString text = format.arg(number).arg(filepath);
 
         m_recently_opened[i]->setText(text);
         m_recently_opened[i]->setData(filepath);
@@ -1292,12 +1301,28 @@ void MainWindow::slot_open_recent()
     }
 }
 
-void MainWindow::slot_clear_open_recent_files_menu()
+void MainWindow::slot_clear_recent_project_files_menu()
 {
     QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
     settings.setValue("recent_file_list", QStringList());
 
     update_recent_files_menu(QStringList());
+}
+
+void MainWindow::slot_clear_recent_nonexistent_project_files()
+{
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    QStringList files = settings.value("recent_file_list").toStringList();
+    QStringList existent_files;
+
+    for (int i = 0; i < files.size(); i++)
+    {
+        if (QFileInfo(files[i]).isFile())
+            existent_files << files[i];
+    }
+
+    settings.setValue("recent_file_list", existent_files);
+    update_recent_files_menu(existent_files);
 }
 
 void MainWindow::slot_open_cornellbox_builtin_project()
@@ -1341,9 +1366,7 @@ namespace
 void MainWindow::slot_open_project_complete(const QString& filepath, const bool successful)
 {
     if (successful)
-    {
         on_project_change();
-    }
     else
     {
         show_project_file_loading_failed_message_box(this, filepath);
@@ -1378,7 +1401,6 @@ void MainWindow::slot_save_project_as()
         filepath = QDir::toNativeSeparators(filepath);
 
         save_project(filepath);
-        update_recent_files_menu(filepath);
     }
 }
 
@@ -1444,7 +1466,7 @@ void MainWindow::initialize_ocio()
 
     // Default to an empty OCIO config if everything else fails.
     m_ocio_config = OCIO::GetCurrentConfig();
-    RENDERER_LOG_ERROR("Could not initialize OCIO config.");
+    RENDERER_LOG_ERROR("could not find an ocio configuration, using empty configuration.");
 }
 
 void MainWindow::slot_project_modified()
@@ -1759,7 +1781,7 @@ void MainWindow::slot_render_widget_context_menu(const QPoint& point)
     menu->addAction("Save Frame...", this, SLOT(slot_save_frame()));
     menu->addAction("Save All AOVs...", this, SLOT(slot_save_all_aovs()));
     menu->addSeparator();
-    menu->addAction("Clear Frame", this, SLOT(slot_clear_frame()));
+    menu->addAction("Clear All", this, SLOT(slot_clear_frame()));
 
     menu->exec(point);
 }
@@ -1824,14 +1846,13 @@ void MainWindow::slot_save_all_aovs()
 
 namespace
 {
-    void write_all_aovs(
+    void write_main_and_aov_images(
         const Project&  project,
         const bf::path& image_path)
     {
         bf::create_directories(image_path.parent_path());
 
         const Frame* frame = project.get_frame();
-
         frame->write_main_image(image_path.string().c_str());
         frame->write_aov_images(image_path.string().c_str());
     }
@@ -1847,12 +1868,12 @@ void MainWindow::slot_quicksave_all_aovs()
     const bf::path project_path(project.get_path());
     const bf::path quicksave_dir = project_path.parent_path() / "quicksaves";
 
-    write_all_aovs(
+    write_main_and_aov_images(
         project,
         bf::absolute(
             quicksave_dir / "quicksave.exr"));
 
-    write_all_aovs(
+    write_main_and_aov_images(
         project,
         bf::absolute(
             find_next_available_path(quicksave_dir / "quicksave####.exr")));

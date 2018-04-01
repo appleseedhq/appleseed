@@ -130,37 +130,6 @@ const char* MeshObject::get_model() const
     return Model;
 }
 
-bool MeshObject::on_frame_begin(
-    const Project&          project,
-    const BaseGroup*        parent,
-    OnFrameBeginRecorder&   recorder,
-    IAbortSwitch*           abort_switch)
-{
-    if (!Object::on_frame_begin(project, parent, recorder, abort_switch))
-        return false;
-
-    m_alpha_map = get_uncached_alpha_map();
-    return true;
-}
-
-void MeshObject::on_frame_end(
-    const Project&          project,
-    const BaseGroup*        parent)
-{
-    m_alpha_map = nullptr;
-    Object::on_frame_end(project, parent);
-}
-
-bool MeshObject::has_alpha_map() const
-{
-    if (!m_params.strings().exist("alpha_map"))
-        return false;
-
-    const char* value = m_params.strings().get("alpha_map");
-
-    return !is_empty_string(value);
-}
-
 const Source* MeshObject::get_uncached_alpha_map() const
 {
     return m_inputs.source("alpha_map");

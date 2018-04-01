@@ -144,6 +144,7 @@ bool find_root_newton(
     const size_t    max_iterations,
     T&              root)
 {
+    assert(a <= b);
     T fa = f(a);
     T fb = f(b);
 
@@ -157,7 +158,11 @@ bool find_root_newton(
         const T delta = f(root) / d(root);
         root -= delta;
 
-        if (std::abs(delta) <= eps)
+        if ((root < a) || (root > b))
+        {
+            root = clamp(root, a, b);
+        }
+        else if (std::abs(delta) <= eps)
             return true;
     }
 
@@ -199,7 +204,8 @@ void find_multiple_roots_newton(
     const size_t    max_iterations,
     RootHandler&    root_handler)
 {
-    if (std::abs(b - a) > max_length)
+    assert(a <= b);
+    if (b - a > max_length)
     {
         const T m = (a + b) * T(0.5);
         find_multiple_roots_newton(f, d, a, m, max_length, eps, max_iterations, root_handler);

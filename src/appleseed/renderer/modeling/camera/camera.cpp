@@ -37,6 +37,8 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/bezier.h"
+#include "foundation/math/root.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
@@ -62,6 +64,41 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
+struct Camera::Impl
+{
+    float               m_normalized_open_end_time;
+    float               m_normalized_close_start_time;
+
+    float               m_inverse_cdf_open_point;
+    float               m_inverse_cdf_close_point;
+
+    //
+    // Linear shutter parameters.
+    //
+
+    float               m_shutter_curve_linear_open_multiplier;
+    float               m_shutter_curve_linear_fully_opened_multiplier;
+    float               m_shutter_curve_linear_close_multiplier;
+
+    //
+    // Bezier shutter curve parameters.
+    //
+
+    // Control points are represented in form [t0 s0 t1 s1 t2 s2 t3 s3]
+    // where t stands for time and s stands for "shutter openness".
+    typedef Vector<float, 8> ShutterCurveCP;
+
+    bool                m_use_bezier_shutter_curve;
+    ShutterCurveCP      m_shutter_curve_bezier_cp_normalized;
+
+    // Normalization factor to make the area under the curve equal to 1.
+    float               m_shutter_curve_bezier_normalization_factor;
+
+    // Polynomials of open/close CDFs.
+    Vector<float, 7>    m_shutter_curve_bezier_open_cdf;
+    Vector<float, 7>    m_shutter_curve_bezier_close_cdf;
+};
+
 UniqueID Camera::get_class_uid()
 {
     return g_class_uid;
@@ -71,30 +108,104 @@ Camera::Camera(
     const char*             name,
     const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
+  , impl(new Impl())
 {
     set_name(name);
+}
+
+Camera::~Camera()
+{
+    delete impl;
 }
 
 bool Camera::on_render_begin(
     const Project&          project,
     IAbortSwitch*           abort_switch)
 {
-    m_shutter_open_time = m_params.get_optional<float>("shutter_open_time", 0.0f);
-    m_shutter_open_end_time = m_params.get_optional<float>("shutter_open_end_time", m_shutter_open_time);
-    m_shutter_close_time = m_params.get_optional<float>("shutter_close_time", 1.0f);
-    m_shutter_close_start_time = m_params.get_optional<float>("shutter_close_start_time", m_shutter_close_time);
+    m_shutter_open_begin_time = m_params.get_optional<float>("shutter_open_begin_time", 0.0f);
+    m_shutter_open_end_time = m_params.get_optional<float>("shutter_open_end_time", m_shutter_open_begin_time);
+    m_shutter_close_end_time = m_params.get_optional<float>("shutter_close_end_time", 1.0f);
+    m_shutter_close_begin_time = m_params.get_optional<float>("shutter_close_begin_time", m_shutter_close_end_time);
 
     check_shutter_times_for_consistency();
 
-    m_shutter_open_time_interval = m_shutter_close_time - m_shutter_open_time;
-    m_normalized_open_end_time = inverse_lerp(m_shutter_open_time, m_shutter_close_time, m_shutter_open_end_time);
-    m_normalized_open_end_time_half = m_normalized_open_end_time / 2;
-    m_normalized_close_start_time = inverse_lerp(m_shutter_open_time, m_shutter_close_time, m_shutter_close_start_time);
-    m_shutter_pdf_max_height = 2 / (1 + m_normalized_close_start_time - m_normalized_open_end_time);
-    m_open_linear_curve_slope = m_shutter_pdf_max_height / m_normalized_open_end_time;
-    m_close_linear_curve_slope = -m_shutter_pdf_max_height / (1 - m_normalized_close_start_time);
-    m_inverse_cdf_open_point = m_shutter_pdf_max_height * m_normalized_open_end_time_half;
-    m_inverse_cdf_close_point = m_shutter_pdf_max_height * (m_normalized_close_start_time - m_normalized_open_end_time_half);
+    impl->m_normalized_open_end_time =
+        inverse_lerp(
+            m_shutter_open_begin_time,
+            m_shutter_close_end_time,
+            m_shutter_open_end_time);
+
+    impl->m_normalized_close_start_time =
+        inverse_lerp(
+            m_shutter_open_begin_time,
+            m_shutter_close_end_time,
+            m_shutter_close_begin_time);
+
+    m_shutter_time_interval = m_shutter_close_end_time - m_shutter_open_begin_time;
+    m_motion_blur_enabled = m_shutter_time_interval > 0.0f;
+
+    if (m_motion_blur_enabled)
+    {
+        impl->m_use_bezier_shutter_curve = has_param("shutter_curve_control_points");
+
+        if (impl->m_use_bezier_shutter_curve)
+        {
+            impl->m_shutter_curve_bezier_cp_normalized =
+                m_params.get_required<Impl::ShutterCurveCP>("shutter_curve_control_points");
+
+            // Normalize time points.
+            for (size_t i = 0; i < Impl::ShutterCurveCP::Dimension; i += 2)
+            {
+                impl->m_shutter_curve_bezier_cp_normalized[i] =
+                    inverse_lerp(
+                        m_shutter_open_begin_time,
+                        m_shutter_close_end_time,
+                        impl->m_shutter_curve_bezier_cp_normalized[i]);
+            }
+
+            // Use normalized time, so inverse sampling will end up with normalized time points.
+            initialize_shutter_curve_bezier_cdfs(
+                0.0f,                                               // ot
+                impl->m_normalized_open_end_time,                   // oet
+                impl->m_normalized_close_start_time,                // cst
+                1.0f,                                               // ct
+                impl->m_shutter_curve_bezier_cp_normalized[0],      // t00
+                impl->m_shutter_curve_bezier_cp_normalized[2],      // t01
+                impl->m_shutter_curve_bezier_cp_normalized[4],      // t10
+                impl->m_shutter_curve_bezier_cp_normalized[6],      // t11
+                impl->m_shutter_curve_bezier_cp_normalized[1],      // s00
+                impl->m_shutter_curve_bezier_cp_normalized[3],      // s01
+                impl->m_shutter_curve_bezier_cp_normalized[5],      // s10
+                impl->m_shutter_curve_bezier_cp_normalized[7]);     // s11
+
+            impl->m_shutter_curve_bezier_normalization_factor =
+                1.0f / evaluate_polynomial(impl->m_shutter_curve_bezier_close_cdf, 1.0f);
+
+            impl->m_shutter_curve_bezier_open_cdf =
+                impl->m_shutter_curve_bezier_open_cdf *
+                impl->m_shutter_curve_bezier_normalization_factor;
+
+            impl->m_shutter_curve_bezier_close_cdf =
+                impl->m_shutter_curve_bezier_close_cdf *
+                impl->m_shutter_curve_bezier_normalization_factor;
+
+            impl->m_inverse_cdf_open_point = evaluate_polynomial(impl->m_shutter_curve_bezier_open_cdf, 1.0f);
+            impl->m_inverse_cdf_close_point = evaluate_polynomial(impl->m_shutter_curve_bezier_close_cdf, 0.0f);
+        }
+        else
+        {
+            const float cst_minus_oet_plus_one = m_shutter_close_begin_time - m_shutter_open_end_time + 1.0f;
+
+            impl->m_shutter_curve_linear_open_multiplier = cst_minus_oet_plus_one * m_shutter_open_end_time;
+            impl->m_shutter_curve_linear_fully_opened_multiplier = cst_minus_oet_plus_one / 2.0f;
+            impl->m_shutter_curve_linear_close_multiplier = cst_minus_oet_plus_one * (m_shutter_close_begin_time - 1.0f);
+
+            impl->m_inverse_cdf_open_point = m_shutter_open_end_time / cst_minus_oet_plus_one;
+            impl->m_inverse_cdf_close_point =
+                (2.0f * m_shutter_close_begin_time - m_shutter_open_end_time) /
+                cst_minus_oet_plus_one;
+        }
+    }
 
     return true;
 }
@@ -232,61 +343,6 @@ double Camera::extract_focal_length(const double film_width) const
     }
 }
 
-double Camera::extract_f_stop() const
-{
-    const double DefaultFStop = 8.0;
-
-    return get_greater_than_zero("f_stop", DefaultFStop);
-}
-
-void Camera::extract_focal_distance(
-    bool&                   autofocus_enabled,
-    Vector2d&               autofocus_target,
-    double&                 focal_distance) const
-{
-    const Vector2d DefaultAFTarget(0.5);        // in NDC
-    const double DefaultFocalDistance = 1.0;    // in meters
-
-    if (has_param("focal_distance"))
-    {
-        if (has_param("autofocus_target"))
-        {
-            RENDERER_LOG_WARNING(
-                "while defining camera \"%s\": autofocus is enabled; \"focal_distance\" parameter "
-                "will be ignored.",
-                get_path().c_str());
-
-            autofocus_enabled = true;
-            autofocus_target = m_params.get_required<Vector2d>("autofocus_target", DefaultAFTarget);
-            focal_distance = 0.0;
-        }
-        else
-        {
-            autofocus_enabled = false;
-            autofocus_target = DefaultAFTarget;
-            focal_distance = m_params.get_required<double>("focal_distance", DefaultFocalDistance);
-        }
-    }
-    else if (has_param("autofocus_target"))
-    {
-        autofocus_enabled = true;
-        autofocus_target = m_params.get_required<Vector2d>("autofocus_target", DefaultAFTarget);
-        focal_distance = 0.0;
-    }
-    else
-    {
-        RENDERER_LOG_ERROR(
-            "while defining camera \"%s\": no \"focal_distance\" or \"autofocus_target\" parameter found; "
-            "using default focal distance value \"%f\".",
-            get_path().c_str(),
-            DefaultFocalDistance);
-
-        autofocus_enabled = false;
-        autofocus_target = DefaultAFTarget;
-        focal_distance = DefaultFocalDistance;
-    }
-}
-
 double Camera::extract_near_z() const
 {
     const double DefaultNearZ = -0.001;         // in meters
@@ -296,7 +352,7 @@ double Camera::extract_near_z() const
     if (near_z > 0.0)
     {
         RENDERER_LOG_ERROR(
-            "while defining camera \"%s\": invalid near-Z value \"%f\", near-Z values must be negative or zero; "
+            "while defining camera \"%s\": invalid near-z value \"%f\", near-z values must be negative or zero; "
             "using default value \"%f\".",
             get_path().c_str(),
             near_z,
@@ -308,47 +364,93 @@ double Camera::extract_near_z() const
     return near_z;
 }
 
-namespace
-{   
-    //
-    // Shutter curves. Used in Camera::map_to_shutter_curve().
-    //
+void Camera::check_shutter_times_for_consistency() const
+{
+    const auto properly_ordered =
+        m_shutter_open_begin_time <= m_shutter_open_end_time &&
+        m_shutter_open_end_time <= m_shutter_close_begin_time &&
+        m_shutter_close_begin_time <= m_shutter_close_end_time;
 
-    // Integrate and inverse opening/closing curve y = a * x + b to transform samples.
-    float map_sample_to_linear_curve(const float a, const float b, const float x)
+    if (!properly_ordered)
     {
-        float constant;
-        if (a > 0.0f)
-        {
-            // Shutter is opening.
-            constant = 0.0f;
-        }
-        else
-        {
-            // Shutter is closing.
-            constant = 1.0f - (a / 2.0f) - b;
-        }
-        return (sqrt(2.0f * a * (x - constant) + b * b) - b) / a;
+        RENDERER_LOG_WARNING(
+            "while defining camera \"%s\": shutter times are not properly ordered; "
+            "order should be: open begin time <= open end time <= close begin time <= close end time.",
+            get_path().c_str());
     }
 }
 
-float Camera::map_to_shutter_curve(const float sample) const
+void Camera::initialize_shutter_curve_bezier_cdfs(
+    const float             ot,
+    const float             oet,
+    const float             cst,
+    const float             ct,
+    const float             t00,
+    const float             t01,
+    const float             t10,
+    const float             t11,
+    const float             s00,
+    const float             s01,
+    const float             s10,
+    const float             s11)
 {
-    if (0.0f <= sample && sample < m_inverse_cdf_open_point)
-    {
-        // Shutter is opening.
-        return map_sample_to_linear_curve(m_open_linear_curve_slope, 0.0f, sample);
-    }
-    else if (1.0f >= sample && sample > m_inverse_cdf_close_point)
-    {
-        // Shutter is closing.
-        return map_sample_to_linear_curve(m_close_linear_curve_slope, -m_close_linear_curve_slope, sample);
-    }
-    else
-    {
-        // Shutter is fully opened.
-        return sample / m_shutter_pdf_max_height + m_normalized_open_end_time_half;
-    }
+    impl->m_shutter_curve_bezier_open_cdf[0] =  0.0f;
+
+    impl->m_shutter_curve_bezier_open_cdf[1] =  0.0f;
+
+    impl->m_shutter_curve_bezier_open_cdf[2] =  4.5f * (s00*t00 - ot*s00);
+
+    impl->m_shutter_curve_bezier_open_cdf[3] =  6.0f*s00 * (2.0f*ot - 3.0f*t00 + t01) -
+                                                3.0f*s01 * (ot - t00);
+
+    impl->m_shutter_curve_bezier_open_cdf[4] =  0.75f * (
+                                                    s00 * (3.0f*oet - 18.0f*ot + 36.0f*t00 - 21.0f*t01) +
+                                                    s01 * (9.0f*ot - 15.0f*t00 + 6.0f*t01) +
+                                                    t00 - ot
+                                                );
+
+    impl->m_shutter_curve_bezier_open_cdf[5] =  0.6f *  (
+                                                    2.0f * (t01 + ot - 2.0f*t00) -
+                                                    6.0f*s00*(oet - 2.0f*ot + 5.0f*t00 - 4.0f*t01) +
+                                                    3.0f*s01*(oet - 3.0f*ot + 7.0f*t00 - 5.0f*t01)
+                                                );
+
+    impl->m_shutter_curve_bezier_open_cdf[6] =  0.5f * (3.0f*s00 - 3.0f*s01 + 1.0f) *
+                                                (oet - ot + 3.0f*t00 - 3.0f*t01);
+
+    impl->m_shutter_curve_bezier_close_cdf[0] = evaluate_polynomial(impl->m_shutter_curve_bezier_open_cdf, 1.0f)
+                                                + cst - oet;
+
+    impl->m_shutter_curve_bezier_close_cdf[1] = 3.0f * (t10-cst);
+
+    impl->m_shutter_curve_bezier_close_cdf[2] = 1.5f * (
+                                                    cst * (5.0f - 3.0f*s10) +
+                                                    t10 * (3.0f*s10 - 7.0f) +
+                                                    2.0f*t11
+                                                );
+
+    impl->m_shutter_curve_bezier_close_cdf[3] = cst * (12.0f*s10 - 3.0f*s11 - 10.0f) +
+                                                t10 * (3.0f*s11 -18.0f*s10 + 18) +
+                                                t11 * (6.0f*s10 - 9.0f) +
+                                                ct;
+
+    impl->m_shutter_curve_bezier_close_cdf[4] = 0.75f * (
+                                                    cst * (9.0f*s11 -18.0f*s10 + 10.0f) +
+                                                    ct * (3.0f*s10 - 3.0f) +
+                                                    t10 * (36.0f*s10 - 15.0f*s11 - 22.0f) +
+                                                    t11 * (6.0f*s11 -21.0f*s10 + 15.0f)
+                                                );
+
+    impl->m_shutter_curve_bezier_close_cdf[5] = 0.6f * (
+                                                    cst * (12*s10 - 9*s11 - 5.0f) +
+                                                    ct * (3.0f*s11 - 6.0f*s10 + 3.0f) +
+                                                    t10 * (21.0f*s11 - 30.0f*s10 + 13.0f) +
+                                                    t11 * (24.0f*s10 - 15.0f*s11 - 11.0f)
+                                                );
+
+    impl->m_shutter_curve_bezier_close_cdf[6] = 0.5f *
+                                                (3.0f*s10 - 3.0f*s11 - 1.0f) *
+                                                (ct - cst + 3.0f*t10 - 3.0f*t11);
 }
 
 void Camera::initialize_ray(
@@ -360,22 +462,141 @@ void Camera::initialize_ray(
     ray.m_flags = VisibilityFlags::CameraRay;
     ray.m_depth = 0;
 
-    if (m_shutter_open_time == m_shutter_close_time)
+    float sample_time = 0.0f;
+
+    if (m_motion_blur_enabled)
     {
-        ray.m_time =
-            ShadingRay::Time::create_with_normalized_time(
+        sampling_context.split_in_place(1, 1);
+        sample_time = map_to_shutter_curve(sampling_context.next2<float>());
+    }
+
+    ray.m_time =
+        ShadingRay::Time::create_with_normalized_time(
+            sample_time,
+            m_shutter_open_begin_time,
+            m_shutter_close_end_time);
+}
+
+float Camera::map_to_shutter_curve(const float sample) const
+{
+    assert(m_motion_blur_enabled);
+    assert(sample < 1.0f);
+
+    return impl->m_use_bezier_shutter_curve
+        ? map_to_shutter_curve_impl_bezier(sample)
+        : map_to_shutter_curve_impl_linear(sample);
+}
+
+namespace
+{
+    float inverse_sample_curve_patch(
+        const Vector<float, 7>& curve,
+        const float             value,
+        const float             t0,
+        const float             t1,
+        const float             t2,
+        const float             t3)
+    {
+        const auto f =
+            [&curve, &value](float param)
+            {
+                return evaluate_polynomial(curve, param) - value;
+            };
+
+        const auto d =
+            [&curve](float param)
+            {
+                return evaluate_polynomial_derivative(curve, param);
+            };
+
+        const float Eps = 1.0e-6f;
+
+        float root = 0.0f;
+        bool success =
+            find_root_newton(
+                f,
+                d,
                 0.0f,
-                m_shutter_open_time,
-                m_shutter_close_time);
+                1.0f,
+                Eps,
+                10,
+                root);
+
+        if (success)
+            return evaluate_bezier3(t0, t1, t2, t3, root);
+
+        // Fall back to bisection.
+        success =
+            find_root_bisection(
+                f,
+                0.0f,
+                1.0f,
+                Eps,
+                21,     // this would be enough to get 10e-6 accuracy for the whole [a,b] interval
+                root);
+
+        assert(success && "Cannot inverse sample shutter curve CDF");
+
+        return evaluate_bezier3(t0, t1, t2, t3, root);
+    }
+}
+
+float Camera::map_to_shutter_curve_impl_linear(const float sample) const
+{
+    // The linear curve consists of multiple linear segments.
+
+    if (sample < impl->m_inverse_cdf_open_point)
+    {
+        // Shutter is opening.
+        return sqrt(impl->m_shutter_curve_linear_open_multiplier * sample);
+    }
+    else if (sample > impl->m_inverse_cdf_close_point)
+    {
+        // Shutter is closing.
+        return 1.0f - sqrt(impl->m_shutter_curve_linear_close_multiplier * (sample - 1.0f));
     }
     else
     {
-        sampling_context.split_in_place(1, 1);
-        ray.m_time =
-            ShadingRay::Time::create_with_normalized_time(
-                map_to_shutter_curve(sampling_context.next2<float>()),
-                m_shutter_open_time,
-                m_shutter_close_time);
+        // Shutter is fully opened.
+        return impl->m_shutter_curve_linear_fully_opened_multiplier * sample + m_shutter_open_end_time / 2.0f;
+    }
+}
+
+float Camera::map_to_shutter_curve_impl_bezier(const float sample) const
+{
+    // The parametric curve consists of two Bezier curves and constant segment between them.
+    // See https://github.com/appleseedhq/appleseed-wiki/blob/master/documents/Shutter%20Curve.pdf for details.
+
+    if (sample < impl->m_inverse_cdf_open_point)
+    {
+        // Shutter is opening.
+        return
+            inverse_sample_curve_patch(
+                impl->m_shutter_curve_bezier_open_cdf,
+                sample,
+                0.0f,
+                impl->m_shutter_curve_bezier_cp_normalized[0],
+                impl->m_shutter_curve_bezier_cp_normalized[2],
+                impl->m_normalized_open_end_time);
+    }
+    else if (sample > impl->m_inverse_cdf_close_point)
+    {
+        // Shutter is closing.
+        return
+            inverse_sample_curve_patch(
+                impl->m_shutter_curve_bezier_close_cdf,
+                sample,
+                impl->m_normalized_close_start_time,
+                impl->m_shutter_curve_bezier_cp_normalized[4],
+                impl->m_shutter_curve_bezier_cp_normalized[6],
+                1.0f);
+    }
+    else
+    {
+        // Shutter is fully opened.
+        return
+            (sample - impl->m_inverse_cdf_open_point) /
+            impl->m_shutter_curve_bezier_normalization_factor + impl->m_normalized_open_end_time;
     }
 }
 
@@ -411,27 +632,6 @@ double Camera::get_greater_than_zero(
     return value;
 }
 
-void Camera::check_shutter_times_for_consistency() const
-{
-    if (m_shutter_open_end_time < m_shutter_open_time)
-        RENDERER_LOG_WARNING("shutter open time of camera \"%s\" is greater than shutter open end time", get_path().c_str());
-
-    if (m_shutter_close_start_time < m_shutter_open_end_time)
-        RENDERER_LOG_WARNING("shutter open end time of camera \"%s\" is greater than shutter close start time", get_path().c_str());
-
-    if (m_shutter_close_start_time < m_shutter_open_time)
-        RENDERER_LOG_WARNING("shutter open time of camera \"%s\" is greater than shutter close start time", get_path().c_str());
-
-    if (m_shutter_close_time < m_shutter_open_time)
-        RENDERER_LOG_WARNING("shutter open time of camera \"%s\" is greater than shutter close time", get_path().c_str());
-
-    if (m_shutter_close_time < m_shutter_open_end_time)
-        RENDERER_LOG_WARNING("shutter open end time of camera \"%s\" is greater than shutter close time", get_path().c_str());
-
-    if (m_shutter_close_time < m_shutter_close_start_time)
-        RENDERER_LOG_WARNING("shutter close start time of camera \"%s\" is greater than shutter close time", get_path().c_str());
-}
-
 
 //
 // CameraFactory class implementation.
@@ -443,8 +643,8 @@ DictionaryArray CameraFactory::get_input_metadata()
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "shutter_open_time")
-            .insert("label", "Shutter Open Time")
+            .insert("name", "shutter_open_begin_time")
+            .insert("label", "Shutter Open Begin Time")
             .insert("type", "numeric")
             .insert("min",
                 Dictionary()
@@ -475,8 +675,8 @@ DictionaryArray CameraFactory::get_input_metadata()
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "shutter_close_start_time")
-            .insert("label", "Shutter Close Start Time")
+            .insert("name", "shutter_close_begin_time")
+            .insert("label", "Shutter Close Begin Time")
             .insert("type", "numeric")
             .insert("min",
                 Dictionary()
@@ -491,8 +691,8 @@ DictionaryArray CameraFactory::get_input_metadata()
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "shutter_close_time")
-            .insert("label", "Shutter Close Time")
+            .insert("name", "shutter_close_end_time")
+            .insert("label", "Shutter Close End Time")
             .insert("type", "numeric")
             .insert("min",
                 Dictionary()
@@ -504,6 +704,13 @@ DictionaryArray CameraFactory::get_input_metadata()
                     .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "shutter_curve_control_points")
+            .insert("label", "Shutter Curve Control Points")
+            .insert("type", "text")
+            .insert("use", "optional"));
 
     return metadata;
 }

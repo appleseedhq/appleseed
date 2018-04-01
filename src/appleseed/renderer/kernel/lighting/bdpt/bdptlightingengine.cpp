@@ -45,8 +45,11 @@
 
 using namespace foundation;
 
-namespace renderer {
-namespace {
+namespace renderer
+{
+
+namespace
+{
     //
     // Bidirectional Path Tracing lighting engine.
     //
@@ -94,13 +97,6 @@ namespace {
         {
             explicit Parameters(const ParamArray& params)
             {
-
-            }
-
-            void print() const
-            {
-                RENDERER_LOG_INFO(
-                    "bdpt settings:\n");
             }
         };
 
@@ -114,14 +110,17 @@ namespace {
           , m_params(params)
         {
             const Camera* camera = project.get_uncached_active_camera();
-
-            m_shutter_open_time = camera->get_shutter_open_time();
-            m_shutter_close_time = camera->get_shutter_close_time();
+            m_shutter_open_begin_time = camera->get_shutter_open_begin_time();
+            m_shutter_close_end_time = camera->get_shutter_close_end_time();
         }
 
         void release() override
         {
             delete this;
+        }
+
+        void print_settings() const override
+        {
         }
 
         Spectrum ComputeGeometryTerm(
@@ -437,8 +436,8 @@ namespace {
             m_forward_light_sampler.sample(
                 ShadingRay::Time::create_with_normalized_time(
                     s[0],
-                    m_shutter_open_time,
-                    m_shutter_close_time),
+                    m_shutter_open_begin_time,
+                    m_shutter_close_end_time),
                 Vector3f(s[1], s[2], s[3]),
                 light_sample);
 
@@ -513,8 +512,8 @@ namespace {
             const ShadingRay::Time time =
                 ShadingRay::Time::create_with_normalized_time(
                     sampling_context.next2<float>(),
-                    m_shutter_open_time,
-                    m_shutter_close_time);
+                    m_shutter_open_begin_time,
+                    m_shutter_close_end_time);
             const ShadingRay light_ray(
                 light_sample.m_point,
                 Vector3d(emission_direction),
@@ -610,8 +609,8 @@ namespace {
         const BackwardLightSampler& m_backward_light_sampler;
         //Intersector                 m_intersector;
 
-        float                       m_shutter_open_time;
-        float                       m_shutter_close_time;
+        float                       m_shutter_open_begin_time;
+        float                       m_shutter_close_end_time;
 
         Population<uint64>          m_light_path_length;
 
@@ -701,7 +700,6 @@ BDPTLightingEngineFactory::BDPTLightingEngineFactory(
     , m_backward_light_sampler(backward_light_sampler)
     , m_params(params)
 {
-    BDPTLightingEngine::Parameters(params).print();
 }
 
 void BDPTLightingEngineFactory::release()

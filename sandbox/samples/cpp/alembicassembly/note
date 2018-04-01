@@ -1,0 +1,22 @@
+# Possible parameters
+
+fps
+frame
+shutter_open (relative to frame)
+shutter_close (relative to frame)
+file_path (/path/to/foo.abc)
+shape_path (/path/to/myShape)
+clash_prefix (str)
+
+## References
+
+https://github.com/BlueBolt/bb_arnoldAlembicProcedural
+
+
+
+have a look at `read_key_framed_mesh_object()` in `meshobjectreader.cpp`
+this function uses `read_mesh_object()` to read a single "pose" (i.e. a single key frame)
+after loading each pose, it set the new vertex positions in the mesh using `set_vertex_poses()`
+you should also have a look at the `renderer::MeshObject` API
+in `meshobject.h`
+it should be decently self-explanatory

@@ -147,7 +147,7 @@ namespace
 
         void clear_image() override
         {
-            m_image->clear(Color3f(0.0f, 0.0f, numeric_limits<float>::max()));
+            m_image->clear(Color4f(0.0f, 0.0f, 0.0f, numeric_limits<float>::max()));
         }
 
         auto_release_ptr<AOVAccumulator> create_accumulator() const override

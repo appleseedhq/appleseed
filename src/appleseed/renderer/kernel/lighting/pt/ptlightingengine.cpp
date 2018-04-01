@@ -127,10 +127,10 @@ namespace
               : m_enable_dl(params.get_optional<bool>("enable_dl", true))
               , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
               , m_enable_caustics(params.get_optional<bool>("enable_caustics", false))
-              , m_max_bounces(fixup_bounces(params.get_optional<int>("max_bounces", -1)))
-              , m_max_diffuse_bounces(fixup_bounces(params.get_optional<int>("max_diffuse_bounces", -1)))
-              , m_max_glossy_bounces(fixup_bounces(params.get_optional<int>("max_glossy_bounces", -1)))
-              , m_max_specular_bounces(fixup_bounces(params.get_optional<int>("max_specular_bounces", -1)))
+              , m_max_bounces(fixup_bounces(params.get_optional<int>("max_bounces", 8)))
+              , m_max_diffuse_bounces(fixup_bounces(params.get_optional<int>("max_diffuse_bounces", 3)))
+              , m_max_glossy_bounces(fixup_bounces(params.get_optional<int>("max_glossy_bounces", 8)))
+              , m_max_specular_bounces(fixup_bounces(params.get_optional<int>("max_specular_bounces", 8)))
               , m_max_volume_bounces(fixup_bounces(params.get_optional<int>("max_volume_bounces", 8)))
               , m_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("rr_min_path_length", 6)))
               , m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
@@ -164,44 +164,6 @@ namespace
             {
                 return x == 0 ? ~0 : x;
             }
-
-            void print() const
-            {
-                RENDERER_LOG_INFO(
-                    "path tracing settings:\n"
-                    "  direct lighting               %s\n"
-                    "  ibl                           %s\n"
-                    "  caustics                      %s\n"
-                    "  max bounces                   %s\n"
-                    "  max diffuse bounces           %s\n"
-                    "  max glossy bounces            %s\n"
-                    "  max specular bounces          %s\n"
-                    "  max volume bounces            %s\n"
-                    "  rr min path length            %s\n"
-                    "  next event estimation         %s\n"
-                    "  dl light samples              %s\n"
-                    "  dl light threshold            %s\n"
-                    "  ibl env samples               %s\n"
-                    "  max ray intensity             %s\n"
-                    "  volume distance samples       %s\n"
-                    "  equiangular sampling          %s",
-                    m_enable_dl ? "on" : "off",
-                    m_enable_ibl ? "on" : "off",
-                    m_enable_caustics ? "on" : "off",
-                    m_max_bounces == ~0 ? "infinite" : pretty_uint(m_max_bounces).c_str(),
-                    m_max_diffuse_bounces == ~0 ? "infinite" : pretty_uint(m_max_diffuse_bounces).c_str(),
-                    m_max_glossy_bounces == ~0 ? "infinite" : pretty_uint(m_max_glossy_bounces).c_str(),
-                    m_max_specular_bounces == ~0 ? "infinite" : pretty_uint(m_max_specular_bounces).c_str(),
-                    m_max_volume_bounces == ~0 ? "infinite" : pretty_uint(m_max_volume_bounces).c_str(),
-                    m_rr_min_path_length == ~0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
-                    m_next_event_estimation ? "on" : "off",
-                    pretty_scalar(m_dl_light_sample_count).c_str(),
-                    pretty_scalar(m_dl_low_light_threshold, 3).c_str(),
-                    pretty_scalar(m_ibl_env_sample_count).c_str(),
-                    m_has_max_ray_intensity ? pretty_scalar(m_max_ray_intensity).c_str() : "infinite",
-                    pretty_int(m_distance_sample_count).c_str(),
-                    m_enable_equiangular_sampling ? "on" : "off");
-            }
         };
 
         PTLightingEngine(
@@ -217,6 +179,44 @@ namespace
         void release() override
         {
             delete this;
+        }
+
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                "unidirectional path tracer settings:\n"
+                "  direct lighting               %s\n"
+                "  ibl                           %s\n"
+                "  caustics                      %s\n"
+                "  max bounces                   %s\n"
+                "  max diffuse bounces           %s\n"
+                "  max glossy bounces            %s\n"
+                "  max specular bounces          %s\n"
+                "  max volume bounces            %s\n"
+                "  russian roulette start bounce %s\n"
+                "  next event estimation         %s\n"
+                "  dl light samples              %s\n"
+                "  dl light threshold            %s\n"
+                "  ibl env samples               %s\n"
+                "  max ray intensity             %s\n"
+                "  volume distance samples       %s\n"
+                "  equiangular sampling          %s",
+                m_params.m_enable_dl ? "on" : "off",
+                m_params.m_enable_ibl ? "on" : "off",
+                m_params.m_enable_caustics ? "on" : "off",
+                m_params.m_max_bounces == ~0 ? "unlimited" : pretty_uint(m_params.m_max_bounces).c_str(),
+                m_params.m_max_diffuse_bounces == ~0 ? "unlimited" : pretty_uint(m_params.m_max_diffuse_bounces).c_str(),
+                m_params.m_max_glossy_bounces == ~0 ? "unlimited" : pretty_uint(m_params.m_max_glossy_bounces).c_str(),
+                m_params.m_max_specular_bounces == ~0 ? "unlimited" : pretty_uint(m_params.m_max_specular_bounces).c_str(),
+                m_params.m_max_volume_bounces == ~0 ? "unlimited" : pretty_uint(m_params.m_max_volume_bounces).c_str(),
+                m_params.m_rr_min_path_length == ~0 ? "unlimited" : pretty_uint(m_params.m_rr_min_path_length).c_str(),
+                m_params.m_next_event_estimation ? "on" : "off",
+                pretty_scalar(m_params.m_dl_light_sample_count).c_str(),
+                pretty_scalar(m_params.m_dl_low_light_threshold, 3).c_str(),
+                pretty_scalar(m_params.m_ibl_env_sample_count).c_str(),
+                m_params.m_has_max_ray_intensity ? pretty_scalar(m_params.m_max_ray_intensity).c_str() : "unlimited",
+                pretty_int(m_params.m_distance_sample_count).c_str(),
+                m_params.m_enable_equiangular_sampling ? "on" : "off");
         }
 
         void compute_lighting(
@@ -995,7 +995,6 @@ PTLightingEngineFactory::PTLightingEngineFactory(
   : m_light_sampler(light_sampler)
   , m_params(params)
 {
-    PTLightingEngine::Parameters(params).print();
 }
 
 void PTLightingEngineFactory::release()
@@ -1043,7 +1042,7 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
         "max_diffuse_bounces",
         Dictionary()
             .insert("type", "int")
-            .insert("default", "8")
+            .insert("default", "3")
             .insert("unlimited", "true")
             .insert("min", "0")
             .insert("label", "Max Diffuse Bounces")

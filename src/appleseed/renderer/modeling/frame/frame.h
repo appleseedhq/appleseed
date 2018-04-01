@@ -82,7 +82,7 @@ class APPLESEED_DLLSYMBOL Frame
     // Delete this instance.
     void release() override;
 
-    // Print frame settings to the renderer's global logger.
+    // Print this component's settings to the renderer's global logger.
     void print_settings();
 
     // Return the name of the active camera.

@@ -39,7 +39,7 @@ namespace renderer
 // when you increment this value.
 //
 
-const size_t ProjectFormatRevision = 22;
+const size_t ProjectFormatRevision = 25;
 
 }       // namespace renderer
 

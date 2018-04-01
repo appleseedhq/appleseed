@@ -199,7 +199,7 @@ namespace
 
                 // Colors in SeExpr are always in the sRGB color space.
                 if (!m_texture_is_srgb)
-                    color = linear_rgb_to_srgb(color);
+                    color = fast_linear_rgb_to_srgb(color);
 
                 return color;
             }

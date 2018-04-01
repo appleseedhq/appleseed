@@ -87,6 +87,8 @@ namespace
         {
             m_inputs.declare("radiance", InputFormatSpectralIlluminance);
             m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("exposure", InputFormatFloat, "0.0");
+            m_inputs.declare("exposure_multiplier", InputFormatFloat, "1.0");
         }
 
         void release() override
@@ -172,6 +174,8 @@ namespace
         {
             Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
             float       m_radiance_multiplier;  // emitted radiance multiplier
+            float       m_exposure;             // emitted radiance multiplier in f-stops
+            float       m_exposure_multiplier;  // emitted radiance exposure multiplier
         };
 
         void lookup_envmap(
@@ -190,7 +194,7 @@ namespace
             if (is_finite(values.m_radiance))
             {
                 value = values.m_radiance;
-                value *= values.m_radiance_multiplier;
+                value *= values.m_radiance_multiplier * pow(2.0f, values.m_exposure * values.m_exposure_multiplier);
             }
             else value.set(0.0f);
         }
@@ -248,6 +252,35 @@ DictionaryArray MirrorBallMapEnvironmentEDFFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "Environment texture radiance multiplier"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "exposure")
+            .insert("label", "Exposure")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", "0.0")
+            .insert("help", "Environment exposure"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "exposure_multiplier")
+            .insert("label", "Exposure Multiplier")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-64.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "64.0")
+                    .insert("type", "soft"))
+            .insert("default", "1.0")
+            .insert("use", "optional")
+            .insert("help", "Environment exposure multiplier"));
 
     return metadata;
 }

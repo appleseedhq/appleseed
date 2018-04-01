@@ -1067,12 +1067,12 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/lightsample.h
     renderer/kernel/lighting/lightsamplerbase.cpp
     renderer/kernel/lighting/lightsamplerbase.h
-    renderer/kernel/lighting/materialsamplers.cpp
-    renderer/kernel/lighting/materialsamplers.h
     renderer/kernel/lighting/lighttree.cpp
     renderer/kernel/lighting/lighttree.h
     renderer/kernel/lighting/lighttree_node.h
     renderer/kernel/lighting/lighttypes.h
+    renderer/kernel/lighting/materialsamplers.cpp
+    renderer/kernel/lighting/materialsamplers.h
     renderer/kernel/lighting/pathtracer.h
     renderer/kernel/lighting/pathvertex.cpp
     renderer/kernel/lighting/pathvertex.h
@@ -1395,6 +1395,10 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/diffusebtdf.h
     renderer/modeling/bsdf/disneybrdf.cpp
     renderer/modeling/bsdf/disneybrdf.h
+    renderer/modeling/bsdf/energycompensation.cpp
+    renderer/modeling/bsdf/energycompensation.h
+    renderer/modeling/bsdf/energycompensationtables.cpp
+    renderer/modeling/bsdf/energycompensationtables.h
     renderer/modeling/bsdf/fresnel.h
     renderer/modeling/bsdf/glassbsdf.cpp
     renderer/modeling/bsdf/glassbsdf.h

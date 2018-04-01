@@ -62,13 +62,13 @@ namespace
       : public ISampleRenderer
     {
       public:
-        void print_settings() const override
-        {
-        }
-
         void release() override
         {
             delete this;
+        }
+
+        void print_settings() const override
+        {
         }
 
         void render_sample(

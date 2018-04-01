@@ -57,4 +57,11 @@ BENCHMARK_SUITE(Foundation_Image_FilteredTile)
 
         m_tile.add(m_x, m_y, Values);
     }
+
+    BENCHMARK_CASE_F(AtomicAdd, Fixture)
+    {
+        const float Values[4] = { 1.0f, 2.0f, 3.0f, 4.0f };
+
+        m_tile.atomic_add(m_x, m_y, Values);
+    }
 }

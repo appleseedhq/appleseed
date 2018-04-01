@@ -95,10 +95,12 @@ void LineNumberArea::paintEvent(QPaintEvent* event)
     {
         if (block.isVisible() && bottom >= event->rect().top())
         {
-            QString number = QString::number(block_number + 1);
-            painter.setPen(QColor(169, 169, 169));
-            painter.drawText(0, top, width(), fontMetrics().height(),
-                             Qt::AlignRight, number);
+            painter.setPen(QColor(100, 100, 100));
+            painter.drawText(
+                0, top,
+                width(), fontMetrics().height(),
+                Qt::AlignRight,
+                QString::number(block_number + 1));
         }
 
         block = block.next();

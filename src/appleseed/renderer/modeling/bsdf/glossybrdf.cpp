@@ -173,10 +173,6 @@ namespace
             const int                   modes,
             BSDFSample&                 sample) const override
         {
-            const Vector3f& n = sample.m_shading_basis.get_normal();
-            const Vector3f& outgoing = sample.m_outgoing.get_value();
-            const float cos_on = abs(dot(outgoing, n));
-
             const InputValues* values = static_cast<const InputValues*>(data);
 
             const FresnelDielectricFun f(
@@ -189,9 +185,11 @@ namespace
             if (values->m_roughness == 0.0f)
             {
                 if (ScatteringMode::has_specular(modes))
+                {
                     SpecularBRDFHelper::sample(f, sample);
+                    sample.m_value.m_beauty = sample.m_value.m_glossy;
+                }
 
-                sample.m_value.m_beauty = sample.m_value.m_glossy;
                 return;
             }
 
@@ -209,50 +207,57 @@ namespace
                   case GGX:
                     {
                         const GGXMDF mdf;
-                        MicrofacetBRDFHelper::sample(
+                        MicrofacetBRDFHelper<true>::sample(
                             sampling_context,
                             mdf,
                             alpha_x,
                             alpha_y,
                             1.0f,
                             f,
-                            cos_on,
                             sample);
 
-                        const float cos_in = dot(sample.m_shading_basis.get_normal(), sample.m_incoming.get_value());
-                        add_energy_compensation_term(mdf, values, cos_in, cos_on, sample.m_value.m_glossy);
+                        add_energy_compensation_term(
+                            mdf,
+                            values,
+                            sample.m_outgoing.get_value(),
+                            sample.m_incoming.get_value(),
+                            sample.m_shading_basis.get_normal(),
+                            sample.m_value.m_glossy);
                     }
                     break;
 
                   case Beckmann:
                     {
                         const BeckmannMDF mdf;
-                        MicrofacetBRDFHelper::sample(
+                        MicrofacetBRDFHelper<true>::sample(
                             sampling_context,
                             mdf,
                             alpha_x,
                             alpha_y,
                             1.0f,
                             f,
-                            cos_on,
                             sample);
 
-                        const float cos_in = dot(sample.m_shading_basis.get_normal(), sample.m_incoming.get_value());
-                        add_energy_compensation_term(mdf, values, cos_in, cos_on, sample.m_value.m_glossy);
+                        add_energy_compensation_term(
+                            mdf,
+                            values,
+                            sample.m_outgoing.get_value(),
+                            sample.m_incoming.get_value(),
+                            sample.m_shading_basis.get_normal(),
+                            sample.m_value.m_glossy);
                     }
                     break;
 
                   case Std:
                     {
                         const StdMDF mdf;
-                        MicrofacetBRDFHelper::sample(
+                        MicrofacetBRDFHelper<true>::sample(
                             sampling_context,
                             mdf,
                             alpha_x,
                             alpha_y,
                             highlight_falloff_to_gama(values->m_highlight_falloff),
                             f,
-                            cos_on,
                             sample);
                     }
                     break;
@@ -278,21 +283,6 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
 
-            const Vector3f& n = shading_basis.get_normal();
-
-            const Vector3f flipped_incoming =
-                dot(incoming, n) < 0.0f
-                    ? incoming - 2.0f * dot(incoming, n) * n
-                    : incoming;
-
-            const Vector3f flipped_outgoing =
-                dot(outgoing, n) < 0.0f
-                    ? outgoing - 2.0f * dot(outgoing, n) * n
-                    : outgoing;
-
-            const float cos_in = dot(flipped_incoming, n);
-            const float cos_on = dot(flipped_outgoing, n);
-
             const InputValues* values = static_cast<const InputValues*>(data);
 
             float alpha_x, alpha_y;
@@ -315,55 +305,63 @@ namespace
               case GGX:
                 {
                     const GGXMDF mdf;
-                    pdf = MicrofacetBRDFHelper::evaluate(
+                    pdf = MicrofacetBRDFHelper<true>::evaluate(
                         mdf,
                         alpha_x,
                         alpha_y,
                         1.0f,
                         shading_basis,
-                        flipped_outgoing,
-                        flipped_incoming,
+                        outgoing,
+                        incoming,
                         f,
-                        cos_in,
-                        cos_on,
                         value.m_glossy);
-                    add_energy_compensation_term(mdf, values, cos_in, cos_on, value.m_glossy);
+
+                    add_energy_compensation_term(
+                        mdf,
+                        values,
+                        outgoing,
+                        incoming,
+                        shading_basis.get_normal(),
+                        value.m_glossy);
                 }
                 break;
 
               case Beckmann:
                 {
                     const BeckmannMDF mdf;
-                    pdf = MicrofacetBRDFHelper::evaluate(
+                    pdf = MicrofacetBRDFHelper<true>::evaluate(
                         mdf,
                         alpha_x,
                         alpha_y,
                         1.0f,
                         shading_basis,
-                        flipped_outgoing,
-                        flipped_incoming,
+                        outgoing,
+                        incoming,
                         f,
-                        cos_in,
-                        cos_on,
                         value.m_glossy);
-                    add_energy_compensation_term(mdf, values, cos_in, cos_on, value.m_glossy);
+
+                    add_energy_compensation_term(
+                        mdf,
+                        values,
+                        outgoing,
+                        incoming,
+                        shading_basis.get_normal(),
+                        value.m_glossy);
                 }
                 break;
 
               case Std:
                 {
                     const StdMDF mdf;
-                    pdf = MicrofacetBRDFHelper::evaluate(
+                    pdf = MicrofacetBRDFHelper<true>::evaluate(
                         mdf,
                         alpha_x,
                         alpha_y,
                         highlight_falloff_to_gama(values->m_highlight_falloff),
                         shading_basis,
-                        flipped_outgoing,
-                        flipped_incoming,
+                        outgoing,
+                        incoming,
                         f,
-                        cos_in,
-                        cos_on,
                         value.m_glossy);
                 }
                 break;
@@ -391,18 +389,6 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
 
-            const Vector3f& n = shading_basis.get_normal();
-
-            const Vector3f flipped_incoming =
-                dot(incoming, n) < 0.0f
-                    ? incoming - 2.0f * dot(incoming, n) * n
-                    : incoming;
-
-            const Vector3f flipped_outgoing =
-                dot(outgoing, n) < 0.0f
-                    ? outgoing - 2.0f * dot(outgoing, n) * n
-                    : outgoing;
-
             const InputValues* values = static_cast<const InputValues*>(data);
 
             float alpha_x, alpha_y;
@@ -417,42 +403,42 @@ namespace
               case GGX:
                 {
                     const GGXMDF mdf;
-                    return MicrofacetBRDFHelper::pdf(
+                    return MicrofacetBRDFHelper<true>::pdf(
                         mdf,
                         alpha_x,
                         alpha_y,
                         1.0f,
                         shading_basis,
-                        flipped_outgoing,
-                        flipped_incoming);
+                        outgoing,
+                        incoming);
                 }
                 break;
 
               case Beckmann:
                 {
                     const BeckmannMDF mdf;
-                    return MicrofacetBRDFHelper::pdf(
+                    return MicrofacetBRDFHelper<true>::pdf(
                         mdf,
                         alpha_x,
                         alpha_y,
                         1.0f,
                         shading_basis,
-                        flipped_outgoing,
-                        flipped_incoming);
+                        outgoing,
+                        incoming);
                 }
                 break;
 
               case Std:
                 {
                     const StdMDF mdf;
-                    return MicrofacetBRDFHelper::pdf(
+                    return MicrofacetBRDFHelper<true>::pdf(
                         mdf,
                         alpha_x,
                         alpha_y,
                         highlight_falloff_to_gama(values->m_highlight_falloff),
                         shading_basis,
-                        flipped_outgoing,
-                        flipped_incoming);
+                        outgoing,
+                        incoming);
                 }
                 break;
 
@@ -469,12 +455,16 @@ namespace
         static void add_energy_compensation_term(
             const MDF&                  mdf,
             const InputValues*          values,
-            const float                 cos_in,
-            const float                 cos_on,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const Vector3f&             n,
             Spectrum&                   value)
         {
             if (values->m_energy_compensation != 0.0f)
             {
+                const float cos_on = dot(outgoing, n);
+                const float cos_in = dot(incoming, n);
+
                 float fms;
                 float eavg;
                 microfacet_energy_compensation_term(

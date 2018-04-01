@@ -88,7 +88,15 @@ class DynamicSpectrum
     static size_t size();
 
     // Constructors.
+#ifdef APPLESEED_USE_SSE
     DynamicSpectrum();                                      // leave all components uninitialized
+#else
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    DynamicSpectrum() = default;                            // leave all components uninitialized
+#else
+    DynamicSpectrum() {}                                    // leave all components uninitialized
+#endif
+#endif
     explicit DynamicSpectrum(const ValueType val);          // set all components to `val`
     DynamicSpectrum(
         const foundation::Color<ValueType, 3>&              rgb,
@@ -297,13 +305,15 @@ inline size_t DynamicSpectrum<T, N>::size()
     return s_size;
 }
 
+#ifdef APPLESEED_USE_SSE
+
 template <typename T, size_t N>
 inline DynamicSpectrum<T, N>::DynamicSpectrum()
 {
-#ifdef APPLESEED_USE_SSE
     m_samples[s_size] = T(0.0);
-#endif
 }
+
+#endif
 
 template <typename T, size_t N>
 inline DynamicSpectrum<T, N>::DynamicSpectrum(const ValueType val)

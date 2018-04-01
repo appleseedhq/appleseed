@@ -56,21 +56,18 @@ void OIIOErrorHandler::operator()(int errcode, const string& msg)
 
     switch (errcode & ErrorCodeMask)
     {
+      case EH_MESSAGE:
+      case EH_INFO:
+        RENDERER_LOG_DEBUG("%s", modified_msg.c_str());
+        break;
+
       case EH_WARNING:
         RENDERER_LOG_WARNING("%s", modified_msg.c_str());
         break;
 
       case EH_ERROR:
-        RENDERER_LOG_ERROR("%s", modified_msg.c_str());
-        break;
-
       case EH_SEVERE:
-        RENDERER_LOG_FATAL("%s", modified_msg.c_str());
-        break;
-
-      case EH_MESSAGE:
-      case EH_INFO:
-        RENDERER_LOG_INFO("%s", modified_msg.c_str());
+        RENDERER_LOG_ERROR("%s", modified_msg.c_str());
         break;
 
       case EH_DEBUG:

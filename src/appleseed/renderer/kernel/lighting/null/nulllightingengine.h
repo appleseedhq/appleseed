@@ -55,13 +55,18 @@ class NullLightingEngine
 {
   public:
     // Delete this instance.
-    virtual void release() override
+    void release() override
     {
         delete this;
     }
 
+    // Print this component's settings to the renderer's global logger.
+    void print_settings() const override
+    {
+    }
+
     // Compute the lighting at a given point of the scene.
-    virtual void compute_lighting(
+    void compute_lighting(
         SamplingContext&        sampling_context,
         const PixelContext&     pixel_context,
         const ShadingContext&   shading_context,
