@@ -38,9 +38,9 @@
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
+namespace renderer      { class BackwardLightSampler; }
 namespace renderer      { class ForwardLightSampler; }
 namespace renderer      { class Project; }
-namespace renderer      { class BackwardLightSampler; }
 
 namespace renderer
 {
