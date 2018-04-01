@@ -66,8 +66,8 @@ namespace {
         const BSDF*             m_bsdf;
         const void*             m_bsdf_data;
         Basis3f                 m_shading_basis;
-        double                  m_fwd_pdf = 0.0;
-        double                  m_rev_pdf;
+        float                   m_fwd_pdf = 0.0;
+        float                   m_rev_pdf;
         Spectrum                m_Le = Spectrum(0.0);
         ShadingPoint            m_shading_point;
         bool                    m_is_light_vertex = false;
@@ -162,28 +162,28 @@ namespace {
 
         /// TODO:: precompute path density using fwd_pdf and rev_pdf.
         float ComputePathDensity(
-            const std::vector<BDPTVertex>       &light_vertices,
-            const std::vector<BDPTVertex>       &camera_vertices,
-            int                                 s,
-            int                                 t,
-            int                                 p,
-            int                                 q
+            std::vector<BDPTVertex>             &light_vertices,
+            std::vector<BDPTVertex>             &camera_vertices,
+            const int                           s,
+            const int                           t,
+            const int                           p,
+            const int                           q
         )
         {
             assert(p + q == s + t);
 
             // get i Vertex in the constructed path
-            // i = 0 correspond first vertex of the path
+            // i = 1 correspond first vertex of the full path
 
             auto GetVertexStartFromLight = [&](int i)
             {
                 if (i <= s)
                 {
-                    return light_vertices[i - 1];
+                    return &light_vertices[i - 1];
                 }
                 else
                 {
-                    return camera_vertices[s + t - i - 1];
+                    return &camera_vertices[s + t - i - 1];
                 }
             };
 
@@ -191,38 +191,40 @@ namespace {
             {
                 if (i <= t)
                 {
-                    return camera_vertices[i - 2];
+                    return &camera_vertices[i - 2];
                 }
                 else
                 {
-                    return light_vertices[s + t - i];
+                    return &light_vertices[s + t - i];
                 }
             };
 
+            /// TODO:: swap all pdf computation to rev_pdf and fwd_pdf
             float result = 1.0f;
             // start from light
             for (int i = 1; i <= p; i++)
             {
-                if (i == 1) // on light source
+                if (i == 1) // the vertex on light source
                 {
-                    const BDPTVertex & vertex = GetVertexStartFromLight(i);
+                    const BDPTVertex & vertex = *GetVertexStartFromLight(i);
                     result *= vertex.m_is_light_vertex ? m_forward_light_sampler.evaluate_pdf(vertex.m_shading_point) : 0.0f;
                 }
-                else if (i == 2) // after light source
+                else if (i == 2) // the vertex after light source
                 {
-                    const BDPTVertex & prev_vertex = GetVertexStartFromLight(i - 1);
-                    const BDPTVertex & vertex = GetVertexStartFromLight(i);
+                    const BDPTVertex & prev_vertex = *GetVertexStartFromLight(i - 1);
+                    const BDPTVertex & vertex = *GetVertexStartFromLight(i);
+                    /// TODO:: fix this. This assumes diffuse light source.
                     float pdf = static_cast<float>(foundation::dot(foundation::normalize(vertex.m_position - prev_vertex.m_position), prev_vertex.m_geometric_normal) * RcpPi<float>());
                     result *= static_cast<float>(prev_vertex.convertDensity(pdf, vertex));
                 }
                 else
                 {
-                    const BDPTVertex & prev2_vertex = GetVertexStartFromLight(i - 2);
-                    const BDPTVertex & prev_vertex = GetVertexStartFromLight(i - 1);
-                    const BDPTVertex & vertex = GetVertexStartFromLight(i);
+                    const BDPTVertex & prev2_vertex = *GetVertexStartFromLight(i - 2);
+                    const BDPTVertex & prev_vertex = *GetVertexStartFromLight(i - 1);
+                    const BDPTVertex & vertex = *GetVertexStartFromLight(i);
                     float pdf = prev_vertex.m_bsdf->evaluate_pdf(
                         prev_vertex.m_bsdf_data,
-                        false,
+                        true,
                         static_cast<Vector3f>(prev_vertex.m_geometric_normal),
                         prev_vertex.m_shading_basis,
                         static_cast<Vector3f>(foundation::normalize(vertex.m_position - prev_vertex.m_position)),
@@ -241,8 +243,8 @@ namespace {
                 }
                 else if (i == 3) // first point after shading point
                 {
-                    const BDPTVertex & prev_vertex = GetVertexStartFromCamera(i - 1);
-                    const BDPTVertex & vertex = GetVertexStartFromCamera(i);
+                    const BDPTVertex & prev_vertex = *GetVertexStartFromCamera(i - 1);
+                    const BDPTVertex & vertex = *GetVertexStartFromCamera(i);
                     float pdf = prev_vertex.m_bsdf->evaluate_pdf(
                         prev_vertex.m_bsdf_data,
                         false,
@@ -255,9 +257,9 @@ namespace {
                 }
                 else
                 {
-                    const BDPTVertex & prev2_vertex = GetVertexStartFromCamera(i - 2);
-                    const BDPTVertex & prev_vertex = GetVertexStartFromCamera(i - 1);
-                    const BDPTVertex & vertex = GetVertexStartFromCamera(i);
+                    const BDPTVertex & prev2_vertex = *GetVertexStartFromCamera(i - 2);
+                    const BDPTVertex & prev_vertex = *GetVertexStartFromCamera(i - 1);
+                    const BDPTVertex & vertex = *GetVertexStartFromCamera(i);
                     float pdf = prev_vertex.m_bsdf->evaluate_pdf(
                         prev_vertex.m_bsdf_data,
                         false,
@@ -276,10 +278,10 @@ namespace {
         void Connect(
             const ShadingContext&               shading_context,
             const ShadingPoint&                 shading_point,
-            const std::vector<BDPTVertex>       &light_vertices,
-            const std::vector<BDPTVertex>       &camera_vertices,
-            int                        s,
-            int                        t,
+            std::vector<BDPTVertex>             &light_vertices,
+            std::vector<BDPTVertex>             &camera_vertices,
+            const int                           s,
+            const int                           t,
             ShadingComponents&                  radiance)
         {
             assert(t >= 2);
@@ -312,7 +314,7 @@ namespace {
                 DirectShadingComponents camera_eval_bsdf;
                 const float camera_eval_bsdf_prob = camera_vertex.m_bsdf->evaluate(
                     camera_vertex.m_bsdf_data,
-                    false,
+                    false,   // Adjoint
                     false,
                     static_cast<Vector3f>(camera_vertex.m_geometric_normal),
                     camera_vertex.m_shading_basis,
@@ -338,7 +340,7 @@ namespace {
                 DirectShadingComponents camera_eval_bsdf;
                 const float camera_eval_bsdf_prob = camera_vertex.m_bsdf->evaluate(
                     camera_vertex.m_bsdf_data,
-                    false,
+                    false,   // Adjoint
                     false,
                     static_cast<Vector3f>(camera_vertex.m_geometric_normal),
                     camera_vertex.m_shading_basis,
@@ -350,7 +352,7 @@ namespace {
                 DirectShadingComponents light_eval_bsdf;
                 const float light_eval_bsdf_prob = light_vertex.m_bsdf->evaluate(
                     light_vertex.m_bsdf_data,
-                    false,
+                    true,   // Adjoint
                     false,
                     static_cast<Vector3f>(light_vertex.m_geometric_normal),
                     light_vertex.m_shading_basis,
@@ -649,6 +651,7 @@ namespace {
                 bdpt_vertex.m_bsdf = vertex.m_bsdf;
                 bdpt_vertex.m_bsdf_data = vertex.m_bsdf_data;
                 bdpt_vertex.m_fwd_pdf = vertex.m_prev_prob;
+                /// TODO:: compute rev_pdf here
 
                 if (vertex.m_edf)
                 {
