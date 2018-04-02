@@ -41,6 +41,7 @@
 #include "renderer/modeling/project/project.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/arena.h"
 #include "foundation/utility/statistics.h"
 
 using namespace foundation;
@@ -62,19 +63,20 @@ namespace
 
     struct BDPTVertex
     {
-        Spectrum                m_beta;
-        const BSDF*             m_bsdf;
-        const void*             m_bsdf_data;
-        Vector3d                m_dir_to_prev_vertex;
-        float                   m_fwd_pdf = 0.0;
-        Vector3d                m_geometric_normal;
-        bool                    m_is_light_vertex = false;
         Vector3d                m_position;
+        Vector3d                m_geometric_normal;
+        Spectrum                m_beta = Spectrum(0.0f);
+        const BSDF*             m_bsdf = nullptr;
+        const void*             m_bsdf_data = nullptr;
+        Vector3d                m_dir_to_prev_vertex;
         const BDPTVertex*       m_prev_vertex = nullptr;
         Basis3f                 m_shading_basis;
-        float                   m_rev_pdf;
+        Spectrum                m_Le = Spectrum(0.0f);
         ShadingPoint            m_shading_point;
-        Spectrum                m_Le = Spectrum(0.0);
+        bool                    m_is_light_vertex = false;
+
+        float                   m_fwd_pdf = 0.0f;
+        float                   m_rev_pdf = 0.0f;
 
         ///TODO:: create a proper constructor
 
@@ -93,6 +95,7 @@ namespace
       : public ILightingEngine
     {
       public:
+        /// TODO:: get rid of num_max_vertices and read from params instead
         const size_t num_max_vertices = 9;
         struct Parameters
         {
@@ -122,6 +125,27 @@ namespace
 
         void print_settings() const override
         {
+        }
+
+        void compute_lighting(
+            SamplingContext&        sampling_context,
+            const PixelContext&     pixel_context,
+            const ShadingContext&   shading_context,
+            const ShadingPoint&     shading_point,
+            ShadingComponents&      radiance) override      // output radiance, in W.sr^-1.m^-2
+        {
+            BDPTVertex camera_vertices[9];
+            BDPTVertex light_vertices[9];
+
+            size_t num_light_vertices = trace_light(sampling_context, shading_context, light_vertices);
+            size_t num_camera_vertices = trace_camera(sampling_context, shading_context, shading_point, camera_vertices);
+
+            for (size_t s = 0; s < num_light_vertices + 1; s++)
+                for (size_t t = 2; t < num_camera_vertices + 2; t++)
+                    if (s + t <= num_max_vertices)
+                        connect(shading_context, shading_point, light_vertices, camera_vertices, s, t, radiance);
+
+            shading_context.get_arena().clear();
         }
 
         Spectrum compute_geometry_term(
@@ -162,8 +186,8 @@ namespace
 
         /// TODO:: precompute path density using fwd_pdf and rev_pdf.
         float compute_path_density(
-            vector<BDPTVertex>                  &light_vertices,
-            vector<BDPTVertex>                  &camera_vertices,
+            BDPTVertex*                         light_vertices,
+            BDPTVertex*                         camera_vertices,
             const size_t                        s,
             const size_t                        t,
             const size_t                        p,
@@ -274,11 +298,11 @@ namespace
             return result;
         }
 
-        void Connect(
+        void connect(
             const ShadingContext&               shading_context,
             const ShadingPoint&                 shading_point,
-            vector<BDPTVertex>                  &light_vertices,
-            vector<BDPTVertex>                  &camera_vertices,
+            BDPTVertex*                         light_vertices,
+            BDPTVertex*                         camera_vertices,
             const size_t                        s,
             const size_t                        t,
             ShadingComponents&                  radiance)
@@ -380,6 +404,7 @@ namespace
 
             float numerator = compute_path_density(light_vertices, camera_vertices, s, t, s, t);
             float denominator = 0.0;
+            /// TODO:: unhandled case where denominator = 0 (specular surface).
 
             // [p = 0, q = s + t], [p = 1, q = s + t - 1] ... [p = s + t - 2, q = 2]
             for (size_t i = 0; i <= s + t - 2; i++)
@@ -393,41 +418,10 @@ namespace
             radiance.m_beauty += miWeight * result;
         }
 
-        void compute_lighting(
-            SamplingContext&        sampling_context,
-            const PixelContext&     pixel_context,
-            const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            ShadingComponents&      radiance) override      // output radiance, in W.sr^-1.m^-2
-        {
-            vector<BDPTVertex> camera_vertices;
-            vector<BDPTVertex> light_vertices;
-
-            // camera_vertices[0] is on shading_point
-            camera_vertices.reserve(num_max_vertices - 1); 
-
-            // light_vertices[0] is on light source
-            light_vertices.reserve(num_max_vertices);
-
-            trace_light(sampling_context, shading_context, &light_vertices);
-            trace_camera(sampling_context, shading_context, shading_point, &camera_vertices);
-
-            for (size_t s = 0; s < light_vertices.size() + 1; s++)
-            {
-                for (size_t t = 2; t < camera_vertices.size() + 2; t++)
-                {
-                    if (s + t <= num_max_vertices)
-                        Connect(shading_context, shading_point, light_vertices, camera_vertices, s, t, radiance);
-                }
-            }
-
-            shading_context.get_arena().clear();
-        }
-
-        void trace_light(
+        size_t trace_light(
             SamplingContext&            sampling_context,
             const ShadingContext&       shading_context,
-            vector<BDPTVertex>*    vertices)
+            BDPTVertex*                 vertices)
         {
             // Sample the light sources.
             sampling_context.split_in_place(4, 1);
@@ -441,7 +435,7 @@ namespace
                 Vector3f(s[1], s[2], s[3]),
                 light_sample);
 
-            light_sample.m_triangle
+            return light_sample.m_triangle
                 ? trace_emitting_triangle(
                     sampling_context,
                     shading_context,
@@ -453,11 +447,11 @@ namespace
                     light_sample);
         }
 
-        void trace_emitting_triangle(
+        size_t trace_emitting_triangle(
             SamplingContext&            sampling_context,
             const ShadingContext&       shading_context,
             LightSample&                light_sample,
-            vector<BDPTVertex>*    vertices)
+            BDPTVertex*                 vertices)
         {
             // Make sure the geometric normal of the light sample is in the same hemisphere as the shading normal.
             light_sample.m_geometric_normal =
@@ -521,7 +515,7 @@ namespace
                 VisibilityFlags::LightRay,
                 0);
 
-            BDPTVertex bdpt_vertex;
+            BDPTVertex& bdpt_vertex = vertices[0];
             bdpt_vertex.m_beta = initial_flux;
             bdpt_vertex.m_fwd_pdf = light_sample.m_probability;
             /// CONFUSE:: why geometric normal is flipped?
@@ -531,17 +525,18 @@ namespace
             bdpt_vertex.m_rev_pdf = 1.0;
             bdpt_vertex.m_shading_point = light_shading_point;
 
-            vertices->push_back(bdpt_vertex);
-
             // Build the path tracer.
-            PathVisitor path_visitor(initial_flux * dot(emission_direction, Vector3f(light_sample.m_shading_normal)) / edf_prob, shading_context, vertices);
+            size_t num_light_vertices = 0;
+            PathVisitor path_visitor(initial_flux * dot(emission_direction, Vector3f(light_sample.m_shading_normal)) / edf_prob,
+                                     shading_context,
+                                     vertices + 1,
+                                     &num_light_vertices);
             VolumeVisitor volume_visitor;
-
             PathTracer<PathVisitor, VolumeVisitor, true> path_tracer(
                 path_visitor,
                 volume_visitor,
                 ~0,
-                num_max_vertices,
+                num_max_vertices - 2,
                 ~0,
                 ~0,
                 ~0,
@@ -557,29 +552,33 @@ namespace
                     false);
 
             m_light_path_length.insert(light_path_length);
+            assert(num_light_vertices <= num_max_vertices);
+            return num_light_vertices;
         }
 
-        void trace_non_physical_light(
+        size_t trace_non_physical_light(
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
             LightSample&            light_sample)
         {
+            return 0;
         }
 
-        void trace_camera(
+        size_t trace_camera(
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
-            vector<BDPTVertex>*     vertices)
+            BDPTVertex*             vertices)
         {
-            PathVisitor path_visitor(Spectrum(1.0), shading_context, vertices);
+            size_t num_camera_vertices = 0;
+            PathVisitor path_visitor(Spectrum(1.0), shading_context, vertices, &num_camera_vertices);
             VolumeVisitor volume_visitor;
 
             PathTracer<PathVisitor, VolumeVisitor, false> path_tracer(
                 path_visitor,
                 volume_visitor,
                 ~0,
-                num_max_vertices,
+                num_max_vertices - 2,
                 ~0,
                 ~0,
                 ~0,
@@ -594,6 +593,8 @@ namespace
                     false);
 
             m_camera_path_length.insert(camera_path_length);
+            assert(num_camera_vertices <= num_max_vertices - 1);
+            return camera_path_length - 1;
         }
 
         StatisticsVector get_statistics() const override
@@ -619,12 +620,14 @@ namespace
 
         struct PathVisitor
         {
-            PathVisitor(const Spectrum& initial_beta,
-                        const ShadingContext& shading_context,
-                        ::vector<BDPTVertex> * vertices)
+            PathVisitor(const Spectrum&         initial_beta,
+                        const ShadingContext&   shading_context,
+                        BDPTVertex*             vertices,
+                        size_t*                 num_vertices)
               : m_initial_beta(initial_beta)
               , m_shading_context(shading_context)
               , m_vertices(vertices)
+              , m_num_vertices(num_vertices)
             {
             }
 
@@ -642,7 +645,7 @@ namespace
             void on_hit(const PathVertex& vertex)
             {
                 // create BDPT Vertex
-                BDPTVertex bdpt_vertex;
+                BDPTVertex& bdpt_vertex = m_vertices[*m_num_vertices];
                 bdpt_vertex.m_beta = vertex.m_throughput * m_initial_beta;
                 bdpt_vertex.m_bsdf = vertex.m_bsdf;
                 bdpt_vertex.m_bsdf_data = vertex.m_bsdf_data;
@@ -660,8 +663,8 @@ namespace
                     bdpt_vertex.m_is_light_vertex = true;
                 }
 
-                bdpt_vertex.m_prev_vertex = (m_vertices->size() == 0) ? nullptr : &m_vertices->at(m_vertices->size() - 1);
-                m_vertices->push_back(bdpt_vertex);
+                bdpt_vertex.m_prev_vertex = (*m_num_vertices == 0) ? nullptr : m_vertices - 1;
+                (*m_num_vertices)++;
             }
 
             void on_scatter(const PathVertex& vertex)
@@ -670,7 +673,8 @@ namespace
 
             const ShadingContext&       m_shading_context;
             Spectrum                    m_initial_beta;
-            vector<BDPTVertex>*    m_vertices;
+            BDPTVertex*                 m_vertices;
+            size_t*                     m_num_vertices;
         };
 
         struct VolumeVisitor
