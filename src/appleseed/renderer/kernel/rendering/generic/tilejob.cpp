@@ -60,6 +60,7 @@ TileJob::TileJob(
     const Frame&                frame,
     const size_t                tile_x,
     const size_t                tile_y,
+    const size_t                tile_level,
     const size_t                pass_hash,
     const Spectrum::Mode        spectrum_mode,
     IAbortSwitch&               abort_switch)
@@ -68,6 +69,7 @@ TileJob::TileJob(
   , m_frame(frame)
   , m_tile_x(tile_x)
   , m_tile_y(tile_y)
+  , m_tile_level(tile_level)
   , m_pass_hash(pass_hash)
   , m_spectrum_mode(spectrum_mode)
   , m_abort_switch(abort_switch)
@@ -102,6 +104,7 @@ void TileJob::execute(const size_t thread_index)
             m_frame,
             m_tile_x,
             m_tile_y,
+            m_tile_level,
             m_pass_hash,
             m_abort_switch);
     }

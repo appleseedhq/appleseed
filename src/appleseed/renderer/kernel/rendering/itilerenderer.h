@@ -60,6 +60,7 @@ class ITileRenderer
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y,
+        const size_t                tile_level,
         const size_t                pass_hash,
         foundation::IAbortSwitch&   abort_switch) = 0;
 

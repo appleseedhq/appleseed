@@ -73,7 +73,7 @@ void TileJobFactory::create(
     assert(tiles.size() == props.m_tile_count);
 
     // Create tile jobs, one per tile.
-    for (size_t i = 0; i < props.m_tile_count; ++i)
+    for (size_t i = 0; i < props.m_tile_count - 1; ++i)
     {
         // Compute coordinates of the tile in the frame.
         const size_t tile_index = tiles[i];
@@ -90,9 +90,32 @@ void TileJobFactory::create(
                 frame,
                 tile_x,
                 tile_y,
+                0,
                 pass_hash,
                 spectrum_mode,
                 abort_switch));
+    }
+
+    const size_t last_tile_index = tiles.back();
+    const size_t last_tile_x = last_tile_index % props.m_tile_count_x;
+    const size_t last_tile_y = last_tile_index / props.m_tile_count_x;
+
+    for (int i = 0; i < 2; ++i)
+    {
+        for (int j = 0; j < 2; ++j)
+        {
+            tile_jobs.push_back(
+                new TileJob(
+                    tile_renderers,
+                    tile_callbacks,
+                    frame,
+                    last_tile_x * 2 + i,
+                    last_tile_y * 2 + j,
+                    1,
+                    pass_hash,
+                    spectrum_mode,
+                    abort_switch));
+        }
     }
 }
 
