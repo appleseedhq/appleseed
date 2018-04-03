@@ -61,6 +61,31 @@ TEST_SUITE(Foundation_Platform_Path)
         EXPECT_FALSE(executable_dir.empty());
     }
 
+    TEST_CASE(HasExtension_GivenEmptyPath_ReturnsFalse)
+    {
+        EXPECT_FALSE(has_extension(""));
+    }
+
+    TEST_CASE(HasExtension_GivenPathWithoutDot_ReturnsFalse)
+    {
+        EXPECT_FALSE(has_extension("foo"));
+    }
+
+    TEST_CASE(HasExtension_GivenEmptyEndingWithOneDot_ReturnsFalse)
+    {
+        EXPECT_FALSE(has_extension("foo."));
+    }
+
+    TEST_CASE(HasExtension_GivenEmptyEndingWithTwoDots_ReturnsFalse)
+    {
+        EXPECT_FALSE(has_extension("foo.."));
+    }
+
+    TEST_CASE(HasExtension_GivenPathWithExtension_ReturnsTrue)
+    {
+        EXPECT_TRUE(has_extension("foo.ext"));
+    }
+
 #ifdef _WIN32
 
     TEST_CASE(SplitPaths_GivenTwoEmptyPathes_ReturnsEmptyPath)

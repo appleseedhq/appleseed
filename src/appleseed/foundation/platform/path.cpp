@@ -178,6 +178,12 @@ const char* get_home_directory()
     return path;
 }
 
+bool has_extension(const bf::path& p)
+{
+    const auto ext = p.extension();
+    return !ext.empty() && ext != ".";
+}
+
 void split_paths(
     const bf::path&     p1,
     const bf::path&     p2,
@@ -189,8 +195,8 @@ void split_paths(
     assert(r1.empty());
     assert(r2.empty());
 
-    bf::path::const_iterator i1 = p1.begin();
-    bf::path::const_iterator i2 = p2.begin();
+    auto i1 = p1.begin();
+    auto i2 = p2.begin();
 
     while (i1 != p1.end() && i2 != p2.end())
     {
