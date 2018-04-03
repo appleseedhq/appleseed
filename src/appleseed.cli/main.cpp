@@ -607,16 +607,15 @@ namespace
         }
 
         // Write the frame to disk.
-
         if (g_cl.m_output.is_set())
         {
-            project->get_frame()->write_main_image(g_cl.m_output.value().c_str());
-            project->get_frame()->write_aov_images(g_cl.m_output.value().c_str());
+            const char* file_path = g_cl.m_output.value().c_str();
+            project->get_frame()->write_main_image(file_path);
+            project->get_frame()->write_aov_images(file_path);
         }
         else
         {
-            const Frame* frame = project->get_frame();
-            frame->write_main_and_aov_images();
+            project->get_frame()->write_main_and_aov_images();
         }
 
 #if defined __APPLE__ || defined _WIN32

@@ -91,6 +91,9 @@ APPLESEED_DLLSYMBOL const char* get_home_directory();
 // Operations on boost::filesystem::path objects.
 //
 
+// Return true if a path has a non-empty extension.
+bool has_extension(const boost::filesystem::path& p);
+
 // Split two paths into a common base path and two relative paths.
 void split_paths(
     const boost::filesystem::path&  p1,
