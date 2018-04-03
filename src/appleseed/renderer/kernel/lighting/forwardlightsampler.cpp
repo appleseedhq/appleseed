@@ -156,7 +156,7 @@ void ForwardLightSampler::sample(
     else sample_emitting_triangles(time, s, light_sample);
 }
 
-float ForwardLightSampler::evaluate_pdf(const ShadingPoint & light_shading_point) const
+float ForwardLightSampler::evaluate_pdf(const ShadingPoint& light_shading_point) const
 {
     assert(light_shading_point.is_triangle_primitive());
     const EmittingTriangleKey triangle_key(

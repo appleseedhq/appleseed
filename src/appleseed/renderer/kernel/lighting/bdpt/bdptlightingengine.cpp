@@ -61,6 +61,7 @@ namespace
         Camera, Light, Surface, Medium
     };
 
+    /// TODO:: decide if we should use PathVertex / BDPTVertex
     struct BDPTVertex
     {
         Vector3d                m_position;
@@ -80,7 +81,7 @@ namespace
 
         ///TODO:: create a proper constructor
 
-        double convertDensity(double pdf, const BDPTVertex& vertex) const
+        double convert_density(double pdf, const BDPTVertex& vertex) const
         {
             Vector3d w = m_position - vertex.m_position;
             double dist2 = square_norm(w);
@@ -91,6 +92,7 @@ namespace
         }
     };
 
+    /// TODO:: supports the case where t == 1 (if pdf for camera can be queried)
     class BDPTLightingEngine
       : public ILightingEngine
     {
@@ -134,7 +136,7 @@ namespace
             const ShadingPoint&     shading_point,
             ShadingComponents&      radiance) override      // output radiance, in W.sr^-1.m^-2
         {
-            BDPTVertex camera_vertices[9];
+            BDPTVertex camera_vertices[8];
             BDPTVertex light_vertices[9];
 
             size_t num_light_vertices = trace_light(sampling_context, shading_context, light_vertices);
@@ -144,8 +146,6 @@ namespace
                 for (size_t t = 2; t < num_camera_vertices + 2; t++)
                     if (s + t <= num_max_vertices)
                         connect(shading_context, shading_point, light_vertices, camera_vertices, s, t, radiance);
-
-            shading_context.get_arena().clear();
         }
 
         Spectrum compute_geometry_term(
@@ -185,6 +185,8 @@ namespace
         }
 
         /// TODO:: precompute path density using fwd_pdf and rev_pdf.
+        /// in the final code, this function should be removed and the mis weight computation should be very simple.
+        /// example: https://github.com/mmp/pbrt-v3/blob/master/src/integrators/bdpt.cpp#L228
         float compute_path_density(
             BDPTVertex*                         light_vertices,
             BDPTVertex*                         camera_vertices,
@@ -198,7 +200,7 @@ namespace
             // get i Vertex in the constructed path
             // i = 1 correspond first vertex of the full path
 
-            auto GetVertexStartFromLight = [&](const size_t i)
+            auto get_vertex_start_from_light = [&](const size_t i)
             {
                 if (i <= s)
                 {
@@ -210,7 +212,7 @@ namespace
                 }
             };
 
-            auto GetVertexStartFromCamera = [&](const size_t i)
+            auto get_vertex_start_from_camera = [&](const size_t i)
             {
                 if (i <= t)
                 {
@@ -229,22 +231,22 @@ namespace
             {
                 if (i == 1) // the vertex on light source
                 {
-                    const BDPTVertex & vertex = *GetVertexStartFromLight(i);
+                    const BDPTVertex& vertex = *get_vertex_start_from_light(i);
                     result *= vertex.m_is_light_vertex ? m_forward_light_sampler.evaluate_pdf(vertex.m_shading_point) : 0.0f;
                 }
                 else if (i == 2) // the vertex after light source
                 {
-                    const BDPTVertex & prev_vertex = *GetVertexStartFromLight(i - 1);
-                    const BDPTVertex & vertex = *GetVertexStartFromLight(i);
+                    const BDPTVertex& prev_vertex = *get_vertex_start_from_light(i - 1);
+                    const BDPTVertex& vertex = *get_vertex_start_from_light(i);
                     /// TODO:: fix this. This assumes diffuse light source.
                     float pdf = static_cast<float>(dot(normalize(vertex.m_position - prev_vertex.m_position), prev_vertex.m_geometric_normal) * RcpPi<float>());
-                    result *= static_cast<float>(prev_vertex.convertDensity(pdf, vertex));
+                    result *= static_cast<float>(prev_vertex.convert_density(pdf, vertex));
                 }
                 else
                 {
-                    const BDPTVertex & prev2_vertex = *GetVertexStartFromLight(i - 2);
-                    const BDPTVertex & prev_vertex = *GetVertexStartFromLight(i - 1);
-                    const BDPTVertex & vertex = *GetVertexStartFromLight(i);
+                    const BDPTVertex& prev2_vertex = *get_vertex_start_from_light(i - 2);
+                    const BDPTVertex& prev_vertex = *get_vertex_start_from_light(i - 1);
+                    const BDPTVertex& vertex = *get_vertex_start_from_light(i);
                     float pdf = prev_vertex.m_bsdf->evaluate_pdf(
                         prev_vertex.m_bsdf_data,
                         true,
@@ -253,21 +255,17 @@ namespace
                         static_cast<Vector3f>(normalize(vertex.m_position - prev_vertex.m_position)),
                         static_cast<Vector3f>(normalize(prev2_vertex.m_position - prev_vertex.m_position)),
                         ScatteringMode::All);
-                    result *= static_cast<float>(prev_vertex.convertDensity(pdf, vertex));
+                    result *= static_cast<float>(prev_vertex.convert_density(pdf, vertex));
                 }
             }
 
             // start from camera
-            for (size_t i = 2; i <= q; i++)
+            for (size_t i = 3; i <= q; i++)
             {
-                if (i == 2) // on shading point (first hit from camera ray)
+                if (i == 3) // first point after shading point
                 {
-                    continue;
-                }
-                else if (i == 3) // first point after shading point
-                {
-                    const BDPTVertex & prev_vertex = *GetVertexStartFromCamera(i - 1);
-                    const BDPTVertex & vertex = *GetVertexStartFromCamera(i);
+                    const BDPTVertex& prev_vertex = *get_vertex_start_from_camera(i - 1);
+                    const BDPTVertex& vertex = *get_vertex_start_from_camera(i);
                     float pdf = prev_vertex.m_bsdf->evaluate_pdf(
                         prev_vertex.m_bsdf_data,
                         false,
@@ -276,13 +274,13 @@ namespace
                         static_cast<Vector3f>(normalize(vertex.m_position - prev_vertex.m_position)),
                         static_cast<Vector3f>(prev_vertex.m_dir_to_prev_vertex),
                         ScatteringMode::All);
-                    result *= static_cast<float>(prev_vertex.convertDensity(pdf, vertex));
+                    result *= static_cast<float>(prev_vertex.convert_density(pdf, vertex));
                 }
                 else
                 {
-                    const BDPTVertex & prev2_vertex = *GetVertexStartFromCamera(i - 2);
-                    const BDPTVertex & prev_vertex = *GetVertexStartFromCamera(i - 1);
-                    const BDPTVertex & vertex = *GetVertexStartFromCamera(i);
+                    const BDPTVertex& prev2_vertex = *get_vertex_start_from_camera(i - 2);
+                    const BDPTVertex& prev_vertex = *get_vertex_start_from_camera(i - 1);
+                    const BDPTVertex& vertex = *get_vertex_start_from_camera(i);
                     float pdf = prev_vertex.m_bsdf->evaluate_pdf(
                         prev_vertex.m_bsdf_data,
                         false,
@@ -291,7 +289,7 @@ namespace
                         static_cast<Vector3f>(normalize(vertex.m_position - prev_vertex.m_position)),
                         static_cast<Vector3f>(normalize(prev2_vertex.m_position - prev_vertex.m_position)),
                         ScatteringMode::All);
-                    result *= static_cast<float>(prev_vertex.convertDensity(pdf, vertex));
+                    result *= static_cast<float>(prev_vertex.convert_density(pdf, vertex));
                 }
             }
 
@@ -388,23 +386,12 @@ namespace
                 result = geometry * camera_eval_bsdf.m_beauty * light_eval_bsdf.m_beauty * camera_vertex.m_beta * light_vertex.m_beta;
             }
 
-            // check if connection is near black or not
-            bool nearBlack = true;
-            for (size_t i = 0; i < result.size(); i++)
-            {
-                // need nearBlack() function for spectrum
-                if (result[i] > 1e-9)
-                {
-                    nearBlack = false;
-                    break;
-                }
-            }
-
-            if (nearBlack) { return; }
+            // check if throughput is near black or not
+            if (fz(result, 1.0e-9f)) { return; }
 
             float numerator = compute_path_density(light_vertices, camera_vertices, s, t, s, t);
             float denominator = 0.0;
-            /// TODO:: unhandled case where denominator = 0 (specular surface).
+            /// TODO:: unhandled case where (denominator <= 0) (specular surface / impossible path).
 
             // [p = 0, q = s + t], [p = 1, q = s + t - 1] ... [p = s + t - 2, q = 2]
             for (size_t i = 0; i <= s + t - 2; i++)
@@ -412,10 +399,10 @@ namespace
                 denominator += compute_path_density(light_vertices, camera_vertices, s, t, i, s + t - i);
             }
 
-            float miWeight = numerator / denominator;
+            float mis_weight = numerator / denominator;
 
-            assert(miWeight <= 1.0f);
-            radiance.m_beauty += miWeight * result;
+            assert(mi_weight <= 1.0f);
+            radiance.m_beauty += mis_weight * result;
         }
 
         size_t trace_light(
