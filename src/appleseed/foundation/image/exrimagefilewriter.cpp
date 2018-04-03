@@ -38,6 +38,7 @@
 #include "foundation/image/icanvas.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
+#include "foundation/utility/foreach.h"
 
 // OpenEXR headers.
 #include "foundation/platform/_beginexrheaders.h"
@@ -54,6 +55,11 @@
 #include "OpenEXR/ImfTiledOutputPart.h"
 #include "OpenEXR/ImfTiledOutputFile.h"
 #include "foundation/platform/_endexrheaders.h"
+
+// openimageio headers.
+#include "foundation/platform/_beginoiioheaders.h"
+#include "OpenImageIO/imageio.h"
+#include "foundation/platform/_endoiioheaders.h"
 
 // Standard headers.
 #include <cassert>
@@ -107,10 +113,10 @@ PixelType get_imf_pixel_type(const CanvasProperties& props)
 {
     switch (props.m_pixel_format)
     {
-      case PixelFormatUInt32: return UINT; break;
-      case PixelFormatHalf: return HALF; break;
-      case PixelFormatFloat: return FLOAT; break;
-      default: throw ExceptionUnsupportedImageFormat();
+        case PixelFormatUInt32: return PixelType::UINT; break;
+        case PixelFormatHalf: return PixelType::HALF; break;
+        case PixelFormatFloat: return PixelType::FLOAT; break;
+        default: throw ExceptionUnsupportedImageFormat();
     }
 }
 
@@ -196,6 +202,11 @@ void write_tiles(
 
 }
 
+static void exr_set_image_desc(OIIO::ImageSpec& spec, const CanvasProperties& props, const size_t channel_count, const char** channel_names);
+static void exr_set_image_attributes(OIIO::ImageSpec& spec, const ImageAttributes& image_attributes);
+static OIIO::TypeDesc exr_convert_pixel_format(PixelFormat format);
+static void write_tiles(const ICanvas& image, OIIO::ImageOutput* out);
+
 void EXRImageFileWriter::write(
     const char*             filename,
     const ICanvas&          image,
@@ -221,13 +232,182 @@ void EXRImageFileWriter::write(
 
         // Create the output file.
         TiledOutputFile file(filename, header);
-        write_tiles(file, image, channel_count, channel_names);
+        //write_tiles(file, image, channel_count, channel_names);
     }
     catch (const BaseExc& e)
     {
         // I/O error.
         throw ExceptionIOError(e.what());
     }
+
+    // ============================================================== TMP ===================================================================================
+
+    // Creates an ImageOutput structure, which is the main class to write an image file in OpenImageIO.
+    OIIO::ImageOutput* out = OIIO::ImageOutput::create(filename);
+    if (out == nullptr)
+    {
+        const std::string msg = OpenImageIO::geterror();
+        throw ExceptionIOError(msg.c_str());
+    }
+
+    // Create an ImageSpec, which describe the internal structure and attributes of the image file.
+    OIIO::ImageSpec spec;
+    exr_set_image_desc(spec, image.properties(), channel_count, channel_names);
+    exr_set_image_attributes(spec, image_attributes);
+
+    // Opens the image file at the specified file path and fills the image header with spec data.
+    if (!out->open(filename, spec))
+    {
+        const std::string msg = out->geterror();
+        OIIO::ImageOutput::destroy(out);
+        throw ExceptionIOError(msg.c_str());
+    }
+
+    // Write tiles
+    write_tiles(image, out);
+
+    // Closes the image file.
+    if (!out->close())
+    {
+        const std::string msg = out->geterror();
+        OIIO::ImageOutput::destroy(out);
+        throw ExceptionIOError(msg.c_str());
+    }
+
+    // Destroy the ImageOutput stucture.
+    OIIO::ImageOutput::destroy(out);
+}
+
+OIIO::TypeDesc exr_convert_pixel_format(PixelFormat format)
+{
+    switch (format)
+    {
+        case PixelFormatUInt32: 
+            return OIIO::TypeDesc::UINT32; 
+            break;
+
+        case PixelFormatHalf:
+            return OIIO::TypeDesc::HALF; 
+            break;
+
+        case PixelFormatFloat: 
+            return OIIO::TypeDesc::FLOAT; 
+            break;
+
+        default: 
+            return OIIO::TypeDesc::HALF;
+    }
+}
+
+void exr_set_image_desc(
+    OIIO::ImageSpec&		spec, 
+    const CanvasProperties& props, 
+    const size_t		    channel_count,
+    const char**		    channel_names)
+{
+    // Size of the data of the image.
+    spec.width = static_cast<int>(props.m_canvas_width);
+    spec.height = static_cast<int>(props.m_canvas_height);
+
+    // Origin of the pixel data of the image.
+    spec.x = 0;
+    spec.y = 0;
+    spec.z = 0;
+
+    // Full size of the data of the image.
+    spec.full_width = spec.width;
+    spec.full_height = spec.height;
+
+    // Origin of the pixel data of the full image.
+    spec.full_x = spec.x;
+    spec.full_y = spec.y;
+
+    // Size of a tile.
+    spec.tile_width = static_cast<int>(props.m_tile_width);
+    spec.tile_height = static_cast<int>(props.m_tile_height);
+
+    // Number of channels.
+    spec.nchannels = static_cast<int>(channel_count);
+    for (size_t i = 0; i < channel_count; i++)
+    {
+        const char* name = channel_names[i];
+
+        spec.channelnames.push_back(name);
+
+        if (name == "A")
+            spec.alpha_channel = static_cast<int>(i);
+    }
+
+    // Format of the pixel data.
+    spec.set_format(exr_convert_pixel_format(props.m_pixel_format));
+}
+
+// See OpenImageIO reference documentation for an exhaustive attribute names list.
+// https://github.com/OpenImageIO/oiio/blob/master/src/doc/openimageio.pdf
+//
+void exr_set_image_attributes(
+	OIIO::ImageSpec&	    spec, 
+	const ImageAttributes&	image_attributes)
+{
+    for (const_each<ImageAttributes> i = image_attributes; i; ++i)
+    {
+        // Fetch the name and the value of the attribute.
+        const std::string attr_name = i->key();
+        const std::string attr_value = i->value<std::string>();
+
+        if (attr_name == "author")
+            spec.attribute("Copyright", attr_value);
+
+        else if (attr_name == "comment")
+            spec.attribute("ImageDescription", attr_value);
+
+        else if (attr_name == "creation_time")
+            spec.attribute("DateTime", attr_value);
+
+        else
+            spec.attribute(attr_name, attr_value);
+    }
+}
+
+void write_tiles(
+	const ICanvas&		image, 
+	OIIO::ImageOutput*	out)
+{
+	assert(out);
+
+	// Retrieves canvas properties
+	const CanvasProperties& props = image.properties();
+
+	// Loops over the columns of tiles
+	for (size_t tile_y = 0; tile_y < props.m_tile_count_y; tile_y++)
+	{
+		// Loops over the rows of tiles
+		for (size_t tile_x = 0; tile_x < props.m_tile_count_x; tile_x++)
+		{
+			// Computes the offset of the tile in pixels from the origin (origin: x=0;y=0).
+			const size_t tile_offset_x = tile_x * props.m_tile_width;
+			const size_t tile_offset_y = tile_y * props.m_tile_height;
+
+			assert(tile_offset_x <= props.m_canvas_width);
+			assert(tile_offset_y <= props.m_canvas_height);
+
+			// Retrieves the (tile_x, tile_y) tile.
+			const Tile& tile = image.tile(tile_x, tile_y);
+
+			if (!out->write_tile(
+                    static_cast<int>(tile_offset_x), 
+				    static_cast<int>(tile_offset_y), 
+				    0, 
+				    exr_convert_pixel_format(props.m_pixel_format), 
+				    tile.get_storage()))
+			{
+				const std::string msg = out->geterror();
+				out->close();
+				OIIO::ImageOutput::destroy(out);
+				throw ExceptionIOError(msg.c_str());
+			}
+		}
+	}
 }
 
 void EXRImageFileWriter::begin_multipart_exr()

@@ -48,7 +48,7 @@ class APPLESEED_DLLSYMBOL PNGImageFileWriter
 {
   public:
 
-    // Write a whatever image file.
+    // Write a PNG image file.
     void write(
         const char*             filename,
         const ICanvas&          image,

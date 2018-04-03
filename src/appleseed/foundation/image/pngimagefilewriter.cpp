@@ -51,7 +51,7 @@ namespace foundation
 
 static void png_set_image_desc(OIIO::ImageSpec& spec, const CanvasProperties& props);
 static void png_set_image_attributes(OIIO::ImageSpec& spec, const ImageAttributes& image_attributes);
-static void	write_scanline(const ICanvas& image, OIIO::ImageOutput* out);
+static void write_scanline(const ICanvas& image, OIIO::ImageOutput* out);
 
 void PNGImageFileWriter::write(
     const char*             filename,
@@ -205,7 +205,7 @@ void png_set_image_attributes(OIIO::ImageSpec& spec, const ImageAttributes& imag
     }
 }
 
-void	write_scanline(const ICanvas& image, OIIO::ImageOutput* out)
+void write_scanline(const ICanvas& image, OIIO::ImageOutput* out)
 {
     // Retrieves canvas properties
     const CanvasProperties& props = image.properties();
