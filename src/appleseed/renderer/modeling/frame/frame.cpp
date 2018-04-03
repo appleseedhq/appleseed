@@ -153,7 +153,6 @@ Frame::Frame(
             impl->m_tile_width,
             impl->m_tile_height));
 
-    // Copy and add the aovs.
     if (aovs.size() > MaxAOVCount)
     {
         RENDERER_LOG_WARNING(
@@ -161,6 +160,7 @@ Frame::Frame(
             MaxAOVCount);
     }
 
+    // Copy and add AOVs.
     const AOVFactoryRegistrar aov_registrar;
     for (size_t i = 0, e = min(aovs.size(), MaxAOVCount); i < e; ++i)
     {
