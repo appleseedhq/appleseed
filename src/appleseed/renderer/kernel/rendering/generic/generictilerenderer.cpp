@@ -120,7 +120,6 @@ namespace
             const Frame&    frame,
             const size_t    tile_x,
             const size_t    tile_y,
-            const size_t    tile_level,
             const size_t    pass_hash,
             IAbortSwitch&   abort_switch) override
         {
@@ -132,15 +131,15 @@ namespace
             // Retrieve tile properties.
             Tile& tile = frame.image().tile(tile_x, tile_y);
             TileStack aov_tiles = frame.aov_images().tiles(tile_x, tile_y);
-            const int tile_origin_x = static_cast<int>(frame_properties.m_tile_width * tile_x / ((tile_level + 1) * (tile_level + 1)));
-            const int tile_origin_y = static_cast<int>(frame_properties.m_tile_height * tile_y / ((tile_level + 1) * (tile_level + 1)));
+            const int tile_origin_x = static_cast<int>(frame_properties.m_tile_width * tile_x);
+            const int tile_origin_y = static_cast<int>(frame_properties.m_tile_height * tile_y);
 
             // Compute the image space bounding box of the pixels to render.
             AABB2i tile_bbox;
             tile_bbox.min.x = tile_origin_x;
             tile_bbox.min.y = tile_origin_y;
-            tile_bbox.max.x = tile_origin_x + static_cast<int>(tile.get_width() / ((tile_level + 1) * (tile_level + 1))) - 1;
-            tile_bbox.max.y = tile_origin_y + static_cast<int>(tile.get_height() / ((tile_level + 1) * (tile_level + 1))) - 1;
+            tile_bbox.max.x = tile_origin_x + static_cast<int>(tile.get_width()) - 1;
+            tile_bbox.max.y = tile_origin_y + static_cast<int>(tile.get_height()) - 1;
             tile_bbox = AABB2i::intersect(tile_bbox, AABB2i(frame.get_crop_window()));
             if (!tile_bbox.is_valid())
                 return;
