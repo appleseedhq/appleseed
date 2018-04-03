@@ -1000,7 +1000,7 @@ void Frame::extract_parameters()
                 "filter",
                 DefaultFilterName);
             impl->m_filter_name = DefaultFilterName;
-            impl->m_filter.reset(new GaussianFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 8.0f));
+            impl->m_filter.reset(new FastBlackmanHarrisFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
         }
     }
 
