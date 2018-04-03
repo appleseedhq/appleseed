@@ -35,7 +35,7 @@
 #include "utility/miscellaneous.h"
 
 // appleseed.renderer headers.
-#include "renderer/utility/paramarray.h"
+#include "renderer/api/utility.h"
 
 // Qt headers.
 #include <QLayout>

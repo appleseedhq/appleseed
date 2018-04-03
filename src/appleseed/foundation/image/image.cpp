@@ -121,21 +121,21 @@ Image::Image(
     {
         for (size_t tx = 0; tx < m_props.m_tile_count_x; ++tx)
         {
-            const size_t tile_width = m_props.get_tile_width(tx);
-            const size_t tile_height = m_props.get_tile_height(ty);
+            const size_t tw = m_props.get_tile_width(tx);
+            const size_t th = m_props.get_tile_height(ty);
 
             Tile* tile =
                 new Tile(
-                    tile_width,
-                    tile_height,
+                    tw,
+                    th,
                     m_props.m_channel_count,
                     m_props.m_pixel_format);
 
             m_tiles[ty * m_props.m_tile_count_x + tx] = tile;
 
-            for (size_t py = 0; py < tile_height; ++py)
+            for (size_t py = 0; py < th; ++py)
             {
-                for (size_t px = 0; px < tile_width; ++px)
+                for (size_t px = 0; px < tw; ++px)
                 {
                     const size_t ix = tx * m_props.m_tile_width + px;
                     const size_t iy = ty * m_props.m_tile_height + py;

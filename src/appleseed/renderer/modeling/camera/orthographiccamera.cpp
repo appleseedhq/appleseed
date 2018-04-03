@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/rasterization/rasterizationcamera.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/frame/frame.h"
@@ -44,7 +45,6 @@
 #include "foundation/image/image.h"
 #include "foundation/math/dual.h"
 #include "foundation/math/intersection/planesegment.h"
-#include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
@@ -250,6 +250,14 @@ namespace
 
             // Projection was successful.
             return true;
+        }
+
+        RasterizationCamera get_rasterization_camera() const override
+        {
+            RasterizationCamera rc;
+            rc.m_aspect_ratio = m_film_dimensions[0] / m_film_dimensions[1];
+            rc.m_hfov = deg_to_rad(54.0);
+            return rc;
         }
 
       private:

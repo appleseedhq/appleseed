@@ -38,6 +38,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/bezier.h"
+#include "foundation/math/polynomial.h"
 #include "foundation/math/root.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/api/apistring.h"
@@ -294,16 +295,6 @@ Vector2d Camera::extract_film_dimensions() const
     return film_dimensions;
 }
 
-namespace
-{
-    // Compute the focal length (in meters), given the film width (in meters)
-    // and the horizontal field of view (in degrees).
-    double hfov_to_focal_length(const double film_width, const double hfov)
-    {
-        return 0.5 * film_width / tan(0.5 * deg_to_rad(hfov));
-    }
-}
-
 double Camera::extract_focal_length(const double film_width) const
 {
     const double DefaultFocalLength = 0.035;    // in meters
@@ -319,7 +310,7 @@ double Camera::extract_focal_length(const double film_width) const
                 get_path().c_str());
 
             const double hfov = get_greater_than_zero("horizontal_fov", DefaultHFov);
-            return hfov_to_focal_length(film_width, hfov);
+            return hfov_to_focal_length(film_width, deg_to_rad(hfov));
         }
         else
         {
@@ -329,7 +320,7 @@ double Camera::extract_focal_length(const double film_width) const
     else if (has_param("horizontal_fov"))
     {
         const double hfov = get_greater_than_zero("horizontal_fov", DefaultHFov);
-        return hfov_to_focal_length(film_width, hfov);
+        return hfov_to_focal_length(film_width, deg_to_rad(hfov));
     }
     else
     {
@@ -341,6 +332,16 @@ double Camera::extract_focal_length(const double film_width) const
 
         return DefaultFocalLength;
     }
+}
+
+double Camera::hfov_to_focal_length(const double film_width, const double hfov)
+{
+    return 0.5 * film_width / tan(0.5 * hfov);
+}
+
+double Camera::focal_length_to_hfov(const double film_width, const double focal_length)
+{
+    return 2.0 * atan(film_width / (2.0 * focal_length));
 }
 
 double Camera::extract_near_z() const

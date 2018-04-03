@@ -62,6 +62,8 @@ class APPLESEED_DLLSYMBOL ScenePicker
   public:
     struct PickingResult
     {
+        foundation::Vector2d            m_ndc;
+
         bool                            m_hit;
         ShadingPoint::PrimitiveType     m_primitive_type;
         double                          m_distance;                     // world space

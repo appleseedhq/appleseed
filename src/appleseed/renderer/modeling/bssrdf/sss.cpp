@@ -141,10 +141,7 @@ void effective_extinction_coefficient(
 
 float dipole_max_radius(const float sigma_tr)
 {
-    // todo: some plots suggest that our estimate
-    // for max radius is too conservative.
-    // We could probably reduce it a bit.
-    return -log(0.00001f) / sigma_tr;
+    return -log(0.001f) / sigma_tr;
 }
 
 
@@ -188,8 +185,8 @@ float normalized_diffusion_profile(
 
 namespace
 {
-    const size_t NDCDFTableSize = 128;
-    const float NDCDFTableRmax = 55.0f;
+    const size_t NDCDFTableSize = 32;
+    const float NDCDFTableRmax = 35.0f;
 
     float g_nd_cdf_table[NDCDFTableSize];
     float g_nd_cdf_rmax;

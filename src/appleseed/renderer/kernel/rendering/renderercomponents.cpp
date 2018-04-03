@@ -162,6 +162,7 @@ bool RendererComponents::create_lighting_engine_factory()
         m_lighting_engine_factory.reset(
             new PTLightingEngineFactory(
                 *m_backward_light_sampler,
+                m_project.get_light_path_recorder(),
                 get_child_and_inherit_globals(m_params, "pt")));    // todo: change to "pt_lighting_engine"?
 
         return true;

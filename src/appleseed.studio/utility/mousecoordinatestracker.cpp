@@ -30,9 +30,6 @@
 // Interface header.
 #include "mousecoordinatestracker.h"
 
-// appleseed.studio headers.
-#include "mainwindow/rendering/renderwidget.h"
-
 // Qt headers.
 #include <QEvent>
 #include <QLabel>
@@ -51,8 +48,8 @@ namespace appleseed {
 namespace studio {
 
 MouseCoordinatesTracker::MouseCoordinatesTracker(
-    RenderWidget*    widget,
-    QLabel*          label)
+    QWidget*    widget,
+    QLabel*     label)
   : m_widget(widget)
   , m_label(label)
   , m_content_width(widget->width())

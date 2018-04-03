@@ -214,8 +214,8 @@ std::string get_numbered_string(
     const std::string&      pattern,
     const size_t            value);
 
-// Return the maximum value that can be return by get_numbered_string() for
-// a given pattern.
+// Return the maximum value that can be returned by get_numbered_string()
+// for a given pattern.
 size_t get_numbered_string_max_value(const std::string& pattern);
 
 // Return a time stamp string based on the current date and time.

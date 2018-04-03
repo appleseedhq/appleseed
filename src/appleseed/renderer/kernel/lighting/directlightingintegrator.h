@@ -46,8 +46,9 @@
 
 // Forward declarations.
 namespace renderer  { class BackwardLightSampler; }
-namespace renderer  { class LightSample; }
 namespace renderer  { class DirectShadingComponents; }
+namespace renderer  { class LightPathStream; }
+namespace renderer  { class LightSample; }
 namespace renderer  { class ShadingContext; }
 
 namespace renderer
@@ -87,7 +88,8 @@ class DirectLightingIntegrator
     void compute_outgoing_radiance_combined_sampling_low_variance(
         SamplingContext&                sampling_context,
         const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
-        DirectShadingComponents&        radiance) const;
+        DirectShadingComponents&        radianc,
+        LightPathStream*                light_path_stream) const;
 
     // Compute outgoing radiance due to direct lighting via BSDF sampling only.
     void compute_outgoing_radiance_material_sampling(
@@ -101,7 +103,8 @@ class DirectLightingIntegrator
         SamplingContext&                sampling_context,
         const foundation::MISHeuristic  mis_heuristic,
         const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
-        DirectShadingComponents&        radiance) const;
+        DirectShadingComponents&        radiance,
+        LightPathStream*                light_path_stream) const;
 
   private:
     friend class VolumeLightingIntegrator;
@@ -127,13 +130,15 @@ class DirectLightingIntegrator
         const LightSample&              sample,
         const foundation::MISHeuristic  mis_heuristic,
         const foundation::Dual3d&       outgoing,
-        DirectShadingComponents&        radiance) const;
+        DirectShadingComponents&        radiance,
+        LightPathStream*                light_path_stream) const;
 
     void add_non_physical_light_sample_contribution(
         SamplingContext&                sampling_context,
         const LightSample&              sample,
         const foundation::Dual3d&       outgoing,
-        DirectShadingComponents&        radiance) const;
+        DirectShadingComponents&        radiance,
+        LightPathStream*                light_path_stream) const;
 };
 
 }       // namespace renderer

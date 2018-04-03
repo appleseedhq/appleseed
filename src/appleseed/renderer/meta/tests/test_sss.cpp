@@ -747,6 +747,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         EXPECT_FEQ_EPS(Rd, integral, 1.0e-2f);
     }
 
+    const float MaxRadiusTolerance = 0.007f;
+
     //
     // Normalized Diffusion BSSRDF.
     //
@@ -929,7 +931,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const float r = normalized_diffusion_max_radius(l, s);
             const float value = normalized_diffusion_profile(r, l, s, a);
 
-            EXPECT_LT(1.0e-4f, value);
+            EXPECT_LT(MaxRadiusTolerance, value);
         }
     }
 
@@ -968,7 +970,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const float r = dipole_max_radius(bssrdf_eval.get_sigma_tr());
             const float result = bssrdf_eval.evaluate(r);
 
-            EXPECT_LT(1.0e-4f, result);
+            EXPECT_LT(MaxRadiusTolerance, result);
         }
     }
 
@@ -1037,7 +1039,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const float r = dipole_max_radius(bssrdf_eval.get_sigma_tr());
             const float result = bssrdf_eval.evaluate(r);
 
-            EXPECT_LT(1.0e-4f, result);
+            EXPECT_LT(MaxRadiusTolerance, result);
         }
     }
 
@@ -1053,7 +1055,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         const float integral = integrate_bssrdf_profile(bssrdf_eval, SampleCount);
 
-        EXPECT_FEQ_EPS(Rd, integral, 1.0e-2f);
+        EXPECT_FEQ_EPS(Rd, integral, 0.015f);
     }
 
     TEST_CASE(BetterDipole_PlotRdIntegral)
@@ -1106,7 +1108,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const float r = dipole_max_radius(bssrdf_eval.get_sigma_tr());
             const float result = bssrdf_eval.evaluate(r);
 
-            EXPECT_LT(1.0e-4f, result);
+            EXPECT_LT(MaxRadiusTolerance, result);
         }
     }
 

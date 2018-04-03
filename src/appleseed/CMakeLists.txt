@@ -893,10 +893,12 @@ set (renderer_api_sources
     renderer/api/environmentshader.h
     renderer/api/frame.h
     renderer/api/light.h
+    renderer/api/lighting.h
     renderer/api/log.h
     renderer/api/material.h
     renderer/api/object.h
     renderer/api/project.h
+    renderer/api/rasterization.h
     renderer/api/rendering.h
     renderer/api/scene.h
     renderer/api/shadergroup.h
@@ -1063,6 +1065,10 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/ilightingengine.h
     renderer/kernel/lighting/imagebasedlighting.cpp
     renderer/kernel/lighting/imagebasedlighting.h
+    renderer/kernel/lighting/lightpathrecorder.cpp
+    renderer/kernel/lighting/lightpathrecorder.h
+    renderer/kernel/lighting/lightpathstream.cpp
+    renderer/kernel/lighting/lightpathstream.h
     renderer/kernel/lighting/lightsample.cpp
     renderer/kernel/lighting/lightsample.h
     renderer/kernel/lighting/lightsamplerbase.cpp
@@ -1087,6 +1093,17 @@ list (APPEND appleseed_sources
 )
 source_group ("renderer\\kernel\\lighting" FILES
     ${renderer_kernel_lighting_sources}
+)
+
+set (renderer_kernel_rasterization_sources
+    renderer/kernel/rasterization/objectrasterizer.h
+    renderer/kernel/rasterization/rasterizationcamera.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_rasterization_sources}
+)
+source_group ("renderer\\kernel\\rasterization" FILES
+    ${renderer_kernel_rasterization_sources}
 )
 
 set (renderer_kernel_rendering_debug_sources

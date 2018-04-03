@@ -564,7 +564,8 @@ void VolumeLightingIntegrator::take_single_direction_sample(
             light_sample,
             mis_heuristic,
             Dual3d(m_volume_ray.m_dir),
-            radiance);
+            radiance,
+            nullptr);
     }
     else
     {
@@ -572,7 +573,8 @@ void VolumeLightingIntegrator::take_single_direction_sample(
             sampling_context,
             *light_sample,
             Dual3d(m_volume_ray.m_dir),
-            radiance);
+            radiance,
+            nullptr);
     }
 }
 

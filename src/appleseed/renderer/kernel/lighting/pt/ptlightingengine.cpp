@@ -35,6 +35,8 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/directlightingintegrator.h"
 #include "renderer/kernel/lighting/imagebasedlighting.h"
+#include "renderer/kernel/lighting/lightpathrecorder.h"
+#include "renderer/kernel/lighting/lightpathstream.h"
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
@@ -46,7 +48,6 @@
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/light/light.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/stochasticcast.h"
 
@@ -62,11 +63,9 @@
 // Standard headers.
 #include <algorithm>
 #include <cassert>
-#include <cmath>
 #include <cstddef>
 #include <limits>
 #include <string>
-#include <type_traits>
 
 // Forward declarations.
 namespace renderer  { class BackwardLightSampler; }
@@ -95,82 +94,16 @@ namespace
       : public ILightingEngine
     {
       public:
-        struct Parameters
-        {
-            const bool      m_enable_dl;                    // is direct lighting enabled?
-            const bool      m_enable_ibl;                   // is image-based lighting enabled?
-            const bool      m_enable_caustics;              // are caustics enabled?
-
-            const size_t    m_max_bounces;                  // maximum number of bounces, ~0 for unlimited
-            const size_t    m_max_diffuse_bounces;          // maximum number of diffuse bounces, ~0 for unlimited
-            const size_t    m_max_glossy_bounces;           // maximum number of glossy bounces, ~0 for unlimited
-            const size_t    m_max_specular_bounces;         // maximum number of specular bounces, ~0 for unlimited
-            const size_t    m_max_volume_bounces;           // maximum number of volume scattering events, ~0 for unlimited
-
-            const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
-            const bool      m_next_event_estimation;        // use next event estimation?
-
-            const float     m_dl_light_sample_count;        // number of light samples used to estimate direct illumination
-            const float     m_dl_low_light_threshold;       // light contribution threshold to disable shadow rays
-            const float     m_ibl_env_sample_count;         // number of environment samples used to estimate IBL
-
-            const bool      m_has_max_ray_intensity;
-            const float     m_max_ray_intensity;
-
-            const size_t    m_distance_sample_count;        // number of distance samples for volume rendering
-            const bool      m_enable_equiangular_sampling;  // optimize for lights that are located outside volumes
-
-            float           m_rcp_dl_light_sample_count;
-            float           m_rcp_ibl_env_sample_count;
-
-            explicit Parameters(const ParamArray& params)
-              : m_enable_dl(params.get_optional<bool>("enable_dl", true))
-              , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
-              , m_enable_caustics(params.get_optional<bool>("enable_caustics", false))
-              , m_max_bounces(fixup_bounces(params.get_optional<int>("max_bounces", 8)))
-              , m_max_diffuse_bounces(fixup_bounces(params.get_optional<int>("max_diffuse_bounces", 3)))
-              , m_max_glossy_bounces(fixup_bounces(params.get_optional<int>("max_glossy_bounces", 8)))
-              , m_max_specular_bounces(fixup_bounces(params.get_optional<int>("max_specular_bounces", 8)))
-              , m_max_volume_bounces(fixup_bounces(params.get_optional<int>("max_volume_bounces", 8)))
-              , m_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("rr_min_path_length", 6)))
-              , m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
-              , m_dl_light_sample_count(params.get_optional<float>("dl_light_samples", 1.0f))
-              , m_dl_low_light_threshold(params.get_optional<float>("dl_low_light_threshold", 0.0f))
-              , m_ibl_env_sample_count(params.get_optional<float>("ibl_env_samples", 1.0f))
-              , m_has_max_ray_intensity(params.strings().exist("max_ray_intensity"))
-              , m_distance_sample_count(params.get_optional<size_t>("volume_distance_samples", 2))
-              , m_max_ray_intensity(params.get_optional<float>("max_ray_intensity", 0.0f))
-              , m_enable_equiangular_sampling(!params.get_optional<bool>("optimize_for_lights_outside_volumes", false))
-            {
-                // Precompute the reciprocal of the number of light samples.
-                m_rcp_dl_light_sample_count =
-                    m_dl_light_sample_count > 0.0f && m_dl_light_sample_count < 1.0f
-                        ? 1.0f / m_dl_light_sample_count
-                        : 0.0f;
-
-                // Precompute the reciprocal of the number of environment samples.
-                m_rcp_ibl_env_sample_count =
-                    m_ibl_env_sample_count > 0.0f && m_ibl_env_sample_count < 1.0f
-                        ? 1.0f / m_ibl_env_sample_count
-                        : 0.0f;
-            }
-
-            static size_t fixup_bounces(const int x)
-            {
-                return x == -1 ? ~0 : x;
-            }
-
-            static size_t fixup_path_length(const size_t x)
-            {
-                return x == 0 ? ~0 : x;
-            }
-        };
-
         PTLightingEngine(
             const BackwardLightSampler&     light_sampler,
+            LightPathRecorder&              light_path_recorder,
             const ParamArray&               params)
           : m_params(params)
           , m_light_sampler(light_sampler)
+          , m_light_path_stream(
+              m_params.m_record_light_paths
+                  ? light_path_recorder.create_stream()
+                  : nullptr)
           , m_path_count(0)
           , m_inf_volume_ray_warnings(0)
         {
@@ -226,6 +159,14 @@ namespace
             const ShadingPoint&     shading_point,
             ShadingComponents&      radiance) override      // output radiance, in W.sr^-1.m^-2
         {
+            if (m_light_path_stream)
+            {
+                m_light_path_stream->begin_path(
+                    pixel_context,
+                    shading_point.get_scene().get_active_camera(),
+                    shading_point.get_ray().m_org);
+            }
+
             if (m_params.m_next_event_estimation)
             {
                 do_compute_lighting<PathVisitorNextEventEstimation, VolumeVisitorDistanceSampling>(
@@ -242,6 +183,9 @@ namespace
                     shading_point,
                     radiance);
             }
+
+            if (m_light_path_stream)
+                m_light_path_stream->end_path();
         }
 
         template <typename PathVisitor, typename VolumeVisitor>
@@ -257,7 +201,8 @@ namespace
                 sampling_context,
                 shading_context,
                 shading_point.get_scene(),
-                radiance);
+                radiance,
+                m_light_path_stream);
 
             VolumeVisitor volume_visitor(
                 m_params,
@@ -300,8 +245,82 @@ namespace
         }
 
       private:
+        struct Parameters
+        {
+            const bool      m_enable_dl;                    // is direct lighting enabled?
+            const bool      m_enable_ibl;                   // is image-based lighting enabled?
+            const bool      m_enable_caustics;              // are caustics enabled?
+
+            const size_t    m_max_bounces;                  // maximum number of bounces, ~0 for unlimited
+            const size_t    m_max_diffuse_bounces;          // maximum number of diffuse bounces, ~0 for unlimited
+            const size_t    m_max_glossy_bounces;           // maximum number of glossy bounces, ~0 for unlimited
+            const size_t    m_max_specular_bounces;         // maximum number of specular bounces, ~0 for unlimited
+            const size_t    m_max_volume_bounces;           // maximum number of volume scattering events, ~0 for unlimited
+
+            const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
+            const bool      m_next_event_estimation;        // use next event estimation?
+
+            const float     m_dl_light_sample_count;        // number of light samples used to estimate direct illumination
+            const float     m_dl_low_light_threshold;       // light contribution threshold to disable shadow rays
+            const float     m_ibl_env_sample_count;         // number of environment samples used to estimate IBL
+            float           m_rcp_dl_light_sample_count;
+            float           m_rcp_ibl_env_sample_count;
+
+            const bool      m_has_max_ray_intensity;
+            const float     m_max_ray_intensity;
+
+            const size_t    m_distance_sample_count;        // number of distance samples for volume rendering
+            const bool      m_enable_equiangular_sampling;  // optimize for lights that are located outside volumes
+
+            const bool      m_record_light_paths;
+
+            explicit Parameters(const ParamArray& params)
+              : m_enable_dl(params.get_optional<bool>("enable_dl", true))
+              , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
+              , m_enable_caustics(params.get_optional<bool>("enable_caustics", false))
+              , m_max_bounces(fixup_bounces(params.get_optional<int>("max_bounces", 8)))
+              , m_max_diffuse_bounces(fixup_bounces(params.get_optional<int>("max_diffuse_bounces", 3)))
+              , m_max_glossy_bounces(fixup_bounces(params.get_optional<int>("max_glossy_bounces", 8)))
+              , m_max_specular_bounces(fixup_bounces(params.get_optional<int>("max_specular_bounces", 8)))
+              , m_max_volume_bounces(fixup_bounces(params.get_optional<int>("max_volume_bounces", 8)))
+              , m_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("rr_min_path_length", 6)))
+              , m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
+              , m_dl_light_sample_count(params.get_optional<float>("dl_light_samples", 1.0f))
+              , m_dl_low_light_threshold(params.get_optional<float>("dl_low_light_threshold", 0.0f))
+              , m_ibl_env_sample_count(params.get_optional<float>("ibl_env_samples", 1.0f))
+              , m_has_max_ray_intensity(params.strings().exist("max_ray_intensity"))
+              , m_max_ray_intensity(params.get_optional<float>("max_ray_intensity", 0.0f))
+              , m_distance_sample_count(params.get_optional<size_t>("volume_distance_samples", 2))
+              , m_enable_equiangular_sampling(!params.get_optional<bool>("optimize_for_lights_outside_volumes", false))
+              , m_record_light_paths(params.get_optional<bool>("record_light_paths", false))
+            {
+                // Precompute the reciprocal of the number of light samples.
+                m_rcp_dl_light_sample_count =
+                    m_dl_light_sample_count > 0.0f && m_dl_light_sample_count < 1.0f
+                        ? 1.0f / m_dl_light_sample_count
+                        : 0.0f;
+
+                // Precompute the reciprocal of the number of environment samples.
+                m_rcp_ibl_env_sample_count =
+                    m_ibl_env_sample_count > 0.0f && m_ibl_env_sample_count < 1.0f
+                        ? 1.0f / m_ibl_env_sample_count
+                        : 0.0f;
+            }
+
+            static size_t fixup_bounces(const int x)
+            {
+                return x == -1 ? ~0 : x;
+            }
+
+            static size_t fixup_path_length(const size_t x)
+            {
+                return x == 0 ? ~0 : x;
+            }
+        };
+
         const Parameters                m_params;
         const BackwardLightSampler&     m_light_sampler;
+        LightPathStream*                m_light_path_stream;
 
         uint64                          m_path_count;
         Population<uint64>              m_path_length;
@@ -313,33 +332,9 @@ namespace
         // Base path visitor.
         //
 
-        struct PathVisitorBase
+        class PathVisitorBase
         {
-            const Parameters&               m_params;
-            const BackwardLightSampler&     m_light_sampler;
-            SamplingContext&                m_sampling_context;
-            const ShadingContext&           m_shading_context;
-            const EnvironmentEDF*           m_env_edf;
-            ShadingComponents&              m_path_radiance;
-            bool                            m_omit_emitted_light;
-
-            PathVisitorBase(
-                const Parameters&               params,
-                const BackwardLightSampler&     light_sampler,
-                SamplingContext&                sampling_context,
-                const ShadingContext&           shading_context,
-                const Scene&                    scene,
-                ShadingComponents&              path_radiance)
-              : m_params(params)
-              , m_light_sampler(light_sampler)
-              , m_sampling_context(sampling_context)
-              , m_shading_context(shading_context)
-              , m_env_edf(scene.get_environment()->get_environment_edf())
-              , m_path_radiance(path_radiance)
-              , m_omit_emitted_light(false)
-            {
-            }
-
+          public:
             bool accept_scattering(
                 const ScatteringMode::Mode  prev_mode,
                 const ScatteringMode::Mode  next_mode)
@@ -361,29 +356,61 @@ namespace
 
                 return true;
             }
+
+          protected:
+            const Parameters&                   m_params;
+            const BackwardLightSampler&         m_light_sampler;
+            SamplingContext&                    m_sampling_context;
+            const ShadingContext&               m_shading_context;
+            const EnvironmentEDF*               m_env_edf;
+            ShadingComponents&                  m_path_radiance;
+            LightPathStream*                    m_light_path_stream;
+            bool                                m_omit_emitted_light;
+
+            PathVisitorBase(
+                const Parameters&               params,
+                const BackwardLightSampler&     light_sampler,
+                SamplingContext&                sampling_context,
+                const ShadingContext&           shading_context,
+                const Scene&                    scene,
+                ShadingComponents&              path_radiance,
+                LightPathStream*                light_path_stream)
+              : m_params(params)
+              , m_light_sampler(light_sampler)
+              , m_sampling_context(sampling_context)
+              , m_shading_context(shading_context)
+              , m_env_edf(scene.get_environment()->get_environment_edf())
+              , m_path_radiance(path_radiance)
+              , m_light_path_stream(light_path_stream)
+              , m_omit_emitted_light(false)
+            {
+            }
         };
 
         //
         // Path visitor without next event estimation.
         //
 
-        struct PathVisitorSimple
+        class PathVisitorSimple
           : public PathVisitorBase
         {
+          public:
             PathVisitorSimple(
                 const Parameters&               params,
                 const BackwardLightSampler&     light_sampler,
                 SamplingContext&                sampling_context,
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
-                ShadingComponents&              path_radiance)
+                ShadingComponents&              path_radiance,
+                LightPathStream*                light_path_stream)
               : PathVisitorBase(
                     params,
                     light_sampler,
                     sampling_context,
                     shading_context,
                     scene,
-                    path_radiance)
+                    path_radiance,
+                    light_path_stream)
             {
             }
 
@@ -429,12 +456,24 @@ namespace
                     Spectrum emitted_radiance(Spectrum::Illuminance);
                     vertex.compute_emitted_radiance(m_shading_context, emitted_radiance);
 
-                    // Update path radiance.
+                    // Record light path event.
+                    if (m_light_path_stream)
+                        m_light_path_stream->hit_emitter(vertex, emitted_radiance);
+
+                    // Apply path throughput.
                     emitted_radiance *= vertex.m_throughput;
+
+                    // Update path radiance.
                     m_path_radiance.add_emission(
                         vertex.m_path_length,
                         vertex.m_aov_mode,
                         emitted_radiance);
+                }
+                else
+                {
+                    // Record light path event.
+                    if (m_light_path_stream)
+                        m_light_path_stream->hit_reflector(vertex);
                 }
             }
 
@@ -458,25 +497,26 @@ namespace
         // Path visitor with next event estimation.
         //
 
-        struct PathVisitorNextEventEstimation
+        class PathVisitorNextEventEstimation
           : public PathVisitorBase
         {
-            bool m_is_indirect_lighting;
-
+          public:
             PathVisitorNextEventEstimation(
                 const Parameters&               params,
                 const BackwardLightSampler&     light_sampler,
                 SamplingContext&                sampling_context,
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
-                ShadingComponents&              path_radiance)
+                ShadingComponents&              path_radiance,
+                LightPathStream*                light_path_stream)
               : PathVisitorBase(
                     params,
                     light_sampler,
                     sampling_context,
                     shading_context,
                     scene,
-                    path_radiance)
+                    path_radiance,
+                    light_path_stream)
               , m_is_indirect_lighting(false)
             {
             }
@@ -546,6 +586,10 @@ namespace
                     Spectrum emitted_radiance(0.0f);
                     add_emitted_light_contribution(vertex, emitted_radiance);
 
+                    // Record light path event.
+                    if (m_light_path_stream)
+                        m_light_path_stream->hit_emitter(vertex, emitted_radiance);
+
                     // Apply path throughput.
                     emitted_radiance *= vertex.m_throughput;
 
@@ -558,6 +602,12 @@ namespace
                         vertex.m_path_length,
                         vertex.m_aov_mode,
                         emitted_radiance);
+                }
+                else
+                {
+                    // Record light path event.
+                    if (m_light_path_stream)
+                        m_light_path_stream->hit_reflector(vertex);
                 }
             }
 
@@ -612,7 +662,8 @@ namespace
                             *vertex.m_bsdf,
                             vertex.m_bsdf_data,
                             vertex.m_scattering_modes,
-                            vertex_radiance);
+                            vertex_radiance,
+                            m_light_path_stream);
                     }
                 }
 
@@ -645,6 +696,9 @@ namespace
                     vertex_radiance);
             }
 
+          private:
+            bool m_is_indirect_lighting;
+
             void add_emitted_light_contribution(
                 const PathVertex&           vertex,
                 Spectrum&                   vertex_radiance)
@@ -674,7 +728,8 @@ namespace
                 const BSDF&                 bsdf,
                 const void*                 bsdf_data,
                 const int                   scattering_modes,
-                DirectShadingComponents&    vertex_radiance)
+                DirectShadingComponents&    vertex_radiance,
+                LightPathStream*            light_path_stream)
             {
                 DirectShadingComponents dl_radiance;
 
@@ -707,7 +762,8 @@ namespace
                     m_sampling_context,
                     MISPower2,
                     outgoing,
-                    dl_radiance);
+                    dl_radiance,
+                    light_path_stream);
 
                 // Divide by the sample count when this number is less than 1.
                 if (m_params.m_rcp_dl_light_sample_count > 0.0f)
@@ -786,16 +842,34 @@ namespace
         // Base volume visitor.
         //
 
-        struct VolumeVisitorBase
+        class VolumeVisitorBase
         {
-            const Parameters&               m_params;
-            const BackwardLightSampler&     m_light_sampler;
-            SamplingContext&                m_sampling_context;
-            const ShadingContext&           m_shading_context;
-            ShadingComponents&              m_path_radiance;
-            const EnvironmentEDF*           m_env_edf;
-            bool                            m_is_indirect_lighting;
-            size_t&                         m_inf_volume_ray_warnings;
+          public:
+            bool accept_scattering(const ScatteringMode::Mode prev_mode)
+            {
+                return true;
+            }
+
+            void on_scatter(PathVertex& vertex)
+            {
+                // When caustics are disabled, disable glossy and specular components after a diffuse or volume bounce.
+                // Note that accept_scattering() is later going to return false in this case.
+                const bool has_diffuse_or_volume_scattering =
+                    vertex.m_prev_mode == ScatteringMode::Diffuse ||
+                    vertex.m_prev_mode == ScatteringMode::Volume;
+                if (!m_params.m_enable_caustics && has_diffuse_or_volume_scattering)
+                    vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
+            }
+
+          protected:
+            const Parameters&                   m_params;
+            const BackwardLightSampler&         m_light_sampler;
+            SamplingContext&                    m_sampling_context;
+            const ShadingContext&               m_shading_context;
+            ShadingComponents&                  m_path_radiance;
+            const EnvironmentEDF*               m_env_edf;
+            bool                                m_is_indirect_lighting;
+            size_t&                             m_inf_volume_ray_warnings;
 
             VolumeVisitorBase(
                 const Parameters&               params,
@@ -815,31 +889,16 @@ namespace
               , m_inf_volume_ray_warnings(inf_volume_ray_warnings)
             {
             }
-
-            bool accept_scattering(const ScatteringMode::Mode prev_mode)
-            {
-                return true;
-            }
-
-            void on_scatter(PathVertex& vertex)
-            {
-                // When caustics are disabled, disable glossy and specular components after a diffuse or volume bounce.
-                // Note that accept_scattering() is later going to return false in this case.
-                const bool has_diffuse_or_volume_scattering =
-                    vertex.m_prev_mode == ScatteringMode::Diffuse ||
-                    vertex.m_prev_mode == ScatteringMode::Volume;
-                if (!m_params.m_enable_caustics && has_diffuse_or_volume_scattering)
-                    vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
-            }
         };
 
         //
         // Volume visitor without next event estimation.
         //
 
-        struct VolumeVisitorSimple
+        class VolumeVisitorSimple
           : public VolumeVisitorBase
         {
+          public:
             VolumeVisitorSimple(
                 const Parameters&               params,
                 const BackwardLightSampler&     light_sampler,
@@ -871,9 +930,10 @@ namespace
         // Volume visitor with next event estimation.
         //
 
-        struct VolumeVisitorDistanceSampling
+        class VolumeVisitorDistanceSampling
           : public VolumeVisitorBase
         {
+          public:
             VolumeVisitorDistanceSampling(
                 const Parameters&               params,
                 const BackwardLightSampler&     light_sampler,
@@ -991,8 +1051,10 @@ namespace
 
 PTLightingEngineFactory::PTLightingEngineFactory(
     const BackwardLightSampler&     light_sampler,
+    LightPathRecorder&              light_path_recorder,
     const ParamArray&               params)
   : m_light_sampler(light_sampler)
+  , m_light_path_recorder(light_path_recorder)
   , m_params(params)
 {
 }
@@ -1004,7 +1066,11 @@ void PTLightingEngineFactory::release()
 
 ILightingEngine* PTLightingEngineFactory::create()
 {
-    return new PTLightingEngine(m_light_sampler, m_params);
+    return
+        new PTLightingEngine(
+            m_light_sampler,
+            m_light_path_recorder,
+            m_params);
 }
 
 Dictionary PTLightingEngineFactory::get_params_metadata()
@@ -1122,6 +1188,14 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("default", "false")
             .insert("label", "Optimize for Lights Outside Volumes")
             .insert("help", "Optimize distance sampling for lights that are located outside volumes"));
+
+    metadata.dictionaries().insert(
+        "record_light_paths",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "false")
+            .insert("label", "Record Light Paths")
+            .insert("help", "Record light paths in memory to later allow visualizing them or saving them to disk"));
 
     return metadata;
 }
