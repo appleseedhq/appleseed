@@ -255,7 +255,11 @@ namespace
         ParamArray params = frame->get_parameters();
         params.insert(key, value);
 
-        auto_release_ptr<Frame> new_frame(FrameFactory::create(frame->get_name(), params));
+        auto_release_ptr<Frame> new_frame(
+            FrameFactory::create(
+                frame->get_name(),
+                params,
+                frame->aovs()));
 
         project.set_frame(new_frame);
     }
