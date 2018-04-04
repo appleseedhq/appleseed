@@ -68,6 +68,7 @@ class TileJob
         const size_t                tile_y,
         const size_t                pass_hash,
         const Spectrum::Mode        spectrum_mode,
+        foundation::JobQueue&       job_queue,
         foundation::IAbortSwitch&   abort_switch);
 
     // Execute the job.
@@ -81,6 +82,7 @@ class TileJob
     const size_t                    m_tile_y;
     const size_t                    m_pass_hash;
     const Spectrum::Mode            m_spectrum_mode;
+    foundation::JobQueue&           m_job_queue;
     foundation::IAbortSwitch&       m_abort_switch;
 };
 

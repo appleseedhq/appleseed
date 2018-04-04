@@ -31,6 +31,7 @@
 #include "tilejob.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/itilerenderer.h"
 #include "renderer/modeling/frame/frame.h"
@@ -62,6 +63,7 @@ TileJob::TileJob(
     const size_t                tile_y,
     const size_t                pass_hash,
     const Spectrum::Mode        spectrum_mode,
+    foundation::JobQueue&       job_queue,
     IAbortSwitch&               abort_switch)
   : m_tile_renderers(tile_renderers)
   , m_tile_callbacks(tile_callbacks)
@@ -70,6 +72,7 @@ TileJob::TileJob(
   , m_tile_y(tile_y)
   , m_pass_hash(pass_hash)
   , m_spectrum_mode(spectrum_mode)
+  , m_job_queue(job_queue)
   , m_abort_switch(abort_switch)
 {
     // Either there is no tile callback, or there is the same number
@@ -81,6 +84,9 @@ TileJob::TileJob(
 
 void TileJob::execute(const size_t thread_index)
 {
+    if (m_tile_renderers.size() > m_job_queue.get_scheduled_job_count())
+        RENDERER_LOG_INFO("split");
+
     // Initialize thread-local variables.
     Spectrum::set_mode(m_spectrum_mode);
 

@@ -60,6 +60,7 @@ void TileJobFactory::create(
     const size_t                        pass_hash,
     const Spectrum::Mode                spectrum_mode,
     TileJobVector&                      tile_jobs,
+    foundation::JobQueue&               job_queue,
     IAbortSwitch&                       abort_switch)
 {
     // Retrieve frame properties.
@@ -92,6 +93,7 @@ void TileJobFactory::create(
                 tile_y,
                 pass_hash,
                 spectrum_mode,
+                job_queue,
                 abort_switch));
     }
 }

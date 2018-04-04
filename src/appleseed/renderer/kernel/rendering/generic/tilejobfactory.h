@@ -77,6 +77,7 @@ class TileJobFactory
         const size_t                        pass_hash,
         const Spectrum::Mode                spectrum_mode,
         TileJobVector&                      tile_jobs,
+        foundation::JobQueue&               job_queue,
         foundation::IAbortSwitch&           abort_switch);
 
   private:

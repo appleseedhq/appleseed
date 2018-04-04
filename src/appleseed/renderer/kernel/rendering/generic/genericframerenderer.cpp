@@ -355,6 +355,7 @@ namespace
                         pass_hash,
                         m_spectrum_mode,
                         tile_jobs,
+                        m_job_queue,
                         m_abort_switch);
 
                     // Schedule tile jobs.
