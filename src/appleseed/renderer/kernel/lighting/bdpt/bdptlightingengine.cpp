@@ -401,7 +401,7 @@ namespace
 
             float mis_weight = numerator / denominator;
 
-            assert(mi_weight <= 1.0f);
+            assert(mis_weight <= 1.0f);
             radiance.m_beauty += mis_weight * result;
         }
 
