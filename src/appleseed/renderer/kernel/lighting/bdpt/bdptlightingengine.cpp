@@ -61,7 +61,7 @@ namespace
         Camera, Light, Surface, Medium
     };
 
-    /// TODO:: decide if we should use PathVertex / BDPTVertex
+    /// TODO:: decide if we should use existing PathVertex (in PathVertex.h) or just keep using BDPTVertex
     struct BDPTVertex
     {
         Vector3d                m_position;
@@ -136,8 +136,9 @@ namespace
             const ShadingPoint&     shading_point,
             ShadingComponents&      radiance) override      // output radiance, in W.sr^-1.m^-2
         {
-            BDPTVertex camera_vertices[8];
-            BDPTVertex light_vertices[9];
+            /// TODO:: use arena to alloc BDPTVertices instead
+            BDPTVertex* camera_vertices = new BDPTVertex[num_max_vertices - 1];
+            BDPTVertex* light_vertices = new BDPTVertex[num_max_vertices];
 
             size_t num_light_vertices = trace_light(sampling_context, shading_context, light_vertices);
             size_t num_camera_vertices = trace_camera(sampling_context, shading_context, shading_point, camera_vertices);
@@ -146,6 +147,9 @@ namespace
                 for (size_t t = 2; t < num_camera_vertices + 2; t++)
                     if (s + t <= num_max_vertices)
                         connect(shading_context, shading_point, light_vertices, camera_vertices, s, t, radiance);
+
+            delete camera_vertices;
+            delete light_vertices;
         }
 
         Spectrum compute_geometry_term(
@@ -154,23 +158,19 @@ namespace
             const BDPTVertex&       a,
             const BDPTVertex&       b)
         {
-            double g = 1.0;
-
             const Vector3d v = b.m_position - a.m_position;
+            const Vector3d normalized_v = normalize(v);
+            const double dist2 = square_norm(v);
 
             /// TODO:: the special care have to be taken for these dot products when it comes to volume
-            // compute unnormalied dot products
-            g *= max(-dot(v, b.m_geometric_normal), 0.0);
-            g *= max(dot(v, a.m_geometric_normal), 0.0);
+            const double cos1 = max(-dot(normalized_v, b.m_geometric_normal), 0.0);
+            const double cos2 = max(dot(normalized_v, a.m_geometric_normal), 0.0);
 
             Spectrum result(0.0);
 
             // do the visibility test
-            if (g > 0.0)
+            if (cos1 > 0.0 && cos2 > 0.0)
             {
-                // compute inverse dist2 and normalize 2 dot products
-                const double dist2 = square_norm(v);
-                g /= (dist2 * dist2);
                 shading_context.get_tracer().trace_between_simple(
                     shading_context,
                     a.m_position + (v * 1.0e-6),
@@ -179,9 +179,10 @@ namespace
                     VisibilityFlags::ShadowRay,
                     shading_point.get_ray().m_depth,
                     result);
+                double geometry_term = cos1 * cos2 / dist2;
+                result *= (float)geometry_term;
             }
-
-            return result * (float)g;
+            return result;
         }
 
         /// TODO:: precompute path density using fwd_pdf and rev_pdf.
