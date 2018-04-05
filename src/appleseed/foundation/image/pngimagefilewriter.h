@@ -34,6 +34,7 @@
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/image/iimagefilewriter.h"
 #include "foundation/image/imageattributes.h"
+#include "foundation/image/oiioimagefilewriter.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
