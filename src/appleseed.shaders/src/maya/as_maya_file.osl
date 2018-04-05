@@ -320,7 +320,7 @@ shader as_maya_file
             filter = "closest";
         }
 
-        // Disabled filtering can still be overriden by filter radius.
+        // Disabled filtering can still be overridden by filter radius.
 
         if (in_preFilter)
         {
