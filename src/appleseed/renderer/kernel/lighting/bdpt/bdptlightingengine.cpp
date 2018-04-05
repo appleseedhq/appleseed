@@ -588,8 +588,8 @@ namespace
                     false);
 
             m_camera_path_length.insert(camera_path_length);
-            assert(num_camera_vertices <= num_max_vertices - 1);
-            return camera_path_length - 1;
+            assert(num_camera_vertices <= m_num_max_vertices - 1);
+            return num_camera_vertices;
         }
 
         StatisticsVector get_statistics() const override
