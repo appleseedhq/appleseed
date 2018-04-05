@@ -1,4 +1,4 @@
-# appleseed [![Build Status](https://travis-ci.org/appleseedhq/appleseed.svg?branch=master)](https://travis-ci.org/appleseedhq/appleseed) [![Slack](https://slackin-naplrzjfoz.now.sh/badge.svg)](https://slackin-naplrzjfoz.now.sh/)
+# appleseed [![Build Status](https://travis-ci.org/appleseedhq/appleseed.svg?branch=master)](https://travis-ci.org/appleseedhq/appleseed)
 
 ![Japanese Classroom, by Blender Swap’s user NovaZeeke](https://appleseedhq.net/img/renders/classroom.jpg)
 
@@ -19,8 +19,8 @@ appleseed is available as a portable C++ library with C++ and Python APIs, as a 
 * Home: [appleseedhq.net](https://appleseedhq.net/)
 * Twitter: [twitter.com/appleseedhq](https://twitter.com/appleseedhq)
 * Vimeo: [vimeo.com/appleseedhq](https://vimeo.com/appleseedhq)
-* User Forum: [forum.appleseedhq.net](https://forum.appleseedhq.net/)
-* Developers' Slack: [appleseedhq.slack.com](https://slackin-pohcdrcgcs.now.sh/)
+* Discord: [discord.gg](https://discord.gg/Vcu5A7h)
+* Forum: [forum.appleseedhq.net](https://forum.appleseedhq.net/)
 
 ## Contributing
 
@@ -39,4 +39,4 @@ appleseed is available as a portable C++ library with C++ and Python APIs, as a 
 
 appleseed and its accompanying software is released under the [MIT license](https://en.wikipedia.org/wiki/MIT_License).
 
-© 2010-2017 The appleseedhq Organization
+© 2010-2018 The appleseedhq Organization
