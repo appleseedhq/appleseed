@@ -97,12 +97,17 @@ namespace
       : public ILightingEngine
     {
       public:
-        /// TODO:: get rid of num_max_vertices and read from params instead
-        const size_t num_max_vertices = 9;
         struct Parameters
         {
+            const size_t    m_max_bounces;                  // maximum number of bounces, ~0 for unlimited
             explicit Parameters(const ParamArray& params)
+                : m_max_bounces(fixup_bounces(params.get_optional<int>("max_bounces", 8)))
             {
+            }
+
+            static size_t fixup_bounces(const int x)
+            {
+                return x == -1 ? ~0 : x;
             }
         };
 
@@ -118,6 +123,8 @@ namespace
             const Camera* camera = project.get_uncached_active_camera();
             m_shutter_open_begin_time = camera->get_shutter_open_begin_time();
             m_shutter_close_end_time = camera->get_shutter_close_end_time();
+
+            m_num_max_vertices = m_params.m_max_bounces + 2;
         }
 
         void release() override
@@ -137,15 +144,15 @@ namespace
             ShadingComponents&      radiance) override      // output radiance, in W.sr^-1.m^-2
         {
             /// TODO:: use arena to alloc BDPTVertices instead
-            BDPTVertex* camera_vertices = new BDPTVertex[num_max_vertices - 1];
-            BDPTVertex* light_vertices = new BDPTVertex[num_max_vertices];
+            BDPTVertex* camera_vertices = new BDPTVertex[m_num_max_vertices - 1];
+            BDPTVertex* light_vertices = new BDPTVertex[m_num_max_vertices];
 
             size_t num_light_vertices = trace_light(sampling_context, shading_context, light_vertices);
             size_t num_camera_vertices = trace_camera(sampling_context, shading_context, shading_point, camera_vertices);
 
             for (size_t s = 0; s < num_light_vertices + 1; s++)
                 for (size_t t = 2; t < num_camera_vertices + 2; t++)
-                    if (s + t <= num_max_vertices)
+                    if (s + t <= m_num_max_vertices)
                         connect(shading_context, shading_point, light_vertices, camera_vertices, s, t, radiance);
 
             delete camera_vertices;
@@ -524,7 +531,7 @@ namespace
                 path_visitor,
                 volume_visitor,
                 ~0,
-                num_max_vertices - 2,
+                m_num_max_vertices - 2,
                 ~0,
                 ~0,
                 ~0,
@@ -540,7 +547,7 @@ namespace
                     false);
 
             m_light_path_length.insert(light_path_length);
-            assert(num_light_vertices <= num_max_vertices);
+            assert(num_light_vertices <= m_num_max_vertices);
             return num_light_vertices;
         }
 
@@ -566,7 +573,7 @@ namespace
                 path_visitor,
                 volume_visitor,
                 ~0,
-                num_max_vertices - 2,
+                m_num_max_vertices - 2,
                 ~0,
                 ~0,
                 ~0,
@@ -605,6 +612,7 @@ namespace
         Population<uint64>          m_light_path_length;
         Population<uint64>          m_camera_path_length;
 
+        size_t                      m_num_max_vertices;
 
         struct PathVisitor
         {
@@ -714,6 +722,17 @@ Dictionary BDPTLightingEngineFactory::get_params_metadata()
 {
     Dictionary metadata;
     add_common_params_metadata(metadata, true);
+
+    metadata.dictionaries().insert(
+        "max_bounces",
+        Dictionary()
+        .insert("type", "int")
+        .insert("default", "8")
+        .insert("unlimited", "true")
+        .insert("min", "0")
+        .insert("label", "Max Bounces")
+        .insert("help", "Maximum number of bounces"));
+
     return metadata;
 }
 
