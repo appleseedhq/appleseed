@@ -33,6 +33,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/iimagefilewriter.h"
 #include "foundation/image/imageattributes.h"
+#include "foundation/image/oiioimagefilewriter.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -62,12 +63,6 @@ class APPLESEED_DLLSYMBOL EXRImageFileWriter
   : public IImageFileWriter
 {
   public:
-    // Constructor.
-    EXRImageFileWriter();
-
-    // Destructor.
-    ~EXRImageFileWriter() override;
-
     // Write an OpenEXR image file.
     void write(
         const char*             filename,
@@ -83,7 +78,7 @@ class APPLESEED_DLLSYMBOL EXRImageFileWriter
         const char**            channel_names);
 
     // Write an OpenEXR image file with multiple parts.
-    void begin_multipart_exr();
+    void begin_multipart_exr(const char* filename);
 
     void append_part(
         const char*             part_name,
@@ -92,11 +87,13 @@ class APPLESEED_DLLSYMBOL EXRImageFileWriter
         const size_t            channel_count,
         const char**            channel_names);
 
-    void write_multipart_exr(const char* filename);
+    void write_multipart_exr();
 
   private:
-    struct Impl;
-    Impl *impl;
+    void set_image_attributes(const ImageAttributes& image_attributes);
+
+  private:
+    OIIOImageFileWriter m_writer;
 };
 
 }       // namespace foundation
