@@ -860,7 +860,8 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
 
     std::vector<Image> images;
 
-    writer.begin_multipart_exr();
+    create_parent_directories(file_path);
+    writer.begin_multipart_exr(file_path);
 
     static const char* ChannelNames[] = { "R", "G", "B", "A" };
 
@@ -904,8 +905,7 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
         }
     }
 
-    create_parent_directories(file_path);
-    writer.write_multipart_exr(file_path);
+    writer.write_multipart_exr();
 
     RENDERER_LOG_INFO(
         "wrote multipart exr image file %s in %s.",
