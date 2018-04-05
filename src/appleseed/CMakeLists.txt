@@ -95,8 +95,8 @@ set (foundation_image_sources
     foundation/image/exceptionunsupportedimageformat.h
     foundation/image/exrimagefilewriter.cpp
     foundation/image/exrimagefilewriter.h
-    foundation/image/exrutils.cpp
-    foundation/image/exrutils.h
+	foundation/image/oiioimagefilewriter.cpp
+	foundation/image/oiioimagefilewriter.h
     foundation/image/filteredtile.cpp
     foundation/image/filteredtile.h
     foundation/image/genericimagefilereader.cpp
