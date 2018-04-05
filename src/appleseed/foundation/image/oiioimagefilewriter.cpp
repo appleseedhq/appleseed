@@ -145,7 +145,7 @@ void OIIOImageFileWriter::set_image_spec(
 
         spec.channelnames.push_back(name);
 
-        if (name == "A")
+        if (strcmp(name, "A"))
             spec.alpha_channel = static_cast<int>(i);
     }
 
