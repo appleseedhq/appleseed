@@ -1,6 +1,6 @@
 # appleseed [![Build Status](https://travis-ci.org/appleseedhq/appleseed.svg?branch=master)](https://travis-ci.org/appleseedhq/appleseed)
 
-![Japanese Classroom, by Blender Swap’s user NovaZeeke](https://appleseedhq.net/img/renders/classroom.jpg)
+![Interior Scene by Juan Carlos Gutiérrez](https://github.com/appleseedhq/appleseedhq.github.io/raw/master/img/renders/jc-interior.jpg)
 
 ## Overview
 
