@@ -93,6 +93,13 @@ OIIO::TypeDesc convert_pixel_format(PixelFormat format)
     }
 }
 
+bool OIIOImageFileWriter::check_tile_validity(const CanvasProperties& props)
+{
+    return (props.m_canvas_width % props.m_tile_width) == 0 &&
+           (props.m_canvas_height % props.m_tile_height) == 0 &&
+           m_writer->supports("tiles") != 0;
+}
+
 void OIIOImageFileWriter::set_image_spec(
     const CanvasProperties& props,
     const size_t		    channel_count,
@@ -126,7 +133,7 @@ void OIIOImageFileWriter::set_image_spec(
     spec.full_y = spec.y;
 
     // Size of a tile.
-    if (m_writer->supports("tiles"))
+    if (check_tile_validity(props))
     {
         spec.tile_width = static_cast<int>(props.m_tile_width);
         spec.tile_height = static_cast<int>(props.m_tile_height);
@@ -248,13 +255,13 @@ void OIIOImageFileWriter::write_scanlines(const ICanvas* image)
             const Tile& tile = image->tile(tile_x, tile_y);
 
             // Checks if tile height is equal than props tile height.
-            assert(tile.get_height() == props.m_tile_height);
+            assert(tile.get_height() <= props.m_tile_height);
 
             // Loops over the row pixels of the current tile
             for (size_t y = 0; y < tile.get_height(); y++)
             {
                 // Checks if tile width is equal than props tile width.
-                assert(tile.get_width() == props.m_tile_width);
+                assert(tile.get_width() <= props.m_tile_width);
 
                 // Loops over the column pixels of the current tile
                 for (size_t x = 0; x < tile.get_width(); x++)
@@ -297,7 +304,9 @@ void OIIOImageFileWriter::write_scanlines(const ICanvas* image)
 
 void OIIOImageFileWriter::write(const ICanvas* image)
 {
-    if (m_writer->supports("tiles"))
+    assert(image);
+
+    if (check_tile_validity(image->properties()))
         write_tiles(image);
 
     else
