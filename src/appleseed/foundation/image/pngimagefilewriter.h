@@ -53,6 +53,12 @@ class APPLESEED_DLLSYMBOL PNGImageFileWriter
         const char*             filename,
         const ICanvas&          image,
         const ImageAttributes&  image_attributes = ImageAttributes()) final;
+
+  private:
+    void set_image_attributes(const ImageAttributes& image_attributes);
+
+  private:
+    OIIOImageFileWriter m_writer;
 };
 
 }   // namespace foundation
