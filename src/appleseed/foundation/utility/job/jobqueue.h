@@ -137,11 +137,11 @@ class APPLESEED_DLLSYMBOL JobQueue
     // Acquire a scheduled job and change its state from 'scheduled' to 'running'.
     RunningJobInfo acquire_scheduled_job();
 
+    // Acquire a scheduled job without any locking.
+    RunningJobInfo acquire_scheduled_job_no_lock();
+
     // Wait for a scheduled job to be available.
     RunningJobInfo wait_for_scheduled_job(AbortSwitch& abort_switch);
-
-    // Acquire a scheduled job without any locking.
-    RunningJobInfo acquire_scheduled_job_unlocked();
 
     // Retire a running job. The job is deleted if it is owned by the queue.
     void retire_running_job(const RunningJobInfo& running_job_info);

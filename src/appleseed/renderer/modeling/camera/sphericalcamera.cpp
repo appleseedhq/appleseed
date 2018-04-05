@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/rasterization/rasterizationcamera.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/frame/frame.h"
@@ -90,6 +91,23 @@ namespace
             return Model;
         }
 
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                "camera \"%s\" settings:\n"
+                "  model                         %s\n"
+                "  shutter open begin time       %f\n"
+                "  shutter open end time         %f\n"
+                "  shutter close begin time      %f\n"
+                "  shutter close end time        %f",
+                get_path().c_str(),
+                Model,
+                m_shutter_open_begin_time,
+                m_shutter_open_end_time,
+                m_shutter_close_begin_time,
+                m_shutter_close_end_time);
+        }
+
         bool on_render_begin(
             const Project&      project,
             IAbortSwitch*       abort_switch) override
@@ -101,8 +119,6 @@ namespace
             const CanvasProperties& props = project.get_frame()->image().properties();
             m_half_pixel_width = 0.5 * props.m_rcp_canvas_width;
             m_half_pixel_height = 0.5 * props.m_rcp_canvas_height;
-
-            print_settings();
 
             return true;
         }
@@ -200,23 +216,18 @@ namespace
             return true;
         }
 
+        RasterizationCamera get_rasterization_camera() const override
+        {
+            RasterizationCamera rc;
+            rc.m_aspect_ratio = 1024.0 / 576.0;
+            rc.m_hfov = deg_to_rad(54.0);
+            return rc;
+        }
+
       private:
         // Precomputed values.
         double  m_half_pixel_width;     // half pixel width in meters, in camera space
         double  m_half_pixel_height;    // half pixel height in meters, in camera space
-
-        void print_settings() const
-        {
-            RENDERER_LOG_INFO(
-                "camera \"%s\" settings:\n"
-                "  model                         %s\n"
-                "  shutter open                  %f\n"
-                "  shutter close                 %f",
-                get_path().c_str(),
-                Model,
-                m_shutter_open_time,
-                m_shutter_close_time);
-        }
 
         static Vector3d ndc_to_camera(const Vector2d& point)
         {

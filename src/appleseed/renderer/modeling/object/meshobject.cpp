@@ -31,6 +31,7 @@
 #include "meshobject.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/rasterization/objectrasterizer.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/meshobjectprimitives.h"
@@ -42,7 +43,6 @@
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
@@ -130,37 +130,6 @@ const char* MeshObject::get_model() const
     return Model;
 }
 
-bool MeshObject::on_frame_begin(
-    const Project&          project,
-    const BaseGroup*        parent,
-    OnFrameBeginRecorder&   recorder,
-    IAbortSwitch*           abort_switch)
-{
-    if (!Object::on_frame_begin(project, parent, recorder, abort_switch))
-        return false;
-
-    m_alpha_map = get_uncached_alpha_map();
-    return true;
-}
-
-void MeshObject::on_frame_end(
-    const Project&          project,
-    const BaseGroup*        parent)
-{
-    m_alpha_map = nullptr;
-    Object::on_frame_end(project, parent);
-}
-
-bool MeshObject::has_alpha_map() const
-{
-    if (!m_params.strings().exist("alpha_map"))
-        return false;
-
-    const char* value = m_params.strings().get("alpha_map");
-
-    return !is_empty_string(value);
-}
-
 const Source* MeshObject::get_uncached_alpha_map() const
 {
     return m_inputs.source("alpha_map");
@@ -174,6 +143,53 @@ GAABB3 MeshObject::compute_local_bbox() const
 Lazy<RegionKit>& MeshObject::get_region_kit()
 {
     return impl->m_lazy_region_kit;
+}
+
+void MeshObject::rasterize(ObjectRasterizer& rasterizer) const
+{
+    rasterizer.begin_object();
+
+    for (const auto& prim : impl->m_tess.m_primitives)
+    {
+        const auto& v0 = impl->m_tess.m_vertices[prim.m_v0];
+        const auto& v1 = impl->m_tess.m_vertices[prim.m_v1];
+        const auto& v2 = impl->m_tess.m_vertices[prim.m_v2];
+
+        // todo: check that vertex normals are available.
+        const auto& n0 = impl->m_tess.m_vertex_normals[prim.m_n0];
+        const auto& n1 = impl->m_tess.m_vertex_normals[prim.m_n1];
+        const auto& n2 = impl->m_tess.m_vertex_normals[prim.m_n2];
+
+        ObjectRasterizer::Triangle triangle;
+
+        triangle.m_v0[0] = v0[0];
+        triangle.m_v0[1] = v0[1];
+        triangle.m_v0[2] = v0[2];
+
+        triangle.m_v1[0] = v1[0];
+        triangle.m_v1[1] = v1[1];
+        triangle.m_v1[2] = v1[2];
+
+        triangle.m_v2[0] = v2[0];
+        triangle.m_v2[1] = v2[1];
+        triangle.m_v2[2] = v2[2];
+
+        triangle.m_n0[0] = n0[0];
+        triangle.m_n0[1] = n0[1];
+        triangle.m_n0[2] = n0[2];
+
+        triangle.m_n1[0] = n1[0];
+        triangle.m_n1[1] = n1[1];
+        triangle.m_n1[2] = n1[2];
+
+        triangle.m_n2[0] = n2[0];
+        triangle.m_n2[1] = n2[1];
+        triangle.m_n2[2] = n2[2];
+
+        rasterizer.rasterize(triangle);
+    }
+
+    rasterizer.end_object();
 }
 
 void MeshObject::reserve_vertices(const size_t count)

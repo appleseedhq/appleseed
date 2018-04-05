@@ -37,6 +37,8 @@ shader as_triplanar
     string help = "Tri-planar projection node.",
     string icon = "asTriPlanar.png",
     int as_maya_type_id = 0x001279e5,
+    string as_max_class_id = "925310807 310517888",
+    string as_max_plugin_type = "texture",
     string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_triplanar.html#label-as-triplanar"
 ]]
 (
@@ -73,7 +75,7 @@ shader as_triplanar
         string page = "Projection",
         int divider = 1
     ]],
-    string in_space = "World"
+    string in_space = "World Space"
     [[
         string as_maya_attribute_name = "space",
         string as_maya_attribute_short_name = "spa",
@@ -453,8 +455,8 @@ shader as_triplanar
         string as_maya_attribute_short_name = "yeo",
         string label = "Input Transfer Function",
         string page = "Projection.Y Axis.Color Management",
-        string widget = "mapper",
-        string options = "None/Raw:0|sRGB:1|Rec.709:2|Gamma 2.2:3|Gamma 2.4:4|Gamma 2.6 (DCI):5|Rec.1886:6|Rec.2020:7",
+        string widget = "popup",
+        string options = "None/Raw|sRGB|Rec.709|Gamma 2.2|Gamma 2.4|Gamma 2.6 (DCI)|Rec.1886|Rec.2020",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -626,7 +628,7 @@ shader as_triplanar
         string as_maya_attribute_short_name = "zeo",
         string label = "Input Transfer Function",
         string page = "Projection.Z Axis.Color Management",
-        string widget = "mapper",
+        string widget = "popup",
         string options = "None/Raw|sRGB|Rec.709|Gamma 2.2|Gamma 2.4|Gamma 2.6 (DCI)|Rec.1886|Rec.2020",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,

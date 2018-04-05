@@ -151,7 +151,7 @@ void UnfilteredAOV::create_image(
     const size_t tile_height,
     ImageStack& aov_images)
 {
-    // One extra channel to keep track of the distance
+    // Add one extra channel to keep track of the distance
     // to the nearest sample for each pixel.
     const size_t num_channels = get_channel_count() + 1;
 
@@ -163,6 +163,10 @@ void UnfilteredAOV::create_image(
             tile_height,
             num_channels,
             PixelFormatFloat);
+
+    // We need to clear the image because the default channel value
+    // might not be zero and also to initialize the pixel distance channel.
+    clear_image();
 }
 
 }   // namespace renderer

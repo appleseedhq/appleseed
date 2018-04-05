@@ -155,7 +155,8 @@
     [[                                                                      \
         string as_maya_attribute_name = "uvCoord",                          \
         string label = "UV Coordinates",                                    \
-        string page = "UV Coordinates"                                      \
+        string page = "UV Coordinates",                                     \
+        int as_max_attribute_hidden = 1                                     \
     ]],                                                                     \
     float in_uvFilterSize[2] = {                                            \
         UNDEFINED_UVFILTER, UNDEFINED_UVFILTER}                             \
@@ -163,7 +164,8 @@
         string as_maya_attribute_name = "uvFilterSize",                     \
         int as_maya_attribute_hidden = 1,                                   \
         string label = "UV Filter Size",                                    \
-        string page = "UV Coordinates"                                      \
+        string page = "UV Coordinates",                                     \
+        int as_max_attribute_hidden = 1                                     \
     ]]
 
 #define MAYA_COLORMANAGEMENT_PARAMETERS                                     \

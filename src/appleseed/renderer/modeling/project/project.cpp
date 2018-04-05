@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/intersection/tracecontext.h"
+#include "renderer/kernel/lighting/lightpathrecorder.h"
 #include "renderer/modeling/display/display.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
@@ -90,6 +91,7 @@ struct Project::Impl
     auto_release_ptr<Scene>     m_scene;
     auto_release_ptr<Frame>     m_frame;
     auto_release_ptr<Display>   m_display;
+    LightPathRecorder           m_light_path_recorder;
     ConfigurationContainer      m_configurations;
     SearchPaths                 m_search_paths;
     unique_ptr<TraceContext>    m_trace_context;
@@ -161,6 +163,20 @@ Scene* Project::get_scene() const
     return impl->m_scene.get();
 }
 
+Camera* Project::get_uncached_active_camera() const
+{
+    if (const Scene* scene = get_scene())
+    {
+        if (const Frame* frame = get_frame())
+        {
+            if (const char* camera_name = frame->get_active_camera_name())
+                return scene->cameras().get_by_name(camera_name);
+        }
+    }
+
+    return nullptr;
+}
+
 void Project::set_frame(auto_release_ptr<Frame> frame)
 {
     impl->m_frame = frame;
@@ -181,18 +197,9 @@ Display* Project::get_display() const
     return impl->m_display.get();
 }
 
-Camera* Project::get_uncached_active_camera() const
+LightPathRecorder& Project::get_light_path_recorder() const
 {
-    if (const Scene* scene = get_scene())
-    {
-        if (const Frame* frame = get_frame())
-        {
-            if (const char* camera_name = frame->get_active_camera_name())
-                return scene->cameras().get_by_name(camera_name);
-        }
-    }
-
-    return nullptr;
+    return impl->m_light_path_recorder;
 }
 
 ConfigurationContainer& Project::configurations() const

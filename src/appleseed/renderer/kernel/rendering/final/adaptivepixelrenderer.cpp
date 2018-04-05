@@ -86,10 +86,11 @@ namespace
             ISampleRendererFactory*     factory,
             const ParamArray&           params,
             const size_t                thread_index)
-          : m_params(params)
+          : PixelRendererBase(frame, thread_index, params)
+          , m_params(params)
           , m_sample_renderer(factory->create(thread_index))
         {
-            if (m_params.m_diagnostics)
+            if (are_diagnostics_enabled())
             {
                 m_variation_aov_index = frame.create_extra_aov_image("variation");
                 m_samples_aov_index = frame.create_extra_aov_image("samples");
@@ -103,32 +104,34 @@ namespace
             }
         }
 
-        void print_settings() const override
-        {
-            RENDERER_LOG_INFO(
-                "adaptive pixel renderer settings:\n"
-                "  sampling mode                 %s\n"
-                "  min samples                   " FMT_SIZE_T "\n"
-                "  max samples                   " FMT_SIZE_T "\n"
-                "  max variation                 %f\n"
-                "  diagnostics                   %s",
-                m_params.m_sampling_mode == SamplingContext::Mode::QMCMode ? "qmc" : "rng",
-                m_params.m_min_samples,
-                m_params.m_max_samples,
-                m_params.m_max_variation,
-                m_params.m_diagnostics ? "on" : "off");
-        }
-
         void release() override
         {
             delete this;
         }
 
-        void on_tile_begin(
-            const Frame&                frame,
-            Tile&                       tile,
-            TileStack&                  aov_tiles) override
+        void print_settings() const override
         {
+            RENDERER_LOG_INFO(
+                "adaptive pixel renderer settings:\n"
+                "  min samples                   %s\n"
+                "  max samples                   %s\n"
+                "  max variation                 %f\n"
+                "  diagnostics                   %s",
+                pretty_uint(m_params.m_min_samples).c_str(),
+                pretty_uint(m_params.m_max_samples).c_str(),
+                m_params.m_max_variation,
+                are_diagnostics_enabled() ? "on" : "off");
+
+            m_sample_renderer->print_settings();
+        }
+
+        void on_tile_begin(
+            const Frame&            frame,
+            Tile&                   tile,
+            TileStack&              aov_tiles) override
+        {
+            PixelRendererBase::on_tile_begin(frame, tile, aov_tiles);
+
             m_scratch_fb_half_width = truncate<int>(ceil(frame.get_filter().get_xradius()));
             m_scratch_fb_half_height = truncate<int>(ceil(frame.get_filter().get_yradius()));
 
@@ -139,16 +142,21 @@ namespace
                     frame.aov_images().size(),
                     frame.get_filter()));
 
-            if (m_params.m_diagnostics)
-                m_diagnostics.reset(new Tile(tile.get_width(), tile.get_height(), 2, PixelFormatFloat));
+            if (are_diagnostics_enabled())
+            {
+                m_diagnostics.reset(new Tile(
+                    tile.get_width(), tile.get_height(), 2, PixelFormatFloat));
+            }
         }
 
         void on_tile_end(
-            const Frame&                frame,
-            Tile&                       tile,
-            TileStack&                  aov_tiles) override
+            const Frame&            frame,
+            Tile&                   tile,
+            TileStack&              aov_tiles) override
         {
-            if (m_params.m_diagnostics)
+            PixelRendererBase::on_tile_end(frame, tile, aov_tiles);
+
+            if (are_diagnostics_enabled())
             {
                 const size_t width = tile.get_width();
                 const size_t height = tile.get_height();
@@ -183,7 +191,7 @@ namespace
         {
             const size_t aov_count = frame.aov_images().size();
 
-            on_pixel_begin(pi, aov_accumulators);
+            on_pixel_begin(pi, pt, tile_bbox, aov_accumulators);
 
             m_scratch_fb->clear();
 
@@ -285,7 +293,7 @@ namespace
             }
 
             // Store diagnostics values in the diagnostics tile.
-            if (m_params.m_diagnostics && tile_bbox.contains(pt))
+            if (are_diagnostics_enabled() && tile_bbox.contains(pt))
             {
                 Color<float, 2> values;
 
@@ -309,7 +317,7 @@ namespace
                 m_diagnostics->set_pixel(pt.x, pt.y, values);
             }
 
-            on_pixel_end(pi, aov_accumulators);
+            on_pixel_end(pi, pt, tile_bbox, aov_accumulators);
         }
 
         StatisticsVector get_statistics() const override
@@ -329,14 +337,12 @@ namespace
             const size_t                    m_min_samples;
             const size_t                    m_max_samples;
             const float                     m_max_variation;
-            const bool                      m_diagnostics;
 
             explicit Parameters(const ParamArray& params)
               : m_sampling_mode(get_sampling_context_mode(params))
               , m_min_samples(params.get_required<size_t>("min_samples", 16))
               , m_max_samples(params.get_required<size_t>("max_samples", 256))
               , m_max_variation(pow(10.0f, -params.get_optional<float>("quality", 2.0f)))
-              , m_diagnostics(params.get_optional<bool>("enable_diagnostics", false))
             {
             }
         };
@@ -391,7 +397,7 @@ IPixelRenderer* AdaptivePixelRendererFactory::create(
 
 Dictionary AdaptivePixelRendererFactory::get_params_metadata()
 {
-    Dictionary metadata;
+    Dictionary metadata = PixelRendererBaseFactory::get_params_metadata();
 
     metadata.dictionaries().insert(
         "min_samples",
@@ -416,16 +422,6 @@ Dictionary AdaptivePixelRendererFactory::get_params_metadata()
             .insert("default", "2.0")
             .insert("label", "Quality")
             .insert("help", "Quality factor"));
-
-    metadata.dictionaries().insert(
-        "enable_diagnostics",
-        Dictionary()
-            .insert("type", "bool")
-            .insert("default", "false")
-            .insert("label", "Enable Diagnostics")
-            .insert(
-                "help",
-                "Enable adaptive sampling diagnostics"));
 
     return metadata;
 }

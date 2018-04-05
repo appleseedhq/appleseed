@@ -44,10 +44,8 @@
 #include "foundation/core/appleseed.h"
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
-#include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/image/color.h"
 #include "foundation/image/drawing.h"
-#include "foundation/image/exceptionunsupportedimageformat.h"
 #include "foundation/image/exrimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/image/imageattributes.h"
@@ -62,7 +60,6 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/iostreamop.h"
-#include "foundation/utility/otherwise.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 
@@ -71,7 +68,6 @@
 
 // Standard headers.
 #include <algorithm>
-#include <cmath>
 #include <memory>
 #include <string>
 
@@ -216,7 +212,7 @@ void Frame::print_settings()
     const char* camera_name = get_active_camera_name();
 
     RENDERER_LOG_INFO(
-        "frame settings:\n"
+        "frame \"%s\" settings:\n"
         "  camera                        %s\n"
         "  resolution                    %s x %s\n"
         "  tile size                     %s x %s\n"
@@ -226,6 +222,7 @@ void Frame::print_settings()
         "  denoising mode                %s\n"
         "  render stamp                  %s\n"
         "  save extra aovs               %s",
+        get_path().c_str(),
         camera_name ? camera_name : "none",
         pretty_uint(impl->m_frame_width).c_str(),
         pretty_uint(impl->m_frame_height).c_str(),
@@ -239,8 +236,8 @@ void Frame::print_settings()
         pretty_uint(impl->m_crop_window.max[1]).c_str(),
         impl->m_denoising_mode == DenoisingMode::Off ? "off" :
         impl->m_denoising_mode == DenoisingMode::WriteOutputs ? "write outputs" : "denoise",
-        impl->m_render_stamp_enabled ? "enabled" : "disabled",
-        impl->m_save_extra_aovs ? "enabled" : "disabled");
+        impl->m_render_stamp_enabled ? "on" : "off",
+        impl->m_save_extra_aovs ? "on" : "off");
 }
 
 const char* Frame::get_active_camera_name() const
@@ -511,7 +508,7 @@ namespace
             {
                 RENDERER_LOG_ERROR(
                     "could not create directory %s: %s",
-                    parent_path.string().c_str(),
+                    parent_path.c_str(),
                     ec.message().c_str());
             }
         }
@@ -618,7 +615,10 @@ namespace
         create_parent_directories(file_path);
 
         PNGImageFileWriter writer;
-        writer.write(file_path.string().c_str(), transformed_image, image_attributes);
+        writer.write(
+            file_path.string().c_str(),
+            transformed_image,
+            image_attributes);
     }
 
     bool write_image(
@@ -706,18 +706,12 @@ namespace
     {
         bool success = true;
 
-        if (extension != ".exr")
-        {
-            RENDERER_LOG_ERROR("extra AOVs can only be saved as exr.");
-            return false;
-        }
-
         for (size_t i = 0, e = aov_indices.size(); i < e; ++i)
         {
             const size_t image_index = aov_indices[i];
             assert(image_index < images.size());
 
-            const Image & image = images.get_image(image_index);
+            const Image& image = images.get_image(image_index);
 
             // Compute image file path.
             const string aov_name = images.get_name(image_index);
@@ -750,10 +744,10 @@ bool Frame::write_main_image(const char* file_path) const
     // Write BCD histograms and covariances if enabled.
     if (impl->m_denoising_mode == DenoisingMode::WriteOutputs)
     {
-        if (ends_with(file_path, ".exr"))
-            impl->m_denoiser_aov->write_images(file_path);
-        else
-            RENDERER_LOG_ERROR("denoiser outputs can only be saved to exr images.");
+        bf::path boost_file_path(file_path);
+        boost_file_path.replace_extension(".exr");
+
+        impl->m_denoiser_aov->write_images(boost_file_path.string().c_str());
     }
 
     return true;
@@ -763,12 +757,13 @@ bool Frame::write_aov_images(const char* file_path) const
 {
     assert(file_path);
 
-    bool success = true;
+    bf::path boost_file_path(file_path);
+    boost_file_path.replace_extension(".exr");
 
-    const bf::path boost_file_path(file_path);
     const bf::path directory = boost_file_path.parent_path();
     const string base_file_name = boost_file_path.stem().string();
-    const string extension = boost_file_path.extension().string();
+
+    bool success = true;
 
     for (size_t i = 0, e = aovs().size(); i < e; ++i)
     {
@@ -777,22 +772,21 @@ bool Frame::write_aov_images(const char* file_path) const
         // Compute AOV image file path.
         const string aov_name = aov->get_name();
         const string safe_aov_name = make_safe_filename(aov_name);
-        const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
+        const string aov_file_name = base_file_name + "." + safe_aov_name + ".exr";
         const string aov_file_path = (directory / aov_file_name).string();
 
-        // Write AOV image.
         if (!write_image(aov_file_path.c_str(), aov->get_image(), aov))
             success = false;
     }
 
-    if (impl->m_save_extra_aovs && !aov_images().empty())
+    if (impl->m_save_extra_aovs)
     {
         success = success && write_extra_aovs(
             aov_images(),
             impl->m_extra_aovs,
             directory,
             base_file_name,
-            extension);
+            ".exr");
     }
 
     return success;
@@ -818,29 +812,31 @@ bool Frame::write_main_and_aov_images() const
         const AOV* aov = aovs().get_by_index(i);
 
         // Get output filename.
-        const string filepath = aov->get_parameters().get_optional<string>("output_filename");
+        bf::path filepath = aov->get_parameters().get_optional<string>("output_filename");
+        filepath.replace_extension(".exr");
 
         // Write AOV image.
         if (!filepath.empty())
         {
-            if (!write_image(filepath.c_str(), aov->get_image(), aov))
+            if (!write_image(filepath.string().c_str(), aov->get_image(), aov))
                 success = false;
         }
     }
 
     if (impl->m_save_extra_aovs)
     {
-        const bf::path boost_file_path(filepath);
+        bf::path boost_file_path(filepath);
+        boost_file_path.replace_extension(".exr");
+
         const bf::path directory = boost_file_path.parent_path();
         const string base_file_name = boost_file_path.stem().string();
-        const string extension = boost_file_path.extension().string();
 
         success = success && write_extra_aovs(
             aov_images(),
             impl->m_extra_aovs,
             directory,
             base_file_name,
-            extension);
+            ".exr");
     }
 
     return success;
@@ -897,7 +893,7 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
             const size_t image_index = impl->m_extra_aovs[i];
             assert(image_index < aov_images().size());
 
-            const Image & image = aov_images().get_image(image_index);
+            const Image& image = aov_images().get_image(image_index);
             const CanvasProperties& props = image.properties();
             const string aov_name = aov_images().get_name(image_index);
             assert(props.m_channel_count == 4);
@@ -1144,7 +1140,7 @@ DictionaryArray FrameFactory::get_input_metadata()
     metadata.push_back(
         Dictionary()
             .insert("name", "spike_threshold")
-            .insert("label", "Spike Thereshold")
+            .insert("label", "Spike Threshold")
             .insert("type", "numeric")
             .insert("min",
                 Dictionary()
@@ -1244,7 +1240,9 @@ auto_release_ptr<Frame> FrameFactory::create(
     const char*         name,
     const ParamArray&   params)
 {
-    return auto_release_ptr<Frame>(new Frame(name, params, AOVContainer()));
+    return
+        auto_release_ptr<Frame>(
+            new Frame(name, params, AOVContainer()));
 }
 
 auto_release_ptr<Frame> FrameFactory::create(
@@ -1252,7 +1250,9 @@ auto_release_ptr<Frame> FrameFactory::create(
     const ParamArray&   params,
     const AOVContainer& aovs)
 {
-    return auto_release_ptr<Frame>(new Frame(name, params, aovs));
+    return
+        auto_release_ptr<Frame>(
+            new Frame(name, params, aovs));
 }
 
 }   // namespace renderer

@@ -50,7 +50,12 @@ class Dual
     typedef T ValueType;
 
     // Constructors.
-    Dual();
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    Dual() = default;                         // leave all components uninitialized
+#else
+    Dual() {}                                 // leave all components uninitialized
+#endif
+
     explicit Dual(const T& value);
     Dual(const T& value, const T& dx, const T& dy);
 
@@ -65,6 +70,8 @@ class Dual
     bool has_derivatives() const;
     const T& get_dx() const;
     const T& get_dy() const;
+
+    void set_derivatives(const T& dx, const T& dy);
 
   private:
     template <typename U>
@@ -94,12 +101,6 @@ typedef Dual<Vector3d>  Dual3d;
 //
 // Dual class implementation.
 //
-
-template <typename T>
-inline Dual<T>::Dual()
-  : m_has_derivatives(false)
-{
-}
 
 template <typename T>
 inline Dual<T>::Dual(const T& value)
@@ -151,6 +152,14 @@ inline const T& Dual<T>::get_dy() const
 {
     assert(m_has_derivatives);
     return m_dy;
+}
+
+template <typename T>
+inline void Dual<T>::set_derivatives(const T& dx, const T& dy)
+{
+    m_dx = dx;
+    m_dy = dy;
+    m_has_derivatives = true;
 }
 
 }       // namespace foundation

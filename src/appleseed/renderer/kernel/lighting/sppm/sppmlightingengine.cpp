@@ -143,6 +143,11 @@ namespace
             delete this;
         }
 
+        void print_settings() const override
+        {
+            m_params.print();
+        }
+
         void compute_lighting(
             SamplingContext&            sampling_context,
             const PixelContext&         pixel_context,
@@ -359,7 +364,8 @@ namespace
                 integrator.compute_outgoing_radiance_combined_sampling_low_variance(
                     vertex.m_sampling_context,
                     vertex.m_outgoing,
-                    dl_radiance);
+                    dl_radiance,
+                    nullptr);
 
                 // Divide by the sample count when this number is less than 1.
                 if (m_params.m_rcp_dl_light_sample_count > 0.0f)
@@ -649,7 +655,6 @@ SPPMLightingEngineFactory::SPPMLightingEngineFactory(
   , m_backward_light_sampler(backward_light_sampler)
   , m_params(params)
 {
-    m_params.print();
 }
 
 void SPPMLightingEngineFactory::release()

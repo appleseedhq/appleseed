@@ -211,9 +211,6 @@ void RenderingManager::start_rendering(
         m_master_renderer_thread.get(), SIGNAL(finished()),
         SLOT(slot_master_renderer_thread_finished()));
 
-    if (m_rendering_mode == InteractiveRendering)
-        m_render_tab->get_camera_controller()->set_enabled(true);
-
     m_master_renderer_thread->start();
 }
 
@@ -380,6 +377,9 @@ void RenderingManager::slot_rendering_begin()
 
     run_sticky_actions();
     run_scheduled_actions();
+
+    if (m_rendering_mode == InteractiveRendering)
+        m_render_tab->get_camera_controller()->set_enabled(true);
 
     m_rendering_timer.clear();
 

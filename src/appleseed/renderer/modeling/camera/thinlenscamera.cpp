@@ -34,6 +34,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
+#include "renderer/kernel/rasterization/rasterizationcamera.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/texturecache.h"
@@ -64,6 +65,7 @@
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/iostreamop.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -194,12 +196,50 @@ namespace
             return Model;
         }
 
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                "camera \"%s\" settings:\n"
+                "  model                         %s\n"
+                "  film width                    %f\n"
+                "  film height                   %f\n"
+                "  focal length                  %f\n"
+                "  autofocus                     %s\n"
+                "  autofocus target              %f, %f\n"
+                "  diaphragm map                 %s\n"
+                "  diaphragm blades              %s\n"
+                "  diaphragm tilt angle          %f\n"
+                "  near-z                        %f\n"
+                "  shutter open begin time       %f\n"
+                "  shutter open end time         %f\n"
+                "  shutter close begin time      %f\n"
+                "  shutter close end time        %f",
+                get_path().c_str(),
+                Model,
+                m_film_dimensions[0],
+                m_film_dimensions[1],
+                m_focal_length,
+                m_autofocus_enabled ? "on" : "off",
+                m_autofocus_target[0],
+                m_autofocus_target[1],
+                m_diaphragm_map_bound ? "on" : "off",
+                pretty_uint(m_diaphragm_blade_count).c_str(),
+                m_diaphragm_tilt_angle,
+                m_near_z,
+                m_shutter_open_begin_time,
+                m_shutter_open_end_time,
+                m_shutter_close_begin_time,
+                m_shutter_close_end_time);
+        }
+
         bool on_render_begin(
             const Project&          project,
             IAbortSwitch*           abort_switch) override
         {
             if (!Camera::on_render_begin(project, abort_switch))
                 return false;
+
+            m_autofocus_enabled = m_params.get_optional<bool>("autofocus_enabled", true);
 
             // Extract the film dimensions from the camera parameters.
             m_film_dimensions = extract_film_dimensions();
@@ -241,8 +281,6 @@ namespace
                     m_diaphragm_tilt_angle,
                     &m_diaphragm_vertices.front());
             }
-
-            print_settings();
 
             return true;
         }
@@ -412,6 +450,14 @@ namespace
             return true;
         }
 
+        RasterizationCamera get_rasterization_camera() const override
+        {
+            RasterizationCamera rc;
+            rc.m_aspect_ratio = m_film_dimensions[0] / m_film_dimensions[1];
+            rc.m_hfov = focal_length_to_hfov(m_film_dimensions[0], m_focal_length);
+            return rc;
+        }
+
       private:
         // Parameters.
         Vector2d            m_film_dimensions;          // film dimensions in camera space, in meters
@@ -456,6 +502,56 @@ namespace
                     "diaphragm_blades",
                     m_diaphragm_blade_count);
             }
+        }
+
+        void extract_focal_distance(
+            const bool              autofocus_enabled,
+            Vector2d&               autofocus_target,
+            double&                 focal_distance) const
+        {
+            const Vector2d DefaultAFTarget(0.5);        // in NDC
+            const double DefaultFocalDistance = 1.0;    // in meters
+
+            if (autofocus_enabled)
+            {
+                if (has_param("autofocus_target"))
+                    autofocus_target = m_params.get_required<Vector2d>("autofocus_target", DefaultAFTarget);
+                else
+                {
+                    RENDERER_LOG_ERROR(
+                        "while defining camera \"%s\": no \"autofocus_target\" parameter found; "
+                        "using default value \"%f, %f\".",
+                        get_path().c_str(),
+                        DefaultAFTarget[0],
+                        DefaultAFTarget[1]);
+                    autofocus_target = DefaultAFTarget;
+                }
+
+                focal_distance = DefaultFocalDistance;
+            }
+            else
+            {
+                if (has_param("focal_distance"))
+                    focal_distance = m_params.get_required<double>("focal_distance", DefaultFocalDistance);
+                else
+                {
+                    RENDERER_LOG_ERROR(
+                        "while defining camera \"%s\": no \"focal_distance\" parameter found; "
+                        "using default value \"%f\".",
+                        get_path().c_str(),
+                        DefaultFocalDistance);
+                    focal_distance = DefaultFocalDistance;
+                }
+
+                autofocus_target = DefaultAFTarget;
+            }
+        }
+
+        double extract_f_stop() const
+        {
+            const double DefaultFStop = 8.0;
+
+            return get_greater_than_zero("f_stop", DefaultFStop);
         }
 
         void extract_diaphragm_tilt_angle()
@@ -504,8 +600,8 @@ namespace
             ray.m_time =
                 ShadingRay::Time::create_with_normalized_time(
                     0.5f,
-                    get_shutter_open_time(),
-                    get_shutter_close_time());
+                    get_shutter_open_begin_time(),
+                    get_shutter_close_end_time());
             ray.m_flags = VisibilityFlags::ProbeRay;
             ray.m_depth = 0;
 
@@ -537,38 +633,6 @@ namespace
 
                 return 1.0e38;
             }
-        }
-
-        void print_settings() const
-        {
-            RENDERER_LOG_INFO(
-                "camera \"%s\" settings:\n"
-                "  model                         %s\n"
-                "  film width                    %f\n"
-                "  film height                   %f\n"
-                "  focal length                  %f\n"
-                "  autofocus                     %s\n"
-                "  autofocus target              %f, %f\n"
-                "  diaphragm map                 %s\n"
-                "  diaphragm blades              %s\n"
-                "  diaphragm angle               %f\n"
-                "  near z                        %f\n"
-                "  shutter open                  %f\n"
-                "  shutter close                 %f",
-                get_path().c_str(),
-                Model,
-                m_film_dimensions[0],
-                m_film_dimensions[1],
-                m_focal_length,
-                m_autofocus_enabled ? "on" : "off",
-                m_autofocus_target[0],
-                m_autofocus_target[1],
-                m_diaphragm_map_bound ? "on" : "off",
-                pretty_uint(m_diaphragm_blade_count).c_str(),
-                m_diaphragm_tilt_angle,
-                m_near_z,
-                m_shutter_open_time,
-                m_shutter_close_time);
         }
 
         Vector3d ndc_to_camera(const Vector2d& point) const
@@ -626,9 +690,9 @@ namespace
         }
 
         Vector3d compute_ray_direction(
-            const Vector2d&     film_point,         // NDC
-            const Vector3d&     lens_point,         // world space
-            const Transformd&   transform) const
+            const Vector2d&         film_point,         // NDC
+            const Vector3d&         lens_point,         // world space
+            const Transformd&       transform) const
         {
             // Compute film point in camera space.
             const Vector3d film_point_cs = ndc_to_camera(film_point);
@@ -737,10 +801,23 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
+            .insert("name", "autofocus_enabled")
+            .insert("label", "Enable autofocus")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "true")
+            .insert("on_change", "rebuild_form"));
+
+    metadata.push_back(
+        Dictionary()
             .insert("name", "focal_distance")
             .insert("label", "Focal Distance")
             .insert("type", "text")
-            .insert("use", "optional"));
+            .insert("use", "optional")
+            .insert("default", "1.0")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("autofocus_enabled", "false")));
 
     metadata.push_back(
         Dictionary()
@@ -748,7 +825,10 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
             .insert("label", "Autofocus Target")
             .insert("type", "text")
             .insert("use", "optional")
-            .insert("default", "0.5 0.5"));
+            .insert("default", "0.5 0.5")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("autofocus_enabled", "true")));
 
     metadata.push_back(
         Dictionary()

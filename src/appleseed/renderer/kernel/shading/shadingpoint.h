@@ -216,7 +216,7 @@ class ShadingPoint
     // Return the assembly instance that was hit.
     const AssemblyInstance& get_assembly_instance() const;
 
-    // Return the transform at ray time of the assembly instance that was it.
+    // Return the transform at ray time of the assembly instance that was hit.
     const foundation::Transformd& get_assembly_instance_transform() const;
 
     // Return the assembly that was hit.

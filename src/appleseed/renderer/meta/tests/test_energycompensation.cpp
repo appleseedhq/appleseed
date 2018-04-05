@@ -27,6 +27,7 @@
 //
 
 // appleseed.renderer headers.
+#include "renderer/modeling/bsdf/glassbsdf.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
 
 // appleseed.foundation headers.
@@ -36,8 +37,13 @@ using namespace renderer;
 
 TEST_SUITE(Renderer_Modeling_BSDF_EnergyCompensation)
 {
-    TEST_CASE(WriteDirAlbedoTables)
+    TEST_CASE(WriteMicrofacetDirAlbedoTables)
     {
-        write_microfacet_directional_albedo_tables_to_exr("unit tests/outputs");
+        write_microfacet_directional_albedo_tables("unit tests/outputs");
+    }
+
+    TEST_CASE(WriteGlassDirAlbedoTables)
+    {
+        write_glass_directional_albedo_tables("unit tests/outputs");
     }
 }

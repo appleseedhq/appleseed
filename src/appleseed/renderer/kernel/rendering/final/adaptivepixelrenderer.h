@@ -31,7 +31,7 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_ADAPTIVEPIXELRENDERER_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/ipixelrenderer.h"
+#include "renderer/kernel/rendering/pixelrendererbase.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -53,7 +53,7 @@ namespace renderer
 //
 
 class AdaptivePixelRendererFactory
-  : public IPixelRendererFactory
+  : public PixelRendererBaseFactory
 {
   public:
     // Constructor.

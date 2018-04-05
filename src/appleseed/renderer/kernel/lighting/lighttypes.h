@@ -33,6 +33,9 @@
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/utility/transformsequence.h"
 
+// appleseed.foundation headers.
+#include "foundation/math/vector.h"
+
 // Standard headers.
 #include <cstddef>
 
@@ -51,7 +54,7 @@ enum LightType
 };
 
 //
-// NonPhysicalLightInfo class implementation.
+// A non-physical light.
 //
 
 class NonPhysicalLightInfo
@@ -63,7 +66,7 @@ class NonPhysicalLightInfo
 
 
 //
-// EmittingTriangle class implementation.
+// A light-emitting triangle.
 //
 
 class EmittingTriangle

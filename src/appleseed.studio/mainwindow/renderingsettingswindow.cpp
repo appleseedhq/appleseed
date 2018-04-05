@@ -354,7 +354,10 @@ class RenderSettingsPanel
         for (const_each<DirectLinkCollection> i = m_direct_links; i; ++i)
         {
             const string default_value_path = i->m_param_path + ".default";
-            const string default_value = m_params_metadata.get_path_optional<string>(default_value_path.c_str(), i->m_default_value);
+            const string default_value =
+                m_params_metadata.get_path_optional<string>(
+                    default_value_path.c_str(),
+                    i->m_default_value);
             const string value = get_config<string>(config, i->m_param_path, default_value);
             set_widget(i->m_widget_key, value);
         }
@@ -464,6 +467,7 @@ namespace
             create_direct_link("uniform_sampler.samples",               "uniform_pixel_renderer.samples");
             create_direct_link("uniform_sampler.force_antialiasing",    "uniform_pixel_renderer.force_antialiasing");
             create_direct_link("uniform_sampler.decorrelate_pixels",    "uniform_pixel_renderer.decorrelate_pixels");
+            create_direct_link("uniform_sampler.enable_diagnostics",    "uniform_pixel_renderer.enable_diagnostics");
 
             create_direct_link("adaptive_sampler.min_samples",          "adaptive_pixel_renderer.min_samples");
             create_direct_link("adaptive_sampler.max_samples",          "adaptive_pixel_renderer.max_samples");
@@ -550,6 +554,10 @@ namespace
             m_uniform_sampler_decorrelate_pixels = create_checkbox("uniform_sampler.decorrelate_pixels", "Decorrelate Pixels");
             m_uniform_sampler_decorrelate_pixels->setToolTip(m_params_metadata.get_path("uniform_pixel_renderer.decorrelate_pixels.help"));
             layout->addWidget(m_uniform_sampler_decorrelate_pixels);
+
+            QCheckBox* enable_diagnostics = create_checkbox("uniform_sampler.enable_diagnostics", "Enable Diagnostic AOVs");
+            enable_diagnostics->setToolTip(m_params_metadata.get_path("uniform_pixel_renderer.enable_diagnostics.help"));
+            layout->addWidget(enable_diagnostics);
 
             connect(
                 m_image_plane_sampler_passes, SIGNAL(valueChanged(const int)),
@@ -757,14 +765,15 @@ namespace
             layout->addRow("Russian Roulette Start Bounce:", russian_roulette_start);
         }
 
-        void load_bounce_settings(
+        void load_global_max_bounce_settings(
             const Configuration&    config,
             const string&           widget_key_prefix,
-            const string&           param_path)
+            const string&           param_path,
+            const int               default_max_bounces)
         {
             const int DefaultMaxBounces = 8;
 
-            const int max_bounces = get_config<int>(config, param_path, -1);
+            const int max_bounces = get_config<int>(config, param_path, default_max_bounces);
 
             set_widget(widget_key_prefix + ".bounces.unlimited_bounces", max_bounces == -1);
             set_widget(widget_key_prefix + ".bounces.max_bounces", max_bounces == -1 ? DefaultMaxBounces : max_bounces);
@@ -787,16 +796,23 @@ namespace
             const Configuration&    config,
             const string&           widget_key_prefix,
             const string&           bounce_type,
+            const int               default_max_bounces,
             const bool              allow_unlimited = true)
         {
             const int DefaultMaxBounces = 8;
+            const int DefaultMaxDiffuseBounces = 3;
 
             const int max_bounces =
-                get_config<int>(config, construct_bounce_param_path(bounce_type), -1);
+                get_config<int>(config, construct_bounce_param_path(bounce_type), default_max_bounces);
+
+            const string widget_max_bounce_key = widget_key_prefix + ".bounces.max_" + bounce_type + "_bounces";
 
             if (allow_unlimited)
                 set_widget(widget_key_prefix + ".bounces.unlimited_" + bounce_type + "_bounces", max_bounces == -1);
-            set_widget(widget_key_prefix + ".bounces.max_" + bounce_type + "_bounces", max_bounces == -1 ? DefaultMaxBounces : max_bounces);
+            if (bounce_type == "diffuse")
+                set_widget(widget_max_bounce_key, max_bounces == -1 ? DefaultMaxDiffuseBounces : max_bounces);
+            else
+                set_widget(widget_max_bounce_key, max_bounces == -1 ? DefaultMaxBounces : max_bounces);
         }
 
         void save_separate_bounce_settings(
@@ -853,25 +869,26 @@ namespace
             create_pt_volume_settings(layout);
             create_pt_advanced_settings(layout);
 
-            create_direct_link("lighting_components.dl",                    "pt.enable_dl");
-            create_direct_link("lighting_components.ibl",                   "pt.enable_ibl");
-            create_direct_link("lighting_components.caustics",              "pt.enable_caustics");
-            create_direct_link("pt.bounces.rr_start_bounce",                "pt.rr_min_path_length");
-            create_direct_link("advanced.next_event_estimation",            "pt.next_event_estimation");
-            create_direct_link("advanced.dl.light_samples",                 "pt.dl_light_samples");
-            create_direct_link("advanced.dl.low_light_threshold",           "pt.dl_low_light_threshold");
-            create_direct_link("advanced.ibl.env_samples",                  "pt.ibl_env_samples");
-            create_direct_link("volume.distance_samples",                   "pt.volume_distance_samples");
-            create_direct_link("volume.optimize_for_lights_outside_volumes","pt.optimize_for_lights_outside_volumes");
-            create_direct_link("advanced.light_sampler.algorithm",          "light_sampler.algorithm");
+            create_direct_link("lighting_components.dl",                        "pt.enable_dl");
+            create_direct_link("lighting_components.ibl",                       "pt.enable_ibl");
+            create_direct_link("lighting_components.caustics",                  "pt.enable_caustics");
+            create_direct_link("pt.bounces.rr_start_bounce",                    "pt.rr_min_path_length");
+            create_direct_link("volume.distance_samples",                       "pt.volume_distance_samples");
+            create_direct_link("volume.optimize_for_lights_outside_volumes",    "pt.optimize_for_lights_outside_volumes");
+            create_direct_link("advanced.next_event_estimation",                "pt.next_event_estimation");
+            create_direct_link("advanced.dl.light_samples",                     "pt.dl_light_samples");
+            create_direct_link("advanced.dl.low_light_threshold",               "pt.dl_low_light_threshold");
+            create_direct_link("advanced.ibl.env_samples",                      "pt.ibl_env_samples");
+            create_direct_link("advanced.light_sampler.algorithm",              "light_sampler.algorithm");
+            create_direct_link("advanced.record_light_paths",                   "pt.record_light_paths");
 
             load_directly_linked_values(config);
 
-            load_bounce_settings(config, "pt", "pt.max_bounces");
-            load_separate_bounce_settings(config, "pt", "diffuse");
-            load_separate_bounce_settings(config, "pt", "glossy");
-            load_separate_bounce_settings(config, "pt", "specular");
-            load_separate_bounce_settings(config, "pt", "volume", false);
+            load_global_max_bounce_settings(config, "pt", "pt.max_bounces", 8);
+            load_separate_bounce_settings(config, "pt", "diffuse", 3);
+            load_separate_bounce_settings(config, "pt", "glossy", 8);
+            load_separate_bounce_settings(config, "pt", "specular", 8);
+            load_separate_bounce_settings(config, "pt", "volume", 8, false);
 
             set_widget("advanced.unlimited_ray_intensity", !config.get_parameters().exist_path("pt.max_ray_intensity"));
             set_widget("advanced.max_ray_intensity", get_config<double>(config, "pt.max_ray_intensity", 1.0));
@@ -893,29 +910,6 @@ namespace
         }
 
       private:
-        void create_pt_advanced_settings(QVBoxLayout* parent)
-        {
-            QGroupBox* groupbox = new QGroupBox("Advanced");
-            parent->addWidget(groupbox);
-
-            QVBoxLayout* layout = new QVBoxLayout();
-            groupbox->setLayout(layout);
-
-            QFormLayout* sublayout = create_form_layout();
-            layout->addLayout(sublayout);
-
-            QGroupBox* nee_groupbox = create_checkable_groupbox("advanced.next_event_estimation", "Next Event Estimation");
-            layout->addWidget(nee_groupbox);
-
-            QVBoxLayout* nee_layout = create_vertical_layout();
-            nee_groupbox->setLayout(nee_layout);
-
-            create_pt_advanced_lightsampler_settings(nee_layout);
-            create_pt_advanced_dl_settings(nee_layout);
-            create_pt_advanced_ibl_settings(nee_layout);
-            create_pt_advanced_max_ray_intensity_settings(nee_layout);
-        }
-
         void create_pt_volume_settings(QVBoxLayout* parent)
         {
             QGroupBox* groupbox = new QGroupBox("Participating Media");
@@ -933,25 +927,49 @@ namespace
                 m_params_metadata.get_path("pt.volume_distance_samples.help"));
             sublayout->addRow("Volume Distance Samples:", volume_distance_samples);
 
-            QCheckBox* optimize_for_lights_outside_volumes =
-                create_checkbox("volume.optimize_for_lights_outside_volumes", "Optimize for Lights Outside Volumes");
-            sublayout->addRow(optimize_for_lights_outside_volumes);
+            sublayout->addRow(
+                create_checkbox("volume.optimize_for_lights_outside_volumes", "Optimize for Lights Outside Volumes"));
         }
 
-        void create_pt_advanced_lightsampler_settings(QVBoxLayout* parent)
+        void create_pt_advanced_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = new QGroupBox("Advanced");
+            parent->addWidget(groupbox);
+
+            QVBoxLayout* layout = new QVBoxLayout();
+            groupbox->setLayout(layout);
+
+            create_pt_advanced_nee_settings(layout);
+            create_pt_advanced_diag_settings(layout);
+        }
+
+        void create_pt_advanced_nee_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = create_checkable_groupbox("advanced.next_event_estimation", "Next Event Estimation");
+            parent->addWidget(groupbox);
+
+            QVBoxLayout* layout = create_vertical_layout();
+            groupbox->setLayout(layout);
+
+            create_pt_advanced_nee_lightsampler_settings(layout);
+            create_pt_advanced_nee_dl_settings(layout);
+            create_pt_advanced_nee_ibl_settings(layout);
+            create_pt_advanced_nee_max_ray_intensity_settings(layout);
+        }
+
+        void create_pt_advanced_nee_lightsampler_settings(QVBoxLayout* parent)
         {
             QFormLayout* sublayout = create_form_layout();
             parent->addLayout(sublayout);
 
-            QComboBox* light_sampling;
-            light_sampling = create_combobox("advanced.light_sampler.algorithm");
+            QComboBox* light_sampling = create_combobox("advanced.light_sampler.algorithm");
             light_sampling->setToolTip(m_params_metadata.get_path("light_sampler.algorithm.help"));
             light_sampling->addItem("CDF", "cdf");
             light_sampling->addItem("Light Tree", "lighttree");
             sublayout->addRow("Light Sampler:", light_sampling);
         }
 
-        void create_pt_advanced_dl_settings(QVBoxLayout* parent)
+        void create_pt_advanced_nee_dl_settings(QVBoxLayout* parent)
         {
             QGroupBox* groupbox = new QGroupBox("Direct Lighting");
             parent->addWidget(groupbox);
@@ -971,7 +989,7 @@ namespace
             sublayout->addRow("Low Light Threshold:", low_light_threshold);
         }
 
-        void create_pt_advanced_ibl_settings(QVBoxLayout* parent)
+        void create_pt_advanced_nee_ibl_settings(QVBoxLayout* parent)
         {
             QGroupBox* groupbox = new QGroupBox("Image-Based Lighting");
             parent->addWidget(groupbox);
@@ -987,7 +1005,7 @@ namespace
             sublayout->addLayout(create_form_layout("Environment Samples:", env_samples));
         }
 
-        void create_pt_advanced_max_ray_intensity_settings(QVBoxLayout* parent)
+        void create_pt_advanced_nee_max_ray_intensity_settings(QVBoxLayout* parent)
         {
             QDoubleSpinBox* max_ray_intensity = create_double_input("advanced.max_ray_intensity", 0.0, 1.0e9, 3, 0.1);
             max_ray_intensity->setToolTip(m_params_metadata.get_path("pt.max_ray_intensity.help"));
@@ -995,6 +1013,20 @@ namespace
             QCheckBox* unlimited_ray_intensity = create_checkbox("advanced.unlimited_ray_intensity", "Unlimited");
             parent->addLayout(create_form_layout("Max Ray Intensity:", create_horizontal_group(max_ray_intensity, unlimited_ray_intensity)));
             connect(unlimited_ray_intensity, SIGNAL(toggled(bool)), max_ray_intensity, SLOT(setDisabled(bool)));
+        }
+
+        void create_pt_advanced_diag_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* diag_groupbox = new QGroupBox("Diagnostics");
+            parent->addWidget(diag_groupbox);
+
+            QVBoxLayout* layout = create_vertical_layout();
+            diag_groupbox->setLayout(layout);
+
+            QFormLayout* sublayout = create_form_layout();
+            layout->addLayout(sublayout);
+
+            sublayout->addRow(create_checkbox("advanced.record_light_paths", "Record Light Paths"));
         }
     };
 
@@ -1031,8 +1063,8 @@ namespace
 
             load_directly_linked_values(config);
 
-            load_bounce_settings(config, "photon_tracing", "sppm.photon_tracing_max_bounces");
-            load_bounce_settings(config, "radiance_estimation", "sppm.path_tracing_max_bounces");
+            load_global_max_bounce_settings(config, "photon_tracing", "sppm.photon_tracing_max_bounces", -1);
+            load_global_max_bounce_settings(config, "radiance_estimation", "sppm.path_tracing_max_bounces", -1);
 
             const string dl_mode = get_config<string>(config, "sppm.dl_mode", "rt");
             if (dl_mode == "rt")

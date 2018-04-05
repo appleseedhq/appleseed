@@ -168,7 +168,7 @@ shader as_standard_surface
         string page = "Specular",
         string help = "Specular spread, controls the tails of the highlights.",
         int divider = 1
-    ]],  
+    ]],
     int in_fresnel_type = 0
     [[
         string as_maya_attribute_name = "fresnelType",
@@ -672,7 +672,7 @@ shader as_standard_surface
 
         if (in_fresnel_type == 0)
         {
-            if (!compute_coating && compute_transmission)
+            if (compute_transmission)
             {
                 out_outColor += opacity * as_glass(
                     "std",
@@ -772,7 +772,7 @@ shader as_standard_surface
         if (compute_edf && in_tonemap_edf)
         {
             edf_color /= luminance(edf_color) + 1.0;
-        }        
+        }
         if (compute_edf && max(edf_color) > 0.0)
         {
             out_outColor += transmittance * opacity *

@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/rasterization/rasterizationcamera.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/frame/frame.h"
@@ -120,6 +121,31 @@ namespace
             return Model;
         }
 
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                "camera \"%s\" settings:\n"
+                "  model                         %s\n"
+                "  film width                    %f\n"
+                "  film height                   %f\n"
+                "  focal length                  %f\n"
+                "  near-z                        %f\n"
+                "  shutter open begin time       %f\n"
+                "  shutter open end time         %f\n"
+                "  shutter close begin time      %f\n"
+                "  shutter close end time        %f",
+                get_path().c_str(),
+                Model,
+                m_film_dimensions[0],
+                m_film_dimensions[1],
+                m_focal_length,
+                m_near_z,
+                m_shutter_open_begin_time,
+                m_shutter_open_end_time,
+                m_shutter_close_begin_time,
+                m_shutter_close_end_time);
+        }
+
         bool on_render_begin(
             const Project&      project,
             IAbortSwitch*       abort_switch) override
@@ -143,8 +169,6 @@ namespace
             // Precompute pixel area.
             const size_t pixel_count = project.get_frame()->image().properties().m_pixel_count;
             m_pixel_area = m_film_dimensions[0] * m_film_dimensions[1] / pixel_count;
-
-            print_settings();
 
             return true;
         }
@@ -264,6 +288,14 @@ namespace
             return true;
         }
 
+        RasterizationCamera get_rasterization_camera() const override
+        {
+            RasterizationCamera rc;
+            rc.m_aspect_ratio = m_film_dimensions[0] / m_film_dimensions[1];
+            rc.m_hfov = focal_length_to_hfov(m_film_dimensions[0], m_focal_length);
+            return rc;
+        }
+
       private:
         // Parameters.
         Vector2d    m_film_dimensions;      // film dimensions in camera space, in meters
@@ -274,27 +306,6 @@ namespace
         double      m_rcp_film_width;       // film width reciprocal in camera space
         double      m_rcp_film_height;      // film height reciprocal in camera space
         double      m_pixel_area;           // pixel area in meters, in camera space
-
-        void print_settings() const
-        {
-            RENDERER_LOG_INFO(
-                "camera \"%s\" settings:\n"
-                "  model                         %s\n"
-                "  film width                    %f\n"
-                "  film height                   %f\n"
-                "  focal length                  %f\n"
-                "  near z                        %f\n"
-                "  shutter open                  %f\n"
-                "  shutter close                 %f",
-                get_path().c_str(),
-                Model,
-                m_film_dimensions[0],
-                m_film_dimensions[1],
-                m_focal_length,
-                m_near_z,
-                m_shutter_open_time,
-                m_shutter_close_time);
-        }
 
         Vector3d ndc_to_camera(const Vector2d& point) const
         {

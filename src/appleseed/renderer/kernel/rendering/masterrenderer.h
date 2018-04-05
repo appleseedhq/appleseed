@@ -89,26 +89,26 @@ class APPLESEED_DLLSYMBOL MasterRenderer
     struct Impl;
     Impl* impl;
 
-    // Render frame sequences, each time reinitializing the rendering components.
+    // Render a frame until completed or aborted and handle reinitialization events.
     RenderingResult::Status do_render();
 
-    // Initialize the rendering components and render a frame sequence.
-    IRendererController::Status initialize_and_render_frame_sequence();
+    // Initialize rendering components and render a frame.
+    IRendererController::Status initialize_and_render_frame();
 
-    // Return true if the scene passes basic integrity checks.
-    bool check_scene() const;
-
-    // Bind all scene entities inputs. Return true on success, false otherwise.
-    bool bind_scene_entities_inputs() const;
-
-    // Render a frame sequence until the sequence is completed or rendering is aborted.
-    IRendererController::Status render_frame_sequence(
+    // Render a frame until completed or aborted and handle restart events.
+    IRendererController::Status render_frame(
         RendererComponents&         components,
         foundation::IAbortSwitch&   abort_switch);
 
     // Wait until the the frame is completed or rendering is aborted.
     IRendererController::Status wait_for_event(
         IFrameRenderer&             frame_renderer) const;
+
+    // Return true if the scene passes basic integrity checks.
+    bool check_scene() const;
+
+    // Bind all scene entities inputs. Return true on success, false otherwise.
+    bool bind_scene_entities_inputs() const;
 
     void add_render_stamp(const double render_time);
 };

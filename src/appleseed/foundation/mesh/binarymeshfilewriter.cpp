@@ -48,24 +48,6 @@ namespace foundation
 // BinaryMeshFileWriter class implementation.
 //
 
-namespace
-{
-    template <typename File>
-    inline void checked_write(File& file, const void* inbuf, const size_t size)
-    {
-        const size_t bytes_written = file.write(inbuf, size);
-
-        if (bytes_written < size)
-            throw ExceptionIOError();
-    }
-
-    template <typename File, typename T>
-    inline void checked_write(File& file, const T& object)
-    {
-        checked_write(file, &object, sizeof(T));
-    }
-}
-
 BinaryMeshFileWriter::BinaryMeshFileWriter(const string& filename)
   : m_filename(filename)
   , m_writer(m_file, 256 * 1024)

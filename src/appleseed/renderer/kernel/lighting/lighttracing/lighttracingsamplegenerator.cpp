@@ -147,20 +147,6 @@ namespace
             {
                 return x == 0 ? ~0 : x;
             }
-
-            void print() const
-            {
-                RENDERER_LOG_INFO(
-                    "light tracing settings:\n"
-                    "  ibl                           %s\n"
-                    "  caustics                      %s\n"
-                    "  max bounces                   %s\n"
-                    "  rr min path length            %s",
-                    m_enable_ibl ? "on" : "off",
-                    m_enable_caustics ? "on" : "off",
-                    m_max_bounces == ~0 ? "infinite" : pretty_uint(m_max_bounces).c_str(),
-                    m_rr_min_path_length == ~0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str());
-            }
         };
 
         LightTracingSampleGenerator(
@@ -210,14 +196,27 @@ namespace
             m_disk_point_prob = 1.0f / (Pi<float>() * square(static_cast<float>(m_scene_radius)));
 
             const Camera* camera = project.get_uncached_active_camera();
-
-            m_shutter_open_time = camera->get_shutter_open_time();
-            m_shutter_close_time = camera->get_shutter_close_time();
+            m_shutter_open_begin_time = camera->get_shutter_open_begin_time();
+            m_shutter_close_end_time = camera->get_shutter_close_end_time();
         }
 
         void release() override
         {
             delete this;
+        }
+
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                "light tracing settings:\n"
+                "  ibl                           %s\n"
+                "  caustics                      %s\n"
+                "  max bounces                   %s\n"
+                "  russian roulette start bounce %s",
+                m_params.m_enable_ibl ? "on" : "off",
+                m_params.m_enable_caustics ? "on" : "off",
+                m_params.m_max_bounces == ~0 ? "unlimited" : pretty_uint(m_params.m_max_bounces).c_str(),
+                m_params.m_rr_min_path_length == ~0 ? "unlimited" : pretty_uint(m_params.m_rr_min_path_length).c_str());
         }
 
         void reset() override
@@ -541,8 +540,8 @@ namespace
         uint64                          m_path_count;
         Population<uint64>              m_path_length;
 
-        float                           m_shutter_open_time;
-        float                           m_shutter_close_time;
+        float                           m_shutter_open_begin_time;
+        float                           m_shutter_close_end_time;
 
         size_t generate_samples(
             const size_t                sequence_index,
@@ -589,8 +588,8 @@ namespace
             m_light_sampler.sample(
                 ShadingRay::Time::create_with_normalized_time(
                     s[0],
-                    m_shutter_open_time,
-                    m_shutter_close_time),
+                    m_shutter_open_begin_time,
+                    m_shutter_close_end_time),
                 Vector3f(s[1], s[2], s[3]),
                 light_sample);
 
@@ -661,8 +660,8 @@ namespace
             const ShadingRay::Time time =
                 ShadingRay::Time::create_with_normalized_time(
                     sampling_context.next2<float>(),
-                    m_shutter_open_time,
-                    m_shutter_close_time);
+                    m_shutter_open_begin_time,
+                    m_shutter_close_end_time);
             const ShadingRay light_ray(
                 light_sample.m_point,
                 Vector3d(emission_direction),
@@ -744,8 +743,8 @@ namespace
             const ShadingRay::Time time =
                 ShadingRay::Time::create_with_normalized_time(
                     sampling_context.next2<float>(),
-                    m_shutter_open_time,
-                    m_shutter_close_time);
+                    m_shutter_open_begin_time,
+                    m_shutter_close_end_time);
             const ShadingRay light_ray(
                 emission_position,
                 emission_direction,
@@ -836,8 +835,8 @@ namespace
             const ShadingRay::Time time =
                 ShadingRay::Time::create_with_normalized_time(
                     sampling_context.next2<float>(),
-                    m_shutter_open_time,
-                    m_shutter_close_time);
+                    m_shutter_open_begin_time,
+                    m_shutter_close_end_time);
             const ShadingRay light_ray(
                 ray_origin,
                 -Vector3d(outgoing),
@@ -905,7 +904,6 @@ LightTracingSampleGeneratorFactory::LightTracingSampleGeneratorFactory(
   , m_shading_system(shading_system)
   , m_params(params)
 {
-    LightTracingSampleGenerator::Parameters(params).print();
 }
 
 void LightTracingSampleGeneratorFactory::release()

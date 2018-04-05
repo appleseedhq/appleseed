@@ -261,8 +261,8 @@ namespace
           , m_abort_switch(abort_switch)
         {
             const Camera* camera = scene.get_active_camera();
-            m_shutter_open_time = camera->get_shutter_open_time();
-            m_shutter_close_time = camera->get_shutter_close_time();
+            m_shutter_open_begin_time = camera->get_shutter_open_begin_time();
+            m_shutter_close_end_time = camera->get_shutter_close_end_time();
         }
 
         void execute(const size_t thread_index) override
@@ -314,8 +314,8 @@ namespace
         const size_t                m_pass_hash;
         IAbortSwitch&               m_abort_switch;
         SPPMPhotonVector            m_local_photons;
-        float                       m_shutter_open_time;
-        float                       m_shutter_close_time;
+        float                       m_shutter_open_begin_time;
+        float                       m_shutter_close_end_time;
 
         void trace_light_photon(
             const ShadingContext&   shading_context,
@@ -326,8 +326,8 @@ namespace
             m_light_sampler.sample(
                 ShadingRay::Time::create_with_normalized_time(
                     s[0],
-                    m_shutter_open_time,
-                    m_shutter_close_time),
+                    m_shutter_open_begin_time,
+                    m_shutter_close_end_time),
                 Vector3f(s[1], s[2], s[3]),
                 light_sample);
 
@@ -411,8 +411,8 @@ namespace
                 Vector3d(emission_direction),
                 ShadingRay::Time::create_with_normalized_time(
                     child_sampling_context.next2<float>(),
-                    m_shutter_open_time,
-                    m_shutter_close_time),
+                    m_shutter_open_begin_time,
+                    m_shutter_close_end_time),
                 VisibilityFlags::LightRay,
                 0);
 
@@ -477,8 +477,8 @@ namespace
                 emission_direction,
                 ShadingRay::Time::create_with_normalized_time(
                     child_sampling_context.next2<float>(),
-                    m_shutter_open_time,
-                    m_shutter_close_time),
+                    m_shutter_open_begin_time,
+                    m_shutter_close_end_time),
                 VisibilityFlags::LightRay,
                 0);
 
@@ -563,8 +563,8 @@ namespace
             m_safe_scene_diameter = scene_data.m_safe_diameter;
 
             const Camera* camera = scene.get_active_camera();
-            m_shutter_open_time = camera->get_shutter_open_time();
-            m_shutter_close_time = camera->get_shutter_close_time();
+            m_shutter_open_begin_time = camera->get_shutter_open_begin_time();
+            m_shutter_close_end_time = camera->get_shutter_close_end_time();
         }
 
         void execute(const size_t thread_index) override
@@ -617,8 +617,8 @@ namespace
         const size_t                m_pass_hash;
         IAbortSwitch&               m_abort_switch;
         SPPMPhotonVector            m_local_photons;
-        float                       m_shutter_open_time;
-        float                       m_shutter_close_time;
+        float                       m_shutter_open_begin_time;
+        float                       m_shutter_close_end_time;
 
         Vector3d                    m_scene_center;         // world space
         double                      m_scene_radius;         // world space
@@ -684,8 +684,8 @@ namespace
                 -Vector3d(outgoing),
                 ShadingRay::Time::create_with_normalized_time(
                     child_sampling_context.next2<float>(),
-                    m_shutter_open_time,
-                    m_shutter_close_time),
+                    m_shutter_open_begin_time,
+                    m_shutter_close_end_time),
                 VisibilityFlags::LightRay,
                 0);
 

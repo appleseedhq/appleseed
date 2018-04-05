@@ -53,7 +53,10 @@ shader as_color_transform
     [[
         string as_maya_attribute_name = "inputSpace",
         string as_maya_attribute_short_name = "is",
+        int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,        
         string widget = "mapper",
         string options = "RGB:0|HSV:1|HSL:2|XYZ:3|xyY:4|CIE 1976 L*a*b*:5|CIE 1976 L*u*v*:6|CIE 1976 LCh_ab:7|CIE 1976 LCh_uv:8",
         string label = "Input Space",
@@ -63,7 +66,10 @@ shader as_color_transform
     [[
         string as_maya_attribute_name = "outputSpace",
         string as_maya_attribute_short_name = "os",
+        int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,        
         string widget = "mapper",
         string options = "RGB:0|HSV:1|HSL:2|CIE XYZ:3|CIE xyY:4|CIE 1976 L*a*b*:5|CIE 1976 L*u*v*:6|CIE 1976 LCh_ab:7|CIE 1976 LCh_uv:8",
         string label = "Output Space",

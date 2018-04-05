@@ -38,7 +38,7 @@
 #include "application/application.h"
 
 // appleseed.renderer headers.
-#include "renderer/utility/paramarray.h"
+#include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"

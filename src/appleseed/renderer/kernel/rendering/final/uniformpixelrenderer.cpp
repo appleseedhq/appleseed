@@ -59,12 +59,7 @@
 // Standard headers.
 #include <cmath>
 
-// Forward declarations.
-namespace foundation    { class Tile; }
-namespace renderer      { class TileStack; }
-
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -80,10 +75,12 @@ namespace
     {
       public:
         UniformPixelRenderer(
+            const Frame&                frame,
             ISampleRendererFactory*     factory,
             const ParamArray&           params,
             const size_t                thread_index)
-          : m_params(params)
+          : PixelRendererBase(frame, thread_index, params)
+          , m_params(params)
           , m_sample_renderer(factory->create(thread_index))
           , m_sample_count(m_params.m_samples)
           , m_sqrt_sample_count(round<int>(sqrt(static_cast<double>(m_params.m_samples))))
@@ -105,23 +102,25 @@ namespace
             }
         }
 
+        void release() override
+        {
+            delete this;
+        }
+
         void print_settings() const override
         {
             RENDERER_LOG_INFO(
                 "uniform pixel renderer settings:\n"
-                "  sampling mode                 %s\n"
-                "  samples                       " FMT_SIZE_T "\n"
+                "  samples                       %s\n"
                 "  force antialiasing            %s\n"
-                "  decorrelate pixels            %s",
-                m_params.m_sampling_mode == SamplingContext::Mode::QMCMode ? "qmc" : "rng",
-                m_params.m_samples,
+                "  decorrelate pixels            %s\n"
+                "  diagnostics                   %s",
+                pretty_uint(m_params.m_samples).c_str(),
                 m_params.m_force_aa ? "on" : "off",
-                m_params.m_decorrelate ? "on" : "off");
-        }
+                m_params.m_decorrelate ? "on" : "off",
+                are_diagnostics_enabled() ? "on" : "off");
 
-        void release() override
-        {
-            delete this;
+            m_sample_renderer->print_settings();
         }
 
         void render_pixel(
@@ -137,7 +136,7 @@ namespace
         {
             const size_t aov_count = frame.aov_images().size();
 
-            on_pixel_begin(pi, aov_accumulators);
+            on_pixel_begin(pi, pt, tile_bbox, aov_accumulators);
 
             if (m_params.m_decorrelate)
             {
@@ -251,7 +250,7 @@ namespace
                 }
             }
 
-            on_pixel_end(pi, aov_accumulators);
+            on_pixel_end(pi, pt, tile_bbox, aov_accumulators);
         }
 
         StatisticsVector get_statistics() const override
@@ -303,9 +302,11 @@ namespace
 //
 
 UniformPixelRendererFactory::UniformPixelRendererFactory(
+    const Frame&                frame,
     ISampleRendererFactory*     factory,
     const ParamArray&           params)
-  : m_factory(factory)
+  : m_frame(frame)
+  , m_factory(factory)
   , m_params(params)
 {
 }
@@ -318,12 +319,12 @@ void UniformPixelRendererFactory::release()
 IPixelRenderer* UniformPixelRendererFactory::create(
     const size_t                thread_index)
 {
-    return new UniformPixelRenderer(m_factory, m_params, thread_index);
+    return new UniformPixelRenderer(m_frame, m_factory, m_params, thread_index);
 }
 
 Dictionary UniformPixelRendererFactory::get_params_metadata()
 {
-    Dictionary metadata;
+    Dictionary metadata = PixelRendererBaseFactory::get_params_metadata();
 
     metadata.dictionaries().insert(
         "samples",

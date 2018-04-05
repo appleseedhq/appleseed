@@ -40,6 +40,7 @@
 #include "mainwindow/project/attributeeditor.h"
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/pythonconsole/pythonconsolewidget.h"
+#include "mainwindow/rendering/lightpathstab.h"
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
@@ -50,6 +51,7 @@
 // appleseed.renderer headers.
 #include "renderer/api/aov.h"
 #include "renderer/api/frame.h"
+#include "renderer/api/lighting.h"
 #include "renderer/api/log.h"
 #include "renderer/api/project.h"
 #include "renderer/api/rendering.h"
@@ -61,7 +63,6 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/system.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/log/logmessage.h"
@@ -76,7 +77,6 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
-#include <QIcon>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
@@ -88,7 +88,6 @@
 #include <QString>
 #include <QStringList>
 #include <Qt>
-#include <QToolButton>
 #include <QUrl>
 
 // Boost headers.
@@ -124,6 +123,7 @@ MainWindow::MainWindow(QWidget* parent)
   , m_project_explorer(nullptr)
   , m_attribute_editor(nullptr)
   , m_project_file_watcher(nullptr)
+  , m_light_paths_tab(nullptr)
 {
     initialize_ocio();
 
@@ -151,7 +151,7 @@ MainWindow::MainWindow(QWidget* parent)
     slot_load_settings();
 
     update_project_explorer();
-    remove_render_widgets();
+    remove_render_tabs();
     update_workspace();
 
     build_minimize_buttons();
@@ -209,7 +209,7 @@ bool MainWindow::open_project(const QString& filepath)
         m_rendering_manager.wait_until_rendering_end();
     }
 
-    remove_render_widgets();
+    remove_render_tabs();
 
     set_file_widgets_enabled(false, NotRendering);
     set_project_explorer_enabled(false);
@@ -223,7 +223,7 @@ bool MainWindow::open_project(const QString& filepath)
     }
     else
     {
-        recreate_render_widgets();
+        recreate_render_tabs();
         update_workspace();
     }
 
@@ -240,7 +240,7 @@ void MainWindow::open_project_async(const QString& filepath)
         m_rendering_manager.wait_until_rendering_end();
     }
 
-    remove_render_widgets();
+    remove_render_tabs();
 
     set_file_widgets_enabled(false, NotRendering);
     set_project_explorer_enabled(false);
@@ -282,6 +282,8 @@ bool MainWindow::save_project(QString filepath)
     if (m_project_file_watcher)
         start_monitoring_project_file();
 
+    if (successful)
+        update_recent_files_menu(filepath);
     update_workspace();
 
     return successful;
@@ -434,10 +436,10 @@ void MainWindow::build_override_shading_menu_item()
 {
     QActionGroup* action_group = new QActionGroup(this);
 
+    // No Override.
     connect(
         m_ui->action_diagnostics_override_shading_no_override, SIGNAL(triggered()),
         SLOT(slot_clear_shading_override()));
-
     action_group->addAction(m_ui->action_diagnostics_override_shading_no_override);
 
     for (int i = 0; i < DiagnosticSurfaceShader::ShadingModeCount; ++i)
@@ -446,31 +448,16 @@ void MainWindow::build_override_shading_menu_item()
         const char* shading_mode_name = DiagnosticSurfaceShader::ShadingModeNames[i].m_value;
 
         QAction* action = new QAction(this);
-
-        action->setCheckable(true);
-
         action->setObjectName(
             QString::fromAscii("action_diagnostics_override_shading_") + shading_mode_value);
-
-        action->setText(
-            QApplication::translate(
-                objectName().toAscii().constData(),
-                shading_mode_name,
-                nullptr,
-                QApplication::UnicodeUTF8));
+        action->setCheckable(true);
+        action->setText(shading_mode_name);
 
         const int shortcut_number = i + 1;
-
         if (shortcut_number <= 9)
         {
-            const QString shortcut =
-                QApplication::translate(
-                    objectName().toAscii().constData(),
-                    QString::fromAscii("Ctrl+Shift+%1").arg(shortcut_number).toAscii().constData(),
-                    nullptr,
-                    QApplication::UnicodeUTF8);
-
-            action->setShortcut(shortcut);
+            action->setShortcut(
+                QKeySequence(QString::fromAscii("Ctrl+Shift+%1").arg(shortcut_number)));
         }
 
         action->setData(shading_mode_value);
@@ -480,7 +467,6 @@ void MainWindow::build_override_shading_menu_item()
             SLOT(slot_set_shading_override()));
 
         m_ui->menu_diagnostics_override_shading->addAction(action);
-
         action_group->addAction(action);
     }
 }
@@ -535,10 +521,15 @@ void MainWindow::build_recent_files_menu()
 
     m_ui->menu_open_recent->addSeparator();
 
-    QAction* clear_open_recent_menu = new QAction(this);
-    clear_open_recent_menu->setText("&Clear Menu");
-    connect(clear_open_recent_menu, SIGNAL(triggered()), SLOT(slot_clear_open_recent_files_menu()));
-    m_ui->menu_open_recent->addAction(clear_open_recent_menu);
+    QAction* clear_missing_files = new QAction(this);
+    clear_missing_files->setText("Clear &Missing Files");
+    connect(clear_missing_files, SIGNAL(triggered()), SLOT(slot_clear_recent_missing_project_files()));
+    m_ui->menu_open_recent->addAction(clear_missing_files);
+
+    QAction* clear_all_files = new QAction(this);
+    clear_all_files->setText("Clear &All Files");
+    connect(clear_all_files, SIGNAL(triggered()), SLOT(slot_clear_all_recent_project_files()));
+    m_ui->menu_open_recent->addAction(clear_all_files);
 }
 
 void MainWindow::update_recent_files_menu(const QString& filepath)
@@ -563,8 +554,10 @@ void MainWindow::update_recent_files_menu(const QStringList& files)
 
     for (int i = 0; i < recent_file_count; ++i)
     {
+        const int number = i + 1;
         const QString filepath = files[i];
-        const QString text = tr("&%1 %2").arg(i + 1).arg(filepath);
+        const QString format = number <= 9 ? "&%1 %2" : "%1 %2";
+        const QString text = format.arg(number).arg(filepath);
 
         m_recently_opened[i]->setText(text);
         m_recently_opened[i]->setData(filepath);
@@ -708,11 +701,17 @@ void MainWindow::update_workspace()
 {
     update_window_title();
 
+    // Enable/disable menus and widgets appropriately.
     set_file_widgets_enabled(true, NotRendering);
     set_project_explorer_enabled(true);
     set_rendering_widgets_enabled(true, NotRendering);
-
     m_ui->attribute_editor_scrollarea_contents->setEnabled(true);
+
+    // Add/remove light paths tab.
+    if (m_project_manager.is_project_open() &&
+        m_project_manager.get_project()->get_light_path_recorder().get_light_path_count() > 0)
+        add_light_paths_tab();
+    else remove_light_paths_tab();
 }
 
 void MainWindow::update_project_explorer()
@@ -852,19 +851,23 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const Rend
     const int current_tab_index = m_ui->tab_render_channels->currentIndex();
     if (current_tab_index != -1)
     {
-        RenderTab* render_tab = m_tab_index_to_render_tab[current_tab_index];
+        const auto render_tab_it = m_tab_index_to_render_tab.find(current_tab_index);
+        if (render_tab_it != m_tab_index_to_render_tab.end())
+        {
+            RenderTab* render_tab = render_tab_it->second;
 
-        // Clear frame.
-        render_tab->set_clear_frame_button_enabled(
-            is_enabled && is_project_open && rendering_mode == NotRendering);
+            // Clear frame.
+            render_tab->set_clear_frame_button_enabled(
+                is_enabled && is_project_open && rendering_mode == NotRendering);
 
-        // Set/clear rendering region.
-        render_tab->set_render_region_buttons_enabled(
-            is_enabled && is_project_open && rendering_mode != FinalRendering);
+            // Set/clear rendering region.
+            render_tab->set_render_region_buttons_enabled(
+                is_enabled && is_project_open && rendering_mode != FinalRendering);
 
-        // Scene picker.
-        render_tab->get_scene_picking_handler()->set_enabled(
-            is_enabled && is_project_open && rendering_mode != FinalRendering);
+            // Scene picker.
+            render_tab->get_scene_picking_handler()->set_enabled(
+                is_enabled && is_project_open && rendering_mode != FinalRendering);
+        }
     }
 }
 
@@ -896,15 +899,15 @@ void MainWindow::restore_state_after_project_open()
     }
 }
 
-void MainWindow::recreate_render_widgets()
+void MainWindow::recreate_render_tabs()
 {
-    remove_render_widgets();
+    remove_render_tabs();
 
     if (m_project_manager.is_project_open())
-        add_render_widget("RGB");
+        add_render_tab("RGB");
 }
 
-void MainWindow::remove_render_widgets()
+void MainWindow::remove_render_tabs()
 {
     for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
         delete i->second;
@@ -916,14 +919,16 @@ void MainWindow::remove_render_widgets()
         m_ui->tab_render_channels->removeTab(0);
 }
 
-void MainWindow::add_render_widget(const QString& label)
+void MainWindow::add_render_tab(const QString& label)
 {
-    // Create the render tab.
+    // Create render tab.
     RenderTab* render_tab =
         new RenderTab(
             *m_project_explorer,
             *m_project_manager.get_project(),
             m_ocio_config);
+
+    // Connect the render tab to the main window and the rendering manager.
     connect(
         render_tab, SIGNAL(signal_render_widget_context_menu(const QPoint&)),
         SLOT(slot_render_widget_context_menu(const QPoint&)));
@@ -964,9 +969,41 @@ void MainWindow::add_render_widget(const QString& label)
     // Add the render tab to the tab bar.
     const int tab_index = m_ui->tab_render_channels->addTab(render_tab, label);
 
-    // Update the mappings.
+    // Update mappings.
     m_render_tabs[label.toStdString()] = render_tab;
     m_tab_index_to_render_tab[tab_index] = render_tab;
+}
+
+void MainWindow::add_light_paths_tab()
+{
+    if (m_light_paths_tab == nullptr)
+    {
+        // Create light paths tab.
+        m_light_paths_tab =
+            new LightPathsTab(
+                *m_project_manager.get_project(),
+                m_settings);
+
+        // Connect render tabs to the light paths tab.
+        for (const auto& kv : m_render_tabs)
+        {
+            connect(
+                kv.second, SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
+                m_light_paths_tab, SLOT(slot_entity_picked(renderer::ScenePicker::PickingResult)));
+        }
+
+        // Add the light paths tab to the tab bar.
+        m_ui->tab_render_channels->addTab(m_light_paths_tab, "Light Paths");
+    }
+}
+
+void MainWindow::remove_light_paths_tab()
+{
+    if (m_light_paths_tab != nullptr)
+    {
+        delete m_light_paths_tab;
+        m_light_paths_tab = nullptr;
+    }
 }
 
 ParamArray MainWindow::get_project_params(const char* configuration_name) const
@@ -1039,7 +1076,7 @@ bool MainWindow::can_close_project()
 void MainWindow::on_project_change()
 {
     update_project_explorer();
-    recreate_render_widgets();
+    recreate_render_tabs();
 
     update_override_shading_menu_item();
 
@@ -1135,11 +1172,14 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
 {
     assert(m_project_manager.is_project_open());
 
-    // Enable/disable widgets appropriately.
+    // Enable/disable menus and widgets appropriately.
     set_file_widgets_enabled(false, rendering_mode);
-    set_rendering_widgets_enabled(true, rendering_mode);
     set_project_explorer_enabled(rendering_mode == InteractiveRendering);
+    set_rendering_widgets_enabled(true, rendering_mode);
     m_ui->attribute_editor_scrollarea_contents->setEnabled(rendering_mode == InteractiveRendering);
+
+    // Remove light paths tab.
+    remove_light_paths_tab();
 
     // Stop monitoring the project file in Final rendering mode.
     if (rendering_mode == FinalRendering)
@@ -1153,14 +1193,14 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
 
     frame->clear_main_and_aov_images();
 
-    // In the UI, darken all render widgets.
+    // Darken render widgets.
     for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
     {
         i->second->darken();
         i->second->update();
     }
 
-    // Retrieve the right configuration.
+    // Retrieve the appropriate rendering configuration.
     const char* configuration_name =
         rendering_mode == InteractiveRendering ? "interactive" : "final";
     const ParamArray params = get_project_params(configuration_name);
@@ -1241,7 +1281,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     if (m_benchmark_window.get())
         m_benchmark_window->close();
 
-    remove_render_widgets();
+    remove_render_tabs();
 
     m_project_manager.close_project();
 
@@ -1292,12 +1332,28 @@ void MainWindow::slot_open_recent()
     }
 }
 
-void MainWindow::slot_clear_open_recent_files_menu()
+void MainWindow::slot_clear_all_recent_project_files()
 {
     QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
     settings.setValue("recent_file_list", QStringList());
 
     update_recent_files_menu(QStringList());
+}
+
+void MainWindow::slot_clear_recent_missing_project_files()
+{
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    QStringList files = settings.value("recent_file_list").toStringList();
+    QStringList existent_files;
+
+    for (int i = 0; i < files.size(); i++)
+    {
+        if (QFileInfo(files[i]).isFile())
+            existent_files << files[i];
+    }
+
+    settings.setValue("recent_file_list", existent_files);
+    update_recent_files_menu(existent_files);
 }
 
 void MainWindow::slot_open_cornellbox_builtin_project()
@@ -1341,13 +1397,11 @@ namespace
 void MainWindow::slot_open_project_complete(const QString& filepath, const bool successful)
 {
     if (successful)
-    {
         on_project_change();
-    }
     else
     {
         show_project_file_loading_failed_message_box(this, filepath);
-        recreate_render_widgets();
+        recreate_render_tabs();
         update_workspace();
     }
 }
@@ -1378,7 +1432,6 @@ void MainWindow::slot_save_project_as()
         filepath = QDir::toNativeSeparators(filepath);
 
         save_project(filepath);
-        update_recent_files_menu(filepath);
     }
 }
 
@@ -1444,7 +1497,7 @@ void MainWindow::initialize_ocio()
 
     // Default to an empty OCIO config if everything else fails.
     m_ocio_config = OCIO::GetCurrentConfig();
-    RENDERER_LOG_ERROR("Could not initialize OCIO config.");
+    RENDERER_LOG_ERROR("could not find an ocio configuration, using empty configuration.");
 }
 
 void MainWindow::slot_project_modified()
@@ -1759,8 +1812,7 @@ void MainWindow::slot_render_widget_context_menu(const QPoint& point)
     menu->addAction("Save Frame...", this, SLOT(slot_save_frame()));
     menu->addAction("Save All AOVs...", this, SLOT(slot_save_all_aovs()));
     menu->addSeparator();
-    menu->addAction("Clear Frame", this, SLOT(slot_clear_frame()));
-
+    menu->addAction("Clear All", this, SLOT(slot_clear_frame()));
     menu->exec(point);
 }
 
@@ -1824,14 +1876,13 @@ void MainWindow::slot_save_all_aovs()
 
 namespace
 {
-    void write_all_aovs(
+    void write_main_and_aov_images(
         const Project&  project,
         const bf::path& image_path)
     {
         bf::create_directories(image_path.parent_path());
 
         const Frame* frame = project.get_frame();
-
         frame->write_main_image(image_path.string().c_str());
         frame->write_aov_images(image_path.string().c_str());
     }
@@ -1847,12 +1898,12 @@ void MainWindow::slot_quicksave_all_aovs()
     const bf::path project_path(project.get_path());
     const bf::path quicksave_dir = project_path.parent_path() / "quicksaves";
 
-    write_all_aovs(
+    write_main_and_aov_images(
         project,
         bf::absolute(
             quicksave_dir / "quicksave.exr"));
 
-    write_all_aovs(
+    write_main_and_aov_images(
         project,
         bf::absolute(
             find_next_available_path(quicksave_dir / "quicksave####.exr")));
@@ -1870,8 +1921,10 @@ void MainWindow::slot_clear_frame()
 
 void MainWindow::slot_reset_zoom()
 {
-    const int current_tab_index = m_ui->tab_render_channels->currentIndex();
-    m_tab_index_to_render_tab[current_tab_index]->reset_zoom();
+    const auto current_tab_index = m_ui->tab_render_channels->currentIndex();
+    const auto render_tab_it = m_tab_index_to_render_tab.find(current_tab_index);
+    if (render_tab_it != m_tab_index_to_render_tab.end())
+        render_tab_it->second->reset_zoom();
 }
 
 void MainWindow::slot_filter_text_changed(const QString& pattern)

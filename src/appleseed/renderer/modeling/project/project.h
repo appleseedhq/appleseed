@@ -86,6 +86,7 @@ namespace renderer      { class EnvironmentEDF; }
 namespace renderer      { class EnvironmentShader; }
 namespace renderer      { class Frame; }
 namespace renderer      { class Light; }
+namespace renderer      { class LightPathRecorder; }
 namespace renderer      { class Material; }
 namespace renderer      { class Object; }
 namespace renderer      { class Scene; }
@@ -131,6 +132,11 @@ class APPLESEED_DLLSYMBOL Project
     // Return nullptr if the project does not contain a scene.
     Scene* get_scene() const;
 
+    // Access the camera specified in the frame as active.
+    // Return nullptr if the scene does not contain cameras or if
+    // no cameras are specified in the frame.
+    Camera* get_uncached_active_camera() const;
+
     // Set the frame, replacing the existing frame.
     void set_frame(foundation::auto_release_ptr<Frame> frame);
 
@@ -145,10 +151,8 @@ class APPLESEED_DLLSYMBOL Project
     // Return nullptr if the project does not contain a display.
     Display* get_display() const;
 
-    // Access the camera specified in the frame as active.
-    // Return nullptr if the scene does not contain cameras or if
-    // no cameras are specified in the frame.
-    Camera* get_uncached_active_camera() const;
+    // Access the light path recorder.
+    LightPathRecorder& get_light_path_recorder() const;
 
     // Access the configurations.
     ConfigurationContainer& configurations() const;

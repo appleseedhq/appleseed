@@ -57,6 +57,9 @@ shader as_luminance
         string label = "Use Maya CMS",
         string page = "Color Space",
         int divider = 1,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0
     ]],
     int in_inputColorSpace = 0
@@ -69,6 +72,9 @@ shader as_luminance
         string label = "Input Color Space",
         string page = "Color Space",
         int divider = 1,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0
     ]],
     float in_chromaticityCoordsR[2] = {0.640, 0.330}
@@ -106,24 +112,29 @@ shader as_luminance
     [[
         string as_maya_attribute_name = "inputIlluminants",
         string as_maya_attribute_short_name = "ii",
-        int as_maya_attribute_keyable = 0,
         string widget = "mapper",
         string options = "Standard Illuminant D50:0|Standard Illuminant D55:1|Standard Illuminant D60:2|Standard Illuminant D65:3|Standard Illuminant D75:4|DCI White Point:5|Equal Energy White Point E:6|Correlated Color Temperature:7|WP Chromaticity Coordinates:8",
         string label = "Illuminants",
         string page = "Color Space.Illuminants",
         string help = "Preset illuminants, correlated color temperature or explicit white point xy chromaticity coordinates.",
         int divider = 1,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0
     ]],
     int in_colorTemperature = 6504
     [[
         string as_maya_attribute_name = "colorTemperature",
         string as_maya_attribute_short_name = "ct",
-        int as_maya_attribute_keyable = 0,
         int min = 1667,
         int max = 25000,
         string label = "Color Temperature",
-        string page = "Color Space.Illuminants"
+        string page = "Color Space.Illuminants",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 1
     ]],
     float in_chromaticityCoordsW[2] = {0.3127, 0.329}
     [[

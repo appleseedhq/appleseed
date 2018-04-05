@@ -63,7 +63,15 @@ class RegularSpectrum
     static const size_t StoredSamples = (((N * sizeof(T)) + 15) & ~15) / sizeof(T);
 
     // Constructors.
-    RegularSpectrum();                                      // leave all components uninitialized
+#ifdef APPLESEED_USE_SSE
+    RegularSpectrum();
+#else
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    RegularSpectrum() = default;                            // leave all components uninitialized
+#else
+    RegularSpectrum() {}                                    // leave all components uninitialized
+#endif
+#endif
     explicit RegularSpectrum(const ValueType val);          // set all components to `val`
 
     // Construct a spectrum from another spectrum of a different type.
@@ -178,14 +186,16 @@ typedef RegularSpectrum<double, 31> RegularSpectrum31d;
 // RegularSpectrum class implementation.
 //
 
+#ifdef APPLESEED_USE_SSE
+
 template <typename T, size_t N>
 inline RegularSpectrum<T, N>::RegularSpectrum()
 {
-#ifdef APPLESEED_USE_SSE
     for (size_t i = N; i < StoredSamples; ++i)
         m_samples[i] = T(0.0);
-#endif
 }
+
+#endif
 
 template <typename T, size_t N>
 inline RegularSpectrum<T, N>::RegularSpectrum(const ValueType val)

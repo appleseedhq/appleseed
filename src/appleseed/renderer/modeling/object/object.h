@@ -46,9 +46,13 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class ParamArray; }
-namespace renderer  { class Project; }
-namespace renderer  { class Source; }
+namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class BaseGroup; }
+namespace renderer      { class ObjectRasterizer; }
+namespace renderer      { class OnFrameBeginRecorder; }
+namespace renderer      { class ParamArray; }
+namespace renderer      { class Project; }
+namespace renderer      { class Source; }
 
 namespace renderer
 {
@@ -82,14 +86,35 @@ class APPLESEED_DLLSYMBOL Object
     virtual size_t get_material_slot_count() const = 0;
     virtual const char* get_material_slot(const size_t index) const = 0;
 
-    // Return true if this object has an alpha map.
-    virtual bool has_alpha_map() const;
-
-    // Return the source bound to the alpha map input, or 0 if the object doesn't have an alpha map.
-    const Source* get_alpha_map() const;
+    // Return the source bound to the alpha map input, or nullptr if the object doesn't have an alpha map.
     virtual const Source* get_uncached_alpha_map() const;
 
-  protected:
+    // Return true if this object has an alpha map.
+    bool has_alpha_map() const;
+
+    // Return true if this object has an uniform alpha value equals to 1.0f.
+    bool has_opaque_uniform_alpha_map() const;
+
+    // This method is called once before rendering each frame.
+    // Returns true on success, false otherwise.
+    bool on_frame_begin(
+        const Project&              project,
+        const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
+
+    // This method is called once after rendering each frame (only if on_frame_begin() was called).
+    void on_frame_end(
+        const Project&              project,
+        const BaseGroup*            parent) override;
+
+    // Return the alpha map cached by on_frame_begin().
+    const Source* get_alpha_map() const;
+
+    // Send this object to an object rasterizer.
+    virtual void rasterize(ObjectRasterizer& rasterizer) const;
+
+  private:
     const Source* m_alpha_map;
 };
 

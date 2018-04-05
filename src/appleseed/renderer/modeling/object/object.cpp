@@ -30,6 +30,9 @@
 // Interface header.
 #include "object.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/input/source.h"
+
 using namespace foundation;
 
 namespace renderer
@@ -58,14 +61,54 @@ Object::Object(
     set_name(name);
 }
 
-bool Object::has_alpha_map() const
-{
-    return false;
-}
-
 const Source* Object::get_uncached_alpha_map() const
 {
     return nullptr;
+}
+
+bool Object::has_alpha_map() const
+{
+    return get_uncached_alpha_map() != nullptr;
+}
+
+bool Object::has_opaque_uniform_alpha_map() const
+{
+    const Source* source = get_uncached_alpha_map();
+
+    if (!source || !source->is_uniform())
+        return false;
+
+    float alpha;
+    source->evaluate_uniform(alpha);
+
+    return alpha == 1.0f;
+}
+
+bool Object::on_frame_begin(
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
+    IAbortSwitch*           abort_switch)
+{
+    if (!ConnectableEntity::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
+
+    m_alpha_map = get_uncached_alpha_map();
+
+    return true;
+}
+
+void Object::on_frame_end(
+    const Project&          project,
+    const BaseGroup*        parent)
+{
+    m_alpha_map = nullptr;
+
+    ConnectableEntity::on_frame_end(project, parent);
+}
+
+void Object::rasterize(ObjectRasterizer& rasterizer) const
+{
 }
 
 }   // namespace renderer

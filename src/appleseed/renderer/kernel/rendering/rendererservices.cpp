@@ -146,9 +146,9 @@ void RendererServices::initialize(TextureStore& texture_store)
             strcmp(m_camera->get_model(), "spherical_camera") == 0 ? g_spherical_ustr :
             g_unknown_proj_ustr;
 
-        m_shutter[0] = m_camera->get_shutter_open_time();
-        m_shutter[1] = m_camera->get_shutter_close_time();
-        m_shutter_interval = m_camera->get_shutter_open_time_interval();
+        m_shutter[0] = m_camera->get_shutter_open_begin_time();
+        m_shutter[1] = m_camera->get_shutter_close_end_time();
+        m_shutter_interval = m_camera->get_shutter_time_interval();
     }
 
     const CanvasProperties& props = m_project.get_frame()->image().properties();

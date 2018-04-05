@@ -296,6 +296,12 @@ source_group ("mainwindow\\pythonconsole" FILES
 set (mainwindow_rendering_sources
     mainwindow/rendering/cameracontroller.cpp
     mainwindow/rendering/cameracontroller.h
+    mainwindow/rendering/lightpathspickinghandler.cpp
+    mainwindow/rendering/lightpathspickinghandler.h
+    mainwindow/rendering/lightpathstab.cpp
+    mainwindow/rendering/lightpathstab.h
+    mainwindow/rendering/lightpathswidget.cpp
+    mainwindow/rendering/lightpathswidget.h
     mainwindow/rendering/pixelcolortracker.cpp
     mainwindow/rendering/pixelcolortracker.h
     mainwindow/rendering/pixelinspectorhandler.cpp

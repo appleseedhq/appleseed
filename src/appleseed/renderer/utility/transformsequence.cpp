@@ -561,12 +561,15 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
         const TrajectoryX tx(sx, sy, corner2d);
         const TrajectoryY ty(sx, sy, corner2d);
 
+        const double a = min(angle, 0.0);
+        const double b = max(angle, 0.0);
+
         // Find all the rotation angles at which this corner is an extremum and update the motion bounding box.
         RootHandler root_handler(tx, ty, sz, axis_to_z, corner, motion_bbox);
         find_multiple_roots_newton(
             Bind<TrajectoryX>(tx, &TrajectoryX::d),
             Bind<TrajectoryX>(tx, &TrajectoryX::dd),
-            0.0, angle,
+            a, b,
             MinLength,
             RootEps,
             MaxIterations,
@@ -574,7 +577,7 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
         find_multiple_roots_newton(
             Bind<TrajectoryY>(ty, &TrajectoryY::d),
             Bind<TrajectoryY>(ty, &TrajectoryY::dd),
-            0.0, angle,
+            a, b,
             MinLength,
             RootEps,
             MaxIterations,
