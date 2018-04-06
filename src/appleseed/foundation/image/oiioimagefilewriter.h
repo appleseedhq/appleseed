@@ -75,10 +75,9 @@ class APPLESEED_DLLSYMBOL OIIOImageFileWriter
     void close_file();
     void write_single_image();
     void write_multi_images();
-    void write(const ICanvas* image);
-    void write_tiles(const ICanvas* image);
-    void write_scanlines(const ICanvas* image);
-    bool check_tile_validity(const CanvasProperties& props);
+    void write(const size_t image_index);
+    void write_tiles(const size_t image_index);
+    void write_scanlines(const size_t image_index);
 
   private:
     struct OIIOImages;

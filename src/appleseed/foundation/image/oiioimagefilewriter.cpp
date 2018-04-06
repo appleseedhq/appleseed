@@ -35,6 +35,7 @@
 #include "foundation/image/icanvas.h"
 
 // Standard headers.
+#include <algorithm>
 #include <memory>
 #include <stdexcept>
 
@@ -110,13 +111,6 @@ OIIO::TypeDesc convert_pixel_format(PixelFormat format)
     }
 }
 
-bool OIIOImageFileWriter::check_tile_validity(const CanvasProperties& props)
-{
-    return (props.m_canvas_width % props.m_tile_width) == 0 &&
-           (props.m_canvas_height % props.m_tile_height) == 0 &&
-           m_writer->supports("tiles") != 0;
-}
-
 void OIIOImageFileWriter::set_image_spec(
     const CanvasProperties& props,
     const size_t		    channel_count,
@@ -150,7 +144,7 @@ void OIIOImageFileWriter::set_image_spec(
     spec.full_y = spec.y;
 
     // Size of a tile.
-    if (check_tile_validity(props))
+    if (m_writer->supports("tiles"))
     {
         spec.tile_width = static_cast<int>(props.m_tile_width);
         spec.tile_height = static_cast<int>(props.m_tile_height);
@@ -209,12 +203,30 @@ void OIIOImageFileWriter::set_image_attribute(
     m_images->m_spec.back().attribute(key, value);
 }
 
-void OIIOImageFileWriter::write_tiles(const ICanvas* image)
+void OIIOImageFileWriter::write_tiles(const size_t image_index)
 {
-    assert(image);
+    // Retrieves canvas
+    assert(image_index < m_images->m_canvas.size());
+    const ICanvas* canvas = m_images->m_canvas[image_index];
+    assert(canvas);
 
     // Retrieves canvas properties
-    const CanvasProperties& props = image->properties();
+    const CanvasProperties& props = canvas->properties();
+
+    // Retrieves image spec
+    assert(image_index < m_images->m_spec.size());
+    const OIIO::ImageSpec& spec = m_images->m_spec[image_index];
+
+    // Computes the tiles' xstride offset in bytes
+    size_t xstride = 0;
+
+    if (spec.channelformats.size() > 0)
+    {
+        for (OIIO::TypeDesc format : spec.channelformats)
+            xstride += format.size();
+    }
+    else
+        xstride = spec.nchannels * spec.format.size();
 
     // Loops over the columns of tiles
     for (size_t tile_y = 0; tile_y < props.m_tile_count_y; tile_y++)
@@ -224,21 +236,26 @@ void OIIOImageFileWriter::write_tiles(const ICanvas* image)
         {
             // Computes the offset of the tile in pixels from the origin (origin: x=0;y=0).
             const size_t tile_offset_x = tile_x * props.m_tile_width;
-            const size_t tile_offset_y = tile_y * props.m_tile_height;
-
             assert(tile_offset_x <= props.m_canvas_width);
+            const size_t tile_offset_y = tile_y * props.m_tile_height;
             assert(tile_offset_y <= props.m_canvas_height);
 
-            // Retrieves the (tile_x, tile_y) tile.
-            const Tile& tile = image->tile(tile_x, tile_y);
+            // Computes the tile's ystride offset in bytes
+            const size_t ystride = xstride * std::min(static_cast<size_t>(spec.width + spec.x - tile_offset_x), 
+                                                      static_cast<size_t>(spec.tile_width));
 
-            // Writes the tile.
+            // Retrieves the (tile_x, tile_y) tile.
+            const Tile& tile = canvas->tile(tile_x, tile_y);
+
+            // Writes the tile into the file.
             if (!m_writer->write_tile(
                     static_cast<int>(tile_offset_x),
                     static_cast<int>(tile_offset_y),
                     0,
                     convert_pixel_format(props.m_pixel_format),
-                    tile.get_storage()))
+                    tile.get_storage(),
+                    xstride,
+                    ystride))
             {
                 const std::string msg = m_writer->geterror();
                 close_file();
@@ -249,12 +266,15 @@ void OIIOImageFileWriter::write_tiles(const ICanvas* image)
     }
 }
 
-void OIIOImageFileWriter::write_scanlines(const ICanvas* image)
+void OIIOImageFileWriter::write_scanlines(const size_t image_index)
 {
-    assert(image);
+    // Retrieves canvas
+    assert(image_index < m_images->m_canvas.size());
+    const ICanvas* canvas = m_images->m_canvas[image_index];
+    assert(canvas);
 
     // Retrieves canvas properties
-    const CanvasProperties& props = image->properties();
+    const CanvasProperties& props = canvas->properties();
 
     // Constructs the temporary buffer holding one row of tiles in target format.
     std::unique_ptr<uint8> buffer(new uint8[props.m_canvas_width * props.m_tile_height * props.m_pixel_size]);
@@ -267,17 +287,11 @@ void OIIOImageFileWriter::write_scanlines(const ICanvas* image)
         for (size_t tile_x = 0; tile_x < props.m_tile_count_x; tile_x++)
         {
             // Retrieves the (tile_x, tile_y) tile.
-            const Tile& tile = image->tile(tile_x, tile_y);
-
-            // Checks if tile height is equal than props tile height.
-            assert(tile.get_height() <= props.m_tile_height);
+            const Tile& tile = canvas->tile(tile_x, tile_y);
 
             // Loops over the row pixels of the current tile
             for (size_t y = 0; y < tile.get_height(); y++)
             {
-                // Checks if tile width is equal than props tile width.
-                assert(tile.get_width() <= props.m_tile_width);
-
                 // Loops over the column pixels of the current tile
                 for (size_t x = 0; x < tile.get_width(); x++)
                 {
@@ -287,21 +301,20 @@ void OIIOImageFileWriter::write_scanlines(const ICanvas* image)
                     // Index of the pixel in the temporary buffer.
                     const size_t buffer_index = (y * props.m_canvas_width + buffer_x) * props.m_pixel_size;
 
-                    // Checks if tile channel count is equal than props channel count.
-                    assert(tile.get_channel_count() == props.m_channel_count);
-                    // Checks if pixel format is the same.
-                    assert(tile.get_pixel_format() == props.m_pixel_format);
-
+                    // Retrieves the (x, y) pixel.
                     const uint8* __restrict pixel = tile.pixel(x, y);
+
+                    // Write the pixel into the buffer.
                     memcpy(&(buffer_ptr[buffer_index]), pixel, props.m_pixel_size);
                 }
             }
         }
 
-        // Computes 
+        // Computes y dimensional scanline border.
         const size_t y_begin = tile_y;
         const size_t y_end = y_begin + props.m_tile_height;
 
+        // Write scanline into the file.
         if (!m_writer->write_scanlines(
                 static_cast<int>(y_begin), 
                 static_cast<int>(y_end), 
@@ -317,14 +330,14 @@ void OIIOImageFileWriter::write_scanlines(const ICanvas* image)
     }
 }
 
-void OIIOImageFileWriter::write(const ICanvas* image)
+void OIIOImageFileWriter::write(const size_t image_index)
 {
-    assert(image);
+    assert(image_index < m_images->m_canvas.size());
 
-    if (check_tile_validity(image->properties()))
-        write_tiles(image);
+    if (m_writer->supports("tiles"))
+        write_tiles(image_index);
     else
-        write_scanlines(image);
+        write_scanlines(image_index);
 }
 
 void OIIOImageFileWriter::write_single_image()
@@ -336,7 +349,9 @@ void OIIOImageFileWriter::write_single_image()
         throw ExceptionIOError(msg.c_str());
     }
 
-    write(m_images->m_canvas.back());
+    assert(m_images->m_canvas.size() > 0);
+
+    write(m_images->m_canvas.size() - 1);
 
     close_file();
 }
@@ -369,7 +384,7 @@ void OIIOImageFileWriter::write_multi_images()
             }
         }
     
-        write(m_images->m_canvas[i]);
+        write(i);
     
     }
     
