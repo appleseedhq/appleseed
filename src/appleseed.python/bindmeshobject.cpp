@@ -140,19 +140,18 @@ void bind_mesh_object()
         .def(bpy::init<size_t, size_t, size_t, size_t, size_t, size_t, size_t>())
         .def(bpy::init<size_t, size_t, size_t, size_t, size_t, size_t, size_t, size_t, size_t, size_t>())
 
-        .def_readwrite("v0", &Triangle::m_v0)
-        .def_readwrite("v1", &Triangle::m_v1)
-        .def_readwrite("v2", &Triangle::m_v2)
-        .def_readwrite("n0", &Triangle::m_n0)
-        .def_readwrite("n1", &Triangle::m_n1)
-        .def_readwrite("n2", &Triangle::m_n2)
-        .def_readwrite("a0", &Triangle::m_a0)
-        .def_readwrite("a1", &Triangle::m_a1)
-        .def_readwrite("a2", &Triangle::m_a2)
-        .def_readwrite("pa", &Triangle::m_pa)
+        .def_readwrite("m_v0", &Triangle::m_v0)
+        .def_readwrite("m_v1", &Triangle::m_v1)
+        .def_readwrite("m_v2", &Triangle::m_v2)
+        .def_readwrite("m_n0", &Triangle::m_n0)
+        .def_readwrite("m_n1", &Triangle::m_n1)
+        .def_readwrite("m_n2", &Triangle::m_n2)
+        .def_readwrite("m_a0", &Triangle::m_a0)
+        .def_readwrite("m_a1", &Triangle::m_a1)
+        .def_readwrite("m_a2", &Triangle::m_a2)
+        .def_readwrite("m_pa", &Triangle::m_pa)
 
-        .def("has_vertex_attributes", &Triangle::has_vertex_attributes)
-        ;
+        .def("has_vertex_attributes", &Triangle::has_vertex_attributes);
 
     bpy::class_<MeshObject, auto_release_ptr<MeshObject>, bpy::bases<Object>, boost::noncopyable>("MeshObject", bpy::no_init)
         .def("__init__", bpy::make_constructor(create_mesh_obj))
@@ -194,18 +193,15 @@ void bind_mesh_object()
         .def("clear_vertex_tangent_poses", &MeshObject::clear_vertex_tangent_poses)
 
         .def("reserve_material_slots", &MeshObject::reserve_material_slots)
-        .def("push_material_slot", &MeshObject::push_material_slot)
-        ;
+        .def("push_material_slot", &MeshObject::push_material_slot);
 
     boost::python::implicitly_convertible<auto_release_ptr<MeshObject>, auto_release_ptr<Object>>();
 
     bpy::class_<MeshObjectReader>("MeshObjectReader", bpy::no_init)
-        .def("read", read_mesh_objects).staticmethod("read")
-        ;
+        .def("read", read_mesh_objects).staticmethod("read");
 
     bpy::class_<MeshObjectWriter>("MeshObjectWriter", bpy::no_init)
-        .def("write", write_mesh_object).staticmethod("write")
-        ;
+        .def("write", write_mesh_object).staticmethod("write");
 
     bpy::def("compute_smooth_vertex_normals", compute_smooth_vertex_normals);
     bpy::def("compute_smooth_vertex_tangents", compute_smooth_vertex_tangents);
