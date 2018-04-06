@@ -39,6 +39,8 @@
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
+#include "foundation/image/colorspace.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
@@ -146,6 +148,11 @@ namespace
     {
         const Matrix4d mt(transpose(m));
         ::glMultMatrixd(const_cast<GLdouble*>(&mt[0]));
+    }
+
+    void glColor(const Color3f& c)
+    {
+        glColor3f(c[0], c[1], c[2]);
     }
 
     struct OpenGLRasterizer
@@ -324,13 +331,11 @@ void LightPathsWidget::render_light_path(const size_t light_path_index) const
         LightPathVertex v1;
         light_path_recorder.get_light_path_vertex(i, v1);
 
-        const float total_radiance = v1.m_radiance[0] + v1.m_radiance[1] + v1.m_radiance[2];
-        const float rcp_total_radiance = 1.0f / total_radiance;
-        v1.m_radiance[0] *= rcp_total_radiance;
-        v1.m_radiance[1] *= rcp_total_radiance;
-        v1.m_radiance[2] *= rcp_total_radiance;
+        auto radiance = Color3f::from_array(v1.m_radiance);
+        radiance /= sum_value(radiance);
+        radiance = linear_rgb_to_srgb(radiance);
 
-        glColor3f(v1.m_radiance[0], v1.m_radiance[1], v1.m_radiance[2]);
+        glColor(radiance);
 
         glVertex3f(v0.m_position[0], v0.m_position[1], v0.m_position[2]);
         glVertex3f(v1.m_position[0], v1.m_position[1], v1.m_position[2]);
