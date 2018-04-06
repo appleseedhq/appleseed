@@ -161,7 +161,7 @@ template <typename T, size_t N> size_t max_abs_index(const RegularSpectrum<T, N>
 template <typename T, size_t N> RegularSpectrum<T, N> component_wise_min(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs);
 template <typename T, size_t N> RegularSpectrum<T, N> component_wise_max(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs);
 
-// Return the sum of all values of a spectrum.
+// Return the sum of the components of a spectrum.
 template <typename T, size_t N> T sum_value(const RegularSpectrum<T, N>& s);
 
 // Return the average value of a spectrum.
