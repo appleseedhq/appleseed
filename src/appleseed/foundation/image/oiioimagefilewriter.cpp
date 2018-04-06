@@ -34,12 +34,29 @@
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/image/icanvas.h"
 
-// std headers.
+// Standard headers.
 #include <memory>
 #include <stdexcept>
 
 namespace foundation
 {
+
+struct OIIOImageFileWriter::OIIOImages
+{
+    std::vector<const ICanvas*>     m_canvas;
+    std::vector<OIIO::ImageSpec>    m_spec;
+};
+
+OIIOImageFileWriter::OIIOImageFileWriter() :
+    m_images{ new OIIOImages{} }
+{
+
+}
+
+OIIOImageFileWriter::~OIIOImageFileWriter()
+{
+    delete m_images;
+}
 
 void OIIOImageFileWriter::create(const char* filename)
 {
@@ -57,13 +74,13 @@ void OIIOImageFileWriter::create(const char* filename)
 
 void OIIOImageFileWriter::append_image(const ICanvas* image)
 {
-    m_images.m_canvas.push_back(image);
-    m_images.m_spec.push_back(OIIO::ImageSpec{});
+    m_images->m_canvas.push_back(image);
+    m_images->m_spec.push_back(OIIO::ImageSpec{});
 }
 
-size_t OIIOImageFileWriter::number_of_images() const
+size_t OIIOImageFileWriter::get_image_count() const
 {
-    return m_images.m_canvas.size();
+    return m_images->m_canvas.size();
 }
 
 OIIO::TypeDesc convert_pixel_format(PixelFormat format)
@@ -108,13 +125,13 @@ void OIIOImageFileWriter::set_image_spec(
 {
     assert(channel_names);
 
-    if (number_of_images() == 0)
+    if (get_image_count() == 0)
     {
         destroy();
         throw ExceptionIOError("No images available!");
     }
 
-    OIIO::ImageSpec& spec = m_images.m_spec.back();
+    OIIO::ImageSpec& spec = m_images->m_spec.back();
 
     // Size of the data of the image.
     spec.width = static_cast<int>(props.m_canvas_width);
@@ -171,9 +188,7 @@ void OIIOImageFileWriter::set_image_spec(
     channel_names.push_back("B");
 
     if (props.m_channel_count == 4)
-    {
         channel_names.push_back("A");
-    }
 
     set_image_spec(props, props.m_channel_count, channel_names.data(), output_pixel_format);
 }
@@ -185,13 +200,13 @@ void OIIOImageFileWriter::set_image_attribute(
     assert(key);
     assert(value);
 
-    if (number_of_images() == 0)
+    if (get_image_count() == 0)
     {
         destroy();
         throw ExceptionIOError("No images available!");
     }
 
-    m_images.m_spec.back().attribute(key, value);
+    m_images->m_spec.back().attribute(key, value);
 }
 
 void OIIOImageFileWriter::write_tiles(const ICanvas* image)
@@ -219,11 +234,11 @@ void OIIOImageFileWriter::write_tiles(const ICanvas* image)
 
             // Writes the tile.
             if (!m_writer->write_tile(
-                static_cast<int>(tile_offset_x),
-                static_cast<int>(tile_offset_y),
-                0,
-                convert_pixel_format(props.m_pixel_format),
-                tile.get_storage()))
+                    static_cast<int>(tile_offset_x),
+                    static_cast<int>(tile_offset_y),
+                    0,
+                    convert_pixel_format(props.m_pixel_format),
+                    tile.get_storage()))
             {
                 const std::string msg = m_writer->geterror();
                 close_file();
@@ -308,21 +323,20 @@ void OIIOImageFileWriter::write(const ICanvas* image)
 
     if (check_tile_validity(image->properties()))
         write_tiles(image);
-
     else
         write_scanlines(image);
 }
 
 void OIIOImageFileWriter::write_single_image()
 {
-    if (!m_writer->open(m_filename, m_images.m_spec.back()))
+    if (!m_writer->open(m_filename, m_images->m_spec.back()))
     {
         const std::string msg = m_writer->geterror();
         destroy();
         throw ExceptionIOError(msg.c_str());
     }
 
-    write(m_images.m_canvas.back());
+    write(m_images->m_canvas.back());
 
     close_file();
 }
@@ -335,18 +349,18 @@ void OIIOImageFileWriter::write_multi_images()
         throw ExceptionIOError("File format is unable to write multiple image!");
     }
 
-    if (!m_writer->open(m_filename, static_cast<int>(number_of_images()), m_images.m_spec.data()))
+    if (!m_writer->open(m_filename, static_cast<int>(get_image_count()), m_images.m_spec.data()))
     {
         const std::string msg = m_writer->geterror();
         destroy();
         throw ExceptionIOError(msg.c_str());
     }
     
-    for (size_t i = 0; i < number_of_images(); i++)
+    for (size_t i = 0; i < get_image_count(); i++)
     {
         if (i > 0)
         {
-            if (!m_writer->open(m_filename, m_images.m_spec[i], OIIO::ImageOutput::AppendSubimage))
+            if (!m_writer->open(m_filename, m_images->m_spec[i], OIIO::ImageOutput::AppendSubimage))
             {
                 const std::string msg = m_writer->geterror();
                 close_file();
@@ -355,7 +369,7 @@ void OIIOImageFileWriter::write_multi_images()
             }
         }
     
-        write(m_images.m_canvas[i]);
+        write(m_images->m_canvas[i]);
     
     }
     
@@ -364,10 +378,10 @@ void OIIOImageFileWriter::write_multi_images()
 
 void OIIOImageFileWriter::write()
 {
-    if (number_of_images() == 0)
+    if (get_image_count() == 0)
         return;
 
-    else if (number_of_images() == 1)
+    else if (get_image_count() == 1)
         write_single_image();
 
     else
@@ -392,8 +406,8 @@ void OIIOImageFileWriter::destroy()
 
     m_writer = nullptr;
     m_filename = nullptr;
-    m_images.m_canvas.clear();
-    m_images.m_spec.clear();
+    m_images->m_canvas.clear();
+    m_images->m_spec.clear();
 }
 
 }   // namespace foundation

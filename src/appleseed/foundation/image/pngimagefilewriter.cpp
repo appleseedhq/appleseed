@@ -32,11 +32,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionioerror.h"
+#include "foundation/utility/foreach.h"
 #include "foundation/image/icanvas.h"
 #include "foundation/image/oiioimagefilewriter.h"
-#include "foundation/utility/foreach.h"
 
-// std headers.
+// Standard headers.
 #include <cstring>
 #include <cstdint>
 #include <memory>

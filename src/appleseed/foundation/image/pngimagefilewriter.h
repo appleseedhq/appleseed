@@ -45,7 +45,7 @@ namespace foundation
 {
 
 class APPLESEED_DLLSYMBOL PNGImageFileWriter
-    : public IImageFileWriter
+  : public IImageFileWriter
 {
   public:
 
@@ -62,5 +62,6 @@ class APPLESEED_DLLSYMBOL PNGImageFileWriter
     OIIOImageFileWriter m_writer;
 };
 
-}   // namespace foundation
+}       // namespace foundation
+
 #endif  // !APPLESEED_FOUNDATION_IMAGE_PNGIMAGEFILEWRITER_H

@@ -44,6 +44,8 @@ namespace foundation
 class APPLESEED_DLLSYMBOL OIIOImageFileWriter
 {
   public:
+    OIIOImageFileWriter();
+    ~OIIOImageFileWriter() final;
 
     void create(const char* filename);
 
@@ -63,14 +65,13 @@ class APPLESEED_DLLSYMBOL OIIOImageFileWriter
         const char*     key,
         const char*     value);
 
-    size_t number_of_images() const;
+    size_t get_image_count() const;
 
     void write();
 
     void destroy();
 
   private:
-    
     void close_file();
     void write_single_image();
     void write_multi_images();
@@ -80,19 +81,13 @@ class APPLESEED_DLLSYMBOL OIIOImageFileWriter
     bool check_tile_validity(const CanvasProperties& props);
 
   private:
-
-    struct OIIOImages
-    {
-        std::vector<const ICanvas*>     m_canvas;
-        std::vector<OIIO::ImageSpec>    m_spec;
-    };
+    struct OIIOImages;
 
     OIIO::ImageOutput*  m_writer;
-    OIIOImages          m_images;
+    OIIOImages*         m_images;
     const char*         m_filename;
-
 };
 
-}   // namespace foundation
+}       // namespace foundation
 
 #endif  // !APPLESEED_FOUNDATION_IMAGE_OIIOIMAGEFILEWRITER_H
