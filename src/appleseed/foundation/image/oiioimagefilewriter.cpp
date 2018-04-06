@@ -218,15 +218,7 @@ void OIIOImageFileWriter::write_tiles(const size_t image_index)
     const OIIO::ImageSpec& spec = m_images->m_spec[image_index];
 
     // Computes the tiles' xstride offset in bytes
-    size_t xstride = 0;
-
-    if (spec.channelformats.size() > 0)
-    {
-        for (OIIO::TypeDesc format : spec.channelformats)
-            xstride += format.size();
-    }
-    else
-        xstride = spec.nchannels * spec.format.size();
+    size_t xstride = props.m_pixel_size;
 
     // Loops over the columns of tiles
     for (size_t tile_y = 0; tile_y < props.m_tile_count_y; tile_y++)
