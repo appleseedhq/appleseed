@@ -52,6 +52,7 @@
 #include <QKeyEvent>
 
 // Standard headers.
+#include <algorithm>
 #include <string>
 
 using namespace foundation;
@@ -78,6 +79,29 @@ LightPathsWidget::LightPathsWidget(
 void LightPathsWidget::set_light_paths(const LightPathArray& light_paths)
 {
     m_light_paths = light_paths;
+
+    if (m_light_paths.size() > 1)
+    {
+        // Sort paths by descending radiance at the camera.
+        const auto& light_path_recorder = m_project.get_light_path_recorder();
+        sort(
+            &m_light_paths[0],
+            &m_light_paths[0] + m_light_paths.size(),
+            [&light_path_recorder](const LightPath& lhs, const LightPath& rhs)
+            {
+                LightPathVertex lhs_v;
+                light_path_recorder.get_light_path_vertex(lhs.m_vertex_end_index - 1, lhs_v);
+
+                LightPathVertex rhs_v;
+                light_path_recorder.get_light_path_vertex(rhs.m_vertex_end_index - 1, rhs_v);
+
+                return
+                    sum_value(Color3f::from_array(lhs_v.m_radiance)) >
+                    sum_value(Color3f::from_array(rhs_v.m_radiance));
+            });
+    }
+
+    // Display all paths by default.
     set_selected_light_path_index(-1);
 }
 
@@ -374,11 +398,12 @@ void LightPathsWidget::dump_selected_light_path() const
                     ? foundation::format("\"{0}\"", v.m_entity->get_path().c_str())
                     : "n/a";
 
-            RENDERER_LOG_INFO("  vertex " FMT_SIZE_T ": entity: %s - position: (%f, %f, %f) - energy: (%f, %f, %f)",
+            RENDERER_LOG_INFO("  vertex " FMT_SIZE_T ": entity: %s - position: (%f, %f, %f) - radiance: (%f, %f, %f) - total radiance: %f",
                 i - path.m_vertex_begin_index + 1,
                 entity_name.c_str(),
                 v.m_position[0], v.m_position[1], v.m_position[2],
-                v.m_radiance[0], v.m_radiance[1], v.m_radiance[2]);
+                v.m_radiance[0], v.m_radiance[1], v.m_radiance[2],
+                v.m_radiance[0] + v.m_radiance[1] + v.m_radiance[2]);
         }
     }
 }
