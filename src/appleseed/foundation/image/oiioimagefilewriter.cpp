@@ -349,7 +349,7 @@ void OIIOImageFileWriter::write_multi_images()
         throw ExceptionIOError("File format is unable to write multiple image!");
     }
 
-    if (!m_writer->open(m_filename, static_cast<int>(get_image_count()), m_images.m_spec.data()))
+    if (!m_writer->open(m_filename, static_cast<int>(get_image_count()), m_images->m_spec.data()))
     {
         const std::string msg = m_writer->geterror();
         destroy();

@@ -45,7 +45,7 @@ class APPLESEED_DLLSYMBOL OIIOImageFileWriter
 {
   public:
     OIIOImageFileWriter();
-    ~OIIOImageFileWriter() final;
+    ~OIIOImageFileWriter();
 
     void create(const char* filename);
 
