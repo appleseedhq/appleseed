@@ -30,6 +30,11 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_OPENGL_H
 #define APPLESEED_FOUNDATION_PLATFORM_OPENGL_H
 
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+
+#else // Windows or Linux
 // On Windows, the OpenGL headers require that <windows.h> is included first.
 #ifdef _WIN32
 #include "foundation/platform/windows.h"
@@ -39,4 +44,5 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
+#endif  // !__APPLE__
 #endif  // !APPLESEED_FOUNDATION_PLATFORM_OPENGL_H
