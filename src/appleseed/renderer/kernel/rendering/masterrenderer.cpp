@@ -80,13 +80,65 @@ namespace renderer
 // MasterRenderer class implementation.
 //
 
+namespace
+{
+    string make_search_path_string(const SearchPaths& search_paths)
+    {
+        return search_paths.to_string_reversed(SearchPaths::osl_path_separator()).c_str();
+    }
+
+    // An abort switch whose abort status is determined by a renderer::IRendererController.
+    class RendererControllerAbortSwitch
+      : public IAbortSwitch
+    {
+      public:
+        explicit RendererControllerAbortSwitch(IRendererController& renderer_controller)
+          : m_renderer_controller(renderer_controller)
+        {
+        }
+
+        bool is_aborted() const override
+        {
+            const IRendererController::Status status = m_renderer_controller.get_status();
+            return
+                status == IRendererController::TerminateRendering ||
+                status == IRendererController::AbortRendering ||
+                status == IRendererController::ReinitializeRendering;
+        }
+
+      private:
+        IRendererController& m_renderer_controller;
+    };
+}
+
 struct MasterRenderer::Impl
 {
+    Project&                    m_project;
+    ParamArray                  m_params;
+
+    OIIOErrorHandler*           m_error_handler;
+
+    OIIOTextureSystem*          m_texture_system;
+
+    RendererServices*           m_renderer_services;
+    OSLShadingSystem*           m_shading_system;
+
+    IRendererController*        m_renderer_controller;
+    ITileCallbackFactory*       m_tile_callback_factory;
+
+    SerialRendererController*   m_serial_renderer_controller;
+    ITileCallbackFactory*       m_serial_tile_callback_factory;
+
+    Display*                    m_display;
+
     Impl(
         Project&          project,
         const ParamArray& params)
       : m_project(project)
       , m_params(params)
+      , m_serial_renderer_controller(nullptr)
+      , m_serial_tile_callback_factory(nullptr)
+      , m_display(nullptr)
     {
         m_error_handler = new OIIOErrorHandler();
     #ifndef NDEBUG
@@ -153,23 +205,377 @@ struct MasterRenderer::Impl
         delete m_error_handler;
     }
 
-    Project&                    m_project;
-    ParamArray                  m_params;
+    // Initialize OSL's shading system.
+    bool initialize_osl_shading_system(
+        TextureStore&               texture_store,
+        foundation::IAbortSwitch&   abort_switch)
+    {
+        // Initialize OIIO.
+        const size_t texture_cache_size_bytes =
+            m_params.child("texture_store").get_optional<size_t>(
+                "max_size",
+                TextureStore::get_default_size());
+        RENDERER_LOG_INFO(
+            "setting oiio texture cache size to %s.",
+            pretty_size(texture_cache_size_bytes).c_str());
+        const float texture_cache_size_mb =
+            static_cast<float>(texture_cache_size_bytes) / (1024 * 1024);
+        m_texture_system->attribute("max_memory_MB", texture_cache_size_mb);
 
-    OIIOErrorHandler*           m_error_handler;
+        string prev_search_path;
+        m_texture_system->getattribute("searchpath", prev_search_path);
 
-    OIIOTextureSystem*          m_texture_system;
+        string new_search_path = make_search_path_string(m_project.search_paths());
+        if (new_search_path != prev_search_path)
+        {
+            RENDERER_LOG_INFO("setting oiio search path to %s", new_search_path.c_str());
+            m_texture_system->invalidate_all(true);
+            m_texture_system->attribute("searchpath", new_search_path);
+        }
 
-    RendererServices*           m_renderer_services;
-    OSLShadingSystem*           m_shading_system;
+        // Initialize OSL.
+        m_renderer_services->initialize(texture_store);
 
-    IRendererController*        m_renderer_controller;
-    ITileCallbackFactory*       m_tile_callback_factory;
+        m_shading_system->getattribute("searchpath:shader", prev_search_path);
 
-    SerialRendererController*   m_serial_renderer_controller;
-    ITileCallbackFactory*       m_serial_tile_callback_factory;
+        new_search_path = make_search_path_string(m_project.search_paths());
+        if (new_search_path != prev_search_path)
+        {
+            RENDERER_LOG_INFO("setting osl shader search path to %s", new_search_path.c_str());
+            m_project.get_scene()->release_optimized_osl_shader_groups();
+            m_shading_system->attribute("searchpath:shader", new_search_path);
+        }
 
-    Display*                    m_display;
+        // Re-optimize the shader groups that need updating.
+        return
+            m_project.get_scene()->create_optimized_osl_shader_groups(
+                *m_shading_system,
+                &abort_switch);
+    }
+
+    // Return true if the scene passes basic integrity checks.
+    bool check_scene() const
+    {
+        if (m_project.get_scene() == nullptr)
+        {
+            RENDERER_LOG_ERROR("project does not contain a scene.");
+            return false;
+        }
+
+        if (m_project.get_frame() == nullptr)
+        {
+            RENDERER_LOG_ERROR("project does not contain a frame.");
+            return false;
+        }
+
+        if (m_project.get_uncached_active_camera() == nullptr)
+        {
+            RENDERER_LOG_ERROR("no active camera in project.");
+            return false;
+        }
+
+        return true;
+    }
+
+    // Bind all scene entities inputs. Return true on success, false otherwise.
+    bool bind_scene_entities_inputs() const
+    {
+        InputBinder input_binder(*m_project.get_scene());
+        input_binder.bind();
+        return input_binder.get_error_count() == 0;
+    }
+
+    // Render the project.
+    MasterRenderer::RenderingResult render()
+    {
+        // Initialize thread-local variables.
+        Spectrum::set_mode(get_spectrum_mode(m_params));
+
+        RenderingResult result;
+
+        try
+        {
+            Stopwatch<DefaultWallclockTimer> stopwatch;
+            stopwatch.start();
+
+            result.m_status = do_render();
+
+            stopwatch.measure();
+            result.m_render_time = stopwatch.get_seconds();
+
+            if (result.m_status == RenderingResult::Succeeded)
+                add_render_stamp(result.m_render_time);
+
+            return result;
+        }
+        catch (const bad_alloc&)
+        {
+            m_renderer_controller->on_rendering_abort();
+            RENDERER_LOG_ERROR("rendering failed (ran out of memory).");
+            result.m_status = RenderingResult::Failed;
+        }
+    #ifdef NDEBUG
+        catch (const exception& e)
+        {
+            m_renderer_controller->on_rendering_abort();
+            RENDERER_LOG_ERROR("rendering failed (%s).", e.what());
+            result.m_status = RenderingResult::Failed;
+        }
+        catch (...)
+        {
+            m_renderer_controller->on_rendering_abort();
+            RENDERER_LOG_ERROR("rendering failed (unknown exception).");
+            result.m_status = RenderingResult::Failed;
+        }
+    #endif
+
+        return result;
+    }
+
+    // Render a frame until completed or aborted and handle reinitialization events.
+    MasterRenderer::RenderingResult::Status do_render()
+    {
+        while (true)
+        {
+            m_renderer_controller->on_rendering_begin();
+
+            const IRendererController::Status status = initialize_and_render_frame();
+
+            switch (status)
+            {
+              case IRendererController::TerminateRendering:
+                m_renderer_controller->on_rendering_success();
+                return RenderingResult::Succeeded;
+
+              case IRendererController::AbortRendering:
+                m_renderer_controller->on_rendering_abort();
+                return RenderingResult::Aborted;
+
+              case IRendererController::ReinitializeRendering:
+                break;
+
+              assert_otherwise;
+            }
+        }
+    }
+
+    // Initialize rendering components and render a frame.
+    IRendererController::Status initialize_and_render_frame()
+    {
+        // Construct an abort switch that will allow to abort initialization or rendering.
+        RendererControllerAbortSwitch abort_switch(*m_renderer_controller);
+
+        // Perform basic integrity checks on the scene.
+        if (!check_scene())
+            return IRendererController::AbortRendering;
+
+        // Expand all procedural assemblies.
+        if (!m_project.get_scene()->expand_procedural_assemblies(m_project, &abort_switch))
+            return IRendererController::AbortRendering;
+
+        // Bind entities inputs. This must be done before creating/updating the trace context.
+        if (!bind_scene_entities_inputs())
+            return IRendererController::AbortRendering;
+
+        // Create the texture store.
+        TextureStore texture_store(
+            *m_project.get_scene(),
+            m_params.child("texture_store"));
+
+        // Initialize OSL's shading system.
+        if (!initialize_osl_shading_system(texture_store, abort_switch))
+            return IRendererController::AbortRendering;
+
+        // Don't proceed further if initialization was aborted.
+        if (abort_switch.is_aborted())
+            return m_renderer_controller->get_status();
+
+        // Build or update ray tracing acceleration structures.
+        m_project.update_trace_context();
+
+        // Perform pre-render rendering actions.
+        if (!m_project.get_scene()->on_render_begin(m_project, &abort_switch))
+            return IRendererController::AbortRendering;
+
+        // Create renderer components.
+        RendererComponents components(
+            m_project,
+            m_params,
+            m_tile_callback_factory,
+            texture_store,
+            *m_texture_system,
+            *m_shading_system);
+        if (!components.create())
+            return IRendererController::AbortRendering;
+
+        // Print renderer component settings.
+        components.print_settings();
+
+        // Execute the main rendering loop.
+        const auto status = render_frame(components, abort_switch);
+
+        // Perform post-render rendering actions.
+        m_project.get_scene()->on_render_end(m_project);
+
+        const CanvasProperties& props = m_project.get_frame()->image().properties();
+        m_project.get_light_path_recorder().finalize(
+            props.m_canvas_width,
+            props.m_canvas_height);
+
+        // Print texture store performance statistics.
+        RENDERER_LOG_DEBUG("%s", texture_store.get_statistics().to_string().c_str());
+
+        return status;
+    }
+
+    // Render a frame until completed or aborted and handle restart events.
+    IRendererController::Status render_frame(
+        RendererComponents&     components,
+        IAbortSwitch&           abort_switch)
+    {
+        while (true)
+        {
+            // Discard recorded light paths.
+            m_project.get_light_path_recorder().clear();
+
+            // The on_frame_begin() method of the renderer controller might alter the scene
+            // (e.g. transform the camera), thus it needs to be called before the on_frame_begin()
+            // of the scene which assumes the scene is up-to-date and ready to be rendered.
+            m_renderer_controller->on_frame_begin();
+
+            // Perform pre-frame rendering actions. Don't proceed if that failed.
+            OnFrameBeginRecorder recorder;
+            if (!components.get_shading_engine().on_frame_begin(m_project, recorder, &abort_switch) ||
+                !m_project.get_scene()->on_frame_begin(m_project, nullptr, recorder, &abort_switch))
+            {
+                recorder.on_frame_end(m_project);
+                m_renderer_controller->on_frame_end();
+                return IRendererController::AbortRendering;
+            }
+
+            // Print settings of key entities.
+            m_project.get_scene()->get_active_camera()->print_settings();
+            m_project.get_frame()->print_settings();
+
+            // Don't proceed with rendering if scene preparation was aborted.
+            if (abort_switch.is_aborted())
+            {
+                recorder.on_frame_end(m_project);
+                m_renderer_controller->on_frame_end();
+                return m_renderer_controller->get_status();
+            }
+
+            IFrameRenderer& frame_renderer = components.get_frame_renderer();
+            assert(!frame_renderer.is_rendering());
+
+            frame_renderer.start_rendering();
+
+            const IRendererController::Status status = wait_for_event(frame_renderer);
+
+            switch (status)
+            {
+              case IRendererController::TerminateRendering:
+              case IRendererController::AbortRendering:
+              case IRendererController::ReinitializeRendering:
+                frame_renderer.terminate_rendering();
+                break;
+
+              case IRendererController::RestartRendering:
+                frame_renderer.stop_rendering();
+                break;
+
+              assert_otherwise;
+            }
+
+            assert(!frame_renderer.is_rendering());
+
+            // Perform post-frame rendering actions
+            recorder.on_frame_end(m_project);
+            m_renderer_controller->on_frame_end();
+
+            switch (status)
+            {
+              case IRendererController::TerminateRendering:
+              case IRendererController::AbortRendering:
+              case IRendererController::ReinitializeRendering:
+                return status;
+
+              case IRendererController::RestartRendering:
+                break;
+
+              assert_otherwise;
+            }
+        }
+    }
+
+    // Wait until the the frame is completed or rendering is aborted.
+    IRendererController::Status wait_for_event(IFrameRenderer& frame_renderer) const
+    {
+        bool is_paused = false;
+
+        while (true)
+        {
+            if (!frame_renderer.is_rendering())
+                return IRendererController::TerminateRendering;
+
+            const IRendererController::Status status = m_renderer_controller->get_status();
+
+            switch (status)
+            {
+              case IRendererController::ContinueRendering:
+                if (is_paused)
+                {
+                    frame_renderer.resume_rendering();
+                    is_paused = false;
+                }
+                break;
+
+              case IRendererController::PauseRendering:
+                if (!is_paused)
+                {
+                    frame_renderer.pause_rendering();
+                    is_paused = true;
+                }
+                break;
+
+              default:
+                return status;
+            }
+
+            m_renderer_controller->on_progress();
+
+            foundation::sleep(1);   // namespace qualifer required
+        }
+    }
+
+    void add_render_stamp(const double render_time)
+    {
+        const Frame* frame = m_project.get_frame();
+
+        if (frame == nullptr)
+            return;
+
+        if (!frame->is_render_stamp_enabled())
+            return;
+
+        Frame::RenderStampInfo info;
+        info.m_render_time = render_time;
+
+        frame->add_render_stamp(info);
+
+        if (m_tile_callback_factory)
+        {
+            // todo: things would be simpler if the tile callback had a method to refresh a whole frame.
+            auto_release_ptr<ITileCallback> tile_callback(m_tile_callback_factory->create());
+            const CanvasProperties& frame_props = frame->image().properties();
+
+            for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
+            {
+                for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
+                    tile_callback->on_tile_end(frame, tx, ty);
+            }
+        }
+    }
 };
 
 MasterRenderer::MasterRenderer(
@@ -181,11 +587,6 @@ MasterRenderer::MasterRenderer(
 {
     impl->m_renderer_controller = renderer_controller;
     impl->m_tile_callback_factory = tile_callback_factory;
-
-    impl->m_serial_renderer_controller = nullptr;
-    impl->m_serial_tile_callback_factory = nullptr;
-
-    impl->m_display = nullptr;
 
     if (impl->m_tile_callback_factory == nullptr)
     {
@@ -214,8 +615,6 @@ MasterRenderer::MasterRenderer(
     impl->m_tile_callback_factory =
     impl->m_serial_tile_callback_factory =
         new SerialTileCallbackFactory(impl->m_serial_renderer_controller);
-
-    impl->m_display = nullptr;
 }
 
 MasterRenderer::~MasterRenderer()
@@ -233,404 +632,9 @@ const ParamArray& MasterRenderer::get_parameters() const
     return impl->m_params;
 }
 
-namespace
-{
-    string make_search_path_string(const SearchPaths& search_paths)
-    {
-        return search_paths.to_string_reversed(SearchPaths::osl_path_separator()).c_str();
-    }
-}
-
-bool MasterRenderer::initialize_osl_shading_system(
-    TextureStore&               texture_store,
-    foundation::IAbortSwitch&   abort_switch)
-{
-    // Initialize OIIO.
-    const ParamArray& params = impl->m_params.child("texture_store");
-
-    const size_t texture_cache_size_bytes =
-        params.get_optional<size_t>(
-            "max_size",
-            TextureStore::get_default_size());
-    RENDERER_LOG_INFO(
-        "setting oiio texture cache size to %s.",
-        pretty_size(texture_cache_size_bytes).c_str());
-    const float texture_cache_size_mb =
-        static_cast<float>(texture_cache_size_bytes) / (1024 * 1024);
-    impl->m_texture_system->attribute("max_memory_MB", texture_cache_size_mb);
-
-    string prev_search_path;
-    impl->m_texture_system->getattribute("searchpath", prev_search_path);
-
-    string new_search_path = make_search_path_string(impl->m_project.search_paths());
-    if (new_search_path != prev_search_path)
-    {
-        RENDERER_LOG_INFO("setting oiio search path to %s", new_search_path.c_str());
-        impl->m_texture_system->invalidate_all(true);
-        impl->m_texture_system->attribute("searchpath", new_search_path);
-    }
-
-    // Initialize OSL.
-    impl->m_renderer_services->initialize(texture_store);
-
-    impl->m_shading_system->getattribute("searchpath:shader", prev_search_path);
-
-    new_search_path = make_search_path_string(impl->m_project.search_paths());
-    if (new_search_path != prev_search_path)
-    {
-        RENDERER_LOG_INFO("setting osl shader search path to %s", new_search_path.c_str());
-        impl->m_project.get_scene()->release_optimized_osl_shader_groups();
-        impl->m_shading_system->attribute("searchpath:shader", new_search_path);
-    }
-
-    // Re-optimize the shader groups that need updating.
-    return
-        impl->m_project.get_scene()->create_optimized_osl_shader_groups(
-            *impl->m_shading_system,
-            &abort_switch);
-}
-
 MasterRenderer::RenderingResult MasterRenderer::render()
 {
-    // Initialize thread-local variables.
-    Spectrum::set_mode(get_spectrum_mode(impl->m_params));
-
-    RenderingResult result;
-
-    try
-    {
-        Stopwatch<DefaultWallclockTimer> stopwatch;
-        stopwatch.start();
-
-        result.m_status = do_render();
-
-        stopwatch.measure();
-        result.m_render_time = stopwatch.get_seconds();
-
-        if (result.m_status == RenderingResult::Succeeded)
-            add_render_stamp(result.m_render_time);
-
-        return result;
-    }
-    catch (const bad_alloc&)
-    {
-        impl->m_renderer_controller->on_rendering_abort();
-        RENDERER_LOG_ERROR("rendering failed (ran out of memory).");
-        result.m_status = RenderingResult::Failed;
-    }
-#ifdef NDEBUG
-    catch (const exception& e)
-    {
-        impl->m_renderer_controller->on_rendering_abort();
-        RENDERER_LOG_ERROR("rendering failed (%s).", e.what());
-        result.m_status = RenderingResult::Failed;
-    }
-    catch (...)
-    {
-        impl->m_renderer_controller->on_rendering_abort();
-        RENDERER_LOG_ERROR("rendering failed (unknown exception).");
-        result.m_status = RenderingResult::Failed;
-    }
-#endif
-
-    return result;
-}
-
-MasterRenderer::RenderingResult::Status MasterRenderer::do_render()
-{
-    while (true)
-    {
-        impl->m_renderer_controller->on_rendering_begin();
-
-        const IRendererController::Status status = initialize_and_render_frame();
-
-        switch (status)
-        {
-          case IRendererController::TerminateRendering:
-            impl->m_renderer_controller->on_rendering_success();
-            return RenderingResult::Succeeded;
-
-          case IRendererController::AbortRendering:
-            impl->m_renderer_controller->on_rendering_abort();
-            return RenderingResult::Aborted;
-
-          case IRendererController::ReinitializeRendering:
-            break;
-
-          assert_otherwise;
-        }
-    }
-}
-
-namespace
-{
-    // An abort switch whose abort status is determined by a renderer::IRendererController.
-    class RendererControllerAbortSwitch
-      : public IAbortSwitch
-    {
-      public:
-        explicit RendererControllerAbortSwitch(IRendererController& renderer_controller)
-          : m_renderer_controller(renderer_controller)
-        {
-        }
-
-        bool is_aborted() const override
-        {
-            const IRendererController::Status status = m_renderer_controller.get_status();
-            return
-                status == IRendererController::TerminateRendering ||
-                status == IRendererController::AbortRendering ||
-                status == IRendererController::ReinitializeRendering;
-        }
-
-      private:
-        IRendererController& m_renderer_controller;
-    };
-}
-
-IRendererController::Status MasterRenderer::initialize_and_render_frame()
-{
-    // Construct an abort switch that will allow to abort initialization or rendering.
-    RendererControllerAbortSwitch abort_switch(*impl->m_renderer_controller);
-
-    // Perform basic integrity checks on the scene.
-    if (!check_scene())
-        return IRendererController::AbortRendering;
-
-    // Expand all procedural assemblies.
-    if (!impl->m_project.get_scene()->expand_procedural_assemblies(impl->m_project, &abort_switch))
-        return IRendererController::AbortRendering;
-
-    // Bind entities inputs. This must be done before creating/updating the trace context.
-    if (!bind_scene_entities_inputs())
-        return IRendererController::AbortRendering;
-
-    // Create the texture store.
-    TextureStore texture_store(
-        *impl->m_project.get_scene(),
-        impl->m_params.child("texture_store"));
-
-    // Initialize OSL's shading system.
-    if (!initialize_osl_shading_system(texture_store, abort_switch))
-        return IRendererController::AbortRendering;
-
-    // Don't proceed further if initialization was aborted.
-    if (abort_switch.is_aborted())
-        return impl->m_renderer_controller->get_status();
-
-    // Build or update ray tracing acceleration structures.
-    impl->m_project.update_trace_context();
-
-    // Perform pre-render rendering actions.
-    if (!impl->m_project.get_scene()->on_render_begin(impl->m_project, &abort_switch))
-        return IRendererController::AbortRendering;
-
-    // Create renderer components.
-    RendererComponents components(
-        impl->m_project,
-        impl->m_params,
-        impl->m_tile_callback_factory,
-        texture_store,
-        *impl->m_texture_system,
-        *impl->m_shading_system);
-    if (!components.create())
-        return IRendererController::AbortRendering;
-
-    // Print renderer component settings.
-    components.print_settings();
-
-    // Execute the main rendering loop.
-    const auto status = render_frame(components, abort_switch);
-
-    // Perform post-render rendering actions.
-    impl->m_project.get_scene()->on_render_end(impl->m_project);
-
-    const CanvasProperties& props = impl->m_project.get_frame()->image().properties();
-    impl->m_project.get_light_path_recorder().finalize(
-        props.m_canvas_width,
-        props.m_canvas_height);
-
-    // Print texture store performance statistics.
-    RENDERER_LOG_DEBUG("%s", texture_store.get_statistics().to_string().c_str());
-
-    return status;
-}
-
-IRendererController::Status MasterRenderer::render_frame(
-    RendererComponents&     components,
-    IAbortSwitch&           abort_switch)
-{
-    while (true)
-    {
-        // Discard recorded light paths.
-        impl->m_project.get_light_path_recorder().clear();
-
-        // The on_frame_begin() method of the renderer controller might alter the scene
-        // (e.g. transform the camera), thus it needs to be called before the on_frame_begin()
-        // of the scene which assumes the scene is up-to-date and ready to be rendered.
-        impl->m_renderer_controller->on_frame_begin();
-
-        // Perform pre-frame rendering actions. Don't proceed if that failed.
-        OnFrameBeginRecorder recorder;
-        if (!components.get_shading_engine().on_frame_begin(impl->m_project, recorder, &abort_switch) ||
-            !impl->m_project.get_scene()->on_frame_begin(impl->m_project, nullptr, recorder, &abort_switch))
-        {
-            recorder.on_frame_end(impl->m_project);
-            impl->m_renderer_controller->on_frame_end();
-            return IRendererController::AbortRendering;
-        }
-
-        // Print settings of key entities.
-        impl->m_project.get_scene()->get_active_camera()->print_settings();
-        impl->m_project.get_frame()->print_settings();
-
-        // Don't proceed with rendering if scene preparation was aborted.
-        if (abort_switch.is_aborted())
-        {
-            recorder.on_frame_end(impl->m_project);
-            impl->m_renderer_controller->on_frame_end();
-            return impl->m_renderer_controller->get_status();
-        }
-
-        IFrameRenderer& frame_renderer = components.get_frame_renderer();
-        assert(!frame_renderer.is_rendering());
-
-        frame_renderer.start_rendering();
-
-        const IRendererController::Status status = wait_for_event(frame_renderer);
-
-        switch (status)
-        {
-          case IRendererController::TerminateRendering:
-          case IRendererController::AbortRendering:
-          case IRendererController::ReinitializeRendering:
-            frame_renderer.terminate_rendering();
-            break;
-
-          case IRendererController::RestartRendering:
-            frame_renderer.stop_rendering();
-            break;
-
-          assert_otherwise;
-        }
-
-        assert(!frame_renderer.is_rendering());
-
-        // Perform post-frame rendering actions
-        recorder.on_frame_end(impl->m_project);
-        impl->m_renderer_controller->on_frame_end();
-
-        switch (status)
-        {
-          case IRendererController::TerminateRendering:
-          case IRendererController::AbortRendering:
-          case IRendererController::ReinitializeRendering:
-            return status;
-
-          case IRendererController::RestartRendering:
-            break;
-
-          assert_otherwise;
-        }
-    }
-}
-
-IRendererController::Status MasterRenderer::wait_for_event(IFrameRenderer& frame_renderer) const
-{
-    bool is_paused = false;
-
-    while (true)
-    {
-        if (!frame_renderer.is_rendering())
-            return IRendererController::TerminateRendering;
-
-        const IRendererController::Status status = impl->m_renderer_controller->get_status();
-
-        switch (status)
-        {
-          case IRendererController::ContinueRendering:
-            if (is_paused)
-            {
-                frame_renderer.resume_rendering();
-                is_paused = false;
-            }
-            break;
-
-          case IRendererController::PauseRendering:
-            if (!is_paused)
-            {
-                frame_renderer.pause_rendering();
-                is_paused = true;
-            }
-            break;
-
-          default:
-            return status;
-        }
-
-        impl->m_renderer_controller->on_progress();
-
-        foundation::sleep(1);   // namespace qualifer required
-    }
-}
-
-bool MasterRenderer::check_scene() const
-{
-    if (impl->m_project.get_scene() == nullptr)
-    {
-        RENDERER_LOG_ERROR("project does not contain a scene.");
-        return false;
-    }
-
-    if (impl->m_project.get_frame() == nullptr)
-    {
-        RENDERER_LOG_ERROR("project does not contain a frame.");
-        return false;
-    }
-
-    if (impl->m_project.get_uncached_active_camera() == nullptr)
-    {
-        RENDERER_LOG_ERROR("no active camera in project.");
-        return false;
-    }
-
-    return true;
-}
-
-bool MasterRenderer::bind_scene_entities_inputs() const
-{
-    InputBinder input_binder(*impl->m_project.get_scene());
-    input_binder.bind();
-    return input_binder.get_error_count() == 0;
-}
-
-void MasterRenderer::add_render_stamp(const double render_time)
-{
-    const Frame* frame = impl->m_project.get_frame();
-
-    if (frame == nullptr)
-        return;
-
-    if (!frame->is_render_stamp_enabled())
-        return;
-
-    Frame::RenderStampInfo info;
-    info.m_render_time = render_time;
-
-    frame->add_render_stamp(info);
-
-    if (impl->m_tile_callback_factory)
-    {
-        // todo: things would be simpler if the tile callback had a method to refresh a whole frame.
-        auto_release_ptr<ITileCallback> tile_callback(impl->m_tile_callback_factory->create());
-        const CanvasProperties& frame_props = frame->image().properties();
-
-        for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
-        {
-            for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
-                tile_callback->on_tile_end(frame, tx, ty);
-        }
-    }
+    return impl->render();
 }
 
 }   // namespace renderer
