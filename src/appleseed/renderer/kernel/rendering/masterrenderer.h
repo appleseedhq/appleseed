@@ -30,25 +30,18 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_MASTERRENDERER_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_MASTERRENDERER_H
 
-// appleseed.renderer headers.
-#include "renderer/kernel/rendering/irenderercontroller.h"
-#include "renderer/utility/paramarray.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class IFrameRenderer; }
+namespace renderer      { class IRendererController; }
 namespace renderer      { class ITileCallback; }
 namespace renderer      { class ITileCallbackFactory; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
-namespace renderer      { class RendererComponents; }
-namespace renderer      { class TextureStore; }
 
 namespace renderer
 {
@@ -82,11 +75,6 @@ class APPLESEED_DLLSYMBOL MasterRenderer
     ParamArray& get_parameters();
     const ParamArray& get_parameters() const;
 
-    // Initialize OSL's shading system.
-    bool initialize_osl_shading_system(
-        TextureStore&               texture_store,
-        foundation::IAbortSwitch&   abort_switch);
-
     struct RenderingResult
     {
         enum Status { Succeeded, Aborted, Failed };
@@ -101,29 +89,6 @@ class APPLESEED_DLLSYMBOL MasterRenderer
   private:
     struct Impl;
     Impl* impl;
-
-    // Render a frame until completed or aborted and handle reinitialization events.
-    RenderingResult::Status do_render();
-
-    // Initialize rendering components and render a frame.
-    IRendererController::Status initialize_and_render_frame();
-
-    // Render a frame until completed or aborted and handle restart events.
-    IRendererController::Status render_frame(
-        RendererComponents&         components,
-        foundation::IAbortSwitch&   abort_switch);
-
-    // Wait until the the frame is completed or rendering is aborted.
-    IRendererController::Status wait_for_event(
-        IFrameRenderer&             frame_renderer) const;
-
-    // Return true if the scene passes basic integrity checks.
-    bool check_scene() const;
-
-    // Bind all scene entities inputs. Return true on success, false otherwise.
-    bool bind_scene_entities_inputs() const;
-
-    void add_render_stamp(const double render_time);
 };
 
 }       // namespace renderer
