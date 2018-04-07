@@ -272,10 +272,7 @@ void Denoiser::reorderPixelSetJumpNextChunk(
 
 void Denoiser::reorderPixelSetShuffle(vector<PixelPosition>& io_rPixelSet)
 {
-    unsigned seed =
-        static_cast<unsigned>(std::chrono::system_clock::now().time_since_epoch().count());
-
-    shuffle(io_rPixelSet.begin(), io_rPixelSet.end(), std::default_random_engine(seed));
+    shuffle(io_rPixelSet.begin(), io_rPixelSet.end(), std::mt19937(15383617));
 }
 
 void Denoiser::finalAggregation()
