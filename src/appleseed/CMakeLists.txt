@@ -1176,8 +1176,6 @@ source_group ("renderer\\kernel\\rendering\\progressive" FILES
 )
 
 set (renderer_kernel_rendering_sources
-    renderer/kernel/rendering/baserenderer.cpp
-    renderer/kernel/rendering/baserenderer.h
     renderer/kernel/rendering/defaultrenderercontroller.cpp
     renderer/kernel/rendering/defaultrenderercontroller.h
     renderer/kernel/rendering/ephemeralshadingresultframebufferfactory.cpp

@@ -35,9 +35,14 @@
 #include "renderer/kernel/lighting/lightpathrecorder.h"
 #include "renderer/kernel/rendering/iframerenderer.h"
 #include "renderer/kernel/rendering/itilecallback.h"
+#include "renderer/kernel/rendering/oiioerrorhandler.h"
 #include "renderer/kernel/rendering/renderercomponents.h"
+#include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/rendering/serialrenderercontroller.h"
 #include "renderer/kernel/rendering/serialtilecallback.h"
+#include "renderer/kernel/shading/closures.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
+#include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/display/display.h"
 #include "renderer/modeling/entity/onframebeginrecorder.h"
@@ -77,6 +82,87 @@ namespace renderer
 
 struct MasterRenderer::Impl
 {
+    Impl(
+        Project&          project,
+        const ParamArray& params)
+      : m_project(project)
+      , m_params(params)
+    {
+        m_error_handler = new OIIOErrorHandler();
+    #ifndef NDEBUG
+        m_error_handler->verbosity(OIIO::ErrorHandler::VERBOSE);
+    #endif
+
+        RENDERER_LOG_DEBUG("creating oiio texture system...");
+        m_texture_system = OIIOTextureSystemFactory::create(false);
+        m_texture_system->attribute("automip", 0);
+        m_texture_system->attribute("accept_untiled", 1);
+        m_texture_system->attribute("accept_unmipped", 1);
+        m_texture_system->attribute("gray_to_rgb", 1);
+        m_texture_system->attribute("latlong_up", "y");
+        m_texture_system->attribute("flip_t", 1);
+
+        m_renderer_services = new RendererServices(
+            m_project,
+            reinterpret_cast<OIIO::TextureSystem&>(*m_texture_system));
+
+        RENDERER_LOG_DEBUG("creating osl shading system...");
+        m_shading_system = OSLShadingSystemFactory::create(
+            m_renderer_services,
+            m_texture_system,
+            m_error_handler);
+        m_shading_system->attribute("lockgeom", 1);
+        m_shading_system->attribute("colorspace", "Linear");
+        m_shading_system->attribute("commonspace", "world");
+        m_shading_system->attribute("statistics:level", 1);
+        m_shading_system->attribute(
+            "raytypes",
+            OSL::TypeDesc(
+                OSL::TypeDesc::STRING,
+                static_cast<int>(VisibilityFlags::Count)),
+            VisibilityFlags::Names);
+    #ifndef NDEBUG
+        m_shading_system->attribute("compile_report", 1);
+        m_shading_system->attribute("countlayerexecs", 1);
+        m_shading_system->attribute("clearmemory", 1);
+    #endif
+
+        // Register appleseed's closures into OSL's shading system.
+        register_closures(*m_shading_system);
+    }
+
+    ~Impl()
+    {
+        if (m_display)
+            m_display->close();
+
+        delete m_serial_tile_callback_factory;
+        delete m_serial_renderer_controller;
+
+        RENDERER_LOG_DEBUG("destroying osl shading system...");
+        m_project.get_scene()->release_optimized_osl_shader_groups();
+        m_shading_system->release();
+        delete m_renderer_services;
+
+        const string stats = m_texture_system->getstats();
+        const string modified_stats = prefix_all_lines(trim_both(stats), "oiio: ");
+        RENDERER_LOG_DEBUG("%s", modified_stats.c_str());
+
+        RENDERER_LOG_DEBUG("destroying oiio texture system...");
+        m_texture_system->release();
+        delete m_error_handler;
+    }
+
+    Project&                    m_project;
+    ParamArray                  m_params;
+
+    OIIOErrorHandler*           m_error_handler;
+
+    OIIOTextureSystem*          m_texture_system;
+
+    RendererServices*           m_renderer_services;
+    OSLShadingSystem*           m_shading_system;
+
     IRendererController*        m_renderer_controller;
     ITileCallbackFactory*       m_tile_callback_factory;
 
@@ -91,8 +177,7 @@ MasterRenderer::MasterRenderer(
     const ParamArray&       params,
     IRendererController*    renderer_controller,
     ITileCallbackFactory*   tile_callback_factory)
-  : BaseRenderer(project, params)
-  , impl(new Impl())
+  : impl(new Impl(project, params))
 {
     impl->m_renderer_controller = renderer_controller;
     impl->m_tile_callback_factory = tile_callback_factory;
@@ -106,8 +191,8 @@ MasterRenderer::MasterRenderer(
     {
         // Try to use the display if there is one in the project
         // and no tile callback factory was specified.
-        Display* display = m_project.get_display();
-        if (display != nullptr && display->open(m_project))
+        Display* display = impl->m_project.get_display();
+        if (display != nullptr && display->open(impl->m_project))
         {
             impl->m_tile_callback_factory = display->get_tile_callback_factory();
             impl->m_display = display;
@@ -120,8 +205,7 @@ MasterRenderer::MasterRenderer(
     const ParamArray&       params,
     IRendererController*    renderer_controller,
     ITileCallback*          tile_callback)
-  : BaseRenderer(project, params)
-  , impl(new Impl())
+  : impl(new Impl(project, params))
 {
     impl->m_renderer_controller =
     impl->m_serial_renderer_controller =
@@ -136,18 +220,80 @@ MasterRenderer::MasterRenderer(
 
 MasterRenderer::~MasterRenderer()
 {
-    if (impl->m_display)
-        impl->m_display->close();
-
-    delete impl->m_serial_tile_callback_factory;
-    delete impl->m_serial_renderer_controller;
     delete impl;
+}
+
+ParamArray& MasterRenderer::get_parameters()
+{
+    return impl->m_params;
+}
+
+const ParamArray& MasterRenderer::get_parameters() const
+{
+    return impl->m_params;
+}
+
+namespace
+{
+    string make_search_path_string(const SearchPaths& search_paths)
+    {
+        return search_paths.to_string_reversed(SearchPaths::osl_path_separator()).c_str();
+    }
+}
+
+bool MasterRenderer::initialize_osl_shading_system(
+    TextureStore&               texture_store,
+    foundation::IAbortSwitch&   abort_switch)
+{
+    // Initialize OIIO.
+    const ParamArray& params = impl->m_params.child("texture_store");
+
+    const size_t texture_cache_size_bytes =
+        params.get_optional<size_t>(
+            "max_size",
+            TextureStore::get_default_size());
+    RENDERER_LOG_INFO(
+        "setting oiio texture cache size to %s.",
+        pretty_size(texture_cache_size_bytes).c_str());
+    const float texture_cache_size_mb =
+        static_cast<float>(texture_cache_size_bytes) / (1024 * 1024);
+    impl->m_texture_system->attribute("max_memory_MB", texture_cache_size_mb);
+
+    string prev_search_path;
+    impl->m_texture_system->getattribute("searchpath", prev_search_path);
+
+    string new_search_path = make_search_path_string(impl->m_project.search_paths());
+    if (new_search_path != prev_search_path)
+    {
+        RENDERER_LOG_INFO("setting oiio search path to %s", new_search_path.c_str());
+        impl->m_texture_system->invalidate_all(true);
+        impl->m_texture_system->attribute("searchpath", new_search_path);
+    }
+
+    // Initialize OSL.
+    impl->m_renderer_services->initialize(texture_store);
+
+    impl->m_shading_system->getattribute("searchpath:shader", prev_search_path);
+
+    new_search_path = make_search_path_string(impl->m_project.search_paths());
+    if (new_search_path != prev_search_path)
+    {
+        RENDERER_LOG_INFO("setting osl shader search path to %s", new_search_path.c_str());
+        impl->m_project.get_scene()->release_optimized_osl_shader_groups();
+        impl->m_shading_system->attribute("searchpath:shader", new_search_path);
+    }
+
+    // Re-optimize the shader groups that need updating.
+    return
+        impl->m_project.get_scene()->create_optimized_osl_shader_groups(
+            *impl->m_shading_system,
+            &abort_switch);
 }
 
 MasterRenderer::RenderingResult MasterRenderer::render()
 {
     // Initialize thread-local variables.
-    Spectrum::set_mode(get_spectrum_mode(m_params));
+    Spectrum::set_mode(get_spectrum_mode(impl->m_params));
 
     RenderingResult result;
 
@@ -252,7 +398,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame()
         return IRendererController::AbortRendering;
 
     // Expand all procedural assemblies.
-    if (!m_project.get_scene()->expand_procedural_assemblies(m_project, &abort_switch))
+    if (!impl->m_project.get_scene()->expand_procedural_assemblies(impl->m_project, &abort_switch))
         return IRendererController::AbortRendering;
 
     // Bind entities inputs. This must be done before creating/updating the trace context.
@@ -261,8 +407,8 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame()
 
     // Create the texture store.
     TextureStore texture_store(
-        *m_project.get_scene(),
-        m_params.child("texture_store"));
+        *impl->m_project.get_scene(),
+        impl->m_params.child("texture_store"));
 
     // Initialize OSL's shading system.
     if (!initialize_osl_shading_system(texture_store, abort_switch))
@@ -273,20 +419,20 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame()
         return impl->m_renderer_controller->get_status();
 
     // Build or update ray tracing acceleration structures.
-    m_project.update_trace_context();
+    impl->m_project.update_trace_context();
 
     // Perform pre-render rendering actions.
-    if (!m_project.get_scene()->on_render_begin(m_project, &abort_switch))
+    if (!impl->m_project.get_scene()->on_render_begin(impl->m_project, &abort_switch))
         return IRendererController::AbortRendering;
 
     // Create renderer components.
     RendererComponents components(
-        m_project,
-        m_params,
+        impl->m_project,
+        impl->m_params,
         impl->m_tile_callback_factory,
         texture_store,
-        *m_texture_system,
-        *m_shading_system);
+        *impl->m_texture_system,
+        *impl->m_shading_system);
     if (!components.create())
         return IRendererController::AbortRendering;
 
@@ -297,10 +443,10 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame()
     const auto status = render_frame(components, abort_switch);
 
     // Perform post-render rendering actions.
-    m_project.get_scene()->on_render_end(m_project);
+    impl->m_project.get_scene()->on_render_end(impl->m_project);
 
-    const CanvasProperties& props = m_project.get_frame()->image().properties();
-    m_project.get_light_path_recorder().finalize(
+    const CanvasProperties& props = impl->m_project.get_frame()->image().properties();
+    impl->m_project.get_light_path_recorder().finalize(
         props.m_canvas_width,
         props.m_canvas_height);
 
@@ -317,7 +463,7 @@ IRendererController::Status MasterRenderer::render_frame(
     while (true)
     {
         // Discard recorded light paths.
-        m_project.get_light_path_recorder().clear();
+        impl->m_project.get_light_path_recorder().clear();
 
         // The on_frame_begin() method of the renderer controller might alter the scene
         // (e.g. transform the camera), thus it needs to be called before the on_frame_begin()
@@ -326,22 +472,22 @@ IRendererController::Status MasterRenderer::render_frame(
 
         // Perform pre-frame rendering actions. Don't proceed if that failed.
         OnFrameBeginRecorder recorder;
-        if (!components.get_shading_engine().on_frame_begin(m_project, recorder, &abort_switch) ||
-            !m_project.get_scene()->on_frame_begin(m_project, nullptr, recorder, &abort_switch))
+        if (!components.get_shading_engine().on_frame_begin(impl->m_project, recorder, &abort_switch) ||
+            !impl->m_project.get_scene()->on_frame_begin(impl->m_project, nullptr, recorder, &abort_switch))
         {
-            recorder.on_frame_end(m_project);
+            recorder.on_frame_end(impl->m_project);
             impl->m_renderer_controller->on_frame_end();
             return IRendererController::AbortRendering;
         }
 
         // Print settings of key entities.
-        m_project.get_scene()->get_active_camera()->print_settings();
-        m_project.get_frame()->print_settings();
+        impl->m_project.get_scene()->get_active_camera()->print_settings();
+        impl->m_project.get_frame()->print_settings();
 
         // Don't proceed with rendering if scene preparation was aborted.
         if (abort_switch.is_aborted())
         {
-            recorder.on_frame_end(m_project);
+            recorder.on_frame_end(impl->m_project);
             impl->m_renderer_controller->on_frame_end();
             return impl->m_renderer_controller->get_status();
         }
@@ -371,7 +517,7 @@ IRendererController::Status MasterRenderer::render_frame(
         assert(!frame_renderer.is_rendering());
 
         // Perform post-frame rendering actions
-        recorder.on_frame_end(m_project);
+        recorder.on_frame_end(impl->m_project);
         impl->m_renderer_controller->on_frame_end();
 
         switch (status)
@@ -430,19 +576,19 @@ IRendererController::Status MasterRenderer::wait_for_event(IFrameRenderer& frame
 
 bool MasterRenderer::check_scene() const
 {
-    if (m_project.get_scene() == nullptr)
+    if (impl->m_project.get_scene() == nullptr)
     {
         RENDERER_LOG_ERROR("project does not contain a scene.");
         return false;
     }
 
-    if (m_project.get_frame() == nullptr)
+    if (impl->m_project.get_frame() == nullptr)
     {
         RENDERER_LOG_ERROR("project does not contain a frame.");
         return false;
     }
 
-    if (m_project.get_uncached_active_camera() == nullptr)
+    if (impl->m_project.get_uncached_active_camera() == nullptr)
     {
         RENDERER_LOG_ERROR("no active camera in project.");
         return false;
@@ -453,14 +599,14 @@ bool MasterRenderer::check_scene() const
 
 bool MasterRenderer::bind_scene_entities_inputs() const
 {
-    InputBinder input_binder(*m_project.get_scene());
+    InputBinder input_binder(*impl->m_project.get_scene());
     input_binder.bind();
     return input_binder.get_error_count() == 0;
 }
 
 void MasterRenderer::add_render_stamp(const double render_time)
 {
-    const Frame* frame = m_project.get_frame();
+    const Frame* frame = impl->m_project.get_frame();
 
     if (frame == nullptr)
         return;
