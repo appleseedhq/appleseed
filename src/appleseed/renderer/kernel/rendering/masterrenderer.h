@@ -31,9 +31,12 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_MASTERRENDERER_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/baserenderer.h"
 #include "renderer/kernel/rendering/irenderercontroller.h"
 #include "renderer/utility/paramarray.h"
+
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -45,6 +48,7 @@ namespace renderer      { class ITileCallback; }
 namespace renderer      { class ITileCallbackFactory; }
 namespace renderer      { class Project; }
 namespace renderer      { class RendererComponents; }
+namespace renderer      { class TextureStore; }
 
 namespace renderer
 {
@@ -54,7 +58,7 @@ namespace renderer
 //
 
 class APPLESEED_DLLSYMBOL MasterRenderer
-  : public BaseRenderer
+  : public foundation::NonCopyable
 {
   public:
     // Constructor.
@@ -73,6 +77,15 @@ class APPLESEED_DLLSYMBOL MasterRenderer
 
     // Destructor.
     ~MasterRenderer();
+
+    // Return the parameters of the master renderer.
+    ParamArray& get_parameters();
+    const ParamArray& get_parameters() const;
+
+    // Initialize OSL's shading system.
+    bool initialize_osl_shading_system(
+        TextureStore&               texture_store,
+        foundation::IAbortSwitch&   abort_switch);
 
     struct RenderingResult
     {
