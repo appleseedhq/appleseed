@@ -423,6 +423,11 @@ void Frame::denoise(
 {
     DenoiserOptions options;
 
+    const bool skip_denoised = m_params.get_optional<bool>("skip_denoised", true);
+    options.m_marked_pixels_skipping_probability = skip_denoised ? 1.0f : 0.0f;
+
+    options.m_use_random_pixel_order = m_params.get_optional<bool>("random_pixel_order", true);
+
     options.m_prefilter_spikes = m_params.get_optional<bool>("prefilter_spikes", true);
 
     options.m_prefilter_threshold_stddev_factor =
@@ -1116,6 +1121,28 @@ DictionaryArray FrameFactory::get_input_metadata()
             .insert("use", "required")
             .insert("default", "off")
             .insert("on_change", "rebuild_form"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "skip_denoised")
+            .insert("label", "Skip Denoised Pixels")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "true")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "random_pixel_order")
+            .insert("label", "Random Pixel Order")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "true")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on")));
 
     metadata.push_back(
         Dictionary()
