@@ -124,7 +124,7 @@ namespace
             m_shutter_open_begin_time = camera->get_shutter_open_begin_time();
             m_shutter_close_end_time = camera->get_shutter_close_end_time();
 
-            m_num_max_vertices = m_params.m_max_bounces + 2;
+            m_num_max_vertices = m_params.m_max_bounces + 3;
         }
 
         void release() override
