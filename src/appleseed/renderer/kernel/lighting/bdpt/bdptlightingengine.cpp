@@ -332,8 +332,8 @@ namespace
                 const BDPTVertex& light_vertex = light_vertices[s - 1];
                 const BDPTVertex& camera_vertex = camera_vertices[t - 2];
 
-                if (light_vertex.m_bsdf == nullptr || camera_vertex.m_bsdf == nullptr ||
-                    light_vertex.m_bsdf_data == nullptr || camera_vertex.m_bsdf_data == nullptr)
+                /// TODO:: need to take care of light material as well
+                if (camera_vertex.m_bsdf == nullptr || camera_vertex.m_bsdf_data == nullptr)
                 {
                     return;
                 }
@@ -352,7 +352,6 @@ namespace
                     ScatteringMode::All,
                     camera_eval_bsdf);
 
-                /// TODO:: need to take care of light material as well
                 result = geometry * camera_eval_bsdf.m_beauty * camera_vertex.m_beta * light_vertex.m_beta;
             }
             else
