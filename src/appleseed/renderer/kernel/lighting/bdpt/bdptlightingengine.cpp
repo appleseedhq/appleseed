@@ -404,17 +404,25 @@ namespace
             }
 
             // check if throughput is near black or not
-            if (fz(result, 1.0e-9f)) { return; }
+            if (fz(result, 1.0e-4f)) { return; }
 
             float numerator = compute_path_density(light_vertices, camera_vertices, s, t, s, t);
-            float denominator = 0.0;
-            /// TODO:: unhandled case where (denominator <= 0) (specular surface / impossible path).
+            if (numerator == 0.f) { return; }
 
+            /// TODO:: unhandled case where (numerator <= 0) (specular surface / impossible path).
+            assert(isfinite(numerator));
+            assert(numerator > 0.f);
+
+            float denominator = 0.0;
             // [p = 0, q = s + t], [p = 1, q = s + t - 1] ... [p = s + t - 2, q = 2]
             for (size_t i = 0; i <= s + t - 2; i++)
             {
                 denominator += compute_path_density(light_vertices, camera_vertices, s, t, i, s + t - i);
             }
+
+            /// TODO:: unhandled case where (denominator <= 0) (specular surface / impossible path).
+            assert(isfinite(denominator));
+            assert(denominator > 0.f);
 
             float mis_weight = numerator / denominator;
 
