@@ -240,22 +240,26 @@ namespace
                 if (i == 1) // the vertex on light source
                 {
                     const BDPTVertex& vertex = *get_vertex_start_from_light(i);
-                    result *= vertex.m_is_light_vertex ? m_forward_light_sampler.evaluate_pdf(vertex.m_shading_point) : 0.0f;
+                    float pdf_a = vertex.m_is_light_vertex ? m_forward_light_sampler.evaluate_pdf(vertex.m_shading_point) : 0.0f;
+                    assert(pdf_a >= 0.f);
+                    result *= pdf_a;
                 }
                 else if (i == 2) // the vertex after light source
                 {
                     const BDPTVertex& prev_vertex = *get_vertex_start_from_light(i - 1);
                     const BDPTVertex& vertex = *get_vertex_start_from_light(i);
                     /// TODO:: fix this. This assumes diffuse light source.
-                    float pdf = static_cast<float>(dot(normalize(vertex.m_position - prev_vertex.m_position), prev_vertex.m_geometric_normal) * RcpPi<float>());
-                    result *= static_cast<float>(prev_vertex.convert_density(pdf, vertex));
+                    float pdf_w = static_cast<float>(dot(normalize(vertex.m_position - prev_vertex.m_position), prev_vertex.m_geometric_normal) * RcpPi<float>());
+                    float pdf_a = static_cast<float>(prev_vertex.convert_density(pdf_w, vertex));
+                    assert(pdf_a >= 0.f);
+                    result *= pdf_a;
                 }
                 else
                 {
                     const BDPTVertex& prev2_vertex = *get_vertex_start_from_light(i - 2);
                     const BDPTVertex& prev_vertex = *get_vertex_start_from_light(i - 1);
                     const BDPTVertex& vertex = *get_vertex_start_from_light(i);
-                    float pdf = prev_vertex.m_bsdf->evaluate_pdf(
+                    float pdf_w = prev_vertex.m_bsdf->evaluate_pdf(
                         prev_vertex.m_bsdf_data,
                         true,
                         static_cast<Vector3f>(prev_vertex.m_geometric_normal),
@@ -263,7 +267,9 @@ namespace
                         static_cast<Vector3f>(normalize(vertex.m_position - prev_vertex.m_position)),
                         static_cast<Vector3f>(normalize(prev2_vertex.m_position - prev_vertex.m_position)),
                         ScatteringMode::All);
-                    result *= static_cast<float>(prev_vertex.convert_density(pdf, vertex));
+                    float pdf_a = static_cast<float>(prev_vertex.convert_density(pdf_w, vertex));
+                    assert(pdf_a >= 0.f);
+                    result *= pdf_a;
                 }
             }
 
@@ -274,7 +280,7 @@ namespace
                 {
                     const BDPTVertex& prev_vertex = *get_vertex_start_from_camera(i - 1);
                     const BDPTVertex& vertex = *get_vertex_start_from_camera(i);
-                    float pdf = prev_vertex.m_bsdf->evaluate_pdf(
+                    float pdf_w = prev_vertex.m_bsdf->evaluate_pdf(
                         prev_vertex.m_bsdf_data,
                         false,
                         static_cast<Vector3f>(prev_vertex.m_geometric_normal),
@@ -282,14 +288,16 @@ namespace
                         static_cast<Vector3f>(normalize(vertex.m_position - prev_vertex.m_position)),
                         static_cast<Vector3f>(prev_vertex.m_dir_to_prev_vertex),
                         ScatteringMode::All);
-                    result *= static_cast<float>(prev_vertex.convert_density(pdf, vertex));
+                    float pdf_a = static_cast<float>(prev_vertex.convert_density(pdf_w, vertex));
+                    assert(pdf_a >= 0.f);
+                    result *= pdf_a;
                 }
                 else
                 {
                     const BDPTVertex& prev2_vertex = *get_vertex_start_from_camera(i - 2);
                     const BDPTVertex& prev_vertex = *get_vertex_start_from_camera(i - 1);
                     const BDPTVertex& vertex = *get_vertex_start_from_camera(i);
-                    float pdf = prev_vertex.m_bsdf->evaluate_pdf(
+                    float pdf_w = prev_vertex.m_bsdf->evaluate_pdf(
                         prev_vertex.m_bsdf_data,
                         false,
                         static_cast<Vector3f>(prev_vertex.m_geometric_normal),
@@ -297,7 +305,9 @@ namespace
                         static_cast<Vector3f>(normalize(vertex.m_position - prev_vertex.m_position)),
                         static_cast<Vector3f>(normalize(prev2_vertex.m_position - prev_vertex.m_position)),
                         ScatteringMode::All);
-                    result *= static_cast<float>(prev_vertex.convert_density(pdf, vertex));
+                    float pdf_a = static_cast<float>(prev_vertex.convert_density(pdf_w, vertex));
+                    assert(pdf_a >= 0.f);
+                    result *= pdf_a;
                 }
             }
 
