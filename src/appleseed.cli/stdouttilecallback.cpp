@@ -91,6 +91,8 @@ namespace
             const int old_stdout_mode = _setmode(_fileno(stdout), _O_BINARY);
 #endif
             send_highlight_tile(*frame, tile_x, tile_y);
+
+            fflush(stdout);
 #ifdef _WIN32
             _setmode(_fileno(stdout), old_stdout_mode);
 #endif
