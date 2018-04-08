@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/icanvas.h"
+#include "foundation/image/imageattributes.h"
 
 // openimageio headers.
 #include "foundation/platform/_beginoiioheaders.h"
@@ -44,40 +45,37 @@ namespace foundation
 class APPLESEED_DLLSYMBOL OIIOImageFileWriter
 {
   public:
-    OIIOImageFileWriter();
+    OIIOImageFileWriter(const char* filename);
     ~OIIOImageFileWriter();
-
-    void create(const char* filename);
 
     void append_image(const ICanvas* image);
 
-    void set_image_spec(
-        const CanvasProperties& props,
-        const size_t            channel_count,
-        const char**            channel_names,
-        const PixelFormat       output_pixel_format);
+    void set_image_output_format(const PixelFormat output_pixel_format);
 
-    void set_image_spec(
-        const CanvasProperties& props,
-        const PixelFormat       output_pixel_format);
+    void set_image_channels(
+        const size_t    channel_count,
+        const char**    channel_names);
 
-    void set_image_attribute(
-        const char*     key,
-        const char*     value);
+    void set_image_attributes(const ImageAttributes& image_attributes);
 
-    size_t get_image_count() const;
+    size_t get_image_count(void) const;
 
     void write();
 
-    void destroy();
-
   private:
-    void close_file();
-    void write_single_image();
-    void write_multi_images();
+    void close_file(void);
+
+    void set_image_spec(void);
+    
+    void set_exr_image_attributes(const ImageAttributes& image_attributes);
+    void set_png_image_attributes(const ImageAttributes& image_attributes);
+    
     void write(const size_t image_index);
-    void write_tiles(const size_t image_index);
+    void write_single_image(void);
+    void write_multi_images(void);
+
     void write_scanlines(const size_t image_index);
+    void write_tiles(const size_t image_index);
 
   private:
     struct OIIOImages;

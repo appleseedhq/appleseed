@@ -32,8 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
-#include "foundation/image/exrimagefilewriter.h"
-#include "foundation/image/pngimagefilewriter.h"
+#include "foundation/image/oiioimagefilewriter.h"
 #include "foundation/utility/string.h"
 
 // Boost headers.
@@ -60,15 +59,16 @@ void GenericImageFileWriter::write(
     const bf::path filepath(filename);
     const string extension = lower_case(filepath.extension().string());
 
-    if (extension == ".exr")
+    if (extension == ".exr" || extension == ".png")
     {
-        EXRImageFileWriter writer;
-        writer.write(filename, image, image_attributes);
-    }
-    else if (extension == ".png")
-    {
-        PNGImageFileWriter writer;
-        writer.write(filename, image, image_attributes);
+        OIIOImageFileWriter writer{ filename };
+
+        if (extension == ".png")
+            writer.set_image_output_format(PixelFormat::PixelFormatUInt8);
+
+        writer.set_image_attributes(image_attributes);
+
+        writer.write();
     }
     else
     {

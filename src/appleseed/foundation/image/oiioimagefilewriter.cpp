@@ -32,7 +32,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionioerror.h"
+#include "foundation/utility/foreach.h"
 #include "foundation/image/icanvas.h"
+
+// Boost headers.
+#include "boost/filesystem/path.hpp"
 
 // Standard headers.
 #include <algorithm>
@@ -48,18 +52,8 @@ struct OIIOImageFileWriter::OIIOImages
     std::vector<OIIO::ImageSpec>    m_spec;
 };
 
-OIIOImageFileWriter::OIIOImageFileWriter() :
+OIIOImageFileWriter::OIIOImageFileWriter(const char* filename) :
     m_images{ new OIIOImages{} }
-{
-
-}
-
-OIIOImageFileWriter::~OIIOImageFileWriter()
-{
-    delete m_images;
-}
-
-void OIIOImageFileWriter::create(const char* filename)
 {
     assert(filename);
 
@@ -73,15 +67,31 @@ void OIIOImageFileWriter::create(const char* filename)
     }
 }
 
+OIIOImageFileWriter::~OIIOImageFileWriter()
+{
+    // Destroy the ImageOutput stucture.
+    OIIO::ImageOutput::destroy(m_writer);
+
+    m_writer = nullptr;
+    m_filename = nullptr;
+
+    m_images->m_canvas.clear();
+    m_images->m_spec.clear();
+
+    delete m_images;
+}
+
+size_t OIIOImageFileWriter::get_image_count(void) const
+{
+    return m_images->m_canvas.size();
+}
+
 void OIIOImageFileWriter::append_image(const ICanvas* image)
 {
     m_images->m_canvas.push_back(image);
     m_images->m_spec.push_back(OIIO::ImageSpec{});
-}
 
-size_t OIIOImageFileWriter::get_image_count() const
-{
-    return m_images->m_canvas.size();
+    set_image_spec();
 }
 
 OIIO::TypeDesc convert_pixel_format(PixelFormat format)
@@ -111,20 +121,42 @@ OIIO::TypeDesc convert_pixel_format(PixelFormat format)
     }
 }
 
-void OIIOImageFileWriter::set_image_spec(
-    const CanvasProperties& props,
-    const size_t		    channel_count,
-    const char**		    channel_names,
-    const PixelFormat       output_pixel_format)
+void OIIOImageFileWriter::set_image_output_format(const PixelFormat output_pixel_format)
 {
-    assert(channel_names);
-
     if (get_image_count() == 0)
-    {
-        destroy();
         throw ExceptionIOError("No images available!");
-    }
 
+    m_images->m_spec.back().set_format(convert_pixel_format(output_pixel_format));
+}
+
+void OIIOImageFileWriter::set_image_channels(
+    const size_t    channel_count,
+    const char**    channel_names)
+{
+    if (get_image_count() == 0)
+        throw ExceptionIOError("No images available!");
+
+    OIIO::ImageSpec& spec = m_images->m_spec.back();
+
+    spec.nchannels = static_cast<int>(channel_count);
+
+    for (size_t i = 0; i < channel_count; i++)
+    {
+        const char* name = channel_names[i];
+
+        spec.channelnames.push_back(name);
+
+        if (strcmp(name, "A"))
+            spec.alpha_channel = static_cast<int>(i);
+    }
+}
+
+void OIIOImageFileWriter::set_image_spec(void)
+{
+    if (get_image_count() == 0)
+        throw ExceptionIOError("No images available!");
+
+    const CanvasProperties& props = m_images->m_canvas.back()->properties();
     OIIO::ImageSpec& spec = m_images->m_spec.back();
 
     // Size of the data of the image.
@@ -156,51 +188,112 @@ void OIIOImageFileWriter::set_image_spec(
     }
 
     // Number of channels.
-    spec.nchannels = static_cast<int>(channel_count);
-    for (size_t i = 0; i < channel_count; i++)
-    {
-        const char* name = channel_names[i];
-
-        spec.channelnames.push_back(name);
-
-        if (strcmp(name, "A"))
-            spec.alpha_channel = static_cast<int>(i);
-    }
+    const char* channel_names[] = { "R", "G", "B", "A" };
+    set_image_channels(props.m_channel_count, channel_names);
 
     // Format of the pixel data.
-    spec.set_format(convert_pixel_format(output_pixel_format));
+    set_image_output_format(props.m_pixel_format);
 }
 
-void OIIOImageFileWriter::set_image_spec(
-    const CanvasProperties& props,
-    const PixelFormat       output_pixel_format)
+// See OpenImageIO reference documentation for an exhaustive attribute names list.
+// https://github.com/OpenImageIO/oiio/blob/master/src/doc/openimageio.pdf
+//
+void OIIOImageFileWriter::set_exr_image_attributes(const ImageAttributes& image_attributes)
 {
-    std::vector<const char*> channel_names;
+    OIIO::ImageSpec spec = m_images->m_spec.back();
 
-    channel_names.push_back("R");
-    channel_names.push_back("G");
-    channel_names.push_back("B");
-
-    if (props.m_channel_count == 4)
-        channel_names.push_back("A");
-
-    set_image_spec(props, props.m_channel_count, channel_names.data(), output_pixel_format);
-}
-
-void OIIOImageFileWriter::set_image_attribute(
-    const char* key, 
-    const char* value)
-{
-    assert(key);
-    assert(value);
-
-    if (get_image_count() == 0)
+    for (const_each<ImageAttributes> i = image_attributes; i; ++i)
     {
-        destroy();
-        throw ExceptionIOError("No images available!");
-    }
+        // Fetch the name and the value of the attribute.
+        const std::string attr_name = i->key();
+        const std::string attr_value = i->value<std::string>();
 
-    m_images->m_spec.back().attribute(key, value);
+        if (attr_name == "author")
+            spec.attribute("Copyright", attr_value.c_str());
+
+        else if (attr_name == "comment")
+            spec.attribute("ImageDescription", attr_value.c_str());
+
+        else if (attr_name == "creation_time")
+            spec.attribute("DateTime", attr_value.c_str());
+
+        else
+            spec.attribute(attr_name.c_str(), attr_value.c_str());
+    }
+}
+
+// See OpenImageIO reference documentation for an exhaustive attribute names list.
+// https://github.com/OpenImageIO/oiio/blob/master/src/doc/openimageio.pdf
+//
+void OIIOImageFileWriter::set_png_image_attributes(const ImageAttributes& image_attributes)
+{
+    OIIO::ImageSpec spec = m_images->m_spec.back();
+
+    for (const_each<ImageAttributes> i = image_attributes; i; ++i)
+    {
+        // Fetch the name and the value of the attribute.
+        const std::string attr_name = i->key();
+        const std::string attr_value = i->value<std::string>();
+
+        if (attr_name == "title")
+            spec.attribute("DocumentName", attr_value.c_str());
+
+        else if (attr_name == "author")
+            spec.attribute("Artist", attr_value.c_str());
+
+        else if (attr_name == "description")
+            spec.attribute("ImageDescription", attr_value.c_str());
+
+        else if (attr_name == "copyright")
+            spec.attribute("Copyright", attr_value.c_str());
+
+        else if (attr_name == "creation_time")
+            spec.attribute("DateTime", attr_value.c_str());
+
+        else if (attr_name == "software")
+            spec.attribute("Software", attr_value.c_str());
+
+        else if (attr_name == "disclaimer")
+            spec.attribute("Disclaimer", attr_value.c_str());
+
+        else if (attr_name == "warning")
+            spec.attribute("Warning", attr_value.c_str());
+
+        else if (attr_name == "source")
+            spec.attribute("Source", attr_value.c_str());
+
+        else if (attr_name == "comment")
+            spec.attribute("Comment", attr_value.c_str());
+
+        else if (attr_name == "dpi")
+        {
+            const size_t dpi = from_string<size_t>(attr_value);
+            const double dpm = dpi * (100.0 / 2.54);
+            const char* dpm_str = to_string<double>(dpm).c_str();
+            spec.attribute("XResolution", dpm_str);
+            spec.attribute("YResolution", dpm_str);
+            spec.attribute("ResolutionUnit", "cm");
+        }
+
+        else
+            spec.attribute(attr_name.c_str(), attr_value.c_str());
+    }
+}
+
+void OIIOImageFileWriter::set_image_attributes(const ImageAttributes& image_attributes)
+{
+    if (get_image_count() == 0)
+        throw ExceptionIOError("No images available!");
+
+    // Retrieve filename extension
+    const boost::filesystem::path filepath(m_filename);
+    const std::string extension = lower_case(filepath.extension().string());
+
+    // Set image attributes depending of its extension
+    if (extension == ".exr")
+        set_exr_image_attributes(image_attributes);
+    else if (extension == ".png")
+        set_exr_image_attributes(image_attributes);
 }
 
 void OIIOImageFileWriter::write_tiles(const size_t image_index)
@@ -251,7 +344,6 @@ void OIIOImageFileWriter::write_tiles(const size_t image_index)
             {
                 const std::string msg = m_writer->geterror();
                 close_file();
-                destroy();
                 throw ExceptionIOError(msg.c_str());
             }
         }
@@ -316,7 +408,6 @@ void OIIOImageFileWriter::write_scanlines(const size_t image_index)
         {
             const std::string msg = m_writer->geterror();
             close_file();
-            destroy();
             throw ExceptionIOError(msg.c_str());
         }
     }
@@ -337,7 +428,6 @@ void OIIOImageFileWriter::write_single_image()
     if (!m_writer->open(m_filename, m_images->m_spec.back()))
     {
         const std::string msg = m_writer->geterror();
-        destroy();
         throw ExceptionIOError(msg.c_str());
     }
 
@@ -351,15 +441,11 @@ void OIIOImageFileWriter::write_single_image()
 void OIIOImageFileWriter::write_multi_images()
 {
     if (!m_writer->supports("multiimage"))
-    {
-        destroy();
         throw ExceptionIOError("File format is unable to write multiple image!");
-    }
 
     if (!m_writer->open(m_filename, static_cast<int>(get_image_count()), m_images->m_spec.data()))
     {
         const std::string msg = m_writer->geterror();
-        destroy();
         throw ExceptionIOError(msg.c_str());
     }
     
@@ -371,7 +457,6 @@ void OIIOImageFileWriter::write_multi_images()
             {
                 const std::string msg = m_writer->geterror();
                 close_file();
-                destroy();
                 throw ExceptionIOError(msg.c_str());
             }
         }
@@ -387,10 +472,8 @@ void OIIOImageFileWriter::write()
 {
     if (get_image_count() == 0)
         return;
-
     else if (get_image_count() == 1)
         write_single_image();
-
     else
         write_multi_images();
 }
@@ -401,20 +484,8 @@ void OIIOImageFileWriter::close_file()
     if (!m_writer->close())
     {
         const std::string msg = m_writer->geterror();
-        destroy();
         throw ExceptionIOError(msg.c_str());
     }
-}
-
-void OIIOImageFileWriter::destroy()
-{
-    // Destroy the ImageOutput stucture.
-    OIIO::ImageOutput::destroy(m_writer);
-
-    m_writer = nullptr;
-    m_filename = nullptr;
-    m_images->m_canvas.clear();
-    m_images->m_spec.clear();
 }
 
 }   // namespace foundation

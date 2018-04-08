@@ -93,8 +93,6 @@ set (foundation_image_sources
     foundation/image/drawing.cpp
     foundation/image/drawing.h
     foundation/image/exceptionunsupportedimageformat.h
-    foundation/image/exrimagefilewriter.cpp
-    foundation/image/exrimagefilewriter.h
     foundation/image/filteredtile.cpp
     foundation/image/filteredtile.h
     foundation/image/genericimagefilereader.cpp
@@ -117,8 +115,6 @@ set (foundation_image_sources
     foundation/image/oiioimagefilewriter.h
     foundation/image/pixel.cpp
     foundation/image/pixel.h
-    foundation/image/pngimagefilewriter.cpp
-    foundation/image/pngimagefilewriter.h
     foundation/image/regularspectrum.h
     foundation/image/tile.cpp
     foundation/image/tile.h

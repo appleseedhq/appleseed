@@ -46,11 +46,10 @@
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/image/color.h"
 #include "foundation/image/drawing.h"
-#include "foundation/image/exrimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/image/imageattributes.h"
+#include "foundation/image/oiioimagefilewriter.h"
 #include "foundation/image/pixel.h"
-#include "foundation/image/pngimagefilewriter.h"
 #include "foundation/image/text/textrenderer.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
@@ -527,7 +526,9 @@ namespace
     {
         create_parent_directories(file_path);
 
-        EXRImageFileWriter writer;
+        const std::string filename = file_path.string();
+
+        OIIOImageFileWriter writer{ filename.c_str() };
 
         if (aov)
         {
@@ -537,30 +538,22 @@ namespace
                 const CanvasProperties& props = image.properties();
                 const Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
 
-                writer.write(
-                    file_path.string().c_str(),
-                    half_image,
-                    image_attributes,
-                    aov->get_channel_count(),
-                    aov->get_channel_names());
+                writer.append_image(&half_image);
             }
             else
-            {
-                writer.write(
-                    file_path.string().c_str(),
-                    image,
-                    image_attributes,
-                    aov->get_channel_count(),
-                    aov->get_channel_names());
-            }
+                writer.append_image(&image);
+
+            writer.set_image_channels(aov->get_channel_count(), aov->get_channel_names());
+            writer.set_image_attributes(image_attributes);
+
         }
         else
         {
-            writer.write(
-                file_path.string().c_str(),
-                image,
-                image_attributes);
+            writer.append_image(&image);
+            writer.set_image_attributes(image_attributes);
         }
+
+        writer.write();
     }
 
     void transform_to_srgb(Tile& tile)
@@ -614,11 +607,14 @@ namespace
 
         create_parent_directories(file_path);
 
-        PNGImageFileWriter writer;
-        writer.write(
-            file_path.string().c_str(),
-            transformed_image,
-            image_attributes);
+        const std::string filename = file_path.string();
+
+        OIIOImageFileWriter writer{ filename.c_str() };
+
+        writer.append_image(&transformed_image);
+        writer.set_image_output_format(PixelFormat::PixelFormatUInt8);
+        writer.set_image_attributes(image_attributes);
+        writer.write();
     }
 
     bool write_image(
@@ -847,26 +843,25 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
 
-    create_parent_directories(file_path);
-
-    EXRImageFileWriter writer;
-
     ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
     add_chromaticities(image_attributes);
 
     std::vector<Image> images;
 
     create_parent_directories(file_path);
-    writer.begin_multipart_exr(file_path);
 
-    static const char* ChannelNames[] = { "R", "G", "B", "A" };
+    OIIOImageFileWriter writer{ file_path };
 
     // Always save the main image as half floats.
     {
         const Image& image = *impl->m_image;
         const CanvasProperties& props = image.properties();
         images.emplace_back(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
-        writer.append_part("beauty", images.back(), image_attributes, 4, ChannelNames);
+
+        image_attributes.insert("Name", "beauty");
+
+        writer.append_image(&(images.back()));
+        writer.set_image_attributes(image_attributes);
     }
 
     for (size_t i = 0, e = impl->m_aovs.size(); i < e; ++i)
@@ -880,10 +875,13 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
             // If the AOV has color data, assume we can save it as half floats.
             const CanvasProperties& props = image.properties();
             images.emplace_back(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
-            writer.append_part(aov_name.c_str(), images.back(), image_attributes, aov->get_channel_count(), aov->get_channel_names());
         }
-        else
-            writer.append_part(aov_name.c_str(), image, image_attributes, aov->get_channel_count(), aov->get_channel_names());
+
+        image_attributes.insert("Name", aov_name.c_str());
+
+        writer.append_image(&image);
+        writer.set_image_channels(aov->get_channel_count(), aov->get_channel_names());
+        writer.set_image_attributes(image_attributes);
     }
 
     if (impl->m_save_extra_aovs)
@@ -897,11 +895,15 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
             const CanvasProperties& props = image.properties();
             const string aov_name = aov_images().get_name(image_index);
             assert(props.m_channel_count == 4);
-            writer.append_part(aov_name.c_str(), image, image_attributes, props.m_channel_count, ChannelNames);
+
+            image_attributes.insert("Name", aov_name.c_str());
+
+            writer.append_image(&image);
+            writer.set_image_attributes(image_attributes);
         }
     }
 
-    writer.write_multipart_exr();
+    writer.write();
 
     RENDERER_LOG_INFO(
         "wrote multipart exr image file %s in %s.",
