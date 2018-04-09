@@ -63,6 +63,8 @@ void GenericImageFileWriter::write(
     {
         OIIOImageFileWriter writer{ filename };
 
+        writer.append_image(&image);
+
         if (extension == ".png")
             writer.set_image_output_format(PixelFormat::PixelFormatUInt8);
 
