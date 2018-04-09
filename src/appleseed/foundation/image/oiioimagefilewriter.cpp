@@ -53,13 +53,16 @@ struct OIIOImageFileWriter::OIIOImages
 };
 
 OIIOImageFileWriter::OIIOImageFileWriter() :
-    m_images{ new OIIOImages{} }
+    m_writer{ nullptr },
+    m_images{ new OIIOImages{} },
+    m_filename{ nullptr }
 {
 }
 
 OIIOImageFileWriter::~OIIOImageFileWriter()
 {
-    delete m_images;
+    if (m_images)
+        delete m_images;
 }
 
 void OIIOImageFileWriter::create(const char* filename)
@@ -79,7 +82,8 @@ void OIIOImageFileWriter::create(const char* filename)
 void OIIOImageFileWriter::destroy()
 {
     // Destroy the ImageOutput stucture.
-    OIIO::ImageOutput::destroy(m_writer);
+    if (m_writer)
+        OIIO::ImageOutput::destroy(m_writer);
 
     m_writer = nullptr;
     m_filename = nullptr;
