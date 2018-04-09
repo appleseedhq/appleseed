@@ -52,8 +52,17 @@ struct OIIOImageFileWriter::OIIOImages
     std::vector<OIIO::ImageSpec>    m_spec;
 };
 
-OIIOImageFileWriter::OIIOImageFileWriter(const char* filename) :
+OIIOImageFileWriter::OIIOImageFileWriter() :
     m_images{ new OIIOImages{} }
+{
+}
+
+OIIOImageFileWriter::~OIIOImageFileWriter()
+{
+    delete m_images;
+}
+
+void OIIOImageFileWriter::create(const char* filename)
 {
     assert(filename);
 
@@ -67,7 +76,7 @@ OIIOImageFileWriter::OIIOImageFileWriter(const char* filename) :
     }
 }
 
-OIIOImageFileWriter::~OIIOImageFileWriter()
+void OIIOImageFileWriter::destroy()
 {
     // Destroy the ImageOutput stucture.
     OIIO::ImageOutput::destroy(m_writer);
@@ -77,8 +86,6 @@ OIIOImageFileWriter::~OIIOImageFileWriter()
 
     m_images->m_canvas.clear();
     m_images->m_spec.clear();
-
-    delete m_images;
 }
 
 size_t OIIOImageFileWriter::get_image_count(void) const

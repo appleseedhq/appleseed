@@ -235,10 +235,12 @@ void AlbedoTable2D::write_table_to_image(const bfs::path& filename) const
 
     const std::string file = filename.string();
 
-    OIIOImageFileWriter writer{ file.c_str() };
+    OIIOImageFileWriter writer;
 
+    writer.create(file.c_str());
     writer.append_image(&image);
     writer.write();
+    writer.destroy();
 }
 
 void AlbedoTable2D::write_table_to_cpp_array(
@@ -451,10 +453,12 @@ void AlbedoTable3D::write_table_to_image(const bfs::path& filename) const
 
     const std::string file = filename.string();
 
-    OIIOImageFileWriter writer{ file.c_str() };
+    OIIOImageFileWriter writer;
 
+    writer.create(file.c_str());
     writer.append_image(&image);
     writer.write();
+    writer.destroy();
 }
 
 void AlbedoTable3D::write_table_to_cpp_array(
