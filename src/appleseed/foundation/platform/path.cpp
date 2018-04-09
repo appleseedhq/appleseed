@@ -34,13 +34,8 @@
 #ifdef __APPLE__
 #include "foundation/platform/types.h"
 #endif
-#include "foundation/utility/iterators.h"
-
-// Boost headers.
-#include "boost/filesystem/operations.hpp"
 
 // Standard headers.
-#include <cassert>
 #include <cstddef>
 #include <cstring>
 
@@ -176,41 +171,6 @@ const char* get_home_directory()
     }
 
     return path;
-}
-
-void split_paths(
-    const bf::path&     p1,
-    const bf::path&     p2,
-    bf::path&           common,
-    bf::path&           r1,
-    bf::path&           r2)
-{
-    assert(common.empty());
-    assert(r1.empty());
-    assert(r2.empty());
-
-    bf::path::const_iterator i1 = p1.begin();
-    bf::path::const_iterator i2 = p2.begin();
-
-    while (i1 != p1.end() && i2 != p2.end())
-    {
-        if (*i1 != *i2)
-            break;
-
-        if ((p1.has_filename() && succ(i1) == p1.end()) ||
-            (p2.has_filename() && succ(i2) == p2.end()))
-            break;
-
-        common /= *i1;
-
-        ++i1, ++i2;
-    }
-
-    while (i1 != p1.end())
-        r1 /= *i1++;
-
-    while (i2 != p2.end())
-        r2 /= *i2++;
 }
 
 }   // namespace foundation

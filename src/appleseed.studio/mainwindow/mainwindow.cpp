@@ -62,11 +62,11 @@
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/path.h"
 #include "foundation/platform/system.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/log/logmessage.h"
-#include "foundation/utility/path.h"
 #include "foundation/utility/settings.h"
 
 // Qt headers.

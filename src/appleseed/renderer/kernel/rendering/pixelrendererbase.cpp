@@ -66,7 +66,7 @@ PixelRendererBase::PixelRendererBase(
     {
         m_invalid_sample_aov_index = frame.create_extra_aov_image("invalid_samples");
 
-        if ((thread_index == 0) && (m_invalid_sample_aov_index == size_t(~0)))
+        if (m_invalid_sample_aov_index == size_t(~0) && thread_index == 0)
         {
             RENDERER_LOG_WARNING(
                 "could not create invalid samples aov, maximum number of aovs (" FMT_SIZE_T ") reached.",
@@ -114,8 +114,7 @@ void PixelRendererBase::on_tile_end(
                 if (sample_state[0] == CorrectSampleHint)
                 {
                     tile.get_pixel(x, y, color);
-                    // 20% of luminance
-                    color.rgb().set(luminance(color.rgb()) * 0.2f);
+                    color.rgb().set(0.2f * luminance(color.rgb()));     // 20% of luminance
                 }
 
                 aov_tiles.set_pixel(x, y, m_invalid_sample_aov_index, color);
@@ -149,10 +148,11 @@ void PixelRendererBase::on_pixel_end(
         ++m_invalid_pixel_count;
 
         const size_t MaxWarningsPerThread = 5;
+
         if (m_invalid_pixel_count <= MaxWarningsPerThread)
         {
             RENDERER_LOG_WARNING(
-                FMT_SIZE_T " sample%s at pixel (%d, %d) had NaN, negative or infinite components and %s ignored.",
+                FMT_SIZE_T " sample%s at pixel (%d, %d) had nan, negative or infinite components and %s ignored.",
                 m_invalid_sample_count,
                 m_invalid_sample_count > 1 ? "s" : "",
                 pi.x, pi.y,
@@ -162,20 +162,12 @@ void PixelRendererBase::on_pixel_end(
         {
             RENDERER_LOG_WARNING("more invalid samples found, omitting warning messages for brevity.");
         }
-
     }
 
-    // Invalid samples diagnostic
     if (m_params.m_diagnostics && tile_bbox.contains(pt))
     {
-        Color<uint8, 1> sample_state;
-
-        if (m_invalid_sample_count > 0)
-            sample_state[0] = InvalidSampleHint;
-        else
-            sample_state[0] = CorrectSampleHint;
-
-        m_invalid_sample_diagnostic->set_pixel(pt.x, pt.y, sample_state);
+        m_invalid_sample_diagnostic->set_pixel(pt.x, pt.y,
+            m_invalid_sample_count > 0 ? &InvalidSampleHint : &CorrectSampleHint);
     }
 }
 

@@ -816,7 +816,6 @@ set (foundation_utility_sources
     foundation/utility/memory.h
     foundation/utility/numerictype.h
     foundation/utility/otherwise.h
-    foundation/utility/path.h
     foundation/utility/poison.h
     foundation/utility/poolallocator.h
     foundation/utility/preprocessor.cpp
@@ -1325,6 +1324,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_entityvector.cpp
     renderer/meta/tests/test_environmentedf.cpp
     renderer/meta/tests/test_forwardlightsampler.cpp
+    renderer/meta/tests/test_frame.cpp
     renderer/meta/tests/test_imagetools.cpp
     renderer/meta/tests/test_inputarray.cpp
     renderer/meta/tests/test_intersector.cpp

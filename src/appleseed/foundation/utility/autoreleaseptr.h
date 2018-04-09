@@ -37,9 +37,9 @@ namespace foundation
 {
 
 //
-// Similarly to std::auto_ptr, foundation::auto_release_ptr is a smart pointer
-// providing strict ownership semantics. The only difference with std::auto_ptr
-// is that the pointed object is deleted using foundation::IUnknown::release()
+// Similarly to std::auto_ptr<>, foundation::auto_release_ptr<> is a smart pointer
+// providing strict ownership semantics. The only difference with std::auto_ptr<>
+// is that the pointed object is deallocated using foundation::IUnknown::release()
 // instead of the delete operator.
 //
 

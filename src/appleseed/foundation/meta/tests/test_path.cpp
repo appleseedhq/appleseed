@@ -29,7 +29,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/path.h"
-#include "foundation/utility/path.h"
 #include "foundation/utility/test.h"
 
 // Boost headers.
@@ -59,6 +58,31 @@ TEST_SUITE(Foundation_Platform_Path)
         const string executable_dir = get_executable_directory();
 
         EXPECT_FALSE(executable_dir.empty());
+    }
+
+    TEST_CASE(HasExtension_GivenEmptyPath_ReturnsFalse)
+    {
+        EXPECT_FALSE(has_extension(""));
+    }
+
+    TEST_CASE(HasExtension_GivenPathWithoutDot_ReturnsFalse)
+    {
+        EXPECT_FALSE(has_extension("foo"));
+    }
+
+    TEST_CASE(HasExtension_GivenEmptyEndingWithOneDot_ReturnsFalse)
+    {
+        EXPECT_FALSE(has_extension("foo."));
+    }
+
+    TEST_CASE(HasExtension_GivenEmptyEndingWithTwoDots_ReturnsFalse)
+    {
+        EXPECT_FALSE(has_extension("foo.."));
+    }
+
+    TEST_CASE(HasExtension_GivenPathWithExtension_ReturnsTrue)
+    {
+        EXPECT_TRUE(has_extension("foo.ext"));
     }
 
 #ifdef _WIN32
@@ -207,15 +231,12 @@ TEST_SUITE(Foundation_Platform_Path)
     }
 
 #endif
-}
 
-TEST_SUITE(Foundation_Utility_Path)
-{
-    struct Fixture
+    struct FindNextAvailablePathFixture
     {
         const bf::path m_base_output;
 
-        Fixture()
+        FindNextAvailablePathFixture()
           : m_base_output(bf::absolute("unit tests/outputs/test_path/"))
         {
             bf::remove_all(m_base_output);
@@ -230,19 +251,19 @@ TEST_SUITE(Foundation_Utility_Path)
         }
     };
 
-    TEST_CASE_F(FindNextAvailablePath_GivenEmptyDirectory_ReturnsFileNumber1, Fixture)
+    TEST_CASE_F(FindNextAvailablePath_GivenEmptyDirectory_ReturnsFileNumber1, FindNextAvailablePathFixture)
     {
         EXPECT_EQ("test1.txt", find_next_available_path(m_base_output / "test#.txt").filename().string());
     }
 
-    TEST_CASE_F(FindNextAvailablePath_GivenFileNumber1Exists_ReturnsFileNumber2, Fixture)
+    TEST_CASE_F(FindNextAvailablePath_GivenFileNumber1Exists_ReturnsFileNumber2, FindNextAvailablePathFixture)
     {
         create_file(m_base_output / "test1.txt");
 
         EXPECT_EQ("test2.txt", find_next_available_path(m_base_output / "test#.txt").filename().string());
     }
 
-    TEST_CASE_F(FindNextAvailablePath_GivenFilesNumber1To9Exist_ReturnsFileNumber1, Fixture)
+    TEST_CASE_F(FindNextAvailablePath_GivenFilesNumber1To9Exist_ReturnsFileNumber1, FindNextAvailablePathFixture)
     {
         create_file(m_base_output / "test1.txt");
         create_file(m_base_output / "test2.txt");
