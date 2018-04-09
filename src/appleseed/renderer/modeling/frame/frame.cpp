@@ -544,15 +544,14 @@ namespace
                 writer.append_image(&image);
 
             writer.set_image_channels(aov->get_channel_count(), aov->get_channel_names());
-            writer.set_image_attributes(image_attributes);
 
         }
         else
         {
             writer.append_image(&image);
-            writer.set_image_attributes(image_attributes);
         }
 
+        writer.set_image_attributes(image_attributes);
         writer.write();
     }
 
