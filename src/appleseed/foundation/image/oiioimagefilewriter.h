@@ -45,11 +45,8 @@ namespace foundation
 class APPLESEED_DLLSYMBOL OIIOImageFileWriter
 {
   public:
-    OIIOImageFileWriter();
+    OIIOImageFileWriter(const char* filename);
     ~OIIOImageFileWriter();
-
-    void create(const char* filename);
-    virtual void destroy();
 
     void append_image(const ICanvas* image);
 

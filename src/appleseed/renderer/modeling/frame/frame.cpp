@@ -529,19 +529,16 @@ namespace
 
         const std::string filename = file_path.string();
 
-        OIIOImageFileWriter writer;
-
-        writer.create(filename.c_str());
+        OIIOImageFileWriter writer{ filename.c_str() };
 
         if (aov)
         {
             if (aov->has_color_data())
             {
-                // If the AOV has color data, assume we can save it as half floats.
-                const CanvasProperties& props = image.properties();
-                const Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
+                writer.append_image(&image);
 
-                writer.append_image(&half_image);
+                // If the AOV has color data, assume we can save it as half floats.
+                writer.set_image_output_format(PixelFormatHalf);
             }
             else
                 writer.append_image(&image);
@@ -556,7 +553,6 @@ namespace
 
         writer.set_image_attributes(image_attributes);
         writer.write();
-        writer.destroy();
     }
 
     void transform_to_srgb(Tile& tile)
@@ -612,14 +608,12 @@ namespace
 
         const std::string filename = file_path.string();
 
-        OIIOImageFileWriter writer;
+        OIIOImageFileWriter writer{ filename.c_str() };
 
-        writer.create(filename.c_str());
         writer.append_image(&transformed_image);
         writer.set_image_output_format(PixelFormat::PixelFormatUInt8);
         writer.set_image_attributes(image_attributes);
         writer.write();
-        writer.destroy();
     }
 
     bool write_image(
@@ -845,9 +839,7 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
 
     create_parent_directories(file_path);
 
-    OIIOImageFileWriter writer;
-
-    writer.create(file_path);
+    OIIOImageFileWriter writer{ file_path };
 
     // Always save the main image as half floats.
     {
@@ -903,8 +895,6 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
     }
 
     writer.write();
-
-    writer.destroy();
 
     RENDERER_LOG_INFO(
         "wrote multipart exr image file %s in %s.",

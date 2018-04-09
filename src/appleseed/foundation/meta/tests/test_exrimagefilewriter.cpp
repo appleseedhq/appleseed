@@ -54,12 +54,10 @@ TEST_SUITE(Foundation_Image_EXRImageFileWriter)
         Image image(2, 2, 32, 32, 4, PixelFormatFloat);
         image.clear(Reference);
 
-        OIIOImageFileWriter writer;
+        OIIOImageFileWriter writer{ Filename };
 
-        writer.create(Filename);
         writer.append_image(&image);
         writer.write();
-        writer.destroy();
     }
 
     TEST_CASE(CorrectlyWriteTestImage)
