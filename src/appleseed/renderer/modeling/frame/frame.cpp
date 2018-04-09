@@ -874,11 +874,13 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
             // If the AOV has color data, assume we can save it as half floats.
             const CanvasProperties& props = image.properties();
             images.emplace_back(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
+            writer.append_image(&(images.back()));
         }
+        else
+            writer.append_image(&image);
 
         image_attributes.insert("Name", aov_name.c_str());
 
-        writer.append_image(&image);
         writer.set_image_channels(aov->get_channel_count(), aov->get_channel_names());
         writer.set_image_attributes(image_attributes);
     }
