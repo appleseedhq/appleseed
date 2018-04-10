@@ -32,8 +32,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionioerror.h"
-#include "foundation/utility/foreach.h"
 #include "foundation/image/icanvas.h"
+#include "foundation/utility/foreach.h"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
@@ -55,7 +55,8 @@ struct OIIOImageFileWriter::OIIOImages
 OIIOImageFileWriter::OIIOImageFileWriter(const char* filename) :
     m_images{ new OIIOImages{} }
 {
-    assert(filename);
+    if (filename == nullptr)
+        throw ExceptionIOError("Valid filename must be provide!");
 
     m_filename = filename;
 
@@ -88,6 +89,9 @@ size_t OIIOImageFileWriter::get_image_count(void) const
 
 void OIIOImageFileWriter::append_image(const ICanvas* image)
 {
+    if (image == nullptr)
+        throw ExceptionIOError("Valid image must be provide!");
+
     m_images->m_canvas.push_back(image);
     m_images->m_spec.push_back(OIIO::ImageSpec{});
 
@@ -135,6 +139,10 @@ void OIIOImageFileWriter::set_image_channels(
 {
     if (get_image_count() == 0)
         throw ExceptionIOError("No images available!");
+    if (channel_count < 0)
+        throw ExceptionIOError("channel_count must be superior to 0");
+    if (channel_names == nullptr)
+        throw ExceptionIOError("Valid channel_names must be provide!");
 
     OIIO::ImageSpec& spec = m_images->m_spec.back();
 
@@ -298,6 +306,8 @@ void OIIOImageFileWriter::set_image_attributes(const ImageAttributes& image_attr
 
 void OIIOImageFileWriter::write_tiles(const size_t image_index)
 {
+    assert(image_index < m_images->m_canvas.size());
+
     // Retrieves canvas
     assert(image_index < m_images->m_canvas.size());
     const ICanvas* canvas = m_images->m_canvas[image_index];
@@ -352,6 +362,8 @@ void OIIOImageFileWriter::write_tiles(const size_t image_index)
 
 void OIIOImageFileWriter::write_scanlines(const size_t image_index)
 {
+    assert(image_index < m_images->m_canvas.size());
+
     // Retrieves canvas
     assert(image_index < m_images->m_canvas.size());
     const ICanvas* canvas = m_images->m_canvas[image_index];

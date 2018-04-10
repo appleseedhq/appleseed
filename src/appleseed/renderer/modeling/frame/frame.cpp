@@ -531,24 +531,15 @@ namespace
 
         OIIOImageFileWriter writer{ filename.c_str() };
 
+        writer.append_image(&image);
+
         if (aov)
         {
+            // If the AOV has color data, assume we can save it as half floats.
             if (aov->has_color_data())
-            {
-                writer.append_image(&image);
-
-                // If the AOV has color data, assume we can save it as half floats.
                 writer.set_image_output_format(PixelFormatHalf);
-            }
-            else
-                writer.append_image(&image);
 
             writer.set_image_channels(aov->get_channel_count(), aov->get_channel_names());
-
-        }
-        else
-        {
-            writer.append_image(&image);
         }
 
         writer.set_image_attributes(image_attributes);
