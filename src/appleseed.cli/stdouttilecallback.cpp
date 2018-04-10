@@ -91,6 +91,8 @@ namespace
             const int old_stdout_mode = _setmode(_fileno(stdout), _O_BINARY);
 #endif
             send_highlight_tile(*frame, tile_x, tile_y);
+
+            fflush(stdout);
 #ifdef _WIN32
             _setmode(_fileno(stdout), old_stdout_mode);
 #endif
@@ -139,7 +141,7 @@ namespace
             // This header is sent only once and can contains AOVs and frame informations.
             const bool beauty_only = (m_export_options == StdOutTileCallbackFactory::TileOutputOptions::BeautyOnly);
             const size_t chunk_size = 1 * sizeof(uint32);
-            const size_t plane_count = beauty_only ? 1 : 1 + frame.aov_images().size();
+            const size_t plane_count = beauty_only ? 1 : 1 + frame.aovs().size();
             const uint32 header[] =
             {
                 static_cast<uint32>(ChunkTypeTilesHeader),
@@ -152,11 +154,13 @@ namespace
 
             if (!beauty_only)
             {
-                for (size_t i = 0, e = frame.aov_images().size(); i < e; ++i)
+                for (size_t i = 0, e = frame.aovs().size(); i < e; ++i)
                 {
+                    const AOV* aov = frame.aovs().get_by_index(i);
+
                     send_plane_definition(
-                        frame.aov_images().get_image(i),
-                        frame.aov_images().get_name(i),
+                        aov->get_image(),
+                        aov->get_name(),
                         i + 1);
                 }
             }
@@ -233,11 +237,13 @@ namespace
             if (m_export_options == StdOutTileCallbackFactory::TileOutputOptions::AllAOVs)
             {
                 // Send AOV tiles.
-                for (size_t i = 0, e = frame.aov_images().size(); i < e; ++i)
+                for (size_t i = 0, e = frame.aovs().size(); i < e; ++i)
                 {
+                    const AOV* aov = frame.aovs().get_by_index(i);
+
                     do_send_tile(
                         props,
-                        frame.aov_images().get_image(i).tile(tile_x, tile_y),
+                        aov->get_image().tile(tile_x, tile_y),
                         tile_x,
                         tile_y,
                         i + 1);

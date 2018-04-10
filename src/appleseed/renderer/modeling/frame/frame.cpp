@@ -55,6 +55,7 @@
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/defaulttimers.h"
+#include "foundation/platform/path.h"
 #include "foundation/platform/system.h"
 #include "foundation/resources/logo/appleseed-seeds-16.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -153,7 +154,6 @@ Frame::Frame(
             impl->m_tile_width,
             impl->m_tile_height));
 
-    // Copy and add the aovs.
     if (aovs.size() > MaxAOVCount)
     {
         RENDERER_LOG_WARNING(
@@ -161,6 +161,7 @@ Frame::Frame(
             MaxAOVCount);
     }
 
+    // Copy and add AOVs.
     const AOVFactoryRegistrar aov_registrar;
     for (size_t i = 0, e = min(aovs.size(), MaxAOVCount); i < e; ++i)
     {
@@ -422,6 +423,11 @@ void Frame::denoise(
 {
     DenoiserOptions options;
 
+    const bool skip_denoised = m_params.get_optional<bool>("skip_denoised", true);
+    options.m_marked_pixels_skipping_probability = skip_denoised ? 1.0f : 0.0f;
+
+    options.m_use_random_pixel_order = m_params.get_optional<bool>("random_pixel_order", true);
+
     options.m_prefilter_spikes = m_params.get_optional<bool>("prefilter_spikes", true);
 
     options.m_prefilter_threshold_stddev_factor =
@@ -488,15 +494,6 @@ void Frame::denoise(
 
 namespace
 {
-    void add_chromaticities(ImageAttributes& image_attributes)
-    {
-        // Scene-linear sRGB / Rec. 709 chromaticities.
-        image_attributes.insert("white_xy_chromaticity", Vector2f(0.3127f, 0.3290f));
-        image_attributes.insert("red_xy_chromaticity", Vector2f(0.64f, 0.33f));
-        image_attributes.insert("green_xy_chromaticity", Vector2f(0.30f, 0.60f));
-        image_attributes.insert("blue_xy_chromaticity",  Vector2f(0.15f, 0.06f));
-    }
-
     void create_parent_directories(const bf::path& file_path)
     {
         const bf::path parent_path = file_path.parent_path();
@@ -517,6 +514,15 @@ namespace
     void create_parent_directories(const char* file_path)
     {
         create_parent_directories(bf::path(file_path));
+    }
+
+    void add_chromaticities(ImageAttributes& image_attributes)
+    {
+        // Scene-linear sRGB / Rec. 709 chromaticities.
+        image_attributes.insert("white_xy_chromaticity", Vector2f(0.3127f, 0.3290f));
+        image_attributes.insert("red_xy_chromaticity", Vector2f(0.64f, 0.33f));
+        image_attributes.insert("green_xy_chromaticity", Vector2f(0.30f, 0.60f));
+        image_attributes.insert("blue_xy_chromaticity",  Vector2f(0.15f, 0.06f));
     }
 
     void write_exr_image(
@@ -634,10 +640,10 @@ namespace
         bf::path bf_file_path(file_path);
         string extension = lower_case(bf_file_path.extension().string());
 
-        if (extension.empty())
+        if (!has_extension(bf_file_path))
         {
             extension = ".exr";
-            bf_file_path += extension;
+            bf_file_path.replace_extension(extension);
         }
 
         ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
@@ -664,7 +670,7 @@ namespace
             {
                 RENDERER_LOG_ERROR(
                     "failed to write image file %s: unsupported image format.",
-                    file_path);
+                    bf_file_path.string().c_str());
 
                 return false;
             }
@@ -673,7 +679,7 @@ namespace
         {
             RENDERER_LOG_ERROR(
                 "failed to write image file %s: i/o error.",
-                file_path);
+                bf_file_path.string().c_str());
 
             return false;
         }
@@ -681,7 +687,7 @@ namespace
         {
             RENDERER_LOG_ERROR(
                 "failed to write image file %s: %s.",
-                file_path,
+                bf_file_path.string().c_str(),
                 e.what());
 
             return false;
@@ -691,40 +697,10 @@ namespace
 
         RENDERER_LOG_INFO(
             "wrote image file %s in %s.",
-            file_path,
+            bf_file_path.string().c_str(),
             pretty_time(stopwatch.get_seconds()).c_str());
 
         return true;
-    }
-
-    bool write_extra_aovs(
-        const ImageStack&       images,
-        const vector<size_t>&   aov_indices,
-        const bf::path&         directory,
-        const string&           base_file_name,
-        const string&           extension)
-    {
-        bool success = true;
-
-        for (size_t i = 0, e = aov_indices.size(); i < e; ++i)
-        {
-            const size_t image_index = aov_indices[i];
-            assert(image_index < images.size());
-
-            const Image& image = images.get_image(image_index);
-
-            // Compute image file path.
-            const string aov_name = images.get_name(image_index);
-            const string safe_aov_name = make_safe_filename(aov_name);
-            const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
-            const string aov_file_path = (directory / aov_file_name).string();
-
-            // Write AOV image.
-            if (!write_image(aov_file_path.c_str(), image))
-                success = false;
-        }
-
-        return success;
     }
 }
 
@@ -747,7 +723,8 @@ bool Frame::write_main_image(const char* file_path) const
         bf::path boost_file_path(file_path);
         boost_file_path.replace_extension(".exr");
 
-        impl->m_denoiser_aov->write_images(boost_file_path.string().c_str());
+        if (!impl->m_denoiser_aov->write_images(boost_file_path.string().c_str()))
+            return false;
     }
 
     return true;
@@ -758,7 +735,19 @@ bool Frame::write_aov_images(const char* file_path) const
     assert(file_path);
 
     bf::path boost_file_path(file_path);
-    boost_file_path.replace_extension(".exr");
+    const bf::path file_path_ext = boost_file_path.extension();
+
+    if (file_path_ext != ".exr")
+    {
+        if (has_extension(file_path_ext))
+        {
+            RENDERER_LOG_WARNING(
+                "aovs cannot be saved to %s files; saving them to exr files instead.",
+                file_path_ext.string().substr(1).c_str());
+        }
+
+        boost_file_path.replace_extension(".exr");
+    }
 
     const bf::path directory = boost_file_path.parent_path();
     const string base_file_name = boost_file_path.stem().string();
@@ -775,18 +764,28 @@ bool Frame::write_aov_images(const char* file_path) const
         const string aov_file_name = base_file_name + "." + safe_aov_name + ".exr";
         const string aov_file_path = (directory / aov_file_name).string();
 
+        // Write AOV image.
         if (!write_image(aov_file_path.c_str(), aov->get_image(), aov))
             success = false;
     }
 
     if (impl->m_save_extra_aovs)
     {
-        success = success && write_extra_aovs(
-            aov_images(),
-            impl->m_extra_aovs,
-            directory,
-            base_file_name,
-            ".exr");
+        for (size_t i = 0, e = impl->m_extra_aovs.size(); i < e; ++i)
+        {
+            const size_t image_index = impl->m_extra_aovs[i];
+            const Image& image = aov_images().get_image(image_index);
+
+            // Compute AOV image file path.
+            const string aov_name = aov_images().get_name(image_index);
+            const string safe_aov_name = make_safe_filename(aov_name);
+            const string aov_file_name = base_file_name + "." + safe_aov_name + ".exr";
+            const string aov_file_path = (directory / aov_file_name).string();
+
+            // Write AOV image.
+            if (!write_image(aov_file_path.c_str(), image))
+                success = false;
+        }
     }
 
     return success;
@@ -796,47 +795,44 @@ bool Frame::write_main_and_aov_images() const
 {
     bool success = true;
 
-    // Get output filename.
-    const string filepath = get_parameters().get_optional<string>("output_filename");
-
     // Write main image.
-    if (!filepath.empty())
     {
-        if (!write_main_image(filepath.c_str()))
-            success = false;
-    }
-
-    // Write AOVs.
-    for (size_t i = 0, e = aovs().size(); i < e; ++i)
-    {
-        const AOV* aov = aovs().get_by_index(i);
-
-        // Get output filename.
-        bf::path filepath = aov->get_parameters().get_optional<string>("output_filename");
-        filepath.replace_extension(".exr");
-
-        // Write AOV image.
+        const string filepath = get_parameters().get_optional<string>("output_filename");
         if (!filepath.empty())
         {
-            if (!write_image(filepath.string().c_str(), aov->get_image(), aov))
+            if (!write_main_image(filepath.c_str()))
                 success = false;
         }
     }
 
-    if (impl->m_save_extra_aovs)
+    // Write AOV images.
+    for (size_t i = 0, e = aovs().size(); i < e; ++i)
     {
-        bf::path boost_file_path(filepath);
-        boost_file_path.replace_extension(".exr");
+        const AOV* aov = aovs().get_by_index(i);
+        bf::path filepath = aov->get_parameters().get_optional<string>("output_filename");
+        if (!filepath.empty())
+        {
+            const bf::path filepath_ext = filepath.extension();
+            if (filepath_ext != ".exr")
+            {
+                bf::path new_filepath(filepath);
+                new_filepath.replace_extension(".exr");
 
-        const bf::path directory = boost_file_path.parent_path();
-        const string base_file_name = boost_file_path.stem().string();
+                if (has_extension(filepath_ext))
+                {
+                    RENDERER_LOG_WARNING(
+                        "aov \"%s\" cannot be saved to %s file; saving it to \"%s\" instead.",
+                        aov->get_path().c_str(),
+                        filepath_ext.string().substr(1).c_str(),
+                        new_filepath.string().c_str());
+                }
 
-        success = success && write_extra_aovs(
-            aov_images(),
-            impl->m_extra_aovs,
-            directory,
-            base_file_name,
-            ".exr");
+                filepath = new_filepath;
+            }
+
+            if (!write_image(filepath.string().c_str(), aov->get_image(), aov))
+                success = false;
+        }
     }
 
     return success;
@@ -1000,7 +996,7 @@ void Frame::extract_parameters()
                 "filter",
                 DefaultFilterName);
             impl->m_filter_name = DefaultFilterName;
-            impl->m_filter.reset(new GaussianFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 8.0f));
+            impl->m_filter.reset(new FastBlackmanHarrisFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
         }
     }
 
@@ -1125,6 +1121,28 @@ DictionaryArray FrameFactory::get_input_metadata()
             .insert("use", "required")
             .insert("default", "off")
             .insert("on_change", "rebuild_form"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "skip_denoised")
+            .insert("label", "Skip Denoised Pixels")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "true")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "random_pixel_order")
+            .insert("label", "Random Pixel Order")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "true")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on")));
 
     metadata.push_back(
         Dictionary()

@@ -147,6 +147,5 @@ void bind_frame()
         .def("write_main_and_aov_images_to_multipart_exr", &Frame::write_main_and_aov_images_to_multipart_exr)
         .def("archive", archive_frame)
 
-        .def("aovs", &Frame::aovs, bpy::return_value_policy<bpy::reference_existing_object>())
-        ;
+        .def("aovs", &Frame::aovs, bpy::return_value_policy<bpy::reference_existing_object>());
 }

@@ -117,27 +117,27 @@ class APPLESEED_DLLSYMBOL Frame
 
     // Return the normalized device coordinates of a given sample.
     foundation::Vector2d get_sample_position(
-        const double    sample_x,               // x coordinate of the sample in the image, in [0,width)
-        const double    sample_y) const;        // y coordinate of the sample in the image, in [0,height)
+        const double                sample_x,               // x coordinate of the sample in the image, in [0,width)
+        const double                sample_y) const;        // y coordinate of the sample in the image, in [0,height)
     foundation::Vector2d get_sample_position(
-        const size_t    pixel_x,                // x coordinate of the pixel in the image
-        const size_t    pixel_y,                // y coordinate of the pixel in the image
-        const double    sample_x,               // x coordinate of the sample in the pixel, in [0,1)
-        const double    sample_y) const;        // y coordinate of the sample in the pixel, in [0,1)
+        const size_t                pixel_x,                // x coordinate of the pixel in the image
+        const size_t                pixel_y,                // y coordinate of the pixel in the image
+        const double                sample_x,               // x coordinate of the sample in the pixel, in [0,1)
+        const double                sample_y) const;        // y coordinate of the sample in the pixel, in [0,1)
     foundation::Vector2d get_sample_position(
-        const size_t    tile_x,                 // x coordinate of the tile in the image
-        const size_t    tile_y,                 // y coordinate of the tile in the image
-        const size_t    pixel_x,                // x coordinate of the pixel in the tile
-        const size_t    pixel_y,                // y coordinate of the pixel in the tile
-        const double    sample_x,               // x coordinate of the sample in the pixel, in [0,1)
-        const double    sample_y) const;        // y coordinate of the sample in the pixel, in [0,1)
+        const size_t                tile_x,                 // x coordinate of the tile in the image
+        const size_t                tile_y,                 // y coordinate of the tile in the image
+        const size_t                pixel_x,                // x coordinate of the pixel in the tile
+        const size_t                pixel_y,                // y coordinate of the pixel in the tile
+        const double                sample_x,               // x coordinate of the sample in the pixel, in [0,1)
+        const double                sample_y) const;        // y coordinate of the sample in the pixel, in [0,1)
 
     // Do any post-process needed by AOV images.
     void post_process_aov_images() const;
 
     struct RenderStampInfo
     {
-        double m_render_time;   // in seconds
+        double m_render_time;       // in seconds
     };
 
     // Return whether the render stamp should be added to the frame.
@@ -161,17 +161,20 @@ class APPLESEED_DLLSYMBOL Frame
         const size_t                thread_count,
         foundation::IAbortSwitch*   abort_switch) const;
 
-    // Write the main image / the AOV images to disk.
+    // Write the main image to disk.
     // Return true if successful, false otherwise.
     bool write_main_image(const char* file_path) const;
+
+    // Write the AOV images to disk.
+    // Return true if successful, false otherwise.
     bool write_aov_images(const char* file_path) const;
 
     // Write the main image and the AOV images to disk.
-    // The images file paths are taken from the frame and AOV "output_filename" parameters.
+    // Output file paths are taken from the frame's and AOVs' "output_filename" parameters.
     // Return true if successful, false otherwise.
     bool write_main_and_aov_images() const;
 
-    // Write the main image and the AOVs to a multipart OpenEXR file.
+    // Write the main image and the AOV images to a multipart OpenEXR file.
     void write_main_and_aov_images_to_multipart_exr(const char* file_path) const;
 
     // Archive the frame to a given directory on disk. If output_path is provided,
@@ -179,8 +182,8 @@ class APPLESEED_DLLSYMBOL Frame
     // be freed using foundation::free_string().
     // Return true if successful, false otherwise.
     bool archive(
-        const char*     directory,
-        char**          output_path = nullptr) const;
+        const char*                 directory,
+        char**                      output_path = nullptr) const;
 
   private:
     friend class AOVAccumulatorContainer;
@@ -189,13 +192,13 @@ class APPLESEED_DLLSYMBOL Frame
     struct Impl;
     Impl* impl;
 
-    foundation::CanvasProperties    m_props;
+    foundation::CanvasProperties m_props;
 
     // Constructor.
     Frame(
-        const char*         name,
-        const ParamArray&   params,
-        const AOVContainer& aovs);
+        const char*                 name,
+        const ParamArray&           params,
+        const AOVContainer&         aovs);
 
     // Destructor.
     ~Frame() override;
@@ -219,14 +222,14 @@ class APPLESEED_DLLSYMBOL FrameFactory
 
     // Create a new frame.
     static foundation::auto_release_ptr<Frame> create(
-        const char*         name,
-        const ParamArray&   params);
+        const char*                 name,
+        const ParamArray&           params);
 
     // Create a new frame.
     static foundation::auto_release_ptr<Frame> create(
-        const char*         name,
-        const ParamArray&   params,
-        const AOVContainer& aovs);
+        const char*                 name,
+        const ParamArray&           params,
+        const AOVContainer&         aovs);
 };
 
 

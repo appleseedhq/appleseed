@@ -820,7 +820,6 @@ set (foundation_utility_sources
     foundation/utility/memory.h
     foundation/utility/numerictype.h
     foundation/utility/otherwise.h
-    foundation/utility/path.h
     foundation/utility/poison.h
     foundation/utility/poolallocator.h
     foundation/utility/preprocessor.cpp
@@ -1177,8 +1176,6 @@ source_group ("renderer\\kernel\\rendering\\progressive" FILES
 )
 
 set (renderer_kernel_rendering_sources
-    renderer/kernel/rendering/baserenderer.cpp
-    renderer/kernel/rendering/baserenderer.h
     renderer/kernel/rendering/defaultrenderercontroller.cpp
     renderer/kernel/rendering/defaultrenderercontroller.h
     renderer/kernel/rendering/ephemeralshadingresultframebufferfactory.cpp
@@ -1329,6 +1326,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_entityvector.cpp
     renderer/meta/tests/test_environmentedf.cpp
     renderer/meta/tests/test_forwardlightsampler.cpp
+    renderer/meta/tests/test_frame.cpp
     renderer/meta/tests/test_imagetools.cpp
     renderer/meta/tests/test_inputarray.cpp
     renderer/meta/tests/test_intersector.cpp
