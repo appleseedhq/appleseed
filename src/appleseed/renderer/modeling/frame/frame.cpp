@@ -522,7 +522,7 @@ namespace
     void write_exr_image(
         const bf::path&         file_path,
         const Image&            image,
-        const ImageAttributes&  image_attributes,
+        ImageAttributes&        image_attributes,
         const AOV*              aov)
     {
         create_parent_directories(file_path);
@@ -542,7 +542,9 @@ namespace
             writer.set_image_channels(aov->get_channel_count(), aov->get_channel_names());
         }
 
+        image_attributes.insert("oiio::ColorSpace", "Linear");
         writer.set_image_attributes(image_attributes);
+
         writer.write();
     }
 
@@ -586,7 +588,7 @@ namespace
     void write_png_image(
         const bf::path&         file_path,
         const Image&            image,
-        const ImageAttributes&  image_attributes)
+        ImageAttributes&        image_attributes)
     {
         const CanvasProperties& props = image.properties();
 
@@ -602,8 +604,12 @@ namespace
         OIIOImageFileWriter writer{ filename.c_str() };
 
         writer.append_image(&transformed_image);
+
         writer.set_image_output_format(PixelFormat::PixelFormatUInt8);
+
+        image_attributes.insert("oiio::ColorSpace", "sRGB");
         writer.set_image_attributes(image_attributes);
+
         writer.write();
     }
 
