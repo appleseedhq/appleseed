@@ -150,6 +150,9 @@ namespace
             size_t num_light_vertices = trace_light(sampling_context, shading_context, light_vertices);
             size_t num_camera_vertices = trace_camera(sampling_context, shading_context, shading_point, camera_vertices);
 
+            assert(num_camera_vertices <= m_num_max_vertices - 1);
+            assert(num_light_vertices <= m_num_max_vertices);
+
             for (size_t s = 0; s < num_light_vertices + 1; s++)
                 for (size_t t = 2; t < num_camera_vertices + 2; t++)
                     if (s + t <= m_num_max_vertices)
@@ -538,10 +541,10 @@ namespace
             bdpt_vertex.m_shading_point = light_shading_point;
 
             // Build the path tracer.
-            size_t num_light_vertices = 0;
+            size_t num_light_vertices = 1;
             PathVisitor path_visitor(initial_flux * dot(emission_direction, Vector3f(light_sample.m_shading_normal)) / edf_prob,
                                      shading_context,
-                                     vertices + 1,
+                                     vertices,
                                      &num_light_vertices);
             VolumeVisitor volume_visitor;
             PathTracer<PathVisitor, VolumeVisitor, true> path_tracer(
