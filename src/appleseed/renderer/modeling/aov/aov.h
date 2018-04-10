@@ -158,6 +158,8 @@ class UnfilteredAOV
         const size_t    tile_width,
         const size_t    tile_height,
         ImageStack&     aov_images) override;
+
+    foundation::Image*  m_filter_image;
 };
 
 }       // namespace renderer

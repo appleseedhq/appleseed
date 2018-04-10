@@ -136,8 +136,11 @@ namespace
 // UnfilteredAOVAccumulator class implementation.
 //
 
-UnfilteredAOVAccumulator::UnfilteredAOVAccumulator(Image& image)
+UnfilteredAOVAccumulator::UnfilteredAOVAccumulator(
+    Image& image,
+    Image& filter_image)
   : m_image(image)
+  , m_filter_image(filter_image)
 {
 }
 
@@ -150,6 +153,7 @@ void UnfilteredAOVAccumulator::on_tile_begin(
     // Fetch the destination tile.
     const CanvasProperties& props = frame.image().properties();
     m_tile = &m_image.tile(tile_x, tile_y);
+    m_filter_tile = &m_filter_image.tile(tile_x, tile_y);
 
     // Fetch the tile bounds (inclusive).
     m_tile_origin_x = static_cast<int>(tile_x * props.m_tile_width);

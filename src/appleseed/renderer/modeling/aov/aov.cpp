@@ -131,12 +131,14 @@ bool ColorAOV::has_color_data() const
 
 UnfilteredAOV::UnfilteredAOV(const char* name, const ParamArray& params)
   : AOV(name, params)
+  , m_filter_image(nullptr)
 {
 }
 
 UnfilteredAOV::~UnfilteredAOV()
 {
     delete m_image;
+    delete m_filter_image;
 }
 
 bool UnfilteredAOV::has_color_data() const
@@ -151,17 +153,24 @@ void UnfilteredAOV::create_image(
     const size_t tile_height,
     ImageStack& aov_images)
 {
-    // Add one extra channel to keep track of the distance
-    // to the nearest sample for each pixel.
-    const size_t num_channels = get_channel_count() + 1;
-
     m_image =
         new Image(
             canvas_width,
             canvas_height,
             tile_width,
             tile_height,
-            num_channels,
+            get_channel_count(),
+            PixelFormatFloat);
+
+    // Extra image to keep track of the distance
+    // to the nearest sample for each pixel.
+    m_filter_image =
+        new Image(
+            canvas_width,
+            canvas_height,
+            tile_width,
+            tile_height,
+            1,
             PixelFormatFloat);
 
     // We need to clear the image because the default channel value
