@@ -293,7 +293,7 @@ void OIIOImageFileWriter::set_image_attributes(const ImageAttributes& image_attr
     if (extension == ".exr")
         set_exr_image_attributes(image_attributes);
     else if (extension == ".png")
-        set_exr_image_attributes(image_attributes);
+        set_png_image_attributes(image_attributes);
 }
 
 void OIIOImageFileWriter::write_tiles(const size_t image_index)
