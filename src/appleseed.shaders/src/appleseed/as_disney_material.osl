@@ -47,22 +47,22 @@ shader as_disney_material
         string label = "Surface Color",
         string page = "Common"
     ]],
-    float in_subsurface_amount = 0.0
+    float in_subsurface_weight = 0.0
     [[
-        string as_maya_attribute_name = "subsurfaceAmount",
+        string as_maya_attribute_name = "subsurfaceWeight",
         string as_maya_attribute_short_name = "ss",
         float min = 0.0,
         float max = 1.0,
-        string label = "Subsurface Amount",
+        string label = "Subsurface Weight",
         string page = "Common"
     ]],
-    float in_specular_amount = 0.5
+    float in_specular_weight = 0.5
     [[
-        string as_maya_attribute_name = "specularAmount",
+        string as_maya_attribute_name = "specularWeight",
         string as_maya_attribute_short_name = "sa",
         float min = 0.0,
         float max = 1.0,
-        string label = "Specular Amount",
+        string label = "Specular Weight",
         string page = "Specular"
     ]],
     float in_roughness = 0.5
@@ -83,9 +83,9 @@ shader as_disney_material
         string label = "Specular Tinting",
         string page = "Specular"
     ]],
-    float in_metallic_amount = 0.0
+    float in_metallic_weight = 0.0
     [[
-        string as_maya_attribute_name = "metallicAmount",
+        string as_maya_attribute_name = "metallicWeight",
         string as_maya_attribute_short_name = "ma",
         float min = 0.0,
         float max = 1.0,
@@ -120,14 +120,14 @@ shader as_disney_material
         string page = "Specular",
         string help = "Vector tangent field map, with XY in R,G channels"
     ]],
-    float in_sheen_amount = 0.0
+    float in_sheen_weight = 0.0
     [[
-        string as_maya_attribute_name = "sheenAmount",
+        string as_maya_attribute_name = "sheenWeight",
         string as_maya_attribute_short_name = "ha",
         float min = 0.0,
         float max = 10.0,
         float softmax = 1.0,
-        string label = "Sheen Amount",
+        string label = "Sheen Weight",
         string page = "Sheen"
     ]],
     float in_sheen_tint = 0.5
@@ -146,7 +146,7 @@ shader as_disney_material
         float min = 0.0,
         float max = 100.0,
         float softmax = 1.0,
-        string label = "Coating Amount",
+        string label = "Coating Weight",
         string page = "Clear Coat"
     ]],
     float in_clear_coat_glossyness = 1.0
@@ -272,7 +272,7 @@ shader as_disney_material
     normal Nn = normalize(in_bump_normal);
     vector tangent = Tn;
 
-    if (max(in_specular_amount) > 0.0 && in_anisotropy_amount > 0.0)
+    if (max(in_specular_weight) > 0.0 && in_anisotropy_amount > 0.0)
     {
         if (isconnected(in_anisotropy_vector_map))
         {
@@ -298,13 +298,13 @@ shader as_disney_material
         Nn,
         tangent,
         in_color,
-        in_subsurface_amount,
-        in_metallic_amount,
-        in_specular_amount,
+        in_subsurface_weight,
+        in_metallic_weight,
+        in_specular_weight,
         in_specular_tint,
         in_anisotropy_amount,
         in_roughness,
-        in_sheen_amount,
+        in_sheen_weight,
         in_sheen_tint,
         in_clear_coat,
         in_clear_coat_glossyness);
