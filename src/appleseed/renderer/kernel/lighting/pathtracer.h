@@ -93,12 +93,14 @@ class PathTracer
         SamplingContext&        sampling_context,
         const ShadingContext&   shading_context,
         const ShadingRay&       ray,
-        const ShadingPoint*     parent_shading_point = nullptr);
+        const ShadingPoint*     parent_shading_point = nullptr,
+        const bool              clear_arena = true);
 
     size_t trace(
         SamplingContext&        sampling_context,
         const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point);
+        const ShadingPoint&     shading_point,
+        const bool              clear_arena = true);
 
     const ShadingPoint& get_path_vertex(const size_t i) const;
 
@@ -184,7 +186,8 @@ inline size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
     SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
     const ShadingRay&           ray,
-    const ShadingPoint*         parent_shading_point)
+    const ShadingPoint*         parent_shading_point,
+    const bool                  clear_arena)
 {
     ShadingPoint shading_point;
     shading_context.get_intersector().trace(ray, shading_point, parent_shading_point);
@@ -193,14 +196,16 @@ inline size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         trace(
             sampling_context,
             shading_context,
-            shading_point);
+            shading_point,
+            clear_arena);
 }
 
 template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
 size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
     SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
-    const ShadingPoint&         shading_point)
+    const ShadingPoint&         shading_point,
+    const bool                  clear_arena)
 {
     // Terminate the path if the first hit is too close to the origin.
     if (shading_point.hit_surface() && shading_point.get_distance() < m_near_start)
@@ -228,7 +233,10 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
     while (true)
     {
-        shading_context.get_arena().clear();
+        if (clear_arena)
+        {
+            shading_context.get_arena().clear();
+        }
         ShadingPoint* next_shading_point = m_shading_point_arena.allocate<ShadingPoint>();
 
 #ifndef NDEBUG
