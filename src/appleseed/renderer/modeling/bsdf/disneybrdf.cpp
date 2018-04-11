@@ -472,6 +472,9 @@ namespace
                 weights[ClearcoatComponent] = 0.0f;
             }
 
+            if (sample.m_mode == ScatteringMode::None)
+                return;
+
             const Vector3f& outgoing = sample.m_outgoing.get_value();
             const Vector3f& incoming = sample.m_incoming.get_value();
 
