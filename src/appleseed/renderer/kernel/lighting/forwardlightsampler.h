@@ -72,6 +72,9 @@ class ForwardLightSampler
         const foundation::Vector3f&     s,
         LightSample&                    light_sample) const;
 
+    float evaluate_pdf(
+        const ShadingPoint&             light_shading_point) const;
+
   private:
     // Sample the set of non-physical lights.
     void sample_non_physical_lights(
