@@ -54,7 +54,7 @@ VPythonFile::VPythonFile(const string& filename)
         throw ExceptionIOError();
 
     fprintf(m_file, "from __future__ import division\n");
-    fprintf(m_file, "from visual import *\n");
+    fprintf(m_file, "from vpython import *\n");
 }
 
 VPythonFile::~VPythonFile()
@@ -98,7 +98,7 @@ void VPythonFile::draw_point(
 {
     fprintf(
         m_file,
-        "points(pos=[(%f,%f,%f)], size=" FMT_SIZE_T ", color=%s)\n",
+        "points(pos=[(%f,%f,%f)], radius=" FMT_SIZE_T ", color=%s)\n",
         point.x, point.y, point.z,
         size,
         color);
@@ -112,7 +112,7 @@ void VPythonFile::draw_points(
 {
     fprintf(
         m_file,
-        "points(pos=[%s], size=" FMT_SIZE_T ", color=%s)\n",
+        "points(pos=[%s], radius=" FMT_SIZE_T ", color=%s)\n",
         points_to_string(point_count, points).c_str(),
         size,
         color);
@@ -153,7 +153,7 @@ void VPythonFile::draw_arrow(
 
     fprintf(
         m_file,
-        "arrow(pos=(%f,%f,%f), axis=(%f,%f,%f), shaftwidth=%f, fixedwidth=True, color=%s)\n",
+        "arrow(pos=vec(%f,%f,%f), axis=vec(%f,%f,%f), shaftwidth=%f, fixedwidth=True, color=%s)\n",
         from.x, from.y, from.z,
         axis.x, axis.y, axis.z,
         shaft_width,
@@ -235,7 +235,7 @@ void VPythonFile::draw_triangle(
 {
     fprintf(
         m_file,
-        "faces(pos=[(%f,%f,%f),(%f,%f,%f),(%f,%f,%f)], color=%s)\n",
+        "triangle(vs=[vertex(pos=vec(%f,%f,%f)),vertex(pos=vec(%f,%f,%f)),vertex(pos=vec(%f,%f,%f))], color=%s)\n",
         v0.x, v0.y, v0.z,
         v1.x, v1.y, v1.z,
         v2.x, v2.y, v2.z,
