@@ -831,6 +831,7 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
 
     ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
     add_chromaticities(image_attributes);
+    image_attributes.insert("color_space", "Linear");
 
     std::vector<Image> images;
 
