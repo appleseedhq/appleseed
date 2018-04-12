@@ -542,7 +542,7 @@ namespace
             writer.set_image_channels(aov->get_channel_count(), aov->get_channel_names());
         }
 
-        image_attributes.insert("oiio::ColorSpace", "Linear");
+        image_attributes.insert("color_space", "Linear");
         writer.set_image_attributes(image_attributes);
 
         writer.write();
@@ -607,7 +607,7 @@ namespace
 
         writer.set_image_output_format(PixelFormat::PixelFormatUInt8);
 
-        image_attributes.insert("oiio::ColorSpace", "sRGB");
+        image_attributes.insert("color_space", "sRGB");
         writer.set_image_attributes(image_attributes);
 
         writer.write();

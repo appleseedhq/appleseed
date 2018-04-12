@@ -225,6 +225,9 @@ void OIIOImageFileWriter::set_exr_image_attributes(const ImageAttributes& image_
         else if (attr_name == "creation_time")
             spec.attribute("DateTime", attr_value.c_str());
 
+        else if (attr_name == "color_space")
+            spec.attribute("oiio::ColorSpace", attr_value.c_str());
+
         else
             spec.attribute(attr_name.c_str(), attr_value.c_str());
     }
@@ -272,6 +275,9 @@ void OIIOImageFileWriter::set_png_image_attributes(const ImageAttributes& image_
 
         else if (attr_name == "comment")
             spec.attribute("Comment", attr_value.c_str());
+
+        else if (attr_name == "color_space")
+            spec.attribute("oiio::ColorSpace", attr_value.c_str());
 
         else if (attr_name == "dpi")
         {
