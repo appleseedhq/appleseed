@@ -542,7 +542,7 @@ namespace
             writer.set_image_channels(aov->get_channel_count(), aov->get_channel_names());
         }
 
-        image_attributes.insert("color_space", "Linear");
+        image_attributes.insert("color_space", "linear");
         writer.set_image_attributes(image_attributes);
 
         writer.write();
@@ -831,7 +831,7 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
 
     ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
     add_chromaticities(image_attributes);
-    image_attributes.insert("color_space", "Linear");
+    image_attributes.insert("color_space", "linear");
 
     std::vector<Image> images;
 
