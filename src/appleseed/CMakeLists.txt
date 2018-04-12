@@ -264,6 +264,7 @@ set (foundation_math_sources
     foundation/math/bsp.h
     foundation/math/bvh.h
     foundation/math/cdf.h
+    foundation/math/correlatedmultijitter.h
     foundation/math/combination.h
     foundation/math/distance.h
     foundation/math/dual.h
@@ -404,6 +405,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_cameracontroller.cpp
     foundation/meta/tests/test_casts.cpp
     foundation/meta/tests/test_cdf.cpp
+    foundation/meta/tests/test_correlatedmultijitter.cpp
     foundation/meta/tests/test_color.cpp
     foundation/meta/tests/test_colorspace.cpp
     foundation/meta/tests/test_commandlineparser.cpp

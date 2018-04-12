@@ -31,6 +31,7 @@
 #define APPLESEED_FOUNDATION_MATH_SAMPLING_QMCSAMPLINGCONTEXT_H
 
 // appleseed.foundation headers.
+#include "foundation/math/correlatedmultijitter.h"
 #include "foundation/math/permutation.h"
 #include "foundation/math/primes.h"
 #include "foundation/math/qmc.h"
@@ -40,6 +41,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cmath>
 #include <cstddef>
 
 // Unit test case declarations.
@@ -55,6 +57,7 @@ namespace foundation
 // A sampling context featuring:
 //
 //   - deterministic sampling based on Halton sequences
+//   - deterministic sampling based on modified Chiu et al’s multi-jittered sampling method
 //   - Faure digit scrambling
 //   - Cranley-Patterson rotation
 //   - Monte Carlo padding
@@ -63,6 +66,7 @@ namespace foundation
 //
 //   Kollig and Keller, Efficient Multidimensional Sampling
 //   www.uni-kl.de/AG-Heinrich/EMS.pdf
+//   graphics.pixar.com/library/MultiJitteredSampling/paper.pdf
 //
 
 template <typename RNG>
@@ -128,17 +132,45 @@ class QMCSamplingContext
 
     typedef Vector<double, 4> VectorType;
 
-    RNG&        m_rng;
-    Mode        m_mode;
+    struct CMJParameters
+    {
+        bool            m_enabled;
+        size_t          m_m;
+        size_t          m_n;
+        size_t          m_sequence;
+        int             m_pattern;
 
-    size_t      m_base_dimension;
-    size_t      m_base_instance;
+        explicit CMJParameters(
+            const size_t    samples_count,
+            const size_t    dimension,
+            const int       pattern,
+            const Mode      mode)
+          : m_sequence(0)
+          , m_pattern(pattern)
+        {
+            m_enabled = false;
 
-    size_t      m_dimension;
-    size_t      m_sample_count;
+            if (samples_count > 1 && dimension == 2 && mode == QMCMode)
+            {
+                m_enabled = true;
+                cmj_compute_mn(m_m, m_n, samples_count);
+            }
+        }
+    };
 
-    size_t      m_instance;
-    VectorType  m_offset;
+    CMJParameters   m_cmj_params;
+
+    RNG&            m_rng;
+    Mode            m_mode;
+
+    size_t          m_base_dimension;
+    size_t          m_base_instance;
+
+    size_t          m_dimension;
+    size_t          m_sample_count;
+
+    size_t          m_instance;
+    VectorType      m_offset;
 
     // Cranley-Patterson rotation.
     template <typename T>
@@ -158,6 +190,7 @@ class QMCSamplingContext
 
     template <typename T> T next2(Tag<T>);
     template <typename T, size_t N> Vector<T, N> next2(Tag<Vector<T, N>>);
+    template <typename T> Vector<T, 2> next2(Tag<Vector<T, 2>>);
 };
 
 
@@ -177,6 +210,7 @@ inline QMCSamplingContext<RNG>::QMCSamplingContext(
   , m_sample_count(0)
   , m_instance(0)
   , m_offset(0.0)
+  , m_cmj_params(0, 0, 0, mode)
 {
 }
 
@@ -195,6 +229,7 @@ inline QMCSamplingContext<RNG>::QMCSamplingContext(
   , m_sample_count(sample_count)
   , m_instance(instance)
   , m_offset(0.0)
+  , m_cmj_params(sample_count, dimension, instance, mode)
 {
     assert(dimension <= VectorType::Dimension);
 }
@@ -214,6 +249,7 @@ inline QMCSamplingContext<RNG>::QMCSamplingContext(
   , m_dimension(dimension)
   , m_sample_count(sample_count)
   , m_instance(0)
+  , m_cmj_params(sample_count, dimension, base_instance, mode)
 {
     assert(dimension <= VectorType::Dimension);
 
@@ -232,6 +268,7 @@ QMCSamplingContext<RNG>::operator=(const QMCSamplingContext& rhs)
     m_sample_count = rhs.m_sample_count;
     m_instance = rhs.m_instance;
     m_offset = rhs.m_offset;
+    m_cmj_params = rhs.m_cmj_params;
 
     return *this;
 }
@@ -256,7 +293,8 @@ inline void QMCSamplingContext<RNG>::split_in_place(
     const size_t        dimension,
     const size_t        sample_count)
 {
-    assert(m_sample_count == 0 || m_instance == m_sample_count);    // can't split in the middle of a sequence
+    // can't split in the middle of a sequence
+    assert(m_sample_count == 0 || m_instance == m_sample_count || m_cmj_params.m_enabled);
     assert(dimension <= VectorType::Dimension);
 
     m_base_dimension += m_dimension;                // dimension allocation
@@ -264,6 +302,8 @@ inline void QMCSamplingContext<RNG>::split_in_place(
     m_dimension = dimension;
     m_sample_count = sample_count;
     m_instance = 0;
+
+    m_cmj_params = CMJParameters(sample_count, dimension, m_base_instance, m_mode);
 
     if (m_mode == QMCMode)
         compute_offset();
@@ -344,7 +384,7 @@ inline Vector<T, N> QMCSamplingContext<RNG>::next2(Tag<Vector<T, N>>)
 {
     Vector<T, N> v;
 
-    assert(m_sample_count == 0 || m_instance < m_sample_count);
+    assert(m_sample_count == 0 || m_instance < m_sample_count || m_cmj_params.m_enabled);
     assert(N == m_dimension);
     assert(N <= PrimeTableSize);
 
@@ -374,6 +414,61 @@ inline Vector<T, N> QMCSamplingContext<RNG>::next2(Tag<Vector<T, N>>)
     {
         for (size_t i = 0; i < N; ++i)
             v[i] = rand2<T>(m_rng);
+    }
+
+    ++m_instance;
+
+    return v;
+}
+
+template <typename RNG>
+template <typename T>
+inline Vector<T, 2> QMCSamplingContext<RNG>::next2(Tag<Vector<T, 2>>)
+{
+    Vector<T, 2> v;
+
+    assert(m_sample_count == 0 || m_instance < m_sample_count || m_cmj_params.m_enabled);
+    assert(m_dimension == 2);
+
+    if (m_mode == QMCMode)
+    {
+        if (m_cmj_params.m_enabled)
+        {
+            // Correlated Multi-Jittered Sampling
+            v = cmj_generate_sample<T>(
+                m_cmj_params.m_sequence++,
+                m_cmj_params.m_m,
+                m_cmj_params.m_n,
+                m_sample_count,
+                m_cmj_params.m_pattern);
+        }
+        else
+        {
+            if (m_instance < PrecomputedHaltonSequenceSize)
+            {
+                for (size_t i = 0; i < 2; ++i)
+                {
+                    v[i] = static_cast<T>(PrecomputedHaltonSequence[m_instance * 4 + i]);
+                    v[i] = rotate(v[i], static_cast<T>(m_offset[i]));
+                }
+            }
+            else
+            {
+                v[0] = radical_inverse_base2<T>(m_instance);
+                v[0] = rotate(v[0], static_cast<T>(m_offset[0]));
+
+                for (size_t i = 1; i < 2; ++i)
+                {
+                    v[i] = fast_radical_inverse<T>(i, m_instance);
+                    v[i] = rotate(v[i], static_cast<T>(m_offset[i]));
+                }
+            }
+        }
+    }
+    else
+    {
+        v[0] = rand2<T>(m_rng);
+        v[1] = rand2<T>(m_rng);
     }
 
     ++m_instance;
