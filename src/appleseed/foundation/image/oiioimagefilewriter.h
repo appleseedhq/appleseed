@@ -67,8 +67,8 @@ class APPLESEED_DLLSYMBOL OIIOImageFileWriter
 
     void set_image_spec(void);
     
+    void set_generic_image_attributes(const ImageAttributes& image_attributes);
     void set_exr_image_attributes(const ImageAttributes& image_attributes);
-    void set_png_image_attributes(const ImageAttributes& image_attributes);
     
     void write(const size_t image_index);
     void write_single_image(void);

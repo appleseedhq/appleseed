@@ -42,6 +42,23 @@ namespace foundation
 //
 // Image attributes.
 //
+//
+// Here is a non-exhaust list of attributes you can fill for images:
+//
+// - author: The author of the image.
+// - copyright: Any copyright notice or owner of the image.
+// - title: The name of the overall document that this image is a part of.
+// - description: The image description.
+// - date: The creation date of the image.
+// - software: The software that was be used to create the image.
+// - computer: The name or identity of the computer that created the image.
+// - color_space: The color space of the image.
+//      - linear
+//      - sRGB
+// - compression: The compression mode of the image.
+// - compression_quality: The compression quality of the image between 0 and 100.
+// - dpi: dots per inch of the image.
+//
 
 class APPLESEED_DLLSYMBOL ImageAttributes
   : public StringDictionary

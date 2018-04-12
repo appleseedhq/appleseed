@@ -203,10 +203,18 @@ void OIIOImageFileWriter::set_image_spec(void)
     set_image_output_format(props.m_pixel_format);
 }
 
-// See OpenImageIO reference documentation for an exhaustive attribute names list.
-// https://github.com/OpenImageIO/oiio/blob/master/src/doc/openimageio.pdf
-//
 void OIIOImageFileWriter::set_exr_image_attributes(const ImageAttributes& image_attributes)
+{
+    OIIO::ImageSpec spec = m_images->m_spec.back();
+
+    if (image_attributes.exist("dwa_compression_lvl"))
+    {
+        const std::string dwa_compression_lvl = image_attributes.get<std::string>("dwa_compression_lvl");
+        spec.attribute("openexr:dwaCompressionLevel", from_string<float>(dwa_compression_lvl));
+    }
+}
+
+void OIIOImageFileWriter::set_generic_image_attributes(const ImageAttributes& image_attributes)
 {
     OIIO::ImageSpec spec = m_images->m_spec.back();
 
@@ -217,80 +225,48 @@ void OIIOImageFileWriter::set_exr_image_attributes(const ImageAttributes& image_
         const std::string attr_value = i->value<std::string>();
 
         if (attr_name == "author")
-            spec.attribute("Copyright", attr_value.c_str());
-
-        else if (attr_name == "comment")
-            spec.attribute("ImageDescription", attr_value.c_str());
-
-        else if (attr_name == "creation_time")
-            spec.attribute("DateTime", attr_value.c_str());
-
-        else if (attr_name == "color_space")
-            spec.attribute("oiio::ColorSpace", attr_value.c_str());
-
-        else
-            spec.attribute(attr_name.c_str(), attr_value.c_str());
-    }
-}
-
-// See OpenImageIO reference documentation for an exhaustive attribute names list.
-// https://github.com/OpenImageIO/oiio/blob/master/src/doc/openimageio.pdf
-//
-void OIIOImageFileWriter::set_png_image_attributes(const ImageAttributes& image_attributes)
-{
-    OIIO::ImageSpec spec = m_images->m_spec.back();
-
-    for (const_each<ImageAttributes> i = image_attributes; i; ++i)
-    {
-        // Fetch the name and the value of the attribute.
-        const std::string attr_name = i->key();
-        const std::string attr_value = i->value<std::string>();
-
-        if (attr_name == "title")
-            spec.attribute("DocumentName", attr_value.c_str());
-
-        else if (attr_name == "author")
             spec.attribute("Artist", attr_value.c_str());
-
-        else if (attr_name == "description")
-            spec.attribute("ImageDescription", attr_value.c_str());
 
         else if (attr_name == "copyright")
             spec.attribute("Copyright", attr_value.c_str());
 
-        else if (attr_name == "creation_time")
+        else if (attr_name == "title")
+            spec.attribute("DocumentName", attr_value.c_str());
+
+        else if (attr_name == "description")
+            spec.attribute("ImageDescription", attr_value.c_str());
+
+        else if (attr_name == "date")
             spec.attribute("DateTime", attr_value.c_str());
 
         else if (attr_name == "software")
             spec.attribute("Software", attr_value.c_str());
 
-        else if (attr_name == "disclaimer")
-            spec.attribute("Disclaimer", attr_value.c_str());
-
-        else if (attr_name == "warning")
-            spec.attribute("Warning", attr_value.c_str());
-
-        else if (attr_name == "source")
-            spec.attribute("Source", attr_value.c_str());
-
-        else if (attr_name == "comment")
-            spec.attribute("Comment", attr_value.c_str());
+        else if (attr_name == "computer")
+            spec.attribute("HostComputer", attr_value.c_str());
 
         else if (attr_name == "color_space")
-            spec.attribute("oiio::ColorSpace", attr_value.c_str());
+        {
+            if (attr_value == "linear")
+                spec.attribute("oiio::ColorSpace", "Linear");
+            else
+                spec.attribute("oiio::ColorSpace", attr_value.c_str());
+        }
+
+        else if (attr_name == "compression")
+            spec.attribute("compression", attr_value.c_str());
+
+        else if (attr_name == "compression_quality")
+            spec.attribute("CompressionQuality", from_string<int>(attr_value));
 
         else if (attr_name == "dpi")
         {
             const size_t dpi = from_string<size_t>(attr_value);
             const double dpm = dpi * (100.0 / 2.54);
-            const char* dpm_str = to_string<double>(dpm).c_str();
-            spec.attribute("XResolution", dpm_str);
-            spec.attribute("YResolution", dpm_str);
+            spec.attribute("XResolution", static_cast<float>(dpm));
+            spec.attribute("YResolution", static_cast<float>(dpm));
             spec.attribute("ResolutionUnit", "cm");
         }
-
-        else
-            spec.attribute(attr_name.c_str(), attr_value.c_str());
     }
 }
 
@@ -303,11 +279,12 @@ void OIIOImageFileWriter::set_image_attributes(const ImageAttributes& image_attr
     const boost::filesystem::path filepath(m_filename);
     const std::string extension = lower_case(filepath.extension().string());
 
+    // General image attributes
+    set_generic_image_attributes(image_attributes);
+
     // Set image attributes depending of its extension
     if (extension == ".exr")
         set_exr_image_attributes(image_attributes);
-    else if (extension == ".png")
-        set_png_image_attributes(image_attributes);
 }
 
 void OIIOImageFileWriter::write_tiles(const size_t image_index)
