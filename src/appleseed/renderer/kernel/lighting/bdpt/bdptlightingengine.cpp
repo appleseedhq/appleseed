@@ -41,6 +41,8 @@
 #include "renderer/modeling/project/project.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/fp.h"
+#include "foundation/math/population.h"
 #include "foundation/utility/arena.h"
 #include "foundation/utility/statistics.h"
 
@@ -83,12 +85,13 @@ namespace
 
         double convert_density(double pdf, const BDPTVertex& vertex) const
         {
-            Vector3d w = m_position - vertex.m_position;
-            double dist2 = square_norm(w);
-            if (dist2 == 0) return 0.0;
-            double invDist2 = 1 / dist2;
-            pdf *= max(dot(vertex.m_geometric_normal, w * sqrt(invDist2)), 0.0);
-            return pdf * invDist2;
+            const Vector3d w = m_position - vertex.m_position;
+            const double dist2 = square_norm(w);
+            if (dist2 == 0.0)
+                return 0.0;
+            const double rcp_dist2 = 1.0 / dist2;
+            pdf *= max(dot(vertex.m_geometric_normal, w * sqrt(rcp_dist2)), 0.0);
+            return pdf * rcp_dist2;
         }
     };
 
@@ -100,6 +103,7 @@ namespace
         struct Parameters
         {
             const size_t    m_max_bounces;                  // maximum number of bounces, ~0 for unlimited
+
             explicit Parameters(const ParamArray& params)
                 : m_max_bounces(fixup_bounces(params.get_optional<int>("max_bounces", 8)))
             {
@@ -113,11 +117,9 @@ namespace
 
         BDPTLightingEngine(
             const Project&              project,
-            const ForwardLightSampler&  forward_light_sampler,
-            const BackwardLightSampler& backward_light_sampler,
+            const ForwardLightSampler&  light_sampler,
             const ParamArray&           params)
-          : m_forward_light_sampler(forward_light_sampler)
-          , m_backward_light_sampler(backward_light_sampler)
+          : m_light_sampler(light_sampler)
           , m_params(params)
         {
             const Camera* camera = project.get_uncached_active_camera();
@@ -137,11 +139,11 @@ namespace
         }
 
         void compute_lighting(
-            SamplingContext&        sampling_context,
-            const PixelContext&     pixel_context,
-            const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            ShadingComponents&      radiance) override      // output radiance, in W.sr^-1.m^-2
+            SamplingContext&            sampling_context,
+            const PixelContext&         pixel_context,
+            const ShadingContext&       shading_context,
+            const ShadingPoint&         shading_point,
+            ShadingComponents&          radiance) override      // output radiance, in W.sr^-1.m^-2
         {
             /// TODO:: use arena to alloc BDPTVertices instead
             BDPTVertex* camera_vertices = new BDPTVertex[m_num_max_vertices - 1];
@@ -154,19 +156,24 @@ namespace
             assert(num_light_vertices <= m_num_max_vertices);
 
             for (size_t s = 0; s < num_light_vertices + 1; s++)
+            {
                 for (size_t t = 2; t < num_camera_vertices + 2; t++)
+                {
                     if (s + t <= m_num_max_vertices)
                         connect(shading_context, shading_point, light_vertices, camera_vertices, s, t, radiance);
+                }
+            }
 
             delete camera_vertices;
             delete light_vertices;
         }
 
+        // todo: use an output parameter instead of returning a spectrum.
         Spectrum compute_geometry_term(
-            const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            const BDPTVertex&       a,
-            const BDPTVertex&       b)
+            const ShadingContext&       shading_context,
+            const ShadingPoint&         shading_point,
+            const BDPTVertex&           a,
+            const BDPTVertex&           b)
         {
             const Vector3d v = b.m_position - a.m_position;
             const Vector3d normalized_v = normalize(v);
@@ -176,7 +183,7 @@ namespace
             const double cos1 = max(-dot(normalized_v, b.m_geometric_normal), 0.0);
             const double cos2 = max(dot(normalized_v, a.m_geometric_normal), 0.0);
 
-            Spectrum result(0.0);
+            Spectrum result(0.0f);
 
             // do the visibility test
             if (cos1 > 0.0 && cos2 > 0.0)
@@ -192,6 +199,7 @@ namespace
                 double geometry_term = cos1 * cos2 / dist2;
                 result *= (float)geometry_term;
             }
+
             return result;
         }
 
@@ -199,12 +207,12 @@ namespace
         /// in the final code, this function should be removed and the mis weight computation should be very simple.
         /// example: https://github.com/mmp/pbrt-v3/blob/master/src/integrators/bdpt.cpp#L228
         float compute_path_density(
-            BDPTVertex*                         light_vertices,
-            BDPTVertex*                         camera_vertices,
-            const size_t                        s,
-            const size_t                        t,
-            const size_t                        p,
-            const size_t                        q)
+            BDPTVertex*                 light_vertices,
+            BDPTVertex*                 camera_vertices,
+            const size_t                s,
+            const size_t                t,
+            const size_t                p,
+            const size_t                q)
         {
             assert(p + q == s + t);
 
@@ -243,8 +251,8 @@ namespace
                 if (i == 1) // the vertex on light source
                 {
                     const BDPTVertex& vertex = *get_vertex_start_from_light(i);
-                    float pdf_a = vertex.m_is_light_vertex ? m_forward_light_sampler.evaluate_pdf(vertex.m_shading_point) : 0.0f;
-                    assert(pdf_a >= 0.f);
+                    float pdf_a = vertex.m_is_light_vertex ? m_light_sampler.evaluate_pdf(vertex.m_shading_point) : 0.0f;
+                    assert(pdf_a >= 0.0f);
                     result *= pdf_a;
                 }
                 else if (i == 2) // the vertex after light source
@@ -254,7 +262,7 @@ namespace
                     /// TODO:: fix this. This assumes diffuse light source.
                     float pdf_w = static_cast<float>(dot(normalize(vertex.m_position - prev_vertex.m_position), prev_vertex.m_geometric_normal) * RcpPi<float>());
                     float pdf_a = static_cast<float>(prev_vertex.convert_density(pdf_w, vertex));
-                    assert(pdf_a >= 0.f);
+                    assert(pdf_a >= 0.0f);
                     result *= pdf_a;
                 }
                 else
@@ -271,7 +279,7 @@ namespace
                         static_cast<Vector3f>(normalize(prev2_vertex.m_position - prev_vertex.m_position)),
                         ScatteringMode::All);
                     float pdf_a = static_cast<float>(prev_vertex.convert_density(pdf_w, vertex));
-                    assert(pdf_a >= 0.f);
+                    assert(pdf_a >= 0.0f);
                     result *= pdf_a;
                 }
             }
@@ -292,7 +300,7 @@ namespace
                         static_cast<Vector3f>(prev_vertex.m_dir_to_prev_vertex),
                         ScatteringMode::All);
                     float pdf_a = static_cast<float>(prev_vertex.convert_density(pdf_w, vertex));
-                    assert(pdf_a >= 0.f);
+                    assert(pdf_a >= 0.0f);
                     result *= pdf_a;
                 }
                 else
@@ -309,7 +317,7 @@ namespace
                         static_cast<Vector3f>(normalize(prev2_vertex.m_position - prev_vertex.m_position)),
                         ScatteringMode::All);
                     float pdf_a = static_cast<float>(prev_vertex.convert_density(pdf_w, vertex));
-                    assert(pdf_a >= 0.f);
+                    assert(pdf_a >= 0.0f);
                     result *= pdf_a;
                 }
             }
@@ -318,13 +326,13 @@ namespace
         }
 
         void connect(
-            const ShadingContext&               shading_context,
-            const ShadingPoint&                 shading_point,
-            BDPTVertex*                         light_vertices,
-            BDPTVertex*                         camera_vertices,
-            const size_t                        s,
-            const size_t                        t,
-            ShadingComponents&                  radiance)
+            const ShadingContext&       shading_context,
+            const ShadingPoint&         shading_point,
+            BDPTVertex*                 light_vertices,
+            BDPTVertex*                 camera_vertices,
+            const size_t                s,
+            const size_t                t,
+            ShadingComponents&          radiance)
         {
             assert(t >= 2);
             Spectrum result(0);
@@ -374,9 +382,7 @@ namespace
 
                 if (light_vertex.m_bsdf == nullptr || camera_vertex.m_bsdf == nullptr ||
                     light_vertex.m_bsdf_data == nullptr || camera_vertex.m_bsdf == nullptr)
-                {
                     return;
-                }
 
                 DirectShadingComponents camera_eval_bsdf;
                 camera_vertex.m_bsdf->evaluate(
@@ -407,27 +413,27 @@ namespace
             }
 
             // check if throughput is near black or not
-            if (fz(result, 1.0e-4f)) { return; }
+            if (fz(result, 1.0e-4f))
+                return;
 
-            float numerator = compute_path_density(light_vertices, camera_vertices, s, t, s, t);
-            if (numerator == 0.f) { return; }
+            const float numerator = compute_path_density(light_vertices, camera_vertices, s, t, s, t);
+            if (numerator == 0.0f)
+                return;
 
             /// TODO:: unhandled case where (numerator <= 0) (specular surface / impossible path).
-            assert(isfinite(numerator));
-            assert(numerator > 0.f);
+            assert(FP<float>::is_finite(numerator));
+            assert(numerator > 0.0f);
 
-            float denominator = 0.0;
+            float denominator = 0.0f;
             // [p = 0, q = s + t], [p = 1, q = s + t - 1] ... [p = s + t - 2, q = 2]
             for (size_t i = 0; i <= s + t - 2; i++)
-            {
                 denominator += compute_path_density(light_vertices, camera_vertices, s, t, i, s + t - i);
-            }
 
             /// TODO:: unhandled case where (denominator <= 0) (specular surface / impossible path).
-            assert(isfinite(denominator));
-            assert(denominator > 0.f);
+            assert(FP<float>::is_finite(denominator));
+            assert(denominator > 0.0f);
 
-            float mis_weight = numerator / denominator;
+            const float mis_weight = numerator / denominator;
 
             assert(mis_weight <= 1.0f);
             radiance.m_beauty += mis_weight * result;
@@ -442,7 +448,7 @@ namespace
             sampling_context.split_in_place(4, 1);
             const Vector4f s = sampling_context.next2<Vector4f>();
             LightSample light_sample;
-            m_forward_light_sampler.sample(
+            m_light_sampler.sample(
                 ShadingRay::Time::create_with_normalized_time(
                     s[0],
                     m_shutter_open_begin_time,
@@ -450,16 +456,17 @@ namespace
                 Vector3f(s[1], s[2], s[3]),
                 light_sample);
 
-            return light_sample.m_triangle
-                ? trace_emitting_triangle(
-                    sampling_context,
-                    shading_context,
-                    light_sample,
-                    vertices)
-                : trace_non_physical_light(
-                    sampling_context,
-                    shading_context,
-                    light_sample);
+            return
+                light_sample.m_triangle != nullptr
+                    ? trace_emitting_triangle(
+                        sampling_context,
+                        shading_context,
+                        light_sample,
+                        vertices)
+                    : trace_non_physical_light(
+                        sampling_context,
+                        shading_context,
+                        light_sample);
         }
 
         size_t trace_emitting_triangle(
@@ -572,18 +579,18 @@ namespace
         }
 
         size_t trace_non_physical_light(
-            SamplingContext&        sampling_context,
-            const ShadingContext&   shading_context,
-            LightSample&            light_sample)
+            SamplingContext&            sampling_context,
+            const ShadingContext&       shading_context,
+            LightSample&                light_sample)
         {
             return 0;
         }
 
         size_t trace_camera(
-            SamplingContext&        sampling_context,
-            const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            BDPTVertex*             vertices)
+            SamplingContext&            sampling_context,
+            const ShadingContext&       shading_context,
+            const ShadingPoint&         shading_point,
+            BDPTVertex*                 vertices)
         {
             size_t num_camera_vertices = 0;
             PathVisitor path_visitor(Spectrum(1.0), shading_context, vertices, &num_camera_vertices);
@@ -622,9 +629,7 @@ namespace
     private:
         const Parameters            m_params;
 
-        const ForwardLightSampler&  m_forward_light_sampler;
-        const BackwardLightSampler& m_backward_light_sampler;
-        //Intersector                 m_intersector;
+        const ForwardLightSampler&  m_light_sampler;
 
         float                       m_shutter_open_begin_time;
         float                       m_shutter_close_end_time;
@@ -636,10 +641,16 @@ namespace
 
         struct PathVisitor
         {
-            PathVisitor(const Spectrum&         initial_beta,
-                        const ShadingContext&   shading_context,
-                        BDPTVertex*             vertices,
-                        size_t*                 num_vertices)
+            const ShadingContext&           m_shading_context;
+            Spectrum                        m_initial_beta;
+            BDPTVertex*                     m_vertices;
+            size_t*                         m_num_vertices;
+
+            PathVisitor(
+                const Spectrum&             initial_beta,
+                const ShadingContext&       shading_context,
+                BDPTVertex*                 vertices,
+                size_t*                     num_vertices)
               : m_initial_beta(initial_beta)
               , m_shading_context(shading_context)
               , m_vertices(vertices)
@@ -686,11 +697,6 @@ namespace
             void on_scatter(const PathVertex& vertex)
             {
             }
-
-            const ShadingContext&       m_shading_context;
-            Spectrum                    m_initial_beta;
-            BDPTVertex*                 m_vertices;
-            size_t*                     m_num_vertices;
         };
 
         struct VolumeVisitor
@@ -705,22 +711,29 @@ namespace
                 return true;
             }
 
-            void on_scatter(PathVertex& vertex) {}
+            void on_scatter(PathVertex& vertex)
+            {
+            }
 
-            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray) {}
+            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray)
+            {
+            }
         };
     };
 }
 
+
+//
+// BDPTLightingEngineFactory class implementation.
+//
+
 BDPTLightingEngineFactory::BDPTLightingEngineFactory(
     const Project&              project,
-    const ForwardLightSampler&  forward_light_sampler,
-    const BackwardLightSampler& backward_light_sampler,
+    const ForwardLightSampler&  light_sampler,
     const ParamArray&           params)
-    : m_project(project)
-    , m_forward_light_sampler(forward_light_sampler)
-    , m_backward_light_sampler(backward_light_sampler)
-    , m_params(params)
+  : m_project(project)
+  , m_light_sampler(light_sampler)
+  , m_params(params)
 {
 }
 
@@ -731,11 +744,11 @@ void BDPTLightingEngineFactory::release()
 
 ILightingEngine* BDPTLightingEngineFactory::create()
 {
-    return new BDPTLightingEngine(
-        m_project,
-        m_forward_light_sampler,
-        m_backward_light_sampler,
-        m_params);
+    return
+        new BDPTLightingEngine(
+            m_project,
+            m_light_sampler,
+            m_params);
 }
 
 Dictionary BDPTLightingEngineFactory::get_params_metadata()
@@ -746,12 +759,12 @@ Dictionary BDPTLightingEngineFactory::get_params_metadata()
     metadata.dictionaries().insert(
         "max_bounces",
         Dictionary()
-        .insert("type", "int")
-        .insert("default", "8")
-        .insert("unlimited", "true")
-        .insert("min", "0")
-        .insert("label", "Max Bounces")
-        .insert("help", "Maximum number of bounces"));
+            .insert("type", "int")
+            .insert("default", "8")
+            .insert("unlimited", "true")
+            .insert("min", "0")
+            .insert("label", "Max Bounces")
+            .insert("help", "Maximum number of bounces"));
 
     return metadata;
 }
