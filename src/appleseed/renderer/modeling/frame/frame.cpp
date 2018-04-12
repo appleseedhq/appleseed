@@ -845,7 +845,7 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
         const CanvasProperties& props = image.properties();
         images.emplace_back(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
 
-        image_attributes.insert("Name", "beauty");
+        image_attributes.insert("image_name", "beauty");
 
         writer.append_image(&(images.back()));
         writer.set_image_attributes(image_attributes);
@@ -867,7 +867,7 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
         else
             writer.append_image(&image);
 
-        image_attributes.insert("Name", aov_name.c_str());
+        image_attributes.insert("image_name", aov_name.c_str());
 
         writer.set_image_channels(aov->get_channel_count(), aov->get_channel_names());
         writer.set_image_attributes(image_attributes);
@@ -885,7 +885,7 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
             const string aov_name = aov_images().get_name(image_index);
             assert(props.m_channel_count == 4);
 
-            image_attributes.insert("Name", aov_name.c_str());
+            image_attributes.insert("image_name", aov_name.c_str());
 
             writer.append_image(&image);
             writer.set_image_attributes(image_attributes);

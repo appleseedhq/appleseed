@@ -248,9 +248,9 @@ void OIIOImageFileWriter::set_generic_image_attributes(const ImageAttributes& im
         else if (attr_name == "color_space")
         {
             if (attr_value == "linear")
-                spec.attribute("oiio::ColorSpace", "Linear");
+                spec.attribute("oiio:ColorSpace", "Linear");
             else
-                spec.attribute("oiio::ColorSpace", attr_value.c_str());
+                spec.attribute("oiio:ColorSpace", attr_value.c_str());
         }
 
         else if (attr_name == "compression")
@@ -267,6 +267,9 @@ void OIIOImageFileWriter::set_generic_image_attributes(const ImageAttributes& im
             spec.attribute("YResolution", static_cast<float>(dpm));
             spec.attribute("ResolutionUnit", "cm");
         }
+
+        else if (attr_name == "image_name")
+            spec.attribute("oiio:subimagename", attr_value.c_str());
     }
 }
 

@@ -52,6 +52,7 @@ namespace foundation
 // - date: The creation date of the image.
 // - software: The software that was be used to create the image.
 // - computer: The name or identity of the computer that created the image.
+// - image_name: The name of the image.
 // - color_space: The color space of the image.
 //      - linear
 //      - sRGB
