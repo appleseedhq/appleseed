@@ -115,7 +115,9 @@ class UnfilteredAOVAccumulator
   : public AOVAccumulator
 {
   public:
-    explicit UnfilteredAOVAccumulator(foundation::Image& image);
+    UnfilteredAOVAccumulator(
+        foundation::Image& image,
+        foundation::Image& filter_image);
 
     void on_tile_begin(
         const Frame&                frame,
@@ -126,12 +128,17 @@ class UnfilteredAOVAccumulator
   protected:
     foundation::Image&  m_image;
     foundation::Tile*   m_tile;
+
+    foundation::Image&  m_filter_image;
+    foundation::Tile*   m_filter_tile;
+
     int                 m_tile_origin_x;
     int                 m_tile_origin_y;
     int                 m_tile_end_x;
     int                 m_tile_end_y;
 
     foundation::Tile& get_tile() const;
+    foundation::Tile& get_filter_tile() const;
 
     bool outside_tile(const foundation::Vector2i& pi) const;
 
@@ -210,6 +217,11 @@ class AOVAccumulatorContainer
 inline foundation::Tile& UnfilteredAOVAccumulator::get_tile() const
 {
     return *m_tile;
+}
+
+inline foundation::Tile& UnfilteredAOVAccumulator::get_filter_tile() const
+{
+    return *m_filter_tile;
 }
 
 inline bool UnfilteredAOVAccumulator::outside_tile(

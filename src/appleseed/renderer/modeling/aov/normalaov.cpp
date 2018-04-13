@@ -63,8 +63,8 @@ namespace
       : public UnfilteredAOVAccumulator
     {
       public:
-        explicit NormalAOVAccumulator(Image& image)
-          : UnfilteredAOVAccumulator(image)
+        NormalAOVAccumulator(Image& image, Image& filter_image)
+          : UnfilteredAOVAccumulator(image, filter_image)
         {
         }
 
@@ -83,7 +83,10 @@ namespace
             float* p = reinterpret_cast<float*>(
                 get_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
 
-            const float min_sample_square_distance = p[3];
+            float* f = reinterpret_cast<float*>(
+                get_filter_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
+
+            const float min_sample_square_distance = *f;
             const float sample_square_distance =
                 square_distance_to_pixel_center(pixel_context.get_sample_position());
 
@@ -95,14 +98,14 @@ namespace
                     p[0] = static_cast<float>(n[0]) * 0.5f + 0.5f;
                     p[1] = static_cast<float>(n[1]) * 0.5f + 0.5f;
                     p[2] = static_cast<float>(n[2]) * 0.5f + 0.5f;
-                    p[3] = sample_square_distance;
+                    *f = sample_square_distance;
                 }
                 else
                 {
                     p[0] = 0.5f;
                     p[1] = 0.5f;
                     p[2] = 0.5f;
-                    p[3] = sample_square_distance;
+                    *f = sample_square_distance;
                 }
             }
         }
@@ -147,12 +150,14 @@ namespace
 
         void clear_image() override
         {
-            m_image->clear(Color4f(0.5f, 0.5f, 0.5f, numeric_limits<float>::max()));
+            m_image->clear(Color3f(0.5f, 0.5f, 0.5f));
+            m_filter_image->clear(Color<float, 1>(numeric_limits<float>::max()));
         }
 
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
-            return auto_release_ptr<AOVAccumulator>(new NormalAOVAccumulator(get_image()));
+            return auto_release_ptr<AOVAccumulator>(
+                new NormalAOVAccumulator(get_image(), *m_filter_image));
         }
     };
 }

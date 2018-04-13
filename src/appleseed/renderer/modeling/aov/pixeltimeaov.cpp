@@ -34,6 +34,7 @@
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/aov/aov.h"
+#include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -63,11 +64,11 @@ namespace
     //
 
     class PixelTimeAOVAccumulator
-      : public UnfilteredAOVAccumulator
+      : public AOVAccumulator
     {
       public:
         explicit PixelTimeAOVAccumulator(Image& image)
-          : UnfilteredAOVAccumulator(image)
+          : m_image(image)
         {
         }
 
@@ -77,11 +78,15 @@ namespace
             const size_t                tile_y,
             const size_t                max_spp) override
         {
-            UnfilteredAOVAccumulator::on_tile_begin(
-                frame,
-                tile_x,
-                tile_y,
-                max_spp);
+            // Fetch the destination tile.
+            const CanvasProperties& props = frame.image().properties();
+            m_tile = &m_image.tile(tile_x, tile_y);
+
+            // Fetch the tile bounds (inclusive).
+            m_tile_origin_x = static_cast<int>(tile_x * props.m_tile_width);
+            m_tile_origin_y = static_cast<int>(tile_y * props.m_tile_height);
+            m_tile_end_x = static_cast<int>(m_tile_origin_x + m_tile->get_width() - 1);
+            m_tile_end_y = static_cast<int>(m_tile_origin_y + m_tile->get_height() - 1);
 
             m_samples.reserve(max_spp);
         }
@@ -122,14 +127,31 @@ namespace
             const double median = m_samples[mid];
 
             float* p = reinterpret_cast<float*>(
-                get_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
+                m_tile->pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
 
             *p += static_cast<float>(median) * m_samples.size();
         }
 
       private:
+        Image&                              m_image;
+        foundation::Tile*                   m_tile;
+
+        int                                 m_tile_origin_x;
+        int                                 m_tile_origin_y;
+        int                                 m_tile_end_x;
+        int                                 m_tile_end_y;
+
         Stopwatch<DefaultProcessorTimer>    m_stopwatch;
         std::vector<double>                 m_samples;
+
+        bool outside_tile(const Vector2i& pi) const
+        {
+            return
+                pi.x < m_tile_origin_x ||
+                pi.y < m_tile_origin_y ||
+                pi.x > m_tile_end_x ||
+                pi.y > m_tile_end_y;
+        }
     };
 
 
@@ -140,11 +162,11 @@ namespace
     const char* PixelTimeAOVModel = "pixel_time_aov";
 
     class PixelTimeAOV
-      : public UnfilteredAOV
+      : public AOV
     {
       public:
         explicit PixelTimeAOV(const ParamArray& params)
-          : UnfilteredAOV("pixel_time", params)
+          : AOV("pixel_time", params)
         {
         }
 
@@ -167,6 +189,11 @@ namespace
         {
             static const char* ChannelNames[] = {"PixelTime"};
             return ChannelNames;
+        }
+
+        bool has_color_data() const override
+        {
+            return false;
         }
 
         void create_image(
