@@ -164,8 +164,8 @@ namespace
                 }
             }
 
-            delete camera_vertices;
-            delete light_vertices;
+            delete[] camera_vertices;
+            delete[] light_vertices;
         }
 
         // todo: use an output parameter instead of returning a spectrum.
