@@ -210,8 +210,12 @@ namespace
                     sample);
             sample.m_value *= c->get_closure_weight(closure_index);
 
-            if (sample.m_mode == ScatteringMode::Specular || sample.m_probability == 0.0f)
+            if (sample.m_mode == ScatteringMode::None ||
+                sample.m_mode == ScatteringMode::Specular ||
+                sample.m_probability < 1e-6f)
+            {
                 return;
+            }
 
             sample.m_probability *= pdfs[closure_index];
             pdfs[closure_index] = 0.0f;
