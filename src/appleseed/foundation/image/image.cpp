@@ -170,16 +170,30 @@ void Image::release()
 
 Tile& Image::tile(
     const size_t        tile_x,
-    const size_t        tile_y)
+    const size_t        tile_y,
+    const size_t        tile_level)
 {
-    const size_t tile_index = tile_y * m_props.m_tile_count_x + tile_x;
+    size_t ax, ay;
+
+    if (tile_level > 0)
+    {
+        ax = tile_x / 2;
+        ay = tile_y / 2;
+    }
+    else
+    {
+        ax = tile_x;
+        ay = tile_y;
+    }
+        
+    const size_t tile_index = ay * m_props.m_tile_count_x + ax;
 
     if (m_tiles[tile_index] == nullptr)
     {
         Tile* tile =
             new Tile(
-                m_props.get_tile_width(tile_x),
-                m_props.get_tile_height(tile_y),
+                m_props.get_tile_width(ax),
+                m_props.get_tile_height(ay),
                 m_props.m_channel_count,
                 m_props.m_pixel_format);
 
@@ -188,20 +202,49 @@ Tile& Image::tile(
         m_tiles[tile_index] = tile;
     }
 
+    if (tile_level > 0)
+    {
+        int x = tile_x % 2;
+        int y = tile_y % 2;
+
+        if (m_tiles[tile_index]->m_sub_tiles == nullptr)
+        {
+            m_tiles[tile_index]->m_sub_tiles = new Tile*[4];
+
+            for (int i = 0; i < 4; ++i)
+            {
+                m_tiles[tile_index]->m_sub_tiles[i] =
+                    new Tile(
+                        m_props.get_tile_width(ax) / 2,
+                        m_props.get_tile_height(ay) / 2,
+                        m_props.m_channel_count,
+                        m_props.m_pixel_format);
+
+                memset(m_tiles[tile_index]->m_sub_tiles[i]->pixel(0, 0), 0, m_tiles[tile_index]->m_sub_tiles[i]->get_size());
+            }
+
+
+        }
+
+        return *m_tiles[tile_index]->m_sub_tiles[2 * x + y];
+    }
+
     return *m_tiles[tile_index];
 }
 
 const Tile& Image::tile(
     const size_t        tile_x,
-    const size_t        tile_y) const
+    const size_t        tile_y,
+    const size_t        tile_level) const
 {
-    return const_cast<Image*>(this)->tile(tile_x, tile_y);
+    return const_cast<Image*>(this)->tile(tile_x, tile_y, tile_level);
 }
 
 void Image::set_tile(
     const size_t        tile_x,
     const size_t        tile_y,
-    Tile*               tile)
+    Tile*               tile,
+    const size_t        tile_level)
 {
     const size_t tile_index = tile_y * m_props.m_tile_count_x + tile_x;
 

@@ -52,6 +52,7 @@ class IShadingResultFrameBufferFactory
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y,
+        const size_t                tile_level,
         const foundation::AABB2u&   tile_bbox) = 0;
 
     virtual void destroy(

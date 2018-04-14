@@ -56,7 +56,7 @@ PermanentShadingResultFrameBufferFactory::PermanentShadingResultFrameBufferFacto
     const size_t tile_count_x = frame.image().properties().m_tile_count_x;
     const size_t tile_count_y = frame.image().properties().m_tile_count_y;
 
-    m_framebuffers.resize(tile_count_x * tile_count_y, nullptr);
+    m_framebuffers.resize(tile_count_x * tile_count_y * 4, nullptr);
 }
 
 PermanentShadingResultFrameBufferFactory::~PermanentShadingResultFrameBufferFactory()
@@ -69,14 +69,15 @@ ShadingResultFrameBuffer* PermanentShadingResultFrameBufferFactory::create(
     const Frame&                frame,
     const size_t                tile_x,
     const size_t                tile_y,
+    const size_t                tile_level,
     const AABB2u&               tile_bbox)
 {
     const size_t tile_count_x = frame.image().properties().m_tile_count_x;
-    const size_t index = tile_y * tile_count_x + tile_x;
+    const size_t index = tile_y * tile_count_x * pow_int(2, tile_level) + tile_x;
 
     if (m_framebuffers[index] == nullptr)
     {
-        const Tile& tile = frame.image().tile(tile_x, tile_y);
+        const Tile& tile = frame.image().tile(tile_x, tile_y, tile_level);
 
         m_framebuffers[index] =
             new ShadingResultFrameBuffer(

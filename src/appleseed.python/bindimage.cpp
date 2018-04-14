@@ -169,7 +169,7 @@ void bind_image()
         .def("blender_tile_data", blender_tile_data)
         ;
 
-    const Tile& (Image::*image_get_tile)(const size_t, const size_t) const = &Image::tile;
+    const Tile& (Image::*image_get_tile)(const size_t, const size_t, const size_t) const = &Image::tile;
 
     bpy::class_<Image, boost::noncopyable>("Image", bpy::no_init)
         .def("__copy__", copy_image, bpy::return_value_policy<bpy::manage_new_object>())

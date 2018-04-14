@@ -53,9 +53,10 @@ ShadingResultFrameBuffer* EphemeralShadingResultFrameBufferFactory::create(
     const Frame&                frame,
     const size_t                tile_x,
     const size_t                tile_y,
+    const size_t                tile_level,
     const AABB2u&               tile_bbox)
 {
-    const Tile& tile = frame.image().tile(tile_x, tile_y);
+    const Tile& tile = frame.image().tile(tile_x, tile_y, tile_level);
 
     ShadingResultFrameBuffer* framebuffer =
         new ShadingResultFrameBuffer(

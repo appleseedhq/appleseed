@@ -61,6 +61,7 @@ TileJob::TileJob(
     const Frame&                frame,
     const size_t                tile_x,
     const size_t                tile_y,
+    const size_t                tile_level,
     const size_t                pass_hash,
     const Spectrum::Mode        spectrum_mode,
     foundation::JobQueue&       job_queue,
@@ -70,6 +71,7 @@ TileJob::TileJob(
   , m_frame(frame)
   , m_tile_x(tile_x)
   , m_tile_y(tile_y)
+  , m_tile_level(tile_level)
   , m_pass_hash(pass_hash)
   , m_spectrum_mode(spectrum_mode)
   , m_job_queue(job_queue)
@@ -87,6 +89,60 @@ void TileJob::execute(const size_t thread_index)
     if (m_tile_renderers.size() > m_job_queue.get_scheduled_job_count())
         RENDERER_LOG_INFO("split");
 
+    if (m_tile_level == 0 )
+    {
+        m_job_queue.schedule(new TileJob(
+            m_tile_renderers,
+            m_tile_callbacks,
+            m_frame,
+            2 * m_tile_x,
+            2 * m_tile_y,
+            1,
+            m_pass_hash,
+            m_spectrum_mode,
+            m_job_queue,
+            m_abort_switch), true);
+
+        m_job_queue.schedule(new TileJob(
+            m_tile_renderers,
+            m_tile_callbacks,
+            m_frame,
+            2 * m_tile_x + 1,
+            2 * m_tile_y,
+            1,
+            m_pass_hash,
+            m_spectrum_mode,
+            m_job_queue,
+            m_abort_switch), true);
+
+        m_job_queue.schedule(new TileJob(
+            m_tile_renderers,
+            m_tile_callbacks,
+            m_frame,
+            2 * m_tile_x,
+            2 * m_tile_y + 1,
+            1,
+            m_pass_hash,
+            m_spectrum_mode,
+            m_job_queue,
+            m_abort_switch), true);
+
+        m_job_queue.schedule(new TileJob(
+            m_tile_renderers,
+            m_tile_callbacks,
+            m_frame,
+            2 * m_tile_x + 1,
+            2 * m_tile_y + 1,
+            1,
+            m_pass_hash,
+            m_spectrum_mode,
+            m_job_queue,
+            m_abort_switch), true);
+
+        return;
+    }
+
+
     // Initialize thread-local variables.
     Spectrum::set_mode(m_spectrum_mode);
 
@@ -99,7 +155,7 @@ void TileJob::execute(const size_t thread_index)
 
     // Call the pre-render tile callback.
     if (tile_callback)
-        tile_callback->on_tile_begin(&m_frame, m_tile_x, m_tile_y);
+        tile_callback->on_tile_begin(&m_frame, m_tile_x, m_tile_y, m_tile_level);
 
     try
     {
@@ -108,6 +164,7 @@ void TileJob::execute(const size_t thread_index)
             m_frame,
             m_tile_x,
             m_tile_y,
+            m_tile_level,
             m_pass_hash,
             m_abort_switch);
     }
@@ -115,7 +172,7 @@ void TileJob::execute(const size_t thread_index)
     {
         // Call the post-render tile callback.
         if (tile_callback)
-            tile_callback->on_tile_end(&m_frame, m_tile_x, m_tile_y);
+            tile_callback->on_tile_end(&m_frame, m_tile_x, m_tile_y, m_tile_level);
 
         // Rethrow the exception.
         throw;
@@ -123,7 +180,7 @@ void TileJob::execute(const size_t thread_index)
 
     // Call the post-render tile callback.
     if (tile_callback)
-        tile_callback->on_tile_end(&m_frame, m_tile_x, m_tile_y);
+        tile_callback->on_tile_end(&m_frame, m_tile_x, m_tile_y, m_tile_level);
 }
 
 }   // namespace renderer

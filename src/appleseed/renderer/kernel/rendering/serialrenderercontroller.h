@@ -78,12 +78,14 @@ class SerialRendererController
     void add_on_tile_begin_callback(
         const Frame*            frame,
         const size_t            tile_x,
-        const size_t            tile_y);
+        const size_t            tile_y,
+        const size_t            tile_level);
 
     void add_on_tile_end_callback(
         const Frame*            frame,
         const size_t            tile_x,
-        const size_t            tile_y);
+        const size_t            tile_y,
+        const size_t            tile_level);
 
     void add_on_progressive_frame_update_callback(
         const Frame*            frame);
@@ -104,6 +106,7 @@ class SerialRendererController
         const Frame*    m_frame;
         size_t          m_tile_x;
         size_t          m_tile_y;
+        size_t          m_tile_level;
     };
 
     IRendererController*                m_controller;

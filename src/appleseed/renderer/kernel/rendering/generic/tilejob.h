@@ -66,6 +66,7 @@ class TileJob
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y,
+        const size_t                tile_level,
         const size_t                pass_hash,
         const Spectrum::Mode        spectrum_mode,
         foundation::JobQueue&       job_queue,
@@ -80,6 +81,7 @@ class TileJob
     const Frame&                    m_frame;
     const size_t                    m_tile_x;
     const size_t                    m_tile_y;
+    const size_t                    m_tile_level;
     const size_t                    m_pass_hash;
     const Spectrum::Mode            m_spectrum_mode;
     foundation::JobQueue&           m_job_queue;

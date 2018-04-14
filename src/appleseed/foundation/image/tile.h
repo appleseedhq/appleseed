@@ -185,6 +185,8 @@ class APPLESEED_DLLSYMBOL Tile
     // (but possibly using a different pixel format).
     void copy(const Tile& rhs);
 
+    Tile**                   m_sub_tiles = nullptr;
+
   protected:
     const size_t            m_width;            // tile width, in pixels
     const size_t            m_height;           // tile height, in pixels
@@ -196,6 +198,7 @@ class APPLESEED_DLLSYMBOL Tile
     const size_t            m_array_size;       // size in bytes of the pixel array
     uint8*                  m_pixel_array;      // pixel array
     bool                    m_own_storage;      // does the tile own the memory used for pixel storage?
+    
 };
 
 

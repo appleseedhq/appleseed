@@ -95,13 +95,15 @@ class RenderWidget
     void highlight_tile(
         const renderer::Frame&  frame,
         const size_t            tile_x,
-        const size_t            tile_y);
+        const size_t            tile_y,
+        const size_t            tile_level);
 
     // Thread-safe.
     void blit_tile(
         const renderer::Frame&  frame,
         const size_t            tile_x,
-        const size_t            tile_y);
+        const size_t            tile_y,
+        const size_t            tile_level);
 
     // Thread-safe.
     void blit_frame(const renderer::Frame& frame);
@@ -124,16 +126,18 @@ class RenderWidget
     OCIO::ConstConfigRcPtr              m_ocio_config;
     OCIO::ConstProcessorRcPtr           m_ocio_processor;
 
-    void allocate_working_storage(const foundation::CanvasProperties& frame_props);
+    void allocate_working_storage(const foundation::CanvasProperties& frame_props, const size_t tile_level);
 
     void blit_tile_no_lock(
         const renderer::Frame&  frame,
         const size_t            tile_x,
-        const size_t            tile_y);
+        const size_t            tile_y,
+        const size_t            tile_level);
 
     void update_tile_no_lock(
         const size_t            tile_x,
-        const size_t            tile_y);
+        const size_t            tile_y,
+        const size_t            tile_level);
 
     void paintEvent(QPaintEvent* event) override;
 };

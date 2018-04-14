@@ -168,7 +168,7 @@ TileStack ImageStack::tiles(
     const size_t size = impl->m_images.size();
 
     for (size_t i = 0; i < size; ++i)
-        tile_stack.append(&impl->m_images[i].m_image->tile(tile_x, tile_y));
+        tile_stack.append(&impl->m_images[i].m_image->tile(tile_x, tile_y, 1));
 
     return tile_stack;
 }

@@ -65,10 +65,12 @@ class APPLESEED_DLLSYMBOL ICanvas
     // Direct access to a given tile.
     virtual Tile& tile(
         const size_t    tile_x,
-        const size_t    tile_y) = 0;
+        const size_t    tile_y,
+        const size_t    tile_level = 0) = 0;
     virtual const Tile& tile(
         const size_t    tile_x,
-        const size_t    tile_y) const = 0;
+        const size_t    tile_y,
+        const size_t    tile_level = 0) const = 0;
 
     // Direct access to a given pixel.
     uint8* pixel(

@@ -93,17 +93,20 @@ class APPLESEED_DLLSYMBOL Image
     // Direct access to a given tile.
     Tile& tile(
         const size_t        tile_x,
-        const size_t        tile_y) override;
+        const size_t        tile_y,
+        const size_t        tile_level = 0) override;
     const Tile& tile(
         const size_t        tile_x,
-        const size_t        tile_y) const override;
+        const size_t        tile_y,
+        const size_t        tile_level = 0) const override;
 
     // Set a given tile. Ownership of the tile is transfered to the Image class.
     // If a tile already exists at the given coordinates, it gets replaced.
     void set_tile(
         const size_t        tile_x,
         const size_t        tile_y,
-        Tile*               tile);
+        Tile*               tile,
+        const size_t        tile_level = 0);
 
   protected:
     CanvasProperties        m_props;

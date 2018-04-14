@@ -572,7 +572,7 @@ struct MasterRenderer::Impl
             for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
             {
                 for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
-                    tile_callback->on_tile_end(frame, tx, ty);
+                    tile_callback->on_tile_end(frame, tx, ty, 0);
             }
         }
     }

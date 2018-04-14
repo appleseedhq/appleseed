@@ -122,13 +122,15 @@ void SerialRendererController::add_on_tiled_frame_end_callback(
 void SerialRendererController::add_on_tile_begin_callback(
     const Frame*            frame,
     const size_t            tile_x,
-    const size_t            tile_y)
+    const size_t            tile_y,
+    const size_t            tile_level)
 {
     PendingTileCallback callback;
     callback.m_type = PendingTileCallback::OnTileBegin;
     callback.m_frame = frame;
     callback.m_tile_x = tile_x;
     callback.m_tile_y = tile_y;
+    callback.m_tile_level = tile_level;
 
     boost::mutex::scoped_lock lock(m_mutex);
     m_pending_callbacks.push_back(callback);
@@ -137,13 +139,15 @@ void SerialRendererController::add_on_tile_begin_callback(
 void SerialRendererController::add_on_tile_end_callback(
     const Frame*            frame,
     const size_t            tile_x,
-    const size_t            tile_y)
+    const size_t            tile_y,
+    const size_t            tile_level)
 {
     PendingTileCallback callback;
     callback.m_type = PendingTileCallback::OnTileEnd;
     callback.m_frame = frame;
     callback.m_tile_x = tile_x;
     callback.m_tile_y = tile_y;
+    callback.m_tile_level = tile_level;
 
     boost::mutex::scoped_lock lock(m_mutex);
     m_pending_callbacks.push_back(callback);
@@ -174,11 +178,11 @@ void SerialRendererController::exec_callback(const PendingTileCallback& cb)
         break;
 
       case PendingTileCallback::OnTileBegin:
-        m_tile_callback->on_tile_begin(cb.m_frame, cb.m_tile_x, cb.m_tile_y);
+        m_tile_callback->on_tile_begin(cb.m_frame, cb.m_tile_x, cb.m_tile_y, cb.m_tile_level);
         break;
 
       case PendingTileCallback::OnTileEnd:
-        m_tile_callback->on_tile_end(cb.m_frame, cb.m_tile_x, cb.m_tile_y);
+        m_tile_callback->on_tile_end(cb.m_frame, cb.m_tile_x, cb.m_tile_y, cb.m_tile_level);
         break;
 
       case PendingTileCallback::OnProgressiveFrameUpdate:

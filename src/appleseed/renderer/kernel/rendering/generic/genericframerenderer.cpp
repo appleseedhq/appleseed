@@ -434,7 +434,7 @@ namespace
                     for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
                     {
                         for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
-                            tile_callback->on_tile_begin(&m_frame, tx, ty);
+                            tile_callback->on_tile_begin(&m_frame, tx, ty, 0);
                     }
                 }
             }
@@ -449,7 +449,7 @@ namespace
                     for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
                     {
                         for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
-                            tile_callback->on_tile_end(&m_frame, tx, ty);
+                            tile_callback->on_tile_end(&m_frame, tx, ty, 0);
                     }
                 }
             }

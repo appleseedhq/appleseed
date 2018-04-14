@@ -91,10 +91,50 @@ void TileJobFactory::create(
                 frame,
                 tile_x,
                 tile_y,
+                0,
                 pass_hash,
                 spectrum_mode,
                 job_queue,
                 abort_switch));
+
+        //tile_jobs.push_back(
+        //    new TileJob(
+        //        tile_renderers,
+        //        tile_callbacks,
+        //        frame,
+        //        2 * tile_x + 1,
+        //        2 * tile_y,
+        //        1,
+        //        pass_hash,
+        //        spectrum_mode,
+        //        job_queue,
+        //        abort_switch));
+
+        //tile_jobs.push_back(
+        //    new TileJob(
+        //        tile_renderers,
+        //        tile_callbacks,
+        //        frame,
+        //        2 * tile_x,
+        //        2 * tile_y + 1,
+        //        1,
+        //        pass_hash,
+        //        spectrum_mode,
+        //        job_queue,
+        //        abort_switch));
+
+        //tile_jobs.push_back(
+        //    new TileJob(
+        //        tile_renderers,
+        //        tile_callbacks,
+        //        frame,
+        //        2 * tile_x + 1,
+        //        2 * tile_y + 1,
+        //        1,
+        //        pass_hash,
+        //        spectrum_mode,
+        //        job_queue,
+        //        abort_switch));
     }
 }
 

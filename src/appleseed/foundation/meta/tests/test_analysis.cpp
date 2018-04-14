@@ -74,7 +74,7 @@ TEST_SUITE(Foundation_Image_Analysis)
     {
         Image image(4, 4, 2, 2, 4, PixelFormatFloat);
         image.clear(Color4f(1.0f));
-        image.tile(0, 0).set_pixel(1, 1, Color4f(FP<float>::snan()));
+        image.tile(0, 0, 0).set_pixel(1, 1, Color4f(FP<float>::snan()));
 
         const double average_luminance = compute_average_luminance(image);
 

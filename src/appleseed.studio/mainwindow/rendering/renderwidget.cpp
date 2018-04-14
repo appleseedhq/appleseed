@@ -197,16 +197,17 @@ namespace
 void RenderWidget::highlight_tile(
     const Frame&    frame,
     const size_t    tile_x,
-    const size_t    tile_y)
+    const size_t    tile_y,
+    const size_t    tile_level)
 {
     QMutexLocker locker(&m_mutex);
 
     // Retrieve tile bounds.
     const Image& frame_image = frame.image();
     const CanvasProperties& frame_props = frame_image.properties();
-    const size_t x = tile_x * frame_props.m_tile_width;
-    const size_t y = tile_y * frame_props.m_tile_height;
-    const Tile& tile = frame_image.tile(tile_x, tile_y);
+    const size_t x = (tile_x * frame_props.m_tile_width) / pow_int(2, tile_level);
+    const size_t y = (tile_y * frame_props.m_tile_height) / pow_int(2, tile_level);
+    const Tile& tile = frame_image.tile(tile_x, tile_y, tile_level);
     const size_t width = tile.get_width();
     const size_t height = tile.get_height();
 
@@ -240,14 +241,15 @@ void RenderWidget::highlight_tile(
 void RenderWidget::blit_tile(
     const Frame&    frame,
     const size_t    tile_x,
-    const size_t    tile_y)
+    const size_t    tile_y,
+    const size_t    tile_level)
 {
     QMutexLocker locker(&m_mutex);
 
-    allocate_working_storage(frame.image().properties());
+    allocate_working_storage(frame.image().properties(), tile_level);
 
-    blit_tile_no_lock(frame, tile_x, tile_y);
-    update_tile_no_lock(tile_x, tile_y);
+    blit_tile_no_lock(frame, tile_x, tile_y, tile_level);
+    update_tile_no_lock(tile_x, tile_y, tile_level);
 }
 
 void RenderWidget::blit_frame(const Frame& frame)
@@ -256,14 +258,14 @@ void RenderWidget::blit_frame(const Frame& frame)
 
     const CanvasProperties& frame_props = frame.image().properties();
 
-    allocate_working_storage(frame_props);
+    allocate_working_storage(frame_props, 0);
 
     for (size_t y = 0; y < frame_props.m_tile_count_y; ++y)
     {
         for (size_t x = 0; x < frame_props.m_tile_count_x; ++x)
         {
-            blit_tile_no_lock(frame, x, y);
-            update_tile_no_lock(x, y);
+            blit_tile_no_lock(frame, x, y, 0);
+            update_tile_no_lock(x, y, 0);
         }
     }
 }
@@ -287,7 +289,7 @@ void RenderWidget::slot_display_transform_changed(const QString& transform)
             for (size_t y = 0; y < frame_props.m_tile_count_y; ++y)
             {
                 for (size_t x = 0; x < frame_props.m_tile_count_x; ++x)
-                    update_tile_no_lock(x, y);
+                    update_tile_no_lock(x, y, 0);
             }
         }
     }
@@ -315,7 +317,7 @@ namespace
     }
 }
 
-void RenderWidget::allocate_working_storage(const CanvasProperties& frame_props)
+void RenderWidget::allocate_working_storage(const CanvasProperties& frame_props, const size_t tile_level)
 {
     if (!m_image_storage.get() || !is_compatible(*m_image_storage.get(), frame_props))
     {
@@ -333,8 +335,8 @@ void RenderWidget::allocate_working_storage(const CanvasProperties& frame_props)
     {
         m_float_tile_storage.reset(
             new Tile(
-                frame_props.m_tile_width,
-                frame_props.m_tile_height,
+                frame_props.m_tile_width / pow_int(2, tile_level),
+                frame_props.m_tile_height / pow_int(2, tile_level),
                 frame_props.m_channel_count,
                 PixelFormatFloat));
     }
@@ -343,8 +345,8 @@ void RenderWidget::allocate_working_storage(const CanvasProperties& frame_props)
     {
         m_uint8_tile_storage.reset(
             new Tile(
-                frame_props.m_tile_width,
-                frame_props.m_tile_height,
+                frame_props.m_tile_width / pow_int(2, tile_level),
+                frame_props.m_tile_height / pow_int(2, tile_level),
                 frame_props.m_channel_count,
                 PixelFormatUInt8));
     }
@@ -353,20 +355,21 @@ void RenderWidget::allocate_working_storage(const CanvasProperties& frame_props)
 void RenderWidget::blit_tile_no_lock(
     const Frame&    frame,
     const size_t    tile_x,
-    const size_t    tile_y)
+    const size_t    tile_y,
+    const size_t    tile_level)
 {
     // Retrieve the source tile.
-    const Tile& src_tile = frame.image().tile(tile_x, tile_y);
+    const Tile& src_tile = frame.image().tile(tile_x, tile_y, tile_level);
 
     // Retrieve the dest tile and copy the pixels.
-    Tile& dst_tile = m_image_storage->tile(tile_x, tile_y);
+    Tile& dst_tile = m_image_storage->tile(tile_x, tile_y, tile_level);
     dst_tile.copy(src_tile);
 }
 
-void RenderWidget::update_tile_no_lock(const size_t tile_x, const size_t tile_y)
+void RenderWidget::update_tile_no_lock(const size_t tile_x, const size_t tile_y, const size_t tile_level)
 {
     // Retrieve the source tile.
-    const Tile& src_tile = m_image_storage->tile(tile_x, tile_y);
+    const Tile& src_tile = m_image_storage->tile(tile_x, tile_y, tile_level);
 
     // Copy the tile.
     Tile float_tile(
@@ -397,8 +400,8 @@ void RenderWidget::update_tile_no_lock(const size_t tile_x, const size_t tile_y)
 
     // Compute the coordinates of the first destination pixel.
     const CanvasProperties& frame_props = m_image_storage->properties();
-    const size_t x = tile_x * frame_props.m_tile_width;
-    const size_t y = tile_y * frame_props.m_tile_height;
+    const size_t x = (tile_x * frame_props.m_tile_width) / pow_int(2, tile_level);
+    const size_t y = (tile_y * frame_props.m_tile_height) / pow_int(2, tile_level);
 
     // Clipping is not supported.
     assert(x < image_width);

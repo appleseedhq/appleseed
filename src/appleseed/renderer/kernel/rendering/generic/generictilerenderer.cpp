@@ -120,19 +120,20 @@ namespace
             const Frame&    frame,
             const size_t    tile_x,
             const size_t    tile_y,
+            const size_t    tile_level,
             const size_t    pass_hash,
             IAbortSwitch&   abort_switch) override
         {
             // Retrieve frame properties.
             const CanvasProperties& frame_properties = frame.image().properties();
-            assert(tile_x < frame_properties.m_tile_count_x);
-            assert(tile_y < frame_properties.m_tile_count_y);
+            //assert(tile_x < frame_properties.m_tile_count_x);
+            //assert(tile_y < frame_properties.m_tile_count_y);
 
             // Retrieve tile properties.
-            Tile& tile = frame.image().tile(tile_x, tile_y);
+            Tile& tile = frame.image().tile(tile_x, tile_y, tile_level);
             TileStack aov_tiles = frame.aov_images().tiles(tile_x, tile_y);
-            const int tile_origin_x = static_cast<int>(frame_properties.m_tile_width * tile_x);
-            const int tile_origin_y = static_cast<int>(frame_properties.m_tile_height * tile_y);
+            const int tile_origin_x = static_cast<int>((frame_properties.m_tile_width / pow_int(2, tile_level)) * tile_x);
+            const int tile_origin_y = static_cast<int>((frame_properties.m_tile_height / pow_int(2, tile_level)) * tile_y);
 
             // Compute the image space bounding box of the pixels to render.
             AABB2i tile_bbox;
@@ -173,6 +174,7 @@ namespace
                     frame,
                     tile_x,
                     tile_y,
+                    tile_level,
                     tile_bbox);
             assert(framebuffer);
 
