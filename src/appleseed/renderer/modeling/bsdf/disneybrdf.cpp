@@ -609,8 +609,7 @@ namespace
 
                 Spectrum spec;
                 const GGXMDF ggx_mdf;
-                pdf +=
-                    weights[SpecularComponent] *
+                const float spec_pdf =
                     MicrofacetBRDFHelper<false>::evaluate(
                         ggx_mdf,
                         alpha_x,
@@ -621,16 +620,20 @@ namespace
                         incoming,
                         DisneySpecularFresnelFun(*values),
                         spec);
-                value.m_glossy += spec;
+
+                if (spec_pdf > 0.0f)
+                {
+                    pdf += weights[SpecularComponent] * spec_pdf;
+                    value.m_glossy += spec;
+                }
             }
 
             if (weights[ClearcoatComponent] > 0.0f)
             {
                 const float alpha = clearcoat_roughness(values);
-                Spectrum clear;
+                Spectrum clearcoat;
                 const GTR1MDF gtr1_mdf;
-                pdf +=
-                    weights[ClearcoatComponent] *
+                const float clearcoat_pdf =
                     MicrofacetBRDFHelper<false>::evaluate(
                         gtr1_mdf,
                         alpha,
@@ -640,8 +643,13 @@ namespace
                         outgoing,
                         incoming,
                         DisneyClearcoatFresnelFun(*values),
-                        clear);
-                value.m_glossy += clear;
+                        clearcoat);
+
+                if (clearcoat_pdf > 0.0f)
+                {
+                    pdf += weights[ClearcoatComponent] * clearcoat_pdf;
+                    value.m_glossy += clearcoat;
+                }
             }
 
             value.m_beauty = value.m_diffuse;
