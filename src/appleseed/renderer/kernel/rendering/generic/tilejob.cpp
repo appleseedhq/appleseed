@@ -89,7 +89,7 @@ void TileJob::execute(const size_t thread_index)
     if (m_tile_renderers.size() > m_job_queue.get_scheduled_job_count())
         RENDERER_LOG_INFO("split");
 
-    if (m_tile_level == 0 )
+    if (m_tile_level == 0 && rand() % 2 == 0)
     {
         m_job_queue.schedule(new TileJob(
             m_tile_renderers,

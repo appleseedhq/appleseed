@@ -56,7 +56,7 @@ PermanentShadingResultFrameBufferFactory::PermanentShadingResultFrameBufferFacto
     const size_t tile_count_x = frame.image().properties().m_tile_count_x;
     const size_t tile_count_y = frame.image().properties().m_tile_count_y;
 
-    m_framebuffers.resize(tile_count_x * tile_count_y * 4, nullptr);
+    m_framebuffers.resize(tile_count_x * tile_count_y, nullptr);
 }
 
 PermanentShadingResultFrameBufferFactory::~PermanentShadingResultFrameBufferFactory()
@@ -72,22 +72,81 @@ ShadingResultFrameBuffer* PermanentShadingResultFrameBufferFactory::create(
     const size_t                tile_level,
     const AABB2u&               tile_bbox)
 {
+    size_t ax, ay;
+
+    if (tile_level > 0)
+    {
+        ax = tile_x / 2;
+        ay = tile_y / 2;
+    }
+    else
+    {
+        ax = tile_x;
+        ay = tile_y;
+    }
+
     const size_t tile_count_x = frame.image().properties().m_tile_count_x;
-    const size_t index = tile_y * tile_count_x * pow_int(2, tile_level) + tile_x;
+    const size_t index = ay * tile_count_x + ax;
+
+    const Tile& tile = frame.image().tile(tile_x, tile_y, tile_level);
 
     if (m_framebuffers[index] == nullptr)
     {
-        const Tile& tile = frame.image().tile(tile_x, tile_y, tile_level);
+        const int tile_origin_x = static_cast<int>(frame.image().properties().m_tile_width * tile_x);
+        const int tile_origin_y = static_cast<int>(frame.image().properties().m_tile_height * tile_y);
+
+        AABB2i base_tile_bbox;
+        base_tile_bbox.min.x = tile_origin_x;
+        base_tile_bbox.min.y = tile_origin_y;
+        base_tile_bbox.max.x = tile_origin_x + static_cast<int>(frame.image().properties().m_tile_width) - 1;
+        base_tile_bbox.max.y = tile_origin_y + static_cast<int>(frame.image().properties().m_tile_height) - 1;
+        base_tile_bbox = AABB2i::intersect(base_tile_bbox, AABB2i(frame.get_crop_window()));
+
+        base_tile_bbox.min.x -= tile_origin_x;
+        base_tile_bbox.min.y -= tile_origin_y;
+        base_tile_bbox.max.x -= tile_origin_x;
+        base_tile_bbox.max.y -= tile_origin_y;
 
         m_framebuffers[index] =
             new ShadingResultFrameBuffer(
-                tile.get_width(),
-                tile.get_height(),
+                tile.get_width() * (1 + tile_level),
+                tile.get_height() * (1 + tile_level),
                 frame.aov_images().size(),
-                tile_bbox,
+                base_tile_bbox,
                 frame.get_filter());
 
         m_framebuffers[index]->clear();
+    }
+
+    if (tile_level > 0)
+    {
+        int x = tile_x % 2;
+        int y = tile_y % 2;
+
+        int i = 2 * x + y;
+
+        if (m_framebuffers[index]->m_sub_tiles == nullptr)
+        {
+            m_framebuffers[index]->m_sub_tiles = new Tile*[4];
+
+            for (int i = 0; i < 4; ++i)
+                m_framebuffers[index]->m_sub_tiles[i] = nullptr;
+        }
+
+        if (m_framebuffers[index]->m_sub_tiles[i] == nullptr)
+        {
+            m_framebuffers[index]->m_sub_tiles[i] =
+                new ShadingResultFrameBuffer(
+                    tile.get_width(),
+                    tile.get_height(),
+                    frame.aov_images().size(),
+                    tile_bbox,
+                    frame.get_filter());
+
+            ((ShadingResultFrameBuffer*)(m_framebuffers[index]->m_sub_tiles[i]))->clear();
+        }
+
+        return (ShadingResultFrameBuffer*)m_framebuffers[index]->m_sub_tiles[i];
     }
 
     return m_framebuffers[index];
