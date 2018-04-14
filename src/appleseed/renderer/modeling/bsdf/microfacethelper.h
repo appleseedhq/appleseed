@@ -120,6 +120,11 @@ class MicrofacetBRDFHelper
         foundation::Vector3f wo =
             sample.m_shading_basis.transform_to_local(outgoing);
 
+        const float cos_on = std::abs(wo.y);
+
+        if (cos_on == 0.0f)
+            return;
+
         foundation::Vector3f m = mdf.sample(wo, s, alpha_x, alpha_y, gamma);
         foundation::Vector3f wi = foundation::reflect(wo, m);
 
@@ -128,6 +133,12 @@ class MicrofacetBRDFHelper
 
         if (force_above_surface(wi, ng))
             m = foundation::normalize(wo + wi);
+
+        const foundation::Vector3f n(0.0f, 1.0f, 0.0f);
+        const float cos_in = std::abs(wi.y);
+
+        if (cos_in == 0.0f)
+            return;
 
         const foundation::Vector3f incoming =
             sample.m_shading_basis.transform_to_parent(wi);
@@ -142,10 +153,6 @@ class MicrofacetBRDFHelper
                 alpha_y,
                 gamma);
 
-        const foundation::Vector3f n(0.0f, 1.0f, 0.0f);
-        const float cos_on = std::abs(wo.y);
-        const float cos_in = std::abs(wi.y);
-
         f(wo, m, n, sample.m_value.m_glossy);
         sample.m_value.m_glossy *= D * G / (4.0f * cos_on * cos_in);
 
@@ -154,8 +161,13 @@ class MicrofacetBRDFHelper
         if (Flip)
             wo.y = std::abs(wo.y);
 
+        const float cos_oh = foundation::dot(wo, m);
+
+        if (cos_oh == 0.0f)
+            return;
+
         sample.m_probability =
-            mdf.pdf(wo, m, alpha_x, alpha_y, gamma) / (4.0f * foundation::dot(wo, m));
+            mdf.pdf(wo, m, alpha_x, alpha_y, gamma) / (4.0f * cos_oh);
 
         // Skip samples with very low probability.
         if (sample.m_probability > 1e-6f)
@@ -189,6 +201,12 @@ class MicrofacetBRDFHelper
             wi.y = std::abs(wi.y);
         }
 
+        const float cos_on = std::abs(wo.y);
+        const float cos_in = std::abs(wi.y);
+
+        if (cos_on == 0.0f || cos_in == 0.0f)
+            return 0.0f;
+
         const foundation::Vector3f m = foundation::normalize(wi + wo);
 
         const float D = mdf.D(m, alpha_x, alpha_y, gamma);
@@ -201,11 +219,11 @@ class MicrofacetBRDFHelper
                 alpha_y,
                 gamma);
 
-        const float cos_on = std::abs(wo.y);
-        const float cos_in = std::abs(wi.y);
-
         const foundation::Vector3f n(0.0f, 1.0f, 0.0f);
         const float cos_oh = foundation::dot(wo, m);
+
+        if (cos_oh == 0.0f)
+            return 0.0f;
 
         f(wo, m, n, value);
         value *= D * G / (4.0f * cos_on * cos_in);
@@ -235,13 +253,18 @@ class MicrofacetBRDFHelper
         }
 
         const foundation::Vector3f m = foundation::normalize(wi + wo);
+        const float cos_oh = foundation::dot(wo, m);
+
+        if (cos_oh == 0.0f)
+            return 0.0f;
+
         return
             mdf.pdf(
                 wo,
                 m,
                 alpha_x,
                 alpha_y,
-                gamma) / (4.0f * foundation::dot(wo, m));
+                gamma) / (4.0f * cos_oh);
     }
 
     // Simplified version of sample used when computing albedo tables.
@@ -255,9 +278,11 @@ class MicrofacetBRDFHelper
         float&                          probability)
     {
         foundation::Vector3f m = mdf.sample(wo, s, alpha, alpha, 0.0f);
-        const float cos_oh = std::abs(foundation::dot(wo, m));
 
-        if (cos_oh == 0.0f)
+        const float cos_oh = std::abs(foundation::dot(wo, m));
+        const float cos_on = std::abs(wo.y);
+
+        if (cos_on == 0.0f || cos_oh == 0.0f)
         {
             probability = 0.0f;
             return 0.0f;
@@ -272,6 +297,12 @@ class MicrofacetBRDFHelper
 
         const float cos_in = std::abs(wi.y);
 
+        if (cos_in == 0.0f)
+        {
+            probability = 0.0f;
+            return 0.0f;
+        }
+
         const float gamma = 1.0f;
         const float D = mdf.D(m, alpha, alpha, gamma);
         const float G =
@@ -285,7 +316,6 @@ class MicrofacetBRDFHelper
 
         probability = mdf.pdf(wo, m, alpha, alpha, gamma) / (4.0f * cos_oh);
 
-        const float cos_on = std::abs(wo.y);
         return D * G / (4.0f * cos_on * cos_in);
     }
 
