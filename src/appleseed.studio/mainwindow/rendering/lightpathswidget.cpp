@@ -153,7 +153,7 @@ void LightPathsWidget::initializeGL()
     static const GLfloat LightAmbient[] = { 0.0f, 0.0f, 0.0f, 1.0f };
     static const GLfloat LightDiffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
     static const GLfloat LightSpecular[] = { 0.3f, 0.3f, 0.3f, 1.0f };
-    
+
     glEnable(GL_LIGHT0);
     glLightfv(GL_LIGHT0, GL_POSITION, LightPosition);
     glLightfv(GL_LIGHT0, GL_AMBIENT, LightAmbient);
@@ -199,7 +199,7 @@ namespace
 
             glNormal3d(triangle.m_n1[0], triangle.m_n1[1], triangle.m_n1[2]);
             glVertex3d(triangle.m_v1[0], triangle.m_v1[1], triangle.m_v1[2]);
-            
+
             glNormal3d(triangle.m_n2[0], triangle.m_n2[1], triangle.m_n2[2]);
             glVertex3d(triangle.m_v2[0], triangle.m_v2[1], triangle.m_v2[2]);
         }
@@ -342,8 +342,7 @@ void LightPathsWidget::render_light_paths() const
 void LightPathsWidget::render_light_path(const size_t light_path_index) const
 {
     const auto& path = m_light_paths[light_path_index];
-    const auto vertex_count = path.m_vertex_end_index - path.m_vertex_begin_index;
-    assert(vertex_count >= 2);
+    assert(path.m_vertex_end_index - path.m_vertex_begin_index >= 2);
 
     const auto& light_path_recorder = m_project.get_light_path_recorder();
 
