@@ -31,6 +31,7 @@
 from __future__ import print_function
 from distutils import archive_util, dir_util
 from xml.etree.ElementTree import ElementTree
+import fnmatch
 import glob
 import os
 import platform
@@ -48,7 +49,7 @@ import zipfile
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.4.12"
+VERSION = "2.5.0"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
@@ -153,6 +154,7 @@ class Settings:
         self.appleseed_headers_path = self.__get_required(tree, "appleseed_headers_path")
         self.qt_runtime_path = self.__get_required(tree, "qt_runtime_path")
         self.platform_runtime_path = self.__get_required(tree, "platform_runtime_path")
+        self.python_path = self.__get_required(tree, "python_path")
         self.package_output_path = self.__get_required(tree, "package_output_path")
 
     def __get_required(self, tree, key):
@@ -170,6 +172,7 @@ class Settings:
         print("  Path to Qt runtime:        " + self.qt_runtime_path)
         if os.name == "nt":
             print("  Path to platform runtime:  " + self.platform_runtime_path)
+        print("  Path to Python 2.7:        " + self.python_path)
         print("  Output directory:          " + self.package_output_path)
         print("")
 
@@ -416,6 +419,7 @@ class WindowsPackageBuilder(PackageBuilder):
 
     def alter_stage(self):
         self.add_dependencies_to_stage()
+        self.add_python_to_stage()
 
     def add_dependencies_to_stage(self):
         progress("Windows-specific: Adding dependencies to staging directory")
@@ -423,6 +427,30 @@ class WindowsPackageBuilder(PackageBuilder):
         self.copy_qt_framework("QtGui")
         self.copy_qt_framework("QtOpenGL")
         copy_glob(os.path.join(self.settings.platform_runtime_path, "*"), "appleseed/bin/")
+
+    def add_python_to_stage(self):
+        progress("Windows-specific: Adding Python 2.7 to staging directory")
+
+        shutil.copy(os.path.join(self.settings.python_path, "Microsoft.VC90.CRT.manifest"), "appleseed/bin/")
+        shutil.copy(os.path.join(self.settings.python_path, "msvcr90.dll"), "appleseed/bin/")
+        shutil.copy(os.path.join(self.settings.python_path, "python.exe"), "appleseed/bin/")
+        shutil.copy(os.path.join(self.settings.python_path, "python27.dll"), "appleseed/bin/")
+
+        safe_make_directory("appleseed/python27")
+        shutil.copy(os.path.join(self.settings.python_path, "LICENSE.txt"), "appleseed/python27")
+        shutil.copy(os.path.join(self.settings.python_path, "README.txt"), "appleseed/python27")
+        shutil.copytree(os.path.join(self.settings.python_path, "DLLs"), "appleseed/python27/DLLs")
+        shutil.copytree(os.path.join(self.settings.python_path, "include"), "appleseed/python27/include")
+        shutil.copytree(os.path.join(self.settings.python_path, "libs"), "appleseed/python27/libs")
+
+        def ignore_lib_content(path, names):
+            if path == os.path.join(self.settings.python_path, "Lib"):
+                return ["site-packages"]
+            return set(fnmatch.filter(names, "*.pyc"))
+        shutil.copytree(os.path.join(self.settings.python_path, "Lib"), "appleseed/python27/Lib", ignore=ignore_lib_content)
+
+        safe_make_directory("appleseed/python27/Lib/site-packages")
+        shutil.copy(os.path.join(self.settings.python_path, "Lib", "site-packages", "README.txt"), "appleseed/python27/Lib/site-packages/")
 
     def copy_qt_framework(self, framework_name):
         src_filepath = os.path.join(self.settings.qt_runtime_path, framework_name + "4" + ".dll")
