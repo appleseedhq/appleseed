@@ -152,6 +152,8 @@ class UnfilteredAOV
     bool has_color_data() const override;
 
   protected:
+    foundation::Image*  m_filter_image;
+
     void create_image(
         const size_t    canvas_width,
         const size_t    canvas_height,

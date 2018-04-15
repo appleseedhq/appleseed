@@ -156,8 +156,9 @@ namespace
 
                 m_texture_filename = OIIO::ustring(trim_both(tokens[0], " \""));
                 m_texture_is_srgb = texture_is_srgb(m_texture_filename);
-                m_texture_options.swrap = OIIO::TextureOpt::WrapPeriodic;
                 m_texture_options.rwrap = OIIO::TextureOpt::WrapPeriodic;
+                m_texture_options.swrap = OIIO::TextureOpt::WrapPeriodic;
+                m_texture_options.twrap = OIIO::TextureOpt::WrapPeriodic;
             }
 
             return true;

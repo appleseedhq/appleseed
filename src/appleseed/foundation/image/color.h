@@ -165,6 +165,9 @@ template <typename T, size_t N> size_t max_abs_index(const Color<T, N>& c);
 template <typename T, size_t N> Color<T, N> component_wise_min(const Color<T, N>& lhs, const Color<T, N>& rhs);
 template <typename T, size_t N> Color<T, N> component_wise_max(const Color<T, N>& lhs, const Color<T, N>& rhs);
 
+// Return the sum of the components of a color.
+template <typename T, size_t N> T sum_value(const Color<T, N>& c);
+
 // Return the average value of a color.
 template <typename T, size_t N> T average_value(const Color<T, N>& c);
 
@@ -827,14 +830,20 @@ inline Color<T, N> component_wise_max(const Color<T, N>& lhs, const Color<T, N>&
 }
 
 template <typename T, size_t N>
-inline T average_value(const Color<T, N>& c)
+inline T sum_value(const Color<T, N>& c)
 {
-    T average = c[0];
+    T sum = c[0];
 
     for (size_t i = 1; i < N; ++i)
-        average += c[i];
+        sum += c[i];
 
-    return average * (T(1.0) / N);
+    return sum;
+}
+
+template <typename T, size_t N>
+inline T average_value(const Color<T, N>& c)
+{
+    return sum_value(c) / N;
 }
 
 template <typename T, size_t N>

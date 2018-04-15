@@ -71,11 +71,11 @@ void AOV::release()
 }
 
 void AOV::create_image(
-    const size_t    canvas_width,
-    const size_t    canvas_height,
-    const size_t    tile_width,
-    const size_t    tile_height,
-    ImageStack&     aov_images)
+    const size_t        canvas_width,
+    const size_t        canvas_height,
+    const size_t        tile_width,
+    const size_t        tile_height,
+    ImageStack&         aov_images)
 {
     m_image_index = aov_images.append(
         get_name(),
@@ -147,11 +147,11 @@ bool UnfilteredAOV::has_color_data() const
 }
 
 void UnfilteredAOV::create_image(
-    const size_t canvas_width,
-    const size_t canvas_height,
-    const size_t tile_width,
-    const size_t tile_height,
-    ImageStack& aov_images)
+    const size_t        canvas_width,
+    const size_t        canvas_height,
+    const size_t        tile_width,
+    const size_t        tile_height,
+    ImageStack&         aov_images)
 {
     m_image =
         new Image(

@@ -1013,6 +1013,12 @@ namespace
             const float                 T,
             SpectrumType&               value)
         {
+            if (wo.y == 0.0f || wi.y == 0.0f)
+            {
+                set_to_zero(value);
+                return;
+            }
+
             // [1] eq. 21.
             const float cos_ih = dot(m, wi);
             const float cos_oh = dot(m, wo);

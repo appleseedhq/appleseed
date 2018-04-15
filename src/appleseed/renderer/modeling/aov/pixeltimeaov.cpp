@@ -68,8 +68,7 @@ namespace
     {
       public:
         explicit PixelTimeAOVAccumulator(Image& image)
-          : AOVAccumulator()
-          , m_image(image)
+          : m_image(image)
         {
         }
 
@@ -145,7 +144,7 @@ namespace
         Stopwatch<DefaultProcessorTimer>    m_stopwatch;
         std::vector<double>                 m_samples;
 
-        inline bool outside_tile(const Vector2i& pi) const
+        bool outside_tile(const Vector2i& pi) const
         {
             return
                 pi.x < m_tile_origin_x ||

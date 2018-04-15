@@ -236,7 +236,7 @@ template <typename T, size_t N> size_t max_index(const renderer::DynamicSpectrum
 template <typename T, size_t N> size_t min_abs_index(const renderer::DynamicSpectrum<T, N>& s);
 template <typename T, size_t N> size_t max_abs_index(const renderer::DynamicSpectrum<T, N>& s);
 
-// Return the sum of all values of a spectrum.
+// Return the sum of the components of a spectrum.
 template <typename T, size_t N> T sum_value(const renderer::DynamicSpectrum<T, N>& s);
 
 // Return the average value of a spectrum.
