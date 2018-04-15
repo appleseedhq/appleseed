@@ -68,20 +68,30 @@ namespace
     {
         Vector3d                m_position;
         Vector3d                m_geometric_normal;
-        Spectrum                m_beta = Spectrum(0.0f);
-        const BSDF*             m_bsdf = nullptr;
-        const void*             m_bsdf_data = nullptr;
+        Spectrum                m_beta;
+        const BSDF*             m_bsdf;
+        const void*             m_bsdf_data;
         Vector3d                m_dir_to_prev_vertex;
-        const BDPTVertex*       m_prev_vertex = nullptr;
+        const BDPTVertex*       m_prev_vertex;
         Basis3f                 m_shading_basis;
-        Spectrum                m_Le = Spectrum(0.0f);
+        Spectrum                m_Le;
         ShadingPoint            m_shading_point;
-        bool                    m_is_light_vertex = false;
+        bool                    m_is_light_vertex;
 
-        float                   m_fwd_pdf = 0.0f;
-        float                   m_rev_pdf = 0.0f;
+        float                   m_fwd_pdf;
+        float                   m_rev_pdf;
 
-        ///TODO:: create a proper constructor
+        BDPTVertex()
+          : m_beta(0.0f)
+          , m_bsdf(nullptr)
+          , m_bsdf_data(nullptr)
+          , m_prev_vertex(nullptr)
+          , m_Le(0.0f)
+          , m_is_light_vertex(false)
+          , m_fwd_pdf(0.0f)
+          , m_rev_pdf(0.0f)
+        {
+        }
 
         double convert_density(double pdf, const BDPTVertex& vertex) const
         {
