@@ -342,8 +342,6 @@ class PackageBuilder:
 
     def add_headers_to_stage(self):
         progress("Adding headers to staging directory")
-
-        # appleseed headers.
         safe_make_directory("appleseed/include")
         ignore_files = shutil.ignore_patterns("*.cpp", "*.c", "*.xsd", "snprintf", "version.h.in")
         shutil.copytree(os.path.join(self.settings.appleseed_headers_path, "foundation"), "appleseed/include/foundation", ignore=ignore_files)
