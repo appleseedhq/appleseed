@@ -275,10 +275,10 @@ shader as_blackbody
             as_glossy(
                 "ggx",
                 Nn,
-                vector(0), // tangent vector
+                vector(0),  // tangent vector
                 in_specular_roughness,
-                0.0, // specular spread
-                0.0, // anisotropy amount
+                0.0,        // specular spread
+                0.0,        // anisotropy amount
                 in_ior,
                 "energy_compensation", 1.0);
     }
@@ -299,8 +299,8 @@ shader as_blackbody
         else if (in_temperature_scale * in_temperature > 798)
         {
             // TODO: Integrating Planck's equation to SPD using specified
-            // CMF (ie, 1931, 2012 CMF), then converting from SPD->CIEXYZ to
-            // RGB using the working space RGBW primaries.
+            // CMF (ie, 1931, 2012 CMF), then converting from SPD->CIEXYZ
+            // to RGB using the working space RGBW primaries.
 
             edf_color = blackbody(in_temperature_scale *
                 (float) in_temperature);
