@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -230,7 +230,7 @@ void CommandLineHandlerBase::print_version_information(SuperLogger& logger) cons
         "%s, using %s version %s, %s configuration\n"
         "compiled on %s at %s using %s version %s\n"
         "copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited.\n"
-        "copyright (c) 2014-2017 The appleseedhq Organization.\n"
+        "copyright (c) 2014-2018 The appleseedhq Organization.\n"
         "this software is released under the MIT license (http://opensource.org/licenses/MIT).\n"
         "visit http://appleseedhq.net/ for additional information and resources.",
         impl->m_application_name.c_str(),
