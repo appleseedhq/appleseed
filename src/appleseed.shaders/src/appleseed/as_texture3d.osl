@@ -34,7 +34,7 @@ shader as_texture3d
 [[
     string as_maya_node_name = "asTexture3D",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/3d:swatch/AppleseedRenderSwatch:texture",
-    string help = "A field3d format 3D texture lookup node",
+    string help = "A field3d format 3D texture lookup node.",
     string icon = "asTexture3D.png",
     int as_maya_type_id = 0x001279ff,
     string as_max_class_id = "2105412220 306260647",
@@ -54,7 +54,7 @@ shader as_texture3d
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
-        string help = "The 3D texture file (field3d, f3d, etc)",
+        string help = "The 3D texture file (field3d, f3d, etc).",
         int divider = 1
     ]],
     int in_starting_channel = 0
@@ -88,7 +88,7 @@ shader as_texture3d
         float softmax = 1.0,
         string label = "Default Channel Fill",
         string page = "3D Texture",
-        string help = "Default fill value for any channels requested but not present",
+        string help = "Default fill value for any channels requested but not present.",
         int divider = 1
     ]],
     float in_time = 0.0
@@ -98,7 +98,7 @@ shader as_texture3d
         float softmin = 0.0,
         string label = "Time",
         string page = "3D Texture",
-        string help = "Time value to use if the texture specifies a time varying local transformation"
+        string help = "Time value to use if the texture specifies a time varying local transformation."
     ]],
     int in_s_wrap = 0
     [[
@@ -112,7 +112,7 @@ shader as_texture3d
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
-        string help = "Use the wrapping mode set on the texture, or override it"
+        string help = "Use the wrapping mode set on the texture, or override it."
     ]], 
     int in_t_wrap = 0
     [[
@@ -126,7 +126,7 @@ shader as_texture3d
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
-        string help = "Use the wrapping mode set on the texture, or override it"
+        string help = "Use the wrapping mode set on the texture, or override it."
     ]],
     int in_r_wrap = 0
     [[
@@ -140,7 +140,7 @@ shader as_texture3d
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
-        string help = "Use the wrapping mode set on the texture, or override it"
+        string help = "Use the wrapping mode set on the texture, or override it."
     ]],
     float in_s_blur = 0.0
     [[

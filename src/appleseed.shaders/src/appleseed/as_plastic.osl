@@ -30,7 +30,7 @@ shader as_plastic
 [[
     string as_maya_node_name = "asPlastic",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string help = "Plastic material",
+    string help = "Plastic material.",
     string icon = "asPlastic.png",
     int as_maya_type_id = 0x001279d7,
     string as_max_class_id = "1525511449 941587614",
@@ -88,7 +88,7 @@ shader as_plastic
         float max = 2.5,
         string label = "IOR",
         string page = "Specular",
-        string help = "Index of refraction"
+        string help = "Index of refraction."
     ]],
     int in_distribution = 0
     [[

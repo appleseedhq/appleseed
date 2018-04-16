@@ -30,7 +30,7 @@ shader as_glass
 [[
     string as_maya_node_name = "asGlass",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string help = "Glass material",
+    string help = "Glass material with absorption.",
     string icon = "asGlass",
     int as_maya_type_id = 0x001279c4,
     string as_max_class_id = "1785798004 1778718452",
@@ -131,7 +131,7 @@ shader as_glass
         float max = 1.0,
         string label = "Anisotropy Rotation",
         string page = "Specular.Anisotropy",
-        string help = "The [0,1] range maps to [0,360] degrees range",
+        string help = "The [0,1] range maps to [0,360] degrees range.",
         int divider = 1
     ]],
     int in_anisotropy_mode = 0
@@ -155,7 +155,7 @@ shader as_glass
         string as_maya_attribute_short_name = "av",
         string label = "Anisotropy Vector Map",
         string page = "Specular.Anisotropy",
-        string help = "Vector tangent field map, with XY in R,G channels",
+        string help = "Vector tangent field map, with XY in R,G channels.",
         int divider = 1
     ]],
     vector in_anisotropy_direction = vector(0)

@@ -78,7 +78,7 @@ shader as_anisotropy_vector_field
         string as_maya_attribute_short_name = "rtv",
         float min = 0.0,
         float max = 1.0,
-        string help = "Rotation value, mapping [0,1] to [0,360] degrees",
+        string help = "Rotation value, mapping [0,1] to [0,360] degrees.",
         string label = "Rotation Value",
         string page = "Rotation"
     ]],

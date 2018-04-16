@@ -32,7 +32,7 @@ shader as_switch_texture
 [[
     string as_maya_node_name = "asSwitchTexture",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string help = "Texture variation utility shader",
+    string help = "Texture variation utility shader.",
     string icon = "asSwitchTexture.png",
     int as_maya_type_id = 0x001279da,
     string as_max_class_id = "2082364340 1882157436",
@@ -135,7 +135,7 @@ shader as_switch_texture
         int gafferNoduleLayoutVisible = 0,
         string label = "Expression",
         string page = "Manifold.String",
-        string help = "String expression to search in the object or object instance name"
+        string help = "String expression to search in the object or object instance name."
     ]],
     int in_domain = 0
     [[

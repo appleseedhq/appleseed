@@ -222,7 +222,7 @@ shader as_triplanar
         int gafferNoduleLayoutVisible = 0,
         string label = "Rotation",
         string page = "Projection.X Axis",
-        string help = "Rotation angle in degrees",
+        string help = "Rotation angle in degrees.",
         int divider = 1
     ]],
     int in_x_axis_swrap = 0
@@ -395,7 +395,7 @@ shader as_triplanar
         int gafferNoduleLayoutVisible = 0,
         string label = "Rotation",
         string page = "Projection.Y Axis",
-        string help = "Rotation angle in degrees",
+        string help = "Rotation angle in degrees.",
         int divider = 1
     ]],
     int in_y_axis_swrap = 0
@@ -568,7 +568,7 @@ shader as_triplanar
         int gafferNoduleLayoutVisible = 0,
         string label = "Rotation",
         string page = "Projection.Z Axis",
-        string help = "Rotation angle in degrees",
+        string help = "Rotation angle in degrees.",
         int divider = 1
     ]],
     int in_z_axis_swrap = 0
