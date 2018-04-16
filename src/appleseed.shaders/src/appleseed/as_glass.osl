@@ -45,13 +45,13 @@ shader as_glass
         string label = "Transmittance Color",
         string page = "Transmittance"
     ]],
-    float in_transmittance_weight = 0.8
+    float in_transmittance_amount = 0.8
     [[
-        string as_maya_attribute_name = "transmittanceWeight",
+        string as_maya_attribute_name = "transmittanceAmount",
         string as_maya_attribute_short_name = "ta",
         float min = 0.0,
         float max = 1.0,
-        string label = "Transmittance Weight",
+        string label = "Transmittance Amount",
         string page = "Transmittance"
     ]],
     color in_reflection_tint = color(1)
@@ -335,7 +335,7 @@ shader as_glass
         in_distribution,
         Nn,
         tangent,
-        in_transmittance_weight * in_surface_transmittance,
+        in_transmittance_amount * in_surface_transmittance,
         in_reflection_tint,
         in_refraction_tint,
         in_roughness,

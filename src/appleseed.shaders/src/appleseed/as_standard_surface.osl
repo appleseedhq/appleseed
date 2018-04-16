@@ -76,14 +76,14 @@ shader as_standard_surface
         string page = "Subsurface",
         int divider = 1
     ]],
-    color in_subsurface_mfp = color(0)
+    color in_sss_mfp = color(0)
     [[
         string as_maya_attribute_name = "subsurfaceMfp",
         string as_maya_attribute_short_name = "mfp",
         string label = "Mean Free Path",
         string page = "Subsurface"
     ]],
-    float in_subsurface_mfp_scale = 1.0
+    float in_sss_mfp_scale = 1.0
     [[
         string as_maya_attribute_name = "subsurfaceMfpScale",
         string as_maya_attribute_short_name = "sfm",
@@ -97,44 +97,30 @@ shader as_standard_surface
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0
     ]],
-    int in_subsurface_profile = 0
+    int in_sss_maximum_ray_depth = 2
     [[
-        string as_maya_attribute_name = "subsurfaceProfile",
-        string as_maya_attribute_short_name = "ssp",
-        string widget = "mapper",
-        string options = "Gaussian:0|Dipole:1|Normalized Diffusion:2|Random Walk:3",
-        string label = "Subsurface Profile",
-        string page = "Subsurface.Advanced",
-        int as_maya_attribute_connectable = 0,
-        int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1,
-        int gafferNoduleLayoutVisible = 0,
-        int divider = 1
-    ]],
-    int in_subsurface_maximum_ray_depth = 2
-    [[
-        string as_maya_attribute_name = "subsurfaceMaximumRayDepth",
+        string as_maya_attribute_name = "sssMaximumRayDepth",
         string as_maya_attribute_short_name = "ssd",
         int min = 1,
         int max = 16,
         int softmax = 8,
-        string label = "Subsurface Ray Depth",
+        string label = "SSS Ray Depth",
         string page = "Subsurface.Advanced",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0
     ]],
-    float in_subsurface_threshold = 0.001
+    float in_sss_threshold = 0.001
     [[
-        string as_maya_attribute_name = "subsurfaceThreshold",
+        string as_maya_attribute_name = "sssThreshold",
         string as_maya_attibute_short_name = "sth",
         float min = 0.0,
         float max = 1.0,
         float softmax = 0.01,
-        string label = "Subsurface Diffuse Threshold",
+        string label = "SSS Diffuse Threshold",
         string page = "Subsurface.Advanced",
-        string help = "Threshold at which Subsurface is replaced by a diffuse term",
+        string help = "Threshold at which SSS is replaced by a diffuse term",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -265,15 +251,15 @@ shader as_standard_surface
         string page = "Specular.Anisotropy",
         string help = "Anisotropy vector map, with XY encoded in RG channels"
     ]],
-    float in_refraction_weight = 0.0
+    float in_refraction_amount = 0.0
     [[
-        string as_maya_attribute_name = "refractionWeight",
+        string as_maya_attribute_name = "refractionAmount",
         string as_maya_attribute_short_name = "rtw",
         float min = 0.0,
         float max = 1.0,
-        string label = "Refraction Weight",
+        string label = "Refraction Amount",
         string page = "Specular.Refraction",
-        string help = "Refraction weight. Refraction inherits the IOR"
+        string help = "Refraction amount. Refraction inherits the IOR"
     ]],
     color in_refraction_tint = color(1)
     [[
@@ -312,7 +298,7 @@ shader as_standard_surface
         float max = 1.0,
         string label = "Coating Reflectivity",
         string page = "Coating",
-        string help = "Coating specular weight."
+        string help = "Coating specular amount."
     ]],
     float in_coating_roughness = 0.0
     [[
@@ -339,7 +325,7 @@ shader as_standard_surface
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0
     ]],
-    float in_coating_thickness = 0.0
+    float in_coating_depth = 0.0
     [[
         string as_maya_attribute_name = "coatingDepth",
         string as_maya_attribute_short_name = "cod",
@@ -363,7 +349,7 @@ shader as_standard_surface
         string as_maya_attribute_short_name = "inw",
         float min = 0.0,
         float max = 1.0,
-        string label = "Incandescence Weight",
+        string label = "Incandescence Amount",
         string page = "Incandescence"
     ]],
     int in_incandescence_type = 0
@@ -575,7 +561,7 @@ shader as_standard_surface
     // Coating first, with full absorption substrate is not lit.
 
     int compute_coating =
-        (in_coating_reflectivity > 0.0 || in_coating_thickness > 0.0) ? 1 : 0;
+        (in_coating_reflectivity > 0.0 || in_coating_depth > 0.0) ? 1 : 0;
 
     color coating_transmittance = color(1);
 
@@ -614,7 +600,7 @@ shader as_standard_surface
 
             // Arbitrary value, it seems to provide a good (visual) range.
 
-            float max_depth = 10000.0 * sqr(sqr(in_coating_thickness));
+            float max_depth = 10000.0 * sqr(sqr(in_coating_depth));
             float tau = max_depth * (1.0 - max(0.0, costheta_o));
 
             // Restrict range to avoid pure saturated colors.
@@ -635,23 +621,22 @@ shader as_standard_surface
         (in_translucency_weight * max(in_translucency_color) > 0.0) ? 1 : 0;
 
     int compute_transmission =
-        (in_refraction_weight * max(in_refraction_tint) > 0.0) ? 1 : 0;
+        (in_refraction_amount * max(in_refraction_tint) > 0.0) ? 1 : 0;
 
     int compute_specular = max(in_specular_color) > 0.0 ? 1 : 0;
 
     int compute_diffuse = (in_diffuse_weight * max(in_color) > 0.0) ? 1 : 0;
 
     int compute_bssrdf = (
-        ray_depth > in_subsurface_maximum_ray_depth ||
+        ray_depth > in_sss_maximum_ray_depth ||
         compute_transparency || compute_translucency || compute_transmission ||
-        in_subsurface_weight == 0.0 ||
-        max(in_subsurface_mfp) <= in_subsurface_threshold)
+        in_subsurface_weight == 0.0 || max(in_sss_mfp) <= in_sss_threshold)
         ? 0 : 1;
 
     int compute_edf =
         (in_incandescence_amount * max(in_incandescence_color) > 0.0) ? 1 : 0;
 
-    // Specular first, to get the transmittance weight and bailout earlier.
+    // Specular first, to get the transmittance amount and bailout earlier.
 
     color substrate_transmittance = color(1);
     normal Nn = normalize(in_bump_normal_substrate);
@@ -693,9 +678,9 @@ shader as_standard_surface
                     "std",
                     Nn,
                     tangent,
-                    coating_transmittance, // coating_transmittance unsupported
+                    color(1), // coating_transmittance unsupported
                     in_specular_color,
-                    in_refraction_weight * in_refraction_tint,
+                    in_refraction_amount * in_refraction_tint,
                     in_specular_roughness,
                     1.0 - in_specular_spread,
                     in_anisotropy_amount,
@@ -731,7 +716,7 @@ shader as_standard_surface
         }
 
         // In order to layer substrate BxDFs, we need the microfacet Fresnel
-        // transmission weight (and absorption), but lacking that, use viewer.
+        // transmission amount (and absorption), but lacking that, use viewer.
 
         if ((compute_diffuse || compute_bssrdf || compute_edf ||
             compute_translucency) && max(in_specular_color) > 0.0)
@@ -803,34 +788,15 @@ shader as_standard_surface
         {
             albedo = clamp(albedo, 0.01, 0.99);
 
-            string subsurface_profile;
-
-            if (in_subsurface_profile == 0)
-            {
-                subsurface_profile = "gaussian";
-            }
-            else if (in_subsurface_profile == 1)
-            {
-                subsurface_profile = "better_dipole";
-            }
-            else if (in_subsurface_profile == 2)
-            {
-                subsurface_profile = "normalized_diffusion";
-            }
-            else
-            {
-                subsurface_profile = "randomwalk";
-            }
-
             // Disable Fresnel weight since transmittance is computed earlier,
             // but ideally, the BSSRDF should be used.
 
             out_outColor += in_subsurface_weight *
                 as_subsurface(
-                    subsurface_profile,
+                    "normalized_diffusion",
                     Nn,
                     in_diffuse_weight * in_color,
-                    in_subsurface_mfp_scale * in_subsurface_mfp,
+                    in_sss_mfp_scale * in_sss_mfp,
                     in_ior,
                     "fresnel_weight", 0.0);
         }
