@@ -33,7 +33,10 @@
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/image/icanvas.h"
+#include "foundation/math/vector.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/iostreamop.h"
+#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
@@ -208,9 +211,32 @@ void OIIOImageFileWriter::set_exr_image_attributes(const ImageAttributes& image_
     OIIO::ImageSpec spec = m_images->m_spec.back();
 
     if (image_attributes.exist("dwa_compression_lvl"))
+        spec.attribute("openexr:dwaCompressionLevel", image_attributes.get<float>("dwa_compression_lvl"));
+
+    if (image_attributes.exist("white_xy_chromaticity") &&
+        image_attributes.exist("red_xy_chromaticity") &&
+        image_attributes.exist("green_xy_chromaticity") &&
+        image_attributes.exist("blue_xy_chromaticity"))
     {
-        const std::string dwa_compression_lvl = image_attributes.get<std::string>("dwa_compression_lvl");
-        spec.attribute("openexr:dwaCompressionLevel", from_string<float>(dwa_compression_lvl));
+        float chromaticities[8];
+        memset(chromaticities, 0, 8 * sizeof(float));
+
+        const Vector2f red = image_attributes.get<Vector2f>("red_xy_chromaticity");
+        const Vector2f green = image_attributes.get<Vector2f>("green_xy_chromaticity");
+        const Vector2f blue = image_attributes.get<Vector2f>("blue_xy_chromaticity");
+        const Vector2f white = image_attributes.get<Vector2f>("white_xy_chromaticity");
+
+        chromaticities[0] = red[0]; chromaticities[1] = red[1];
+        chromaticities[2] = green[0]; chromaticities[3] = green[1];
+        chromaticities[4] = blue[0]; chromaticities[5] = blue[1];
+        chromaticities[6] = white[0]; chromaticities[7] = white[1];
+
+        OIIO::TypeDesc type;
+        type.basetype = OIIO::TypeDesc::BASETYPE::FLOAT;
+        type.aggregate = OIIO::TypeDesc::AGGREGATE::SCALAR;
+        type.arraylen = 8;
+
+        spec.attribute("chromaticities", type, chromaticities);
     }
 }
 
@@ -245,6 +271,9 @@ void OIIOImageFileWriter::set_generic_image_attributes(const ImageAttributes& im
         else if (attr_name == "computer")
             spec.attribute("HostComputer", attr_value.c_str());
 
+        else if (attr_name == "image_name")
+            spec.attribute("oiio:subimagename", attr_value.c_str());
+
         else if (attr_name == "color_space")
         {
             if (attr_value == "linear")
@@ -267,9 +296,6 @@ void OIIOImageFileWriter::set_generic_image_attributes(const ImageAttributes& im
             spec.attribute("YResolution", static_cast<float>(dpm));
             spec.attribute("ResolutionUnit", "cm");
         }
-
-        else if (attr_name == "image_name")
-            spec.attribute("oiio:subimagename", attr_value.c_str());
     }
 }
 
