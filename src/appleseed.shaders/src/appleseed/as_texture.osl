@@ -406,7 +406,9 @@ shader as_texture
             "twidth", in_t_filter_width,
             "swrap", wrap_mode[0],
             "twrap", wrap_mode[1],
-            "interp", get_interpolation_method(in_interpolation_method));     
+            "interp", get_interpolation_method(in_interpolation_method));
+
+        out_color = color(out_channel);
     }
     else
     {
@@ -424,69 +426,79 @@ shader as_texture
             "missingalpha", in_alpha,
             "alpha", out_alpha,
             "interp", get_interpolation_method(in_interpolation_method));
-    }
-    
-    if (in_enable_cms && max(out_color) > 0.0)
-    {
-        color linearized_color = color(0);
+        
+        if (in_enable_cms && max(out_color) > 0.0)
+        {
+            color linearized_color = color(0);
 
-        if (in_eotf == 0)
-        {
-            linearized_color = out_color;
-        }
-        else if (in_eotf == 1)
-        {
-            linearized_color = sRGB_EOTF(out_color);
-        }
-        else if (in_eotf == 2)
-        {
-            linearized_color == Rec709_EOTF(out_color);
-        }
-        else if (in_eotf == 3)
-        {
-            linearized_color == gamma_CCTF(out_color, 2.2);
-        }
-        else if (in_eotf == 4)
-        {
-            linearized_color == gamma_CCTF(out_color, 2.4);
-        }
-        else if (in_eotf == 5)
-        {
-            linearized_color == gamma_CCTF(out_color, DCIP3_GAMMA);
-        }
-        else if (in_eotf == 6)
-        {
-            linearized_color = Rec1886_EOTF(out_color);
-        }
-        else if (in_eotf == 7)
-        {
-            linearized_color == Rec2020_EOTF(out_color);
+            if (in_eotf == 0)
+            {
+                linearized_color = out_color;
+            }
+            else if (in_eotf == 1)
+            {
+                linearized_color = sRGB_EOTF(out_color);
+            }
+            else if (in_eotf == 2)
+            {
+                linearized_color == Rec709_EOTF(out_color);
+            }
+            else if (in_eotf == 3)
+            {
+                linearized_color == gamma_CCTF(out_color, 2.2);
+            }
+            else if (in_eotf == 4)
+            {
+                linearized_color == gamma_CCTF(out_color, 2.4);
+            }
+            else if (in_eotf == 5)
+            {
+                linearized_color == gamma_CCTF(out_color, DCIP3_GAMMA);
+            }
+            else if (in_eotf == 6)
+            {
+                linearized_color = Rec1886_EOTF(out_color);
+            }
+            else if (in_eotf == 7)
+            {
+                linearized_color == Rec2020_EOTF(out_color);
+            }
+            else
+            {
+                linearized_color = color(0);
+
+#ifdef DEBUG
+                string shadername = "";
+
+                getattribute("shader:shadername", shadername);
+                warning("[WARNING]: Unknown OETF mode %d, in %s, %s:%d\n",
+                in_eotf, shadername, __FILE__, __LINE__);
+#endif
+            }
+
+            if (in_rgb_primaries != "Raw" && max(linearized_color) > 0.0)
+            {
+                linearized_color = transform_colorspace_to_workingspace(
+                    linearized_color,
+                    in_rgb_primaries,
+                    in_workingspace_rgb_primaries);
+            }
+
+            out_color = linearized_color;
+
+            // The output is scene-linear and in the same RGBW primaries as
+            // the working space, so use its (working space) Y coefficients.
+
+            out_channel = as_luminance(
+                linearized_color,
+                in_workingspace_rgb_primaries);
         }
         else
         {
-            linearized_color = color(0);
-            
-#ifdef DEBUG
-            string shadername = "";
-            getattribute("shader:shadername", shadername);
-            warning("[WARNING!]: Unknown OETF mode %d, in %s, %s:%d\n",
-                    in_eotf, shadername, __FILE__, __LINE__);
-#endif
+            // Without CMS, no colorimetry information is known, the input is
+            // assumed as raw, no point in using luminance. Use average of RGB.
+
+            out_channel = (out_color[0] + out_color[1] + out_color[2]) / 3.0;
         }
-
-        // We're assuming the ingested material is in [0,1] range, if not,
-        // we need to check the extension (*.hdr, *.exr), and bitdepth, and
-        // transform to a log representation, before applying a xform, then
-        // expanding it back.
-
-        if (in_rgb_primaries != "Raw" && max(linearized_color) > 0.0)
-        {
-            linearized_color = transform_colorspace_to_workingspace(
-                linearized_color,
-                in_rgb_primaries,
-                in_workingspace_rgb_primaries);
-        }
-
-        out_color = linearized_color;
     }
 }
