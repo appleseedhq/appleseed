@@ -438,6 +438,7 @@ set (src_appleseed_sources
      src/appleseed/as_blackbody.osl
      src/appleseed/as_blend_color.osl
      src/appleseed/as_blend_shader.osl
+     src/appleseed/as_bump.osl
      src/appleseed/as_color_transform.osl
      src/appleseed/as_composite_color.osl
      src/appleseed/as_create_mask.osl
