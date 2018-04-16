@@ -32,7 +32,7 @@ shader as_switch_surface
 [[
     string as_maya_node_name = "asSwitchSurface",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string help = "Material variation utility shader",
+    string help = "Material variation utility shader.",
     string icon = "asSwitchSurface.png",
     int as_maya_type_id = 0x001279fe,
     string as_max_class_id = "133437029 1618300620",
@@ -149,7 +149,7 @@ shader as_switch_surface
         int gafferNoduleLayoutVisible = 0,
         string label = "Expression",
         string page = "Manifold.String",
-        string help = "String expression to search in the object or object instance name"
+        string help = "String expression to search in the object or object instance name."
     ]],
     int in_domain = 0
     [[

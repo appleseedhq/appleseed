@@ -32,7 +32,7 @@ shader as_disney_material
 [[
     string as_maya_node_name = "asDisneyMaterial",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string help = "Disney material",
+    string help = "Disney material.",
     string icon = "asDisneyMaterial.png",
     int as_maya_type_id = 0x001279c3,
     string as_max_class_id = "151203281 494163155",
@@ -110,7 +110,7 @@ shader as_disney_material
         float max = 1.0,
         string label = "Anisotropy Angle",
         string page = "Specular",
-        string help = "The [0,1] range maps to [0,360] degrees range"
+        string help = "The [0,1] range maps to [0,360] degrees range."
     ]],
     color in_anisotropy_vector_map= color(0)
     [[
@@ -118,7 +118,7 @@ shader as_disney_material
         string as_maya_attribute_short_name = "vm",
         string label = "Anisotropy Vector Map",
         string page = "Specular",
-        string help = "Vector tangent field map, with XY in R,G channels"
+        string help = "Vector tangent field map, with XY in R,G channels."
     ]],
     float in_sheen_amount = 0.0
     [[

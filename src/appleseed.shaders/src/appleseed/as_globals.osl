@@ -59,7 +59,7 @@ shader as_globals
         string as_maya_attribute_name = "worldPref",
         string as_maya_attribute_short_name = "wpr",
         string label = "Referecence Point",
-        string help = "World space reference point Pref"
+        string help = "World space reference point Pref."
     ]],
     output point out_world_Ps = Ps
     [[
@@ -79,7 +79,7 @@ shader as_globals
         string as_maya_attribute_name = "worldNref",
         string as_maya_attribute_short_name = "nre",
         string label = "Reference Normal",
-        string help = "World space reference normal Nref"
+        string help = "World space reference normal Nref."
     ]],
     output normal out_world_Ng = Ng
     [[
