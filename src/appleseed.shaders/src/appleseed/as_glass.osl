@@ -51,7 +51,7 @@ shader as_glass
         string as_maya_attribute_short_name = "ta",
         float min = 0.0,
         float max = 1.0,
-        string label = "Transmittance Amount",
+        string label = "Transmittance Weight",
         string page = "Transmittance"
     ]],
     color in_reflection_tint = color(1)

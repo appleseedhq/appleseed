@@ -131,7 +131,7 @@ shader as_blackbody
         string as_maya_attribute_short_name = "sam",
         float min = 0.0,
         float max = 1.0,
-        string label = "Specular Amount",
+        string label = "Specular Weight",
         string page = "Specular"
     ]],
     float in_specular_roughness = 0.1

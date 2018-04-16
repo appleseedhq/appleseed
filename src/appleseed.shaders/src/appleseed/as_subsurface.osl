@@ -67,7 +67,7 @@ shader as_subsurface
         string as_maya_attribute_short_name = "ssa",
         float min = 0.0,
         float max = 1.0,
-        string label = "SSS Amount",
+        string label = "Subsurface Weight",
         string page = "Subsurface",
         int divider = 1
     ]],
@@ -94,7 +94,7 @@ shader as_subsurface
         int min = 1,
         int max = 16,
         int softmax = 8,
-        string label = "SSS Ray Depth",
+        string label = "Subsurface Ray Depth",
         string page = "Subsurface.Advanced",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
@@ -118,7 +118,7 @@ shader as_subsurface
         float max = 1.0,
         string label = "Fresnel Weight",
         string page = "Fresnel.Advanced",
-        string help = "A value of 0.0 disables scaling the SSS term by the Fresnel. It should match the specular weight ideally."
+        string help = "A value of 0.0 disables scaling the subsurface scattering term by the Fresnel. It should match the specular weight ideally."
     ]],
     float in_specular_weight = 1.0
     [[
