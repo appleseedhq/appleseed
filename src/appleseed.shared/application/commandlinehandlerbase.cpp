@@ -1,7 +1,7 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
@@ -232,7 +232,7 @@ void CommandLineHandlerBase::print_version_information(SuperLogger& logger) cons
         "copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited.\n"
         "copyright (c) 2014-2018 The appleseedhq Organization.\n"
         "this software is released under the MIT license (http://opensource.org/licenses/MIT).\n"
-        "visit http://appleseedhq.net/ for additional information and resources.",
+        "visit https://appleseedhq.net/ for additional information and resources.",
         impl->m_application_name.c_str(),
         Appleseed::get_lib_name(),
         Appleseed::get_lib_version(),
