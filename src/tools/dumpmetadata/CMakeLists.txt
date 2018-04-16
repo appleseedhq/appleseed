@@ -1,7 +1,7 @@
 
 #
 # This source file is part of appleseed.
-# Visit http://appleseedhq.net/ for additional information and resources.
+# Visit https://appleseedhq.net/ for additional information and resources.
 #
 # This software is released under the MIT license.
 #
