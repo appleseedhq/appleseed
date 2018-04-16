@@ -282,7 +282,7 @@ shader as_triplanar
         string as_maya_attribute_short_name = "xeo",
         string label = "Input Transfer Function",
         string page = "Projection.X Axis.Color Management",
-        string widget = "popup",
+        string widget = "mapper",
         string options = "None/Raw|sRGB|Rec.709|Gamma 2.2|Gamma 2.4|Gamma 2.6 (DCI)|Rec.1886|Rec.2020",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,

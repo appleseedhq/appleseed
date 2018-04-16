@@ -125,13 +125,13 @@ shader as_blackbody
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0
     ]],
-    float in_specular_weight = 0.0
+    float in_specular_amount = 0.0
     [[
         string as_maya_attribute_name = "specularAmount",
         string as_maya_attribute_short_name = "sam",
         float min = 0.0,
         float max = 1.0,
-        string label = "Specular Weight",
+        string label = "Specular Amount",
         string page = "Specular"
     ]],
     float in_specular_roughness = 0.1
@@ -258,7 +258,7 @@ shader as_blackbody
 
     float transmittance = 1.0;
 
-    if (in_specular_weight > 0.0 && in_ior > 1.0)
+    if (in_specular_amount > 0.0 && in_ior > 1.0)
     {
         // Dielectric coating, so the Schlick approximation suffices.
         vector In = normalize(I);
@@ -271,7 +271,7 @@ shader as_blackbody
 
         transmittance = 1.0 - clamp(Kr, 0.0, 1.0);
 
-        out_color += in_specular_weight *
+        out_color += in_specular_amount *
             as_glossy(
                 "ggx",
                 Nn,

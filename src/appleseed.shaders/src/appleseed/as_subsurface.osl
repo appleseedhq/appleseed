@@ -40,9 +40,9 @@ shader as_subsurface
     string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_subsurface.html#label-as-subsurface"
 ]]
 (
-    int in_subsurface_profile = 0
+    int in_sss_profile = 0
     [[
-        string as_maya_attribute_name = "subsurfaceProfile",
+        string as_maya_attribute_name = "sssProfile",
         string as_maya_attribute_short_name = "ssp",
         string widget = "mapper",
         string options = "Better Dipole:0|Directional Dipole:1|Gaussian:2|Normalized Diffusion:3|Standard Dipole:4|Random Walk:5",
@@ -61,24 +61,24 @@ shader as_subsurface
         string label = "Reflectance",
         string page = "Subsurface"
     ]],
-    float in_subsurface_weight = 1.0
+    float in_sss_amount = 1.0
     [[
-        string as_maya_attribute_name = "subsurfaceWeight",
+        string as_maya_attribute_name = "sssAmount",
         string as_maya_attribute_short_name = "ssa",
         float min = 0.0,
         float max = 1.0,
-        string label = "Subsurface Weight",
+        string label = "SSS Amount",
         string page = "Subsurface",
         int divider = 1
     ]],
-    color in_subsurface_mfp = color(0.13, 0.69, 0.88)
+    color in_sss_mfp = color(0.13, 0.69, 0.88)
     [[
         string as_maya_attribute_name = "meanFreePath",
         string as_maya_attribute_short_name = "mfp",
         string label = "Mean Free Path",
         string page = "Subsurface"
     ]],
-    float in_subsurface_mfp_scale = 1.0
+    float in_sss_mfp_scale = 1.0
     [[
         string as_maya_attribute_name = "mfpScale",
         string as_maya_attribute_short_name = "msc",
@@ -87,14 +87,14 @@ shader as_subsurface
         string label = "MFP Scale",
         string page = "Subsurface"
     ]],
-    int in_subsurface_maximum_ray_depth = 2
+    int in_sss_maximum_ray_depth = 2
     [[
-        string as_maya_attribute_name = "subsurfaceMaximumRayDepth",
+        string as_maya_attribute_name = "sssMaximumRayDepth",
         string as_maya_attribute_short_name = "ssd",
         int min = 1,
         int max = 16,
         int softmax = 8,
-        string label = "Subsurface Ray Depth",
+        string label = "SSS Ray Depth",
         string page = "Subsurface.Advanced",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
@@ -118,7 +118,7 @@ shader as_subsurface
         float max = 1.0,
         string label = "Fresnel Weight",
         string page = "Fresnel.Advanced",
-        string help = "A value of 0.0 disables scaling the subsurface term by the Fresnel. It should match the specular weight ideally."
+        string help = "A value of 0.0 disables scaling the SSS term by the Fresnel. It should match the specular weight ideally."
     ]],
     float in_specular_weight = 1.0
     [[
@@ -273,56 +273,56 @@ shader as_subsurface
         out_outColor += out_outMatteOpacity;
     }
 
-    string subsurface_profile;
+    string sss_profile;
 
-    if (in_subsurface_profile == 0)
+    if (in_sss_profile == 0)
     {
-        subsurface_profile = "better_dipole";
+        sss_profile = "better_dipole";
     }
-    else if (in_subsurface_profile == 1)
+    else if (in_sss_profile == 1)
     {
-        subsurface_profile = "directional_dipole";
+        sss_profile = "directional_dipole";
     }
-    else if (in_subsurface_profile == 2)
+    else if (in_sss_profile == 2)
     {
-        subsurface_profile = "gaussian";
+        sss_profile = "gaussian";
     }
-    else if (in_subsurface_profile == 3)
+    else if (in_sss_profile == 3)
     {
-        subsurface_profile = "normalized_diffusion";
+        sss_profile = "normalized_diffusion";
     }
-    else if (in_subsurface_profile == 4)
+    else if (in_sss_profile == 4)
     {
-        subsurface_profile = "standard_dipole";
+        sss_profile = "standard_dipole";
     }
     else
     {
-        subsurface_profile = "randomwalk";
+        sss_profile = "randomwalk";
     }
 
     normal Nn = normalize(in_bump_normal);
 
-    if (in_subsurface_weight * max(in_color) > 0.0)
+    if (in_sss_amount * max(in_color) > 0.0)
     {
-        color albedo = clamp(in_subsurface_weight * in_color, 0.01, 0.99);
+        color albedo = clamp(in_sss_amount * in_color, 0.01, 0.99);
 
-        if (subsurface_profile == "randomwalk")
+        if (sss_profile == "randomwalk")
         {
             out_outColor += as_subsurface(
-                subsurface_profile,
+                sss_profile,
                 Nn,
                 albedo,
-                in_subsurface_mfp_scale * in_subsurface_mfp,
+                in_sss_mfp_scale * in_sss_mfp,
                 in_ior,
                 "fresnel_weight", in_fresnel_weight);
         }
         else
         {
             out_outColor += as_subsurface(
-                subsurface_profile,
+                sss_profile,
                 Nn,
                 albedo,
-                in_subsurface_mfp_scale * in_subsurface_mfp,
+                in_sss_mfp_scale * in_sss_mfp,
                 in_ior,
                 "fresnel_weight", in_fresnel_weight);
         }
