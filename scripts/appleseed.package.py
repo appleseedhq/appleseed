@@ -49,7 +49,7 @@ import zipfile
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.5.0"
+VERSION = "2.5.1"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
@@ -354,6 +354,7 @@ class PackageBuilder:
         progress("Adding shaders to staging directory")
         shutil.rmtree("appleseed/shaders")
         shutil.copytree(os.path.join(self.settings.appleseed_path, "sandbox/shaders"), "appleseed/shaders")
+        shutil.copytree(os.path.join(self.settings.appleseed_path, "src/appleseed.shaders/src"), "appleseed/shaders/src")
 
     def add_scripts_to_stage(self):
         progress("Adding scripts to staging directory")
