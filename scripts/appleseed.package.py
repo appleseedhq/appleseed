@@ -131,6 +131,49 @@ def make_writable(filepath):
     os.chmod(filepath, stat.S_IRUSR | stat.S_IWUSR)
 
 
+def merge_tree(src, dst, symlinks=False, ignore=None):
+    names = os.listdir(src)
+    if ignore is not None:
+        ignored_names = ignore(src, names)
+    else:
+        ignored_names = set()
+
+    if not os.path.exists(dst):
+        os.makedirs(dst)
+
+    errors = []
+    for name in names:
+        if name in ignored_names:
+            continue
+        srcname = os.path.join(src, name)
+        dstname = os.path.join(dst, name)
+        try:
+            if symlinks and os.path.islink(srcname):
+                linkto = os.readlink(srcname)
+                os.symlink(linkto, dstname)
+            elif os.path.isdir(srcname):
+                merge_tree(srcname, dstname, symlinks, ignore)
+            else:
+                # Will raise a SpecialFileError for unsupported file types
+                shutil.copy2(srcname, dstname)
+        # catch the Error from the recursive copytree so that we can
+        # continue with other files
+        except Error, err:
+            errors.extend(err.args[0])
+        except EnvironmentError, why:
+            errors.append((srcname, dstname, str(why)))
+    try:
+        shutil.copystat(src, dst)
+    except OSError, why:
+        if WindowsError is not None and isinstance(why, WindowsError):
+            # Copying file access times may fail on Windows
+            pass
+        else:
+            errors.append((src, dst, str(why)))
+    if errors:
+        raise Error, errors
+
+
 #--------------------------------------------------------------------------------------------------
 # Settings.
 #--------------------------------------------------------------------------------------------------
@@ -671,6 +714,7 @@ class LinuxPackageBuilder(PackageBuilder):
         self.add_dependencies_to_stage()
         self.set_runtime_paths_on_binaries()
         self.clear_runtime_paths_on_libraries()
+        self.add_python_to_stage() # Must be last.
 
     def make_executable(self, filepath):
         mode = os.stat(filepath)[stat.ST_MODE]
@@ -723,6 +767,13 @@ class LinuxPackageBuilder(PackageBuilder):
             if lib.startswith(prefix):
                 return True
         return False
+
+    def add_python_to_stage(self):
+        progress("Linux-specific: Adding Python 2.7 to staging directory")
+
+        merge_tree(os.path.join(self.settings.python_path, "bin"), "appleseed/bin", symlinks=True)
+        merge_tree(os.path.join(self.settings.python_path, "lib"), "appleseed/lib", symlinks=True)
+        merge_tree(os.path.join(self.settings.python_path, "include"), "appleseed/include", symlinks=True)
 
 
 #--------------------------------------------------------------------------------------------------
