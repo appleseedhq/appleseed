@@ -468,6 +468,12 @@ bool RendererComponents::create_frame_renderer_factory()
             return false;
         }
 
+        if (m_shading_result_framebuffer_factory.get() == nullptr)
+        {
+            RENDERER_LOG_ERROR("cannot use the generic tile renderer without a shading result framebuffer.");
+            return false;
+        }
+
         m_frame_renderer.reset(
             GenericFrameRendererFactory::create(
                 m_frame,

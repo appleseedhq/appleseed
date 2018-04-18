@@ -186,7 +186,7 @@ class APPLESEED_DLLSYMBOL Tile
     void copy(const Tile& rhs);
 
     // Merge sub-tiles to this tile
-    void merge();
+    void combine();
 
     // Split this tile into four sub-tile
     void split();
@@ -441,6 +441,8 @@ inline T Tile::get_component(
 template <typename Color>
 inline void Tile::clear(const Color& color)
 {
+    combine();
+
     assert(sizeof(Color) == m_channel_count * sizeof(color[0]));
 
     // Set first pixel of first row.

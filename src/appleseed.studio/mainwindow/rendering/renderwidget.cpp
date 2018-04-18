@@ -246,7 +246,7 @@ void RenderWidget::blit_tile(
 {
     QMutexLocker locker(&m_mutex);
 
-    allocate_working_storage(frame.image().properties(), tile_level);
+    allocate_working_storage(frame.image().properties(), 0);
 
     blit_tile_no_lock(frame, tile_x, tile_y, tile_level);
     update_tile_no_lock(tile_x, tile_y, tile_level);
@@ -361,6 +361,10 @@ void RenderWidget::blit_tile_no_lock(
     // Retrieve the source tile.
     const Tile& src_tile = frame.image().tile(tile_x, tile_y, tile_level);
 
+    if (tile_level == 1)
+        m_image_storage->tile(tile_x / 2, tile_y / 2, 0).split();
+    else 
+        m_image_storage->tile(tile_x, tile_y, 0).combine();
     // Retrieve the dest tile and copy the pixels.
     Tile& dst_tile = m_image_storage->tile(tile_x, tile_y, tile_level);
     dst_tile.copy(src_tile);
@@ -368,6 +372,10 @@ void RenderWidget::blit_tile_no_lock(
 
 void RenderWidget::update_tile_no_lock(const size_t tile_x, const size_t tile_y, const size_t tile_level)
 {
+    if (tile_level == 1)
+        m_image_storage->tile(tile_x / 2, tile_y / 2, 0).split();
+    else
+        m_image_storage->tile(tile_x, tile_y, 0).combine();
     // Retrieve the source tile.
     const Tile& src_tile = m_image_storage->tile(tile_x, tile_y, tile_level);
 

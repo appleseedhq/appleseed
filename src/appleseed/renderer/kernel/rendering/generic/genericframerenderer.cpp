@@ -89,6 +89,7 @@ namespace
             const ParamArray&       params)
           : m_frame(frame)
           , m_params(params)
+          , m_framebuffer_factory(framebuffer_factory)
           , m_pass_callback(pass_callback)
           , m_is_rendering(false)
         {

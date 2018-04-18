@@ -204,18 +204,13 @@ Tile& Image::tile(
 
     if (tile_level > 0)
     {
+        //if()
+
         int x = tile_x % 2;
         int y = tile_y % 2;
+        int i = x + 2 * y;
 
-        if (m_tiles[tile_index]->m_sub_tiles[0] == nullptr)
-            m_tiles[tile_index]->split();
-
-        return *m_tiles[tile_index]->m_sub_tiles[2 * x + y];
-    }
-
-    if (tile_level == 0 && m_tiles[tile_index]->m_sub_tiles[0] != nullptr)
-    {
-        m_tiles[tile_index]->merge();
+        return *m_tiles[tile_index]->m_sub_tiles[i];
     }
 
     return *m_tiles[tile_index];
