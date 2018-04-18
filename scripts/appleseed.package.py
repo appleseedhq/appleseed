@@ -49,7 +49,7 @@ import zipfile
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.5.1"
+VERSION = "2.5.2"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
@@ -479,20 +479,12 @@ class WindowsPackageBuilder(PackageBuilder):
         shutil.copy(os.path.join(self.settings.python_path, "python27.dll"), "appleseed/bin/")
 
         safe_make_directory("appleseed/python27")
-        shutil.copy(os.path.join(self.settings.python_path, "LICENSE.txt"), "appleseed/python27")
-        shutil.copy(os.path.join(self.settings.python_path, "README.txt"), "appleseed/python27")
         shutil.copytree(os.path.join(self.settings.python_path, "DLLs"), "appleseed/python27/DLLs")
         shutil.copytree(os.path.join(self.settings.python_path, "include"), "appleseed/python27/include")
+        shutil.copytree(os.path.join(self.settings.python_path, "Lib"), "appleseed/python27/Lib")
         shutil.copytree(os.path.join(self.settings.python_path, "libs"), "appleseed/python27/libs")
-
-        def ignore_lib_content(path, names):
-            if path == os.path.join(self.settings.python_path, "Lib"):
-                return ["site-packages"]
-            return set(fnmatch.filter(names, "*.pyc"))
-        shutil.copytree(os.path.join(self.settings.python_path, "Lib"), "appleseed/python27/Lib", ignore=ignore_lib_content)
-
-        safe_make_directory("appleseed/python27/Lib/site-packages")
-        shutil.copy(os.path.join(self.settings.python_path, "Lib", "site-packages", "README.txt"), "appleseed/python27/Lib/site-packages/")
+        shutil.copy(os.path.join(self.settings.python_path, "LICENSE.txt"), "appleseed/python27")
+        shutil.copy(os.path.join(self.settings.python_path, "README.txt"), "appleseed/python27")
 
     def copy_qt_framework(self, framework_name):
         src_filepath = os.path.join(self.settings.qt_runtime_path, framework_name + "4" + ".dll")
