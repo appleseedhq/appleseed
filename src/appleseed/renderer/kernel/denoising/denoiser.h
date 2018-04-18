@@ -1,7 +1,7 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
@@ -55,14 +55,14 @@ class DenoiserOptions
     bool    m_mark_invalid_pixels;
 
     DenoiserOptions()
-      : m_histogram_patch_distance_threshold(1.f)
+      : m_histogram_patch_distance_threshold(1.0f)
       , m_patch_radius(1)
       , m_search_window_radius(6)
       , m_min_eigenvalue(1.e-8f)
       , m_use_random_pixel_order(false)
       , m_prefilter_spikes(false)
-      , m_prefilter_threshold_stddev_factor(2.f)
-      , m_marked_pixels_skipping_probability(1.f)
+      , m_prefilter_threshold_stddev_factor(2.0f)
+      , m_marked_pixels_skipping_probability(0.0f)
       , m_num_scales(3)
       , m_num_cores(0)
       , m_mark_invalid_pixels(false)

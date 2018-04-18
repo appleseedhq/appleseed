@@ -1,7 +1,7 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
@@ -34,7 +34,7 @@ shader as_fresnel
 [[
     string as_maya_node_name = "asFresnel",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string help = "A viewer Fresnel term node",
+    string help = "A viewer Fresnel term node.",
     string icon = "asFresnel.png",
     int as_maya_type_id = 0x001279f1,
     string as_max_class_id = "1608738100 1656300655", 
@@ -66,7 +66,7 @@ shader as_fresnel
         float softmax = 2.0,
         string label = "Index Of Refraction",
         string page = "Fresnel",
-        string help = "Dielectric monochromatic index of refraction",
+        string help = "Dielectric monochromatic index of refraction.",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
@@ -126,7 +126,7 @@ shader as_fresnel
         string as_maya_attribute_short_name = "n",
         string label = "Surface Normal",
         string page = "Globals",
-        string help = "The unit length world space shading normal, it can be a bumped normal"
+        string help = "The unit length world space shading normal, it can be a bumped normal."
     ]],
     vector in_viewer_vector = I
     [[

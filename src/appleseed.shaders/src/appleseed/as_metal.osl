@@ -1,11 +1,11 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017-2018 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ shader as_metal
 [[
     string as_maya_node_name = "asMetal",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string help = "Metal material",
+    string help = "Metal material.",
     string icon = "asMetal.png",
     int as_maya_type_id = 0x001279f9,
     string as_max_class_id = "121203873 1478432054",
@@ -106,7 +106,7 @@ shader as_metal
         float max = 1.0,
         string label = "Anisotropy Angle",
         string page = "Specular.Anisotropy",
-        string help = "Anisotropy angle in [0,1], mapping to [0,360] degrees",
+        string help = "Anisotropy angle in [0,1], mapping to [0,360] degrees.",
         int divider = 1
     ]],
     int in_anisotropy_mode = 0
@@ -130,7 +130,7 @@ shader as_metal
         string as_maya_attribute_short_name = "ama",
         string label = "Anisotropy Vector Map",
         string page = "Specular.Anisotropy",
-        string help = "Anisotropy vector map, with XY encoded in RG channels",
+        string help = "Anisotropy vector map, with XY encoded in RG channels.",
         int divider = 1
     ]],
     vector in_anisotropy_direction = vector(0)

@@ -1,11 +1,11 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2017-2018 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -63,8 +63,8 @@ namespace
       : public UnfilteredAOVAccumulator
     {
       public:
-        explicit UVAOVAccumulator(Image& image)
-          : UnfilteredAOVAccumulator(image)
+        UVAOVAccumulator(Image& image, Image& filter_image)
+          : UnfilteredAOVAccumulator(image, filter_image)
         {
         }
 
@@ -83,7 +83,10 @@ namespace
             float* p = reinterpret_cast<float*>(
                 get_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
 
-            const float min_sample_square_distance = p[3];
+            float* f = reinterpret_cast<float*>(
+                get_filter_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
+
+            const float min_sample_square_distance = *f;
             const float sample_square_distance =
                 square_distance_to_pixel_center(pixel_context.get_sample_position());
 
@@ -95,14 +98,14 @@ namespace
                     p[0] = uv[0];
                     p[1] = uv[1];
                     p[2] = 0.0f;
-                    p[3] = sample_square_distance;
+                    *f = sample_square_distance;
                 }
                 else
                 {
                     p[0] = 0.0f;
                     p[1] = 0.0f;
                     p[2] = 0.0f;
-                    p[3] = sample_square_distance;
+                    *f = sample_square_distance;
                 }
             }
         }
@@ -147,12 +150,14 @@ namespace
 
         void clear_image() override
         {
-            m_image->clear(Color4f(0.0f, 0.0f, 0.0f, numeric_limits<float>::max()));
+            m_image->clear(Color3f(0.0f, 0.0f, 0.0f));
+            m_filter_image->clear(Color<float, 1>(numeric_limits<float>::max()));
         }
 
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
-            return auto_release_ptr<AOVAccumulator>(new UVAOVAccumulator(get_image()));
+            return auto_release_ptr<AOVAccumulator>(
+                new UVAOVAccumulator(get_image(), *m_filter_image));
         }
     };
 }

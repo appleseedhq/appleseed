@@ -1,0 +1,266 @@
+
+//
+// This source file is part of appleseed.
+// Visit https://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2018 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/maya/as_maya_helpers.h"
+
+shader as_bump
+[[
+    string as_maya_node_name = "asBump",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string help = "Bump Node.",
+    string icon = "asBump.png",
+    int as_maya_type_id = 0x00127a00,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_bump.html#label-as-bump"
+]]
+(
+    string in_mode = "Bump"
+    [[
+        string as_maya_attribute_name = "mode",
+        string as_maya_attribute_short_name = "bmd",
+        string label = "Bump Mode",
+        string widget = "popup",
+        string page = "Mode",
+        string options = "Bump|Normal Map",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    float in_bump_value = 0.0
+    [[
+        string as_maya_attribute_name = "bumpValue",
+        string as_maya_attribute_short_name = "bva",
+        float min = 0.0,
+        float max = 1.0,        
+        string label = "Bump Value",
+        string page = "Bump"
+    ]],
+    float in_bump_depth = 1.0
+    [[
+        string as_maya_attribute_name = "bumpDepth",
+        string as_maya_attribute_short_name = "bde",
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Bump Depth",
+        string page = "Bump"
+    ]],
+    float in_normal_map_weight = 1.0
+    [[
+        string as_maya_attribute_name = "normalMapWeight",
+        string as_maya_attribute_short_name = "nmw",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Normal Map Scale",
+        string page = "Normal Map",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    color in_normal_map = color(0)
+    [[
+        string as_maya_attribute_name = "normalMap",
+        string as_maya_attribute_short_name = "anm",
+        string label = "Normal Map",
+        string page = "Normal Map",
+        int divider = 1
+    ]],
+    string in_normal_map_coordsys = "Tangent Space"
+    [[
+        string as_maya_attribute_name = "normalMapCoordSys",
+        string as_maya_attribute_short_name = "ncs",
+        string widget = "popup",
+        string options = "Tangent Space|Object Space|World Space",
+        string label = "Map Coordinate System",
+        string page = "Normal Map",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    string in_normal_map_mode = "Unsigned"
+    [[
+        string as_maya_attribute_name = "normalMapMode",
+        string as_maya_attribute_short_name = "nmm",
+        string widget = "popup",
+        string options = "Unsigned|Signed",
+        string label = "Normal Map Mode",
+        string page = "Normal Map.Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    int in_normal_map_flip_r = 0
+    [[
+        string as_maya_attribute_name = "normalMapFlipR",
+        string as_maya_attribute_short_name = "nfr",
+        string widget = "checkBox",
+        string label = "Flip R",
+        string page = "Normal Map.Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0        
+    ]],
+    int in_normal_map_flip_g = 0
+    [[
+        string as_maya_attribute_name = "normalMapFlipG",
+        string as_maya_attribute_short_name = "nfg",
+        string widget = "checkBox",
+        string label = "Flip G",
+        string page = "Normal Map.Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_normal_map_swap_rg = 0
+    [[
+        string as_maya_attribute_name = "normalMapSwapRG",
+        string as_maya_attribute_short_name = "srg",
+        string widget = "checkBox",
+        string label = "Swap RG",
+        string page = "Normal Map.Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],                                                         
+    point in_surface_point = P
+    [[
+        string as_maya_attribute_name = "surfacePoint",
+        string as_maya_attribute_short_name = "p",
+        string label = "Surface Point",
+        string page = "Surface",
+        string widget = "null"
+    ]],
+    normal in_surface_normal = N
+    [[
+        string as_maya_attribute_name = "surfaceNormal",
+        string as_maya_attribute_short_name = "n",
+        string label = "Surface Normal",
+        string page = "Surface"
+    ]],
+    vector Tn = vector(0)
+    [[
+        int lockgeom = 0,
+        string widget = "null"
+    ]],
+    vector Bn = vector(0)
+    [[
+        int lockgeom = 0,
+        string widget = "null"
+    ]],
+
+    output normal out_normal = N
+    [[
+        string as_maya_attribute_name = "outNormal",
+        string label = "Output Normal",
+        string help = "Resulting unit length world space normal.",
+        string widget = "null"
+    ]]
+)
+{
+    if (in_mode == "Bump")
+    {
+        if (in_bump_value * in_bump_depth == 0.0)
+        {
+            return;
+        }
+
+        float bump_depth = abs(in_bump_depth);
+        
+        float bump_offset = clamp(
+            in_bump_value * in_bump_depth,
+           -bump_depth,
+            bump_depth);
+
+        normal surface_normal = normalize(in_surface_normal);
+
+        out_normal = normalize(calculatenormal(
+            in_surface_point + (vector) surface_normal * bump_offset));
+    }
+    else
+    {
+        if (in_normal_map_weight == 0.0)
+        {
+            return;
+        }
+
+        normal lookup_normal = (in_normal_map_mode == "Unsigned")
+            ? (normal) clamp(in_normal_map, 0.0, 1.0) * 2.0 - 1.0
+            : (normal) clamp(in_normal_map, -1.0, 1.0);
+
+        normal surface_normal = normalize(in_surface_normal);
+
+        if (in_normal_map_coordsys == "World Space")
+        {
+            out_normal = transform("world", "common", lookup_normal);
+            out_normal = mix(surface_normal, out_normal, in_normal_map_weight);
+        }
+        else if (in_normal_map_coordsys == "Object Space")
+        {
+            out_normal = transform("object", "common", lookup_normal);
+            out_normal = mix(surface_normal, out_normal, in_normal_map_weight);
+        }
+        else
+        {
+            if (in_normal_map_flip_r)
+            {
+                lookup_normal[0] = -lookup_normal[0];
+            }
+            if (in_normal_map_flip_g)
+            {
+                lookup_normal[1] = -lookup_normal[1];
+            }
+            if (in_normal_map_swap_rg)
+            {
+                float lookup_tmp = lookup_normal[0];
+                lookup_normal[0] = lookup_normal[1];
+                lookup_normal[1] = lookup_tmp;
+            }
+
+            vector bitangent = cross(Tn, surface_normal);
+
+            normal reoriented_normal =
+                lookup_normal[0] * Tn +
+                lookup_normal[1] * bitangent +
+                lookup_normal[2] * surface_normal;
+
+            out_normal = mix(
+                surface_normal,
+                reoriented_normal,
+                in_normal_map_weight);
+        }
+        out_normal = normalize(out_normal);
+    }
+}

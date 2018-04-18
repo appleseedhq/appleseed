@@ -1,11 +1,11 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017-2018 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ shader as_subsurface
 [[
     string as_maya_node_name = "asSubsurface",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string help = "SubSurface Scattering material",
+    string help = "SubSurface Scattering material.",
     string icon = "asSubsurface.png",
     int as_maya_type_id = 0x001279e4,
     string as_max_class_id = "492524175 1093340697",
@@ -67,7 +67,7 @@ shader as_subsurface
         string as_maya_attribute_short_name = "ssa",
         float min = 0.0,
         float max = 1.0,
-        string label = "SSS Amount",
+        string label = "Subsurface Weight",
         string page = "Subsurface",
         int divider = 1
     ]],
@@ -94,7 +94,7 @@ shader as_subsurface
         int min = 1,
         int max = 16,
         int softmax = 8,
-        string label = "SSS Ray Depth",
+        string label = "Subsurface Ray Depth",
         string page = "Subsurface.Advanced",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
@@ -118,7 +118,7 @@ shader as_subsurface
         float max = 1.0,
         string label = "Fresnel Weight",
         string page = "Fresnel.Advanced",
-        string help = "A value of 0.0 disables scaling the SSS term by the Fresnel. It should match the specular weight ideally."
+        string help = "A value of 0.0 disables scaling the subsurface scattering term by the Fresnel. It should match the specular weight ideally."
     ]],
     float in_specular_weight = 1.0
     [[
@@ -155,7 +155,7 @@ shader as_subsurface
         float max = 1.0,
         string label = "Anisotropy Angle",
         string page = "Specular.Anisotropy",
-        string help = "Anisotropy angle in [0,1], mapping to [0,360] degrees",
+        string help = "Anisotropy angle in [0,1], mapping to [0,360] degrees.",
         int divider = 1
     ]],
     int in_anisotropy_mode = 0
@@ -179,7 +179,7 @@ shader as_subsurface
         string as_maya_attribute_short_name = "ama",
         string label = "Anisotropy Vector Map",
         string page = "Specular.Anisotropy",
-        string help = "Anisotropy vector map, with XY encoded in RG channels",
+        string help = "Anisotropy vector map, with XY encoded in RG channels.",
         int divider = 1
     ]],
     vector in_anisotropy_direction = vector(0)

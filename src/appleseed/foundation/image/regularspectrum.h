@@ -1,12 +1,12 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -161,7 +161,7 @@ template <typename T, size_t N> size_t max_abs_index(const RegularSpectrum<T, N>
 template <typename T, size_t N> RegularSpectrum<T, N> component_wise_min(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs);
 template <typename T, size_t N> RegularSpectrum<T, N> component_wise_max(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs);
 
-// Return the sum of all values of a spectrum.
+// Return the sum of the components of a spectrum.
 template <typename T, size_t N> T sum_value(const RegularSpectrum<T, N>& s);
 
 // Return the average value of a spectrum.

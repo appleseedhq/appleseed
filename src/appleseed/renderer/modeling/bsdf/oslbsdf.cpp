@@ -1,11 +1,11 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2018 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -210,8 +210,12 @@ namespace
                     sample);
             sample.m_value *= c->get_closure_weight(closure_index);
 
-            if (sample.m_mode == ScatteringMode::Specular || sample.m_probability == 0.0f)
+            if (sample.m_mode == ScatteringMode::None ||
+                sample.m_mode == ScatteringMode::Specular ||
+                sample.m_probability < 1e-6f)
+            {
                 return;
+            }
 
             sample.m_probability *= pdfs[closure_index];
             pdfs[closure_index] = 0.0f;

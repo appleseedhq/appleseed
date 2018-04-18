@@ -1,11 +1,11 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017-2018 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@ shader as_blackbody
 [[
     string as_maya_node_name = "asBlackbody",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string help = "Blackbody Shader",
+    string help = "Blackbody Shader.",
     string icon = "asBlackbody",
     int as_maya_type_id = 0x001279d0,
     string as_max_class_id = "1182349026 1064055537",
@@ -49,7 +49,7 @@ shader as_blackbody
         string options = "Constant:0|Physically Based:1",
         string label = "Incandescence Type",
         string page = "Incandescence",
-        string help = "Constant based, or blackbody radiator based EDF",
+        string help = "Constant based, or blackbody radiator based EDF.",
         int divider = 1,
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
@@ -81,7 +81,7 @@ shader as_blackbody
         float max = 1.0,
         string label = "Temperature Scale",
         string page = "Incandescence",
-        string help = "Temperature scaling factor"
+        string help = "Temperature scaling factor."
     ]],
     int in_temperature = 4300
     [[
@@ -93,7 +93,7 @@ shader as_blackbody
         int softmax = 9300,
         string label = "Temperature",
         string page = "Incandescence",
-        string help = "Temperature in Kelvin degrees, only valid in physically based mode",
+        string help = "Temperature in Kelvin degrees, only valid in physically based mode.",
         int divider = 1,
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
@@ -119,7 +119,7 @@ shader as_blackbody
         string widget = "checkBox",
         string label = "Tonemap Color",
         string page = "Incandescence",
-        string help = "Tonemap incandescence, only valid for physically based mode",
+        string help = "Tonemap incandescence, only valid for physically based mode.",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -131,7 +131,7 @@ shader as_blackbody
         string as_maya_attribute_short_name = "sam",
         float min = 0.0,
         float max = 1.0,
-        string label = "Specular Amount",
+        string label = "Specular Weight",
         string page = "Specular"
     ]],
     float in_specular_roughness = 0.1
@@ -275,10 +275,10 @@ shader as_blackbody
             as_glossy(
                 "ggx",
                 Nn,
-                vector(0), // tangent vector
+                vector(0),  // tangent vector
                 in_specular_roughness,
-                0.0, // specular spread
-                0.0, // anisotropy amount
+                0.0,        // specular spread
+                0.0,        // anisotropy amount
                 in_ior,
                 "energy_compensation", 1.0);
     }
@@ -299,8 +299,8 @@ shader as_blackbody
         else if (in_temperature_scale * in_temperature > 798)
         {
             // TODO: Integrating Planck's equation to SPD using specified
-            // CMF (ie, 1931, 2012 CMF), then converting from SPD->CIEXYZ to
-            // RGB using the working space RGBW primaries.
+            // CMF (ie, 1931, 2012 CMF), then converting from SPD->CIEXYZ
+            // to RGB using the working space RGBW primaries.
 
             edf_color = blackbody(in_temperature_scale *
                 (float) in_temperature);

@@ -1,11 +1,11 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2017-2018 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -136,8 +136,11 @@ namespace
 // UnfilteredAOVAccumulator class implementation.
 //
 
-UnfilteredAOVAccumulator::UnfilteredAOVAccumulator(Image& image)
+UnfilteredAOVAccumulator::UnfilteredAOVAccumulator(
+    Image& image,
+    Image& filter_image)
   : m_image(image)
+  , m_filter_image(filter_image)
 {
 }
 
@@ -150,6 +153,7 @@ void UnfilteredAOVAccumulator::on_tile_begin(
     // Fetch the destination tile.
     const CanvasProperties& props = frame.image().properties();
     m_tile = &m_image.tile(tile_x, tile_y);
+    m_filter_tile = &m_filter_image.tile(tile_x, tile_y);
 
     // Fetch the tile bounds (inclusive).
     m_tile_origin_x = static_cast<int>(tile_x * props.m_tile_width);

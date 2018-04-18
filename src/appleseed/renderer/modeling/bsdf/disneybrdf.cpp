@@ -1,11 +1,11 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2018 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -472,6 +472,9 @@ namespace
                 weights[ClearcoatComponent] = 0.0f;
             }
 
+            if (sample.m_mode == ScatteringMode::None)
+                return;
+
             const Vector3f& outgoing = sample.m_outgoing.get_value();
             const Vector3f& incoming = sample.m_incoming.get_value();
 
@@ -606,8 +609,7 @@ namespace
 
                 Spectrum spec;
                 const GGXMDF ggx_mdf;
-                pdf +=
-                    weights[SpecularComponent] *
+                const float spec_pdf =
                     MicrofacetBRDFHelper<false>::evaluate(
                         ggx_mdf,
                         alpha_x,
@@ -618,16 +620,20 @@ namespace
                         incoming,
                         DisneySpecularFresnelFun(*values),
                         spec);
-                value.m_glossy += spec;
+
+                if (spec_pdf > 0.0f)
+                {
+                    pdf += weights[SpecularComponent] * spec_pdf;
+                    value.m_glossy += spec;
+                }
             }
 
             if (weights[ClearcoatComponent] > 0.0f)
             {
                 const float alpha = clearcoat_roughness(values);
-                Spectrum clear;
+                Spectrum clearcoat;
                 const GTR1MDF gtr1_mdf;
-                pdf +=
-                    weights[ClearcoatComponent] *
+                const float clearcoat_pdf =
                     MicrofacetBRDFHelper<false>::evaluate(
                         gtr1_mdf,
                         alpha,
@@ -637,8 +643,13 @@ namespace
                         outgoing,
                         incoming,
                         DisneyClearcoatFresnelFun(*values),
-                        clear);
-                value.m_glossy += clear;
+                        clearcoat);
+
+                if (clearcoat_pdf > 0.0f)
+                {
+                    pdf += weights[ClearcoatComponent] * clearcoat_pdf;
+                    value.m_glossy += clearcoat;
+                }
             }
 
             value.m_beauty = value.m_diffuse;

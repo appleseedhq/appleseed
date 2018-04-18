@@ -1,11 +1,11 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017-2018 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ shader as_disney_material
 [[
     string as_maya_node_name = "asDisneyMaterial",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string help = "Disney material",
+    string help = "Disney material.",
     string icon = "asDisneyMaterial.png",
     int as_maya_type_id = 0x001279c3,
     string as_max_class_id = "151203281 494163155",
@@ -53,7 +53,7 @@ shader as_disney_material
         string as_maya_attribute_short_name = "ss",
         float min = 0.0,
         float max = 1.0,
-        string label = "Subsurface Amount",
+        string label = "Subsurface Weight",
         string page = "Common"
     ]],
     float in_specular_amount = 0.5
@@ -62,7 +62,7 @@ shader as_disney_material
         string as_maya_attribute_short_name = "sa",
         float min = 0.0,
         float max = 1.0,
-        string label = "Specular Amount",
+        string label = "Specular Weight",
         string page = "Specular"
     ]],
     float in_roughness = 0.5
@@ -110,7 +110,7 @@ shader as_disney_material
         float max = 1.0,
         string label = "Anisotropy Angle",
         string page = "Specular",
-        string help = "The [0,1] range maps to [0,360] degrees range"
+        string help = "The [0,1] range maps to [0,360] degrees range."
     ]],
     color in_anisotropy_vector_map= color(0)
     [[
@@ -118,7 +118,7 @@ shader as_disney_material
         string as_maya_attribute_short_name = "vm",
         string label = "Anisotropy Vector Map",
         string page = "Specular",
-        string help = "Vector tangent field map, with XY in R,G channels"
+        string help = "Vector tangent field map, with XY in R,G channels."
     ]],
     float in_sheen_amount = 0.0
     [[
@@ -127,7 +127,7 @@ shader as_disney_material
         float min = 0.0,
         float max = 10.0,
         float softmax = 1.0,
-        string label = "Sheen Amount",
+        string label = "Sheen Weight",
         string page = "Sheen"
     ]],
     float in_sheen_tint = 0.5
@@ -146,7 +146,7 @@ shader as_disney_material
         float min = 0.0,
         float max = 100.0,
         float softmax = 1.0,
-        string label = "Coating Amount",
+        string label = "Coating Weight",
         string page = "Clear Coat"
     ]],
     float in_clear_coat_glossyness = 1.0

@@ -1,11 +1,11 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2017-2018 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -71,11 +71,11 @@ void AOV::release()
 }
 
 void AOV::create_image(
-    const size_t    canvas_width,
-    const size_t    canvas_height,
-    const size_t    tile_width,
-    const size_t    tile_height,
-    ImageStack&     aov_images)
+    const size_t        canvas_width,
+    const size_t        canvas_height,
+    const size_t        tile_width,
+    const size_t        tile_height,
+    ImageStack&         aov_images)
 {
     m_image_index = aov_images.append(
         get_name(),
@@ -131,12 +131,14 @@ bool ColorAOV::has_color_data() const
 
 UnfilteredAOV::UnfilteredAOV(const char* name, const ParamArray& params)
   : AOV(name, params)
+  , m_filter_image(nullptr)
 {
 }
 
 UnfilteredAOV::~UnfilteredAOV()
 {
     delete m_image;
+    delete m_filter_image;
 }
 
 bool UnfilteredAOV::has_color_data() const
@@ -145,23 +147,30 @@ bool UnfilteredAOV::has_color_data() const
 }
 
 void UnfilteredAOV::create_image(
-    const size_t canvas_width,
-    const size_t canvas_height,
-    const size_t tile_width,
-    const size_t tile_height,
-    ImageStack& aov_images)
+    const size_t        canvas_width,
+    const size_t        canvas_height,
+    const size_t        tile_width,
+    const size_t        tile_height,
+    ImageStack&         aov_images)
 {
-    // Add one extra channel to keep track of the distance
-    // to the nearest sample for each pixel.
-    const size_t num_channels = get_channel_count() + 1;
-
     m_image =
         new Image(
             canvas_width,
             canvas_height,
             tile_width,
             tile_height,
-            num_channels,
+            get_channel_count(),
+            PixelFormatFloat);
+
+    // Extra image to keep track of the distance
+    // to the nearest sample for each pixel.
+    m_filter_image =
+        new Image(
+            canvas_width,
+            canvas_height,
+            tile_width,
+            tile_height,
+            1,
             PixelFormatFloat);
 
     // We need to clear the image because the default channel value

@@ -1,12 +1,12 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,21 +30,18 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_MASTERRENDERER_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_MASTERRENDERER_H
 
-// appleseed.renderer headers.
-#include "renderer/kernel/rendering/baserenderer.h"
-#include "renderer/kernel/rendering/irenderercontroller.h"
-#include "renderer/utility/paramarray.h"
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class IFrameRenderer; }
+namespace renderer      { class IRendererController; }
 namespace renderer      { class ITileCallback; }
 namespace renderer      { class ITileCallbackFactory; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
-namespace renderer      { class RendererComponents; }
 
 namespace renderer
 {
@@ -54,7 +51,7 @@ namespace renderer
 //
 
 class APPLESEED_DLLSYMBOL MasterRenderer
-  : public BaseRenderer
+  : public foundation::NonCopyable
 {
   public:
     // Constructor.
@@ -74,6 +71,10 @@ class APPLESEED_DLLSYMBOL MasterRenderer
     // Destructor.
     ~MasterRenderer();
 
+    // Return the parameters of the master renderer.
+    ParamArray& get_parameters();
+    const ParamArray& get_parameters() const;
+
     struct RenderingResult
     {
         enum Status { Succeeded, Aborted, Failed };
@@ -88,29 +89,6 @@ class APPLESEED_DLLSYMBOL MasterRenderer
   private:
     struct Impl;
     Impl* impl;
-
-    // Render a frame until completed or aborted and handle reinitialization events.
-    RenderingResult::Status do_render();
-
-    // Initialize rendering components and render a frame.
-    IRendererController::Status initialize_and_render_frame();
-
-    // Render a frame until completed or aborted and handle restart events.
-    IRendererController::Status render_frame(
-        RendererComponents&         components,
-        foundation::IAbortSwitch&   abort_switch);
-
-    // Wait until the the frame is completed or rendering is aborted.
-    IRendererController::Status wait_for_event(
-        IFrameRenderer&             frame_renderer) const;
-
-    // Return true if the scene passes basic integrity checks.
-    bool check_scene() const;
-
-    // Bind all scene entities inputs. Return true on success, false otherwise.
-    bool bind_scene_entities_inputs() const;
-
-    void add_render_stamp(const double render_time);
 };
 
 }       // namespace renderer

@@ -1,12 +1,12 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -201,10 +201,14 @@ class APPLESEED_DLLSYMBOL Camera
     // Check shutter times and emit warnings if needed.
     void check_shutter_times_for_consistency() const;
 
+    void initialize_shutter_curve_bezier();
+
+    void initialize_shutter_curve_linear();
+
     void initialize_shutter_curve_bezier_cdfs(
         const float                     ot,
         const float                     oet,
-        const float                     cst,
+        const float                     cbt,
         const float                     ct,
         const float                     t00,
         const float                     t01,

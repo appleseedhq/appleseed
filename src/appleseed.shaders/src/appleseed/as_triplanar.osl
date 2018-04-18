@@ -1,7 +1,7 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
@@ -222,7 +222,7 @@ shader as_triplanar
         int gafferNoduleLayoutVisible = 0,
         string label = "Rotation",
         string page = "Projection.X Axis",
-        string help = "Rotation angle in degrees",
+        string help = "Rotation angle in degrees.",
         int divider = 1
     ]],
     int in_x_axis_swrap = 0
@@ -282,7 +282,7 @@ shader as_triplanar
         string as_maya_attribute_short_name = "xeo",
         string label = "Input Transfer Function",
         string page = "Projection.X Axis.Color Management",
-        string widget = "mapper",
+        string widget = "popup",
         string options = "None/Raw|sRGB|Rec.709|Gamma 2.2|Gamma 2.4|Gamma 2.6 (DCI)|Rec.1886|Rec.2020",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
@@ -395,7 +395,7 @@ shader as_triplanar
         int gafferNoduleLayoutVisible = 0,
         string label = "Rotation",
         string page = "Projection.Y Axis",
-        string help = "Rotation angle in degrees",
+        string help = "Rotation angle in degrees.",
         int divider = 1
     ]],
     int in_y_axis_swrap = 0
@@ -568,7 +568,7 @@ shader as_triplanar
         int gafferNoduleLayoutVisible = 0,
         string label = "Rotation",
         string page = "Projection.Z Axis",
-        string help = "Rotation angle in degrees",
+        string help = "Rotation angle in degrees.",
         int divider = 1
     ]],
     int in_z_axis_swrap = 0

@@ -1,11 +1,11 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017-2018 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -78,7 +78,7 @@ shader as_anisotropy_vector_field
         string as_maya_attribute_short_name = "rtv",
         float min = 0.0,
         float max = 1.0,
-        string help = "Rotation value, mapping [0,1] to [0,360] degrees",
+        string help = "Rotation value, mapping [0,1] to [0,360] degrees.",
         string label = "Rotation Value",
         string page = "Rotation"
     ]],

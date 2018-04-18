@@ -1,11 +1,11 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017-2018 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -59,7 +59,7 @@ shader as_globals
         string as_maya_attribute_name = "worldPref",
         string as_maya_attribute_short_name = "wpr",
         string label = "Referecence Point",
-        string help = "World space reference point Pref"
+        string help = "World space reference point Pref."
     ]],
     output point out_world_Ps = Ps
     [[
@@ -79,7 +79,7 @@ shader as_globals
         string as_maya_attribute_name = "worldNref",
         string as_maya_attribute_short_name = "nre",
         string label = "Reference Normal",
-        string help = "World space reference normal Nref"
+        string help = "World space reference normal Nref."
     ]],
     output normal out_world_Ng = Ng
     [[
@@ -174,7 +174,13 @@ shader as_globals
     [[
         string as_maya_attribute_name = "vCoord",
         string as_maya_attribute_short_name = "vv",
-        string label = "V Coordinate",
+        string label = "V Coordinate"
+    ]],
+    output float out_uv_coord[2] = {out_u_coord, out_v_coord}
+    [[
+        string as_maya_attribute_name = "uvCoord",
+        string as_maya_attribute_short_name = "uv",
+        string label = "UV Coords",
         int divider = 1
     ]],
     output float out_time = time
@@ -199,4 +205,6 @@ shader as_globals
     ]]
 )
 {
+    out_uv_coord[0] = out_u_coord;
+    out_uv_coord[1] = out_v_coord;
 }

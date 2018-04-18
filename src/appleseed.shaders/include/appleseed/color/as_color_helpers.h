@@ -1,11 +1,11 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016-2017 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2016-2018 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +57,8 @@ float as_luminance_D65(color in_C, string colorspace)
     {
         coeffs = color(REC601_D65_LUMINANCE_COEFFS);
     }
-    else if (colorspace == "Rec.709" || colorspace == "sRGB")
+    else if (colorspace == "Rec.709" || colorspace == "sRGB" ||
+             colorspace == "sRGB/Rec.709")
     {
         coeffs = color(REC709_D65_LUMINANCE_COEFFS);
     }
@@ -98,7 +99,8 @@ float as_luminance_D60(color in_C, string colorspace)
     {
         coeffs = color(REC601_D60_LUMINANCE_COEFFS);
     }
-    else if (colorspace == "Rec.709" || colorspace == "sRGB")
+    else if (colorspace == "Rec.709" || colorspace == "sRGB" ||
+             colorspace == "sRGB/Rec.709")
     {
         coeffs = color(REC709_D60_LUMINANCE_COEFFS);
     }
@@ -139,7 +141,8 @@ float as_luminance_DCI(color in_C, string colorspace)
     {
         coeffs = color(REC601_DCI_LUMINANCE_COEFFS);
     }
-    else if (colorspace == "Rec.709" || colorspace == "sRGB")
+    else if (colorspace == "Rec.709" || colorspace == "sRGB" ||
+             colorspace == "sRGB/Rec.709")
     {
         coeffs = color(REC709_DCI_LUMINANCE_COEFFS);
     }
@@ -197,7 +200,51 @@ float as_luminance(color in_C, string colorspace, string illuminant)
 
 float as_luminance(color in_C, string colorspace)
 {
-    return as_luminance_D65(in_C, colorspace);
+    color coeffs; // assuming input color is in "colorspace" working space
+
+    if (colorspace == "Rec.601")
+    {
+        coeffs = color(REC601_D65_LUMINANCE_COEFFS);
+    }
+    else if (colorspace == "Rec.709" || colorspace == "sRGB" ||
+             colorspace == "sRGB/Rec.709")
+    {
+        coeffs = color(REC709_D65_LUMINANCE_COEFFS);
+    }
+    else if (colorspace == "AdobeRGB")
+    {
+        coeffs = color(ADOBERGB_D65_LUMINANCE_COEFFS);
+    }
+    else if (colorspace == "Rec.2020")
+    {
+        coeffs = color(REC2020_D65_LUMINANCE_COEFFS);
+    }
+    else if (colorspace == "ACES")
+    {
+        coeffs = color(ACES_D60_LUMINANCE_COEFFS);
+    }
+    else if (colorspace == "ACEScg")
+    {
+        coeffs = color(ACESCG_D60_LUMINANCE_COEFFS);
+    }
+    else if (colorspace == "DCI-P3")
+    {
+        coeffs = color(DCIP3_DCI_LUMINANCE_COEFFS);
+    }
+    else
+    {
+        coeffs = color(0);
+#ifdef DEBUG
+        string shadername = "";
+
+        getattribute("shader:shadername", shadername);
+        warning("[DEBUG]: Invalid working space specified in %s, %s:%d\n",
+                shadername, __FILE__, __LINE__);
+#endif
+    }
+    return coeffs[0] * in_C[0] +
+           coeffs[1] * in_C[1] +
+           coeffs[2] * in_C[2];
 }
 
 void initialize_RGBW_primaries(
@@ -215,7 +262,8 @@ void initialize_RGBW_primaries(
         RGBW_CIExyz[1] = REC601_CHROMATICITIES_Gxyz;
         RGBW_CIExyz[2] = REC601_CHROMATICITIES_Bxyz;
     }
-    else if (RGB_primaries == "Rec.709" || RGB_primaries == "sRGB")
+    else if (RGB_primaries == "Rec.709" || RGB_primaries == "sRGB" ||
+             RGB_primaries == "sRGB/Rec.709")
     {
         RGBW_CIExyz[0] = REC709_CHROMATICITIES_Rxyz;
         RGBW_CIExyz[1] = REC709_CHROMATICITIES_Gxyz;
@@ -275,7 +323,8 @@ void initialize_RGB_primaries(
         RGB_CIExyz[1] = REC601_CHROMATICITIES_Gxyz;
         RGB_CIExyz[2] = REC601_CHROMATICITIES_Bxyz;
     }
-    else if (RGB_primaries == "Rec.709" || RGB_primaries == "sRGB")
+    else if (RGB_primaries == "Rec.709" || RGB_primaries == "sRGB" ||
+             RGB_primaries == "sRGB/Rec.709")
     {
         RGB_CIExyz[0] = REC709_CHROMATICITIES_Rxyz;
         RGB_CIExyz[1] = REC709_CHROMATICITIES_Gxyz;

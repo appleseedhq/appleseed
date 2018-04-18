@@ -1,11 +1,11 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017-2018 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -97,6 +97,20 @@ shader as_standard_surface
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0
     ]],
+    int in_subsurface_profile = 2
+    [[
+        string as_maya_attribute_name = "subsurfaceProfile",
+        string as_maya_attribute_short_name = "ssp",
+        string widget = "mapper",
+        string options = "Gaussian:0|Dipole:1|Normalized Diffusion:2|Random Walk:3",
+        string label = "Subsurface Profile",
+        string page = "Subsurface.Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
     int in_sss_maximum_ray_depth = 2
     [[
         string as_maya_attribute_name = "sssMaximumRayDepth",
@@ -104,7 +118,7 @@ shader as_standard_surface
         int min = 1,
         int max = 16,
         int softmax = 8,
-        string label = "SSS Ray Depth",
+        string label = "Subsurface Ray Depth",
         string page = "Subsurface.Advanced",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
@@ -118,9 +132,9 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         float softmax = 0.01,
-        string label = "SSS Diffuse Threshold",
+        string label = "Subsurface Threshold",
         string page = "Subsurface.Advanced",
-        string help = "Threshold at which SSS is replaced by a diffuse term",
+        string help = "Threshold at which the subsurface scattering term is replaced by a diffuse term.",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -241,7 +255,7 @@ shader as_standard_surface
         float max = 1.0,
         string label = "Anisotropy Angle",
         string page = "Specular.Anisotropy",
-        string help = "Anisotropy angle in [0,1], mapping to [0,360] degrees"
+        string help = "Anisotropy angle in [0,1], mapping to [0,360] degrees."
     ]],
     color in_anisotropy_map = color(0)
     [[
@@ -249,7 +263,7 @@ shader as_standard_surface
         string as_maya_attribute_short_name = "ama",
         string label = "Anisotropy Vector Map",
         string page = "Specular.Anisotropy",
-        string help = "Anisotropy vector map, with XY encoded in RG channels"
+        string help = "Anisotropy vector map, with XY encoded in RG channels."
     ]],
     float in_refraction_amount = 0.0
     [[
@@ -257,9 +271,9 @@ shader as_standard_surface
         string as_maya_attribute_short_name = "rtw",
         float min = 0.0,
         float max = 1.0,
-        string label = "Refraction Amount",
+        string label = "Refraction Weight",
         string page = "Specular.Refraction",
-        string help = "Refraction amount. Refraction inherits the IOR"
+        string help = "Refraction weight. Refraction inherits the IOR."
     ]],
     color in_refraction_tint = color(1)
     [[
@@ -298,7 +312,7 @@ shader as_standard_surface
         float max = 1.0,
         string label = "Coating Reflectivity",
         string page = "Coating",
-        string help = "Coating specular amount."
+        string help = "Coating specular reflectivity."
     ]],
     float in_coating_roughness = 0.0
     [[
@@ -318,7 +332,7 @@ shader as_standard_surface
         float softmax = 2.0,
         string label = "Coating IOR",
         string page = "Coating",
-        string help = "Coating (monochromatic) dielectric IOR",
+        string help = "Coating (monochromatic) dielectric IOR.",
         int divider = 1,
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
@@ -332,7 +346,7 @@ shader as_standard_surface
         float min = 0.0,
         float max = 10.0,
         float softmax = 1.0,
-        string label = "Coating Depth",
+        string label = "Coating Thickness",
         string page = "Coating",
         string help = "Maps from [0,1] to [0,10] microns."
     ]],
@@ -360,7 +374,7 @@ shader as_standard_surface
         string options = "Constant:0|Physically Based:1",
         string label = "Incandescence Type",
         string page = "Incandescence",
-        string help = "Constant based, or blackbody radiator based EDF",
+        string help = "Constant based, or blackbody radiator based EDF.",
         int divider = 1,
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
@@ -385,7 +399,7 @@ shader as_standard_surface
         int softmax = 9300,
         string label = "Temperature",
         string page = "Incandescence",
-        string help = "Temperature in Kelvin degrees, only valid in physically based mode",
+        string help = "Temperature in Kelvin degrees, only valid in physically based mode.",
         int divider = 1,
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
@@ -412,7 +426,7 @@ shader as_standard_surface
         string widget = "checkBox",
         string label = "Tonemap Color",
         string page = "Incandescence",
-        string help = "Tonemap incandescence, only valid for physically based mode",
+        string help = "Tonemap incandescence, only valid for physically based mode.",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -678,7 +692,7 @@ shader as_standard_surface
                     "std",
                     Nn,
                     tangent,
-                    color(1), // coating_transmittance unsupported
+                    coating_transmittance,
                     in_specular_color,
                     in_refraction_amount * in_refraction_tint,
                     in_specular_roughness,
@@ -788,12 +802,31 @@ shader as_standard_surface
         {
             albedo = clamp(albedo, 0.01, 0.99);
 
+            string subsurface_profile;
+
+            if (in_subsurface_profile == 0)
+            {
+                subsurface_profile = "gaussian";
+            }
+            else if (in_subsurface_profile == 1)
+            {
+                subsurface_profile = "better_dipole";
+            }
+            else if (in_subsurface_profile == 2)
+            {
+                subsurface_profile = "normalized_diffusion";
+            }
+            else
+            {
+                subsurface_profile = "randomwalk";
+            }
+
             // Disable Fresnel weight since transmittance is computed earlier,
             // but ideally, the BSSRDF should be used.
 
             out_outColor += in_subsurface_weight *
                 as_subsurface(
-                    "normalized_diffusion",
+                    subsurface_profile,
                     Nn,
                     in_diffuse_weight * in_color,
                     in_sss_mfp_scale * in_sss_mfp,

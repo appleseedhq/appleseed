@@ -1,11 +1,11 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Aytek Aman, The appleseedhq Organization
+// Copyright (c) 2017-2018 Aytek Aman, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,9 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/utility/paramarray.h"
-
-// appleseed.foundation headers.
-#include "foundation/math/population.h"
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
@@ -68,9 +65,9 @@ class BDPTLightingEngineFactory
     static foundation::Dictionary get_params_metadata();
 
   private:
-    const Project&              m_project;
-    const ForwardLightSampler&  m_light_sampler;
-    ParamArray                  m_params;
+    const Project&                  m_project;
+    const ForwardLightSampler&      m_light_sampler;
+    ParamArray                      m_params;
 };
 
 }       // namespace renderer

@@ -1,12 +1,12 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -164,6 +164,9 @@ template <typename T, size_t N> size_t max_abs_index(const Color<T, N>& c);
 // Component-wise min/max of two colors.
 template <typename T, size_t N> Color<T, N> component_wise_min(const Color<T, N>& lhs, const Color<T, N>& rhs);
 template <typename T, size_t N> Color<T, N> component_wise_max(const Color<T, N>& lhs, const Color<T, N>& rhs);
+
+// Return the sum of the components of a color.
+template <typename T, size_t N> T sum_value(const Color<T, N>& c);
 
 // Return the average value of a color.
 template <typename T, size_t N> T average_value(const Color<T, N>& c);
@@ -827,14 +830,20 @@ inline Color<T, N> component_wise_max(const Color<T, N>& lhs, const Color<T, N>&
 }
 
 template <typename T, size_t N>
-inline T average_value(const Color<T, N>& c)
+inline T sum_value(const Color<T, N>& c)
 {
-    T average = c[0];
+    T sum = c[0];
 
     for (size_t i = 1; i < N; ++i)
-        average += c[i];
+        sum += c[i];
 
-    return average * (T(1.0) / N);
+    return sum;
+}
+
+template <typename T, size_t N>
+inline T average_value(const Color<T, N>& c)
+{
+    return sum_value(c) / N;
 }
 
 template <typename T, size_t N>

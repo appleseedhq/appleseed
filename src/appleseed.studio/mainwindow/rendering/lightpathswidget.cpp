@@ -1,7 +1,7 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
@@ -39,6 +39,8 @@
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
+#include "foundation/image/colorspace.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
@@ -50,6 +52,7 @@
 #include <QKeyEvent>
 
 // Standard headers.
+#include <algorithm>
 #include <string>
 
 using namespace foundation;
@@ -76,6 +79,29 @@ LightPathsWidget::LightPathsWidget(
 void LightPathsWidget::set_light_paths(const LightPathArray& light_paths)
 {
     m_light_paths = light_paths;
+
+    if (m_light_paths.size() > 1)
+    {
+        // Sort paths by descending radiance at the camera.
+        const auto& light_path_recorder = m_project.get_light_path_recorder();
+        sort(
+            &m_light_paths[0],
+            &m_light_paths[0] + m_light_paths.size(),
+            [&light_path_recorder](const LightPath& lhs, const LightPath& rhs)
+            {
+                LightPathVertex lhs_v;
+                light_path_recorder.get_light_path_vertex(lhs.m_vertex_end_index - 1, lhs_v);
+
+                LightPathVertex rhs_v;
+                light_path_recorder.get_light_path_vertex(rhs.m_vertex_end_index - 1, rhs_v);
+
+                return
+                    sum_value(Color3f::from_array(lhs_v.m_radiance)) >
+                    sum_value(Color3f::from_array(rhs_v.m_radiance));
+            });
+    }
+
+    // Display all paths by default.
     set_selected_light_path_index(-1);
 }
 
@@ -127,7 +153,7 @@ void LightPathsWidget::initializeGL()
     static const GLfloat LightAmbient[] = { 0.0f, 0.0f, 0.0f, 1.0f };
     static const GLfloat LightDiffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
     static const GLfloat LightSpecular[] = { 0.3f, 0.3f, 0.3f, 1.0f };
-    
+
     glEnable(GL_LIGHT0);
     glLightfv(GL_LIGHT0, GL_POSITION, LightPosition);
     glLightfv(GL_LIGHT0, GL_AMBIENT, LightAmbient);
@@ -146,6 +172,11 @@ namespace
     {
         const Matrix4d mt(transpose(m));
         ::glMultMatrixd(const_cast<GLdouble*>(&mt[0]));
+    }
+
+    void glColor(const Color3f& c)
+    {
+        glColor3f(c[0], c[1], c[2]);
     }
 
     struct OpenGLRasterizer
@@ -168,7 +199,7 @@ namespace
 
             glNormal3d(triangle.m_n1[0], triangle.m_n1[1], triangle.m_n1[2]);
             glVertex3d(triangle.m_v1[0], triangle.m_v1[1], triangle.m_v1[2]);
-            
+
             glNormal3d(triangle.m_n2[0], triangle.m_n2[1], triangle.m_n2[2]);
             glVertex3d(triangle.m_v2[0], triangle.m_v2[1], triangle.m_v2[2]);
         }
@@ -311,8 +342,7 @@ void LightPathsWidget::render_light_paths() const
 void LightPathsWidget::render_light_path(const size_t light_path_index) const
 {
     const auto& path = m_light_paths[light_path_index];
-    const auto vertex_count = path.m_vertex_end_index - path.m_vertex_begin_index;
-    assert(vertex_count >= 2);
+    assert(path.m_vertex_end_index - path.m_vertex_begin_index >= 2);
 
     const auto& light_path_recorder = m_project.get_light_path_recorder();
 
@@ -324,13 +354,11 @@ void LightPathsWidget::render_light_path(const size_t light_path_index) const
         LightPathVertex v1;
         light_path_recorder.get_light_path_vertex(i, v1);
 
-        const float total_radiance = v1.m_radiance[0] + v1.m_radiance[1] + v1.m_radiance[2];
-        const float rcp_total_radiance = 1.0f / total_radiance;
-        v1.m_radiance[0] *= rcp_total_radiance;
-        v1.m_radiance[1] *= rcp_total_radiance;
-        v1.m_radiance[2] *= rcp_total_radiance;
+        auto radiance = Color3f::from_array(v1.m_radiance);
+        radiance /= sum_value(radiance);
+        radiance = linear_rgb_to_srgb(radiance);
 
-        glColor3f(v1.m_radiance[0], v1.m_radiance[1], v1.m_radiance[2]);
+        glColor(radiance);
 
         glVertex3f(v0.m_position[0], v0.m_position[1], v0.m_position[2]);
         glVertex3f(v1.m_position[0], v1.m_position[1], v1.m_position[2]);
@@ -369,11 +397,12 @@ void LightPathsWidget::dump_selected_light_path() const
                     ? foundation::format("\"{0}\"", v.m_entity->get_path().c_str())
                     : "n/a";
 
-            RENDERER_LOG_INFO("  vertex " FMT_SIZE_T ": entity: %s - position: (%f, %f, %f) - energy: (%f, %f, %f)",
+            RENDERER_LOG_INFO("  vertex " FMT_SIZE_T ": entity: %s - position: (%f, %f, %f) - radiance: (%f, %f, %f) - total radiance: %f",
                 i - path.m_vertex_begin_index + 1,
                 entity_name.c_str(),
                 v.m_position[0], v.m_position[1], v.m_position[2],
-                v.m_radiance[0], v.m_radiance[1], v.m_radiance[2]);
+                v.m_radiance[0], v.m_radiance[1], v.m_radiance[2],
+                v.m_radiance[0] + v.m_radiance[1] + v.m_radiance[2]);
         }
     }
 }

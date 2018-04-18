@@ -1,11 +1,11 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2017-2018 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -67,8 +67,8 @@ namespace
       : public UnfilteredAOVAccumulator
     {
       public:
-        explicit DepthAOVAccumulator(Image& image)
-          : UnfilteredAOVAccumulator(image)
+        DepthAOVAccumulator(Image& image, Image& filter_image)
+          : UnfilteredAOVAccumulator(image, filter_image)
         {
         }
 
@@ -87,7 +87,10 @@ namespace
             float* p = reinterpret_cast<float*>(
                 get_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
 
-            const float min_sample_square_distance = p[1];
+            float* f = reinterpret_cast<float*>(
+                get_filter_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
+
+            const float min_sample_square_distance = *f;
             const float sample_square_distance =
                 square_distance_to_pixel_center(pixel_context.get_sample_position());
 
@@ -97,8 +100,8 @@ namespace
                     ? static_cast<float>(shading_point.get_distance())
                     : numeric_limits<float>::max();
 
-                p[0] = depth;
-                p[1] = sample_square_distance;
+                *p = depth;
+                *f = sample_square_distance;
             }
         }
     };
@@ -142,12 +145,14 @@ namespace
 
         void clear_image() override
         {
-            m_image->clear(Vector2f(numeric_limits<float>::max()));
+            m_image->clear(Color<float, 1>(numeric_limits<float>::max()));
+            m_filter_image->clear(Color<float, 1>(numeric_limits<float>::max()));
         }
 
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
-            return auto_release_ptr<AOVAccumulator>(new DepthAOVAccumulator(get_image()));
+            return auto_release_ptr<AOVAccumulator>(
+                new DepthAOVAccumulator(get_image(), *m_filter_image));
         }
     };
 }

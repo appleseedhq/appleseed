@@ -1,11 +1,11 @@
 
 #
 # This source file is part of appleseed.
-# Visit http://appleseedhq.net/ for additional information and resources.
+# Visit https://appleseedhq.net/ for additional information and resources.
 #
 # This software is released under the MIT license.
 #
-# Copyright (c) 2016-2017 Esteban Tovagliari, The appleseedhq Organization
+# Copyright (c) 2016-2018 Esteban Tovagliari, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -438,6 +438,7 @@ set (src_appleseed_sources
      src/appleseed/as_blackbody.osl
      src/appleseed/as_blend_color.osl
      src/appleseed/as_blend_shader.osl
+     src/appleseed/as_bump.osl
      src/appleseed/as_color_transform.osl
      src/appleseed/as_composite_color.osl
      src/appleseed/as_create_mask.osl

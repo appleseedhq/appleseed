@@ -2,7 +2,7 @@
 
 #
 # This source file is part of appleseed.
-# Visit http://appleseedhq.net/ for additional information and resources.
+# Visit https://appleseedhq.net/ for additional information and resources.
 #
 # This software is released under the MIT license.
 #
@@ -31,6 +31,7 @@
 from __future__ import print_function
 from distutils import archive_util, dir_util
 from xml.etree.ElementTree import ElementTree
+import fnmatch
 import glob
 import os
 import platform
@@ -48,7 +49,7 @@ import zipfile
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.4.12"
+VERSION = "2.5.1"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
@@ -130,6 +131,49 @@ def make_writable(filepath):
     os.chmod(filepath, stat.S_IRUSR | stat.S_IWUSR)
 
 
+def merge_tree(src, dst, symlinks=False, ignore=None):
+    names = os.listdir(src)
+    if ignore is not None:
+        ignored_names = ignore(src, names)
+    else:
+        ignored_names = set()
+
+    if not os.path.exists(dst):
+        os.makedirs(dst)
+
+    errors = []
+    for name in names:
+        if name in ignored_names:
+            continue
+        srcname = os.path.join(src, name)
+        dstname = os.path.join(dst, name)
+        try:
+            if symlinks and os.path.islink(srcname):
+                linkto = os.readlink(srcname)
+                os.symlink(linkto, dstname)
+            elif os.path.isdir(srcname):
+                merge_tree(srcname, dstname, symlinks, ignore)
+            else:
+                # Will raise a SpecialFileError for unsupported file types
+                shutil.copy2(srcname, dstname)
+        # catch the Error from the recursive copytree so that we can
+        # continue with other files
+        except Error, err:
+            errors.extend(err.args[0])
+        except EnvironmentError, why:
+            errors.append((srcname, dstname, str(why)))
+    try:
+        shutil.copystat(src, dst)
+    except OSError, why:
+        if WindowsError is not None and isinstance(why, WindowsError):
+            # Copying file access times may fail on Windows
+            pass
+        else:
+            errors.append((src, dst, str(why)))
+    if errors:
+        raise Error, errors
+
+
 #--------------------------------------------------------------------------------------------------
 # Settings.
 #--------------------------------------------------------------------------------------------------
@@ -153,6 +197,7 @@ class Settings:
         self.appleseed_headers_path = self.__get_required(tree, "appleseed_headers_path")
         self.qt_runtime_path = self.__get_required(tree, "qt_runtime_path")
         self.platform_runtime_path = self.__get_required(tree, "platform_runtime_path")
+        self.python_path = self.__get_required(tree, "python_path")
         self.package_output_path = self.__get_required(tree, "package_output_path")
 
     def __get_required(self, tree, key):
@@ -170,6 +215,7 @@ class Settings:
         print("  Path to Qt runtime:        " + self.qt_runtime_path)
         if os.name == "nt":
             print("  Path to platform runtime:  " + self.platform_runtime_path)
+        print("  Path to Python 2.7:        " + self.python_path)
         print("  Output directory:          " + self.package_output_path)
         print("")
 
@@ -339,8 +385,6 @@ class PackageBuilder:
 
     def add_headers_to_stage(self):
         progress("Adding headers to staging directory")
-
-        # appleseed headers.
         safe_make_directory("appleseed/include")
         ignore_files = shutil.ignore_patterns("*.cpp", "*.c", "*.xsd", "snprintf", "version.h.in")
         shutil.copytree(os.path.join(self.settings.appleseed_headers_path, "foundation"), "appleseed/include/foundation", ignore=ignore_files)
@@ -351,6 +395,7 @@ class PackageBuilder:
         progress("Adding shaders to staging directory")
         shutil.rmtree("appleseed/shaders")
         shutil.copytree(os.path.join(self.settings.appleseed_path, "sandbox/shaders"), "appleseed/shaders")
+        shutil.copytree(os.path.join(self.settings.appleseed_path, "src/appleseed.shaders/src"), "appleseed/shaders/src")
 
     def add_scripts_to_stage(self):
         progress("Adding scripts to staging directory")
@@ -416,6 +461,7 @@ class WindowsPackageBuilder(PackageBuilder):
 
     def alter_stage(self):
         self.add_dependencies_to_stage()
+        self.add_python_to_stage()
 
     def add_dependencies_to_stage(self):
         progress("Windows-specific: Adding dependencies to staging directory")
@@ -423,6 +469,30 @@ class WindowsPackageBuilder(PackageBuilder):
         self.copy_qt_framework("QtGui")
         self.copy_qt_framework("QtOpenGL")
         copy_glob(os.path.join(self.settings.platform_runtime_path, "*"), "appleseed/bin/")
+
+    def add_python_to_stage(self):
+        progress("Windows-specific: Adding Python 2.7 to staging directory")
+
+        shutil.copy(os.path.join(self.settings.python_path, "Microsoft.VC90.CRT.manifest"), "appleseed/bin/")
+        shutil.copy(os.path.join(self.settings.python_path, "msvcr90.dll"), "appleseed/bin/")
+        shutil.copy(os.path.join(self.settings.python_path, "python.exe"), "appleseed/bin/")
+        shutil.copy(os.path.join(self.settings.python_path, "python27.dll"), "appleseed/bin/")
+
+        safe_make_directory("appleseed/python27")
+        shutil.copy(os.path.join(self.settings.python_path, "LICENSE.txt"), "appleseed/python27")
+        shutil.copy(os.path.join(self.settings.python_path, "README.txt"), "appleseed/python27")
+        shutil.copytree(os.path.join(self.settings.python_path, "DLLs"), "appleseed/python27/DLLs")
+        shutil.copytree(os.path.join(self.settings.python_path, "include"), "appleseed/python27/include")
+        shutil.copytree(os.path.join(self.settings.python_path, "libs"), "appleseed/python27/libs")
+
+        def ignore_lib_content(path, names):
+            if path == os.path.join(self.settings.python_path, "Lib"):
+                return ["site-packages"]
+            return set(fnmatch.filter(names, "*.pyc"))
+        shutil.copytree(os.path.join(self.settings.python_path, "Lib"), "appleseed/python27/Lib", ignore=ignore_lib_content)
+
+        safe_make_directory("appleseed/python27/Lib/site-packages")
+        shutil.copy(os.path.join(self.settings.python_path, "Lib", "site-packages", "README.txt"), "appleseed/python27/Lib/site-packages/")
 
     def copy_qt_framework(self, framework_name):
         src_filepath = os.path.join(self.settings.qt_runtime_path, framework_name + "4" + ".dll")
@@ -644,6 +714,7 @@ class LinuxPackageBuilder(PackageBuilder):
         self.add_dependencies_to_stage()
         self.set_runtime_paths_on_binaries()
         self.clear_runtime_paths_on_libraries()
+        self.add_python_to_stage() # Must be last.
 
     def make_executable(self, filepath):
         mode = os.stat(filepath)[stat.ST_MODE]
@@ -696,6 +767,13 @@ class LinuxPackageBuilder(PackageBuilder):
             if lib.startswith(prefix):
                 return True
         return False
+
+    def add_python_to_stage(self):
+        progress("Linux-specific: Adding Python 2.7 to staging directory")
+
+        merge_tree(os.path.join(self.settings.python_path, "bin"), "appleseed/bin", symlinks=True)
+        merge_tree(os.path.join(self.settings.python_path, "lib"), "appleseed/lib", symlinks=True)
+        merge_tree(os.path.join(self.settings.python_path, "include"), "appleseed/include", symlinks=True)
 
 
 #--------------------------------------------------------------------------------------------------

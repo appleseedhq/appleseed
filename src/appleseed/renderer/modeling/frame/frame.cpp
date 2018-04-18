@@ -1,12 +1,12 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -421,6 +421,11 @@ void Frame::denoise(
     IAbortSwitch*       abort_switch) const
 {
     DenoiserOptions options;
+
+    const bool skip_denoised = m_params.get_optional<bool>("skip_denoised", true);
+    options.m_marked_pixels_skipping_probability = skip_denoised ? 1.0f : 0.0f;
+
+    options.m_use_random_pixel_order = m_params.get_optional<bool>("random_pixel_order", true);
 
     options.m_prefilter_spikes = m_params.get_optional<bool>("prefilter_spikes", true);
 
@@ -1116,6 +1121,28 @@ DictionaryArray FrameFactory::get_input_metadata()
             .insert("use", "required")
             .insert("default", "off")
             .insert("on_change", "rebuild_form"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "skip_denoised")
+            .insert("label", "Skip Denoised Pixels")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "true")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "random_pixel_order")
+            .insert("label", "Random Pixel Order")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "true")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on")));
 
     metadata.push_back(
         Dictionary()

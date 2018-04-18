@@ -1,12 +1,12 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,6 @@
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 
 // OpenImageIO headers.
@@ -81,7 +80,24 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
-const QString g_appleseed_image_files_filter = "Bitmap Files (*.png *.exr);;OpenEXR (*.exr);;PNG (*.png);;All Files (*.*)";
+const QString g_appleseed_image_files_filter = "Bitmap Files (*.exr *.png);;OpenEXR (*.exr);;PNG (*.png);;All Files (*.*)";
+
+namespace
+{
+    string join_exts(const vector<string>& exts)
+    {
+        stringstream sstr;
+
+        for (size_t i = 0, e = exts.size(); i < e; ++i)
+        {
+            if (i > 0)
+                sstr << " ";
+            sstr << "*." << exts[i];
+        }
+
+        return sstr.str();
+    }
+}
 
 QString get_oiio_image_files_filter()
 {
@@ -94,33 +110,38 @@ QString get_oiio_image_files_filter()
     {
         stringstream sstr;
 
-        string extensions;
-        OIIO::getattribute("extension_list", extensions);
+        // Retrieve the extension list as a string of the form "bmp:bmp;openexr:exr,sxr,mxr;png:png".
+        string extension_list;
+        OIIO::getattribute("extension_list", extension_list);
 
+        // Split the extension list into an array of the form [ "bmp:bmp", "openexr:exr,sxr,mxr", "png:png" ].
         vector<string> formats;
-        split(extensions, ";", formats);
+        split(extension_list, ";", formats);
 
-        for (const_each<vector<string>> i = formats; i; ++i)
+        // Collect all extensions into an array of the form [ "bmp", "exr", "png" ].
+        vector<string> all_exts;
+        for (const auto& format : formats)
         {
-            const string::size_type sep = i->find_first_of(':');
-            const string format = i->substr(0, sep);
-            const string extlist = i->substr(sep + 1);
-
-            vector<string> exts;
-            split(extlist, ",", exts);
-
-            sstr << upper_case(format) << " Files (";
-
-            for (const_each<vector<string>> e = exts; e; ++e)
-            {
-                if (e.it() != exts.begin())
-                    sstr << " ";
-                sstr << "*." << *e;
-            }
-
-            sstr << ");;";
+            const auto sep = format.find_first_of(':');
+            const auto extlist = format.substr(sep + 1);
+            split(extlist, ",", all_exts);
         }
 
+        // The first filter shows all bitmap files.
+        sstr << "Bitmap Files (" << join_exts(all_exts) << ");;";
+
+        // Then one filter per file format.
+        for (const auto& format : formats)
+        {
+            const auto sep = format.find_first_of(':');
+            const auto name = format.substr(0, sep);
+            const auto extlist = format.substr(sep + 1);
+            vector<string> exts;
+            split(extlist, ",", exts);
+            sstr << upper_case(name) << " Files (" << join_exts(exts) << ");;";
+        }
+
+        // The last filter shows all files.
         sstr << "All Files (*.*)";
 
         filter = QString::fromStdString(sstr.str());

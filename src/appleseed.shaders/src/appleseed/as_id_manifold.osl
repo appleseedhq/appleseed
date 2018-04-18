@@ -1,11 +1,11 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017-2018 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ shader as_id_manifold
 [[
     string as_maya_node_name = "asIdManifold",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string help = "ID manifold utility shader",
+    string help = "ID manifold utility shader.",
     string icon = "asIdManifold",
     int as_maya_type_id = 0x001279d9,
     string as_max_class_id = "1097742994 1256943621",
@@ -65,7 +65,7 @@ shader as_id_manifold
         int gafferNoduleLayoutVisible = 0,
         string label = "Expression",
         string page = "Manifold.String",
-        string help = "String expression to search in the object or object instance name"
+        string help = "String expression to search in the object or object instance name."
     ]],
     int in_domain = 0
     [[

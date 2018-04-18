@@ -173,7 +173,7 @@ html_theme_options = {
         ("Usage", "usage/usage"),
         ("Reference", "reference/reference"),
         ("Contributing", "contributing/contributing"),
-        ("appleseedhq", "http://appleseedhq.net", True),
+        ("appleseedhq", "https://appleseedhq.net", True),
         ("vimeo", "https://vimeo.com/appleseedhq", True)
     ],
 
@@ -421,7 +421,7 @@ epub_language = 'en'
 
 # The scheme of the identifier. Typical schemes are ISBN or URL.
 
-epub_scheme = 'http://appleseedhq.net'
+epub_scheme = 'https://appleseedhq.net'
 
 # The unique identifier of the text. This can be a ISBN number
 # or the project homepage.

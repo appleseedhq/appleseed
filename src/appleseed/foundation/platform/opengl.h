@@ -1,12 +1,12 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,19 +30,18 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_OPENGL_H
 #define APPLESEED_FOUNDATION_PLATFORM_OPENGL_H
 
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-
-#else // Windows or Linux
 // On Windows, the OpenGL headers require that <windows.h> is included first.
 #ifdef _WIN32
 #include "foundation/platform/windows.h"
 #endif
 
 // OpenGL headers.
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#else
 #include <GL/gl.h>
 #include <GL/glu.h>
+#endif
 
-#endif  // !__APPLE__
 #endif  // !APPLESEED_FOUNDATION_PLATFORM_OPENGL_H

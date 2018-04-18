@@ -1,11 +1,11 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017-2018 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -97,7 +97,7 @@ shader as_noise3d
         string as_maya_attribute_name = "frequency",
         string as_maya_attribute_short_name = "frq",
         string label = "XYZ Frequency",
-        string help = "Higher values increase the noise density",
+        string help = "Higher values increase the noise density.",
         string page = "Noise"
     ]],
     int in_ridges = 0
@@ -120,7 +120,7 @@ shader as_noise3d
         string widget = "checkBox",
         string label = "Inflection",
         string page = "Noise",
-        string help = "Uses the absolute value of the noise",
+        string help = "Uses the absolute value of the noise.",
         int gafferNoduleLayoutVisible = 0
     ]],
     int in_signed_noise = 0
@@ -132,7 +132,7 @@ shader as_noise3d
         string widget = "checkBox",
         string label = "Signed Noise",
         string page = "Noise",
-        string help = "Noise range in [0,1] or [-1,1]",
+        string help = "Noise range in [0,1] or [-1,1].",
         int gafferNoduleLayoutVisible = 0
     ]],
     int in_animated_noise = 0
@@ -277,7 +277,7 @@ shader as_noise3d
         int slider = 0,
         string label = "Amplitude",
         string page = "Recursion",
-        string help = "Initial amplitude before recursion"
+        string help = "Initial amplitude before recursion."
     ]],
     int in_octaves = 1
     [[
@@ -291,7 +291,7 @@ shader as_noise3d
         int softmax = 8,
         string label = "Octaves",
         string page = "Recursion",
-        string help = "Maximum number of iterations",
+        string help = "Maximum number of iterations.",
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -319,7 +319,7 @@ shader as_noise3d
         float softmax = 10.0,
         string label = "Lacunarity",
         string page = "Recursion",
-        string help = "Gap between successive frequencies"
+        string help = "Gap between successive frequencies."
     ]],
     float in_offset = 0.0
     [[
@@ -329,7 +329,7 @@ shader as_noise3d
         float softmax = 1.0,
         string label = "Offset",
         string page = "Recursion",
-        string help = "Controls the multifractality"
+        string help = "Controls the multifractality."
     ]],
     float in_noise_gain = 1.0
     [[
@@ -341,7 +341,7 @@ shader as_noise3d
         float softmax = 3.0,
         string label = "Gain",
         string page = "Recursion",
-        string help = "Controls the contrast of the fractal"
+        string help = "Controls the contrast of the fractal."
     ]],
     float in_distortion = 0.0
     [[
