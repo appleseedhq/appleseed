@@ -57,6 +57,7 @@ void TileJobFactory::create(
     const TileOrdering                  tile_ordering,
     const TileJob::TileRendererVector&  tile_renderers,
     const TileJob::TileCallbackVector&  tile_callbacks,
+    IShadingResultFrameBufferFactory&       framebuffer_factory,
     const size_t                        pass_hash,
     const Spectrum::Mode                spectrum_mode,
     TileJobVector&                      tile_jobs,
@@ -88,6 +89,7 @@ void TileJobFactory::create(
             new TileJob(
                 tile_renderers,
                 tile_callbacks,
+                framebuffer_factory,
                 frame,
                 tile_x,
                 tile_y,

@@ -32,6 +32,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/rendering/ishadingresultframebufferfactory.h"
+#include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/itilerenderer.h"
 #include "renderer/modeling/frame/frame.h"
@@ -58,6 +60,7 @@ namespace renderer
 TileJob::TileJob(
     const TileRendererVector&   tile_renderers,
     const TileCallbackVector&   tile_callbacks,
+    IShadingResultFrameBufferFactory&       framebuffer_factory,
     const Frame&                frame,
     const size_t                tile_x,
     const size_t                tile_y,
@@ -68,6 +71,7 @@ TileJob::TileJob(
     IAbortSwitch&               abort_switch)
   : m_tile_renderers(tile_renderers)
   , m_tile_callbacks(tile_callbacks)
+  , m_framebuffer_factory(framebuffer_factory)
   , m_frame(frame)
   , m_tile_x(tile_x)
   , m_tile_y(tile_y)
@@ -88,60 +92,40 @@ void TileJob::execute(const size_t thread_index)
 {
     if (m_tile_renderers.size() > m_job_queue.get_scheduled_job_count())
         RENDERER_LOG_INFO("split");
-
-    if (m_tile_level == 0 && rand() % 2 == 0)
+    
+    const bool split = (m_tile_level == 0) && (rand() % 2 == 0);
+    const AABB2u box;
+    if (false)
     {
-        m_job_queue.schedule(new TileJob(
-            m_tile_renderers,
-            m_tile_callbacks,
-            m_frame,
-            2 * m_tile_x,
-            2 * m_tile_y,
-            1,
-            m_pass_hash,
-            m_spectrum_mode,
-            m_job_queue,
-            m_abort_switch), true);
+        // Here split both image tiles and frame buffer tiles.
+        //m_frame.image().tile(m_tile_x, m_tile_y, m_tile_level).split();
+        //m_framebuffer_factory.create(m_frame, m_tile_x, m_tile_y, m_tile_level, box)->split();
 
-        m_job_queue.schedule(new TileJob(
-            m_tile_renderers,
-            m_tile_callbacks,
-            m_frame,
-            2 * m_tile_x + 1,
-            2 * m_tile_y,
-            1,
-            m_pass_hash,
-            m_spectrum_mode,
-            m_job_queue,
-            m_abort_switch), true);
-
-        m_job_queue.schedule(new TileJob(
-            m_tile_renderers,
-            m_tile_callbacks,
-            m_frame,
-            2 * m_tile_x,
-            2 * m_tile_y + 1,
-            1,
-            m_pass_hash,
-            m_spectrum_mode,
-            m_job_queue,
-            m_abort_switch), true);
-
-        m_job_queue.schedule(new TileJob(
-            m_tile_renderers,
-            m_tile_callbacks,
-            m_frame,
-            2 * m_tile_x + 1,
-            2 * m_tile_y + 1,
-            1,
-            m_pass_hash,
-            m_spectrum_mode,
-            m_job_queue,
-            m_abort_switch), true);
+        for (int i = 0; i < 2; ++i)
+        {
+            for (int j = 0; j < 2; ++j)
+            {
+                m_job_queue.schedule(new TileJob(
+                    m_tile_renderers,
+                    m_tile_callbacks,
+                    m_framebuffer_factory,
+                    m_frame,
+                    2 * m_tile_x + i,
+                    2 * m_tile_y + j,
+                    m_tile_level + 1,
+                    m_pass_hash,
+                    m_spectrum_mode,
+                    m_job_queue,
+                    m_abort_switch), true);
+            }
+        }
 
         return;
     }
 
+    // Make sure that referenced tile is merged
+    //m_frame.image().tile(m_tile_x, m_tile_y, m_tile_level).merge();
+    //m_framebuffer_factory.create(m_frame, m_tile_x, m_tile_y, m_tile_level, box)->merge();
 
     // Initialize thread-local variables.
     Spectrum::set_mode(m_spectrum_mode);

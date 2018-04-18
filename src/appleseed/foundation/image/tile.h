@@ -185,7 +185,13 @@ class APPLESEED_DLLSYMBOL Tile
     // (but possibly using a different pixel format).
     void copy(const Tile& rhs);
 
-    Tile**                   m_sub_tiles = nullptr;
+    // Merge sub-tiles to this tile
+    void merge();
+
+    // Split this tile into four sub-tile
+    void split();
+
+    Tile**                  m_sub_tiles;
 
   protected:
     const size_t            m_width;            // tile width, in pixels

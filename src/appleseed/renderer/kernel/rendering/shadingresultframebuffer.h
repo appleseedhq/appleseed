@@ -77,6 +77,8 @@ class ShadingResultFrameBuffer
         const size_t                    source_y,
         const float                     scaling);
 
+    using Tile::merge;
+
     void develop_to_tile(
         foundation::Tile&               tile,
         TileStack&                      aov_tiles) const;

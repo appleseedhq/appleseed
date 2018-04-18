@@ -68,6 +68,10 @@ Tile::Tile(
         m_pixel_array = new uint8[m_array_size];
         m_own_storage = true;
     }
+
+    m_sub_tiles = new Tile*[4];
+    for (int i = 0; i < 4; ++i)
+        m_sub_tiles[i] = nullptr;
 }
 
 Tile::Tile(
@@ -186,6 +190,63 @@ void Tile::copy(const Tile& rhs)
         m_pixel_format,                             // destination format
         m_pixel_array,                              // destination
         1);                                         // destination stride
+}
+
+void Tile::merge()
+{
+    assert(!m_pixel_array);
+
+    assert(m_sub_tiles[0]);
+    assert(m_sub_tiles[1]);
+    assert(m_sub_tiles[2]);
+    assert(m_sub_tiles[3]);
+
+    
+}
+
+void Tile::split()
+{
+    assert(m_pixel_array);
+
+    assert(!m_sub_tiles[0]);
+    assert(!m_sub_tiles[1]);
+    assert(!m_sub_tiles[2]);
+    assert(!m_sub_tiles[3]);
+
+    const size_t m_width_half = m_width / 2;
+    const size_t m_height_half = m_height / 2;
+
+    for (int sub_tile_index = 0; sub_tile_index < 4; ++sub_tile_index)
+    {
+        const int sub_tile_x = sub_tile_index % 2;
+        const int sub_tile_y = sub_tile_index / 2;
+
+        const size_t sub_tile_width = sub_tile_x == 0 ? m_width_half : m_width - m_width_half;
+        const size_t sub_tile_height = sub_tile_y == 0 ? m_height_half : m_height - m_height_half;
+
+        m_sub_tiles[sub_tile_index] = 
+            new Tile(
+                sub_tile_width,
+                sub_tile_height,
+                m_channel_count,
+                m_pixel_format);
+
+        for (size_t x = 0; x < sub_tile_width; ++x)
+        {
+            for (size_t y = 0; y < sub_tile_height; ++y)
+            {
+                const size_t offset_x = sub_tile_x == 0 ? 0 : m_width_half;
+                const size_t offset_y = sub_tile_y == 0 ? 0 : m_height_half;
+
+                const uint8* base_pixel = pixel(x + offset_x, y + offset_y);
+
+                m_sub_tiles[sub_tile_index]->set_pixel(x, y, base_pixel);
+            }
+        }
+    }
+
+    delete[] m_pixel_array;
+    m_pixel_array = nullptr;
 }
 
 }   // namespace foundation

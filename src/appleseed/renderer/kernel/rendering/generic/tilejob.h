@@ -42,6 +42,7 @@
 
 // Forward declarations.
 namespace renderer  { class Frame; }
+namespace renderer  { class IShadingResultFrameBufferFactory; }
 namespace renderer  { class ITileCallback; }
 namespace renderer  { class ITileRenderer; }
 
@@ -63,6 +64,7 @@ class TileJob
     TileJob(
         const TileRendererVector&   tile_renderers,
         const TileCallbackVector&   tile_callbacks,
+        IShadingResultFrameBufferFactory&       m_framebuffer_factory,
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y,
@@ -78,6 +80,7 @@ class TileJob
   private:
     const TileRendererVector&       m_tile_renderers;
     const TileCallbackVector&       m_tile_callbacks;
+    IShadingResultFrameBufferFactory&       m_framebuffer_factory;
     const Frame&                    m_frame;
     const size_t                    m_tile_x;
     const size_t                    m_tile_y;

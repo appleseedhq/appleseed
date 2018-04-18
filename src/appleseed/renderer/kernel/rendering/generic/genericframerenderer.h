@@ -41,6 +41,7 @@
 namespace foundation    { class Dictionary; }
 namespace renderer      { class Frame; }
 namespace renderer      { class IPassCallback; }
+namespace renderer      { class IShadingResultFrameBufferFactory; }
 namespace renderer      { class ITileCallbackFactory; }
 namespace renderer      { class ITileRendererFactory; }
 
@@ -60,6 +61,7 @@ class GenericFrameRendererFactory
         const Frame&            frame,
         ITileRendererFactory*   tile_renderer_factory,
         ITileCallbackFactory*   tile_callback_factory,      // may be 0
+        IShadingResultFrameBufferFactory*   framebuffer_factory,
         IPassCallback*          pass_callback,              // may be 0
         const ParamArray&       params);
 
@@ -74,6 +76,7 @@ class GenericFrameRendererFactory
         const Frame&            frame,
         ITileRendererFactory*   tile_renderer_factory,
         ITileCallbackFactory*   tile_callback_factory,      // may be 0
+        IShadingResultFrameBufferFactory*   framebuffer_factory,
         IPassCallback*          pass_callback,              // may be 0
         const ParamArray&       params);
 
@@ -84,6 +87,7 @@ class GenericFrameRendererFactory
     const Frame&                m_frame;
     ITileRendererFactory*       m_tile_renderer_factory;
     ITileCallbackFactory*       m_tile_callback_factory;    // may be 0
+    IShadingResultFrameBufferFactory*   m_framebuffer_factory;
     IPassCallback*              m_pass_callback;            // may be 0
     const ParamArray            m_params;
 };

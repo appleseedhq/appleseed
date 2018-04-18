@@ -44,6 +44,7 @@
 // Forward declarations.
 namespace foundation    { class CanvasProperties; }
 namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class IShadingResultFrameBufferFactory; }
 namespace renderer      { class Frame; }
 namespace renderer      { class TileJob; }
 
@@ -74,6 +75,7 @@ class TileJobFactory
         const TileOrdering                  tile_ordering,
         const TileJob::TileRendererVector&  tile_renderers,
         const TileJob::TileCallbackVector&  tile_callbacks,
+        IShadingResultFrameBufferFactory&       m_framebuffer_factory,
         const size_t                        pass_hash,
         const Spectrum::Mode                spectrum_mode,
         TileJobVector&                      tile_jobs,

@@ -72,6 +72,11 @@ ShadingResultFrameBuffer* PermanentShadingResultFrameBufferFactory::create(
     const size_t                tile_level,
     const AABB2u&               tile_bbox)
 {
+    bool tile_exists = false;
+
+    const size_t base_tile_x = 1;
+    const size_t base_tile_y = 1;
+
     size_t ax, ay;
 
     if (tile_level > 0)
@@ -89,7 +94,7 @@ ShadingResultFrameBuffer* PermanentShadingResultFrameBufferFactory::create(
     const size_t index = ay * tile_count_x + ax;
 
     const Tile& tile = frame.image().tile(tile_x, tile_y, tile_level);
-
+    
     if (m_framebuffers[index] == nullptr)
     {
         const int tile_origin_x = static_cast<int>(frame.image().properties().m_tile_width * tile_x);
