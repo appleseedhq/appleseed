@@ -1,7 +1,7 @@
 Warning
 =======
 
-This plugin will currently only work on Linux. It requires either the PySide or the PyQt4 Python module. It will be fully supported in the next release of appleseed.
+This plugin will currently only work on Linux. It requires either the PySide or the PyQt4 Python module. It will be fully supported in a future release of appleseed.
 
 
 Installation
