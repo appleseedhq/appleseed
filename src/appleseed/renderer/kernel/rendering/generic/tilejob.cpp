@@ -90,9 +90,6 @@ TileJob::TileJob(
 
 void TileJob::execute(const size_t thread_index)
 {
-    //if (m_tile_renderers.size() > m_job_queue.get_scheduled_job_count())
-        //RENDERER_LOG_INFO("split");
-    
     const bool split = (m_tile_level == 0) && m_tile_renderers.size() > m_job_queue.get_scheduled_job_count() / 2;
     AABB2u box;
 

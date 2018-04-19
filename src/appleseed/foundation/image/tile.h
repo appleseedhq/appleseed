@@ -265,7 +265,20 @@ inline uint8* Tile::pixel(
     assert(x < m_width);
     assert(y < m_height);
 
-    return pixel(y * m_width + x);
+    if(m_pixel_array)
+        return pixel(y * m_width + x);
+
+    const size_t width_half = m_width / 2;
+    const size_t height_half = m_height / 2;
+
+    const size_t sub_tile_x = x >= width_half ? 1 : 0;
+    const size_t sub_tile_y = y >= height_half ? 1 : 0;
+    const size_t sub_tile_index = 2 * sub_tile_y + sub_tile_x;
+
+    size_t new_x = x - sub_tile_x * width_half;
+    size_t new_y = y - sub_tile_y * height_half;
+
+    return m_sub_tiles[sub_tile_index]->pixel(new_x, new_y);
 }
 
 inline uint8* Tile::component(

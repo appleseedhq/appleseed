@@ -175,7 +175,6 @@ void ShadingResultFrameBuffer::combine_buffer()
         const size_t sub_tile_width = sub_tile_x == 0 ? m_width_half : m_width - m_width_half;
         const size_t sub_tile_height = sub_tile_y == 0 ? m_height_half : m_height - m_height_half;
 
-        
         for (size_t y = 0; y < sub_tile_height; ++y)
         {
             for (size_t x = 0; x < sub_tile_width; ++x)
@@ -190,10 +189,6 @@ void ShadingResultFrameBuffer::combine_buffer()
                 size_t dst_offset = ((x + offset_x) + m_width * (y + offset_y)) * m_pixel_size;
 
                 memcpy(dst + dst_offset, src + src_offset, m_pixel_size);
-
-                //float* sub_pixel = ((ShadingResultFrameBuffer*)m_sub_tiles[sub_tile_index])->pixel(x, y);
-
-                //set_pixel(x + offset_x, y + offset_y, sub_pixel);
             }
         }
     }
@@ -222,12 +217,6 @@ void ShadingResultFrameBuffer::split_buffer()
         box.max.x /= 2;
         box.max.y /= 2;
 
-        //Vector2u offset(sub_tile_x * sub_tile_width, sub_tile_y * sub_tile_height);
-
-        //box.translate(offset);
-        //box.max.x--;
-        //box.max.y--;
-
         m_sub_tiles[sub_tile_index] =
             new ShadingResultFrameBuffer(
                 sub_tile_width,
@@ -235,15 +224,6 @@ void ShadingResultFrameBuffer::split_buffer()
                 m_aov_count,
                 box,
                 m_filter);
-
-        ((ShadingResultFrameBuffer*)m_sub_tiles[sub_tile_index])->clear();
-
-            //new ShadingResultFrameBuffer(
-            //    sub_tile_width,
-            //    sub_tile_height,
-            //    m_channel_count,
-            //    m_pixel_format);
-
 
         for (size_t y = 0; y < sub_tile_height; ++y)
         {

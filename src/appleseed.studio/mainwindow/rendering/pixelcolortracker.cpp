@@ -118,8 +118,6 @@ void PixelColorTracker::clear_rgba_labels() const
 
 void PixelColorTracker::set_rgba_labels(const QPoint& point) const
 {
-    return;
-
     const Image& image = m_project.get_frame()->image();
     const CanvasProperties& props = image.properties();
     const Vector2i pixel = m_mouse_tracker.widget_to_pixel(point);
