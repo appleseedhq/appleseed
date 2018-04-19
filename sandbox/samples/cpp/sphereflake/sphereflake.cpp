@@ -36,6 +36,8 @@
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/specializedapiarrays.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/string.h"
@@ -175,6 +177,19 @@ namespace
         const char* get_model() const override
         {
             return Model;
+        }
+
+        // Return metadata for this assembly model.
+        asf::Dictionary get_model_metadata() const override
+        {
+            return asf::Dictionary();
+        }
+
+        // Return metadata for the inputs of this assembly model.
+        asf::DictionaryArray get_input_metadata() const override
+        {
+            asf::DictionaryArray metadata;
+            return metadata;
         }
 
         // Create a new assembly.
