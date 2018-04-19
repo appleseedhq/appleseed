@@ -259,7 +259,7 @@ class ProjectBuilder
             FrameFactory::create(
                 "beauty",
                 ParamArray()
-                    .insert("camera", scene->get_active_camera()->get_name())
+                    .insert("camera", "camera")
                     .insert("resolution", "1280 720")
                     .insert("color_space", "srgb")
                     .insert("camera", "camera")));
