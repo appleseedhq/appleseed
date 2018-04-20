@@ -157,7 +157,7 @@ void ShadingResultFrameBuffer::develop_to_tile(
     }
 }
 
-void ShadingResultFrameBuffer::combine_buffer()
+void ShadingResultFrameBuffer::combine()
 {
     if (m_pixel_array)
         return;
@@ -194,7 +194,7 @@ void ShadingResultFrameBuffer::combine_buffer()
     }
 }
 
-void ShadingResultFrameBuffer::split_buffer()
+void ShadingResultFrameBuffer::split()
 {
     if (!m_pixel_array)
         return;

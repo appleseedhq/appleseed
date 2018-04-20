@@ -81,8 +81,8 @@ class ShadingResultFrameBuffer
         foundation::Tile&               tile,
         TileStack&                      aov_tiles) const;
 
-    void combine_buffer();
-    void split_buffer();
+    void combine();
+    void split();
 
   private:
     const size_t                        m_aov_count;

@@ -185,10 +185,10 @@ class APPLESEED_DLLSYMBOL Tile
     // (but possibly using a different pixel format).
     void copy(const Tile& rhs);
 
-    // Merge sub-tiles to this tile
+    // Combine sub-tiles to this tile
     void combine();
 
-    // Split this tile into four sub-tile
+    // Split this tile into four sub-tiles
     void split();
 
     Tile**                  m_sub_tiles;

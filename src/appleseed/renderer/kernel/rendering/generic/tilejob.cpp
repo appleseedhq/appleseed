@@ -97,7 +97,7 @@ void TileJob::execute(const size_t thread_index)
     {
         // Here split both image tiles and frame buffer tiles.
         m_frame.image().tile(m_tile_x, m_tile_y, m_tile_level).split();
-        m_framebuffer_factory.create(m_frame, m_tile_x, m_tile_y, m_tile_level, box)->split_buffer();
+        m_framebuffer_factory.create(m_frame, m_tile_x, m_tile_y, m_tile_level, box)->split();
 
         for (int i = 0; i < 2; ++i)
         {
@@ -123,7 +123,7 @@ void TileJob::execute(const size_t thread_index)
 
     // Make sure that referenced tile is merged
     m_frame.image().tile(m_tile_x, m_tile_y, m_tile_level).combine();
-    m_framebuffer_factory.create(m_frame, m_tile_x, m_tile_y, m_tile_level, box)->combine_buffer();
+    m_framebuffer_factory.create(m_frame, m_tile_x, m_tile_y, m_tile_level, box)->combine();
 
     // Initialize thread-local variables.
     Spectrum::set_mode(m_spectrum_mode);
