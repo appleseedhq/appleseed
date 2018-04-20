@@ -157,4 +157,94 @@ void ShadingResultFrameBuffer::develop_to_tile(
     }
 }
 
+void ShadingResultFrameBuffer::combine()
+{
+    if (m_pixel_array)
+        return;
+
+    m_pixel_array = new uint8[m_array_size];
+
+    const size_t m_width_half = m_width / 2;
+    const size_t m_height_half = m_height / 2;
+
+    for (int sub_tile_index = 0; sub_tile_index < 4; ++sub_tile_index)
+    {
+        const int sub_tile_x = sub_tile_index % 2;
+        const int sub_tile_y = sub_tile_index / 2;
+
+        const size_t sub_tile_width = sub_tile_x == 0 ? m_width_half : m_width - m_width_half;
+        const size_t sub_tile_height = sub_tile_y == 0 ? m_height_half : m_height - m_height_half;
+
+        for (size_t y = 0; y < sub_tile_height; ++y)
+        {
+            for (size_t x = 0; x < sub_tile_width; ++x)
+            {
+                const size_t offset_x = sub_tile_x == 0 ? 0 : m_width_half;
+                const size_t offset_y = sub_tile_y == 0 ? 0 : m_height_half;
+
+                uint8* src = m_sub_tiles[sub_tile_index]->get_storage();
+                size_t src_offset = (x + sub_tile_width * y) * m_pixel_size;
+
+                uint8* dst = get_storage();
+                size_t dst_offset = ((x + offset_x) + m_width * (y + offset_y)) * m_pixel_size;
+
+                memcpy(dst + dst_offset, src + src_offset, m_pixel_size);
+            }
+        }
+    }
+}
+
+void ShadingResultFrameBuffer::split()
+{
+    if (!m_pixel_array)
+        return;
+
+    const size_t m_width_half = m_width / 2;
+    const size_t m_height_half = m_height / 2;
+
+    for (int sub_tile_index = 0; sub_tile_index < 4; ++sub_tile_index)
+    {
+        const int sub_tile_x = sub_tile_index % 2;
+        const int sub_tile_y = sub_tile_index / 2;
+
+        const size_t sub_tile_width = sub_tile_x == 0 ? m_width_half : m_width - m_width_half;
+        const size_t sub_tile_height = sub_tile_y == 0 ? m_height_half : m_height - m_height_half;
+
+        AABB2u box;
+        box.min = m_crop_window.min;
+        box.max = m_crop_window.max;
+
+        box.max.x /= 2;
+        box.max.y /= 2;
+
+        m_sub_tiles[sub_tile_index] =
+            new ShadingResultFrameBuffer(
+                sub_tile_width,
+                sub_tile_height,
+                m_aov_count,
+                box,
+                m_filter);
+
+        for (size_t y = 0; y < sub_tile_height; ++y)
+        {
+            for (size_t x = 0; x < sub_tile_width; ++x)
+            {
+                const size_t offset_x = sub_tile_x == 0 ? 0 : m_width_half;
+                const size_t offset_y = sub_tile_y == 0 ? 0 : m_height_half;
+
+                uint8* dst = m_sub_tiles[sub_tile_index]->get_storage();
+                size_t dst_offset = (x + sub_tile_width * y) * m_pixel_size;
+
+                uint8* src = get_storage();
+                size_t src_offset = ((x + offset_x) + m_width * (y + offset_y)) * m_pixel_size;
+
+                memcpy(dst + dst_offset, src + src_offset, m_pixel_size);
+            }
+        }
+    }
+
+    delete[] m_pixel_array;
+    m_pixel_array = nullptr;
+}
+
 }   // namespace renderer

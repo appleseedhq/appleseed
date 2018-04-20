@@ -83,7 +83,8 @@ namespace
         void on_tile_begin(
             const Frame*        frame,
             const size_t        tile_x,
-            const size_t        tile_y) override
+            const size_t        tile_y,
+            const size_t        tile_level) override
         {
             boost::mutex::scoped_lock lock(m_mutex);
 
@@ -101,7 +102,8 @@ namespace
         void on_tile_end(
             const Frame*        frame,
             const size_t        tile_x,
-            const size_t        tile_y) override
+            const size_t        tile_y,
+            const size_t        tile_level) override
         {
             boost::mutex::scoped_lock lock(m_mutex);
 

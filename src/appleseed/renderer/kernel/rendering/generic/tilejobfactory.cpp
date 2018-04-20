@@ -57,6 +57,7 @@ void TileJobFactory::create(
     const TileOrdering                  tile_ordering,
     const TileJob::TileRendererVector&  tile_renderers,
     const TileJob::TileCallbackVector&  tile_callbacks,
+    IShadingResultFrameBufferFactory&       framebuffer_factory,
     const size_t                        pass_hash,
     const Spectrum::Mode                spectrum_mode,
     TileJobVector&                      tile_jobs,
@@ -88,6 +89,7 @@ void TileJobFactory::create(
             new TileJob(
                 tile_renderers,
                 tile_callbacks,
+                framebuffer_factory,
                 frame,
                 tile_x,
                 tile_y,
@@ -96,45 +98,6 @@ void TileJobFactory::create(
                 spectrum_mode,
                 job_queue,
                 abort_switch));
-
-        //tile_jobs.push_back(
-        //    new TileJob(
-        //        tile_renderers,
-        //        tile_callbacks,
-        //        frame,
-        //        2 * tile_x + 1,
-        //        2 * tile_y,
-        //        1,
-        //        pass_hash,
-        //        spectrum_mode,
-        //        job_queue,
-        //        abort_switch));
-
-        //tile_jobs.push_back(
-        //    new TileJob(
-        //        tile_renderers,
-        //        tile_callbacks,
-        //        frame,
-        //        2 * tile_x,
-        //        2 * tile_y + 1,
-        //        1,
-        //        pass_hash,
-        //        spectrum_mode,
-        //        job_queue,
-        //        abort_switch));
-
-        //tile_jobs.push_back(
-        //    new TileJob(
-        //        tile_renderers,
-        //        tile_callbacks,
-        //        frame,
-        //        2 * tile_x + 1,
-        //        2 * tile_y + 1,
-        //        1,
-        //        pass_hash,
-        //        spectrum_mode,
-        //        job_queue,
-        //        abort_switch));
     }
 }
 

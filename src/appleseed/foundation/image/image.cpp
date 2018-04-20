@@ -204,29 +204,13 @@ Tile& Image::tile(
 
     if (tile_level > 0)
     {
+        //if()
+
         int x = tile_x % 2;
         int y = tile_y % 2;
+        int i = x + 2 * y;
 
-        if (m_tiles[tile_index]->m_sub_tiles == nullptr)
-        {
-            m_tiles[tile_index]->m_sub_tiles = new Tile*[4];
-
-            for (int i = 0; i < 4; ++i)
-            {
-                m_tiles[tile_index]->m_sub_tiles[i] =
-                    new Tile(
-                        m_props.get_tile_width(ax) / 2,
-                        m_props.get_tile_height(ay) / 2,
-                        m_props.m_channel_count,
-                        m_props.m_pixel_format);
-
-                memset(m_tiles[tile_index]->m_sub_tiles[i]->pixel(0, 0), 0, m_tiles[tile_index]->m_sub_tiles[i]->get_size());
-            }
-
-
-        }
-
-        return *m_tiles[tile_index]->m_sub_tiles[2 * x + y];
+        return *m_tiles[tile_index]->m_sub_tiles[i];
     }
 
     return *m_tiles[tile_index];
