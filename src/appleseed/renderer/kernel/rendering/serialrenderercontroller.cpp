@@ -85,6 +85,7 @@ void SerialRendererController::on_frame_end()
 void SerialRendererController::on_progress()
 {
     exec_callbacks();
+
     m_controller->on_progress();
 }
 
@@ -161,6 +162,17 @@ void SerialRendererController::add_on_progressive_frame_update_callback(const Fr
     m_pending_callbacks.push_back(callback);
 }
 
+void SerialRendererController::exec_callbacks()
+{
+    boost::mutex::scoped_lock lock(m_mutex);
+
+    while (!m_pending_callbacks.empty())
+    {
+        exec_callback(m_pending_callbacks.front());
+        m_pending_callbacks.pop_front();
+    }
+}
+
 void SerialRendererController::exec_callback(const PendingTileCallback& cb)
 {
     switch (cb.m_type)
@@ -186,17 +198,6 @@ void SerialRendererController::exec_callback(const PendingTileCallback& cb)
         break;
 
       assert_otherwise;
-    }
-}
-
-void SerialRendererController::exec_callbacks()
-{
-    boost::mutex::scoped_lock lock(m_mutex);
-
-    while (!m_pending_callbacks.empty())
-    {
-        exec_callback(m_pending_callbacks.front());
-        m_pending_callbacks.pop_front();
     }
 }
 

@@ -50,7 +50,9 @@ namespace renderer
 
 //
 // A renderer controller that can queue tile callback updates and execute them
-// later in the master renderer's thread. Needed by the Python bindings.
+// later in the master renderer's thread. Useful whenever a tile callback can
+// only run from a specific thread. Used by the Python bindings and the 3ds Max
+// plugin, among other things.
 //
 
 class SerialRendererController
@@ -111,8 +113,8 @@ class SerialRendererController
     boost::mutex                        m_mutex;
     std::deque<PendingTileCallback>     m_pending_callbacks;
 
-    void exec_callback(const PendingTileCallback& cb);
     void exec_callbacks();
+    void exec_callback(const PendingTileCallback& cb);
 };
 
 }       // namespace renderer
