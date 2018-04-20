@@ -173,27 +173,17 @@ Tile& Image::tile(
     const size_t        tile_y,
     const size_t        tile_level)
 {
-    size_t ax, ay;
-
-    if (tile_level > 0)
-    {
-        ax = tile_x / 2;
-        ay = tile_y / 2;
-    }
-    else
-    {
-        ax = tile_x;
-        ay = tile_y;
-    }
+    const size_t root_tile_x = tile_level == 0 ? tile_x : tile_x / 2;
+    const size_t root_tile_y = tile_level == 0 ? tile_y : tile_y / 2;
         
-    const size_t tile_index = ay * m_props.m_tile_count_x + ax;
+    const size_t tile_index = root_tile_y * m_props.m_tile_count_x + root_tile_x;
 
     if (m_tiles[tile_index] == nullptr)
     {
         Tile* tile =
             new Tile(
-                m_props.get_tile_width(ax),
-                m_props.get_tile_height(ay),
+                m_props.get_tile_width(root_tile_x),
+                m_props.get_tile_height(root_tile_y),
                 m_props.m_channel_count,
                 m_props.m_pixel_format);
 
@@ -204,13 +194,11 @@ Tile& Image::tile(
 
     if (tile_level > 0)
     {
-        //if()
+        const int x = tile_x % 2;
+        const int y = tile_y % 2;
+        const int sub_tile_index = x + 2 * y;
 
-        int x = tile_x % 2;
-        int y = tile_y % 2;
-        int i = x + 2 * y;
-
-        return *m_tiles[tile_index]->m_sub_tiles[i];
+        return *m_tiles[tile_index]->m_sub_tiles[sub_tile_index];
     }
 
     return *m_tiles[tile_index];
