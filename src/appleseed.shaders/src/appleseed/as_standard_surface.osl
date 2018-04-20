@@ -362,7 +362,7 @@ shader as_standard_surface
         string as_maya_attribute_name = "incandescenceAmount",
         string as_maya_attribute_short_name = "inw",
         float min = 0.0,
-        float max = 1.0,
+        float softmax = 1.0,
         string label = "Incandescence Amount",
         string page = "Incandescence"
     ]],
