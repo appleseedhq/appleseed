@@ -38,6 +38,7 @@ shader as_noise3d
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/3d:swatch/AppleseedRenderSwatch:texture",
     int as_maya_type_id = 0x001279ca,
     string icon = "asNoise3D.png",
+    string help = "Recursive 3D fractal noise.",
     string as_max_class_id = "729771265 1595816139",
     string as_max_plugin_type = "texture",
     string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_noise3d.html#label-as-noise3d"

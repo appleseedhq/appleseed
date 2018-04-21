@@ -31,7 +31,7 @@ shader as_glass
     string as_maya_node_name = "asGlass",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
     string help = "Glass material with absorption.",
-    string icon = "asGlass",
+    string icon = "asGlass.png",
     int as_maya_type_id = 0x001279c4,
     string as_max_class_id = "1785798004 1778718452",
     string as_max_plugin_type = "material",

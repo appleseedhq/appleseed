@@ -32,8 +32,8 @@ shader as_falloff_angle
 [[
     string as_maya_node_name = "asFalloffAngle",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string help = "Double shading node.",
-    string icon = "asFalloffAngle",
+    string help = "Creates a ramp from the angle between two input vectors.",
+    string icon = "asFalloffAngle.png",
     int as_maya_type_id = 0x001279f7,
     string as_max_class_id = "2015842098 354230760",
     string as_max_plugin_type = "texture",

@@ -32,7 +32,7 @@ shader as_bump
 [[
     string as_maya_node_name = "asBump",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string help = "Bump Node.",
+    string help = "Bump and normal mapping node.",
     string icon = "asBump.png",
     int as_maya_type_id = 0x00127a00,
     string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_bump.html#label-as-bump"
@@ -220,6 +220,21 @@ shader as_bump
             ? (normal) clamp(in_normal_map, 0.0, 1.0) * 2.0 - 1.0
             : (normal) clamp(in_normal_map, -1.0, 1.0);
 
+        if (in_normal_map_flip_r)
+        {
+            lookup_normal[0] = -lookup_normal[0];
+        }
+        if (in_normal_map_flip_g)
+        {
+            lookup_normal[1] = -lookup_normal[1];
+        }
+        if (in_normal_map_swap_rg)
+        {
+            float lookup_tmp = lookup_normal[0];
+            lookup_normal[0] = lookup_normal[1];
+            lookup_normal[1] = lookup_tmp;
+        }
+
         normal surface_normal = normalize(in_surface_normal);
 
         if (in_normal_map_coordsys == "World Space")
@@ -234,21 +249,6 @@ shader as_bump
         }
         else
         {
-            if (in_normal_map_flip_r)
-            {
-                lookup_normal[0] = -lookup_normal[0];
-            }
-            if (in_normal_map_flip_g)
-            {
-                lookup_normal[1] = -lookup_normal[1];
-            }
-            if (in_normal_map_swap_rg)
-            {
-                float lookup_tmp = lookup_normal[0];
-                lookup_normal[0] = lookup_normal[1];
-                lookup_normal[1] = lookup_tmp;
-            }
-
             vector bitangent = cross(Tn, surface_normal);
 
             normal reoriented_normal =
