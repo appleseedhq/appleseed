@@ -33,7 +33,7 @@ shader as_color_transform
 [[
     string as_maya_node_name = "asColorTransform",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string help = "Transforms a color to another color model. Input color MUST be linearized.",
+    string help = "Transforms a color from one color model to another color model.",
     string icon = "asColorTransform.png",
     int as_maya_type_id = 0x001279c8,
     string as_max_class_id = "1025180725 1433928109",

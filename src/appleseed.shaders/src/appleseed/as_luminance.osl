@@ -34,8 +34,8 @@ shader as_luminance
 [[
     string as_maya_node_name = "asLuminance",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string help = "Primaries and illuminants aware relative luminance node.",
     string icon = "asLuminance.png",
+    string help = "A node that outputs the (color space-aware) relative luminance of a color.",
     int as_maya_type_id = 0x001279cd,
     string as_max_class_id = "1648771987 792674094",
     string as_max_plugin_type = "texture",
