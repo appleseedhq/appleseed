@@ -29,21 +29,42 @@ Open a Command Prompt inside a plugin's folder, then type:
 Open the Visual Studio solution file (.sln file) that was generated in build and build the plugin in the configuration of your choice (Debug or Release).
 
 
-On Linux and macOS
-------------------
+On Linux
+--------
+
+The following instructions assume that:
+
+  - You are using the prebuild linux dependencies that can be found [here](https://github.com/appleseedhq/prebuilt-linux-deps)
+
+Make sure to adapt them as required.
 
 In a Bash shell, inside a plugin's directory, type:
+
+    export APPLESEED_DEPENDENCIES=/directory/with/precompiled/dependencies
+    export CMAKE_INCLUDE_PATH=$APPLESEED_DEPENDENCIES/include
+    export CMAKE_LIBRARY_PATH=$APPLESEED_DEPENDENCIES/lib
+    export LD_LIBRARY_PATH=$APPLESEED_DEPENDENCIES/lib
 
   - With an **end-user** release of appleseed:
 
         mkdir build
         cd build
-        cmake <TODO> ..
+        cmake \
+        -DUSE_STATIC_BOOST=OFF \
+        -DBoost_SYSTEM_LIBRARY_RELEASE=$APPLESEED_DEPENDENCIES/lib/libboost_system-gcc48-mt-1_61.so.1.61.0 \
+        -DAPPLESEED_INCLUDE_DIR=../../../../../src/appleseed \
+        -DAPPLESEED_LIBRARY=../../../../lib/libappleseed.so \
+        ..
         make
 
   - With a **working copy** of the appleseed repository:
 
         mkdir build
         cd build
-        cmake <TODO> ..
+        cmake \
+        -DUSE_STATIC_BOOST=OFF \
+        -DBoost_SYSTEM_LIBRARY_RELEASE=$APPLESEED_DEPENDENCIES/lib/libboost_system-gcc48-mt-1_61.so.1.61.0 \
+        -DAPPLESEED_INCLUDE_DIR=../../../../../src/appleseed \
+        -DAPPLESEED_LIBRARY=../../../../lib/Ship/libappleseed.so \
+        ..
         make
