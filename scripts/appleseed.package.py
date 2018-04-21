@@ -49,7 +49,7 @@ import zipfile
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.5.2"
+VERSION = "2.5.3"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
@@ -315,6 +315,9 @@ class PackageBuilder:
         # Remove voluminous unit tests/benchmarks data.
         safe_delete_file("appleseed/tests/unit benchmarks/inputs/test_knn_particles.bin")
         safe_delete_file("appleseed/tests/unit benchmarks/inputs/test_knn_photons.bin")
+        
+        # Temporarily remove Alembic assembly C++ plugin.
+        safe_delete_directory("appleseed/samples/cpp/alembicassembly")
 
     def add_local_binaries_to_stage(self):
         progress("Adding local binaries to staging directory")
