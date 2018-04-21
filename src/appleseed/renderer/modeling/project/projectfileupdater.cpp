@@ -1691,14 +1691,26 @@ namespace
             if (params.dictionaries().exist("pt"))
             {
                 Dictionary& pt_params = params.dictionary("pt");
+
                 if (!pt_params.strings().exist("max_bounces"))
                     pt_params.insert("max_bounces", -1);
+
                 if (!pt_params.strings().exist("max_diffuse_bounces"))
                     pt_params.insert("max_diffuse_bounces", -1);
+
                 if (!pt_params.strings().exist("max_glossy_bounces"))
                     pt_params.insert("max_glossy_bounces", -1);
+
                 if (!pt_params.strings().exist("max_specular_bounces"))
                     pt_params.insert("max_specular_bounces", -1);
+            }
+            else
+            {
+                params.insert("pt", ParamArray()
+                    .insert("max_bounces", -1)
+                    .insert("max_diffuse_bounces", -1)
+                    .insert("max_glossy_bounces", -1)
+                    .insert("max_specular_bounces", -1));
             }
         }
     };
