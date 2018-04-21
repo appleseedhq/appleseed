@@ -159,10 +159,11 @@ struct MasterRenderer::Impl
             reinterpret_cast<OIIO::TextureSystem&>(*m_texture_system));
 
         RENDERER_LOG_DEBUG("creating osl shading system...");
-        m_shading_system = OSLShadingSystemFactory::create(
-            m_renderer_services,
-            m_texture_system,
-            m_error_handler);
+        m_shading_system =
+            OSLShadingSystemFactory::create(
+                m_renderer_services,
+                m_texture_system,
+                m_error_handler);
         m_shading_system->attribute("lockgeom", 1);
         m_shading_system->attribute("colorspace", "Linear");
         m_shading_system->attribute("commonspace", "world");
@@ -314,7 +315,7 @@ struct MasterRenderer::Impl
             RENDERER_LOG_ERROR("rendering failed (ran out of memory).");
             result.m_status = RenderingResult::Failed;
         }
-    #ifdef NDEBUG
+#ifdef NDEBUG
         catch (const exception& e)
         {
             m_renderer_controller->on_rendering_abort();
@@ -327,7 +328,7 @@ struct MasterRenderer::Impl
             RENDERER_LOG_ERROR("rendering failed (unknown exception).");
             result.m_status = RenderingResult::Failed;
         }
-    #endif
+#endif
 
         return result;
     }
@@ -565,10 +566,10 @@ struct MasterRenderer::Impl
 
         if (m_tile_callback_factory)
         {
+            // Invoke the tile callbacks on all tiles.
             // todo: things would be simpler if the tile callback had a method to refresh a whole frame.
             auto_release_ptr<ITileCallback> tile_callback(m_tile_callback_factory->create());
             const CanvasProperties& frame_props = frame->image().properties();
-
             for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
             {
                 for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
