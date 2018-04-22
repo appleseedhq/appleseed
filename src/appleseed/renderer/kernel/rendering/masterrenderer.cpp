@@ -575,6 +575,13 @@ struct MasterRenderer::Impl
                 for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
                     tile_callback->on_tile_end(frame, tx, ty);
             }
+
+            // If all we have is a tile callback (and not a tile callback factory), then updates will be
+            // enqueued into the SerialRendererController instead of being executed right away, hence we
+            // need to manually execute them here, otherwise the render stamp is not guaranteed to be
+            // displayed in client applications.
+            if (m_serial_renderer_controller != nullptr)
+                m_serial_renderer_controller->exec_callbacks();
         }
     }
 };

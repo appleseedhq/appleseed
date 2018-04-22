@@ -90,6 +90,8 @@ class SerialRendererController
     void add_on_progressive_frame_update_callback(
         const Frame*            frame);
 
+    void exec_callbacks();
+
   private:
     struct PendingTileCallback
     {
@@ -113,7 +115,6 @@ class SerialRendererController
     boost::mutex                        m_mutex;
     std::deque<PendingTileCallback>     m_pending_callbacks;
 
-    void exec_callbacks();
     void exec_callback(const PendingTileCallback& cb);
 };
 
