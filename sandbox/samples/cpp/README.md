@@ -1,8 +1,8 @@
-Instructions to compile C++ plugins
-===================================
+C++ Plugins Instructions
+========================
 
-On Windows
-----------
+Compiling the Plugins On Windows
+--------------------------------
 
 The following instructions assume that:
 
@@ -55,8 +55,8 @@ Open a Command Prompt inside a plugin's folder, then type:
 Open the Visual Studio solution file (.sln file) that was generated in build and build the plugin in the configuration of your choice (Debug or Release).
 
 
-On Linux
---------
+Compiling the Plugins On Linux
+------------------------------
 
 The following instructions assume that:
 
@@ -94,3 +94,45 @@ In a Bash shell, inside a plugin's directory, type:
         -DAPPLESEED_LIBRARY=../../../../lib/Ship/libappleseed.so \
         ..
         make
+
+
+Rendering Plugins Test Scenes
+-----------------------------
+
+Most plugins come with simple test scenes in the form of `*.appleseed` files.
+
+In order to render these test scenes, appleseed must be able to find the compiled plugins. Compiled plugins take the form of `*.dll` files (on Windows) or `*.so` files (on macOS).
+
+appleseed looks for compiled plugins in _search paths_. The directory containing the project file is the initial search path: that means that copying the compiled plugins next to the project files will allow appleseed to find them and render the scenes.
+
+Alternatively, there are two ways to declare additional search paths that don't require to copy files around:
+
+- By setting the `APPLESEED_SEARCHPATH` environment variable to a series of paths separated by `;` on Windows and `:` on Linux and macOS;
+- By declaring search paths in project files. It is not possible at the moment to edit search paths from appleseed.studio or any of the appleseed plugins, so they need to be added manually by editing project files (which are XML files, i.e. text files). The example below shows how to do that on Windows.
+
+### Example
+
+In this example, we will render `distancefieldobject/distancefieldobject.appleseed` on Windows.
+
+This scene uses two plugins: `distancefieldobject` and `infiniteplaneobject`. We are assuming that they were compiled with Visual Studio in `Release` configuration following the instructions above. Consequently, the following files are assumed to exist:
+- `distancefieldobject\build\Release\distancefieldobject.dll`
+- `infiniteplaneobject\build\Release\infiniteplaneobject.dll`
+
+Let's add two relative search paths (`build\Release` and `..\infiniteplaneobject\build\Release`) to the `distancefieldobject/distancefieldobject.appleseed` project file in order for appleseed to find these two plugin files:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project format_revision="21">
+    <search_paths>
+        <search_path>
+            build\Release
+        </search_path>
+        <search_path>
+            ..\infiniteplaneobject\build\Release
+        </search_path>
+    </search_paths>
+    ...
+</project>
+```
+
+We now start appleseed.studio, open `distancefieldobject/distancefieldobject.appleseed` and press F5 to start progressive, interactive rendering. Pressing Shift+F5 stops the render.
