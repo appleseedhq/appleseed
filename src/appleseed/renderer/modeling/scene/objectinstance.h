@@ -106,8 +106,9 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     // Return true if the normals of this instance must be flipped.
     bool flip_normals() const;
 
-    // Return the visibility flags of this instance.
+    // Return or set visibility flags of this instance.
     foundation::uint32 get_vis_flags() const;
+    void set_vis_flags(const foundation::uint32 flags);
 
     // Return the medium priority of this instance.
     foundation::int8 get_medium_priority() const;
@@ -264,6 +265,11 @@ inline bool ObjectInstance::flip_normals() const
 inline foundation::uint32 ObjectInstance::get_vis_flags() const
 {
     return m_vis_flags;
+}
+
+inline void ObjectInstance::set_vis_flags(const foundation::uint32 flags)
+{
+    m_vis_flags = flags;
 }
 
 inline foundation::int8 ObjectInstance::get_medium_priority() const
