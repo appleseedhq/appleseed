@@ -739,7 +739,7 @@ bool Frame::write_aov_images(const char* file_path) const
 
     if (file_path_ext != ".exr")
     {
-        if (has_extension(file_path_ext))
+        if (!aovs().empty() && has_extension(file_path_ext))
         {
             RENDERER_LOG_WARNING(
                 "aovs cannot be saved to %s files; saving them to exr files instead.",
