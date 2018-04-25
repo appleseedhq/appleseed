@@ -39,6 +39,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
+#include "renderer/api/lighting.h"
 #include "renderer/api/log.h"
 #include "renderer/api/object.h"
 #include "renderer/api/project.h"
@@ -540,26 +541,28 @@ namespace
 
         // Render the frame.
         LOG_INFO(g_logger, "rendering frame...");
-        MasterRenderer::RenderingResult result;
+        MasterRenderer::RenderingResult rendering_result;
         if (params.get_optional<bool>("background_mode", true))
         {
             ProcessPriorityContext background_context(ProcessPriorityLow, &g_logger);
-            result = renderer.render();
+            rendering_result = renderer.render();
         }
         else
         {
-            result = renderer.render();
+            rendering_result = renderer.render();
         }
-        if (result.m_status != MasterRenderer::RenderingResult::Succeeded)
+        if (rendering_result.m_status != MasterRenderer::RenderingResult::Succeeded)
             return false;
 
         // Print rendering time.
         LOG_INFO(
             g_logger,
             "rendering finished in %s.",
-            pretty_time(result.m_render_time, 3).c_str());
+            pretty_time(rendering_result.m_render_time, 3).c_str());
 
-        // Archive the frame to disk.
+        bool success = true;
+
+        // Optionally archive the frame to disk.
         char* archive_path = nullptr;
         if (params.get_optional<bool>("autosave", true))
         {
@@ -570,21 +573,25 @@ namespace
 
             // Archive the frame to disk.
             LOG_INFO(g_logger, "archiving frame to disk...");
-            project->get_frame()->archive(
-                autosave_path.string().c_str(),
-                &archive_path);
+            if (!project->get_frame()->archive(
+                    autosave_path.string().c_str(),
+                    &archive_path))
+                success = false;
         }
 
-        // Write the frame to disk.
+        // Optionally write the frame to disk.
         if (g_cl.m_output.is_set())
         {
             const char* file_path = g_cl.m_output.value().c_str();
-            project->get_frame()->write_main_image(file_path);
-            project->get_frame()->write_aov_images(file_path);
+            if (!project->get_frame()->write_main_image(file_path))
+                success = false;
+            if (!project->get_frame()->write_aov_images(file_path))
+                success = false;
         }
         else
         {
-            project->get_frame()->write_main_and_aov_images();
+            if (!project->get_frame()->write_main_and_aov_images())
+                success = false;
         }
 
 #if defined __APPLE__ || defined _WIN32
@@ -604,7 +611,15 @@ namespace
         // Deallocate the memory used by the path to the archived image.
         free_string(archive_path);
 
-        return true;
+        // Optionally save recorded light paths to disk.
+        if (g_cl.m_save_light_paths.is_set() &&
+            project->get_light_path_recorder().get_light_path_count() > 0)
+        {
+            if (!project->get_light_path_recorder().write(g_cl.m_save_light_paths.value().c_str()))
+                success = false;
+        }
+
+        return success;
     }
 
     bool benchmark_render(const string& project_filename)

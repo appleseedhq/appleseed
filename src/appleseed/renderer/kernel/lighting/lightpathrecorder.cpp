@@ -263,7 +263,7 @@ void LightPathRecorder::get_light_path_vertex(
     result.m_radiance[2] = source_vertex.m_radiance[2];
 }
 
-void LightPathRecorder::write(const char* filename) const
+bool LightPathRecorder::write(const char* filename) const
 {
     //
     // The format of Light Paths files (*.aspaths) is documented at
@@ -291,7 +291,7 @@ void LightPathRecorder::write(const char* filename) const
         if (!file.open(filename, BufferedFile::BinaryType, BufferedFile::WriteMode))
         {
             RENDERER_LOG_ERROR("failed to open %s for writing.", filename);
-            return;
+            return false;
         }
 
         // Signature.
@@ -429,10 +429,13 @@ void LightPathRecorder::write(const char* filename) const
             light_path_count > 1 ? "s" : "",
             filename,
             pretty_time(stopwatch.get_seconds()).c_str());
+
+        return true;
     }
     catch (const ExceptionIOError&)
     {
         RENDERER_LOG_ERROR("failed to write paths to %s: i/o error", filename);
+        return false;
     }
 }
 

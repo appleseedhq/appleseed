@@ -161,6 +161,13 @@ CommandLineHandler::CommandLineHandler()
             .set_description("send render to standard output"));
 
     parser().add_option_handler(
+        &m_save_light_paths
+            .add_name("--save-light-paths")
+            .set_description("save recorded light paths to disk")
+            .set_syntax("filename")
+            .set_exact_value_count(1));
+
+    parser().add_option_handler(
         &m_disable_autosave
             .add_name("--disable-autosave")
             .set_description("disable automatic saving of rendered images"));
