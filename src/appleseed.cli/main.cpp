@@ -315,26 +315,32 @@ namespace
         }
     }
 
-    void apply_select_object_instances_command_line_option(Assembly& assembly, const RegExFilter& filter)
+    void apply_visibility_command_line_options(
+        Assembly&           assembly,
+        const RegExFilter&  show_filter,
+        const RegExFilter&  hide_filter)
     {
         for (ObjectInstance& object_instance : assembly.object_instances())
         {
-            if (!filter.accepts(object_instance.get_name()))
+            if (!show_filter.accepts(object_instance.get_name()) ||
+                hide_filter.accepts(object_instance.get_name()))
                 object_instance.set_vis_flags(VisibilityFlags::Invisible);
         }
 
         for (Assembly& child_assembly : assembly.assemblies())
-            apply_select_object_instances_command_line_option(child_assembly, filter);
+            apply_visibility_command_line_options(child_assembly, show_filter, hide_filter);
     }
 
-    void apply_select_object_instances_command_line_option(Project& project, const char* regex)
+    void apply_visibility_command_line_options(
+        Project&            project,
+        const string&       show_regex,
+        const string&       hide_regex)
     {
-        const RegExFilter filter(regex, RegExFilter::CaseSensitive);
+        const RegExFilter show_filter(show_regex.c_str(), RegExFilter::CaseSensitive);
+        const RegExFilter hide_filter(hide_regex.c_str(), RegExFilter::CaseSensitive);
 
-        Scene* scene = project.get_scene();
-
-        for (Assembly& assembly : scene->assemblies())
-            apply_select_object_instances_command_line_option(assembly, filter);
+        for (Assembly& assembly : project.get_scene()->assemblies())
+            apply_visibility_command_line_options(assembly, show_filter, hide_filter);
     }
 
     void apply_parameter_command_line_options(ParamArray& params)
@@ -388,12 +394,14 @@ namespace
                 g_cl.m_override_shading.value());
         }
 
-        // Apply --select-object-instances option.
-        if (g_cl.m_select_object_instances.is_set())
+        // Apply --show-object-instances and --hide-object-instances options.
+        if (g_cl.m_show_object_instances.is_set() ||
+            g_cl.m_hide_object_instances.is_set())
         {
-            apply_select_object_instances_command_line_option(
+            apply_visibility_command_line_options(
                 project,
-                g_cl.m_select_object_instances.value().c_str());
+                g_cl.m_show_object_instances.is_set() ? g_cl.m_show_object_instances.value() : ".*",        // match everything
+                g_cl.m_hide_object_instances.is_set() ? g_cl.m_hide_object_instances.value() : "(?!)");     // match nothing
         }
 
         // Apply --parameter options.
