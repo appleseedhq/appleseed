@@ -990,6 +990,9 @@ void MainWindow::add_light_paths_tab()
             connect(
                 kv.second, SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
                 m_light_paths_tab, SLOT(slot_entity_picked(renderer::ScenePicker::PickingResult)));
+            connect(
+                kv.second, SIGNAL(signal_rectangle_selection(const QRect&)),
+                m_light_paths_tab, SLOT(slot_rectangle_selection(const QRect&)));
         }
 
         // Add the light paths tab to the tab bar.

@@ -112,6 +112,54 @@ void LightPathsPickingHandler::pick(const Vector2i& pixel) const
     }
 }
 
+void LightPathsPickingHandler::pick(const AABB2i& rect) const
+{
+    const Image& image = m_project.get_frame()->image();
+    const CanvasProperties& props = image.properties();
+
+    const AABB2i image_rect(
+        Vector2i(0, 0),
+        Vector2i(
+            static_cast<int>(props.m_canvas_width - 1),
+            static_cast<int>(props.m_canvas_height - 1)));
+
+    const auto final_rect = AABB2i::intersect(rect, image_rect);
+
+    if (final_rect.is_valid() && final_rect.volume() > 0)
+    {
+        LightPathArray light_paths;
+        m_project.get_light_path_recorder().query(
+            static_cast<size_t>(final_rect.min.x),
+            static_cast<size_t>(final_rect.min.y),
+            static_cast<size_t>(final_rect.max.x),
+            static_cast<size_t>(final_rect.max.y),
+            light_paths);
+
+        if (light_paths.empty())
+        {
+            RENDERER_LOG_INFO("no light path found in rectangle (%d, %d)-(%d, %d).",
+                final_rect.min.x,
+                final_rect.min.y,
+                final_rect.max.x,
+                final_rect.max.y);
+        }
+        else
+        {
+            RENDERER_LOG_INFO(
+                FMT_SIZE_T " light path%s found in rectangle (%d, %d)-(%d, %d).",
+                light_paths.size(),
+                light_paths.size() > 1 ? "s" : "",
+                final_rect.min.x,
+                final_rect.min.y,
+                final_rect.max.x,
+                final_rect.max.y);
+        }
+
+        m_light_paths_widget->set_light_paths(light_paths);
+        m_light_paths_widget->update();
+    }
+}
+
 bool LightPathsPickingHandler::eventFilter(QObject* object, QEvent* event)
 {
     if (m_enabled)

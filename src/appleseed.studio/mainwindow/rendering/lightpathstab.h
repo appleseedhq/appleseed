@@ -50,6 +50,7 @@ namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
 class QLabel;
 class QPoint;
+class QRect;
 class QScrollArea;
 class QToolBar;
 class QToolButton;
@@ -73,6 +74,7 @@ class LightPathsTab
 
   public slots:
     void slot_entity_picked(const renderer::ScenePicker::PickingResult& result);
+    void slot_rectangle_selection(const QRect& rect);
 
   private slots:
     void slot_light_path_selection_changed(
