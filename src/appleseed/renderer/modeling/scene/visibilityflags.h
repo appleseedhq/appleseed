@@ -52,6 +52,7 @@ class APPLESEED_DLLSYMBOL VisibilityFlags
 
     enum Values
     {
+        Invisible       = 0,
         CameraRay       = 1 << 0,
         LightRay        = 1 << 1,
         ShadowRay       = 1 << 2,
