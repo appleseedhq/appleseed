@@ -116,9 +116,16 @@ CommandLineHandler::CommandLineHandler()
             .set_exact_value_count(1));
 
     parser().add_option_handler(
-        &m_select_object_instances
-            .add_name("--select-object-instances")
-            .set_description("select which object instances to include in the render using a regular expression")
+        &m_show_object_instances
+            .add_name("--show-object-instances")
+            .set_description("show object instances based on a regular expression")
+            .set_syntax("regex")
+            .set_exact_value_count(1));
+
+    parser().add_option_handler(
+        &m_hide_object_instances
+            .add_name("--hide-object-instances")
+            .set_description("hide object instances based on a regular expression")
             .set_syntax("regex")
             .set_exact_value_count(1));
 
