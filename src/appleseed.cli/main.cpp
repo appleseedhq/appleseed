@@ -38,15 +38,12 @@
 #include "application/superlogger.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/color.h"
 #include "renderer/api/frame.h"
 #include "renderer/api/log.h"
-#include "renderer/api/material.h"
 #include "renderer/api/object.h"
 #include "renderer/api/project.h"
 #include "renderer/api/rendering.h"
 #include "renderer/api/scene.h"
-#include "renderer/api/surfaceshader.h"
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
@@ -320,50 +317,14 @@ namespace
 
     void apply_select_object_instances_command_line_option(Assembly& assembly, const RegExFilter& filter)
     {
-        static const char* ColorName = "opaque_black-75AB13E8-D5A2-4D27-A64E-4FC41B55A272";
-        static const char* BlackSurfaceShaderName = "opaque_black_surface_shader-75AB13E8-D5A2-4D27-A64E-4FC41B55A272";
-        static const char* BlackMaterialName = "opaque_black_material-75AB13E8-D5A2-4D27-A64E-4FC41B55A272";
-
-        ColorValueArray color_values;
-        color_values.push_back(0.0f);
-
-        assembly.colors().insert(
-            ColorEntityFactory::create(
-                ColorName,
-                ParamArray()
-                    .insert("color_space", "linear_rgb"),
-                color_values));
-
-        assembly.surface_shaders().insert(
-            ConstantSurfaceShaderFactory().create(
-                BlackSurfaceShaderName,
-                ParamArray()
-                    .insert("color", ColorName)));
-
-        assembly.materials().insert(
-            GenericMaterialFactory().create(
-                BlackMaterialName,
-                ParamArray()
-                    .insert("surface_shader", BlackSurfaceShaderName)));
-
-        for (each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
+        for (ObjectInstance& object_instance : assembly.object_instances())
         {
-            if (!filter.accepts(i->get_name()))
-            {
-                Object* object = i->find_object();
-                const size_t slot_count = object->get_material_slot_count();
-
-                for (size_t s = 0; s < slot_count; ++s)
-                {
-                    const char* slot = object->get_material_slot(s);
-                    i->assign_material(slot, ObjectInstance::FrontSide, BlackMaterialName);
-                    i->assign_material(slot, ObjectInstance::BackSide, BlackMaterialName);
-                }
-            }
+            if (!filter.accepts(object_instance.get_name()))
+                object_instance.set_vis_flags(VisibilityFlags::Invisible);
         }
 
-        for (each<AssemblyContainer> i = assembly.assemblies(); i; ++i)
-            apply_select_object_instances_command_line_option(*i, filter);
+        for (Assembly& child_assembly : assembly.assemblies())
+            apply_select_object_instances_command_line_option(child_assembly, filter);
     }
 
     void apply_select_object_instances_command_line_option(Project& project, const char* regex)
@@ -372,8 +333,8 @@ namespace
 
         Scene* scene = project.get_scene();
 
-        for (each<AssemblyContainer> i = scene->assemblies(); i; ++i)
-            apply_select_object_instances_command_line_option(*i, filter);
+        for (Assembly& assembly : scene->assemblies())
+            apply_select_object_instances_command_line_option(assembly, filter);
     }
 
     void apply_parameter_command_line_options(ParamArray& params)
