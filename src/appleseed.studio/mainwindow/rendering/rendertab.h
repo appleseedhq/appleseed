@@ -120,6 +120,7 @@ class RenderTab
     void signal_camera_change_end();
 
     void signal_entity_picked(renderer::ScenePicker::PickingResult);
+    void signal_rectangle_selection(const QRect& rect);
 
   private slots:
     void slot_render_widget_context_menu(const QPoint& point);

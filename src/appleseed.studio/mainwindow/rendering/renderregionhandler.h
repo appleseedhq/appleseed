@@ -50,6 +50,7 @@ class RenderRegionHandler
     Q_OBJECT
 
   public:
+    // Default mode is RectangleSelectionMode.
     RenderRegionHandler(
         QWidget*                            widget,
         const MouseCoordinatesTracker&      mouse_tracker);
@@ -58,13 +59,23 @@ class RenderRegionHandler
 
     void set_enabled(const bool enabled);
 
+    enum Mode
+    {
+        RectangleSelectionMode,
+        RenderRegionMode
+    };
+
+    void set_mode(const Mode mode);
+
   signals:
+    void signal_rectangle_selection(const QRect& rect);
     void signal_render_region(const QRect& rect);
 
   private:
     QWidget*                                m_widget;
     const MouseCoordinatesTracker&          m_mouse_tracker;
     bool                                    m_enabled;
+    Mode                                    m_mode;
     QRubberBand*                            m_rubber_band;
     QPoint                                  m_origin;
 

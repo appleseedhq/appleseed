@@ -60,6 +60,7 @@ RenderRegionHandler::RenderRegionHandler(
   : m_widget(widget)
   , m_mouse_tracker(mouse_tracker)
   , m_enabled(true)
+  , m_mode(RectangleSelectionMode)
   , m_rubber_band(nullptr)
 {
     m_widget->installEventFilter(this);
@@ -73,6 +74,11 @@ RenderRegionHandler::~RenderRegionHandler()
 void RenderRegionHandler::set_enabled(const bool enabled)
 {
     m_enabled = enabled;
+}
+
+void RenderRegionHandler::set_mode(const Mode mode)
+{
+    m_mode = mode;
 }
 
 bool RenderRegionHandler::eventFilter(QObject* object, QEvent* event)
@@ -131,7 +137,9 @@ bool RenderRegionHandler::eventFilter(QObject* object, QEvent* event)
                 const int w = x1 - x0 + 1;
                 const int h = y1 - y0 + 1;
 
-                emit signal_render_region(QRect(x0, y0, w, h));
+                if (m_mode == RectangleSelectionMode)
+                    emit signal_rectangle_selection(QRect(x0, y0, w, h));
+                else emit signal_render_region(QRect(x0, y0, w, h));
 
                 return true;
             }

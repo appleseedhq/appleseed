@@ -30,6 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_RENDERING_LIGHTPATHSPICKINGHANDLER_H
 
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
 
 // Qt headers.
@@ -60,6 +61,7 @@ class LightPathsPickingHandler
     void set_enabled(const bool enabled);
 
     void pick(const foundation::Vector2i& pixel) const;
+    void pick(const foundation::AABB2i& rect) const;
 
   private:
     LightPathsWidget*                       m_light_paths_widget;

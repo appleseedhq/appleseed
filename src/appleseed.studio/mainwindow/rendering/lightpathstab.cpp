@@ -43,6 +43,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
+#include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
 
 // Qt headers.
@@ -99,6 +100,14 @@ void LightPathsTab::slot_entity_picked(const ScenePicker::PickingResult& result)
         Vector2i(
             result.m_ndc[0] * static_cast<int>(props.m_canvas_width),
             result.m_ndc[1] * static_cast<int>(props.m_canvas_height)));
+}
+
+void LightPathsTab::slot_rectangle_selection(const QRect& rect)
+{
+    m_screen_space_paths_picking_handler->pick(
+        AABB2i(
+            Vector2i(rect.x(), rect.y()),
+            Vector2i(rect.x() + rect.width() - 1, rect.y() + rect.height() - 1)));
 }
 
 void LightPathsTab::slot_light_path_selection_changed(
