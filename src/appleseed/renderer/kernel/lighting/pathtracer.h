@@ -678,6 +678,8 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
             true,       // multiply by |cos(incoming, normal)|
             vertex.m_scattering_modes,
             sample);
+
+        next_ray.m_max_roughness = sample.m_max_roughness;
     }
 
     // Terminate the path if it gets absorbed.

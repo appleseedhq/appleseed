@@ -107,6 +107,7 @@ class ShadingRay
     DepthType                       m_depth;
     foundation::uint8               m_medium_count;
     bool                            m_has_differentials;
+    float                           m_max_roughness;
 
     // Constructors.
     ShadingRay();                   // only partially initialize the object
@@ -161,6 +162,7 @@ class ShadingRay
 inline ShadingRay::ShadingRay()
   : m_medium_count(0)
   , m_has_differentials(false)
+  , m_max_roughness(0.0f)
 {
 }
 
@@ -176,6 +178,7 @@ inline ShadingRay::ShadingRay(
   , m_depth(depth)
   , m_medium_count(0)
   , m_has_differentials(false)
+  , m_max_roughness(0.0f)
 {
 }
 
@@ -193,6 +196,7 @@ inline ShadingRay::ShadingRay(
   , m_depth(depth)
   , m_medium_count(0)
   , m_has_differentials(false)
+  , m_max_roughness(0.0f)
 {
 }
 
