@@ -100,6 +100,8 @@ namespace
                 return;
 
             const InputValues* values = static_cast<const InputValues*>(data);
+            
+            sample.m_max_roughness = 0.0f;
 
             const NoFresnelFun f(
                 values->m_reflectance,

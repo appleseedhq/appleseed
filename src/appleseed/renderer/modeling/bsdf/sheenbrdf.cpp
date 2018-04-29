@@ -104,6 +104,8 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return;
 
+            sample.m_max_roughness = 1.0f;
+
             // Set the scattering mode.
             sample.m_mode = ScatteringMode::Glossy;
 
