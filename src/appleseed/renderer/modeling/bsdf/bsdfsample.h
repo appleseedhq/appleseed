@@ -57,6 +57,9 @@ class BSDFSample
     foundation::Basis3f             m_shading_basis;        // world space shading basis at the point where sampling is done
     foundation::Dual3f              m_outgoing;             // world space outgoing direction, unit-length
 
+    // Roughness.
+    float                           m_max_roughness;            // BSDF roughness
+
     // Outputs.
     ScatteringMode::Mode            m_mode;                 // scattering mode
     foundation::Dual3f              m_incoming;             // world space incoming direction, unit-length, defined only if m_mode != None
