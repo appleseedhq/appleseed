@@ -116,6 +116,8 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
+            sample.m_max_roughness = 1.0f;
+
             // Compute the incoming direction.
             sampling_context.split_in_place(2, 1);
             const Vector2f s = sampling_context.next2<Vector2f>();
