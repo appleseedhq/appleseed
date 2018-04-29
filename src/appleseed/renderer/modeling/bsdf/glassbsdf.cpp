@@ -211,6 +211,8 @@ namespace
 
             new (&values->m_precomputed) InputValues::Precomputed();
 
+            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_max_roughness);
+
             if (shading_point.is_entering())
             {
                 values->m_precomputed.m_backfacing = false;
@@ -246,6 +248,8 @@ namespace
             BSDFSample&                 sample) const override
         {
             const InputValues* values = static_cast<const InputValues*>(data);
+
+            sample.m_max_roughness = values->m_roughness;
 
             if (!ScatteringMode::has_glossy(modes))
                 return;

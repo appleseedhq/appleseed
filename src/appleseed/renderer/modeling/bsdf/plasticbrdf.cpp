@@ -162,6 +162,8 @@ namespace
             values->m_specular_reflectance *= values->m_specular_reflectance_multiplier;
             values->m_diffuse_reflectance *= values->m_diffuse_reflectance_multiplier;
 
+            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_max_roughness);
+
             new (&values->m_precomputed) InputValues::Precomputed();
             const float outside_ior = shading_point.get_ray().get_current_ior();
             values->m_precomputed.m_eta = outside_ior / values->m_ior;
@@ -181,6 +183,8 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
             const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
             const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
+
+            sample.m_max_roughness = values->m_roughness;
 
             // Compute the microfacet normal by sampling the MDF.
             const Vector3f& outgoing = sample.m_outgoing.get_value();
