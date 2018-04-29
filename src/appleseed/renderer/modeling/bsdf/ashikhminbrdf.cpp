@@ -112,6 +112,8 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
+            sample.m_max_roughness = 1.0f;
+
             // Compute reflectance-related values.
             RVal rval;
             if (!compute_rval(rval, values))
