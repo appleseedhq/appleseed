@@ -125,6 +125,8 @@ namespace
         {
             InputValues* values = static_cast<InputValues*>(data);
             new (&values->m_precomputed) InputValues::Precomputed();
+            
+            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_max_roughness);
 
             artist_friendly_fresnel_conductor_reparameterization(
                 values->m_normal_reflectance,
@@ -176,6 +178,8 @@ namespace
             BSDFSample&                 sample) const override
         {
             const InputValues* values = static_cast<const InputValues*>(data);
+
+            sample.m_max_roughness = values->m_roughness;
 
             const FresnelConductorFun f(
                 values->m_precomputed.m_n,
