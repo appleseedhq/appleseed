@@ -70,6 +70,7 @@ shader as_create_mask
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Threshold Channel",
         string page = "Color",
@@ -93,6 +94,7 @@ shader as_create_mask
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Threshold Function",
         string page = "Color"

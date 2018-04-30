@@ -54,6 +54,7 @@ shader as_texture
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -69,6 +70,7 @@ shader as_texture
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -102,6 +104,7 @@ shader as_texture
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -157,6 +160,7 @@ shader as_texture
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Use the wrapping mode set on the texture, or override it."
     ]],
@@ -171,6 +175,7 @@ shader as_texture
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Use the wrapping mode set on the texture, or override it.",
         int divider = 1
@@ -187,6 +192,7 @@ shader as_texture
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     int in_enable_cms = 0
@@ -200,6 +206,7 @@ shader as_texture
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -214,6 +221,7 @@ shader as_texture
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Transfer function of the ingested material, refers to the Opto-Electronic Transfer Function required to transform the input into scene-linear values."
     ]],
@@ -228,6 +236,7 @@ shader as_texture
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "RGB primaries, note that Rec.709 and sRGB share the same CIE xy chromaticity coordinates."
     ]],
@@ -242,6 +251,7 @@ shader as_texture
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Working or rendering space RGB primaries. Note that Rec.709 and sRGB share the same CIE xy chromaticity coordinates."
     ]],

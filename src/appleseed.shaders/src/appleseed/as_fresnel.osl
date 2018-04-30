@@ -54,6 +54,7 @@ shader as_fresnel
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -70,6 +71,7 @@ shader as_fresnel
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int separator = 1
     ]],
@@ -83,6 +85,7 @@ shader as_fresnel
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     color in_edge_tint = color(1)
@@ -95,8 +98,9 @@ shader as_fresnel
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
-        int divider = 1,
-        int gafferNoduleLayoutVisible = 0
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
     ]],
     vector in_complex_eta = vector(0.21544, 1.0066, 1.2402)
     [[
@@ -107,6 +111,7 @@ shader as_fresnel
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0        
     ]],
     vector in_complex_kappa = vector(3.95560, 2.5823, 2.3929)
@@ -118,6 +123,7 @@ shader as_fresnel
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     normal in_surface_normal = N

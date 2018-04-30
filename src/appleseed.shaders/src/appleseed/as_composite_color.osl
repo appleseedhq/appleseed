@@ -83,6 +83,7 @@ shader as_composite_color
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Composite Mode",
         string page = "Color",
@@ -97,6 +98,7 @@ shader as_composite_color
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Clamp Output",
         string page = "Color"
