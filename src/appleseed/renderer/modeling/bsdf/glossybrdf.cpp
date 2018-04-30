@@ -216,13 +216,16 @@ namespace
                             f,
                             sample);
 
-                        add_energy_compensation_term(
-                            mdf,
-                            values,
-                            sample.m_outgoing.get_value(),
-                            sample.m_incoming.get_value(),
-                            sample.m_shading_basis.get_normal(),
-                            sample.m_value.m_glossy);
+                        if (sample.m_mode == ScatteringMode::Glossy)
+                        {
+                            add_energy_compensation_term(
+                                mdf,
+                                values,
+                                sample.m_outgoing.get_value(),
+                                sample.m_incoming.get_value(),
+                                sample.m_shading_basis.get_normal(),
+                                sample.m_value.m_glossy);
+                        }
                     }
                     break;
 
@@ -238,13 +241,16 @@ namespace
                             f,
                             sample);
 
-                        add_energy_compensation_term(
-                            mdf,
-                            values,
-                            sample.m_outgoing.get_value(),
-                            sample.m_incoming.get_value(),
-                            sample.m_shading_basis.get_normal(),
-                            sample.m_value.m_glossy);
+                        if (sample.m_mode == ScatteringMode::Glossy)
+                        {
+                            add_energy_compensation_term(
+                                mdf,
+                                values,
+                                sample.m_outgoing.get_value(),
+                                sample.m_incoming.get_value(),
+                                sample.m_shading_basis.get_normal(),
+                                sample.m_value.m_glossy);
+                        }
                     }
                     break;
 
