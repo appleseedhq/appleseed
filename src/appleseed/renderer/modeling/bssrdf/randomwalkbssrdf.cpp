@@ -240,9 +240,8 @@ namespace
                 VisibilityFlags::ShadowRay,
                 outgoing_point.get_ray().m_depth + 1);
 
-            sampling_context.split_in_place(1, 2);
-
             // Choose color channel used for distance sampling.
+            sampling_context.split_in_place(1, 2);
             const float s = sampling_context.next2<float>();
             const size_t channel = truncate<size_t>(s * Spectrum::size());
             Spectrum channel_pdf(1.0f / Spectrum::size());
@@ -270,8 +269,8 @@ namespace
 
             // Determine the closest surface point and corresponding slab normal.
             const bool outgoing_point_is_closer = distance < 0.5f * ray_length;
-            const Vector3f near_slab_normal = Vector3f(outgoing_point.get_geometric_normal());
-            const Vector3f far_slab_normal = Vector3f(-bssrdf_sample.m_incoming_point.get_geometric_normal());
+            const Vector3f near_slab_normal(outgoing_point.get_geometric_normal());
+            const Vector3f far_slab_normal(-bssrdf_sample.m_incoming_point.get_geometric_normal());
             const Vector3f& slab_normal = outgoing_point_is_closer ? near_slab_normal : far_slab_normal;
             Vector3d current_point = ray.point_at(distance);
 
@@ -289,11 +288,13 @@ namespace
                 // Choose color channel used for distance sampling.
                 Spectrum channel_cdf;
                 build_cdf_and_pdf(bssrdf_sample.m_value, channel_cdf, channel_pdf);
-                const size_t channel = sample_cdf(
-                    &channel_cdf[0],
-                    &channel_cdf[0] + channel_cdf.size(),
-                    sampling_context.next2<float>());
-                if (albedo[channel] == 0.0f || bssrdf_sample.m_value[channel] == 0.0f) break;
+                const size_t channel =
+                    sample_cdf(
+                        &channel_cdf[0],
+                        &channel_cdf[0] + channel_cdf.size(),
+                        sampling_context.next2<float>());
+                if (albedo[channel] == 0.0f || bssrdf_sample.m_value[channel] == 0.0f)
+                    break;
 
                 // Determine if we do biased (Dwivedi) sampling or classical sampling.
                 const bool is_biased = classical_sampling_prob < sampling_context.next2<float>();
@@ -318,7 +319,7 @@ namespace
                 bssrdf_sample.m_value *= albedo;
 
                 // Construct a new ray in the sampled direction.
-                ShadingRay ray(
+                ShadingRay new_ray(
                     current_point,
                     Vector3d(direction),
                     outgoing_point.get_time(),
@@ -331,13 +332,13 @@ namespace
                 float distance = sample_exponential_distribution(s[2], effective_extinction);
 
                 // Trace the ray up to the sampled distance.
-                ray.m_tmax = distance;
+                new_ray.m_tmax = distance;
                 bssrdf_sample.m_incoming_point.clear();
                 shading_context.get_intersector().trace(
-                    ray,
+                    new_ray,
                     bssrdf_sample.m_incoming_point);
                 transmitted = bssrdf_sample.m_incoming_point.hit_surface();
-                current_point = ray.point_at(distance);
+                current_point = new_ray.point_at(distance);
                 if (transmitted)
                 {
                     distance = static_cast<float>(
@@ -355,7 +356,8 @@ namespace
 
                 const float q_direction = 0.5f / evaluate_cosine_dwivedi(diffusion_length, cosine);
                 float q_distance = std::exp(-distance * extinction[channel] * cosine * rcp_diffusion_length);
-                if (!transmitted) q_distance /= extinction_bias;
+                if (!transmitted)
+                    q_distance /= extinction_bias;
                 const float q = q_direction * q_distance;  // PDF of classical sampling divided by PDF of biased samling
 
                 // MIS between classical and biased sampling.
@@ -365,7 +367,8 @@ namespace
                 bssrdf_sample.m_value *= mis_weight * (is_biased ? q : 1.0f);
             }
 
-            if (!transmitted) return false;  // sample was lost inside the object
+            if (!transmitted)
+                return false;  // sample was lost inside the object
 
             if (n_iteration == 0)
                 bssrdf_sample.m_value *= values->m_zero_scattering_weight;
@@ -407,16 +410,19 @@ namespace
             Spectrum&           transmission)
         {
             float mis_base = 0.0f;
+
             for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
             {
                 const float x = -distance * extinction[i];
                 assert(FP<float>::is_finite(x));
                 transmission[i] = std::exp(x);
-                if (!transmitted) transmission[i] *= extinction[i];
+                if (!transmitted)
+                    transmission[i] *= extinction[i];
 
                 // One-sample estimator (Veach: 9.2.4 eq. 9.15).
                 mis_base += transmission[i] * channel_pdf[i];
             }
+
             transmission *= rcp(mis_base);
         }
 
