@@ -55,6 +55,11 @@
 #include <algorithm>
 #include <string>
 
+// Platform headers.
+#ifdef __APPLE__
+#include <GLKit/GLKMatrix4.h>
+#endif
+
 using namespace foundation;
 using namespace renderer;
 using namespace std;
@@ -265,11 +270,21 @@ void LightPathsWidget::paintGL()
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
+#ifdef __APPLE__
+    glMultMatrixf(
+        GLKMatrix4MakePerspective(
+            rc.m_hfov / rc.m_aspect_ratio,
+            rc.m_aspect_ratio,
+            0.01,
+            1000.0
+        ).m);
+#else
     gluPerspective(
         rad_to_deg(rc.m_hfov) / rc.m_aspect_ratio,
         rc.m_aspect_ratio,
         0.01,
         1000.0);
+#endif
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();

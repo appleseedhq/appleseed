@@ -96,7 +96,7 @@ class LightPathsWidget
     void initializeGL() override;
     void resizeGL(int w, int h) override;
     void paintGL() override;
-    void keyPressEvent(QKeyEvent* event);
+    void keyPressEvent(QKeyEvent* event) override;
 
     void render_geometry() const;
     void render_light_paths() const;
