@@ -50,7 +50,8 @@ shader as_anisotropy_vector_field
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 0,
-        int gafferNoduleLayoutVisible = 1
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
     ]],
     color in_color = color(1)
     [[
@@ -70,6 +71,7 @@ shader as_anisotropy_vector_field
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     float in_rotation_value = 0.0
@@ -94,6 +96,7 @@ shader as_anisotropy_vector_field
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     int in_normalize_output = 1
@@ -106,6 +109,7 @@ shader as_anisotropy_vector_field
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     normal in_surface_normal = N
@@ -122,6 +126,7 @@ shader as_anisotropy_vector_field
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     vector Bn = vector(0)
@@ -131,6 +136,7 @@ shader as_anisotropy_vector_field
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
 

@@ -45,6 +45,9 @@ shader as_texture_info
         string widget = "filename",
         string label = "Texture File",
         string page = "Texture",
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,        
         string help = "Texture file to query information from."
     ]],
     

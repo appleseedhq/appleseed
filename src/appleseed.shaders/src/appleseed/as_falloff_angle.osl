@@ -57,6 +57,7 @@ shader as_falloff_angle
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -76,9 +77,10 @@ shader as_falloff_angle
         string widget = "checkBox",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 2,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 2,
+        int divider = 1,
     ]],
     float in_smooth_lower_bound = 0.25
     [[
@@ -110,6 +112,7 @@ shader as_falloff_angle
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
 

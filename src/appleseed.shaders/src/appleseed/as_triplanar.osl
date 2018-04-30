@@ -53,6 +53,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Blend colors, or tangent space normal maps using reoriented normal mapping.",
         int divider = 1
@@ -86,6 +87,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     normal in_normal = N
@@ -99,6 +101,7 @@ shader as_triplanar
     [[
         string as_maya_attribute_name = "placementMatrix",
         string as_maya_attribute_short_name = "pm",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string widget = "null",
         string label = "Placement Matrix"
@@ -114,6 +117,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -128,6 +132,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Working or rendering space RGB primaries. Note that Rec.709 and sRGB share the same CIE xy chromaticity coordinates."
     ]],
@@ -138,6 +143,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Solid Color",
         string page = "Projection.X Axis",
@@ -151,6 +157,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Texture Filename",
         string page = "Projection.X Axis",
@@ -165,6 +172,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Horizontal Frequency",
         string page = "Projection.X Axis"
@@ -178,6 +186,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Vertical Frequency",
         string page = "Projection.X Axis",
@@ -192,6 +201,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Horizontal Offset",
         string page = "Projection.X Axis"
@@ -205,6 +215,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Vertical Offset",
         string page = "Projection.X Axis",
@@ -219,6 +230,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Rotation",
         string page = "Projection.X Axis",
@@ -234,6 +246,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "S Wrap Mode",
         string page = "Projection.X Axis"
@@ -247,6 +260,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "T Wrap Mode",
         string page = "Projection.X Axis",
@@ -260,6 +274,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "S Flip",
         string page = "Projection.X Axis"
@@ -272,6 +287,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "T Flip",
         string page = "Projection.X Axis"
@@ -287,6 +303,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Transfer function of the ingested material, refers to the Opto-Electronic Transfer Function required to transform the input into scene-linear values."
     ]],
@@ -301,6 +318,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Texture RGB primaries, note that Rec.709 and sRGB share the same CIE xy chromaticity coordinates."
     ]],
@@ -311,6 +329,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Solid Color",
         string page = "Projection.Y Axis",
@@ -324,6 +343,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Texture Filename",
         string page = "Projection.Y Axis",
@@ -338,6 +358,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Horizontal Frequency",
         string page = "Projection.Y Axis"
@@ -351,6 +372,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Vertical Frequency",
         string page = "Projection.Y Axis",
@@ -365,6 +387,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Horizontal Offset",
         string page = "Projection.Y Axis"
@@ -378,6 +401,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Vertical Offset",
         string page = "Projection.Y Axis",
@@ -392,6 +416,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Rotation",
         string page = "Projection.Y Axis",
@@ -407,6 +432,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "S Wrap Mode",
         string page = "Projection.Y Axis"
@@ -420,6 +446,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "T Wrap Mode",
         string page = "Projection.Y Axis",
@@ -433,6 +460,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "S Flip",
         string page = "Projection.Y Axis"
@@ -445,6 +473,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "T Flip",
         string page = "Projection.Y Axis"
@@ -460,6 +489,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Transfer function of the ingested material, refers to the Opto-Electronic Transfer Function required to transform the input into scene-linear values."
     ]],
@@ -474,6 +504,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Texture RGB primaries, note that Rec.709 and sRGB share the same CIE xy chromaticity coordinates."
     ]],
@@ -484,6 +515,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Solid Color",
         string page = "Projection.Z Axis",
@@ -497,6 +529,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Texture Filename",
         string page = "Projection.Z Axis",
@@ -511,6 +544,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Horizontal Frequency",
         string page = "Projection.Z Axis"
@@ -524,6 +558,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Vertical Frequency",
         string page = "Projection.Z Axis",
@@ -538,6 +573,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Horizontal Offset",
         string page = "Projection.Z Axis"
@@ -551,6 +587,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Vertical Offset",
         string page = "Projection.Z Axis",
@@ -565,6 +602,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Rotation",
         string page = "Projection.Z Axis",
@@ -580,6 +618,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "S Wrap Mode",
         string page = "Projection.Z Axis"
@@ -593,6 +632,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "T Wrap Mode",
         string page = "Projection.Z Axis",
@@ -606,6 +646,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "S Flip",
         string page = "Projection.Z Axis"
@@ -618,6 +659,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "T Flip",
         string page = "Projection.Z Axis"
@@ -633,6 +675,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Transfer function of the ingested material, refers to the Opto-Electronic Transfer Function required to transform the input into scene-linear values."
     ]],
@@ -647,6 +690,7 @@ shader as_triplanar
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Texture RGB primaries, note that Rec.709 and sRGB share the same CIE xy chromaticity coordinates."
     ]],
@@ -815,6 +859,10 @@ shader as_triplanar
                         in_x_tex_rgb_primaries,
                         in_workingspace_rgb_primaries);  
                 }
+                // Colors are color managed in Maya, so we cannot correct this
+                // extra *colorpick color* until we have a way to query "CC 
+                // Pots" status from within appleseed.
+
                 out_color += blending[0] * in_x_axis_color * x_axis;
                 out_alpha += blending[0] * x_alpha;
             }

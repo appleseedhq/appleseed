@@ -60,6 +60,7 @@ shader as_luminance
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     int in_inputColorSpace = 0
@@ -75,6 +76,7 @@ shader as_luminance
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     float in_chromaticityCoordsR[2] = {0.640, 0.330}
@@ -121,6 +123,7 @@ shader as_luminance
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     int in_colorTemperature = 6504
@@ -134,6 +137,7 @@ shader as_luminance
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 1
     ]],
     float in_chromaticityCoordsW[2] = {0.3127, 0.329}

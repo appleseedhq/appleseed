@@ -88,14 +88,16 @@ shader as_voronoi3d
     int in_metric = 0
     [[
         string as_maya_attribute_name = "metric",
-        int as_maya_attribute_connectable = 0,
-        int as_maya_attribute_keyable = 0,
         string widget = "mapper",
         string options = "Euclidian Distance:0|Sum of Square Difference:1|Tchebychev Distance:2|Sum of Absolute Difference:3|Akritean Distance:4|Minkowski Metric:5|Karlsruhe Metric:6",
         string label = "Metric",
         string page = "Cell",
-        int divider = 1,
-        int gafferNoduleLayoutVisible = 0
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
     ]],
     float in_Minkowski_p = 5.0
     [[
@@ -121,12 +123,14 @@ shader as_voronoi3d
     int in_featuresMode = 0
     [[
         string as_maya_attribute_name = "featuresMode",
-        int as_maya_attribute_connectable = 0,
-        int as_maya_attribute_keyable = 0,
         string widget = "mapper",
         string options = "Feature 1:0|Feature 2:1|Feature 3:2|Feature 4:3|F1 + F2:4|F2 - F1:5|F1 * F2:6|F1 / F2:7|F1 ^ F2:8|Pebbles:9|Cell ID 1:10|Cell ID 2:11|Cell ID 3:12|Cell ID 4:13",
         string label = "Features Mode",
         string page = "Cell",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     float in_amplitude = 1.0
@@ -152,8 +156,12 @@ shader as_voronoi3d
         int softmax = 4,
         string label = "Octaves",
         string page = "Recursion",
-        int divider = 1,
-        int gafferNoduleLayoutVisible = 0
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
     ]],
     float in_lacunarity = 2.217
     [[
@@ -165,7 +173,11 @@ shader as_voronoi3d
         float softmax = 10.0,
         string label = "Lacunarity",
         string page = "Recursion",
-        int as_maya_attribute_connectable = 0
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
     ]],
     float in_persistence = 1.0
     [[
@@ -185,6 +197,10 @@ shader as_voronoi3d
         string label = "Soft Edges",
         string widget = "checkBox",
         string page = "Placement",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     matrix in_placementMatrix = matrix(1)
@@ -192,6 +208,10 @@ shader as_voronoi3d
         string as_maya_attribute_name = "placementMatrix",
         string label = "Placement Matrix",
         string page = "Placement",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     point in_surfacePoint = P

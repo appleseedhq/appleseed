@@ -79,8 +79,9 @@ shader as_glass
         string page = "Specular",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_hidden = 1,
-        int divider = 1,
-        int gafferNoduleLayoutVisible = 0
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
     ]],
     string in_distribution = "ggx"
     [[
@@ -93,6 +94,7 @@ shader as_glass
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     float in_roughness = 0.1
@@ -146,6 +148,7 @@ shader as_glass
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -200,8 +203,9 @@ shader as_glass
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
-        int divider = 1,
-        int gafferNoduleLayoutVisible = 0
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
     ]],
     float in_matte_opacity = 0.0
     [[
@@ -211,6 +215,7 @@ shader as_glass
         float max = 1.0,
         string label = "Matte Opacity",
         string page = "Matte Opacity",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     color in_matte_opacity_color = color(1,0.5,0)
@@ -219,6 +224,7 @@ shader as_glass
         string as_maya_attribute_short_name = "mac",
         string label = "Matte Opacity Color",
         string page = "Matte Opacity",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     int in_maximum_ray_depth = 4
@@ -233,6 +239,7 @@ shader as_glass
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     vector Tn = vector(0)
@@ -240,6 +247,7 @@ shader as_glass
         int lockgeom = 0,
         int as_maya_attribute_hidden = 1,
         string widget = "null",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     vector Bn = vector(0)
@@ -247,6 +255,7 @@ shader as_glass
         int lockgeom = 0,
         int as_maya_attribute_hidden = 1,
         string widget = "null",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
 
@@ -268,6 +277,7 @@ shader as_glass
         string as_maya_attribute_short_name = "om",
         string widget = "null",
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]]
 )
