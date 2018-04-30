@@ -33,7 +33,7 @@ shader as_blackbody
 [[
     string as_maya_node_name = "asBlackbody",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string help = "Incandescence shader with blackbody radiation.",
+    string help = "Emission shader with black-body radiation.",
     string icon = "asBlackbody.png",
     int as_maya_type_id = 0x001279d0,
     string as_max_class_id = "1182349026 1064055537",
@@ -46,10 +46,10 @@ shader as_blackbody
         string as_maya_attribute_name = "incandescenceType",
         string as_maya_attribute_short_name = "int",
         string widget = "mapper",
-        string options = "Constant:0|Physically Based:1",
-        string label = "Incandescence Type",
-        string page = "Incandescence",
-        string help = "Constant based, or blackbody radiator based EDF.",
+        string options = "Custom:0|Black-body Based:1",
+        string label = "Emission Type",
+        string page = "Emission",
+        string help = "Custom based, or black-body radiator based EDF.",
         int divider = 1,
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
@@ -61,8 +61,8 @@ shader as_blackbody
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "inc",
         string label = "Color",
-        string page = "Incandescence",
-        string help = "Incandescence color, only valid in constant mode."
+        string page = "Emission",
+        string help = "Emission color, only valid in custom mode."
     ]],
     float in_incandescence_amount = 0.0
     [[
@@ -70,8 +70,8 @@ shader as_blackbody
         string as_maya_attribute_short_name = "inw",
         float min = 0.0,
         float softmax = 1.0,
-        string label = "Incandescence Amount",
-        string page = "Incandescence"
+        string label = "Emission Amount",
+        string page = "Emission"
     ]],
     float in_temperature_scale = 1.0
     [[
@@ -80,7 +80,7 @@ shader as_blackbody
         float min = 0.0,
         float max = 1.0,
         string label = "Temperature Scale",
-        string page = "Incandescence",
+        string page = "Emission",
         string help = "Temperature scaling factor."
     ]],
     int in_temperature = 4300
@@ -92,7 +92,7 @@ shader as_blackbody
         int softmin = 3400,
         int softmax = 9300,
         string label = "Temperature",
-        string page = "Incandescence",
+        string page = "Emission",
         string help = "Temperature in Kelvin degrees, only valid in physically based mode.",
         int divider = 1,
         int as_maya_attribute_connectable = 0,
@@ -106,7 +106,7 @@ shader as_blackbody
         string as_maya_attribute_short_name = "nae",
         string widget = "checkBox",
         string label = "Normalize Area",
-        string page = "Incandescence",
+        string page = "Emission",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -118,8 +118,8 @@ shader as_blackbody
         string as_maya_attribute_short_name = "tme",
         string widget = "checkBox",
         string label = "Tonemap Color",
-        string page = "Incandescence",
-        string help = "Tonemap incandescence, only valid for physically based mode.",
+        string page = "Emission",
+        string help = "Tonemap emission, only valid for the black-body radiator mode.",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
