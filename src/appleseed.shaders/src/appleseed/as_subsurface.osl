@@ -76,7 +76,7 @@ shader as_subsurface
     [[
         string as_maya_attribute_name = "meanFreePath",
         string as_maya_attribute_short_name = "mfp",
-        string label = "Mean Free Path",
+        string label = "Depth",
         string page = "Subsurface"
     ]],
     float in_sss_mfp_scale = 1.0
@@ -85,7 +85,7 @@ shader as_subsurface
         string as_maya_attribute_short_name = "msc",
         float min = 0.0,
         float softmax = 1.0,
-        string label = "MFP Scale",
+        string label = "Depth Scale",
         string page = "Subsurface"
     ]],
     int in_sss_maximum_ray_depth = 2
