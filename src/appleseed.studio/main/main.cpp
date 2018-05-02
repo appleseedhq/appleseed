@@ -111,15 +111,21 @@ namespace
             exit(EXIT_FAILURE);
         }
 
-#ifdef _WIN32
         // If the PYTHONHOME environment variable is defined, use the Python installation it points to.
         // If it is not defined, use the bundled Python installation.
         if (getenv("PYTHONHOME") == nullptr)
         {
+#ifdef _WIN32
             const string python_path =
                 bf::canonical(
                     bf::path(Application::get_root_path()) / "python27"
                 ).make_preferred().string();
+#else
+            const string python_path =
+                bf::canonical(
+                    bf::path(Application::get_root_path())
+                ).make_preferred().string();
+#endif
 
             static char python_home[FOUNDATION_MAX_PATH_LENGTH + 1];
 
@@ -128,7 +134,6 @@ namespace
 
             Py_SetPythonHome(python_home);
         }
-#endif
     }
 
     bool load_file(const string& filename, string& contents)
