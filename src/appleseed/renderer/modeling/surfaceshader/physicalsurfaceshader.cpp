@@ -38,6 +38,9 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/material/material.h"
+#include "renderer/modeling/shadergroup/shadergroup.h"
+#include "renderer/modeling/surfaceshader/nprsurfaceshaderhelper.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
 
@@ -123,6 +126,15 @@ namespace
             if (m_lighting_samples > 1)
                 radiance /= static_cast<float>(m_lighting_samples);
 
+            if (const Material* material = shading_point.get_material())
+            {
+                if (const ShaderGroup* sg = material->get_render_data().m_shader_group)
+                {
+                    if (sg->has_npr())
+                        m_npr_surface_shader.evaluate(sampling_context, shading_context, shading_point, components, radiance);
+                }
+            }
+
             // Accumulate into AOVs.
             aov_accumulators.write(
                 pixel_context,
@@ -133,7 +145,8 @@ namespace
         }
 
       private:
-        size_t      m_lighting_samples;
+        size_t                  m_lighting_samples;
+        NPRSurfaceShaderHelper  m_npr_surface_shader;
     };
 }
 

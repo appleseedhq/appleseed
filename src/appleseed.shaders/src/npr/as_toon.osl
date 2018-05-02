@@ -1,0 +1,316 @@
+
+//
+// This source file is part of appleseed.
+// Visit https://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2018 Esteban Tovagliari, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/color/as_color_blend_modes.h"
+
+//
+// Reference:
+//
+//
+
+shader as_toon
+[[
+    string help = "XToon material node.",
+    string icon = "asDisneyMaterial.png",
+
+    string as_maya_node_name = "asToon",
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
+    int as_maya_type_id = 0x00127a01,
+
+    string as_blender_node_name = "asToon",
+    string as_blender_category = "shader"
+]]
+(
+    //
+    // Shading.
+    //
+
+    float in_diffuse_weight = 1.0
+    [[
+        string as_maya_attribute_name = "diffuseWeight",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Diffuse Weight",
+        string page = "Shading",
+        int divider = 1
+    ]],
+    float in_specular_weight = 1.0
+    [[
+        string as_maya_attribute_name = "specularWeight",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Specular Weight",
+        string page = "Shading"
+    ]],
+    float in_specular_roughness = 0.1
+    [[
+        string as_maya_attribute_name = "specularRoughness",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Specular Roughness",
+        string page = "Shading"
+    ]],
+
+    //
+    // Toon Remapping
+    //
+
+    color in_shadow_color = color(0.2)
+    [[
+        string as_maya_attribute_name = "shadowColor",
+        string label = "Shadow Color",
+        string page = "Toon"
+    ]],
+    float in_shadow_level = 0.3
+    [[
+        string as_maya_attribute_name = "shadowLevel",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Shadow Level",
+        string page = "Toon"
+    ]],
+    color in_midtone_color = color(0.5)
+    [[
+        string as_maya_attribute_name = "midtoneColor",
+        string label = "Midtone Color",
+        string page = "Toon"
+    ]],
+    float in_midtone_level = 0.7
+    [[
+        string as_maya_attribute_name = "midtoneLevel",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Midtone Level",
+        string page = "Toon"
+    ]],
+    color in_highlight_color = color(0.8)
+    [[
+        string as_maya_attribute_name = "highlightColor",
+        string label = "Highlight Color",
+        string page = "Toon",
+        int divider = 1
+    ]],
+    color in_glossy_color = color(1.0)
+    [[
+        string as_maya_attribute_name = "glossyColor",
+        string label = "Glossy Color",
+        string page = "Toon"
+    ]],
+    float in_glossy_level = 0.7
+    [[
+        string as_maya_attribute_name = "glossyLevel",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Glossy Level",
+        string page = "Toon"
+    ]],
+    float in_softness = 0.05
+    [[
+        string as_maya_attribute_name = "softness",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Softness",
+        string page = "Toon"
+    ]],
+
+    //
+    // Contours
+    //
+
+    color in_contour_color = color(0.0)
+    [[
+        string as_maya_attribute_name = "contourColor",
+        string label = "Color",
+        string page = "Contours"
+    ]],
+    float in_contour_opacity = 1.0
+    [[
+        string as_maya_attribute_name = "contourOpacity",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Opacity",
+        string page = "Contours"
+    ]],
+    float in_contour_width = 1.0
+    [[
+        string as_maya_attribute_name = "contourWidth",
+        float min = 0.0,
+        string label = "Width",
+        string page = "Contours"
+    ]],
+    int in_contour_object = 0
+    [[
+        string as_maya_attribute_name = "contourObj",
+        string widget = "checkBox",
+        string label = "Object",
+        string page = "Contours",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1
+    ]],
+    int in_contour_material = 0
+    [[
+        string as_maya_attribute_name = "contourMtl",
+        string widget = "checkBox",
+        string label = "Material",
+        string page = "Contours",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1
+    ]],
+    int in_contour_occlusion = 0
+    [[
+        string as_maya_attribute_name = "contourOcc",
+        string widget = "checkBox",
+        string label = "Occlusion",
+        string page = "Contours",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1
+    ]],
+    int in_contour_creases = 0
+    [[
+        string as_maya_attribute_name = "contourCrease",
+        string widget = "checkBox",
+        string label = "Creases",
+        string page = "Contours",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1
+    ]],
+    float in_occlusion_threshold = 0.1
+    [[
+        string as_maya_attribute_name = "occlusionThreshold",
+        float min = 0.0,
+        string label = "Occlusion threshold",
+        string page = "Contours"
+    ]],
+    float in_crease_threshold = 15
+    [[
+        string as_maya_attribute_name = "creaseThreshold",
+        float min = 0.0,
+        string label = "Crease threshold",
+        string page = "Contours"
+    ]],
+
+    //
+    // Output
+    //
+
+    output closure color out_outColor = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null"
+    ]],
+    output closure color out_outTransparency = 0
+    [[
+        string as_maya_attribute_name = "outTransparency",
+        string as_maya_attribute_short_name = "ot",
+        string widget = "null"
+    ]]
+)
+{
+    if (raytype("npr"))
+    {
+        // Diffuse
+
+        color diffuse_shading;
+        getattribute("surface_shader:diffuse", diffuse_shading);
+        {
+            float lum = clamp(luminance(diffuse_shading), 0.0, 1.0);
+
+            if (in_softness > 0.0 && lum > in_shadow_level && lum < in_shadow_level + in_softness)
+            {
+                diffuse_shading = mix(
+                    in_shadow_color,
+                    in_midtone_color,
+                    (lum - in_shadow_level) / in_softness);
+            }
+            else if (in_softness > 0.0 && lum > in_midtone_level && lum < in_midtone_level + in_softness)
+            {
+                diffuse_shading = mix(
+                    in_midtone_color,
+                    in_highlight_color,
+                    (lum - in_midtone_level) / in_softness);
+            }
+            else if (lum < in_shadow_level)
+                diffuse_shading = in_shadow_color;
+            else if (lum < in_midtone_level)
+                diffuse_shading = in_midtone_color;
+            else
+                diffuse_shading = in_highlight_color;
+        }
+
+        // Glossy
+
+        color glossy_shading;
+        getattribute("surface_shader:glossy", glossy_shading);
+        {
+            float lum = clamp(luminance(glossy_shading), 0.0, 1.0);
+
+            if (in_softness > 0.0 && lum > in_glossy_level && lum < in_glossy_level + in_softness)
+            {
+                glossy_shading = mix(
+                    color(0),
+                    in_glossy_color,
+                    (lum - in_glossy_level) / in_softness);
+            }
+            else if (lum < in_glossy_level)
+                glossy_shading = color(0);
+            else
+                glossy_shading = in_glossy_color;
+        }
+
+        // Write shading result.
+        out_outColor = (diffuse_shading + glossy_shading) * as_npr_shading();
+
+        // Contours
+        out_outColor += as_npr_contour(
+            in_contour_color,
+            in_contour_opacity,
+            in_contour_width,
+            in_contour_object,
+            in_contour_material,
+            in_contour_occlusion,
+            in_occlusion_threshold,
+            in_contour_creases,
+            in_crease_threshold);
+    }
+    else
+    {
+        // Shading.
+
+        vector T = vector(0);
+        float anisotropy = 0.0;
+
+        out_outColor =
+            (in_diffuse_weight * diffuse(N)) +
+            (in_specular_weight * as_glossy("beckmann", N, T, in_specular_roughness, 0.0, 0.0, 1.5));
+    }
+}

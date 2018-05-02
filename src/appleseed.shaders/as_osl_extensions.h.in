@@ -167,4 +167,19 @@ closure color as_plastic(
     float       diffuse_weight,
     float       scattering) BUILTIN;
 
+
+closure color as_npr_shading() BUILTIN;
+
+closure color as_npr_contour(
+    color       contour_color,
+    float       contour_opacity,
+    float       contour_width,
+    int         object_id,
+    int         material_id,
+    int         occlusion,
+    float       occlusion_threshold,
+    int         creases,
+    float       creases_threshold
+) BUILTIN;
+
 #endif  // AS_OSL_EXTENSIONS_H

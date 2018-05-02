@@ -303,7 +303,7 @@ class RendererServices
     DECLARE_ATTR_GETTER(object_instance_id);
     DECLARE_ATTR_GETTER(object_instance_index);
     DECLARE_ATTR_GETTER(assembly_instance_id);
-    DECLARE_ATTR_GETTER(assembly_instance_name);    
+    DECLARE_ATTR_GETTER(assembly_instance_name);
     DECLARE_ATTR_GETTER(assembly_name);
     DECLARE_ATTR_GETTER(object_instance_name);
     DECLARE_ATTR_GETTER(object_name);
@@ -326,6 +326,10 @@ class RendererServices
     DECLARE_ATTR_GETTER(ray_length);
     DECLARE_ATTR_GETTER(ray_ior);
     DECLARE_ATTR_GETTER(ray_has_differentials);
+
+    // NPR attributes.
+    DECLARE_ATTR_GETTER(surface_shader_diffuse);
+    DECLARE_ATTR_GETTER(surface_shader_glossy);
 
     // appleseed version attributes.
     DECLARE_ATTR_GETTER(appleseed_version_major);

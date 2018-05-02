@@ -279,6 +279,7 @@ class ShadingPoint
     friend class AssemblyLeafVisitor;
     friend class CurveLeafVisitor;
     friend class Intersector;
+    friend class NPRSurfaceShaderHelper;
     friend class OSLShaderGroupExec;
     friend class RegionLeafVisitor;
     friend class RendererServices;
@@ -370,6 +371,10 @@ class ShadingPoint
     mutable OSLObjectTransformInfo      m_obj_transform_info;
     mutable OSLTraceData                m_osl_trace_data;
     mutable OSL::ShaderGlobals          m_shader_globals;
+
+    // NPR-related data.
+    mutable foundation::Color3f         m_surface_shader_diffuse;
+    mutable foundation::Color3f         m_surface_shader_glossy;
 
     // Fetch and cache the source geometry.
     void cache_source_geometry() const;
