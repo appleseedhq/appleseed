@@ -2034,6 +2034,10 @@ target_link_libraries (appleseed
     ${CMAKE_DL_LIBS}
 )
 
+target_link_libraries (appleseed
+    "${APPLESEED_LINK_EXTRA_LIBRARIES}"
+)
+
 
 #--------------------------------------------------------------------------------------------------
 # Pre-build commands.
