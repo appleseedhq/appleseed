@@ -150,6 +150,15 @@ void ShadingContext::execute_osl_background(
         Spectrum::Reflectance);
 }
 
+void ShadingContext::execute_osl_npr(
+    const ShaderGroup&      shader_group,
+    const ShadingPoint&     shading_point) const
+{
+    m_shadergroup_exec.execute_npr(
+        shader_group,
+        shading_point);
+}
+
 void ShadingContext::choose_bsdf_closure_shading_basis(
     const ShadingPoint&     shading_point,
     const Vector2f&         s) const

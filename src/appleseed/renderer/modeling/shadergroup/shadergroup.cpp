@@ -71,6 +71,10 @@ namespace
     const OIIO::ustring g_randomwalk_glass_str("as_randomwalk_glass");
     const OIIO::ustring g_holdout_str("holdout");
     const OIIO::ustring g_debug_str("debug");
+
+    const OIIO::ustring g_npr_shading_str("as_npr_shading");
+    const OIIO::ustring g_npr_contour_str("as_npr_contour");
+
     const OIIO::ustring g_dPdtime_str("dPdtime");
 
     bool is_subsurface_closure(const OIIO::ustring& closure_name)
@@ -217,14 +221,13 @@ bool ShaderGroup::create_optimized_osl_shader_group(
 
         get_shadergroup_closures_info(shading_system);
         report_has_closure("bsdf", HasBSDFs);
-        report_has_closure("emission", HasEmission);
-        report_has_closure("transparent", HasTransparency);
-        report_has_closure("subsurface", HasSubsurface);
-        report_has_closure("holdout", HasHoldout);
-        report_has_closure("debug", HasDebug);
+        report_has_closure(g_emission_str.c_str(), HasEmission);
+        report_has_closure(g_transparent_str.c_str(), HasTransparency);
+        report_has_closure(g_subsurface_str.c_str(), HasSubsurface);
+        report_has_closure(g_holdout_str.c_str(), HasHoldout);
+        report_has_closure(g_debug_str.c_str(), HasDebug);
 
-        get_shadergroup_globals_info(shading_system);
-        report_uses_global("dPdtime", UsesdPdTime);
+        report_has_closure("NPR", HasNPR);
 
         return true;
     }
@@ -339,6 +342,10 @@ void ShaderGroup::get_shadergroup_closures_info(OSLShadingSystem& shading_system
                 m_flags |= HasHoldout;
             else if (closures[i] == g_debug_str)
                 m_flags |= HasDebug;
+            else if (closures[i] == g_npr_shading_str)
+                m_flags |= HasNPR;
+            else if (closures[i] == g_npr_contour_str)
+                m_flags |= HasNPR;
             else
                 m_flags |= HasBSDFs;
         }

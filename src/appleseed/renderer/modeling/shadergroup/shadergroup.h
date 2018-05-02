@@ -119,6 +119,9 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Return true if the shader group contains at least one debug closure.
     bool has_debug() const;
 
+    // Return true if the shader group contains at least one NPR closure.
+    bool has_npr() const;
+
     // Return true if the shader group uses the dPdtime global.
     bool uses_dPdtime() const;
 
@@ -147,13 +150,15 @@ class APPLESEED_DLLSYMBOL ShaderGroup
         HasSubsurface   = 1 << 3,
         HasHoldout      = 1 << 4,
         HasDebug        = 1 << 5,
+        HasNPR          = 1 << 6,
         HasAllClosures  =
             HasBSDFs        |
             HasEmission     |
             HasTransparency |
             HasSubsurface   |
             HasHoldout      |
-            HasDebug,
+            HasDebug        |
+            HasNPR,
 
         // Globals.
         UsesdPdTime     = 1 << 7,
@@ -235,6 +240,11 @@ inline bool ShaderGroup::has_holdout() const
 inline bool ShaderGroup::has_debug() const
 {
     return (m_flags & HasDebug) != 0;
+}
+
+inline bool ShaderGroup::has_npr() const
+{
+    return (m_flags & HasNPR) != 0;
 }
 
 inline bool ShaderGroup::uses_dPdtime() const

@@ -51,7 +51,8 @@ const char* VisibilityFlags::Names[] =
     "diffuse",
     "glossy",
     "specular",
-    "subsurface"
+    "subsurface",
+    "npr"
 };
 
 const size_t VisibilityFlags::Count = countof(VisibilityFlags::Names);

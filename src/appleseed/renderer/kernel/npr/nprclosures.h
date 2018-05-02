@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Sergo Pogosyan, The appleseedhq Organization
+// Copyright (c) 2018 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,21 +26,53 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "aovcomponents.h"
+#ifndef APPLESEED_RENDERER_KERNEL_NPR_NPRCLOSURES_H
+#define APPLESEED_RENDERER_KERNEL_NPR_NPRCLOSURES_H
+
+// appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
+#include "renderer/modeling/input/inputarray.h"
+
+// appleseed.foundation headers.
+#include "foundation/image/color.h"
 
 namespace renderer
 {
 
 //
-// AOVComponents class implementation.
+// NPRShading closure input values.
 //
 
-AOVComponents::AOVComponents()
-  : m_albedo(0.0f)
-  , m_npr_shading(0.0f)
-  , m_npr_contour(0.0f)
+APPLESEED_DECLARE_INPUT_VALUES(NPRShadingInputValues)
 {
-}
+};
 
-}   // namespace renderer
+enum NPRContourFeatures
+{
+    ObjectInstanceID = 1 << 0,
+    MaterialID       = 1 << 1,
+    AllIDFeatures    = ObjectInstanceID | MaterialID,
+
+    OcclusionEdges   = 1 << 2,
+    CreaseEdges      = 1 << 3,
+    AllFeatures      = ~0
+};
+
+
+//
+// NPRContour closure input values.
+//
+
+APPLESEED_DECLARE_INPUT_VALUES(NPRContourInputValues)
+{
+    foundation::Color3f m_color;
+    float               m_opacity;
+    float               m_width;
+    float               m_occlusion_threshold;
+    float               m_cos_crease_threshold;
+    int                 m_features;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_KERNEL_NPR_NPRCLOSURES_H
