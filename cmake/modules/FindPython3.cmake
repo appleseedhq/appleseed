@@ -5,8 +5,7 @@
 #
 # This software is released under the MIT license.
 #
-# Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-# Copyright (c) 2014-2018 Esteban Tovagliari, The appleseedhq Organization
+# Copyright (c) 2018 Esteban Tovagliari, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,21 +26,41 @@
 # THE SOFTWARE.
 #
 
-# The appleseed.python module built into appleseed.studio
-# is called _appleseedpythonbuiltin. Try to load it first.
-# If that fails it means that we are not in appleseed.studio;
-# in that case just load the normal appleseed.python module.
-try:
-    from _appleseedpythonbuiltin import *
-except:
-    from sys import hexversion as appleseed_python_hexversion
 
-    if appleseed_python_hexversion < 0x030000F0:
-        # Python 2.X
-        from _appleseedpython import *
-        from logtarget import *
-    else:
-        # Python 3.X
-        from ._appleseedpython3 import *
-        from .logtarget import *
+#
+# Find Python3 and boost python3 headers and libraries.
+#
+# This module defines the following variables:
+#
+#   PYTHON3_FOUND            True if Python3 was found
+#   PYTHON3_INCLUDE_DIRS     Where to find Python3 header files
+#   PYTHON3_LIBRARIES        List of Python3 libraries to link against
+#
 
+include (FindPackageHandleStandardArgs)
+
+find_path (PYTHON3_INCLUDE_DIR NAMES Python.h)
+find_library (PYTHON3_LIBRARY NAMES python3)
+find_library (BOOST_PYTHON3_LIBRARY NAMES boost_python3)
+
+# Handle the QUIETLY and REQUIRED arguments and set PYTHON3_FOUND.
+find_package_handle_standard_args (PYTHON3 DEFAULT_MSG
+    PYTHON3_INCLUDE_DIR
+    PYTHON3_LIBRARY
+    BOOST_PYTHON3_LIBRARY
+)
+
+# Set the output variables.
+if (PYTHON3_FOUND)
+    set (PYTHON3_INCLUDE_DIRS ${PYTHON3_INCLUDE_DIR})
+    set (PYTHON3_LIBRARIES ${PYTHON3_LIBRARY} ${BOOST_PYTHON3_LIBRARY})
+else ()
+    set (PYTHON3_INCLUDE_DIRS)
+    set (PYTHON3_LIBRARIES)
+endif ()
+
+mark_as_advanced (
+    PYTHON3_INCLUDE_DIR
+    PYTHON3_LIBRARY
+    BOOST_PYTHON3_LIBRARY
+)
