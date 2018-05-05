@@ -144,12 +144,12 @@ namespace
             const string surface_bsdf =
                 m_params.get_required<string>(
                     "surface_bsdf_model",
-                    "lambertian",
-                    { "lambertian", "glass" },
+                    "diffuse",
+                    { "diffuse", "glass" },
                     context);
 
             m_use_glass_bsdf = surface_bsdf == "glass";
-            if (surface_bsdf == "lambertian")
+            if (surface_bsdf == "diffuse")
                 m_use_glass_bsdf = false;
             else if (surface_bsdf == "glass" && m_glass_bsdf->on_frame_begin(project, parent, recorder, abort_switch))
                 m_use_glass_bsdf = true;
@@ -358,7 +358,7 @@ namespace
                 }
 
                 bool volume_scattering_occured;
-                if (!trace_zero_scattering_path_lambertian(
+                if (!trace_zero_scattering_path_diffuse(
                     shading_context,
                     sampling_context,
                     extinction,
@@ -620,7 +620,7 @@ namespace
             return true;
         }
 
-        bool trace_zero_scattering_path_lambertian(
+        bool trace_zero_scattering_path_diffuse(
             const ShadingContext&   shading_context,
             SamplingContext&        sampling_context,
             const Spectrum&         extinction,
@@ -926,49 +926,47 @@ DictionaryArray RandomWalkBSSRDFFactory::get_input_metadata() const
         .insert("items",
             Dictionary()
             .insert("Glass BSDF", "glass")
-            .insert("Lambertian BTDF", "lambertian"))
+            .insert("Diffuse BTDF", "diffuse"))
         .insert("use", "required")
-        .insert("default", "lambertian")
+        .insert("default", "diffuse")
         .insert("on_change", "rebuild_form"));
 
     metadata.push_back(
         Dictionary()
-        .insert("name", "surface_roughness")
-        .insert("label", "Surface Roughness")
-        .insert("type", "numeric")
-        .insert("min",
-            Dictionary()
-            .insert("value", "0.0")
-            .insert("type", "hard"))
-        .insert("max",
-            Dictionary()
-            .insert("value", "1.0")
-            .insert("type", "hard"))
-        .insert("use", "optional")
-        .insert("default", "1.0")
-        .insert("visible_if",
-            Dictionary()
-            .insert("surface_bsdf_model", "glass")));
+            .insert("name", "surface_roughness")
+            .insert("label", "Surface Roughness")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "1.0")
+            .insert("visible_if",
+                Dictionary().insert("surface_bsdf_model", "glass")));
 
     metadata.push_back(
         Dictionary()
-        .insert("name", "highlight_falloff")
-        .insert("label", "Highlight Falloff")
-        .insert("type", "numeric")
-        .insert("min",
-            Dictionary()
-            .insert("value", "0.0")
-            .insert("type", "hard"))
-        .insert("max",
-            Dictionary()
-            .insert("value", "1.0")
-            .insert("type", "hard"))
-        .insert("bounds", "hard")
-        .insert("use", "optional")
-        .insert("default", "0.4")
-        .insert("visible_if",
-            Dictionary()
-            .insert("surface_bsdf_model", "glass")));
+            .insert("name", "highlight_falloff")
+            .insert("label", "Highlight Falloff")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("bounds", "hard")
+            .insert("use", "optional")
+            .insert("default", "0.4")
+            .insert("visible_if",
+                Dictionary().insert("surface_bsdf_model", "glass")));
 
     return metadata;
 }
