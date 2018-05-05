@@ -119,7 +119,11 @@ extern "C" void bind_appleseed_python_classes()
     bind_master_renderer();
 }
 
+#if PY_MAJOR_VERSION == 2
 BOOST_PYTHON_MODULE(_appleseedpython)
+#else
+BOOST_PYTHON_MODULE(_appleseedpython3)
+#endif
 {
     bind_appleseed_python_classes();
 }

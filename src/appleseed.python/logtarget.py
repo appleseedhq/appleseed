@@ -34,7 +34,14 @@
 try:
     from _appleseedpythonbuiltin import *
 except:
-    from _appleseedpython import *
+    from sys import hexversion as appleseed_python_hexversion
+
+    if appleseed_python_hexversion < 0x030000F0:
+        # Python 2.X
+        from _appleseedpython import *
+    else:
+        # Python 3.X
+        from ._appleseedpython3 import *
 
 class ConsoleLogTarget(ILogTarget):
 
