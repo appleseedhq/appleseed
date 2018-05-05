@@ -17,9 +17,9 @@ roles:
 
 displays:
   default:
-    - !<View> {name: None, colorspace: raw}
     - !<View> {name: sRGB, colorspace: sRGB}
     - !<View> {name: rec709, colorspace: rec709}
+    - !<View> {name: None, colorspace: raw}
 
 active_displays: [default]
 active_views: [sRGB]
