@@ -80,7 +80,7 @@ namespace
 
     bpy::object wrap_cpp_project_pointer(const bpy::long_& ptr)
     {
-        const long x = bpy::extract<long>(ptr);
+        const uintptr_t x = bpy::extract<uintptr_t>(ptr);
         return bpy::object(bpy::ptr(binary_cast<Project*>(x)));
     }
 
