@@ -900,6 +900,7 @@ set (renderer_api_sources
     renderer/api/rasterization.h
     renderer/api/rendering.h
     renderer/api/scene.h
+    renderer/api/scenepicker.h
     renderer/api/shadergroup.h
     renderer/api/source.h
     renderer/api/surfaceshader.h

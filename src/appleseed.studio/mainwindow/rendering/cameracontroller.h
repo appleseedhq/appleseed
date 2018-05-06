@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
+#include "renderer/api/scenepicker.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
