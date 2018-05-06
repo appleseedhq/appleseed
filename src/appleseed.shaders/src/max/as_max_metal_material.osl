@@ -66,12 +66,6 @@ shader as_max_metal_material
     [[
         float min = 1.0
     ]],
-    float                EnergyCompensation = 0.0
-    [[
-        string help = "Energy Compensation",
-        float  min = 0.0,
-        float  max = 1.0
-    ]],
     float                Anisotropic = 0.0
     [[
         string help = "Anisotropy",
@@ -90,5 +84,5 @@ shader as_max_metal_material
         microfacet_roughness(Roughness, RoughnessDepthScale),
         0.5,    // Highlight falloff.
         Anisotropic,
-        "energy_compensation", EnergyCompensation);
+        "energy_compensation", 1.0);
 }
