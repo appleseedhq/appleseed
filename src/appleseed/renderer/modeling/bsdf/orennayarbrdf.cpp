@@ -95,16 +95,6 @@ namespace
         {
             return Model;
         }
-        
-        void prepare_inputs(
-            Arena&                      arena,
-            const ShadingPoint&         shading_point,
-            void*                       data) const override
-        {
-            InputValues* values = static_cast<InputValues*>(data);
-
-            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_max_roughness);
-        }
 
         void sample(
             SamplingContext&            sampling_context,
@@ -159,7 +149,7 @@ namespace
             }
             sample.m_value.m_beauty = sample.m_value.m_diffuse;
             
-            sample.m_max_roughness = values->m_roughness;
+            sample.m_max_roughness = 1.0f;
 
             // Compute the probability density of the sampled direction.
             sample.m_probability = wi.y * RcpPi<float>();
