@@ -58,7 +58,7 @@ class BSDFSample
     foundation::Dual3f              m_outgoing;             // world space outgoing direction, unit-length
 
     // Roughness.
-    float                           m_max_roughness;            // BSDF roughness
+    float                           m_max_roughness;        // BSDF roughness
 
     // Outputs.
     ScatteringMode::Mode            m_mode;                 // scattering mode
