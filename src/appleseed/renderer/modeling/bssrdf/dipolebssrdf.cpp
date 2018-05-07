@@ -138,6 +138,7 @@ void DipoleBSSRDF::evaluate(
     const Vector3f&         outgoing_dir,
     const ShadingPoint&     incoming_point,
     const Vector3f&         incoming_dir,
+    const int               modes,
     Spectrum&               value) const
 {
     const DipoleBSSRDFInputValues* values =
@@ -150,6 +151,7 @@ void DipoleBSSRDF::evaluate(
         outgoing_dir,
         incoming_point,
         incoming_dir,
+        modes,
         value);
 }
 

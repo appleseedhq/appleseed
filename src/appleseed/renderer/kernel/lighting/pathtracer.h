@@ -446,36 +446,6 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                 *vertex.m_shading_point);
         }
 
-        BSDFSample bsdf_sample(
-            vertex.m_shading_point,
-            foundation::Dual3f(vertex.m_outgoing));
-
-        // Subsurface scattering.
-        BSSRDFSample bssrdf_sample;
-        bssrdf_sample.m_modes = vertex.m_scattering_modes;
-        if (vertex.m_bssrdf)
-        {
-            // Sample the BSSRDF and terminate the path if no incoming point is found.
-            if (!vertex.m_bssrdf->sample(
-                    shading_context,
-                    sampling_context,
-                    vertex.m_bssrdf_data,
-                    *vertex.m_shading_point,
-                    foundation::Vector3f(vertex.m_outgoing.get_value()),
-                    bssrdf_sample,
-                    bsdf_sample))
-                break;
-
-            // Update the path throughput.
-            vertex.m_throughput *= bssrdf_sample.m_value;
-            vertex.m_throughput /= bssrdf_sample.m_probability;
-
-            // Switch to the BSSRDF's BRDF.
-            vertex.m_shading_point = &bssrdf_sample.m_incoming_point;
-            vertex.m_bsdf = bssrdf_sample.m_brdf;
-            vertex.m_bsdf_data = bssrdf_sample.m_brdf_data;
-        }
-
         // Let the path visitor handle a hit.
         // cos(outgoing, normal) is used for changes of probability measure. In the case of subsurface
         // scattering, we purposely compute it at the outgoing vertex even though it may be used at
@@ -493,10 +463,6 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         if (bounces == m_max_bounces)
             break;
 
-        // Terminate the path if no above-surface scattering possible.
-        if (vertex.m_bsdf == nullptr && material->get_render_data().m_volume == nullptr)
-            break;
-
         // Determine which scattering modes are still enabled.
         if (m_diffuse_bounces >= m_max_diffuse_bounces)
             vertex.m_scattering_modes &= ~ScatteringMode::Diffuse;
@@ -509,6 +475,40 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
         // Terminate path if no scattering event is possible.
         if (vertex.m_scattering_modes == ScatteringMode::None)
+            break;
+
+        BSDFSample bsdf_sample(
+            vertex.m_shading_point,
+            foundation::Dual3f(vertex.m_outgoing));
+
+        // Subsurface scattering.
+        BSSRDFSample bssrdf_sample;
+        bssrdf_sample.m_modes = vertex.m_scattering_modes;
+        if (vertex.m_bssrdf)
+        {
+            // Sample the BSSRDF and terminate the path if no incoming point is found.
+            if (!vertex.m_bssrdf->sample(
+                shading_context,
+                sampling_context,
+                vertex.m_bssrdf_data,
+                *vertex.m_shading_point,
+                foundation::Vector3f(vertex.m_outgoing.get_value()),
+                bssrdf_sample,
+                bsdf_sample))
+                break;
+
+            // Update the path throughput.
+            vertex.m_throughput *= bssrdf_sample.m_value;
+            vertex.m_throughput /= bssrdf_sample.m_probability;
+
+            // Switch to the BSSRDF's BRDF.
+            vertex.m_shading_point = &bssrdf_sample.m_incoming_point;
+            vertex.m_bsdf = bssrdf_sample.m_brdf;
+            vertex.m_bsdf_data = bssrdf_sample.m_brdf_data;
+        }
+
+        // Terminate the path if no above-surface scattering possible.
+        if (vertex.m_bsdf == nullptr && material->get_render_data().m_volume == nullptr)
             break;
 
         // In case there is no BSDF, the current ray will be continued without increasing its depth.
@@ -693,6 +693,13 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
             vertex.m_albedo_saved = true;
             m_path_visitor.on_first_diffuse_bounce(vertex);
         }
+    }
+    else
+    {
+        // Since the BSDF is already sampled during BSSRDF sampling, it is not sampled here.
+        // However, we need to check if the corresponding mode is still enabled.
+        if ((sample.m_mode & vertex.m_scattering_modes) == 0)
+            sample.m_mode = ScatteringMode::None;
     }
 
     // Terminate the path if it gets absorbed.

@@ -183,6 +183,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
                 Vector3f(0.0f, 1.0f, 0.0f),
                 incoming_point,
                 Vector3f(0.0f, 1.0f, 0.0f),
+                ScatteringMode::All,
                 result);
 
             return result[0];

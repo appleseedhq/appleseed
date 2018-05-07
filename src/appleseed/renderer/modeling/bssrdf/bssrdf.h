@@ -122,6 +122,7 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const foundation::Vector3f& outgoing_dir,
         const ShadingPoint&         incoming_point,
         const foundation::Vector3f& incoming_dir,
+        const int                   modes,
         Spectrum&                   value) const = 0;
 
   protected:
