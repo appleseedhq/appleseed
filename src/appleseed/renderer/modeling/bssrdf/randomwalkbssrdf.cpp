@@ -308,6 +308,9 @@ namespace
             const float rcp_diffusion_length = values->m_precomputed.m_rcp_diffusion_length;
             const float diffusion_length = rcp(rcp_diffusion_length);
 
+            if (values->m_weight == 0.0f)
+                return false;
+
             // We use Henyey-Greenstein phase function for the volume bounces.
             HenyeyPhaseFunction phase_function(-values->m_volume_anisotropy);
 
@@ -476,6 +479,7 @@ namespace
             bssrdf_sample.m_incoming_point.flip_side();
 
             // Sample the BSDF at the incoming point.
+            bsdf_sample.m_mode = ScatteringMode::None;
             bsdf_sample.m_shading_point = &bssrdf_sample.m_incoming_point;
             bsdf_sample.m_geometric_normal = Vector3f(bssrdf_sample.m_incoming_point.get_geometric_normal());
             bsdf_sample.m_shading_basis = Basis3f(bssrdf_sample.m_incoming_point.get_shading_basis());
@@ -487,6 +491,8 @@ namespace
                 true,
                 bssrdf_sample.m_modes,
                 bsdf_sample);
+            if (bsdf_sample.m_mode == ScatteringMode::None)
+                return false;
 
             const float cos_in = min(abs(dot(
                 bsdf_sample.m_geometric_normal,
@@ -505,6 +511,7 @@ namespace
             const float c = 1.0f - fresnel_first_moment_x2(values->m_precomputed.m_eta);
 
             bssrdf_sample.m_value *= fi / c;
+            bssrdf_sample.m_value *= values->m_weight;
 
             return true;
         }
@@ -759,6 +766,7 @@ namespace
             const Vector3f&         outgoing_dir,
             const ShadingPoint&     incoming_point,
             const Vector3f&         incoming_dir,
+            const int               modes,
             Spectrum&               value) const override
         {
             // Deterministic approach is not possible here.

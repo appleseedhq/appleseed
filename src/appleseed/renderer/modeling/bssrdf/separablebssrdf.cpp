@@ -361,6 +361,9 @@ bool SeparableBSSRDF::do_sample(
     if (values.m_weight == 0.0f)
         return false;
 
+    if (!ScatteringMode::has_diffuse(bssrdf_sample.m_modes))
+        return false;
+
     // Choose a channel.
     sampling_context.split_in_place(1, 1);
     const size_t channel =
@@ -406,6 +409,7 @@ bool SeparableBSSRDF::do_sample(
         outgoing_dir,
         bssrdf_sample.m_incoming_point,
         bsdf_sample.m_incoming.get_value(),
+        bssrdf_sample.m_modes,
         bssrdf_sample.m_value);
 
     return true;
@@ -418,6 +422,7 @@ void SeparableBSSRDF::do_evaluate(
     const Vector3f&         outgoing_dir,
     const ShadingPoint&     incoming_point,
     const Vector3f&         incoming_dir,
+    const int               modes,
     Spectrum&               value) const
 {
     //
@@ -463,6 +468,12 @@ void SeparableBSSRDF::do_evaluate(
     //     Jeppe Revall Frisvad, Toshiya Hachisuka, Thomas Kim Kjeldsen
     //     http://www.ci.i.u-tokyo.ac.jp/~hachisuka/dirpole.pdf
     //
+
+    if (!ScatteringMode::has_diffuse(modes))
+    {
+        value.set(0.0f);
+        return;
+    }
 
     // The profile function evalutes to zero outside the sampling disk.
     const float square_radius =
