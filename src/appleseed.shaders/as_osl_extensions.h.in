@@ -30,9 +30,9 @@
 #ifndef AS_OSL_EXTENSIONS_H
 #define AS_OSL_EXTENSIONS_H
 
-#define APPLESEED_VERSION_MAJOR     1
-#define APPLESEED_VERSION_MINOR     9
-#define APPLESEED_VERSION_PATCH     0
+#define APPLESEED_VERSION_MAJOR     ${appleseed_version_major}
+#define APPLESEED_VERSION_MINOR     ${appleseed_version_minor}
+#define APPLESEED_VERSION_PATCH     ${appleseed_version_patch}
 
 #define APPLESEED_VERSION               \
     APPLESEED_VERSION_MAJOR * 10000 +   \

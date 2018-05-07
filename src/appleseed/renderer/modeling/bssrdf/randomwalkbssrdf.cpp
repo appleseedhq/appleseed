@@ -35,16 +35,16 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
-#include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/bsdf/glassbsdf.h"
+#include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/bssrdf/sss.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/cdf.h"
 #include "foundation/math/fresnel.h"
-#include "foundation/math/rr.h"
 #include "foundation/math/phasefunction.h"
+#include "foundation/math/rr.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -108,16 +108,11 @@ namespace
             m_inputs.declare("highlight_falloff", InputFormatFloat, "0.4");
 
             const string lambertian_brdf_name = string(name) + "_lambertian_brdf";
-            m_lambertian_brdf = LambertianBRDFFactory().create(lambertian_brdf_name.c_str(), ParamArray()).release();
+            m_lambertian_brdf = LambertianBRDFFactory().create(lambertian_brdf_name.c_str(), ParamArray());
             m_lambertian_brdf_data.m_reflectance.set(1.0f);
             m_lambertian_brdf_data.m_reflectance_multiplier = 1.0f;
 
             m_glass_bsdf = create_glass_bsdf(name, "ggx");
-        }
-
-        ~RandomWalkBSSRDF()
-        {
-            delete m_lambertian_brdf;
         }
 
         void release() override
@@ -391,7 +386,7 @@ namespace
             while (!transmitted && ++n_iteration < MaxIterationsCount)
             {
                 if (n_iteration >= MinRRIteration && !test_rr(sampling_context, bssrdf_sample))
-                    break;  // sample has not passed Rusian Roulette test
+                    break;  // sample has not passed Russian Roulette test
 
                 sampling_context.split_in_place(1, 1);
 
@@ -474,7 +469,7 @@ namespace
             if (!transmitted)
                 return false;  // sample was lost inside the object
 
-            bssrdf_sample.m_brdf = m_lambertian_brdf;
+            bssrdf_sample.m_brdf = m_lambertian_brdf.get();
             bssrdf_sample.m_brdf_data = &m_lambertian_brdf_data;
             bssrdf_sample.m_incoming_point.flip_side();
 
@@ -655,7 +650,7 @@ namespace
             const float s = sampling_context.next2<float>();
             const size_t channel = truncate<size_t>(s * Spectrum::size());
 
-            // Determine the thichness of slab by tracing the first ray.
+            // Determine the thickness of slab by tracing the first ray.
             ShadingRay ray(
                 outgoing_point.get_point(),
                 initial_dir,
@@ -675,7 +670,6 @@ namespace
             const double distance = sample_exponential_distribution(
                 sampling_context.next2<double>(), static_cast<double>(extinction[channel]));
             volume_scattering_occured = distance < ray_length;
-            float mis_base = 0.0f;
             compute_transmission(static_cast<float>(distance), extinction, !volume_scattering_occured, bssrdf_sample.m_value);
 
             if (volume_scattering_occured)
@@ -783,13 +777,13 @@ namespace
                 GlassBSDFFactory().create(
                     glass_bsdf_name.c_str(),
                     ParamArray()
-                    .insert("mdf", mdf_name)
-                    .insert("volume_parameterization", "transmittance"));
+                        .insert("mdf", mdf_name)
+                        .insert("volume_parameterization", "transmittance"));
 
             return bsdf;
         }
 
-        const BSDF*                     m_lambertian_brdf;
+        auto_release_ptr<BSDF>          m_lambertian_brdf;
         LambertianBRDFInputValues       m_lambertian_brdf_data;
         bool                            m_use_glass_bsdf;
 
@@ -912,32 +906,32 @@ DictionaryArray RandomWalkBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-        .insert("name", "volume_anisotropy")
-        .insert("label", "Volume Anisotropy")
-        .insert("type", "numeric")
-        .insert("min",
-            Dictionary()
-            .insert("value", "-1.0")
-            .insert("type", "hard"))
-        .insert("max",
-            Dictionary()
-            .insert("value", "1.0")
-            .insert("type", "hard"))
-        .insert("use", "optional")
-        .insert("default", "0.0"));
+            .insert("name", "volume_anisotropy")
+            .insert("label", "Volume Anisotropy")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-1.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "0.0"));
 
     metadata.push_back(
         Dictionary()
-        .insert("name", "surface_bsdf_model")
-        .insert("label", "Surface BSDF Model")
-        .insert("type", "enumeration")
-        .insert("items",
-            Dictionary()
-            .insert("Glass BSDF", "glass")
-            .insert("Diffuse BTDF", "diffuse"))
-        .insert("use", "required")
-        .insert("default", "diffuse")
-        .insert("on_change", "rebuild_form"));
+            .insert("name", "surface_bsdf_model")
+            .insert("label", "Surface BSDF Model")
+            .insert("type", "enumeration")
+            .insert("items",
+                Dictionary()
+                    .insert("Glass BSDF", "glass")
+                    .insert("Diffuse BTDF", "diffuse"))
+            .insert("use", "required")
+            .insert("default", "diffuse")
+            .insert("on_change", "rebuild_form"));
 
     metadata.push_back(
         Dictionary()

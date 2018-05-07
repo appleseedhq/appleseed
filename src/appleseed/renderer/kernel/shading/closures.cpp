@@ -1440,7 +1440,7 @@ namespace
 
         static ClosureID id()
         {
-            return RandomWalkDiffuseID;
+            return RandomwalkDiffuseID;
         }
 
         static void prepare_closure(
@@ -1481,7 +1481,7 @@ namespace
 
             RandomWalkBSSRDFInputValues* values =
                 composite_closure.add_closure<RandomWalkBSSRDFInputValues>(
-                    RandomWalkDiffuseID,
+                    RandomwalkDiffuseID,
                     shading_basis,
                     weight,
                     p->N,
@@ -1526,7 +1526,7 @@ namespace
 
         static ClosureID id()
         {
-            return RandomWalkGlassID;
+            return RandomwalkGlassID;
         }
 
         static void prepare_closure(
@@ -1569,7 +1569,7 @@ namespace
 
             RandomWalkBSSRDFInputValues* values =
                 composite_closure.add_closure<RandomWalkBSSRDFInputValues>(
-                    RandomWalkGlassID,
+                    RandomwalkGlassID,
                     shading_basis,
                     weight,
                     p->N,
@@ -2048,12 +2048,12 @@ void CompositeSubsurfaceClosure::process_closure_tree(
                         arena);
                 }
             }
-            else if (c->id == RandomWalkGlassID)
+            else if (c->id == RandomwalkDiffuseID)
             {
                 const Color3f w = weight * Color3f(c->w);
                 if (luminance(w) > 0.0f)
                 {
-                    RandomwalkGlassClosure::convert_closure(
+                    RandomwalkDiffuseClosure::convert_closure(
                         *this,
                         original_shading_basis,
                         c->data(),
@@ -2061,12 +2061,12 @@ void CompositeSubsurfaceClosure::process_closure_tree(
                         arena);
                 }
             }
-            else if (c->id == RandomWalkDiffuseID)
+            else if (c->id == RandomwalkGlassID)
             {
                 const Color3f w = weight * Color3f(c->w);
                 if (luminance(w) > 0.0f)
                 {
-                    RandomwalkDiffuseClosure::convert_closure(
+                    RandomwalkGlassClosure::convert_closure(
                         *this,
                         original_shading_basis,
                         c->data(),
@@ -2271,8 +2271,8 @@ void register_closures(OSLShadingSystem& shading_system)
     register_closure<ReflectionClosure>(shading_system);
     register_closure<SheenClosure>(shading_system);
     register_closure<SubsurfaceClosure>(shading_system);
-    register_closure<RandomwalkGlassClosure>(shading_system);
     register_closure<RandomwalkDiffuseClosure>(shading_system);
+    register_closure<RandomwalkGlassClosure>(shading_system);
     register_closure<TranslucentClosure>(shading_system);
     register_closure<TransparentClosure>(shading_system);
 }

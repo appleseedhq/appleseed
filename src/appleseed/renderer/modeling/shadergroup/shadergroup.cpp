@@ -78,8 +78,8 @@ namespace
     {
         return
             closure_name == g_subsurface_str ||
-            closure_name == g_randomwalk_glass_str ||
-            closure_name == g_randomwalk_diffuse_str;
+            closure_name == g_randomwalk_diffuse_str ||
+            closure_name == g_randomwalk_glass_str;
     }
 }
 

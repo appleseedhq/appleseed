@@ -106,8 +106,8 @@ enum ClosureID
     SubsurfaceNormalizedDiffusionID,
     SubsurfaceGaussianID,
 
-    RandomWalkDiffuseID,
-    RandomWalkGlassID,
+    RandomwalkDiffuseID,
+    RandomwalkGlassID,
 
     // Emission closures.
     EmissionID,
