@@ -95,13 +95,13 @@ namespace
 
             m_randomwalk_diffuse =
                 create_and_register_randomwalk_bssrdf(
-                    RandomWalkDiffuseID,
+                    RandomwalkDiffuseID,
                     "randomwalk_diffuse",
                     "diffuse");
 
             m_randomwalk_glass =
                 create_and_register_randomwalk_bssrdf(
-                    RandomWalkGlassID,
+                    RandomwalkGlassID,
                     "randomwalk_glass",
                     "glass");
 
