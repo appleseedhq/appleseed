@@ -259,7 +259,7 @@ namespace
             const char*             surface_bsdf_model)
         {
             auto_release_ptr<BSSRDF> bssrdf =
-                RandomWalkBSSRDFFactory().create(
+                RandomwalkBSSRDFFactory().create(
                     name,
                     ParamArray().insert("surface_bsdf_model", surface_bsdf_model));
             m_all_bssrdfs[cid] = bssrdf.get();

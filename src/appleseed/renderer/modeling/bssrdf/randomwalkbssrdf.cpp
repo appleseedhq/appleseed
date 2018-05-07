@@ -87,11 +87,11 @@ namespace
 
     const char* Model = "randomwalk_bssrdf";
 
-    class RandomWalkBSSRDF
+    class RandomwalkBSSRDF
       : public BSSRDF
     {
       public:
-        RandomWalkBSSRDF(
+        RandomwalkBSSRDF(
             const char*             name,
             const ParamArray&       params)
           : BSSRDF(name, params)
@@ -164,7 +164,7 @@ namespace
 
         size_t compute_input_data_size() const override
         {
-            return sizeof(RandomWalkBSSRDFInputValues);
+            return sizeof(RandomwalkBSSRDFInputValues);
         }
 
         void prepare_inputs(
@@ -172,8 +172,8 @@ namespace
             const ShadingPoint&     shading_point,
             void*                   data) const override
         {
-            RandomWalkBSSRDFInputValues* values =
-                static_cast<RandomWalkBSSRDFInputValues*>(data);
+            RandomwalkBSSRDFInputValues* values =
+                static_cast<RandomwalkBSSRDFInputValues*>(data);
 
             auto& precomputed = values->m_precomputed;
 
@@ -202,7 +202,7 @@ namespace
 
         static GlassBSDFInputValues* create_glass_inputs(
             Arena&                              arena,
-            const RandomWalkBSSRDFInputValues*  bssrdf_values)
+            const RandomwalkBSSRDFInputValues*  bssrdf_values)
         {
             auto glass_values = arena.allocate_noinit<GlassBSDFInputValues>();
 
@@ -219,7 +219,7 @@ namespace
 
         static bool check_glass_inputs(
             const GlassBSDFInputValues*         glass_values,
-            const RandomWalkBSSRDFInputValues*  bssrdf_values)
+            const RandomwalkBSSRDFInputValues*  bssrdf_values)
         {
             return 
                 feq(glass_values->m_refraction_tint, Spectrum(1.0f), 1.0e-6f) &&
@@ -296,8 +296,8 @@ namespace
             BSDFSample&             bsdf_sample) const override
         {
             // Get input values.
-            const RandomWalkBSSRDFInputValues* values =
-                static_cast<const RandomWalkBSSRDFInputValues*>(data);
+            const RandomwalkBSSRDFInputValues* values =
+                static_cast<const RandomwalkBSSRDFInputValues*>(data);
             const Spectrum& extinction = values->m_precomputed.m_extinction;
             const Spectrum& albedo = values->m_precomputed.m_albedo;
             const float rcp_diffusion_length = values->m_precomputed.m_rcp_diffusion_length;
@@ -734,8 +734,8 @@ namespace
             const void* data,
             const float cos_in) const
         {
-            const RandomWalkBSSRDFInputValues* values =
-                static_cast<const RandomWalkBSSRDFInputValues*>(data);
+            const RandomwalkBSSRDFInputValues* values =
+                static_cast<const RandomwalkBSSRDFInputValues*>(data);
 
             float fi;
 
@@ -793,20 +793,20 @@ namespace
 
 
 //
-// RandomWalkBSSRDFFactory class implementation.
+// RandomwalkBSSRDFFactory class implementation.
 //
 
-void RandomWalkBSSRDFFactory::release()
+void RandomwalkBSSRDFFactory::release()
 {
     delete this;
 }
 
-const char* RandomWalkBSSRDFFactory::get_model() const
+const char* RandomwalkBSSRDFFactory::get_model() const
 {
     return Model;
 }
 
-Dictionary RandomWalkBSSRDFFactory::get_model_metadata() const
+Dictionary RandomwalkBSSRDFFactory::get_model_metadata() const
 {
     return
         Dictionary()
@@ -814,7 +814,7 @@ Dictionary RandomWalkBSSRDFFactory::get_model_metadata() const
             .insert("label", "Random-Walk BSSRDF");
 }
 
-DictionaryArray RandomWalkBSSRDFFactory::get_input_metadata() const
+DictionaryArray RandomwalkBSSRDFFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
 
@@ -973,11 +973,11 @@ DictionaryArray RandomWalkBSSRDFFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<BSSRDF> RandomWalkBSSRDFFactory::create(
+auto_release_ptr<BSSRDF> RandomwalkBSSRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<BSSRDF>(new RandomWalkBSSRDF(name, params));
+    return auto_release_ptr<BSSRDF>(new RandomwalkBSSRDF(name, params));
 }
 
 }   // namespace renderer

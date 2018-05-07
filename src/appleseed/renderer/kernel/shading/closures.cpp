@@ -1479,8 +1479,8 @@ namespace
         {
             const Params* p = static_cast<const Params*>(osl_params);
 
-            RandomWalkBSSRDFInputValues* values =
-                composite_closure.add_closure<RandomWalkBSSRDFInputValues>(
+            RandomwalkBSSRDFInputValues* values =
+                composite_closure.add_closure<RandomwalkBSSRDFInputValues>(
                     RandomwalkDiffuseID,
                     shading_basis,
                     weight,
@@ -1492,7 +1492,7 @@ namespace
 
         static void copy_parameters(
             const Params*                   p,
-            RandomWalkBSSRDFInputValues*    values)
+            RandomwalkBSSRDFInputValues*    values)
         {
             values->m_weight = 1.0f;
             values->m_reflectance.set(Color3f(p->reflectance), g_std_lighting_conditions, Spectrum::Reflectance);
@@ -1567,8 +1567,8 @@ namespace
         {
             const Params* p = static_cast<const Params*>(osl_params);
 
-            RandomWalkBSSRDFInputValues* values =
-                composite_closure.add_closure<RandomWalkBSSRDFInputValues>(
+            RandomwalkBSSRDFInputValues* values =
+                composite_closure.add_closure<RandomwalkBSSRDFInputValues>(
                     RandomwalkGlassID,
                     shading_basis,
                     weight,
@@ -1580,7 +1580,7 @@ namespace
 
         static void copy_parameters(
             const Params*                   p,
-            RandomWalkBSSRDFInputValues*    values)
+            RandomwalkBSSRDFInputValues*    values)
         {
             values->m_weight = 1.0f;
             values->m_reflectance.set(Color3f(p->reflectance), g_std_lighting_conditions, Spectrum::Reflectance);
