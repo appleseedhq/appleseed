@@ -149,7 +149,8 @@ namespace
                 pretty_scalar(m_params.m_ibl_env_sample_count).c_str(),
                 m_params.m_has_max_ray_intensity ? pretty_scalar(m_params.m_max_ray_intensity).c_str() : "unlimited",
                 pretty_int(m_params.m_distance_sample_count).c_str(),
-                m_params.m_enable_equiangular_sampling ? "on" : "off");
+                m_params.m_enable_equiangular_sampling ? "on" : "off",
+                m_params.m_clamp_roughness ? "on" : "off");
         }
 
         void compute_lighting(
@@ -222,6 +223,7 @@ namespace
                 m_params.m_max_glossy_bounces,
                 m_params.m_max_specular_bounces,
                 m_params.m_max_volume_bounces,
+                m_params.m_clamp_roughness,
                 shading_context.get_max_iterations());
 
             const size_t path_length =
@@ -269,6 +271,8 @@ namespace
             const bool      m_has_max_ray_intensity;
             const float     m_max_ray_intensity;
 
+            const bool      m_clamp_roughness;
+
             const size_t    m_distance_sample_count;        // number of distance samples for volume rendering
             const bool      m_enable_equiangular_sampling;  // optimize for lights that are located outside volumes
 
@@ -293,6 +297,7 @@ namespace
               , m_distance_sample_count(params.get_optional<size_t>("volume_distance_samples", 2))
               , m_enable_equiangular_sampling(!params.get_optional<bool>("optimize_for_lights_outside_volumes", false))
               , m_record_light_paths(params.get_optional<bool>("record_light_paths", false))
+              , m_clamp_roughness(params.get_optional<bool>("clamp_roughness", false))
             {
                 // Precompute the reciprocal of the number of light samples.
                 m_rcp_dl_light_sample_count =
@@ -1160,6 +1165,14 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("default", "true")
             .insert("label", "Next Event Estimation")
             .insert("help", "Explicitly connect path vertices to light sources to improve efficiency"));
+
+    metadata.dictionaries().insert(
+        "clamp_roughness",
+        Dictionary()
+        .insert("type", "bool")
+        .insert("default", "false")
+        .insert("label", "Clamp BSDF roughness")
+        .insert("help", "Clamp BSDF roughness paramater to maximum level to avoid fireflies in glossy reflections"));
 
     metadata.dictionaries().insert(
         "max_ray_intensity",
