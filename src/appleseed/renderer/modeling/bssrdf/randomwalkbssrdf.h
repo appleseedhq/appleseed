@@ -55,7 +55,7 @@ namespace renderer
 // Random-Walk BSSRDF input values.
 //
 
-APPLESEED_DECLARE_INPUT_VALUES(RandomWalkBSSRDFInputValues)
+APPLESEED_DECLARE_INPUT_VALUES(RandomwalkBSSRDFInputValues)
 {
     float           m_weight;
     Spectrum        m_reflectance;
@@ -84,7 +84,7 @@ APPLESEED_DECLARE_INPUT_VALUES(RandomWalkBSSRDFInputValues)
 // Random-Walk BSSRDF factory.
 //
 
-class APPLESEED_DLLSYMBOL RandomWalkBSSRDFFactory
+class APPLESEED_DLLSYMBOL RandomwalkBSSRDFFactory
   : public IBSSRDFFactory
 {
   public:
