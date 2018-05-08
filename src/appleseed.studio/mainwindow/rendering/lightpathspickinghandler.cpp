@@ -43,6 +43,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
+#include "foundation/utility/string.h"
 
 // Qt headers.
 #include <QEvent>
@@ -100,8 +101,8 @@ void LightPathsPickingHandler::pick(const Vector2i& pixel) const
         else
         {
             RENDERER_LOG_INFO(
-                FMT_SIZE_T " light path%s found at pixel (%d, %d).",
-                light_paths.size(),
+                "%s light path%s found at pixel (%d, %d).",
+                pretty_uint(light_paths.size()).c_str(),
                 light_paths.size() > 1 ? "s" : "",
                 pixel.x,
                 pixel.y);
@@ -146,8 +147,8 @@ void LightPathsPickingHandler::pick(const AABB2i& rect) const
         else
         {
             RENDERER_LOG_INFO(
-                FMT_SIZE_T " light path%s found in rectangle (%d, %d)-(%d, %d).",
-                light_paths.size(),
+                "%s light path%s found in rectangle (%d, %d)-(%d, %d).",
+                pretty_uint(light_paths.size()).c_str(),
                 light_paths.size() > 1 ? "s" : "",
                 final_rect.min.x,
                 final_rect.min.y,
