@@ -439,7 +439,7 @@ shader as_standard_surface
         string widget = "checkBox",
         string label = "Tonemap Color",
         string page = "Emission",
-        string help = "Tonemap emission, only valid for the black-body radiator  mode.",
+        string help = "Tonemap emission, only valid for the black-body radiator mode.",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
