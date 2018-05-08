@@ -218,8 +218,8 @@ namespace
             return;
 
         static const GLfloat Ambient[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-        static const GLfloat Diffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
-        static const GLfloat Specular[] = { 0.4f, 0.4f, 0.4f, 1.0f };
+        static const GLfloat Diffuse[] = { 0.4f, 0.4f, 0.4f, 1.0f };
+        static const GLfloat Specular[] = { 0.15f, 0.15f, 0.15f, 1.0f };
         static const GLfloat Shininess = 20.0f;
 
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, Ambient);
