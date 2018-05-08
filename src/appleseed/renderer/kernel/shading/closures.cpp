@@ -94,6 +94,7 @@ namespace
     const OIIO::ustring g_directional_dipole_profile_str("directional_dipole");
     const OIIO::ustring g_normalized_diffusion_profile_str("normalized_diffusion");
     const OIIO::ustring g_gaussian_profile_str("gaussian");
+    const OIIO::ustring g_randomwalk_profile_str("randomwalk");
 
     //
     // Closure functions.
@@ -1290,6 +1291,7 @@ namespace
             OSL::Color3     mean_free_path;
             float           ior;
             float           fresnel_weight;
+            float           volume_anisotropy;
         };
 
         static const char* name()
@@ -1310,6 +1312,7 @@ namespace
             // Initialize keyword parameter defaults.
             Params* params = new (data) Params();
             params->fresnel_weight = 1.0f;
+            params->volume_anisotropy = 0.0f;
         }
 
         static void register_closure(OSLShadingSystem& shading_system)
@@ -1322,6 +1325,7 @@ namespace
                 CLOSURE_COLOR_PARAM(Params, mean_free_path),
                 CLOSURE_FLOAT_PARAM(Params, ior),
                 CLOSURE_FLOAT_KEYPARAM(Params, fresnel_weight, "fresnel_weight"),
+                CLOSURE_FLOAT_KEYPARAM(Params, volume_anisotropy, "volume_anisotropy"),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
@@ -1360,6 +1364,19 @@ namespace
                         arena);
 
                 copy_parameters(p, values);
+            }
+            else if (p->profile == g_randomwalk_profile_str)
+            {
+                RandomwalkBSSRDFInputValues* values =
+                    composite_closure.add_closure<RandomwalkBSSRDFInputValues>(
+                        SubsurfaceRandomwalkID,
+                        shading_basis,
+                        weight,
+                        p->N,
+                        arena);
+
+                copy_parameters(p, values);
+                values->m_volume_anisotropy = clamp(p->volume_anisotropy, -0.999f, 0.999f);
             }
             else
             {
@@ -1421,90 +1438,6 @@ namespace
         }
     };
 
-    struct RandomwalkDiffuseClosure
-    {
-        struct Params
-        {
-            OSL::Vec3       N;
-            OSL::Color3     reflectance;
-            OSL::Color3     mean_free_path;
-            float           ior;
-            float           fresnel_weight;
-            float           volume_anisotropy;
-        };
-
-        static const char* name()
-        {
-            return "as_randomwalk_diffuse";
-        }
-
-        static ClosureID id()
-        {
-            return RandomwalkDiffuseID;
-        }
-
-        static void prepare_closure(
-            OSL::RendererServices*      render_services,
-            int                         id,
-            void*                       data)
-        {
-            // Initialize keyword parameter defaults.
-            Params* params = new (data) Params();
-            params->fresnel_weight = 1.0f;
-            params->volume_anisotropy = 0.0f;
-        }
-
-        static void register_closure(OSLShadingSystem& shading_system)
-        {
-            const OSL::ClosureParam params[] =
-            {
-                CLOSURE_VECTOR_PARAM(Params, N),
-                CLOSURE_COLOR_PARAM(Params, reflectance),
-                CLOSURE_COLOR_PARAM(Params, mean_free_path),
-                CLOSURE_FLOAT_PARAM(Params, ior),
-                CLOSURE_FLOAT_KEYPARAM(Params, fresnel_weight, "fresnel_weight"),
-                CLOSURE_FLOAT_KEYPARAM(Params, volume_anisotropy, "volume_anisotropy"),
-                CLOSURE_FINISH_PARAM(Params)
-            };
-
-            shading_system.register_closure(name(), id(), params, &prepare_closure, nullptr);
-        }
-
-        static void convert_closure(
-            CompositeSubsurfaceClosure& composite_closure,
-            const Basis3f&              shading_basis,
-            const void*                 osl_params,
-            const Color3f&              weight,
-            Arena&                      arena)
-        {
-            const Params* p = static_cast<const Params*>(osl_params);
-
-            RandomwalkBSSRDFInputValues* values =
-                composite_closure.add_closure<RandomwalkBSSRDFInputValues>(
-                    RandomwalkDiffuseID,
-                    shading_basis,
-                    weight,
-                    p->N,
-                    arena);
-
-            copy_parameters(p, values);
-        }
-
-        static void copy_parameters(
-            const Params*                   p,
-            RandomwalkBSSRDFInputValues*    values)
-        {
-            values->m_weight = 1.0f;
-            values->m_reflectance.set(Color3f(p->reflectance), g_std_lighting_conditions, Spectrum::Reflectance);
-            values->m_reflectance_multiplier = 1.0f;
-            values->m_mfp.set(Color3f(p->mean_free_path), g_std_lighting_conditions, Spectrum::Reflectance);
-            values->m_mfp_multiplier = 1.0f;
-            values->m_ior = p->ior;
-            values->m_volume_anisotropy = clamp(p->volume_anisotropy, -0.999f, 0.999f);
-            values->m_fresnel_weight = saturate(p->fresnel_weight);
-        }
-    };
-
     struct RandomwalkGlassClosure
     {
         struct Params
@@ -1514,8 +1447,6 @@ namespace
             OSL::Color3     mean_free_path;
             float           ior;
             float           surface_roughness;
-            float           highlight_falloff;
-            float           fresnel_weight;
             float           volume_anisotropy;
         };
 
@@ -1536,7 +1467,6 @@ namespace
         {
             // Initialize keyword parameter defaults.
             Params* params = new (data) Params();
-            params->fresnel_weight = 1.0f;
             params->volume_anisotropy = 0.0f;
         }
 
@@ -1549,8 +1479,6 @@ namespace
                 CLOSURE_COLOR_PARAM(Params, mean_free_path),
                 CLOSURE_FLOAT_PARAM(Params, ior),
                 CLOSURE_FLOAT_PARAM(Params, surface_roughness),
-                CLOSURE_FLOAT_PARAM(Params, highlight_falloff),
-                CLOSURE_FLOAT_KEYPARAM(Params, fresnel_weight, "fresnel_weight"),
                 CLOSURE_FLOAT_KEYPARAM(Params, volume_anisotropy, "volume_anisotropy"),
                 CLOSURE_FINISH_PARAM(Params)
             };
@@ -1589,8 +1517,7 @@ namespace
             values->m_mfp_multiplier = 1.0f;
             values->m_ior = p->ior;
             values->m_surface_roughness = clamp(p->surface_roughness, 0.0001f, 1.0f);
-            values->m_highlight_falloff = clamp(p->highlight_falloff, 0.0001f, 1.0f);
-            values->m_fresnel_weight = saturate(p->fresnel_weight);
+            values->m_fresnel_weight = 1.0f;
             values->m_volume_anisotropy = clamp(p->volume_anisotropy, -0.999f, 0.999f);
         }
     };
@@ -2048,19 +1975,6 @@ void CompositeSubsurfaceClosure::process_closure_tree(
                         arena);
                 }
             }
-            else if (c->id == RandomwalkDiffuseID)
-            {
-                const Color3f w = weight * Color3f(c->w);
-                if (luminance(w) > 0.0f)
-                {
-                    RandomwalkDiffuseClosure::convert_closure(
-                        *this,
-                        original_shading_basis,
-                        c->data(),
-                        w,
-                        arena);
-                }
-            }
             else if (c->id == RandomwalkGlassID)
             {
                 const Color3f w = weight * Color3f(c->w);
@@ -2271,7 +2185,6 @@ void register_closures(OSLShadingSystem& shading_system)
     register_closure<ReflectionClosure>(shading_system);
     register_closure<SheenClosure>(shading_system);
     register_closure<SubsurfaceClosure>(shading_system);
-    register_closure<RandomwalkDiffuseClosure>(shading_system);
     register_closure<RandomwalkGlassClosure>(shading_system);
     register_closure<TranslucentClosure>(shading_system);
     register_closure<TransparentClosure>(shading_system);

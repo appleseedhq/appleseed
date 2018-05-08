@@ -66,7 +66,6 @@ APPLESEED_DECLARE_INPUT_VALUES(RandomwalkBSSRDFInputValues)
     float           m_fresnel_weight;
     float           m_volume_anisotropy;
     float           m_surface_roughness;
-    float           m_highlight_falloff;
 
     struct Precomputed
     {
