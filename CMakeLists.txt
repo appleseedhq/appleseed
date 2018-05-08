@@ -178,7 +178,7 @@ endif ()
 
 set (appleseed_version_major    1)
 set (appleseed_version_minor    9)
-set (appleseed_version_patch    0)
+set (appleseed_version_patch    1)
 set (appleseed_version_maturity beta)
 
 configure_file (${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/version.h.in
