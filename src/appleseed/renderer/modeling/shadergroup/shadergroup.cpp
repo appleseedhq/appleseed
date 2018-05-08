@@ -68,7 +68,6 @@ namespace
     const OIIO::ustring g_emission_str("emission");
     const OIIO::ustring g_transparent_str("transparent");
     const OIIO::ustring g_subsurface_str("as_subsurface");
-    const OIIO::ustring g_randomwalk_diffuse_str("as_randomwalk_diffuse");
     const OIIO::ustring g_randomwalk_glass_str("as_randomwalk_glass");
     const OIIO::ustring g_holdout_str("holdout");
     const OIIO::ustring g_debug_str("debug");
@@ -78,7 +77,6 @@ namespace
     {
         return
             closure_name == g_subsurface_str ||
-            closure_name == g_randomwalk_diffuse_str ||
             closure_name == g_randomwalk_glass_str;
     }
 }

@@ -118,15 +118,6 @@ closure color as_subsurface(
     float       ior
     // keyword arguments:
     //   float "fresnel_weight" = 1
-    ) BUILTIN;
-
-closure color as_randomwalk_diffuse(
-    normal      N,
-    color       reflectance,
-    color       mean_free_path,
-    float       ior
-    // keyword arguments:
-    //   float "fresnel_weight" = 1
     //   float "volume_anisotropy" = 0
     ) BUILTIN;
 
@@ -136,9 +127,7 @@ closure color as_randomwalk_glass(
     color       mean_free_path,
     float       ior,
     float       surface_roughness,
-    float       highlight_falloff,
     // keyword arguments:
-    //   float "fresnel_weight" = 1
     //   float "volume_anisotropy" = 0
     ) BUILTIN;
 

@@ -93,9 +93,14 @@ namespace
                     SubsurfaceNormalizedDiffusionID,
                     "normalized_diffusion");
 
-            m_randomwalk_diffuse =
+            m_std_dipole =
+                create_and_register_bssrdf<StandardDipoleBSSRDFFactory>(
+                    SubsurfaceStandardDipoleID,
+                    "standard_dipole");
+            
+            m_randomwalk =
                 create_and_register_randomwalk_bssrdf(
-                    RandomwalkDiffuseID,
+                    SubsurfaceRandomwalkID,
                     "randomwalk_diffuse",
                     "diffuse");
 
@@ -104,11 +109,6 @@ namespace
                     RandomwalkGlassID,
                     "randomwalk_glass",
                     "glass");
-
-            m_std_dipole =
-                create_and_register_bssrdf<StandardDipoleBSSRDFFactory>(
-                    SubsurfaceStandardDipoleID,
-                    "standard_dipole");
         }
 
         void release() override
@@ -278,7 +278,7 @@ namespace
         auto_release_ptr<BSSRDF>    m_gaussian;
         auto_release_ptr<BSSRDF>    m_normalized;
         auto_release_ptr<BSSRDF>    m_std_dipole;
-        auto_release_ptr<BSSRDF>    m_randomwalk_diffuse;
+        auto_release_ptr<BSSRDF>    m_randomwalk;
         auto_release_ptr<BSSRDF>    m_randomwalk_glass;
 
         BSSRDF*                     m_all_bssrdfs[NumClosuresIDs];
