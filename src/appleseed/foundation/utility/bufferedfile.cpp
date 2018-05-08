@@ -444,8 +444,8 @@ bool BufferedFile::seek(
             }
             else
             {
-                current_file_index = m_file_index;
                 flush_buffer();
+                current_file_index = m_file_index;
             }
 
             if (portable_fseek(m_file, target_index - current_file_index, SEEK_CUR))
