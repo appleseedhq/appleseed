@@ -57,6 +57,23 @@ namespace studio {
 //
 // CameraController class implementation.
 //
+// Terminology:
+//
+//   Camera
+//     The active camera of the scene, if there is one.
+//
+//   Camera Controller (or simply Controller)
+//     This class, allows to control the camera using the mouse.
+//
+//   Controller Target
+//     The point the controller (and thus the camera) "looks at".
+//     It should always be along the viewing direction of the camera.
+//
+//   Pivot Point
+//     A point of the scene that can be changed by clicking on objects
+//     (or clicking in empty space to reset it) and that can become the
+//     controller target if the user wishes so (by pressing 'f').
+//
 
 CameraController::CameraController(QWidget* widget, Project& project)
   : m_widget(widget)
@@ -69,18 +86,11 @@ CameraController::CameraController(QWidget* widget, Project& project)
 
 CameraController::~CameraController()
 {
-    set_enabled(false);
+    m_widget->removeEventFilter(this);
 }
 
 void CameraController::set_enabled(const bool enabled)
 {
-    if (enabled == m_enabled)
-        return;
-
-    if (enabled)
-        m_widget->installEventFilter(this);
-    else m_widget->removeEventFilter(this);
-
     m_enabled = enabled;
 }
 
@@ -130,27 +140,30 @@ void CameraController::slot_frame_modified()
 
 bool CameraController::eventFilter(QObject* object, QEvent* event)
 {
-    switch (event->type())
+    if (m_enabled)
     {
-      case QEvent::MouseButtonPress:
-        if (handle_mouse_button_press_event(static_cast<QMouseEvent*>(event)))
-            return true;
-        break;
-
-      case QEvent::MouseButtonRelease:
-        if (handle_mouse_button_release_event(static_cast<QMouseEvent*>(event)))
-            return true;
-        break;
-
-      case QEvent::MouseMove:
-        if (handle_mouse_move_event(static_cast<QMouseEvent*>(event)))
-            return true;
-        break;
-
-      case QEvent::KeyPress:
-        if (handle_key_press_event(static_cast<QKeyEvent*>(event)))
-            return true;
-        break;
+        switch (event->type())
+        {
+          case QEvent::MouseButtonPress:
+            if (handle_mouse_button_press_event(static_cast<QMouseEvent*>(event)))
+                return true;
+            break;
+    
+          case QEvent::MouseButtonRelease:
+            if (handle_mouse_button_release_event(static_cast<QMouseEvent*>(event)))
+                return true;
+            break;
+    
+          case QEvent::MouseMove:
+            if (handle_mouse_move_event(static_cast<QMouseEvent*>(event)))
+                return true;
+            break;
+    
+          case QEvent::KeyPress:
+            if (handle_key_press_event(static_cast<QKeyEvent*>(event)))
+                return true;
+            break;
+        }
     }
 
     return QObject::eventFilter(object, event);
@@ -158,25 +171,6 @@ bool CameraController::eventFilter(QObject* object, QEvent* event)
 
 void CameraController::configure_controller()
 {
-    //
-    // Terminology:
-    //
-    //   Camera
-    //     The active camera of the scene, if there is one.
-    //
-    //   Camera Controller (or simply Controller)
-    //     This class, allows to control the camera using the mouse.
-    //
-    //   Controller Target
-    //     The point the controller (and thus the camera) "looks at".
-    //     It should always be along the viewing direction of the camera.
-    //
-    //   Pivot Point
-    //     A point of the scene that can be changed by clicking on objects
-    //     (or clicking in empty space to reset it) and that can become the
-    //     controller target if the user wishes so (by pressing 'f').
-    //
-
     // By default, the pivot point is the scene's center.
     m_pivot = Vector3d(m_project.get_scene()->compute_bbox().center());
 
