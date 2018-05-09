@@ -33,6 +33,8 @@ shader as_color_transform
 [[
     string as_maya_node_name = "asColorTransform",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string as_blender_node_name = "asColorTransform",
+    string as_blender_category = "utility",
     string help = "Transforms a color from one color model to another color model.",
     string icon = "asColorTransform.png",
     int as_maya_type_id = 0x001279c8,

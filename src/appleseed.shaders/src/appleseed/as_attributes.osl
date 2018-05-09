@@ -30,6 +30,8 @@ shader as_attributes
 [[
     string as_maya_node_name = "asAttributes",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string as_blender_node_name = "asAttributes",
+    string as_blender_category = "utility",
     string help = "OSL and appleseed attributes.",
     string icon = "asAttributes.png",
     int as_maya_type_id = 0x001279f8,

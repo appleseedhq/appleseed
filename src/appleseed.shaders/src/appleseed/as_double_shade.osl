@@ -30,6 +30,8 @@ shader as_double_shade
 [[
     string as_maya_node_name = "asDoubleShade",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string as_blender_node_name = "asDoubleShade",
+    string as_blender_category = "utility",
     string help = "Shades a different color on front or back faces.",
     string icon = "asDoubleShade.png",
     int as_maya_type_id = 0x001279db,

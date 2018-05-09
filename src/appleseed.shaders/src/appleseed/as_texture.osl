@@ -36,6 +36,8 @@ shader as_texture
 [[
     string as_maya_node_name = "asTexture",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/2d:swatch/AppleseedRenderSwatch:texture",
+    string as_blender_node_name = "asTexture",
+    string as_blender_category = "texture",
     string help = "Texture lookup node.",
     string icon = "asTexture.png",
     int as_maya_type_id = 0x001279fa,

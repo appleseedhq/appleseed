@@ -30,6 +30,8 @@ shader as_texture_info
 [[
     string as_maya_node_name = "asTextureInfo",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string as_blender_node_name = "asTextureInfo",
+    string as_blender_category = "utility",
     string help = "Texture Information node.",
     string icon = "asTextureInfo.png",
     int as_maya_type_id = 0x001279fc,
