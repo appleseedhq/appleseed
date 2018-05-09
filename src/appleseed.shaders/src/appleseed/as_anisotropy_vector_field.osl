@@ -30,6 +30,8 @@ shader as_anisotropy_vector_field
 [[
     string as_maya_node_name = "asAnisotropyVectorField",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string as_blender_node_name = "asAnisotropyVectorField",
+    string as_blender_category = "utility",
     string help = "Creates an anisotropy field vector from an input color.",
     string icon = "asAnisotropyVectorField.png",
     int as_maya_type_id = 0x001278e0,

@@ -34,6 +34,8 @@ shader as_fresnel
 [[
     string as_maya_node_name = "asFresnel",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string as_blender_node_name = "asFresnel",
+    string as_blender_category = "utility",
     string help = "A viewer Fresnel term.",
     string icon = "asFresnel.png",
     int as_maya_type_id = 0x001279f1,
