@@ -431,11 +431,11 @@ namespace
                 volume_visitor,
                 m_params.m_photon_tracing_rr_min_path_length,
                 m_params.m_photon_tracing_max_bounces,
-                ~0, // max diffuse bounces
-                ~0, // max glossy bounces
-                ~0, // max specular bounces
-                ~0, // max volume bounces
-                false,
+                ~0,     // max diffuse bounces
+                ~0,     // max glossy bounces
+                ~0,     // max specular bounces
+                ~0,     // max volume bounces
+                false,  // don't clamp roughness
                 m_params.m_max_iterations,
                 edf->get_light_near_start());               // don't illuminate points closer than the light near start value
 
@@ -498,11 +498,11 @@ namespace
                 volume_visitor,
                 m_params.m_photon_tracing_rr_min_path_length,
                 m_params.m_photon_tracing_max_bounces,
-                ~0, // max diffuse bounces
-                ~0, // max glossy bounces
-                ~0, // max specular bounces
-                ~0, // max volume bounces
-                false,
+                ~0,     // max diffuse bounces
+                ~0,     // max glossy bounces
+                ~0,     // max specular bounces
+                ~0,     // max volume bounces
+                false,  // don't clamp roughness
                 m_params.m_max_iterations);
 
             // Trace the photon path.
@@ -706,11 +706,11 @@ namespace
                 volume_visitor,
                 m_params.m_photon_tracing_rr_min_path_length,
                 m_params.m_photon_tracing_max_bounces,
-                ~0, // max diffuse bounces
-                ~0, // max glossy bounces
-                ~0, // max specular bounces
-                ~0, // max volume bounces
-                false,
+                ~0,     // max diffuse bounces
+                ~0,     // max glossy bounces
+                ~0,     // max specular bounces
+                ~0,     // max volume bounces
+                false,  // don't clamp roughness
                 m_params.m_max_iterations);
 
             // Trace the photon path.

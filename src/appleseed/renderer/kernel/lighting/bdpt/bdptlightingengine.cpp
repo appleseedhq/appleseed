@@ -573,8 +573,8 @@ namespace
                 ~0,
                 ~0,
                 ~0,
-                false,
-                shading_context.get_max_iterations());   // don't illuminate points closer than the light near start value
+                false,                                  // don't clamp roughness
+                shading_context.get_max_iterations());  // don't illuminate points closer than the light near start value
 
             const size_t light_path_length =
                 path_tracer.trace(
@@ -616,7 +616,7 @@ namespace
                 ~0,
                 ~0,
                 ~0,
-                false,
+                false,                                  // don't clamp roughness
                 shading_context.get_max_iterations());
 
             const size_t camera_path_length =
