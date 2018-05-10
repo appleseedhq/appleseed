@@ -46,7 +46,7 @@ namespace
     typedef size_t Key;
     typedef size_t Element;
 
-    const Key InvalidKey = ~0;
+    const Key InvalidKey = ~Key(0);
 
     struct KeyHasher
     {

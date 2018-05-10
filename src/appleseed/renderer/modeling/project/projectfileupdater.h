@@ -53,7 +53,7 @@ class APPLESEED_DLLSYMBOL ProjectFileUpdater
     // Return true if the update was successful, false otherwise.
     bool update(
         Project&        project,
-        const size_t    to_revision = ~0);
+        const size_t    to_revision = ~size_t(0));
 
   private:
     friend class ProjectFileReader;
@@ -61,7 +61,7 @@ class APPLESEED_DLLSYMBOL ProjectFileUpdater
     void update(
         Project&        project,
         EventCounters&  event_counters,
-        const size_t    to_revision = ~0);
+        const size_t    to_revision = ~size_t(0));
 
 };
 

@@ -483,7 +483,7 @@ inline Object& Access<Object>::operator*() const
 
 template <typename Object, size_t Lines, size_t Ways, typename Allocator>
 AccessCache<Object, Lines, Ways, Allocator>::AccessCache()
-  : m_cache(m_key_hasher, m_object_swapper, ~0)
+  : m_cache(m_key_hasher, m_object_swapper, ~typename CacheType::KeyType(0))
 {
 }
 
@@ -578,7 +578,7 @@ inline bool AccessCache<Object, Lines, Ways, Allocator>::ObjectSwapper::is_full(
 
 template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
 AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::AccessCacheMap()
-  : m_cache(m_key_hasher, m_object_swapper, ~0)
+  : m_cache(m_key_hasher, m_object_swapper, ~typename CacheType::KeyType(0))
 {
 }
 

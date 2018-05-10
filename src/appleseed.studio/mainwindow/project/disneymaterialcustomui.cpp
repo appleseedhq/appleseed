@@ -207,7 +207,7 @@ size_t DisneyMaterialCustomUI::find_layer_index_by_widget(const QWidget* layer_w
     }
 
     assert(!"Could not find layer widget.");
-    return ~0;
+    return ~size_t(0);
 }
 
 vector<string> DisneyMaterialCustomUI::collect_layer_names() const

@@ -138,12 +138,12 @@ namespace
                 m_params.m_enable_dl ? "on" : "off",
                 m_params.m_enable_ibl ? "on" : "off",
                 m_params.m_enable_caustics ? "on" : "off",
-                m_params.m_max_bounces == ~0 ? "unlimited" : pretty_uint(m_params.m_max_bounces).c_str(),
-                m_params.m_max_diffuse_bounces == ~0 ? "unlimited" : pretty_uint(m_params.m_max_diffuse_bounces).c_str(),
-                m_params.m_max_glossy_bounces == ~0 ? "unlimited" : pretty_uint(m_params.m_max_glossy_bounces).c_str(),
-                m_params.m_max_specular_bounces == ~0 ? "unlimited" : pretty_uint(m_params.m_max_specular_bounces).c_str(),
-                m_params.m_max_volume_bounces == ~0 ? "unlimited" : pretty_uint(m_params.m_max_volume_bounces).c_str(),
-                m_params.m_rr_min_path_length == ~0 ? "unlimited" : pretty_uint(m_params.m_rr_min_path_length).c_str(),
+                m_params.m_max_bounces == ~size_t(0) ? "unlimited" : pretty_uint(m_params.m_max_bounces).c_str(),
+                m_params.m_max_diffuse_bounces == ~size_t(0) ? "unlimited" : pretty_uint(m_params.m_max_diffuse_bounces).c_str(),
+                m_params.m_max_glossy_bounces == ~size_t(0) ? "unlimited" : pretty_uint(m_params.m_max_glossy_bounces).c_str(),
+                m_params.m_max_specular_bounces == ~size_t(0) ? "unlimited" : pretty_uint(m_params.m_max_specular_bounces).c_str(),
+                m_params.m_max_volume_bounces == ~size_t(0) ? "unlimited" : pretty_uint(m_params.m_max_volume_bounces).c_str(),
+                m_params.m_rr_min_path_length == ~size_t(0) ? "unlimited" : pretty_uint(m_params.m_rr_min_path_length).c_str(),
                 m_params.m_next_event_estimation ? "on" : "off",
                 pretty_scalar(m_params.m_dl_light_sample_count).c_str(),
                 pretty_scalar(m_params.m_dl_low_light_threshold, 3).c_str(),
@@ -219,8 +219,8 @@ namespace
                 path_visitor,
                 volume_visitor,
                 m_params.m_rr_min_path_length,
-                m_params.m_max_bounces == ~0 ? ~0 : m_params.m_max_bounces + 1,
-                m_params.m_max_diffuse_bounces == ~0 ? ~0 : m_params.m_max_diffuse_bounces + 1,
+                m_params.m_max_bounces == ~size_t(0) ? ~size_t(0) : m_params.m_max_bounces + 1,
+                m_params.m_max_diffuse_bounces == ~size_t(0) ? ~size_t(0) : m_params.m_max_diffuse_bounces + 1,
                 m_params.m_max_glossy_bounces,
                 m_params.m_max_specular_bounces,
                 m_params.m_max_volume_bounces,
@@ -315,12 +315,12 @@ namespace
 
             static size_t fixup_bounces(const int x)
             {
-                return x == -1 ? ~0 : x;
+                return x == -1 ? ~size_t(0) : x;
             }
 
             static size_t fixup_path_length(const size_t x)
             {
-                return x == 0 ? ~0 : x;
+                return x == 0 ? ~size_t(0) : x;
             }
         };
 
