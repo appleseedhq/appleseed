@@ -198,6 +198,12 @@ if (WITH_PYTHON3_BINDINGS)
         appleseed
         ${PYTHON3_LIBRARIES}
     )
+
+     if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        target_link_libraries (appleseed.python3
+            util
+        )
+     endif ()
 endif ()
 
 #--------------------------------------------------------------------------------------------------

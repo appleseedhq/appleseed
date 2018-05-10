@@ -30,6 +30,8 @@ shader as_plastic
 [[
     string as_maya_node_name = "asPlastic",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
+    string as_blender_node_name = "asPlastic",
+    string as_blender_category = "shader",
     string icon = "asPlastic.png",
     string help = "A plastic material, layering a diffuse and specular terms.",
     int as_maya_type_id = 0x001279d7,

@@ -218,8 +218,8 @@ namespace
             return;
 
         static const GLfloat Ambient[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-        static const GLfloat Diffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
-        static const GLfloat Specular[] = { 0.4f, 0.4f, 0.4f, 1.0f };
+        static const GLfloat Diffuse[] = { 0.4f, 0.4f, 0.4f, 1.0f };
+        static const GLfloat Specular[] = { 0.15f, 0.15f, 0.15f, 1.0f };
         static const GLfloat Shininess = 20.0f;
 
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, Ambient);
@@ -390,14 +390,15 @@ void LightPathsWidget::dump_selected_light_path() const
             RENDERER_LOG_INFO("no light path to display.");
         else
         {
-            RENDERER_LOG_INFO("displaying all " FMT_SIZE_T " light path%s.",
-                m_light_paths.size(),
+            RENDERER_LOG_INFO("displaying all %s light path%s.",
+                pretty_uint(m_light_paths.size()).c_str(),
                 m_light_paths.size() > 1 ? "s" : "");
         }
     }
     else
     {
-        RENDERER_LOG_INFO("displaying light path %d:", m_selected_light_path_index + 1);
+        RENDERER_LOG_INFO("displaying light path %s:",
+            pretty_int(m_selected_light_path_index + 1).c_str());
 
         const auto& light_path_recorder = m_project.get_light_path_recorder();
         const auto& path = m_light_paths[m_selected_light_path_index];

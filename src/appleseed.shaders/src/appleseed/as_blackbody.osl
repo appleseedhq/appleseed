@@ -33,6 +33,8 @@ shader as_blackbody
 [[
     string as_maya_node_name = "asBlackbody",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
+    string as_blender_node_name = "asBlackbody",
+    string as_blender_category = "shader",
     string help = "Emission shader with black-body radiation.",
     string icon = "asBlackbody.png",
     int as_maya_type_id = 0x001279d0,

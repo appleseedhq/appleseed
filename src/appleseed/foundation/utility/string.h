@@ -410,11 +410,11 @@ inline std::string to_string<uint8>(const uint8& value)
     return to_string(static_cast<unsigned int>(value));
 }
 
-// Handle nullptr object
+// Handle nullptr object.
 template <>
-inline std::string to_string<std::nullptr_t>(const std::nullptr_t& value)
+inline std::string to_string<std::nullptr_t>(const std::nullptr_t&)
 {
-    return std::string("<null>");
+    return "<null>";
 }
 
 // Handle C strings separately.
@@ -963,11 +963,11 @@ inline std::string capitalize(const std::string& s)
 
     for (std::string::iterator i = result.begin(); i != result.end(); ++i)
     {
-        if (std::isspace(static_cast<unsigned char>(*i)))
+        if (std::isspace(*i))
             cap = true;
         else
         {
-            *i = cap ? std::toupper(*i) : std::tolower(*i);
+            *i = static_cast<unsigned char>(cap ? std::toupper(*i) : std::tolower(*i));
             cap = false;
         }
     }

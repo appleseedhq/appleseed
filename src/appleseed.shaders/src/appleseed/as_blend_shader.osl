@@ -30,6 +30,8 @@ shader as_blend_shader
 [[
     string as_maya_node_name = "asBlendShader",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
+    string as_blender_node_name = "asBlendShader",
+    string as_blender_category = "utility",
     string help = "Shader blending or mixing node.",
     string icon = "asBlendShader.png",
     int as_maya_type_id = 0x001279dd,

@@ -32,6 +32,8 @@ shader as_switch_texture
 [[
     string as_maya_node_name = "asSwitchTexture",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string as_blender_node_name = "asSwitchTexture",
+    string as_blender_category = "utility",
     string help = "Texture variation utility shader.",
     string icon = "asSwitchTexture.png",
     int as_maya_type_id = 0x001279da,

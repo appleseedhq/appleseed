@@ -61,7 +61,7 @@ RenderRegionHandler::RenderRegionHandler(
   , m_mouse_tracker(mouse_tracker)
   , m_enabled(true)
   , m_mode(RectangleSelectionMode)
-  , m_rubber_band(nullptr)
+  , m_rubber_band(new QRubberBand(QRubberBand::Rectangle, widget))
 {
     m_widget->installEventFilter(this);
 }
@@ -83,68 +83,56 @@ void RenderRegionHandler::set_mode(const Mode mode)
 
 bool RenderRegionHandler::eventFilter(QObject* object, QEvent* event)
 {
-    if (!m_enabled)
-        return QObject::eventFilter(object, event);
-
-    switch (event->type())
+    if (m_enabled)
     {
-      case QEvent::MouseButtonPress:
+        switch (event->type())
         {
-            const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
-
-            if (mouse_event->button() == Qt::LeftButton &&
-                !(mouse_event->modifiers() & (Qt::AltModifier | Qt::ShiftModifier | Qt::ControlModifier)))
+          case QEvent::MouseButtonPress:
             {
-                m_origin = mouse_event->pos();
+                const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
 
-                if (m_rubber_band == nullptr)
-                    m_rubber_band = new QRubberBand(QRubberBand::Rectangle, m_widget);
+                if (mouse_event->button() == Qt::LeftButton &&
+                    !(mouse_event->modifiers() & (Qt::AltModifier | Qt::ShiftModifier | Qt::ControlModifier)))
+                {
+                    m_origin = mouse_event->pos();
+                    m_rubber_band->setGeometry(QRect(m_origin, QSize()));
+                    m_rubber_band->show();
+                }
 
-                m_rubber_band->setGeometry(QRect(m_origin, QSize()));
-                m_rubber_band->show();
-
-                return true;
+                break;
             }
 
-            break;
-        }
-
-      case QEvent::MouseMove:
-        {
-            const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
-
-            if (m_rubber_band)
+          case QEvent::MouseMove:
+            {
+                const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
                 m_rubber_band->setGeometry(QRect(m_origin, mouse_event->pos()).normalized());
-
-            return true;
-        }
-
-      case QEvent::MouseButtonRelease:
-        {
-            const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
-
-            if (mouse_event->button() == Qt::LeftButton && m_rubber_band)
-            {
-                m_rubber_band->hide();
-
-                const Vector2i p0 = m_mouse_tracker.widget_to_pixel(m_origin);
-                const Vector2i p1 = m_mouse_tracker.widget_to_pixel(mouse_event->pos());
-
-                const int x0 = max(min(p0.x, p1.x), 0);
-                const int y0 = max(min(p0.y, p1.y), 0);
-                const int x1 = max(p0.x, p1.x);
-                const int y1 = max(p0.y, p1.y);
-                const int w = x1 - x0 + 1;
-                const int h = y1 - y0 + 1;
-
-                if (m_mode == RectangleSelectionMode)
-                    emit signal_rectangle_selection(QRect(x0, y0, w, h));
-                else emit signal_render_region(QRect(x0, y0, w, h));
-
-                return true;
             }
 
-            break;
+          case QEvent::MouseButtonRelease:
+            {
+                const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
+
+                if (mouse_event->button() == Qt::LeftButton)
+                {
+                    m_rubber_band->hide();
+
+                    const Vector2i p0 = m_mouse_tracker.widget_to_pixel(m_origin);
+                    const Vector2i p1 = m_mouse_tracker.widget_to_pixel(mouse_event->pos());
+
+                    const int x0 = max(min(p0.x, p1.x), 0);
+                    const int y0 = max(min(p0.y, p1.y), 0);
+                    const int x1 = max(p0.x, p1.x);
+                    const int y1 = max(p0.y, p1.y);
+                    const int w = x1 - x0 + 1;
+                    const int h = y1 - y0 + 1;
+
+                    if (m_mode == RectangleSelectionMode)
+                        emit signal_rectangle_selection(QRect(x0, y0, w, h));
+                    else emit signal_render_region(QRect(x0, y0, w, h));
+                }
+
+                break;
+            }
         }
     }
 

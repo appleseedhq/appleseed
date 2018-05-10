@@ -33,6 +33,8 @@ shader as_standard_surface
 [[
     string as_maya_node_name = "asStandardSurface",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
+    string as_blender_node_name = "asStandardSurface",
+    string as_blender_category = "shader",
     string help = "appleseed's standard material shader.",
     string icon = "asStandardSurface.png",
     int as_maya_type_id = 0x001279d4,
@@ -439,7 +441,7 @@ shader as_standard_surface
         string widget = "checkBox",
         string label = "Tonemap Color",
         string page = "Emission",
-        string help = "Tonemap emission, only valid for the black-body radiator  mode.",
+        string help = "Tonemap emission, only valid for the black-body radiator mode.",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,

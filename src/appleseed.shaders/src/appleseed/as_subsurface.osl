@@ -32,6 +32,8 @@ shader as_subsurface
 [[
     string as_maya_node_name = "asSubsurface",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
+    string as_blender_node_name = "asSubsurface",
+    string as_blender_category = "shader",
     string help = "SubSurface Scattering material.",
     string icon = "asSubsurface.png",
     int as_maya_type_id = 0x001279e4,
