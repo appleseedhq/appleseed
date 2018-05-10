@@ -87,10 +87,10 @@ TEST_SUITE(Foundation_Platform_Snprintf)
     }
 
 #if defined APPLESEED_ARCH32
-    const size_t MaxSizeTValue = ~0;
+    const size_t MaxSizeTValue = ~size_t(0);
     const char MaxSizeTValueString[] = "4294967295";
 #elif defined APPLESEED_ARCH64
-    const size_t MaxSizeTValue = ~0;
+    const size_t MaxSizeTValue = ~size_t(0);
     const char MaxSizeTValueString[] = "18446744073709551615";
 #else
     #error Cannot determine machine architecture.

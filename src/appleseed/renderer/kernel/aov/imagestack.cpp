@@ -114,7 +114,7 @@ size_t ImageStack::get_index(const char* name) const
             return i;
     }
 
-    return ~0;
+    return ~size_t(0);
 }
 
 const char* ImageStack::get_name(const size_t index) const

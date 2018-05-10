@@ -121,7 +121,7 @@ namespace
 
             static size_t fixup_bounces(const int x)
             {
-                return x == -1 ? ~0 : x;
+                return x == -1 ? ~size_t(0) : x;
             }
         };
 
@@ -567,12 +567,12 @@ namespace
             PathTracer<PathVisitor, VolumeVisitor, true> path_tracer(
                 path_visitor,
                 volume_visitor,
-                ~0,
+                ~size_t(0),
                 m_num_max_vertices - 2,
-                ~0,
-                ~0,
-                ~0,
-                ~0,
+                ~size_t(0),
+                ~size_t(0),
+                ~size_t(0),
+                ~size_t(0),
                 false,                                  // don't clamp roughness
                 shading_context.get_max_iterations());  // don't illuminate points closer than the light near start value
 
@@ -610,12 +610,12 @@ namespace
             PathTracer<PathVisitor, VolumeVisitor, false> path_tracer(
                 path_visitor,
                 volume_visitor,
-                ~0,
+                ~size_t(0),
                 m_num_max_vertices - 2,
-                ~0,
-                ~0,
-                ~0,
-                ~0,
+                ~size_t(0),
+                ~size_t(0),
+                ~size_t(0),
+                ~size_t(0),
                 false,                                  // don't clamp roughness
                 shading_context.get_max_iterations());
 

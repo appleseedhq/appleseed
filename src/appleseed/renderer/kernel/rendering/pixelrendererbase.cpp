@@ -60,13 +60,13 @@ PixelRendererBase::PixelRendererBase(
     const ParamArray&   params)
   : m_params(params)
   , m_invalid_pixel_count(0)
-  , m_invalid_sample_aov_index(~0)
+  , m_invalid_sample_aov_index(~size_t(0))
 {
     if (m_params.m_diagnostics)
     {
         m_invalid_sample_aov_index = frame.create_extra_aov_image("invalid_samples");
 
-        if (m_invalid_sample_aov_index == size_t(~0) && thread_index == 0)
+        if (m_invalid_sample_aov_index == ~size_t(0) && thread_index == 0)
         {
             RENDERER_LOG_WARNING(
                 "could not create invalid samples aov, maximum number of aovs (" FMT_SIZE_T ") reached.",
@@ -85,7 +85,7 @@ void PixelRendererBase::on_tile_begin(
     Tile&                   tile,
     TileStack&              aov_tiles)
 {
-    if (m_invalid_sample_aov_index != size_t(~0))
+    if (m_invalid_sample_aov_index != ~size_t(0))
     {
         m_invalid_sample_diagnostic.reset(
             new Tile(tile.get_width(), tile.get_height(), 1, PixelFormatUInt8));
@@ -97,7 +97,7 @@ void PixelRendererBase::on_tile_end(
     Tile&                   tile,
     TileStack&              aov_tiles)
 {
-    if (m_invalid_sample_aov_index != size_t(~0))
+    if (m_invalid_sample_aov_index != ~size_t(0))
     {
         const size_t width = tile.get_width();
         const size_t height = tile.get_height();

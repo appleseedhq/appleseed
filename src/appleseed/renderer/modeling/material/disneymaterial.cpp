@@ -742,7 +742,7 @@ const DisneyMaterialLayer& DisneyMaterial::get_layer(
 {
     assert(index < get_layer_count());
 
-    if (thread_index == size_t(~0))
+    if (thread_index == ~size_t(0))
         return impl->m_layers[index];
 
     assert(thread_index < Impl::MaxThreadCount);

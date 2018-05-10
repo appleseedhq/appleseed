@@ -277,7 +277,7 @@ inline bool CurveLeafVisitor::visit(
     const CurveTree::LeafUserData& user_data = node.get_user_data<CurveTree::LeafUserData>();
 
     size_t curve_index = node.get_item_index();
-    size_t hit_curve_index = ~0;
+    size_t hit_curve_index = ~size_t(0);
     GScalar u, v, t = ray.m_tmax;
 
     for (foundation::uint32 i = 0; i < user_data.m_curve1_count; ++i, ++curve_index)
@@ -310,7 +310,7 @@ inline bool CurveLeafVisitor::visit(
 
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(curve3_curve_count));
 
-    if (hit_curve_index != size_t(~0))
+    if (hit_curve_index != ~size_t(0))
     {
         const CurveKey& curve_key = m_tree.m_curve_keys[hit_curve_index];
         m_shading_point.m_object_instance_index = curve_key.get_object_instance_index();

@@ -591,7 +591,7 @@ bool InputBinder::try_bind_scene_entity_to_input(
           case SymbolTable::SymbolTextureInstance:
             bind_texture_instance_to_input(
                 m_scene.texture_instances(),
-                ~0,                 // the parent is the scene, not an assembly
+                ~UniqueID(0),       // the parent is the scene, not an assembly
                 entity_type,
                 entity_name,
                 param_value,
