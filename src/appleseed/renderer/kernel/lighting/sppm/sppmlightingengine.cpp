@@ -179,10 +179,11 @@ namespace
                 volume_visitor,
                 m_params.m_path_tracing_rr_min_path_length,
                 m_params.m_path_tracing_max_bounces,
-                ~0, // max diffuse bounces
-                ~0, // max glossy bounces
-                ~0, // max specular bounces
-                ~0, // max volume bounces
+                ~0,     // max diffuse bounces
+                ~0,     // max glossy bounces
+                ~0,     // max specular bounces
+                ~0,     // max volume bounces
+                false,  // don't clamp roughness
                 shading_context.get_max_iterations());
 
             const size_t path_length =

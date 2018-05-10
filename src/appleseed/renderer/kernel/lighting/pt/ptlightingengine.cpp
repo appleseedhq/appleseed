@@ -133,7 +133,8 @@ namespace
                 "  ibl env samples               %s\n"
                 "  max ray intensity             %s\n"
                 "  volume distance samples       %s\n"
-                "  equiangular sampling          %s",
+                "  equiangular sampling          %s\n"
+                "  clamp roughness               %s",
                 m_params.m_enable_dl ? "on" : "off",
                 m_params.m_enable_ibl ? "on" : "off",
                 m_params.m_enable_caustics ? "on" : "off",
@@ -149,7 +150,8 @@ namespace
                 pretty_scalar(m_params.m_ibl_env_sample_count).c_str(),
                 m_params.m_has_max_ray_intensity ? pretty_scalar(m_params.m_max_ray_intensity).c_str() : "unlimited",
                 pretty_int(m_params.m_distance_sample_count).c_str(),
-                m_params.m_enable_equiangular_sampling ? "on" : "off");
+                m_params.m_enable_equiangular_sampling ? "on" : "off",
+                m_params.m_clamp_roughness ? "on" : "off");
         }
 
         void compute_lighting(
@@ -222,6 +224,7 @@ namespace
                 m_params.m_max_glossy_bounces,
                 m_params.m_max_specular_bounces,
                 m_params.m_max_volume_bounces,
+                m_params.m_clamp_roughness,
                 shading_context.get_max_iterations());
 
             const size_t path_length =
@@ -257,6 +260,8 @@ namespace
             const size_t    m_max_specular_bounces;         // maximum number of specular bounces, ~0 for unlimited
             const size_t    m_max_volume_bounces;           // maximum number of volume scattering events, ~0 for unlimited
 
+            const bool      m_clamp_roughness;
+
             const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
             const bool      m_next_event_estimation;        // use next event estimation?
 
@@ -283,6 +288,7 @@ namespace
               , m_max_glossy_bounces(fixup_bounces(params.get_optional<int>("max_glossy_bounces", 8)))
               , m_max_specular_bounces(fixup_bounces(params.get_optional<int>("max_specular_bounces", 8)))
               , m_max_volume_bounces(fixup_bounces(params.get_optional<int>("max_volume_bounces", 8)))
+              , m_clamp_roughness(params.get_optional<bool>("clamp_roughness", false))
               , m_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("rr_min_path_length", 6)))
               , m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
               , m_dl_light_sample_count(params.get_optional<float>("dl_light_samples", 1.0f))
@@ -1160,6 +1166,14 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("default", "true")
             .insert("label", "Next Event Estimation")
             .insert("help", "Explicitly connect path vertices to light sources to improve efficiency"));
+
+    metadata.dictionaries().insert(
+        "clamp_roughness",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "false")
+            .insert("label", "Clamp BSDF roughness")
+            .insert("help", "Clamp BSDF roughness parameter to a maximum level to reduce fireflies in glossy reflections"));
 
     metadata.dictionaries().insert(
         "max_ray_intensity",

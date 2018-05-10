@@ -86,6 +86,7 @@ class PathTracer
         const size_t            max_glossy_bounces,
         const size_t            max_specular_bounces,
         const size_t            max_volume_bounces,
+        const bool              clamp_roughness,
         const size_t            max_iterations = 1000,
         const double            near_start = 0.0);          // abort tracing if the first ray is shorter than this
 
@@ -113,6 +114,7 @@ class PathTracer
     const size_t                m_max_glossy_bounces;
     const size_t                m_max_specular_bounces;
     const size_t                m_max_volume_bounces;
+    const bool                  m_clamp_roughness;
     const size_t                m_max_iterations;
     const double                m_near_start;
     size_t                      m_diffuse_bounces;
@@ -166,6 +168,7 @@ inline PathTracer<PathVisitor, VolumeVisitor, Adjoint>::PathTracer(
     const size_t                max_glossy_bounces,
     const size_t                max_specular_bounces,
     const size_t                max_volume_bounces,
+    const bool                  clamp_roughness,
     const size_t                max_iterations,
     const double                near_start)
   : m_path_visitor(path_visitor)
@@ -176,6 +179,7 @@ inline PathTracer<PathVisitor, VolumeVisitor, Adjoint>::PathTracer(
   , m_max_glossy_bounces(max_glossy_bounces)
   , m_max_specular_bounces(max_specular_bounces)
   , m_max_volume_bounces(max_volume_bounces)
+  , m_clamp_roughness(clamp_roughness)
   , m_max_iterations(max_iterations)
   , m_near_start(near_start)
 {
@@ -679,7 +683,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
             vertex.m_scattering_modes,
             sample);
 
-        next_ray.m_max_roughness = sample.m_max_roughness;
+        next_ray.m_max_roughness = m_clamp_roughness ? 0.0f : sample.m_max_roughness;
     }
 
     // Terminate the path if it gets absorbed.

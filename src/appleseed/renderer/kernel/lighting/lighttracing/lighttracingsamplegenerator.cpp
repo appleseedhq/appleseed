@@ -684,10 +684,11 @@ namespace
                 volume_visitor,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_bounces,
-                ~0, // max diffuse bounces
-                ~0, // max glossy bounces
-                ~0, // max specular bounces
-                ~0, // max volume bounces
+                ~0,     // max diffuse bounces
+                ~0,     // max glossy bounces
+                ~0,     // max specular bounces
+                ~0,     // max volume bounces
+                false,  // don't clamp roughness
                 m_params.m_max_iterations,
                 material_data.m_edf->get_light_near_start());   // don't illuminate points closer than the light near start value
 
@@ -767,9 +768,11 @@ namespace
                 volume_visitor,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_bounces,
-                ~0, // max diffuse bounces
-                ~0, // max glossy bounces
-                ~0, // max specular bounces
+                ~0,     // max diffuse bounces
+                ~0,     // max glossy bounces
+                ~0,     // max specular bounces
+                ~0,     // max volume bounces
+                false,  // don't clamp roughness
                 m_params.m_max_iterations);
 
             // Handle the light vertex separately.
@@ -859,9 +862,11 @@ namespace
                 volume_visitor,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_bounces,
-                ~0, // max diffuse bounces
-                ~0, // max glossy bounces
-                ~0, // max specular bounces
+                ~0,     // max diffuse bounces
+                ~0,     // max glossy bounces
+                ~0,     // max specular bounces
+                ~0,     // max volume bounces
+                false,  // don't clamp roughness
                 m_params.m_max_iterations);
 
             // Trace the light path.
