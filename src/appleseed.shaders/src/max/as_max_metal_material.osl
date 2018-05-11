@@ -83,5 +83,6 @@ shader as_max_metal_material
         EdgeTint,
         microfacet_roughness(Roughness, RoughnessDepthScale),
         0.5,    // Highlight falloff.
-        Anisotropic);
+        Anisotropic,
+        "energy_compensation", 1.0);
 }
