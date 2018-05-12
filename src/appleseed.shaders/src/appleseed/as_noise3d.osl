@@ -142,6 +142,7 @@ shader as_noise3d
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
+    // to be removed
     int in_animated_noise = 0
     [[
         string as_maya_attribute_name = "animatedNoise",
@@ -153,7 +154,8 @@ shader as_noise3d
         string page = "Noise.Motion",
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        string widget = "null"
     ]],
     float in_frame_time = 0.0
     [[
@@ -165,7 +167,7 @@ shader as_noise3d
         string page = "Noise.Motion",
         string help = "Frame time, typically frame number."
     ]],
-    float in_time_scale = 1.0
+    float in_time_scale = 0.0
     [[
         string as_maya_attribute_name = "timeScale",
         string as_maya_attribute_short_name = "fqt",
@@ -432,7 +434,7 @@ shader as_noise3d
 
     string noisetype = get_noise_type(in_type);
 
-    if (in_animated_noise)
+    if (in_time_scale > 0.0)
     {
         float frequency_time = in_frame_time * in_time_scale;
 
@@ -604,8 +606,7 @@ shader as_noise3d
     result /= norm;
     result *= in_intensity;
 
-    // TODO: get working/rendering space via getattribute().
-    out_outAlpha = as_luminance(result, "Rec.709", "D65");
+    out_outAlpha = luminance(result); 
 
     color blendc = mix(in_color2, in_color1, in_contrast);
     out_outColor = mix(in_color2, blendc, 1.0 - result);
