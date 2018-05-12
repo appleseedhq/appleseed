@@ -155,8 +155,8 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
 
         v.remove(entity_ptr);
 
-        EXPECT_EQ(size_t(~0), v.get_index(entity_id));
-        EXPECT_EQ(size_t(~0), v.get_index("entity"));
+        EXPECT_EQ(~size_t(0), v.get_index(entity_id));
+        EXPECT_EQ(~size_t(0), v.get_index("entity"));
     }
 
     TEST_CASE(GetIndex_GivenID_ReturnsIndex)

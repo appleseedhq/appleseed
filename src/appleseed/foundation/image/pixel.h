@@ -156,7 +156,7 @@ class Pixel
 
     // Use this value in a channel shuffling table to indicate that a channel
     // must be skipped.
-    static const size_t SkipChannel = ~0;
+    static const size_t SkipChannel = ~size_t(0);
 
     // Return the number of destination channels specified by a channel shuffling table.
     static size_t get_dest_channel_count(

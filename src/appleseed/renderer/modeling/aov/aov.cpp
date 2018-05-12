@@ -60,7 +60,7 @@ AOV::AOV(
     const ParamArray&   params)
   : Entity(g_class_uid, params)
   , m_image(nullptr)
-  , m_image_index(~0)
+  , m_image_index(~size_t(0))
 {
     set_name(name);
 }

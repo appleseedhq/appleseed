@@ -150,7 +150,7 @@ class APPLESEED_DLLSYMBOL DisneyMaterial
     // Retrieve a given layer of the material.
     const DisneyMaterialLayer& get_layer(
         const size_t                index,
-        const size_t                thread_index = ~0) const;
+        const size_t                thread_index = ~size_t(0)) const;
 
   private:
     friend class DisneyMaterialFactory;

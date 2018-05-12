@@ -259,7 +259,11 @@ inline size_t TextureStore::TileKey::get_tile_y() const
 
 inline TextureStore::TileKey TextureStore::TileKey::invalid()
 {
-    return TileKey(~0, ~0, ~0);
+    return
+        TileKey(
+            ~foundation::UniqueID(0),   // assembly unique ID
+            ~foundation::UniqueID(0),   // texture unique ID
+            ~foundation::uint32(0));    // tile X and Y coordinates
 }
 
 inline bool TextureStore::TileKey::operator==(const TileKey& rhs) const

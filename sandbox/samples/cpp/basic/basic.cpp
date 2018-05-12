@@ -50,6 +50,7 @@
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
+#include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/log/consolelogtarget.h"
 #include "foundation/utility/autoreleaseptr.h"
@@ -269,8 +270,7 @@ asf::auto_release_ptr<asr::Project> build_project()
             "beauty",
             asr::ParamArray()
                 .insert("camera", "camera")
-                .insert("resolution", "640 480")
-                .insert("color_space", "srgb")));
+                .insert("resolution", "640 480")));
 
     // Bind the scene to the project.
     project->set_scene(scene);

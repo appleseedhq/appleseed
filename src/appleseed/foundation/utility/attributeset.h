@@ -54,7 +54,7 @@ class AttributeSet
 {
   public:
     typedef size_t ChannelID;
-    static const ChannelID InvalidChannelID = ~0;
+    static const ChannelID InvalidChannelID = ~ChannelID(0);
 
     // Destructor.
     ~AttributeSet();
