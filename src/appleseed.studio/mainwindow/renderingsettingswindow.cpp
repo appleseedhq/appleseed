@@ -942,7 +942,7 @@ namespace
             groupbox->setLayout(layout);
 
             create_pt_advanced_nee_settings(layout);
-            create_pt_advanced_clamp_roughness_settings(layout);
+            create_pt_advanced_optimization_settings(layout);
             create_pt_advanced_diag_settings(layout);
         }
 
@@ -1018,7 +1018,7 @@ namespace
             connect(unlimited_ray_intensity, SIGNAL(toggled(bool)), max_ray_intensity, SLOT(setDisabled(bool)));
         }
 
-        void create_pt_advanced_clamp_roughness_settings(QVBoxLayout* parent)
+        void create_pt_advanced_optimization_settings(QVBoxLayout* parent)
         {
             QGroupBox* diag_groupbox = new QGroupBox("Optimizations");
             parent->addWidget(diag_groupbox);
