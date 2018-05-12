@@ -29,6 +29,9 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_LIGHTPATHSWIDGET_H
 #define APPLESEED_STUDIO_MAINWINDOW_RENDERING_LIGHTPATHSWIDGET_H
 
+// appleseed.studio headers.
+#include "mainwindow/rendering/renderclipboardhandler.h"
+
 // appleseed.renderer headers.
 #include "renderer/api/lighting.h"
 
@@ -48,6 +51,7 @@
 namespace renderer  { class Camera; }
 namespace renderer  { class Project; }
 class QKeyEvent;
+class QImage;
 
 namespace appleseed {
 namespace studio {
@@ -58,6 +62,7 @@ namespace studio {
 
 class LightPathsWidget
   : public QGLWidget
+  , public ICapturableWidget
 {
     Q_OBJECT
 
@@ -66,6 +71,8 @@ class LightPathsWidget
         const renderer::Project&            project,
         const size_t                        width,
         const size_t                        height);
+
+    QImage capture() override;
 
     void set_light_paths(
         const renderer::LightPathArray&     light_paths);

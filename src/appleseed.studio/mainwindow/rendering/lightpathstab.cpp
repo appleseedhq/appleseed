@@ -307,6 +307,9 @@ void LightPathsTab::recreate_handlers()
     connect(
         m_camera_controller.get(), SIGNAL(signal_camera_changed()),
         SLOT(slot_camera_changed()));
+
+    // Clipboard handler.
+    m_clipboard_handler.reset(new RenderClipboardHandler(m_light_paths_widget, m_light_paths_widget));
 }
 
 }   // namespace studio
