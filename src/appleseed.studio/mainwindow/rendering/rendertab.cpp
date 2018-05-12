@@ -480,7 +480,7 @@ void RenderTab::recreate_handlers()
         SLOT(slot_set_render_region(const QRect&)));
 
     // Clipboard handler.
-    m_clipboard_handler.reset(new RenderClipboardHandler(m_render_widget));
+    m_clipboard_handler.reset(new RenderClipboardHandler(m_render_widget, m_render_widget));
 
     // Set initial state.
     m_pixel_inspector_handler->set_enabled(false);

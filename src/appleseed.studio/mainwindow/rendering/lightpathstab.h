@@ -32,6 +32,7 @@
 // appleseed.studio headers.
 #include "mainwindow/rendering/cameracontroller.h"
 #include "mainwindow/rendering/lightpathspickinghandler.h"
+#include "mainwindow/rendering/renderclipboardhandler.h"
 #include "utility/mousecoordinatestracker.h"
 
 // appleseed.renderer headers.
@@ -98,6 +99,7 @@ class LightPathsTab
     std::unique_ptr<CameraController>           m_camera_controller;
     std::unique_ptr<LightPathsPickingHandler>   m_screen_space_paths_picking_handler;
     std::unique_ptr<LightPathsPickingHandler>   m_world_space_paths_picking_handler;
+    std::unique_ptr<RenderClipboardHandler>     m_clipboard_handler;
 
     void create_light_paths_widget();
     void create_toolbar();

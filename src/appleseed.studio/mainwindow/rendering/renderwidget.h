@@ -30,6 +30,9 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERWIDGET_H
 #define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERWIDGET_H
 
+// appleseed.studio headers.
+#include "mainwindow/rendering/renderclipboardhandler.h"
+
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/image/image.h"
@@ -63,6 +66,7 @@ namespace studio {
 
 class RenderWidget
   : public QWidget
+  , public ICapturableWidget
 {
     Q_OBJECT
 
@@ -75,7 +79,7 @@ class RenderWidget
         QWidget*                parent = nullptr);
 
     // Thread-safe.
-    QImage get_image_copy() const;
+    QImage capture() override;
 
     // Thread-safe.
     void resize(

@@ -34,11 +34,18 @@
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class RenderWidget; } }
 class QEvent;
+class QImage;
+class QWidget;
 
 namespace appleseed {
 namespace studio {
+
+class ICapturableWidget
+{
+  public:
+    virtual QImage capture() = 0;
+};
 
 class RenderClipboardHandler
   : public QObject
@@ -46,12 +53,13 @@ class RenderClipboardHandler
     Q_OBJECT
 
   public:
-    explicit RenderClipboardHandler(RenderWidget* widget);
+    RenderClipboardHandler(QWidget* widget, ICapturableWidget* capturable_widget);
 
     ~RenderClipboardHandler() override;
 
   private:
-    RenderWidget* m_widget;
+    QWidget*            m_widget;
+    ICapturableWidget*  m_capturable_widget;
 
     bool eventFilter(QObject* object, QEvent* event) override;
 };

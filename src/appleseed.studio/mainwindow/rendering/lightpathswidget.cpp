@@ -81,6 +81,11 @@ LightPathsWidget::LightPathsWidget(
     setFixedHeight(static_cast<int>(height));
 }
 
+QImage LightPathsWidget::capture()
+{
+    return grabFrameBuffer();
+}
+
 void LightPathsWidget::set_light_paths(const LightPathArray& light_paths)
 {
     m_light_paths = light_paths;
