@@ -942,6 +942,7 @@ namespace
             groupbox->setLayout(layout);
 
             create_pt_advanced_nee_settings(layout);
+            create_pt_advanced_optimization_settings(layout);
             create_pt_advanced_diag_settings(layout);
         }
 
@@ -957,7 +958,6 @@ namespace
             create_pt_advanced_nee_dl_settings(layout);
             create_pt_advanced_nee_ibl_settings(layout);
             create_pt_advanced_nee_max_ray_intensity_settings(layout);
-            create_pt_advanced_nee_clamp_roughness_settings(layout);
         }
 
         void create_pt_advanced_nee_lightsampler_settings(QVBoxLayout* parent)
@@ -1018,10 +1018,16 @@ namespace
             connect(unlimited_ray_intensity, SIGNAL(toggled(bool)), max_ray_intensity, SLOT(setDisabled(bool)));
         }
 
-        void create_pt_advanced_nee_clamp_roughness_settings(QVBoxLayout* parent)
+        void create_pt_advanced_optimization_settings(QVBoxLayout* parent)
         {
+            QGroupBox* diag_groupbox = new QGroupBox("Optimizations");
+            parent->addWidget(diag_groupbox);
+
+            QVBoxLayout* layout = create_vertical_layout();
+            diag_groupbox->setLayout(layout);
+
             QFormLayout* sublayout = create_form_layout();
-            parent->addLayout(sublayout);
+            layout->addLayout(sublayout);
 
             sublayout->addRow(create_checkbox("advanced.clamp_roughness", "Clamp Roughness"));
         }
