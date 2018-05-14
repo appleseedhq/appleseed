@@ -140,6 +140,8 @@ namespace
                     incoming,
                     n,
                     sample.m_value.m_diffuse);
+
+                sample.m_value.m_albedo = values->m_reflectance;
             }
             else
             {

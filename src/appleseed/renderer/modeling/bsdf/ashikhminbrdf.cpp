@@ -220,6 +220,8 @@ namespace
                 sample.m_value.m_diffuse = rval.m_kd;
                 sample.m_value.m_diffuse *= a * b;
 
+                sample.m_value.m_albedo = values->m_rd;
+
                 // Evaluate the PDF of the diffuse component.
                 pdf_diffuse = cos_in * RcpPi<float>();
                 assert(pdf_diffuse > 0.0f);

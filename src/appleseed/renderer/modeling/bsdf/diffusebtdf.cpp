@@ -140,6 +140,8 @@ namespace
 
             // Set the scattering mode.
             sample.m_mode = ScatteringMode::Diffuse;
+
+            sample.m_value.m_albedo = values->m_transmittance;
         }
 
         float evaluate(
