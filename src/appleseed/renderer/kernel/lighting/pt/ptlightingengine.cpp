@@ -231,7 +231,9 @@ namespace
                 path_tracer.trace(
                     sampling_context,
                     shading_context,
-                    shading_point);
+                    shading_point,
+                    radiance
+                    );
 
             // Update statistics.
             ++m_path_count;
@@ -835,6 +837,7 @@ namespace
                 clamp_contribution(radiance.m_glossy);
                 clamp_contribution(radiance.m_volume);
                 clamp_contribution(radiance.m_emission);
+                clamp_contribution(radiance.m_albedo);
 
                 // Rebuild the beauty component.
                 radiance.m_beauty  = radiance.m_diffuse;

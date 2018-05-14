@@ -50,6 +50,7 @@ class ShadingComponents
     Spectrum m_glossy;
     Spectrum m_volume;
     Spectrum m_emission;
+    Spectrum m_albedo;
 
     // Indirect components.
     Spectrum m_indirect_diffuse;

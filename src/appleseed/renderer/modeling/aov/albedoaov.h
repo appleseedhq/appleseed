@@ -26,44 +26,52 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_DIRECTSHADINGCOMPONENTS_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_DIRECTSHADINGCOMPONENTS_H
+#ifndef APPLESEED_RENDERER_MODELING_AOV_ALBEDOAOV_H
+#define APPLESEED_RENDERER_MODELING_AOV_ALBEDOAOV_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
+#include "renderer/modeling/aov/iaovfactory.h"
 
-// appleseed.renderer headers.
-#include "renderer/kernel/lighting/scatteringmode.h"
+// appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace foundation    { class Dictionary; }
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class AOV; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
 
-class DirectShadingComponents
+//
+// A factory for albedo AOVs.
+//
+
+class APPLESEED_DLLSYMBOL AlbedoAOVFactory
+  : public IAOVFactory
 {
   public:
-    Spectrum m_beauty;
-    Spectrum m_diffuse;
-    Spectrum m_glossy;
-    Spectrum m_volume;
-    Spectrum m_emission;
-    Spectrum m_albedo;
+    // Delete this instance.
+    void release() override;
 
-    // Constructor. Clears all components to 0.
-    DirectShadingComponents();
+    // Return a string identifying this AOV model.
+    const char* get_model() const override;
 
-    void set(const float val);
+    // Return metadata for this AOV model.
+    foundation::Dictionary get_model_metadata() const override;
+
+    // Return metadata for the inputs of this AOV model.
+    foundation::DictionaryArray get_input_metadata() const override;
+
+    // Create a new AOV instance.
+    foundation::auto_release_ptr<AOV> create(
+        const ParamArray&   params) const override;
 };
-
-DirectShadingComponents& operator+=(DirectShadingComponents& lhs, const DirectShadingComponents& rhs);
-
-DirectShadingComponents& operator*=(DirectShadingComponents& lhs, const float rhs);
-DirectShadingComponents& operator/=(DirectShadingComponents& lhs, const float rhs);
-
-DirectShadingComponents& operator*=(DirectShadingComponents& lhs, const Spectrum& rhs);
-
-void madd(DirectShadingComponents& a, const DirectShadingComponents& b, const float c);
-void madd(DirectShadingComponents& a, const DirectShadingComponents& b, const Spectrum& c);
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_DIRECTSHADINGCOMPONENTS_H
+#endif  // !APPLESEED_RENDERER_MODELING_AOV_ALBEDOAOV_H

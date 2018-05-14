@@ -36,6 +36,7 @@
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
@@ -95,6 +96,13 @@ class PathTracer
         const ShadingContext&   shading_context,
         const ShadingRay&       ray,
         const ShadingPoint*     parent_shading_point = nullptr,
+        const bool              clear_arena = true);
+
+    size_t trace(
+        SamplingContext&        sampling_context,
+        const ShadingContext&   shading_context,
+        const ShadingPoint&     shading_point,
+        ShadingComponents&      radiance,
         const bool              clear_arena = true);
 
     size_t trace(
@@ -205,10 +213,29 @@ inline size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 }
 
 template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
+inline size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
+    SamplingContext&            sampling_context,
+    const ShadingContext&       shading_context,
+    const ShadingPoint&         shading_point,
+    const bool                  clear_arena)
+{
+    ShadingComponents temp_components;
+
+    return
+        trace(
+            sampling_context,
+            shading_context,
+            shading_point,
+            temp_components,
+            clear_arena);
+}
+
+template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
 size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
     SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point,
+    ShadingComponents&          radiance,
     const bool                  clear_arena)
 {
     // Terminate the path if the first hit is too close to the origin.
@@ -523,6 +550,9 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
             const bool continue_path =
                 process_bounce(sampling_context, vertex, bsdf_sample, next_ray);
 
+            if (vertex.m_albedo_aov_saved)
+                radiance.m_albedo = vertex.m_albedo;
+
             // Terminate the path if this scattering event is not accepted.
             if (!continue_path)
                 break;
@@ -684,6 +714,11 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
             sample);
 
         next_ray.m_max_roughness = m_clamp_roughness ? sample.m_max_roughness : 0.0f;
+        if (sample.m_mode == ScatteringMode::Diffuse && !vertex.m_albedo_aov_saved)
+        {
+            vertex.m_albedo = sample.m_value.m_albedo;
+            vertex.m_albedo_aov_saved = true;
+        }
     }
 
     // Terminate the path if it gets absorbed.
