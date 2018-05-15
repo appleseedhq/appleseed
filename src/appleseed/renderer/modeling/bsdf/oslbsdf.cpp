@@ -209,6 +209,7 @@ namespace
                     modes,
                     sample);
             sample.m_value *= c->get_closure_weight(closure_index);
+            sample.m_aov_components.m_albedo *= c->get_closure_weight(closure_index);
 
             if (sample.m_mode == ScatteringMode::None ||
                 sample.m_mode == ScatteringMode::Specular ||
