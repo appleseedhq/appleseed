@@ -269,3 +269,13 @@ bpy::dict dictionary_array_to_bpy_dict(
 
     return dictionaries;
 }
+
+bpy::list dictionary_array_to_bpy_list(const DictionaryArray& array)
+{
+    bpy::list metadata;
+
+    for (size_t i = 0, e = array.size(); i < e; ++i)
+        metadata.append(dictionary_to_bpy_dict(array[i]));
+
+    return metadata;
+}

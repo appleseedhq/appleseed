@@ -51,4 +51,7 @@ boost::python::dict dictionary_array_to_bpy_dict(
     const foundation::DictionaryArray&  array,
     const char*                         key);
 
+boost::python::list dictionary_array_to_bpy_list(
+    const foundation::DictionaryArray&  array);
+
 #endif  // !APPLESEED_PYTHON_DICT2DICT_H
