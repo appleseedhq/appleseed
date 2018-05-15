@@ -328,7 +328,7 @@ namespace
                 matte_comp *= m_s;
                 sample.m_value.m_diffuse = matte_comp;
 
-                sample.m_value.m_albedo = values->m_rm;
+                sample.m_aov_components.m_albedo = values->m_rm;
 
                 // Evaluate the PDF of the incoming direction for the matte component.
                 pdf_matte = dot_LN * RcpPi<float>();

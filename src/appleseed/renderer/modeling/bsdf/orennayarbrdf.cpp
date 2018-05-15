@@ -141,7 +141,7 @@ namespace
                     n,
                     sample.m_value.m_diffuse);
 
-                sample.m_value.m_albedo = values->m_reflectance;
+                sample.m_aov_components.m_albedo = values->m_reflectance;
             }
             else
             {
