@@ -167,7 +167,7 @@ void LightPathsTab::slot_save_light_paths()
 
 void LightPathsTab::slot_camera_changed()
 {
-    m_camera_controller->update_camera_transform();
+    m_light_paths_widget->set_transform(m_camera_controller->get_transform());
     m_light_paths_widget->update();
 }
 
@@ -246,6 +246,15 @@ void LightPathsTab::create_toolbar()
         m_light_paths_widget, SLOT(slot_toggle_backface_culling(const bool)));
     m_toolbar->addWidget(backface_culling_button);
 
+    // Synchronize Camera button.
+    QToolButton* sync_camera_button = new QToolButton();
+    sync_camera_button->setIcon(load_icons("lightpathstab_toggle_backface_culling"));
+    sync_camera_button->setToolTip("Synchronize Camera");
+    connect(
+        sync_camera_button, SIGNAL(clicked()),
+        m_light_paths_widget, SLOT(slot_synchronize_camera()));
+    m_toolbar->addWidget(sync_camera_button);
+
     // Add stretchy spacer.
     // This places interactive widgets on the left and info on the right.
     QWidget* spacer = new QWidget();
@@ -292,6 +301,7 @@ void LightPathsTab::recreate_handlers()
     m_screen_space_paths_picking_handler->set_enabled(false);
 
     // The world-space paths picking handler is used to pick paths in the light paths widget.
+    // Commented out because we don't want to allow that.
     // m_world_space_paths_picking_handler.reset(
     //     new LightPathsPickingHandler(
     //         m_light_paths_widget,
@@ -303,7 +313,8 @@ void LightPathsTab::recreate_handlers()
     m_camera_controller.reset(
         new CameraController(
             m_light_paths_widget,
-            m_project));
+            m_project,
+            m_project.get_uncached_active_camera()));
     connect(
         m_camera_controller.get(), SIGNAL(signal_camera_changed()),
         SLOT(slot_camera_changed()));

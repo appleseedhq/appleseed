@@ -438,7 +438,8 @@ void RenderTab::recreate_handlers()
     m_camera_controller.reset(
         new CameraController(
             m_render_widget,
-            m_project));
+            m_project,
+            m_project.get_uncached_active_camera()));
     connect(
         m_camera_controller.get(), SIGNAL(signal_camera_change_begin()),
         SIGNAL(signal_camera_change_begin()));

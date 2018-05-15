@@ -41,9 +41,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
-#include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
-#include "foundation/math/transform.h"
 #include "foundation/platform/opengl.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/string.h"
@@ -79,11 +77,19 @@ LightPathsWidget::LightPathsWidget(
     setFocusPolicy(Qt::StrongFocus);
     setFixedWidth(static_cast<int>(width));
     setFixedHeight(static_cast<int>(height));
+
+    const float time = m_camera.get_shutter_middle_time();
+    m_camera_matrix = m_camera.transform_sequence().evaluate(time).get_parent_to_local();
 }
 
 QImage LightPathsWidget::capture()
 {
     return grabFrameBuffer();
+}
+
+void LightPathsWidget::set_transform(const Transformd& transform)
+{
+    m_camera_matrix = transform.get_parent_to_local();
 }
 
 void LightPathsWidget::set_light_paths(const LightPathArray& light_paths)
@@ -127,12 +133,6 @@ void LightPathsWidget::set_selected_light_path_index(const int selected_light_pa
         static_cast<int>(m_light_paths.size()));
 }
 
-void LightPathsWidget::slot_toggle_backface_culling(const bool checked)
-{
-    m_backface_culling_enabled = checked;
-    update();
-}
-
 void LightPathsWidget::slot_display_all_light_paths()
 {
     if (m_selected_light_path_index > -1)
@@ -149,6 +149,19 @@ void LightPathsWidget::slot_display_next_light_path()
 {
     if (m_selected_light_path_index < static_cast<int>(m_light_paths.size()) - 1)
         set_selected_light_path_index(m_selected_light_path_index + 1);
+}
+
+void LightPathsWidget::slot_toggle_backface_culling(const bool checked)
+{
+    m_backface_culling_enabled = checked;
+    update();
+}
+
+void LightPathsWidget::slot_synchronize_camera()
+{
+    m_camera.transform_sequence().clear();
+    m_camera.transform_sequence().set_transform(0.0f,
+        Transformd::from_local_to_parent(inverse(m_camera_matrix)));
 }
 
 void LightPathsWidget::initializeGL()
@@ -331,8 +344,9 @@ void LightPathsWidget::render_geometry() const
 {
     glEnable(GL_LIGHTING);
 
+    glMultMatrixd(m_camera_matrix);
+
     const float time = m_camera.get_shutter_middle_time();
-    glMultMatrixd(m_camera.transform_sequence().evaluate(time).get_parent_to_local());
 
     for (const auto& assembly_instance : m_project.get_scene()->assembly_instances())
         draw(assembly_instance, time);
