@@ -92,7 +92,7 @@ class PathVertex
     // AOV properties.
     ScatteringMode::Mode        m_aov_mode;
     Spectrum                    m_albedo;
-    bool                        m_albedo_aov_saved;
+    bool                        m_albedo_saved;
 
     // Constructor.
     explicit PathVertex(SamplingContext& sampling_context);
@@ -126,7 +126,7 @@ class PathVertex
 
 inline PathVertex::PathVertex(SamplingContext& sampling_context)
   : m_sampling_context(sampling_context)
-  , m_albedo_aov_saved(false)
+  , m_albedo_saved(false)
 {
 }
 

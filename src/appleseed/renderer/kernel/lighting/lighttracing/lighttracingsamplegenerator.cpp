@@ -302,6 +302,10 @@ namespace
             {
             }
 
+            void on_first_diffuse_bounce(const PathVertex& vertex)
+            {
+            }
+
             size_t get_sample_count() const
             {
                 return m_sample_count;

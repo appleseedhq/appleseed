@@ -231,9 +231,7 @@ namespace
                 path_tracer.trace(
                     sampling_context,
                     shading_context,
-                    shading_point,
-                    radiance
-                    );
+                    shading_point);
 
             // Update statistics.
             ++m_path_count;
@@ -343,6 +341,11 @@ namespace
         class PathVisitorBase
         {
           public:
+            void on_first_diffuse_bounce(const PathVertex& vertex)
+            {
+                m_path_radiance.m_albedo = vertex.m_albedo;
+            }
+
             bool accept_scattering(
                 const ScatteringMode::Mode  prev_mode,
                 const ScatteringMode::Mode  next_mode)
@@ -837,7 +840,6 @@ namespace
                 clamp_contribution(radiance.m_glossy);
                 clamp_contribution(radiance.m_volume);
                 clamp_contribution(radiance.m_emission);
-                clamp_contribution(radiance.m_albedo);
 
                 // Rebuild the beauty component.
                 radiance.m_beauty  = radiance.m_diffuse;

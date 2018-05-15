@@ -670,6 +670,10 @@ namespace
             {
             }
 
+            void on_first_diffuse_bounce(const PathVertex& vertex)
+            {
+            }
+
             bool accept_scattering(
                 const ScatteringMode::Mode  prev_mode,
                 const ScatteringMode::Mode  next_mode) const
