@@ -39,6 +39,7 @@
 
 // Forward declarations.
 namespace renderer  { class PixelContext; }
+namespace renderer  { class AOVComponents; }
 namespace renderer  { class ShadingComponents; }
 namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
@@ -71,7 +72,8 @@ class NullLightingEngine
         const PixelContext&     pixel_context,
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
-        ShadingComponents&      radiance) override
+        ShadingComponents&      radiance,
+        AOVComponents&          components) override
     {
     }
 };

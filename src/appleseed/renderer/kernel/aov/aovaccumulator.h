@@ -48,6 +48,7 @@ namespace foundation    { class Image; }
 namespace foundation    { class Tile; }
 namespace renderer      { class Frame; }
 namespace renderer      { class PixelContext; }
+namespace renderer      { class AOVComponents; }
 namespace renderer      { class ShadingComponents; }
 namespace renderer      { class ShadingPoint; }
 namespace renderer      { class ShadingResult; }
@@ -103,6 +104,7 @@ class AOVAccumulator
         const PixelContext&         pixel_context,
         const ShadingPoint&         shading_point,
         const ShadingComponents&    shading_components,
+        const AOVComponents&        aov_components,
         ShadingResult&              shading_result);
 };
 
@@ -197,6 +199,7 @@ class AOVAccumulatorContainer
         const PixelContext&         pixel_context,
         const ShadingPoint&         shading_point,
         const ShadingComponents&    shading_components,
+        const AOVComponents&        aov_components,
         ShadingResult&              shading_result);
 
   private:

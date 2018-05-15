@@ -41,6 +41,7 @@
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/lighting/volumelightingintegrator.h"
+#include "renderer/kernel/shading/aovcomponents.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -159,7 +160,8 @@ namespace
             const PixelContext&     pixel_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
-            ShadingComponents&      radiance) override      // output radiance, in W.sr^-1.m^-2
+            ShadingComponents&      radiance,               // output radiance, in W.sr^-1.m^-2
+            AOVComponents&          components) override      
         {
             if (m_light_path_stream)
             {
@@ -175,7 +177,8 @@ namespace
                     sampling_context,
                     shading_context,
                     shading_point,
-                    radiance);
+                    radiance,
+                    components);
             }
             else
             {
@@ -183,7 +186,8 @@ namespace
                     sampling_context,
                     shading_context,
                     shading_point,
-                    radiance);
+                    radiance,
+                    components);
             }
 
             if (m_light_path_stream)
@@ -195,7 +199,8 @@ namespace
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
-            ShadingComponents&      radiance)               // output radiance, in W.sr^-1.m^-2
+            ShadingComponents&      radiance,               // output radiance, in W.sr^-1.m^-2
+            AOVComponents&          components)               
         {
             PathVisitor path_visitor(
                 m_params,
@@ -204,6 +209,7 @@ namespace
                 shading_context,
                 shading_point.get_scene(),
                 radiance,
+                components,
                 m_light_path_stream);
 
             VolumeVisitor volume_visitor(
@@ -343,7 +349,7 @@ namespace
           public:
             void on_first_diffuse_bounce(const PathVertex& vertex)
             {
-                m_path_radiance.m_albedo = vertex.m_albedo;
+                m_aov_components.m_albedo = vertex.m_albedo;
             }
 
             bool accept_scattering(
@@ -375,6 +381,7 @@ namespace
             const ShadingContext&               m_shading_context;
             const EnvironmentEDF*               m_env_edf;
             ShadingComponents&                  m_path_radiance;
+            AOVComponents&                      m_aov_components;
             LightPathStream*                    m_light_path_stream;
             bool                                m_omit_emitted_light;
 
@@ -385,6 +392,7 @@ namespace
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
                 ShadingComponents&              path_radiance,
+                AOVComponents&                  components,
                 LightPathStream*                light_path_stream)
               : m_params(params)
               , m_light_sampler(light_sampler)
@@ -392,6 +400,7 @@ namespace
               , m_shading_context(shading_context)
               , m_env_edf(scene.get_environment()->get_environment_edf())
               , m_path_radiance(path_radiance)
+              , m_aov_components(components)
               , m_light_path_stream(light_path_stream)
               , m_omit_emitted_light(false)
             {
@@ -413,6 +422,7 @@ namespace
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
                 ShadingComponents&              path_radiance,
+                AOVComponents&                  components,
                 LightPathStream*                light_path_stream)
               : PathVisitorBase(
                     params,
@@ -421,6 +431,7 @@ namespace
                     shading_context,
                     scene,
                     path_radiance,
+                    components,
                     light_path_stream)
             {
             }
@@ -519,6 +530,7 @@ namespace
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
                 ShadingComponents&              path_radiance,
+                AOVComponents&                  components,
                 LightPathStream*                light_path_stream)
               : PathVisitorBase(
                     params,
@@ -527,6 +539,7 @@ namespace
                     shading_context,
                     scene,
                     path_radiance,
+                    components,
                     light_path_stream)
               , m_is_indirect_lighting(false)
             {

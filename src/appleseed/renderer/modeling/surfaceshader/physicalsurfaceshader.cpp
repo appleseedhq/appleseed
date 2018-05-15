@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
+#include "renderer/kernel/shading/aovcomponents.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -107,6 +108,7 @@ namespace
             ShadingResult&              shading_result) const override
         {
             // Compute lighting.
+            AOVComponents components;
             ShadingComponents radiance;
             for (size_t i = 0, e = m_lighting_samples; i < e; ++i)
             {
@@ -115,7 +117,8 @@ namespace
                     pixel_context,
                     shading_context,
                     shading_point,
-                    radiance);
+                    radiance,
+                    components);
             }
             if (m_lighting_samples > 1)
                 radiance /= static_cast<float>(m_lighting_samples);
@@ -125,6 +128,7 @@ namespace
                 pixel_context,
                 shading_point,
                 radiance,
+                components,
                 shading_result);
         }
 

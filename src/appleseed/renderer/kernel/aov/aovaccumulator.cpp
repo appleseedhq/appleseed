@@ -105,6 +105,7 @@ void AOVAccumulator::write(
     const PixelContext&         pixel_context,
     const ShadingPoint&         shading_point,
     const ShadingComponents&    shading_components,
+    const AOVComponents&        aov_components,
     ShadingResult&              shading_result)
 {
 }
@@ -123,6 +124,7 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingPoint&         shading_point,
             const ShadingComponents&    shading_components,
+            const AOVComponents&        aov_components,
             ShadingResult&              shading_result) override
         {
             shading_result.m_main.rgb() =
@@ -257,6 +259,7 @@ void AOVAccumulatorContainer::write(
     const PixelContext&         pixel_context,
     const ShadingPoint&         shading_point,
     const ShadingComponents&    shading_components,
+    const AOVComponents&        aov_components,
     ShadingResult&              shading_result)
 {
     for (size_t i = 0, e = m_size; i < e; ++i)
@@ -265,6 +268,7 @@ void AOVAccumulatorContainer::write(
             pixel_context,
             shading_point,
             shading_components,
+            aov_components,
             shading_result);
     }
 }

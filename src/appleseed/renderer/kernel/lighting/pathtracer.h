@@ -36,6 +36,7 @@
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/aovcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
@@ -687,7 +688,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
 
         if (sample.m_mode == ScatteringMode::Diffuse && !vertex.m_albedo_saved)
         {
-            vertex.m_albedo = sample.m_value.m_albedo;
+            vertex.m_albedo = sample.m_aov_components.m_albedo;
             vertex.m_albedo_saved = true;
             m_path_visitor.on_first_diffuse_bounce(vertex);
         }
