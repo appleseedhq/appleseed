@@ -45,7 +45,6 @@ ShadingComponents::ShadingComponents()
   , m_glossy(0.0f)
   , m_volume(0.0f)
   , m_emission(0.0f)
-  , m_albedo(0.0f)
   , m_indirect_diffuse(0.0f)
   , m_indirect_glossy(0.0f)
   , m_indirect_volume(0.0f)
@@ -96,7 +95,6 @@ void ShadingComponents::add(
         m_glossy += value.m_glossy;
         m_volume += value.m_volume;
         m_emission += value.m_emission;
-        m_albedo += value.m_albedo;
     }
     else
     {
@@ -128,7 +126,6 @@ ShadingComponents& operator*=(ShadingComponents& lhs, const float rhs)
     lhs.m_glossy *= rhs;
     lhs.m_volume *= rhs;
     lhs.m_emission *= rhs;
-    lhs.m_albedo *= rhs;
     lhs.m_indirect_diffuse *= rhs;
     lhs.m_indirect_glossy *= rhs;
     lhs.m_indirect_volume *= rhs;

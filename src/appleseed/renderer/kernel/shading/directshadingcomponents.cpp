@@ -51,7 +51,6 @@ void DirectShadingComponents::set(const float val)
     m_glossy.set(0.0f);
     m_volume.set(0.0f);
     m_emission.set(0.0f);
-    m_albedo.set(0.0f);
 }
 
 DirectShadingComponents& operator+=(DirectShadingComponents& lhs, const DirectShadingComponents& rhs)
@@ -61,7 +60,6 @@ DirectShadingComponents& operator+=(DirectShadingComponents& lhs, const DirectSh
     lhs.m_glossy += rhs.m_glossy;
     lhs.m_volume += rhs.m_volume;
     lhs.m_emission += rhs.m_emission;
-    lhs.m_albedo += rhs.m_albedo;
     return lhs;
 }
 
@@ -72,7 +70,6 @@ DirectShadingComponents& operator*=(DirectShadingComponents& lhs, const float rh
     lhs.m_glossy *= rhs;
     lhs.m_volume *= rhs;
     lhs.m_emission *= rhs;
-    lhs.m_albedo *= rhs;
     return lhs;
 }
 
@@ -90,7 +87,6 @@ DirectShadingComponents& operator*=(DirectShadingComponents& lhs, const Spectrum
     lhs.m_glossy *= rhs;
     lhs.m_volume *= rhs;
     lhs.m_emission *= rhs;
-    lhs.m_albedo *= rhs;
     return lhs;
 }
 
@@ -101,7 +97,6 @@ void madd(DirectShadingComponents& a, const DirectShadingComponents& b, const fl
     madd(a.m_glossy, b.m_glossy, c);
     madd(a.m_volume, b.m_volume, c);
     madd(a.m_emission, b.m_emission, c);
-    madd(a.m_albedo, b.m_albedo, c);
 }
 
 void madd(DirectShadingComponents& a, const DirectShadingComponents& b, const Spectrum& c)
@@ -111,7 +106,6 @@ void madd(DirectShadingComponents& a, const DirectShadingComponents& b, const Sp
     madd(a.m_glossy, b.m_glossy, c);
     madd(a.m_volume, b.m_volume, c);
     madd(a.m_emission, b.m_emission, c);
-    madd(a.m_albedo, b.m_albedo, c);
 }
 
 }   // namespace renderer
