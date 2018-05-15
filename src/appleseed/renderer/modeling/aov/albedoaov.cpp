@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
+#include "renderer/kernel/shading/aovcomponents.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
@@ -70,10 +71,11 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingPoint&         shading_point,
             const ShadingComponents&    shading_components,
+            const AOVComponents&        aov_components,
             ShadingResult&              shading_result) override
         {
             shading_result.m_aovs[m_index].rgb() =
-                shading_components.m_albedo.to_rgb(g_std_lighting_conditions);
+                aov_components.m_albedo.to_rgb(g_std_lighting_conditions);
 
             shading_result.m_aovs[m_index].a = shading_result.m_main.a;
         }

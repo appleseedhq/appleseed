@@ -76,6 +76,7 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingPoint&         shading_point,
             const ShadingComponents&    shading_components,
+            const AOVComponents&        aov_components,
             ShadingResult&              shading_result) override
         {
             const Vector2i& pi = pixel_context.get_pixel_coords();

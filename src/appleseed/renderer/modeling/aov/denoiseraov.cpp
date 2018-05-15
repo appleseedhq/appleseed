@@ -216,6 +216,7 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingPoint&         shading_point,
             const ShadingComponents&    shading_components,
+            const AOVComponents&        aov_components,
             ShadingResult&              shading_result) override
         {
             if (shading_result.is_main_valid())
