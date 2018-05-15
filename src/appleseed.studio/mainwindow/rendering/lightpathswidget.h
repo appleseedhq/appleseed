@@ -36,6 +36,8 @@
 #include "renderer/api/lighting.h"
 
 // On Windows, <QGLWidget> requires that <windows.h> is included first.
+#include "foundation/math/matrix.h"
+#include "foundation/math/transform.h"
 #ifdef _WIN32
 #include "foundation/platform/windows.h"
 #endif
@@ -74,6 +76,9 @@ class LightPathsWidget
 
     QImage capture() override;
 
+    void set_transform(
+        const foundation::Transformd&       transform);
+
     void set_light_paths(
         const renderer::LightPathArray&     light_paths);
 
@@ -86,14 +91,16 @@ class LightPathsWidget
         const int                           total_light_paths) const;
 
   public slots:
-    void slot_toggle_backface_culling(const bool checked);
     void slot_display_all_light_paths();
     void slot_display_previous_light_path();
     void slot_display_next_light_path();
+    void slot_toggle_backface_culling(const bool checked);
+    void slot_synchronize_camera();
 
   private:
     const renderer::Project&                m_project;
-    const renderer::Camera&                 m_camera;
+    renderer::Camera&                       m_camera;
+    foundation::Matrix4d                    m_camera_matrix;
 
     bool                                    m_backface_culling_enabled;
 
