@@ -29,6 +29,7 @@
 
 // appleseed.python headers.
 #include "dict2dict.h"
+#include "metadata.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
@@ -126,11 +127,17 @@ namespace
         result.append(window.max[1]);
         return result;
     }
+
+    bpy::list get_input_metadata()
+    {
+        return dictionary_array_to_bpy_list(FrameFactory::get_input_metadata());
+    }
 }
 
 void bind_frame()
 {
     bpy::class_<Frame, auto_release_ptr<Frame>, bpy::bases<Entity>, boost::noncopyable>("Frame", bpy::no_init)
+        .def("get_input_metadata", get_input_metadata).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_frame))
         .def("__init__", bpy::make_constructor(create_frame_with_aovs))
 
