@@ -933,6 +933,8 @@ source_group ("renderer\\global" FILES
 set (renderer_kernel_aov_sources
     renderer/kernel/aov/aovaccumulator.cpp
     renderer/kernel/aov/aovaccumulator.h
+    renderer/kernel/aov/aovcomponents.cpp
+    renderer/kernel/aov/aovcomponents.h
     renderer/kernel/aov/aovsettings.h
     renderer/kernel/aov/imagestack.cpp
     renderer/kernel/aov/imagestack.h
@@ -1238,8 +1240,6 @@ set (renderer_kernel_shading_sources
     renderer/kernel/shading/closures.h
     renderer/kernel/shading/directshadingcomponents.cpp
     renderer/kernel/shading/directshadingcomponents.h
-    renderer/kernel/shading/aovcomponents.cpp
-    renderer/kernel/shading/aovcomponents.h
     renderer/kernel/shading/fastambientocclusion.cpp
     renderer/kernel/shading/fastambientocclusion.h
     renderer/kernel/shading/oslshadercompiler.cpp

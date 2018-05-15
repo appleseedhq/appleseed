@@ -32,8 +32,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
+#include "renderer/kernel/aov/aovcomponents.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
-#include "renderer/kernel/shading/aovcomponents.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"

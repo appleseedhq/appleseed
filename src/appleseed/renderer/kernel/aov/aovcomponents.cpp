@@ -36,7 +36,7 @@ namespace renderer
 // AOVComponents class implementation.
 //
 
-    AOVComponents::AOVComponents()
+AOVComponents::AOVComponents()
   : m_albedo(0.0f)
 {
 }

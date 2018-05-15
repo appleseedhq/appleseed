@@ -38,8 +38,8 @@
 #include "foundation/platform/compiler.h"
 
 // Forward declarations.
-namespace renderer  { class PixelContext; }
 namespace renderer  { class AOVComponents; }
+namespace renderer  { class PixelContext; }
 namespace renderer  { class ShadingComponents; }
 namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }

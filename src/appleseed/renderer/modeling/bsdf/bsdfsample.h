@@ -31,8 +31,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/aovcomponents.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
-#include "renderer/kernel/shading/aovcomponents.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 
