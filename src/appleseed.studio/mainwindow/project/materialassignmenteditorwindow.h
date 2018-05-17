@@ -65,12 +65,14 @@ class MaterialAssignmentEditorWindow
     Q_OBJECT
 
   public:
+    // Constructor.
     MaterialAssignmentEditorWindow(
-        QWidget*                        parent,
         renderer::ObjectInstance&       object_instance,
         ObjectInstanceItem&             object_istance_item,
-        EntityEditorContext&            editor_context);
+        EntityEditorContext&            editor_context,
+        QWidget*                        parent = nullptr);
 
+    // Destructor.
     ~MaterialAssignmentEditorWindow() override;
 
   signals:

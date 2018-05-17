@@ -264,10 +264,10 @@ void ObjectInstanceItem::slot_open_material_assignment_editor()
 {
     MaterialAssignmentEditorWindow* editor_window =
         new MaterialAssignmentEditorWindow(
-            QTreeWidgetItem::treeWidget(),
             *m_entity,
             *this,
-            m_editor_context);
+            m_editor_context,
+            QTreeWidgetItem::treeWidget());
 
     editor_window->showNormal();
     editor_window->activateWindow();
