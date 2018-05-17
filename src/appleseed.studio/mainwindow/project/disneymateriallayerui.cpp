@@ -371,11 +371,11 @@ void DisneyMaterialLayerUI::slot_open_expression_editor(const QString& widget_na
 
     ExpressionEditorWindow* expression_editor_window =
         new ExpressionEditorWindow(
-            m_content_widget,
             m_project,
             m_settings,
             widget_name,
-            widget_proxy->get());
+            widget_proxy->get(),
+            m_content_widget);
 
     connect(
         expression_editor_window,

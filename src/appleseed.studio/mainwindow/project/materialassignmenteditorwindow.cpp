@@ -76,10 +76,10 @@ namespace appleseed {
 namespace studio {
 
 MaterialAssignmentEditorWindow::MaterialAssignmentEditorWindow(
-    QWidget*                parent,
     ObjectInstance&         object_instance,
     ObjectInstanceItem&     object_instance_item,
-    EntityEditorContext&    editor_context)
+    EntityEditorContext&    editor_context,
+    QWidget*                parent)
   : QWidget(parent)
   , m_ui(new Ui::MaterialAssignmentEditorWindow())
   , m_object_instance(object_instance)
