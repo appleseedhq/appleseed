@@ -114,7 +114,7 @@ void AssemblyCollectionItem::slot_create()
 
         assembly_item->instantiate(assembly_instance_name);
 
-        m_editor_context.m_project_builder.notify_project_modification();
+        m_editor_context.m_project_builder.slot_notify_project_modification();
     }
 }
 

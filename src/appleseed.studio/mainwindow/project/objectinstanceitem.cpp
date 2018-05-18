@@ -472,7 +472,7 @@ void ObjectInstanceItem::do_delete()
 
     // Mark the assembly and the project as modified.
     m_parent.bump_version_id();
-    m_editor_context.m_project_builder.notify_project_modification();
+    m_editor_context.m_project_builder.slot_notify_project_modification();
 
     // Remove and delete the object instance item.
     ItemBase* object_instance_item = m_editor_context.m_item_registry.get_item(object_instance_uid);
@@ -548,7 +548,7 @@ void ObjectInstanceItem::do_assign_material(
     if (sides & ObjectInstance::BackSide)
         m_entity->assign_material(slot_name, ObjectInstance::BackSide, material_name);
 
-    m_editor_context.m_project_builder.notify_project_modification();
+    m_editor_context.m_project_builder.slot_notify_project_modification();
 
     update_style();
 }
@@ -563,7 +563,7 @@ void ObjectInstanceItem::do_unassign_material(
     if (sides & ObjectInstance::BackSide)
         m_entity->unassign_material(slot_name, ObjectInstance::BackSide);
 
-    m_editor_context.m_project_builder.notify_project_modification();
+    m_editor_context.m_project_builder.slot_notify_project_modification();
 
     update_style();
 }

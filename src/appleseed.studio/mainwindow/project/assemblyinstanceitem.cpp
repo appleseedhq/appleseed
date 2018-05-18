@@ -86,7 +86,7 @@ void AssemblyInstanceItem::do_delete()
 
     // Mark the scene and the project as modified.
     m_editor_context.m_project.get_scene()->bump_version_id();
-    m_editor_context.m_project_builder.notify_project_modification();
+    m_editor_context.m_project_builder.slot_notify_project_modification();
 
     // Remove and delete the assembly instance item.
     ItemBase* assembly_instance_item = m_editor_context.m_item_registry.get_item(assembly_instance_uid);

@@ -141,7 +141,7 @@ void TextureItem::do_delete()
     m_parent.textures().remove(m_parent.textures().get_by_uid(texture_uid));
 
     // Mark the project as modified.
-    m_editor_context.m_project_builder.notify_project_modification();
+    m_editor_context.m_project_builder.slot_notify_project_modification();
 
     // Remove and delete the texture item.
     ItemBase* texture_item = m_editor_context.m_item_registry.get_item(texture_uid);
