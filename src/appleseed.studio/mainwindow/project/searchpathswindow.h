@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,52 +26,65 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTITEM_H
-
-// appleseed.studio headers.
-#include "mainwindow/project/itembase.h"
-#include "mainwindow/project/searchpathswindow.h"
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_SEARCHPATHSWINDOW_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_SEARCHPATHSWINDOW_H
 
 // Qt headers.
 #include <QObject>
-
-// Standard headers.
-#include <memory>
+#include <QWidget>
 
 // Forward declarations.
-namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class CollectionItem; } }
-namespace appleseed { namespace studio { class EntityEditorContext; } }
-namespace appleseed { namespace studio { class OutputItem; } }
-namespace appleseed { namespace studio { class SceneItem; } }
 namespace renderer  { class Project; }
-class QMenu;
+namespace Ui        { class SearchPathsWindow; }
 
 namespace appleseed {
 namespace studio {
 
-class ProjectItem
-  : public ItemBase
+//
+// Search paths window.
+//
+
+class SearchPathsWindow
+  : public QWidget
 {
     Q_OBJECT
 
   public:
-    explicit ProjectItem(EntityEditorContext& editor_context);
+    // Constructor.
+    SearchPathsWindow(
+        const renderer::Project&    project,
+        QWidget*                    parent = nullptr);
 
-    QMenu* get_single_item_context_menu() const override;
+    // Destructor.
+    ~SearchPathsWindow() override;
 
-    void expand();
+  signals:
+    void signal_paths_modified() const;
 
   private:
-    SceneItem*                          m_scene_item;
-    OutputItem*                         m_output_item;
-    std::unique_ptr<SearchPathsWindow>  m_search_paths_window;
+    // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
+    Ui::SearchPathsWindow*          m_ui;
+
+    const renderer::Project&        m_project;
+    bool                            m_edit_committed;
+
+    void load_search_paths();
+    void save_search_paths();
 
   private slots:
-    void slot_edit_search_paths();
+    void accept();
+    void reject();
+    void slot_add();
+    void slot_remove();
+    void slot_move_up();
+    void slot_move_down();
+    void slot_path_selection_changed();
+    void slot_path_editor_committed(QWidget* widget);
+    void slot_path_editor_closed(QWidget* widget);
+
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_SEARCHPATHSWINDOW_H

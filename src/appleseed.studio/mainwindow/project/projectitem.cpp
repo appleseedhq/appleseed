@@ -91,6 +91,10 @@ void ProjectItem::slot_edit_search_paths()
             new SearchPathsWindow(
                 m_editor_context.m_project,
                 QTreeWidgetItem::treeWidget()));
+
+        connect(
+            m_search_paths_window.get(), SIGNAL(signal_paths_modified()),
+            &m_editor_context.m_project_builder, SLOT(slot_notify_project_modification()));
     }
 
     m_search_paths_window->showNormal();
