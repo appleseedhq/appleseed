@@ -186,6 +186,9 @@ set (mainwindow_project_sources
     mainwindow/project/projectmanager.h
     mainwindow/project/sceneitem.cpp
     mainwindow/project/sceneitem.h
+    mainwindow/project/searchpathswindow.cpp
+    mainwindow/project/searchpathswindow.h
+    mainwindow/project/searchpathswindow.ui
     mainwindow/project/singlemodelcollectionitem.h
     mainwindow/project/singlemodelentityeditorformfactory.cpp
     mainwindow/project/singlemodelentityeditorformfactory.h
