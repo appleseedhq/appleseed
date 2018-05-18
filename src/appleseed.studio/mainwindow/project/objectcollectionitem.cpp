@@ -192,7 +192,7 @@ void ObjectCollectionItem::insert_objects(const string& path) const
     if (!mesh_objects.empty())
     {
         m_parent.bump_version_id();
-        m_editor_context.m_project_builder.notify_project_modification();
+        m_editor_context.m_project_builder.slot_notify_project_modification();
     }
 }
 

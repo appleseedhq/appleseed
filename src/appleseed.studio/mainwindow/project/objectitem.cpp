@@ -169,7 +169,7 @@ void ObjectItem::do_instantiate(const string& name)
     m_parent.object_instances().insert(object_instance);
 
     m_parent.bump_version_id();
-    m_editor_context.m_project_builder.notify_project_modification();
+    m_editor_context.m_project_builder.slot_notify_project_modification();
 }
 
 void ObjectItem::delete_multiple(const QList<ItemBase*>& items)
@@ -197,7 +197,7 @@ void ObjectItem::do_delete()
     m_parent.objects().remove(m_parent.objects().get_by_uid(object_uid));
 
     // Mark the project as modified.
-    m_editor_context.m_project_builder.notify_project_modification();
+    m_editor_context.m_project_builder.slot_notify_project_modification();
 
     // Remove and delete the object item.
     ItemBase* object_item = m_editor_context.m_item_registry.get_item(object_uid);

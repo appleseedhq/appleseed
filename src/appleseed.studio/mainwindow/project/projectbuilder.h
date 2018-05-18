@@ -74,8 +74,6 @@ class ProjectBuilder
   public:
     explicit ProjectBuilder(renderer::Project& project);
 
-    void notify_project_modification() const;
-
     template <typename Entity, typename ParentEntity>
     Entity* insert_entity(
         ParentEntity&                       parent,
@@ -106,6 +104,9 @@ class ProjectBuilder
     void signal_project_modified() const;
     void signal_frame_modified() const;
 
+  public slots:
+    void slot_notify_project_modification() const;
+
   private:
     renderer::Project& m_project;
 
@@ -133,7 +134,7 @@ Entity* ProjectBuilder::insert_entity(
 
     renderer::EntityTraits<Entity>::insert_entity(entity, parent);
 
-    notify_project_modification();
+    slot_notify_project_modification();
 
     return entity_ptr;
 }
@@ -145,7 +146,7 @@ void ProjectBuilder::remove_entity(
 {
     renderer::EntityTraits<Entity>::remove_entity(entity, parent);
 
-    notify_project_modification();
+    slot_notify_project_modification();
 }
 
 template <typename Entity, typename ParentEntity>
@@ -160,7 +161,7 @@ Entity* ProjectBuilder::edit_entity(
     renderer::EntityTraits<Entity>::remove_entity(old_entity, parent);
     renderer::EntityTraits<Entity>::insert_entity(new_entity, parent);
 
-    notify_project_modification();
+    slot_notify_project_modification();
 
     return new_entity_ptr;
 }
@@ -195,7 +196,7 @@ inline renderer::EnvironmentEDF* ProjectBuilder::edit_entity(
     renderer::EntityTraits<renderer::EnvironmentEDF>::remove_entity(old_entity, parent);
     renderer::EntityTraits<renderer::EnvironmentEDF>::insert_entity(new_entity, parent);
 
-    notify_project_modification();
+    slot_notify_project_modification();
 
     return new_entity_ptr;
 }
@@ -214,7 +215,7 @@ inline renderer::Camera* ProjectBuilder::edit_entity(
     renderer::EntityTraits<renderer::Camera>::remove_entity(old_entity, parent);
     renderer::EntityTraits<renderer::Camera>::insert_entity(new_entity, parent);
 
-    notify_project_modification();
+    slot_notify_project_modification();
 
     return new_entity_ptr;
 }
@@ -248,7 +249,7 @@ inline renderer::ObjectInstance* ProjectBuilder::edit_entity(
     renderer::EntityTraits<renderer::ObjectInstance>::insert_entity(new_entity, parent);
 
     parent.bump_version_id();
-    notify_project_modification();
+    slot_notify_project_modification();
 
     return new_entity_ptr;
 }
@@ -276,7 +277,7 @@ inline renderer::TextureInstance* ProjectBuilder::edit_entity(
     renderer::EntityTraits<renderer::TextureInstance>::remove_entity(old_entity, parent);
     renderer::EntityTraits<renderer::TextureInstance>::insert_entity(new_entity, parent);
 
-    notify_project_modification();
+    slot_notify_project_modification();
 
     return new_entity_ptr;
 }
@@ -295,7 +296,7 @@ inline renderer::Light* ProjectBuilder::edit_entity(
     renderer::EntityTraits<renderer::Light>::remove_entity(old_entity, parent);
     renderer::EntityTraits<renderer::Light>::insert_entity(new_entity, parent);
 
-    notify_project_modification();
+    slot_notify_project_modification();
 
     return new_entity_ptr;
 }
