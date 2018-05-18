@@ -933,6 +933,8 @@ source_group ("renderer\\global" FILES
 set (renderer_kernel_aov_sources
     renderer/kernel/aov/aovaccumulator.cpp
     renderer/kernel/aov/aovaccumulator.h
+    renderer/kernel/aov/aovcomponents.cpp
+    renderer/kernel/aov/aovcomponents.h
     renderer/kernel/aov/aovsettings.h
     renderer/kernel/aov/imagestack.cpp
     renderer/kernel/aov/imagestack.h
@@ -1359,6 +1361,8 @@ source_group ("renderer\\meta\\tests" FILES
 )
 
 set (renderer_modeling_aov_sources
+    renderer/modeling/aov/albedoaov.cpp
+    renderer/modeling/aov/albedoaov.h
     renderer/modeling/aov/aov.cpp
     renderer/modeling/aov/aov.h
     renderer/modeling/aov/aovcontainer.h

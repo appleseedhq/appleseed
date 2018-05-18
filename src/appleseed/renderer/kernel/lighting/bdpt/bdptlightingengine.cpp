@@ -153,7 +153,8 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
-            ShadingComponents&          radiance) override      // output radiance, in W.sr^-1.m^-2
+            ShadingComponents&          radiance,               // output radiance, in W.sr^-1.m^-2
+            AOVComponents&              components) override
         {
             /// TODO:: use arena to alloc BDPTVertices instead
             BDPTVertex* camera_vertices = new BDPTVertex[m_num_max_vertices - 1];
@@ -667,6 +668,10 @@ namespace
               , m_shading_context(shading_context)
               , m_vertices(vertices)
               , m_num_vertices(num_vertices)
+            {
+            }
+
+            void on_first_diffuse_bounce(const PathVertex& vertex)
             {
             }
 

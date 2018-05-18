@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/aovcomponents.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
@@ -684,6 +685,13 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
             sample);
 
         next_ray.m_max_roughness = m_clamp_roughness ? sample.m_max_roughness : 0.0f;
+
+        if (sample.m_mode == ScatteringMode::Diffuse && !vertex.m_albedo_saved)
+        {
+            vertex.m_albedo = sample.m_aov_components.m_albedo;
+            vertex.m_albedo_saved = true;
+            m_path_visitor.on_first_diffuse_bounce(vertex);
+        }
     }
 
     // Terminate the path if it gets absorbed.

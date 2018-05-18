@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017-2018 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,57 +26,52 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_NULL_NULLLIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_NULL_NULLLIGHTINGENGINE_H
+#ifndef APPLESEED_RENDERER_MODELING_AOV_ALBEDOAOV_H
+#define APPLESEED_RENDERER_MODELING_AOV_ALBEDOAOV_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
-#include "renderer/kernel/lighting/ilightingengine.h"
+#include "renderer/modeling/aov/iaovfactory.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer  { class AOVComponents; }
-namespace renderer  { class PixelContext; }
-namespace renderer  { class ShadingComponents; }
-namespace renderer  { class ShadingContext; }
-namespace renderer  { class ShadingPoint; }
+namespace foundation    { class Dictionary; }
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class AOV; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
 
 //
-// A lighting engine that always returns zero.
+// A factory for albedo AOVs.
 //
 
-class NullLightingEngine
-  : public ILightingEngine
+class APPLESEED_DLLSYMBOL AlbedoAOVFactory
+  : public IAOVFactory
 {
   public:
     // Delete this instance.
-    void release() override
-    {
-        delete this;
-    }
+    void release() override;
 
-    // Print this component's settings to the renderer's global logger.
-    void print_settings() const override
-    {
-    }
+    // Return a string identifying this AOV model.
+    const char* get_model() const override;
 
-    // Compute the lighting at a given point of the scene.
-    void compute_lighting(
-        SamplingContext&        sampling_context,
-        const PixelContext&     pixel_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        ShadingComponents&      radiance,
-        AOVComponents&          components) override
-    {
-    }
+    // Return metadata for this AOV model.
+    foundation::Dictionary get_model_metadata() const override;
+
+    // Return metadata for the inputs of this AOV model.
+    foundation::DictionaryArray get_input_metadata() const override;
+
+    // Create a new AOV instance.
+    foundation::auto_release_ptr<AOV> create(
+        const ParamArray&   params) const override;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_NULL_NULLLIGHTINGENGINE_H
+#endif  // !APPLESEED_RENDERER_MODELING_AOV_ALBEDOAOV_H

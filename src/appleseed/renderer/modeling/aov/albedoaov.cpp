@@ -27,19 +27,18 @@
 //
 
 // Interface header.
-#include "uvaov.h"
+#include "albedoaov.h"
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
-#include "renderer/kernel/rendering/pixelcontext.h"
-#include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/aov/aovcomponents.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
+#include "renderer/modeling/color/colorspace.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
-#include "foundation/image/image.h"
-#include "foundation/image/tile.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -56,15 +55,15 @@ namespace renderer
 namespace
 {
     //
-    // UV AOV accumulator.
+    // Albedo AOV accumulator.
     //
 
-    class UVAOVAccumulator
-      : public UnfilteredAOVAccumulator
+    class AlbedoAOVAccumulator
+      : public AOVAccumulator
     {
       public:
-        UVAOVAccumulator(Image& image, Image& filter_image)
-          : UnfilteredAOVAccumulator(image, filter_image)
+        explicit AlbedoAOVAccumulator(const size_t index)
+          : m_index(index)
         {
         }
 
@@ -75,56 +74,29 @@ namespace
             const AOVComponents&        aov_components,
             ShadingResult&              shading_result) override
         {
-            const Vector2i& pi = pixel_context.get_pixel_coords();
+            shading_result.m_aovs[m_index].rgb() =
+                aov_components.m_albedo.to_rgb(g_std_lighting_conditions);
 
-            // Ignore samples outside the tile.
-            if (outside_tile(pi))
-                return;
-
-            float* p = reinterpret_cast<float*>(
-                get_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
-
-            float* f = reinterpret_cast<float*>(
-                get_filter_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
-
-            const float min_sample_square_distance = *f;
-            const float sample_square_distance =
-                square_distance_to_pixel_center(pixel_context.get_sample_position());
-
-            if (sample_square_distance < min_sample_square_distance)
-            {
-                if (shading_point.hit_surface())
-                {
-                    const Vector2f& uv = shading_point.get_uv(0);
-                    p[0] = uv[0];
-                    p[1] = uv[1];
-                    p[2] = 0.0f;
-                    *f = sample_square_distance;
-                }
-                else
-                {
-                    p[0] = 0.0f;
-                    p[1] = 0.0f;
-                    p[2] = 0.0f;
-                    *f = sample_square_distance;
-                }
-            }
+            shading_result.m_aovs[m_index].a = shading_result.m_main.a;
         }
+
+      private:
+        const size_t m_index;
     };
 
 
     //
-    // UV AOV.
+    // Albedo AOV.
     //
 
-    const char* Model = "uv_aov";
+    const char* AlbedoModel = "albedo_aov";
 
-    class UVAOV
-      : public UnfilteredAOV
+    class AlbedoAOV
+      : public ColorAOV
     {
       public:
-        explicit UVAOV(const ParamArray& params)
-          : UnfilteredAOV("uv", params)
+        explicit AlbedoAOV(const ParamArray& params)
+          : ColorAOV("albedo", params)
         {
         }
 
@@ -135,68 +107,51 @@ namespace
 
         const char* get_model() const override
         {
-            return Model;
-        }
-
-        size_t get_channel_count() const override
-        {
-            return 3;
-        }
-
-        const char** get_channel_names() const override
-        {
-            static const char* ChannelNames[] = {"R", "G", "B"};
-            return ChannelNames;
-        }
-
-        void clear_image() override
-        {
-            m_image->clear(Color3f(0.0f, 0.0f, 0.0f));
-            m_filter_image->clear(Color<float, 1>(numeric_limits<float>::max()));
+            return AlbedoModel;
         }
 
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
-                new UVAOVAccumulator(get_image(), *m_filter_image));
+                new AlbedoAOVAccumulator(m_image_index));
         }
     };
 }
 
 
 //
-// UVAOVFactory class implementation.
+// AlbedoAOVFactory class implementation.
 //
 
-void UVAOVFactory::release()
+void AlbedoAOVFactory::release()
 {
     delete this;
 }
 
-const char* UVAOVFactory::get_model() const
+const char* AlbedoAOVFactory::get_model() const
 {
-    return Model;
+    return AlbedoModel;
 }
 
-Dictionary UVAOVFactory::get_model_metadata() const
+Dictionary AlbedoAOVFactory::get_model_metadata() const
 {
     return
         Dictionary()
-            .insert("name", Model)
-            .insert("label", "UV")
+            .insert("name", get_model())
+            .insert("label", "Albedo")
             .insert("default_model", "false");
 }
 
-DictionaryArray UVAOVFactory::get_input_metadata() const
+DictionaryArray AlbedoAOVFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
     return metadata;
 }
 
-auto_release_ptr<AOV> UVAOVFactory::create(
+auto_release_ptr<AOV> AlbedoAOVFactory::create(
     const ParamArray&   params) const
 {
-    return auto_release_ptr<AOV>(new UVAOV(params));
+    return auto_release_ptr<AOV>(new AlbedoAOV(params));
 }
 
 }   // namespace renderer

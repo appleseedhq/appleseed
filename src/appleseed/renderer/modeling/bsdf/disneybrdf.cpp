@@ -187,6 +187,8 @@ namespace
                     sample.m_value.m_diffuse);
             assert(sample.m_probability > 0.0f);
 
+            sample.m_aov_components.m_albedo = values->m_base_color;
+
             sample.compute_reflected_differentials();
         }
 
