@@ -46,8 +46,23 @@ namespace foundation
 //
 // An ordered collection of search paths.
 //
-// The paths are ordered by ascending priority:
-// paths inserted later have precedence over those inserted earlier.
+// Terminology:
+//
+//   Root path
+//     A path used to resolve relative search paths.
+//
+//   Environment search path
+//     A search path extracted from an environment variable.
+//
+//   Explicit search path
+//     A search path explicitly and manually added to the collection.
+//
+// Priorities:
+//
+//   Paths are ordered by ascending priority: paths inserted later have precedence
+//   over those inserted earlier.
+//
+//   Environment search paths all have lower priority than explicit search paths.
 //
 
 class APPLESEED_DLLSYMBOL SearchPaths
@@ -60,6 +75,7 @@ class APPLESEED_DLLSYMBOL SearchPaths
     static const char osl_path_separator();
 
     // Constructor.
+    // No root path is set and the search path collection is empty.
     SearchPaths();
 
     // Constructor.
@@ -78,52 +94,62 @@ class APPLESEED_DLLSYMBOL SearchPaths
     // Swap.
     void swap(SearchPaths& other);
 
-    // Set the root path used to resolve relative search paths.
+    // Reset this class to its initial state (clear the root path and remove all search paths).
+    void reset();
+
+    //
+    // Root path.
+    //
+
+    // Set the root path.
     void set_root_path(const char* path);
     void set_root_path(const std::string& path);
 
-    // Return the root path used to resolve relative search paths.
+    // Return the root path.
     APIString get_root_path() const;
 
     // Return true if the root path has been set.
     bool has_root_path() const;
 
-    // Remove all search paths and clears the root path.
-    void clear();
-
-    // Remove all search paths except the root path and paths added from environment variables.
-    void reset();
-
-    // Return true if empty.
-    bool empty() const;
-
-    // Return the number of search paths.
-    size_t get_path_count() const;
-
-    // Return the i'th path.
-    const char* get_path(const size_t i) const;
-
-    // Return the number of explicit search paths.
-    size_t get_explicit_path_count() const;
-
-    // Return the i'th explicit path.
-    const char* get_explicit_path(const size_t i) const;
+    //
+    // Environment search paths.
+    //
 
     // Return the number of environment search paths.
     size_t get_environment_path_count() const;
 
-    // Return the i'th environment path.
+    // Return the i'th environment search path.
     const char* get_environment_path(const size_t i) const;
 
-    // Insert a search path at the end of the collection.
-    void push_back(const char* path);
-    void push_back(const std::string& path);
+    //
+    // Explicit search paths.
+    //
 
-    void split_and_push_back(const char* paths, const char separator);
-    void split_and_push_back(const std::string& paths, const char separator);
+    // Remove all explicit search paths.
+    void clear_explicit_paths();
 
-    // Remove the i'th path.
-    void remove(const size_t i);
+    // Return the number of explicit search paths.
+    size_t get_explicit_path_count() const;
+
+    // Return the i'th explicit search path.
+    const char* get_explicit_path(const size_t i) const;
+
+    // Insert an explicit search path at the end of the collection.
+    void push_back_explicit_path(const char* path);
+    void push_back_explicit_path(const std::string& path);
+
+    // Remove the i'th explicit search path.
+    void remove_explicit_path(const size_t i);
+
+    //
+    // Combined search paths.
+    //
+
+    // Return the total number of search paths (environment paths and explicit paths).
+    size_t get_path_count() const;
+
+    // Return the i'th path from the collection of environment paths and explicit paths.
+    const char* get_path(const size_t i) const;
 
     // Return true if a given file exists, that is, if the argument is the absolute
     // path to a file that exists, or it is the name of a file that exists in one of
@@ -140,8 +166,8 @@ class APPLESEED_DLLSYMBOL SearchPaths
     void qualify(const char* filepath, APIString* qualified_filepath, APIString* search_path) const;
     void qualify(const std::string& filepath, APIString* qualified_filepath, APIString* search_path) const;
 
-    // Return a string with all the search paths separated by the specified separator.
-    // The second variant returns the search paths in reverse order.
+    // Return a string with all search paths separated by the specified separator.
+    // The second variant returns search paths in reverse order.
     APIString to_string(const char separator) const;
     APIString to_string_reversed(const char separator) const;
 
@@ -162,14 +188,9 @@ inline void SearchPaths::set_root_path(const std::string& path)
     set_root_path(path.c_str());
 }
 
-inline void SearchPaths::push_back(const std::string& path)
+inline void SearchPaths::push_back_explicit_path(const std::string& path)
 {
-    push_back(path.c_str());
-}
-
-inline void SearchPaths::split_and_push_back(const std::string& paths, const char separator)
-{
-    split_and_push_back(paths.c_str(), separator);
+    push_back_explicit_path(path.c_str());
 }
 
 inline bool SearchPaths::exist(const std::string& filepath) const

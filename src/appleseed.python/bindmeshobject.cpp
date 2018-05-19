@@ -92,7 +92,7 @@ namespace
                 bpy::throw_error_already_set();
             }
 
-            paths.push_back(ex());
+            paths.push_back_explicit_path(ex());
         }
 
         MeshObjectArray objs;

@@ -147,8 +147,9 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
         m_project->set_path((project_directory / "project.appleseed").string().c_str());
         m_project->search_paths().set_root_path(project_directory.string());
 
-        m_project->search_paths().push_back("subdirectory");
-        m_project->search_paths().push_back(canonical(project_directory / "../alternate/subdirectory").string());
+        m_project->search_paths().push_back_explicit_path("subdirectory");
+        m_project->search_paths().push_back_explicit_path(
+            canonical(project_directory / "../alternate/subdirectory").string());
 
         create_assembly();
         create_mesh_object("asset1", "asset1.obj"); // found in project's root directory
@@ -191,8 +192,9 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
         m_project->set_path((project_directory / "project.appleseed").string().c_str());
         m_project->search_paths().set_root_path(project_directory.string());
 
-        m_project->search_paths().push_back("subdirectory");
-        m_project->search_paths().push_back(canonical(project_directory / "../alternate/subdirectory").string());
+        m_project->search_paths().push_back_explicit_path("subdirectory");
+        m_project->search_paths().push_back_explicit_path(
+            canonical(project_directory / "../alternate/subdirectory").string());
 
         create_assembly();
         create_mesh_object("asset1", "asset1.obj"); // found in project's root directory

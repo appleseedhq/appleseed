@@ -148,10 +148,10 @@ void SearchPathsWindow::save_search_paths()
 {
     auto& search_paths = m_project.search_paths();
 
-    search_paths.reset();
+    search_paths.clear_explicit_paths();
 
     for (int i = 0, e = m_ui->listwidget_paths->count(); i < e; ++i)
-        search_paths.push_back(m_ui->listwidget_paths->item(i)->text().toStdString());
+        search_paths.push_back_explicit_path(m_ui->listwidget_paths->item(i)->text().toStdString());
 
     emit signal_paths_modified();
 }

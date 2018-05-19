@@ -98,13 +98,13 @@ namespace
 
     void project_set_search_paths(Project* project, const bpy::list& paths)
     {
-        project->search_paths().clear();
+        project->search_paths().reset();
 
         for (bpy::ssize_t i = 0, e = bpy::len(paths); i < e; ++i)
         {
             const bpy::extract<const char*> extractor(paths[i]);
             if (extractor.check())
-                project->search_paths().push_back(extractor());
+                project->search_paths().push_back_explicit_path(extractor());
             else
             {
                 PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings accepted.");
