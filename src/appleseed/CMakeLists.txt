@@ -818,6 +818,8 @@ set (foundation_utility_sources
     foundation/utility/makevector.h
     foundation/utility/memory.cpp
     foundation/utility/memory.h
+    foundation/utility/murmurhash.cpp
+    foundation/utility/murmurhash.h
     foundation/utility/numerictype.h
     foundation/utility/otherwise.h
     foundation/utility/poison.h

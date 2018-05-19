@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2018 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,31 +26,31 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTOPERATIONS_H
-#define APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTOPERATIONS_H
+// appleseed.foundation headers.
+#include "foundation/platform/python.h"
+#include "foundation/utility/murmurhash.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+namespace bpy = boost::python;
+using namespace foundation;
 
-// Forward declarations.
-namespace foundation { class MurmurHash; }
-namespace renderer   { class MeshObject; }
-
-namespace renderer
+namespace
 {
 
-// Compute smooth vertex normal vectors for a mesh object.
-// The mesh object must not already have normals.
-APPLESEED_DLLSYMBOL void compute_smooth_vertex_normals(MeshObject& object);
+    static std::string repr(const MurmurHash& hash)
+    {
+        return "appleseed.MurmurHash(\"" + hash.to_string() + "\")";
+    }
 
-// Compute smooth vertex tangent vectors for a mesh object.
-// The mesh object must not already have tangent vectors.
-// The mesh object must have texture coordinates.
-APPLESEED_DLLSYMBOL void compute_smooth_vertex_tangents(MeshObject& object);
+}
 
-// Compute a hash for a mesh object.
-APPLESEED_DLLSYMBOL void compute_signature(foundation::MurmurHash& hash, const MeshObject& object);
-
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTOPERATIONS_H
+void bind_murmurhash()
+{
+    bpy::class_<MurmurHash>("MurmurHash")
+        .def(bpy::init<>())
+        .def(bpy::self == bpy::self)
+        .def(bpy::self != bpy::self)
+        .def(bpy::self <  bpy::self)
+        .def("__repr__", &repr)
+        .def("__str__", &MurmurHash::to_string)
+        .def("to_string", &MurmurHash::to_string);
+}

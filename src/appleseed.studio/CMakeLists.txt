@@ -244,6 +244,7 @@ set (appleseedpython_sources
     ../appleseed.python/bindmaterial.cpp
     ../appleseed.python/bindmatrix.cpp
     ../appleseed.python/bindmeshobject.cpp
+    ../appleseed.python/bindmurmurhash.cpp
     ../appleseed.python/bindobject.cpp
     ../appleseed.python/bindproject.cpp
     ../appleseed.python/bindquaternion.cpp
