@@ -126,7 +126,7 @@ namespace
         for (size_t i = 0; i < search_paths.get_explicit_path_count(); ++i)    // must evaluate size() at each iteration
         {
             if (path(search_paths.get_explicit_path(i)).is_absolute())
-                search_paths.remove(i);
+                search_paths.remove_explicit_path(i);
         }
     }
 }

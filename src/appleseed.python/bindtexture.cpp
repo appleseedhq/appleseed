@@ -67,7 +67,7 @@ namespace
         {
             bpy::extract<const char*> extractor(search_paths[i]);
             if (extractor.check())
-                paths.push_back(extractor());
+                paths.push_back_explicit_path(extractor());
             else
             {
                 PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings accepted.");
