@@ -929,7 +929,7 @@ namespace
 
                 // Create an instance of the assembly.
                 asf::auto_release_ptr<asr::Assembly> xform_assembly(
-                    asr::AssemblyFactory().create(  // TODO: Do I really have to instanciate AssemblyFactory?
+                    asr::AssemblyFactory().create(  // TODO: Do I really have to instantiate AssemblyFactory?
                         (obj_name+"_assembly").c_str(),  // Assembly instance.
                         asr::ParamArray()));
 
@@ -1242,7 +1242,7 @@ namespace
 
                 RENDERER_LOG_WARNING(
                     "shutter close (%f) is smaller than shutter open (%f) "
-                    "for camera \"%s\", only shutter open will be use.",
+                    "for camera \"%s\", only shutter open will be used.",
                         shutter_close, shutter_open, get_path().c_str());
             }
 
