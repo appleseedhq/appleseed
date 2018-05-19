@@ -94,9 +94,6 @@ class APPLESEED_DLLSYMBOL SearchPaths
     // Swap.
     void swap(SearchPaths& other);
 
-    // Reset this class to its initial state (clear the root path and remove all search paths).
-    void reset();
-
     //
     // Root path.
     //
