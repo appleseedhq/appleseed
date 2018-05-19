@@ -130,14 +130,6 @@ void SearchPaths::swap(SearchPaths& other)
     std::swap(impl, other.impl);
 }
 
-void SearchPaths::reset()
-{
-    impl->m_root_path.clear();
-    impl->m_environment_paths.clear();
-    impl->m_explicit_paths.clear();
-    impl->m_all_paths.clear();
-}
-
 void SearchPaths::set_root_path(const char* path)
 {
     impl->m_root_path = bf::path(path).make_preferred();

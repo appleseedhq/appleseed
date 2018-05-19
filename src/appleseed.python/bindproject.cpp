@@ -98,7 +98,7 @@ namespace
 
     void project_set_search_paths(Project* project, const bpy::list& paths)
     {
-        project->search_paths().reset();
+        project->search_paths().clear_explicit_paths();
 
         for (bpy::ssize_t i = 0, e = bpy::len(paths); i < e; ++i)
         {
