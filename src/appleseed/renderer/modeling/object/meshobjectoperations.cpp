@@ -37,6 +37,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
+#include "foundation/utility/murmurhash.h"
 
 // Standard headers.
 #include <cassert>
@@ -221,6 +222,50 @@ void compute_smooth_vertex_tangents(MeshObject& object)
 
     for (size_t i = 0; i < object.get_motion_segment_count(); ++i)
         compute_smooth_vertex_tangents_pose(object, i);
+}
+
+void compute_signature(MurmurHash& hash, const MeshObject& object)
+{
+    // Static attributes.
+
+    hash.append(object.get_triangle_count());
+    for (size_t i = 0, e = object.get_triangle_count(); i < e; ++i)
+        hash.append(object.get_triangle(i));
+
+    hash.append(object.get_material_slot_count());
+    for (size_t i = 0, e = object.get_material_slot_count(); i < e; ++i)
+        hash.append(object.get_material_slot(i));
+
+    hash.append(object.get_vertex_count());
+    for (size_t i = 0, e = object.get_vertex_count(); i < e; ++i)
+        hash.append(object.get_vertex(i));
+
+    hash.append(object.get_tex_coords_count());
+    for (size_t i = 0, e = object.get_tex_coords_count(); i < e; ++i)
+        hash.append(object.get_tex_coords(i));
+
+    hash.append(object.get_vertex_normal_count());
+    for (size_t i = 0, e = object.get_vertex_normal_count(); i < e; ++i)
+        hash.append(object.get_vertex_normal(i));
+
+    hash.append(object.get_vertex_tangent_count());
+    for (size_t i = 0, e = object.get_vertex_tangent_count(); i < e; ++i)
+        hash.append(object.get_vertex_tangent(i));
+
+    // Poses.
+
+    hash.append(object.get_motion_segment_count());
+    for (size_t j = 0, je = object.get_motion_segment_count(); j < je; ++j)
+    {
+        for (size_t i = 0, e = object.get_vertex_count(); i < e; ++i)
+            object.get_vertex_pose(i, j);
+
+        for (size_t i = 0, e = object.get_vertex_normal_count(); i < e; ++i)
+            object.get_vertex_normal_pose(i, j);
+
+        for (size_t i = 0, e = object.get_vertex_tangent_count(); i < e; ++i)
+            object.get_vertex_tangent_pose(i, j);
+    }
 }
 
 }   // namespace renderer

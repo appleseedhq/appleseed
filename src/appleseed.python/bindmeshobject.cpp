@@ -36,6 +36,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/python.h"
+#include "foundation/utility/murmurhash.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.
@@ -130,6 +131,11 @@ namespace
     {
         return create_primitive_mesh(name.c_str(), bpy_dict_to_param_array(params));
     }
+
+    void compute_mesh_signature(MurmurHash& hash, const MeshObject* mesh)
+    {
+        compute_signature(hash, *mesh);
+    }
 }
 
 void bind_mesh_object()
@@ -205,5 +211,6 @@ void bind_mesh_object()
 
     bpy::def("compute_smooth_vertex_normals", compute_smooth_vertex_normals);
     bpy::def("compute_smooth_vertex_tangents", compute_smooth_vertex_tangents);
+    bpy::def("compute_signature", compute_mesh_signature);
     bpy::def("create_primitive_mesh", create_mesh_prim);
 }

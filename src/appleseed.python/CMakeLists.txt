@@ -80,6 +80,7 @@ set (sources
     bindmaterial.cpp
     bindmatrix.cpp
     bindmeshobject.cpp
+    bindmurmurhash.cpp
     bindobject.cpp
     bindproject.cpp
     bindquaternion.cpp
