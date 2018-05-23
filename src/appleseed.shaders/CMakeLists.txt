@@ -155,6 +155,7 @@ source_group ("include\\appleseed\\transform" FILES
 #--------------------------------------------------------------------------------------------------
 
 set (src_blenderseed_sources
+     src/blenderseed/as_blender_areaLight.osl
      src/blenderseed/as_closure2surface.osl
 )
 
