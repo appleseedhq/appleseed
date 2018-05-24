@@ -31,8 +31,11 @@
 #include "diagnosticsurfaceshader.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/aov/aovcomponents.h"
+#include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/shading/ambientocclusion.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
@@ -79,7 +82,7 @@ namespace
 const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
     DiagnosticSurfaceShader::ShadingModeValues[] =
 {
-    { "color",                      Color },
+    { "albedo",                     Albedo },
     { "coverage",                   Coverage },
     { "barycentric",                Barycentric },
     { "uv",                         UV },
@@ -105,7 +108,7 @@ const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
 
 const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingModeNames[] =
 {
-    { "color",                      "Color" },
+    { "albedo",                     "ALbedo" },
     { "coverage",                   "Coverage" },
     { "barycentric",                "Barycentric Coordinates" },
     { "uv",                         "UV Coordinates" },
@@ -226,7 +229,7 @@ void DiagnosticSurfaceShader::evaluate(
 {
     switch (m_shading_mode)
     {
-      case Color:
+      case Albedo:
         {
             shading_result.set_main_to_opaque_pink();
 
@@ -235,30 +238,20 @@ void DiagnosticSurfaceShader::evaluate(
             {
                 const Material::RenderData& material_data = material->get_render_data();
 
-                // Execute the OSL shader if there is one.
-                if (material_data.m_shader_group)
-                {
-                    shading_context.execute_osl_shading(
-                        *material_data.m_shader_group,
-                        shading_point);
-                }
-
                 if (material_data.m_bsdf)
                 {
-                    const Vector3f direction = -normalize(Vector3f(shading_point.get_ray().m_dir));
+                    // Compute lighting.
+                    AOVComponents components;
+                    ShadingComponents radiance;
+                    shading_context.get_lighting_engine()->compute_lighting(
+                        sampling_context,
+                        pixel_context,
+                        shading_context,
+                        shading_point,
+                        radiance,
+                        components);
 
-                    DirectShadingComponents value;
-                    material_data.m_bsdf->evaluate(
-                        material_data.m_bsdf->evaluate_inputs(shading_context, shading_point),
-                        false,
-                        false,
-                        Vector3f(shading_point.get_geometric_normal()),
-                        Basis3f(shading_point.get_shading_basis()),
-                        direction,
-                        direction,
-                        ScatteringMode::All,
-                        value);
-                    set_result(value.m_beauty, shading_result);
+                    set_result(components.m_albedo, shading_result);
                 }
             }
         }
