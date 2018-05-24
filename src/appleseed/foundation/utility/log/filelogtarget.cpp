@@ -42,8 +42,9 @@ namespace foundation
 // FileLogTarget class implementation.
 //
 
-FileLogTarget::FileLogTarget()
-  : m_file(nullptr)
+FileLogTarget::FileLogTarget(const int options)
+  : m_options(options)
+  , m_file(nullptr)
 {
 }
 
@@ -64,8 +65,13 @@ void FileLogTarget::write(
     const char*                 header,
     const char*                 message)
 {
-    if (m_file)
+    if (m_file != nullptr)
+    {
         write_message(m_file, category, header, message);
+
+        if (m_options & FlushAfterEveryMessage)
+            fflush(m_file);
+    }
 }
 
 bool FileLogTarget::open(const char* filename)
@@ -93,9 +99,9 @@ bool FileLogTarget::is_open() const
     return m_file != nullptr;
 }
 
-FileLogTarget* create_file_log_target()
+FileLogTarget* create_file_log_target(const int options)
 {
-    return new FileLogTarget();
+    return new FileLogTarget(options);
 }
 
 }   // namespace foundation
