@@ -233,25 +233,43 @@ void DiagnosticSurfaceShader::evaluate(
         {
             shading_result.set_main_to_opaque_pink();
 
+            const ShadingRay& ray = shading_point.get_ray();
+            if (!ray.m_has_differentials)
+                break;
+
             const Material* material = shading_point.get_material();
             if (material)
             {
                 const Material::RenderData& material_data = material->get_render_data();
 
+                // Execute the OSL shader if there is one.
+                if (material_data.m_shader_group)
+                {
+                    shading_context.execute_osl_shading(
+                        *material_data.m_shader_group,
+                        shading_point);
+                }
+
                 if (material_data.m_bsdf)
                 {
-                    // Compute lighting.
-                    AOVComponents components;
-                    ShadingComponents radiance;
-                    shading_context.get_lighting_engine()->compute_lighting(
-                        sampling_context,
-                        pixel_context,
-                        shading_context,
-                        shading_point,
-                        radiance,
-                        components);
+                    const Dual3d outgoing(
+                        -ray.m_dir,
+                        ray.m_dir - ray.m_rx.m_dir,
+                        ray.m_dir - ray.m_ry.m_dir);
 
-                    set_result(components.m_albedo, shading_result);
+                    BSDFSample sample(&shading_point, Dual3f(outgoing));
+                    material_data.m_bsdf->sample(
+                        sampling_context,
+                        material_data.m_bsdf->evaluate_inputs(shading_context, shading_point),
+                        false,
+                        false,
+                        ScatteringMode::All,
+                        sample);
+
+                    if (!sample.m_incoming.has_derivatives())
+                        break;
+
+                    set_result(sample.m_aov_components.m_albedo, shading_result);
                 }
             }
         }
