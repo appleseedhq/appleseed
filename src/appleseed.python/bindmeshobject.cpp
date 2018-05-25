@@ -172,6 +172,11 @@ void bind_mesh_object()
         .def("get_vertex_normal_count", &MeshObject::get_vertex_normal_count)
         .def("get_vertex_normal", &MeshObject::get_vertex_normal, bpy::return_value_policy<bpy::reference_existing_object>())
 
+        .def("reserve_vertex_tangents", &MeshObject::reserve_vertex_tangents)
+        .def("push_vertex_tangent", &MeshObject::push_vertex_tangent)
+        .def("get_vertex_tangent_count", &MeshObject::get_vertex_tangent_count)
+        .def("get_vertex_tangent", &MeshObject::get_vertex_tangent)
+
         .def("reserve_tex_coords", &MeshObject::reserve_tex_coords)
         .def("push_tex_coords", &MeshObject::push_tex_coords)
         .def("get_tex_coords_count", &MeshObject::get_tex_coords_count)
