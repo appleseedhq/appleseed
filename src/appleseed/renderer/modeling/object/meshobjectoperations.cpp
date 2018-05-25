@@ -258,13 +258,13 @@ void compute_signature(MurmurHash& hash, const MeshObject& object)
     for (size_t j = 0, je = object.get_motion_segment_count(); j < je; ++j)
     {
         for (size_t i = 0, e = object.get_vertex_count(); i < e; ++i)
-            object.get_vertex_pose(i, j);
+            hash.append(object.get_vertex_pose(i, j));
 
         for (size_t i = 0, e = object.get_vertex_normal_count(); i < e; ++i)
-            object.get_vertex_normal_pose(i, j);
+            hash.append(object.get_vertex_normal_pose(i, j));
 
         for (size_t i = 0, e = object.get_vertex_tangent_count(); i < e; ++i)
-            object.get_vertex_tangent_pose(i, j);
+            hash.append(object.get_vertex_tangent_pose(i, j));
     }
 }
 
