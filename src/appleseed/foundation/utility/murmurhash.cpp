@@ -92,7 +92,7 @@ void MurmurHash::append(const void* data, const size_t bytes)
 
     // tail
 
-    const uint64 * tail = (reinterpret_cast<const uint64*>(data)) + nBlocks*16;
+    const uint8* tail = reinterpret_cast<const uint8*>(data) + nBlocks*16;
 
     uint64 k1 = 0;
     uint64 k2 = 0;
