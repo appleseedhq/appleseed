@@ -441,6 +441,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_microfacet.cpp
     foundation/meta/tests/test_minmax.cpp
     foundation/meta/tests/test_mis.cpp
+    foundation/meta/tests/test_murmurhash.cpp
     foundation/meta/tests/test_noise.cpp
     foundation/meta/tests/test_objmeshfilereader.cpp
     foundation/meta/tests/test_objmeshfilewriter.cpp
