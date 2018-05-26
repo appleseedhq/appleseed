@@ -66,11 +66,11 @@ class APPLESEED_DLLSYMBOL MurmurHash
     bool operator<(const MurmurHash& other) const;
 
     template <typename T>
-    void append(const T& x);
+    MurmurHash& append(const T& x);
 
-    void append(const char* str);
+    MurmurHash& append(const char* str);
 
-    void append(const std::string& str);
+    MurmurHash& append(const std::string& str);
 
     std::string to_string() const;
 
@@ -89,14 +89,16 @@ std::ostream& operator<<(std::ostream& o, const MurmurHash& hash);
 //
 
 template <typename T>
-inline void MurmurHash::append(const T& x)
+inline MurmurHash& MurmurHash::append(const T& x)
 {
     append(&x, sizeof(T));
+    return *this;
 }
 
-inline void MurmurHash::append(const std::string& str)
+inline MurmurHash& MurmurHash::append(const std::string& str)
 {
     append(str.c_str(), str.size());
+    return *this;
 }
 
 inline std::string MurmurHash::to_string() const

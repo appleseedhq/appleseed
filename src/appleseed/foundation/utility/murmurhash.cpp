@@ -136,9 +136,10 @@ void MurmurHash::append(const void* data, const size_t bytes)
     m_h2 = h2;
 }
 
-void MurmurHash::append(const char* str)
+MurmurHash& MurmurHash::append(const char* str)
 {
     append(str, strlen(str));
+    return *this;
 }
 
 bool MurmurHash::operator==(const MurmurHash& other) const
