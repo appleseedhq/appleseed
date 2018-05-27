@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2018 Thomas Manceau, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,13 +30,16 @@
 #define APPLESEED_FOUNDATION_IMAGE_OIIOIMAGEFILEWRITER_H
 
 // appleseed.foundation headers.
-#include "foundation/image/icanvas.h"
 #include "foundation/image/imageattributes.h"
+#include "foundation/image/pixel.h"
 
-// openimageio headers.
+// OpenImageIO headers.
 #include "foundation/platform/_beginoiioheaders.h"
 #include "OpenImageIO/imageio.h"
 #include "foundation/platform/_endoiioheaders.h"
+
+// Forward declarations.
+namespace foundation { class ICanvas; }
 
 namespace foundation
 {
@@ -45,7 +47,7 @@ namespace foundation
 class APPLESEED_DLLSYMBOL OIIOImageFileWriter
 {
   public:
-    OIIOImageFileWriter(const char* filename);
+    explicit OIIOImageFileWriter(const char* filename);
     ~OIIOImageFileWriter();
 
     void append_image(const ICanvas* image);
@@ -58,30 +60,30 @@ class APPLESEED_DLLSYMBOL OIIOImageFileWriter
 
     void set_image_attributes(const ImageAttributes& image_attributes);
 
-    size_t get_image_count(void) const;
+    size_t get_image_count() const;
 
     void write();
 
   private:
-    void close_file(void);
+    void close_file();
 
-    void set_image_spec(void);
+    void set_image_spec();
     
     void set_generic_image_attributes(const ImageAttributes& image_attributes);
     void set_exr_image_attributes(const ImageAttributes& image_attributes);
     
     void write(const size_t image_index);
-    void write_single_image(void);
-    void write_multi_images(void);
+    void write_single_image();
+    void write_multi_images();
 
     void write_scanlines(const size_t image_index);
     void write_tiles(const size_t image_index);
 
   private:
-    struct OIIOImages;
+    struct Impl;
+    Impl* impl;
 
     OIIO::ImageOutput*  m_writer;
-    OIIOImages*         m_images;
     const char*         m_filename;
 };
 

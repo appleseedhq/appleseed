@@ -61,7 +61,7 @@ void GenericImageFileWriter::write(
 
     if (extension == ".exr" || extension == ".png")
     {
-        OIIOImageFileWriter writer{ filename };
+        OIIOImageFileWriter writer(filename);
 
         writer.append_image(&image);
 
