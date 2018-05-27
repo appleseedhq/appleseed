@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "oslshadercompiler.h"
+#include "shadercompiler.h"
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/oiioerrorhandler.h"
@@ -76,6 +76,7 @@ struct ShaderCompiler::Impl
     string              m_stdosl_path;
     OSL::OSLCompiler*   m_compiler;
     OIIOErrorHandler*   m_error_handler;
+    vector<string>      m_options;
 };
 
 ShaderCompiler::ShaderCompiler(const char* stdosl_path)
@@ -93,16 +94,25 @@ void ShaderCompiler::release()
     delete this;
 }
 
+void ShaderCompiler::clear_options()
+{
+    impl->m_options.clear();
+}
+
+void ShaderCompiler::add_option(const char* option)
+{
+    impl->m_options.push_back(option);
+}
+
 bool ShaderCompiler::compile_buffer(
     const char* source_code,
     APIString&  result)
 {
-    vector<string> options;
     string buffer;
     const bool ok = impl->m_compiler->compile_buffer(
         source_code,
         buffer,
-        options,
+        impl->m_options,
         impl->m_stdosl_path.c_str());
 
     if (ok)
