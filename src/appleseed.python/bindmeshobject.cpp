@@ -67,7 +67,7 @@ namespace
                 MeshObjectFactory().create(name.c_str(), bpy_dict_to_param_array(params)));
     }
 
-    const Triangle& get_triangle(const MeshObject* object, const size_t index)
+    Triangle& get_triangle(MeshObject* object, const size_t index)
     {
         return object->get_triangle(index);
     }
