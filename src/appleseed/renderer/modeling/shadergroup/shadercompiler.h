@@ -26,12 +26,15 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_OSLSHADERCOMPILER_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_OSLSHADERCOMPILER_H
+#ifndef APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERCOMPILER_H
+#define APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERCOMPILER_H
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class APIString; }
@@ -43,12 +46,16 @@ namespace renderer
 // Simple wrapper around OSL's OSLCompiler.
 //
 
-class ShaderCompiler
+class APPLESEED_DLLSYMBOL ShaderCompiler
   : public foundation::NonCopyable
 {
   public:
     // Delete this instance.
     void release();
+
+    void clear_options();
+
+    void add_option(const char* option);
 
     bool compile_buffer(
         const char*             source_code,
@@ -64,12 +71,11 @@ class ShaderCompiler
     ~ShaderCompiler();
 };
 
-
-//
+ //
 // ShaderCompiler factory.
 //
 
-class ShaderCompilerFactory
+class APPLESEED_DLLSYMBOL ShaderCompilerFactory
 {
   public:
     // Create a new shader compiler.
@@ -79,4 +85,4 @@ class ShaderCompilerFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_OSLSHADERCOMPILER_H
+#endif  // !APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERCOMPILER_H

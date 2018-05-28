@@ -1244,8 +1244,6 @@ set (renderer_kernel_shading_sources
     renderer/kernel/shading/directshadingcomponents.h
     renderer/kernel/shading/fastambientocclusion.cpp
     renderer/kernel/shading/fastambientocclusion.h
-    renderer/kernel/shading/oslshadercompiler.cpp
-    renderer/kernel/shading/oslshadercompiler.h
     renderer/kernel/shading/oslshadergroupexec.cpp
     renderer/kernel/shading/oslshadergroupexec.h
     renderer/kernel/shading/oslshadingsystem.cpp
@@ -1870,6 +1868,8 @@ source_group ("renderer\\modeling\\scene" FILES
 set (renderer_modeling_shadergroup
     renderer/modeling/shadergroup/shader.cpp
     renderer/modeling/shadergroup/shader.h
+    renderer/modeling/shadergroup/shadercompiler.cpp
+    renderer/modeling/shadergroup/shadercompiler.h
     renderer/modeling/shadergroup/shaderconnection.cpp
     renderer/modeling/shadergroup/shaderconnection.h
     renderer/modeling/shadergroup/shadergroup.cpp
