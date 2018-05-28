@@ -126,6 +126,9 @@ option (USE_STATIC_OCIO                     "Use static OpenColorIO libraries"  
 option (USE_STATIC_OSL                      "Use static OpenShadingLanguage libraries"              ON)
 option (WARNINGS_AS_ERRORS                  "Treat compiler warnings as errors"                     ON)
 
+option (WITH_EMBREE                         "Use Embree intersection backend"                       ON)
+option (USE_EXTERNAL_EMBREE                 "Use external Embree library"                           OFF)
+
 option (HIDE_SYMBOLS                        "When using gcc, hide symbols not on the public API"    ON)
 
 if (CMAKE_SYSTEM_NAME MATCHES "Linux|FreeBSD")
@@ -265,6 +268,13 @@ if (WITH_DISNEY_MATERIAL)
     endif ()
 endif ()
 
+if (WITH_EMBREE)
+    add_definitions (-DAPPLESEED_WITH_EMBREE)
+    if (USE_EXTERNAL_EMBREE)
+        find_package (Embree REQUIRED)
+    endif ()
+endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
@@ -340,6 +350,13 @@ if (WITH_DISNEY_MATERIAL)
     endif ()
 endif ()
 
+if (WITH_EMBREE)
+    if (NOT USE_EXTERNAL_EMBREE)
+        include_directories (${APPLESEED_DEPS_STAGE_DIR}/embree-debug/include/)
+    else ()
+        include_directories (${EMBREE_INCLUDE_DIRS})
+    endif ()
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Preprocessor definitions.

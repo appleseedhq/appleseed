@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/curvetree.h"
+#include "renderer/kernel/intersection/embreescene.h"
 #include "renderer/kernel/intersection/probevisitorbase.h"
 #include "renderer/kernel/intersection/regiontree.h"
 #include "renderer/kernel/intersection/treerepository.h"
@@ -87,6 +88,13 @@ class AssemblyTree
     // Return the size (in bytes) of this object in memory.
     size_t get_memory_size() const;
 
+#ifdef APPLESEED_WITH_EMBREE
+
+    bool use_embree() const;
+    void set_use_embree(const bool value);
+
+#endif
+
   private:
     friend class AssemblyLeafVisitor;
     friend class AssemblyLeafProbeVisitor;
@@ -131,6 +139,15 @@ class AssemblyTree
     TreeRepository<CurveTree>       m_curve_tree_repository;
     CurveTreeContainer              m_curve_trees;
 
+#ifdef APPLESEED_WITH_EMBREE
+
+    TreeRepository<EmbreeScene>     m_embree_scene_repository;
+    EmbreeSceneContainer            m_embree_scenes;
+    bool                            m_use_embree;
+    bool                            m_dirty; // is used to determine triangle tree / embree switch
+
+#endif
+
     void collect_assembly_instances(
         const AssemblyInstanceContainer&        assembly_instances,
         const TransformSequence&                parent_transform_seq,
@@ -147,6 +164,13 @@ class AssemblyTree
     void create_region_tree(const Assembly& assembly);
     void create_triangle_tree(const Assembly& assembly);
     void create_curve_tree(const Assembly& assembly);
+
+#ifdef APPLESEED_WITH_EMBREE
+
+    void create_embree_scene(const Assembly& assembly);
+    void delete_embree_scene(const foundation::UniqueID assembly_id);
+
+#endif
 
     void delete_child_trees(const foundation::UniqueID assembly_id);
     void delete_region_tree(const foundation::UniqueID assembly_id);
@@ -173,6 +197,9 @@ class AssemblyLeafVisitor
         RegionTreeAccessCache&                      region_tree_cache,
         TriangleTreeAccessCache&                    triangle_tree_cache,
         CurveTreeAccessCache&                       curve_tree_cache,
+#ifdef APPLESEED_WITH_EMBREE
+        EmbreeSceneAccessCache&                     embree_scene_cache,
+#endif
         const ShadingPoint*                         parent_shading_point
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
         , foundation::bvh::TraversalStatistics&     triangle_tree_stats
@@ -197,6 +224,9 @@ class AssemblyLeafVisitor
     RegionTreeAccessCache&                          m_region_tree_cache;
     TriangleTreeAccessCache&                        m_triangle_tree_cache;
     CurveTreeAccessCache&                           m_curve_tree_cache;
+#ifdef APPLESEED_WITH_EMBREE
+    EmbreeSceneAccessCache&                         m_embree_scene_cache;
+#endif
     const ShadingPoint*                             m_parent_shading_point;
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     foundation::bvh::TraversalStatistics&           m_triangle_tree_stats;
@@ -220,6 +250,9 @@ class AssemblyLeafProbeVisitor
         RegionTreeAccessCache&                      region_tree_cache,
         TriangleTreeAccessCache&                    triangle_tree_cache,
         CurveTreeAccessCache&                       curve_tree_cache,
+#ifdef APPLESEED_WITH_EMBREE
+        EmbreeSceneAccessCache&                     embree_scene_cache,
+#endif
         const ShadingPoint*                         parent_shading_point
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
         , foundation::bvh::TraversalStatistics&     triangle_tree_stats
@@ -243,6 +276,9 @@ class AssemblyLeafProbeVisitor
     RegionTreeAccessCache&                          m_region_tree_cache;
     TriangleTreeAccessCache&                        m_triangle_tree_cache;
     CurveTreeAccessCache&                           m_curve_tree_cache;
+#ifdef APPLESEED_WITH_EMBREE
+    EmbreeSceneAccessCache&                         m_embree_scene_cache;
+#endif
     const ShadingPoint*                             m_parent_shading_point;
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     foundation::bvh::TraversalStatistics&           m_triangle_tree_stats;
@@ -278,6 +314,9 @@ inline AssemblyLeafVisitor::AssemblyLeafVisitor(
     RegionTreeAccessCache&                          region_tree_cache,
     TriangleTreeAccessCache&                        triangle_tree_cache,
     CurveTreeAccessCache&                           curve_tree_cache,
+#ifdef APPLESEED_WITH_EMBREE
+    EmbreeSceneAccessCache&                         embree_scene_cache,
+#endif
     const ShadingPoint*                             parent_shading_point
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     , foundation::bvh::TraversalStatistics&         triangle_tree_stats
@@ -289,6 +328,7 @@ inline AssemblyLeafVisitor::AssemblyLeafVisitor(
   , m_region_tree_cache(region_tree_cache)
   , m_triangle_tree_cache(triangle_tree_cache)
   , m_curve_tree_cache(curve_tree_cache)
+  , m_embree_scene_cache(embree_scene_cache)
   , m_parent_shading_point(parent_shading_point)
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
   , m_triangle_tree_stats(triangle_tree_stats)
@@ -307,6 +347,9 @@ inline AssemblyLeafProbeVisitor::AssemblyLeafProbeVisitor(
     RegionTreeAccessCache&                          region_tree_cache,
     TriangleTreeAccessCache&                        triangle_tree_cache,
     CurveTreeAccessCache&                           curve_tree_cache,
+#ifdef APPLESEED_WITH_EMBREE
+    EmbreeSceneAccessCache&                         embree_scene_cache,
+#endif
     const ShadingPoint*                             parent_shading_point
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     , foundation::bvh::TraversalStatistics&         triangle_tree_stats
@@ -317,6 +360,7 @@ inline AssemblyLeafProbeVisitor::AssemblyLeafProbeVisitor(
   , m_region_tree_cache(region_tree_cache)
   , m_triangle_tree_cache(triangle_tree_cache)
   , m_curve_tree_cache(curve_tree_cache)
+  , m_embree_scene_cache(embree_scene_cache)
   , m_parent_shading_point(parent_shading_point)
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
   , m_triangle_tree_stats(triangle_tree_stats)

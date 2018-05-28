@@ -369,6 +369,17 @@ macro (link_against_seexpreditor target)
     endif ()
 endmacro ()
 
+macro (link_against_embree target)
+    if (USE_EXTERNAL_EMBREE)
+        target_link_libraries (${target} ${EMBREE_LIBRARIES})
+    else ()
+        target_link_libraries (${target} 
+            debug ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/embree3.lib
+            optimized ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/embree3.lib
+        )
+    endif ()
+endmacro ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Copy a target binary to the sandbox.

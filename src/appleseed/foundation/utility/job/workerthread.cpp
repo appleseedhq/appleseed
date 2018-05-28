@@ -32,6 +32,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/snprintf.h"
+#ifdef APPLESEED_USE_SSE
+#include "foundation/platform/sse.h"
+#endif
 #include "foundation/platform/types.h"
 #include "foundation/utility/job/ijob.h"
 #include "foundation/utility/job/jobmanager.h"
@@ -79,6 +82,11 @@ void WorkerThread::start()
 
     assert(m_pause_flag.is_clear());
     assert(!m_abort_switch.is_aborted());
+
+#ifdef APPLESEED_USE_SSE
+    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+    _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+#endif
 
     // Start the thread.
     m_thread = new boost::thread(m_thread_func);
