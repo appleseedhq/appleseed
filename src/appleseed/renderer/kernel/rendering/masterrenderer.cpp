@@ -441,9 +441,6 @@ struct MasterRenderer::Impl
         if (abort_switch.is_aborted())
             return m_renderer_controller->get_status();
 
-        // Build or update ray tracing acceleration structures.
-        m_project.update_trace_context();
-
         // Create renderer components.
         RendererComponents components(
             m_project,
@@ -454,6 +451,14 @@ struct MasterRenderer::Impl
             *m_shading_system);
         if (!components.create())
             return IRendererController::AbortRendering;
+
+        // Build or update ray tracing acceleration structures.
+#ifdef APPLESEED_WITH_EMBREE
+        m_project.set_use_embree(
+            m_params.get_optional<bool>("use_embree", false));
+#endif
+
+        m_project.update_trace_context();
 
         // Print renderer component settings.
         components.print_settings();

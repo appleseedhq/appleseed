@@ -60,7 +60,6 @@ class Triangle
     foundation::uint32  m_n0, m_n1, m_n2;   // vertex normal indices
     foundation::uint32  m_a0, m_a1, m_a2;   // vertex attribute indices
     foundation::uint32  m_pa;               // primitive attribute index
-
     // Constructors.
     Triangle();                             // leave all fields uninitialized
     Triangle(

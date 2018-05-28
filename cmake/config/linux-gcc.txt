@@ -253,6 +253,11 @@ macro (link_against_seexpreditor target)
     target_link_libraries (${target} ${SEEXPREDITOR_LIBRARIES})
 endmacro ()
 
+macro (link_against_embree target)
+    target_link_libraries (${target} ${EMBREE_LIBRARIES})
+
+endmacro ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Copy a target binary to the sandbox.

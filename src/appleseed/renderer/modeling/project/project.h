@@ -195,6 +195,11 @@ class APPLESEED_DLLSYMBOL Project
     // Synchronize the trace context with the scene.
     void update_trace_context();
 
+#ifdef APPLESEED_WITH_EMBREE
+    // Set use Embree flag for trace context
+    void set_use_embree(const bool value);
+#endif
+
   private:
     friend class ProjectFactory;
 

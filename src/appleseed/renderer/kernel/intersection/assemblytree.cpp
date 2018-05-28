@@ -84,8 +84,11 @@ namespace renderer
 AssemblyTree::AssemblyTree(const Scene& scene)
   : TreeType(AlignedAllocator<void>(System::get_l1_data_cache_line_size()))
   , m_scene(scene)
+#ifdef APPLESEED_WITH_EMBREE
+  , m_use_embree(false)
+  , m_dirty(false)
+#endif
 {
-    update();
 }
 
 AssemblyTree::~AssemblyTree()
@@ -210,6 +213,15 @@ void AssemblyTree::rebuild_assembly_tree()
         StatisticsVector::make(
             "assembly tree statistics",
             statistics).to_string().c_str());
+
+#ifdef APPLESEED_WITH_EMBREE
+
+    if (use_embree())
+    {
+        RENDERER_LOG_INFO("using Embree for assembly tree leaf intersection");
+    }
+
+#endif
 }
 
 void AssemblyTree::store_items_in_leaves(Statistics& statistics)
@@ -269,7 +281,11 @@ void AssemblyTree::update_tree_hierarchy()
 
         if (stored_version_it != m_assembly_versions.end())
         {
-            if (stored_version_it->second == current_version_id)
+            if ((stored_version_it->second == current_version_id)
+#ifdef APPLESEED_WITH_EMBREE
+                && !m_dirty
+#endif
+                )
             {
                 // The child trees of this assembly are up-to-date.
                 continue;
@@ -289,6 +305,10 @@ void AssemblyTree::update_tree_hierarchy()
     // Update child trees.
     update_region_trees();
     update_triangle_trees();
+
+#ifdef APPLESEED_WITH_EMBREE
+    m_dirty = false;
+#endif
 }
 
 void AssemblyTree::collect_unique_assemblies(AssemblyVector& assemblies) const
@@ -404,17 +424,28 @@ namespace
 
 void AssemblyTree::create_child_trees(const Assembly& assembly)
 {
-    // Create a region or a triangle tree if there are mesh objects.
-    if (has_object_instances_of_type(assembly, MeshObjectFactory().get_model()))
-    {
-        assembly.is_flushable()
-            ? create_region_tree(assembly)
-            : create_triangle_tree(assembly);
-    }
+#ifdef APPLESEED_WITH_EMBREE
 
-    // Create a curve tree if there are curve objects.
-    if (has_object_instances_of_type(assembly, CurveObjectFactory().get_model()))
-        create_curve_tree(assembly);
+    if (use_embree())
+    {
+        create_embree_scene(assembly);
+    }
+    else
+
+#endif
+    {
+        // Create a region or a triangle tree if there are mesh objects.
+        if (has_object_instances_of_type(assembly, MeshObjectFactory().get_model()))
+        {
+            assembly.is_flushable()
+                ? create_region_tree(assembly)
+                : create_triangle_tree(assembly);
+        }
+
+        // Create a curve tree if there are curve objects.
+        if (has_object_instances_of_type(assembly, CurveObjectFactory().get_model()))
+            create_curve_tree(assembly);
+    }
 }
 
 void AssemblyTree::create_region_tree(const Assembly& assembly)
@@ -498,11 +529,63 @@ void AssemblyTree::create_curve_tree(const Assembly& assembly)
     m_curve_trees.insert(make_pair(assembly.get_uid(), tree));
 }
 
+#ifdef APPLESEED_WITH_EMBREE
+
+bool AssemblyTree::use_embree() const
+{
+    return m_use_embree;
+}
+
+void AssemblyTree::set_use_embree(const bool value)
+{
+    if (value != m_use_embree)
+    {
+        m_dirty = true;
+        m_use_embree = value;
+    }
+}
+
+void AssemblyTree::create_embree_scene(const Assembly& assembly)
+{
+    const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory().get_model());
+    Lazy<EmbreeScene>* scene = m_embree_scene_repository.acquire(hash);
+
+    if (scene == nullptr)
+    {
+        unique_ptr<ILazyFactory<EmbreeScene>> embree_scene_factory(
+            new EmbreeSceneFactory(
+                EmbreeScene::Arguments(
+                    m_scene.get_embree_device(),
+                    assembly
+                )));
+        
+        scene = new Lazy<EmbreeScene>(move(embree_scene_factory));
+        m_embree_scene_repository.insert(hash, scene);
+    }
+
+    m_embree_scenes.insert(make_pair(assembly.get_uid(), scene));
+}
+
+void AssemblyTree::delete_embree_scene(const UniqueID assembly_id)
+{
+    const EmbreeSceneContainer::iterator it = m_embree_scenes.find(assembly_id);
+    if (it != m_embree_scenes.end())
+    {
+        m_embree_scene_repository.release(it->second);
+        m_embree_scenes.erase(it);
+    }
+}
+
+#endif
+
 void AssemblyTree::delete_child_trees(const UniqueID assembly_id)
 {
     delete_region_tree(assembly_id);
     delete_triangle_tree(assembly_id);
     delete_curve_tree(assembly_id);
+#ifdef APPLESEED_WITH_EMBREE
+    delete_embree_scene(assembly_id);
+#endif
 }
 
 void AssemblyTree::delete_region_tree(const UniqueID assembly_id)
@@ -663,7 +746,21 @@ bool AssemblyLeafVisitor::visit(
             ray,
             local_shading_point.m_ray);
         const RayInfo3d local_ray_info(local_shading_point.m_ray);
+        
+#ifdef APPLESEED_WITH_EMBREE
 
+        if (m_tree.use_embree())
+        {
+            const EmbreeScene& embree_scene =
+                *m_embree_scene_cache.access(
+                    item.m_assembly_uid,
+                    m_tree.m_embree_scenes);
+            
+            embree_scene.intersect(local_shading_point);
+        }
+        else
+
+#endif
         if (item.m_assembly->is_flushable())
         {
             // Retrieve the region tree of this assembly.
@@ -872,6 +969,25 @@ bool AssemblyLeafProbeVisitor::visit(
             ray,
             local_ray);
         const RayInfo3d local_ray_info(local_ray);
+
+#ifdef APPLESEED_WITH_EMBREE
+
+        if (m_tree.use_embree())
+        {
+            const EmbreeScene& embree_scene =
+                *m_embree_scene_cache.access(
+                    item.m_assembly_uid,
+                    m_tree.m_embree_scenes);
+            
+            if (embree_scene.occlude(local_ray))
+            {
+                m_hit = true;
+                return false;
+            }
+        }
+        else
+
+#endif
 
         if (item.m_assembly->is_flushable())
         {

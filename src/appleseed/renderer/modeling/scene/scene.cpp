@@ -31,6 +31,7 @@
 #include "scene.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/intersection/embreescene.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
@@ -87,6 +88,9 @@ struct Scene::Impl
     EnvironmentEDFContainer         m_environment_edfs;
     EnvironmentShaderContainer      m_environment_shaders;
     auto_release_ptr<SurfaceShader> m_default_surface_shader;
+#ifdef APPLESEED_WITH_EMBREE
+    EmbreeDevice                    m_embree_device;
+#endif
 
     explicit Impl(Entity* parent)
       : m_cameras(parent)
@@ -421,6 +425,14 @@ void Scene::on_frame_end(
     Entity::on_frame_end(project, parent);
 }
 
+#ifdef APPLESEED_WITH_EMBREE
+
+const EmbreeDevice& Scene::get_embree_device() const
+{
+    return impl->m_embree_device;
+}
+
+#endif
 
 //
 // SceneFactory class implementation.
