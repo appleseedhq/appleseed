@@ -278,6 +278,7 @@ class ShadingPoint
     friend class AssemblyLeafProbeVisitor;
     friend class AssemblyLeafVisitor;
     friend class CurveLeafVisitor;
+    friend class EmbreeScene;
     friend class Intersector;
     friend class NPRSurfaceShaderHelper;
     friend class OSLShaderGroupExec;

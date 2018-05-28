@@ -190,6 +190,17 @@ Dictionary Configuration::get_metadata()
             .insert("label", "Render Threads")
             .insert("help", "Number of threads to use for rendering"));
 
+#ifdef APPLESEED_WITH_EMBREE
+
+    metadata.insert(
+        "use_embree",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("label", "Use Embree")
+            .insert("help", "Whether to use Embree ray tracing kernels or appleseed internal ones"));
+
+#endif
+    
     metadata.dictionaries().insert(
         "light_sampler",
         BackwardLightSampler::get_params_metadata());
