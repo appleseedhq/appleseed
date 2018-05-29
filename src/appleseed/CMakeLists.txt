@@ -70,6 +70,23 @@ source_group ("foundation\\core" FILES
     ${foundation_core_sources}
 )
 
+set (foundation_curve_sources
+        foundation/curve/binarycurvefilereader.h
+        foundation/curve/binarycurvefilereader.cpp
+        foundation/curve/binarycurvefilewriter.cpp
+        foundation/curve/binarycurvefilewriter.h
+        foundation/curve/icurvebuilder.h
+        foundation/curve/icurvefilereader.h
+        foundation/curve/icurvefilewriter.h
+        foundation/curve/icurvewalker.h
+        )
+list (APPEND appleseed_sources
+        ${foundation_curve_sources}
+        )
+source_group ("foundation\\curve" FILES
+        ${foundation_curves_sources}
+        )
+
 set (foundation_image_text_sources
     foundation/image/text/stb_truetype.cpp
     foundation/image/text/stb_truetype.h

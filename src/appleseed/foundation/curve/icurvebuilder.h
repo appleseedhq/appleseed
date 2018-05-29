@@ -1,0 +1,84 @@
+
+//
+// This source file is part of appleseed.
+// Visit https://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2018 Girish Ramesh, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#ifndef APPLESEED_FOUNDATION_CURVE_ICURVEBUILDER_H
+#define APPLESEED_FOUNDATION_CURVE_ICURVEBUILDER_H
+
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/vector.h"
+#include "foundation/image/color.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
+
+namespace foundation
+{
+
+//
+// Curve builder interface.
+//
+
+    class APPLESEED_DLLSYMBOL ICurveBuilder
+    : public NonCopyable
+{
+    public:
+    // Destructor.
+    virtual ~ICurveBuilder() {}
+
+    // Begin the definition of a curve.
+    virtual void begin_curve(const unsigned char basis, const int32 strand_count) = 0;
+
+    // Append a vertex to the curve.
+    // Return the index of the vertex within the curve.
+    virtual size_t push_vertex(const Vector3f& v) = 0;
+
+    // Append a width to the vertex of a curve.
+    // Return the index of the vertex within the curve.
+    virtual size_t push_vertex_width(const float v) = 0;
+
+    // Append a colour value to the vertex of a curve.
+    // Return the index of the vertex within the curve.
+    virtual size_t push_vertex_colour(const Color3f& v) = 0;
+
+    // Append a opacity value to the vertex of a curve.
+    // Return the index of the vertex within the curve.
+    virtual size_t push_vertex_opacity(const float v) = 0;
+
+
+
+    // End the definition of a curve
+    virtual void end_curve() = 0;
+};
+
+}       // namespace foundation
+
+#endif  // !APPLESEED_FOUNDATION_CURVE_ICURVEBUILDER_H

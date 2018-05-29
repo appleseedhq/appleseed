@@ -34,11 +34,11 @@ DATA BLOCK FORMAT VERSION 1
 
 
   .----------------------------------.
-  |             Basis                |    1 byte (8-bit unsigned char enum - linear/bezier/b-spline)
+  |             Basis                |    1 byte (8-bit unsigned char enum - linear/bezier/b-spline/catmull-rom)
   +----------------------------------+
-  |        Number of strands         |    4 bytes (32-bit unsigned integer)
+  |         Number of curves         |    4 bytes (32-bit unsigned integer)
   +----------------------------------+
-  |   Number of vertices strand #1   |    4 bytes (32-bit unsigned integer)
+  |    Number of vertices curve #1   |    4 bytes (32-bit unsigned integer)
   +----------------------------------+
   | Coordinates of vertex #1 [X,Y,Z] |    12 bytes (3 single precision floats)
   +----------------------------------+
@@ -48,15 +48,15 @@ DATA BLOCK FORMAT VERSION 1
   +----------------------------------+
   |              ...                 |
   +----------------------------------+
-  |      Thickness of vertex #1      |    4 bytes (single precision float)
+  |        Width at vertex #1        |    4 bytes (single precision float)
   +----------------------------------+
-  |      Thickness of vertex #2      |    4 bytes (single precision float)
+  |        Width of vertex #2        |    4 bytes (single precision float)
   +----------------------------------+
   |              ...                 |
   +----------------------------------+
-  |    Transparency of vertex #1     |    4 bytes (single precision float)
+  |    Transparency at vertex #1     |    4 bytes (single precision float)
   +----------------------------------+
-  |    Transparency of vertex #2     |    4 bytes (single precision float)
+  |    Transparency at vertex #2     |    4 bytes (single precision float)
   +----------------------------------+
   |              ...                 |
   +----------------------------------+
