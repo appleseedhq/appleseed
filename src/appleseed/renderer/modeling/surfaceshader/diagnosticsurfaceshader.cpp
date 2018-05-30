@@ -108,7 +108,7 @@ const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
 
 const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingModeNames[] =
 {
-    { "albedo",                     "ALbedo" },
+    { "albedo",                     "Albedo" },
     { "coverage",                   "Coverage" },
     { "barycentric",                "Barycentric Coordinates" },
     { "uv",                         "UV Coordinates" },
@@ -234,8 +234,6 @@ void DiagnosticSurfaceShader::evaluate(
             shading_result.set_main_to_opaque_pink();
 
             const ShadingRay& ray = shading_point.get_ray();
-            if (!ray.m_has_differentials)
-                break;
 
             const Material* material = shading_point.get_material();
             if (material)
@@ -265,9 +263,6 @@ void DiagnosticSurfaceShader::evaluate(
                         false,
                         ScatteringMode::All,
                         sample);
-
-                    if (!sample.m_incoming.has_derivatives())
-                        break;
 
                     set_result(sample.m_aov_components.m_albedo, shading_result);
                 }
