@@ -26,23 +26,25 @@
 // THE SOFTWARE.
 //
 
-// appleseed.python headers.
+// Interface header.
 #include "murmurhashwrapper.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/python.h"
 #include "foundation/utility/murmurhash.h"
 
-namespace bpy = boost::python;
-using namespace foundation;
+// Standard headers.
+#include <string>
 
-void bind_murmurhash()
+MurmurHashWrapper::MurmurHashWrapper()
 {
-    bpy::class_<MurmurHashWrapper>("MurmurHash")
-        .def(bpy::init<>())
-        .def(bpy::self == bpy::self)
-        .def(bpy::self != bpy::self)
-        .def(bpy::self <  bpy::self)
-        .def("__str__", &MurmurHashWrapper::to_string)
-        .def("to_string", &MurmurHashWrapper::to_string);
+    // Null terminator character.
+    m_string[CharBufferSize-1] = 0;
+}
+
+const char* MurmurHashWrapper::to_string()
+{
+    const std::string str = m_hash.to_string();
+
+    memcpy(m_string, str.c_str(), CharBufferSize - 1);
+    return m_string;
 }

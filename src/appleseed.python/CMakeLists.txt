@@ -100,6 +100,8 @@ set (sources
     logtarget.py
     metadata.h
     module.cpp
+    murmurhashwrapper.h
+    murmurhashwrapper.cpp
     unalignedmatrix44.h
     unalignedtransform.h
 )

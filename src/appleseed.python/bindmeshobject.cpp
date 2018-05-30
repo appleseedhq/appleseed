@@ -30,6 +30,7 @@
 // appleseed.python headers.
 #include "bindentitycontainers.h"
 #include "dict2dict.h"
+#include "murmurhashwrapper.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/object.h"
@@ -132,9 +133,9 @@ namespace
         return create_primitive_mesh(name.c_str(), bpy_dict_to_param_array(params));
     }
 
-    void compute_mesh_signature(MurmurHash& hash, const MeshObject* mesh)
+    void compute_mesh_signature(MurmurHashWrapper& hash, const MeshObject* mesh)
     {
-        compute_signature(hash, *mesh);
+        compute_signature(hash.m_hash, *mesh);
     }
 }
 
