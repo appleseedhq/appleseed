@@ -30,21 +30,22 @@ install:
   - if [ -n "$GCC_VERSION" ]; then export CXX="${CXX}-${GCC_VERSION}"; fi
 
 compiler:
-  - gcc
+  - clang
+  
 
-matrix:
-    include:
-        - os: linux
-          compiler: gcc
-          env: GCC_VERSION=4.8
+#matrix:
+#    include:
+#        - os: linux
+#          compiler: gcc
+#          env: GCC_VERSION=4.8
 
-        - os: linux
-          compiler: gcc
-          env: GCC_VERSION=5
+#        - os: linux
+#          compiler: gcc
+#        env: GCC_VERSION=5
 
-        - os: linux
-          compiler: gcc
-          env: GCC_VERSION=6
+#        - os: linux
+#          compiler: gcc
+#          env: GCC_VERSION=6
 
 script:
   - ./travis/build.sh
