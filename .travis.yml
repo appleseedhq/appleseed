@@ -48,14 +48,14 @@ matrix:
           env: GCC_VERSION=6
 
     exclude:
-        - compiler: gcc
-          os: osx
+        - os: osx
+          compiler: gcc
+          
+        - os: linux
+          compiler: clang
 
-        - compiler: clang
-          os: linux
-
-        - compiler: gcc
-          os: linux
+        - os: linux
+          compiler: gcc
 
 script:
   - if [ $TRAVIS_OS_NAME == linux ]; then ./travis/build-linux.sh ; fi
