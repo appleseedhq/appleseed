@@ -3,7 +3,7 @@ sudo: false
 language: cpp
 
 os:
-#  - linux
+  - linux
   - osx
 
 dist: trusty
@@ -23,7 +23,7 @@ addons:
       - libqt4-dev
 
 before_install:
-#  - git clone https://github.com/appleseedhq/prebuilt-linux-deps.git
+  - if [ $TRAVIS_OS_NAME == linux ]; then git clone https://github.com/appleseedhq/prebuilt-linux-deps.git ; fi
 
 install:
   - if [ -n "$GCC_VERSION" ]; then export CC="${CC}-${GCC_VERSION}"; fi
@@ -31,25 +31,29 @@ install:
 
 compiler:
   - clang
+  - gcc
 
 
-#matrix:
-#    include:
-#        - os: linux
-#          compiler: gcc
-#          env: GCC_VERSION=4.8
+matrix:
+    include:
+        - os: linux
+          compiler: gcc
+          env: GCC_VERSION=4.8
 
-#        - os: linux
-#          compiler: gcc
-#        env: GCC_VERSION=5
+        - os: linux
+          compiler: gcc
+        env: GCC_VERSION=5
 
-#        - os: linux
-#          compiler: gcc
-#          env: GCC_VERSION=6
+        - os: linux
+          compiler: gcc
+          env: GCC_VERSION=6
+          
+        - os: osx
+          compiler: clang
 
 script:
-#  - ./travis/build.sh
-  - ./travis/build-macos.sh
+  - if [ $TRAVIS_OS_NAME == linux ]; then ./travis/build.sh ; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then ./travis/build-macos.sh ; fi
 
 notifications:
   slack: appleseedhq:H9o3XAC4e05O0yE4upX1FNkW
