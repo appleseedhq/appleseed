@@ -62,9 +62,6 @@ class APPLESEED_DLLSYMBOL IObjectFactory
   : public foundation::IUnknown
 {
   public:
-    // Destructor.
-    virtual ~IObjectFactory() {}
-
     // Return a string identifying this object model.
     virtual const char* get_model() const = 0;
 

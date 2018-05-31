@@ -54,9 +54,6 @@ class APPLESEED_DLLSYMBOL ILightFactory
   : public foundation::IUnknown
 {
   public:
-    // Destructor.
-    virtual ~ILightFactory() {}
-
     // Return a string identifying this light model.
     virtual const char* get_model() const = 0;
 

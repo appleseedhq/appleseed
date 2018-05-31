@@ -54,9 +54,6 @@ class APPLESEED_DLLSYMBOL IEDFFactory
   : public foundation::IUnknown
 {
   public:
-    // Destructor.
-    virtual ~IEDFFactory() {}
-
     // Return a string identifying this EDF model.
     virtual const char* get_model() const = 0;
 

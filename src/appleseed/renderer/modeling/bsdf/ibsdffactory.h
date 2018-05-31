@@ -54,9 +54,6 @@ class APPLESEED_DLLSYMBOL IBSDFFactory
   : public foundation::IUnknown
 {
   public:
-    // Destructor.
-    virtual ~IBSDFFactory() {}
-
     // Return a string identifying this BSDF model.
     virtual const char* get_model() const = 0;
 
