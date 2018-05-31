@@ -4,6 +4,7 @@ set -e
 
 THISDIR=`pwd`
 mkdir local
+export LD_LIBRARY_PATH=$THISDIR/local/lib:$APPLESEED_DEPENDENCIES/lib:../sandbox/lib/Debug:$LD_LIBRARY_PATH
 
 
 echo "Setting up the deps:"
@@ -64,13 +65,15 @@ cmake -DWITH_DISNEY_MATERIAL=ON -DUSE_STATIC_BOOST=OFF \
       -DOSL_LIBRARIES=$THISDIR/local/lib\
       -DOSL_EXEC_LIBRARY=$THISDIR/local/lib/liboslexec.dylib \
       -DOSL_COMP_LIBRARY=$THISDIR/local/lib/liboslcomp.dylib\
-      -DOSL_QUERY_LIBRARY=$THISDIR/local/lib/liboslquery.dylib \
+      -DOSL_QUERY_LIBRARY=$THISDIR/local/lib/liboslq  uery.dylib \
       -DOSL_COMPILER=$THISDIR/local/bin/oslc \
       -DOSL_QUERY_INFO=$THISDIR/local/bin/oslinfo \
       -DSEEXPR_INCLUDE_DIR=$THISDIR/local/include \
       -DSEEXPR_LIBRARY=$THISDIR/local/lib/libSeExpr.dylib \
       -DSEEXPREDITOR_INCLUDE_DIR=$THISDIR/local/include\
       -DSEEXPREDITOR_LIBRARY=$THISDIR/local/lib/libSeExprEditor.dylib\
+      -D HIDE_SYMBOLS=ON \
+      -D CMAKE_BUILD_TYPE=Debug \
       ..
 make -j 2
 
