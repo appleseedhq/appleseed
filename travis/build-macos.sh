@@ -26,6 +26,10 @@ mkdir -p $HOME/Library/Python/2.7/lib/python/site-packages
 echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> $HOME/Library/Python/2.7/lib/python/site-packages/homebrew.pth
 
 
+#Patching openEXR to avoid the "register" issue in Debug mode ([-Werror,-Wdeprecated-register])
+cat /usr/local/include/OpenEXR/half.h | sed 's/register int/int/g' >! /usr/local/include/OpenEXR/half.h 
+
+
 #OSL
 git clone https://github.com/imageworks/OpenShadingLanguage.git
 cd OpenShadingLanguage
