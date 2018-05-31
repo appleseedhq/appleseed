@@ -42,6 +42,7 @@ git checkout db9610a24401fa7198c54c8768d0484175f54172
 mkdir build
 cd build
 cmake -Wno-dev -DCMAKE_POLICY_DEFAULT_CMP0042=OLD -DCMAKE_INSTALL_PREFIX=$THISDIR/local  ..
+make doc
 make install -j 2
 cd ../..
 
@@ -49,7 +50,28 @@ cd ../..
 #Main build
 mkdir build
 cd build
-cmake -DWITH_DISNEY_MATERIAL=ON -DUSE_STATIC_BOOST=OFF -DUSE_EXTERNAL_ZLIB=ON -DUSE_EXTERNAL_PNG=ON -DUSE_EXTERNAL_EXR=ON -DUSE_EXTERNAL_XERCES=ON -DUSE_EXTERNAL_SEEXPR=ON -DUSE_EXTERNAL_OIIO=ON -DUSE_EXTERNAL_OCIO=ON -DUSE_EXTERNAL_OSL=ON -DZLIB_INCLUDE_DIR=/usr/local/opt/zlib/include -DZLIB_LIBRARY=/usr/local/opt/zlib/lib/libz.dylib -DPYTHON_INCLUDE_DIR=/usr/local/Cellar/python@2/2.7.15/Frameworks/Python.framework/Versions/2.7/include/python2.7/ -DPYTHON_LIBRARY=/usr/local/Cellar/python@2/2.7.15/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib -DBoost_PYTHON_LIBRARY_RELEASE=/usr/local/lib/libboost_python27.dylib ..
+cmake -DWITH_DISNEY_MATERIAL=ON -DUSE_STATIC_BOOST=OFF \
+      -DUSE_EXTERNAL_ZLIB=ON -DUSE_EXTERNAL_PNG=ON \
+      -DUSE_EXTERNAL_EXR=ON -DUSE_EXTERNAL_XERCES=ON\
+      -DUSE_EXTERNAL_SEEXPR=ON -DUSE_EXTERNAL_OIIO=ON \
+      -DUSE_EXTERNAL_OCIO=ON -DUSE_EXTERNAL_OSL=ON \
+      -DZLIB_INCLUDE_DIR=/usr/local/opt/zlib/include \
+      -DZLIB_LIBRARY=/usr/local/opt/zlib/lib/libz.dylib\
+      -DPYTHON_INCLUDE_DIR=/usr/local/Cellar/python@2/2.7.15/Frameworks/Python.framework/Versions/2.7/include/python2.7/ \
+      -DPYTHON_LIBRARY=/usr/local/Cellar/python@2/2.7.15/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
+      -DBoost_PYTHON_LIBRARY_RELEASE=/usr/local/lib/libboost_python27.dylib\
+      -DOSL_INCLUDE_DIR=$THISDIR/local/include\
+      -DOSL_LIBRARIES=$THISDIR/local/lib\
+      -DOSL_EXEC_LIBRARY=$THISDIR/local/lib/liboslexec.dylib \
+      -DOSL_COMP_LIBRARY=$THISDIR/local/lib/liboslcomp.dylib\
+      -DOSL_QUERY_LIBRARY=$THISDIR/local/lib/liboslquery.dylib \
+      -DOSL_COMPILER=$THIS/local/bin/oslc \
+      -DOSL_QUERY_INFO=$THISDIR/local/bin/oslinfo \
+      -DSEEXPR_INCLUDE_DIR=$THISDIR/local/include \
+      -DSEEXPR_LIBRARY=$THISDIR/local/lib/libSeExpr.dylib \
+      -DSEEXPREDITOR_INCLUDE_DIR=$THISDIR/local/include\
+      -DSEEXPREDITOR_LIBRARY=$THISDIR/local/lib/libSeExprEditor.dylib\
+      ..
 make -j 2
 
 
