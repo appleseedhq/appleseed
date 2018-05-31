@@ -55,6 +55,8 @@ matrix:
           os: osx
         - compiler: clang
           os: linux
+        - os: linux
+          compiler: gcc
 
 
 script:
