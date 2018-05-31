@@ -41,6 +41,7 @@
 #include "foundation/image/colorspace.h"
 #include "foundation/image/tile.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/otherwise.h"
 
 using namespace foundation;
 
@@ -51,8 +52,9 @@ namespace renderer
 // PixelRendererBase class implementation.
 //
 
-const uint8 InvalidSampleHint = 1;
-const uint8 CorrectSampleHint = 2;
+const uint8 NoState = 0;
+const uint8 InvalidSample = 1;
+const uint8 CorrectSample = 2;
 
 PixelRendererBase::PixelRendererBase(
     const Frame&        frame,
@@ -109,12 +111,25 @@ void PixelRendererBase::on_tile_end(
                 Color<uint8, 1> sample_state;
                 m_invalid_sample_diagnostic->get_pixel(x, y, sample_state);
 
-                Color4f color(1.0f, 0.0f, 1.0f, 1.0f);
+                Color4f color;
 
-                if (sample_state[0] == CorrectSampleHint)
+                switch (sample_state[0])
                 {
+                  case NoState:
+                    color = Color4f(1.0f, 0.0f, 0.0f, 1.0f);
+                    break;
+
+                  case InvalidSample:
+                    color = Color4f(1.0f, 0.0f, 1.0f, 1.0f);
+                    break;
+
+                  case CorrectSample:
                     tile.get_pixel(x, y, color);
                     color.rgb().set(0.2f * luminance(color.rgb()));     // 20% of luminance
+                    color.a = 1.0f;
+                    break;
+
+                  assert_otherwise;
                 }
 
                 aov_tiles.set_pixel(x, y, m_invalid_sample_aov_index, color);
@@ -167,7 +182,7 @@ void PixelRendererBase::on_pixel_end(
     if (m_params.m_diagnostics && tile_bbox.contains(pt))
     {
         m_invalid_sample_diagnostic->set_pixel(pt.x, pt.y,
-            m_invalid_sample_count > 0 ? &InvalidSampleHint : &CorrectSampleHint);
+            m_invalid_sample_count > 0 ? &InvalidSample : &CorrectSample);
     }
 }
 
