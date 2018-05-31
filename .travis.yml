@@ -3,7 +3,8 @@ sudo: false
 language: cpp
 
 os:
-  - linux
+#  - linux
+  - osx
 
 dist: trusty
 
@@ -22,7 +23,7 @@ addons:
       - libqt4-dev
 
 before_install:
-  - git clone https://github.com/appleseedhq/prebuilt-linux-deps.git
+#  - git clone https://github.com/appleseedhq/prebuilt-linux-deps.git
 
 install:
   - if [ -n "$GCC_VERSION" ]; then export CC="${CC}-${GCC_VERSION}"; fi
@@ -47,6 +48,7 @@ matrix:
 
 script:
   - ./travis/build.sh
+  - ./travis/build-macos.sh
 
 notifications:
   slack: appleseedhq:H9o3XAC4e05O0yE4upX1FNkW
