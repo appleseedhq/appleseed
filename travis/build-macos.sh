@@ -8,6 +8,7 @@ mkdir local
 
 echo "Setting up the deps:"
 echo "------------------------"
+brew upgrade boost
 brew install boost-python
 brew install zlib
 brew install xerces-c
