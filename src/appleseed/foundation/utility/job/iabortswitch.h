@@ -43,7 +43,7 @@ namespace foundation
 //
 
 class APPLESEED_DLLSYMBOL IAbortSwitch
-  : public foundation::NonCopyable
+  : public NonCopyable
 {
   public:
     // Destructor.

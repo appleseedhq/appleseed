@@ -206,9 +206,7 @@ Dictionary PixelRendererBaseFactory::get_params_metadata()
             .insert("type", "bool")
             .insert("default", "false")
             .insert("label", "Enable Diagnostics")
-            .insert(
-                "help",
-                "Enable pixel renderer diagnostics"));
+            .insert("help", "Enable pixel renderer diagnostics"));
 
     return metadata;
 }

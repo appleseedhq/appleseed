@@ -54,9 +54,6 @@ class APPLESEED_DLLSYMBOL IEnvironmentShaderFactory
   : public foundation::IUnknown
 {
   public:
-    // Destructor.
-    virtual ~IEnvironmentShaderFactory() {}
-
     // Return a string identifying this environment shader model.
     virtual const char* get_model() const = 0;
 

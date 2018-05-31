@@ -54,9 +54,6 @@ class APPLESEED_DLLSYMBOL IMaterialFactory
   : public foundation::IUnknown
 {
   public:
-    // Destructor.
-    virtual ~IMaterialFactory() {}
-
     // Return a string identifying this material model.
     virtual const char* get_model() const = 0;
 
