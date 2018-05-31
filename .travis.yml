@@ -47,14 +47,13 @@ matrix:
           compiler: gcc
           env: GCC_VERSION=6
 
-        - os: osx
-          compiler: clang
-
     exclude:
         - compiler: gcc
           os: osx
+
         - compiler: clang
           os: linux
+
         - os: linux
           compiler: gcc
 
