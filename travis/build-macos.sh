@@ -41,7 +41,7 @@ git checkout db9610a24401fa7198c54c8768d0484175f54172
 mkdir build
 cd build
 cmake -Wno-dev -DCMAKE_POLICY_DEFAULT_CMP0042=OLD -DCMAKE_INSTALL_PREFIX=$THISDIR/local  ..
-make doc install -j 2
+make install -j 2
 cd ../..
 
 
