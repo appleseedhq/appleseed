@@ -8,7 +8,7 @@ export LD_LIBRARY_PATH=$THISDIR/local/lib:$APPLESEED_DEPENDENCIES/lib:../sandbox
 
 
 echo "Setting up the deps:"
-echo "------------------------"
+echo "--------------------"
 brew upgrade boost
 brew install boost-python
 brew install zlib

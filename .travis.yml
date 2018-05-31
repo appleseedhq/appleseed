@@ -33,7 +33,6 @@ compiler:
   - clang
   - gcc
 
-
 matrix:
     include:
         - os: linux
@@ -42,12 +41,12 @@ matrix:
 
         - os: linux
           compiler: gcc
-        env: GCC_VERSION=5
+          env: GCC_VERSION=5
 
         - os: linux
           compiler: gcc
           env: GCC_VERSION=6
-          
+
         - os: osx
           compiler: clang
 
