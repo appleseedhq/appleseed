@@ -139,7 +139,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_hair_ball(
             points[p] = r * d;
         }
 
-        const Curve3Type curve(points, curve_width);
+        const Curve3Type curve(points, curve_width, 1.0f, Color3f(0.2, 0.0, 0.7));
         split_and_store(object.ref(), curve, split_count);
     }
 
@@ -169,6 +169,8 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_furry_ball(
     {
         GVector3 points[ControlPointCount];
         GScalar widths[ControlPointCount];
+        GScalar opacities[ControlPointCount];
+        GColor3 colors[ControlPointCount];
 
         static const size_t Bases[] = { 2 };
         const GVector2 s = hammersley_sequence<GScalar, 2>(Bases, curve_count, c);
@@ -186,9 +188,11 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_furry_ball(
             const GVector3 f = curliness * sample_sphere_uniform(rand_vector2<GVector2>(rng));
             points[p] = points[0] + length * (r * d + f);
             widths[p] = lerp(root_width, tip_width, r);
+            opacities[p] = 1.0f;
+            colors[p] = GColor3(0.2, 0.0, 0.7);
         }
 
-        const Curve3Type curve(points, widths);
+        const Curve3Type curve(points, widths, opacities, colors);
         split_and_store(object.ref(), curve, split_count);
     }
 
@@ -244,15 +248,19 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_text_curve_file(
         {
             GVector3 points[2];
             GScalar widths[2];
+            GScalar opacities[2];
+            GColor3 colors[2];
 
             for (size_t p = 0; p < control_point_count; ++p)
             {
                 input >> points[p].x >> points[p].y >> points[p].z;
                 input >> widths[p];
+                opacities[p] = 1.0f;
+                colors[p] = GColor3(0.2, 0.0, 0.7);
             }
 
             // We never presplit degree-1 curves.
-            const Curve1Type curve(points, widths);
+            const Curve1Type curve(points, widths, opacities, colors);
             object->push_curve1(curve);
         }
         else
@@ -261,14 +269,18 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_text_curve_file(
 
             GVector3 points[4];
             GScalar widths[4];
+            GScalar opacities[4];
+            GColor3 colors[4];
 
             for (size_t p = 0; p < control_point_count; ++p)
             {
                 input >> points[p].x >> points[p].y >> points[p].z;
                 input >> widths[p];
+                opacities[p] = 1.0f;
+                colors[p] = GColor3(0.2, 0.0, 0.7);
             }
 
-            const Curve3Type curve(points, widths);
+            const Curve3Type curve(points, widths, opacities, colors);
             split_and_store(object.ref(), curve, split_count);
         }
     }
@@ -373,7 +385,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_mitsuba_curve_file(
                 {
                     for (size_t i = 0, e = vertices.size() - 1; i < e; ++i)
                     {
-                        const Curve1Type curve(&vertices[i], radius);
+                        const Curve1Type curve(&vertices[i], radius, GScalar(1.0f), GColor3(0.2, 0.0, 0.7));
                         object->push_curve1(curve);
                     }
                 }
@@ -397,7 +409,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_mitsuba_curve_file(
 
                     for (size_t i = 0, e = new_vertices.size(); i + 3 < e; i += 3)
                     {
-                        const Curve3Type curve(&new_vertices[i], radius);
+                        const Curve3Type curve(&new_vertices[i], radius, GScalar(1.0f), GColor3(0.2, 0.0, 0.7));
                         object->push_curve3(curve);
                     }
                 }
