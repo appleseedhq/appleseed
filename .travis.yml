@@ -50,6 +50,13 @@ matrix:
         - os: osx
           compiler: clang
 
+    exclude:
+        - compiler: gcc
+          os: osx
+        - compiler: clang
+          os: linux
+
+
 script:
   - if [ $TRAVIS_OS_NAME == linux ]; then ./travis/build.sh ; fi
   - if [ $TRAVIS_OS_NAME == osx ]; then ./travis/build-macos.sh ; fi
