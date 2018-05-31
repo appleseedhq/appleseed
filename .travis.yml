@@ -31,7 +31,7 @@ install:
 
 compiler:
   - clang
-  
+
 
 #matrix:
 #    include:
@@ -48,7 +48,7 @@ compiler:
 #          env: GCC_VERSION=6
 
 script:
-  - ./travis/build.sh
+#  - ./travis/build.sh
   - ./travis/build-macos.sh
 
 notifications:

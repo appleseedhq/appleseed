@@ -8,7 +8,7 @@ mkdir local
 
 echo "Setting up the deps:"
 echo "------------------------"
-brew install boost --c++11 --without-single --without-static
+brew install boost --without-single --without-static
 brew install boost-python
 brew install zlib
 brew install xerces-c
