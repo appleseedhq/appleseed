@@ -54,12 +54,11 @@ matrix:
         - compiler: clang
           os: linux
 
-        - os: linux
-          compiler: gcc
-
+        - compiler: gcc
+          os: linux
 
 script:
-  - if [ $TRAVIS_OS_NAME == linux ]; then ./travis/build.sh ; fi
+  - if [ $TRAVIS_OS_NAME == linux ]; then ./travis/build-linux.sh ; fi
   - if [ $TRAVIS_OS_NAME == osx ]; then ./travis/build-macos.sh ; fi
 
 notifications:
