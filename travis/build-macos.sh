@@ -65,7 +65,7 @@ cmake -DWITH_DISNEY_MATERIAL=ON -DUSE_STATIC_BOOST=OFF \
       -DOSL_EXEC_LIBRARY=$THISDIR/local/lib/liboslexec.dylib \
       -DOSL_COMP_LIBRARY=$THISDIR/local/lib/liboslcomp.dylib\
       -DOSL_QUERY_LIBRARY=$THISDIR/local/lib/liboslquery.dylib \
-      -DOSL_COMPILER=$THIS/local/bin/oslc \
+      -DOSL_COMPILER=$THISDIR/local/bin/oslc \
       -DOSL_QUERY_INFO=$THISDIR/local/bin/oslinfo \
       -DSEEXPR_INCLUDE_DIR=$THISDIR/local/include \
       -DSEEXPR_LIBRARY=$THISDIR/local/lib/libSeExpr.dylib \
