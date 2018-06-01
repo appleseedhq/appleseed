@@ -26,23 +26,39 @@
 // THE SOFTWARE.
 //
 
-// appleseed.python headers.
-#include "murmurhashwrapper.h"
+#ifndef APPLESEED_PYTHON_MURMURHASHWRAPPER_H
+#define APPLESEED_PYTHON_MURMURHASHWRAPPER_H
 
 // appleseed.foundation headers.
 #include "foundation/platform/python.h"
 #include "foundation/utility/murmurhash.h"
 
-namespace bpy = boost::python;
-using namespace foundation;
-
-void bind_murmurhash()
+class MurmurHashWrapper
 {
-    bpy::class_<MurmurHashWrapper>("MurmurHash")
-        .def(bpy::init<>())
-        .def(bpy::self == bpy::self)
-        .def(bpy::self != bpy::self)
-        .def(bpy::self <  bpy::self)
-        .def("__str__", &MurmurHashWrapper::to_string)
-        .def("to_string", &MurmurHashWrapper::to_string);
-}
+  public:
+    MurmurHashWrapper();
+
+    bool operator==(const MurmurHashWrapper& other) const
+    {
+        return m_hash == other.m_hash;
+    }
+
+    bool operator!=(const MurmurHashWrapper& other) const
+    {
+        return m_hash != other.m_hash;
+    }
+
+    bool operator<(const MurmurHashWrapper& other) const
+    {
+        return m_hash < other.m_hash;
+    }
+
+    const char* to_string();
+
+    enum {CharBufferSize = 2 * sizeof(foundation::MurmurHash) + 1};
+
+    foundation::MurmurHash  m_hash;
+    char                    m_string[CharBufferSize];
+};
+
+#endif  // !APPLESEED_PYTHON_MURMURHASHWRAPPER_H

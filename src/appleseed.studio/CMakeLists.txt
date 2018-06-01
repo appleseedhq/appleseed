@@ -264,6 +264,8 @@ set (appleseedpython_sources
     ../appleseed.python/logtarget.py
     ../appleseed.python/metadata.h
     ../appleseed.python/module.cpp
+    ../appleseed.python/murmurhashwrapper.h
+    ../appleseed.python/murmurhashwrapper.cpp
     ../appleseed.python/unalignedmatrix44.h
     ../appleseed.python/unalignedtransform.h
 )
