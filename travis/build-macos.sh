@@ -23,7 +23,6 @@ echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >>
 
 echo "Installing OSL:"
 echo "---------------"
-#OSL
 git clone https://github.com/imageworks/OpenShadingLanguage.git
 cd OpenShadingLanguage
 git checkout Release-1.8.12
@@ -35,7 +34,6 @@ cd ../..
 
 echo "Installing SeExpr:"
 echo "------------------"
-#SeExpr
 git clone https://github.com/wdas/SeExpr
 cd SeExpr
 git checkout db9610a24401fa7198c54c8768d0484175f54172
@@ -48,7 +46,6 @@ cd ../..
 
 echo "Main build:"
 echo "-----------"
-#Main build
 mkdir build
 cd build
 cmake -DWITH_DISNEY_MATERIAL=ON -DUSE_STATIC_BOOST=OFF \
