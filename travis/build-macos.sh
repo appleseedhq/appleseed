@@ -1,10 +1,11 @@
 #!/bin/sh
-
 set -e
 
 THISDIR=`pwd`
 mkdir local
+
 export LD_LIBRARY_PATH=$THISDIR/local/lib:$APPLESEED_DEPENDENCIES/lib:../sandbox/lib/Debug:$LD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH=$THISDIR/local/lib:$DYLD_LIBRARY_PATH
 
 
 echo "Setting up the deps:"
@@ -68,7 +69,7 @@ cmake -DWITH_DISNEY_MATERIAL=ON -DUSE_STATIC_BOOST=OFF \
      -DOSL_COMPILER=$THISDIR/local/bin/oslc \
      -DOSL_QUERY_INFO=$THISDIR/local/bin/oslinfo \
      -DSEEXPR_INCLUDE_DIR=$THISDIR/local/include \
-     -DSEEXPR_LIBRARY=$THISDIR/local/lib/libSeExpr.dylib \
+     -DSEEXPR_LIBRARY=$THISDIR/local/lib/libSeExpr.dylib\
      -DSEEXPREDITOR_INCLUDE_DIR=$THISDIR/local/include\
      -DSEEXPREDITOR_LIBRARY=$THISDIR/local/lib/libSeExprEditor.dylib\
      -D HIDE_SYMBOLS=ON \
@@ -76,6 +77,8 @@ cmake -DWITH_DISNEY_MATERIAL=ON -DUSE_STATIC_BOOST=OFF \
      ..
 make -j 2
 
+
+otool -L exefile ../sandbox/bin/Debug/appleseed.cli
 
 echo "Running appleseed tests:"
 echo "------------------------"
