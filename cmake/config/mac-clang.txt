@@ -61,6 +61,7 @@ set (git_command "git")
 # Flags common to all configurations.
 set (c_compiler_flags_common
     -Wno-switch                                         # don't complain about unhandled enumeration values in switch
+    -Wno-deprecated-register                            # don't complain about "register" (OpenEXR issue)
     -fno-math-errno                                     # ignore errno when calling math functions
 )
 if (WARNINGS_AS_ERRORS)
