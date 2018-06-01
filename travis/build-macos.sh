@@ -20,10 +20,15 @@ mkdir -p $HOME/Library/Python/2.7/lib/python/site-packages
 echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> $HOME/Library/Python/2.7/lib/python/site-packages/homebrew.pth
 
 
+
+echo "Patching OpenEXR:"
+echo "-----------------"
 #Patching openEXR to avoid the "register" issue in Debug mode ([-Werror,-Wdeprecated-register])
 cat /usr/local/include/OpenEXR/half.h | sed 's/register int/int/g' >! /usr/local/include/OpenEXR/half.h
+grep "register" /usr/local/include/OpenEXR/half.h
 
-
+echo "Installing OSL:"
+echo "---------------"
 #OSL
 git clone https://github.com/imageworks/OpenShadingLanguage.git
 cd OpenShadingLanguage
@@ -34,6 +39,8 @@ cmake -DLLVM_DIRECTORY=/usr/local/opt/llvm@3.9/ -DLLVM_STATIC=ON -DENABLERTTI=ON
 make install -j 2
 cd ../..
 
+echo "Installing SeExpr:"
+echo "------------------"
 #SeExpr
 git clone https://github.com/wdas/SeExpr
 cd SeExpr
@@ -45,7 +52,8 @@ mkdir src/doc/html
 make install -j 2
 cd ../..
 
-
+echo "Main build:"
+echo "-----------"
 #Main build
 mkdir build
 cd build
