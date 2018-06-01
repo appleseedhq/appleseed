@@ -77,12 +77,10 @@ make -j 2
 
 echo "Running appleseed tests:"
 echo "------------------------"
-
 ../sandbox/bin/Debug/appleseed.cli --run-unit-tests --verbose-unit-tests
 
 echo "Running appleseed.python tests:"
 echo "-------------------------------"
-
 export PYTHONPATH=$PYTHONPATH:../sandbox/lib/Debug/python2.7
 python ../sandbox/lib/Debug/python2.7/appleseed/test/runtests.py
 
