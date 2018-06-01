@@ -75,9 +75,6 @@ cmake -DWITH_DISNEY_MATERIAL=ON -DUSE_STATIC_BOOST=OFF \
      ..
 make -j 2
 
-
-otool -L exefile ../sandbox/bin/Debug/appleseed.cli
-
 echo "Running appleseed tests:"
 echo "------------------------"
 
