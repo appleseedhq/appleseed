@@ -40,6 +40,7 @@
 #include "renderer/modeling/aov/normalaov.h"
 #include "renderer/modeling/aov/npraovs.h"
 #include "renderer/modeling/aov/pixeltimeaov.h"
+#include "renderer/modeling/aov/positionaov.h"
 #include "renderer/modeling/aov/uvaov.h"
 #include "renderer/modeling/entity/registerentityfactories.h"
 
@@ -98,6 +99,7 @@ void AOVFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
     register_factory(auto_release_ptr<FactoryType>(new PixelSampleCountAOVFactory()));
     register_factory(auto_release_ptr<FactoryType>(new PixelTimeAOVFactory()));
     register_factory(auto_release_ptr<FactoryType>(new PixelVariationAOVFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new PositionAOVFactory()));
     register_factory(auto_release_ptr<FactoryType>(new UVAOVFactory()));
     register_factory(auto_release_ptr<FactoryType>(new AlbedoAOVFactory()));
 
