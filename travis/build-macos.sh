@@ -3,7 +3,6 @@ set -e
 
 THISDIR=`pwd`
 mkdir local
-mkdir sandbox/bin/
 
 export LD_LIBRARY_PATH=$THISDIR/local/lib:$APPLESEED_DEPENDENCIES/lib:../sandbox/lib/Debug:$LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=$THISDIR/local/lib:$DYLD_LIBRARY_PATH
