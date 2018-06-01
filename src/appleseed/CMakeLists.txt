@@ -1426,6 +1426,8 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/npraovs.h
     renderer/modeling/aov/pixeltimeaov.cpp
     renderer/modeling/aov/pixeltimeaov.h
+    renderer/modeling/aov/positionaov.cpp
+    renderer/modeling/aov/positionaov.h
     renderer/modeling/aov/uvaov.cpp
     renderer/modeling/aov/uvaov.h
 )
