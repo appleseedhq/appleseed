@@ -63,6 +63,16 @@ set (preprocessor_definitions_common
     XERCES_STATIC_LIBRARY                   # link statically against Xerces-C
 )
 
+if (USE_STATIC_BOOST)
+    set (preprocessor_definitions_common ${preprocessor_definitions_common}
+        BOOST_PYTHON_STATIC_LIB             # link statically against Boost.Python
+    )
+else ()
+    set (preprocessor_definitions_common ${preprocessor_definitions_common}
+        BOOST_ALL_DYN_LINK                  # link dynamically
+    )
+endif ()
+
 # Release configuration.
 set (preprocessor_definitions_release
     _SECURE_SCL=0
