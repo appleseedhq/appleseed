@@ -228,7 +228,7 @@ if (USE_EXTERNAL_EXR)
     find_package (Imath REQUIRED)
     find_package (OpenEXR REQUIRED)
     if (NOT USE_STATIC_EXR AND MSVC)
-        add_definitions(-DOPENEXR_DLL)
+        add_definitions (-DOPENEXR_DLL)
     endif ()
 endif ()
 
