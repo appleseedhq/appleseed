@@ -61,7 +61,6 @@ set (preprocessor_definitions_common
     _USRDLL
     _WINDOWS
     XERCES_STATIC_LIBRARY                   # link statically against Xerces-C
-    BOOST_PYTHON_STATIC_LIB                 # link statically against Boost.Python
 )
 
 # Release configuration.

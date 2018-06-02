@@ -193,6 +193,9 @@ set (Boost_MULTITHREADED TRUE)
 
 if (USE_STATIC_BOOST)
     set (Boost_USE_STATIC_LIBS TRUE)
+    add_definitions(-DBOOST_PYTHON_STATIC_LIB) # link statically against Boost.Python
+else ()
+    add_definitions(-DBOOST_ALL_DYN_LINK)
 endif ()
 
 set (BOOST_NEEDED_LIBS atomic chrono date_time filesystem regex system thread wave)
