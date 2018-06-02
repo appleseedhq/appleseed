@@ -123,6 +123,7 @@ option (USE_STATIC_BOOST                    "Use static Boost libraries"        
 option (USE_STATIC_OIIO                     "Use static OpenImageIO libraries"                      ON)
 option (USE_STATIC_OCIO                     "Use static OpenColorIO libraries"                      ON)
 option (USE_STATIC_OSL                      "Use static OpenShadingLanguage libraries"              ON)
+option (USE_STATIC_EXR                      "Use static OpenEXR libraries"                          ON)
 option (WARNINGS_AS_ERRORS                  "Treat compiler warnings as errors"                     ON)
 
 option (HIDE_SYMBOLS                        "When using gcc, hide symbols not on the public API"    ON)
@@ -226,6 +227,9 @@ endif ()
 if (USE_EXTERNAL_EXR)
     find_package (Imath REQUIRED)
     find_package (OpenEXR REQUIRED)
+    if (NOT USE_STATIC_EXR AND MSVC)
+        add_definitions(-DOPENEXR_DLL)
+    endif ()
 endif ()
 
 if (USE_EXTERNAL_XERCES)
