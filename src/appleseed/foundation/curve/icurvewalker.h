@@ -51,8 +51,6 @@ namespace foundation
     : public NonCopyable
 {
     public:
-    // Special index value indicating that a feature is absent.
-    enum { None = ~0 };
 
     // Destructor.
     virtual ~ICurveWalker() {}
@@ -67,16 +65,16 @@ namespace foundation
     virtual size_t get_vertex_count(const size_t i) const = 0;
 
     // Return vertex location on strand
-    virtual Vector3f get_vertex(const size_t vertex_id, const size_t i) const = 0;
+    virtual Vector3f get_vertex(const size_t i) const = 0;
 
     // Return vertex width on strand
-    virtual float get_vertex_width(const size_t vertex_id, const size_t i) const = 0;
+    virtual float get_vertex_width(const size_t i) const = 0;
 
     // Return vertex opacity on strand
-    virtual float get_vertex_opacity(const size_t vertex_id, const size_t i) const = 0;
+    virtual float get_vertex_opacity(const size_t i) const = 0;
 
     // Return vertex colour on strand
-    virtual Color3f get_vertex_colour(const size_t vertex_id, const size_t i) const = 0;
+    virtual Color3f get_vertex_colour(const size_t i) const = 0;
 };
 
 }       // namespace foundation

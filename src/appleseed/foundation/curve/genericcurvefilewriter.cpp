@@ -26,54 +26,44 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CURVE_BINARYCURVEFILEWRITER_H
-#define APPLESEED_FOUNDATION_CURVE_BINARYCURVEFILEWRITER_H
+// Interface header.
+#include "genericcurvefilewriter.h"
 
 // appleseed.foundation headers.
-#include "foundation/curve/icurvefilewriter.h"
-#include "foundation/platform/compiler.h"
-#include "foundation/utility/bufferedfile.h"
+#include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
+#include "foundation/curve/binarycurvefilewriter.h"
+#include "foundation/utility/string.h"
+
+// Boost headers.
+#include "boost/filesystem/path.hpp"
 
 // Standard headers.
-#include <cstddef>
 #include <string>
 
-// Forward declarations.
-namespace foundation    { class ICurveWalker; }
+using namespace std;
+namespace bf = boost::filesystem;
 
 namespace foundation
 {
 
-//
-// Writer for a simple binary mesh file format.
-//
-
-    class BinaryCurveFileWriter
-            : public ICurveFileWriter
+    GenericCurveFileWriter::GenericCurveFileWriter(const char* filename)
     {
-    public:
-        // Constructor.
-        explicit BinaryCurveFileWriter(const std::string& filename);
+        const bf::path filepath(filename);
+        const string extension = lower_case(filepath.extension().string());
 
-        // Write a mesh.
-        void write(const ICurveWalker& walker) override;
+        if (extension == ".binarycurve")
+            m_writer = new BinaryCurveFileWriter(filename);
+        else throw ExceptionUnsupportedFileFormat(filename);
+    }
 
-    private:
-        const std::string           m_filename;
-        BufferedFile                m_file;
-        LZ4CompressedWriterAdapter  m_writer;
+    GenericCurveFileWriter::~GenericCurveFileWriter()
+    {
+        delete m_writer;
+    }
 
-        void write_signature();
-        void write_version();
+    void GenericCurveFileWriter::write(const ICurveWalker& walker)
+    {
+        m_writer->write(walker);
+    }
 
-        void write_curves(const ICurveWalker& walker);
-        void write_curve_count(const ICurveWalker& walker);
-        void write_basis(const ICurveWalker& walker);
-        void write_vertex_properties(const ICurveWalker& walker,
-                                     const uint32 vertex_id,
-                                     int32& vertex_count);
-    };
-
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CURVE_BINARYCURVEFILEWRITER_H
+}   // namespace foundation

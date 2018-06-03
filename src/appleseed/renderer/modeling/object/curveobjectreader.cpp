@@ -81,6 +81,10 @@ namespace renderer
 
 namespace {
 
+    //
+    // Curve object builder.
+    //
+
     class CurveObjectBuilder
             : public ICurveBuilder {
     public:

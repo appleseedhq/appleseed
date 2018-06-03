@@ -26,17 +26,15 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CURVE_BINARYCURVEFILEWRITER_H
-#define APPLESEED_FOUNDATION_CURVE_BINARYCURVEFILEWRITER_H
+#ifndef APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEWRITER_H
+#define APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEWRITER_H
 
 // appleseed.foundation headers.
 #include "foundation/curve/icurvefilewriter.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/bufferedfile.h"
 
-// Standard headers.
-#include <cstddef>
-#include <string>
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class ICurveWalker; }
@@ -45,35 +43,26 @@ namespace foundation
 {
 
 //
-// Writer for a simple binary mesh file format.
+// Write a curve file using the right writer based on the extension of the curve file name.
 //
 
-    class BinaryCurveFileWriter
+    class APPLESEED_DLLSYMBOL GenericCurveFileWriter
             : public ICurveFileWriter
     {
     public:
         // Constructor.
-        explicit BinaryCurveFileWriter(const std::string& filename);
+        explicit GenericCurveFileWriter(const char* filename);
+
+        // Destructor.
+        ~GenericCurveFileWriter() override;
 
         // Write a mesh.
         void write(const ICurveWalker& walker) override;
 
     private:
-        const std::string           m_filename;
-        BufferedFile                m_file;
-        LZ4CompressedWriterAdapter  m_writer;
-
-        void write_signature();
-        void write_version();
-
-        void write_curves(const ICurveWalker& walker);
-        void write_curve_count(const ICurveWalker& walker);
-        void write_basis(const ICurveWalker& walker);
-        void write_vertex_properties(const ICurveWalker& walker,
-                                     const uint32 vertex_id,
-                                     int32& vertex_count);
+        ICurveFileWriter* m_writer;
     };
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_CURVE_BINARYCURVEFILEWRITER_H
+#endif  // !APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEWRITER_H

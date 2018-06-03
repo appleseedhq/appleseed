@@ -37,6 +37,8 @@
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
+#include "foundation/curve/icurvewalker.h"
+#include "foundation/curve/genericcurvefilewriter.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
@@ -58,23 +60,139 @@ namespace renderer
 
 namespace
 {
-    template <typename CurveType>
-    void write_curve(ostream& output, CurveType& curve)
+    //
+    // Curve object walker.
+    //
+
+    class CurveObjectWalker
+            : public ICurveWalker
     {
-        const size_t control_point_count = curve.get_control_point_count();
-
-        output << control_point_count;
-
-        for (size_t p = 0; p < control_point_count; ++p)
+    public:
+        CurveObjectWalker(
+                const CurveObject&   object)
+                : m_object(object)
         {
-            const GVector3& point = curve.get_control_point(p);
-            const GScalar width = curve.get_width(p);
-
-            output << ' ' << point.x << ' ' << point.y << ' ' << point.z << ' ' << width;
+            create_parameters();
         }
 
-        output << endl;
-    }
+        size_t get_basis() const override
+        {
+            return static_cast<unsigned char>(m_object.get_basis());
+        }
+
+        size_t get_curve_count() const override
+        {
+            return m_curve_count;
+        }
+
+        size_t get_vertex_count(const size_t i) const override
+        {
+            return m_vertex_counts[i];
+        }
+
+        Vector3f get_vertex(const size_t i) const override
+        {
+            return m_vertices[i];
+        }
+
+        float get_vertex_width(const size_t i) const override
+        {
+            return m_widths[i];
+        }
+
+        float get_vertex_opacity(const size_t i) const override
+        {
+            return m_opacities[i];
+        }
+
+        Color3f get_vertex_colour(const size_t i) const override
+        {
+            return m_colors[i];
+        }
+
+    private:
+        const CurveObject&  m_object;
+
+        // Curve parameters for writing
+        size_t              m_curve_count;
+        vector<size_t>      m_vertex_counts;
+        vector<GVector3>    m_vertices;
+        vector<GScalar>     m_widths;
+        vector<GScalar>     m_opacities;
+        vector<GColor3>     m_colors;
+
+
+        void create_curve1_parameters()
+        {
+            int32 vertex_count = 0;
+
+            for (int32 i = 0; i < m_object.get_curve1_count(); i = i + 2)
+            {
+                if (!feq(m_vertices.back(), m_object.get_curve1(i).get_control_point(0)))
+                {
+                    m_vertices.push_back(m_object.get_curve1(i).get_control_point(0));
+                    m_widths.push_back(m_object.get_curve1(i).get_width(0));
+                    m_opacities.push_back(m_object.get_curve1(i).get_opacity(0));
+                    m_colors.push_back(m_object.get_curve1(i).get_color(0));
+
+                    m_vertex_counts.push_back(vertex_count);
+                    vertex_count = 1;
+                    m_curve_count++;
+                }
+
+                m_vertices.push_back(m_object.get_curve1(i).get_control_point(1));
+                m_widths.push_back(m_object.get_curve1(i).get_width(1));
+                m_opacities.push_back(m_object.get_curve1(i).get_opacity(1));
+                m_colors.push_back(m_object.get_curve1(i).get_color(1));
+
+                vertex_count++;
+            }
+        }
+
+        void create_curve3_parameters()
+        {
+            int32 vertex_count = 0;
+
+            for (int32 i = 0; i < m_object.get_curve1_count(); i = i + 4)
+            {
+                if (!feq(m_vertices.back(), m_object.get_curve3(i).get_control_point(0)))
+                {
+                    m_vertices.push_back(m_object.get_curve3(i).get_control_point(0));
+                    m_widths.push_back(m_object.get_curve3(i).get_width(0));
+                    m_opacities.push_back(m_object.get_curve3(i).get_opacity(0));
+                    m_colors.push_back(m_object.get_curve3(i).get_color(0));
+
+                    m_vertex_counts.push_back(vertex_count);
+                    vertex_count = 1;
+                    m_curve_count++;
+                }
+
+                m_vertices.push_back(m_object.get_curve3(i).get_control_point(1));
+                m_widths.push_back(m_object.get_curve3(i).get_width(1));
+                m_opacities.push_back(m_object.get_curve3(i).get_opacity(1));
+                m_colors.push_back(m_object.get_curve3(i).get_color(1));
+
+                vertex_count++;
+            }
+        }
+
+
+        void create_parameters()
+        {
+            switch(m_object.get_basis())
+            {
+                case CurveBasis::LINEAR:
+                    create_curve1_parameters();
+                    break;
+
+                case CurveBasis::BEZIER:
+                case CurveBasis::BSPLINE:
+                case CurveBasis::CATMULLROM:
+                    create_curve3_parameters();
+                    break;
+            }
+        }
+    };
 }
 
 bool CurveObjectWriter::write(
@@ -86,41 +204,34 @@ bool CurveObjectWriter::write(
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
 
-    ofstream output;
-    output.open(filepath);
-
-    if (!output.is_open())
+    try
     {
-        RENDERER_LOG_ERROR("failed to create curve file %s.", filepath);
+        GenericCurveFileWriter writer(filepath);
+        CurveObjectWalker walker(object);
+        writer.write(walker);
+    }
+    catch (const ExceptionIOError&)
+    {
+        RENDERER_LOG_ERROR(
+                "failed to write curve file %s: i/o error.",
+                filepath);
         return false;
     }
-
-    const size_t curve1_count = object.get_curve1_count();
-    const size_t curve3_count = object.get_curve3_count();
-
-    output << curve1_count << endl;
-    output << curve3_count << endl;
-
-    for (size_t i = 0; i < curve1_count; ++i)
-        write_curve(output, object.get_curve1(i));
-
-    for (size_t i = 0; i < curve3_count; ++i)
-        write_curve(output, object.get_curve3(i));
-
-    output.close();
-
-    if (output.bad())
+    catch (const Exception& e)
     {
-        RENDERER_LOG_ERROR("failed to write curve file %s: i/o error.", filepath);
+        RENDERER_LOG_ERROR(
+                "failed to write curve file %s: %s.",
+                filepath,
+                e.what());
         return false;
     }
 
     stopwatch.measure();
 
     RENDERER_LOG_INFO(
-        "wrote curve file %s in %s.",
-        filepath,
-        pretty_time(stopwatch.get_seconds()).c_str());
+            "wrote curve file %s in %s.",
+            filepath,
+            pretty_time(stopwatch.get_seconds()).c_str());
 
     return true;
 }

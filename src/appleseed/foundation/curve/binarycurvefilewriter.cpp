@@ -91,8 +91,10 @@ namespace foundation
         write_basis(walker);
         write_curve_count(walker);
 
+        int32 vertex_count = 0;
+
         for (uint32 i = 0; i < walker.get_curve_count(); ++i)
-            write_vertex_properties(walker, i);
+            write_vertex_properties(walker, i, vertex_count);
     }
 
     void BinaryCurveFileWriter::write_basis(const ICurveWalker& walker)
@@ -108,22 +110,26 @@ namespace foundation
         checked_write(m_writer, curve_count);
     }
 
-    void BinaryCurveFileWriter::write_vertex_properties(const ICurveWalker& walker, const uint32 vertex_id)
+    void BinaryCurveFileWriter::write_vertex_properties(const ICurveWalker& walker,
+                                                        const uint32 vertex_id,
+                                                        int32& vertex_count)
     {
         const uint32 count = static_cast<uint32>(walker.get_vertex_count(vertex_id));
         checked_write(m_writer, count);
 
         for (uint32 i = 0; i < count; ++i)
-            checked_write(m_writer, walker.get_vertex(vertex_id, i));
+            checked_write(m_writer, walker.get_vertex(i + vertex_count));
 
         for (uint32 i = 0; i < count; ++i)
-            checked_write(m_writer, walker.get_vertex_width(vertex_id, i));
+            checked_write(m_writer, walker.get_vertex_width(i + vertex_count));
 
         for (uint32 i = 0; i < count; ++i)
-            checked_write(m_writer, walker.get_vertex_opacity(vertex_id, i));
+            checked_write(m_writer, walker.get_vertex_opacity(i + vertex_count));
 
         for (uint32 i = 0; i < count; ++i)
-            checked_write(m_writer, (walker.get_vertex_colour(vertex_id, i)));
+            checked_write(m_writer, walker.get_vertex_colour(i + vertex_count));
+
+        vertex_count += count;
     }
 
 }   // namespace foundation
