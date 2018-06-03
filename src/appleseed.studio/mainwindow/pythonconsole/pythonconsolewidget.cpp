@@ -279,7 +279,7 @@ void PythonConsoleWidget::open_file(const string& filepath)
     fstream file(filepath, fstream::in);
     if (file.bad())
     {
-        RENDERER_LOG_ERROR("Can't open Python script \"%s\"", filepath.c_str());
+        RENDERER_LOG_ERROR("cannot open python script \"%s\" for reading.", filepath.c_str());
         return;
     }
 
@@ -338,7 +338,7 @@ void PythonConsoleWidget::save_file(std::string filepath)
     fstream file(filepath, fstream::out);
     if (file.bad())
     {
-        RENDERER_LOG_ERROR("Can't save Python script \"%s\"", filepath.c_str());
+        RENDERER_LOG_ERROR("cannot open python script \"%s\" for writing.", filepath.c_str());
         return;
     }
 
