@@ -141,7 +141,10 @@ void write_point_cloud_image(
     for (size_t i = 0; i < points.size(); ++i)
         Drawing::draw_dot(image, points[i], Color4f(1.0f));
 
-    GenericImageFileWriter().write(image_path.c_str(), image);
+    GenericImageFileWriter writer(image_path.c_str());
+
+    writer.append_image(&image);
+    writer.write();
 }
 
 void write_point_cloud_image(

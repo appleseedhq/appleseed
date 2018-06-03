@@ -46,9 +46,9 @@
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/image/color.h"
 #include "foundation/image/drawing.h"
+#include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/image/imageattributes.h"
-#include "foundation/image/oiioimagefilewriter.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/text/textrenderer.h"
 #include "foundation/image/tile.h"
@@ -534,7 +534,7 @@ namespace
 
         const std::string filename = file_path.string();
 
-        OIIOImageFileWriter writer(filename.c_str());
+        GenericImageFileWriter writer(filename.c_str());
 
         writer.append_image(&image);
 
@@ -606,7 +606,7 @@ namespace
 
         const std::string filename = file_path.string();
 
-        OIIOImageFileWriter writer(filename.c_str());
+        GenericImageFileWriter writer(filename.c_str());
 
         writer.append_image(&transformed_image);
 
@@ -842,7 +842,7 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
 
     create_parent_directories(file_path);
 
-    OIIOImageFileWriter writer(file_path);
+    GenericImageFileWriter writer(file_path);
 
     // Always save the main image as half floats.
     {

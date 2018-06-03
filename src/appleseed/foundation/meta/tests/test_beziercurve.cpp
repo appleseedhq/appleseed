@@ -141,8 +141,10 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
             }
         }
 
-        GenericImageFileWriter writer;
-        writer.write(filename, image);
+        GenericImageFileWriter writer(filename);
+
+        writer.append_image(&image);
+        writer.write();
     }
 
 #pragma warning (pop)

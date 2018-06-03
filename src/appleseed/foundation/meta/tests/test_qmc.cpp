@@ -392,7 +392,10 @@ TEST_SUITE(Foundation_Math_QMC)
             image.set_pixel(x, y, c);
         }
 
-        GenericImageFileWriter().write("unit tests/outputs/test_qmc_sampleimageplanewithhaltonsequence.png", image);
+        GenericImageFileWriter writer("unit tests/outputs/test_qmc_sampleimageplanewithhaltonsequence.png");
+
+        writer.append_image(&image);
+        writer.write();
     }
 
     TEST_CASE(SampleImagePlaneWithHaltonSequence_Uniformized)
@@ -434,7 +437,10 @@ TEST_SUITE(Foundation_Math_QMC)
             image.set_pixel(x, y, c);
         }
 
-        GenericImageFileWriter().write("unit tests/outputs/test_qmc_sampleimageplanewithhaltonsequence_uniformized.png", image);
+        GenericImageFileWriter writer("unit tests/outputs/test_qmc_sampleimageplanewithhaltonsequence_uniformized.png");
+
+        writer.append_image(&image);
+        writer.write();
     }
 
 #ifdef APPLESEED_ARCH64
@@ -477,7 +483,10 @@ TEST_SUITE(Foundation_Math_QMC)
             image.set_pixel(x, y, c);
         }
 
-        GenericImageFileWriter().write("unit tests/outputs/test_qmc_sampleimageplanewithhaltonsequence_uniformized_64bitoffset.png", image);
+        GenericImageFileWriter writer("unit tests/outputs/test_qmc_sampleimageplanewithhaltonsequence_uniformized_64bitoffset.png");
+
+        writer.append_image(&image);
+        writer.write();
     }
 
 #endif

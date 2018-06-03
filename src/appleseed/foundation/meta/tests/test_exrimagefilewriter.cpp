@@ -29,9 +29,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+#include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/genericprogressiveimagefilereader.h"
 #include "foundation/image/image.h"
-#include "foundation/image/oiioimagefilewriter.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
 #include "foundation/utility/iostreamop.h"
@@ -54,7 +54,7 @@ TEST_SUITE(Foundation_Image_EXRImageFileWriter)
         Image image(2, 2, 32, 32, 4, PixelFormatFloat);
         image.clear(Reference);
 
-        OIIOImageFileWriter writer(Filename);
+        GenericImageFileWriter writer(Filename);
 
         writer.append_image(&image);
         writer.write();

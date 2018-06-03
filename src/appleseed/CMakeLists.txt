@@ -103,7 +103,6 @@ set (foundation_image_sources
     foundation/image/genericprogressiveimagefilereader.h
     foundation/image/icanvas.h
     foundation/image/iimagefilereader.h
-    foundation/image/iimagefilewriter.h
     foundation/image/image.cpp
     foundation/image/image.h
     foundation/image/imageattributes.cpp
@@ -111,8 +110,6 @@ set (foundation_image_sources
     foundation/image/iprogressiveimagefilereader.h
     foundation/image/nativedrawing.cpp
     foundation/image/nativedrawing.h
-    foundation/image/oiioimagefilewriter.cpp
-    foundation/image/oiioimagefilewriter.h
     foundation/image/pixel.cpp
     foundation/image/pixel.h
     foundation/image/regularspectrum.h
