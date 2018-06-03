@@ -97,7 +97,7 @@ class GenericVolume
         if (!Volume::on_frame_begin(project, parent, recorder, abort_switch))
             return false;
 
-        const EntityDefMessageContext context("volume", this);
+        const OnFrameBeginMessageContext context("volume", this);
 
         const std::string phase_function =
             m_params.get_required<std::string>(

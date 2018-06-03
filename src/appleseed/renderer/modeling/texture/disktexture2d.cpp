@@ -80,7 +80,7 @@ namespace
           : Texture(name, params)
           , m_reader(&global_logger())
         {
-            const EntityDefMessageContext message_context("texture", this);
+            const EntityDefMessageContext context("texture", this);
 
             // Establish and store the qualified path to the texture file.
             m_filepath = to_string(search_paths.qualify(m_params.get_required<string>("filename", "")));
@@ -91,7 +91,7 @@ namespace
                     "color_space",
                     "linear_rgb",
                     make_vector("linear_rgb", "srgb", "ciexyz"),
-                    message_context);
+                    context);
             if (color_space == "linear_rgb")
                 m_color_space = ColorSpaceLinearRGB;
             else if (color_space == "srgb")

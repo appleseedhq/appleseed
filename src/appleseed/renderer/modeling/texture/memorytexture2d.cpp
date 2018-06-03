@@ -176,7 +176,7 @@ namespace
 
         void extract_parameters()
         {
-            const EntityDefMessageContext message_context("texture", this);
+            const EntityDefMessageContext context("texture", this);
 
             // Retrieve the color space.
             const string color_space =
@@ -184,7 +184,7 @@ namespace
                     "color_space",
                     "linear_rgb",
                     make_vector("linear_rgb", "srgb", "ciexyz"),
-                    message_context);
+                    context);
             if (color_space == "linear_rgb")
                 m_color_space = ColorSpaceLinearRGB;
             else if (color_space == "srgb")
