@@ -126,17 +126,6 @@ SceneItem::SceneItem(
     m_environment_shader_collection_item->add_items(scene.environment_shaders());
 }
 
-void SceneItem::expand()
-{
-    setExpanded(true);
-
-    get_assembly_collection_item().setExpanded(true);
-    get_assembly_instance_collection_item().setExpanded(true);
-
-    if (get_assembly_collection_item().childCount() == 1)
-        get_assembly_collection_item().child(0)->setExpanded(true);
-}
-
 QMenu* SceneItem::get_single_item_context_menu() const
 {
     QMenu* menu = ItemBase::get_single_item_context_menu();
@@ -152,6 +141,17 @@ QMenu* SceneItem::get_single_item_context_menu() const
     menu->addAction("Create Environment Shader...", m_environment_shader_collection_item, SLOT(slot_create()));
 
     return menu;
+}
+
+void SceneItem::expand()
+{
+    setExpanded(true);
+
+    get_assembly_collection_item().setExpanded(true);
+    get_assembly_instance_collection_item().setExpanded(true);
+
+    if (get_assembly_collection_item().childCount() == 1)
+        get_assembly_collection_item().child(0)->setExpanded(true);
 }
 
 void SceneItem::add_item(Camera* camera)

@@ -2370,9 +2370,7 @@ namespace
                     m_context.get_project().get_factory_registrar<AOV>().lookup(m_model.c_str());
 
                 if (factory)
-                {
                     m_aov = factory->create(m_params);
-                }
                 else
                 {
                     RENDERER_LOG_ERROR(

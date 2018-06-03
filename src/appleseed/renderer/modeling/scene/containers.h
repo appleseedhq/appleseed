@@ -107,8 +107,8 @@ class ExceptionUnknownEntity
 {
   public:
     explicit ExceptionUnknownEntity(
-        const char*         entity_name,
-        const Entity*       context = nullptr);
+        const char*                 entity_name,
+        const Entity*               context = nullptr);
 
     const std::string& get_context_path() const;
 
@@ -119,28 +119,28 @@ class ExceptionUnknownEntity
 
 //
 // Retrieve a mandatory entity from a container.
-// Returns 0 if the parameter does not exist.
+// Returns nullptr if the parameter does not exist.
 // Throws a renderer::ExceptionUnknownEntity exception if the requested entity does not exist.
 //
 
 template <typename T, typename Container>
 T* get_required_entity(
-    const Container&        container,
-    const ParamArray&       params,
-    const std::string&      param_name);
+    const Container&                container,
+    const ParamArray&               params,
+    const std::string&              param_name);
 
 
 //
 // Retrieve an optional entity from a container.
-// Returns 0 if the parameter does not exist.
+// Returns nullptr if the parameter does not exist.
 // Throws a renderer::ExceptionUnknownEntity exception if the requested entity does not exist.
 //
 
 template <typename T, typename Container>
 T* get_optional_entity(
-    const Container&        container,
-    const ParamArray&       params,
-    const std::string&      param_name);
+    const Container&                container,
+    const ParamArray&               params,
+    const std::string&              param_name);
 
 
 //
@@ -167,9 +167,9 @@ std::string make_unique_name(
 
 template <typename T, typename Container>
 T* get_required_entity(
-    const Container&        container,
-    const ParamArray&       params,
-    const std::string&      param_name)
+    const Container&                container,
+    const ParamArray&               params,
+    const std::string&              param_name)
 {
     const std::string entity_name =
         params.get_required<std::string>(param_name.c_str(), std::string());
@@ -187,9 +187,9 @@ T* get_required_entity(
 
 template <typename T, typename Container>
 T* get_optional_entity(
-    const Container&        container,
-    const ParamArray&       params,
-    const std::string&      param_name)
+    const Container&                container,
+    const ParamArray&               params,
+    const std::string&              param_name)
 {
     const std::string entity_name =
         params.get_optional<std::string>(param_name.c_str(), std::string());
