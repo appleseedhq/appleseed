@@ -27,6 +27,7 @@
 //
 
 // appleseed.renderer headers.
+#include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/aov/aovcontainer.h"
 #include "renderer/modeling/aov/diffuseaov.h"
 #include "renderer/modeling/aov/glossyaov.h"

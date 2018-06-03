@@ -35,6 +35,7 @@
 #include "renderer/kernel/aov/aovsettings.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/denoising/denoiser.h"
+#include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/aov/aovfactoryregistrar.h"
 #include "renderer/modeling/aov/denoiseraov.h"
 #include "renderer/modeling/aov/iaovfactory.h"
@@ -61,6 +62,7 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/iostreamop.h"
+#include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 
@@ -241,6 +243,11 @@ void Frame::print_settings()
         impl->m_save_extra_aovs ? "on" : "off");
 }
 
+AOVContainer& Frame::aovs() const
+{
+    return impl->m_aovs;
+}
+
 const char* Frame::get_active_camera_name() const
 {
     if (m_params.strings().exist("camera"))
@@ -268,11 +275,6 @@ void Frame::clear_main_and_aov_images()
 ImageStack& Frame::aov_images() const
 {
     return *impl->m_aov_images;
-}
-
-const AOVContainer& Frame::aovs() const
-{
-    return impl->m_aovs;
 }
 
 const AOVContainer& Frame::internal_aovs() const
@@ -330,9 +332,22 @@ const AABB2u& Frame::get_crop_window() const
     return impl->m_crop_window;
 }
 
-size_t Frame::get_pixel_count() const
+bool Frame::on_frame_begin(
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
+    IAbortSwitch*           abort_switch)
 {
-    return impl->m_crop_window.volume();
+    for (auto& aov : aovs())
+    {
+        if (is_aborted(abort_switch))
+            return false;
+
+        if (!aov.on_frame_begin(project, parent, recorder, abort_switch))
+            return false;
+    }
+
+    return true;
 }
 
 void Frame::post_process_aov_images() const

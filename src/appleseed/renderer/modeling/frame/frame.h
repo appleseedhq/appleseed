@@ -31,7 +31,6 @@
 #define APPLESEED_RENDERER_MODELING_FRAME_FRAME_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/aov/aovcontainer.h"
 #include "renderer/modeling/entity/entity.h"
 
@@ -58,10 +57,12 @@ namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class Image; }
 namespace foundation    { class ImageAttributes; }
 namespace foundation    { class Tile; }
-namespace renderer      { class AOV; }
+namespace renderer      { class BaseGroup; }
 namespace renderer      { class DenoiserAOV; }
 namespace renderer      { class ImageStack; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class Project; }
 
 namespace renderer
 {
@@ -85,6 +86,9 @@ class APPLESEED_DLLSYMBOL Frame
     // Print this component's settings to the renderer's global logger.
     void print_settings();
 
+    // Access the AOVs.
+    AOVContainer& aovs() const;
+
     // Return the name of the active camera.
     const char* get_active_camera_name() const;
 
@@ -96,9 +100,6 @@ class APPLESEED_DLLSYMBOL Frame
 
     // Access the AOV images.
     ImageStack& aov_images() const;
-
-    // Access the AOVs.
-    const AOVContainer& aovs() const;
 
     // Create an extra AOV image if it does not exist.
     size_t create_extra_aov_image(const char* name) const;
@@ -112,8 +113,13 @@ class APPLESEED_DLLSYMBOL Frame
     void set_crop_window(const foundation::AABB2u& crop_window);
     const foundation::AABB2u& get_crop_window() const;
 
-    // Return the number of pixels in the frame, taking into account the crop window.
-    size_t get_pixel_count() const;
+    // This method is called once before rendering each frame.
+    // Returns true on success, false otherwise.
+    bool on_frame_begin(
+        const Project&              project,
+        const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
     // Return the normalized device coordinates of a given sample.
     foundation::Vector2d get_sample_position(

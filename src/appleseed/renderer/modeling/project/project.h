@@ -77,6 +77,7 @@
 // Forward declarations.
 namespace foundation    { class SearchPaths; }
 namespace renderer      { class Assembly; }
+namespace renderer      { class BaseGroup; }
 namespace renderer      { class BSDF; }
 namespace renderer      { class BSSRDF; }
 namespace renderer      { class Camera; }
@@ -89,6 +90,7 @@ namespace renderer      { class Light; }
 namespace renderer      { class LightPathRecorder; }
 namespace renderer      { class Material; }
 namespace renderer      { class Object; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class Scene; }
 namespace renderer      { class SurfaceShader; }
 namespace renderer      { class Texture; }
@@ -166,6 +168,14 @@ class APPLESEED_DLLSYMBOL Project
 
     // Reinitialize all factory registrars; load plugins found in project's search paths.
     void reinitialize_factory_registrars();
+
+    // This method is called once before rendering each frame.
+    // Returns true on success, false otherwise.
+    bool on_frame_begin(
+        const Project&                  project,
+        const BaseGroup*                parent,
+        OnFrameBeginRecorder&           recorder,
+        foundation::IAbortSwitch*       abort_switch = nullptr) override;
 
     // Return true if the trace context has already been built.
     bool has_trace_context() const;

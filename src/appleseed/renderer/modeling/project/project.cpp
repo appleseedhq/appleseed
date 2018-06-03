@@ -231,6 +231,21 @@ void Project::reinitialize_factory_registrars()
     m_volume_factory_registrar.reinitialize(impl->m_search_paths);
 }
 
+bool Project::on_frame_begin(
+    const Project&              project,
+    const BaseGroup*            parent,
+    OnFrameBeginRecorder&       recorder,
+    IAbortSwitch*               abort_switch)
+{
+    if (!impl->m_scene->on_frame_begin(project, nullptr, recorder, abort_switch))
+        return false;
+
+    if (!impl->m_frame->on_frame_begin(project, nullptr, recorder, abort_switch))
+        return false;
+
+    return true;
+}
+
 bool Project::has_trace_context() const
 {
     return impl->m_trace_context.get() != nullptr;

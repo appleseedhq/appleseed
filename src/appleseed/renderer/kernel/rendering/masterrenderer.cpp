@@ -447,7 +447,8 @@ struct MasterRenderer::Impl
             // Perform pre-frame rendering actions. Don't proceed if that failed.
             OnFrameBeginRecorder recorder;
             if (!components.get_shading_engine().on_frame_begin(m_project, recorder, &abort_switch) ||
-                !m_project.get_scene()->on_frame_begin(m_project, nullptr, recorder, &abort_switch))
+                !m_project.on_frame_begin(m_project, nullptr, recorder, &abort_switch) ||
+                abort_switch.is_aborted())
             {
                 recorder.on_frame_end(m_project);
                 m_renderer_controller->on_frame_end();
@@ -458,19 +459,13 @@ struct MasterRenderer::Impl
             m_project.get_scene()->get_active_camera()->print_settings();
             m_project.get_frame()->print_settings();
 
-            // Don't proceed with rendering if scene preparation was aborted.
-            if (abort_switch.is_aborted())
-            {
-                recorder.on_frame_end(m_project);
-                m_renderer_controller->on_frame_end();
-                return m_renderer_controller->get_status();
-            }
-
             IFrameRenderer& frame_renderer = components.get_frame_renderer();
             assert(!frame_renderer.is_rendering());
 
+            // Start rendering the frame.
             frame_renderer.start_rendering();
 
+            // Wait until the the frame is completed or rendering is aborted.
             const IRendererController::Status status = wait_for_event(frame_renderer);
 
             switch (status)
