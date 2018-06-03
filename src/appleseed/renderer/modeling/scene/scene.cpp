@@ -399,17 +399,16 @@ namespace
         OnFrameBeginRecorder&   recorder,
         IAbortSwitch*           abort_switch)
     {
-        bool success = true;
-
-        for (each<EntityCollection> i = entities; i; ++i)
+        for (auto& entity : entities)
         {
             if (is_aborted(abort_switch))
-                break;
+                return false;
 
-            success = success && i->on_frame_begin(project, parent, recorder, abort_switch);
+            if (!entity.on_frame_begin(project, parent, recorder, abort_switch))
+                return false;
         }
 
-        return success;
+        return true;
     }
 }
 
