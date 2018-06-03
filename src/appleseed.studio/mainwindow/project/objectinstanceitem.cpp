@@ -476,7 +476,6 @@ void ObjectInstanceItem::do_delete()
 
     // Remove and delete the object instance item.
     ItemBase* object_instance_item = m_editor_context.m_item_registry.get_item(object_instance_uid);
-    m_editor_context.m_item_registry.remove(object_instance_uid);
     delete object_instance_item;
 
     // At this point 'this' no longer exists.

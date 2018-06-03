@@ -107,7 +107,6 @@ namespace
         {
             texture_instances.remove(texture_instances.get_by_uid(*i));
             delete item_registry.get_item(*i);
-            item_registry.remove(*i);
         }
 
         // Recurse into child assemblies.
@@ -145,7 +144,6 @@ void TextureItem::do_delete()
 
     // Remove and delete the texture item.
     ItemBase* texture_item = m_editor_context.m_item_registry.get_item(texture_uid);
-    m_editor_context.m_item_registry.remove(texture_uid);
     delete texture_item;
 
     // At this point 'this' no longer exists.

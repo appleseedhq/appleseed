@@ -33,7 +33,6 @@
 // appleseed.studio headers.
 #include "mainwindow/project/basegroupitem.h"
 #include "mainwindow/project/entityeditorcontext.h"
-#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/textureitem.h"
 #include "utility/interop.h"
@@ -167,16 +166,12 @@ ItemBase* TextureCollectionItem::create_item(Texture* texture)
 {
     assert(texture);
 
-    ItemBase* item =
+    return
         new TextureItem(
             m_editor_context,
             texture,
             m_parent,
             this);
-
-    m_editor_context.m_item_registry.insert(*texture, item);
-
-    return item;
 }
 
 }   // namespace studio

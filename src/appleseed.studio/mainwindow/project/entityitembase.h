@@ -31,7 +31,9 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYITEMBASE_H
 
 // appleseed.studio headers.
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/itembase.h"
+#include "mainwindow/project/itemregistry.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
@@ -85,10 +87,13 @@ class EntityItemBase
         EntityEditorContext&        editor_context,
         Entity*                     entity);
 
+    ~EntityItemBase() override;
+
     void update();
 
   protected:
-    Entity* m_entity;
+    Entity*                 m_entity;
+    foundation::UniqueID    m_entity_uid;
 };
 
 
@@ -102,10 +107,19 @@ EntityItemBase<Entity>::EntityItemBase(
     Entity*                 entity)
   : EntityItemBaseSlots(editor_context, entity->get_class_uid())
   , m_entity(entity)
+  , m_entity_uid(entity->get_uid())
 {
     assert(m_entity != nullptr);
 
     update();
+
+    m_editor_context.m_item_registry.insert(*m_entity, this);
+}
+
+template <typename Entity>
+EntityItemBase<Entity>::~EntityItemBase()
+{
+    m_editor_context.m_item_registry.remove(m_entity_uid);
 }
 
 template <typename Entity>

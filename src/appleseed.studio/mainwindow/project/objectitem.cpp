@@ -111,7 +111,6 @@ namespace
         {
             object_instances.remove(object_instances.get_by_uid(*i));
             delete item_registry.get_item(*i);
-            item_registry.remove(*i);
         }
 
         if (!remove_list.empty())
@@ -201,7 +200,6 @@ void ObjectItem::do_delete()
 
     // Remove and delete the object item.
     ItemBase* object_item = m_editor_context.m_item_registry.get_item(object_uid);
-    m_editor_context.m_item_registry.remove(object_uid);
     delete object_item;
 
     // At this point 'this' no longer exists.
