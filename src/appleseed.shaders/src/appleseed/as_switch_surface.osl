@@ -32,6 +32,8 @@ shader as_switch_surface
 [[
     string as_maya_node_name = "asSwitchSurface",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
+    string as_blender_node_name = "asSwitchSurface",
+    string as_blender_category = "utility",
     string help = "Material variation utility shader.",
     string icon = "asSwitchSurface.png",
     int as_maya_type_id = 0x001279fe,
@@ -108,6 +110,7 @@ shader as_switch_surface
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -121,6 +124,7 @@ shader as_switch_surface
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "If on (default), restricts the variation to inputs which have upstream connections only. If off uses all inputs, even if they contain nothing."
     ]],
@@ -133,6 +137,7 @@ shader as_switch_surface
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Type",
         string page = "Manifold",
@@ -146,6 +151,7 @@ shader as_switch_surface
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Expression",
         string page = "Manifold.String",
@@ -160,6 +166,7 @@ shader as_switch_surface
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Domain",
         string page = "Manifold.String",
@@ -174,6 +181,7 @@ shader as_switch_surface
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 0,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 1,
         string label = "Seed",
         string page = "Manifold.String"

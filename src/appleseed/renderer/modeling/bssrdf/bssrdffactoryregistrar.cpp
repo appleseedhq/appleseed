@@ -83,7 +83,7 @@ void BSSRDFFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
     register_factory(auto_release_ptr<FactoryType>(new DirectionalDipoleBSSRDFFactory()));
     register_factory(auto_release_ptr<FactoryType>(new GaussianBSSRDFFactory()));
     register_factory(auto_release_ptr<FactoryType>(new NormalizedDiffusionBSSRDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new RandomWalkBSSRDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new RandomwalkBSSRDFFactory()));
     register_factory(auto_release_ptr<FactoryType>(new StandardDipoleBSSRDFFactory()));
 
     // Register factories defined in plugins.

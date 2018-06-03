@@ -118,6 +118,17 @@ closure color as_subsurface(
     float       ior
     // keyword arguments:
     //   float "fresnel_weight" = 1
+    //   float "volume_anisotropy" = 0
+    ) BUILTIN;
+
+closure color as_randomwalk_glass(
+    normal      N,
+    color       reflectance,
+    color       mean_free_path,
+    float       ior,
+    float       surface_roughness,
+    // keyword arguments:
+    //   float "volume_anisotropy" = 0
     ) BUILTIN;
 
 closure color as_ashikhmin_shirley(

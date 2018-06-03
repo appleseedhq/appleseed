@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>500</width>
+    <height>400</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,30 +33,46 @@
        <item>
         <widget class="QPushButton" name="pushbutton_new">
          <property name="text">
-          <string>New</string>
+          <string>&amp;New</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="pushbutton_clone">
          <property name="text">
-          <string>Clone</string>
+          <string>&amp;Clone</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="pushbutton_rename">
          <property name="text">
-          <string>Rename</string>
+          <string>&amp;Rename</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="pushbutton_delete">
          <property name="text">
-          <string>Delete</string>
+          <string>&amp;Delete</string>
          </property>
         </widget>
+       </item>
+       <item>
+        <spacer name="horizontalspacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>100</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
        <item>
         <spacer name="verticalspacer">

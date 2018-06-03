@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
+#include "renderer/api/scenepicker.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -42,6 +43,7 @@
 #include <QObject>
 
 // Forward declarations.
+namespace renderer  { class Camera; }
 namespace renderer  { class Project; }
 class QEvent;
 class QKeyEvent;
@@ -61,7 +63,8 @@ class CameraController
     // The camera controller is disabled by default.
     CameraController(
         QWidget*            widget,
-        renderer::Project&  project);
+        renderer::Project&  project,
+        renderer::Camera*   camera);
 
     // Destructor.
     ~CameraController() override;
@@ -88,6 +91,7 @@ class CameraController
 
     QWidget*                m_widget;
     renderer::Project&      m_project;
+    renderer::Camera*       m_camera;
     bool                    m_enabled;
 
     ControllerType          m_controller;

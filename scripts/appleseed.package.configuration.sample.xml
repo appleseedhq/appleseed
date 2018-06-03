@@ -20,7 +20,7 @@
     <platform_runtime_path>C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\redist\x64\Microsoft.VC140.CRT</platform_runtime_path>
 
     <!-- The path to a Python 2.7 installation. -->
-    <python_path>C:\Python27</python_path>
+    <python_path>C:\appleseed-deps\python27</python_path>
 
     <!-- The directory inside which the final archive file will be created. -->
     <package_output_path>C:\appleseed\archives\releases</package_output_path>

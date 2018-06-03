@@ -95,7 +95,7 @@ namespace
             {
                 const bpy::extract<const char*> extractor(search_paths[i]);
                 if (extractor.check())
-                    m_search_paths.push_back(extractor());
+                    m_search_paths.push_back_explicit_path(extractor());
                 else
                 {
                     PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings accepted.");
@@ -109,6 +109,11 @@ namespace
         bool open(const char* shader_name)
         {
             return m_shader_query->open(shader_name);
+        }
+
+        bool open_bytecode(const char* shader_code)
+        {
+            return m_shader_query->open_bytecode(shader_code);
         }
 
         string get_shader_name() const
@@ -142,6 +147,22 @@ namespace
         SearchPaths                     m_search_paths;
         auto_release_ptr<ShaderQuery>   m_shader_query;
     };
+
+    auto_release_ptr<ShaderCompiler> create_shader_compiler(const char* stdosl_path)
+    {
+        return ShaderCompilerFactory::create(stdosl_path);
+    }
+
+    bpy::object compile_buffer(ShaderCompiler* compiler, const std::string& buffer)
+    {
+        APIString result;
+
+        if (compiler->compile_buffer(buffer.c_str(), result))
+            return bpy::str(result.c_str());
+
+        // return None if compilation failed.
+        return bpy::object();
+    }
 }
 
 void bind_shader_group()
@@ -150,19 +171,24 @@ void bind_shader_group()
         .def("__init__", bpy::make_constructor(create_shader_group))
         .def("add_shader", add_shader)
         .def("add_connection", &ShaderGroup::add_connection)
-        .def("clear", &ShaderGroup::clear)
-        ;
+        .def("clear", &ShaderGroup::clear);
+
+    bind_typed_entity_vector<ShaderGroup>("ShaderGroupContainer");
 
     bpy::class_<ShaderQueryWrapper, boost::noncopyable>("ShaderQuery")
         .def(bpy::init<const char*>())
         .def(bpy::init<bpy::list>())
         .def("open", &ShaderQueryWrapper::open)
+        .def("open_bytecode", &ShaderQueryWrapper::open_bytecode)
         .def("get_shader_name", &ShaderQueryWrapper::get_shader_name)
         .def("get_shader_type", &ShaderQueryWrapper::get_shader_type)
         .def("get_num_params", &ShaderQueryWrapper::get_param_count)
         .def("get_param_info", &ShaderQueryWrapper::get_param_info)
-        .def("get_metadata", &ShaderQueryWrapper::get_metadata)
-        ;
+        .def("get_metadata", &ShaderQueryWrapper::get_metadata);
 
-    bind_typed_entity_vector<ShaderGroup>("ShaderGroupContainer");
+    bpy::class_<ShaderCompiler, auto_release_ptr<ShaderCompiler>, boost::noncopyable>("ShaderCompiler", bpy::no_init)
+        .def("__init__", bpy::make_constructor(create_shader_compiler))
+        .def("clear_options", &ShaderCompiler::clear_options)
+        .def("add_option", &ShaderCompiler::add_option)
+        .def("compile_buffer", compile_buffer);
 }

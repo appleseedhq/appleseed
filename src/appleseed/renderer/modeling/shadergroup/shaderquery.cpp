@@ -145,16 +145,34 @@ struct ShaderQuery::Impl
 
     bool open(const char* shader_name)
     {
-        m_metadata = OptionalDictionary();
-        m_param_info.clear();
+        init();
 
-        m_query = OSL::OSLQuery();
         const bool ok = m_query.open(shader_name, m_search_path);
 
         if (ok)
             m_param_info.assign(m_query.nparams(), OptionalDictionary());
 
         return ok;
+    }
+
+    bool open_bytecode(const char* shader_code)
+    {
+        init();
+
+        const bool ok = m_query.open_bytecode(shader_code);
+
+        if (ok)
+            m_param_info.assign(m_query.nparams(), OptionalDictionary());
+
+        return ok;
+    }
+
+    void init()
+    {
+        m_metadata = OptionalDictionary();
+        m_param_info.clear();
+
+        m_query = OSL::OSLQuery();
     }
 };
 
@@ -191,6 +209,11 @@ void ShaderQuery::release()
 bool ShaderQuery::open(const char* shader_name)
 {
     return impl->open(shader_name);
+}
+
+bool ShaderQuery::open_bytecode(const char* shader_code)
+{
+    return impl->open_bytecode(shader_code);
 }
 
 const char* ShaderQuery::get_shader_name() const

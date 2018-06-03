@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -139,7 +139,7 @@ class ProjectBuilder
                 const Vector3d scaling(scale_x, scale_y, scale_z);
 
                 // Compute rotation.
-                const double rotation = OrientationVariation * rand2(rng, -Pi, Pi);
+                const double rotation = OrientationVariation * rand2(rng, -Pi<double>(), Pi<double>());
 
                 // Compute translation.
                 const double translate_x = (fx - 0.5) * total_size_x;
@@ -236,7 +236,7 @@ class ProjectBuilder
                     .insert("autofocus_target", "0.5 0.5")
                     .insert("controller_target", "0.00222523 -0.004497 0.00937141")));
 
-        const double CameraMatrix[16] =
+        static const double CameraMatrix[16] =
         {
             0.898911352044089, -0.291992464000737, 0.326647795236774, 0.051430150409342,
             0.000000000000000, 0.745548999631107, 0.666450815251250, 0.095894497845129,
@@ -246,7 +246,8 @@ class ProjectBuilder
 
         camera->transform_sequence().set_transform(
             0.0,
-            Transformd::from_local_to_parent(Matrix4d(CameraMatrix)));
+            Transformd::from_local_to_parent(
+                Matrix4d::from_array(CameraMatrix)));
 
         scene->cameras().insert(camera);
 
@@ -258,7 +259,7 @@ class ProjectBuilder
             FrameFactory::create(
                 "beauty",
                 ParamArray()
-                    .insert("camera", scene->get_camera()->get_name())
+                    .insert("camera", "camera")
                     .insert("resolution", "1280 720")
                     .insert("color_space", "srgb")
                     .insert("camera", "camera")));
@@ -295,11 +296,11 @@ class SingleBakedMeshProjectBuilder
     auto_release_ptr<MeshObject>    m_cube;
     auto_release_ptr<MeshObject>    m_mesh;
 
-    virtual void initialize_assembly(
+    void initialize_assembly(
         Project&            project,
         Assembly&           assembly,
         const size_t        image_width,
-        const size_t        image_height) APPLESEED_OVERRIDE
+        const size_t        image_height) override
     {
         assembly.textures().insert(
             DiskTexture2dFactory().create(
@@ -357,7 +358,7 @@ class SingleBakedMeshProjectBuilder
         m_cube.reset(objects[0]);
 
         // Create the baked mesh object.
-        m_mesh = MeshObjectFactory::create("cubes", ParamArray());
+        m_mesh = MeshObjectFactory().create("cubes", ParamArray());
 
         // Reserve memory into the baked mesh object.
         const size_t cube_count = image_width * image_height;
@@ -367,14 +368,14 @@ class SingleBakedMeshProjectBuilder
         m_mesh->reserve_triangles(m_cube->get_triangle_count() * cube_count);
     }
 
-    virtual void add_cube(
+    void add_cube(
         Assembly&           assembly,
         const size_t        ix,
         const size_t        iy,
         const double        fx,
         const double        fz,
         const Color3b&      color,
-        const Transformd&   transform) APPLESEED_OVERRIDE
+        const Transformd&   transform) override
     {
         // Push vertices.
         const size_t base_vertex_index = m_mesh->get_vertex_count();
@@ -413,7 +414,7 @@ class SingleBakedMeshProjectBuilder
         }
     }
 
-    virtual void finalize_assembly(Assembly& assembly) APPLESEED_OVERRIDE
+    void finalize_assembly(Assembly& assembly) override
     {
         // Insert the baked mesh object into the assembly.
         assembly.objects().insert(auto_release_ptr<Object>(m_mesh));
@@ -434,11 +435,11 @@ class InstancesProjectBuilder
   : public ProjectBuilder
 {
   private:
-    virtual void initialize_assembly(
+    void initialize_assembly(
         Project&            project,
         Assembly&           assembly,
         const size_t        image_width,
-        const size_t        image_height) APPLESEED_OVERRIDE
+        const size_t        image_height) override
     {
         assembly.surface_shaders().insert(
             PhysicalSurfaceShaderFactory().create(
@@ -459,14 +460,14 @@ class InstancesProjectBuilder
         assembly.objects().insert(auto_release_ptr<Object>(objects[0]));
     }
 
-    virtual void add_cube(
+    void add_cube(
         Assembly&           assembly,
         const size_t        ix,
         const size_t        iy,
         const double        fx,
         const double        fz,
         const Color3b&      color,
-        const Transformd&   transform) APPLESEED_OVERRIDE
+        const Transformd&   transform) override
     {
         const string color_suffix = color_to_string(color);
         const string color_name = "color_" + color_suffix;
@@ -537,7 +538,7 @@ class InstancesProjectBuilder
         assembly.assembly_instances().insert(cube_assembly_inst);
     }
 
-    virtual void finalize_assembly(Assembly& assembly) APPLESEED_OVERRIDE
+    void finalize_assembly(Assembly& assembly) override
     {
     }
 

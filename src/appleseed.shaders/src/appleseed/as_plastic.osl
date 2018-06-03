@@ -30,8 +30,10 @@ shader as_plastic
 [[
     string as_maya_node_name = "asPlastic",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string help = "Plastic material.",
+    string as_blender_node_name = "asPlastic",
+    string as_blender_category = "shader",
     string icon = "asPlastic.png",
+    string help = "A plastic material, layering a diffuse and specular terms.",
     int as_maya_type_id = 0x001279d7,
     string as_max_class_id = "1525511449 941587614",
     string as_max_plugin_type = "material",
@@ -101,6 +103,7 @@ shader as_plastic
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -147,6 +150,7 @@ shader as_plastic
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -180,6 +184,7 @@ shader as_plastic
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
 
@@ -201,6 +206,7 @@ shader as_plastic
         string as_maya_attribute_short_name = "om",
         string widget = "null",
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]]
 )

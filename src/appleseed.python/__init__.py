@@ -34,6 +34,22 @@
 try:
     from _appleseedpythonbuiltin import *
 except:
-    from _appleseedpython import *
+    from sys import hexversion as appleseed_python_hexversion
 
-from logtarget import *
+    if appleseed_python_hexversion < 0x030000F0:
+        # Python 2.X
+        from _appleseedpython import *
+        from logtarget import *
+    else:
+        # Python 3.X
+        from ._appleseedpython3 import *
+        from .logtarget import *
+
+#
+# appleseed.python class extensions.
+#
+
+def MurmurHash__str(self):
+    return "%016x%016x" % (self.h1, self.h2)
+
+MurmurHash.__str__ = MurmurHash__str

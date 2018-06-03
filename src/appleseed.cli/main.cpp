@@ -38,15 +38,13 @@
 #include "application/superlogger.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/color.h"
 #include "renderer/api/frame.h"
+#include "renderer/api/lighting.h"
 #include "renderer/api/log.h"
-#include "renderer/api/material.h"
 #include "renderer/api/object.h"
 #include "renderer/api/project.h"
 #include "renderer/api/rendering.h"
 #include "renderer/api/scene.h"
-#include "renderer/api/surfaceshader.h"
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
@@ -318,62 +316,32 @@ namespace
         }
     }
 
-    void apply_select_object_instances_command_line_option(Assembly& assembly, const RegExFilter& filter)
+    void apply_visibility_command_line_options(
+        Assembly&           assembly,
+        const RegExFilter&  show_filter,
+        const RegExFilter&  hide_filter)
     {
-        static const char* ColorName = "opaque_black-75AB13E8-D5A2-4D27-A64E-4FC41B55A272";
-        static const char* BlackSurfaceShaderName = "opaque_black_surface_shader-75AB13E8-D5A2-4D27-A64E-4FC41B55A272";
-        static const char* BlackMaterialName = "opaque_black_material-75AB13E8-D5A2-4D27-A64E-4FC41B55A272";
-
-        ColorValueArray color_values;
-        color_values.push_back(0.0f);
-
-        assembly.colors().insert(
-            ColorEntityFactory::create(
-                ColorName,
-                ParamArray()
-                    .insert("color_space", "linear_rgb"),
-                color_values));
-
-        assembly.surface_shaders().insert(
-            ConstantSurfaceShaderFactory().create(
-                BlackSurfaceShaderName,
-                ParamArray()
-                    .insert("color", ColorName)));
-
-        assembly.materials().insert(
-            GenericMaterialFactory().create(
-                BlackMaterialName,
-                ParamArray()
-                    .insert("surface_shader", BlackSurfaceShaderName)));
-
-        for (each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
+        for (ObjectInstance& object_instance : assembly.object_instances())
         {
-            if (!filter.accepts(i->get_name()))
-            {
-                Object* object = i->find_object();
-                const size_t slot_count = object->get_material_slot_count();
-
-                for (size_t s = 0; s < slot_count; ++s)
-                {
-                    const char* slot = object->get_material_slot(s);
-                    i->assign_material(slot, ObjectInstance::FrontSide, BlackMaterialName);
-                    i->assign_material(slot, ObjectInstance::BackSide, BlackMaterialName);
-                }
-            }
+            if (!show_filter.accepts(object_instance.get_name()) ||
+                hide_filter.accepts(object_instance.get_name()))
+                object_instance.set_vis_flags(VisibilityFlags::Invisible);
         }
 
-        for (each<AssemblyContainer> i = assembly.assemblies(); i; ++i)
-            apply_select_object_instances_command_line_option(*i, filter);
+        for (Assembly& child_assembly : assembly.assemblies())
+            apply_visibility_command_line_options(child_assembly, show_filter, hide_filter);
     }
 
-    void apply_select_object_instances_command_line_option(Project& project, const char* regex)
+    void apply_visibility_command_line_options(
+        Project&            project,
+        const string&       show_regex,
+        const string&       hide_regex)
     {
-        const RegExFilter filter(regex, RegExFilter::CaseSensitive);
+        const RegExFilter show_filter(show_regex.c_str(), RegExFilter::CaseSensitive);
+        const RegExFilter hide_filter(hide_regex.c_str(), RegExFilter::CaseSensitive);
 
-        Scene* scene = project.get_scene();
-
-        for (each<AssemblyContainer> i = scene->assemblies(); i; ++i)
-            apply_select_object_instances_command_line_option(*i, filter);
+        for (Assembly& assembly : project.get_scene()->assemblies())
+            apply_visibility_command_line_options(assembly, show_filter, hide_filter);
     }
 
     void apply_parameter_command_line_options(ParamArray& params)
@@ -427,12 +395,14 @@ namespace
                 g_cl.m_override_shading.value());
         }
 
-        // Apply --select-object-instances option.
-        if (g_cl.m_select_object_instances.is_set())
+        // Apply --show-object-instances and --hide-object-instances options.
+        if (g_cl.m_show_object_instances.is_set() ||
+            g_cl.m_hide_object_instances.is_set())
         {
-            apply_select_object_instances_command_line_option(
+            apply_visibility_command_line_options(
                 project,
-                g_cl.m_select_object_instances.value().c_str());
+                g_cl.m_show_object_instances.is_set() ? g_cl.m_show_object_instances.value() : ".*",        // match everything
+                g_cl.m_hide_object_instances.is_set() ? g_cl.m_hide_object_instances.value() : "(?!)");     // match nothing
         }
 
         // Apply --parameter options.
@@ -571,26 +541,28 @@ namespace
 
         // Render the frame.
         LOG_INFO(g_logger, "rendering frame...");
-        MasterRenderer::RenderingResult result;
+        MasterRenderer::RenderingResult rendering_result;
         if (params.get_optional<bool>("background_mode", true))
         {
             ProcessPriorityContext background_context(ProcessPriorityLow, &g_logger);
-            result = renderer.render();
+            rendering_result = renderer.render();
         }
         else
         {
-            result = renderer.render();
+            rendering_result = renderer.render();
         }
-        if (result.m_status != MasterRenderer::RenderingResult::Succeeded)
+        if (rendering_result.m_status != MasterRenderer::RenderingResult::Succeeded)
             return false;
 
         // Print rendering time.
         LOG_INFO(
             g_logger,
             "rendering finished in %s.",
-            pretty_time(result.m_render_time, 3).c_str());
+            pretty_time(rendering_result.m_render_time, 3).c_str());
 
-        // Archive the frame to disk.
+        bool success = true;
+
+        // Optionally archive the frame to disk.
         char* archive_path = nullptr;
         if (params.get_optional<bool>("autosave", true))
         {
@@ -601,21 +573,25 @@ namespace
 
             // Archive the frame to disk.
             LOG_INFO(g_logger, "archiving frame to disk...");
-            project->get_frame()->archive(
-                autosave_path.string().c_str(),
-                &archive_path);
+            if (!project->get_frame()->archive(
+                    autosave_path.string().c_str(),
+                    &archive_path))
+                success = false;
         }
 
-        // Write the frame to disk.
+        // Optionally write the frame to disk.
         if (g_cl.m_output.is_set())
         {
             const char* file_path = g_cl.m_output.value().c_str();
-            project->get_frame()->write_main_image(file_path);
-            project->get_frame()->write_aov_images(file_path);
+            if (!project->get_frame()->write_main_image(file_path))
+                success = false;
+            if (!project->get_frame()->write_aov_images(file_path))
+                success = false;
         }
         else
         {
-            project->get_frame()->write_main_and_aov_images();
+            if (!project->get_frame()->write_main_and_aov_images())
+                success = false;
         }
 
 #if defined __APPLE__ || defined _WIN32
@@ -635,7 +611,15 @@ namespace
         // Deallocate the memory used by the path to the archived image.
         free_string(archive_path);
 
-        return true;
+        // Optionally save recorded light paths to disk.
+        if (g_cl.m_save_light_paths.is_set() &&
+            project->get_light_path_recorder().get_light_path_count() > 0)
+        {
+            if (!project->get_light_path_recorder().write(g_cl.m_save_light_paths.value().c_str()))
+                success = false;
+        }
+
+        return success;
     }
 
     bool benchmark_render(const string& project_filename)

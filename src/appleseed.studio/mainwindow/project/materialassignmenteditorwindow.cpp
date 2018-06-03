@@ -76,10 +76,10 @@ namespace appleseed {
 namespace studio {
 
 MaterialAssignmentEditorWindow::MaterialAssignmentEditorWindow(
-    QWidget*                parent,
     ObjectInstance&         object_instance,
     ObjectInstanceItem&     object_instance_item,
-    EntityEditorContext&    editor_context)
+    EntityEditorContext&    editor_context,
+    QWidget*                parent)
   : QWidget(parent)
   , m_ui(new Ui::MaterialAssignmentEditorWindow())
   , m_object_instance(object_instance)
@@ -359,7 +359,7 @@ void MaterialAssignmentEditorWindow::assign_materials(const SlotValueCollection&
 
     if (old_front_mappings != m_object_instance.get_front_material_mappings() ||
         old_back_mappings != m_object_instance.get_back_material_mappings())
-        m_editor_context.m_project_builder.notify_project_modification();
+        m_editor_context.m_project_builder.slot_notify_project_modification();
 
     if (m_editor_context.m_rendering_manager.is_rendering())
         m_editor_context.m_rendering_manager.reinitialize_rendering();

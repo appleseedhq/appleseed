@@ -30,6 +30,8 @@ shader as_globals
 [[
     string as_maya_node_name = "asGlobals",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string as_blender_node_name = "asGlobals",
+    string as_blender_category = "utility",
     string help = "OSL global variables.",
     string icon = "asGlobals.png",
     int as_maya_type_id = 0x001279ef,
@@ -166,20 +168,20 @@ shader as_globals
     ]],
     output float out_u_coord = u
     [[
-        string as_maya_attribute_name = "uCoord",
-        string as_maya_attribute_short_name = "uu",
+        string as_maya_attribute_name = "outUCoord",
+        string as_maya_attribute_short_name = "ouu",
         string label = "U Coordinate"
     ]],
     output float out_v_coord = v
     [[
-        string as_maya_attribute_name = "vCoord",
-        string as_maya_attribute_short_name = "vv",
+        string as_maya_attribute_name = "outVCoord",
+        string as_maya_attribute_short_name = "ovv",
         string label = "V Coordinate"
     ]],
     output float out_uv_coord[2] = {out_u_coord, out_v_coord}
     [[
-        string as_maya_attribute_name = "uvCoord",
-        string as_maya_attribute_short_name = "uv",
+        string as_maya_attribute_name = "outUVCoords",
+        string as_maya_attribute_short_name = "ouv",
         string label = "UV Coords",
         int divider = 1
     ]],

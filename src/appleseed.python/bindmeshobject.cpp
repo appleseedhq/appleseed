@@ -36,6 +36,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/python.h"
+#include "foundation/utility/murmurhash.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.
@@ -66,7 +67,7 @@ namespace
                 MeshObjectFactory().create(name.c_str(), bpy_dict_to_param_array(params)));
     }
 
-    const Triangle& get_triangle(const MeshObject* object, const size_t index)
+    Triangle& get_triangle(MeshObject* object, const size_t index)
     {
         return object->get_triangle(index);
     }
@@ -92,7 +93,7 @@ namespace
                 bpy::throw_error_already_set();
             }
 
-            paths.push_back(ex());
+            paths.push_back_explicit_path(ex());
         }
 
         MeshObjectArray objs;
@@ -130,6 +131,11 @@ namespace
     {
         return create_primitive_mesh(name.c_str(), bpy_dict_to_param_array(params));
     }
+
+    void compute_mesh_signature(MurmurHash& hash, const MeshObject* mesh)
+    {
+        compute_signature(hash, *mesh);
+    }
 }
 
 void bind_mesh_object()
@@ -165,6 +171,11 @@ void bind_mesh_object()
         .def("push_vertex_normal", &MeshObject::push_vertex_normal)
         .def("get_vertex_normal_count", &MeshObject::get_vertex_normal_count)
         .def("get_vertex_normal", &MeshObject::get_vertex_normal, bpy::return_value_policy<bpy::reference_existing_object>())
+
+        .def("reserve_vertex_tangents", &MeshObject::reserve_vertex_tangents)
+        .def("push_vertex_tangent", &MeshObject::push_vertex_tangent)
+        .def("get_vertex_tangent_count", &MeshObject::get_vertex_tangent_count)
+        .def("get_vertex_tangent", &MeshObject::get_vertex_tangent)
 
         .def("reserve_tex_coords", &MeshObject::reserve_tex_coords)
         .def("push_tex_coords", &MeshObject::push_tex_coords)
@@ -205,5 +216,6 @@ void bind_mesh_object()
 
     bpy::def("compute_smooth_vertex_normals", compute_smooth_vertex_normals);
     bpy::def("compute_smooth_vertex_tangents", compute_smooth_vertex_tangents);
+    bpy::def("compute_signature", compute_mesh_signature);
     bpy::def("create_primitive_mesh", create_mesh_prim);
 }

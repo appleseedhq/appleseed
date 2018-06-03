@@ -114,7 +114,9 @@ option (WITH_DOXYGEN                        "Generate API Reference with Doxygen
 option (WITH_HEADERS                        "Install header files (to build samples)"               ON)
 option (WITH_SAMPLES                        "Install sample files (requires headers)"               ON)
 option (WITH_TESTS                          "Install unit tests and benchmarks"                     ON)
-option (WITH_PYTHON                         "Build Python bindings"                                 ON)
+option (WITH_PYTHON2_BINDINGS               "Build Python bindings for Python 2"                    ON)
+option (WITH_PYTHON3_BINDINGS               "Build Python bindings for Python 3"                    OFF)
+
 option (WITH_DISNEY_MATERIAL                "Build Disney material"                                 OFF)
 
 option (USE_STATIC_BOOST                    "Use static Boost libraries"                            ON)
@@ -176,7 +178,7 @@ endif ()
 
 set (appleseed_version_major    1)
 set (appleseed_version_minor    9)
-set (appleseed_version_patch    0)
+set (appleseed_version_patch    1)
 set (appleseed_version_maturity beta)
 
 configure_file (${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/version.h.in
@@ -574,7 +576,7 @@ if (WITH_CLI)
     add_subdirectory (src/appleseed.cli)
 endif ()
 
-if (WITH_PYTHON)
+if (WITH_PYTHON2_BINDINGS)
     set (Python_ADDITIONAL_VERSIONS 2.7)
     find_package (PythonLibs REQUIRED)
 
@@ -596,8 +598,8 @@ if (WITH_PYTHON)
 endif ()
 
 if (WITH_STUDIO)
-    if (NOT WITH_PYTHON)
-        message (FATAL_ERROR "WITH_PYTHON should be \"ON\" to build appleseed.studio")
+    if (NOT WITH_PYTHON2_BINDINGS)
+        message (FATAL_ERROR "WITH_PYTHON2_BINDINGS should be \"ON\" to build appleseed.studio")
     endif ()
     add_subdirectory (src/appleseed.studio)
 endif ()

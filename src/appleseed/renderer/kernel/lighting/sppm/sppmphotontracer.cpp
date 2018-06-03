@@ -119,6 +119,10 @@ namespace
         {
         }
 
+        void on_first_diffuse_bounce(const PathVertex& vertex)
+        {
+        }
+
         bool accept_scattering(
             const ScatteringMode::Mode  prev_mode,
             const ScatteringMode::Mode  next_mode) const
@@ -431,10 +435,11 @@ namespace
                 volume_visitor,
                 m_params.m_photon_tracing_rr_min_path_length,
                 m_params.m_photon_tracing_max_bounces,
-                ~0, // max diffuse bounces
-                ~0, // max glossy bounces
-                ~0, // max specular bounces
-                ~0, // max volume bounces
+                ~size_t(0), // max diffuse bounces
+                ~size_t(0), // max glossy bounces
+                ~size_t(0), // max specular bounces
+                ~size_t(0), // max volume bounces
+                false,      // don't clamp roughness
                 m_params.m_max_iterations,
                 edf->get_light_near_start());               // don't illuminate points closer than the light near start value
 
@@ -497,10 +502,11 @@ namespace
                 volume_visitor,
                 m_params.m_photon_tracing_rr_min_path_length,
                 m_params.m_photon_tracing_max_bounces,
-                ~0, // max diffuse bounces
-                ~0, // max glossy bounces
-                ~0, // max specular bounces
-                ~0, // max volume bounces
+                ~size_t(0), // max diffuse bounces
+                ~size_t(0), // max glossy bounces
+                ~size_t(0), // max specular bounces
+                ~size_t(0), // max volume bounces
+                false,      // don't clamp roughness
                 m_params.m_max_iterations);
 
             // Trace the photon path.
@@ -704,10 +710,11 @@ namespace
                 volume_visitor,
                 m_params.m_photon_tracing_rr_min_path_length,
                 m_params.m_photon_tracing_max_bounces,
-                ~0, // max diffuse bounces
-                ~0, // max glossy bounces
-                ~0, // max specular bounces
-                ~0, // max volume bounces
+                ~size_t(0), // max diffuse bounces
+                ~size_t(0), // max glossy bounces
+                ~size_t(0), // max specular bounces
+                ~size_t(0), // max volume bounces
+                false,      // don't clamp roughness
                 m_params.m_max_iterations);
 
             // Trace the photon path.

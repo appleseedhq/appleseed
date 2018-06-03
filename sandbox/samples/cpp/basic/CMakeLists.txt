@@ -6,7 +6,7 @@
 # This software is released under the MIT license.
 #
 # Copyright (c) 2013 Nicholas Yue, Jupiter Jazz Limited
-# Copyright (c) 2014-2017 Nicholas Yue, The appleseedhq Organization
+# Copyright (c) 2014-2018 Nicholas Yue, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -88,7 +88,7 @@ if (NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
     add_definitions (-DBOOST_NO_CXX11_SCOPED_ENUMS)
 endif ()
 
-include_directories (${Boost_INCLUDE_DIRS})
+include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 link_directories (${Boost_LIBRARY_DIRS})
 
 
@@ -154,7 +154,7 @@ add_executable (basic basic.cpp)
 
 target_link_libraries (basic
     ${APPLESEED_LIBRARIES}
+    ${Boost_LIBRARIES}
     ${IMATH_LIBRARIES}
     ${OPENEXR_LIBRARIES}
-    ${Boost_LIBRARIES}
 )

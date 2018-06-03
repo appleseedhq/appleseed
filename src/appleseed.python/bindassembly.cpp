@@ -117,6 +117,11 @@ namespace
         return instance->transform_sequence();
     }
 
+    void set_transform_sequence(AssemblyInstance* instance, const TransformSequence& seq)
+    {
+        instance->transform_sequence() = seq;
+    }
+
     string get_assembly_name(AssemblyInstance* instance)
     {
         return instance->get_assembly_name();
@@ -138,6 +143,7 @@ void bind_assembly()
         .def("__init__", bpy::make_constructor(create_assembly_with_params))
         .def("__init__", bpy::make_constructor(create_assembly_with_model_and_params))
         .def("bsdfs", &Assembly::bsdfs, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("bssrdfs", &Assembly::bssrdfs, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("edfs", &Assembly::edfs, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("surface_shaders", &Assembly::surface_shaders, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("materials", &Assembly::materials, bpy::return_value_policy<bpy::reference_existing_object>())
@@ -152,6 +158,7 @@ void bind_assembly()
     bpy::class_<AssemblyInstance, auto_release_ptr<AssemblyInstance>, bpy::bases<Entity>, boost::noncopyable>("AssemblyInstance", bpy::no_init)
         .def("__init__", bpy::make_constructor(create_assembly_instance))
         .def("transform_sequence", get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("set_transform_sequence", set_transform_sequence)
         .def("get_vis_flags", &AssemblyInstance::get_vis_flags)
         .def("compute_parent_bbox", &AssemblyInstance::compute_parent_bbox)
         .def("get_assembly_name", &get_assembly_name)

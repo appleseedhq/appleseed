@@ -34,8 +34,10 @@ shader as_luminance
 [[
     string as_maya_node_name = "asLuminance",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string help = "Primaries and illuminants aware relative luminance node.",
+    string as_blender_node_name = "asLuminance",
+    string as_blender_category = "utility",
     string icon = "asLuminance.png",
+    string help = "A node that outputs the (color space-aware) relative luminance of a color.",
     int as_maya_type_id = 0x001279cd,
     string as_max_class_id = "1648771987 792674094",
     string as_max_plugin_type = "texture",
@@ -60,6 +62,7 @@ shader as_luminance
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     int in_inputColorSpace = 0
@@ -75,6 +78,7 @@ shader as_luminance
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     float in_chromaticityCoordsR[2] = {0.640, 0.330}
@@ -121,6 +125,7 @@ shader as_luminance
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     int in_colorTemperature = 6504
@@ -134,6 +139,7 @@ shader as_luminance
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 1
     ]],
     float in_chromaticityCoordsW[2] = {0.3127, 0.329}

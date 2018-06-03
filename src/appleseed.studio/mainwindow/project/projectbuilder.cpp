@@ -54,11 +54,6 @@ ProjectBuilder::ProjectBuilder(Project& project)
 {
 }
 
-void ProjectBuilder::notify_project_modification() const
-{
-    emit signal_project_modified();
-}
-
 Frame* ProjectBuilder::edit_frame(
     const Dictionary&   values) const
 {
@@ -80,10 +75,15 @@ Frame* ProjectBuilder::edit_frame(
     if (new_canvas_width != old_canvas_width || new_canvas_height != old_canvas_height)
         m_project.get_frame()->reset_crop_window();
 
-    notify_project_modification();
+    slot_notify_project_modification();
     emit signal_frame_modified();
 
     return m_project.get_frame();
+}
+
+void ProjectBuilder::slot_notify_project_modification() const
+{
+    emit signal_project_modified();
 }
 
 string ProjectBuilder::get_entity_name(const Dictionary& values)

@@ -33,8 +33,10 @@ shader as_standard_surface
 [[
     string as_maya_node_name = "asStandardSurface",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string help = "Standard Surface Shader",
-    string icon = "asStandardSurface",
+    string as_blender_node_name = "asStandardSurface",
+    string as_blender_category = "shader",
+    string help = "appleseed's standard material shader.",
+    string icon = "asStandardSurface.png",
     int as_maya_type_id = 0x001279d4,
     string as_max_class_id = "651059681 943276521",
     string as_max_plugin_type = "material",
@@ -80,7 +82,7 @@ shader as_standard_surface
     [[
         string as_maya_attribute_name = "subsurfaceMfp",
         string as_maya_attribute_short_name = "mfp",
-        string label = "Mean Free Path",
+        string label = "Depth",
         string page = "Subsurface"
     ]],
     float in_sss_mfp_scale = 1.0
@@ -90,11 +92,12 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1000.0,
         float softmax = 100.0,
-        string label = "MFP Scale",
+        string label = "Depth Scale",
         string page = "Subsurface",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     int in_subsurface_profile = 2
@@ -108,6 +111,7 @@ shader as_standard_surface
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -123,6 +127,7 @@ shader as_standard_surface
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     float in_sss_threshold = 0.001
@@ -138,6 +143,7 @@ shader as_standard_surface
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     float in_translucency_weight = 0.0
@@ -195,6 +201,7 @@ shader as_standard_surface
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -211,6 +218,7 @@ shader as_standard_surface
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     color in_face_tint = color(0.85, 0.21, 0.05)
@@ -223,6 +231,7 @@ shader as_standard_surface
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     color in_edge_tint = color(1)
@@ -235,8 +244,9 @@ shader as_standard_surface
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
-        int divider = 1,
-        int gafferNoduleLayoutVisible = 0
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
     ]],
     float in_anisotropy_amount = 0.0
     [[
@@ -295,6 +305,7 @@ shader as_standard_surface
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     color in_absorption_color = color(1)
@@ -337,6 +348,7 @@ shader as_standard_surface
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     float in_coating_depth = 0.0
@@ -362,32 +374,33 @@ shader as_standard_surface
         string as_maya_attribute_name = "incandescenceAmount",
         string as_maya_attribute_short_name = "inw",
         float min = 0.0,
-        float max = 1.0,
-        string label = "Incandescence Amount",
-        string page = "Incandescence"
+        float softmax = 1.0,
+        string label = "Emission Amount",
+        string page = "Emission"
     ]],
     int in_incandescence_type = 0
     [[
         string as_maya_attribute_name = "incandescenceType",
         string as_maya_attribute_short_name = "int",
         string widget = "mapper",
-        string options = "Constant:0|Physically Based:1",
-        string label = "Incandescence Type",
-        string page = "Incandescence",
-        string help = "Constant based, or blackbody radiator based EDF.",
+        string options = "Custom:0|Black-body:1",
+        string label = "Emission Type",
+        string page = "Emission",
+        string help = "Custom or black-body radiator EDF.",
         int divider = 1,
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     color in_incandescence_color = color(0)
     [[
         string as_maya_attribute_name = "incandescenceColor",
         string as_maya_attribute_short_name = "inc",
-        string label = "Incandescence Color",
-        string page = "Incandescence",
-        string help = "Incandescence color, only valid in constant mode."
+        string label = "Emission Color",
+        string page = "Emission",
+        string help = "Emission color, only valid in constant mode."
     ]],
     int in_temperature = 4300
     [[
@@ -398,12 +411,13 @@ shader as_standard_surface
         int softmin = 3400,
         int softmax = 9300,
         string label = "Temperature",
-        string page = "Incandescence",
+        string page = "Emission",
         string help = "Temperature in Kelvin degrees, only valid in physically based mode.",
         int divider = 1,
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
 
@@ -413,10 +427,11 @@ shader as_standard_surface
         string as_maya_attribute_short_name = "nae",
         string widget = "checkBox",
         string label = "Normalize Area",
-        string page = "Incandescence",
+        string page = "Emission",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     int in_tonemap_edf = 1
@@ -425,11 +440,12 @@ shader as_standard_surface
         string as_maya_attribute_short_name = "tme",
         string widget = "checkBox",
         string label = "Tonemap Color",
-        string page = "Incandescence",
-        string help = "Tonemap incandescence, only valid for physically based mode.",
+        string page = "Emission",
+        string help = "Tonemap emission, only valid for the black-body radiator mode.",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     color in_transparency = color(0)
@@ -465,8 +481,9 @@ shader as_standard_surface
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
-        int divider = 1,
-        int gafferNoduleLayoutVisible = 0
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
     ]],
     float in_matte_opacity = 0.0
     [[
@@ -476,6 +493,7 @@ shader as_standard_surface
         float max = 1.0,
         string label = "Matte Opacity",
         string page = "Matte Opacity",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     color in_matte_opacity_color = color(1,0.5,0)
@@ -484,6 +502,7 @@ shader as_standard_surface
         string as_maya_attribute_short_name = "mac",
         string label = "Matte Opacity Color",
         string page = "Matte Opacity",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     int in_maximum_ray_depth = 8
@@ -498,6 +517,7 @@ shader as_standard_surface
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     vector Tn = vector(0)
@@ -505,6 +525,7 @@ shader as_standard_surface
         int lockgeom = 0,
         int as_maya_attribute_hidden = 1,
         string widget = "null",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     vector Bn = vector(0)
@@ -512,6 +533,7 @@ shader as_standard_surface
         int lockgeom = 0,
         int as_maya_attribute_hidden = 1,
         string widget = "null",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     output closure color out_outColor = 0
@@ -532,6 +554,7 @@ shader as_standard_surface
         string as_maya_attribute_short_name = "om",
         string widget = "null",
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]]
 )

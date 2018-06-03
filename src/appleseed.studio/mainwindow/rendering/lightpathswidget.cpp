@@ -41,9 +41,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
-#include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
-#include "foundation/math/transform.h"
 #include "foundation/platform/opengl.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/string.h"
@@ -54,6 +52,11 @@
 // Standard headers.
 #include <algorithm>
 #include <string>
+
+// Platform headers.
+#ifdef __APPLE__
+#include <GLKit/GLKMatrix4.h>
+#endif
 
 using namespace foundation;
 using namespace renderer;
@@ -74,6 +77,19 @@ LightPathsWidget::LightPathsWidget(
     setFocusPolicy(Qt::StrongFocus);
     setFixedWidth(static_cast<int>(width));
     setFixedHeight(static_cast<int>(height));
+
+    const float time = m_camera.get_shutter_middle_time();
+    m_camera_matrix = m_camera.transform_sequence().evaluate(time).get_parent_to_local();
+}
+
+QImage LightPathsWidget::capture()
+{
+    return grabFrameBuffer();
+}
+
+void LightPathsWidget::set_transform(const Transformd& transform)
+{
+    m_camera_matrix = transform.get_parent_to_local();
 }
 
 void LightPathsWidget::set_light_paths(const LightPathArray& light_paths)
@@ -117,12 +133,6 @@ void LightPathsWidget::set_selected_light_path_index(const int selected_light_pa
         static_cast<int>(m_light_paths.size()));
 }
 
-void LightPathsWidget::slot_toggle_backface_culling(const bool checked)
-{
-    m_backface_culling_enabled = checked;
-    update();
-}
-
 void LightPathsWidget::slot_display_all_light_paths()
 {
     if (m_selected_light_path_index > -1)
@@ -139,6 +149,19 @@ void LightPathsWidget::slot_display_next_light_path()
 {
     if (m_selected_light_path_index < static_cast<int>(m_light_paths.size()) - 1)
         set_selected_light_path_index(m_selected_light_path_index + 1);
+}
+
+void LightPathsWidget::slot_toggle_backface_culling(const bool checked)
+{
+    m_backface_culling_enabled = checked;
+    update();
+}
+
+void LightPathsWidget::slot_synchronize_camera()
+{
+    m_camera.transform_sequence().clear();
+    m_camera.transform_sequence().set_transform(0.0f,
+        Transformd::from_local_to_parent(inverse(m_camera_matrix)));
 }
 
 void LightPathsWidget::initializeGL()
@@ -213,8 +236,8 @@ namespace
             return;
 
         static const GLfloat Ambient[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-        static const GLfloat Diffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
-        static const GLfloat Specular[] = { 0.4f, 0.4f, 0.4f, 1.0f };
+        static const GLfloat Diffuse[] = { 0.4f, 0.4f, 0.4f, 1.0f };
+        static const GLfloat Specular[] = { 0.15f, 0.15f, 0.15f, 1.0f };
         static const GLfloat Shininess = 20.0f;
 
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, Ambient);
@@ -265,11 +288,21 @@ void LightPathsWidget::paintGL()
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
+#ifdef __APPLE__
+    glMultMatrixf(
+        GLKMatrix4MakePerspective(
+            rc.m_hfov / rc.m_aspect_ratio,
+            rc.m_aspect_ratio,
+            0.01,
+            1000.0
+        ).m);
+#else
     gluPerspective(
         rad_to_deg(rc.m_hfov) / rc.m_aspect_ratio,
         rc.m_aspect_ratio,
         0.01,
         1000.0);
+#endif
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -311,8 +344,9 @@ void LightPathsWidget::render_geometry() const
 {
     glEnable(GL_LIGHTING);
 
+    glMultMatrixd(m_camera_matrix);
+
     const float time = m_camera.get_shutter_middle_time();
-    glMultMatrixd(m_camera.transform_sequence().evaluate(time).get_parent_to_local());
 
     for (const auto& assembly_instance : m_project.get_scene()->assembly_instances())
         draw(assembly_instance, time);
@@ -375,14 +409,15 @@ void LightPathsWidget::dump_selected_light_path() const
             RENDERER_LOG_INFO("no light path to display.");
         else
         {
-            RENDERER_LOG_INFO("displaying all " FMT_SIZE_T " light path%s.",
-                m_light_paths.size(),
+            RENDERER_LOG_INFO("displaying all %s light path%s.",
+                pretty_uint(m_light_paths.size()).c_str(),
                 m_light_paths.size() > 1 ? "s" : "");
         }
     }
     else
     {
-        RENDERER_LOG_INFO("displaying light path %d:", m_selected_light_path_index + 1);
+        RENDERER_LOG_INFO("displaying light path %s:",
+            pretty_int(m_selected_light_path_index + 1).c_str());
 
         const auto& light_path_recorder = m_project.get_light_path_recorder();
         const auto& path = m_light_paths[m_selected_light_path_index];

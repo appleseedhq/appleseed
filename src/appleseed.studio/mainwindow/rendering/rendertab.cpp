@@ -179,7 +179,10 @@ void RenderTab::slot_render_widget_context_menu(const QPoint& point)
 void RenderTab::slot_toggle_render_region(const bool checked)
 {
     m_scene_picking_handler->set_enabled(!checked);
-    m_render_region_handler->set_enabled(checked);
+    m_render_region_handler->set_mode(
+        checked
+            ? RenderRegionHandler::RenderRegionMode
+            : RenderRegionHandler::RectangleSelectionMode);
 }
 
 void RenderTab::slot_set_render_region(const QRect& rect)
@@ -435,7 +438,8 @@ void RenderTab::recreate_handlers()
     m_camera_controller.reset(
         new CameraController(
             m_render_widget,
-            m_project));
+            m_project,
+            m_project.get_uncached_active_camera()));
     connect(
         m_camera_controller.get(), SIGNAL(signal_camera_change_begin()),
         SIGNAL(signal_camera_change_begin()));
@@ -470,17 +474,19 @@ void RenderTab::recreate_handlers()
             m_render_widget,
             *m_mouse_tracker.get()));
     connect(
+        m_render_region_handler.get(), SIGNAL(signal_rectangle_selection(const QRect&)),
+        SIGNAL(signal_rectangle_selection(const QRect&)));
+    connect(
         m_render_region_handler.get(), SIGNAL(signal_render_region(const QRect&)),
         SLOT(slot_set_render_region(const QRect&)));
 
     // Clipboard handler.
-    m_clipboard_handler.reset(new RenderClipboardHandler(m_render_widget));
+    m_clipboard_handler.reset(new RenderClipboardHandler(m_render_widget, m_render_widget));
 
     // Set initial state.
     m_pixel_inspector_handler->set_enabled(false);
     m_camera_controller->set_enabled(false);
-    m_scene_picking_handler->set_enabled(true);
-    m_render_region_handler->set_enabled(false);
+    m_scene_picking_handler->set_enabled(true);     // todo: should be true by default
 }
 
 }   // namespace studio

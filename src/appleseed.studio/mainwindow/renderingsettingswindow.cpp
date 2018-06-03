@@ -882,6 +882,7 @@ namespace
             create_direct_link("advanced.ibl.env_samples",                      "pt.ibl_env_samples");
             create_direct_link("advanced.light_sampler.algorithm",              "light_sampler.algorithm");
             create_direct_link("advanced.record_light_paths",                   "pt.record_light_paths");
+            create_direct_link("advanced.clamp_roughness",                      "pt.clamp_roughness");
 
             load_directly_linked_values(config);
 
@@ -941,6 +942,7 @@ namespace
             groupbox->setLayout(layout);
 
             create_pt_advanced_nee_settings(layout);
+            create_pt_advanced_optimization_settings(layout);
             create_pt_advanced_diag_settings(layout);
         }
 
@@ -1014,6 +1016,20 @@ namespace
             QCheckBox* unlimited_ray_intensity = create_checkbox("advanced.unlimited_ray_intensity", "Unlimited");
             parent->addLayout(create_form_layout("Max Ray Intensity:", create_horizontal_group(max_ray_intensity, unlimited_ray_intensity)));
             connect(unlimited_ray_intensity, SIGNAL(toggled(bool)), max_ray_intensity, SLOT(setDisabled(bool)));
+        }
+
+        void create_pt_advanced_optimization_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* diag_groupbox = new QGroupBox("Optimizations");
+            parent->addWidget(diag_groupbox);
+
+            QVBoxLayout* layout = create_vertical_layout();
+            diag_groupbox->setLayout(layout);
+
+            QFormLayout* sublayout = create_form_layout();
+            layout->addLayout(sublayout);
+
+            sublayout->addRow(create_checkbox("advanced.clamp_roughness", "Clamp Roughness"));
         }
 
         void create_pt_advanced_diag_settings(QVBoxLayout* parent)

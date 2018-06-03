@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Dorian Fevrier, The appleseedhq Organization
+// Copyright (c) 2017-2018 Dorian Fevrier, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -929,7 +929,7 @@ namespace
 
                 // Create an instance of the assembly.
                 asf::auto_release_ptr<asr::Assembly> xform_assembly(
-                    asr::AssemblyFactory().create(  // TODO: Do I really have to instanciate AssemblyFactory?
+                    asr::AssemblyFactory().create(  // TODO: Do I really have to instantiate AssemblyFactory?
                         (obj_name+"_assembly").c_str(),  // Assembly instance.
                         asr::ParamArray()));
 
@@ -1242,7 +1242,7 @@ namespace
 
                 RENDERER_LOG_WARNING(
                     "shutter close (%f) is smaller than shutter open (%f) "
-                    "for camera \"%s\", only shutter open will be use.",
+                    "for camera \"%s\", only shutter open will be used.",
                         shutter_close, shutter_open, get_path().c_str());
             }
 

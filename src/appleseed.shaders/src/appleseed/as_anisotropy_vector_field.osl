@@ -30,7 +30,9 @@ shader as_anisotropy_vector_field
 [[
     string as_maya_node_name = "asAnisotropyVectorField",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string help = "Anisotropy vector field node.",
+    string as_blender_node_name = "asAnisotropyVectorField",
+    string as_blender_category = "utility",
+    string help = "Creates an anisotropy field vector from an input color.",
     string icon = "asAnisotropyVectorField.png",
     int as_maya_type_id = 0x001278e0,
     string as_max_class_id = "755844571 356534419",
@@ -50,7 +52,8 @@ shader as_anisotropy_vector_field
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 0,
-        int gafferNoduleLayoutVisible = 1
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
     ]],
     color in_color = color(1)
     [[
@@ -64,12 +67,13 @@ shader as_anisotropy_vector_field
         string as_maya_attribute_name = "fieldMode",
         string as_maya_attribute_short_name = "fm",
         string widget = "mapper",
-        string options = "Red/Green as XY:0|Red/Blue as XY:1",
+        string options = "Red Green as XY:0|Red Blue as XY:1",
         string label = "Field Mode",
         string page = "Field",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     float in_rotation_value = 0.0
@@ -94,6 +98,7 @@ shader as_anisotropy_vector_field
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     int in_normalize_output = 1
@@ -106,6 +111,7 @@ shader as_anisotropy_vector_field
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     normal in_surface_normal = N
@@ -122,6 +128,7 @@ shader as_anisotropy_vector_field
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     vector Bn = vector(0)
@@ -131,6 +138,7 @@ shader as_anisotropy_vector_field
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
 

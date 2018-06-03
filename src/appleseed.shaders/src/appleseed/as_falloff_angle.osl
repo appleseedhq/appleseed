@@ -32,8 +32,10 @@ shader as_falloff_angle
 [[
     string as_maya_node_name = "asFalloffAngle",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string help = "Double shading node.",
-    string icon = "asFalloffAngle",
+    string as_blender_node_name = "asFalloffAngle",
+    string as_blender_category = "utility",
+    string help = "Creates a ramp from the angle between two input vectors.",
+    string icon = "asFalloffAngle.png",
     int as_maya_type_id = 0x001279f7,
     string as_max_class_id = "2015842098 354230760",
     string as_max_plugin_type = "texture",
@@ -57,6 +59,7 @@ shader as_falloff_angle
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -76,9 +79,10 @@ shader as_falloff_angle
         string widget = "checkBox",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 2,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 2,
+        int divider = 1,
     ]],
     float in_smooth_lower_bound = 0.25
     [[
@@ -110,6 +114,7 @@ shader as_falloff_angle
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
 

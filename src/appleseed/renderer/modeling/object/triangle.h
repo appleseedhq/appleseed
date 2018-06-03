@@ -53,7 +53,7 @@ class Triangle
     // limited to 65535 (one value is used to indicate an absent feature).
 
     // Special index value used to indicate that a feature is not present.
-    static const foundation::uint32 None = ~0;
+    static const foundation::uint32 None = ~foundation::uint32(0);
 
     // Public members.
     foundation::uint32  m_v0, m_v1, m_v2;   // vertex indices

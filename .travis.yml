@@ -4,6 +4,7 @@ language: cpp
 
 os:
   - linux
+  - osx
 
 dist: trusty
 
@@ -22,13 +23,14 @@ addons:
       - libqt4-dev
 
 before_install:
-  - git clone https://github.com/appleseedhq/prebuilt-linux-deps.git
+  - if [ $TRAVIS_OS_NAME == linux ]; then git clone https://github.com/appleseedhq/prebuilt-linux-deps.git ; fi
 
 install:
   - if [ -n "$GCC_VERSION" ]; then export CC="${CC}-${GCC_VERSION}"; fi
   - if [ -n "$GCC_VERSION" ]; then export CXX="${CXX}-${GCC_VERSION}"; fi
 
 compiler:
+  - clang
   - gcc
 
 matrix:
@@ -45,8 +47,19 @@ matrix:
           compiler: gcc
           env: GCC_VERSION=6
 
+    exclude:
+        - os: osx
+          compiler: gcc
+          
+        - os: linux
+          compiler: clang
+
+        - os: linux
+          compiler: gcc
+
 script:
-  - ./travis/build.sh
+  - if [ $TRAVIS_OS_NAME == linux ]; then ./travis/build-linux.sh ; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then ./travis/build-macos.sh ; fi
 
 notifications:
   slack: appleseedhq:H9o3XAC4e05O0yE4upX1FNkW

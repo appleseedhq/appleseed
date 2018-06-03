@@ -32,8 +32,10 @@ shader as_metal
 [[
     string as_maya_node_name = "asMetal",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string help = "Metal material.",
+    string as_blender_node_name = "asMetal",
+    string as_blender_category = "shader",
     string icon = "asMetal.png",
+    string help = "A metal material shader.",
     int as_maya_type_id = 0x001279f9,
     string as_max_class_id = "121203873 1478432054",
     string as_max_plugin_type = "material",
@@ -67,6 +69,7 @@ shader as_metal
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -121,6 +124,7 @@ shader as_metal
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -164,6 +168,7 @@ shader as_metal
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],       
     int in_thinfilm_min = 380
@@ -177,6 +182,7 @@ shader as_metal
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Thin film thickness lower bound, in nanometers."
     ]],
@@ -191,6 +197,7 @@ shader as_metal
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Thin film thickness upper bound, in nanometers."
     ]],
@@ -213,6 +220,7 @@ shader as_metal
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -224,6 +232,7 @@ shader as_metal
         float max = 1.0,
         string label = "Matte Opacity",
         string page = "Matte Opacity",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     color in_matte_opacity_color = color(1,0.5,0)
@@ -232,6 +241,7 @@ shader as_metal
         string as_maya_attribute_short_name = "mac",
         string label = "Matte Opacity Color",
         string page = "Matte Opacity",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     int in_maximum_ray_depth = 8
@@ -246,6 +256,7 @@ shader as_metal
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     vector Tn = vector(0)
@@ -253,6 +264,7 @@ shader as_metal
         int lockgeom = 0,
         int as_maya_attribute_hidden = 1,
         string widget = "null",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     vector Bn = vector(0)
@@ -260,6 +272,7 @@ shader as_metal
         int lockgeom = 0,
         int as_maya_attribute_hidden = 1,
         string widget = "null",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
 
@@ -275,6 +288,7 @@ shader as_metal
         string as_maya_attribute_short_name = "om",
         string widget = "null",
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]]
 )

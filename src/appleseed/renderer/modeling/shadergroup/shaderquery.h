@@ -64,6 +64,9 @@ class APPLESEED_DLLSYMBOL ShaderQuery
     // Open a compiled shader.
     bool open(const char* shader_name);
 
+    // Open a bytecode memory compiled shader.
+    bool open_bytecode(const char* shader_code);
+
     // Return the shader name.
     const char* get_shader_name() const;
 

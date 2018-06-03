@@ -30,6 +30,8 @@ shader as_blend_shader
 [[
     string as_maya_node_name = "asBlendShader",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
+    string as_blender_node_name = "asBlendShader",
+    string as_blender_category = "utility",
     string help = "Shader blending or mixing node.",
     string icon = "asBlendShader.png",
     int as_maya_type_id = 0x001279dd,
@@ -65,6 +67,7 @@ shader as_blend_shader
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     closure color in_color1 = 0
@@ -94,6 +97,7 @@ shader as_blend_shader
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],  
     closure color in_color2 = 0
@@ -123,6 +127,7 @@ shader as_blend_shader
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     closure color in_color3 = 0
@@ -152,6 +157,7 @@ shader as_blend_shader
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     closure color in_color4 = 0
@@ -181,6 +187,7 @@ shader as_blend_shader
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     closure color in_color5 = 0
@@ -210,6 +217,7 @@ shader as_blend_shader
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]], 
     closure color in_color6 = 0
@@ -239,6 +247,7 @@ shader as_blend_shader
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]], 
     closure color in_color7 = 0
@@ -268,6 +277,7 @@ shader as_blend_shader
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
 

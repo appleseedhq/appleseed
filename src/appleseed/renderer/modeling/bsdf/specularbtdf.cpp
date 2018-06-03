@@ -127,6 +127,8 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
+            sample.m_max_roughness = 0.0f;
+
             const Vector3f& shading_normal = sample.m_shading_basis.get_normal();
             const float cos_theta_i = dot(sample.m_outgoing.get_value(), shading_normal);
             const float sin_theta_i2 = 1.0f - square(cos_theta_i);

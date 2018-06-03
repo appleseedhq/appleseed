@@ -35,8 +35,12 @@
 # Boost.
 if (NOT PYTHON_MAJOR_VERSION STREQUAL "2")
     message (FATAL_ERROR "Python 2.x needed")
-else ()
-    find_package (Boost 1.55 COMPONENTS python)
+endif ()
+
+find_package (Boost 1.55 COMPONENTS python)
+
+if (WITH_PYTHON3_BINDINGS)
+    find_package (Python3 REQUIRED)
 endif ()
 
 
@@ -76,6 +80,7 @@ set (sources
     bindmaterial.cpp
     bindmatrix.cpp
     bindmeshobject.cpp
+    bindmurmurhash.cpp
     bindobject.cpp
     bindproject.cpp
     bindquaternion.cpp
@@ -107,7 +112,7 @@ source_group ("" FILES
 
 
 #--------------------------------------------------------------------------------------------------
-# Target.
+# Targets.
 #--------------------------------------------------------------------------------------------------
 
 add_library (appleseed.python MODULE
@@ -125,6 +130,22 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     )
 endif ()
 
+if (WITH_PYTHON3_BINDINGS)
+    add_library (appleseed.python3 MODULE
+        ${appleseed.python_sources}
+    )
+
+    set_target_properties (appleseed.python3 PROPERTIES
+        PREFIX ""
+        OUTPUT_NAME "_appleseedpython3"
+    )
+
+    if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        set_target_properties (appleseed.python3 PROPERTIES
+            SUFFIX ".pyd"
+        )
+    endif ()
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
@@ -133,9 +154,13 @@ endif ()
 include_directories (
     .
     ../appleseed.shared
-    ${PYTHON_INCLUDE_DIRS}
 )
 
+target_include_directories (appleseed.python PRIVATE ${PYTHON_INCLUDE_DIRS})
+
+if (WITH_PYTHON3_BINDINGS)
+    target_include_directories (appleseed.python3 PRIVATE ${PYTHON3_INCLUDE_DIRS})
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Preprocessor definitions.
@@ -147,6 +172,13 @@ append_custom_preprocessor_definitions (appleseed.python
     APPLESEED_ENABLE_IMATH_INTEROP
 )
 
+if (WITH_PYTHON3_BINDINGS)
+    apply_preprocessor_definitions (appleseed.python3)
+
+    append_custom_preprocessor_definitions (appleseed.python3
+        APPLESEED_ENABLE_IMATH_INTEROP
+    )
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Static libraries.
@@ -160,6 +192,20 @@ target_link_libraries (appleseed.python
     ${PYTHON_LIBRARIES}
 )
 
+if (WITH_PYTHON3_BINDINGS)
+    link_against_platform (appleseed.python3)
+
+    target_link_libraries (appleseed.python3
+        appleseed
+        ${PYTHON3_LIBRARIES}
+    )
+
+     if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        target_link_libraries (appleseed.python3
+            util
+        )
+     endif ()
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Post-build commands.
@@ -173,6 +219,9 @@ add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/applese
 add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/textureconverter.py appleseed)
 add_copy_dir_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/test appleseed)
 
+if (WITH_PYTHON3_BINDINGS)
+    add_copy_target_to_sandbox_py_module_command (appleseed.python3 appleseed)
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Installation.
@@ -183,3 +232,7 @@ install (FILES __init__.py DESTINATION ${py_module_dst})
 install (FILES logtarget.py DESTINATION ${py_module_dst})
 install (DIRECTORY test DESTINATION ${py_module_dst})
 install (TARGETS appleseed.python DESTINATION ${py_module_dst})
+
+if (WITH_PYTHON3_BINDINGS)
+    install (TARGETS appleseed.python3 DESTINATION ${py_module_dst})
+endif ()

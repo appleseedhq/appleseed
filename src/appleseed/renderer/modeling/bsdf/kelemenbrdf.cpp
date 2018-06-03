@@ -165,6 +165,16 @@ namespace
             return Model;
         }
 
+        void prepare_inputs(
+            Arena&                      arena,
+            const ShadingPoint&         shading_point,
+            void*                       data) const override
+        {
+            InputValues* values = static_cast<InputValues*>(data);
+
+            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_max_roughness);
+        }
+
         bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
@@ -230,6 +240,8 @@ namespace
             BSDFSample&                 sample) const override
         {
             const InputValues* values = static_cast<const InputValues*>(data);
+
+            sample.m_max_roughness = values->m_roughness;
 
             // Define aliases to match notations in the paper.
             const Vector3f& V = sample.m_outgoing.get_value();
@@ -315,6 +327,8 @@ namespace
                 matte_comp *= matte_albedo;
                 matte_comp *= m_s;
                 sample.m_value.m_diffuse = matte_comp;
+
+                sample.m_aov_components.m_albedo = values->m_rm;
 
                 // Evaluate the PDF of the incoming direction for the matte component.
                 pdf_matte = dot_LN * RcpPi<float>();

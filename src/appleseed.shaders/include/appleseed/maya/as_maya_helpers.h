@@ -86,6 +86,7 @@
         string label = "Alpha Is Luminance",                                \
         string widget = "checkBox",                                         \
         string page = "Color Balance",                                      \
+        int as_blender_input_socket = 0,                                    \
         int gafferNoduleLayoutVisible = 0                                   \
     ]]
 
@@ -98,6 +99,7 @@
         float softmax = 1.0,                                                \
         string label = "Filter",                                            \
         string page = "Effects",                                            \
+        int as_blender_input_socket = 0,                                    \
         int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     float in_filterOffset = 0.0                                             \
@@ -108,6 +110,7 @@
         float softmax = 1.0,                                                \
         string label = "Filter Offset",                                     \
         string page = "Effects",                                            \
+        int as_blender_input_socket = 0,                                    \
         int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     int in_invert = 0                                                       \
@@ -117,6 +120,7 @@
         string label = "Invert",                                            \
         string widget = "checkBox",                                         \
         string page = "Effects",                                            \
+        int as_blender_input_socket = 0,                                    \
         int gafferNoduleLayoutVisible = 0                                   \
     ]]
 
@@ -128,6 +132,7 @@
         string label = "Wrap",                                              \
         string widget = "checkBox",                                         \
         string page = "Effects",                                            \
+        int as_blender_input_socket = 0,                                    \
         int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     int in_local = 0                                                        \
@@ -137,6 +142,7 @@
         string label = "Local",                                             \
         string widget = "checkBox",                                         \
         string page = "Effects",                                            \
+        int as_blender_input_socket = 0,                                    \
         int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     float in_blend = 0.0                                                    \
@@ -147,6 +153,7 @@
         float min = 0.0,                                                    \
         float max = 1.0,                                                    \
         string page = "Effects",                                            \
+        int as_blender_input_socket = 0,                                    \
         int gafferNoduleLayoutVisible = 0                                   \
     ]]
 
@@ -175,6 +182,7 @@
         int as_maya_attribute_hidden = 1,                                   \
         string widget = "null",                                             \
         string label = "Color Profile",                                     \
+        int as_blender_input_socket = 0,                                    \
         int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     int in_ignoreColorSpaceFileRules = 0                                    \
@@ -183,6 +191,7 @@
         int as_maya_attribute_hidden = 1,                                   \
         string widget = "null",                                             \
         string label = "Ignore Color Space File Rules",                     \
+        int as_blender_input_socket = 0,                                    \
         int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     string in_colorSpace = ""                                               \
@@ -191,6 +200,7 @@
         int as_maya_attribute_hidden = 1,                                   \
         string widget = "null",                                             \
         string label = "Color Space",                                       \
+        int as_blender_input_socket = 0,                                    \
         int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     string in_workingSpace = ""                                             \
@@ -198,6 +208,8 @@
         string as_maya_attribute_name = "workingSpace",                     \
         int as_maya_attribute_hidden = 1,                                   \
         string widget = "null",                                             \
+        int as_blender_input_socket = 0,                                    \
+        int gafferNoduleLayoutVisible = 0,                                  \
         string label = "Working Space"                                      \
     ]],                                                                     \
     int in_colorManagementEnabled = 0                                       \
@@ -206,6 +218,7 @@
         int as_maya_attribute_hidden = 1,                                   \
         string widget = "null",                                             \
         string label = "Color Management Enabled",                          \
+        int as_blender_input_socket = 0,                                    \
         int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     int in_colorManagementConfigFileEnabled = 0                             \
@@ -214,6 +227,7 @@
         int as_maya_attribute_hidden = 1,                                   \
         string widget = "null",                                             \
         string label = "Enable CMS Config",                                 \
+        int as_blender_input_socket = 0,                                    \
         int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     string in_colorManagementConfigFilePath = ""                            \
@@ -222,6 +236,7 @@
         int as_maya_attribute_hidden = 1,                                   \
         string widget = "null",                                             \
         string label = "Color Management Config File Path",                 \
+        int as_blender_input_socket = 0,                                    \
         int gafferNoduleLayoutVisible = 0                                   \
     ]]
 

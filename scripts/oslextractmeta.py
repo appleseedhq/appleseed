@@ -6,7 +6,7 @@
 #
 # This software is released under the MIT license.
 #
-# Copyright (c) 2015-2017 Hans Hoogenboom, The appleseedhq Organization
+# Copyright (c) 2015-2018 Hans Hoogenboom, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -56,9 +56,9 @@ _shaderKeys = ["name", "label", "type", "help", "url", "value", "page", "widget"
 #_parmKeyword = ["output"]
 
 
-#----------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # Functions to sanitize olsinfo output
-#----------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 def _error(msg, crash=False):
     sys.stderr.write(msg)
@@ -87,9 +87,9 @@ def _getKeyValue(st):
     return (key, value)
 
 
-#----------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # File handling
-#----------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 def isValidFile(filename, filetypes):
     (head, tail) = os.path.splitext(filename)
@@ -162,9 +162,9 @@ def createFileList(filetypes, osl_cfg, recursive=False, args=None, pathfile=None
     return filelist
 
 
-#----------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # Functions for parsing *.oso files
-#----------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 def parseOslInfo(compiledShader, osl_cfg):
 
@@ -291,9 +291,9 @@ def parseShaderInfo(compiledShader, FileTypes, osl_cfg):
         return compShader
 
 
-#----------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # Functions for handling the shader dictionary
-#----------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 def getNumberOfShaders(jsonFile):
     return len(jsonFile['shaders'])
@@ -373,9 +373,9 @@ def cli():
     return (args, output, existingFile)
 
 
-#----------------------------------------------------------
-# Main body
-#----------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
+# Entry point.
+# -------------------------------------------------------------------------------------------------
 
 def main():
     (args, output, existingFile) = cli()
@@ -455,7 +455,5 @@ def main():
 
     return 0
 
-
-# call main function
 if __name__ == "__main__":
     main()

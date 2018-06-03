@@ -30,6 +30,8 @@ shader as_space_transform
 [[
     string as_maya_node_name = "asSpaceTransform",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string as_blender_node_name = "asSpaceTransform",
+    string as_blender_category = "utility",
     string help = "Coordinate system transform node.",
     string icon = "asSpaceTransform.png",
     int as_maya_type_id = 0x001279f0,
@@ -71,6 +73,7 @@ shader as_space_transform
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     string in_to_space = "common"
@@ -84,6 +87,7 @@ shader as_space_transform
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -97,6 +101,7 @@ shader as_space_transform
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],

@@ -36,9 +36,11 @@ shader as_noise2d
 [[
     string as_maya_node_name = "asNoise2D",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/2d:swatch/AppleseedRenderSwatch:texture",
+    string as_blender_node_name = "asNoise2D",
+    string as_blender_category = "texture",
     int as_maya_type_id = 0x001279cb,
     string icon = "asNoise2D.png",
-    string URL = "https://appleseedhq.net/",
+    string help = "Recursive 2D fractal noise.",
     string as_max_class_id = "981826223 274675317",
     string as_max_plugin_type = "texture",
     string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_noise2d.html#label-as-noise2d"
@@ -79,6 +81,7 @@ shader as_noise2d
         string label = "Type",
         string page = "Noise",
         string help = "Noise type used.",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -123,6 +126,7 @@ shader as_noise2d
         string widget = "checkBox",
         string label = "Ridges",
         string page = "Noise",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     int in_inflection = 0
@@ -135,6 +139,7 @@ shader as_noise2d
         string label = "Inflection",
         string page = "Noise",
         string help = "Uses the absolute value of the noise.",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     int in_signed_noise = 0
@@ -147,6 +152,7 @@ shader as_noise2d
         string label = "Signed Noise",
         string page = "Noise",
         string help = "Noise range in [0,1] or [-1,1].",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     int in_animated_noise = 0
@@ -158,6 +164,7 @@ shader as_noise2d
         string widget = "checkBox",
         string label = "Animate",
         string page = "Noise.Motion",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -190,6 +197,7 @@ shader as_noise2d
         string widget = "checkBox",
         string label = "Periodic",
         string page = "Noise.Periodic",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -248,6 +256,7 @@ shader as_noise2d
         string options = "Isotropic:0|Anisotropic:1|Hybrid:2",
         string label = "Mode",
         string page = "Noise.Gabor",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -277,6 +286,7 @@ shader as_noise2d
         int softmax = 64,
         string label = "Impulses",
         string page = "Noise.Gabor",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -289,6 +299,7 @@ shader as_noise2d
         string widget = "checkBox",
         string label = "Filter",
         string page = "Noise.Gabor",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],  
     float in_amplitude = 1.0
@@ -317,6 +328,7 @@ shader as_noise2d
         string label = "Octaves",
         string page = "Recursion",
         string help = "Maximum number of iterations.",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -331,6 +343,7 @@ shader as_noise2d
         string label = "Cascade",
         string page = "Recursion",
         string help = "Add sucessive frequencies, or multiply them.",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],

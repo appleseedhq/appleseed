@@ -54,7 +54,7 @@ namespace foundation
 
 namespace
 {
-    const size_t Undefined = ~0;
+    const size_t Undefined = ~size_t(0);
 }
 
 struct OBJMeshFileReader::Impl

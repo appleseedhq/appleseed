@@ -2799,7 +2799,7 @@ namespace
                         static_cast<SearchPathElementHandler*>(handler);
                     const string& path = path_handler->get_path();
                     if (!path.empty())
-                        m_project->search_paths().push_back(path);
+                        m_project->search_paths().push_back_explicit_path(path);
                 }
                 break;
 

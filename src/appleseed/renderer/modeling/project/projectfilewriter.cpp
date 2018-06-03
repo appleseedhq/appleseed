@@ -808,7 +808,7 @@ namespace
         {
             const SearchPaths& search_paths = project.search_paths();
 
-            if (!search_paths.empty())
+            if (search_paths.get_explicit_path_count() > 0)
             {
                 XMLElement element("search_paths", m_file, m_indenter);
                 element.write(XMLElement::HasChildElements);

@@ -126,7 +126,8 @@ class APPLESEED_DLLSYMBOL LightPathRecorder
         LightPathVertex&    result) const;
 
     // Write light paths to disk. `finalize()` must have been called.
-    void write(const char* filename) const;
+    // Return true if successful, false otherwise.
+    bool write(const char* filename) const;
 
   private:
     struct Impl;

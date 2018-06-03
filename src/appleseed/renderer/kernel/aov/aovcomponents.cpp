@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017-2018 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2018 Sergo Pogosyan, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,57 +26,19 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_OSLSHADERCOMPILER_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_OSLSHADERCOMPILER_H
-
-// appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/autoreleaseptr.h"
-
-// Forward declarations.
-namespace foundation    { class APIString; }
+// Interface header.
+#include "aovcomponents.h"
 
 namespace renderer
 {
 
 //
-// Simple wrapper around OSL's OSLCompiler.
+// AOVComponents class implementation.
 //
 
-class ShaderCompiler
-  : public foundation::NonCopyable
+AOVComponents::AOVComponents()
+  : m_albedo(0.0f)
 {
-  public:
-    // Delete this instance.
-    void release();
+}
 
-    bool compile_buffer(
-        const char*             source_code,
-        foundation::APIString&  result);
-
-  private:
-    friend class ShaderCompilerFactory;
-
-    struct Impl;
-    Impl* impl;
-
-    explicit ShaderCompiler(const char* stdosl_path);
-    ~ShaderCompiler();
-};
-
-
-//
-// ShaderCompiler factory.
-//
-
-class ShaderCompilerFactory
-{
-  public:
-    // Create a new shader compiler.
-    static foundation::auto_release_ptr<ShaderCompiler> create(
-        const char* stdosl_path);
-};
-
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_OSLSHADERCOMPILER_H
+}   // namespace renderer

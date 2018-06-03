@@ -67,7 +67,8 @@ class CommandLineHandler
     foundation::ValueOptionHandler<int>             m_samples;
     foundation::ValueOptionHandler<int>             m_passes;
     foundation::ValueOptionHandler<std::string>     m_override_shading;
-    foundation::ValueOptionHandler<std::string>     m_select_object_instances;
+    foundation::ValueOptionHandler<std::string>     m_show_object_instances;
+    foundation::ValueOptionHandler<std::string>     m_hide_object_instances;
 
     // Output options.
     foundation::ValueOptionHandler<std::string>     m_output;
@@ -78,6 +79,7 @@ class CommandLineHandler
     foundation::FlagOptionHandler                   m_send_to_mplay;
     foundation::ValueOptionHandler<int>             m_send_to_hrmanpipe;
     foundation::FlagOptionHandler                   m_disable_autosave;
+    foundation::ValueOptionHandler<std::string>     m_save_light_paths;
 
     // Developer-oriented options.
     foundation::ValueOptionHandler<std::string>     m_run_unit_tests;

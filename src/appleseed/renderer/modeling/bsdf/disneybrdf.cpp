@@ -187,6 +187,8 @@ namespace
                     sample.m_value.m_diffuse);
             assert(sample.m_probability > 0.0f);
 
+            sample.m_aov_components.m_albedo = values->m_base_color;
+
             sample.compute_reflected_differentials();
         }
 
@@ -382,6 +384,8 @@ namespace
         {
             InputValues* values = static_cast<InputValues*>(data);
 
+            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_max_roughness);
+
             new (&values->m_precomputed) InputValues::Precomputed();
 
             const Color3f tint_xyz =
@@ -406,6 +410,8 @@ namespace
             BSDFSample&                 sample) const override
         {
             const InputValues* values = static_cast<const InputValues*>(data);
+
+            sample.m_max_roughness = values->m_roughness;
 
             // Compute component weights.
             float weights[NumComponents];

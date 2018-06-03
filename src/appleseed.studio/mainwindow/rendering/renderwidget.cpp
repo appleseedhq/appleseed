@@ -81,7 +81,7 @@ RenderWidget::RenderWidget(
     slot_display_transform_changed(default_transform);
 }
 
-QImage RenderWidget::get_image_copy() const
+QImage RenderWidget::capture()
 {
     QMutexLocker locker(&m_mutex);
 

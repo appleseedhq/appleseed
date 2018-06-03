@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/aovcomponents.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
@@ -86,6 +87,7 @@ class PathTracer
         const size_t            max_glossy_bounces,
         const size_t            max_specular_bounces,
         const size_t            max_volume_bounces,
+        const bool              clamp_roughness,
         const size_t            max_iterations = 1000,
         const double            near_start = 0.0);          // abort tracing if the first ray is shorter than this
 
@@ -113,6 +115,7 @@ class PathTracer
     const size_t                m_max_glossy_bounces;
     const size_t                m_max_specular_bounces;
     const size_t                m_max_volume_bounces;
+    const bool                  m_clamp_roughness;
     const size_t                m_max_iterations;
     const double                m_near_start;
     size_t                      m_diffuse_bounces;
@@ -166,6 +169,7 @@ inline PathTracer<PathVisitor, VolumeVisitor, Adjoint>::PathTracer(
     const size_t                max_glossy_bounces,
     const size_t                max_specular_bounces,
     const size_t                max_volume_bounces,
+    const bool                  clamp_roughness,
     const size_t                max_iterations,
     const double                near_start)
   : m_path_visitor(path_visitor)
@@ -176,6 +180,7 @@ inline PathTracer<PathVisitor, VolumeVisitor, Adjoint>::PathTracer(
   , m_max_glossy_bounces(max_glossy_bounces)
   , m_max_specular_bounces(max_specular_bounces)
   , m_max_volume_bounces(max_volume_bounces)
+  , m_clamp_roughness(clamp_roughness)
   , m_max_iterations(max_iterations)
   , m_near_start(near_start)
 {
@@ -441,35 +446,6 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                 *vertex.m_shading_point);
         }
 
-        BSDFSample bsdf_sample(
-            vertex.m_shading_point,
-            foundation::Dual3f(vertex.m_outgoing));
-
-        // Subsurface scattering.
-        BSSRDFSample bssrdf_sample;
-        if (vertex.m_bssrdf)
-        {
-            // Sample the BSSRDF and terminate the path if no incoming point is found.
-            if (!vertex.m_bssrdf->sample(
-                    shading_context,
-                    sampling_context,
-                    vertex.m_bssrdf_data,
-                    *vertex.m_shading_point,
-                    foundation::Vector3f(vertex.m_outgoing.get_value()),
-                    bssrdf_sample,
-                    bsdf_sample))
-                break;
-
-            // Update the path throughput.
-            vertex.m_throughput *= bssrdf_sample.m_value;
-            vertex.m_throughput /= bssrdf_sample.m_probability;
-
-            // Switch to the BSSRDF's BRDF.
-            vertex.m_shading_point = &bssrdf_sample.m_incoming_point;
-            vertex.m_bsdf = bssrdf_sample.m_brdf;
-            vertex.m_bsdf_data = bssrdf_sample.m_brdf_data;
-        }
-
         // Let the path visitor handle a hit.
         // cos(outgoing, normal) is used for changes of probability measure. In the case of subsurface
         // scattering, we purposely compute it at the outgoing vertex even though it may be used at
@@ -487,10 +463,6 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         if (bounces == m_max_bounces)
             break;
 
-        // Terminate the path if no above-surface scattering possible.
-        if (vertex.m_bsdf == nullptr && material->get_render_data().m_volume == nullptr)
-            break;
-
         // Determine which scattering modes are still enabled.
         if (m_diffuse_bounces >= m_max_diffuse_bounces)
             vertex.m_scattering_modes &= ~ScatteringMode::Diffuse;
@@ -503,6 +475,40 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
         // Terminate path if no scattering event is possible.
         if (vertex.m_scattering_modes == ScatteringMode::None)
+            break;
+
+        BSDFSample bsdf_sample(
+            vertex.m_shading_point,
+            foundation::Dual3f(vertex.m_outgoing));
+
+        // Subsurface scattering.
+        BSSRDFSample bssrdf_sample;
+        bssrdf_sample.m_modes = vertex.m_scattering_modes;
+        if (vertex.m_bssrdf)
+        {
+            // Sample the BSSRDF and terminate the path if no incoming point is found.
+            if (!vertex.m_bssrdf->sample(
+                shading_context,
+                sampling_context,
+                vertex.m_bssrdf_data,
+                *vertex.m_shading_point,
+                foundation::Vector3f(vertex.m_outgoing.get_value()),
+                bssrdf_sample,
+                bsdf_sample))
+                break;
+
+            // Update the path throughput.
+            vertex.m_throughput *= bssrdf_sample.m_value;
+            vertex.m_throughput /= bssrdf_sample.m_probability;
+
+            // Switch to the BSSRDF's BRDF.
+            vertex.m_shading_point = &bssrdf_sample.m_incoming_point;
+            vertex.m_bsdf = bssrdf_sample.m_brdf;
+            vertex.m_bsdf_data = bssrdf_sample.m_brdf_data;
+        }
+
+        // Terminate the path if no above-surface scattering possible.
+        if (vertex.m_bsdf == nullptr && material->get_render_data().m_volume == nullptr)
             break;
 
         // In case there is no BSDF, the current ray will be continued without increasing its depth.
@@ -526,7 +532,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
         // Build the medium list of the scattered ray.
         const foundation::Vector3d& geometric_normal = vertex.get_geometric_normal();
-        const bool crossing_interface =
+        const bool crossing_interface = vertex.m_bssrdf == nullptr &&
             foundation::dot(vertex.m_outgoing.get_value(), geometric_normal) *
             foundation::dot(next_ray.m_dir, geometric_normal) < 0.0;
         if (crossing_interface)
@@ -678,6 +684,22 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
             true,       // multiply by |cos(incoming, normal)|
             vertex.m_scattering_modes,
             sample);
+
+        next_ray.m_max_roughness = m_clamp_roughness ? sample.m_max_roughness : 0.0f;
+
+        if (sample.m_mode == ScatteringMode::Diffuse && !vertex.m_albedo_saved)
+        {
+            vertex.m_albedo = sample.m_aov_components.m_albedo;
+            vertex.m_albedo_saved = true;
+            m_path_visitor.on_first_diffuse_bounce(vertex);
+        }
+    }
+    else
+    {
+        // Since the BSDF is already sampled during BSSRDF sampling, it is not sampled here.
+        // However, we need to check if the corresponding mode is still enabled.
+        if ((sample.m_mode & vertex.m_scattering_modes) == 0)
+            sample.m_mode = ScatteringMode::None;
     }
 
     // Terminate the path if it gets absorbed.

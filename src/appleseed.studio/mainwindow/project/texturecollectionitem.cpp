@@ -160,7 +160,7 @@ void TextureCollectionItem::slot_import_textures()
 
     }
 
-    m_editor_context.m_project_builder.notify_project_modification();
+    m_editor_context.m_project_builder.slot_notify_project_modification();
 }
 
 ItemBase* TextureCollectionItem::create_item(Texture* texture)

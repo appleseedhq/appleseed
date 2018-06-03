@@ -280,7 +280,7 @@ void AssemblyItem::do_instantiate(const string& name)
     m_parent.assembly_instances().insert(assembly_instance);
 
     m_editor_context.m_project.get_scene()->bump_version_id();
-    m_editor_context.m_project_builder.notify_project_modification();
+    m_editor_context.m_project_builder.slot_notify_project_modification();
 }
 
 template <typename Entity, typename EntityContainer>
@@ -404,7 +404,7 @@ void AssemblyItem::do_delete()
     m_parent.assemblies().remove(assembly_uid);
 
     // Mark the project as modified.
-    m_editor_context.m_project_builder.notify_project_modification();
+    m_editor_context.m_project_builder.slot_notify_project_modification();
 
     // Remove and delete the assembly item.
     ItemBase* assembly_item = m_editor_context.m_item_registry.get_item(assembly_uid);

@@ -1,4 +1,5 @@
 
+//
 // This source file is part of appleseed.
 // Visit https://appleseedhq.net/ for additional information and resources.
 //
@@ -53,12 +54,16 @@ class ExpressionEditorWindow
     Q_OBJECT
 
   public:
+    // Constructor.
     ExpressionEditorWindow(
-        QWidget*                    parent,
         const renderer::Project&    project,
         renderer::ParamArray&       settings,
         const QString&              widget_name,
-        const std::string&          expression);
+        const std::string&          expression,
+        QWidget*                    parent = nullptr);
+
+    // Destructor.
+    ~ExpressionEditorWindow() override;
 
     void apply_expression();
 
@@ -81,7 +86,9 @@ class ExpressionEditorWindow
     void closeEvent(QCloseEvent* e) override;
 
   private:
+    // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
     Ui::ExpressionEditorWindow*     m_ui;
+
     const renderer::Project&        m_project;
     renderer::ParamArray&           m_settings;
     const QString                   m_widget_name;

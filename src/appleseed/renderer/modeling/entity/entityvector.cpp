@@ -330,14 +330,14 @@ auto_release_ptr<Entity> EntityVector::remove(Entity* entity)
 size_t EntityVector::get_index(const UniqueID id) const
 {
     const Impl::IDIndex::iterator it = impl->m_id_index.find(id);
-    return it == impl->m_id_index.end() ? ~0 : it->second;
+    return it == impl->m_id_index.end() ? ~size_t(0) : it->second;
 }
 
 size_t EntityVector::get_index(const char* name) const
 {
     assert(name);
     const Impl::NameIndex::iterator it = impl->m_name_index.find(name);
-    return it == impl->m_name_index.end() ? ~0 : it->second;
+    return it == impl->m_name_index.end() ? ~size_t(0) : it->second;
 }
 
 Entity* EntityVector::get_by_index(const size_t index) const
@@ -349,13 +349,13 @@ Entity* EntityVector::get_by_index(const size_t index) const
 Entity* EntityVector::get_by_uid(const UniqueID id) const
 {
     const size_t index = get_index(id);
-    return index == size_t(~0) ? nullptr : get_by_index(index);
+    return index == ~size_t(0) ? nullptr : get_by_index(index);
 }
 
 Entity* EntityVector::get_by_name(const char* name) const
 {
     const size_t index = get_index(name);
-    return index == size_t(~0) ? nullptr : get_by_index(index);
+    return index == ~size_t(0) ? nullptr : get_by_index(index);
 }
 
 EntityVector::iterator EntityVector::begin()

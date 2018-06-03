@@ -27,13 +27,13 @@
 
 surface as_closure2surface
 [[
-	string as_maya_node_name = "asClosure2Surface",
-	string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch"
+	string as_blender_node_name = "asClosure2Surface",
+    string as_blender_category = "surface",
 ]]
 (
     closure color in_input = 0
     [[
-    	string as_maya_label = "Input Closure"
+    	string label = "Input Closure"
     ]]
 )
 {

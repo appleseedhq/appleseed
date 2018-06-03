@@ -7,7 +7,7 @@
 # This software is released under the MIT license.
 #
 # Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-# Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+# Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -35,16 +35,16 @@ import os
 import subprocess
 
 
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # Constants.
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 DEFAULT_TOOL_FILENAME = "convertmeshfile.exe" if os.name == "nt" else "convertmeshfile"
 
 
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # Utility functions.
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 def walk(directory, recursive):
     if recursive:
@@ -57,19 +57,19 @@ def walk(directory, recursive):
             yield os.path.join(dirpath, filename)
 
 
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # Convert a given mesh file.
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 def convert_mesh_file(input_filepath, output_filepath, tool_path):
     print("converting {0} to {1}...".format(input_filepath, output_filepath))
     subprocess.call([tool_path, input_filepath, output_filepath])
 
 
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # Convert all matching mesh files in a given directory (possibly recursively).
 # Returns the number of converted mesh files.
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 def convert_mesh_files(tool_path, directory, recursive, input_pattern, output_format, overwrite):
     converted_file_count = 0
@@ -85,9 +85,9 @@ def convert_mesh_files(tool_path, directory, recursive, input_pattern, output_fo
     return converted_file_count
 
 
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # Entry point.
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 def main():
     parser = argparse.ArgumentParser(description="convert multiple mesh files from one format "

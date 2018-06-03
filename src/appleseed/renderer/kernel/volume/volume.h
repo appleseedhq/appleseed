@@ -53,7 +53,7 @@ typedef foundation::VoxelGrid3<float, double> VoxelGrid;
 
 struct FluidChannels
 {
-    static const size_t NotPresent = ~0;
+    static const size_t NotPresent = ~size_t(0);
 
     size_t  m_color_index;
     size_t  m_density_index;

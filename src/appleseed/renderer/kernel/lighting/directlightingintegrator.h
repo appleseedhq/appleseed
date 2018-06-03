@@ -88,7 +88,7 @@ class DirectLightingIntegrator
     void compute_outgoing_radiance_combined_sampling_low_variance(
         SamplingContext&                sampling_context,
         const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
-        DirectShadingComponents&        radianc,
+        DirectShadingComponents&        radiance,
         LightPathStream*                light_path_stream) const;
 
     // Compute outgoing radiance due to direct lighting via BSDF sampling only.
@@ -108,7 +108,7 @@ class DirectLightingIntegrator
 
   private:
     friend class VolumeLightingIntegrator;
-    
+
     const ShadingContext&               m_shading_context;
     const BackwardLightSampler&         m_light_sampler;
     const ShadingRay::Time&             m_time;

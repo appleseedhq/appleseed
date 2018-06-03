@@ -1188,6 +1188,11 @@ QWidget#toggle_button_off
     border: BORDER_STYLE;
 }
 
+QLineEdit#lineedit_root_path[isSet="false"]
+{
+    color: DISABLED_TEXT_COLOR;
+}
+
 QToolTip
 {
     background-color: rgba(80, 80, 80, 180);

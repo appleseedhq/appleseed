@@ -74,9 +74,9 @@ struct SearchPaths::Impl
     typedef vector<string> PathCollection;
 
     bf::path        m_root_path;
-    PathCollection  m_explicit_paths;
     PathCollection  m_environment_paths;
-    PathCollection  m_all_paths;
+    PathCollection  m_explicit_paths;
+    PathCollection  m_all_paths;    // first all environment paths, then all explicit paths
 };
 
 SearchPaths::SearchPaths()
@@ -92,19 +92,18 @@ SearchPaths::SearchPaths(const char* envvar, const char separator)
         vector<string> paths;
         split(value, string(&separator, 1), paths);
 
-        for (const_each<vector<string>> i = paths; i; ++i)
+        for (const string& path : paths)
         {
-            const bf::path fp(*i);
-
-            // Ignore relative paths.
-            if (!fp.is_absolute())
+            // Ignore empty paths.
+            if (path.empty())
                 continue;
 
-            if (!i->empty())
-            {
-                impl->m_environment_paths.emplace_back(i->c_str());
-                impl->m_all_paths.emplace_back(i->c_str());
-            }
+            // Ignore relative paths.
+            if (!bf::path(path).is_absolute())
+                continue;
+
+            impl->m_environment_paths.emplace_back(path.c_str());
+            impl->m_all_paths.emplace_back(path.c_str());
         }
     }
 }
@@ -146,34 +145,21 @@ bool SearchPaths::has_root_path() const
     return !impl->m_root_path.empty();
 }
 
-void SearchPaths::clear()
+size_t SearchPaths::get_environment_path_count() const
 {
-    impl->m_root_path.clear();
-    impl->m_explicit_paths.clear();
-    impl->m_environment_paths.clear();
-    impl->m_all_paths.clear();
+    return impl->m_environment_paths.size();
 }
 
-void SearchPaths::reset()
+const char* SearchPaths::get_environment_path(const size_t i) const
+{
+    assert(i < get_environment_path_count());
+    return impl->m_environment_paths[i].c_str();
+}
+
+void SearchPaths::clear_explicit_paths()
 {
     impl->m_explicit_paths.clear();
     impl->m_all_paths = impl->m_environment_paths;
-}
-
-bool SearchPaths::empty() const
-{
-    return impl->m_explicit_paths.empty();
-}
-
-size_t SearchPaths::get_path_count() const
-{
-    return impl->m_all_paths.size();
-}
-
-const char* SearchPaths::get_path(const size_t i) const
-{
-    assert(i < get_path_count());
-    return impl->m_all_paths[i].c_str();
 }
 
 size_t SearchPaths::get_explicit_path_count() const
@@ -187,39 +173,28 @@ const char* SearchPaths::get_explicit_path(const size_t i) const
     return impl->m_explicit_paths[i].c_str();
 }
 
-size_t SearchPaths::get_environment_path_count() const
-{
-    return impl->m_environment_paths.size();
-}
-
-const char* SearchPaths::get_environment_path(const size_t i) const
-{
-    assert(i < get_environment_path_count());
-    return impl->m_environment_paths[i].c_str();
-}
-
-void SearchPaths::push_back(const char* path)
+void SearchPaths::push_back_explicit_path(const char* path)
 {
     assert(path);
     impl->m_explicit_paths.emplace_back(path);
     impl->m_all_paths.emplace_back(path);
 }
 
-void SearchPaths::split_and_push_back(const char* paths, const char separator)
-{
-    assert(paths);
-
-    vector<string> path_list;
-    split(paths, string(&separator, 1), path_list);
-
-    for (const_each<vector<string>> i = path_list; i; ++i)
-        push_back(i->c_str());
-}
-
-void SearchPaths::remove(const size_t i)
+void SearchPaths::remove_explicit_path(const size_t i)
 {
     assert(i < get_explicit_path_count());
     impl->m_explicit_paths.erase(impl->m_explicit_paths.begin() + i);
+}
+
+size_t SearchPaths::get_path_count() const
+{
+    return impl->m_all_paths.size();
+}
+
+const char* SearchPaths::get_path(const size_t i) const
+{
+    assert(i < get_path_count());
+    return impl->m_all_paths[i].c_str();
 }
 
 bool SearchPaths::exist(const char* filepath) const

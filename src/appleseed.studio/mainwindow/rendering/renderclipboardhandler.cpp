@@ -30,9 +30,6 @@
 // Interface header.
 #include "renderclipboardhandler.h"
 
-// appleseed.studio headers.
-#include "mainwindow/rendering/renderwidget.h"
-
 // appleseed.renderer headers.
 #include "renderer/api/log.h"
 
@@ -42,12 +39,14 @@
 #include <QEvent>
 #include <QKeyEvent>
 #include <Qt>
+#include <QWidget>
 
 namespace appleseed {
 namespace studio {
 
-RenderClipboardHandler::RenderClipboardHandler(RenderWidget* widget)
+RenderClipboardHandler::RenderClipboardHandler(QWidget* widget, ICapturableWidget* capturable_widget)
   : m_widget(widget)
+  , m_capturable_widget(capturable_widget)
 {
     m_widget->installEventFilter(this);
 }
@@ -65,9 +64,8 @@ bool RenderClipboardHandler::eventFilter(QObject* object, QEvent* event)
 
         if (key_event->modifiers() == Qt::ControlModifier && key_event->key() == Qt::Key_C)
         {
-            QApplication::clipboard()->setImage(m_widget->get_image_copy());
-            RENDERER_LOG_INFO("copied render to clipboard.");
-            return true;
+            QApplication::clipboard()->setImage(m_capturable_widget->capture());
+            RENDERER_LOG_INFO("copied image to clipboard.");
         }
     }
 

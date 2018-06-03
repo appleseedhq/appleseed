@@ -33,7 +33,8 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer  { class MeshObject; }
+namespace foundation { class MurmurHash; }
+namespace renderer   { class MeshObject; }
 
 namespace renderer
 {
@@ -46,6 +47,9 @@ APPLESEED_DLLSYMBOL void compute_smooth_vertex_normals(MeshObject& object);
 // The mesh object must not already have tangent vectors.
 // The mesh object must have texture coordinates.
 APPLESEED_DLLSYMBOL void compute_smooth_vertex_tangents(MeshObject& object);
+
+// Compute a hash for a mesh object.
+APPLESEED_DLLSYMBOL void compute_signature(foundation::MurmurHash& hash, const MeshObject& object);
 
 }       // namespace renderer
 

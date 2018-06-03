@@ -53,6 +53,12 @@ class APPLESEED_DLLSYMBOL FileLogTarget
   : public FileLogTargetBase
 {
   public:
+    enum Options
+    {
+        Default                     = 0,        // none of the flags below
+        FlushAfterEveryMessage      = 1 << 0    // call fflush() on the file after every message
+    };
+
     // Delete this instance.
     void release() override;
 
@@ -71,19 +77,21 @@ class APPLESEED_DLLSYMBOL FileLogTarget
     bool is_open() const;
 
   private:
-    friend APPLESEED_DLLSYMBOL FileLogTarget* create_file_log_target();
+    friend APPLESEED_DLLSYMBOL FileLogTarget* create_file_log_target(const int options);
 
-    std::FILE* m_file;
+    const int   m_options;
+    std::FILE*  m_file;
 
     // Constructor.
-    FileLogTarget();
+    explicit FileLogTarget(const int options);
 
     // Destructor.
     ~FileLogTarget() override;
 };
 
 // Create an instance of a log target that outputs to a file.
-APPLESEED_DLLSYMBOL FileLogTarget* create_file_log_target();
+APPLESEED_DLLSYMBOL FileLogTarget* create_file_log_target(
+    const int options = FileLogTarget::Options::Default);
 
 }       // namespace foundation
 

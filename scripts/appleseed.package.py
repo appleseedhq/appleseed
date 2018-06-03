@@ -7,7 +7,7 @@
 # This software is released under the MIT license.
 #
 # Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-# Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+# Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -45,17 +45,17 @@ import traceback
 import zipfile
 
 
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # Constants.
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
-VERSION = "2.5.1"
+VERSION = "2.5.3"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # Utility functions.
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 def info(message):
     print("  " + message)
@@ -174,9 +174,9 @@ def merge_tree(src, dst, symlinks=False, ignore=None):
         raise Error, errors
 
 
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # Settings.
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 class Settings:
 
@@ -220,9 +220,9 @@ class Settings:
         print("")
 
 
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # Package information.
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 class PackageInfo:
 
@@ -251,9 +251,9 @@ class PackageInfo:
         print("")
 
 
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # Base package builder.
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 class PackageBuilder:
 
@@ -315,6 +315,9 @@ class PackageBuilder:
         # Remove voluminous unit tests/benchmarks data.
         safe_delete_file("appleseed/tests/unit benchmarks/inputs/test_knn_particles.bin")
         safe_delete_file("appleseed/tests/unit benchmarks/inputs/test_knn_photons.bin")
+
+        # Temporarily remove Alembic assembly C++ plugin.
+        safe_delete_directory("appleseed/samples/cpp/alembicassembly")
 
     def add_local_binaries_to_stage(self):
         progress("Adding local binaries to staging directory")
@@ -453,9 +456,9 @@ class PackageBuilder:
         return p.returncode, out, err
 
 
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # Windows package builder.
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 class WindowsPackageBuilder(PackageBuilder):
 
@@ -479,20 +482,12 @@ class WindowsPackageBuilder(PackageBuilder):
         shutil.copy(os.path.join(self.settings.python_path, "python27.dll"), "appleseed/bin/")
 
         safe_make_directory("appleseed/python27")
-        shutil.copy(os.path.join(self.settings.python_path, "LICENSE.txt"), "appleseed/python27")
-        shutil.copy(os.path.join(self.settings.python_path, "README.txt"), "appleseed/python27")
         shutil.copytree(os.path.join(self.settings.python_path, "DLLs"), "appleseed/python27/DLLs")
         shutil.copytree(os.path.join(self.settings.python_path, "include"), "appleseed/python27/include")
+        shutil.copytree(os.path.join(self.settings.python_path, "Lib"), "appleseed/python27/Lib")
         shutil.copytree(os.path.join(self.settings.python_path, "libs"), "appleseed/python27/libs")
-
-        def ignore_lib_content(path, names):
-            if path == os.path.join(self.settings.python_path, "Lib"):
-                return ["site-packages"]
-            return set(fnmatch.filter(names, "*.pyc"))
-        shutil.copytree(os.path.join(self.settings.python_path, "Lib"), "appleseed/python27/Lib", ignore=ignore_lib_content)
-
-        safe_make_directory("appleseed/python27/Lib/site-packages")
-        shutil.copy(os.path.join(self.settings.python_path, "Lib", "site-packages", "README.txt"), "appleseed/python27/Lib/site-packages/")
+        shutil.copy(os.path.join(self.settings.python_path, "LICENSE.txt"), "appleseed/python27")
+        shutil.copy(os.path.join(self.settings.python_path, "README.txt"), "appleseed/python27")
 
     def copy_qt_framework(self, framework_name):
         src_filepath = os.path.join(self.settings.qt_runtime_path, framework_name + "4" + ".dll")
@@ -500,9 +495,9 @@ class WindowsPackageBuilder(PackageBuilder):
         shutil.copy(src_filepath, dst_path)
 
 
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # Mac package builder.
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 class MacPackageBuilder(PackageBuilder):
 
@@ -690,9 +685,9 @@ class MacPackageBuilder(PackageBuilder):
         open("appleseed/bin/Contents/Resources/qt.conf", "w").close()
 
 
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # Linux package builder.
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 class LinuxPackageBuilder(PackageBuilder):
 
@@ -714,7 +709,7 @@ class LinuxPackageBuilder(PackageBuilder):
         self.add_dependencies_to_stage()
         self.set_runtime_paths_on_binaries()
         self.clear_runtime_paths_on_libraries()
-        self.add_python_to_stage() # Must be last.
+        self.add_python_to_stage()  # Must be last.
 
     def make_executable(self, filepath):
         mode = os.stat(filepath)[stat.ST_MODE]
@@ -776,9 +771,9 @@ class LinuxPackageBuilder(PackageBuilder):
         merge_tree(os.path.join(self.settings.python_path, "include"), "appleseed/include", symlinks=True)
 
 
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # Entry point.
-#--------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 def main():
     print("appleseed.package version " + VERSION)

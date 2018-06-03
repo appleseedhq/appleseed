@@ -140,6 +140,8 @@ namespace
                     incoming,
                     n,
                     sample.m_value.m_diffuse);
+
+                sample.m_aov_components.m_albedo = values->m_reflectance;
             }
             else
             {
@@ -148,6 +150,8 @@ namespace
                 sample.m_value.m_diffuse *= values->m_reflectance_multiplier * RcpPi<float>();
             }
             sample.m_value.m_beauty = sample.m_value.m_diffuse;
+            
+            sample.m_max_roughness = 1.0f;
 
             // Compute the probability density of the sampled direction.
             sample.m_probability = wi.y * RcpPi<float>();

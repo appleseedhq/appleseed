@@ -475,7 +475,7 @@ const char* Preprocessor::get_error_message() const
 
 size_t Preprocessor::get_error_location() const
 {
-    return failed() ? impl->m_error_location : ~0;
+    return failed() ? impl->m_error_location : ~size_t(0);
 }
 
 }   // namespace foundation

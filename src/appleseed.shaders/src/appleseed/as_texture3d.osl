@@ -34,6 +34,8 @@ shader as_texture3d
 [[
     string as_maya_node_name = "asTexture3D",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/3d:swatch/AppleseedRenderSwatch:texture",
+    string as_blender_node_name = "asTexture3D",
+    string as_blender_category = "3d_texture",
     string help = "A field3d format 3D texture lookup node.",
     string icon = "asTexture3D.png",
     int as_maya_type_id = 0x001279ff,
@@ -53,6 +55,7 @@ shader as_texture3d
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "The 3D texture file (field3d, f3d, etc).",
         int divider = 1
@@ -69,6 +72,7 @@ shader as_texture3d
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
@@ -111,6 +115,7 @@ shader as_texture3d
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Use the wrapping mode set on the texture, or override it."
     ]], 
@@ -125,6 +130,7 @@ shader as_texture3d
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Use the wrapping mode set on the texture, or override it."
     ]],
@@ -139,6 +145,7 @@ shader as_texture3d
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Use the wrapping mode set on the texture, or override it."
     ]],
@@ -151,6 +158,7 @@ shader as_texture3d
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Blur Width",
         string page = "3D Texture.Blur",
@@ -165,6 +173,7 @@ shader as_texture3d
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Blur Height",
         string page = "3D Texture.Blur",
@@ -179,6 +188,7 @@ shader as_texture3d
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Blur Depth",
         string page = "3D Texture.Blur",
@@ -196,6 +206,7 @@ shader as_texture3d
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,        
         string help = "Scale the size of the filter defined by the partial derivatives along s or implicitly from P, with 0 disabling filtering altogether."
     ]],
@@ -210,6 +221,7 @@ shader as_texture3d
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Scale the size of the filter defined by the partial derivatives along t or implicitly from P, with 0 disabling filtering altogether."
     ]],
@@ -224,6 +236,7 @@ shader as_texture3d
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Scale the size of the filter defined by the partial derivatives along r or implicitly from P, with 0 disabling filtering altogether."
     ]],
@@ -246,6 +259,7 @@ shader as_texture3d
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     matrix in_placement_matrix = matrix(1)
@@ -255,6 +269,7 @@ shader as_texture3d
         string label = "Placement Matrix",
         string page = "Coordinates",
         string widget = "null",
+        int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     output color out_color = color(0)

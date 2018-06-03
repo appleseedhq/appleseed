@@ -146,6 +146,8 @@ void bind_transform()
         .def("size", &TransformSequence::size)
         .def("clear", &TransformSequence::clear)
 
+        .def("optimize", &TransformSequence::optimize)
+
         .def("transforms", &transform_seq_as_list)
 
         .def(bpy::self * bpy::self)

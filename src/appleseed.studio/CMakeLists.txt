@@ -186,6 +186,9 @@ set (mainwindow_project_sources
     mainwindow/project/projectmanager.h
     mainwindow/project/sceneitem.cpp
     mainwindow/project/sceneitem.h
+    mainwindow/project/searchpathswindow.cpp
+    mainwindow/project/searchpathswindow.h
+    mainwindow/project/searchpathswindow.ui
     mainwindow/project/singlemodelcollectionitem.h
     mainwindow/project/singlemodelentityeditorformfactory.cpp
     mainwindow/project/singlemodelentityeditorformfactory.h
@@ -241,6 +244,7 @@ set (appleseedpython_sources
     ../appleseed.python/bindmaterial.cpp
     ../appleseed.python/bindmatrix.cpp
     ../appleseed.python/bindmeshobject.cpp
+    ../appleseed.python/bindmurmurhash.cpp
     ../appleseed.python/bindobject.cpp
     ../appleseed.python/bindproject.cpp
     ../appleseed.python/bindquaternion.cpp
@@ -646,7 +650,6 @@ endif ()
 
 add_custom_target (appleseed.studio.python.copy_py_files ALL)
 
-add_copy_target_to_sandbox_py_module_command (appleseed.studio appleseed)
 add_copy_studio_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.studio/python/studio/__init__.py appleseed.studio)
 add_copy_studio_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.studio/python/studio/ui.py appleseed.studio)
 add_copy_studio_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.studio/python/studio/plugins.py appleseed.studio)

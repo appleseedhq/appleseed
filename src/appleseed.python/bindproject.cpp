@@ -78,6 +78,12 @@ namespace
         return bpy::object(project);
     }
 
+    bpy::object wrap_cpp_project_pointer(const bpy::long_& ptr)
+    {
+        const uintptr_t x = bpy::extract<uintptr_t>(ptr);
+        return bpy::object(bpy::ptr(binary_cast<Project*>(x)));
+    }
+
     bpy::list project_get_search_paths(const Project* project)
     {
         bpy::list paths;
@@ -92,13 +98,13 @@ namespace
 
     void project_set_search_paths(Project* project, const bpy::list& paths)
     {
-        project->search_paths().clear();
+        project->search_paths().clear_explicit_paths();
 
         for (bpy::ssize_t i = 0, e = bpy::len(paths); i < e; ++i)
         {
             const bpy::extract<const char*> extractor(paths[i]);
             if (extractor.check())
-                project->search_paths().push_back(extractor());
+                project->search_paths().push_back_explicit_path(extractor());
             else
             {
                 PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings accepted.");
@@ -190,6 +196,7 @@ namespace
             }
         }
 
+#if PY_MAJOR_VERSION == 2
         if (PyInt_Check(value.ptr()))
         {
             bpy::extract<int> extractor(value);
@@ -199,6 +206,7 @@ namespace
                 return;
             }
         }
+#endif
 
         if (PyLong_Check(value.ptr()))
         {
@@ -328,7 +336,9 @@ void bind_project()
         .def("get_display", &Project::get_display, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("set_display", &Project::set_display)
 
-        .def("get_active_camera", &Project::get_uncached_active_camera, bpy::return_value_policy<bpy::reference_existing_object>());
+        .def("get_active_camera", &Project::get_uncached_active_camera, bpy::return_value_policy<bpy::reference_existing_object>())
+
+        .def("_wrap_cpp_project_pointer", &wrap_cpp_project_pointer).staticmethod("_wrap_cpp_project_pointer");
 
     bpy::enum_<ProjectFileReader::Options>("ProjectFileReaderOptions")
         .value("Defaults", ProjectFileReader::Defaults)

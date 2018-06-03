@@ -125,6 +125,8 @@ namespace
         {
             InputValues* values = static_cast<InputValues*>(data);
             new (&values->m_precomputed) InputValues::Precomputed();
+            
+            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_max_roughness);
 
             artist_friendly_fresnel_conductor_reparameterization(
                 values->m_normal_reflectance,
@@ -177,6 +179,8 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
+            sample.m_max_roughness = values->m_roughness;
+
             const FresnelConductorFun f(
                 values->m_precomputed.m_n,
                 values->m_precomputed.m_k,
@@ -218,13 +222,16 @@ namespace
                             f,
                             sample);
 
-                        add_energy_compensation_term(
-                            mdf,
-                            values,
-                            sample.m_outgoing.get_value(),
-                            sample.m_incoming.get_value(),
-                            sample.m_shading_basis.get_normal(),
-                            sample.m_value.m_glossy);
+                        if (sample.m_mode == ScatteringMode::Glossy)
+                        {
+                            add_energy_compensation_term(
+                                mdf,
+                                values,
+                                sample.m_outgoing.get_value(),
+                                sample.m_incoming.get_value(),
+                                sample.m_shading_basis.get_normal(),
+                                sample.m_value.m_glossy);
+                        }
                     }
                     break;
 
@@ -240,13 +247,16 @@ namespace
                             f,
                             sample);
 
-                        add_energy_compensation_term(
-                            mdf,
-                            values,
-                            sample.m_outgoing.get_value(),
-                            sample.m_incoming.get_value(),
-                            sample.m_shading_basis.get_normal(),
-                            sample.m_value.m_glossy);
+                        if (sample.m_mode == ScatteringMode::Glossy)
+                        {
+                            add_energy_compensation_term(
+                                mdf,
+                                values,
+                                sample.m_outgoing.get_value(),
+                                sample.m_incoming.get_value(),
+                                sample.m_shading_basis.get_normal(),
+                                sample.m_value.m_glossy);
+                        }
                     }
                     break;
 

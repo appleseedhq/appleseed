@@ -31,6 +31,7 @@
 
 // API headers.
 #include "renderer/modeling/shadergroup/shader.h"
+#include "renderer/modeling/shadergroup/shadercompiler.h"
 #include "renderer/modeling/shadergroup/shaderconnection.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #include "renderer/modeling/shadergroup/shadergrouptraits.h"

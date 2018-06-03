@@ -434,6 +434,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_microfacet.cpp
     foundation/meta/tests/test_minmax.cpp
     foundation/meta/tests/test_mis.cpp
+    foundation/meta/tests/test_murmurhash.cpp
     foundation/meta/tests/test_noise.cpp
     foundation/meta/tests/test_objmeshfilereader.cpp
     foundation/meta/tests/test_objmeshfilewriter.cpp
@@ -811,6 +812,8 @@ set (foundation_utility_sources
     foundation/utility/makevector.h
     foundation/utility/memory.cpp
     foundation/utility/memory.h
+    foundation/utility/murmurhash.cpp
+    foundation/utility/murmurhash.h
     foundation/utility/numerictype.h
     foundation/utility/otherwise.h
     foundation/utility/poison.h
@@ -893,6 +896,7 @@ set (renderer_api_sources
     renderer/api/rasterization.h
     renderer/api/rendering.h
     renderer/api/scene.h
+    renderer/api/scenepicker.h
     renderer/api/shadergroup.h
     renderer/api/source.h
     renderer/api/surfaceshader.h
@@ -925,6 +929,8 @@ source_group ("renderer\\global" FILES
 set (renderer_kernel_aov_sources
     renderer/kernel/aov/aovaccumulator.cpp
     renderer/kernel/aov/aovaccumulator.h
+    renderer/kernel/aov/aovcomponents.cpp
+    renderer/kernel/aov/aovcomponents.h
     renderer/kernel/aov/aovsettings.h
     renderer/kernel/aov/imagestack.cpp
     renderer/kernel/aov/imagestack.h
@@ -1232,8 +1238,6 @@ set (renderer_kernel_shading_sources
     renderer/kernel/shading/directshadingcomponents.h
     renderer/kernel/shading/fastambientocclusion.cpp
     renderer/kernel/shading/fastambientocclusion.h
-    renderer/kernel/shading/oslshadercompiler.cpp
-    renderer/kernel/shading/oslshadercompiler.h
     renderer/kernel/shading/oslshadergroupexec.cpp
     renderer/kernel/shading/oslshadergroupexec.h
     renderer/kernel/shading/oslshadingsystem.cpp
@@ -1351,6 +1355,8 @@ source_group ("renderer\\meta\\tests" FILES
 )
 
 set (renderer_modeling_aov_sources
+    renderer/modeling/aov/albedoaov.cpp
+    renderer/modeling/aov/albedoaov.h
     renderer/modeling/aov/aov.cpp
     renderer/modeling/aov/aov.h
     renderer/modeling/aov/aovcontainer.h
@@ -1856,6 +1862,8 @@ source_group ("renderer\\modeling\\scene" FILES
 set (renderer_modeling_shadergroup
     renderer/modeling/shadergroup/shader.cpp
     renderer/modeling/shadergroup/shader.h
+    renderer/modeling/shadergroup/shadercompiler.cpp
+    renderer/modeling/shadergroup/shadercompiler.h
     renderer/modeling/shadergroup/shaderconnection.cpp
     renderer/modeling/shadergroup/shaderconnection.h
     renderer/modeling/shadergroup/shadergroup.cpp
@@ -2025,6 +2033,10 @@ target_link_libraries (appleseed
     ${Boost_LIBRARIES}
     lz4
     ${CMAKE_DL_LIBS}
+)
+
+target_link_libraries (appleseed
+    "${APPLESEED_LINK_EXTRA_LIBRARIES}"
 )
 
 

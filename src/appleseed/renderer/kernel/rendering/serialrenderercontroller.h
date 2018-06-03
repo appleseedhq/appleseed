@@ -50,7 +50,9 @@ namespace renderer
 
 //
 // A renderer controller that can queue tile callback updates and execute them
-// later in the master renderer's thread. Needed by the Python bindings.
+// later in the master renderer's thread. Useful whenever a tile callback can
+// only run from a specific thread. Used by the Python bindings and the 3ds Max
+// plugin, among other things.
 //
 
 class SerialRendererController
@@ -88,6 +90,8 @@ class SerialRendererController
     void add_on_progressive_frame_update_callback(
         const Frame*            frame);
 
+    void exec_callbacks();
+
   private:
     struct PendingTileCallback
     {
@@ -112,7 +116,6 @@ class SerialRendererController
     std::deque<PendingTileCallback>     m_pending_callbacks;
 
     void exec_callback(const PendingTileCallback& cb);
-    void exec_callbacks();
 };
 
 }       // namespace renderer

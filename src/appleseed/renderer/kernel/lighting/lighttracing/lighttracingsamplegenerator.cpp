@@ -140,12 +140,12 @@ namespace
 
             static size_t fixup_bounces(const int x)
             {
-                return x == -1 ? ~0 : x;
+                return x == -1 ? ~size_t(0) : x;
             }
 
             static size_t fixup_path_length(const size_t x)
             {
-                return x == 0 ? ~0 : x;
+                return x == 0 ? ~size_t(0) : x;
             }
         };
 
@@ -215,8 +215,8 @@ namespace
                 "  russian roulette start bounce %s",
                 m_params.m_enable_ibl ? "on" : "off",
                 m_params.m_enable_caustics ? "on" : "off",
-                m_params.m_max_bounces == ~0 ? "unlimited" : pretty_uint(m_params.m_max_bounces).c_str(),
-                m_params.m_rr_min_path_length == ~0 ? "unlimited" : pretty_uint(m_params.m_rr_min_path_length).c_str());
+                m_params.m_max_bounces == ~size_t(0) ? "unlimited" : pretty_uint(m_params.m_max_bounces).c_str(),
+                m_params.m_rr_min_path_length == ~size_t(0) ? "unlimited" : pretty_uint(m_params.m_rr_min_path_length).c_str());
         }
 
         void reset() override
@@ -299,6 +299,10 @@ namespace
               , m_samples(samples)
               , m_sample_count(0)
               , m_initial_flux(initial_flux)
+            {
+            }
+
+            void on_first_diffuse_bounce(const PathVertex& vertex)
             {
             }
 
@@ -684,10 +688,11 @@ namespace
                 volume_visitor,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_bounces,
-                ~0, // max diffuse bounces
-                ~0, // max glossy bounces
-                ~0, // max specular bounces
-                ~0, // max volume bounces
+                ~size_t(0), // max diffuse bounces
+                ~size_t(0), // max glossy bounces
+                ~size_t(0), // max specular bounces
+                ~size_t(0), // max volume bounces
+                false,      // don't clamp roughness
                 m_params.m_max_iterations,
                 material_data.m_edf->get_light_near_start());   // don't illuminate points closer than the light near start value
 
@@ -767,9 +772,11 @@ namespace
                 volume_visitor,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_bounces,
-                ~0, // max diffuse bounces
-                ~0, // max glossy bounces
-                ~0, // max specular bounces
+                ~size_t(0), // max diffuse bounces
+                ~size_t(0), // max glossy bounces
+                ~size_t(0), // max specular bounces
+                ~size_t(0), // max volume bounces
+                false,      // don't clamp roughness
                 m_params.m_max_iterations);
 
             // Handle the light vertex separately.
@@ -859,9 +866,11 @@ namespace
                 volume_visitor,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_bounces,
-                ~0, // max diffuse bounces
-                ~0, // max glossy bounces
-                ~0, // max specular bounces
+                ~size_t(0), // max diffuse bounces
+                ~size_t(0), // max glossy bounces
+                ~size_t(0), // max specular bounces
+                ~size_t(0), // max volume bounces
+                false,      // don't clamp roughness
                 m_params.m_max_iterations);
 
             // Trace the light path.

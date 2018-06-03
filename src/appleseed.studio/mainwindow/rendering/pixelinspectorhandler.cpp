@@ -89,11 +89,11 @@ void PixelInspectorHandler::update_tooltip_visibility()
 
 bool PixelInspectorHandler::eventFilter(QObject* object, QEvent* event)
 {
-    if (!m_enabled)
-        return QObject::eventFilter(object, event);
-
-    if (event->type() == QEvent::MouseMove)
-        show_tooltip();
+    if (m_enabled)
+    {
+        if (event->type() == QEvent::MouseMove)
+            show_tooltip();
+    }
 
     return QObject::eventFilter(object, event);
 }

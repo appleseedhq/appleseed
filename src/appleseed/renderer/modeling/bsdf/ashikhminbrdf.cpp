@@ -112,6 +112,8 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
+            sample.m_max_roughness = 1.0f;
+
             // Compute reflectance-related values.
             RVal rval;
             if (!compute_rval(rval, values))
@@ -217,6 +219,8 @@ namespace
                 const float b = 1.0f - pow5(1.0f - 0.5f * cos_on);
                 sample.m_value.m_diffuse = rval.m_kd;
                 sample.m_value.m_diffuse *= a * b;
+
+                sample.m_aov_components.m_albedo = values->m_rd;
 
                 // Evaluate the PDF of the diffuse component.
                 pdf_diffuse = cos_in * RcpPi<float>();

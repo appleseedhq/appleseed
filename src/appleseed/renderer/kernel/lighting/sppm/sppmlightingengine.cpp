@@ -153,7 +153,8 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
-            ShadingComponents&          radiance) override      // output radiance, in W.sr^-1.m^-2
+            ShadingComponents&          radiance,               // output radiance, in W.sr^-1.m^-2
+            AOVComponents&              components) override
         {
             if (m_params.m_view_photons)
             {
@@ -179,10 +180,11 @@ namespace
                 volume_visitor,
                 m_params.m_path_tracing_rr_min_path_length,
                 m_params.m_path_tracing_max_bounces,
-                ~0, // max diffuse bounces
-                ~0, // max glossy bounces
-                ~0, // max specular bounces
-                ~0, // max volume bounces
+                ~size_t(0), // max diffuse bounces
+                ~size_t(0), // max glossy bounces
+                ~size_t(0), // max specular bounces
+                ~size_t(0), // max volume bounces
+                false,      // don't clamp roughness
                 shading_context.get_max_iterations());
 
             const size_t path_length =
@@ -245,6 +247,10 @@ namespace
               , m_env_edf(scene.get_environment()->get_environment_edf())
               , m_answer(answer)
               , m_path_radiance(path_radiance)
+            {
+            }
+
+            void on_first_diffuse_bounce(const PathVertex& vertex)
             {
             }
 

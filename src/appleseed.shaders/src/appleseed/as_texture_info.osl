@@ -30,6 +30,8 @@ shader as_texture_info
 [[
     string as_maya_node_name = "asTextureInfo",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string as_blender_node_name = "asTextureInfo",
+    string as_blender_category = "utility",
     string help = "Texture Information node.",
     string icon = "asTextureInfo.png",
     int as_maya_type_id = 0x001279fc,
@@ -45,6 +47,9 @@ shader as_texture_info
         string widget = "filename",
         string label = "Texture File",
         string page = "Texture",
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,        
         string help = "Texture file to query information from."
     ]],
     

@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/ibssrdffactory.h"
 #include "renderer/modeling/bssrdf/separablebssrdf.h"
@@ -56,7 +55,7 @@ namespace renderer
 // Random-Walk BSSRDF input values.
 //
 
-APPLESEED_DECLARE_INPUT_VALUES(RandomWalkBSSRDFInputValues)
+APPLESEED_DECLARE_INPUT_VALUES(RandomwalkBSSRDFInputValues)
 {
     float           m_weight;
     Spectrum        m_reflectance;
@@ -65,14 +64,15 @@ APPLESEED_DECLARE_INPUT_VALUES(RandomWalkBSSRDFInputValues)
     float           m_mfp_multiplier;
     float           m_ior;
     float           m_fresnel_weight;
-    float           m_zero_scattering_weight;
+    float           m_volume_anisotropy;
+    float           m_surface_roughness;
 
     struct Precomputed
     {
-        Spectrum        m_albedo;
-        Spectrum        m_extinction;
-        float           m_rcp_diffusion_length;
-        float           m_eta;
+        Spectrum                m_albedo;
+        Spectrum                m_extinction;
+        float                   m_rcp_diffusion_length;
+        float                   m_eta;
     };
 
     Precomputed     m_precomputed;
@@ -83,7 +83,7 @@ APPLESEED_DECLARE_INPUT_VALUES(RandomWalkBSSRDFInputValues)
 // Random-Walk BSSRDF factory.
 //
 
-class APPLESEED_DLLSYMBOL RandomWalkBSSRDFFactory
+class APPLESEED_DLLSYMBOL RandomwalkBSSRDFFactory
   : public IBSSRDFFactory
 {
   public:

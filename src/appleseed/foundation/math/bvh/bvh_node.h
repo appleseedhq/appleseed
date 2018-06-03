@@ -116,26 +116,26 @@ class APPLESEED_ALIGN(64) Node
 template <typename AABB>
 inline void Node<AABB>::make_interior()
 {
-    m_item_count = ~0;
+    m_item_count = ~uint32(0);
 }
 
 template <typename AABB>
 inline void Node<AABB>::make_leaf()
 {
-    if (m_item_count == uint32(~0))
+    if (m_item_count == ~uint32(0))
         m_item_count = 0;
 }
 
 template <typename AABB>
 inline bool Node<AABB>::is_interior() const
 {
-    return m_item_count == uint32(~0);
+    return m_item_count == ~uint32(0);
 }
 
 template <typename AABB>
 inline bool Node<AABB>::is_leaf() const
 {
-    return m_item_count != uint32(~0);
+    return m_item_count != ~uint32(0);
 }
 
 template <typename AABB>

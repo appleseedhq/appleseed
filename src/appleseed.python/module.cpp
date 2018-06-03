@@ -55,6 +55,7 @@ void bind_master_renderer();
 void bind_material();
 void bind_matrix();
 void bind_mesh_object();
+void bind_murmurhash();
 void bind_object();
 void bind_project();
 void bind_quaternion();
@@ -78,6 +79,7 @@ extern "C" void bind_appleseed_python_classes()
     boost::python::scope().attr("APPLESEED_VERSION_STRING") = APPLESEED_VERSION_STRING;
 
     bind_utility();
+    bind_murmurhash();
     bind_logger();
 
     bind_vector();
@@ -119,7 +121,11 @@ extern "C" void bind_appleseed_python_classes()
     bind_master_renderer();
 }
 
+#if PY_MAJOR_VERSION == 2
 BOOST_PYTHON_MODULE(_appleseedpython)
+#else
+BOOST_PYTHON_MODULE(_appleseedpython3)
+#endif
 {
     bind_appleseed_python_classes();
 }

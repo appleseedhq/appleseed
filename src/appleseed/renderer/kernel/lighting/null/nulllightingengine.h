@@ -38,6 +38,7 @@
 #include "foundation/platform/compiler.h"
 
 // Forward declarations.
+namespace renderer  { class AOVComponents; }
 namespace renderer  { class PixelContext; }
 namespace renderer  { class ShadingComponents; }
 namespace renderer  { class ShadingContext; }
@@ -71,7 +72,8 @@ class NullLightingEngine
         const PixelContext&     pixel_context,
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
-        ShadingComponents&      radiance) override
+        ShadingComponents&      radiance,
+        AOVComponents&          components) override
     {
     }
 };

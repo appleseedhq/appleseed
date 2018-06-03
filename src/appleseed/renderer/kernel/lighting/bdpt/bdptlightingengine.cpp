@@ -121,7 +121,7 @@ namespace
 
             static size_t fixup_bounces(const int x)
             {
-                return x == -1 ? ~0 : x;
+                return x == -1 ? ~size_t(0) : x;
             }
         };
 
@@ -153,7 +153,8 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
-            ShadingComponents&          radiance) override      // output radiance, in W.sr^-1.m^-2
+            ShadingComponents&          radiance,               // output radiance, in W.sr^-1.m^-2
+            AOVComponents&              components) override
         {
             /// TODO:: use arena to alloc BDPTVertices instead
             BDPTVertex* camera_vertices = new BDPTVertex[m_num_max_vertices - 1];
@@ -567,13 +568,14 @@ namespace
             PathTracer<PathVisitor, VolumeVisitor, true> path_tracer(
                 path_visitor,
                 volume_visitor,
-                ~0,
+                ~size_t(0),
                 m_num_max_vertices - 2,
-                ~0,
-                ~0,
-                ~0,
-                ~0,
-                shading_context.get_max_iterations());   // don't illuminate points closer than the light near start value
+                ~size_t(0),
+                ~size_t(0),
+                ~size_t(0),
+                ~size_t(0),
+                false,                                  // don't clamp roughness
+                shading_context.get_max_iterations());  // don't illuminate points closer than the light near start value
 
             const size_t light_path_length =
                 path_tracer.trace(
@@ -609,12 +611,13 @@ namespace
             PathTracer<PathVisitor, VolumeVisitor, false> path_tracer(
                 path_visitor,
                 volume_visitor,
-                ~0,
+                ~size_t(0),
                 m_num_max_vertices - 2,
-                ~0,
-                ~0,
-                ~0,
-                ~0,
+                ~size_t(0),
+                ~size_t(0),
+                ~size_t(0),
+                ~size_t(0),
+                false,                                  // don't clamp roughness
                 shading_context.get_max_iterations());
 
             const size_t camera_path_length =
@@ -665,6 +668,10 @@ namespace
               , m_shading_context(shading_context)
               , m_vertices(vertices)
               , m_num_vertices(num_vertices)
+            {
+            }
+
+            void on_first_diffuse_bounce(const PathVertex& vertex)
             {
             }
 

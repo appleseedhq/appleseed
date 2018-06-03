@@ -68,9 +68,17 @@ namespace
     const OIIO::ustring g_emission_str("emission");
     const OIIO::ustring g_transparent_str("transparent");
     const OIIO::ustring g_subsurface_str("as_subsurface");
+    const OIIO::ustring g_randomwalk_glass_str("as_randomwalk_glass");
     const OIIO::ustring g_holdout_str("holdout");
     const OIIO::ustring g_debug_str("debug");
     const OIIO::ustring g_dPdtime_str("dPdtime");
+
+    bool is_subsurface_closure(const OIIO::ustring& closure_name)
+    {
+        return
+            closure_name == g_subsurface_str ||
+            closure_name == g_randomwalk_glass_str;
+    }
 }
 
 struct ShaderGroup::Impl
@@ -325,7 +333,7 @@ void ShaderGroup::get_shadergroup_closures_info(OSLShadingSystem& shading_system
                 m_flags |= HasEmission;
             else if (closures[i] == g_transparent_str)
                 m_flags |= HasTransparency;
-            else if (closures[i] == g_subsurface_str)
+            else if (is_subsurface_closure(closures[i]))
                 m_flags |= HasSubsurface;
             else if (closures[i] == g_holdout_str)
                 m_flags |= HasHoldout;

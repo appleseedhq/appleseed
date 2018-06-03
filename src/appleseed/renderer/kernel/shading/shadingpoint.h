@@ -361,7 +361,7 @@ class ShadingPoint
     mutable foundation::Vector3d        m_front_point;                  // hit point refined to front, in assembly instance space
     mutable foundation::Vector3d        m_back_point;                   // hit point refined to back, in assembly instance space
 
-    // OSl-related data.
+    // OSL-related data.
     mutable OSLObjectTransformInfo      m_obj_transform_info;
     mutable OSLTraceData                m_osl_trace_data;
     mutable OSL::ShaderGlobals          m_shader_globals;

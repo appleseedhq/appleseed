@@ -85,16 +85,16 @@ namespace appleseed {
 namespace studio {
 
 ExpressionEditorWindow::ExpressionEditorWindow(
-    QWidget*        parent,
     const Project&  project,
     ParamArray&     settings,
     const QString&  widget_name,
-    const string&   expression)
+    const string&   expression,
+    QWidget*        parent)
   : QWidget(parent)
+  , m_ui(new Ui::ExpressionEditorWindow())
   , m_project(project)
   , m_settings(settings)
   , m_widget_name(widget_name)
-  , m_ui(new Ui::ExpressionEditorWindow())
   , m_show_examples(false)
 {
     m_ui->setupUi(this);
@@ -171,13 +171,21 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     m_ui->buttonbox_layout->setStretch(0, 1);
     m_ui->buttonbox_layout->setStretch(1, 0);
 
-    // Create connections.
     connect(m_ui->buttonbox, SIGNAL(accepted()), SLOT(slot_accept()));
     connect(m_ui->buttonbox, SIGNAL(rejected()), SLOT(slot_cancel()));
-    connect(m_ui->buttonbox->button(QDialogButtonBox::Apply), SIGNAL(clicked()), SLOT(slot_apply()));
+
+    connect(
+        m_ui->buttonbox->button(QDialogButtonBox::Apply), SIGNAL(clicked()),
+        SLOT(slot_apply()));
+
     connect(
         create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
-        this, SLOT(close()));
+        SLOT(close()));
+}
+
+ExpressionEditorWindow::~ExpressionEditorWindow()
+{
+    delete m_ui;
 }
 
 void ExpressionEditorWindow::apply_expression()

@@ -29,10 +29,15 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_LIGHTPATHSWIDGET_H
 #define APPLESEED_STUDIO_MAINWINDOW_RENDERING_LIGHTPATHSWIDGET_H
 
+// appleseed.studio headers.
+#include "mainwindow/rendering/renderclipboardhandler.h"
+
 // appleseed.renderer headers.
 #include "renderer/api/lighting.h"
 
 // On Windows, <QGLWidget> requires that <windows.h> is included first.
+#include "foundation/math/matrix.h"
+#include "foundation/math/transform.h"
 #ifdef _WIN32
 #include "foundation/platform/windows.h"
 #endif
@@ -48,6 +53,7 @@
 namespace renderer  { class Camera; }
 namespace renderer  { class Project; }
 class QKeyEvent;
+class QImage;
 
 namespace appleseed {
 namespace studio {
@@ -58,6 +64,7 @@ namespace studio {
 
 class LightPathsWidget
   : public QGLWidget
+  , public ICapturableWidget
 {
     Q_OBJECT
 
@@ -66,6 +73,11 @@ class LightPathsWidget
         const renderer::Project&            project,
         const size_t                        width,
         const size_t                        height);
+
+    QImage capture() override;
+
+    void set_transform(
+        const foundation::Transformd&       transform);
 
     void set_light_paths(
         const renderer::LightPathArray&     light_paths);
@@ -79,14 +91,16 @@ class LightPathsWidget
         const int                           total_light_paths) const;
 
   public slots:
-    void slot_toggle_backface_culling(const bool checked);
     void slot_display_all_light_paths();
     void slot_display_previous_light_path();
     void slot_display_next_light_path();
+    void slot_toggle_backface_culling(const bool checked);
+    void slot_synchronize_camera();
 
   private:
     const renderer::Project&                m_project;
-    const renderer::Camera&                 m_camera;
+    renderer::Camera&                       m_camera;
+    foundation::Matrix4d                    m_camera_matrix;
 
     bool                                    m_backface_culling_enabled;
 
@@ -96,7 +110,7 @@ class LightPathsWidget
     void initializeGL() override;
     void resizeGL(int w, int h) override;
     void paintGL() override;
-    void keyPressEvent(QKeyEvent* event);
+    void keyPressEvent(QKeyEvent* event) override;
 
     void render_geometry() const;
     void render_light_paths() const;

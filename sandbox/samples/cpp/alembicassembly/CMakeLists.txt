@@ -5,7 +5,7 @@
 #
 # This software is released under the MIT license.
 #
-# Copyright (c) 2017 Esteban Tovagliari, The appleseedhq Organization
+# Copyright (c) 2017-2018 Esteban Tovagliari, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -39,14 +39,18 @@ set (CMAKE_MODULE_PATH
     ${PROJECT_SOURCE_DIR}/../../../share/cmake/Modules
     ${PROJECT_SOURCE_DIR}/../../../../cmake/modules
 )
-message("${PROJECT_SOURCE_DIR}/../../../../cmake/Modules")
 
 
 #--------------------------------------------------------------------------------------------------
 # Build options.
 #--------------------------------------------------------------------------------------------------
 
-option (USE_STATIC_BOOST    "Use static Boost libraries"    ON)
+option (USE_EXTERNAL_OIIO   "Use external OpenImageIO library"          OFF)
+option (USE_EXTERNAL_OSL    "Use external OpenShadingLanguage library"  OFF)
+
+option (USE_STATIC_BOOST    "Use static Boost libraries"                ON)
+option (USE_STATIC_OIIO     "Use static OpenImageIO libraries"          ON)
+option (USE_STATIC_OSL      "Use static OpenShadingLanguage libraries"  ON)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -71,7 +75,7 @@ if (USE_STATIC_BOOST)
     set (Boost_USE_STATIC_LIBS TRUE)
 endif ()
 
-set (BOOST_NEEDED_LIBS)
+set (BOOST_NEEDED_LIBS )
 
 find_package (Boost 1.55 REQUIRED ${BOOST_NEEDED_LIBS})
 
@@ -92,8 +96,23 @@ link_directories (${Boost_LIBRARY_DIRS})
 #--------------------------------------------------------------------------------------------------
 
 find_package (Appleseed)
+find_package (Imath)
 find_package (OpenEXR)
 find_package (Alembic)
+
+if (USE_STATIC_OIIO)
+    add_definitions (-DOIIO_STATIC_BUILD)
+endif ()
+if (USE_EXTERNAL_OIIO)
+    find_package (OpenImageIO REQUIRED)
+endif ()
+
+if (USE_STATIC_OSL)
+    add_definitions (-DOSL_STATIC_LIBRARY)
+endif ()
+if (USE_EXTERNAL_OSL)
+    find_package (OSL REQUIRED)
+endif ()
 
 
 #--------------------------------------------------------------------------------------------------
@@ -101,8 +120,21 @@ find_package (Alembic)
 #--------------------------------------------------------------------------------------------------
 
 include_directories (${APPLESEED_INCLUDE_DIRS})
-include_directories (${OPENEXR_INCLUDE_DIR})
+include_directories (${IMATH_INCLUDE_DIRS})
+include_directories (${OPENEXR_INCLUDE_DIRS})
 include_directories (${ALEMBIC_INCLUDE_DIR})
+
+if (USE_EXTERNAL_OIIO)
+    include_directories (${OPENIMAGEIO_INCLUDE_DIRS})
+else ()
+    include_directories (${APPLESEED_DEPS_STAGE_DIR}/oiio-debug/include)
+endif ()
+
+if (USE_EXTERNAL_OSL)
+    include_directories (${OSL_INCLUDE_DIRS})
+else ()
+    include_directories (${APPLESEED_DEPS_STAGE_DIR}/osl-debug/include)
+endif ()
 
 
 #--------------------------------------------------------------------------------------------------
@@ -122,12 +154,10 @@ endif ()
 add_library (alembicassembly SHARED alembicassembly.cpp)
 set_target_properties (alembicassembly PROPERTIES PREFIX "")
 
-message("a ${ALEMBIC_ABC_LIBRARY}")
-message("b ${ALEMBIC_LIBRARY}")
-
 target_link_libraries (alembicassembly
     ${APPLESEED_LIBRARIES}
-    ${ALEMBIC_ABC_LIBRARY}
-    ${OPENEXR_LIBRARY}
     ${Boost_LIBRARIES}
+    ${IMATH_LIBRARIES}
+    ${OPENEXR_LIBRARIES}
+    ${ALEMBIC_ABC_LIBRARY}
 )

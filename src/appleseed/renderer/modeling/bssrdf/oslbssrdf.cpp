@@ -93,15 +93,22 @@ namespace
                     SubsurfaceNormalizedDiffusionID,
                     "normalized_diffusion");
 
-            m_randomwalk =
-                create_and_register_bssrdf<RandomWalkBSSRDFFactory>(
-                    SubsurfaceRandomWalkID,
-                    "randomwalk");
-
             m_std_dipole =
                 create_and_register_bssrdf<StandardDipoleBSSRDFFactory>(
                     SubsurfaceStandardDipoleID,
                     "standard_dipole");
+            
+            m_randomwalk =
+                create_and_register_randomwalk_bssrdf(
+                    SubsurfaceRandomwalkID,
+                    "randomwalk_diffuse",
+                    "diffuse");
+
+            m_randomwalk_glass =
+                create_and_register_randomwalk_bssrdf(
+                    RandomwalkGlassID,
+                    "randomwalk_glass",
+                    "glass");
         }
 
         void release() override
@@ -210,6 +217,7 @@ namespace
             const Vector3f&         outgoing_dir,
             const ShadingPoint&     incoming_point,
             const Vector3f&         incoming_dir,
+            const int               modes,
             Spectrum&               value) const override
         {
             const CompositeSubsurfaceClosure* c =
@@ -227,6 +235,7 @@ namespace
                         outgoing_dir,
                         incoming_point,
                         incoming_dir,
+                        modes,
                         s);
 
                 madd(value, s, c->get_closure_weight(i));
@@ -244,6 +253,19 @@ namespace
             return bssrdf;
         }
 
+        auto_release_ptr<BSSRDF> create_and_register_randomwalk_bssrdf(
+            const ClosureID         cid,
+            const char*             name,
+            const char*             surface_bsdf_model)
+        {
+            auto_release_ptr<BSSRDF> bssrdf =
+                RandomwalkBSSRDFFactory().create(
+                    name,
+                    ParamArray().insert("surface_bsdf_model", surface_bsdf_model));
+            m_all_bssrdfs[cid] = bssrdf.get();
+            return bssrdf;
+        }
+
         const BSSRDF& bssrdf_from_closure_id(const ClosureID cid) const
         {
             const BSSRDF* bssrdf = m_all_bssrdfs[cid];
@@ -257,6 +279,7 @@ namespace
         auto_release_ptr<BSSRDF>    m_normalized;
         auto_release_ptr<BSSRDF>    m_std_dipole;
         auto_release_ptr<BSSRDF>    m_randomwalk;
+        auto_release_ptr<BSSRDF>    m_randomwalk_glass;
 
         BSSRDF*                     m_all_bssrdfs[NumClosuresIDs];
     };

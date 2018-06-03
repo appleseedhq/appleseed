@@ -248,7 +248,7 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
         EXPECT_EQ("STUVWXYZ", string(buf, 8));
     }
 
-    TEST_CASE(TestSeekingBackwardWhileWriting)
+    TEST_CASE(TestSeekingBackwardInsideBufferWhileWriting)
     {
         BufferedFile file(
             Filename,
@@ -263,6 +263,7 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
 
         const uint32 Value2 = 0xFADEBABEUL;
         file.write(Value2);
+
         file.close();
 
         file.open(
@@ -272,6 +273,43 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
             BufferSize);
 
         uint32 value;
+
+        EXPECT_EQ(4, file.read(value));
+        EXPECT_EQ(Value2, value);
+    }
+
+    TEST_CASE(TestSeekingBackwardOutsideBufferWhileWriting)
+    {
+        BufferedFile file(
+            Filename,
+            BufferedFile::BinaryType,
+            BufferedFile::WriteMode,
+            BufferSize);
+
+        const uint32 Value1 = 0xDEADBEEFUL;
+        file.write(Value1);
+
+        const uint32 Value2 = 0xFADEBABEUL;
+        file.write(Value2);
+
+        EXPECT_TRUE(file.seek(0, BufferedFile::SeekFromBeginning));
+
+        const uint32 Value3 = 0x12345678UL;
+        file.write(Value3);
+
+        file.close();
+
+        file.open(
+            Filename,
+            BufferedFile::BinaryType,
+            BufferedFile::ReadMode,
+            BufferSize);
+
+        uint32 value;
+
+        EXPECT_EQ(4, file.read(value));
+        EXPECT_EQ(Value3, value);
+
         EXPECT_EQ(4, file.read(value));
         EXPECT_EQ(Value2, value);
     }

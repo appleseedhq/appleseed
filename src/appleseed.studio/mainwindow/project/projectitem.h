@@ -32,6 +32,13 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/itembase.h"
+#include "mainwindow/project/searchpathswindow.h"
+
+// Qt headers.
+#include <QObject>
+
+// Standard headers.
+#include <memory>
 
 // Forward declarations.
 namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class CollectionItem; } }
@@ -39,6 +46,7 @@ namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class OutputItem; } }
 namespace appleseed { namespace studio { class SceneItem; } }
 namespace renderer  { class Project; }
+class QMenu;
 
 namespace appleseed {
 namespace studio {
@@ -46,14 +54,22 @@ namespace studio {
 class ProjectItem
   : public ItemBase
 {
+    Q_OBJECT
+
   public:
     explicit ProjectItem(EntityEditorContext& editor_context);
+
+    QMenu* get_single_item_context_menu() const override;
 
     void expand();
 
   private:
-    SceneItem*                      m_scene_item;
-    OutputItem*                     m_output_item;
+    SceneItem*                          m_scene_item;
+    OutputItem*                         m_output_item;
+    std::unique_ptr<SearchPathsWindow>  m_search_paths_window;
+
+  private slots:
+    void slot_edit_search_paths();
 };
 
 }       // namespace studio
