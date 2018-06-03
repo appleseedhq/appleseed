@@ -58,6 +58,8 @@ namespace renderer      { class ParamArray; }
 namespace renderer
 {
 
+enum class CurveBasis : unsigned char { LINEAR, BEZIER, BSPLINE, CATMULLROM };
+
 //
 // Curve object (source geometry).
 //
@@ -77,6 +79,14 @@ class APPLESEED_DLLSYMBOL CurveObject
 
     // Return the region kit of the object.
     foundation::Lazy<RegionKit>& get_region_kit() override;
+
+    // Insert and access curve basis
+    CurveBasis get_basis() const;
+    void push_basis(unsigned char b);
+
+    // Insert and access curve_count
+    void push_curve_count(size_t c);
+    size_t get_curve_count() const;
 
     // Insert and access curves.
     void reserve_curves1(const size_t count);

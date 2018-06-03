@@ -26,59 +26,43 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CURVE_ICURVEBUILDER_H
-#define APPLESEED_FOUNDATION_CURVE_ICURVEBUILDER_H
+#ifndef APPLESEED_FOUNDATION_MESH_GENERICCURVEFILEREADER_H
+#define APPLESEED_FOUNDATION_MESH_GENERICCURVEFILEREADER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/vector.h"
-#include "foundation/image/color.h"
+#include "foundation/curve/icurvefilereader.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Standard headers.
-#include <cstddef>
+// Forward declarations.
+namespace foundation    { class ICurveBuilder; }
 
 namespace foundation
 {
 
 //
-// Curve builder interface.
+// Read a curve file using the right reader based on the extension of the curve file name.
 //
 
-    class APPLESEED_DLLSYMBOL ICurveBuilder
-    : public NonCopyable
+class APPLESEED_DLLSYMBOL GenericCurveFileReader
+    : public ICurveFileReader
 {
     public:
+    // Constructor.
+    explicit GenericCurveFileReader(const char* filename);
+
     // Destructor.
-    virtual ~ICurveBuilder() {}
+    ~GenericCurveFileReader() override;
 
-    // Begin the definition of a curve object.
-    virtual void begin_curve_object(unsigned char basis, uint32 count) = 0;
+    // Read a curve object.
+    void read(ICurveBuilder& builder) override;
 
-    // Begin the definition of a curve.
-    virtual void begin_curve() = 0;
-
-    // Append a vertex to the curve.
-    virtual void push_vertex(const Vector3f& v) = 0;
-
-    // Append a width to the vertex of a curve.
-    virtual void push_vertex_width(const float w) = 0;
-
-    // Append a colour value to the vertex of a curve.
-    virtual void push_vertex_color(const Color3f& c) = 0;
-
-    // Append a opacity value to the vertex of a curve.
-    virtual void push_vertex_opacity(const float o) = 0;
-
-    // End the definition of a curve.
-    virtual void end_curve() = 0;
-
-    // End the definition of a curve object.
-    virtual void end_curve_object() = 0;
+    private:
+    struct Impl;
+    Impl* impl;
 };
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_CURVE_ICURVEBUILDER_H
+#endif  // !APPLESEED_FOUNDATION_MESH_GENERICCURVEFILEREADER_H

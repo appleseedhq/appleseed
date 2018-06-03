@@ -26,59 +26,56 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CURVE_ICURVEBUILDER_H
-#define APPLESEED_FOUNDATION_CURVE_ICURVEBUILDER_H
+// Interface header.
+#include "genericcurvefilereader.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/vector.h"
-#include "foundation/image/color.h"
+#include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
+#include "foundation/curve/binarycurvefilereader.h"
+#include "foundation/utility/string.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+// Boost headers.
+#include "boost/filesystem/path.hpp"
 
 // Standard headers.
-#include <cstddef>
+#include <string>
+
+using namespace std;
+namespace bf = boost::filesystem;
 
 namespace foundation
 {
 
-//
-// Curve builder interface.
-//
+    struct GenericCurveFileReader::Impl
+    {
+        string  m_filename;
+    };
 
-    class APPLESEED_DLLSYMBOL ICurveBuilder
-    : public NonCopyable
-{
-    public:
-    // Destructor.
-    virtual ~ICurveBuilder() {}
+    GenericCurveFileReader::GenericCurveFileReader(const char* filename)
+            : impl(new Impl())
+    {
+        impl->m_filename = filename;
+    }
 
-    // Begin the definition of a curve object.
-    virtual void begin_curve_object(unsigned char basis, uint32 count) = 0;
+    GenericCurveFileReader::~GenericCurveFileReader()
+    {
+        delete impl;
+    }
 
-    // Begin the definition of a curve.
-    virtual void begin_curve() = 0;
+    void GenericCurveFileReader::read(ICurveBuilder& builder)
+    {
+        const bf::path filepath(impl->m_filename);
+        const string extension = lower_case(filepath.extension().string());
 
-    // Append a vertex to the curve.
-    virtual void push_vertex(const Vector3f& v) = 0;
+        if (extension == ".binarycurve")
+        {
+            BinaryCurveFileReader reader(impl->m_filename);
+            reader.read(builder);
+        }
+        else
+        {
+            throw ExceptionUnsupportedFileFormat(impl->m_filename.c_str());
+        }
+    }
 
-    // Append a width to the vertex of a curve.
-    virtual void push_vertex_width(const float w) = 0;
-
-    // Append a colour value to the vertex of a curve.
-    virtual void push_vertex_color(const Color3f& c) = 0;
-
-    // Append a opacity value to the vertex of a curve.
-    virtual void push_vertex_opacity(const float o) = 0;
-
-    // End the definition of a curve.
-    virtual void end_curve() = 0;
-
-    // End the definition of a curve object.
-    virtual void end_curve_object() = 0;
-};
-
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CURVE_ICURVEBUILDER_H
+}   // namespace foundation

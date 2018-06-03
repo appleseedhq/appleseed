@@ -61,6 +61,8 @@ struct CurveObject::Impl
 {
     RegionKit           m_region_kit;
     Lazy<RegionKit>     m_lazy_region_kit;
+    CurveBasis          m_basis;
+    size_t              m_curve_count;
     vector<Curve1Type>  m_curves1;
     vector<Curve3Type>  m_curves3;
     vector<string>      m_material_slots;
@@ -120,6 +122,27 @@ Lazy<RegionKit>& CurveObject::get_region_kit()
 {
     return impl->m_lazy_region_kit;
 }
+
+CurveBasis CurveObject::get_basis() const
+{
+    return impl->m_basis;
+}
+
+void CurveObject::push_basis(unsigned char b)
+{
+    impl->m_basis = static_cast<CurveBasis>(b);
+}
+
+size_t CurveObject::get_curve_count() const
+{
+    return impl->m_curve_count;
+}
+
+void CurveObject::push_curve_count(size_t c)
+{
+    impl->m_curve_count = c;
+}
+
 
 void CurveObject::reserve_curves1(const size_t count)
 {

@@ -87,7 +87,7 @@ namespace foundation
 
                 // Unknown format.
             default:
-                throw ExceptionIOError("unknown binarymesh format version");
+                throw ExceptionIOError("unknown binarycurve format version");
         }
 
         read_curves(*reader.get(), builder);
@@ -106,26 +106,40 @@ namespace foundation
 
     void BinaryCurveFileReader::read_curves(ReaderAdapter& reader, ICurveBuilder& builder)
     {
-        unsigned char basis;
-        uint32 curve_count;
 
         try
         {
-            checked_read(reader, basis);
-            checked_read(reader, curve_count);
+            while (true)
+            {
+                // Read the basis and curve count
+                unsigned char basis;
+                uint32 curve_count;
+                try
+                {
+                    checked_read(reader, basis);
+                    checked_read(reader, curve_count);
+                }
+                catch (const ExceptionEOF&)
+                {
+                    // Expected EOF.
+                    break;
+                }
+
+                builder.begin_curve_object(basis, curve_count);
+
+                for (uint32 i = 0; i < curve_count; ++i) {
+                    builder.begin_curve();
+                    read_vertex_properties(reader, builder);
+                    builder.end_curve();
+                }
+                builder.end_curve_object();
+            }
         }
         catch (const ExceptionEOF&)
         {
             // Unexpected EOF.
             throw ExceptionIOError();
         }
-
-        builder.begin_curve(basis, curve_count);
-
-        for (uint32 i = 0; i < curve_count; ++i)
-            read_vertex_properties(reader, builder);
-
-        builder.end_curve();
 
     }
 
@@ -159,7 +173,7 @@ namespace foundation
         {
             Color3f v;
             checked_read(reader, v);
-            builder.push_vertex_colour(v);
+            builder.push_vertex_color(v);
         }
     }
 

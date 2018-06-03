@@ -247,8 +247,8 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
     {
         const Vector3f ControlPoints[] = { Vector3f(-0.5f, 0.5f, 0.0f), Vector3f(0.5f, -0.5f, 0.0f) };
         const float Widths[] = { 0.06f, 0.01f };
-        const float Opacities[] = {1.0f, 1.0f};
-        const Color3f Colors[] = {Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f)};
+        const float Opacities[] = { 1.0f, 1.0f };
+        const Color3f Colors[] = { Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f) };
         const BezierCurve1f Curves[] = { BezierCurve1f(ControlPoints, Widths, Opacities, Colors) };
 
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_singlebezier1curve_variablewidth.png", false);
@@ -258,9 +258,9 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
     {
         const Vector3f ControlPoints[] = { Vector3f(-0.5f, 0.0f, 0.0f), Vector3f(0.0f, 0.5f, 0.0f), Vector3f(0.50f, 0.0f, 0.0f) };
         const float Widths[] = { 0.01f, 0.08f, 0.01f };
-        const float Opacities[] = {1.0f, 1.0f, 1.0f};
-        const Color3f Colors[] = {Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f),
-                                  Color3f(0.2f, 0.0f, 0.7f)};
+        const float Opacities[] = { 1.0f, 1.0f, 1.0f };
+        const Color3f Colors[] = { Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f),
+                                  Color3f(0.2f, 0.0f, 0.7f) };
         const BezierCurve2f Curves[] = { BezierCurve2f(ControlPoints, Widths, Opacities, Colors) };
 
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_singlebezier2curve_variablewidth.png", false);
@@ -270,9 +270,9 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
     {
         const Vector3f ControlPoints[] = { Vector3f(-0.5f, 0.0f, 0.0f), Vector3f(-0.20f, 0.20f, 0.0f), Vector3f(0.20f, -0.20f, 0.0f), Vector3f(0.5f, 0.0f, 0.0f) };
         const float Widths[] = { 0.03f, 0.1f, 0.06f, 0.02f };
-        const float Opacities[] = {1.0f, 1.0f, 1.0f, 1.0f};
-        const Color3f Colors[] = {Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f),
-                                  Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f)};
+        const float Opacities[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+        const Color3f Colors[] = { Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f),
+                                  Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f) };
         const BezierCurve3f Curves[] = { BezierCurve3f(ControlPoints, Widths, Opacities, Colors) };
 
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_singlebezier3curve_variablewidth.png", false);
@@ -287,8 +287,8 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
     {
         const Vector3f ControlPoints[] = { Vector3f(-1.0f, -1.0f, 0.0f), Vector3f(1.0f, 1.0f, 0.0f) };
         const float Widths[] = { 0.06f, 0.06f };
-        const float Opacities[] = {1.0f, 1.0f};
-        const Color3f Colors[] = {Color3f(0.0f, 1.0f, 0.0f), Color3f(1.0f, 0.0f, 0.0f)};
+        const float Opacities[] = { 1.0f, 1.0f };
+        const Color3f Colors[] = { Color3f(0.0f, 1.0f, 0.0f), Color3f(1.0f, 0.0f, 0.0f) };
         const BezierCurve1f Curves[] = { BezierCurve1f(ControlPoints, Widths, Opacities, Colors) };
 
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_singlebezier1curve_variablecolor.png", false);
@@ -298,9 +298,9 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
     {
         const Vector3f ControlPoints[] = { Vector3f(-0.5f, 0.0f, 0.0f), Vector3f(0.0f, 0.5f, 0.0f), Vector3f(0.50f, 0.0f, 0.0f) };
         const float Widths[] = { 0.01f, 0.01f, 0.01f };
-        const float Opacities[] = {1.0f, 1.0f, 1.0f};
-        const Color3f Colors[] = {Color3f(0.0f, 1.0f, 0.0f), Color3f(1.0f, 0.0f, 0.0f),
-                                  Color3f(0.0f, 0.0f, 1.0f)};
+        const float Opacities[] = { 1.0f, 1.0f, 1.0f };
+        const Color3f Colors[] = { Color3f(0.0f, 1.0f, 0.0f), Color3f(1.0f, 0.0f, 0.0f),
+                                  Color3f(0.0f, 0.0f, 1.0f) };
         const BezierCurve2f Curves[] = { BezierCurve2f(ControlPoints, Widths, Opacities, Colors) };
 
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_singlebezier2curve_variablecolor.png", false);
@@ -311,9 +311,9 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
 
         const Vector3f ControlPoints[] = { Vector3f(-0.5f, 0.0f, 0.0f), Vector3f(0.0f, 0.5f, 0.0f), Vector3f(0.50f, 0.0f, 0.0f) };
         const float Widths[] = { 0.01f, 0.01f, 0.01f, 0.01f};
-        const float Opacities[] = {1.0f, 1.0f, 1.0f, 1.0f};
-        const Color3f Colors[] = {Color3f(0.0f, 1.0f, 0.0f), Color3f(1.0f, 0.0f, 0.0f),
-                                  Color3f(0.0f, 0.0f, 1.0f), Color3f(1.0f, 1.0f, 1.0f)};
+        const float Opacities[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+        const Color3f Colors[] = { Color3f(0.0f, 1.0f, 0.0f), Color3f(1.0f, 0.0f, 0.0f),
+                                  Color3f(0.0f, 0.0f, 1.0f), Color3f(1.0f, 1.0f, 1.0f) };
         const BezierCurve3f Curves[] = { BezierCurve3f(ControlPoints, Widths, Opacities, Colors) };
 
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_singlebezier3curve_variablecolor.png", false);
@@ -328,8 +328,8 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
     {
         const Vector3f ControlPoints[] = { Vector3f(-1.0f, -1.0f, 0.0f), Vector3f(1.0f, 1.0f, 0.0f) };
         const float Widths[] = { 0.06f, 0.06f };
-        const float Opacities[] = {1.0f, 0.0f};
-        const Color3f Colors[] = {Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f)};
+        const float Opacities[] = { 1.0f, 0.0f };
+        const Color3f Colors[] = { Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f) };
         const BezierCurve1f Curves[] = { BezierCurve1f(ControlPoints, Widths, Opacities, Colors) };
 
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_singlebezier1curve_variableopacity.png", false);
@@ -339,9 +339,9 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
     {
         const Vector3f ControlPoints[] = { Vector3f(-0.5f, 0.0f, 0.0f), Vector3f(0.0f, 0.5f, 0.0f), Vector3f(0.50f, 0.0f, 0.0f) };
         const float Widths[] = { 0.01f, 0.01f, 0.01f };
-        const float Opacities[] = {1.0f, 0.0f, 1.0f};
-        const Color3f Colors[] = {Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f),
-                                  Color3f(0.2f, 0.0f, 0.7f)};
+        const float Opacities[] = { 1.0f, 0.0f, 1.0f };
+        const Color3f Colors[] = { Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f),
+                                  Color3f(0.2f, 0.0f, 0.7f) };
         const BezierCurve2f Curves[] = { BezierCurve2f(ControlPoints, Widths, Opacities, Colors) };
 
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_singlebezier2curve_variableopacity.png", false);
@@ -352,9 +352,9 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
 
         const Vector3f ControlPoints[] = { Vector3f(-0.5f, 0.0f, 0.0f), Vector3f(0.0f, 0.5f, 0.0f), Vector3f(0.50f, 0.0f, 0.0f) };
         const float Widths[] = { 0.01f, 0.01f, 0.01f, 0.01f};
-        const float Opacities[] = {1.0f, 0.6f, 0.2f, 1.0f};
-        const Color3f Colors[] = {Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f),
-                                  Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f)};
+        const float Opacities[] = { 1.0f, 0.6f, 0.2f, 1.0f };
+        const Color3f Colors[] = { Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f),
+                                  Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f) };
         const BezierCurve3f Curves[] = { BezierCurve3f(ControlPoints, Widths, Opacities, Colors) };
 
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_singlebezier3curve_variableopacity.png", false);
@@ -397,8 +397,8 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
         const Vector3f ControlPoints2[] = { Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.5f, 0.5f, 0.0f) };
         const float Widths1[] = { 0.06f, 0.01f };
         const float Widths2[] = { 0.01f, 0.06f };
-        const float Opacities[] = {1.0f, 1.0f};
-        const Color3f Colors[] = {Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f)};
+        const float Opacities[] = { 1.0f, 1.0f };
+        const Color3f Colors[] = { Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f) };
         const BezierCurve1f Curves[] =
         {
             BezierCurve1f(ControlPoints1, Widths1, Opacities, Colors),
@@ -426,9 +426,9 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
         const Vector3f ControlPoints1[] = { Vector3f(-0.7f, 0.0f, 0.0f), Vector3f(-0.4f, 0.5f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f) };
         const Vector3f ControlPoints2[] = { Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.4f, -0.5f, 0.0f), Vector3f(0.7f, 0.0f, 0.0f) };
         const float Widths[] = { 0.01f, 0.08f, 0.01f };
-        const float Opacities[] = {1.0f, 1.0f, 1.0f};
-        const Color3f Colors[] = {Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f),
-                                  Color3f(0.2f, 0.0f, 0.7f)};
+        const float Opacities[] = { 1.0f, 1.0f, 1.0f };
+        const Color3f Colors[] = { Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f),
+                                  Color3f(0.2f, 0.0f, 0.7f) };
         const BezierCurve2f Curves[] =
         {
             BezierCurve2f(ControlPoints1, Widths, Opacities, Colors),
@@ -456,9 +456,9 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
         const Vector3f ControlPoints1[] = { Vector3f(-0.7f, 0.0f, 0.0f), Vector3f(-0.2f, 0.5f, 0.0f), Vector3f(-0.5f, -0.5f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f) };
         const Vector3f ControlPoints2[] = { Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.5f, 0.5f, 0.0f), Vector3f(0.2f, -0.5f, 0.0f), Vector3f(0.7f, 0.0f, 0.0f) };
         const float Widths[] = { 0.03f, 0.1f, 0.06f, 0.03f };
-        const float Opacities[] = {1.0f, 1.0f, 1.0f, 1.0f};
-        const Color3f Colors[] = {Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f),
-                                  Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f)};
+        const float Opacities[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+        const Color3f Colors[] = { Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f),
+                                  Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f) };
         const BezierCurve3f Curves[] =
         {
             BezierCurve3f(ControlPoints1, Widths, Opacities, Colors),
