@@ -193,6 +193,7 @@ namespace
                 curve_object_name.c_str(),
                 ParamArray()));
 
+        curve_object->push_basis('\x01');
         curve_object->reserve_curves3(params.m_curve_count);
 
         GVector3 points[ControlPointCount];

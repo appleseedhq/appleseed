@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/curve/binarycurvefilereader.h"
+#include "foundation/curve/mitshairfilereader.h"
 #include "foundation/utility/string.h"
 
 // Boost headers.
@@ -49,12 +50,16 @@ namespace foundation
     struct GenericCurveFileReader::Impl
     {
         string  m_filename;
+        float   m_radius;
+        size_t  m_degree;
     };
 
-    GenericCurveFileReader::GenericCurveFileReader(const char* filename)
+    GenericCurveFileReader::GenericCurveFileReader(const char* filename, float radius, size_t degree)
             : impl(new Impl())
     {
         impl->m_filename = filename;
+        impl->m_radius = radius;
+        impl->m_degree = degree;
     }
 
     GenericCurveFileReader::~GenericCurveFileReader()
@@ -70,6 +75,11 @@ namespace foundation
         if (extension == ".binarycurve")
         {
             BinaryCurveFileReader reader(impl->m_filename);
+            reader.read(builder);
+        }
+        else if (extension == ".mitshair")
+        {
+            MitsHairFileReader reader(impl->m_filename, impl->m_radius, impl->m_degree);
             reader.read(builder);
         }
         else

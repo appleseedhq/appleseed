@@ -70,7 +70,9 @@ namespace
     public:
         CurveObjectWalker(
                 const CurveObject&   object)
-                : m_object(object)
+                : m_object(object),
+                  m_curve_count(0),
+                  m_total_vertex_count(0)
         {
             create_parameters();
         }
@@ -80,6 +82,32 @@ namespace
             return static_cast<unsigned char>(m_object.get_basis());
         }
 
+        string get_basis_string()
+        {
+            string basis;
+
+            switch(m_object.get_basis())
+            {
+                case CurveBasis::LINEAR:
+                    basis = "linear";
+                    break;
+
+                case CurveBasis::BEZIER:
+                    basis = "bezier";
+                    break;
+
+                case CurveBasis::BSPLINE:
+                    basis = "b-spline";
+                    break;
+
+                case CurveBasis::CATMULLROM:
+                    basis = "catmull-rom";
+                    break;
+            }
+
+            return basis;
+        }
+
         size_t get_curve_count() const override
         {
             return m_curve_count;
@@ -87,7 +115,7 @@ namespace
 
         size_t get_vertex_count(const size_t i) const override
         {
-            return m_vertex_counts[i];
+            return m_vertex_counts[i+1];
         }
 
         Vector3f get_vertex(const size_t i) const override
@@ -110,6 +138,11 @@ namespace
             return m_colors[i];
         }
 
+        size_t get_total_vertex_count() const
+        {
+            return m_total_vertex_count;
+        }
+
     private:
         const CurveObject&  m_object;
 
@@ -121,14 +154,16 @@ namespace
         vector<GScalar>     m_opacities;
         vector<GColor3>     m_colors;
 
+        // Global stats
+        size_t              m_total_vertex_count;
 
         void create_curve1_parameters()
         {
             int32 vertex_count = 0;
 
-            for (int32 i = 0; i < m_object.get_curve1_count(); i = i + 2)
+            for (int32 i = 0; i < m_object.get_curve1_count(); ++i)
             {
-                if (!feq(m_vertices.back(), m_object.get_curve1(i).get_control_point(0)))
+                if (m_vertices.empty() || !feq(m_vertices.back(), m_object.get_curve1(i).get_control_point(0)))
                 {
                     m_vertices.push_back(m_object.get_curve1(i).get_control_point(0));
                     m_widths.push_back(m_object.get_curve1(i).get_width(0));
@@ -138,6 +173,7 @@ namespace
                     m_vertex_counts.push_back(vertex_count);
                     vertex_count = 1;
                     m_curve_count++;
+                    m_total_vertex_count++;
                 }
 
                 m_vertices.push_back(m_object.get_curve1(i).get_control_point(1));
@@ -146,16 +182,18 @@ namespace
                 m_colors.push_back(m_object.get_curve1(i).get_color(1));
 
                 vertex_count++;
+                m_total_vertex_count++;
             }
+            m_vertex_counts.push_back(vertex_count);
         }
 
         void create_curve3_parameters()
         {
             int32 vertex_count = 0;
 
-            for (int32 i = 0; i < m_object.get_curve1_count(); i = i + 4)
+            for (int32 i = 0; i < m_object.get_curve3_count(); ++i)
             {
-                if (!feq(m_vertices.back(), m_object.get_curve3(i).get_control_point(0)))
+                if (m_vertices.empty() || !feq(m_vertices.back(), m_object.get_curve3(i).get_control_point(0)))
                 {
                     m_vertices.push_back(m_object.get_curve3(i).get_control_point(0));
                     m_widths.push_back(m_object.get_curve3(i).get_width(0));
@@ -165,15 +203,21 @@ namespace
                     m_vertex_counts.push_back(vertex_count);
                     vertex_count = 1;
                     m_curve_count++;
+                    m_total_vertex_count++;
                 }
 
-                m_vertices.push_back(m_object.get_curve3(i).get_control_point(1));
-                m_widths.push_back(m_object.get_curve3(i).get_width(1));
-                m_opacities.push_back(m_object.get_curve3(i).get_opacity(1));
-                m_colors.push_back(m_object.get_curve3(i).get_color(1));
+                for (int8 k = 1; k < 4; ++k)
+                {
+                    m_vertices.push_back(m_object.get_curve3(i).get_control_point(k));
+                    m_widths.push_back(m_object.get_curve3(i).get_width(k));
+                    m_opacities.push_back(m_object.get_curve3(i).get_opacity(k));
+                    m_colors.push_back(m_object.get_curve3(i).get_color(k));
 
-                vertex_count++;
+                    vertex_count++;
+                    m_total_vertex_count++;
+                }
             }
+            m_vertex_counts.push_back(vertex_count);
         }
 
 
@@ -204,10 +248,11 @@ bool CurveObjectWriter::write(
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
 
+    GenericCurveFileWriter writer(filepath);
+    CurveObjectWalker walker(object);
+
     try
     {
-        GenericCurveFileWriter writer(filepath);
-        CurveObjectWalker walker(object);
         writer.write(walker);
     }
     catch (const ExceptionIOError&)
@@ -229,9 +274,14 @@ bool CurveObjectWriter::write(
     stopwatch.measure();
 
     RENDERER_LOG_INFO(
-            "wrote curve file %s in %s.",
+            "wrote curve file %s (%s %s, %s %s, %s %s) in %s.",
             filepath,
+            pretty_int(walker.get_curve_count()).c_str(),"curves",
+            walker.get_basis_string().c_str(), "type",
+            pretty_int(walker.get_total_vertex_count()).c_str(),
+            walker.get_total_vertex_count() > 1 ? "vertices" : "vertex",
             pretty_time(stopwatch.get_seconds()).c_str());
+
 
     return true;
 }

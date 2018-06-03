@@ -57,25 +57,6 @@ class APPLESEED_DLLSYMBOL CurveObjectReader
         const foundation::SearchPaths&  search_paths,
         const char*                     name,
         const ParamArray&               params);
-
-  private:
-    static foundation::auto_release_ptr<CurveObject> create_hair_ball(
-        const char*                     name,
-        const ParamArray&               params);
-
-    static foundation::auto_release_ptr<CurveObject> create_furry_ball(
-        const char*                     name,
-        const ParamArray&               params);
-
-    static foundation::auto_release_ptr<CurveObject> load_text_curve_file(
-        const foundation::SearchPaths&  search_paths,
-        const char*                     name,
-        const ParamArray&               params);
-
-    static foundation::auto_release_ptr<CurveObject> load_mitsuba_curve_file(
-        const foundation::SearchPaths&  search_paths,
-        const char*                     name,
-        const ParamArray&               params);
 };
 
 }       // namespace renderer

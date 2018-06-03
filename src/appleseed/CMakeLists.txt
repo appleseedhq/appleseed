@@ -71,18 +71,20 @@ source_group ("foundation\\core" FILES
 )
 
 set (foundation_curve_sources
-        foundation/curve/binarycurvefilereader.h
         foundation/curve/binarycurvefilereader.cpp
+        foundation/curve/binarycurvefilereader.h
         foundation/curve/binarycurvefilewriter.cpp
         foundation/curve/binarycurvefilewriter.h
-        foundation/curve/genericcurvefilereader.h
         foundation/curve/genericcurvefilereader.cpp
-        foundation/curve/genericcurvefilewriter.h
+        foundation/curve/genericcurvefilereader.h
         foundation/curve/genericcurvefilewriter.cpp
+        foundation/curve/genericcurvefilewriter.h
         foundation/curve/icurvebuilder.h
         foundation/curve/icurvefilereader.h
         foundation/curve/icurvefilewriter.h
         foundation/curve/icurvewalker.h
+        foundation/curve/mitshairfilereader.cpp
+        foundation/curve/mitshairfilereader.h
         )
 list (APPEND appleseed_sources
         ${foundation_curve_sources}

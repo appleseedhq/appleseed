@@ -130,19 +130,32 @@ CurveBasis CurveObject::get_basis() const
 
 void CurveObject::push_basis(unsigned char b)
 {
+    assert(static_cast<CurveBasis>(b) <= CurveBasis::CATMULLROM);
+
     impl->m_basis = static_cast<CurveBasis>(b);
 }
 
 size_t CurveObject::get_curve_count() const
 {
-    return impl->m_curve_count;
+    switch(impl->m_basis)
+    {
+        case CurveBasis::LINEAR:
+            return get_curve1_count();
+
+        case CurveBasis::BEZIER:
+        case CurveBasis::BSPLINE:
+        case CurveBasis::CATMULLROM:
+            return get_curve3_count();
+
+        assert_otherwise;
+    }
 }
+
 
 void CurveObject::push_curve_count(size_t c)
 {
     impl->m_curve_count = c;
 }
-
 
 void CurveObject::reserve_curves1(const size_t count)
 {

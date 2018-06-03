@@ -125,7 +125,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
                 CurveObjectFactory().create(object_name, ParamArray()));
 
             static const GVector3 ControlPoints[] = { GVector3(0.0, 0.0, 0.0), GVector3(0.0, 1.0, 0.0) };
-            curve_object->push_curve1(Curve1Type(ControlPoints, GScalar(0.1), GScalar(0.1), GColor3(0.2, 0.0, 0.7)));
+            curve_object->push_basis('\0');
+            curve_object->push_curve1(Curve1Type(ControlPoints, GScalar(0.1), GScalar(1.0), GColor3(0.2, 0.0, 0.7)));
 
             get_assembly()->objects().insert(auto_release_ptr<Object>(curve_object));
         }
@@ -264,9 +265,9 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
                 ProjectFileWriter::OmitHeaderComment);
 
         ASSERT_TRUE(success);
-        EXPECT_TRUE(exists(m_output_directory / "curve_object.txt"));
+        EXPECT_TRUE(exists(m_output_directory / "curve_object.binarycurve"));
         EXPECT_EQ(
-            string("curve_object.txt"),
+            string("curve_object.binarycurve"),
             get_assembly()->objects().get_by_name("curve_object")->get_parameters().get("filepath"));
     }
 
@@ -284,9 +285,9 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
                 ProjectFileWriter::OmitWritingGeometryFiles);
 
         ASSERT_TRUE(success);
-        EXPECT_FALSE(exists(m_output_directory / "curve_object.txt"));
+        EXPECT_FALSE(exists(m_output_directory / "curve_object.binarycurve"));
         EXPECT_EQ(
-            string("curve_object.txt"),
+            string("curve_object.binarycurve"),
             get_assembly()->objects().get_by_name("curve_object")->get_parameters().get("filepath"));
     }
 

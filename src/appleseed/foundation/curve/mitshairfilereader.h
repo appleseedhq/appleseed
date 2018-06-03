@@ -26,43 +26,52 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MESH_GENERICCURVEFILEREADER_H
-#define APPLESEED_FOUNDATION_MESH_GENERICCURVEFILEREADER_H
+#ifndef APPLESEED_FOUNDATION_CURVE_MITSHAIRCURVEFILEREADER_H
+#define APPLESEED_FOUNDATION_CURVE_MITSHAIRCURVEFILEREADER_H
 
 // appleseed.foundation headers.
 #include "foundation/curve/icurvefilereader.h"
+#include "foundation/platform/compiler.h"
+#include "foundation/math/vector.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+// Standard headers.
+#include <cstddef>
+#include <string>
+#include <vector>
 
 // Forward declarations.
+namespace foundation    { class BufferedFile; }
 namespace foundation    { class ICurveBuilder; }
+namespace foundation    { class ReaderAdapter; }
 
 namespace foundation
 {
 
 //
-// Read a curve file using the right reader based on the extension of the curve file name.
+// Read for mitshair curve file format.
 //
 
-class APPLESEED_DLLSYMBOL GenericCurveFileReader
-    : public ICurveFileReader
-{
+    class MitsHairFileReader
+            : public ICurveFileReader
+    {
     public:
-    // Constructor.
-    explicit GenericCurveFileReader(const char* filename, float radius, size_t degree);
+        // Constructor.
+        explicit MitsHairFileReader(const std::string& filename, const float radius, const size_t degree);
 
-    // Destructor.
-    ~GenericCurveFileReader() override;
-
-    // Read a curve object.
-    void read(ICurveBuilder& builder) override;
+        // Read a curve file.
+        void read(ICurveBuilder& builder) override;
 
     private:
-    struct Impl;
-    Impl* impl;
-};
+        const std::string       m_filename;
+        const float             m_radius;
+        const size_t            m_degree;
+
+        static void read_and_check_signature(BufferedFile& file);
+
+        void read_curves(ReaderAdapter& reader, ICurveBuilder& builder);
+        void push_vertex_properties(Vector3f& v, ICurveBuilder& builder);
+    };
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_MESH_GENERICCURVEFILEREADER_H
+#endif  // !APPLESEED_FOUNDATION_CURVE_MITSHAIRCURVEFILEREADER_H
