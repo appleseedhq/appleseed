@@ -33,9 +33,6 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditor.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
 // Standard headers.
 #include <string>
 

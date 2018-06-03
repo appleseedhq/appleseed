@@ -36,9 +36,6 @@
 #include "mainwindow/project/ientityvalueprovider.h"
 #include "mainwindow/project/itembase.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
 // Qt headers.
 #include <QObject>
 
@@ -63,7 +60,7 @@ class FrameItem
         EntityEditorContext&    editor_context,
         renderer::Frame*        frame);
 
-  foundation::Dictionary get_values() const override;
+    foundation::Dictionary get_values() const override;
 
   private slots:
     void slot_edit_accepted(foundation::Dictionary values);

@@ -38,7 +38,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
@@ -157,8 +156,8 @@ template <typename Entity>
 template <typename EntityContainer>
 void CollectionItemBase<Entity>::add_items(EntityContainer& entities)
 {
-    for (foundation::each<EntityContainer> i = entities; i; ++i)
-        add_item(&*i);
+    for (auto& entity : entities)
+        add_item(&entity);
 }
 
 template <typename Entity>

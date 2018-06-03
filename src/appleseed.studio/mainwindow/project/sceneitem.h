@@ -59,9 +59,9 @@ class SceneItem
         EntityEditorContext&            editor_context,
         renderer::Scene&                scene);
 
-    void expand();
-
     QMenu* get_single_item_context_menu() const override;
+
+    void expand();
 
     void add_item(renderer::Camera* camera);
     void add_item(renderer::EnvironmentEDF* environment_edf);
