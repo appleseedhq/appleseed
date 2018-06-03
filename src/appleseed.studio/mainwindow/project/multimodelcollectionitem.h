@@ -35,7 +35,6 @@
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditor.h"
 #include "mainwindow/project/entityeditorcontext.h"
-#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
 #include "mainwindow/project/multimodelentityitem.h"
 #include "mainwindow/project/projectbuilder.h"
@@ -107,16 +106,12 @@ ItemBase* MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::create_ite
 {
     assert(entity);
 
-    ItemBase* item =
+    return
         new MultiModelEntityItem<Entity, ParentEntity, This>(
             Base::m_editor_context,
             entity,
             Base::m_parent,
             this);
-
-    Base::m_editor_context.m_item_registry.insert(*entity, item);
-
-    return item;
 }
 
 template <typename Entity, typename ParentEntity, typename ParentItem>

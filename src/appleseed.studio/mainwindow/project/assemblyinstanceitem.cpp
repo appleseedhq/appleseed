@@ -90,7 +90,6 @@ void AssemblyInstanceItem::do_delete()
 
     // Remove and delete the assembly instance item.
     ItemBase* assembly_instance_item = m_editor_context.m_item_registry.get_item(assembly_instance_uid);
-    m_editor_context.m_item_registry.remove(assembly_instance_uid);
     delete assembly_instance_item;
 
     // At this point 'this' no longer exists.

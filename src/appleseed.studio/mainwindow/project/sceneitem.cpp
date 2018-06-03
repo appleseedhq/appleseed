@@ -33,9 +33,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/assemblyinstanceitem.h"
-#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/instancecollectionitem.h"
-#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/singlemodelcollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
@@ -101,7 +99,6 @@ SceneItem::SceneItem(
                 this));
     m_environment_item->set_allow_deletion(false);
     m_environment_item->set_fixed_position(true);
-    editor_context.m_item_registry.insert(*scene.get_environment(), m_environment_item);
 
     insertChild(
         child_index++,

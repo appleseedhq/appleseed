@@ -31,9 +31,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLLECTIONITEMBASE_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/itembase.h"
-#include "mainwindow/project/itemregistry.h"
 #include "utility/treewidget.h"
 
 // appleseed.foundation headers.
@@ -176,15 +174,11 @@ ItemBase* CollectionItemBase<Entity>::create_item(Entity* entity)
 {
     assert(entity);
 
-    ItemBase* item =
+    return
         new ItemBase(
             m_editor_context,
             entity->get_class_uid(),
             entity->get_name());
-
-    m_editor_context.m_item_registry.insert(*entity, item);
-
-    return item;
 }
 
 }       // namespace studio
