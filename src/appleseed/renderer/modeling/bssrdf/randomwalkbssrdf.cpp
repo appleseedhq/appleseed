@@ -134,7 +134,7 @@ namespace
             if (!BSSRDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            const EntityDefMessageContext context("bssrdf", this);
+            const OnFrameBeginMessageContext context("bssrdf", this);
 
             const string surface_bsdf =
                 m_params.get_required<string>(
