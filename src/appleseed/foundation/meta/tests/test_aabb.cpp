@@ -122,6 +122,36 @@ TEST_SUITE(Foundation_Math_AABB)
         EXPECT_FALSE(bbox.is_valid());
     }
 
+    TEST_CASE(TestInvalidateOnNoIntersectionOnIntegralAABB)
+    {
+        AABB2i bbox(
+            Vector2i(1, 0),
+            Vector2i(4, 2));
+
+        AABB2i bbox2(
+            Vector2i(5, 0),
+            Vector2i(8, 2));
+
+        AABB2i bbox3 = AABB2i::intersect(bbox, bbox2);
+
+        EXPECT_FALSE(bbox3.is_valid());
+    }
+
+    TEST_CASE(TestInvalidateOnIntersectionOnIntegralAABB)
+    {
+        AABB2i bbox(
+            Vector2i(1, 0),
+            Vector2i(4, 2));
+
+        AABB2i bbox2(
+            Vector2i(4, 0),
+            Vector2i(8, 2));
+
+        AABB2i bbox3 = AABB2i::intersect(bbox, bbox2);
+
+        EXPECT_TRUE(bbox3.is_valid());
+    }
+
     TEST_CASE(TestInvalidateOnUnsignedIntegerAABB)
     {
         AABB3u bbox(
@@ -177,6 +207,15 @@ TEST_SUITE(Foundation_Math_AABB)
 
         EXPECT_TRUE(AABB3d::overlap(bbox1, bbox2));
         EXPECT_TRUE(AABB3d::overlap(bbox2, bbox1));
+    }
+
+    TEST_CASE(TestOverlapOnIntegralAABB)
+    {
+        const AABB2i bbox1(Vector2i(1, 2), Vector2i(5, 4));
+        const AABB2i bbox2(Vector2i(5, 3), Vector2i(8, 3));
+
+        EXPECT_TRUE(AABB2i::overlap(bbox1, bbox2));
+        EXPECT_TRUE(AABB2i::overlap(bbox2, bbox1));
     }
 
     TEST_CASE(TestOverlapRatio)
@@ -387,6 +426,21 @@ TEST_SUITE(Foundation_Math_AABB)
         EXPECT_FEQ(Vector3d(5.0, 7.0, 9.0), bbox.extent());
     }
 
+    TEST_CASE(TestExtentOnIntegralAABB)
+    {
+        const AABB3i bbox(
+            Vector3i(-1, -2, -3),
+            Vector3i(4, 5, 6));
+
+        EXPECT_FEQ(Vector3i(6, 8, 10), bbox.extent());
+
+        const AABB3i bbox2(
+            Vector3i(0, -1, 1),
+            Vector3i(4, 4, 4));
+
+        EXPECT_FEQ(Vector3i(5, 6, 4), bbox2.extent());
+    }
+
     TEST_CASE(TestDiameter)
     {
         const AABB3d bbox(
@@ -436,6 +490,15 @@ TEST_SUITE(Foundation_Math_AABB)
             Vector3d(4.0, 5.0, 6.0));
 
         EXPECT_FEQ(5.0 * 7.0 * 9.0, bbox.volume());
+    }
+
+    TEST_CASE(TestVolumeOnIntegralAABB)
+    {
+        const AABB3i bbox(
+            Vector3i(-1, -2, -3),
+            Vector3i(4, 5, 6));
+
+        EXPECT_FEQ(6 * 8 * 10, bbox.volume());
     }
 
     TEST_CASE(TestHalfSurfaceArea)
@@ -536,4 +599,15 @@ TEST_SUITE(Foundation_Math_AABB)
         EXPECT_FALSE(bbox1 != bbox2);
         EXPECT_TRUE(bbox1 != bbox3);
     }
+
+    TEST_CASE(TestOneByOneOnIntegralAABB)
+    {
+        const AABB3i bbox(
+            Vector3i(0, 0, 0),
+            Vector3i(0, 0, 0));
+
+        EXPECT_TRUE(bbox.is_valid());
+        EXPECT_FEQ(Vector3i(1, 1, 1), bbox.extent());
+    }
 }
+
