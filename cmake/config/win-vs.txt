@@ -69,6 +69,13 @@ set (preprocessor_definitions_release
     _SECURE_SCL=0
 )
 
+if (NOT USE_STATIC_EXR)
+    set (preprocessor_definitions_common
+    ${preprocessor_definitions_common}
+    OPENEXR_DLL                             # We need to set this pre-processor for OpenEXR to link correctly when the lib is dynamic
+    )
+endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Compilation/linking flags.
