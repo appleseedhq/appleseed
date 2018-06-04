@@ -131,6 +131,7 @@ RendererServices::RendererServices(
     m_global_user_data_getters[OIIO::ustring("Bn")] = &RendererServices::get_user_data_bn;
     m_global_user_data_getters[OIIO::ustring("dNdu")] = &RendererServices::get_user_data_dndu;
     m_global_user_data_getters[OIIO::ustring("dNdv")] = &RendererServices::get_user_data_dndv;
+    m_global_user_data_getters[OIIO::ustring("vertex_color")] = &RendererServices::get_user_data_vertex_color;
 }
 
 void RendererServices::initialize(TextureStore& texture_store)
@@ -1144,6 +1145,32 @@ IMPLEMENT_USER_DATA_GETTER(dndv)
 
         return true;
     }
+
+    return false;
+}
+
+IMPLEMENT_USER_DATA_GETTER(vertex_color)
+{
+    if (type == OIIO::TypeDesc::TypeColor)
+    {
+        const ShadingPoint* shading_point =
+            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+
+        const Color3d& cv = shading_point->get_per_vertex_color();
+            OSL::Color3 v(
+                static_cast<float>(cv.r),
+                static_cast<float>(cv.g),
+                static_cast<float>(cv.b));
+
+        reinterpret_cast<float*>(val)[0] = v.x;
+        reinterpret_cast<float*>(val)[1] = v.y;
+        reinterpret_cast<float*>(val)[2] = v.z;
+
+        if (derivatives)
+            clear_derivatives(type, val);
+
+        return true;
+        }
 
     return false;
 }
