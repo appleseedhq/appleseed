@@ -92,7 +92,9 @@ namespace {
         CurveObjectBuilder(
                 const ParamArray &params,
                 const string &name)
-                : m_params(params), m_name(name), m_split_count(0) {
+                : m_params(params), m_name(name), m_split_count(0)
+        {
+            m_basis = m_basis.make_identity();
         }
 
         CurveObject* get_object()
@@ -136,7 +138,8 @@ namespace {
             return basis;
         }
 
-        void begin_curve_object(unsigned char basis, uint32 count = 0) override {
+        void begin_curve_object(unsigned char basis, uint32 count = 0) override
+        {
             // Create an empty curve object.
             m_object = static_cast<CurveObject *>(
                     CurveObjectFactory().create(m_name.c_str(), m_params).release());
@@ -146,7 +149,8 @@ namespace {
             m_object->push_basis(basis);
             m_object->push_curve_count(count);
 
-            switch (static_cast<CurveBasis>(basis)) {
+            switch (static_cast<CurveBasis>(basis))
+            {
                 case CurveBasis::LINEAR:
                     m_object->reserve_curves1(count);
                     m_object->reserve_curves3(0);
@@ -160,6 +164,60 @@ namespace {
                     break;
             }
 
+            if (static_cast<CurveBasis>(basis) == CurveBasis::BSPLINE)
+            {
+                // First row
+                m_basis[0] = -1.0f;
+                m_basis[1] = 3.0f;
+                m_basis[2] = -3.0f;
+                m_basis[3] = 1.0f;
+
+                // Second row
+                m_basis[4] = 3.0f;
+                m_basis[5] = -6.0f;
+                m_basis[6] = 3.0f;
+                m_basis[7] = 0.0f;
+
+                // Third row
+                m_basis[8] = -3.0f;
+                m_basis[9] = 0.0f;
+                m_basis[10] = 3.0f;
+                m_basis[11] = 0.0f;
+
+                // Fourth row
+                m_basis[12] = 1.0f;
+                m_basis[13] = 4.0f;
+                m_basis[14] = 1.0f;
+                m_basis[15] = 0.0f;
+            }
+
+            else if (static_cast<CurveBasis>(basis) == CurveBasis::CATMULLROM)
+            {
+                // First row
+                m_basis[0] = -0.5f;
+                m_basis[1] = 1.5f;
+                m_basis[2] = -1.5f;
+                m_basis[3] = 0.5f;
+
+                // Second row
+                m_basis[4] = 1.0f;
+                m_basis[5] = -2.5f;
+                m_basis[6] = 2.0f;
+                m_basis[7] = -0.5f;
+
+                // Third row
+                m_basis[8] = -0.5f;
+                m_basis[9] = 0.0f;
+                m_basis[10] = 0.5f;
+                m_basis[11] = 0.0f;
+
+                // Fourth row
+                m_basis[12] = 0.0f;
+                m_basis[13] = 1.0f;
+                m_basis[14] = 0.0f;
+                m_basis[15] = 0.0f;
+            }
+
         }
 
         void begin_curve() override {
@@ -170,39 +228,47 @@ namespace {
 
         void end_curve() override
         {
-            switch (m_object->get_basis()) {
+            switch (m_object->get_basis())
+            {
                 case CurveBasis::LINEAR:
                     push_curve1();
                     break;
 
                 case CurveBasis::BEZIER:
+                    push_curve3(3);
+                    break;
+
                 case CurveBasis::BSPLINE:
                 case CurveBasis::CATMULLROM:
-                    push_curve3();
+                    push_curve3(1);
                     break;
             }
 
             m_total_vertex_count += m_vertices.size();
         }
 
-        void end_curve_object() override {
+        void end_curve_object() override
+        {
 
         }
 
-
-        void push_vertex(const Vector3f &v) override {
+        void push_vertex(const Vector3f &v) override
+        {
             return m_vertices.push_back(GVector3(v));
         }
 
-        void push_vertex_width(const float w) override {
+        void push_vertex_width(const float w) override
+        {
             return m_widths.push_back(w);
         }
 
-        void push_vertex_opacity(const float o) override {
+        void push_vertex_opacity(const float o) override
+        {
             return m_opacities.push_back(o);
         }
 
-        void push_vertex_color(const Color3f &c) override {
+        void push_vertex_color(const Color3f &c) override
+        {
             return m_colors.push_back(GColor3(c));
         }
 
@@ -212,6 +278,7 @@ namespace {
         const string        m_name;
         CurveObject*        m_object;
         size_t              m_split_count;
+        Matrix4f            m_basis;
 
         // Curve attributes and statistics
         vector<GVector3>    m_vertices;
@@ -223,7 +290,8 @@ namespace {
         size_t              m_total_vertex_count;
 
 
-        void reset_curve_variables() {
+        void reset_curve_variables()
+        {
             m_vertices.clear();
             m_widths.clear();
             m_opacities.clear();
@@ -231,7 +299,8 @@ namespace {
         }
 
 
-        void split_and_store(const Curve3Type &curve, const size_t split_count) {
+        void split_and_store(const Curve3Type &curve, const size_t split_count)
+        {
             if (split_count > 0) {
                 Curve3Type child1, child2;
                 curve.split(child1, child2);
@@ -251,14 +320,53 @@ namespace {
             }
         }
 
-        void push_curve3() {
-            for (int32 i = 0; i < m_vertices.size() - 3; i = i + 3) {
+        void push_curve3(int stride)
+        {
+            for (int32 i = 0; i < m_vertices.size() - 3; i = i + stride) {
                 GVector3 points[4] = {m_vertices[i], m_vertices[i + 1], m_vertices[i + 2], m_vertices[i + 3]};
                 GScalar widths[4] = {m_widths[i], m_widths[i + 1], m_widths[i + 2], m_widths[i + 3]};
                 GScalar opacities[4] = {m_opacities[i], m_opacities[i + 1], m_opacities[i + 2], m_opacities[i + 3]};
                 GColor3 colors[4] = {m_colors[i], m_colors[i + 1], m_colors[i + 2], m_colors[i + 3]};
 
-                split_and_store(Curve3Type(points, widths, opacities, colors), m_split_count);
+                Matrix<float, 4, 3> m_points = Matrix<float, 4, 3>();
+                Matrix<float, 4, 3> m_colors = Matrix<float, 4, 3>();
+                Matrix<float, 4, 1> m_widths = Matrix<float, 4, 1>();
+                Matrix<float, 4, 1> m_opacities = Matrix<float, 4, 1>();
+
+                for (int32 i = 0; i < 4; ++i)
+                {
+                    m_points[3 * i] = points[i].x;
+                    m_points[3 * i + 1] = points[i].y;
+                    m_points[3 * i + 2] = points[i].z;
+
+                    m_colors[3 * i] = colors[i].r;
+                    m_colors[3 * i + 1] = colors[i].g;
+                    m_colors[3 * i + 2] = colors[i].b;
+
+                    m_widths[i] = widths[i];
+                    m_opacities[i] = opacities[i];
+
+                }
+
+                Matrix<float, 4, 3> t_points= m_basis * m_points;
+                Matrix<float, 4, 3> t_colors= m_basis * m_points;
+                Matrix<float, 4, 1> t_widths = m_basis * m_widths;
+                Matrix<float, 4, 1> t_opacities = m_basis * m_widths;
+
+                GVector3 points_final[4];
+                GColor3 colors_final[4];
+                GScalar opacities_final[4];
+                GScalar widths_final[4];
+
+                for (int32 i = 0; i < 4; ++i)
+                {
+                    points_final[i] = GVector3(t_points[3 * i], t_points[3 * i + 1], t_points[3 * i + 2]);
+                    colors_final[i] = GColor3(t_colors[3 * i], t_colors[3 * i + 1], t_colors[3 * i + 2]);
+                    opacities_final[i] = t_opacities[i];
+                    widths_final[i] = t_widths[i];
+                }
+
+                split_and_store(Curve3Type(points_final, widths_final, opacities_final, colors_final), m_split_count);
             }
         }
     };

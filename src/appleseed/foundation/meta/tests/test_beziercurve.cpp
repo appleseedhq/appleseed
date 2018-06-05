@@ -309,7 +309,7 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
     TEST_CASE(RenderSingleBezier3Curve_VariableColor)
     {
 
-        const Vector3f ControlPoints[] = { Vector3f(-0.5f, 0.0f, 0.0f), Vector3f(0.0f, 0.5f, 0.0f), Vector3f(0.50f, 0.0f, 0.0f) };
+        const Vector3f ControlPoints[] = { Vector3f(-0.5f, 0.0f, 0.0f), Vector3f(-0.20f, 0.20f, 0.0f), Vector3f(0.20f, -0.20f, 0.0f), Vector3f(0.5f, 0.0f, 0.0f) };
         const float Widths[] = { 0.01f, 0.01f, 0.01f, 0.01f};
         const float Opacities[] = { 1.0f, 1.0f, 1.0f, 1.0f };
         const Color3f Colors[] = { Color3f(0.0f, 1.0f, 0.0f), Color3f(1.0f, 0.0f, 0.0f),
@@ -350,7 +350,7 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
     TEST_CASE(RenderSingleBezier3Curve_VariableOpacity)
     {
 
-        const Vector3f ControlPoints[] = { Vector3f(-0.5f, 0.0f, 0.0f), Vector3f(0.0f, 0.5f, 0.0f), Vector3f(0.50f, 0.0f, 0.0f) };
+        const Vector3f ControlPoints[] = { Vector3f(-0.5f, 0.0f, 0.0f), Vector3f(-0.20f, 0.20f, 0.0f), Vector3f(0.20f, -0.20f, 0.0f), Vector3f(0.5f, 0.0f, 0.0f) };
         const float Widths[] = { 0.01f, 0.01f, 0.01f, 0.01f};
         const float Opacities[] = { 1.0f, 0.6f, 0.2f, 1.0f };
         const Color3f Colors[] = { Color3f(0.2f, 0.0f, 0.7f), Color3f(0.2f, 0.0f, 0.7f),

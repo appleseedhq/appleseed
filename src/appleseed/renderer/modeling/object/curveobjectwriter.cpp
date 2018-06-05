@@ -79,6 +79,14 @@ namespace
 
         size_t get_basis() const override
         {
+            switch(m_object.get_basis())
+            {
+                case CurveBasis::BEZIER:
+                case CurveBasis::BSPLINE:
+                case CurveBasis::CATMULLROM:
+                    return static_cast<unsigned char>(CurveBasis::BEZIER);
+            }
+
             return static_cast<unsigned char>(m_object.get_basis());
         }
 
@@ -93,15 +101,9 @@ namespace
                     break;
 
                 case CurveBasis::BEZIER:
-                    basis = "bezier";
-                    break;
-
                 case CurveBasis::BSPLINE:
-                    basis = "b-spline";
-                    break;
-
                 case CurveBasis::CATMULLROM:
-                    basis = "catmull-rom";
+                    basis = "bezier";
                     break;
             }
 
