@@ -120,7 +120,7 @@ namespace
 
     bool write_project_default_opts(
         const ProjectFileWriter*            writer,
-        const Project*                      project,
+        Project*                            project,
         const char*                         filepath)
     {
         return ProjectFileWriter::write(*project, filepath);
@@ -128,7 +128,7 @@ namespace
 
     bool write_project_with_opts(
         const ProjectFileWriter*            writer,
-        const Project*                      project,
+        Project*                            project,
         const char*                         filepath,
         int                                 opts)
     {
@@ -137,7 +137,7 @@ namespace
 
     bool write_project_with_opts_and_comments(
         const ProjectFileWriter*            writer,
-        const Project*                      project,
+        Project*                            project,
         const char*                         filepath,
         int                                 opts,
         const char*                         extra_comments)

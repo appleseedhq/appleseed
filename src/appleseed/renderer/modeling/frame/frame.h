@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/aov/aovcontainer.h"
 #include "renderer/modeling/entity/entity.h"
+#include "renderer/modeling/postprocessingstage/postprocessingstagecontainer.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -56,6 +57,8 @@ namespace foundation    { class DictionaryArray; }
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class Image; }
 namespace foundation    { class ImageAttributes; }
+namespace foundation    { class StringArray; }
+namespace foundation    { class StringDictionary; }
 namespace foundation    { class Tile; }
 namespace renderer      { class BaseGroup; }
 namespace renderer      { class DenoiserAOV; }
@@ -89,6 +92,9 @@ class APPLESEED_DLLSYMBOL Frame
     // Access the AOVs.
     AOVContainer& aovs() const;
 
+    // Access the post-processing stages.
+    PostProcessingStageContainer& post_processing_stages() const;
+
     // Return the name of the active camera.
     const char* get_active_camera_name() const;
 
@@ -112,6 +118,10 @@ class APPLESEED_DLLSYMBOL Frame
     bool has_crop_window() const;
     void set_crop_window(const foundation::AABB2u& crop_window);
     const foundation::AABB2u& get_crop_window() const;
+
+    // Expose asset file paths referenced by this entity to the outside.
+    void collect_asset_paths(foundation::StringArray& paths) const override;
+    void update_asset_paths(const foundation::StringDictionary& mappings) override;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
@@ -141,16 +151,10 @@ class APPLESEED_DLLSYMBOL Frame
     // Do any post-process needed by AOV images.
     void post_process_aov_images() const;
 
-    struct RenderStampInfo
-    {
-        double m_render_time;       // in seconds
-    };
-
-    // Return whether the render stamp should be added to the frame.
-    bool is_render_stamp_enabled() const;
-
-    // Add the render stamp to the frame.
-    void add_render_stamp(const RenderStampInfo& info) const;
+    // Access render info. Render info contain statistics and additional results
+    // from the rendering process such as render time. They are used in particular
+    // by the Render Stamp post-processing stage.
+    ParamArray& render_info();
 
     enum class DenoisingMode
     {

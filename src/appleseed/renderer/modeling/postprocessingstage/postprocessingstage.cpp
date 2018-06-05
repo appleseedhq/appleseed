@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,21 +26,58 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
-#define APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
+// Interface header.
+#include "postprocessingstage.h"
+
+// appleseed.renderer headers.
+#include "renderer/utility/messagecontext.h"
+#include "renderer/utility/paramarray.h"
+
+// Standard headers.
+#include <limits>
+
+using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
 
 //
-// Revision number of the current project file format.
-//
-// Make sure to update the project file updater (renderer::ProjectFileUpdater)
-// when you increment this value.
+// PostProcessingStage class implementation.
 //
 
-const size_t ProjectFormatRevision = 26;
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
 
-}       // namespace renderer
+UniqueID PostProcessingStage::get_class_uid()
+{
+    return g_class_uid;
+}
 
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
+PostProcessingStage::PostProcessingStage(
+    const char*         name,
+    const ParamArray&   params)
+  : ConnectableEntity(g_class_uid, params)
+{
+    set_name(name);
+
+    const EntityDefMessageContext context("post-processing stage", this);
+
+    m_order = m_params.get_required<int>("order", 0, context);
+}
+
+void PostProcessingStage::find_min_max(const Frame& frame, Color4f& min, Color4f& max)
+{
+    min = Color4f(+numeric_limits<float>::max());
+    max = Color4f(-numeric_limits<float>::max());
+
+    for_each_pixel(frame, [&min, &max](Color4f& color)
+    {
+        min = component_wise_min(min, color);
+        max = component_wise_max(max, color);
+    });
+}
+
+}   // namespace renderer

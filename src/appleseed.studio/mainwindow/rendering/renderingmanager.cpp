@@ -102,9 +102,10 @@ namespace
         {
             set_current_thread_name("master_renderer");
 
-            const auto result = m_master_renderer->render();
+            const MasterRenderer::RenderingResult rendering_result =
+                m_master_renderer->render();
 
-            if (result.m_status == MasterRenderer::RenderingResult::Failed)
+            if (rendering_result.m_status == MasterRenderer::RenderingResult::Failed)
                 emit signal_rendering_failed();
         }
     };

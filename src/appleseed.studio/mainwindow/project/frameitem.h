@@ -41,9 +41,11 @@
 
 // Forward declarations.
 namespace appleseed     { namespace studio { class AttributeEditor; } }
+namespace appleseed     { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class CollectionItem; } }
 namespace appleseed     { namespace studio { class EntityEditorContext; } }
 namespace foundation    { class Dictionary; }
 namespace renderer      { class Frame; }
+namespace renderer      { class PostProcessingStage; }
 
 namespace appleseed {
 namespace studio {
@@ -62,13 +64,18 @@ class FrameItem
 
     foundation::Dictionary get_values() const override;
 
+    void add_item(renderer::PostProcessingStage* stage);
+
   private slots:
     void slot_edit_accepted(foundation::Dictionary values);
 
   private:
     friend class EntityEditionAction<FrameItem>;
 
-    renderer::Frame* m_frame;
+    typedef CollectionItem<renderer::PostProcessingStage, renderer::Frame, FrameItem> PostProcessingStageCollectionItem;
+
+    renderer::Frame*                    m_frame;
+    PostProcessingStageCollectionItem*  m_post_processing_stage_collection_item;
 
     void slot_edit(AttributeEditor* attribute_editor) override;
     void edit(const foundation::Dictionary& values);

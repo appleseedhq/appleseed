@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,21 +26,24 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
-#define APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
+#ifndef APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_POSTPROCESSINGSTAGECONTAINER_H
+#define APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_POSTPROCESSINGSTAGECONTAINER_H
+
+// appleseed.renderer headers.
+#include "renderer/modeling/entity/entityvector.h"
+
+// Forward declarations.
+namespace renderer  { class PostProcessingStage; }
 
 namespace renderer
 {
 
 //
-// Revision number of the current project file format.
-//
-// Make sure to update the project file updater (renderer::ProjectFileUpdater)
-// when you increment this value.
+// A post-processing stage container.
 //
 
-const size_t ProjectFormatRevision = 26;
+typedef TypedEntityVector<PostProcessingStage> PostProcessingStageContainer;
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
+#endif  // !APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_POSTPROCESSINGSTAGECONTAINER_H
