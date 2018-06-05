@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,21 +26,41 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
-#define APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
+#ifndef APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_COLORMAPDATA_H
+#define APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_COLORMAPDATA_H
 
 namespace renderer
 {
 
 //
-// Revision number of the current project file format.
+// Perceptually uniform sequential color maps from Matplotlib.
 //
-// Make sure to update the project file updater (renderer::ProjectFileUpdater)
-// when you increment this value.
+// References:
+//
+//   http://bids.github.io/colormap/
+//   https://github.com/BIDS/colormap/blob/master/colormaps.py
+//   http://medvis.org/2016/02/23/better-than-the-rainbow-the-matplotlib-alternative-colormaps/
 //
 
-const size_t ProjectFormatRevision = 26;
+extern const float MagmaColorMap[3 * 256];
+extern const float InfernoColorMap[3 * 256];
+extern const float PlasmaColorMap[3 * 256];
+extern const float ViridisColorMap[3 * 256];
+
+
+//
+// For completeness, the Jet color map popularized by MATLAB.
+//
+// References:
+//
+//   https://blogs.mathworks.com/cleve/2015/02/02/origins-of-colormaps/
+//   https://www.mathworks.com/content/dam/mathworks/tag-team/Objects/r/81137_92238v00_RainbowColorMap_57312.pdf
+//   https://blogs.mathworks.com/steve/2014/10/20/a-new-colormap-for-matlab-part-2-troubles-with-rainbows/
+//   https://www.youtube.com/watch?v=xAoljeRJ3lU
+//
+
+extern const float JetColorMap[3 * 9];
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
+#endif  // !APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_COLORMAPDATA_H

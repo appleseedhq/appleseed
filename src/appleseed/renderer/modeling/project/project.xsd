@@ -317,23 +317,39 @@
                                 <xsd:complexType>
                                     <xsd:complexContent>
                                         <xsd:extension base="parameterSet">
-                                            <xsd:choice minOccurs="0" maxOccurs="1">
-                                            <xsd:element name="aovs">
-                                                <xsd:complexType>
-                                                    <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                                                        <xsd:element name="aov">
-                                                            <xsd:complexType>
-                                                                <xsd:complexContent>
-                                                                    <xsd:extension base="parameterSet">
-                                                                        <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                                                    </xsd:extension>
-                                                                </xsd:complexContent>
-                                                            </xsd:complexType>
-                                                        </xsd:element>
-                                                    </xsd:choice>
-                                                </xsd:complexType>
-                                            </xsd:element>
-                                            </xsd:choice>
+                                            <xsd:sequence>
+                                                <xsd:element name="aovs" minOccurs="0">
+                                                    <xsd:complexType>
+                                                        <xsd:sequence>
+                                                            <xsd:element name="aov" minOccurs="0" maxOccurs="unbounded">
+                                                                <xsd:complexType>
+                                                                    <xsd:complexContent>
+                                                                        <xsd:extension base="parameterSet">
+                                                                            <xsd:attribute name="model" type="xsd:string" use="required"/>
+                                                                        </xsd:extension>
+                                                                    </xsd:complexContent>
+                                                                </xsd:complexType>
+                                                            </xsd:element>
+                                                        </xsd:sequence>
+                                                    </xsd:complexType>
+                                                </xsd:element>
+                                                <xsd:element name="post_processing_stages" minOccurs="0">
+                                                    <xsd:complexType>
+                                                        <xsd:sequence>
+                                                            <xsd:element name="post_processing_stage" minOccurs="0" maxOccurs="unbounded">
+                                                                <xsd:complexType>
+                                                                    <xsd:complexContent>
+                                                                        <xsd:extension base="parameterSet">
+                                                                            <xsd:attribute name="name" type="xsd:string" use="required"/>
+                                                                            <xsd:attribute name="model" type="xsd:string" use="required"/>
+                                                                        </xsd:extension>
+                                                                    </xsd:complexContent>
+                                                                </xsd:complexType>
+                                                            </xsd:element>
+                                                        </xsd:sequence>
+                                                    </xsd:complexType>
+                                                </xsd:element>
+                                            </xsd:sequence>
                                             <xsd:attribute name="name" type="xsd:string" use="required"/>
                                         </xsd:extension>
                                     </xsd:complexContent>

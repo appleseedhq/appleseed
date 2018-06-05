@@ -67,6 +67,9 @@
 #include "renderer/modeling/object/iobjectfactory.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/objectfactoryregistrar.h"
+#include "renderer/modeling/postprocessingstage/ipostprocessingstagefactory.h"
+#include "renderer/modeling/postprocessingstage/postprocessingstage.h"
+#include "renderer/modeling/postprocessingstage/postprocessingstagefactoryregistrar.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/project/eventcounters.h"
@@ -400,6 +403,8 @@ namespace
         ElementOutput,
         ElementParameter,
         ElementParameters,
+        ElementPostProcessingStage,
+        ElementPostProcessingStages,
         ElementProject,
         ElementRotation,
         ElementScaling,
@@ -2423,6 +2428,11 @@ namespace
         {
         }
 
+        void set_aov_container(AOVContainer* aovs)
+        {
+            m_aovs = aovs;
+        }
+
         void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
@@ -2436,19 +2446,18 @@ namespace
                     auto_release_ptr<AOV> aov(
                         static_cast<AOVElementHandler*>(handler)->get_aov());
 
-                    if (aov.get() == nullptr)
-                        return;
-
-                    if (m_aovs->get_by_name(aov->get_name()) != nullptr)
+                    if (aov.get() != nullptr)
                     {
-                        RENDERER_LOG_ERROR(
-                            "an aov with the path \"%s\" already exists.",
-                            aov->get_path().c_str());
-                        m_context.get_event_counters().signal_error();
-                        return;
+                        if (m_aovs->get_by_name(aov->get_name()) == nullptr)
+                            m_aovs->insert(aov);
+                        else
+                        {
+                            RENDERER_LOG_ERROR(
+                                "an aov with the path \"%s\" already exists.",
+                                aov->get_path().c_str());
+                            m_context.get_event_counters().signal_error();
+                        }
                     }
-
-                    m_aovs->insert(aov);
                 }
                 break;
 
@@ -2456,14 +2465,81 @@ namespace
             }
         }
 
-        void set_aov_container(AOVContainer* aovs)
-        {
-            m_aovs = aovs;
-        }
-
       private:
         ParseContext&   m_context;
         AOVContainer*   m_aovs;
+    };
+
+
+    //
+    // <post_processing_stage> element handler.
+    //
+
+    class PostProcessingStageElementHandler
+      : public EntityElementHandler<PostProcessingStage, ParametrizedElementHandler>
+    {
+      public:
+        explicit PostProcessingStageElementHandler(ParseContext& context)
+          : EntityElementHandler<PostProcessingStage, ParametrizedElementHandler>("post-processing stage", context)
+        {
+        }
+    };
+
+
+    //
+    // <post_processing_stages> element handler.
+    //
+
+    class PostProcessingStagesElementHandler
+      : public ElementHandlerBaseType
+    {
+      public:
+        explicit PostProcessingStagesElementHandler(ParseContext& context)
+          : m_context(context)
+          , m_stages(nullptr)
+        {
+        }
+
+        void set_post_processing_stage_container(PostProcessingStageContainer* stages)
+        {
+            m_stages = stages;
+        }
+
+        void end_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler) override
+        {
+            assert(m_stages);
+
+            switch (element)
+            {
+              case ElementPostProcessingStage:
+                {
+                    auto_release_ptr<PostProcessingStage> stage =
+                        static_cast<PostProcessingStageElementHandler*>(handler)->get_entity();
+
+                    if (stage.get() != nullptr)
+                    {
+                        if (m_stages->get_by_name(stage->get_name()) == nullptr)
+                            m_stages->insert(stage);
+                        else
+                        {
+                            RENDERER_LOG_ERROR(
+                                "a post-processing stage with the path \"%s\" already exists.",
+                                stage->get_path().c_str());
+                            m_context.get_event_counters().signal_error();
+                        }
+                    }
+                }
+                break;
+
+              assert_otherwise;
+            }
+        }
+
+      private:
+        ParseContext&                   m_context;
+        PostProcessingStageContainer*   m_stages;
     };
 
 
@@ -2487,6 +2563,9 @@ namespace
             m_frame.reset();
 
             m_name = get_value(attrs, "name");
+
+            m_aovs.clear();
+            m_post_processing_stages.clear();
         }
 
         void end_element() override
@@ -2494,6 +2573,7 @@ namespace
             ParametrizedElementHandler::end_element();
 
             m_frame = FrameFactory::create(m_name.c_str(), m_params, m_aovs);
+            m_frame->post_processing_stages().swap(m_post_processing_stages);
         }
 
         void start_child_element(
@@ -2510,8 +2590,17 @@ namespace
                 }
                 break;
 
+              case ElementPostProcessingStages:
+                {
+                    PostProcessingStagesElementHandler* post_processing_stages_handler =
+                        static_cast<PostProcessingStagesElementHandler*>(handler);
+                    post_processing_stages_handler->set_post_processing_stage_container(&m_post_processing_stages);
+                }
+                break;
+
               default:
                 ParametrizedElementHandler::start_child_element(element, handler);
+                break;
             }
         }
 
@@ -2519,10 +2608,20 @@ namespace
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
         {
-            if (element == ElementAOVs)
-                return;
+            switch (element)
+            {
+              case ElementAOVs:
+                // Nothing to do, AOVs were directly inserted into the project.
+                break;
 
-            ParametrizedElementHandler::end_child_element(element, handler);
+              case ElementPostProcessingStages:
+                // Nothing to do, post-processing stages were directly inserted into the project.
+                break;
+
+              default:
+                ParametrizedElementHandler::end_child_element(element, handler);
+                break;
+            }
         }
 
         auto_release_ptr<Frame> get_frame()
@@ -2531,10 +2630,11 @@ namespace
         }
 
       private:
-        ParseContext&           m_context;
-        auto_release_ptr<Frame> m_frame;
-        AOVContainer            m_aovs;
-        string                  m_name;
+        ParseContext&                   m_context;
+        auto_release_ptr<Frame>         m_frame;
+        string                          m_name;
+        AOVContainer                    m_aovs;
+        PostProcessingStageContainer    m_post_processing_stages;
     };
 
 
@@ -3011,6 +3111,8 @@ namespace
             register_factory_helper<OutputElementHandler>("output", ElementOutput);
             register_factory_helper<ParameterElementHandler>("parameter", ElementParameter);
             register_factory_helper<ParametersElementHandler>("parameters", ElementParameters);
+            register_factory_helper<PostProcessingStageElementHandler>("post_processing_stage", ElementPostProcessingStage);
+            register_factory_helper<PostProcessingStagesElementHandler>("post_processing_stages", ElementPostProcessingStages);
             register_factory_helper<RotationElementHandler>("rotation", ElementRotation);
             register_factory_helper<ScalingElementHandler>("scaling", ElementScaling);
             register_factory_helper<SceneElementHandler>("scene", ElementScene);

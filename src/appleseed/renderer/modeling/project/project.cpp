@@ -187,7 +187,7 @@ Frame* Project::get_frame() const
     return impl->m_frame.get();
 }
 
-void Project::set_display(foundation::auto_release_ptr<Display> display)
+void Project::set_display(auto_release_ptr<Display> display)
 {
     impl->m_display = display;
 }
@@ -231,12 +231,39 @@ void Project::reinitialize_factory_registrars()
     m_volume_factory_registrar.reinitialize(impl->m_search_paths);
 }
 
+void Project::collect_asset_paths(StringArray& paths) const
+{
+    if (impl->m_scene.get() != nullptr)
+        impl->m_scene->collect_asset_paths(paths);
+
+    if (impl->m_frame.get() != nullptr)
+        impl->m_frame->collect_asset_paths(paths);
+
+    for (const Configuration& config : configurations())
+        config.collect_asset_paths(paths);
+}
+
+void Project::update_asset_paths(const StringDictionary& mappings)
+{
+    if (impl->m_scene.get() != nullptr)
+        impl->m_scene->update_asset_paths(mappings);
+
+    if (impl->m_frame.get() != nullptr)
+        impl->m_frame->update_asset_paths(mappings);
+
+    for (Configuration& config : configurations())
+        config.update_asset_paths(mappings);
+}
+
 bool Project::on_frame_begin(
     const Project&              project,
     const BaseGroup*            parent,
     OnFrameBeginRecorder&       recorder,
     IAbortSwitch*               abort_switch)
 {
+    assert(impl->m_scene.get() != nullptr);
+    assert(impl->m_frame.get() != nullptr);
+
     if (!impl->m_scene->on_frame_begin(project, nullptr, recorder, abort_switch))
         return false;
 
@@ -264,7 +291,7 @@ const TraceContext& Project::get_trace_context() const
 
 void Project::update_trace_context()
 {
-    if (impl->m_trace_context.get())
+    if (impl->m_trace_context.get() != nullptr)
         impl->m_trace_context->update();
 }
 

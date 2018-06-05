@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,21 +26,35 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
-#define APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
+// Interface header.
+#include "ipostprocessingstagefactory.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/api/specializedapiarrays.h"
+#include "foundation/utility/containers/dictionary.h"
+
+using namespace foundation;
 
 namespace renderer
 {
 
-//
-// Revision number of the current project file format.
-//
-// Make sure to update the project file updater (renderer::ProjectFileUpdater)
-// when you increment this value.
-//
+void IPostProcessingStageFactory::add_common_input_metadata(DictionaryArray& metadata)
+{
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "order")
+            .insert("label", "Order")
+            .insert("type", "integer")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10")
+                    .insert("type", "soft"))
+            .insert("use", "required")
+            .insert("default", "0"));
+}
 
-const size_t ProjectFormatRevision = 26;
-
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
+}   // namespace renderer

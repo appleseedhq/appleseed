@@ -53,6 +53,8 @@
 #include "renderer/modeling/material/materialtraits.h"
 #include "renderer/modeling/object/objectfactoryregistrar.h"
 #include "renderer/modeling/object/objecttraits.h"
+#include "renderer/modeling/postprocessingstage/postprocessingstagefactoryregistrar.h"
+#include "renderer/modeling/postprocessingstage/postprocessingstagetraits.h"
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/scene/assemblyfactoryregistrar.h"
 #include "renderer/modeling/scene/assemblytraits.h"
@@ -76,6 +78,8 @@
 
 // Forward declarations.
 namespace foundation    { class SearchPaths; }
+namespace foundation    { class StringArray; }
+namespace foundation    { class StringDictionary; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class BaseGroup; }
 namespace renderer      { class BSDF; }
@@ -91,6 +95,7 @@ namespace renderer      { class LightPathRecorder; }
 namespace renderer      { class Material; }
 namespace renderer      { class Object; }
 namespace renderer      { class OnFrameBeginRecorder; }
+namespace renderer      { class PostProcessingStage; }
 namespace renderer      { class Scene; }
 namespace renderer      { class SurfaceShader; }
 namespace renderer      { class Texture; }
@@ -169,6 +174,10 @@ class APPLESEED_DLLSYMBOL Project
     // Reinitialize all factory registrars; load plugins found in project's search paths.
     void reinitialize_factory_registrars();
 
+    // Expose asset file paths referenced by this entity to the outside.
+    void collect_asset_paths(foundation::StringArray& paths) const override;
+    void update_asset_paths(const foundation::StringDictionary& mappings) override;
+
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     bool on_frame_begin(
@@ -204,6 +213,7 @@ class APPLESEED_DLLSYMBOL Project
     LightFactoryRegistrar               m_light_factory_registrar;
     MaterialFactoryRegistrar            m_material_factory_registrar;
     ObjectFactoryRegistrar              m_object_factory_registrar;
+    PostProcessingStageFactoryRegistrar m_post_processing_stage_factory_registrar;
     SurfaceShaderFactoryRegistrar       m_surface_shader_factory_registrar;
     TextureFactoryRegistrar             m_texture_factory_registrar;
     VolumeFactoryRegistrar              m_volume_factory_registrar;
@@ -299,6 +309,12 @@ template <>
 inline const EntityTraits<Object>::FactoryRegistrarType& Project::get_factory_registrar<Object>() const
 {
     return m_object_factory_registrar;
+}
+
+template <>
+inline const EntityTraits<PostProcessingStage>::FactoryRegistrarType& Project::get_factory_registrar<PostProcessingStage>() const
+{
+    return m_post_processing_stage_factory_registrar;
 }
 
 template <>

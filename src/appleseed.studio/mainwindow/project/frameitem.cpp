@@ -35,6 +35,7 @@
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditor.h"
 #include "mainwindow/project/entityeditorcontext.h"
+#include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/singlemodelentityeditorformfactory.h"
 #include "mainwindow/project/tools.h"
@@ -42,6 +43,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
+#include "renderer/api/postprocessing.h"
+#include "renderer/api/project.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
@@ -73,11 +76,26 @@ FrameItem::FrameItem(
   , m_frame(frame)
 {
     set_allow_deletion(false);
+
+    addChild(
+        m_post_processing_stage_collection_item =
+            new MultiModelCollectionItem<PostProcessingStage, Frame, FrameItem>(
+                editor_context,
+                new_guid(),
+                EntityTraits<PostProcessingStage>::get_human_readable_collection_type_name(),
+                *m_frame,
+                this));
+    m_post_processing_stage_collection_item->add_items(m_frame->post_processing_stages());
 }
 
 Dictionary FrameItem::get_values() const
 {
     return m_frame->get_parameters();
+}
+
+void FrameItem::add_item(PostProcessingStage* stage)
+{
+    m_post_processing_stage_collection_item->add_item(stage);
 }
 
 void FrameItem::slot_edit(AttributeEditor* attribute_editor)
@@ -136,9 +154,21 @@ void FrameItem::slot_edit_accepted(Dictionary values)
 
 void FrameItem::edit(const Dictionary& values)
 {
+    delete m_post_processing_stage_collection_item;
+
     m_frame = m_editor_context.m_project_builder.edit_frame(values);
 
     set_title(QString::fromAscii(m_frame->get_name()));
+
+    addChild(
+        m_post_processing_stage_collection_item =
+            new MultiModelCollectionItem<PostProcessingStage, Frame, FrameItem>(
+                m_editor_context,
+                new_guid(),
+                EntityTraits<PostProcessingStage>::get_human_readable_collection_type_name(),
+                *m_frame,
+                this));
+    m_post_processing_stage_collection_item->add_items(m_frame->post_processing_stages());
 }
 
 }   // namespace studio

@@ -49,6 +49,7 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/searchpaths.h"
+#include "foundation/utility/string.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
@@ -127,7 +128,7 @@ namespace
             if (m_params.strings().exist("filename"))
             {
                 const char* filename = m_params.get("filename");
-                if (filename[0] != '\0')
+                if (!is_empty_string(filename))
                     paths.push_back(filename);
             }
         }
