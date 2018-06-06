@@ -147,12 +147,10 @@ void bind_frame()
         .def("get_crop_window", get_crop_window)
 
         .def("image", &Frame::image, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def("aov_images", &Frame::aov_images, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("aovs", &Frame::aovs, bpy::return_value_policy<bpy::reference_existing_object>())
 
         .def("write_main_image", &Frame::write_main_image)
         .def("write_aov_images", &Frame::write_aov_images)
         .def("write_main_and_aov_images_to_multipart_exr", &Frame::write_main_and_aov_images_to_multipart_exr)
-        .def("archive", archive_frame)
-
-        .def("aovs", &Frame::aovs, bpy::return_value_policy<bpy::reference_existing_object>());
+        .def("archive", archive_frame);
 }
