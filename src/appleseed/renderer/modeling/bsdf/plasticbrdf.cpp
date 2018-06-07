@@ -166,7 +166,7 @@ namespace
             values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_min_roughness);
 
             new (&values->m_precomputed) InputValues::Precomputed();
-            const float outside_ior = shading_point.get_ray().get_current_ior();
+            const float outside_ior = shading_point.get_ray().m_media.get_current_ior();
             values->m_precomputed.m_eta = outside_ior / values->m_ior;
 
             values->m_precomputed.m_specular_weight = max(max_value(values->m_specular_reflectance), 0.0f);

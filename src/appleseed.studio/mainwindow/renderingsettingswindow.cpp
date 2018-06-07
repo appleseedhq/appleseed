@@ -817,16 +817,18 @@ namespace
             QCheckBox* unlimited_diffuse_bounces = create_checkbox(widget_base_key + "unlimited_diffuse_bounces", "Unlimited");
             QCheckBox* unlimited_glossy_bounces = create_checkbox(widget_base_key + "unlimited_glossy_bounces", "Unlimited");
             QCheckBox* unlimited_specular_bounces = create_checkbox(widget_base_key + "unlimited_specular_bounces", "Unlimited");
+            QCheckBox* unlimited_volume_bounces = create_checkbox(widget_base_key + "unlimited_volume_bounces", "Unlimited");
 
             layout->addRow("Max Global Bounces:", create_horizontal_group(max_bounces, unlimited_bounces));
             layout->addRow("Max Diffuse Bounces:", create_horizontal_group(max_diffuse_bounces, unlimited_diffuse_bounces));
             layout->addRow("Max Glossy Bounces:", create_horizontal_group(max_glossy_bounces, unlimited_glossy_bounces));
             layout->addRow("Max Specular Bounces:", create_horizontal_group(max_specular_bounces, unlimited_specular_bounces));
-            layout->addRow("Max Volume Bounces:", create_horizontal_group(max_volume_bounces));
+            layout->addRow("Max Volume Bounces:", create_horizontal_group(max_volume_bounces, unlimited_volume_bounces));
             connect(unlimited_bounces, SIGNAL(toggled(bool)), max_bounces, SLOT(setDisabled(bool)));
             connect(unlimited_diffuse_bounces, SIGNAL(toggled(bool)), max_diffuse_bounces, SLOT(setDisabled(bool)));
             connect(unlimited_glossy_bounces, SIGNAL(toggled(bool)), max_glossy_bounces, SLOT(setDisabled(bool)));
             connect(unlimited_specular_bounces, SIGNAL(toggled(bool)), max_specular_bounces, SLOT(setDisabled(bool)));
+            connect(unlimited_volume_bounces, SIGNAL(toggled(bool)), max_volume_bounces, SLOT(setDisabled(bool)));
 
             QSpinBox* russian_roulette_start = create_integer_input(widget_base_key + "rr_start_bounce", 1, 100, 1);
             russian_roulette_start->setToolTip(m_params_metadata.get_path("pt.rr_min_path_length.help"));
@@ -941,8 +943,8 @@ namespace
             create_direct_link("lighting_components.ibl",                       "pt.enable_ibl");
             create_direct_link("lighting_components.caustics",                  "pt.enable_caustics");
             create_direct_link("pt.bounces.rr_start_bounce",                    "pt.rr_min_path_length");
-            create_direct_link("volume.distance_samples",                       "pt.volume_distance_samples");
             create_direct_link("volume.optimize_for_lights_outside_volumes",    "pt.optimize_for_lights_outside_volumes");
+            create_direct_link("volume.enable_secondary_volume_bounces",        "pt.enable_secondary_volume_bounces");
             create_direct_link("advanced.next_event_estimation",                "pt.next_event_estimation");
             create_direct_link("advanced.dl.light_samples",                     "pt.dl_light_samples");
             create_direct_link("advanced.dl.low_light_threshold",               "pt.dl_low_light_threshold");
@@ -957,7 +959,7 @@ namespace
             load_separate_bounce_settings(config, "pt", "diffuse", 3);
             load_separate_bounce_settings(config, "pt", "glossy", 8);
             load_separate_bounce_settings(config, "pt", "specular", 8);
-            load_separate_bounce_settings(config, "pt", "volume", 8, false);
+            load_separate_bounce_settings(config, "pt", "volume", 8);
 
             set_widget("advanced.unlimited_ray_intensity", !config.get_parameters().exist_path("pt.max_ray_intensity"));
             set_widget("advanced.max_ray_intensity", get_config<double>(config, "pt.max_ray_intensity", 1.0));
@@ -971,7 +973,7 @@ namespace
             save_separate_bounce_settings(config, "pt", "diffuse");
             save_separate_bounce_settings(config, "pt", "glossy");
             save_separate_bounce_settings(config, "pt", "specular");
-            save_separate_bounce_settings(config, "pt", "volume", false);
+            save_separate_bounce_settings(config, "pt", "volume");
 
             if (get_widget<bool>("advanced.unlimited_ray_intensity"))
                 config.get_parameters().remove_path("pt.max_ray_intensity");
@@ -990,14 +992,11 @@ namespace
             QFormLayout* sublayout = create_form_layout();
             layout->addLayout(sublayout);
 
-            QSpinBox* volume_distance_samples =
-                create_integer_input("volume.distance_samples", 1, 1000, 1);
-            volume_distance_samples->setToolTip(
-                m_params_metadata.get_path("pt.volume_distance_samples.help"));
-            sublayout->addRow("Volume Distance Samples:", volume_distance_samples);
-
             sublayout->addRow(
                 create_checkbox("volume.optimize_for_lights_outside_volumes", "Optimize for Lights Outside Volumes"));
+
+            sublayout->addRow(
+                create_checkbox("volume.enable_secondary_volume_bounces", "Enable Secondary Volume Bounces"));
         }
 
         void create_pt_advanced_settings(QVBoxLayout* parent)

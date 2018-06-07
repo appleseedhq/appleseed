@@ -258,19 +258,6 @@ namespace
         }
 
       private:
-        struct VolumeVisitor
-        {
-            bool accept_scattering(
-                const ScatteringMode::Mode  prev_mode)
-            {
-                return true;
-            }
-
-            void on_scatter(PathVertex& vertex) {}
-
-            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray) {}
-        };
-
         struct PathVisitor
         {
             const Parameters&               m_params;
@@ -325,6 +312,18 @@ namespace
                 }
 
                 return true;
+            }
+
+            void get_next_shading_point(
+                const ShadingRay&           ray,
+                PathVertex*                 vertex,
+                ShadingPoint*               next_shading_point)
+            {
+                // This ray is being cast into an ordinary medium.
+                m_shading_context.get_intersector().trace(
+                    ray,
+                    *next_shading_point,
+                    vertex->m_shading_point);
             }
 
             void visit_area_light_vertex(
@@ -516,7 +515,7 @@ namespace
             }
         };
 
-        typedef PathTracer<PathVisitor, VolumeVisitor, true> PathTracerType;   // true = adjoint
+        typedef PathTracer<PathVisitor, true> PathTracerType;   // true = adjoint
 
         const Parameters                m_params;
 
@@ -683,10 +682,8 @@ namespace
                 sampling_context,
                 samples,
                 initial_flux);
-            VolumeVisitor volume_visitor;
             PathTracerType path_tracer(
                 path_visitor,
-                volume_visitor,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_bounces,
                 ~size_t(0), // max diffuse bounces
@@ -767,10 +764,8 @@ namespace
                 sampling_context,
                 samples,
                 initial_flux);
-            VolumeVisitor volume_visitor;
             PathTracerType path_tracer(
                 path_visitor,
-                volume_visitor,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_bounces,
                 ~size_t(0), // max diffuse bounces
@@ -861,10 +856,8 @@ namespace
                 sampling_context,
                 samples,
                 initial_flux);
-            VolumeVisitor volume_visitor;
             PathTracerType path_tracer(
                 path_visitor,
-                volume_visitor,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_bounces,
                 ~size_t(0), // max diffuse bounces
