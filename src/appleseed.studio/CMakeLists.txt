@@ -230,6 +230,7 @@ set (appleseedpython_sources
     ../appleseed.python/bindbssrdf.cpp
     ../appleseed.python/bindcamera.cpp
     ../appleseed.python/bindcolor.cpp
+    ../appleseed.python/bindcurveobject.cpp
     ../appleseed.python/binddisplay.cpp
     ../appleseed.python/bindedf.cpp
     ../appleseed.python/bindentity.cpp
