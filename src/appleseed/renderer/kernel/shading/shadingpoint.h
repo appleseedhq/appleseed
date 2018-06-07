@@ -107,13 +107,6 @@ class ShadingPoint
     // Reset the shading point to its initial state (no intersection).
     void clear();
 
-    // Initialize this shading point as a point in participating media,
-    // given a ray through volume and a distance from origin.
-    void create_volume_shading_point(
-        const ShadingPoint&     prev_shading_point,
-        const ShadingRay&       volume_ray,
-        const float             distance);
-
     // Return the scene that was tested for intersection.
     const Scene& get_scene() const;
 
@@ -696,11 +689,14 @@ inline const foundation::Vector3d& ShadingPoint::get_dpdy() const
 
 inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
 {
-    assert(hit_surface());
+    assert(is_valid());
 
     if (!(m_members & HasGeometricNormal))
     {
-        compute_normals();
+        if (hit_surface())
+            compute_normals();
+        else
+            m_geometric_normal = -m_ray.m_dir;
         m_members |= HasGeometricNormal | HasOriginalShadingNormal;
     }
 
@@ -709,11 +705,14 @@ inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
 
 inline const foundation::Vector3d& ShadingPoint::get_original_shading_normal() const
 {
-    assert(hit_surface());
+    assert(is_valid());
 
     if (!(m_members & HasOriginalShadingNormal))
     {
-        compute_normals();
+        if (hit_surface())
+            compute_normals();
+        else
+            m_original_shading_normal = -m_ray.m_dir;
         m_members |= HasGeometricNormal | HasOriginalShadingNormal;
     }
 
@@ -727,7 +726,7 @@ inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
 
 inline void ShadingPoint::set_shading_basis(const foundation::Basis3d& basis) const
 {
-    assert(hit_surface());
+    assert(is_valid());
     m_shading_basis = basis;
     m_members |= HasShadingBasis;
     m_members &= ~HasScreenSpaceDerivatives;
@@ -735,11 +734,14 @@ inline void ShadingPoint::set_shading_basis(const foundation::Basis3d& basis) co
 
 inline const foundation::Basis3d& ShadingPoint::get_shading_basis() const
 {
-    assert(hit_surface());
+    assert(is_valid());
 
     if (!(m_members & HasShadingBasis))
     {
-        compute_shading_basis();
+        if (hit_surface())
+            compute_shading_basis();
+        else
+            set_shading_basis(foundation::Basis3d(-m_ray.m_dir));
         m_members |= HasShadingBasis;
     }
 
@@ -805,8 +807,8 @@ inline const Material* ShadingPoint::get_material() const
     {
         if (hit_volume())
         {
-            m_material = m_ray.get_current_medium()->m_material;
-            m_opposite_material = m_ray.get_current_medium()->m_material;
+            m_material = m_ray.m_media.get_current()->m_material;
+            m_opposite_material = m_ray.m_media.get_current()->m_material;
         }
         else
             fetch_materials();
@@ -826,8 +828,8 @@ inline const Material* ShadingPoint::get_opposite_material() const
     {
         if (hit_volume())
         {
-            m_material = m_ray.get_current_medium()->m_material;
-            m_opposite_material = m_ray.get_current_medium()->m_material;
+            m_material = m_ray.m_media.get_current()->m_material;
+            m_opposite_material = m_ray.m_media.get_current()->m_material;
         }
         else
             fetch_materials();
@@ -860,15 +862,31 @@ inline const Assembly& ShadingPoint::get_assembly() const
 
 inline const ObjectInstance& ShadingPoint::get_object_instance() const
 {
-    assert(hit_surface());
-    cache_source_geometry();
+    assert(is_valid());
+    if (hit_surface())
+    {
+        cache_source_geometry();
+    }
+    else
+    {
+        m_object_instance = m_ray.m_media.get_current()->m_object_instance;
+        m_object = &m_object_instance->get_object();
+    }
     return *m_object_instance;
 }
 
 inline const Object& ShadingPoint::get_object() const
 {
-    assert(hit_surface());
-    cache_source_geometry();
+    assert(is_valid());
+    if (hit_surface())
+    {
+        cache_source_geometry();
+    }
+    else
+    {
+        m_object_instance = m_ray.m_media.get_current()->m_object_instance;
+        m_object = &m_object_instance->get_object();
+    }
     return *m_object;
 }
 

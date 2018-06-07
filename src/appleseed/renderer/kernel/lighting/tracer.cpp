@@ -121,7 +121,7 @@ const ShadingPoint& Tracer::do_trace(
 
         const ShadingRay& current_ray = shading_point_ptr->get_ray();
 
-        const ShadingRay::Medium* medium = current_ray.get_current_medium();
+        const ShadingRay::Medium* medium = current_ray.m_media.get_current();
         const Volume* volume = medium == nullptr ? nullptr : medium->get_volume();
 
         // Stop if the ray escaped the scene.
@@ -191,9 +191,9 @@ const ShadingPoint& Tracer::do_trace(
         // Update the medium list.
         const ObjectInstance& object_instance = shading_point_ptr->get_object_instance();
         if (entering)
-            next_ray.add_medium(current_ray, &object_instance, material, 1.0f);
+            next_ray.m_media.add(current_ray.m_media, &object_instance, material, 1.0f);
         else
-            next_ray.remove_medium(current_ray, &object_instance);
+            next_ray.m_media.remove(current_ray.m_media, &object_instance);
 
         // Trace ray further.
         m_shading_points[shading_point_index].clear();
@@ -244,7 +244,7 @@ const ShadingPoint& Tracer::do_trace_between(
         const ShadingRay& current_ray = shading_point_ptr->get_ray();
 
         // Get information about the medium that contains the shadow ray.
-        const ShadingRay::Medium* medium = current_ray.get_current_medium();
+        const ShadingRay::Medium* medium = current_ray.m_media.get_current();
         const Volume* volume =
             (medium == nullptr) ? nullptr : medium->get_volume();
         const ShadingRay& volume_ray = shading_point_ptr->get_ray();
@@ -314,9 +314,9 @@ const ShadingPoint& Tracer::do_trace_between(
         // Update the medium list.
         const ObjectInstance& object_instance = shading_point_ptr->get_object_instance();
         if (entering)
-            next_ray.add_medium(current_ray, &object_instance, material, 1.0f);
+            next_ray.m_media.add(current_ray.m_media, &object_instance, material, 1.0f);
         else
-            next_ray.remove_medium(current_ray, &object_instance);
+            next_ray.m_media.remove(current_ray.m_media, &object_instance);
 
         // Trace ray further.
         m_shading_points[shading_point_index].clear();

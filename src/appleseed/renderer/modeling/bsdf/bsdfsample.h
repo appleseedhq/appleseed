@@ -120,7 +120,8 @@ inline void BSDFSample::set_to_scattering(const ScatteringMode::Mode mode, const
         mode == ScatteringMode::None ||
         mode == ScatteringMode::Diffuse ||
         mode == ScatteringMode::Glossy ||
-        mode == ScatteringMode::Specular);
+        mode == ScatteringMode::Specular ||
+        mode == ScatteringMode::Volume);
     assert(
         (mode == ScatteringMode::None     && probability == 0.0f) ||
         (mode == ScatteringMode::Specular && probability == BSDF::DiracDelta) ||

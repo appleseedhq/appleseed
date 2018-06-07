@@ -1728,6 +1728,9 @@ namespace
 
                 if (!pt_params.strings().exist("max_specular_bounces"))
                     pt_params.insert("max_specular_bounces", -1);
+
+                if (!pt_params.strings().exist("max_volume_bounces"))
+                    pt_params.insert("max_volume_bounces", -1);
             }
             else
             {
@@ -1735,7 +1738,8 @@ namespace
                     .insert("max_bounces", -1)
                     .insert("max_diffuse_bounces", -1)
                     .insert("max_glossy_bounces", -1)
-                    .insert("max_specular_bounces", -1));
+                    .insert("max_specular_bounces", -1)
+                    .insert("max_volume_bounces", -1));
             }
         }
     };

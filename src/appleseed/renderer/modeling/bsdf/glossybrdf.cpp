@@ -162,7 +162,7 @@ namespace
             values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_min_roughness);
 
             new (&values->m_precomputed) InputValues::Precomputed();
-            values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
+            values->m_precomputed.m_outside_ior = shading_point.get_ray().m_media.get_current_ior();
 
             values->m_precomputed.m_fresnel_average =
                 average_fresnel_reflectance_dielectric(

@@ -43,7 +43,6 @@
 namespace renderer  { class BSDF; }
 namespace renderer  { class DirectShadingComponents; }
 namespace renderer  { class EnvironmentEDF; }
-namespace renderer  { class IMaterialSampler; }
 namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
 
@@ -59,21 +58,24 @@ void compute_ibl_combined_sampling(
     SamplingContext&                sampling_context,
     const ShadingContext&           shading_context,
     const EnvironmentEDF&           environment_edf,
+    const ShadingPoint&             shading_point,
     const foundation::Dual3d&       outgoing,               // world space outgoing direction, unit-length
-    const IMaterialSampler&         material_sampler,
     const int                       env_sampling_modes,     // permitted scattering modes during environment sampling
-    const size_t                    material_sample_count,  // number of samples in BSDF sampling
+    const size_t                    bsdf_sample_count,      // number of samples in BSDF sampling
     const size_t                    env_sample_count,       // number of samples in environment sampling
     DirectShadingComponents&        radiance);
 
 // Compute outgoing radiance due to image-based lighting via BSDF sampling only.
-void compute_ibl_material_sampling(
+void compute_ibl_bsdf_sampling(
     SamplingContext&                sampling_context,
     const ShadingContext&           shading_context,
     const EnvironmentEDF&           environment_edf,
+    const ShadingPoint&             shading_point,
     const foundation::Dual3d&       outgoing,               // world space outgoing direction, unit-length
-    const IMaterialSampler&         material_sampler,
-    const size_t                    material_sample_count,  // number of samples in BSDF sampling
+    const BSDF&                     bsdf,
+    const void*                     bsdf_data,
+    const int                       bsdf_sampling_modes,    // permitted scattering modes during BSDF sampling
+    const size_t                    bsdf_sample_count,      // number of samples in BSDF sampling
     const size_t                    env_sample_count,       // number of samples in environment sampling
     DirectShadingComponents&        radiance);
 
@@ -82,10 +84,12 @@ void compute_ibl_environment_sampling(
     SamplingContext&                sampling_context,
     const ShadingContext&           shading_context,
     const EnvironmentEDF&           environment_edf,
+    const ShadingPoint&             shading_point,
     const foundation::Dual3d&       outgoing,               // world space outgoing direction, unit-length
-    const IMaterialSampler&         material_sampler,
+    const BSDF&                     bsdf,
+    const void*                     bsdf_data,
     const int                       env_sampling_modes,     // permitted scattering modes during environment sampling
-    const size_t                    material_sample_count,
+    const size_t                    bsdf_sample_count,      // number of samples in BSDF sampling
     const size_t                    env_sample_count,       // number of samples in environment sampling
     DirectShadingComponents&        radiance);
 
