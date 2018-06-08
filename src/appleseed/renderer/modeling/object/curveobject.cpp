@@ -177,7 +177,14 @@ size_t CurveObject::push_curve1(const Curve1Type& curve)
 size_t CurveObject::push_curve3(const Curve3Type& curve)
 {
     const size_t index = impl->m_curves3.size();
-    impl->m_curves3.push_back(curve);
+    Curve3Type t_curve = Curve3Type(curve, CurveMatrixType::make_identity(), true);
+
+    if (get_basis() == CurveBasis::BSPLINE)
+        t_curve.transform_basis(CurveMatrixType::from_array(ar_bezier_inv) * CurveMatrixType::from_array(ar_bspline));
+    else if (get_basis() == CurveBasis::CATMULLROM)
+        t_curve.transform_basis(CurveMatrixType::from_array(ar_bezier_inv) * CurveMatrixType::from_array(ar_catmullrom));
+
+    impl->m_curves3.push_back(t_curve);
     return index;
 }
 

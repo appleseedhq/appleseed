@@ -43,6 +43,7 @@
 #include <cstddef>
 #include <limits>
 #include <vector>
+#include <renderer/modeling/object/curveobject.h>
 
 using namespace foundation;
 using namespace std;
@@ -360,6 +361,39 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_singlebezier3curve_variableopacity.png", false);
     }
 
+    //
+    // Basis tests
+    //
+
+
+    TEST_CASE(RenderSingleBezier3Curve_BSpline)
+    {
+
+        const Vector3f ControlPoints[] = { Vector3f(-0.5f, 0.0f, 0.0f), Vector3f(-0.20f, 0.20f, 0.0f), Vector3f(0.20f, -0.20f, 0.0f), Vector3f(0.5f, 0.0f, 0.0f) };
+        const float Widths[] = { 0.01f, 0.01f, 0.01f, 0.01f};
+        const float Opacities[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+        const Color3f Colors[] = { Color3f(0.0f, 1.0f, 0.0f), Color3f(1.0f, 0.0f, 0.0f),
+                                   Color3f(0.0f, 0.0f, 1.0f), Color3f(1.0f, 1.0f, 1.0f) };
+        Matrix4f Basis = Matrix4f::from_array(renderer::ar_bezier_inv) * Matrix4f::from_array(renderer::ar_bspline);
+        const BezierCurve3f Curves[] = { BezierCurve3f(BezierCurve3f(ControlPoints, Widths, Opacities, Colors), Basis, true) };
+
+        render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_singlebezier3curve_bspline.png", false);
+    }
+
+
+    TEST_CASE(RenderSingleBezier3Curve_CatmullRom)
+    {
+
+        const Vector3f ControlPoints[] = { Vector3f(-0.5f, 0.0f, 0.0f), Vector3f(-0.20f, 0.20f, 0.0f), Vector3f(0.20f, -0.20f, 0.0f), Vector3f(0.5f, 0.0f, 0.0f) };
+        const float Widths[] = { 0.01f, 0.01f, 0.01f, 0.01f};
+        const float Opacities[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+        const Color3f Colors[] = { Color3f(0.0f, 1.0f, 0.0f), Color3f(1.0f, 0.0f, 0.0f),
+                                   Color3f(0.0f, 0.0f, 1.0f), Color3f(1.0f, 1.0f, 1.0f) };
+        Matrix4f Basis = Matrix4f::from_array(renderer::ar_bezier_inv) * Matrix4f::from_array(renderer::ar_catmullrom);
+        const BezierCurve3f Curves[] = { BezierCurve3f(BezierCurve3f(ControlPoints, Widths, Opacities, Colors), Basis, true) };
+
+        render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_singlebezier3curve_catmullrom.png", false);
+    }
 
     //
     // Edge cases.
