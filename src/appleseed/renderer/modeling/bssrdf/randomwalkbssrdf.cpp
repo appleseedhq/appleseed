@@ -357,7 +357,10 @@ namespace
                 bssrdf_sample.m_value *= fo;
 
                 if (!volume_scattering_occurred)
+                {
+                    bssrdf_sample.m_value *= values->m_reflectance;
                     transmitted = true;
+                }
             }
 
             // Initialize the number of iterations.
