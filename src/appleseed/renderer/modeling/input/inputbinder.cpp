@@ -572,6 +572,7 @@ bool InputBinder::try_bind_scene_entity_to_input(
           BIND(SymbolTable::SymbolShaderGroup, m_scene.shader_groups());
           BIND(SymbolTable::SymbolEnvironmentEDF, m_scene.environment_edfs());
           BIND(SymbolTable::SymbolEnvironmentShader, m_scene.environment_shaders());
+          case SymbolTable::SymbolNotFound: break;
           assert_otherwise;
         }
 
@@ -597,6 +598,9 @@ bool InputBinder::try_bind_scene_entity_to_input(
                 param_value,
                 input);
             return true;
+
+          case SymbolTable::SymbolNotFound:
+            break;
 
           default: break;           // might be a scalar
         }
@@ -656,6 +660,7 @@ bool InputBinder::try_bind_assembly_entity_to_input(
           BIND(SymbolTable::SymbolObject, assembly.objects());
           BIND(SymbolTable::SymbolObjectInstance, assembly.object_instances());
           BIND(SymbolTable::SymbolVolume, assembly.volumes());
+          case SymbolTable::SymbolNotFound: break;
           default: break;           // might be a scene entity (e.g. an environment EDF)
         }
 
@@ -681,6 +686,9 @@ bool InputBinder::try_bind_assembly_entity_to_input(
                 param_value,
                 input);
             return true;
+
+          case SymbolTable::SymbolNotFound:
+            break;
 
           default: break;           // might be a scalar
         }
@@ -769,6 +777,7 @@ InputBinder::ReferencedEntity InputBinder::find_entity_in_assembly(
       case SymbolTable::SymbolObject: return ReferencedEntity(assembly.objects(), name);
       case SymbolTable::SymbolObjectInstance: return ReferencedEntity(assembly.object_instances(), name);
       case SymbolTable::SymbolVolume: return ReferencedEntity(assembly.volumes(), name);
+      case SymbolTable::SymbolNotFound: break;
       default: break;               // might be a scalar
     }
 
@@ -786,6 +795,7 @@ InputBinder::ReferencedEntity InputBinder::find_entity_in_scene(
       case SymbolTable::SymbolShaderGroup: return ReferencedEntity(m_scene.shader_groups(), name);
       case SymbolTable::SymbolEnvironmentEDF: return ReferencedEntity(m_scene.environment_edfs(), name);
       case SymbolTable::SymbolEnvironmentShader: return ReferencedEntity(m_scene.environment_shaders(), name);
+      case SymbolTable::SymbolNotFound: break;
       default: break;               // might be a scalar
     }
 
