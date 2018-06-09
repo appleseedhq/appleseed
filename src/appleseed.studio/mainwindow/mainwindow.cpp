@@ -326,7 +326,7 @@ QDockWidget* MainWindow::create_dock_widget(const char* dock_name)
     dock_widget->setObjectName(object_name);
     dock_widget->setWindowTitle(dock_name);
 
-    const auto& actions = m_ui->menu_view->actions();
+    const auto actions = m_ui->menu_view->actions();
     QAction* menu_separator = actions.last();
     for (int i = actions.size() - 2; i != 0; --i)
     {
@@ -337,10 +337,12 @@ QDockWidget* MainWindow::create_dock_widget(const char* dock_name)
         }
     }
 
-    m_ui->menu_view->insertAction(menu_separator,
-                                  dock_widget->toggleViewAction());
+    m_ui->menu_view->insertAction(
+        menu_separator,
+        dock_widget->toggleViewAction());
 
     m_minimize_buttons.push_back(new MinimizeButton(dock_widget));
+
     statusBar()->insertPermanentWidget(
         static_cast<int>(m_minimize_buttons.size()),
         m_minimize_buttons.back());
