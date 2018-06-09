@@ -91,6 +91,16 @@ namespace
 
         void print_settings() const override
         {
+            string projection_type;
+            switch (m_projection_type){
+                case EquisolidAngle:
+                    projection_type = "equisolid angle";
+                    break;
+
+                default:
+                    projection_type = "unknown";
+            }
+
             RENDERER_LOG_INFO(
                 "camera \"%s\" settings:\n"
                 "  model                         %s\n"
@@ -102,7 +112,7 @@ namespace
                 "  shutter open end time         %f\n"
                 "  shutter close begin time      %f\n"
                 "  shutter close end time        %f\n"
-                "  projection type               %d",
+                "  projection type               %s",
                 get_path().c_str(),
                 Model,
                 m_film_dimensions[0],
@@ -113,7 +123,7 @@ namespace
                 m_shutter_open_end_time,
                 m_shutter_close_begin_time,
                 m_shutter_close_end_time,
-                m_projection_type);
+                projection_type.c_str());
         }
 
         bool on_render_begin(
