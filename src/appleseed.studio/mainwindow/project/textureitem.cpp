@@ -128,25 +128,20 @@ void TextureItem::do_delete()
     if (!allows_deletion())
         return;
 
-    const UniqueID texture_uid = m_entity->get_uid();
-
     // Remove all texture instances and their corresponding project items.
     remove_texture_instances(
         m_editor_context.m_item_registry,
         m_parent,
-        texture_uid);
+        m_entity_uid);
 
     // Remove and delete the texture.
-    m_parent.textures().remove(m_parent.textures().get_by_uid(texture_uid));
+    m_parent.textures().remove(m_parent.textures().get_by_uid(m_entity_uid));
 
     // Mark the project as modified.
     m_editor_context.m_project_builder.slot_notify_project_modification();
 
     // Remove and delete the texture item.
-    ItemBase* texture_item = m_editor_context.m_item_registry.get_item(texture_uid);
-    delete texture_item;
-
-    // At this point 'this' no longer exists.
+    delete this;
 }
 
 }   // namespace studio
