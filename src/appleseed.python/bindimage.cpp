@@ -40,8 +40,9 @@
 #include "foundation/platform/types.h"
 
 // Standard headers.
-#include <algorithm>
 #include <cstddef>
+#include <cstring>
+#include <memory>
 #include <string>
 
 namespace bpy = boost::python;
@@ -61,52 +62,6 @@ namespace
         return new Tile(*source);
     }
 
-    void copy_tile_data_to_py_buffer(const Tile& tile, bpy::object& buffer)
-    {
-        void* array = nullptr;
-        Py_ssize_t len;
-
-        const int success = PyObject_AsWriteBuffer(buffer.ptr(), &array, &len);
-
-        if (success != 0)
-            bpy::throw_error_already_set();
-
-        if (static_cast<size_t>(len) < tile.get_size())
-        {
-            PyErr_SetString(PyExc_IndexError, "Buffer size is smaller than data size");
-            bpy::throw_error_already_set();
-        }
-
-        std::copy(
-            tile.get_storage(),
-            tile.get_storage() + tile.get_size(),
-            reinterpret_cast<uint8*>(array));
-    }
-
-    bpy::list blender_tile_data(const Tile& tile)
-    {
-        bpy::list pixels;
-
-        for (size_t y = 0, height = tile.get_height(); y < height; ++y)
-        {
-            for (size_t x = 0, width = tile.get_width(); x < width; ++x)
-            {
-                // Blender's image coordinate system is y up.
-                Color4f linear_rgba;
-                tile.get_pixel(x, height - y - 1, linear_rgba);
-
-                bpy::list p;
-                p.append(linear_rgba[0]);
-                p.append(linear_rgba[1]);
-                p.append(linear_rgba[2]);
-                p.append(linear_rgba[3]);
-                pixels.append(p);
-            }
-        }
-
-        return pixels;
-    }
-
     Image* copy_image(const Image* source)
     {
         return new Image(*source);
@@ -116,6 +71,64 @@ namespace
     {
         // todo: not sure what to store in memo...
         return new Image(*source);
+    }
+
+    const char* python_array_code(PixelFormat format)
+    {
+        switch (format)
+        {
+          case PixelFormatUInt8:
+            return "B";
+
+          case PixelFormatUInt16:
+            return "H";
+
+          case PixelFormatUInt32:
+            return "I";
+
+          case PixelFormatHalf:
+            return "B";
+
+          case PixelFormatFloat:
+            return "f";
+
+          case PixelFormatDouble:
+            return "d";
+
+          assert_otherwise;
+        }
+    }
+
+    // Copied from OpenImageIO's python bindings.
+    bpy::object c_array_to_py_array(const char* data, PixelFormat format, size_t size)
+    {
+        // Figure out what kind of array to return and create it
+        bpy::object arr_module(bpy::handle<>(PyImport_ImportModule("array")));
+        bpy::object array = arr_module.attr("array")(python_array_code(format));
+
+        // Create a Python byte array (or string for Python2) to hold the data.
+#if PY_MAJOR_VERSION >= 3
+        bpy::object string_py(bpy::handle<>(PyBytes_FromStringAndSize(data, size)));
+#else
+        bpy::object string_py(bpy::handle<>(PyString_FromStringAndSize(data, size)));
+#endif
+
+        // Copy the data from the string to the array, then return the array.
+#if (PY_MAJOR_VERSION < 3) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 2)
+        array.attr("fromstring")(string_py);
+#else
+        array.attr("frombytes")(string_py);
+#endif
+        return array;
+    }
+
+    bpy::object tile_get_storage(const Tile* tile)
+    {
+        // Allocate our own temp buffer and copy the pixels.
+        std::unique_ptr<char[]> data (new char[tile->get_size()]);
+        std::memcpy(data.get(), tile->get_storage(), tile->get_size());
+
+        return c_array_to_py_array(data.get(), tile->get_pixel_format(), tile->get_size());
     }
 
     std::string image_stack_get_name(const ImageStack* image_stack, const size_t index)
@@ -132,28 +145,26 @@ void bind_image()
         .value("UInt32", PixelFormatUInt32)
         .value("Half",   PixelFormatHalf)
         .value("Float",  PixelFormatFloat)
-        .value("Double", PixelFormatDouble)
-        ;
+        .value("Double", PixelFormatDouble);
 
     bpy::class_<CanvasProperties, boost::noncopyable>("CanvasProperties", bpy::no_init)
-        .def_readonly("canvas_width", &CanvasProperties::m_canvas_width)
-        .def_readonly("canvas_height", &CanvasProperties::m_canvas_height)
-        .def_readonly("tile_width", &CanvasProperties::m_tile_width)
-        .def_readonly("tile_height", &CanvasProperties::m_tile_height)
-        .def_readonly("channel_count", &CanvasProperties::m_channel_count)
-        .def_readonly("pixel_format", &CanvasProperties::m_pixel_format)
-        .def_readonly("rcp_canvas_width", &CanvasProperties::m_rcp_canvas_width)
-        .def_readonly("rcp_canvas_height", &CanvasProperties::m_rcp_canvas_height)
-        .def_readonly("rcp_tile_width", &CanvasProperties::m_rcp_tile_width)
-        .def_readonly("rcp_tile_height", &CanvasProperties::m_rcp_tile_height)
-        .def_readonly("tile_count_x", &CanvasProperties::m_tile_count_x)
-        .def_readonly("tile_count_y", &CanvasProperties::m_tile_count_y)
-        .def_readonly("tile_count", &CanvasProperties::m_tile_count)
-        .def_readonly("pixel_count", &CanvasProperties::m_pixel_count)
-        .def_readonly("pixel_size", &CanvasProperties::m_pixel_size)
+        .add_property("m_canvas_width", &CanvasProperties::m_canvas_width)
+        .add_property("m_canvas_height", &CanvasProperties::m_canvas_height)
+        .add_property("m_tile_width", &CanvasProperties::m_tile_width)
+        .add_property("m_tile_height", &CanvasProperties::m_tile_height)
+        .add_property("m_channel_count", &CanvasProperties::m_channel_count)
+        .add_property("m_pixel_format", &CanvasProperties::m_pixel_format)
+        .add_property("m_rcp_canvas_width", &CanvasProperties::m_rcp_canvas_width)
+        .add_property("m_rcp_canvas_height", &CanvasProperties::m_rcp_canvas_height)
+        .add_property("m_rcp_tile_width", &CanvasProperties::m_rcp_tile_width)
+        .add_property("m_rcp_tile_height", &CanvasProperties::m_rcp_tile_height)
+        .add_property("m_tile_count_x", &CanvasProperties::m_tile_count_x)
+        .add_property("m_tile_count_y", &CanvasProperties::m_tile_count_y)
+        .add_property("m_tile_count", &CanvasProperties::m_tile_count)
+        .add_property("m_pixel_count", &CanvasProperties::m_pixel_count)
+        .add_property("m_pixel_size", &CanvasProperties::m_pixel_size)
         .def("get_tile_width", &CanvasProperties::get_tile_width)
-        .def("get_tile_height", &CanvasProperties::get_tile_height)
-        ;
+        .def("get_tile_height", &CanvasProperties::get_tile_height);
 
     bpy::class_<Tile, boost::noncopyable>("Tile", bpy::init<size_t, size_t, size_t, PixelFormat>())
         .def("__copy__", copy_tile, bpy::return_value_policy<bpy::manage_new_object>())
@@ -164,10 +175,7 @@ void bind_image()
         .def("get_channel_count", &Tile::get_channel_count)
         .def("get_pixel_count", &Tile::get_pixel_count)
         .def("get_size", &Tile::get_size)
-        .def("copy_data_to", copy_tile_data_to_py_buffer)   // todo: maybe this needs a better name
-
-        .def("blender_tile_data", blender_tile_data)
-        ;
+        .def("get_storage", tile_get_storage);
 
     const Tile& (Image::*image_get_tile)(const size_t, const size_t) const = &Image::tile;
 
@@ -175,8 +183,7 @@ void bind_image()
         .def("__copy__", copy_image, bpy::return_value_policy<bpy::manage_new_object>())
         .def("__deepcopy__", copy_image, bpy::return_value_policy<bpy::manage_new_object>())
         .def("properties", &Image::properties, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def("tile", image_get_tile, bpy::return_value_policy<bpy::reference_existing_object>())
-        ;
+        .def("tile", image_get_tile, bpy::return_value_policy<bpy::reference_existing_object>());
 
     const Image& (ImageStack::*image_stack_get_image)(const size_t) const = &ImageStack::get_image;
 
@@ -184,6 +191,5 @@ void bind_image()
         .def("empty", &ImageStack::empty)
         .def("size", &ImageStack::size)
         .def("get_name", image_stack_get_name)
-        .def("get_image", image_stack_get_image, bpy::return_value_policy<bpy::reference_existing_object>())
-        ;
+        .def("get_image", image_stack_get_image, bpy::return_value_policy<bpy::reference_existing_object>());
 }
