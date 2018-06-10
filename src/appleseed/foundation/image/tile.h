@@ -181,9 +181,8 @@ class APPLESEED_DLLSYMBOL Tile
     template <typename Color>
     void clear(const Color& color);
 
-    // Copy the contents of another tile of equal dimensions and number of channels
-    // (but possibly using a different pixel format).
-    void copy(const Tile& rhs);
+    // Copy the contents of another tile of identical geometry (but possibly with a different pixel format).
+    void copy_from(const Tile& source);
 
   protected:
     const size_t            m_width;            // tile width, in pixels
