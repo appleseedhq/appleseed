@@ -32,7 +32,6 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditorcontext.h"
-#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/rendering/renderingmanager.h"
 #include "utility/miscellaneous.h"
@@ -79,20 +78,15 @@ void AssemblyInstanceItem::do_delete()
     if (!allows_deletion())
         return;
 
-    const UniqueID assembly_instance_uid = m_entity->get_uid();
-
     // Remove and delete the assembly instance.
-    m_parent.assembly_instances().remove(assembly_instance_uid);
+    m_parent.assembly_instances().remove(m_entity_uid);
 
     // Mark the scene and the project as modified.
     m_editor_context.m_project.get_scene()->bump_version_id();
     m_editor_context.m_project_builder.slot_notify_project_modification();
 
     // Remove and delete the assembly instance item.
-    ItemBase* assembly_instance_item = m_editor_context.m_item_registry.get_item(assembly_instance_uid);
-    delete assembly_instance_item;
-
-    // At this point 'this' no longer exists.
+    delete this;
 }
 
 }   // namespace studio

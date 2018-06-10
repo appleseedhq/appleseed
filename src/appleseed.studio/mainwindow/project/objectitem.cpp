@@ -184,25 +184,20 @@ void ObjectItem::do_delete()
     if (!allows_deletion())
         return;
 
-    const UniqueID object_uid = m_entity->get_uid();
-
     // Remove all object instances and their corresponding project items.
     remove_object_instances(
         m_editor_context.m_item_registry,
         m_parent,
-        object_uid);
+        m_entity_uid);
 
     // Remove and delete the object.
-    m_parent.objects().remove(m_parent.objects().get_by_uid(object_uid));
+    m_parent.objects().remove(m_parent.objects().get_by_uid(m_entity_uid));
 
     // Mark the project as modified.
     m_editor_context.m_project_builder.slot_notify_project_modification();
 
     // Remove and delete the object item.
-    ItemBase* object_item = m_editor_context.m_item_registry.get_item(object_uid);
-    delete object_item;
-
-    // At this point 'this' no longer exists.
+    delete this;
 }
 
 }   // namespace studio

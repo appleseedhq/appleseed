@@ -464,21 +464,16 @@ void ObjectInstanceItem::do_delete()
     if (!allows_deletion())
         return;
 
-    const UniqueID object_instance_uid = m_entity->get_uid();
-
     // Remove and delete the object instance.
     m_parent.object_instances().remove(
-        m_parent.object_instances().get_by_uid(object_instance_uid));
+        m_parent.object_instances().get_by_uid(m_entity_uid));
 
     // Mark the assembly and the project as modified.
     m_parent.bump_version_id();
     m_editor_context.m_project_builder.slot_notify_project_modification();
 
     // Remove and delete the object instance item.
-    ItemBase* object_instance_item = m_editor_context.m_item_registry.get_item(object_instance_uid);
-    delete object_instance_item;
-
-    // At this point 'this' no longer exists.
+    delete this;
 }
 
 void ObjectInstanceItem::add_material_assignment_menu_actions(
