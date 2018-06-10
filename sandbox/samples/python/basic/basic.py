@@ -239,7 +239,7 @@ class TileCallback(asr.ITileCallback):
         self.rendered_pixels += tile.get_pixel_count()
 
         # Retrieve the total number of pixels in the frame.
-        total_pixels = frame.image().properties().pixel_count
+        total_pixels = frame.image().properties().m_pixel_count
 
         # Print a progress message.
         percent = (100.0 * self.rendered_pixels) / total_pixels
