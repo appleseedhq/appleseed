@@ -172,16 +172,16 @@ size_t Tile::get_memory_size() const
     return sizeof(*this) + get_size();
 }
 
-void Tile::copy(const Tile& rhs)
+void Tile::copy_from(const Tile& source)
 {
-    assert(m_width == rhs.m_width);
-    assert(m_height == rhs.m_height);
-    assert(m_channel_count == rhs.m_channel_count);
+    assert(m_width == source.m_width);
+    assert(m_height == source.m_height);
+    assert(m_channel_count == source.m_channel_count);
 
     Pixel::convert(
-        rhs.m_pixel_format,                         // source format
-        rhs.m_pixel_array,                          // source begin
-        rhs.m_pixel_array + rhs.m_array_size,       // source end
+        source.m_pixel_format,                      // source format
+        source.m_pixel_array,                       // source begin
+        source.m_pixel_array + source.m_array_size, // source end
         1,                                          // source stride
         m_pixel_format,                             // destination format
         m_pixel_array,                              // destination

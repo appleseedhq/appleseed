@@ -91,6 +91,7 @@ class APPLESEED_DLLSYMBOL Image
     const CanvasProperties& properties() const override;
 
     // Direct access to a given tile.
+    // Warning: it is not safe to call these methods concurrently from multiple threads.
     Tile& tile(
         const size_t        tile_x,
         const size_t        tile_y) override;
@@ -104,6 +105,9 @@ class APPLESEED_DLLSYMBOL Image
         const size_t        tile_x,
         const size_t        tile_y,
         Tile*               tile);
+
+    // Copy the contents of another image of identical geometry (but possibly with a different pixel format).
+    void copy_from(const Image& source);
 
   protected:
     CanvasProperties        m_props;
