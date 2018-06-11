@@ -101,9 +101,9 @@ TEST_SUITE(Foundation_Math_Population)
         EXPECT_EQ(8, pop.get_size());
         EXPECT_EQ(2, pop.get_min());
         EXPECT_EQ(9, pop.get_max());
-        EXPECT_FEQ(5.0, pop.get_mean());
-        EXPECT_FEQ(2.0, pop.get_dev());
-        EXPECT_FEQ(0.4, pop.get_var());
+        EXPECT_EQ(5.0, pop.get_mean());
+        EXPECT_EQ(2.0, pop.get_dev());
+        EXPECT_EQ(0.4, pop.get_var());
     }
 
     TEST_CASE(NonEmptyIntegerPopulationWithCounts)
@@ -118,9 +118,9 @@ TEST_SUITE(Foundation_Math_Population)
         EXPECT_EQ(8, pop.get_size());
         EXPECT_EQ(2, pop.get_min());
         EXPECT_EQ(9, pop.get_max());
-        EXPECT_FEQ(5.0, pop.get_mean());
-        EXPECT_FEQ(2.0, pop.get_dev());
-        EXPECT_FEQ(0.4, pop.get_var());
+        EXPECT_EQ(5.0, pop.get_mean());
+        EXPECT_EQ(2.0, pop.get_dev());
+        EXPECT_EQ(0.4, pop.get_var());
     }
 
     TEST_CASE(NonEmptyFloatPopulationWithLargeCounts)
@@ -134,9 +134,9 @@ TEST_SUITE(Foundation_Math_Population)
         EXPECT_EQ(631, pop.get_size());
         EXPECT_FEQ(-3.0f, pop.get_min());
         EXPECT_FEQ(102.0f, pop.get_max());
-        EXPECT_FEQ_EPS(12.4517, pop.get_mean(), 1.0e-4);
-        EXPECT_FEQ_EPS(17.104, pop.get_dev(), 1.0e-4);
-        EXPECT_FEQ_EPS(1.37363, pop.get_var(), 1.0e-4);
+        EXPECT_FEQ_EPS(12.452f, static_cast<float>(pop.get_mean()), 1.0e-2f);
+        EXPECT_FEQ_EPS(17.104f, static_cast<float>(pop.get_dev()), 1.0e-2f);
+        EXPECT_FEQ_EPS(1.374f, static_cast<float>(pop.get_var()), 1.0e-2f);
     }
 
     TEST_CASE(MergeEmptyPopulationIntoEmptyPopulation)
@@ -230,7 +230,7 @@ TEST_SUITE(Foundation_Math_Population)
         EXPECT_EQ(expected.get_size(), pop.get_size());
         EXPECT_EQ(expected.get_min(), pop.get_min());
         EXPECT_EQ(expected.get_max(), pop.get_max());
-        EXPECT_FEQ(expected.get_mean(), pop.get_mean());
-        EXPECT_FEQ(expected.get_dev(), pop.get_dev());
+        EXPECT_EQ(expected.get_mean(), pop.get_mean());
+        EXPECT_EQ(expected.get_dev(), pop.get_dev());
     }
 }

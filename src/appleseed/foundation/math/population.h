@@ -56,7 +56,7 @@ class Population
     // Constructor.
     Population();                           // empty population
 
-    // Insert count times the value val into the population.
+    // Insert `count` times the value `val` into the population.
     void insert(const ValueType& val, const size_t count = 1);
 
     // Merge another population into this one.
