@@ -74,9 +74,9 @@ class AABBBase
 
     // Constructors.
 #if !defined(_MSC_VER) || _MSC_VER >= 1800
-    AABBBase() = default;                   // leave all components uninitialized
+    AABBBase() = default;               // leave all components uninitialized
 #else
-    AABBBase() {}                           // leave all components uninitialized
+    AABBBase() {}                       // leave all components uninitialized
 #endif
     AABBBase(
         const VectorType& min,          // lower bound
@@ -163,7 +163,7 @@ template <typename T, size_t N> AABBBase<T, N>& operator*=(AABBBase<T, N>& lhs, 
 
 
 //
-// N-dimensional floating point axis-aligned bounding box [min, max] class.
+// N-dimensional floating-point axis-aligned bounding box [min, max] class.
 //
 
 template <typename T, size_t N>
@@ -205,9 +205,11 @@ class AABB
     VectorType center() const;
     ValueType center(const size_t dim) const;
 
+    // Compute the extent of the bounding box.
     VectorType extent() const;
     ValueType extent(const size_t dim) const;
 
+    // Return the volume of the bounding box.
     T volume() const;
 };
 
@@ -516,25 +518,25 @@ inline AABBBase<T, N>& operator*=(AABBBase<T, N>& lhs, const T rhs)
 template <typename T, size_t N>
 inline Vector<T, N> AABBBase<T, N>::extent() const
 {
-    assert(this->is_valid());
+    assert(is_valid());
 
-    return this->max - this->min + Vector<T, N>(1);
+    return max - min + VectorType(1);
 }
 
 template <typename T, size_t N>
 inline T AABBBase<T, N>::extent(const size_t dim) const
 {
-    assert(this->is_valid());
+    assert(is_valid());
 
-    return this->max[dim] - this->min[dim] + T(1);
+    return max[dim] - min[dim] + T(1);
 }
 
 template <typename T, size_t N>
 inline T AABBBase<T, N>::volume() const
 {
-    assert(this->is_valid());
+    assert(is_valid());
 
-    const VectorType e = this->max - this->min + Vector<T, N>(1);
+    const VectorType e = max - min + VectorType(1);
 
     ValueType volume = e[0];
 
