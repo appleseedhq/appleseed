@@ -229,9 +229,9 @@ namespace
             {
                 for (size_t i = 0; i < src_props.m_canvas_width; ++i)
                 {
-                    Color<float, 1> val;
-                    m_image->get_pixel(i, j, val);
-                    max_time = max(val[0], max_time);
+                    float val;
+                    m_image->get_pixel(i, j, &val);
+                    max_time = max(val, max_time);
                 }
             }
 
@@ -245,11 +245,12 @@ namespace
             {
                 for (size_t i = 0; i < src_props.m_canvas_width; ++i)
                 {
-                    Color<float, 1> c;
-                    m_image->get_pixel(i, j, c);
+                    float c;
+                    m_image->get_pixel(i, j, &c);
 
-                    c[0] *= rcp_max_time;
-                    m_image->set_pixel(i, j, c);
+                    c *= rcp_max_time;
+
+                    m_image->set_pixel(i, j, &c);
                 }
             }
         }

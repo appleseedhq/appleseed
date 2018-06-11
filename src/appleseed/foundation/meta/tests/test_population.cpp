@@ -101,9 +101,42 @@ TEST_SUITE(Foundation_Math_Population)
         EXPECT_EQ(8, pop.get_size());
         EXPECT_EQ(2, pop.get_min());
         EXPECT_EQ(9, pop.get_max());
-        EXPECT_FEQ(5.0, pop.get_mean());
-        EXPECT_FEQ(2.0, pop.get_dev());
-        EXPECT_FEQ(0.4, pop.get_var());
+        EXPECT_EQ(5.0, pop.get_mean());
+        EXPECT_EQ(2.0, pop.get_dev());
+        EXPECT_EQ(0.4, pop.get_var());
+    }
+
+    TEST_CASE(NonEmptyIntegerPopulationWithCounts)
+    {
+        Population<int> pop;
+        pop.insert(2);
+        pop.insert(4, 3);
+        pop.insert(5, 2);
+        pop.insert(7);
+        pop.insert(9);
+
+        EXPECT_EQ(8, pop.get_size());
+        EXPECT_EQ(2, pop.get_min());
+        EXPECT_EQ(9, pop.get_max());
+        EXPECT_EQ(5.0, pop.get_mean());
+        EXPECT_EQ(2.0, pop.get_dev());
+        EXPECT_EQ(0.4, pop.get_var());
+    }
+
+    TEST_CASE(NonEmptyFloatPopulationWithLargeCounts)
+    {
+        Population<float> pop;
+
+        pop.insert(12.0f, 510);
+        pop.insert(102.0f, 20);
+        pop.insert(-3.0f, 101);
+
+        EXPECT_EQ(631, pop.get_size());
+        EXPECT_FEQ(-3.0f, pop.get_min());
+        EXPECT_FEQ(102.0f, pop.get_max());
+        EXPECT_FEQ_EPS(12.452f, static_cast<float>(pop.get_mean()), 1.0e-2f);
+        EXPECT_FEQ_EPS(17.104f, static_cast<float>(pop.get_dev()), 1.0e-2f);
+        EXPECT_FEQ_EPS(1.374f, static_cast<float>(pop.get_var()), 1.0e-2f);
     }
 
     TEST_CASE(NonEmptyIntegerPopulationWithWeights)
@@ -214,7 +247,7 @@ TEST_SUITE(Foundation_Math_Population)
         EXPECT_EQ(expected.get_size(), pop.get_size());
         EXPECT_EQ(expected.get_min(), pop.get_min());
         EXPECT_EQ(expected.get_max(), pop.get_max());
-        EXPECT_FEQ(expected.get_mean(), pop.get_mean());
-        EXPECT_FEQ(expected.get_dev(), pop.get_dev());
+        EXPECT_EQ(expected.get_mean(), pop.get_mean());
+        EXPECT_EQ(expected.get_dev(), pop.get_dev());
     }
 }

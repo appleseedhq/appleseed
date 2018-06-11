@@ -136,16 +136,12 @@ ItemBase* MaterialCollectionItem::create_item(Material* material)
 {
     assert(material);
 
-    ItemBase* item =
+    return
         new MaterialItem(
             m_editor_context,
             material,
             m_parent,
             this);
-
-    m_editor_context.m_item_registry.insert(*material, item);
-
-    return item;
 }
 
 void MaterialCollectionItem::slot_create_generic()

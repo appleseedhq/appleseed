@@ -52,7 +52,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/job/abortswitch.h"
 
 using namespace foundation;
@@ -199,79 +198,34 @@ GAABB3 Assembly::compute_non_hierarchical_local_bbox() const
             impl->m_object_instances.end());
 }
 
-namespace
-{
-    template <typename EntityCollection>
-    void do_collect_asset_paths(
-        StringArray&            paths,
-        const EntityCollection& entities)
-    {
-        for (const_each<EntityCollection> i = entities; i; ++i)
-            i->collect_asset_paths(paths);
-    }
-
-    template <typename EntityCollection>
-    void do_update_asset_paths(
-        const StringDictionary& mappings,
-        EntityCollection&       entities)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-            i->update_asset_paths(mappings);
-    }
-}
-
 void Assembly::collect_asset_paths(StringArray& paths) const
 {
     BaseGroup::collect_asset_paths(paths);
 
-    do_collect_asset_paths(paths, bsdfs());
-    do_collect_asset_paths(paths, bssrdfs());
-    do_collect_asset_paths(paths, edfs());
-    do_collect_asset_paths(paths, surface_shaders());
-    do_collect_asset_paths(paths, materials());
-    do_collect_asset_paths(paths, lights());
-    do_collect_asset_paths(paths, objects());
-    do_collect_asset_paths(paths, object_instances());
-    do_collect_asset_paths(paths, volumes());
+    invoke_collect_asset_paths(bsdfs(), paths);
+    invoke_collect_asset_paths(bssrdfs(), paths);
+    invoke_collect_asset_paths(edfs(), paths);
+    invoke_collect_asset_paths(surface_shaders(), paths);
+    invoke_collect_asset_paths(materials(), paths);
+    invoke_collect_asset_paths(lights(), paths);
+    invoke_collect_asset_paths(objects(), paths);
+    invoke_collect_asset_paths(object_instances(), paths);
+    invoke_collect_asset_paths(volumes(), paths);
 }
 
 void Assembly::update_asset_paths(const StringDictionary& mappings)
 {
     BaseGroup::update_asset_paths(mappings);
 
-    do_update_asset_paths(mappings, bsdfs());
-    do_update_asset_paths(mappings, bssrdfs());
-    do_update_asset_paths(mappings, edfs());
-    do_update_asset_paths(mappings, surface_shaders());
-    do_update_asset_paths(mappings, materials());
-    do_update_asset_paths(mappings, lights());
-    do_update_asset_paths(mappings, objects());
-    do_update_asset_paths(mappings, object_instances());
-    do_update_asset_paths(mappings, volumes());
-}
-
-namespace
-{
-    template <typename EntityCollection>
-    bool invoke_on_frame_begin(
-        const Project&          project,
-        const BaseGroup*        parent,
-        EntityCollection&       entities,
-        OnFrameBeginRecorder&   recorder,
-        IAbortSwitch*           abort_switch)
-    {
-        bool success = true;
-
-        for (each<EntityCollection> i = entities; i; ++i)
-        {
-            if (is_aborted(abort_switch))
-                break;
-
-            success = success && i->on_frame_begin(project, parent, recorder, abort_switch);
-        }
-
-        return success;
-    }
+    invoke_update_asset_paths(bsdfs(), mappings);
+    invoke_update_asset_paths(bssrdfs(), mappings);
+    invoke_update_asset_paths(edfs(), mappings);
+    invoke_update_asset_paths(surface_shaders(), mappings);
+    invoke_update_asset_paths(materials(), mappings);
+    invoke_update_asset_paths(lights(), mappings);
+    invoke_update_asset_paths(objects(), mappings);
+    invoke_update_asset_paths(object_instances(), mappings);
+    invoke_update_asset_paths(volumes(), mappings);
 }
 
 bool Assembly::on_frame_begin(
@@ -283,22 +237,19 @@ bool Assembly::on_frame_begin(
     if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
+    if (!BaseGroup::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
+
     bool success = true;
-    success = success && invoke_on_frame_begin(project, this, colors(), recorder, abort_switch);
-    success = success && invoke_on_frame_begin(project, this, textures(), recorder, abort_switch);
-    success = success && invoke_on_frame_begin(project, this, texture_instances(), recorder, abort_switch);
-    success = success && invoke_on_frame_begin(project, this, shader_groups(), recorder, abort_switch);
-    success = success && invoke_on_frame_begin(project, this, bsdfs(), recorder, abort_switch);
-    success = success && invoke_on_frame_begin(project, this, bssrdfs(), recorder, abort_switch);
-    success = success && invoke_on_frame_begin(project, this, edfs(), recorder, abort_switch);
-    success = success && invoke_on_frame_begin(project, this, surface_shaders(), recorder, abort_switch);
-    success = success && invoke_on_frame_begin(project, this, materials(), recorder, abort_switch);
-    success = success && invoke_on_frame_begin(project, this, lights(), recorder, abort_switch);
-    success = success && invoke_on_frame_begin(project, this, objects(), recorder, abort_switch);
-    success = success && invoke_on_frame_begin(project, this, object_instances(), recorder, abort_switch);
-    success = success && invoke_on_frame_begin(project, this, volumes(), recorder, abort_switch);
-    success = success && invoke_on_frame_begin(project, this, assemblies(), recorder, abort_switch);
-    success = success && invoke_on_frame_begin(project, this, assembly_instances(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(bsdfs(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(bssrdfs(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(edfs(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(surface_shaders(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(materials(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(lights(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(objects(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(object_instances(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(volumes(), project, this, recorder, abort_switch);
     if (!success)
         return false;
 

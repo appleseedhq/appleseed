@@ -56,8 +56,8 @@ class Population
     // Constructor.
     Population();                           // empty population
 
-    // Insert a new value into the population.
-    void insert(const ValueType& val, const size_t amount = 1);
+    // Insert `count` times the value `val` into the population.
+    void insert(const ValueType& val, const size_t count = 1);
 
     // Merge another population into this one.
     void merge(const PopulationType& pop);
@@ -96,7 +96,7 @@ inline Population<T>::Population()
 }
 
 template <typename T>
-inline void Population<T>::insert(const ValueType& val, const size_t amount)
+inline void Population<T>::insert(const ValueType& val, const size_t count)
 {
     //
     // For a given population of n values { x1, x2, ..., xn }, the minimum value,
@@ -126,6 +126,8 @@ inline void Population<T>::insert(const ValueType& val, const size_t amount)
     //   http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
     //
 
+    assert(count >= 1);
+
     // Update the minimum value.
     if (m_min > val)
         m_min = val;
@@ -134,12 +136,12 @@ inline void Population<T>::insert(const ValueType& val, const size_t amount)
     if (m_max < val)
         m_max = val;
 
+    // Update the size of the population.
+    m_size += count;
+
     // Compute the residual value.
     const double double_val = static_cast<double>(val);
-    const double residual = (double_val - m_mean) * amount;
-
-    // Update the size of the population.
-    m_size += amount;
+    const double residual = (double_val - m_mean) * count;
 
     // Update the mean value of the population.
     m_mean += residual / m_size;

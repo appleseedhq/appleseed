@@ -53,9 +53,6 @@ class APPLESEED_DLLSYMBOL IAOVFactory
   : public foundation::IUnknown
 {
   public:
-    // Destructor.
-    virtual ~IAOVFactory() {}
-
     // Return a string identifying this AOV model.
     virtual const char* get_model() const = 0;
 

@@ -31,9 +31,9 @@
 #define APPLESEED_RENDERER_MODELING_FRAME_FRAME_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/aov/aovcontainer.h"
 #include "renderer/modeling/entity/entity.h"
+#include "renderer/modeling/postprocessingstage/postprocessingstagecontainer.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -57,11 +57,15 @@ namespace foundation    { class DictionaryArray; }
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class Image; }
 namespace foundation    { class ImageAttributes; }
+namespace foundation    { class StringArray; }
+namespace foundation    { class StringDictionary; }
 namespace foundation    { class Tile; }
-namespace renderer      { class AOV; }
+namespace renderer      { class BaseGroup; }
 namespace renderer      { class DenoiserAOV; }
 namespace renderer      { class ImageStack; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class Project; }
 
 namespace renderer
 {
@@ -85,6 +89,12 @@ class APPLESEED_DLLSYMBOL Frame
     // Print this component's settings to the renderer's global logger.
     void print_settings();
 
+    // Access the AOVs.
+    AOVContainer& aovs() const;
+
+    // Access the post-processing stages.
+    PostProcessingStageContainer& post_processing_stages() const;
+
     // Return the name of the active camera.
     const char* get_active_camera_name() const;
 
@@ -96,9 +106,6 @@ class APPLESEED_DLLSYMBOL Frame
 
     // Access the AOV images.
     ImageStack& aov_images() const;
-
-    // Access the AOVs.
-    const AOVContainer& aovs() const;
 
     // Create an extra AOV image if it does not exist.
     size_t create_extra_aov_image(const char* name) const;
@@ -112,8 +119,17 @@ class APPLESEED_DLLSYMBOL Frame
     void set_crop_window(const foundation::AABB2u& crop_window);
     const foundation::AABB2u& get_crop_window() const;
 
-    // Return the number of pixels in the frame, taking into account the crop window.
-    size_t get_pixel_count() const;
+    // Expose asset file paths referenced by this entity to the outside.
+    void collect_asset_paths(foundation::StringArray& paths) const override;
+    void update_asset_paths(const foundation::StringDictionary& mappings) override;
+
+    // This method is called once before rendering each frame.
+    // Returns true on success, false otherwise.
+    bool on_frame_begin(
+        const Project&              project,
+        const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
     // Return the normalized device coordinates of a given sample.
     foundation::Vector2d get_sample_position(
@@ -135,16 +151,10 @@ class APPLESEED_DLLSYMBOL Frame
     // Do any post-process needed by AOV images.
     void post_process_aov_images() const;
 
-    struct RenderStampInfo
-    {
-        double m_render_time;       // in seconds
-    };
-
-    // Return whether the render stamp should be added to the frame.
-    bool is_render_stamp_enabled() const;
-
-    // Add the render stamp to the frame.
-    void add_render_stamp(const RenderStampInfo& info) const;
+    // Access render info. Render info contain statistics and additional results
+    // from the rendering process such as render time. They are used in particular
+    // by the Render Stamp post-processing stage.
+    ParamArray& render_info();
 
     enum class DenoisingMode
     {

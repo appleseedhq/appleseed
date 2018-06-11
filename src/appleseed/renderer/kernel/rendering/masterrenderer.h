@@ -75,12 +75,15 @@ class APPLESEED_DLLSYMBOL MasterRenderer
     ParamArray& get_parameters();
     const ParamArray& get_parameters() const;
 
-    struct RenderingResult
+    struct APPLESEED_DLLSYMBOL RenderingResult
     {
         enum Status { Succeeded, Aborted, Failed };
 
         Status  m_status;
         double  m_render_time;
+        double  m_post_processing_time;
+
+        RenderingResult();
     };
 
     // Render the project.

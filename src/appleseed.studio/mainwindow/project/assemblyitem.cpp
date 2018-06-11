@@ -365,7 +365,6 @@ namespace
         {
             assembly_instances.remove(*i);
             delete item_registry.get_item(*i);
-            item_registry.remove(*i);
         }
 
         // Recurse into child assemblies.
@@ -408,7 +407,6 @@ void AssemblyItem::do_delete()
 
     // Remove and delete the assembly item.
     ItemBase* assembly_item = m_editor_context.m_item_registry.get_item(assembly_uid);
-    m_editor_context.m_item_registry.remove(assembly_uid);
     delete assembly_item;
 
     // At this point 'this' no longer exists.

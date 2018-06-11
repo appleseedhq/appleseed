@@ -41,7 +41,9 @@ namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
 namespace renderer      { class Entity; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class OSLShadingSystem; }
+namespace renderer      { class Project; }
 
 namespace renderer
 {
@@ -88,6 +90,14 @@ class APPLESEED_DLLSYMBOL BaseGroup
     // Expose asset file paths referenced by this entity to the outside.
     void collect_asset_paths(foundation::StringArray& paths) const;
     void update_asset_paths(const foundation::StringDictionary& mappings);
+
+    // This method is called once before rendering each frame.
+    // Returns true on success, false otherwise.
+    bool on_frame_begin(
+        const Project&              project,
+        const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr);
 
   private:
     struct Impl;

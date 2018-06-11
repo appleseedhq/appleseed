@@ -54,9 +54,6 @@ class APPLESEED_DLLSYMBOL ISurfaceShaderFactory
   : public foundation::IUnknown
 {
   public:
-    // Destructor.
-    virtual ~ISurfaceShaderFactory() {}
-
     // Return a string identifying this surface shader model.
     virtual const char* get_model() const = 0;
 

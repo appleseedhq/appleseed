@@ -32,8 +32,6 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitembase.h"
-#include "mainwindow/project/entityeditorcontext.h"
-#include "mainwindow/project/itemregistry.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -43,6 +41,7 @@
 #include <cassert>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class ItemBase; } }
 class QString;
 
@@ -89,16 +88,12 @@ ItemBase* InstanceCollectionItem<Entity, EntityItem, ParentEntity>::create_item(
 {
     assert(entity);
 
-    ItemBase* item =
+    return
         new EntityItem(
             Base::m_editor_context,
             entity,
             m_parent,
             this);
-
-    Base::m_editor_context.m_item_registry.insert(*entity, item);
-
-    return item;
 }
 
 }       // namespace studio

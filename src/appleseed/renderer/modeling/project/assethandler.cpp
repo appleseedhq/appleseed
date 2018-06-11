@@ -67,24 +67,6 @@ namespace renderer
 
 namespace
 {
-    template <typename EntityCollection>
-    void do_collect_asset_paths(
-        StringArray&            paths,
-        const EntityCollection& entities)
-    {
-        for (const_each<EntityCollection> i = entities; i; ++i)
-            i->collect_asset_paths(paths);
-    }
-
-    template <typename EntityCollection>
-    void do_update_asset_paths(
-        const StringDictionary& mappings,
-        EntityCollection&       entities)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-            i->update_asset_paths(mappings);
-    }
-
     string convert_to_posix(string path)
     {
         replace(path.begin(), path.end(), '\\', '/');
@@ -132,7 +114,7 @@ namespace
 }
 
 AssetHandler::AssetHandler(
-    const Project&      project,
+    Project&            project,
     const char*         filepath,
     const Mode          mode)
   : m_project(project)
@@ -146,18 +128,11 @@ AssetHandler::AssetHandler(
 
 bool AssetHandler::handle_assets() const
 {
+    // Collect asset paths from project entities.
     StringArray paths;
+    m_project.collect_asset_paths(paths);
 
-    Scene* scene = m_project.get_scene();
-    if (scene)
-        scene->collect_asset_paths(paths);
-
-    Frame* frame = m_project.get_frame();
-    if (frame)
-        frame->collect_asset_paths(paths);
-
-    do_collect_asset_paths(paths, m_project.configurations());
-
+    // Remove duplicates.
     vector<string> unique_paths = array_vector<vector<string>>(paths);
     sort(unique_paths.begin(), unique_paths.end());
     unique_paths.erase(
@@ -172,22 +147,19 @@ bool AssetHandler::handle_assets() const
         string asset_path = unique_paths[i];
         assert(!asset_path.empty());
 
+        // Handle this asset.
         if (!handle_asset(asset_path))
             success = false;
 
+        // Update mapping from old asset paths to new ones.
         mappings.insert(unique_paths[i], asset_path);
     }
 
     if (!success)
         return false;
 
-    if (scene)
-        scene->update_asset_paths(mappings);
-
-    if (frame)
-        frame->update_asset_paths(mappings);
-
-    do_update_asset_paths(mappings, m_project.configurations());
+    // Update asset paths in project entities.
+    m_project.update_asset_paths(mappings);
 
     // If we copied all assets, we no longer need the absolute search paths, so remove them.
     if (m_mode == CopyAllAssets)

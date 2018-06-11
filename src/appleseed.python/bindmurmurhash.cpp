@@ -37,8 +37,8 @@ void bind_murmurhash()
 {
     bpy::class_<MurmurHash>("MurmurHash")
         .def(bpy::init<>())
-        .def_readonly("h1", &MurmurHash::h1)
-        .def_readonly("h2", &MurmurHash::h2)
+        .add_property("h1", &MurmurHash::h1)
+        .add_property("h2", &MurmurHash::h2)
         .def(bpy::self == bpy::self)
         .def(bpy::self != bpy::self)
         .def(bpy::self <  bpy::self);
