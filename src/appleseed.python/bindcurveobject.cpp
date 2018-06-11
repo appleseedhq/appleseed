@@ -107,10 +107,10 @@ namespace
 void bind_curve_object()
 {
     bpy::enum_<CurveBasis>("CurveBasis")
-            .value("LINEAR", CurveBasis::LINEAR)
-            .value("BEZIER", CurveBasis::BEZIER)
-            .value("BSPLINE", CurveBasis::BSPLINE)
-            .value("CATMULLROM", CurveBasis::CATMULLROM);
+            .value("Linear", CurveBasis::Linear)
+            .value("Bezier", CurveBasis::Bezier)
+            .value("Bspline", CurveBasis::Bspline)
+            .value("Catmullrom", CurveBasis::Catmullrom);
 
     bpy::class_<Curve1Type>("Curve1Type")
             .def(bpy::init<GVector3*, GScalar, GScalar, GColor3>())

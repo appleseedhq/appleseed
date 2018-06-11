@@ -58,21 +58,22 @@ namespace renderer      { class ParamArray; }
 namespace renderer
 {
 
-enum class CurveBasis : unsigned char { LINEAR, BEZIER, BSPLINE, CATMULLROM };
-const GScalar ar_bspline[16] = {  0.16666f,  0.66666f,  0.16666f,      0.0f,
-                                     -0.5f,      0.0f,      0.5f,      0.0f,
-                                      0.5f,     -1.0f,      0.5f,      0.0f,
-                                 -0.16666f,      0.5f,     -0.5f,  0.16666f };
+enum class CurveBasis : unsigned char { Linear, Bezier, Bspline, Catmullrom };
+
+const GScalar ar_bspline[16] = { 0.16666f,  0.66666f,  0.16666f,      0.0f,
+                                    -0.5f,      0.0f,      0.5f,      0.0f,
+                                     0.5f,     -1.0f,      0.5f,      0.0f,
+                                -0.16666f,      0.5f,     -0.5f,  0.16666f };
 
 const GScalar ar_catmullrom[16] = { 0.0f,  1.0f,  0.0f,  0.0f,
                                    -0.5f,  0.0f,  0.5f,  0.0f,
                                     1.0f, -2.5f,  2.0f, -0.5f,
                                    -0.5f,  1.5f, -1.5f,  0.5f } ;
 
-const GScalar ar_bezier_inv[16] = { 1.0f,      0.0f,      0.0f,  0.0f,
-                                    1.0f,  0.33333f,      0.0f,  0.0f,
-                                    1.0f,  0.66666f,  0.33333f,  0.0f,
-                                    1.0f,      1.0f,      1.0f,  1.0f } ;
+const GScalar ar_bezier_inv[16] = { 1.0f,      0.0f,      0.0f, 0.0f,
+                                    1.0f,  0.33333f,      0.0f, 0.0f,
+                                    1.0f,  0.66666f,  0.33333f, 0.0f,
+                                    1.0f,      1.0f,      1.0f, 1.0f } ;
 
 
 

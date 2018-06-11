@@ -81,10 +81,10 @@ namespace
         {
             switch(m_object.get_basis())
             {
-                case CurveBasis::BEZIER:
-                case CurveBasis::BSPLINE:
-                case CurveBasis::CATMULLROM:
-                    return static_cast<unsigned char>(CurveBasis::BEZIER);
+                case CurveBasis::Bezier:
+                case CurveBasis::Bspline:
+                case CurveBasis::Catmullrom:
+                    return static_cast<unsigned char>(CurveBasis::Bezier);
             }
 
             return static_cast<unsigned char>(m_object.get_basis());
@@ -96,13 +96,13 @@ namespace
 
             switch(m_object.get_basis())
             {
-                case CurveBasis::LINEAR:
+                case CurveBasis::Linear:
                     basis = "linear";
                     break;
 
-                case CurveBasis::BEZIER:
-                case CurveBasis::BSPLINE:
-                case CurveBasis::CATMULLROM:
+                case CurveBasis::Bezier:
+                case CurveBasis::Bspline:
+                case CurveBasis::Catmullrom:
                     basis = "bezier";
                     break;
             }
@@ -227,13 +227,13 @@ namespace
         {
             switch(m_object.get_basis())
             {
-                case CurveBasis::LINEAR:
+                case CurveBasis::Linear:
                     create_curve1_parameters();
                     break;
 
-                case CurveBasis::BEZIER:
-                case CurveBasis::BSPLINE:
-                case CurveBasis::CATMULLROM:
+                case CurveBasis::Bezier:
+                case CurveBasis::Bspline:
+                case CurveBasis::Catmullrom:
                     create_curve3_parameters();
                     break;
             }

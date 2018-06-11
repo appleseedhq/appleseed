@@ -34,7 +34,7 @@ DATA BLOCK FORMAT VERSION 1
 
 
   .----------------------------------.
-  |             Basis                |    1 byte (8-bit unsigned char enum - linear/bezier/b-spline/catmull-rom)
+  |             Basis                |    1 byte (8-bit unsigned char enum - linear(1)/ bezier(2)/ b-spline(3)/ catmull-rom(4))
   +----------------------------------+
   |         Number of curves         |    4 bytes (32-bit unsigned integer)
   +----------------------------------+

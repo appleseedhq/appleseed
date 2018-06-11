@@ -130,7 +130,7 @@ CurveBasis CurveObject::get_basis() const
 
 void CurveObject::push_basis(unsigned char b)
 {
-    assert(static_cast<CurveBasis>(b) <= CurveBasis::CATMULLROM);
+    assert(static_cast<CurveBasis>(b) <= CurveBasis::Catmullrom);
 
     impl->m_basis = static_cast<CurveBasis>(b);
 }
@@ -139,12 +139,12 @@ size_t CurveObject::get_curve_count() const
 {
     switch(impl->m_basis)
     {
-        case CurveBasis::LINEAR:
+        case CurveBasis::Linear:
             return get_curve1_count();
 
-        case CurveBasis::BEZIER:
-        case CurveBasis::BSPLINE:
-        case CurveBasis::CATMULLROM:
+        case CurveBasis::Bezier:
+        case CurveBasis::Bspline:
+        case CurveBasis::Catmullrom:
             return get_curve3_count();
 
         assert_otherwise;
@@ -179,9 +179,9 @@ size_t CurveObject::push_curve3(const Curve3Type& curve)
     const size_t index = impl->m_curves3.size();
     Curve3Type t_curve = Curve3Type(curve, CurveMatrixType::make_identity(), true);
 
-    if (get_basis() == CurveBasis::BSPLINE)
+    if (get_basis() == CurveBasis::Bspline)
         t_curve.transform_basis(CurveMatrixType::from_array(ar_bezier_inv) * CurveMatrixType::from_array(ar_bspline));
-    else if (get_basis() == CurveBasis::CATMULLROM)
+    else if (get_basis() == CurveBasis::Catmullrom)
         t_curve.transform_basis(CurveMatrixType::from_array(ar_bezier_inv) * CurveMatrixType::from_array(ar_catmullrom));
 
     impl->m_curves3.push_back(t_curve);

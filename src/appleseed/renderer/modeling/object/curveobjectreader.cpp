@@ -117,19 +117,19 @@ namespace {
 
             switch(m_object->get_basis())
             {
-                case CurveBasis::LINEAR:
+                case CurveBasis::Linear:
                     basis = "linear";
                     break;
 
-                case CurveBasis::BEZIER:
+                case CurveBasis::Bezier:
                     basis = "bezier";
                     break;
 
-                case CurveBasis::BSPLINE:
+                case CurveBasis::Bspline:
                     basis = "b-spline";
                     break;
 
-                case CurveBasis::CATMULLROM:
+                case CurveBasis::Catmullrom:
                     basis = "catmull-rom";
                     break;
             }
@@ -150,14 +150,14 @@ namespace {
 
             switch (static_cast<CurveBasis>(basis))
             {
-                case CurveBasis::LINEAR:
+                case CurveBasis::Linear:
                     m_object->reserve_curves1(count);
                     m_object->reserve_curves3(0);
                     break;
 
-                case CurveBasis::BEZIER:
-                case CurveBasis::BSPLINE:
-                case CurveBasis::CATMULLROM:
+                case CurveBasis::Bezier:
+                case CurveBasis::Bspline:
+                case CurveBasis::Catmullrom:
                     m_object->reserve_curves3(count);
                     m_object->reserve_curves1(0);
                     break;
@@ -175,16 +175,16 @@ namespace {
         {
             switch (m_object->get_basis())
             {
-                case CurveBasis::LINEAR:
+                case CurveBasis::Linear:
                     push_curve1();
                     break;
 
-                case CurveBasis::BEZIER:
+                case CurveBasis::Bezier:
                     push_curve3(3);
                     break;
 
-                case CurveBasis::BSPLINE:
-                case CurveBasis::CATMULLROM:
+                case CurveBasis::Bspline:
+                case CurveBasis::Catmullrom:
                     push_curve3(1);
                     break;
             }
