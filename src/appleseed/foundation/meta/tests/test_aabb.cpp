@@ -122,17 +122,6 @@ TEST_SUITE(Foundation_Math_AABB)
         EXPECT_FALSE(bbox.is_valid());
     }
 
-    TEST_CASE(TestInvalidateOnUnsignedIntegerAABB)
-    {
-        AABB3u bbox(
-            Vector3u(1, 2, 3),
-            Vector3u(4, 5, 6));
-
-        bbox.invalidate();
-
-        EXPECT_FALSE(bbox.is_valid());
-    }
-
     TEST_CASE(VerifyThatRank0AABBOverlapsWithItself)
     {
         const AABB3d bbox(
@@ -181,42 +170,42 @@ TEST_SUITE(Foundation_Math_AABB)
 
     TEST_CASE(TestOverlapRatio)
     {
-        EXPECT_FEQ(0.0,
+        EXPECT_EQ(0.0,
             AABB2d::overlap_ratio(
                 AABB2d(Vector2d(0.0, 0.0), Vector2d(1.0, 1.0)),
                 AABB2d(Vector2d(2.0, 0.0), Vector2d(3.0, 1.0))));
 
-        EXPECT_FEQ(0.0,
+        EXPECT_EQ(0.0,
             AABB2d::overlap_ratio(
                 AABB2d(Vector2d(2.0, 0.0), Vector2d(3.0, 1.0)),
                 AABB2d(Vector2d(0.0, 0.0), Vector2d(1.0, 1.0))));
 
-        EXPECT_FEQ(1.0,
+        EXPECT_EQ(1.0,
             AABB2d::overlap_ratio(
                 AABB2d(Vector2d(1.0, 1.0), Vector2d(2.0, 2.0)),
                 AABB2d(Vector2d(1.0, 1.0), Vector2d(2.0, 2.0))));
 
-        EXPECT_FEQ(1.0,
+        EXPECT_EQ(1.0,
             AABB2d::overlap_ratio(
                 AABB2d(Vector2d(1.0, 1.0), Vector2d(2.0, 2.0)),
                 AABB2d(Vector2d(0.0, 0.0), Vector2d(3.0, 3.0))));
 
-        EXPECT_FEQ(1.0,
+        EXPECT_EQ(1.0,
             AABB2d::overlap_ratio(
                 AABB2d(Vector2d(0.0, 0.0), Vector2d(3.0, 3.0)),
                 AABB2d(Vector2d(1.0, 1.0), Vector2d(2.0, 2.0))));
 
-        EXPECT_FEQ(0.5,
+        EXPECT_EQ(0.5,
             AABB2d::overlap_ratio(
                 AABB2d(Vector2d(0.0, 0.0), Vector2d(2.0, 2.0)),
                 AABB2d(Vector2d(1.0, 0.0), Vector2d(3.0, 2.0))));
 
-        EXPECT_FEQ(0.5,
+        EXPECT_EQ(0.5,
             AABB2d::overlap_ratio(
                 AABB2d(Vector2d(1.0, 0.0), Vector2d(3.0, 2.0)),
                 AABB2d(Vector2d(0.0, 0.0), Vector2d(2.0, 2.0))));
 
-        EXPECT_FEQ(0.25,
+        EXPECT_EQ(0.25,
             AABB2d::overlap_ratio(
                 AABB2d(Vector2d(0.0, 0.0), Vector2d(2.0, 2.0)),
                 AABB2d(Vector2d(1.0, 1.0), Vector2d(3.0, 3.0))));
@@ -224,37 +213,37 @@ TEST_SUITE(Foundation_Math_AABB)
 
     TEST_CASE(TestExtentRatio)
     {
-        EXPECT_FEQ(1.0,
+        EXPECT_EQ(1.0,
             AABB3d::extent_ratio(
                 AABB3d(Vector3d(0.0), Vector3d(0.0, 0.0, 0.0)),
                 AABB3d(Vector3d(0.0), Vector3d(0.0, 0.0, 0.0))));
 
-        EXPECT_FEQ(1.0,
+        EXPECT_EQ(1.0,
             AABB3d::extent_ratio(
                 AABB3d(Vector3d(0.0), Vector3d(1.0, 1.0, 1.0)),
                 AABB3d(Vector3d(0.0), Vector3d(1.0, 1.0, 1.0))));
 
-        EXPECT_FEQ(1.0,
+        EXPECT_EQ(1.0,
             AABB3d::extent_ratio(
                 AABB3d(Vector3d(0.0), Vector3d(0.0, 1.0, 1.0)),
                 AABB3d(Vector3d(0.0), Vector3d(0.0, 1.0, 1.0))));
 
-        EXPECT_FEQ(1.0,
+        EXPECT_EQ(1.0,
             AABB3d::extent_ratio(
                 AABB3d(Vector3d(0.0), Vector3d(1.0, 0.0, 1.0)),
                 AABB3d(Vector3d(0.0), Vector3d(1.0, 0.0, 1.0))));
 
-        EXPECT_FEQ(1.0,
+        EXPECT_EQ(1.0,
             AABB3d::extent_ratio(
                 AABB3d(Vector3d(0.0), Vector3d(1.0, 1.0, 0.0)),
                 AABB3d(Vector3d(0.0), Vector3d(1.0, 1.0, 0.0))));
 
-        EXPECT_FEQ(2.0,
+        EXPECT_EQ(2.0,
             AABB3d::extent_ratio(
                 AABB3d(Vector3d(0.0), Vector3d(2.0, 1.0, 1.0)),
                 AABB3d(Vector3d(0.0), Vector3d(1.0, 1.0, 1.0))));
 
-        EXPECT_FEQ(8.0,
+        EXPECT_EQ(8.0,
             AABB3d::extent_ratio(
                 AABB3d(Vector3d(0.0), Vector3d(2.0, 2.0, 2.0)),
                 AABB3d(Vector3d(0.0), Vector3d(1.0, 1.0, 1.0))));
@@ -318,8 +307,8 @@ TEST_SUITE(Foundation_Math_AABB)
 
         bbox.grow(Vector3d(2.0, 0.0, -1.0));
 
-        EXPECT_FEQ(Vector3d(-1.0, 2.0, 4.0), bbox.min);
-        EXPECT_FEQ(Vector3d(6.0, 5.0, 5.0), bbox.max);
+        EXPECT_EQ(Vector3d(-1.0, 2.0, 4.0), bbox.min);
+        EXPECT_EQ(Vector3d(6.0, 5.0, 5.0), bbox.max);
     }
 
     TEST_CASE(TestRobustGrow)
@@ -375,7 +364,7 @@ TEST_SUITE(Foundation_Math_AABB)
             Vector3d(1.0, 2.0, 3.0),
             Vector3d(5.0, 6.0, 7.0));
 
-        EXPECT_FEQ(Vector3d(3.0, 4.0, 5.0), bbox.center());
+        EXPECT_EQ(Vector3d(3.0, 4.0, 5.0), bbox.center());
     }
 
     TEST_CASE(TestExtent)
@@ -384,7 +373,7 @@ TEST_SUITE(Foundation_Math_AABB)
             Vector3d(-1.0, -2.0, -3.0),
             Vector3d(4.0, 5.0, 6.0));
 
-        EXPECT_FEQ(Vector3d(5.0, 7.0, 9.0), bbox.extent());
+        EXPECT_EQ(Vector3d(5.0, 7.0, 9.0), bbox.extent());
     }
 
     TEST_CASE(TestDiameter)
@@ -414,7 +403,7 @@ TEST_SUITE(Foundation_Math_AABB)
         const double square_diameter = 5.0 * 5.0 + 7.0 * 7.0 + 9.0 * 9.0;
         const double radius = sqrt(square_diameter / 4.0);
 
-        EXPECT_FEQ(radius, bbox.radius());
+        EXPECT_EQ(radius, bbox.radius());
     }
 
     TEST_CASE(TestSquareRadius)
@@ -426,7 +415,7 @@ TEST_SUITE(Foundation_Math_AABB)
         const double square_diameter = 5.0 * 5.0 + 7.0 * 7.0 + 9.0 * 9.0;
         const double square_radius = square_diameter / 4.0;
 
-        EXPECT_FEQ(square_radius, bbox.square_radius());
+        EXPECT_EQ(square_radius, bbox.square_radius());
     }
 
     TEST_CASE(TestVolume)
@@ -435,7 +424,7 @@ TEST_SUITE(Foundation_Math_AABB)
             Vector3d(-1.0, -2.0, -3.0),
             Vector3d(4.0, 5.0, 6.0));
 
-        EXPECT_FEQ(5.0 * 7.0 * 9.0, bbox.volume());
+        EXPECT_EQ(5.0 * 7.0 * 9.0, bbox.volume());
     }
 
     TEST_CASE(TestHalfSurfaceArea)
@@ -444,7 +433,7 @@ TEST_SUITE(Foundation_Math_AABB)
             Vector3d(-1.0, -2.0, -3.0),
             Vector3d(4.0, 5.0, 6.0));
 
-        EXPECT_FEQ(5.0 * 7.0 + 5.0 * 9.0 + 7.0 * 9.0, half_surface_area(bbox));
+        EXPECT_EQ(5.0 * 7.0 + 5.0 * 9.0 + 7.0 * 9.0, half_surface_area(bbox));
     }
 
     TEST_CASE(TestSurfaceArea)
@@ -453,7 +442,7 @@ TEST_SUITE(Foundation_Math_AABB)
             Vector3d(-1.0, -2.0, -3.0),
             Vector3d(4.0, 5.0, 6.0));
 
-        EXPECT_FEQ(2.0 * (5.0 * 7.0 + 5.0 * 9.0 + 7.0 * 9.0), surface_area(bbox));
+        EXPECT_EQ(2.0 * (5.0 * 7.0 + 5.0 * 9.0 + 7.0 * 9.0), surface_area(bbox));
     }
 
     TEST_CASE(TestGetCornerCount)
@@ -537,3 +526,85 @@ TEST_SUITE(Foundation_Math_AABB)
         EXPECT_TRUE(bbox1 != bbox3);
     }
 }
+
+TEST_SUITE(Foundation_Math_IntegralAABB)
+{
+    TEST_CASE(TestInvalidateOnNoIntersectionOnIntegralAABB)
+    {
+        AABB2i bbox(
+            Vector2i(1, 0),
+            Vector2i(4, 2));
+
+        AABB2i bbox2(
+            Vector2i(5, 0),
+            Vector2i(8, 2));
+
+        AABB2i bbox3 = AABB2i::intersect(bbox, bbox2);
+
+        EXPECT_FALSE(bbox3.is_valid());
+    }
+
+    TEST_CASE(TestInvalidateOnIntersectionOnIntegralAABB)
+    {
+        AABB2i bbox(
+            Vector2i(1, 0),
+            Vector2i(4, 2));
+
+        AABB2i bbox2(
+            Vector2i(4, 0),
+            Vector2i(8, 2));
+
+        AABB2i bbox3 = AABB2i::intersect(bbox, bbox2);
+
+        EXPECT_TRUE(bbox3.is_valid());
+    }
+
+    TEST_CASE(TestInvalidateOnUnsignedIntegerAABB)
+    {
+        AABB3u bbox(
+            Vector3u(1, 2, 3),
+            Vector3u(4, 5, 6));
+
+        bbox.invalidate();
+
+        EXPECT_FALSE(bbox.is_valid());
+    }
+
+    TEST_CASE(TestOverlapOnIntegralAABB)
+    {
+        const AABB2i bbox1(Vector2i(1, 2), Vector2i(5, 4));
+        const AABB2i bbox2(Vector2i(5, 3), Vector2i(8, 3));
+
+        EXPECT_TRUE(AABB2i::overlap(bbox1, bbox2));
+        EXPECT_TRUE(AABB2i::overlap(bbox2, bbox1));
+    }
+
+    TEST_CASE(TestExtentOnIntegralAABB)
+    {
+        const AABB3i bbox(
+            Vector3i(-1, -2, -3),
+            Vector3i(4, 5, 6));
+
+        EXPECT_EQ(Vector3i(6, 8, 10), bbox.extent());
+    }
+
+    TEST_CASE(TestExtentOn1x1x1IntegralAABB)
+    {
+        const AABB3i bbox(
+            Vector3i(0, 0, 0),
+            Vector3i(0, 0, 0));
+
+        EXPECT_TRUE(bbox.is_valid());
+        EXPECT_EQ(Vector3i(1, 1, 1), bbox.extent());
+    }
+
+    TEST_CASE(TestVolumeOnIntegralAABB)
+    {
+        const AABB3i bbox(
+            Vector3i(-1, -2, -3),
+            Vector3i(4, 5, 6));
+
+        EXPECT_EQ(6 * 8 * 10, bbox.volume());
+    }
+}
+

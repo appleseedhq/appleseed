@@ -126,7 +126,7 @@ void LightPathsPickingHandler::pick(const AABB2i& rect) const
 
     const auto final_rect = AABB2i::intersect(rect, image_rect);
 
-    if (final_rect.is_valid() && final_rect.volume() > 0)
+    if (final_rect.is_valid())
     {
         LightPathArray light_paths;
         m_project.get_light_path_recorder().query(
