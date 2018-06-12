@@ -141,7 +141,11 @@ namespace
             // This header is sent only once and can contains AOVs and frame informations.
             const bool beauty_only = (m_export_options == StdOutTileCallbackFactory::TileOutputOptions::BeautyOnly);
             const size_t chunk_size = 1 * sizeof(uint32);
-            const size_t plane_count = beauty_only ? 1 : 1 + frame.aovs().size();
+            const size_t plane_count =
+                beauty_only ? 1 : 1
+                + frame.aovs().size()
+                + (frame.has_extra_aov() ? frame.extra_aov_indexs().size() : 0);
+
             const uint32 header[] =
             {
                 static_cast<uint32>(ChunkTypeTilesHeader),
