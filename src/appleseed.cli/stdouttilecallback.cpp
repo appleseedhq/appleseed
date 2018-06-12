@@ -141,7 +141,11 @@ namespace
             // This header is sent only once and can contains AOVs and frame informations.
             const bool beauty_only = (m_export_options == StdOutTileCallbackFactory::TileOutputOptions::BeautyOnly);
             const size_t chunk_size = 1 * sizeof(uint32);
-            const size_t plane_count = beauty_only ? 1 : 1 + frame.aovs().size();
+            const size_t plane_count =
+                beauty_only ? 1 : 1
+                + frame.aovs().size()
+                + (frame.has_extra_aov() ? frame.extra_aov_indexs().size() : 0);
+
             const uint32 header[] =
             {
                 static_cast<uint32>(ChunkTypeTilesHeader),
@@ -162,6 +166,24 @@ namespace
                         aov->get_image(),
                         aov->get_name(),
                         i + 1);
+                }
+
+                // Extra AOVs.
+                if (frame.has_extra_aov())
+                {
+                    const vector<size_t>& diagnostic_index = frame.extra_aov_indexs();
+
+                    for (size_t i = 0, e = diagnostic_index.size(); i < e; ++i)
+                    {
+                        const size_t image_index = diagnostic_index[i];
+                        const Image& image = frame.aov_images().get_image(image_index);
+                        const string aov_name = frame.aov_images().get_name(image_index);
+
+                        send_plane_definition(
+                            image,
+                            aov_name.c_str(),
+                            i + frame.aovs().size() + 1);
+                    }
                 }
             }
 
@@ -247,6 +269,26 @@ namespace
                         tile_x,
                         tile_y,
                         i + 1);
+                }
+
+                // Extra AOVs.
+                if (frame.has_extra_aov())
+                {
+                    const vector<size_t>& diagnostic_index = frame.extra_aov_indexs();
+
+                    for (size_t i = 0, e = diagnostic_index.size(); i < e; ++i)
+                    {
+                        const size_t image_index = diagnostic_index[i];
+                        const Image& image = frame.aov_images().get_image(image_index);
+                        const string aov_name = frame.aov_images().get_name(image_index);
+
+                        do_send_tile(
+                            props,
+                            image.tile(tile_x, tile_y),
+                            tile_x,
+                            tile_y,
+                            i + frame.aovs().size() + 1);
+                    }
                 }
             }
         }

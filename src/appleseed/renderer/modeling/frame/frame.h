@@ -51,6 +51,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <vector>
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
@@ -107,8 +108,14 @@ class APPLESEED_DLLSYMBOL Frame
     // Access the AOV images.
     ImageStack& aov_images() const;
 
+    // Access extra AOV indexs.
+    std::vector<size_t>& extra_aov_indexs() const;
+
     // Create an extra AOV image if it does not exist.
     size_t create_extra_aov_image(const char* name) const;
+
+    // Check if extra AOVs are enabled.
+    bool has_extra_aov() const;
 
     // Return the reconstruction filter used by the main image and the AOV images.
     const foundation::Filter2f& get_filter() const;
