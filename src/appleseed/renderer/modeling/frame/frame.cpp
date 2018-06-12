@@ -276,6 +276,11 @@ ImageStack& Frame::aov_images() const
     return *impl->m_aov_images;
 }
 
+vector<size_t>& Frame::extra_aov_indexs() const
+{
+    return impl->m_extra_aovs;
+}
+
 const AOVContainer& Frame::internal_aovs() const
 {
     return impl->m_internal_aovs;
@@ -293,6 +298,11 @@ size_t Frame::create_extra_aov_image(const char* name) const
     }
 
     return index;
+}
+
+bool Frame::has_extra_aov() const
+{
+    return impl->m_save_extra_aovs && extra_aov_indexs().size() > 0;
 }
 
 const Filter2f& Frame::get_filter() const

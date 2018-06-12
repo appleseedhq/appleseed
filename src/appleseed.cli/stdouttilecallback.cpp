@@ -44,6 +44,7 @@
 // Standard headers.
 #include <cstddef>
 #include <cstdio>
+#include <iostream>
 
 // Platform headers.
 #ifdef _WIN32
@@ -163,6 +164,24 @@ namespace
                         aov->get_name(),
                         i + 1);
                 }
+
+                // Extra AOVs.
+                if (frame.has_extra_aov())
+                {
+                    const vector<size_t>& diagnostic_index = frame.extra_aov_indexs();
+
+                    for (size_t i = 0, e = diagnostic_index.size(); i < e; ++i)
+                    {
+                        const size_t image_index = diagnostic_index[i];
+                        const Image& image = frame.aov_images().get_image(image_index);
+                        const string aov_name = frame.aov_images().get_name(image_index);
+
+                        send_plane_definition(
+                            image,
+                            aov_name.c_str(),
+                            i + frame.aovs().size() + 1);
+                    }
+                }
             }
 
             m_header_sent = true;
@@ -247,6 +266,26 @@ namespace
                         tile_x,
                         tile_y,
                         i + 1);
+                }
+
+                // Extra AOVs.
+                if (frame.has_extra_aov())
+                {
+                    const vector<size_t>& diagnostic_index = frame.extra_aov_indexs();
+
+                    for (size_t i = 0, e = diagnostic_index.size(); i < e; ++i)
+                    {
+                        const size_t image_index = diagnostic_index[i];
+                        const Image& image = frame.aov_images().get_image(image_index);
+                        const string aov_name = frame.aov_images().get_name(image_index);
+
+                        do_send_tile(
+                            props,
+                            image.tile(tile_x, tile_y),
+                            tile_x,
+                            tile_y,
+                            i + frame.aovs().size() + 1);
+                    }
                 }
             }
         }
