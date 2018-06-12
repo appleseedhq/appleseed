@@ -44,7 +44,6 @@
 // Standard headers.
 #include <cstddef>
 #include <cstdio>
-#include <iostream>
 
 // Platform headers.
 #ifdef _WIN32
