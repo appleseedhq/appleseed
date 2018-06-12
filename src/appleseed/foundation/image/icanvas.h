@@ -88,7 +88,7 @@ class APPLESEED_DLLSYMBOL ICanvas
     void set_pixel(
         const size_t    x,
         const size_t    y,
-        const T         components[]);
+        T               components[]);
 
     // Structured read access to a given pixel, with automatic pixel format conversion.
     template <typename Color>
@@ -198,9 +198,11 @@ template <typename T>
 inline void ICanvas::set_pixel(
     const size_t        x,
     const size_t        y,
-    const T             components[])
+    T                   components[])
 {
     const CanvasProperties& props = properties();
+
+    assert(sizeof(T) == props.m_pixel_size / props.m_channel_count);
 
     Pixel::convert_to_format(
         components,                         // source begin
