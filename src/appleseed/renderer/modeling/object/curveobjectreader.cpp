@@ -113,22 +113,24 @@ namespace {
 
         const char* get_basis()
         {
-
             switch (m_object->get_basis())
             {
-                case CurveBasis::Linear:
-                    return "linear";
+              case CurveBasis::Linear:
+                return "linear";
 
-                case CurveBasis::Bezier:
-                    return "bezier";
+              case CurveBasis::Bezier:
+                return "bezier";
 
-                case CurveBasis::Bspline:
-                    return "b-spline";
+              case CurveBasis::Bspline:
+                return "b-spline";
 
-                case CurveBasis::Catmullrom:
-                    return "catmull-rom";
+              case CurveBasis::Catmullrom:
+                return "catmull-rom";
+
+              default:
+                return "invalid basis";
+
             }
-
         }
 
         void begin_curve_object(unsigned char basis, uint32 count = 0) override
@@ -156,11 +158,10 @@ namespace {
                 m_object->reserve_curves1(0);
                 break;
             }
-
         }
 
-        void begin_curve() override {
-
+        void begin_curve() override
+        {
             // Reset curve variables.
             reset_curve_variables();
         }
@@ -182,7 +183,6 @@ namespace {
                 push_curve3(1);
                 break;
             }
-
             m_total_vertex_count += m_vertices.size();
         }
 
@@ -216,7 +216,7 @@ namespace {
             const size_t ControlPointCount = 4;
             const size_t curve_count = m_params.get_optional<size_t>("curves", 100);
             const GScalar curve_width = m_params.get_optional<GScalar>("width", GScalar(0.002));
-            const unsigned char basis = 2;
+            const unsigned char basis = m_params.get_optional<unsigned char>("basis", 2);
 
             begin_curve_object(basis, curve_count);
 
@@ -251,7 +251,7 @@ namespace {
             const GScalar root_width = m_params.get_optional<GScalar>("root_width", GScalar(0.001));
             const GScalar tip_width = m_params.get_optional<GScalar>("tip_width", GScalar(0.0001));
             const GScalar curliness = m_params.get_optional<GScalar>("curliness", GScalar(0.5));
-            const unsigned char basis = 2;
+            const unsigned char basis = m_params.get_optional<unsigned char>("basis", 2);
 
             begin_curve_object(basis, curve_count);
 
@@ -295,13 +295,13 @@ namespace {
         CurveObject*        m_object;
         size_t              m_split_count;
 
-        // Curve attributes and statistics
+        // Curve attributes and statistics.
         vector<GVector3>    m_vertices;
         vector<GScalar>     m_widths;
         vector<GScalar>     m_opacities;
         vector<Color3f>     m_colors;
 
-        // Global statistics
+        // Global statistics.
         size_t              m_total_vertex_count;
 
         void reset_curve_variables()

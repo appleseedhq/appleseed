@@ -58,7 +58,6 @@ typedef foundation::AABB<GScalar, 3> GAABB3;
 typedef foundation::AABB<GScalar, 1> GAABB1;
 typedef foundation::Ray<GScalar, 3> GRay3;
 typedef foundation::RayInfo<GScalar, 3> GRayInfo3;
-typedef foundation::Color<GScalar, 3> GColor3;
 
 // Spectrum representation.
 typedef DynamicSpectrum31f Spectrum;

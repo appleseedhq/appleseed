@@ -243,8 +243,8 @@ class ShadingPoint
     // Return the opacity at the intersection point.
     const Alpha& get_alpha() const;
 
-    // Return the interpolated per-vertex colour at the intersection point.
-    const GColor3& get_per_vertex_color() const;
+    // Return the interpolated per-vertex color at the intersection point.
+    const foundation::Color3f& get_per_vertex_color() const;
 
     OSL::ShaderGlobals& get_osl_shader_globals() const;
 
@@ -322,9 +322,9 @@ class ShadingPoint
         HasMaterials                    = 1 << 12,
         HasWorldSpacePointVelocity      = 1 << 13,
         HasAlpha                        = 1 << 14,
-        HasScreenSpaceDerivatives       = 1 << 15,
-        HasOSLShaderGlobals             = 1 << 16,
-        HasPerVertexColor               = 1 << 17
+        HasPerVertexColor               = 1 << 15,
+        HasScreenSpaceDerivatives       = 1 << 16,
+        HasOSLShaderGlobals             = 1 << 17
     };
     mutable foundation::uint32          m_members;
 
@@ -359,7 +359,7 @@ class ShadingPoint
     mutable const Material*             m_material;                     // material at intersection point
     mutable const Material*             m_opposite_material;            // opposite material at intersection point
     mutable Alpha                       m_alpha;                        // opacity at intersection point
-    mutable GColor3                     m_color;                        // per-vertex interpolated color at intersection point
+    mutable foundation::Color3f         m_color;                        // per-vertex interpolated color at intersection point
 
     // Data required to avoid self-intersections.
     mutable foundation::Vector3d        m_asm_geo_normal;               // assembly instance space geometric normal to hit triangle
@@ -918,7 +918,7 @@ inline const Alpha& ShadingPoint::get_alpha() const
     return m_alpha;
 }
 
-inline const GColor3& ShadingPoint::get_per_vertex_color() const
+inline const foundation::Color3f& ShadingPoint::get_per_vertex_color() const
 {
     if (!(m_members & HasPerVertexColor))
     {

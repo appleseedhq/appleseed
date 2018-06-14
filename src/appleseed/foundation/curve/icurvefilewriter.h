@@ -45,10 +45,10 @@ namespace foundation
 // Curve file writer interface.
 //
 
-    class APPLESEED_DLLSYMBOL ICurveFileWriter
-    : public NonCopyable
+class APPLESEED_DLLSYMBOL ICurveFileWriter
+  : public NonCopyable
 {
-    public:
+  public:
     // Destructor.
     virtual ~ICurveFileWriter() {}
 

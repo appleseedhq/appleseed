@@ -58,18 +58,18 @@ namespace boost
 namespace
 {
     auto_release_ptr<CurveObject> create_curve_obj(
-            const string&       name,
-            const bpy::dict&    params)
+        const string&       name,
+        const bpy::dict&    params)
     {
         return auto_release_ptr<CurveObject>(
-                        CurveObjectFactory().create(name.c_str(), bpy_dict_to_param_array(params)));
+            CurveObjectFactory().create(name.c_str(), bpy_dict_to_param_array(params)));
     }
 
 
     auto_release_ptr<CurveObject> read_curve_object(
-            const bpy::list&    search_paths,
-            const string&       object_name,
-            const bpy::dict&    params)
+        const bpy::list&    search_paths,
+        const string&       object_name,
+        const bpy::dict&    params)
     {
         SearchPaths paths;
 
@@ -97,53 +97,166 @@ namespace
     }
 
     bool write_curve_object(
-            const CurveObject*   object,
-            const string&        filename)
+        const CurveObject*   object,
+        const string&        filename)
     {
         return CurveObjectWriter::write(*object, filename.c_str());
+    }
+
+    Curve1Type* create_curve_1(
+        const bpy::list&     points,
+        const bpy::list&     widths,
+        const bpy::list&     opacities,
+        const bpy::list&     colors)
+    {
+        Vector3f curve_points[2];
+        float curve_widths[2];
+        float curve_opacities[2];
+        Color3f curve_colors[2];
+
+        for (bpy::ssize_t i = 0, e = bpy::len(points); i < e; ++i)
+        {
+            bpy::extract<const float> point(points[i]);
+            if (!point.check())
+            {
+                PyErr_SetString(PyExc_TypeError, "Incompatible type. Only floats.");
+                bpy::throw_error_already_set();
+            }
+            curve_points[i / 3][i % 3] = point;
+        }
+        for (bpy::ssize_t i = 0, e = bpy::len(widths); i < e; ++i)
+        {
+            bpy::extract<const float> width(widths[i]);
+            if (!width.check())
+            {
+                PyErr_SetString(PyExc_TypeError, "Incompatible type. Only floats.");
+                bpy::throw_error_already_set();
+            }
+            curve_widths[i] = width;
+        }
+        for (bpy::ssize_t i = 0, e = bpy::len(opacities); i < e; ++i)
+        {
+            bpy::extract<const float> opacity(opacities[i]);
+            if (!opacity.check())
+            {
+                PyErr_SetString(PyExc_TypeError, "Incompatible type. Only floats.");
+                bpy::throw_error_already_set();
+            }
+            curve_opacities[i] = opacity;
+        }
+        for (bpy::ssize_t i = 0, e = bpy::len(colors); i < e; ++i)
+        {
+            bpy::extract<const float> color(colors[i]);
+            if (!color.check())
+            {
+                PyErr_SetString(PyExc_TypeError, "Incompatible type. Only floats.");
+                bpy::throw_error_already_set();
+            }
+            curve_colors[i / 3][i % 3] = color;
+        }
+
+        if (bpy::len(widths) == 1)
+            return new Curve1Type(curve_points, curve_widths[0], curve_opacities[0], curve_colors[0]);
+
+        return new Curve1Type(curve_points, curve_widths, curve_opacities, curve_colors);
+    }
+
+    Curve3Type* create_curve_3(
+        const bpy::list&     points,
+        const bpy::list&     widths,
+        const bpy::list&     opacities,
+        const bpy::list&     colors)
+    {
+        Vector3f curve_points[4];
+        float curve_widths[4];
+        float curve_opacities[4];
+        Color3f curve_colors[4];
+
+        for (bpy::ssize_t i = 0, e = bpy::len(points); i < e; ++i)
+        {
+            bpy::extract<const float> point(points[i]);
+            if (!point.check())
+            {
+                PyErr_SetString(PyExc_TypeError, "Incompatible type. Only floats.");
+                bpy::throw_error_already_set();
+            }
+            curve_points[i / 3][i % 3] = point;
+        }
+        for (bpy::ssize_t i = 0, e = bpy::len(widths); i < e; ++i)
+        {
+            bpy::extract<const float> width(widths[i]);
+            if (!width.check())
+            {
+                PyErr_SetString(PyExc_TypeError, "Incompatible type. Only floats.");
+                bpy::throw_error_already_set();
+            }
+            curve_widths[i] = width;
+        }
+        for (bpy::ssize_t i = 0, e = bpy::len(opacities); i < e; ++i)
+        {
+            bpy::extract<const float> opacity(opacities[i]);
+            if (!opacity.check())
+            {
+                PyErr_SetString(PyExc_TypeError, "Incompatible type. Only floats.");
+                bpy::throw_error_already_set();
+            }
+            curve_opacities[i] = opacity;
+        }
+        for (bpy::ssize_t i = 0, e = bpy::len(colors); i < e; ++i)
+        {
+            bpy::extract<const float> color(colors[i]);
+            if (!color.check())
+            {
+                PyErr_SetString(PyExc_TypeError, "Incompatible type. Only floats.");
+                bpy::throw_error_already_set();
+            }
+            curve_colors[i / 3][i % 3] = color;
+        }
+
+        if (bpy::len(widths) == 1)
+            return new Curve3Type(curve_points, curve_widths[0], curve_opacities[0], curve_colors[0]);
+
+        return new Curve3Type(curve_points, curve_widths, curve_opacities, curve_colors);
     }
 }
 
 void bind_curve_object()
 {
     bpy::enum_<CurveBasis>("CurveBasis")
-            .value("Linear", CurveBasis::Linear)
-            .value("Bezier", CurveBasis::Bezier)
-            .value("Bspline", CurveBasis::Bspline)
-            .value("Catmullrom", CurveBasis::Catmullrom);
+        .value("Linear", CurveBasis::Linear)
+        .value("Bezier", CurveBasis::Bezier)
+        .value("Bspline", CurveBasis::Bspline)
+        .value("Catmullrom", CurveBasis::Catmullrom);
 
     bpy::class_<Curve1Type>("Curve1Type")
-            .def(bpy::init<GVector3*, GScalar, GScalar, GColor3>())
-            .def(bpy::init<GVector3*, GScalar*, GScalar*, GColor3*>());
+        .def("__init__", bpy::make_constructor(&create_curve_1));
 
     bpy::class_<Curve3Type>("Curve3Type")
-            .def(bpy::init<GVector3*, GScalar, GScalar, GColor3>())
-            .def(bpy::init<GVector3*, GScalar*, GScalar*, GColor3*>());
-
+        .def("__init__", bpy::make_constructor(&create_curve_3));
 
     bpy::class_<CurveObject, auto_release_ptr<CurveObject>, bpy::bases<Object>, boost::noncopyable>("CurveObject", bpy::no_init)
-            .def("__init__", bpy::make_constructor(create_curve_obj))
+        .def("__init__", bpy::make_constructor(create_curve_obj))
 
-            .def("get_basis", &CurveObject::get_basis)
-            .def("push_basis", &CurveObject::push_basis)
-            .def("get_curve_count", &CurveObject::get_curve_count)
-            .def("push_curve_count", &CurveObject::push_curve_count)
+        .def("get_basis", &CurveObject::get_basis)
+        .def("push_basis", &CurveObject::push_basis)
+        .def("get_curve_count", &CurveObject::get_curve_count)
+        .def("push_curve_count", &CurveObject::push_curve_count)
 
-            .def("reserve_curves1", &CurveObject::reserve_curves1)
-            .def("reserve_curves3", &CurveObject::reserve_curves3)
-            .def("push_curve1", &CurveObject::push_curve1)
-            .def("push_curve3", &CurveObject::push_curve3)
+        .def("reserve_curves1", &CurveObject::reserve_curves1)
+        .def("reserve_curves3", &CurveObject::reserve_curves3)
+        .def("push_curve1", &CurveObject::push_curve1)
+        .def("push_curve3", &CurveObject::push_curve3)
 
-            .def("get_curve1_count", &CurveObject::get_curve1_count)
-            .def("get_curve3_count", &CurveObject::get_curve3_count)
-            .def("get_curve1", &CurveObject::get_curve1, bpy::return_value_policy<bpy::reference_existing_object>())
-            .def("get_curve3", &CurveObject::get_curve3, bpy::return_value_policy<bpy::reference_existing_object>());
+        .def("get_curve1_count", &CurveObject::get_curve1_count)
+        .def("get_curve3_count", &CurveObject::get_curve3_count)
+        .def("get_curve1", &CurveObject::get_curve1, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_curve3", &CurveObject::get_curve3, bpy::return_value_policy<bpy::reference_existing_object>());
 
     boost::python::implicitly_convertible<auto_release_ptr<CurveObject>, auto_release_ptr<Object>>();
 
     bpy::class_<CurveObjectReader>("CurveObjectReader", bpy::no_init)
-            .def("read", read_curve_object).staticmethod("read");
+        .def("read", read_curve_object).staticmethod("read");
 
     bpy::class_<CurveObjectWriter>("CurveObjectWriter", bpy::no_init)
-            .def("write", write_curve_object).staticmethod("write");
+        .def("write", write_curve_object).staticmethod("write");
 }

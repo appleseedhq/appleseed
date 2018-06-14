@@ -46,22 +46,22 @@ namespace foundation
 // Write a curve file using the right writer based on the extension of the curve file name.
 //
 
-    class APPLESEED_DLLSYMBOL GenericCurveFileWriter
-            : public ICurveFileWriter
-    {
-    public:
-        // Constructor.
-        explicit GenericCurveFileWriter(const char* filename);
+class APPLESEED_DLLSYMBOL GenericCurveFileWriter
+  : public ICurveFileWriter
+{
+  public:
+    // Constructor.
+    explicit GenericCurveFileWriter(const char* filename);
 
-        // Destructor.
-        ~GenericCurveFileWriter() override;
+    // Destructor.
+    ~GenericCurveFileWriter() override;
 
-        // Write a mesh.
-        void write(const ICurveWalker& walker) override;
+    // Write a curve object.
+    void write(const ICurveWalker& walker) override;
 
-    private:
-        ICurveFileWriter* m_writer;
-    };
+  private:
+    ICurveFileWriter* m_writer;
+};
 
 }       // namespace foundation
 

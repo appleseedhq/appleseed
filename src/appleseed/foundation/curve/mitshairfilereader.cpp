@@ -31,9 +31,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionioerror.h"
-#include "foundation/math/vector.h"
 #include "foundation/curve/icurvebuilder.h"
 #include "foundation/image/color.h"
+#include "foundation/math/fp.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/bufferedfile.h"
 #include "foundation/utility/memory.h"
@@ -52,147 +53,133 @@ namespace foundation
 // MitsHairFileReader class implementation.
 //
 
-    MitsHairFileReader::MitsHairFileReader(const string& filename, const float radius, const size_t degree)
-            : m_filename(filename),
-              m_radius(radius),
-              m_degree(degree)
+MitsHairFileReader::MitsHairFileReader(const string& filename, const float radius, const size_t basis)
+  : m_filename(filename)
+  , m_radius(radius)
+  , m_basis(basis)
+{
+}
+
+void MitsHairFileReader::read(ICurveBuilder& builder)
+{
+    BufferedFile file(
+        m_filename.c_str(),
+        BufferedFile::BinaryType,
+        BufferedFile::ReadMode);
+
+    if (!file.is_open())
+        throw ExceptionIOError();
+
+    read_and_check_signature(file);
+
+    unique_ptr<ReaderAdapter> reader;
+    reader.reset(new PassthroughReaderAdapter(file));
+    read_curves(*reader.get(), builder);
+}
+
+void MitsHairFileReader::read_and_check_signature(BufferedFile& file)
+{
+    static const char ExpectedSig[11] = { 'B', 'I', 'N', 'A', 'R', 'Y', '_', 'H', 'A', 'I', 'R' };
+
+    char signature[sizeof(ExpectedSig)];
+    checked_read(file, signature, sizeof(signature));
+
+    if (memcmp(signature, ExpectedSig, sizeof(ExpectedSig)) != 0)
+        throw ExceptionIOError("invalid mitshair format signature");
+}
+
+void MitsHairFileReader::read_curves(ReaderAdapter& reader, ICurveBuilder& builder)
+{
+    try
     {
-    }
-
-    void MitsHairFileReader::read(ICurveBuilder& builder)
-    {
-        BufferedFile file(
-                m_filename.c_str(),
-                BufferedFile::BinaryType,
-                BufferedFile::ReadMode);
-
-        if (!file.is_open())
-            throw ExceptionIOError();
-
-        read_and_check_signature(file);
-
-        unique_ptr<ReaderAdapter> reader;
-        reader.reset(new PassthroughReaderAdapter(file));
-        read_curves(*reader.get(), builder);
-    }
-
-    void MitsHairFileReader::read_and_check_signature(BufferedFile& file)
-    {
-        static const char ExpectedSig[11] = { 'B', 'I', 'N', 'A', 'R', 'Y', '_', 'H', 'A', 'I', 'R' };
-
-        char signature[sizeof(ExpectedSig)];
-        checked_read(file, signature, sizeof(signature));
-
-        if (memcmp(signature, ExpectedSig, sizeof(ExpectedSig)) != 0)
-            throw ExceptionIOError("invalid mitshair format signature");
-    }
-
-    void MitsHairFileReader::read_curves(ReaderAdapter& reader, ICurveBuilder& builder)
-    {
+        // Read the basis and curve count
+        uint32 vertex_count;
         try
         {
-            // Read the basis and curve count
-            uint32 vertex_count;
-            try
-            {
-                checked_read(reader, vertex_count);
-            }
-            catch (const ExceptionEOF&)
-            {
-                // Expected EOF
-
-            }
-
-            unsigned char basis;
-
-            switch(m_degree)
-            {
-                case 1:
-                    basis = static_cast<unsigned char>('\0');
-                    break;
-
-                case 3:
-                    basis = static_cast<unsigned char>('\x01');
-                    break;
-
-                assert_otherwise;
-
-            }
-
-            builder.begin_curve_object(basis);
-            builder.begin_curve();
-
-            vector<Vector3f> vertices, new_vertices;
-
-            for (uint32 c = 0; c < vertex_count; ++c) {
-                float x;
-                checked_read(reader, x);
-
-                if (FP<float>::is_inf(x)) {
-                    switch (m_degree) {
-                        case 1:
-                            if (vertices.size() >= 2)
-                            {
-                                for (size_t i = 0; i < vertices.size(); ++i)
-                                    push_vertex_properties(vertices[i], builder);
-                                builder.end_curve();
-                                builder.begin_curve();
-                            }
-                            break;
-
-                        case 3:
-                            if (vertices.size() >= 4)
-                            {
-                                assert(new_vertices.empty());
-                                for (size_t i = 0; i < vertices.size(); ++i) {
-                                    new_vertices.push_back(vertices[i]);
-
-                                    if (i > 0 && i % 2 == 0 && i + 1 < vertices.size()) {
-                                        // Add a midpoint.
-                                        new_vertices.push_back(0.5f * (vertices[i] + vertices[i + 1]));
-                                    }
-                                }
-
-                                for (size_t i = 0, e = new_vertices.size(); i + 3 < e; i += 3)
-                                    push_vertex_properties(new_vertices[i], builder);
-                                builder.end_curve();
-                                builder.begin_curve();
-                            }
-                            break;
-
-                        assert_otherwise;
-                    }
-
-                    clear_keep_memory(vertices);
-                    clear_keep_memory(new_vertices);
-
-                    continue;
-                }
-
-                Vector2f yz;
-                checked_read(reader, yz);
-                vertices.emplace_back(x, yz[0], yz[1]);
-            }
-
-            builder.end_curve_object();
-
+            checked_read(reader, vertex_count);
         }
         catch (const ExceptionEOF&)
         {
-            // Unexpected EOF.
-            throw ExceptionIOError();
+            // Expected EOF
         }
 
-    }
+        builder.begin_curve_object(static_cast<unsigned char>(m_basis));
+        builder.begin_curve();
 
-    void MitsHairFileReader::push_vertex_properties(Vector3f& v, ICurveBuilder& builder)
+        vector<Vector3f> vertices, new_vertices;
+
+        for (uint32 c = 0; c < vertex_count; ++c)
+        {
+            float x;
+            checked_read(reader, x);
+
+            if (FP<float>::is_inf(x))
+            {
+                switch (m_basis)
+                {
+                  case 1:
+                    if (vertices.size() >= 2)
+                    {
+                        for (size_t i = 0; i < vertices.size(); ++i)
+                            push_vertex_properties(vertices[i], builder);
+                        builder.end_curve();
+                        builder.begin_curve();
+                    }
+                    break;
+
+                  case 2:
+                  case 3:
+                  case 4:
+                    if (vertices.size() >= 4)
+                    {
+                        assert(new_vertices.empty());
+                        for (size_t i = 0; i < vertices.size(); ++i)
+                        {
+                            new_vertices.push_back(vertices[i]);
+
+                            if (i > 0 && i % 2 == 0 && i + 1 < vertices.size())
+                            {
+                                // Add a midpoint.
+                                new_vertices.push_back(0.5f * (vertices[i] + vertices[i + 1]));
+                            }
+                        }
+
+                        for (size_t i = 0, e = new_vertices.size(); i + 3 < e; i += 3)
+                            push_vertex_properties(new_vertices[i], builder);
+                        builder.end_curve();
+                        builder.begin_curve();
+                    }
+                    break;
+
+                  assert_otherwise;
+                }
+
+                clear_keep_memory(vertices);
+                clear_keep_memory(new_vertices);
+
+                continue;
+            }
+
+            Vector2f yz;
+            checked_read(reader, yz);
+            vertices.emplace_back(x, yz[0], yz[1]);
+        }
+
+        builder.end_curve_object();
+    }
+    catch (const ExceptionEOF&)
     {
-
-        builder.push_vertex(v);
-        builder.push_vertex_width(m_radius);
-        builder.push_vertex_opacity(1.0f);
-        builder.push_vertex_color(Color3f(0.2, 0.0, 0.7));
-
+        // Unexpected EOF.
+        throw ExceptionIOError();
     }
+}
+
+void MitsHairFileReader::push_vertex_properties(Vector3f& v, ICurveBuilder& builder)
+{
+    builder.push_vertex(v);
+    builder.push_vertex_width(m_radius);
+    builder.push_vertex_opacity(1.0f); // Default opacity
+    builder.push_vertex_color(Color3f(0.2, 0.0, 0.7)); // Default color
+}
 
 }   // namespace foundation

@@ -31,12 +31,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/curve/icurvefilereader.h"
-#include "foundation/platform/compiler.h"
 
 // Standard headers.
-#include <cstddef>
 #include <string>
-#include <vector>
 
 // Forward declarations.
 namespace foundation    { class BufferedFile; }
@@ -50,24 +47,23 @@ namespace foundation
 // Read for a simple binary curve file format.
 //
 
-    class BinaryCurveFileReader
-            : public ICurveFileReader
-    {
-    public:
-        // Constructor.
-        explicit BinaryCurveFileReader(const std::string& filename);
+class BinaryCurveFileReader
+  : public ICurveFileReader
+{
+  public:
+    // Constructor.
+    explicit BinaryCurveFileReader(const std::string& filename);
 
-        // Read a curve file.
-        void read(ICurveBuilder& builder) override;
+    // Read a curve file.
+    void read(ICurveBuilder& builder) override;
 
-    private:
-        const std::string       m_filename;
+  private:
+    const std::string           m_filename;
 
-        static void read_and_check_signature(BufferedFile& file);
-
-        void read_curves(ReaderAdapter& reader, ICurveBuilder& builder);
-        void read_vertex_properties(ReaderAdapter& reader, ICurveBuilder& builder);
-    };
+    static void read_and_check_signature(BufferedFile& file);
+    void read_curves(ReaderAdapter& reader, ICurveBuilder& builder);
+    void read_curve(ReaderAdapter &reader, ICurveBuilder &builder);
+};
 
 }       // namespace foundation
 

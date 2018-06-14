@@ -51,130 +51,129 @@ namespace foundation
 // BinaryCurveFileReader class implementation.
 //
 
-    BinaryCurveFileReader::BinaryCurveFileReader(const string& filename)
-            : m_filename(filename)
+BinaryCurveFileReader::BinaryCurveFileReader(const string& filename)
+  : m_filename(filename)
+{
+}
+
+void BinaryCurveFileReader::read(ICurveBuilder& builder)
+{
+    BufferedFile file(
+        m_filename.c_str(),
+        BufferedFile::BinaryType,
+        BufferedFile::ReadMode);
+
+    if (!file.is_open())
+        throw ExceptionIOError();
+
+    read_and_check_signature(file);
+
+    uint16 version;
+    checked_read(file, version);
+
+    unique_ptr<ReaderAdapter> reader;
+
+    switch (version)
     {
+      // Uncompressed.
+      case 1:
+        reader.reset(new PassthroughReaderAdapter(file));
+            break;
+
+      // LZ4-compressed.
+      case 2:
+        reader.reset(new LZ4CompressedReaderAdapter(file));
+            break;
+
+      // Unknown format.
+      default:
+        throw ExceptionIOError("unknown binarycurve format version");
     }
 
-    void BinaryCurveFileReader::read(ICurveBuilder& builder)
+    read_curves(*reader.get(), builder);
+}
+
+void BinaryCurveFileReader::read_and_check_signature(BufferedFile& file)
+{
+    static const char ExpectedSig[11] = { 'B', 'I', 'N', 'A', 'R', 'Y', 'C', 'U', 'R', 'V', 'E' };
+
+    char signature[sizeof(ExpectedSig)];
+    checked_read(file, signature, sizeof(signature));
+
+    if (memcmp(signature, ExpectedSig, sizeof(ExpectedSig)) != 0)
+        throw ExceptionIOError("invalid binarycurve format signature");
+}
+
+void BinaryCurveFileReader::read_curves(ReaderAdapter& reader, ICurveBuilder& builder)
+{
+    try
     {
-        BufferedFile file(
-                m_filename.c_str(),
-                BufferedFile::BinaryType,
-                BufferedFile::ReadMode);
-
-        if (!file.is_open())
-            throw ExceptionIOError();
-
-        read_and_check_signature(file);
-
-        uint16 version;
-        checked_read(file, version);
-
-        unique_ptr<ReaderAdapter> reader;
-
-        switch (version)
+        while (true)
         {
-            // Uncompressed.
-            case 1:
-                reader.reset(new PassthroughReaderAdapter(file));
-                break;
-
-                // LZ4-compressed.
-            case 2:
-                reader.reset(new LZ4CompressedReaderAdapter(file));
-                break;
-
-                // Unknown format.
-            default:
-                throw ExceptionIOError("unknown binarycurve format version");
-        }
-
-        read_curves(*reader.get(), builder);
-    }
-
-    void BinaryCurveFileReader::read_and_check_signature(BufferedFile& file)
-    {
-        static const char ExpectedSig[11] = { 'B', 'I', 'N', 'A', 'R', 'Y', 'C', 'U', 'R', 'V', 'E' };
-
-        char signature[sizeof(ExpectedSig)];
-        checked_read(file, signature, sizeof(signature));
-
-        if (memcmp(signature, ExpectedSig, sizeof(ExpectedSig)) != 0)
-            throw ExceptionIOError("invalid binarycurve format signature");
-    }
-
-    void BinaryCurveFileReader::read_curves(ReaderAdapter& reader, ICurveBuilder& builder)
-    {
-
-        try
-        {
-            while (true)
+            // Read the basis and curve count.
+            unsigned char basis;
+            uint32 curve_count;
+            try
             {
-                // Read the basis and curve count
-                unsigned char basis;
-                uint32 curve_count;
-                try
-                {
-                    checked_read(reader, basis);
-                    checked_read(reader, curve_count);
-                }
-                catch (const ExceptionEOF&)
-                {
-                    // Expected EOF.
-                    break;
-                }
-
-                builder.begin_curve_object(basis, curve_count);
-
-                for (uint32 i = 0; i < curve_count; ++i) {
-                    builder.begin_curve();
-                    read_vertex_properties(reader, builder);
-                    builder.end_curve();
-                }
-                builder.end_curve_object();
+                checked_read(reader, basis);
+                checked_read(reader, curve_count);
             }
-        }
-        catch (const ExceptionEOF&)
-        {
-            // Unexpected EOF.
-            throw ExceptionIOError();
-        }
+            catch (const ExceptionEOF&)
+            {
+                // Expected EOF.
+                break;
+            }
 
+            builder.begin_curve_object(basis, curve_count);
+
+            for (uint32 i = 0; i < curve_count; ++i)
+            {
+                builder.begin_curve();
+                read_curve(reader, builder);
+                builder.end_curve();
+            }
+            builder.end_curve_object();
+        }
     }
-
-    void BinaryCurveFileReader::read_vertex_properties(ReaderAdapter& reader, ICurveBuilder& builder)
+    catch (const ExceptionEOF&)
     {
-        uint32 vertex_count;
-        checked_read(reader, vertex_count);
-
-        for (uint32 i = 0; i < vertex_count; ++i)
-        {
-            Vector3f v;
-            checked_read(reader, v);
-            builder.push_vertex(v);
-        }
-
-        for (uint32 i = 0; i < vertex_count; ++i)
-        {
-            float v;
-            checked_read(reader, v);
-            builder.push_vertex_width(v);
-        }
-
-        for (uint32 i = 0; i < vertex_count; ++i)
-        {
-            float v;
-            checked_read(reader, v);
-            builder.push_vertex_opacity(v);
-        }
-
-        for (uint32 i = 0; i < vertex_count; ++i)
-        {
-            Color3f v;
-            checked_read(reader, v);
-            builder.push_vertex_color(v);
-        }
+        // Unexpected EOF.
+        throw ExceptionIOError();
     }
+}
+
+void BinaryCurveFileReader::read_curve(ReaderAdapter &reader, ICurveBuilder &builder)
+{
+    uint32 vertex_count;
+    checked_read(reader, vertex_count);
+
+    for (uint32 i = 0; i < vertex_count; ++i)
+    {
+        Vector3f v;
+        checked_read(reader, v);
+        builder.push_vertex(v);
+    }
+
+    for (uint32 i = 0; i < vertex_count; ++i)
+    {
+        float v;
+        checked_read(reader, v);
+        builder.push_vertex_width(v);
+    }
+
+    for (uint32 i = 0; i < vertex_count; ++i)
+    {
+        float v;
+        checked_read(reader, v);
+        builder.push_vertex_opacity(v);
+    }
+
+    for (uint32 i = 0; i < vertex_count; ++i)
+    {
+        Color3f v;
+        checked_read(reader, v);
+        builder.push_vertex_color(v);
+    }
+}
 
 }   // namespace foundation

@@ -47,34 +47,33 @@ namespace foundation
 // Curve walker interface.
 //
 
-    class APPLESEED_DLLSYMBOL ICurveWalker
-    : public NonCopyable
+class APPLESEED_DLLSYMBOL ICurveWalker
+  : public NonCopyable
 {
-    public:
-
+  public:
     // Destructor.
     virtual ~ICurveWalker() {}
 
-    // Return the basis of the mesh.
+    // Return the basis of the curve.
     virtual size_t get_basis() const = 0;
 
-    // Return the number of strands
+    // Return the number of curves.
     virtual size_t get_curve_count() const = 0;
 
-    // Return the number of vertices in strand
+    // Return the number of vertices in curve.
     virtual size_t get_vertex_count(const size_t i) const = 0;
 
-    // Return vertex location on strand
+    // Return vertex location on curve.
     virtual Vector3f get_vertex(const size_t i) const = 0;
 
-    // Return vertex width on strand
+    // Return vertex width on curve.
     virtual float get_vertex_width(const size_t i) const = 0;
 
-    // Return vertex opacity on strand
+    // Return vertex opacity on curve.
     virtual float get_vertex_opacity(const size_t i) const = 0;
 
-    // Return vertex colour on strand
-    virtual Color3f get_vertex_colour(const size_t i) const = 0;
+    // Return vertex color on curve.
+    virtual Color3f get_vertex_color(const size_t i) const = 0;
 };
 
 }       // namespace foundation

@@ -43,7 +43,6 @@
 #include <cstddef>
 #include <limits>
 #include <vector>
-#include <renderer/modeling/object/curveobject.h>
 
 using namespace foundation;
 using namespace std;
@@ -118,8 +117,6 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
                         {
                             const ColorType color_t = curve.evaluate_color(v);
                             const ValueType opacity = curve.evaluate_opacity(v);
-
-
                             color = color_t * opacity;
                         }
                     }
@@ -374,7 +371,46 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
         const float Opacities[] = { 1.0f, 1.0f, 1.0f, 1.0f };
         const Color3f Colors[] = { Color3f(0.0f, 1.0f, 0.0f), Color3f(1.0f, 0.0f, 0.0f),
                                    Color3f(0.0f, 0.0f, 1.0f), Color3f(1.0f, 1.0f, 1.0f) };
-        Matrix4f Basis = Matrix4f::from_array(renderer::ar_bezier_inv) * Matrix4f::from_array(renderer::ar_bspline);
+        static const float BSplineBasisArray[16] =
+        {
+            0.16666f,
+            0.66666f,
+            0.16666f,
+            0.0f,
+            -0.5f,
+            0.0f,
+            0.5f,
+            0.0f,
+            0.5f,
+            -1.0f,
+            0.5f,
+            0.0f,
+            -0.16666f,
+            0.5f,
+            -0.5f,
+            0.16666f
+        };
+
+        static const float BezierInverseBasisArray[16] =
+        {
+            1.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            1.0f,
+            0.33333f,
+            0.0f,
+            0.0f,
+            1.0f,
+            0.66666f,
+            0.33333f,
+            0.0f,
+            1.0f,
+            1.0f,
+            1.0f,
+            1.0f
+        };
+        Matrix4f Basis = Matrix4f::from_array(BezierInverseBasisArray) * Matrix4f::from_array(BSplineBasisArray);
         const BezierCurve3f Curves[] = { BezierCurve3f(BezierCurve3f(ControlPoints, Widths, Opacities, Colors), Basis, true) };
 
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_singlebezier3curve_bspline.png", false);
@@ -389,7 +425,45 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
         const float Opacities[] = { 1.0f, 1.0f, 1.0f, 1.0f };
         const Color3f Colors[] = { Color3f(0.0f, 1.0f, 0.0f), Color3f(1.0f, 0.0f, 0.0f),
                                    Color3f(0.0f, 0.0f, 1.0f), Color3f(1.0f, 1.0f, 1.0f) };
-        Matrix4f Basis = Matrix4f::from_array(renderer::ar_bezier_inv) * Matrix4f::from_array(renderer::ar_catmullrom);
+        static const float CatmullRomBasisArray[16] =
+        {
+            0.0f,
+            1.0f,
+            0.0f,
+            0.0f,
+            -0.5f,
+            0.0f,
+            0.5f,
+            0.0f,
+            1.0f,
+            -2.5f,
+            2.0f,
+            -0.5f,
+            -0.5f,
+            1.5f,
+            -1.5f,
+            0.5f
+        };
+        static const float BezierInverseBasisArray[16] =
+        {
+            1.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            1.0f,
+            0.33333f,
+            0.0f,
+            0.0f,
+            1.0f,
+            0.66666f,
+            0.33333f,
+            0.0f,
+            1.0f,
+            1.0f,
+            1.0f,
+            1.0f
+        };
+        Matrix4f Basis = Matrix4f::from_array(BezierInverseBasisArray) * Matrix4f::from_array(CatmullRomBasisArray);
         const BezierCurve3f Curves[] = { BezierCurve3f(BezierCurve3f(ControlPoints, Widths, Opacities, Colors), Basis, true) };
 
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_singlebezier3curve_catmullrom.png", false);

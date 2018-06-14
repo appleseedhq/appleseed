@@ -46,24 +46,24 @@ namespace bf = boost::filesystem;
 namespace foundation
 {
 
-    GenericCurveFileWriter::GenericCurveFileWriter(const char* filename)
-    {
-        const bf::path filepath(filename);
-        const string extension = lower_case(filepath.extension().string());
+GenericCurveFileWriter::GenericCurveFileWriter(const char* filename)
+{
+    const bf::path filepath(filename);
+    const string extension = lower_case(filepath.extension().string());
 
-        if (extension == ".binarycurve")
-            m_writer = new BinaryCurveFileWriter(filename);
-        else throw ExceptionUnsupportedFileFormat(filename);
-    }
+    if (extension == ".binarycurve")
+        m_writer = new BinaryCurveFileWriter(filename);
+    else throw ExceptionUnsupportedFileFormat(filename);
+}
 
-    GenericCurveFileWriter::~GenericCurveFileWriter()
-    {
-        delete m_writer;
-    }
+GenericCurveFileWriter::~GenericCurveFileWriter()
+{
+    delete m_writer;
+}
 
-    void GenericCurveFileWriter::write(const ICurveWalker& walker)
-    {
-        m_writer->write(walker);
-    }
+void GenericCurveFileWriter::write(const ICurveWalker& walker)
+{
+    m_writer->write(walker);
+}
 
 }   // namespace foundation

@@ -58,24 +58,76 @@ namespace renderer      { class ParamArray; }
 namespace renderer
 {
 
-enum class CurveBasis : unsigned char { Linear, Bezier, Bspline, Catmullrom };
+enum class CurveBasis : unsigned char
+{
+    Linear = 1,
+    Bezier = 2,
+    Bspline = 3,
+    Catmullrom = 4
+};
 
-const GScalar ar_bspline[16] = { 0.16666f,  0.66666f,  0.16666f,      0.0f,
-                                    -0.5f,      0.0f,      0.5f,      0.0f,
-                                     0.5f,     -1.0f,      0.5f,      0.0f,
-                                -0.16666f,      0.5f,     -0.5f,  0.16666f };
+// B-Spline basis matrix array.
+static const GScalar BSplineBasisArray[16] =
+{
+     0.16666f,
+     0.66666f,
+     0.16666f,
+         0.0f,
+        -0.5f,
+         0.0f,
+         0.5f,
+         0.0f,
+         0.5f,
+        -1.0f,
+         0.5f,
+         0.0f,
+    -0.16666f,
+         0.5f,
+        -0.5f,
+     0.16666f
+};
 
-const GScalar ar_catmullrom[16] = { 0.0f,  1.0f,  0.0f,  0.0f,
-                                   -0.5f,  0.0f,  0.5f,  0.0f,
-                                    1.0f, -2.5f,  2.0f, -0.5f,
-                                   -0.5f,  1.5f, -1.5f,  0.5f } ;
+// Catmull-Rom basis matrix array.
+static const GScalar CatmullRomBasisArray[16] =
+{
+     0.0f,
+     1.0f,
+     0.0f,
+     0.0f,
+    -0.5f,
+     0.0f,
+     0.5f,
+     0.0f,
+     1.0f,
+    -2.5f,
+     2.0f,
+    -0.5f,
+    -0.5f,
+     1.5f,
+    -1.5f,
+     0.5f
+};
 
-const GScalar ar_bezier_inv[16] = { 1.0f,      0.0f,      0.0f, 0.0f,
-                                    1.0f,  0.33333f,      0.0f, 0.0f,
-                                    1.0f,  0.66666f,  0.33333f, 0.0f,
-                                    1.0f,      1.0f,      1.0f, 1.0f } ;
-
-
+// Inverse Bezier basis array.
+static const GScalar BezierInverseBasisArray[16] =
+{
+        1.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+        1.0f,
+    0.33333f,
+        0.0f,
+        0.0f,
+        1.0f,
+    0.66666f,
+    0.33333f,
+        0.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f
+};
 
 //
 // Curve object (source geometry).
@@ -97,11 +149,11 @@ class APPLESEED_DLLSYMBOL CurveObject
     // Return the region kit of the object.
     foundation::Lazy<RegionKit>& get_region_kit() override;
 
-    // Insert and access curve basis
+    // Insert and access curve basis.
     CurveBasis get_basis() const;
     void push_basis(unsigned char b);
 
-    // Insert and access curve_count
+    // Insert and access curve_count.
     void push_curve_count(size_t c);
     size_t get_curve_count() const;
 

@@ -137,22 +137,22 @@ void CurveObject::push_basis(unsigned char b)
 
 size_t CurveObject::get_curve_count() const
 {
-    switch(impl->m_basis)
+    switch (impl->m_basis)
     {
-        case CurveBasis::Linear:
-            return get_curve1_count();
+      case CurveBasis::Linear:
+        return get_curve1_count();
 
-        case CurveBasis::Bezier:
-        case CurveBasis::Bspline:
-        case CurveBasis::Catmullrom:
-            return get_curve3_count();
+      case CurveBasis::Bezier:
+      case CurveBasis::Bspline:
+      case CurveBasis::Catmullrom:
+        return get_curve3_count();
 
-        assert_otherwise;
+      default:
+        return 0;
     }
 }
 
-
-void CurveObject::push_curve_count(size_t c)
+void CurveObject::push_curve_count(const size_t c)
 {
     impl->m_curve_count = c;
 }
@@ -177,13 +177,24 @@ size_t CurveObject::push_curve1(const Curve1Type& curve)
 size_t CurveObject::push_curve3(const Curve3Type& curve)
 {
     const size_t index = impl->m_curves3.size();
-    Curve3Type t_curve = Curve3Type(curve, CurveMatrixType::make_identity(), true);
+    Curve3Type t_curve;
 
-    if (get_basis() == CurveBasis::Bspline)
-        t_curve.transform_basis(CurveMatrixType::from_array(ar_bezier_inv) * CurveMatrixType::from_array(ar_bspline));
-    else if (get_basis() == CurveBasis::Catmullrom)
-        t_curve.transform_basis(CurveMatrixType::from_array(ar_bezier_inv) * CurveMatrixType::from_array(ar_catmullrom));
+    switch(get_basis())
+    {
+      case CurveBasis::Bspline:
+        t_curve.transform_basis(
+            CurveMatrixType::from_array(BezierInverseBasisArray) * CurveMatrixType::from_array(BSplineBasisArray));
+        break;
 
+      case CurveBasis::Catmullrom:
+        t_curve.transform_basis(
+            CurveMatrixType::from_array(BezierInverseBasisArray) * CurveMatrixType::from_array(CatmullRomBasisArray));
+        break;
+
+      default:
+        t_curve = Curve3Type(curve, CurveMatrixType::make_identity(), true);
+        break;
+    }
     impl->m_curves3.push_back(t_curve);
     return index;
 }

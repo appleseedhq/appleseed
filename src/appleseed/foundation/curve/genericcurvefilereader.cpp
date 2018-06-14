@@ -47,45 +47,45 @@ namespace bf = boost::filesystem;
 namespace foundation
 {
 
-    struct GenericCurveFileReader::Impl
-    {
-        string  m_filename;
-        float   m_radius;
-        size_t  m_degree;
-    };
+struct GenericCurveFileReader::Impl
+{
+    string  m_filename;
+    float   m_radius;
+    size_t  m_basis;
+};
 
-    GenericCurveFileReader::GenericCurveFileReader(const char* filename, float radius, size_t degree)
-            : impl(new Impl())
+GenericCurveFileReader::GenericCurveFileReader(const char* filename, const float radius, const size_t basis)
+  : impl(new Impl())
+{
+    impl->m_filename = filename;
+    impl->m_radius = radius;
+    impl->m_basis = basis;
+}
+
+GenericCurveFileReader::~GenericCurveFileReader()
+{
+    delete impl;
+}
+
+void GenericCurveFileReader::read(ICurveBuilder& builder)
+{
+    const bf::path filepath(impl->m_filename);
+    const string extension = lower_case(filepath.extension().string());
+
+    if (extension == ".binarycurve")
     {
-        impl->m_filename = filename;
-        impl->m_radius = radius;
-        impl->m_degree = degree;
+        BinaryCurveFileReader reader(impl->m_filename);
+        reader.read(builder);
     }
-
-    GenericCurveFileReader::~GenericCurveFileReader()
+    else if (extension == ".mitshair")
     {
-        delete impl;
+        MitsHairFileReader reader(impl->m_filename, impl->m_radius, impl->m_basis);
+        reader.read(builder);
     }
-
-    void GenericCurveFileReader::read(ICurveBuilder& builder)
+    else
     {
-        const bf::path filepath(impl->m_filename);
-        const string extension = lower_case(filepath.extension().string());
-
-        if (extension == ".binarycurve")
-        {
-            BinaryCurveFileReader reader(impl->m_filename);
-            reader.read(builder);
-        }
-        else if (extension == ".mitshair")
-        {
-            MitsHairFileReader reader(impl->m_filename, impl->m_radius, impl->m_degree);
-            reader.read(builder);
-        }
-        else
-        {
-            throw ExceptionUnsupportedFileFormat(impl->m_filename.c_str());
-        }
+        throw ExceptionUnsupportedFileFormat(impl->m_filename.c_str());
     }
+}
 
 }   // namespace foundation

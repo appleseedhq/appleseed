@@ -45,10 +45,10 @@ namespace foundation
 // Curve file reader interface.
 //
 
-    class APPLESEED_DLLSYMBOL ICurveFileReader
-    : public NonCopyable
+class APPLESEED_DLLSYMBOL ICurveFileReader
+  : public NonCopyable
 {
-    public:
+  public:
     // Destructor.
     virtual ~ICurveFileReader() {}
 

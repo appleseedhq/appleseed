@@ -31,8 +31,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionioerror.h"
-#include "foundation/math/vector.h"
 #include "foundation/curve/icurvewalker.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.
@@ -47,89 +47,88 @@ namespace foundation
 // BinaryCurveFileWriter class implementation.
 //
 
-    BinaryCurveFileWriter::BinaryCurveFileWriter(const string& filename)
-            : m_filename(filename)
-            , m_writer(m_file, 256 * 1024)
-    {
-    }
+BinaryCurveFileWriter::BinaryCurveFileWriter(const string& filename)
+  : m_filename(filename)
+  , m_writer(m_file, 256 * 1024)
+{
+}
 
-    void BinaryCurveFileWriter::write(const ICurveWalker& walker)
+void BinaryCurveFileWriter::write(const ICurveWalker& walker)
+{
+    if (!m_file.is_open())
     {
+        m_file.open(
+            m_filename.c_str(),
+            BufferedFile::BinaryType,
+            BufferedFile::WriteMode);
+
         if (!m_file.is_open())
-        {
-            m_file.open(
-                    m_filename.c_str(),
-                    BufferedFile::BinaryType,
-                    BufferedFile::WriteMode);
+            throw ExceptionIOError();
 
-            if (!m_file.is_open())
-                throw ExceptionIOError();
-
-            write_signature();
-            write_version();
-        }
-
-        write_curves(walker);
+        write_signature();
+        write_version();
     }
 
-    void BinaryCurveFileWriter::write_signature()
-    {
-        static const char Signature[11] = { 'B', 'I', 'N', 'A', 'R', 'Y', 'C', 'U', 'R', 'V', 'E' };
+    write_curves(walker);
+}
 
-        checked_write(m_file, Signature, sizeof(Signature));
-    }
+void BinaryCurveFileWriter::write_signature()
+{
+    static const char Signature[11] = { 'B', 'I', 'N', 'A', 'R', 'Y', 'C', 'U', 'R', 'V', 'E' };
 
-    void BinaryCurveFileWriter::write_version()
-    {
-        const uint16 Version = 2;
+    checked_write(m_file, Signature, sizeof(Signature));
+}
 
-        checked_write(m_file, Version);
-    }
+void BinaryCurveFileWriter::write_version()
+{
+    const uint16 Version = 2;
 
-    void BinaryCurveFileWriter::write_curves(const ICurveWalker& walker)
-    {
-        write_basis(walker);
-        write_curve_count(walker);
+    checked_write(m_file, Version);
+}
 
-        int32 vertex_count = 0;
+void BinaryCurveFileWriter::write_curves(const ICurveWalker& walker)
+{
+    write_basis(walker);
+    write_curve_count(walker);
 
-        for (uint32 i = 0; i < walker.get_curve_count(); ++i)
-            write_vertex_properties(walker, i, vertex_count);
-    }
+    uint32 vertex_count = 0;
 
-    void BinaryCurveFileWriter::write_basis(const ICurveWalker& walker)
-    {
-        const unsigned char basis = static_cast<unsigned char>(walker.get_basis());
-        checked_write(m_writer, basis);
-    }
+    for (uint32 i = 0; i < walker.get_curve_count(); ++i)
+        write_curve(walker, i, vertex_count);
+}
 
+void BinaryCurveFileWriter::write_basis(const ICurveWalker& walker)
+{
+    const unsigned char basis = static_cast<unsigned char>(walker.get_basis());
+    checked_write(m_writer, basis);
+}
 
-    void BinaryCurveFileWriter::write_curve_count(const ICurveWalker& walker)
-    {
-        const uint32 curve_count = static_cast<uint32>(walker.get_curve_count());
-        checked_write(m_writer, curve_count);
-    }
+void BinaryCurveFileWriter::write_curve_count(const ICurveWalker& walker)
+{
+    const uint32 curve_count = static_cast<uint32>(walker.get_curve_count());
+    checked_write(m_writer, curve_count);
+}
 
-    void BinaryCurveFileWriter::write_vertex_properties(const ICurveWalker& walker,
-                                                        const uint32 vertex_id,
-                                                        int32& vertex_count)
-    {
-        const uint32 count = static_cast<uint32>(walker.get_vertex_count(vertex_id));
-        checked_write(m_writer, count);
+void BinaryCurveFileWriter::write_curve(const ICurveWalker &walker,
+                                        const uint32 curve_id,
+                                        uint32 &vertex_count)
+{
+    const uint32 count = static_cast<uint32>(walker.get_vertex_count(curve_id));
+    checked_write(m_writer, count);
 
-        for (uint32 i = 0; i < count; ++i)
-            checked_write(m_writer, walker.get_vertex(i + vertex_count));
+    for (uint32 i = 0; i < count; ++i)
+        checked_write(m_writer, walker.get_vertex(i + vertex_count));
 
-        for (uint32 i = 0; i < count; ++i)
-            checked_write(m_writer, walker.get_vertex_width(i + vertex_count));
+    for (uint32 i = 0; i < count; ++i)
+        checked_write(m_writer, walker.get_vertex_width(i + vertex_count));
 
-        for (uint32 i = 0; i < count; ++i)
-            checked_write(m_writer, walker.get_vertex_opacity(i + vertex_count));
+    for (uint32 i = 0; i < count; ++i)
+        checked_write(m_writer, walker.get_vertex_opacity(i + vertex_count));
 
-        for (uint32 i = 0; i < count; ++i)
-            checked_write(m_writer, walker.get_vertex_colour(i + vertex_count));
+    for (uint32 i = 0; i < count; ++i)
+        checked_write(m_writer, walker.get_vertex_color(i + vertex_count));
 
-        vertex_count += count;
-    }
+    vertex_count += count;
+}
 
 }   // namespace foundation

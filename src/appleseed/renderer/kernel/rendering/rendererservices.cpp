@@ -1156,11 +1156,8 @@ IMPLEMENT_USER_DATA_GETTER(vertex_color)
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
-        const Color3d& cv = shading_point->get_per_vertex_color();
-            OSL::Color3 v(
-                static_cast<float>(cv.r),
-                static_cast<float>(cv.g),
-                static_cast<float>(cv.b));
+        const Color3f& cv = shading_point->get_per_vertex_color();
+        const OSL::Color3 v(cv.r, cv.g, cv.b);
 
         reinterpret_cast<float*>(val)[0] = v.x;
         reinterpret_cast<float*>(val)[1] = v.y;
@@ -1170,8 +1167,7 @@ IMPLEMENT_USER_DATA_GETTER(vertex_color)
             clear_derivatives(type, val);
 
         return true;
-        }
-
+    }
     return false;
 }
 

@@ -51,26 +51,26 @@ namespace foundation
 // Read for mitshair curve file format.
 //
 
-    class MitsHairFileReader
-            : public ICurveFileReader
-    {
-    public:
-        // Constructor.
-        explicit MitsHairFileReader(const std::string& filename, const float radius, const size_t degree);
+class MitsHairFileReader
+  : public ICurveFileReader
+{
+  public:
+    // Constructor.
+    MitsHairFileReader(const std::string& filename, const float radius, const size_t degree);
 
-        // Read a curve file.
-        void read(ICurveBuilder& builder) override;
+    // Read a curve file.
+    void read(ICurveBuilder& builder) override;
 
-    private:
-        const std::string       m_filename;
-        const float             m_radius;
-        const size_t            m_degree;
+  private:
+    const std::string       m_filename;
+    const float             m_radius;
+    const size_t            m_basis;
 
-        static void read_and_check_signature(BufferedFile& file);
+    static void read_and_check_signature(BufferedFile& file);
 
-        void read_curves(ReaderAdapter& reader, ICurveBuilder& builder);
-        void push_vertex_properties(Vector3f& v, ICurveBuilder& builder);
-    };
+    void read_curves(ReaderAdapter& reader, ICurveBuilder& builder);
+    void push_vertex_properties(Vector3f& v, ICurveBuilder& builder);
+};
 
 }       // namespace foundation
 

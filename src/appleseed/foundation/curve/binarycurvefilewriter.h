@@ -31,11 +31,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/curve/icurvefilewriter.h"
-#include "foundation/platform/compiler.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/bufferedfile.h"
 
 // Standard headers.
-#include <cstddef>
 #include <string>
 
 // Forward declarations.
@@ -45,34 +44,35 @@ namespace foundation
 {
 
 //
-// Writer for a simple binary mesh file format.
+// Writer for a simple binary curve file format.
 //
 
-    class BinaryCurveFileWriter
-            : public ICurveFileWriter
-    {
-    public:
-        // Constructor.
-        explicit BinaryCurveFileWriter(const std::string& filename);
+class BinaryCurveFileWriter
+  : public ICurveFileWriter
+{
+  public:
+    // Constructor.
+    explicit BinaryCurveFileWriter(const std::string& filename);
 
-        // Write a mesh.
-        void write(const ICurveWalker& walker) override;
+    // Write a curve object.
+    void write(const ICurveWalker& walker) override;
 
-    private:
-        const std::string           m_filename;
-        BufferedFile                m_file;
-        LZ4CompressedWriterAdapter  m_writer;
+  private:
+    const std::string           m_filename;
+    BufferedFile                m_file;
+    LZ4CompressedWriterAdapter  m_writer;
 
-        void write_signature();
-        void write_version();
+    void write_signature();
+    void write_version();
 
-        void write_curves(const ICurveWalker& walker);
-        void write_curve_count(const ICurveWalker& walker);
-        void write_basis(const ICurveWalker& walker);
-        void write_vertex_properties(const ICurveWalker& walker,
-                                     const uint32 vertex_id,
-                                     int32& vertex_count);
-    };
+    void write_curves(const ICurveWalker& walker);
+    void write_curve_count(const ICurveWalker& walker);
+    void write_basis(const ICurveWalker& walker);
+    void write_curve(
+        const ICurveWalker &walker,
+        const uint32 curve_id,
+        uint32 &vertex_count);
+};
 
 }       // namespace foundation
 

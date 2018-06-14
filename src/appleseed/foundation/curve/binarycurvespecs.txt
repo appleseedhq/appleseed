@@ -54,15 +54,15 @@ DATA BLOCK FORMAT VERSION 1
   +----------------------------------+
   |              ...                 |
   +----------------------------------+
-  |    Transparency at vertex #1     |    4 bytes (single precision float)
+  |       Opacity at vertex #1       |    4 bytes (single precision float)
   +----------------------------------+
-  |    Transparency at vertex #2     |    4 bytes (single precision float)
+  |       Opacity at vertex #2       |    4 bytes (single precision float)
   +----------------------------------+
   |              ...                 |
   +----------------------------------+
-  |       Colour of vertex #1        |    12 bytes (RGB single precision float)
+  |        Color of vertex #1        |    12 bytes (RGB single precision float)
   +----------------------------------+
-  |       Colour of vertex #2        |    12 bytes (RGB single precision float)
+  |        Color of vertex #2        |    12 bytes (RGB single precision float)
   +----------------------------------+
   |              ...                 |
   `----------------------------------'

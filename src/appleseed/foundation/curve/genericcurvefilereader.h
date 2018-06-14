@@ -46,11 +46,11 @@ namespace foundation
 //
 
 class APPLESEED_DLLSYMBOL GenericCurveFileReader
-    : public ICurveFileReader
+  : public ICurveFileReader
 {
-    public:
+  public:
     // Constructor.
-    explicit GenericCurveFileReader(const char* filename, float radius, size_t degree);
+    GenericCurveFileReader(const char* filename, const float radius, const size_t basis);
 
     // Destructor.
     ~GenericCurveFileReader() override;
@@ -58,7 +58,7 @@ class APPLESEED_DLLSYMBOL GenericCurveFileReader
     // Read a curve object.
     void read(ICurveBuilder& builder) override;
 
-    private:
+  private:
     struct Impl;
     Impl* impl;
 };
