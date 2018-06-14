@@ -589,10 +589,10 @@ inline T AABB<T, N>::extent_ratio(const AABBType& a, const AABBType& b)
 template <typename T, size_t N>
 inline void AABB<T, N>::robust_grow(const ValueType eps)
 {
-    assert(this->is_valid());
+    assert(AABBType::is_valid());
 
-    const VectorType c = ValueType(0.5) * (this->min + this->max);
-    const VectorType e = this->max - this->min;
+    const VectorType c = ValueType(0.5) * (AABBType::min + AABBType::max);
+    const VectorType e = AABBType::max - AABBType::min;
 
     for (size_t i = 0; i < N; ++i)
     {
@@ -604,31 +604,31 @@ inline void AABB<T, N>::robust_grow(const ValueType eps)
 
         const ValueType delta = dominant_factor * eps;
 
-        this->min[i] -= delta;
-        this->max[i] += delta;
+        AABBType::min[i] -= delta;
+        AABBType::max[i] += delta;
     }
 }
 
 template <typename T, size_t N>
 inline T AABB<T, N>::diameter() const
 {
-    assert(this->is_valid());
+    assert(AABBType::is_valid());
 
-    return norm(this->extent());
+    return norm(AABBType::extent());
 }
 
 template <typename T, size_t N>
 inline T AABB<T, N>::square_diameter() const
 {
-    assert(this->is_valid());
+    assert(AABBType::is_valid());
 
-    return square_norm(this->extent());
+    return square_norm(AABBType::extent());
 }
 
 template <typename T, size_t N>
 inline T AABB<T, N>::radius() const
 {
-    assert(this->is_valid());
+    assert(AABBType::is_valid());
 
     return T(0.5) * diameter();
 }
@@ -636,7 +636,7 @@ inline T AABB<T, N>::radius() const
 template <typename T, size_t N>
 inline T AABB<T, N>::square_radius() const
 {
-    assert(this->is_valid());
+    assert(AABBType::is_valid());
 
     return T(0.25) * square_diameter();
 }
@@ -644,41 +644,41 @@ inline T AABB<T, N>::square_radius() const
 template <typename T, size_t N>
 inline Vector<T, N> AABB<T, N>::center() const
 {
-    assert(this->is_valid());
+    assert(AABBType::is_valid());
 
-    return ValueType(0.5) * (this->min + this->max);
+    return ValueType(0.5) * (AABBType::min + AABBType::max);
 }
 
 template <typename T, size_t N>
 inline T AABB<T, N>::center(const size_t dim) const
 {
-    assert(this->is_valid());
+    assert(AABBType::is_valid());
 
-    return ValueType(0.5) * (this->min[dim] + this->max[dim]);
+    return ValueType(0.5) * (AABBType::min[dim] + AABBType::max[dim]);
 }
 
 template <typename T, size_t N>
 inline Vector<T, N> AABB<T, N>::extent() const
 {
-    assert(this->is_valid());
+    assert(AABBType::is_valid());
 
-    return this->max - this->min;
+    return AABBType::max - AABBType::min;
 }
 
 template <typename T, size_t N>
 inline T AABB<T, N>::extent(const size_t dim) const
 {
-    assert(this->is_valid());
+    assert(AABBType::is_valid());
 
-    return this->max[dim] - this->min[dim];
+    return AABBType::max[dim] - AABBType::min[dim];
 }
 
 template <typename T, size_t N>
 inline T AABB<T, N>::volume() const
 {
-    assert(this->is_valid());
+    assert(AABBType::is_valid());
 
-    const VectorType e = this->max - this->min;
+    const VectorType e = AABBType::max - AABBType::min;
 
     ValueType volume = e[0];
 
