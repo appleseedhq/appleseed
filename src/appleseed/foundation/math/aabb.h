@@ -53,18 +53,18 @@ namespace foundation
 {
 
 //
-// N-dimensional axis-aligned bounding box [min, max] class and operations.
+// N-dimensional integral axis-aligned bounding box [min, max] class and operations.
 // The boundary of the bounding box is considered to belong to the bounding box.
 //
 
 template <typename T, size_t N>
-class AABB
+class AABBBase
 {
   public:
     // Value, vector and AABB types.
     typedef T ValueType;
     typedef Vector<T, N> VectorType;
-    typedef AABB<T, N> AABBType;
+    typedef AABBBase<T, N> AABBType;
 
     // Dimension.
     static const size_t Dimension = N;
@@ -74,22 +74,22 @@ class AABB
 
     // Constructors.
 #if !defined(_MSC_VER) || _MSC_VER >= 1800
-    AABB() = default;                   // leave all components uninitialized
+    AABBBase() = default;               // leave all components uninitialized
 #else
-    AABB() {}                           // leave all components uninitialized
+    AABBBase() {}                       // leave all components uninitialized
 #endif
-    AABB(
+    AABBBase(
         const VectorType& min,          // lower bound
         const VectorType& max);         // upper bound
 
     // Construct a bounding box from another bounding box of a different type.
     template <typename U>
-    AABB(const AABB<U, N>& rhs);
+    AABBBase(const AABBBase<U, N>& rhs);
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
 
     // Implicit construction from an Imath::Box.
-    AABB(const Imath::Box<typename ImathVecEquivalent<T, N>::Type>& rhs);
+    AABBBase(const Imath::Box<typename ImathVecEquivalent<T, N>::Type>& rhs);
 
     // Reinterpret this bounding box as an Imath::Box.
     operator Imath::Box<typename ImathVecEquivalent<T, N>::Type>&();
@@ -106,14 +106,6 @@ class AABB
     // Return true if two bounding boxes overlap.
     static bool overlap(const AABBType& a, const AABBType& b);
 
-    // Return the amount of overlapping between two bounding boxes.
-    // Returns 0.0 if the bounding boxes are disjoint, 1.0 if one
-    // is contained in the other.
-    static ValueType overlap_ratio(const AABBType& a, const AABBType& b);
-
-    // Return the ratio of the extent of a to the extent of b.
-    static ValueType extent_ratio(const AABBType& a, const AABBType& b);
-
     // Unchecked array subscripting. [0] is min, [1] is max.
     VectorType& operator[](const size_t i);
     const VectorType& operator[](const size_t i) const;
@@ -128,9 +120,6 @@ class AABB
     // Grow the bounding box by a fixed amount in every dimension.
     void grow(const VectorType& v);
 
-    // Robustly grow the bounding box by a given epsilon factor.
-    void robust_grow(const ValueType eps);
-
     // Translate the bounding box.
     void translate(const VectorType& v);
 
@@ -142,25 +131,9 @@ class AABB
     // along which the bounding box has a strictly positive extent).
     size_t rank() const;
 
-    // Compute the center of the bounding box.
-    VectorType center() const;
-    ValueType center(const size_t dim) const;
-
     // Compute the extent of the bounding box.
     VectorType extent() const;
     ValueType extent(const size_t dim) const;
-
-    // Return the diameter of the bounding box.
-    ValueType diameter() const;
-
-    // Return the square diameter of the bounding box.
-    ValueType square_diameter() const;
-
-    // Return the radius of the bounding box.
-    ValueType radius() const;
-    
-    // Return the square radius of the bounding box.
-    ValueType square_radius() const;
 
     // Return the volume of the bounding box.
     T volume() const;
@@ -174,56 +147,112 @@ class AABB
 };
 
 // Exact inequality and equality tests.
-template <typename T, size_t N> bool operator!=(const AABB<T, N>& lhs, const AABB<T, N>& rhs);
-template <typename T, size_t N> bool operator==(const AABB<T, N>& lhs, const AABB<T, N>& rhs);
-
-// Approximate equality tests.
-template <typename T, size_t N> bool feq(const AABB<T, N>& lhs, const AABB<T, N>& rhs);
-template <typename T, size_t N> bool feq(const AABB<T, N>& lhs, const AABB<T, N>& rhs, const T eps);
+template <typename T, size_t N> bool operator!=(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs);
+template <typename T, size_t N> bool operator==(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs);
 
 // Bounding box arithmetic.
-template <typename T, size_t N> AABB<T, N>  operator+ (const AABB<T, N>& lhs, const AABB<T, N>& rhs);
-template <typename T, size_t N> AABB<T, N>  operator* (const AABB<T, N>& lhs, const T rhs);
-template <typename T, size_t N> AABB<T, N>  operator* (const T lhs, const AABB<T, N>& rhs);
-template <typename T, size_t N> AABB<T, N>& operator+=(AABB<T, N>& lhs, const AABB<T, N>& rhs);
-template <typename T, size_t N> AABB<T, N>& operator*=(AABB<T, N>& lhs, const T rhs);
+template <typename T, size_t N> AABBBase<T, N>  operator+ (const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs);
+template <typename T, size_t N> AABBBase<T, N>  operator* (const AABBBase<T, N>& lhs, const T rhs);
+template <typename T, size_t N> AABBBase<T, N>  operator* (const T lhs, const AABBBase<T, N>& rhs);
+template <typename T, size_t N> AABBBase<T, N>& operator+=(AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs);
+template <typename T, size_t N> AABBBase<T, N>& operator*=(AABBBase<T, N>& lhs, const T rhs);
+
+
+//
+// N-dimensional floating-point axis-aligned bounding box [min, max] class.
+//
+
+template <typename T, size_t N>
+class AABB
+  : public AABBBase<T, N>
+{
+  public:
+    using AABBBase<T, N>::AABBBase;
+
+    // Value, vector and AABB types.
+    typedef T ValueType;
+    typedef Vector<T, N> VectorType;
+    typedef AABB<T, N> AABBType;
+
+    // Return the amount of overlapping between two bounding boxes.
+    // Returns 0.0 if the bounding boxes are disjoint, 1.0 if one
+    // is contained in the other.
+    static ValueType overlap_ratio(const AABBType& a, const AABBType& b);
+
+    // Return the ratio of the extent of a to the extent of b.
+    static ValueType extent_ratio(const AABBType& a, const AABBType& b);
+
+    // Robustly grow the bounding box by a given epsilon factor.
+    void robust_grow(const ValueType eps);
+
+    // Return the diameter of the bounding box.
+    ValueType diameter() const;
+
+    // Return the square diameter of the bounding box.
+    ValueType square_diameter() const;
+
+    // Return the radius of the bounding box.
+    ValueType radius() const;
+
+    // Return the square radius of the bounding box.
+    ValueType square_radius() const;
+
+    // Compute the center of the bounding box.
+    VectorType center() const;
+    ValueType center(const size_t dim) const;
+
+    // Compute the extent of the bounding box.
+    VectorType extent() const;
+    ValueType extent(const size_t dim) const;
+
+    // Return the volume of the bounding box.
+    T volume() const;
+};
 
 // Compute the surface area of a 3D bounding box.
 template <typename T> T half_surface_area(const AABB<T, 3>& bbox);
 template <typename T> T surface_area(const AABB<T, 3>& bbox);
+
+// Approximate equality tests.
+template <typename T, size_t N> bool feq(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs);
+template <typename T, size_t N> bool feq(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs, const T eps);
 
 
 //
 // Full specializations for 1D, 2D, 3D and 4D vectors of type int, float and double.
 //
 
-typedef AABB<int,    1> AABB1i;
-typedef AABB<size_t, 1> AABB1u;
 typedef AABB<float,  1> AABB1f;
 typedef AABB<double, 1> AABB1d;
 
-typedef AABB<int,    2> AABB2i;
-typedef AABB<size_t, 2> AABB2u;
 typedef AABB<float,  2> AABB2f;
 typedef AABB<double, 2> AABB2d;
 
-typedef AABB<int,    3> AABB3i;
-typedef AABB<size_t, 3> AABB3u;
 typedef AABB<float,  3> AABB3f;
 typedef AABB<double, 3> AABB3d;
 
-typedef AABB<int,    4> AABB4i;
-typedef AABB<size_t, 4> AABB4u;
 typedef AABB<float,  4> AABB4f;
 typedef AABB<double, 4> AABB4d;
 
+typedef AABBBase<int,    1> AABB1i;
+typedef AABBBase<size_t, 1> AABB1u;
+
+typedef AABBBase<int,    2> AABB2i;
+typedef AABBBase<size_t, 2> AABB2u;
+
+typedef AABBBase<int,    3> AABB3i;
+typedef AABBBase<size_t, 3> AABB3u;
+
+typedef AABBBase<int,    4> AABB4i;
+typedef AABBBase<size_t, 4> AABB4u;
+
 
 //
-// N-dimensional axis-aligned bounding box class and operations.
+// N-dimensional integral axis-aligned bounding box class and operations.
 //
 
 template <typename T, size_t N>
-inline AABB<T, N>::AABB(
+inline AABBBase<T, N>::AABBBase(
     const VectorType& min_,
     const VectorType& max_)
   : min(min_)
@@ -233,7 +262,7 @@ inline AABB<T, N>::AABB(
 
 template <typename T, size_t N>
 template <typename U>
-inline AABB<T, N>::AABB(const AABB<U, N>& rhs)
+inline AABBBase<T, N>::AABBBase(const AABBBase<U, N>& rhs)
   : min(VectorType(rhs.min))
   , max(VectorType(rhs.max))
 {
@@ -242,20 +271,20 @@ inline AABB<T, N>::AABB(const AABB<U, N>& rhs)
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
 
 template <typename T, size_t N>
-inline AABB<T, N>::AABB(const Imath::Box<typename ImathVecEquivalent<T, N>::Type>& rhs)
+inline AABBBase<T, N>::AABBBase(const Imath::Box<typename ImathVecEquivalent<T, N>::Type>& rhs)
   : min(rhs.min)
   , max(rhs.max)
 {
 }
 
 template <typename T, size_t N>
-inline AABB<T, N>::operator Imath::Box<typename ImathVecEquivalent<T, N>::Type>&()
+inline AABBBase<T, N>::operator Imath::Box<typename ImathVecEquivalent<T, N>::Type>&()
 {
     return reinterpret_cast<Imath::Box<typename ImathVecEquivalent<T, N>::Type>&>(*this);
 }
 
 template <typename T, size_t N>
-inline AABB<T, N>::operator const Imath::Box<typename ImathVecEquivalent<T, N>::Type>&() const
+inline AABBBase<T, N>::operator const Imath::Box<typename ImathVecEquivalent<T, N>::Type>&() const
 {
     return reinterpret_cast<const Imath::Box<typename ImathVecEquivalent<T, N>::Type>&>(*this);
 }
@@ -263,15 +292,15 @@ inline AABB<T, N>::operator const Imath::Box<typename ImathVecEquivalent<T, N>::
 #endif
 
 template <typename T, size_t N>
-inline AABB<T, N> AABB<T, N>::invalid()
+inline AABBBase<T, N> AABBBase<T, N>::invalid()
 {
-    AABB<T, N> bbox;
+    AABBBase<T, N> bbox;
     bbox.invalidate();
     return bbox;
 }
 
 template <typename T, size_t N>
-inline AABB<T, N> AABB<T, N>::intersect(const AABBType& a, const AABBType& b)
+inline AABBBase<T, N> AABBBase<T, N>::intersect(const AABBType& a, const AABBType& b)
 {
     assert(a.is_valid());
     assert(b.is_valid());
@@ -288,7 +317,7 @@ inline AABB<T, N> AABB<T, N>::intersect(const AABBType& a, const AABBType& b)
 }
 
 template <typename T, size_t N>
-inline bool AABB<T, N>::overlap(const AABBType& a, const AABBType& b)
+inline bool AABBBase<T, N>::overlap(const AABBType& a, const AABBType& b)
 {
     assert(a.is_valid());
     assert(b.is_valid());
@@ -301,6 +330,215 @@ inline bool AABB<T, N>::overlap(const AABBType& a, const AABBType& b)
 
     return true;
 }
+
+template <typename T, size_t N>
+inline Vector<T, N>& AABBBase<T, N>::operator[](const size_t i)
+{
+    assert(i < 2);
+    return (&min)[i];
+}
+
+template <typename T, size_t N>
+inline const Vector<T, N>& AABBBase<T, N>::operator[](const size_t i) const
+{
+    assert(i < 2);
+    return (&min)[i];
+}
+
+template <typename T, size_t N>
+inline void AABBBase<T, N>::invalidate()
+{
+    for (size_t i = 0; i < N; ++i)
+    {
+        min[i] = std::numeric_limits<T>::max();
+        max[i] = signed_min<T>();
+    }
+}
+
+template <typename T, size_t N>
+inline void AABBBase<T, N>::insert(const VectorType& v)
+{
+    for (size_t i = 0; i < N; ++i)
+    {
+        if (min[i] > v[i])
+            min[i] = v[i];
+        if (max[i] < v[i])
+            max[i] = v[i];
+    }
+}
+
+template <typename T, size_t N>
+inline void AABBBase<T, N>::insert(const AABBType& b)
+{
+    for (size_t i = 0; i < N; ++i)
+    {
+        if (min[i] > b.min[i])
+            min[i] = b.min[i];
+        if (max[i] < b.max[i])
+            max[i] = b.max[i];
+    }
+}
+
+template <typename T, size_t N>
+inline void AABBBase<T, N>::grow(const VectorType& v)
+{
+    assert(is_valid());
+
+    min -= v;
+    max += v;
+}
+
+template <typename T, size_t N>
+inline void AABBBase<T, N>::translate(const VectorType& v)
+{
+    assert(is_valid());
+
+    min += v;
+    max += v;
+}
+
+template <typename T, size_t N>
+inline bool AABBBase<T, N>::is_valid() const
+{
+    for (size_t i = 0; i < N; ++i)
+    {
+        // Return false if NaN values creep in.
+        if (!(min[i] <= max[i]))
+            return false;
+    }
+
+    return true;
+}
+
+template <typename T, size_t N>
+inline size_t AABBBase<T, N>::rank() const
+{
+    size_t r = 0;
+
+    for (size_t i = 0; i < N; ++i)
+    {
+        if (min[i] < max[i])
+            ++r;
+    }
+
+    return r;
+}
+
+template <typename T, size_t N>
+inline size_t AABBBase<T, N>::get_corner_count() const
+{
+    return 1 << N;
+}
+
+template <typename T, size_t N>
+Vector<T, N> AABBBase<T, N>::compute_corner(const size_t i) const
+{
+    assert(is_valid());
+
+    VectorType p;
+
+    for (size_t d = 0; d < N; ++d)
+        p[d] = i & (size_t(1) << d) ? max[d] : min[d];
+
+    return p;
+}
+
+template <typename T, size_t N>
+inline bool AABBBase<T, N>::contains(const VectorType& v) const
+{
+    assert(is_valid());
+
+    for (size_t i = 0; i < N; ++i)
+    {
+        if (v[i] < min[i] || v[i] > max[i])
+            return false;
+    }
+
+    return true;
+}
+
+template <typename T, size_t N>
+inline bool operator!=(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs)
+{
+    return lhs.min != rhs.min || lhs.max != rhs.max;
+}
+
+template <typename T, size_t N>
+inline bool operator==(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs)
+{
+    return !(lhs != rhs);
+}
+
+template <typename T, size_t N>
+inline AABBBase<T, N> operator+(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs)
+{
+    return AABBBase<T, N>(lhs.min + rhs.min, lhs.max + rhs.max);
+}
+
+template <typename T, size_t N>
+inline AABBBase<T, N> operator*(const AABBBase<T, N>& lhs, const T rhs)
+{
+    return AABBBase<T, N>(lhs.min * rhs, lhs.max * rhs);
+}
+
+template <typename T, size_t N>
+inline AABBBase<T, N> operator*(const T lhs, const AABBBase<T, N>& rhs)
+{
+    return AABBBase<T, N>(lhs * rhs.min, lhs * rhs.max);
+}
+
+template <typename T, size_t N>
+inline AABBBase<T, N>& operator+=(AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs)
+{
+    lhs.min += rhs.min;
+    lhs.max += rhs.max;
+    return lhs;
+}
+
+template <typename T, size_t N>
+inline AABBBase<T, N>& operator*=(AABBBase<T, N>& lhs, const T rhs)
+{
+    lhs.min *= rhs;
+    lhs.max *= rhs;
+    return lhs;
+}
+
+template <typename T, size_t N>
+inline Vector<T, N> AABBBase<T, N>::extent() const
+{
+    assert(is_valid());
+
+    return max - min + VectorType(1);
+}
+
+template <typename T, size_t N>
+inline T AABBBase<T, N>::extent(const size_t dim) const
+{
+    assert(is_valid());
+
+    return max[dim] - min[dim] + T(1);
+}
+
+template <typename T, size_t N>
+inline T AABBBase<T, N>::volume() const
+{
+    assert(is_valid());
+
+    const VectorType e = extent();
+
+    ValueType volume = e[0];
+
+    for (size_t i = 1; i < N; ++i)
+        volume *= e[i];
+
+    return volume;
+}
+
+
+//
+// Floating-point bounding box specialization.
+//
+//
 
 template <typename T, size_t N>
 inline T AABB<T, N>::overlap_ratio(const AABBType& a, const AABBType& b)
@@ -349,69 +587,12 @@ inline T AABB<T, N>::extent_ratio(const AABBType& a, const AABBType& b)
 }
 
 template <typename T, size_t N>
-inline Vector<T, N>& AABB<T, N>::operator[](const size_t i)
-{
-    assert(i < 2);
-    return (&min)[i];
-}
-
-template <typename T, size_t N>
-inline const Vector<T, N>& AABB<T, N>::operator[](const size_t i) const
-{
-    assert(i < 2);
-    return (&min)[i];
-}
-
-template <typename T, size_t N>
-inline void AABB<T, N>::invalidate()
-{
-    for (size_t i = 0; i < N; ++i)
-    {
-        min[i] = std::numeric_limits<T>::max();
-        max[i] = signed_min<T>();
-    }
-}
-
-template <typename T, size_t N>
-inline void AABB<T, N>::insert(const VectorType& v)
-{
-    for (size_t i = 0; i < N; ++i)
-    {
-        if (min[i] > v[i])
-            min[i] = v[i];
-        if (max[i] < v[i])
-            max[i] = v[i];
-    }
-}
-
-template <typename T, size_t N>
-inline void AABB<T, N>::insert(const AABBType& b)
-{
-    for (size_t i = 0; i < N; ++i)
-    {
-        if (min[i] > b.min[i])
-            min[i] = b.min[i];
-        if (max[i] < b.max[i])
-            max[i] = b.max[i];
-    }
-}
-
-template <typename T, size_t N>
-inline void AABB<T, N>::grow(const VectorType& v)
-{
-    assert(is_valid());
-
-    min -= v;
-    max += v;
-}
-
-template <typename T, size_t N>
 inline void AABB<T, N>::robust_grow(const ValueType eps)
 {
-    assert(is_valid());
+    assert(AABBType::is_valid());
 
-    const VectorType c = ValueType(0.5) * (min + max);
-    const VectorType e = max - min;
+    const VectorType c = ValueType(0.5) * (AABBType::min + AABBType::max);
+    const VectorType e = AABBType::max - AABBType::min;
 
     for (size_t i = 0; i < N; ++i)
     {
@@ -423,99 +604,31 @@ inline void AABB<T, N>::robust_grow(const ValueType eps)
 
         const ValueType delta = dominant_factor * eps;
 
-        min[i] -= delta;
-        max[i] += delta;
+        AABBType::min[i] -= delta;
+        AABBType::max[i] += delta;
     }
-}
-
-template <typename T, size_t N>
-inline void AABB<T, N>::translate(const VectorType& v)
-{
-    assert(is_valid());
-
-    min += v;
-    max += v;
-}
-
-template <typename T, size_t N>
-inline bool AABB<T, N>::is_valid() const
-{
-    for (size_t i = 0; i < N; ++i)
-    {
-        // Return false if NaN values creep in.
-        if (!(min[i] <= max[i]))
-            return false;
-    }
-
-    return true;
-}
-
-template <typename T, size_t N>
-inline size_t AABB<T, N>::rank() const
-{
-    size_t r = 0;
-
-    for (size_t i = 0; i < N; ++i)
-    {
-        if (min[i] < max[i])
-            ++r;
-    }
-
-    return r;
-}
-
-template <typename T, size_t N>
-inline Vector<T, N> AABB<T, N>::center() const
-{
-    assert(is_valid());
-
-    return ValueType(0.5) * (min + max);
-}
-
-template <typename T, size_t N>
-inline T AABB<T, N>::center(const size_t dim) const
-{
-    assert(is_valid());
-
-    return ValueType(0.5) * (min[dim] + max[dim]);
-}
-
-template <typename T, size_t N>
-inline Vector<T, N> AABB<T, N>::extent() const
-{
-    assert(is_valid());
-
-    return max - min;
-}
-
-template <typename T, size_t N>
-inline T AABB<T, N>::extent(const size_t dim) const
-{
-    assert(is_valid());
-
-    return max[dim] - min[dim];
 }
 
 template <typename T, size_t N>
 inline T AABB<T, N>::diameter() const
 {
-    assert(is_valid());
+    assert(AABBType::is_valid());
 
-    return norm(extent());
+    return norm(AABBType::extent());
 }
 
 template <typename T, size_t N>
 inline T AABB<T, N>::square_diameter() const
 {
-    assert(is_valid());
+    assert(AABBType::is_valid());
 
-    return square_norm(extent());
+    return square_norm(AABBType::extent());
 }
 
 template <typename T, size_t N>
 inline T AABB<T, N>::radius() const
 {
-    assert(is_valid());
+    assert(AABBType::is_valid());
 
     return T(0.5) * diameter();
 }
@@ -523,17 +636,49 @@ inline T AABB<T, N>::radius() const
 template <typename T, size_t N>
 inline T AABB<T, N>::square_radius() const
 {
-    assert(is_valid());
+    assert(AABBType::is_valid());
 
     return T(0.25) * square_diameter();
 }
 
 template <typename T, size_t N>
-T AABB<T, N>::volume() const
+inline Vector<T, N> AABB<T, N>::center() const
 {
-    assert(is_valid());
+    assert(AABBType::is_valid());
 
-    const VectorType e = max - min;
+    return ValueType(0.5) * (AABBType::min + AABBType::max);
+}
+
+template <typename T, size_t N>
+inline T AABB<T, N>::center(const size_t dim) const
+{
+    assert(AABBType::is_valid());
+
+    return ValueType(0.5) * (AABBType::min[dim] + AABBType::max[dim]);
+}
+
+template <typename T, size_t N>
+inline Vector<T, N> AABB<T, N>::extent() const
+{
+    assert(AABBType::is_valid());
+
+    return AABBType::max - AABBType::min;
+}
+
+template <typename T, size_t N>
+inline T AABB<T, N>::extent(const size_t dim) const
+{
+    assert(AABBType::is_valid());
+
+    return AABBType::max[dim] - AABBType::min[dim];
+}
+
+template <typename T, size_t N>
+inline T AABB<T, N>::volume() const
+{
+    assert(AABBType::is_valid());
+
+    const VectorType e = AABBType::max - AABBType::min;
 
     ValueType volume = e[0];
 
@@ -541,97 +686,6 @@ T AABB<T, N>::volume() const
         volume *= e[i];
 
     return volume;
-}
-
-template <typename T, size_t N>
-inline size_t AABB<T, N>::get_corner_count() const
-{
-    return 1 << N;
-}
-
-template <typename T, size_t N>
-Vector<T, N> AABB<T, N>::compute_corner(const size_t i) const
-{
-    assert(is_valid());
-
-    VectorType p;
-
-    for (size_t d = 0; d < N; ++d)
-        p[d] = i & (size_t(1) << d) ? max[d] : min[d];
-
-    return p;
-}
-
-template <typename T, size_t N>
-inline bool AABB<T, N>::contains(const VectorType& v) const
-{
-    assert(is_valid());
-
-    for (size_t i = 0; i < N; ++i)
-    {
-        if (v[i] < min[i] || v[i] > max[i])
-            return false;
-    }
-
-    return true;
-}
-
-template <typename T, size_t N>
-inline bool operator!=(const AABB<T, N>& lhs, const AABB<T, N>& rhs)
-{
-    return lhs.min != rhs.min || lhs.max != rhs.max;
-}
-
-template <typename T, size_t N>
-inline bool operator==(const AABB<T, N>& lhs, const AABB<T, N>& rhs)
-{
-    return !(lhs != rhs);
-}
-
-template <typename T, size_t N>
-inline bool feq(const AABB<T, N>& lhs, const AABB<T, N>& rhs)
-{
-    return feq(lhs.min, rhs.min) && feq(lhs.max, rhs.max);
-}
-
-template <typename T, size_t N>
-inline bool feq(const AABB<T, N>& lhs, const AABB<T, N>& rhs, const T eps)
-{
-    return feq(lhs.min, rhs.min, eps) && feq(lhs.max, rhs.max, eps);
-}
-
-template <typename T, size_t N>
-inline AABB<T, N> operator+(const AABB<T, N>& lhs, const AABB<T, N>& rhs)
-{
-    return AABB<T, N>(lhs.min + rhs.min, lhs.max + rhs.max);
-}
-
-template <typename T, size_t N>
-inline AABB<T, N> operator*(const AABB<T, N>& lhs, const T rhs)
-{
-    return AABB<T, N>(lhs.min * rhs, lhs.max * rhs);
-}
-
-template <typename T, size_t N>
-inline AABB<T, N> operator*(const T lhs, const AABB<T, N>& rhs)
-{
-    return AABB<T, N>(lhs * rhs.min, lhs * rhs.max);
-}
-
-template <typename T, size_t N>
-inline AABB<T, N>& operator+=(AABB<T, N>& lhs, const AABB<T, N>& rhs)
-{
-    lhs.min += rhs.min;
-    lhs.max += rhs.max;
-    return lhs;
-}
-
-template <typename T, size_t N>
-inline AABB<T, N>& operator*=(AABB<T, N>& lhs, const T rhs)
-{
-    lhs.min *= rhs;
-    lhs.max *= rhs;
-    return lhs;
 }
 
 template <typename T>
@@ -650,6 +704,19 @@ inline T surface_area(const AABB<T, 3>& bbox)
     const T h = half_surface_area(bbox);
     return h + h;
 }
+
+template <typename T, size_t N>
+inline bool feq(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs)
+{
+    return feq(lhs.min, rhs.min) && feq(lhs.max, rhs.max);
+}
+
+template <typename T, size_t N>
+inline bool feq(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs, const T eps)
+{
+    return feq(lhs.min, rhs.min, eps) && feq(lhs.max, rhs.max, eps);
+}
+
 
 }       // namespace foundation
 
