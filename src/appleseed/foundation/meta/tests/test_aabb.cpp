@@ -529,7 +529,7 @@ TEST_SUITE(Foundation_Math_AABB)
 
 TEST_SUITE(Foundation_Math_IntegralAABB)
 {
-    TEST_CASE(TestInvalidateOnNoIntersectionOnIntegralAABB)
+    TEST_CASE(TestIsValidOnNoIntersectionOnIntegralAABB)
     {
         const AABB2i bbox(
             Vector2i(1, 0),
@@ -544,7 +544,7 @@ TEST_SUITE(Foundation_Math_IntegralAABB)
         EXPECT_FALSE(bbox3.is_valid());
     }
 
-    TEST_CASE(TestInvalidateOnIntersectionOnIntegralAABB)
+    TEST_CASE(TestIsValidOnIntersectionOnIntegralAABB)
     {
         const AABB2i bbox(
             Vector2i(1, 0),

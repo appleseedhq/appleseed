@@ -150,10 +150,6 @@ class AABBBase
 template <typename T, size_t N> bool operator!=(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs);
 template <typename T, size_t N> bool operator==(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs);
 
-// Approximate equality tests.
-template <typename T, size_t N> bool feq(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs);
-template <typename T, size_t N> bool feq(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs, const T eps);
-
 // Bounding box arithmetic.
 template <typename T, size_t N> AABBBase<T, N>  operator+ (const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs);
 template <typename T, size_t N> AABBBase<T, N>  operator* (const AABBBase<T, N>& lhs, const T rhs);
@@ -216,6 +212,10 @@ class AABB
 // Compute the surface area of a 3D bounding box.
 template <typename T> T half_surface_area(const AABB<T, 3>& bbox);
 template <typename T> T surface_area(const AABB<T, 3>& bbox);
+
+// Approximate equality tests.
+template <typename T, size_t N> bool feq(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs);
+template <typename T, size_t N> bool feq(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs, const T eps);
 
 
 //
@@ -470,18 +470,6 @@ inline bool operator==(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs)
 }
 
 template <typename T, size_t N>
-inline bool feq(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs)
-{
-    return feq(lhs.min, rhs.min) && feq(lhs.max, rhs.max);
-}
-
-template <typename T, size_t N>
-inline bool feq(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs, const T eps)
-{
-    return feq(lhs.min, rhs.min, eps) && feq(lhs.max, rhs.max, eps);
-}
-
-template <typename T, size_t N>
 inline AABBBase<T, N> operator+(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs)
 {
     return AABBBase<T, N>(lhs.min + rhs.min, lhs.max + rhs.max);
@@ -536,7 +524,7 @@ inline T AABBBase<T, N>::volume() const
 {
     assert(is_valid());
 
-    const VectorType e = max - min + VectorType(1);
+    const VectorType e = extent();
 
     ValueType volume = e[0];
 
@@ -544,23 +532,6 @@ inline T AABBBase<T, N>::volume() const
         volume *= e[i];
 
     return volume;
-}
-
-template <typename T>
-inline T half_surface_area(const AABB<T, 3>& bbox)
-{
-    assert(bbox.is_valid());
-
-    const Vector<T, 3> e = bbox.max - bbox.min;
-
-    return e[0] * e[1] + e[0] * e[2] + e[1] * e[2];
-}
-
-template <typename T>
-inline T surface_area(const AABB<T, 3>& bbox)
-{
-    const T h = half_surface_area(bbox);
-    return h + h;
 }
 
 
@@ -716,6 +687,36 @@ inline T AABB<T, N>::volume() const
 
     return volume;
 }
+
+template <typename T>
+inline T half_surface_area(const AABB<T, 3>& bbox)
+{
+    assert(bbox.is_valid());
+
+    const Vector<T, 3> e = bbox.max - bbox.min;
+
+    return e[0] * e[1] + e[0] * e[2] + e[1] * e[2];
+}
+
+template <typename T>
+inline T surface_area(const AABB<T, 3>& bbox)
+{
+    const T h = half_surface_area(bbox);
+    return h + h;
+}
+
+template <typename T, size_t N>
+inline bool feq(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs)
+{
+    return feq(lhs.min, rhs.min) && feq(lhs.max, rhs.max);
+}
+
+template <typename T, size_t N>
+inline bool feq(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs, const T eps)
+{
+    return feq(lhs.min, rhs.min, eps) && feq(lhs.max, rhs.max, eps);
+}
+
 
 }       // namespace foundation
 
