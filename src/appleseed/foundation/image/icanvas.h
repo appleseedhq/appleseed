@@ -92,11 +92,11 @@ class APPLESEED_DLLSYMBOL ICanvas
         const T                 components[]);
 
     // Structured read access to a given pixel, with automatic pixel format conversion.
-    template <typename Color>
+    template <typename T, size_t N>
     void get_pixel(
         const size_t            x,
         const size_t            y,
-        Color&                  color) const;
+        Color<T, N>&            color) const;
     template <typename T>
     void get_pixel(
         const size_t            x,
@@ -105,8 +105,8 @@ class APPLESEED_DLLSYMBOL ICanvas
 
     // Set all pixels to a given color.
     // This causes all tiles to be accessed, and created if necessary.
-    template <typename Color>
-    void clear(const Color& color);
+    template <typename T, size_t N>
+    void clear(const Color<T, N>& color);
 };
 
 
@@ -172,10 +172,6 @@ inline const uint8* ICanvas::pixel(
     return t.pixel(pixel_x, pixel_y);
 }
 
-// Check that the number of channels in a pixel value matches the number of channels in the tile.
-#define FOUNDATION_CHECK_PIXEL_SIZE(color) \
-    assert(sizeof(Color) == props.m_channel_count * sizeof(color[0]))
-
 template <typename T, size_t N>
 inline void ICanvas::set_pixel(
     const size_t        x,
@@ -212,15 +208,15 @@ inline void ICanvas::set_pixel(
         1);                                 // destination stride
 }
 
-template <typename Color>
+template <typename T, size_t N>
 inline void ICanvas::get_pixel(
     const size_t        x,
     const size_t        y,
-    Color&              color) const
+    Color<T, N>&        color) const
 {
     const CanvasProperties& props = properties();
 
-    FOUNDATION_CHECK_PIXEL_SIZE(color);
+    assert(N == props.m_channel_count);
 
     const uint8* src = pixel(x, y);
 
@@ -251,12 +247,12 @@ inline void ICanvas::get_pixel(
         1);                                 // destination stride
 }
 
-template <typename Color>
-inline void ICanvas::clear(const Color& color)
+template <typename T, size_t N>
+inline void ICanvas::clear(const Color<T, N>& color)
 {
     const CanvasProperties& props = properties();
 
-    FOUNDATION_CHECK_PIXEL_SIZE(color);
+    assert(N == props.m_channel_count);
 
     for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
     {
@@ -264,8 +260,6 @@ inline void ICanvas::clear(const Color& color)
             tile(tx, ty).clear(color);
     }
 }
-
-#undef FOUNDATION_CHECK_PIXEL_SIZE
 
 }       // namespace foundation
 
