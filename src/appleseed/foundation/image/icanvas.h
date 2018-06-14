@@ -33,6 +33,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/color.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
@@ -64,43 +65,43 @@ class APPLESEED_DLLSYMBOL ICanvas
 
     // Direct access to a given tile.
     virtual Tile& tile(
-        const size_t    tile_x,
-        const size_t    tile_y) = 0;
+        const size_t            tile_x,
+        const size_t            tile_y) = 0;
     virtual const Tile& tile(
-        const size_t    tile_x,
-        const size_t    tile_y) const = 0;
+        const size_t            tile_x,
+        const size_t            tile_y) const = 0;
 
     // Direct access to a given pixel.
     uint8* pixel(
-        const size_t    x,
-        const size_t    y);
+        const size_t            x,
+        const size_t            y);
     const uint8* pixel(
-        const size_t    x,
-        const size_t    y) const;
+        const size_t            x,
+        const size_t            y) const;
 
     // Structured write access to a given pixel, with automatic pixel format conversion.
-    template <typename Color>
+    template <typename T, size_t N>
     void set_pixel(
-        const size_t    x,
-        const size_t    y,
-        const Color&    color);
+        const size_t            x,
+        const size_t            y,
+        const Color<T, N>&      color);
     template <typename T>
     void set_pixel(
-        const size_t    x,
-        const size_t    y,
-        T               components[]);
+        const size_t            x,
+        const size_t            y,
+        const T                 components[]);
 
     // Structured read access to a given pixel, with automatic pixel format conversion.
     template <typename Color>
     void get_pixel(
-        const size_t    x,
-        const size_t    y,
-        Color&          color) const;
+        const size_t            x,
+        const size_t            y,
+        Color&                  color) const;
     template <typename T>
     void get_pixel(
-        const size_t    x,
-        const size_t    y,
-        T               components[]) const;
+        const size_t            x,
+        const size_t            y,
+        T                       components[]) const;
 
     // Set all pixels to a given color.
     // This causes all tiles to be accessed, and created if necessary.
@@ -175,15 +176,15 @@ inline const uint8* ICanvas::pixel(
 #define FOUNDATION_CHECK_PIXEL_SIZE(color) \
     assert(sizeof(Color) == props.m_channel_count * sizeof(color[0]))
 
-template <typename Color>
+template <typename T, size_t N>
 inline void ICanvas::set_pixel(
     const size_t        x,
     const size_t        y,
-    const Color&        color)
+    const Color<T, N>&  color)
 {
     const CanvasProperties& props = properties();
 
-    FOUNDATION_CHECK_PIXEL_SIZE(color);
+    assert(N == props.m_channel_count);
 
     Pixel::convert_to_format(
         &color[0],                          // source begin
@@ -198,11 +199,9 @@ template <typename T>
 inline void ICanvas::set_pixel(
     const size_t        x,
     const size_t        y,
-    T                   components[])
+    const T             components[])
 {
     const CanvasProperties& props = properties();
-
-    assert(sizeof(T) == props.m_pixel_size / props.m_channel_count);
 
     Pixel::convert_to_format(
         components,                         // source begin
