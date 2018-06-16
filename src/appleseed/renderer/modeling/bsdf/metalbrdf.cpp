@@ -125,7 +125,7 @@ namespace
         {
             InputValues* values = static_cast<InputValues*>(data);
             new (&values->m_precomputed) InputValues::Precomputed();
-            
+
             values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_max_roughness);
 
             artist_friendly_fresnel_conductor_reparameterization(
@@ -497,10 +497,11 @@ namespace
                     eavg);
 
                 Spectrum fterm = values->m_precomputed.m_fresnel_average;
-                fterm *= 1.0f - eavg;
+                fterm *= fterm;
+                fterm *= eavg;
 
                 const Spectrum one(1.0f);
-                fterm /= one - values->m_precomputed.m_fresnel_average * eavg;
+                fterm /= one - values->m_precomputed.m_fresnel_average * (1.0f - eavg);
 
                 madd(
                     value,

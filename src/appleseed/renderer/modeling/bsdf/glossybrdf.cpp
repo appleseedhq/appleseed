@@ -490,7 +490,7 @@ namespace
                 if (values->m_fresnel_weight != 0.0f)
                 {
                     const float fterm =
-                        (values->m_precomputed.m_fresnel_average * (1.0f - eavg)) / (1.0f - values->m_precomputed.m_fresnel_average * eavg);
+                        (square(values->m_precomputed.m_fresnel_average) * eavg) / (1.0f - values->m_precomputed.m_fresnel_average * (1.0f - eavg));
                     fms *= lerp(1.0f, fterm, values->m_fresnel_weight);
                 }
 
