@@ -15,6 +15,7 @@
 
 // Standard headers.
 #include <algorithm>
+#include <cassert>
 #include <vector>
 
 namespace bcd
@@ -181,6 +182,9 @@ class DeepImage
 
     scalar* getDataPtr();
     const scalar* getDataPtr() const;
+
+    //  Returns a clamped position with the width and height of the image
+    PixelPosition clamp(const PixelPosition& pos) const;
 
     //  Returns the 1D storage index in the buffer from 3 coordinates
     int glueIndices(int i_line, int i_column, int i_dimensionIndex) const;
@@ -857,11 +861,27 @@ DeepImage<scalar>::getDataPtr() const
 }
 
 template<typename scalar>
+inline PixelPosition
+DeepImage< scalar >::clamp(const PixelPosition& pos) const
+{
+    return PixelPosition(
+        std::max(0, std::min(pos.m_line, m_height - 1)),
+        std::max(0, std::min(pos.m_column, m_width - 1)));
+}
+
+template<typename scalar>
 inline int
 DeepImage<scalar>::glueIndices(int i_line,
                                int i_column,
                                int i_dimensionIndex) const
 {
+    assert(i_line >= 0);
+    assert(i_line < m_height);
+    assert(i_column >= 0);
+    assert(i_column < m_width);
+    assert(i_dimensionIndex >= 0);
+    assert(i_dimensionIndex < m_depth);
+
     return i_line * m_widthTimesDepth + i_column * m_depth + i_dimensionIndex;
 }
 
@@ -874,6 +894,13 @@ DeepImage<scalar>::glueIndices(int i_width,
                                int i_column,
                                int i_dimensionIndex)
 {
+    assert(i_line >= 0);
+    assert(i_line < i_height);
+    assert(i_column >= 0);
+    assert(i_column < i_width);
+    assert(i_dimensionIndex >= 0);
+    assert(i_dimensionIndex < i_depth);
+
     return (i_line * i_width + i_column) * i_depth + i_dimensionIndex;
 }
 

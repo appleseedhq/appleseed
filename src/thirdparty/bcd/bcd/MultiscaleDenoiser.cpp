@@ -342,9 +342,9 @@ unique_ptr<Deepimf> MultiscaleDenoiser::downscaleSum(const Deepimf& i_rImage)
         for (col = 0; col < downscaledWidth; ++col)
         {
             p1 = PixelPosition(2 * line, 2 * col);
-            p2 = p1 + PixelVector(1, 0);
-            p3 = p1 + PixelVector(0, 1);
-            p4 = p1 + PixelVector(1, 1);
+            p2 = i_rImage.clamp(p1 + PixelVector(1,0));
+            p3 = i_rImage.clamp(p1 + PixelVector(0,1));
+            p4 = i_rImage.clamp(p1 + PixelVector(1,1));
 
             for (z = 0; z < depth; ++z)
             {
@@ -378,9 +378,10 @@ unique_ptr<Deepimf> MultiscaleDenoiser::downscaleAverage(const Deepimf& i_rImage
         for (col = 0; col < downscaledWidth; ++col)
         {
             p1 = PixelPosition(2 * line, 2 * col);
-            p2 = p1 + PixelVector(1, 0);
-            p3 = p1 + PixelVector(0, 1);
-            p4 = p1 + PixelVector(1, 1);
+            p2 = i_rImage.clamp(p1 + PixelVector(1,0));
+            p3 = i_rImage.clamp(p1 + PixelVector(0,1));
+            p4 = i_rImage.clamp(p1 + PixelVector(1,1));
+
             for (z = 0; z < depth; ++z)
             {
                 uImage->set(line,
@@ -419,9 +420,9 @@ unique_ptr<Deepimf> MultiscaleDenoiser::downscaleSampleCovarianceSum(
         for (col = 0; col < downscaledWidth; ++col)
         {
             p1 = PixelPosition(2 * line, 2 * col);
-            p2 = p1 + PixelVector(1, 0);
-            p3 = p1 + PixelVector(0, 1);
-            p4 = p1 + PixelVector(1, 1);
+            p2 = i_rSampleCovarianceImage.clamp(p1 + PixelVector(1,0));
+            p3 = i_rSampleCovarianceImage.clamp(p1 + PixelVector(0,1));
+            p4 = i_rSampleCovarianceImage.clamp(p1 + PixelVector(1,1));
             n1 = i_rNbOfSamplesImage.get(p1, 0);
             n2 = i_rNbOfSamplesImage.get(p2, 0);
             n3 = i_rNbOfSamplesImage.get(p3, 0);
