@@ -384,6 +384,8 @@ namespace
 
             sample.m_incoming = Dual3f(basis.transform_to_parent(wi));
 
+            sample.m_is_refraction_sample = is_refraction;
+
             if (is_refraction)
                 sample.compute_transmitted_differentials(1.0f / eta);
             else sample.compute_reflected_differentials();

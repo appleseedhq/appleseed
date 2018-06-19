@@ -1365,6 +1365,8 @@ source_group ("renderer\\meta\\tests" FILES
 set (renderer_modeling_aov_sources
     renderer/modeling/aov/albedoaov.cpp
     renderer/modeling/aov/albedoaov.h
+    renderer/modeling/aov/alphatransparency.cpp
+    renderer/modeling/aov/alphatransparency.h
     renderer/modeling/aov/aov.cpp
     renderer/modeling/aov/aov.h
     renderer/modeling/aov/aovcontainer.h

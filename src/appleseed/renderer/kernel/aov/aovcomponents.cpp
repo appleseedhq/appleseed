@@ -38,6 +38,7 @@ namespace renderer
 
 AOVComponents::AOVComponents()
   : m_albedo(0.0f)
+  , m_refraction_value(0.0f)
 {
 }
 

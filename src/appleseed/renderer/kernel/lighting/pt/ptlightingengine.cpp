@@ -352,6 +352,11 @@ namespace
                 m_aov_components.m_albedo = vertex.m_albedo;
             }
 
+            void store_aov_components(const PathVertex& vertex)
+            {
+                m_aov_components.m_refraction_value = vertex.m_refraction_alpha_value;
+            }
+
             bool accept_scattering(
                 const ScatteringMode::Mode  prev_mode,
                 const ScatteringMode::Mode  next_mode)

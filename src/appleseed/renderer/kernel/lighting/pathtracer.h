@@ -282,6 +282,13 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         if (!vertex.m_shading_point->hit_surface())
         {
             m_path_visitor.on_miss(vertex);
+
+            if (!vertex.m_has_non_refraction_sample)
+            {
+                vertex.m_refraction_alpha_value = Spectrum(1.0f) - saturate(vertex.m_sample_refraction_value);
+                m_path_visitor.store_aov_components(vertex);
+            }
+
             break;
         }
 
@@ -687,6 +694,9 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
 
         next_ray.m_max_roughness = m_clamp_roughness ? sample.m_max_roughness : 0.0f;
 
+        if (!sample.m_is_refraction_sample)
+            vertex.m_has_non_refraction_sample = true;
+
         if (sample.m_mode == ScatteringMode::Diffuse && !vertex.m_albedo_saved)
         {
             vertex.m_albedo = sample.m_aov_components.m_albedo;
@@ -722,6 +732,9 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     if (sample.m_probability != BSDF::DiracDelta)
         sample.m_value /= sample.m_probability;
     vertex.m_throughput *= sample.m_value.m_beauty;
+
+    vertex.m_sample_refraction_value *= sample.m_value.m_glossy;
+    m_path_visitor.store_aov_components(vertex);
 
     // Update bounce counters.
     ++vertex.m_path_length;
