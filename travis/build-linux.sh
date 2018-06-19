@@ -2,6 +2,14 @@
 
 set -e
 
+# Download dependencies
+
+curl -L "https://github.com/appleseedhq/prebuilt-linux-deps/releases/download/binaries/appleseed-deps-shared-2.0.tgz" > deps.tgz
+tar xfz deps.tgz
+rm deps.tgz
+
+# Configure cmake
+
 THISDIR=`pwd`
 APPLESEED_DEPENDENCIES=$THISDIR/prebuilt-linux-deps
 
