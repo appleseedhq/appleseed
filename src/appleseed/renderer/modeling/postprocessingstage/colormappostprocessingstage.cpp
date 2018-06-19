@@ -117,7 +117,7 @@ namespace
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
             const string color_map =
-                m_params.get_required<string>(
+                m_params.get_optional<string>(
                     "color_map",
                     "inferno",
                     make_vector("inferno", "jet", "magma", "plasma", "viridis", "custom"),
