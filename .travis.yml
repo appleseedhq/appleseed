@@ -22,9 +22,6 @@ addons:
       - python2.7-dev
       - libqt4-dev
 
-before_install:
-  - if [ $TRAVIS_OS_NAME == linux ]; then git clone https://github.com/appleseedhq/prebuilt-linux-deps.git ; fi
-
 install:
   - if [ -n "$GCC_VERSION" ]; then export CC="${CC}-${GCC_VERSION}"; fi
   - if [ -n "$GCC_VERSION" ]; then export CXX="${CXX}-${GCC_VERSION}"; fi
