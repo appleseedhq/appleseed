@@ -107,6 +107,7 @@
      <addaction name="separator"/>
     </widget>
     <addaction name="menu_diagnostics_override_shading"/>
+    <addaction name="action_diagnostics_false_colors"/>
    </widget>
    <widget class="QMenu" name="menu_debug">
     <property name="title">
@@ -478,6 +479,14 @@
   <action name="action_tools_settings">
    <property name="text">
     <string>&amp;Settings...</string>
+   </property>
+  </action>
+  <action name="action_diagnostics_false_colors">
+   <property name="text">
+    <string>&amp;False Colors...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+F</string>
    </property>
   </action>
  </widget>

@@ -111,7 +111,11 @@ EntityEditor::EntityEditor(
   , m_color_picker_signal_mapper(new QSignalMapper(this))
   , m_file_picker_signal_mapper(new QSignalMapper(this))
 {
-    assert(m_parent->layout() == 0);
+    if (m_parent->layout() != nullptr)
+    {
+        clear_layout(m_parent->layout());
+        delete m_parent->layout();
+    }
 
     m_top_layout = new QVBoxLayout(m_parent);
     m_top_layout->setMargin(7);

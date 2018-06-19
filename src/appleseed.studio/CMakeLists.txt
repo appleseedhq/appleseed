@@ -285,6 +285,9 @@ set (mainwindow_sources
     mainwindow/configurationmanagerwindow.cpp
     mainwindow/configurationmanagerwindow.h
     mainwindow/configurationmanagerwindow.ui
+    mainwindow/falsecolorswindow.cpp
+    mainwindow/falsecolorswindow.h
+    mainwindow/falsecolorswindow.ui
     mainwindow/logwidget.cpp
     mainwindow/logwidget.h
     mainwindow/mainwindow.cpp
