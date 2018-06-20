@@ -262,10 +262,9 @@ class PackageInfo:
 
 class PackageBuilder:
 
-    def __init__(self, settings, package_info, no_zip):
+    def __init__(self, settings, package_info):
         self.settings = settings
         self.package_info = package_info
-        self.no_zip = no_zip
 
     def build_package(self):
         print("Building package:")
@@ -289,8 +288,8 @@ class PackageBuilder:
         self.add_dummy_files_into_empty_directories()
         self.disable_system_qt_plugins()
         self.alter_stage()
-        if self.no_zip:
-            self.build_final_package()
+        if self.package_info.no_zip:
+            self.deploy_stage_to_package_directory()
         else:
             self.build_final_zip_file()
         self.remove_stage()
@@ -446,8 +445,8 @@ class PackageBuilder:
     def alter_stage(self):
         return
 
-    def build_final_package(self):
-        progress("Building final output directory from staging directory")
+    def deploy_stage_to_package_directory(self):
+        progress("Deploying staging directory to package directory")
         shutil.copytree("appleseed", os.path.join(self.settings.package_output_path, "appleseed"))
 
     def build_final_zip_file(self):
@@ -813,11 +812,11 @@ def main():
     package_info.load()
 
     if os.name == "nt":
-        package_builder = WindowsPackageBuilder(settings, package_info, no_zip)
+        package_builder = WindowsPackageBuilder(settings, package_info)
     elif os.name == "posix" and platform.mac_ver()[0] != "":
-        package_builder = MacPackageBuilder(settings, package_info, no_zip)
+        package_builder = MacPackageBuilder(settings, package_info)
     elif os.name == "posix" and platform.mac_ver()[0] == "":
-        package_builder = LinuxPackageBuilder(settings, package_info, no_zip)
+        package_builder = LinuxPackageBuilder(settings, package_info)
     else:
         fatal("Unsupported platform: " + os.name)
 
