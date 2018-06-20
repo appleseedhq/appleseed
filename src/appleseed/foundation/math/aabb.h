@@ -186,7 +186,7 @@ class AABB
     template <typename U>
     AABB(const AABB<U, N>& rhs);
 
-    // Construct a bounding box from a parent bounding box.
+    // Construct a bounding box from an integral one.
     AABB(const AABBBase<T, N>& rhs);
 
     // Return the amount of overlapping between two bounding boxes.

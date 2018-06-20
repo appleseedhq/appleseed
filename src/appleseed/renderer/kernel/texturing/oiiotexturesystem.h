@@ -47,7 +47,7 @@ class OIIOTextureSystem
     ~OIIOTextureSystem() override;
 
     // Needed by gcc 8.
-    void operator delete (void*) {}
+    void operator delete(void*) {}
 };
 
 class OIIOTextureSystemFactory
