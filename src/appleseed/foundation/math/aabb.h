@@ -167,12 +167,27 @@ class AABB
   : public AABBBase<T, N>
 {
   public:
-    using AABBBase<T, N>::AABBBase;
-
     // Value, vector and AABB types.
     typedef T ValueType;
     typedef Vector<T, N> VectorType;
     typedef AABB<T, N> AABBType;
+
+    // Constructors.
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    AABB() = default;                   // leave all components uninitialized
+#else
+    AABB() {}                           // leave all components uninitialized
+#endif
+    AABB(
+        const VectorType& min,          // lower bound
+        const VectorType& max);         // upper bound
+
+    // Construct a bounding box from another bounding box of a different type.
+    template <typename U>
+    AABB(const AABB<U, N>& rhs);
+
+    // Construct a bounding box from a parent bounding box.
+    AABB(const AABBBase<T, N>& rhs);
 
     // Return the amount of overlapping between two bounding boxes.
     // Returns 0.0 if the bounding boxes are disjoint, 1.0 if one
@@ -539,6 +554,30 @@ inline T AABBBase<T, N>::volume() const
 // Floating-point bounding box specialization.
 //
 //
+
+template <typename T, size_t N>
+inline AABB<T, N>::AABB(
+    const VectorType& min_,
+    const VectorType& max_)
+{
+    AABBType::min = min_;
+    AABBType::max = max_;
+}
+
+template <typename T, size_t N>
+template <typename U>
+inline AABB<T, N>::AABB(const AABB<U, N>& rhs)
+{
+    AABBType::min = VectorType(rhs.min);
+    AABBType::max = VectorType(rhs.max);
+}
+
+template <typename T, size_t N>
+inline AABB<T,N>::AABB(const AABBBase<T, N>& rhs)
+{
+    AABBType::min = VectorType(rhs.min);
+    AABBType::max = VectorType(rhs.max);
+}
 
 template <typename T, size_t N>
 inline T AABB<T, N>::overlap_ratio(const AABBType& a, const AABBType& b)
