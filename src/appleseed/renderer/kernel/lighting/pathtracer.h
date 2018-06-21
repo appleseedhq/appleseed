@@ -285,7 +285,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
             if (!vertex.m_has_non_refraction_sample)
             {
-                vertex.m_refraction_alpha_value = Spectrum(1.0f) - saturate(vertex.m_sample_refraction_value);
+                vertex.m_refraction_alpha_value = Spectrum(1.0f) - foundation::saturate(vertex.m_sample_refraction_value);
                 m_path_visitor.store_aov_components(vertex);
             }
 
