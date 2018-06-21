@@ -248,8 +248,8 @@ void LightPathsTab::create_toolbar()
 
     // Synchronize Camera button.
     QToolButton* sync_camera_button = new QToolButton();
-    sync_camera_button->setIcon(load_icons("lightpathstab_toggle_backface_culling"));
     sync_camera_button->setToolTip("Synchronize Camera");
+    sync_camera_button->setIcon(load_icons("lightpathstab_synchronize_camera"));
     connect(
         sync_camera_button, SIGNAL(clicked()),
         m_light_paths_widget, SLOT(slot_synchronize_camera()));
