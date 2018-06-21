@@ -73,6 +73,9 @@ class TileJob
     // Execute the job.
     void execute(const size_t thread_index) override;
 
+    // Check if the render wasn't aborted during this tile.
+    bool is_render_successfull() const;
+
   private:
     const TileRendererVector&       m_tile_renderers;
     const TileCallbackVector&       m_tile_callbacks;
@@ -81,6 +84,7 @@ class TileJob
     const size_t                    m_tile_y;
     const size_t                    m_pass_hash;
     const Spectrum::Mode            m_spectrum_mode;
+    bool                            m_finished;
     foundation::IAbortSwitch&       m_abort_switch;
 };
 
