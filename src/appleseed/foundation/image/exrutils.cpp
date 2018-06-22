@@ -67,6 +67,40 @@ namespace
                 static_cast<int>(System::get_logical_cpu_core_count()));
         }
     };
+
+    void add_attribute(Header& header, const string& attr_name, const string& attr_value)
+    {
+        // Try to guess the type of the value represented by the string.
+
+        try // Vector3
+        {
+            const Vector3d v = from_string<Vector3d>(attr_value);
+            header.insert(attr_name.c_str(), V3dAttribute(Imath::V3d(v[0], v[1], v[2])));
+            return;
+        }
+        catch (ExceptionStringConversionError&) {}
+
+        try // Vector2
+        {
+            const Vector2d v = from_string<Vector2d>(attr_value);
+            header.insert(attr_name.c_str(), V2dAttribute(Imath::V2d(v[0], v[1])));
+            return;
+        }
+        catch (ExceptionStringConversionError&) {}
+
+        try // int / double / float
+        {
+            const float f = from_string<float>(attr_value);
+            header.insert(attr_name.c_str(), FloatAttribute(f));
+            return;
+        }
+        catch (ExceptionStringConversionError&) {}
+
+        // todo: check more types here if needed...
+
+        // As a fallback, use a string.
+        header.insert(attr_name.c_str(), StringAttribute(attr_value));
+    }
 }
 
 void initialize_openexr()
@@ -124,7 +158,7 @@ void add_attributes(
             ++num_chromaticity_coordinates;
         }
         else
-            header.insert(attr_name.c_str(), StringAttribute(attr_value));
+            add_attribute(header, attr_name, attr_value);
     }
 
     // Only save chromaticities if they are complete.
