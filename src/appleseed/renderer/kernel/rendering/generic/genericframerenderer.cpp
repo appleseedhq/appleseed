@@ -46,7 +46,9 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/hash.h"
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/exrimagefilewriter.h"
 #include "foundation/image/image.h"
+#include "foundation/image/imageattributes.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -54,6 +56,9 @@
 #include "foundation/utility/job.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
+
+// Boost headers.
+#include "boost/filesystem.hpp"
 
 // Standard headers.
 #include <cassert>
@@ -65,6 +70,7 @@
 using namespace boost;
 using namespace foundation;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace renderer
 {
@@ -186,6 +192,7 @@ namespace
                     m_frame,
                     m_params.m_tile_ordering,
                     m_params.m_pass_count,
+                    m_params.m_pass_start,
                     m_params.m_spectrum_mode,
                     m_tile_renderers,
                     m_tile_callbacks,
@@ -238,6 +245,7 @@ namespace
             const size_t                        m_thread_count;     // number of rendering threads
             const TileJobFactory::TileOrdering  m_tile_ordering;    // tile rendering order
             const size_t                        m_pass_count;       // number of rendering passes
+            const size_t                        m_pass_start;       // number of the first rendering pass
 
             explicit Parameters(const ParamArray& params)
               : m_spectrum_mode(get_spectrum_mode(params))
@@ -245,6 +253,7 @@ namespace
               , m_thread_count(get_rendering_thread_count(params))
               , m_tile_ordering(get_tile_ordering(params))
               , m_pass_count(params.get_optional<size_t>("passes", 1))
+              , m_pass_start(params.get_optional<size_t>("pass_start", 0))
             {
             }
 
@@ -290,6 +299,7 @@ namespace
                 const Frame&                        frame,
                 const TileJobFactory::TileOrdering  tile_ordering,
                 const size_t                        pass_count,
+                const size_t                        pass_start,
                 const Spectrum::Mode                spectrum_mode,
                 vector<ITileRenderer*>&             tile_renderers,
                 vector<ITileCallback*>&             tile_callbacks,
@@ -304,6 +314,7 @@ namespace
               , m_tile_callbacks(tile_callbacks)
               , m_pass_callback(pass_callback)
               , m_pass_count(pass_count)
+              , m_pass_start(pass_start)
               , m_spectrum_mode(spectrum_mode)
               , m_job_queue(job_queue)
               , m_thread_count(thread_count)
@@ -320,13 +331,29 @@ namespace
                 // Rendering passes.
                 //
 
-                for (size_t pass = 0; pass < m_pass_count; ++pass)
+                for (size_t pass = m_pass_start; pass < m_pass_count; ++pass)
                 {
                     // Check abort flag.
                     if (m_abort_switch.is_aborted())
                     {
                         m_is_rendering = false;
                         return;
+                    }
+                    else if(pass > m_pass_start)
+                    {
+                        // Create a resumable pass renderer if required.
+                        RENDERER_LOG_INFO("creating a resumable render starting at pass %s", pretty_uint(pass + 1).c_str());
+                        bf::path bf_file_path("/tmp/resumable.exr");
+                        const Image& image = m_frame.image();
+
+                        ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
+                        image_attributes.insert("last pass", pass - 1);
+
+                        EXRImageFileWriter writer;
+                        writer.write(
+                             bf_file_path.string().c_str(),
+                             image,
+                             image_attributes);
                     }
 
                     if (m_pass_count > 1)
@@ -416,6 +443,7 @@ namespace
             vector<ITileCallback*>&                 m_tile_callbacks;
             IPassCallback*                          m_pass_callback;
             const size_t                            m_pass_count;
+            const size_t                            m_pass_start;
             const Spectrum::Mode                    m_spectrum_mode;
             JobQueue&                               m_job_queue;
             const size_t                            m_thread_count;

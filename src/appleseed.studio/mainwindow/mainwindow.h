@@ -101,6 +101,7 @@ class MainWindow
     bool open_project(const QString& filepath);
     void open_project_async(const QString& filepath);
     void open_and_render_project(const QString& filepath, const QString& configuration);
+    void open_resumable_render(const QString& filepath);
     bool save_project(QString filepath);
     bool pack_project(QString filepath);
     void close_project();
@@ -128,6 +129,7 @@ class MainWindow
 
     QAction*                                    m_action_new_project;
     QAction*                                    m_action_open_project;
+    QAction*                                    m_action_open_resumable_render;
     QAction*                                    m_action_save_project;
     QAction*                                    m_action_reload_project;
     QAction*                                    m_action_monitor_project_file;
@@ -241,6 +243,7 @@ class MainWindow
     void slot_new_project();
     void slot_open_project();
     void slot_open_recent();
+    void slot_open_resumable_render();
     void slot_clear_all_recent_project_files();
     void slot_clear_recent_missing_project_files();
     void slot_open_cornellbox_builtin_project();

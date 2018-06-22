@@ -268,6 +268,11 @@ void MainWindow::open_and_render_project(const QString& filepath, const QString&
     open_project_async(filepath);
 }
 
+void MainWindow::open_resumable_render(const QString& filepath)
+{
+    start_rendering(FinalRendering);
+}
+
 bool MainWindow::save_project(QString filepath)
 {
     if (!m_project_manager.is_project_open())
@@ -601,6 +606,10 @@ void MainWindow::build_toolbar()
     m_action_open_project = new QAction(load_icons("project_open"), combine_name_and_shortcut("Open Project...", m_ui->action_file_open_project->shortcut()), this);
     connect(m_action_open_project, SIGNAL(triggered()), SLOT(slot_open_project()));
     m_ui->main_toolbar->addAction(m_action_open_project);
+
+    m_action_open_resumable_render = new QAction(load_icons("project_open"), combine_name_and_shortcut("Open Temporary Render...", m_ui->action_file_open_temporary_render->shortcut()), this);
+    connect(m_action_open_resumable_render, SIGNAL(triggered()), SLOT(slot_open_resumable_render()));
+    m_ui->main_toolbar->addAction(m_action_open_resumable_render);
 
     m_action_save_project = new QAction(load_icons("project_save") , combine_name_and_shortcut("Save Project", m_ui->action_file_save_project->shortcut()), this);
     connect(m_action_save_project, SIGNAL(triggered()), SLOT(slot_save_project()));
@@ -1428,6 +1437,24 @@ void MainWindow::slot_open_recent()
     {
         const QString filepath = action->data().toString();
         open_project_async(filepath);
+    }
+}
+
+void MainWindow::slot_open_resumable_render()
+{
+    QString filepath =
+        get_open_filename(
+            this,
+            "Open...",
+            get_project_files_filter(),
+            m_settings,
+            SETTINGS_FILE_DIALOG_PROJECTS);
+
+    if (!filepath.isEmpty())
+    {
+        filepath = QDir::toNativeSeparators(filepath);
+
+        open_resumable_render(filepath);
     }
 }
 
