@@ -95,7 +95,9 @@ namespace
           case PixelFormatDouble:
             return "d";
 
-          assert_otherwise;
+          default:
+            assert(false);
+            return nullptr;
         }
     }
 
