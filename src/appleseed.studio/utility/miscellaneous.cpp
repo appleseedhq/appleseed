@@ -82,6 +82,8 @@ namespace studio {
 
 const QString g_appleseed_image_files_filter = "Bitmap Files (*.exr *.png);;OpenEXR (*.exr);;PNG (*.png);;All Files (*.*)";
 
+const QString g_qt_image_files_filter = "Bitmap Files (*.bmp *.jpg *.png *.tif);;BMP (*.bmp);;JPEG (*.jpg);;PNG (*.png);;TIFF (*.tif);;All Files (*.*)";
+
 namespace
 {
     string join_exts(const vector<string>& exts)
