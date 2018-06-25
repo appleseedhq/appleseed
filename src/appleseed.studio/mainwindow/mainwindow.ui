@@ -88,6 +88,7 @@
     </property>
     <addaction name="action_rendering_start_interactive_rendering"/>
     <addaction name="action_rendering_start_final_rendering"/>
+    <addaction name="action_rendering_pause_resume_rendering"/>
     <addaction name="action_rendering_stop_rendering"/>
     <addaction name="separator"/>
     <addaction name="action_rendering_rendering_settings"/>
@@ -403,6 +404,14 @@
    </property>
    <property name="shortcut">
     <string>F5</string>
+   </property>
+  </action>
+  <action name="action_rendering_pause_resume_rendering">
+   <property name="text">
+    <string>&amp;Pause/Resume Rendering</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F5</string>
    </property>
   </action>
   <action name="action_rendering_stop_rendering">

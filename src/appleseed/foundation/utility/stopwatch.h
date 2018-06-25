@@ -65,12 +65,19 @@ class Stopwatch
     // Start or restart the stopwatch.
     void start();
 
+    // Pause the stopwatch.
+    void pause();
+
+    // Resume the stopwatch.
+    void resume();
+
     // Measure the time elapsed since the last call to start().
     // The stopwatch keeps running.
     Stopwatch& measure();
 
     // Read the number of timer ticks elapsed since the last call to start().
     // measure() must have been called prior to calling this method.
+    // Ticks are adjsuted for overhead.
     uint64 get_ticks() const;
 
     // Read the number of seconds elapsed since the last call to start().
@@ -81,8 +88,11 @@ class Stopwatch
     Timer   m_timer;        // internal timer
     uint64  m_timer_freq;   // frequency of the internal timer
     uint64  m_overhead;     // measured overhead of calling start() + measure()
-    uint64  m_start;        // timer value when start() is called
-    uint64  m_elapsed;      // elapsed time when measure() is called, adjusted for overhead
+    uint64  m_start;        // timer value when start(), resume() or measure() is called
+    uint64  m_pause_time;   // timer value when pause() is called
+    uint64  m_elapsed;      // elapsed time when measure() is called
+    uint64  m_commited;     // time spent before resume() was called
+    bool    m_paused;       // state of the watch
 
     // Measure the overhead of calling start() + measure().
     uint64 measure_overhead(const size_t measures);
@@ -95,6 +105,11 @@ class Stopwatch
 
 template <typename Timer>
 Stopwatch<Timer>::Stopwatch(const size_t overhead_measures)
+  : m_start(0)
+  , m_pause_time(0)
+  , m_elapsed(0)
+  , m_commited(0)
+  , m_paused(false)
 {
     // Retrieve internal timer frequency.
     m_timer_freq = m_timer.frequency();
@@ -109,8 +124,7 @@ Stopwatch<Timer>::Stopwatch(const size_t overhead_measures)
         m_overhead = measure_overhead(overhead_measures);
     }
 
-    m_start = 0;
-    m_elapsed = 0;
+    clear();
 }
 
 template <typename Timer>
@@ -129,12 +143,37 @@ template <typename Timer>
 inline void Stopwatch<Timer>::clear()
 {
     m_elapsed = 0;
+    m_commited = 0;
 }
 
 template <typename Timer>
 inline void Stopwatch<Timer>::start()
 {
+    m_paused = false;
+    clear();
     m_start = m_timer.read_start();
+}
+
+template <typename Timer>
+inline void Stopwatch<Timer>::pause()
+{
+    assert(!m_paused);
+    m_pause_time = m_timer.read_end();
+    m_paused = true;
+}
+
+template <typename Timer>
+inline void Stopwatch<Timer>::resume()
+{
+    assert(m_paused);
+
+    // Update committed time.
+    const uint64 end = m_timer.read_end();
+    m_commited += end >= m_start ? end - m_start : 0;
+    m_commited -= end >= m_pause_time ? end - m_pause_time : 0;
+
+    m_start = m_timer.read_start();
+    m_paused = false;
 }
 
 template <typename Timer>
@@ -144,10 +183,10 @@ inline Stopwatch<Timer>& Stopwatch<Timer>::measure()
     const uint64 end = m_timer.read_end();
     m_elapsed = end >= m_start ? end - m_start : 0;
 
-    // Subtract known overhead from elapsed time.
-    if (m_elapsed >= m_overhead)
-        m_elapsed -= m_overhead;
-    else m_elapsed = 0;
+    if (m_paused)
+        m_elapsed -= end >= m_pause_time ? end - m_pause_time : 0;
+
+    m_elapsed += m_commited;
 
     return *this;
 }
@@ -155,7 +194,11 @@ inline Stopwatch<Timer>& Stopwatch<Timer>::measure()
 template <typename Timer>
 inline uint64 Stopwatch<Timer>::get_ticks() const
 {
-    return m_elapsed;
+    // Subtract known overhead from elapsed time.
+    if (m_elapsed >= m_overhead)
+        return m_elapsed - m_overhead;
+    else
+        return 0;
 }
 
 template <typename Timer>

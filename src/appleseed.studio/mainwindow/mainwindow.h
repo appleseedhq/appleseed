@@ -134,6 +134,7 @@ class MainWindow
 
     QAction*                                    m_action_start_interactive_rendering;
     QAction*                                    m_action_start_final_rendering;
+    QAction*                                    m_action_pause_resume_rendering;
     QAction*                                    m_action_stop_rendering;
     QAction*                                    m_action_rendering_settings;
 
@@ -263,6 +264,7 @@ class MainWindow
         const QString&  filepath,
         const QString&  configuration,
         const bool      successful);
+    void slot_pause_or_resume_rendering();
     void slot_rendering_end();
     void slot_camera_changed();
 

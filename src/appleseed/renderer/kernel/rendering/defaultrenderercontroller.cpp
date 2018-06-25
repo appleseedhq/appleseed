@@ -49,6 +49,14 @@ void DefaultRendererController::on_rendering_abort()
 {
 }
 
+void DefaultRendererController::on_rendering_pause()
+{
+}
+
+void DefaultRendererController::on_rendering_resume()
+{
+}
+
 void DefaultRendererController::on_frame_begin()
 {
 }
