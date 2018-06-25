@@ -34,12 +34,14 @@
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/exceptionunsupportedimageformat.h"
+#include "foundation/image/imageattributes.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
 
 // OpenImageIO headers.
 #include "foundation/platform/_beginoiioheaders.h"
 #include "OpenImageIO/imageio.h"
+#include "OpenImageIO/paramlist.h"
 #include "OpenImageIO/typedesc.h"
 #include "foundation/platform/_endoiioheaders.h"
 
@@ -197,8 +199,40 @@ void GenericProgressiveImageFileReader::read_image_attributes(
     ImageAttributes&    attrs)
 {
     assert(is_open());
+    assert(attrs.empty());
 
-    // todo: implement.
+    const OIIO::ImageSpec& spec = impl->m_input->spec();
+
+    for (size_t i = 0; i < spec.extra_attribs.size(); ++i)
+    {
+        const OIIO::ParamValue& p(spec.extra_attribs[i]);
+
+        switch (p.type().basetype)
+        {
+          case OIIO::TypeDesc::STRING:
+            attrs.insert(p.name().c_str(), *static_cast<char* const *>(p.data()));
+            break;
+
+          case OIIO::TypeDesc::FLOAT:
+            attrs.insert(p.name().c_str(), *static_cast<const float *>(p.data()));
+            break;
+
+          case OIIO::TypeDesc::DOUBLE:
+            attrs.insert(p.name().c_str(), *static_cast<const double *>(p.data()));
+            break;
+
+          case OIIO::TypeDesc::INT:
+            attrs.insert(p.name().c_str(), *static_cast<const int *>(p.data()));
+            break;
+
+          case OIIO::TypeDesc::UINT:
+            attrs.insert(p.name().c_str(), *static_cast<const unsigned int *>(p.data()));
+            break;
+
+          assert_otherwise;
+        }
+        // todo: handle more types if required.
+    }
 }
 
 Tile* GenericProgressiveImageFileReader::read_tile(

@@ -32,6 +32,7 @@
 #include "foundation/image/exrimagefilewriter.h"
 #include "foundation/image/genericprogressiveimagefilereader.h"
 #include "foundation/image/image.h"
+#include "foundation/image/imageattributes.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
 #include "foundation/utility/iostreamop.h"
@@ -54,8 +55,17 @@ TEST_SUITE(Foundation_Image_EXRImageFileWriter)
         Image image(2, 2, 32, 32, 4, PixelFormatFloat);
         image.clear(Reference);
 
+        ImageAttributes attrs;
+        attrs.insert("appleseed:test:StringAttr", "something");
+        attrs.insert("appleseed:test:StringButIntAttr", "47");
+        attrs.insert("appleseed:test:StringButFloatAttr", "47.5");
+        attrs.insert("appleseed:test:FloatAttr", 32.0f);
+        attrs.insert("appleseed:test:DoubleAttr", 32.0);
+        attrs.insert("appleseed:test:IntAttr", 32);
+        attrs.insert("appleseed:test:UnsignedIntAttr", static_cast<size_t>(32));
+
         EXRImageFileWriter writer;
-        writer.write(Filename, image);
+        writer.write(Filename, image, attrs);
     }
 
     TEST_CASE(CorrectlyWriteTestImage)
@@ -72,5 +82,16 @@ TEST_SUITE(Foundation_Image_EXRImageFileWriter)
             tile->get_pixel(i, c);
             EXPECT_EQ(Reference, c);
         }
+
+        ImageAttributes attrs;
+        reader.read_image_attributes(attrs);
+
+        EXPECT_EQ(attrs.get<string>("appleseed:test:StringAttr"), string("something"));
+        EXPECT_EQ(attrs.get<int>("appleseed:test:StringButIntAttr"), 47);
+        EXPECT_EQ(attrs.get<float>("appleseed:test:StringButFloatAttr"), 47.5f);
+        EXPECT_EQ(attrs.get<float>("appleseed:test:FloatAttr"), 32.0f);
+        EXPECT_EQ(attrs.get<double>("appleseed:test:DoubleAttr"), 32.0);
+        EXPECT_EQ(attrs.get<int>("appleseed:test:IntAttr"), 32);
+        EXPECT_EQ(attrs.get<size_t>("appleseed:test:UnsignedIntAttr"), static_cast<size_t>(32));
     }
 }
