@@ -93,9 +93,9 @@ std::istream& operator>>(std::istream& s, Vector<T, N>& vector);
 
 // foundation::AABB.
 template <typename T, size_t N>
-std::ostream& operator<<(std::ostream& s, const AABB<T, N>& aabb);
+std::ostream& operator<<(std::ostream& s, const AABBBase<T, N>& aabb);
 template <typename T, size_t N>
-std::istream& operator>>(std::istream& s, AABB<T, N>& aabb);
+std::istream& operator>>(std::istream& s, AABBBase<T, N>& aabb);
 
 // foundation::Matrix.
 template <typename T, size_t M, size_t N>
@@ -268,13 +268,13 @@ std::istream& operator>>(std::istream& s, Vector<T, N>& vector)
 }
 
 template <typename T, size_t N>
-std::ostream& operator<<(std::ostream& s, const AABB<T, N>& aabb)
+std::ostream& operator<<(std::ostream& s, const AABBBase<T, N>& aabb)
 {
     return s << aabb.min << ' ' << aabb.max;
 }
 
 template <typename T, size_t N>
-std::istream& operator>>(std::istream& s, AABB<T, N>& aabb)
+std::istream& operator>>(std::istream& s, AABBBase<T, N>& aabb)
 {
     s >> aabb.min;
     s >> aabb.max;

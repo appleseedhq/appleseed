@@ -41,11 +41,9 @@
 #include <memory>
 
 // Forward declarations.
-namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class CollectionItem; } }
 namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class OutputItem; } }
 namespace appleseed { namespace studio { class SceneItem; } }
-namespace renderer  { class Project; }
 class QMenu;
 
 namespace appleseed {

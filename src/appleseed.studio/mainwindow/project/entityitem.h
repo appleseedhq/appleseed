@@ -100,7 +100,6 @@ class EntityItem
     friend class EntityInstantiationAction<EntityItem>;
     friend class EntityDeletionAction<EntityItem>;
 
-    foundation::UniqueID        m_entity_uid;
     bool                        m_fixed_position;
 };
 
@@ -118,7 +117,6 @@ EntityItem<Entity, ParentEntity, CollectionItem>::EntityItem(
   : Base(editor_context, entity)
   , m_parent(parent)
   , m_collection_item(collection_item)
-  , m_entity_uid(entity->get_uid())
   , m_fixed_position(false)
 {
 }
@@ -158,7 +156,7 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::slot_edit_accepted(founda
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 void EntityItem<Entity, ParentEntity, CollectionItem>::edit(const foundation::Dictionary& values)
 {
-    Base::m_editor_context.m_item_registry.remove(m_entity_uid);
+    Base::m_editor_context.m_item_registry.remove(Base::m_entity_uid);
 
     const std::string old_entity_name = Base::m_entity->get_name();
 
@@ -170,8 +168,8 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::edit(const foundation::Di
 
     const std::string new_entity_name = Base::m_entity->get_name();
 
-    m_entity_uid = Base::m_entity->get_uid();
-    Base::m_editor_context.m_item_registry.insert(m_entity_uid, this);
+    Base::m_entity_uid = Base::m_entity->get_uid();
+    Base::m_editor_context.m_item_registry.insert(Base::m_entity_uid, this);
 
     Base::update();
 

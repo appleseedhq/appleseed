@@ -557,7 +557,7 @@ namespace
               , m_timer_start_value(m_timer.read())
             {
                 const Vector2u crop_window_extent = m_project.get_frame()->get_crop_window().extent();
-                const size_t pixel_count = (crop_window_extent.x + 1) * (crop_window_extent.y + 1);
+                const size_t pixel_count = crop_window_extent.x * crop_window_extent.y;
                 m_rcp_pixel_count = 1.0 / pixel_count;
             }
 

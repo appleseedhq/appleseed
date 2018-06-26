@@ -45,3 +45,11 @@ except:
         from ._appleseedpython3 import *
         from .logtarget import *
 
+#
+# appleseed.python class extensions.
+#
+
+def MurmurHash__str(self):
+    return "%016x%016x" % (self.h1, self.h2)
+
+MurmurHash.__str__ = MurmurHash__str

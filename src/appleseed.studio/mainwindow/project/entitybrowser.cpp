@@ -31,6 +31,7 @@
 #include "entitybrowser.h"
 
 // appleseed.renderer headers.
+#include "renderer/api/aov.h"
 #include "renderer/api/bsdf.h"
 #include "renderer/api/bssrdf.h"
 #include "renderer/api/camera.h"
@@ -38,7 +39,9 @@
 #include "renderer/api/edf.h"
 #include "renderer/api/environmentedf.h"
 #include "renderer/api/environmentshader.h"
+#include "renderer/api/frame.h"
 #include "renderer/api/material.h"
+#include "renderer/api/postprocessing.h"
 #include "renderer/api/scene.h"
 #include "renderer/api/shadergroup.h"
 #include "renderer/api/surfaceshader.h"
@@ -181,6 +184,24 @@ StringDictionary EntityBrowser<Assembly>::get_entities(const string& type) const
     }
 
     return entities;
+}
+
+
+//
+// EntityBrowser<Frame> class implementation.
+//
+
+EntityBrowser<Frame>::EntityBrowser(const Frame& frame)
+  : m_frame(frame)
+{
+}
+
+StringDictionary EntityBrowser<Frame>::get_entities(const string& type) const
+{
+    return
+        type == "aov" ? build_entity_dictionary(m_frame.aovs()) :
+        type == "post_processing_stage" ? build_entity_dictionary(m_frame.post_processing_stages()) :
+        StringDictionary();
 }
 
 }   // namespace studio

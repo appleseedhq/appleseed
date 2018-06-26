@@ -91,9 +91,7 @@ Image::Image(const Image& rhs)
     for (size_t ty = 0; ty < m_props.m_tile_count_y; ++ty)
     {
         for (size_t tx = 0; tx < m_props.m_tile_count_x; ++tx)
-        {
             m_tiles[ty * m_props.m_tile_count_x + tx] = new Tile(rhs.tile(tx, ty));
-        }
     }
 }
 
@@ -204,10 +202,23 @@ void Image::set_tile(
     Tile*               tile)
 {
     const size_t tile_index = tile_y * m_props.m_tile_count_x + tile_x;
-
     delete m_tiles[tile_index];
-
     m_tiles[tile_index] = tile;
+}
+
+void Image::copy_from(const Image& source)
+{
+    assert(m_props.m_canvas_width == source.m_props.m_canvas_width);
+    assert(m_props.m_canvas_height == source.m_props.m_canvas_height);
+    assert(m_props.m_tile_width == source.m_props.m_tile_width);
+    assert(m_props.m_tile_height == source.m_props.m_tile_height);
+    assert(m_props.m_channel_count == source.m_props.m_channel_count);
+
+    for (size_t ty = 0; ty < m_props.m_tile_count_y; ++ty)
+    {
+        for (size_t tx = 0; tx < m_props.m_tile_count_x; ++tx)
+            tile(tx, ty).copy_from(source.tile(tx, ty));
+    }
 }
 
 }   // namespace foundation

@@ -97,7 +97,7 @@ class GenericVolume
         if (!Volume::on_frame_begin(project, parent, recorder, abort_switch))
             return false;
 
-        const EntityDefMessageContext context("volume", this);
+        const OnFrameBeginMessageContext context("volume", this);
 
         const std::string phase_function =
             m_params.get_required<std::string>(
@@ -110,9 +110,10 @@ class GenericVolume
             m_phase_function.reset(new IsotropicPhaseFunction());
         else if (phase_function == "henyey")
         {
-            const float g = clamp(
-                m_params.get_optional<float>("average_cosine", 0.0f),
-                -0.99f, +0.99f);
+            const float g =
+                clamp(
+                    m_params.get_optional<float>("average_cosine", 0.0f),
+                    -0.99f, +0.99f);
             m_phase_function.reset(new HenyeyPhaseFunction(g));
         }
         else return false;

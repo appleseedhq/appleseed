@@ -92,25 +92,25 @@ TextureInstance::TextureInstance(
     // No bound texture yet.
     m_texture = nullptr;
 
-    const EntityDefMessageContext message_context("texture instance", this);
+    const EntityDefMessageContext context("texture instance", this);
 
     // Retrieve the texture addressing mode.
     const string addressing_mode =
-        m_params.get_optional<string>("addressing_mode", "wrap", make_vector("clamp", "wrap"), message_context);
+        m_params.get_optional<string>("addressing_mode", "wrap", make_vector("clamp", "wrap"), context);
     if (addressing_mode == "clamp")
         m_addressing_mode = TextureAddressingClamp;
     else m_addressing_mode = TextureAddressingWrap;
 
     // Retrieve the texture filtering mode.
     const string filtering_mode =
-        m_params.get_optional<string>("filtering_mode", "bilinear", make_vector("nearest", "bilinear"), message_context);
+        m_params.get_optional<string>("filtering_mode", "bilinear", make_vector("nearest", "bilinear"), context);
     if (filtering_mode == "nearest")
         m_filtering_mode = TextureFilteringNearest;
     else m_filtering_mode = TextureFilteringBilinear;
 
     // Retrieve the texture alpha mode.
     const string alpha_mode =
-        m_params.get_optional<string>("alpha_mode", "alpha_channel", make_vector("alpha_channel", "luminance", "detect"), message_context);
+        m_params.get_optional<string>("alpha_mode", "alpha_channel", make_vector("alpha_channel", "luminance", "detect"), context);
     if (alpha_mode == "alpha_channel")
         m_alpha_mode = TextureAlphaModeAlphaChannel;
     else if (alpha_mode == "luminance")

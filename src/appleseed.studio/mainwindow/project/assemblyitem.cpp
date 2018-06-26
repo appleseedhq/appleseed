@@ -95,6 +95,7 @@ AssemblyItem::AssemblyItem(
     BaseGroupItem*          parent_item)
   : BaseGroupItem(editor_context, g_class_uid, assembly)
   , m_assembly(assembly)
+  , m_assembly_uid(assembly.get_uid())
   , m_parent(parent)
   , m_parent_item(parent_item)
 {
@@ -152,6 +153,13 @@ AssemblyItem::AssemblyItem(
     insertChild(
         11,
         m_volume_collection_item = add_multi_model_collection_item<Volume>(assembly.volumes()));
+
+    m_editor_context.m_item_registry.insert(m_assembly, this);
+}
+
+AssemblyItem::~AssemblyItem()
+{
+    m_editor_context.m_item_registry.remove(m_assembly_uid);
 }
 
 QMenu* AssemblyItem::get_single_item_context_menu() const
@@ -365,7 +373,6 @@ namespace
         {
             assembly_instances.remove(*i);
             delete item_registry.get_item(*i);
-            item_registry.remove(*i);
         }
 
         // Recurse into child assemblies.
@@ -407,11 +414,7 @@ void AssemblyItem::do_delete()
     m_editor_context.m_project_builder.slot_notify_project_modification();
 
     // Remove and delete the assembly item.
-    ItemBase* assembly_item = m_editor_context.m_item_registry.get_item(assembly_uid);
-    m_editor_context.m_item_registry.remove(assembly_uid);
-    delete assembly_item;
-
-    // At this point 'this' no longer exists.
+    delete this;
 }
 
 }   // namespace studio

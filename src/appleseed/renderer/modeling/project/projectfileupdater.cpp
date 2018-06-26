@@ -61,6 +61,7 @@
 #include "renderer/modeling/light/sunlight.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/postprocessingstage/renderstamppostprocessingstage.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/eventcounters.h"
 #include "renderer/modeling/project/project.h"
@@ -158,12 +159,12 @@ namespace
 
         // Copy a key from one dictionary to same dictionary.
         static void copy_if_exist_no_overwrite(
-            Dictionary&         dict, 
-            const char*         dest_key, 
+            Dictionary&         dict,
+            const char*         dest_key,
             const char*         src_key)
         {
             if (!dict.strings().exist(dest_key))
-                copy_if_exist(dict, dest_key, dict, src_key);            
+                copy_if_exist(dict, dest_key, dict, src_key);
         }
 
         // Move a key from one dictionary to another at a given path.
@@ -1599,7 +1600,7 @@ namespace
     //
     // Update from revision 21 to revision 22.
     //
-    
+
     class UpdateFromRevision_21
       : public Updater
     {
@@ -1628,13 +1629,13 @@ namespace
                         "shutter_close_time");
                 }
             }
-        }  
+        }
     };
 
     //
     // Update from revision 22 to revision 23.
     //
-    
+
     class UpdateFromRevision_22
       : public Updater
     {
@@ -1657,11 +1658,11 @@ namespace
                     else
                     {
                         // camera_params include "focal_distance".
-                        camera_params.strings().insert("autofocus_enabled", false);                        
+                        camera_params.strings().insert("autofocus_enabled", false);
                     }
                 }
             }
-        }  
+        }
     };
 
     //
@@ -1718,7 +1719,7 @@ namespace
     //
     // Update from revision 24 to revision 25.
     //
-    
+
     class UpdateFromRevision_24
       : public Updater
     {
@@ -1740,7 +1741,50 @@ namespace
                     move_if_exist(camera_params, "shutter_close_end_time", "shutter_close_time");
                 }
             }
-        }  
+        }
+    };
+
+    //
+    // Update from revision 25 to revision 26.
+    //
+
+    class UpdateFromRevision_25
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_25(Project& project)
+          : Updater(project, 25)
+        {
+        }
+
+        void update() override
+        {
+            if (m_project.get_frame())
+                update_frame(*m_project.get_frame());
+        }
+
+      private:
+        static void update_frame(Frame& frame)
+        {
+            ParamArray& params = frame.get_parameters();
+
+            if (params.get_optional<bool>("enable_render_stamp"))
+            {
+                // There cannot be any other post-processing stage at this point.
+                assert(frame.post_processing_stages().empty());
+
+                const string format_string = params.get_optional<string>("render_stamp_format");
+                frame.post_processing_stages().insert(
+                    RenderStampPostProcessingStageFactory().create(
+                        "render_stamp",
+                        ParamArray()
+                            .insert("order", 0)
+                            .insert("format_string", format_string)));
+            }
+
+            params.remove_path("enable_render_stamp");
+            params.remove_path("render_stamp_format");
+        }
     };
 }
 
@@ -1799,6 +1843,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(22);
       CASE_UPDATE_FROM_REVISION(23);
       CASE_UPDATE_FROM_REVISION(24);
+      CASE_UPDATE_FROM_REVISION(25);
 
       case ProjectFormatRevision:
         // Project is up-to-date.

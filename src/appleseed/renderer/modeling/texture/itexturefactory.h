@@ -55,9 +55,6 @@ class APPLESEED_DLLSYMBOL ITextureFactory
   : public foundation::IUnknown
 {
   public:
-    // Destructor.
-    virtual ~ITextureFactory() {}
-
     // Return a string identifying this texture model.
     virtual const char* get_model() const = 0;
 

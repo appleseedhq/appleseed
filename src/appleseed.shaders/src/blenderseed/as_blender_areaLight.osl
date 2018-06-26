@@ -26,7 +26,7 @@
 // THE SOFTWARE.
 //
 
-surface as_blender_areaLight
+shader as_blender_areaLight
 [[
     string as_blender_node_name = "asAreaLight",
     string as_blender_category = "shader"

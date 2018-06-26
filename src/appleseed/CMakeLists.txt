@@ -922,6 +922,7 @@ set (renderer_api_sources
     renderer/api/log.h
     renderer/api/material.h
     renderer/api/object.h
+    renderer/api/postprocessing.h
     renderer/api/project.h
     renderer/api/rasterization.h
     renderer/api/rendering.h
@@ -1811,6 +1812,29 @@ list (APPEND appleseed_sources
 )
 source_group ("renderer\\modeling\\object" FILES
     ${renderer_modeling_object_sources}
+)
+
+set (renderer_modeling_postprocessingstage_sources
+    renderer/modeling/postprocessingstage/colormapdata.cpp
+    renderer/modeling/postprocessingstage/colormapdata.h
+    renderer/modeling/postprocessingstage/colormappostprocessingstage.cpp
+    renderer/modeling/postprocessingstage/colormappostprocessingstage.h
+    renderer/modeling/postprocessingstage/ipostprocessingstagefactory.cpp
+    renderer/modeling/postprocessingstage/ipostprocessingstagefactory.h
+    renderer/modeling/postprocessingstage/postprocessingstage.cpp
+    renderer/modeling/postprocessingstage/postprocessingstage.h
+    renderer/modeling/postprocessingstage/postprocessingstagecontainer.h
+    renderer/modeling/postprocessingstage/postprocessingstagefactoryregistrar.cpp
+    renderer/modeling/postprocessingstage/postprocessingstagefactoryregistrar.h
+    renderer/modeling/postprocessingstage/postprocessingstagetraits.h
+    renderer/modeling/postprocessingstage/renderstamppostprocessingstage.cpp
+    renderer/modeling/postprocessingstage/renderstamppostprocessingstage.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_postprocessingstage_sources}
+)
+source_group ("renderer\\modeling\\postprocessingstage" FILES
+    ${renderer_modeling_postprocessingstage_sources}
 )
 
 set (renderer_modeling_project_sources

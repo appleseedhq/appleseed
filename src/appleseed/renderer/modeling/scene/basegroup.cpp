@@ -99,8 +99,8 @@ ShaderGroupContainer& BaseGroup::shader_groups() const
 }
 
 bool BaseGroup::create_optimized_osl_shader_groups(
-    OSLShadingSystem&   shading_system,
-    IAbortSwitch*       abort_switch)
+    OSLShadingSystem&           shading_system,
+    IAbortSwitch*               abort_switch)
 {
     bool success = true;
 
@@ -146,45 +146,40 @@ AssemblyInstanceContainer& BaseGroup::assembly_instances() const
     return impl->m_assembly_instances;
 }
 
-namespace
-{
-    template <typename EntityCollection>
-    void do_collect_asset_paths(
-        StringArray&            paths,
-        const EntityCollection& entities)
-    {
-        for (const_each<EntityCollection> i = entities; i; ++i)
-            i->collect_asset_paths(paths);
-    }
-
-    template <typename EntityCollection>
-    void do_update_asset_paths(
-        const StringDictionary& mappings,
-        EntityCollection&       entities)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-            i->update_asset_paths(mappings);
-    }
-}
-
 void BaseGroup::collect_asset_paths(StringArray& paths) const
 {
-    do_collect_asset_paths(paths, colors());
-    do_collect_asset_paths(paths, textures());
-    do_collect_asset_paths(paths, texture_instances());
-    do_collect_asset_paths(paths, shader_groups());
-    do_collect_asset_paths(paths, assemblies());
-    do_collect_asset_paths(paths, assembly_instances());
+    invoke_collect_asset_paths(colors(), paths);
+    invoke_collect_asset_paths(textures(), paths);
+    invoke_collect_asset_paths(texture_instances(), paths);
+    invoke_collect_asset_paths(shader_groups(), paths);
+    invoke_collect_asset_paths(assemblies(), paths);
+    invoke_collect_asset_paths(assembly_instances(), paths);
 }
 
 void BaseGroup::update_asset_paths(const StringDictionary& mappings)
 {
-    do_update_asset_paths(mappings, colors());
-    do_update_asset_paths(mappings, textures());
-    do_update_asset_paths(mappings, texture_instances());
-    do_update_asset_paths(mappings, shader_groups());
-    do_update_asset_paths(mappings, assemblies());
-    do_update_asset_paths(mappings, assembly_instances());
+    invoke_update_asset_paths(colors(), mappings);
+    invoke_update_asset_paths(textures(), mappings);
+    invoke_update_asset_paths(texture_instances(), mappings);
+    invoke_update_asset_paths(shader_groups(), mappings);
+    invoke_update_asset_paths(assemblies(), mappings);
+    invoke_update_asset_paths(assembly_instances(), mappings);
+}
+
+bool BaseGroup::on_frame_begin(
+    const Project&              project,
+    const BaseGroup*            parent,
+    OnFrameBeginRecorder&       recorder,
+    IAbortSwitch*               abort_switch)
+{
+    bool success = true;
+    success = success && invoke_on_frame_begin(colors(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(textures(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(texture_instances(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(shader_groups(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(assemblies(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(assembly_instances(), project, this, recorder, abort_switch);
+    return success;
 }
 
 }   // namespace renderer

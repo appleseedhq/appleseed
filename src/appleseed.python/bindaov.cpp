@@ -35,6 +35,7 @@
 #include "renderer/api/aov.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/image.h"
 #include "foundation/platform/python.h"
 
 namespace bpy = boost::python;
@@ -78,6 +79,18 @@ namespace
     {
         return factory->create(bpy_dict_to_param_array(params));
     }
+
+    bpy::list get_channel_names(const AOV* aov)
+    {
+        bpy::list channels;
+
+        const char** names = aov->get_channel_names();
+
+        for (size_t i = 0, e = aov->get_channel_count(); i < e ; ++i)
+            channels.append(names[i]);
+
+        return channels;
+    }
 }
 
 void bind_aov()
@@ -86,7 +99,11 @@ void bind_aov()
         .def("get_model_metadata", &detail::get_entity_model_metadata<AOVFactoryRegistrar>).staticmethod("get_model_metadata")
         .def("get_input_metadata", &detail::get_entity_input_metadata<AOVFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_aov))
-        .def("get_model", &AOV::get_model);
+        .def("get_model", &AOV::get_model)
+        .def("get_channel_count", &AOV::get_channel_count)
+        .def("get_channel_names", &get_channel_names)
+        .def("has_color_data", &AOV::has_color_data)
+        .def("get_image", &AOV::get_image, bpy::return_value_policy<bpy::reference_existing_object>());
 
     bind_typed_entity_vector<AOV>("AOVContainer");
 

@@ -33,6 +33,7 @@
 // appleseed.studio headers.
 #include "debug/benchmarks/benchmarkwindow.h"
 #include "debug/tests/testwindow.h"
+#include "mainwindow/falsecolorswindow.h"
 #include "mainwindow/project/projectmanager.h"
 #include "mainwindow/qtlogtarget.h"
 #include "mainwindow/rendering/renderingmanager.h"
@@ -148,6 +149,7 @@ class MainWindow
     std::unique_ptr<RenderingSettingsWindow>    m_rendering_settings_window;
     std::unique_ptr<TestWindow>                 m_test_window;
     std::unique_ptr<BenchmarkWindow>            m_benchmark_window;
+    std::unique_ptr<FalseColorsWindow>          m_false_colors_window;
 
     ProjectManager                              m_project_manager;
     ProjectExplorer*                            m_project_explorer;
@@ -196,6 +198,7 @@ class MainWindow
     void set_file_widgets_enabled(const bool is_enabled, const RenderingMode rendering_mode);
     void set_project_explorer_enabled(const bool is_enabled);
     void set_rendering_widgets_enabled(const bool is_enabled, const RenderingMode rendering_mode);
+    void set_diagnostics_widgets_enabled(const bool is_enabled, const RenderingMode rendering_mode);
     void save_state_before_project_open();
     void restore_state_after_project_open();
 
@@ -263,9 +266,13 @@ class MainWindow
     void slot_rendering_end();
     void slot_camera_changed();
 
-    // Shading overrides.
+    // Diagnostics.
     void slot_clear_shading_override();
     void slot_set_shading_override();
+    void slot_show_false_colors_window();
+    void slot_set_false_colors_enabled(const bool enabled);
+    void slot_apply_false_colors_settings_changes(foundation::Dictionary values);
+    void apply_false_colors_settings();
 
     // Render region.
     void slot_clear_render_region();

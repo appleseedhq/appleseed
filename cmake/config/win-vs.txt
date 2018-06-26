@@ -61,13 +61,29 @@ set (preprocessor_definitions_common
     _USRDLL
     _WINDOWS
     XERCES_STATIC_LIBRARY                   # link statically against Xerces-C
-    BOOST_PYTHON_STATIC_LIB                 # link statically against Boost.Python
 )
+
+if (USE_STATIC_BOOST)
+    set (preprocessor_definitions_common ${preprocessor_definitions_common}
+        BOOST_PYTHON_STATIC_LIB             # link statically against Boost.Python
+    )
+else ()
+    set (preprocessor_definitions_common ${preprocessor_definitions_common}
+        BOOST_ALL_DYN_LINK                  # link dynamically
+    )
+endif ()
 
 # Release configuration.
 set (preprocessor_definitions_release
     _SECURE_SCL=0
 )
+
+if (NOT USE_STATIC_EXR)
+    set (preprocessor_definitions_common
+        ${preprocessor_definitions_common}
+        OPENEXR_DLL                         # We need to set this pre-processor for OpenEXR to link correctly when the lib is dynamic
+    )
+endif ()
 
 
 #--------------------------------------------------------------------------------------------------
@@ -383,8 +399,8 @@ macro (add_copy_target_exe_to_sandbox_command target)
     # Copy the .exe and the PDB file (except in Ship configuration).
     add_custom_command (TARGET ${target} POST_BUILD
         COMMAND if not exist "${bin_path}" mkdir "${bin_path}"
-        COMMAND ${CMAKE_COMMAND} -E copy "$(TargetPath)" "${bin_path}"
-        COMMAND if not "$(Configuration)" == "Ship" copy /Y "$(TargetDir)\$(TargetName).pdb" "${bin_path}"
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${target}> "${bin_path}"
+        COMMAND if not $<CONFIG> == "Ship" ${CMAKE_COMMAND} -E copy "$<TARGET_PDB_FILE:${target}>" "${bin_path}"
     )
 endmacro ()
 
@@ -393,15 +409,15 @@ macro (add_copy_target_lib_to_sandbox_command target)
     get_sandbox_bin_path (bin_path)
     add_custom_command (TARGET ${target} POST_BUILD
         COMMAND if not exist "${bin_path}" mkdir "${bin_path}"
-        COMMAND ${CMAKE_COMMAND} -E copy "$(TargetPath)" "${bin_path}"
-        COMMAND if not "$(Configuration)" == "Ship" copy /Y "$(TargetDir)\$(TargetName).pdb" "${bin_path}"
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${target}> "${bin_path}"
+        COMMAND if not $<CONFIG> == "Ship" ${CMAKE_COMMAND} -E copy "$<TARGET_PDB_FILE:${target}>" "${bin_path}"
     )
 
     # Copy the import library.
     get_sandbox_lib_path (lib_path)
     add_custom_command (TARGET ${target} POST_BUILD
         COMMAND if not exist "${lib_path}" mkdir "${lib_path}"
-        COMMAND ${CMAKE_COMMAND} -E copy "$(TargetDir)\$(TargetName).lib" "${lib_path}"
+        COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_LINKER_FILE:${target}>" "${lib_path}"
     )
 endmacro ()
 
@@ -412,7 +428,7 @@ macro (add_copy_target_to_sandbox_py_module_command target module_name)
 
     add_custom_command (TARGET ${target} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory "${module_path}"
-        COMMAND ${CMAKE_COMMAND} -E copy "$(TargetPath)" "${module_path}"
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${target}> "${module_path}"
     )
 endmacro ()
 

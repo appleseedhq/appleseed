@@ -54,9 +54,6 @@ class APPLESEED_DLLSYMBOL IEnvironmentEDFFactory
   : public foundation::IUnknown
 {
   public:
-    // Destructor.
-    virtual ~IEnvironmentEDFFactory() {}
-
     // Return a string identifying this environment EDF model.
     virtual const char* get_model() const = 0;
 

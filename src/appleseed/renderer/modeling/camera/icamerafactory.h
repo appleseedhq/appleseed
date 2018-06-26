@@ -54,9 +54,6 @@ class APPLESEED_DLLSYMBOL ICameraFactory
   : public foundation::IUnknown
 {
   public:
-    // Destructor.
-    virtual ~ICameraFactory() {}
-
     // Return a string identifying this camera model.
     virtual const char* get_model() const = 0;
 

@@ -155,12 +155,14 @@ class Statistics
     struct PopulationEntry
       : public Entry
     {
-        Population<T> m_value;
+        Population<T>       m_value;
+        std::streamsize     m_precision;
 
         PopulationEntry(
             const std::string&          name,
             const std::string&          unit,
-            const Population<T>&        value);
+            const Population<T>&        value,
+            const std::streamsize       precision);
 
         std::unique_ptr<Entry> clone() const override;
         void merge(const Entry* other) override;
@@ -194,7 +196,14 @@ class Statistics
     void insert(
         const std::string&              name,
         const Population<T>&            value,
-        const std::string&              unit);
+        const std::streamsize           precision = 1);
+
+    template <typename T>
+    void insert(
+        const std::string&              name,
+        const Population<T>&            value,
+        const std::string&              unit,
+        const std::streamsize           precision = 1);
 
     void insert_size(
         const std::string&              name,
@@ -357,14 +366,24 @@ inline void Statistics::insert<std::string>(
 }
 
 template <typename T>
+void Statistics::insert(
+    const std::string&                  name,
+    const Population<T>&                value,
+    const std::streamsize               precision)
+{
+    insert(name, value, std::string(), precision);
+}
+
+template <typename T>
 inline void Statistics::insert(
     const std::string&                  name,
     const Population<T>&                value,
-    const std::string&                  unit)
+    const std::string&                  unit,
+    const std::streamsize               precision)
 {
     insert(
         std::unique_ptr<PopulationEntry<T>>(
-            new PopulationEntry<T>(name, unit, value)));
+            new PopulationEntry<T>(name, unit, value, precision)));
 }
 
 inline void Statistics::insert_size(
@@ -420,9 +439,11 @@ template <typename T>
 Statistics::PopulationEntry<T>::PopulationEntry(
     const std::string&                  name,
     const std::string&                  unit,
-    const Population<T>&                value)
+    const Population<T>&                value,
+    const std::streamsize               precision)
   : Entry(name, unit)
   , m_value(value)
+  , m_precision(precision)
 {
 }
 
@@ -436,13 +457,14 @@ template <typename T>
 void Statistics::PopulationEntry<T>::merge(const Entry* other)
 {
     m_value.merge(cast<PopulationEntry>(other)->m_value);
+    m_precision = std::max(m_precision, cast<PopulationEntry>(other)->m_precision);
 }
 
 template <typename T>
 std::string Statistics::PopulationEntry<T>::to_string() const
 {
     std::stringstream sstr;
-    sstr << std::fixed << std::setprecision(1);
+    sstr << std::fixed << std::setprecision(m_precision);
 
     sstr <<   "avg " << m_value.get_mean() << m_unit;
     sstr << "  min " << m_value.get_min() << m_unit;

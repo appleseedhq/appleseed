@@ -33,24 +33,13 @@
 namespace bpy = boost::python;
 using namespace foundation;
 
-namespace
-{
-
-    static std::string repr(const MurmurHash& hash)
-    {
-        return "appleseed.MurmurHash(\"" + hash.to_string() + "\")";
-    }
-
-}
-
 void bind_murmurhash()
 {
     bpy::class_<MurmurHash>("MurmurHash")
         .def(bpy::init<>())
+        .add_property("h1", &MurmurHash::h1)
+        .add_property("h2", &MurmurHash::h2)
         .def(bpy::self == bpy::self)
         .def(bpy::self != bpy::self)
-        .def(bpy::self <  bpy::self)
-        .def("__repr__", &repr)
-        .def("__str__", &MurmurHash::to_string)
-        .def("to_string", &MurmurHash::to_string);
+        .def(bpy::self <  bpy::self);
 }

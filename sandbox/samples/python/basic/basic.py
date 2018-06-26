@@ -220,25 +220,33 @@ class TileCallback(asr.ITileCallback):
         super(TileCallback, self).__init__()
         self.rendered_pixels = 0
 
-    # This method is called before a region is rendered.
-    def pre_render(self, x, y, width, height):
+    # This method is called before a frame is rendered.
+    def on_tiled_frame_begin(self, frame):
+        pass
+
+    # This method is called after a frame is rendered.
+    def on_tiled_frame_end(self, frame):
+        pass
+
+    # This method is called before a tile is rendered.
+    def on_tile_begin(self, frame, tile_x, tile_y):
         pass
 
     # This method is called after a tile is rendered.
-    def post_render_tile(self, frame, tile_x, tile_y):
+    def on_tile_end(self, frame, tile_x, tile_y):
         # Keep track of the total number of rendered pixels.
         tile = frame.image().tile(tile_x, tile_y)
         self.rendered_pixels += tile.get_pixel_count()
 
         # Retrieve the total number of pixels in the frame.
-        total_pixels = frame.image().properties().pixel_count
+        total_pixels = frame.image().properties().m_pixel_count
 
         # Print a progress message.
         percent = (100.0 * self.rendered_pixels) / total_pixels
         sys.stdout.write("rendering, {0:.2f}% done   \r".format(percent))
 
-    # This method is called after a whole frame is rendered.
-    def post_render(self, frame):
+    # This method is called after the frame has been updated.
+    def on_progressive_frame_update(self, frame):
         pass
 
 

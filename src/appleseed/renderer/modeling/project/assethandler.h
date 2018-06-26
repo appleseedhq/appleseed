@@ -52,14 +52,14 @@ class AssetHandler
 
     // Constructor.
     AssetHandler(
-        const Project&              project,
+        Project&                    project,
         const char*                 filepath,
         const Mode                  mode);
 
     bool handle_assets() const;
 
   private:
-    const Project&                  m_project;
+    Project&                        m_project;
     const boost::filesystem::path   m_project_old_root_path;
     const boost::filesystem::path   m_project_new_root_path;
     const boost::filesystem::path   m_project_old_root_dir;

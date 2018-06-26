@@ -391,7 +391,10 @@ void Logger::write(
         const size_t thread = impl->m_thread_map.thread_id_to_int(boost::this_thread::get_id());
         const FormatEvaluator format_evaluator(effective_category, datetime, thread, &impl->m_message_buffer[0]);
         const string header = format_evaluator.evaluate(impl->m_formatter.get_header_format(effective_category));
-        const string message = format_evaluator.evaluate(impl->m_formatter.get_message_format(effective_category));
+        string message = format_evaluator.evaluate(impl->m_formatter.get_message_format(effective_category));
+
+        // Remove trailing newline characters from the message.
+        message = trim_right(message, "\n");
 
         if (!message.empty())
         {

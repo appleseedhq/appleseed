@@ -34,6 +34,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
+#include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -97,6 +98,8 @@ namespace
             if (!EnvironmentShader::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
+            const OnFrameBeginMessageContext context("environment edf", this);
+
             // Cache the bound environment EDF.
             m_env_edf = dynamic_cast<const EnvironmentEDF*>(m_inputs.get_entity("environment_edf"));
 
@@ -104,9 +107,8 @@ namespace
             if (m_env_edf == nullptr)
             {
                 RENDERER_LOG_ERROR(
-                    "while preparing environment shader \"%s\": "
-                    "cannot find environment edf \"%s\".",
-                    get_path().c_str(),
+                    "%scannot find environment edf \"%s\".",
+                    context.get(),
                     m_params.get_required<string>("environment_edf", "").c_str());
                 return false;
             }

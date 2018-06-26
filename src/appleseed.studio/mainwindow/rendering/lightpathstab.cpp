@@ -216,7 +216,7 @@ void LightPathsTab::create_toolbar()
     // Previous Light Path button.
     m_prev_path_button = new QToolButton();
     m_prev_path_button->setIcon(load_icons("lightpathstab_prev_light_path"));
-    m_prev_path_button->setToolTip("Previous Light Path");
+    m_prev_path_button->setToolTip("Display previous light path");
     m_prev_path_button->setEnabled(false);
     connect(
         m_prev_path_button, SIGNAL(clicked()),
@@ -226,7 +226,7 @@ void LightPathsTab::create_toolbar()
     // Next Light Path button.
     m_next_path_button = new QToolButton();
     m_next_path_button->setIcon(load_icons("lightpathstab_next_light_path"));
-    m_next_path_button->setToolTip("Next Light Path");
+    m_next_path_button->setToolTip("Display next light path");
     m_next_path_button->setEnabled(false);
     connect(
         m_next_path_button, SIGNAL(clicked()),
@@ -238,7 +238,7 @@ void LightPathsTab::create_toolbar()
     // Toggle Backface Culling button.
     QToolButton* backface_culling_button = new QToolButton();
     backface_culling_button->setIcon(load_icons("lightpathstab_toggle_backface_culling"));
-    backface_culling_button->setToolTip("Toggle Backface Culling");
+    backface_culling_button->setToolTip("Show/hide backfacing surfaces");
     backface_culling_button->setCheckable(true);
     backface_culling_button->setChecked(false);
     connect(
@@ -248,8 +248,8 @@ void LightPathsTab::create_toolbar()
 
     // Synchronize Camera button.
     QToolButton* sync_camera_button = new QToolButton();
-    sync_camera_button->setIcon(load_icons("lightpathstab_toggle_backface_culling"));
-    sync_camera_button->setToolTip("Synchronize Camera");
+    sync_camera_button->setIcon(load_icons("lightpathstab_synchronize_camera"));
+    sync_camera_button->setToolTip("Synchronize the rendering camera with this camera");
     connect(
         sync_camera_button, SIGNAL(clicked()),
         m_light_paths_widget, SLOT(slot_synchronize_camera()));

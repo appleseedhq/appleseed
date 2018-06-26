@@ -49,6 +49,7 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/searchpaths.h"
+#include "foundation/utility/string.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
@@ -80,7 +81,7 @@ namespace
           : Texture(name, params)
           , m_reader(&global_logger())
         {
-            const EntityDefMessageContext message_context("texture", this);
+            const EntityDefMessageContext context("texture", this);
 
             // Establish and store the qualified path to the texture file.
             m_filepath = to_string(search_paths.qualify(m_params.get_required<string>("filename", "")));
@@ -91,7 +92,7 @@ namespace
                     "color_space",
                     "linear_rgb",
                     make_vector("linear_rgb", "srgb", "ciexyz"),
-                    message_context);
+                    context);
             if (color_space == "linear_rgb")
                 m_color_space = ColorSpaceLinearRGB;
             else if (color_space == "srgb")
@@ -127,7 +128,7 @@ namespace
             if (m_params.strings().exist("filename"))
             {
                 const char* filename = m_params.get("filename");
-                if (filename[0] != '\0')
+                if (!is_empty_string(filename))
                     paths.push_back(filename);
             }
         }

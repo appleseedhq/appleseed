@@ -72,6 +72,9 @@ class APPLESEED_DLLSYMBOL MurmurHash
 
     MurmurHash& append(const std::string& str);
 
+    uint64 h1() const;
+    uint64 h2() const;
+
     std::string to_string() const;
 
   private:
@@ -99,6 +102,16 @@ inline MurmurHash& MurmurHash::append(const std::string& str)
 {
     append(str.c_str(), str.size());
     return *this;
+}
+
+inline uint64 MurmurHash::h1() const
+{
+    return m_h1;
+}
+
+inline uint64 MurmurHash::h2() const
+{
+    return m_h2;
 }
 
 inline std::string MurmurHash::to_string() const

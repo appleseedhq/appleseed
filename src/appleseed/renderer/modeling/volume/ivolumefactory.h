@@ -53,9 +53,6 @@ class APPLESEED_DLLSYMBOL IVolumeFactory
   : public foundation::IUnknown
 {
   public:
-    // Destructor.
-    virtual ~IVolumeFactory() {}
-
     // Return a string identifying this volume model.
     virtual const char* get_model() const = 0;
 

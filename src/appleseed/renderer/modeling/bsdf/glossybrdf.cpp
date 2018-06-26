@@ -149,7 +149,8 @@ namespace
             if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            const EntityDefMessageContext context("bsdf", this);
+            const OnFrameBeginMessageContext context("bsdf", this);
+
             const string mdf =
                 m_params.get_required<string>(
                     "mdf",
@@ -489,7 +490,7 @@ namespace
                 if (values->m_fresnel_weight != 0.0f)
                 {
                     const float fterm =
-                        (values->m_precomputed.m_fresnel_average * (1.0f - eavg)) / (1.0f - values->m_precomputed.m_fresnel_average * eavg);
+                        (square(values->m_precomputed.m_fresnel_average) * eavg) / (1.0f - values->m_precomputed.m_fresnel_average * (1.0f - eavg));
                     fms *= lerp(1.0f, fterm, values->m_fresnel_weight);
                 }
 

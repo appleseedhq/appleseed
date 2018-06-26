@@ -41,6 +41,7 @@
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/pythonconsole/pythonconsolewidget.h"
 #include "mainwindow/rendering/lightpathstab.h"
+#include "mainwindow/rendering/renderwidget.h"
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
@@ -53,6 +54,7 @@
 #include "renderer/api/frame.h"
 #include "renderer/api/lighting.h"
 #include "renderer/api/log.h"
+#include "renderer/api/postprocessing.h"
 #include "renderer/api/project.h"
 #include "renderer/api/rendering.h"
 #include "renderer/api/surfaceshader.h"
@@ -214,6 +216,7 @@ bool MainWindow::open_project(const QString& filepath)
     set_file_widgets_enabled(false, NotRendering);
     set_project_explorer_enabled(false);
     set_rendering_widgets_enabled(false, NotRendering);
+    set_diagnostics_widgets_enabled(false, NotRendering);
 
     const bool successful = m_project_manager.load_project(filepath.toAscii().constData());
 
@@ -245,6 +248,7 @@ void MainWindow::open_project_async(const QString& filepath)
     set_file_widgets_enabled(false, NotRendering);
     set_project_explorer_enabled(false);
     set_rendering_widgets_enabled(false, NotRendering);
+    set_diagnostics_widgets_enabled(false, NotRendering);
 
     m_project_manager.load_project_async(filepath.toAscii().constData());
 }
@@ -326,7 +330,7 @@ QDockWidget* MainWindow::create_dock_widget(const char* dock_name)
     dock_widget->setObjectName(object_name);
     dock_widget->setWindowTitle(dock_name);
 
-    const auto& actions = m_ui->menu_view->actions();
+    const auto actions = m_ui->menu_view->actions();
     QAction* menu_separator = actions.last();
     for (int i = actions.size() - 2; i != 0; --i)
     {
@@ -337,10 +341,12 @@ QDockWidget* MainWindow::create_dock_widget(const char* dock_name)
         }
     }
 
-    m_ui->menu_view->insertAction(menu_separator,
-                                  dock_widget->toggleViewAction());
+    m_ui->menu_view->insertAction(
+        menu_separator,
+        dock_widget->toggleViewAction());
 
     m_minimize_buttons.push_back(new MinimizeButton(dock_widget));
+
     statusBar()->insertPermanentWidget(
         static_cast<int>(m_minimize_buttons.size()),
         m_minimize_buttons.back());
@@ -409,6 +415,8 @@ void MainWindow::build_menus()
     //
 
     build_override_shading_menu_item();
+
+    connect(m_ui->action_diagnostics_false_colors, SIGNAL(triggered()), SLOT(slot_show_false_colors_window()));
 
     //
     // Debug menu.
@@ -705,6 +713,7 @@ void MainWindow::update_workspace()
     set_file_widgets_enabled(true, NotRendering);
     set_project_explorer_enabled(true);
     set_rendering_widgets_enabled(true, NotRendering);
+    set_diagnostics_widgets_enabled(true, NotRendering);
     m_ui->attribute_editor_scrollarea_contents->setEnabled(true);
 
     // Add/remove light paths tab.
@@ -869,6 +878,14 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const Rend
                 is_enabled && is_project_open && rendering_mode != FinalRendering);
         }
     }
+}
+
+void MainWindow::set_diagnostics_widgets_enabled(const bool is_enabled, const RenderingMode rendering_mode)
+{
+    const bool is_project_open = m_project_manager.is_project_open();
+
+    m_ui->menu_diagnostics_override_shading->setEnabled(is_enabled && is_project_open);
+    m_ui->action_diagnostics_false_colors->setEnabled(is_enabled && is_project_open && rendering_mode == NotRendering);
 }
 
 void MainWindow::save_state_before_project_open()
@@ -1082,6 +1099,7 @@ void MainWindow::on_project_change()
     recreate_render_tabs();
 
     update_override_shading_menu_item();
+    m_false_colors_window.reset();
 
     if (m_rendering_settings_window.get() != nullptr &&
         m_project_manager.get_project() != nullptr)
@@ -1175,10 +1193,13 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
 {
     assert(m_project_manager.is_project_open());
 
+    m_false_colors_window.reset();
+
     // Enable/disable menus and widgets appropriately.
     set_file_widgets_enabled(false, rendering_mode);
     set_project_explorer_enabled(rendering_mode == InteractiveRendering);
     set_rendering_widgets_enabled(true, rendering_mode);
+    set_diagnostics_widgets_enabled(true, rendering_mode);
     m_ui->attribute_editor_scrollarea_contents->setEnabled(rendering_mode == InteractiveRendering);
 
     // Remove light paths tab.
@@ -1630,6 +1651,8 @@ void MainWindow::slot_start_rendering_once(const QString& filepath, const QStrin
 
 void MainWindow::slot_rendering_end()
 {
+    apply_false_colors_settings();
+
     update_workspace();
 
     // Restart monitoring the project file if monitoring was enabled
@@ -1706,6 +1729,106 @@ void MainWindow::slot_set_shading_override()
     m_rendering_manager.reinitialize_rendering();
 }
 
+void MainWindow::slot_show_false_colors_window()
+{
+    if (m_false_colors_window.get() == nullptr)
+    {
+        m_false_colors_window.reset(new FalseColorsWindow(this));
+
+        QObject::connect(
+            m_false_colors_window.get(), SIGNAL(signal_set_enabled(const bool)),
+            SLOT(slot_set_false_colors_enabled(const bool)));
+
+        QObject::connect(
+            m_false_colors_window.get(), SIGNAL(signal_applied(foundation::Dictionary)),
+            SLOT(slot_apply_false_colors_settings_changes(foundation::Dictionary)));
+
+        QObject::connect(
+            m_false_colors_window.get(), SIGNAL(signal_accepted(foundation::Dictionary)),
+            SLOT(slot_apply_false_colors_settings_changes(foundation::Dictionary)));
+
+        QObject::connect(
+            m_false_colors_window.get(), SIGNAL(signal_canceled(foundation::Dictionary)),
+            SLOT(slot_apply_false_colors_settings_changes(foundation::Dictionary)));
+    }
+
+    Project* project = m_project_manager.get_project();
+    assert(project);
+
+    m_false_colors_window->initialize(
+        *project,
+        m_settings,
+        m_settings.child("false_colors"));
+
+    m_false_colors_window->showNormal();
+    m_false_colors_window->activateWindow();
+}
+
+void MainWindow::slot_set_false_colors_enabled(const bool enabled)
+{
+    m_settings.push("false_colors").insert("enabled", enabled);
+    apply_false_colors_settings();
+}
+
+void MainWindow::slot_apply_false_colors_settings_changes(Dictionary values)
+{
+    m_settings.push("false_colors").merge(values);
+    apply_false_colors_settings();
+}
+
+void MainWindow::apply_false_colors_settings()
+{
+    Project* project = m_project_manager.get_project();
+    assert(project != nullptr);
+
+    Frame* frame = project->get_frame();
+    assert(frame != nullptr);
+
+    Dictionary params = m_settings.child("false_colors");
+
+    if (params.strings().exist("enabled") &&
+        params.strings().get<bool>("enabled"))
+    {
+        // Make a temporary copy of the frame.
+        auto_release_ptr<Frame> frame_copy(
+            FrameFactory::create("frame_copy", frame->get_parameters()));
+        frame_copy->image().copy_from(frame->image());
+
+        // Add required params.
+        params.insert("order", 0);
+
+        // Create a color map post-processing stage.
+        auto_release_ptr<PostProcessingStage> stage(
+            ColorMapPostProcessingStageFactory().create(
+                "__false_colors_post_processing_stage",
+                params));
+
+        // Prepare the post-processing stage.
+        OnFrameBeginRecorder recorder;
+        if (stage->on_frame_begin(*project, nullptr, recorder, nullptr))
+        {
+            // Execute the post-processing stage on the frame copy.
+            stage->execute(frame_copy.ref());
+
+            // Blit the frame copy into the render widget.
+            for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+            {
+                i->second->get_render_widget()->blit_frame(frame_copy.ref());
+                i->second->get_render_widget()->update();
+            }
+        }
+    }
+    else
+    {
+        // Blit the regular frame into the render widget.
+        for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        {
+            i->second->get_render_widget()->blit_frame(*frame);
+            i->second->get_render_widget()->update();
+        }
+    }
+}
+
 namespace
 {
     class ClearRenderRegionAction
@@ -1777,8 +1900,7 @@ void MainWindow::slot_clear_render_region()
 
     if (m_rendering_manager.is_rendering())
         m_rendering_manager.schedule(std::move(clear_render_region_action));
-    else clear_render_region_action.get()->operator()(
-        *m_project_manager.get_project());
+    else clear_render_region_action.get()->operator()(*m_project_manager.get_project());
 
     m_rendering_manager.reinitialize_rendering();
 }
@@ -1790,8 +1912,7 @@ void MainWindow::slot_set_render_region(const QRect& rect)
 
     if (!m_rendering_manager.is_rendering())
     {
-        set_render_region_action.get()->operator()(
-            *m_project_manager.get_project());
+        set_render_region_action.get()->operator()(*m_project_manager.get_project());
 
         if (m_settings.get_path_optional<bool>(SETTINGS_RENDER_REGION_TRIGGERS_RENDERING))
             start_rendering(InteractiveRendering);

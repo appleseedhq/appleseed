@@ -33,9 +33,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/assemblyinstanceitem.h"
-#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/instancecollectionitem.h"
-#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/singlemodelcollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
@@ -101,7 +99,6 @@ SceneItem::SceneItem(
                 this));
     m_environment_item->set_allow_deletion(false);
     m_environment_item->set_fixed_position(true);
-    editor_context.m_item_registry.insert(*scene.get_environment(), m_environment_item);
 
     insertChild(
         child_index++,
@@ -126,17 +123,6 @@ SceneItem::SceneItem(
     m_environment_shader_collection_item->add_items(scene.environment_shaders());
 }
 
-void SceneItem::expand()
-{
-    setExpanded(true);
-
-    get_assembly_collection_item().setExpanded(true);
-    get_assembly_instance_collection_item().setExpanded(true);
-
-    if (get_assembly_collection_item().childCount() == 1)
-        get_assembly_collection_item().child(0)->setExpanded(true);
-}
-
 QMenu* SceneItem::get_single_item_context_menu() const
 {
     QMenu* menu = ItemBase::get_single_item_context_menu();
@@ -152,6 +138,17 @@ QMenu* SceneItem::get_single_item_context_menu() const
     menu->addAction("Create Environment Shader...", m_environment_shader_collection_item, SLOT(slot_create()));
 
     return menu;
+}
+
+void SceneItem::expand()
+{
+    setExpanded(true);
+
+    get_assembly_collection_item().setExpanded(true);
+    get_assembly_instance_collection_item().setExpanded(true);
+
+    if (get_assembly_collection_item().childCount() == 1)
+        get_assembly_collection_item().child(0)->setExpanded(true);
 }
 
 void SceneItem::add_item(Camera* camera)
