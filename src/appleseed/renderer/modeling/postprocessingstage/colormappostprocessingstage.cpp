@@ -43,6 +43,7 @@
 #include "foundation/image/colorspace.h"
 #include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/image.h"
+#include "foundation/image/text/textrenderer.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -56,6 +57,7 @@
 #include <cassert>
 #include <exception>
 #include <memory>
+#include <string>
 #include <vector>
 
 using namespace foundation;
@@ -173,16 +175,41 @@ namespace
             }
 
             m_add_legend_bar = m_params.get_optional<bool>("add_legend_bar", true);
+            m_legend_bar_ticks = m_params.get_optional<size_t>("legend_bar_ticks", 8);
 
             return true;
         }
 
         void execute(Frame& frame) const override
         {
-            remap_colors(frame);
+            float min_luminance, max_luminance;
+
+            if (m_auto_range)
+            {
+                Color4f min_color, max_color;
+                find_min_max(frame, min_color, max_color);
+
+                min_luminance = luminance(min_color.rgb());
+                max_luminance = luminance(max_color.rgb());
+            }
+            else
+            {
+                min_luminance = m_range_min;
+                max_luminance = m_range_max;
+            }
+
+            RENDERER_LOG_INFO(
+                "post-processing stage \"%s\":\n"
+                "  min luminance                 %f\n"
+                "  max luminance                 %f",
+                get_path().c_str(),
+                min_luminance,
+                max_luminance);
+
+            remap_colors(frame, min_luminance, max_luminance);
 
             if (m_add_legend_bar)
-                add_legend_bar(frame);
+                add_legend_bar(frame, min_luminance, max_luminance);
         }
 
       private:
@@ -191,6 +218,7 @@ namespace
         float               m_range_min;
         float               m_range_max;
         bool                m_add_legend_bar;
+        size_t              m_legend_bar_ticks;
 
         void set_palette_from_array(const float* values, const size_t entry_count)
         {
@@ -230,26 +258,8 @@ namespace
             return lerp(m_palette[ix], m_palette[ix + 1], w);
         }
 
-        void remap_colors(Frame& frame) const
+        void remap_colors(Frame& frame, const float min_luminance, const float max_luminance) const
         {
-            float min_luminance, max_luminance;
-
-            if (m_auto_range)
-            {
-                Color4f min_color, max_color;
-                find_min_max(frame, min_color, max_color);
-
-                min_luminance = luminance(min_color.rgb());
-                max_luminance = luminance(max_color.rgb());
-
-                RENDERER_LOG_DEBUG("min luminance: %f, max luminance: %f", min_luminance, max_luminance);
-            }
-            else
-            {
-                min_luminance = m_range_min;
-                max_luminance = m_range_max;
-            }
-
             if (min_luminance == max_luminance)
             {
                 for_each_pixel(frame, [this, min_luminance, max_luminance](Color4f& color)
@@ -275,19 +285,22 @@ namespace
             }
         }
 
-        void add_legend_bar(Frame& frame) const
+        void add_legend_bar(Frame& frame, const float min_luminance, const float max_luminance) const
         {
+            // Legend bar settings.
+            const float LegendBarWidthPercent = 5.0f;               // width in percents of the legend bar
+            const float LegendBarMinWidth = 1.0f;                   // minimum width in pixels of the legend bar
+            const float LegendBarMaxWidth = 30.0f;                  // maximum width in pixels of the legend bar
+            const float LegendBarLeftMargin = 10.0f;                // margin in pixels on the left of the legend bar
+            const size_t LegendBarVerticalMargin = 20;              // margin in pixels at top and bottom of the legend bar
+            const size_t TickMarkLength = 6;                        // length in pixel of tick marks
+            const Color4f TickMarkColor(1.0f, 1.0f, 1.0f, 1.0f);    // color of tick marks
+            const auto LabelFont = TextRenderer::Font::UbuntuL;     // font for tick labels
+            const float LabelFontHeight = 14.0f;                    // height in pixel of tick labels
+            const Color4f LabelFontColor(1.0f, 1.0f, 1.0f, 1.0f);   // color of tick labels
+
             Image& image = frame.image();
             const CanvasProperties& props = image.properties();
-
-            // Can't add a vertical bar if the image is less than 2 pixels wide.
-            if (props.m_canvas_width < 2)
-                return;
-
-            // Width of the legend bar in percents.
-            const float LegendBarWidthPercent = 5.0f;   // width of the legend bar in percents
-            const float LegendBarMinWidth = 1.0f;       // minimum width of the legend bar in pixels
-            const float LegendBarMaxWidth = 30.0f;      // maximum width of the legend bar in pixels
 
             // Compute the width of the legend bar in pixels.
             const size_t legend_bar_width =
@@ -297,18 +310,70 @@ namespace
                         LegendBarMinWidth,
                         LegendBarMaxWidth));
 
-            // Draw the legend bar.
-            for (size_t y = 0; y < props.m_canvas_height; ++y)
+            // Handle edge cases.
+            if (props.m_canvas_width <= legend_bar_width ||
+                props.m_canvas_height <= 2 * LegendBarVerticalMargin)
+                return;
+
+            // Compute bounds of the legend bar.
+            const size_t x0 = props.m_canvas_width - legend_bar_width;
+            const size_t x1 = props.m_canvas_width;
+            const size_t y0 = LegendBarVerticalMargin;
+            const size_t y1 = props.m_canvas_height - LegendBarVerticalMargin;
+            assert(x0 < x1);
+            assert(y0 < y1);
+
+            // Draw legend bar.
+            for (size_t y = y0; y < y1; ++y)
             {
-                for (size_t x = props.m_canvas_width - legend_bar_width; x < props.m_canvas_width; ++x)
+                for (size_t x = x0; x < x1; ++x)
                 {
+                    const float val =
+                        y0 == y1 - 1
+                            ? 0.0f
+                            : fit<size_t, float>(y, y0, y1 - 1, 1.0f, 0.0f);
+
                     image.set_pixel(
                         x, y,
                         Color4f(
-                            evaluate_palette(
-                                fit<size_t, float>(y, 0, props.m_canvas_height - 1, 1.0f, 0.0f)),
+                            evaluate_palette(val),
                             1.0f));
                 }
+            }
+
+            // Handle more edge cases.
+            if (x0 < TickMarkLength)
+                return;
+
+            // Draw ticks.
+            for (size_t i = 0; i < m_legend_bar_ticks; ++i)
+            {
+                const size_t y = y0 + i * (y1 - y0 - 1) / (m_legend_bar_ticks - 1);
+                assert(y >= y0 && y < y1);
+
+                // Draw tick mark.
+                for (size_t x = x0 - TickMarkLength; x < x0; ++x)
+                    image.set_pixel(x, y, TickMarkColor);
+
+                const float lum =
+                    fit<size_t, float>(i, 0, m_legend_bar_ticks - 1, max_luminance, min_luminance);
+                const string label = to_string(lum);
+
+                const float label_width =
+                    TextRenderer::compute_string_width(LabelFont, LabelFontHeight, label.c_str());
+                const float label_height =
+                    TextRenderer::compute_string_height(LabelFontHeight, label.c_str());
+
+                // Draw tick label.
+                TextRenderer::draw_string(
+                    image,
+                    ColorSpaceLinearRGB,
+                    LabelFont,
+                    LabelFontHeight,
+                    LabelFontColor,
+                    static_cast<float>(x0 - label_width - LegendBarLeftMargin),
+                    static_cast<float>(y) - label_height / 2.0f + 1.0f,
+                    label.c_str());
             }
         }
     };
@@ -426,6 +491,25 @@ DictionaryArray ColorMapPostProcessingStageFactory::get_input_metadata() const
             .insert("type", "boolean")
             .insert("use", "optional")
             .insert("default", "true"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "legend_bar_ticks")
+            .insert("label", "Legend Bar Ticks")
+            .insert("type", "integer")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "2")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "64")
+                    .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "8")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("add_legend_bar", "true")));
 
     return metadata;
 }
