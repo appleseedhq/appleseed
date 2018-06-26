@@ -107,7 +107,12 @@ namespace
 
         void update_asset_paths(const StringDictionary& mappings) override
         {
-            m_params.set("color_map_file_path", mappings.get(m_params.get("color_map_file_path")));
+            if (m_params.strings().exist("color_map_file_path"))
+            {
+                const char* filepath = m_params.get("color_map_file_path");
+                if (!is_empty_string(filepath))
+                    m_params.set("color_map_file_path", mappings.get(m_params.get("color_map_file_path")));
+            }
         }
 
         bool on_frame_begin(
