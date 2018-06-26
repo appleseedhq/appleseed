@@ -91,7 +91,7 @@ namespace
 
         void print_settings() const override
         {
-            string projection_type;
+            const char* projection_type;
             switch (m_projection_type){
                 case EquisolidAngle:
                     projection_type = "equisolid angle";
@@ -123,7 +123,7 @@ namespace
                 m_shutter_open_end_time,
                 m_shutter_close_begin_time,
                 m_shutter_close_end_time,
-                projection_type.c_str());
+                projection_type);
         }
 
         bool on_render_begin(
