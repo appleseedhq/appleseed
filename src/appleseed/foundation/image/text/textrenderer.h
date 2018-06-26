@@ -65,13 +65,23 @@ class TextRenderer
         UbuntuM
     };
 
-    static float compute_string_height(
+    static float compute_string_width(
+        const Font              font,
         const float             font_height,
-        const float             line_spacing,
+        const char*             string);
+
+    static float compute_string_width(
+        const stbtt_fontinfo&   font_info,
+        const float             font_height,
         const char*             string);
 
     static float compute_string_height(
         const float             font_height,
+        const char*             string);
+
+    static float compute_string_height(
+        const float             font_height,
+        const float             line_spacing,
         const char*             string);
 
     static void draw_string(
@@ -100,7 +110,6 @@ class TextRenderer
         const ColorSpace        image_color_space,
         const stbtt_fontinfo&   font_info,
         const float             font_height,
-        const float             line_spacing,
         const Color4f&          color_srgb,
         const float             origin_x,
         const float             origin_y,
@@ -111,6 +120,7 @@ class TextRenderer
         const ColorSpace        image_color_space,
         const stbtt_fontinfo&   font_info,
         const float             font_height,
+        const float             line_spacing,
         const Color4f&          color_srgb,
         const float             origin_x,
         const float             origin_y,

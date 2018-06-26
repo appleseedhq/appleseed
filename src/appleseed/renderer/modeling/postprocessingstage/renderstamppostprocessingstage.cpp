@@ -106,7 +106,8 @@ namespace
         void execute(Frame& frame) const override
         {
             // Render stamp settings.
-            const float FontSize = 14.0f;
+            const auto Font = TextRenderer::Font::UbuntuL;
+            const float FontHeight = 14.0f;
             const Color4f FontColor(0.8f, 0.8f, 0.8f, 1.0f);
             const Color4f BackgroundColor(0.0f, 0.0f, 0.0f, 0.9f);
             const float MarginH = 6.0f;
@@ -130,7 +131,7 @@ namespace
             // Compute the height in pixels of the string.
             const CanvasProperties& props = frame.image().properties();
             const float image_height = static_cast<float>(props.m_canvas_height);
-            const float text_height = TextRenderer::compute_string_height(FontSize, text.c_str());
+            const float text_height = TextRenderer::compute_string_height(FontHeight, text.c_str());
             const float origin_y = image_height - text_height - MarginV;
 
             // Draw the background rectangle.
@@ -148,8 +149,8 @@ namespace
             TextRenderer::draw_string(
                 frame.image(),
                 ColorSpaceLinearRGB,
-                TextRenderer::Font::UbuntuL,
-                FontSize,
+                Font,
+                FontHeight,
                 FontColor,
                 MarginH + appleseed_seeds_16_width + MarginH,
                 origin_y,

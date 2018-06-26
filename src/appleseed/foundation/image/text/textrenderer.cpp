@@ -39,6 +39,7 @@
 #include "foundation/resources/fonts/Ubuntu-M.ttf.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cstddef>
 #include <vector>
 
@@ -71,6 +72,72 @@ namespace
     BuiltinFonts g_builtin_fonts;
 }
 
+float TextRenderer::compute_string_width(
+    const Font              font,
+    const float             font_height,
+    const char*             string)
+{
+    const stbtt_fontinfo& font_info =
+        font == Font::UbuntuL
+            ? g_builtin_fonts.m_ubuntu_l_font
+            : g_builtin_fonts.m_ubuntu_m_font;
+
+    return compute_string_width(font_info, font_height, string);
+}
+
+float TextRenderer::compute_string_width(
+    const stbtt_fontinfo&   font_info,
+    const float             font_height,
+    const char*             string)
+{
+    float width = 0.0f, max_width = 0.0f;
+
+    // Compute font scaling factor for the desired pixel height.
+    const float scale = stbtt_ScaleForPixelHeight(&font_info, font_height);
+
+    for (const char* s = string; *s; ++s)
+    {
+        // Codepoint to render.
+        const char cp = s[0];
+
+        // Handle carriage returns.
+        if (cp == '\n')
+        {
+            if (max_width < width)
+                max_width = width;
+            width = 0.0f;
+            continue;
+        }
+
+        // Advance cursor.
+        int advance_width;
+        stbtt_GetCodepointHMetrics(&font_info, cp, &advance_width, nullptr);
+        width += advance_width * scale;
+
+        // Apply kerning.
+        const char next_cp = s[1];
+        if (next_cp != 0)
+        {
+            const int kern_advance =
+                stbtt_GetCodepointKernAdvance(&font_info, cp, next_cp);
+            width += kern_advance * scale;
+        }
+    }
+
+    return max(width, max_width);
+}
+    
+float TextRenderer::compute_string_height(
+    const float             font_height,
+    const char*             string)
+{
+    return
+        compute_string_height(
+            font_height,
+            DefaultLineSpacing,
+            string);
+}
+
 float TextRenderer::compute_string_height(
     const float             font_height,
     const float             line_spacing,
@@ -86,16 +153,31 @@ float TextRenderer::compute_string_height(
 
     return font_height * (1 + (lines - 1) * line_spacing);
 }
-    
-float TextRenderer::compute_string_height(
+
+void TextRenderer::draw_string(
+    Image&                  image,
+    const ColorSpace        image_color_space,
+    const Font              font,
     const float             font_height,
+    const Color4f&          color_srgb,
+    const float             origin_x,
+    const float             origin_y,
     const char*             string)
 {
-    return
-        compute_string_height(
-            font_height,
-            DefaultLineSpacing,
-            string);
+    const stbtt_fontinfo& font_info =
+        font == Font::UbuntuL
+            ? g_builtin_fonts.m_ubuntu_l_font
+            : g_builtin_fonts.m_ubuntu_m_font;
+
+    draw_string(
+        image,
+        image_color_space,
+        font_info,
+        font_height,
+        color_srgb,
+        origin_x,
+        origin_y,
+        string);
 }
 
 void TextRenderer::draw_string(
@@ -129,23 +211,19 @@ void TextRenderer::draw_string(
 void TextRenderer::draw_string(
     Image&                  image,
     const ColorSpace        image_color_space,
-    const Font              font,
+    const stbtt_fontinfo&   font_info,
     const float             font_height,
     const Color4f&          color_srgb,
     const float             origin_x,
     const float             origin_y,
     const char*             string)
 {
-    const stbtt_fontinfo& font_info =
-        font == Font::UbuntuL
-            ? g_builtin_fonts.m_ubuntu_l_font
-            : g_builtin_fonts.m_ubuntu_m_font;
-
     draw_string(
         image,
         image_color_space,
         font_info,
         font_height,
+        DefaultLineSpacing,
         color_srgb,
         origin_x,
         origin_y,
@@ -294,28 +372,6 @@ void TextRenderer::draw_string(
             x += kern_advance * scale;
         }
     }
-}
-
-void TextRenderer::draw_string(
-    Image&                  image,
-    const ColorSpace        image_color_space,
-    const stbtt_fontinfo&   font_info,
-    const float             font_height,
-    const Color4f&          color_srgb,
-    const float             origin_x,
-    const float             origin_y,
-    const char*             string)
-{
-    draw_string(
-        image,
-        image_color_space,
-        font_info,
-        font_height,
-        DefaultLineSpacing,
-        color_srgb,
-        origin_x,
-        origin_y,
-        string);
 }
 
 }   // namespace foundation
