@@ -407,6 +407,9 @@
    </property>
   </action>
   <action name="action_rendering_pause_resume_rendering">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Pause/Resume Rendering</string>
    </property>
