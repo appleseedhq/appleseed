@@ -50,6 +50,9 @@ namespace studio {
 // File dialog filter string for bitmap files supported by appleseed's own image subsystem.
 extern const QString g_appleseed_image_files_filter;
 
+// File dialog filter string for bitmap files supported by Qt.
+extern const QString g_qt_image_files_filter;
+
 // Return the file dialog filter string for image file formats supported by OpenImageIO.
 QString get_oiio_image_files_filter();
 

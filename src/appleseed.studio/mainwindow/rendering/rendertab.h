@@ -107,8 +107,8 @@ class RenderTab
     void load_state(const State& state);
 
   signals:
-    void signal_save_all_aovs();
-    void signal_quicksave_all_aovs();
+    void signal_save_raw_frame_and_aovs();
+    void signal_quicksave_raw_frame_and_aovs();
     void signal_set_render_region(const QRect& rect);
     void signal_clear_render_region();
     void signal_render_widget_context_menu(const QPoint& point);

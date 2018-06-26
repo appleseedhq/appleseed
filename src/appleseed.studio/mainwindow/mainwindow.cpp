@@ -956,11 +956,11 @@ void MainWindow::add_render_tab(const QString& label)
         render_tab, SIGNAL(signal_clear_render_region()),
         SLOT(slot_clear_render_region()));
     connect(
-        render_tab, SIGNAL(signal_save_all_aovs()),
-        SLOT(slot_save_all_aovs()));
+        render_tab, SIGNAL(signal_save_raw_frame_and_aovs()),
+        SLOT(slot_save_raw_frame_and_aovs()));
     connect(
-        render_tab, SIGNAL(signal_quicksave_all_aovs()),
-        SLOT(slot_quicksave_all_aovs()));
+        render_tab, SIGNAL(signal_quicksave_raw_frame_and_aovs()),
+        SLOT(slot_quicksave_raw_frame_and_aovs()));
     connect(
         render_tab, SIGNAL(signal_reset_zoom()),
         SLOT(slot_reset_zoom()));
@@ -1239,6 +1239,59 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
         m_render_tabs["RGB"]);
 }
 
+void MainWindow::apply_false_colors_settings()
+{
+    Project* project = m_project_manager.get_project();
+    assert(project != nullptr);
+
+    Frame* frame = project->get_frame();
+    assert(frame != nullptr);
+
+    Dictionary params = m_settings.child("false_colors");
+
+    if (params.strings().exist("enabled") &&
+        params.strings().get<bool>("enabled"))
+    {
+        // Make a temporary copy of the frame.
+        auto_release_ptr<Frame> frame_copy(
+            FrameFactory::create("frame_copy", frame->get_parameters()));
+        frame_copy->image().copy_from(frame->image());
+
+        // Add required params.
+        params.insert("order", 0);
+
+        // Create a color map post-processing stage.
+        auto_release_ptr<PostProcessingStage> stage(
+            ColorMapPostProcessingStageFactory().create(
+                "__false_colors_post_processing_stage",
+                params));
+
+        // Prepare the post-processing stage.
+        OnFrameBeginRecorder recorder;
+        if (stage->on_frame_begin(*project, nullptr, recorder, nullptr))
+        {
+            // Execute the post-processing stage on the frame copy.
+            stage->execute(frame_copy.ref());
+
+            // Blit the frame copy into the render widget.
+            for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+            {
+                i->second->get_render_widget()->blit_frame(frame_copy.ref());
+                i->second->get_render_widget()->update();
+            }
+        }
+    }
+    else
+    {
+        // Blit the regular frame into the render widget.
+        for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        {
+            i->second->get_render_widget()->blit_frame(*frame);
+            i->second->get_render_widget()->update();
+        }
+    }
+}
+
 void MainWindow::print_startup_information()
 {
     RENDERER_LOG_INFO(
@@ -1476,6 +1529,7 @@ void MainWindow::slot_pack_project_as()
         filepath = QDir::toNativeSeparators(filepath);
 
         pack_project(filepath);
+
         // Don't update the Recent Files menu.
     }
 }
@@ -1776,59 +1830,6 @@ void MainWindow::slot_apply_false_colors_settings_changes(Dictionary values)
     apply_false_colors_settings();
 }
 
-void MainWindow::apply_false_colors_settings()
-{
-    Project* project = m_project_manager.get_project();
-    assert(project != nullptr);
-
-    Frame* frame = project->get_frame();
-    assert(frame != nullptr);
-
-    Dictionary params = m_settings.child("false_colors");
-
-    if (params.strings().exist("enabled") &&
-        params.strings().get<bool>("enabled"))
-    {
-        // Make a temporary copy of the frame.
-        auto_release_ptr<Frame> frame_copy(
-            FrameFactory::create("frame_copy", frame->get_parameters()));
-        frame_copy->image().copy_from(frame->image());
-
-        // Add required params.
-        params.insert("order", 0);
-
-        // Create a color map post-processing stage.
-        auto_release_ptr<PostProcessingStage> stage(
-            ColorMapPostProcessingStageFactory().create(
-                "__false_colors_post_processing_stage",
-                params));
-
-        // Prepare the post-processing stage.
-        OnFrameBeginRecorder recorder;
-        if (stage->on_frame_begin(*project, nullptr, recorder, nullptr))
-        {
-            // Execute the post-processing stage on the frame copy.
-            stage->execute(frame_copy.ref());
-
-            // Blit the frame copy into the render widget.
-            for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
-            {
-                i->second->get_render_widget()->blit_frame(frame_copy.ref());
-                i->second->get_render_widget()->update();
-            }
-        }
-    }
-    else
-    {
-        // Blit the regular frame into the render widget.
-        for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
-        {
-            i->second->get_render_widget()->blit_frame(*frame);
-            i->second->get_render_widget()->update();
-        }
-    }
-}
-
 namespace
 {
     class ClearRenderRegionAction
@@ -1933,8 +1934,9 @@ void MainWindow::slot_render_widget_context_menu(const QPoint& point)
         return;
 
     QMenu* menu = new QMenu(this);
-    menu->addAction("Save Frame...", this, SLOT(slot_save_frame()));
-    menu->addAction("Save All AOVs...", this, SLOT(slot_save_all_aovs()));
+    menu->addAction("Save Post-Processed Frame...", this, SLOT(slot_save_post_processed_frame()));
+    menu->addAction("Save Raw Frame...", this, SLOT(slot_save_raw_frame()));
+    menu->addAction("Save Raw Frame and AOVs...", this, SLOT(slot_save_raw_frame_and_aovs()));
     menu->addSeparator();
     menu->addAction("Clear All", this, SLOT(slot_clear_frame()));
     menu->exec(point);
@@ -1945,20 +1947,22 @@ namespace
     QString ask_frame_save_file_path(
         QWidget*        parent,
         const QString&  caption,
+        const QString&  filter,
+        const QString&  default_ext,
         ParamArray&     settings)
     {
         QString filepath =
             get_save_filename(
                 parent,
                 caption,
-                g_appleseed_image_files_filter,
+                filter,
                 settings,
                 SETTINGS_FILE_DIALOG_FRAMES);
 
         if (!filepath.isEmpty())
         {
             if (QFileInfo(filepath).suffix().isEmpty())
-                filepath += ".exr";
+                filepath += default_ext;
 
             filepath = QDir::toNativeSeparators(filepath);
         }
@@ -1967,13 +1971,13 @@ namespace
     }
 }
 
-void MainWindow::slot_save_frame()
+void MainWindow::slot_save_raw_frame()
 {
     assert(m_project_manager.is_project_open());
     assert(!m_rendering_manager.is_rendering());
 
     const QString filepath =
-        ask_frame_save_file_path(this, "Save Frame As...", m_settings);
+        ask_frame_save_file_path(this, "Save Raw Frame As...", g_appleseed_image_files_filter, ".exr", m_settings);
 
     if (filepath.isEmpty())
         return;
@@ -1982,13 +1986,13 @@ void MainWindow::slot_save_frame()
     frame->write_main_image(filepath.toAscii().constData());
 }
 
-void MainWindow::slot_save_all_aovs()
+void MainWindow::slot_save_raw_frame_and_aovs()
 {
     assert(m_project_manager.is_project_open());
     assert(!m_rendering_manager.is_rendering());
 
     const QString filepath =
-        ask_frame_save_file_path(this, "Save All AOVs As...", m_settings);
+        ask_frame_save_file_path(this, "Save Raw Frame and AOVs As...", g_appleseed_image_files_filter, ".exr", m_settings);
 
     if (filepath.isEmpty())
         return;
@@ -2012,7 +2016,7 @@ namespace
     }
 }
 
-void MainWindow::slot_quicksave_all_aovs()
+void MainWindow::slot_quicksave_raw_frame_and_aovs()
 {
     assert(m_project_manager.is_project_open());
     assert(!m_rendering_manager.is_rendering());
@@ -2031,6 +2035,21 @@ void MainWindow::slot_quicksave_all_aovs()
         project,
         bf::absolute(
             find_next_available_path(quicksave_dir / "quicksave####.exr")));
+}
+
+void MainWindow::slot_save_post_processed_frame()
+{
+    assert(m_project_manager.is_project_open());
+    assert(!m_rendering_manager.is_rendering());
+
+    const QString filepath =
+        ask_frame_save_file_path(this, "Save Post-Processed Frame As...", g_qt_image_files_filter, ".png", m_settings);
+
+    if (filepath.isEmpty())
+        return;
+
+    // todo: this is sketchy. The render tab should be retrieved from the signal.
+    m_render_tabs["RGB"]->get_render_widget()->capture().save(filepath);
 }
 
 void MainWindow::slot_clear_frame()

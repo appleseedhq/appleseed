@@ -226,6 +226,9 @@ class MainWindow
     // Rendering.
     void start_rendering(const RenderingMode rendering_mode);
 
+    // Diagnostics.
+    void apply_false_colors_settings();
+
     // Miscellaneous.
     void print_startup_information();
     void initialize_ocio();
@@ -272,7 +275,6 @@ class MainWindow
     void slot_show_false_colors_window();
     void slot_set_false_colors_enabled(const bool enabled);
     void slot_apply_false_colors_settings_changes(foundation::Dictionary values);
-    void apply_false_colors_settings();
 
     // Render region.
     void slot_clear_render_region();
@@ -280,9 +282,10 @@ class MainWindow
 
     // Render widget actions.
     void slot_render_widget_context_menu(const QPoint& point);
-    void slot_save_frame();
-    void slot_save_all_aovs();
-    void slot_quicksave_all_aovs();
+    void slot_save_raw_frame();
+    void slot_save_raw_frame_and_aovs();
+    void slot_quicksave_raw_frame_and_aovs();
+    void slot_save_post_processed_frame();
     void slot_clear_frame();
     void slot_reset_zoom();
 
