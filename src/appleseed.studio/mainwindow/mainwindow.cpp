@@ -1727,9 +1727,6 @@ void MainWindow::slot_start_rendering_once(const QString& filepath, const QStrin
 
 void MainWindow::slot_pause_or_resume_rendering(const bool checked)
 {
-    // Ignore updates when not rendering.
-    assert(!m_rendering_manager.is_rendering());
-
     if (checked)
     {
         assert(!m_rendering_manager.is_rendering_paused());
