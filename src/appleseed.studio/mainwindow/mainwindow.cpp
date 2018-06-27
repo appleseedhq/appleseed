@@ -270,6 +270,9 @@ void MainWindow::open_and_render_project(const QString& filepath, const QString&
 
 void MainWindow::open_resumable_render(const QString& filepath)
 {
+    if (!m_project_manager.is_project_open())
+        return false;
+
     start_rendering(FinalRendering);
 }
 
@@ -375,6 +378,8 @@ void MainWindow::build_menus()
 
     connect(m_ui->action_file_open_builtin_project_cornellbox, SIGNAL(triggered()), SLOT(slot_open_cornellbox_builtin_project()));
     connect(m_ui->action_file_reload_project, SIGNAL(triggered()), SLOT(slot_reload_project()));
+
+    connect(m_ui->action_file_open_resumable_render, SIGNAL(triggered()), SLOT(slot_open_resumable_render()));
 
     connect(m_ui->action_file_monitor_project, SIGNAL(toggled(bool)), SLOT(slot_toggle_project_file_monitoring(const bool)));
 
@@ -607,7 +612,7 @@ void MainWindow::build_toolbar()
     connect(m_action_open_project, SIGNAL(triggered()), SLOT(slot_open_project()));
     m_ui->main_toolbar->addAction(m_action_open_project);
 
-    m_action_open_resumable_render = new QAction(load_icons("project_open"), combine_name_and_shortcut("Open Temporary Render...", m_ui->action_file_open_temporary_render->shortcut()), this);
+    m_action_open_resumable_render = new QAction(load_icons("project_open"), combine_name_and_shortcut("Open Resumable Render...", m_ui->action_file_open_resumable_render->shortcut()), this);
     connect(m_action_open_resumable_render, SIGNAL(triggered()), SLOT(slot_open_resumable_render()));
     m_ui->main_toolbar->addAction(m_action_open_resumable_render);
 
@@ -1413,7 +1418,7 @@ void MainWindow::slot_open_project()
         get_open_filename(
             this,
             "Open...",
-            get_project_files_filter(),
+            get_resumable_render_files_filter(),
             m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 

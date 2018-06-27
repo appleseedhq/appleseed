@@ -71,6 +71,9 @@ enum ProjectFilesFilter
 // `filters` is a combination of ProjectFilesFilter values.
 QString get_project_files_filter(const int filters = ProjectFilesFilterDefault);
 
+// Return a file dialog filter string for appleseed resumable renders.
+QString get_resumable_render_files_filter();
+
 // Combine two filesystem paths and convert the result to native separators.
 QString combine_paths(const QString& lhs, const QString& rhs);
 

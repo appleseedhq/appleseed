@@ -170,6 +170,17 @@ QString get_project_files_filter(const int filters)
     return filter_list.join(";;");
 }
 
+QString get_resumable_render_files_filter()
+{
+    QStringList filter_list;
+
+    filter_list << "EXR Files (*.exr)";
+
+    filter_list << "All Files (*.*)";
+
+    return filter_list.join(";;");
+}
+
 QString combine_paths(const QString& lhs, const QString& rhs)
 {
     QString result(lhs);

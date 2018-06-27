@@ -68,7 +68,7 @@
     </widget>
     <addaction name="action_file_new_project"/>
     <addaction name="action_file_open_project"/>
-    <addaction name="action_file_open_temporary_render"/>
+    <addaction name="action_file_open_resumable_render"/>
     <addaction name="menu_open_recent"/>
     <addaction name="menu_file_open_builtin_project"/>
     <addaction name="action_file_reload_project"/>
@@ -305,9 +305,9 @@
     <string>&amp;Open Project...</string>
    </property>
   </action>
-  <action name="action_file_open_temporary_render">
+  <action name="action_file_open_resumable_render">
    <property name="text">
-    <string>&amp;Open Temporary Render...</string>
+    <string>Open Res&amp;umable Render...</string>
    </property>
   </action>
   <action name="action_file_open_builtin_project_cornellbox">
