@@ -271,7 +271,7 @@ void MainWindow::open_and_render_project(const QString& filepath, const QString&
 void MainWindow::open_resumable_render(const QString& filepath)
 {
     if (!m_project_manager.is_project_open())
-        return false;
+        return;
 
     start_rendering(FinalRendering);
 }
