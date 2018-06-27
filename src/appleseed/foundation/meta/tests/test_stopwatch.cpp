@@ -28,6 +28,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/timers.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/test.h"
 
@@ -35,66 +36,65 @@ using namespace foundation;
 
 TEST_SUITE(Foundation_Utility_Stopwatch)
 {
-    class TestingHandTimer
+    struct FakeTimer
     {
-        public:
-            int time = 0;
+        uint64 m_time = 0;
 
-            int frequency() const { return 1; }
-            int read() const { return time; }
-            int read_start() const { return read(); }
-            int read_end() const { return read(); }
+        uint64 frequency() const { return 1; }
+        uint64 read() const { return m_time; }
+        uint64 read_start() const { return read(); }
+        uint64 read_end() const { return read(); }
     };
 
     TEST_CASE(TestUnstartedStopwatch)
     {
-        Stopwatch<TestingHandTimer> watch(0);
+        Stopwatch<FakeTimer> watch(0);
 
         EXPECT_EQ(watch.get_ticks(), 0);
     }
 
     TEST_CASE(TestMeasureStopwatch)
     {
-        Stopwatch<TestingHandTimer> watch(0);
-        TestingHandTimer& timer = watch.get_timer();
+        Stopwatch<FakeTimer> watch(0);
+        FakeTimer& timer = watch.get_timer();
 
         watch.start();
         EXPECT_EQ(watch.get_ticks(), 0);
 
-        timer.time += 500;
+        timer.m_time += 500;
         EXPECT_EQ(watch.get_ticks(), 0);
 
         watch.measure();
         EXPECT_EQ(watch.get_ticks(), 500);
 
-        timer.time += 100;
+        timer.m_time += 100;
         watch.measure();
         EXPECT_EQ(watch.get_ticks(), 600);
 
-        timer.time += 50;
+        timer.m_time += 50;
         watch.measure();
         EXPECT_EQ(watch.get_ticks(), 650);
     }
 
     TEST_CASE(TestMeasureRestartedStopwatch)
     {
-        Stopwatch<TestingHandTimer> watch(0);
-        TestingHandTimer& timer = watch.get_timer();
+        Stopwatch<FakeTimer> watch(0);
+        FakeTimer& timer = watch.get_timer();
 
         watch.start();
-        timer.time += 400;
+        timer.m_time += 400;
         watch.measure();
         EXPECT_EQ(watch.get_ticks(), 400);
 
         watch.start();
-        timer.time += 600;
+        timer.m_time += 600;
         EXPECT_EQ(watch.get_ticks(), 0);
 
         watch.measure();
         EXPECT_EQ(watch.get_ticks(), 600);
-        EXPECT_EQ(timer.time, 1000);
+        EXPECT_EQ(timer.m_time, 1000);
 
-        timer.time += 600;
+        timer.m_time += 600;
         watch.measure();
         EXPECT_EQ(watch.get_ticks(), 1200);
 
@@ -102,18 +102,18 @@ TEST_SUITE(Foundation_Utility_Stopwatch)
         watch.measure();
         EXPECT_EQ(watch.get_ticks(), 0);
 
-        timer.time += 100;
+        timer.m_time += 100;
         watch.measure();
         EXPECT_EQ(watch.get_ticks(), 100);
     }
 
     TEST_CASE(TestMeasureClearedStopwatch)
     {
-        Stopwatch<TestingHandTimer> watch(0);
-        TestingHandTimer& timer = watch.get_timer();
+        Stopwatch<FakeTimer> watch(0);
+        FakeTimer& timer = watch.get_timer();
 
         watch.start();
-        timer.time += 400;
+        timer.m_time += 400;
         watch.measure();
         EXPECT_EQ(watch.get_ticks(), 400);
 
@@ -123,18 +123,18 @@ TEST_SUITE(Foundation_Utility_Stopwatch)
         watch.measure();
         EXPECT_EQ(watch.get_ticks(), 400);
 
-        timer.time += 10;
+        timer.m_time += 10;
         watch.measure();
         EXPECT_EQ(watch.get_ticks(), 410);
     }
 
     TEST_CASE(TestMeasureClearedPausedStopwatch)
     {
-        Stopwatch<TestingHandTimer> watch(0);
-        TestingHandTimer& timer = watch.get_timer();
+        Stopwatch<FakeTimer> watch(0);
+        FakeTimer& timer = watch.get_timer();
 
         watch.start();
-        timer.time += 400;
+        timer.m_time += 400;
         watch.measure();
         EXPECT_EQ(watch.get_ticks(), 400);
 
@@ -158,31 +158,31 @@ TEST_SUITE(Foundation_Utility_Stopwatch)
 
     TEST_CASE(TestMeasurePausedStopwatch)
     {
-        Stopwatch<TestingHandTimer> watch(0);
-        TestingHandTimer& timer = watch.get_timer();
+        Stopwatch<FakeTimer> watch(0);
+        FakeTimer& timer = watch.get_timer();
 
         watch.start();
-        timer.time += 500;
+        timer.m_time += 500;
 
         watch.measure();
         EXPECT_EQ(watch.get_ticks(), 500);
 
-        timer.time += 100;
+        timer.m_time += 100;
 
         watch.pause();
-        timer.time += 400;
+        timer.m_time += 400;
         EXPECT_EQ(watch.get_ticks(), 500);
 
         watch.measure();
         EXPECT_EQ(watch.get_ticks(), 600);
 
         watch.resume();
-        timer.time += 150;
+        timer.m_time += 150;
         watch.measure();
         EXPECT_EQ(watch.get_ticks(), 750);
 
         watch.pause();
-        timer.time += 4000;
+        timer.m_time += 4000;
 
         watch.measure();
         EXPECT_EQ(watch.get_ticks(), 750);
@@ -190,11 +190,11 @@ TEST_SUITE(Foundation_Utility_Stopwatch)
 
     TEST_CASE(TestMultipleMeasureOnRunningStopwatch)
     {
-        Stopwatch<TestingHandTimer> watch(0);
-        TestingHandTimer& timer = watch.get_timer();
+        Stopwatch<FakeTimer> watch(0);
+        FakeTimer& timer = watch.get_timer();
 
         watch.start();
-        timer.time += 400;
+        timer.m_time += 400;
         watch.measure();
         watch.measure();
         watch.measure();
@@ -204,11 +204,11 @@ TEST_SUITE(Foundation_Utility_Stopwatch)
 
     TEST_CASE(TestMultipleMeasureOnPausedStopwatch)
     {
-        Stopwatch<TestingHandTimer> watch(0);
-        TestingHandTimer& timer = watch.get_timer();
+        Stopwatch<FakeTimer> watch(0);
+        FakeTimer& timer = watch.get_timer();
 
         watch.start();
-        timer.time += 5;
+        timer.m_time += 5;
 
         watch.measure();
         watch.measure();
@@ -216,10 +216,10 @@ TEST_SUITE(Foundation_Utility_Stopwatch)
         watch.measure();
         EXPECT_EQ(watch.get_ticks(), 5);
 
-        timer.time += 1;
+        timer.m_time += 1;
 
         watch.pause();
-        timer.time += 4;
+        timer.m_time += 4;
         EXPECT_EQ(watch.get_ticks(), 5);
 
         watch.measure();
@@ -229,7 +229,7 @@ TEST_SUITE(Foundation_Utility_Stopwatch)
         EXPECT_EQ(watch.get_ticks(), 6);
 
         watch.resume();
-        timer.time += 15;
+        timer.m_time += 15;
         watch.measure();
         watch.measure();
         watch.measure();
@@ -238,7 +238,7 @@ TEST_SUITE(Foundation_Utility_Stopwatch)
         EXPECT_EQ(watch.get_ticks(), 21);
 
         watch.pause();
-        timer.time += 4;
+        timer.m_time += 4;
 
         watch.measure();
         watch.measure();

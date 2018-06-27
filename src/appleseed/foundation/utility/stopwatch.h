@@ -77,7 +77,7 @@ class Stopwatch
 
     // Read the number of timer ticks elapsed since the last call to start().
     // measure() must have been called prior to calling this method.
-    // Ticks are adjsuted for overhead.
+    // Ticks are adjusted for overhead.
     uint64 get_ticks() const;
 
     // Read the number of seconds elapsed since the last call to start().
@@ -195,10 +195,7 @@ template <typename Timer>
 inline uint64 Stopwatch<Timer>::get_ticks() const
 {
     // Subtract known overhead from elapsed time.
-    if (m_elapsed >= m_overhead)
-        return m_elapsed - m_overhead;
-    else
-        return 0;
+    return m_elapsed >= m_overhead ? m_elapsed - m_overhead : 0;
 }
 
 template <typename Timer>
