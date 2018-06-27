@@ -59,6 +59,12 @@ class APPLESEED_DLLSYMBOL IRendererController
     // This method is called after rendering was aborted.
     virtual void on_rendering_abort() = 0;
 
+    // This method is called after rendering was paused.
+    virtual void on_rendering_pause() = 0;
+
+    // This method is called after rendering was resumed.
+    virtual void on_rendering_resume() = 0;
+
     // This method is called before rendering a single frame.
     virtual void on_frame_begin() = 0;
 

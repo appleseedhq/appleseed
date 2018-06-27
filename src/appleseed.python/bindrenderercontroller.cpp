@@ -97,6 +97,38 @@ namespace
             }
         }
 
+        void on_rendering_pause() override
+        {
+            // Lock Python's global interpreter lock (GIL),
+            // it was released in MasterRenderer.render.
+            ScopedGILLock lock;
+
+            try
+            {
+                get_override("on_rendering_pause")();
+            }
+            catch (bpy::error_already_set)
+            {
+                PyErr_Print();
+            }
+        }
+
+        void on_rendering_resume() override
+        {
+            // Lock Python's global interpreter lock (GIL),
+            // it was released in MasterRenderer.render.
+            ScopedGILLock lock;
+
+            try
+            {
+                get_override("on_rendering_resume")();
+            }
+            catch (bpy::error_already_set)
+            {
+                PyErr_Print();
+            }
+        }
+
         void on_frame_begin() override
         {
             // Lock Python's global interpreter lock (GIL),

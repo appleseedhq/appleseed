@@ -407,6 +407,7 @@ void MainWindow::build_menus()
 
     connect(m_ui->action_rendering_start_interactive_rendering, SIGNAL(triggered()), SLOT(slot_start_interactive_rendering()));
     connect(m_ui->action_rendering_start_final_rendering, SIGNAL(triggered()), SLOT(slot_start_final_rendering()));
+    connect(m_ui->action_rendering_pause_resume_rendering, SIGNAL(toggled(bool)), SLOT(slot_pause_or_resume_rendering(const bool)));
     connect(m_ui->action_rendering_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
     connect(m_ui->action_rendering_rendering_settings, SIGNAL(triggered()), SLOT(slot_show_rendering_settings_window()));
 
@@ -576,6 +577,17 @@ void MainWindow::update_recent_files_menu(const QStringList& files)
         m_recently_opened[i]->setVisible(false);
 }
 
+void MainWindow::update_pause_resume_checkbox(const bool checked)
+{
+    bool old_state = m_action_pause_resume_rendering->blockSignals(true);
+    m_action_pause_resume_rendering->setChecked(checked);
+    m_action_pause_resume_rendering->blockSignals(old_state);
+
+    old_state = m_ui->action_rendering_pause_resume_rendering->blockSignals(true);
+    m_ui->action_rendering_pause_resume_rendering->setChecked(checked);
+    m_ui->action_rendering_pause_resume_rendering->blockSignals(old_state);
+}
+
 void MainWindow::build_toolbar()
 {
     //
@@ -616,6 +628,11 @@ void MainWindow::build_toolbar()
     m_action_start_final_rendering = new QAction(load_icons("rendering_start_final"), combine_name_and_shortcut("Start Final Rendering", m_ui->action_rendering_start_final_rendering->shortcut()), this);
     connect(m_action_start_final_rendering, SIGNAL(triggered()), SLOT(slot_start_final_rendering()));
     m_ui->main_toolbar->addAction(m_action_start_final_rendering);
+
+    m_action_pause_resume_rendering = new QAction(load_icons("rendering_pause_resume"), combine_name_and_shortcut("Pause/Resume Rendering", m_ui->action_rendering_pause_resume_rendering->shortcut()), this);
+    m_action_pause_resume_rendering->setCheckable(true);
+    connect(m_action_pause_resume_rendering, SIGNAL(toggled(bool)), SLOT(slot_pause_or_resume_rendering(const bool)));
+    m_ui->main_toolbar->addAction(m_action_pause_resume_rendering);
 
     m_action_stop_rendering = new QAction(load_icons("rendering_stop"), combine_name_and_shortcut("Stop Rendering", m_ui->action_rendering_stop_rendering->shortcut()), this);
     connect(m_action_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
@@ -714,6 +731,7 @@ void MainWindow::update_workspace()
     set_project_explorer_enabled(true);
     set_rendering_widgets_enabled(true, NotRendering);
     set_diagnostics_widgets_enabled(true, NotRendering);
+    update_pause_resume_checkbox(false);
     m_ui->attribute_editor_scrollarea_contents->setEnabled(true);
 
     // Add/remove light paths tab.
@@ -848,6 +866,10 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const Rend
     // Rendering -> Start Final Rendering.
     m_ui->action_rendering_start_final_rendering->setEnabled(allow_start);
     m_action_start_final_rendering->setEnabled(allow_start);
+
+    // Rendering -> Pause/Resume Rendering.
+    m_ui->action_rendering_pause_resume_rendering->setEnabled(allow_stop);
+    m_action_pause_resume_rendering->setEnabled(allow_stop);
 
     // Rendering -> Stop Rendering.
     m_ui->action_rendering_stop_rendering->setEnabled(allow_stop);
@@ -1701,6 +1723,24 @@ void MainWindow::slot_start_rendering_once(const QString& filepath, const QStrin
             start_rendering(InteractiveRendering);
         else start_rendering(FinalRendering);
     }
+}
+
+void MainWindow::slot_pause_or_resume_rendering(const bool checked)
+{
+    // Ignore updates when not rendering.
+    assert(!m_rendering_manager.is_rendering());
+
+    if (checked)
+    {
+        assert(!m_rendering_manager.is_rendering_paused());
+        m_rendering_manager.pause_rendering();
+    }
+    else
+    {
+        m_rendering_manager.resume_rendering();
+    }
+
+    update_pause_resume_checkbox(checked);
 }
 
 void MainWindow::slot_rendering_end()

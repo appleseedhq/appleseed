@@ -94,6 +94,9 @@ class RenderingManager
     // Return true if currently rendering, false otherwise.
     bool is_rendering() const;
 
+    // Return true if current rendering state is paused, false otherwise.
+    bool is_rendering_paused() const;
+
     // Wait until rendering has ended.
     void wait_until_rendering_end();
 
@@ -189,6 +192,8 @@ class RenderingManager
 
   private slots:
     void slot_rendering_begin();
+    void slot_rendering_pause();
+    void slot_rendering_resume();
     void slot_rendering_end();
     void slot_rendering_failed();
     void slot_frame_begin();

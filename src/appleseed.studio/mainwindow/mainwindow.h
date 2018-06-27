@@ -134,6 +134,7 @@ class MainWindow
 
     QAction*                                    m_action_start_interactive_rendering;
     QAction*                                    m_action_start_final_rendering;
+    QAction*                                    m_action_pause_resume_rendering;
     QAction*                                    m_action_stop_rendering;
     QAction*                                    m_action_rendering_settings;
 
@@ -182,6 +183,7 @@ class MainWindow
     void build_recent_files_menu();
     void update_recent_files_menu(const QString& filepath);
     void update_recent_files_menu(const QStringList& files);
+    void update_pause_resume_checkbox(const bool checked);
 
     // Other UI elements.
     void build_toolbar();
@@ -266,6 +268,8 @@ class MainWindow
         const QString&  filepath,
         const QString&  configuration,
         const bool      successful);
+    void slot_pause_or_resume_rendering(
+        const bool      checked);
     void slot_rendering_end();
     void slot_camera_changed();
 

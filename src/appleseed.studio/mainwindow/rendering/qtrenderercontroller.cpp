@@ -61,6 +61,16 @@ void QtRendererController::on_rendering_abort()
     emit signal_rendering_abort();
 }
 
+void QtRendererController::on_rendering_pause()
+{
+    emit signal_rendering_pause();
+}
+
+void QtRendererController::on_rendering_resume()
+{
+    emit signal_rendering_resume();
+}
+
 void QtRendererController::on_frame_begin()
 {
     const Status status = get_status();

@@ -538,6 +538,7 @@ struct MasterRenderer::Impl
                 if (is_paused)
                 {
                     frame_renderer.resume_rendering();
+                    m_renderer_controller->on_rendering_resume();
                     is_paused = false;
                 }
                 break;
@@ -546,6 +547,7 @@ struct MasterRenderer::Impl
                 if (!is_paused)
                 {
                     frame_renderer.pause_rendering();
+                    m_renderer_controller->on_rendering_pause();
                     is_paused = true;
                 }
                 break;

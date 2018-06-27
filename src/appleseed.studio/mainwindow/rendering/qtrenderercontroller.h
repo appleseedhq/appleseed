@@ -62,6 +62,12 @@ class QtRendererController
     // This method is called after rendering was aborted.
     void on_rendering_abort() override;
 
+    // This method is called after rendering was paused.
+    void on_rendering_pause() override;
+
+    // This method is called after rendering was resumed.
+    void on_rendering_resume() override;
+
     // This method is called before rendering a single frame.
     void on_frame_begin() override;
 
@@ -78,6 +84,8 @@ class QtRendererController
     void signal_rendering_begin();
     void signal_rendering_success();
     void signal_rendering_abort();
+    void signal_rendering_pause();
+    void signal_rendering_resume();
     void signal_frame_begin();
     void signal_frame_end();
 

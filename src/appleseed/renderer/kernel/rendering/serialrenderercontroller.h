@@ -66,6 +66,8 @@ class SerialRendererController
     void on_rendering_begin() override;
     void on_rendering_success() override;
     void on_rendering_abort() override;
+    void on_rendering_pause() override;
+    void on_rendering_resume() override;
     void on_frame_begin() override;
     void on_frame_end() override;
     void on_progress() override;

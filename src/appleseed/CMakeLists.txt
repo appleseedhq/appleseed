@@ -470,6 +470,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_spline.cpp
     foundation/meta/tests/test_statistics.cpp
     foundation/meta/tests/test_stlallocatortestbed.cpp
+    foundation/meta/tests/test_stopwatch.cpp
     foundation/meta/tests/test_string.cpp
     foundation/meta/tests/test_test.cpp
     foundation/meta/tests/test_thread.cpp
