@@ -1240,7 +1240,7 @@ namespace
             catch (const Exception&)
             {
                 RENDERER_LOG_ERROR(
-                    "while updating gaussianbssrdf \"%s\", failed to convert v parameter.",
+                    "while updating gaussian bssrdf \"%s\": failed to convert v parameter.",
                     bssrdf.get_name());
             }
         }

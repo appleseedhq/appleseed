@@ -212,7 +212,7 @@ void Frame::print_settings()
 
     RENDERER_LOG_INFO(
         "frame \"%s\" settings:\n"
-        "  camera                        %s\n"
+        "  camera                        \"%s\"\n"
         "  resolution                    %s x %s\n"
         "  tile size                     %s x %s\n"
         "  filter                        %s\n"
