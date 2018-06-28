@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2018 Srinath Ravichandran, The appleseedhq Organization
+// Copyright (c) 2018 Girish Ramesh, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,39 +26,36 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
-#define APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
-
-// appleseed.renderer headers.
-#include "renderer/modeling/object/curveobject.h"
+#ifndef APPLESEED_FOUNDATION_CURVE_ICURVEFILEREADER_H
+#define APPLESEED_FOUNDATION_CURVE_ICURVEFILEREADER_H
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/core/concepts/noncopyable.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation    { class SearchPaths; }
-namespace renderer      { class ParamArray; }
+namespace foundation    { class ICurveBuilder; }
 
-namespace renderer
+namespace foundation
 {
 
 //
-// Curve object reader.
+// Curve file reader interface.
 //
 
-class APPLESEED_DLLSYMBOL CurveObjectReader
+class APPLESEED_DLLSYMBOL ICurveFileReader
+  : public NonCopyable
 {
   public:
-    // Read a curve object from disk. The filepath is defined in params.
-    static foundation::auto_release_ptr<CurveObject> read(
-        const foundation::SearchPaths&  search_paths,
-        const char*                     name,
-        const ParamArray&               params);
+    // Destructor.
+    virtual ~ICurveFileReader() {}
+
+    // Read a curve file.
+    virtual void read(ICurveBuilder& builder) = 0;
 };
 
-}       // namespace renderer
+}       // namespace foundation
 
-#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
+#endif  // !APPLESEED_FOUNDATION_CURVE_ICURVEFILEREADER_H

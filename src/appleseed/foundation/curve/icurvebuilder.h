@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2018 Srinath Ravichandran, The appleseedhq Organization
+// Copyright (c) 2018 Girish Ramesh, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,39 +26,59 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
-#define APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
-
-// appleseed.renderer headers.
-#include "renderer/modeling/object/curveobject.h"
+#ifndef APPLESEED_FOUNDATION_CURVE_ICURVEBUILDER_H
+#define APPLESEED_FOUNDATION_CURVE_ICURVEBUILDER_H
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/image/color.h"
+#include "foundation/math/vector.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Forward declarations.
-namespace foundation    { class SearchPaths; }
-namespace renderer      { class ParamArray; }
+// Standard headers.
+#include <cstddef>
 
-namespace renderer
+namespace foundation
 {
 
 //
-// Curve object reader.
+// Curve builder interface.
 //
 
-class APPLESEED_DLLSYMBOL CurveObjectReader
+class APPLESEED_DLLSYMBOL ICurveBuilder
+  : public NonCopyable
 {
   public:
-    // Read a curve object from disk. The filepath is defined in params.
-    static foundation::auto_release_ptr<CurveObject> read(
-        const foundation::SearchPaths&  search_paths,
-        const char*                     name,
-        const ParamArray&               params);
+    // Destructor.
+    virtual ~ICurveBuilder() {}
+
+    // Begin the definition of a curve object.
+    virtual void begin_curve_object(unsigned char basis, uint32 count = 0) = 0;
+
+    // Begin the definition of a curve.
+    virtual void begin_curve() = 0;
+
+    // Append a vertex to the curve.
+    virtual void push_vertex(const Vector3f& v) = 0;
+
+    // Append a width to the vertex of a curve.
+    virtual void push_vertex_width(const float w) = 0;
+
+    // Append a color value to the vertex of a curve.
+    virtual void push_vertex_color(const Color3f& c) = 0;
+
+    // Append an opacity value to the vertex of a curve.
+    virtual void push_vertex_opacity(const float o) = 0;
+
+    // End the definition of a curve.
+    virtual void end_curve() = 0;
+
+    // End the definition of a curve object.
+    virtual void end_curve_object() = 0;
 };
 
-}       // namespace renderer
+}       // namespace foundation
 
-#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
+#endif  // !APPLESEED_FOUNDATION_CURVE_ICURVEBUILDER_H

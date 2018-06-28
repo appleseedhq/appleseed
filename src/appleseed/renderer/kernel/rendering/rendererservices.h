@@ -347,6 +347,7 @@ class RendererServices
     DECLARE_USER_DATA_GETTER(bn);
     DECLARE_USER_DATA_GETTER(dndu);
     DECLARE_USER_DATA_GETTER(dndv);
+    DECLARE_USER_DATA_GETTER(vertex_color);
 
     #undef DECLARE_USER_DATA_GETTER
 

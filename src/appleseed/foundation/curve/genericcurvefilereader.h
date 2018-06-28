@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2018 Srinath Ravichandran, The appleseedhq Organization
+// Copyright (c) 2018 Girish Ramesh, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,39 +26,43 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
-#define APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
-
-// appleseed.renderer headers.
-#include "renderer/modeling/object/curveobject.h"
+#ifndef APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEREADER_H
+#define APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEREADER_H
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/curve/icurvefilereader.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation    { class SearchPaths; }
-namespace renderer      { class ParamArray; }
+namespace foundation    { class ICurveBuilder; }
 
-namespace renderer
+namespace foundation
 {
 
 //
-// Curve object reader.
+// Read a curve file using the right reader based on the extension of the curve file name.
 //
 
-class APPLESEED_DLLSYMBOL CurveObjectReader
+class APPLESEED_DLLSYMBOL GenericCurveFileReader
+  : public ICurveFileReader
 {
   public:
-    // Read a curve object from disk. The filepath is defined in params.
-    static foundation::auto_release_ptr<CurveObject> read(
-        const foundation::SearchPaths&  search_paths,
-        const char*                     name,
-        const ParamArray&               params);
+    // Constructor.
+    GenericCurveFileReader(const char* filename, const float radius, const size_t basis);
+
+    // Destructor.
+    ~GenericCurveFileReader() override;
+
+    // Read a curve object.
+    void read(ICurveBuilder& builder) override;
+
+  private:
+    struct Impl;
+    Impl* impl;
 };
 
-}       // namespace renderer
+}       // namespace foundation
 
-#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
+#endif  // !APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEREADER_H

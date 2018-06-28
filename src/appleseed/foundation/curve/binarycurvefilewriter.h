@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2018 Srinath Ravichandran, The appleseedhq Organization
+// Copyright (c) 2018 Girish Ramesh, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,39 +26,54 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
-#define APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
-
-// appleseed.renderer headers.
-#include "renderer/modeling/object/curveobject.h"
+#ifndef APPLESEED_FOUNDATION_CURVE_BINARYCURVEFILEWRITER_H
+#define APPLESEED_FOUNDATION_CURVE_BINARYCURVEFILEWRITER_H
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/curve/icurvefilewriter.h"
+#include "foundation/platform/types.h"
+#include "foundation/utility/bufferedfile.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+// Standard headers.
+#include <string>
 
 // Forward declarations.
-namespace foundation    { class SearchPaths; }
-namespace renderer      { class ParamArray; }
+namespace foundation    { class ICurveWalker; }
 
-namespace renderer
+namespace foundation
 {
 
 //
-// Curve object reader.
+// Writer for a simple binary curve file format.
 //
 
-class APPLESEED_DLLSYMBOL CurveObjectReader
+class BinaryCurveFileWriter
+  : public ICurveFileWriter
 {
   public:
-    // Read a curve object from disk. The filepath is defined in params.
-    static foundation::auto_release_ptr<CurveObject> read(
-        const foundation::SearchPaths&  search_paths,
-        const char*                     name,
-        const ParamArray&               params);
+    // Constructor.
+    explicit BinaryCurveFileWriter(const std::string& filename);
+
+    // Write a curve object.
+    void write(const ICurveWalker& walker) override;
+
+  private:
+    const std::string           m_filename;
+    BufferedFile                m_file;
+    LZ4CompressedWriterAdapter  m_writer;
+
+    void write_signature();
+    void write_version();
+
+    void write_curves(const ICurveWalker& walker);
+    void write_curve_count(const ICurveWalker& walker);
+    void write_basis(const ICurveWalker& walker);
+    void write_curve(
+        const ICurveWalker &walker,
+        const uint32 curve_id,
+        uint32 &vertex_count);
 };
 
-}       // namespace renderer
+}       // namespace foundation
 
-#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
+#endif  // !APPLESEED_FOUNDATION_CURVE_BINARYCURVEFILEWRITER_H

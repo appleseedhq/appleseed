@@ -37,6 +37,8 @@
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
+#include "foundation/curve/genericcurvefilewriter.h"
+#include "foundation/curve/icurvewalker.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
@@ -58,23 +60,175 @@ namespace renderer
 
 namespace
 {
-    template <typename CurveType>
-    void write_curve(ostream& output, CurveType& curve)
+    //
+    // Curve object walker.
+    //
+
+    class CurveObjectWalker
+      : public ICurveWalker
     {
-        const size_t control_point_count = curve.get_control_point_count();
-
-        output << control_point_count;
-
-        for (size_t p = 0; p < control_point_count; ++p)
+      public:
+        explicit CurveObjectWalker(const CurveObject& object)
+          : m_object(object),
+            m_curve_count(0),
+            m_total_vertex_count(0)
         {
-            const GVector3& point = curve.get_control_point(p);
-            const GScalar width = curve.get_width(p);
-
-            output << ' ' << point.x << ' ' << point.y << ' ' << point.z << ' ' << width;
+            create_parameters();
         }
 
-        output << endl;
-    }
+        size_t get_basis() const override
+        {
+            switch (m_object.get_basis())
+            {
+              case CurveBasis::Bezier:
+              case CurveBasis::Bspline:
+              case CurveBasis::Catmullrom:
+                return static_cast<unsigned char>(CurveBasis::Bezier);
+            }
+
+            return static_cast<unsigned char>(m_object.get_basis());
+        }
+
+        const char* get_basis_string()
+        {
+            switch (m_object.get_basis())
+            {
+              case CurveBasis::Linear:
+                return "linear";
+
+              default:
+                return "bezier";
+            }
+        }
+
+        size_t get_curve_count() const override
+        {
+            return m_curve_count;
+        }
+
+        size_t get_vertex_count(const size_t i) const override
+        {
+            return m_vertex_counts[i+1];
+        }
+
+        Vector3f get_vertex(const size_t i) const override
+        {
+            return m_vertices[i];
+        }
+
+        float get_vertex_width(const size_t i) const override
+        {
+            return m_widths[i];
+        }
+
+        float get_vertex_opacity(const size_t i) const override
+        {
+            return m_opacities[i];
+        }
+
+        Color3f get_vertex_color(const size_t i) const override
+        {
+            return m_colors[i];
+        }
+
+        size_t get_total_vertex_count() const
+        {
+            return m_total_vertex_count;
+        }
+
+      private:
+        const CurveObject&  m_object;
+
+        // Curve parameters for writing.
+        size_t              m_curve_count;
+        vector<size_t>      m_vertex_counts;
+        vector<GVector3>    m_vertices;
+        vector<GScalar>     m_widths;
+        vector<GScalar>     m_opacities;
+        vector<Color3f>     m_colors;
+
+        // Global stats.
+        size_t              m_total_vertex_count;
+
+        void create_curve1_parameters()
+        {
+            uint32 vertex_count = 0;
+
+            for (uint32 i = 0; i < m_object.get_curve1_count(); ++i)
+            {
+                if (m_vertices.empty() || !feq(m_vertices.back(), m_object.get_curve1(i).get_control_point(0)))
+                {
+                    m_vertices.push_back(m_object.get_curve1(i).get_control_point(0));
+                    m_widths.push_back(m_object.get_curve1(i).get_width(0));
+                    m_opacities.push_back(m_object.get_curve1(i).get_opacity(0));
+                    m_colors.push_back(m_object.get_curve1(i).get_color(0));
+
+                    m_vertex_counts.push_back(vertex_count);
+                    vertex_count = 1;
+                    m_curve_count++;
+                    m_total_vertex_count++;
+                }
+
+                m_vertices.push_back(m_object.get_curve1(i).get_control_point(1));
+                m_widths.push_back(m_object.get_curve1(i).get_width(1));
+                m_opacities.push_back(m_object.get_curve1(i).get_opacity(1));
+                m_colors.push_back(m_object.get_curve1(i).get_color(1));
+
+                vertex_count++;
+                m_total_vertex_count++;
+            }
+            m_vertex_counts.push_back(vertex_count);
+        }
+
+        void create_curve3_parameters()
+        {
+            uint32 vertex_count = 0;
+
+            for (uint32 i = 0; i < m_object.get_curve3_count(); ++i)
+            {
+                if (m_vertices.empty() || !feq(m_vertices.back(), m_object.get_curve3(i).get_control_point(0)))
+                {
+                    m_vertices.push_back(m_object.get_curve3(i).get_control_point(0));
+                    m_widths.push_back(m_object.get_curve3(i).get_width(0));
+                    m_opacities.push_back(m_object.get_curve3(i).get_opacity(0));
+                    m_colors.push_back(m_object.get_curve3(i).get_color(0));
+
+                    m_vertex_counts.push_back(vertex_count);
+                    vertex_count = 1;
+                    m_curve_count++;
+                    m_total_vertex_count++;
+                }
+
+                for (size_t k = 1; k < 4; ++k)
+                {
+                    m_vertices.push_back(m_object.get_curve3(i).get_control_point(k));
+                    m_widths.push_back(m_object.get_curve3(i).get_width(k));
+                    m_opacities.push_back(m_object.get_curve3(i).get_opacity(k));
+                    m_colors.push_back(m_object.get_curve3(i).get_color(k));
+
+                    vertex_count++;
+                    m_total_vertex_count++;
+                }
+            }
+            m_vertex_counts.push_back(vertex_count);
+        }
+
+        void create_parameters()
+        {
+            switch (m_object.get_basis())
+            {
+              case CurveBasis::Linear:
+                create_curve1_parameters();
+                break;
+
+              case CurveBasis::Bezier:
+              case CurveBasis::Bspline:
+              case CurveBasis::Catmullrom:
+                create_curve3_parameters();
+                break;
+            }
+        }
+    };
 }
 
 bool CurveObjectWriter::write(
@@ -86,40 +240,32 @@ bool CurveObjectWriter::write(
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
 
-    ofstream output;
-    output.open(filepath);
+    GenericCurveFileWriter writer(filepath);
+    CurveObjectWalker walker(object);
 
-    if (!output.is_open())
+    try
     {
-        RENDERER_LOG_ERROR("failed to create curve file %s.", filepath);
-        return false;
+        writer.write(walker);
     }
-
-    const size_t curve1_count = object.get_curve1_count();
-    const size_t curve3_count = object.get_curve3_count();
-
-    output << curve1_count << endl;
-    output << curve3_count << endl;
-
-    for (size_t i = 0; i < curve1_count; ++i)
-        write_curve(output, object.get_curve1(i));
-
-    for (size_t i = 0; i < curve3_count; ++i)
-        write_curve(output, object.get_curve3(i));
-
-    output.close();
-
-    if (output.bad())
+    catch (const ExceptionIOError&)
     {
         RENDERER_LOG_ERROR("failed to write curve file %s: i/o error.", filepath);
+        return false;
+    }
+    catch (const Exception& e)
+    {
+        RENDERER_LOG_ERROR("failed to write curve file %s: %s.", filepath, e.what());
         return false;
     }
 
     stopwatch.measure();
 
     RENDERER_LOG_INFO(
-        "wrote curve file %s in %s.",
-        filepath,
+        "wrote curve file %s (%s %s, %s %s, %s %s) in %s.", filepath,
+        pretty_int(walker.get_curve_count()).c_str(),"curves",
+        walker.get_basis_string(), "type",
+        pretty_int(walker.get_total_vertex_count()).c_str(),
+        walker.get_total_vertex_count() > 1 ? "vertices" : "vertex",
         pretty_time(stopwatch.get_seconds()).c_str());
 
     return true;

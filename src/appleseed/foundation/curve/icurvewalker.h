@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2018 Srinath Ravichandran, The appleseedhq Organization
+// Copyright (c) 2018 Girish Ramesh, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,39 +26,56 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
-#define APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
-
-// appleseed.renderer headers.
-#include "renderer/modeling/object/curveobject.h"
+#ifndef APPLESEED_FOUNDATION_CURVE_ICURVEWALKER_H
+#define APPLESEED_FOUNDATION_CURVE_ICURVEWALKER_H
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/vector.h"
+#include "foundation/image/color.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Forward declarations.
-namespace foundation    { class SearchPaths; }
-namespace renderer      { class ParamArray; }
+// Standard headers.
+#include <cstddef>
 
-namespace renderer
+namespace foundation
 {
 
 //
-// Curve object reader.
+// Curve walker interface.
 //
 
-class APPLESEED_DLLSYMBOL CurveObjectReader
+class APPLESEED_DLLSYMBOL ICurveWalker
+  : public NonCopyable
 {
   public:
-    // Read a curve object from disk. The filepath is defined in params.
-    static foundation::auto_release_ptr<CurveObject> read(
-        const foundation::SearchPaths&  search_paths,
-        const char*                     name,
-        const ParamArray&               params);
+    // Destructor.
+    virtual ~ICurveWalker() {}
+
+    // Return the basis of the curve.
+    virtual size_t get_basis() const = 0;
+
+    // Return the number of curves.
+    virtual size_t get_curve_count() const = 0;
+
+    // Return the number of vertices in curve.
+    virtual size_t get_vertex_count(const size_t i) const = 0;
+
+    // Return vertex location on curve.
+    virtual Vector3f get_vertex(const size_t i) const = 0;
+
+    // Return vertex width on curve.
+    virtual float get_vertex_width(const size_t i) const = 0;
+
+    // Return vertex opacity on curve.
+    virtual float get_vertex_opacity(const size_t i) const = 0;
+
+    // Return vertex color on curve.
+    virtual Color3f get_vertex_color(const size_t i) const = 0;
 };
 
-}       // namespace renderer
+}       // namespace foundation
 
-#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
+#endif  // !APPLESEED_FOUNDATION_CURVE_ICURVEWALKER_H

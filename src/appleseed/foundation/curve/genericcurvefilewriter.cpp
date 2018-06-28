@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2018 Srinath Ravichandran, The appleseedhq Organization
+// Copyright (c) 2018 Girish Ramesh, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,39 +26,44 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
-#define APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
-
-// appleseed.renderer headers.
-#include "renderer/modeling/object/curveobject.h"
+// Interface header.
+#include "genericcurvefilewriter.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
+#include "foundation/curve/binarycurvefilewriter.h"
+#include "foundation/utility/string.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+// Boost headers.
+#include "boost/filesystem/path.hpp"
 
-// Forward declarations.
-namespace foundation    { class SearchPaths; }
-namespace renderer      { class ParamArray; }
+// Standard headers.
+#include <string>
 
-namespace renderer
+using namespace std;
+namespace bf = boost::filesystem;
+
+namespace foundation
 {
 
-//
-// Curve object reader.
-//
-
-class APPLESEED_DLLSYMBOL CurveObjectReader
+GenericCurveFileWriter::GenericCurveFileWriter(const char* filename)
 {
-  public:
-    // Read a curve object from disk. The filepath is defined in params.
-    static foundation::auto_release_ptr<CurveObject> read(
-        const foundation::SearchPaths&  search_paths,
-        const char*                     name,
-        const ParamArray&               params);
-};
+    const bf::path filepath(filename);
+    const string extension = lower_case(filepath.extension().string());
 
-}       // namespace renderer
+    if (extension == ".binarycurve")
+        m_writer = new BinaryCurveFileWriter(filename);
+    else throw ExceptionUnsupportedFileFormat(filename);
+}
 
-#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
+GenericCurveFileWriter::~GenericCurveFileWriter()
+{
+    delete m_writer;
+}
+
+void GenericCurveFileWriter::write(const ICurveWalker& walker)
+{
+    m_writer->write(walker);
+}
+
+}   // namespace foundation

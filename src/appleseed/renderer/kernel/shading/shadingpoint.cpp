@@ -966,13 +966,59 @@ void ShadingPoint::compute_alpha() const
         break;
 
       case PrimitiveCurve1:
+        {
+            assert(is_curve_primitive());
+            const GScalar v = m_bary[1];
+            const CurveObject *curves = static_cast<const CurveObject *>(&get_object());
+            m_alpha *= Alpha(curves->get_curve1(m_primitive_index).evaluate_opacity(v));
+        }
+        break;
+
       case PrimitiveCurve3:
-        // todo: interpolate per vertex alpha for curves here.
+        {
+            assert(is_curve_primitive());
+            const GScalar v = m_bary[1];
+            const CurveObject *curves = static_cast<const CurveObject *>(&get_object());
+            m_alpha *= Alpha(curves->get_curve3(m_primitive_index).evaluate_opacity(v));
+        }
         break;
 
       assert_otherwise;
     }
 }
+
+void ShadingPoint::compute_per_vertex_color() const
+{
+    m_color = foundation::Color3f(1.0f);
+
+    switch (m_primitive_type)
+    {
+      case PrimitiveTriangle:
+      case PrimitiveProceduralSurface:
+        break;
+
+      case PrimitiveCurve1:
+        {
+            assert(is_curve_primitive());
+            const GScalar v = m_bary[1];
+            const CurveObject *curves = static_cast<const CurveObject *>(&get_object());
+            m_color = foundation::Color3f(curves->get_curve1(m_primitive_index).evaluate_color(v));
+        }
+        break;
+
+      case PrimitiveCurve3:
+        {
+            assert(is_curve_primitive());
+            const GScalar v = m_bary[1];
+            const CurveObject* curves = static_cast<const CurveObject*>(&get_object());
+            m_color = foundation::Color3f(curves->get_curve3(m_primitive_index).evaluate_color(v));
+        }
+        break;
+
+      assert_otherwise;
+    }
+}
+
 
 void ShadingPoint::initialize_osl_shader_globals(
     const ShaderGroup&          sg,

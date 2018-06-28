@@ -66,6 +66,7 @@ set (sources
     bindbssrdf.cpp
     bindcamera.cpp
     bindcolor.cpp
+    bindcurveobject.cpp
     binddisplay.cpp
     bindedf.cpp
     bindentity.cpp

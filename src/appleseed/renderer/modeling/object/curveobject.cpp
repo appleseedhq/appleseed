@@ -61,6 +61,8 @@ struct CurveObject::Impl
 {
     RegionKit           m_region_kit;
     Lazy<RegionKit>     m_lazy_region_kit;
+    CurveBasis          m_basis;
+    size_t              m_curve_count;
     vector<Curve1Type>  m_curves1;
     vector<Curve3Type>  m_curves3;
     vector<string>      m_material_slots;
@@ -121,6 +123,40 @@ Lazy<RegionKit>& CurveObject::get_region_kit()
     return impl->m_lazy_region_kit;
 }
 
+CurveBasis CurveObject::get_basis() const
+{
+    return impl->m_basis;
+}
+
+void CurveObject::push_basis(unsigned char b)
+{
+    assert(static_cast<CurveBasis>(b) <= CurveBasis::Catmullrom);
+
+    impl->m_basis = static_cast<CurveBasis>(b);
+}
+
+size_t CurveObject::get_curve_count() const
+{
+    switch (impl->m_basis)
+    {
+      case CurveBasis::Linear:
+        return get_curve1_count();
+
+      case CurveBasis::Bezier:
+      case CurveBasis::Bspline:
+      case CurveBasis::Catmullrom:
+        return get_curve3_count();
+
+      default:
+        return 0;
+    }
+}
+
+void CurveObject::push_curve_count(const size_t c)
+{
+    impl->m_curve_count = c;
+}
+
 void CurveObject::reserve_curves1(const size_t count)
 {
     impl->m_curves1.reserve(count);
@@ -141,7 +177,25 @@ size_t CurveObject::push_curve1(const Curve1Type& curve)
 size_t CurveObject::push_curve3(const Curve3Type& curve)
 {
     const size_t index = impl->m_curves3.size();
-    impl->m_curves3.push_back(curve);
+    Curve3Type t_curve;
+
+    switch(get_basis())
+    {
+      case CurveBasis::Bspline:
+        t_curve.transform_basis(
+            CurveMatrixType::from_array(BezierInverseBasisArray) * CurveMatrixType::from_array(BSplineBasisArray));
+        break;
+
+      case CurveBasis::Catmullrom:
+        t_curve.transform_basis(
+            CurveMatrixType::from_array(BezierInverseBasisArray) * CurveMatrixType::from_array(CatmullRomBasisArray));
+        break;
+
+      default:
+        t_curve = Curve3Type(curve, CurveMatrixType::make_identity(), true);
+        break;
+    }
+    impl->m_curves3.push_back(t_curve);
     return index;
 }
 

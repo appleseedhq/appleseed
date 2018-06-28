@@ -42,6 +42,7 @@ void bind_bsdf();
 void bind_bssrdf();
 void bind_camera();
 void bind_color();
+void bind_curve_object();
 void bind_display();
 void bind_edf();
 void bind_entity();
@@ -102,6 +103,7 @@ extern "C" void bind_appleseed_python_classes()
     bind_material();
     bind_light();
     bind_object();
+    bind_curve_object();
     bind_mesh_object();
     bind_assembly();
 

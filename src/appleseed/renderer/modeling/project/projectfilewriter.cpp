@@ -709,7 +709,7 @@ namespace
             if (!params.strings().exist("filepath"))
             {
                 const string object_name = object.get_name();
-                const string filename = object_name + ".txt";
+                const string filename = object_name + ".binarycurve";
 
                 if (!(m_options & ProjectFileWriter::OmitWritingGeometryFiles))
                 {
