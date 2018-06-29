@@ -330,13 +330,11 @@ QString get_save_filename(
     // Use the selected filter as the extension only if the filter has one type.
     if (finfo.suffix().isEmpty() && selected_filter.count('*') == 1)
     {
-        int start = selected_filter.indexOf("*") + 1;
-        int end = selected_filter.indexOf(")", start);
-
-        if (start != 0 && end > start)
-        {
-            filepath += selected_filter.mid(start, end - start);
-        }
+        int begin = selected_filter.indexOf("*") + 1;
+        int end = selected_filter.indexOf(")", begin);
+        assert(begin != 0 && end > begin);
+        
+        filepath += selected_filter.mid(begin, end - begin);
     }
 
     return filepath;
