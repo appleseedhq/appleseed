@@ -305,7 +305,7 @@ QString get_save_filename(
     const QString dir = get_value(settings, settings_key + SETTINGS_LAST_DIRECTORY);
     QString selected_filter = get_value(settings, settings_key + SETTINGS_SELECTED_FILTER);
 
-    const QString filepath =
+    QString filepath =
         QFileDialog::getSaveFileName(
             parent,
             caption,
@@ -322,6 +322,19 @@ QString get_save_filename(
             settings,
             settings_key + SETTINGS_LAST_DIRECTORY,
             QDir::toNativeSeparators(QFileInfo(filepath).path()));
+    }
+
+    QFileInfo finfo(filepath);
+
+    // Check if there is any extension.
+    // Use the selected filter as the extension only if the filter has one type.
+    if (finfo.suffix().isEmpty() && selected_filter.count('*') == 1)
+    {
+        int begin = selected_filter.indexOf("*") + 1;
+        int end = selected_filter.indexOf(")", begin);
+        assert(begin != 0 && end > begin);
+        
+        filepath += selected_filter.mid(begin, end - begin);
     }
 
     return filepath;
