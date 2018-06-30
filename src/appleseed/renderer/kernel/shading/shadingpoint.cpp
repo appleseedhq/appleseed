@@ -989,7 +989,7 @@ void ShadingPoint::compute_alpha() const
 
 void ShadingPoint::compute_per_vertex_color() const
 {
-    m_color = foundation::Color3f(1.0f);
+    m_color = Color3f(1.0f);
 
     switch (m_primitive_type)
     {
@@ -1002,7 +1002,7 @@ void ShadingPoint::compute_per_vertex_color() const
             assert(is_curve_primitive());
             const GScalar v = m_bary[1];
             const CurveObject *curves = static_cast<const CurveObject *>(&get_object());
-            m_color = foundation::Color3f(curves->get_curve1(m_primitive_index).evaluate_color(v));
+            m_color = Color3f(curves->get_curve1(m_primitive_index).evaluate_color(v));
         }
         break;
 
@@ -1011,7 +1011,7 @@ void ShadingPoint::compute_per_vertex_color() const
             assert(is_curve_primitive());
             const GScalar v = m_bary[1];
             const CurveObject* curves = static_cast<const CurveObject*>(&get_object());
-            m_color = foundation::Color3f(curves->get_curve3(m_primitive_index).evaluate_color(v));
+            m_color = Color3f(curves->get_curve3(m_primitive_index).evaluate_color(v));
         }
         break;
 

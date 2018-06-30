@@ -89,7 +89,7 @@ namespace
             return static_cast<unsigned char>(m_object.get_basis());
         }
 
-        const char* get_basis_string()
+        const char* get_basis_string() const
         {
             switch (m_object.get_basis())
             {

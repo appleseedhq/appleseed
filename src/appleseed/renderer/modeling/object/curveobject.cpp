@@ -179,7 +179,7 @@ size_t CurveObject::push_curve3(const Curve3Type& curve)
     const size_t index = impl->m_curves3.size();
     Curve3Type t_curve;
 
-    switch(get_basis())
+    switch (get_basis())
     {
       case CurveBasis::Bspline:
         t_curve.transform_basis(

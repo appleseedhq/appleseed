@@ -459,7 +459,7 @@ inline void BezierCurveBase<T, N>::transform_basis(const MatrixType& xfm)
     Matrix<ValueType, 4, 1> matrix_widths = Matrix<ValueType, 4, 1>();
     Matrix<ValueType, 4, 1> matrix_opacities = Matrix<ValueType, 4, 1>();
 
-    for (int32 i = 0; i < 4; ++i)
+    for (size_t i = 0; i < 4; ++i)
     {
         matrix_points[3 * i] = m_ctrl_pts[i].x;
         matrix_points[3 * i + 1] = m_ctrl_pts[i].y;
@@ -478,7 +478,7 @@ inline void BezierCurveBase<T, N>::transform_basis(const MatrixType& xfm)
     Matrix<ValueType, 4, 1> transformed_widths = xfm * matrix_widths;
     Matrix<ValueType, 4, 1> transformed_opacities = xfm * matrix_opacities;
 
-    for (int32 i = 0; i < 4; ++i)
+    for (size_t i = 0; i < 4; ++i)
     {
         m_ctrl_pts[i] = VectorType(transformed_points[3 * i], transformed_points[3 * i + 1], transformed_points[3 * i + 2]);
         m_color[i] = ColorType(transformed_colors[3 * i], transformed_colors[3 * i + 1], transformed_colors[3 * i + 2]);
