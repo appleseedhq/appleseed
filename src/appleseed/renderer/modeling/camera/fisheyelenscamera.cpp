@@ -92,9 +92,18 @@ namespace
         void print_settings() const override
         {
             const char* projection_type;
-            switch (m_projection_type){
+            switch (m_projection_type)
+            {
                 case EquisolidAngle:
                     projection_type = "equisolid angle";
+                    break;
+                
+                case Equidistant:
+                    projection_type = "equidistant";
+                    break;
+
+                case Stereographic:
+                    projection_type = "stereographic";
                     break;
 
                 default:
@@ -154,6 +163,13 @@ namespace
 
             if (projection_type == "equisolid_angle")
                 m_projection_type = EquisolidAngle;
+
+            else if (projection_type == "equidistant")
+                m_projection_type = Equidistant;
+                
+            else if (projection_type == "stereographic")
+                m_projection_type = Stereographic;
+
             else
             {
                 RENDERER_LOG_ERROR(
@@ -172,18 +188,36 @@ namespace
             const Transformd rot = Transformd(Matrix4d::make_rotation_z(-atan2 (dir[1], dir[0])));
             dir = rot.vector_to_parent(dir);
 
-            if (m_projection_type == EquisolidAngle) 
+            // Tangent of angle between vector(on xz plane) and z+ axis.
+            const double tan_theta1 = dir[0]/dir[2];
+            const double theta1 = atan(tan_theta1);
+            double theta2 = 0.0;
+
+            switch (m_projection_type) 
             {
-                // Tangent of angle between vector(on xz plane) and z+ axis.
-                const double tangent_xz = dir[0]/dir[2];
-                double theta1 = atan(tangent_xz);
-                double theta2 = 2 * asin(tangent_xz / 2.0);
+                case EquisolidAngle:
+                    theta2 = 2 * asin(tan_theta1 / 2.0);
+                    break;
+                
+                case Equidistant:
+                    theta2 = tan_theta1;
+                    break;
 
-                const Transformd rot2 = Transformd(Matrix4d::make_rotation_y(theta2 - theta1));
+                case Stereographic:
+                    theta2 = 2 * atan(tan_theta1 / 2.0);
+                    break;
 
-                dir = rot2.vector_to_parent(dir);
-                dir = rot.vector_to_local(dir);
+                default:
+                    RENDERER_LOG_ERROR(
+                        "this message should not be logged"
+                        "using default value \"equisolid_angle\".");
+                    theta2 = 2 * asin(tan_theta1 / 2.0);
             }
+
+            const Transformd rot2 = Transformd(Matrix4d::make_rotation_y(theta2 - theta1));
+
+            dir = rot2.vector_to_parent(dir);
+            dir = rot.vector_to_local(dir);
         }
 
         void spawn_ray(
@@ -320,7 +354,7 @@ namespace
 
         enum Projection
         {
-            EquisolidAngle
+            EquisolidAngle, Equidistant, Stereographic
         };
         Projection m_projection_type;
 
@@ -438,8 +472,9 @@ DictionaryArray FisheyeLensCameraFactory::get_input_metadata() const
             .insert("type", "enumeration")
             .insert("items",
                 Dictionary()
-                    .insert("Equisolid angle", "equisolid_angle"))
-
+                    .insert("Equisolid angle", "equisolid_angle")
+                    .insert("Equidistant", "equidistant")
+                    .insert("Stereographic", "stereographic"))
             .insert("default", "equisolid_angle")
             .insert("use", "required"));
 
