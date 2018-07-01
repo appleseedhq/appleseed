@@ -411,7 +411,9 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
             1.0f
         };
         Matrix4f Basis = Matrix4f::from_array(BezierInverseBasisArray) * Matrix4f::from_array(BSplineBasisArray);
-        const BezierCurve3f Curves[] = { BezierCurve3f(BezierCurve3f(ControlPoints, Widths, Opacities, Colors), Basis, true) };
+        BezierCurve3f Curve = BezierCurve3f(ControlPoints, Widths, Opacities, Colors);
+        Curve.transform_basis(Basis);
+        const BezierCurve3f Curves[] = { Curve };
 
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_singlebezier3curve_bspline.png", false);
     }
@@ -464,7 +466,9 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
             1.0f
         };
         Matrix4f Basis = Matrix4f::from_array(BezierInverseBasisArray) * Matrix4f::from_array(CatmullRomBasisArray);
-        const BezierCurve3f Curves[] = { BezierCurve3f(BezierCurve3f(ControlPoints, Widths, Opacities, Colors), Basis, true) };
+        BezierCurve3f Curve = BezierCurve3f(ControlPoints, Widths, Opacities, Colors);
+        Curve.transform_basis(Basis);
+        const BezierCurve3f Curves[] = { Curve };
 
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_singlebezier3curve_catmullrom.png", false);
     }

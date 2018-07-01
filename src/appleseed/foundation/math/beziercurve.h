@@ -90,18 +90,13 @@ class BezierCurveBase
         const ValueType     width[N + 1],
         const ValueType     opacity[N + 1],
         const ColorType     color[N + 1]);
-    BezierCurveBase(
-        const BezierCurveBase&  curve,
-        const MatrixType&       xfm,
-        const bool              basis_conversion = false); // basis_conversion is true when the curve needs to be transformed by matrix
+    BezierCurveBase(const BezierCurveBase& curve, const MatrixType& xfm);
 
     size_t get_control_point_count() const;
     const VectorType& get_control_point(const size_t index) const;
     ValueType get_width(const size_t index) const;
     ValueType get_opacity(const size_t index) const;
     const ColorType& get_color(const size_t index) const;
-
-    void transform_basis(const MatrixType& xfm);
 
     AABBType compute_bbox() const;
     ValueType compute_max_width() const;
@@ -149,10 +144,7 @@ class BezierCurve1
         const ValueType     width[2],
         const ValueType     opacity[2],
         const ColorType     color[2]);
-    BezierCurve1(
-        const BezierCurve1&     curve,
-        const MatrixType&       xfm,
-        const bool              basis_conversion = false);
+    BezierCurve1(const BezierCurve1& curve, const MatrixType& xfm);
 
     VectorType evaluate_point(const ValueType t) const;
     ValueType evaluate_width(const ValueType t) const;
@@ -192,10 +184,7 @@ class BezierCurve2
         const ValueType     width[3],
         const ValueType     opacity[3],
         const ColorType     color[3]);
-    BezierCurve2(
-        const BezierCurve2&     curve,
-        const MatrixType&       xfm,
-        const bool              basis_conversion = false);
+    BezierCurve2(const BezierCurve2& curve, const MatrixType& xfm);
 
     VectorType evaluate_point(const ValueType t) const;
     ValueType evaluate_width(const ValueType t) const;
@@ -235,16 +224,14 @@ class BezierCurve3
         const ValueType     width[4],
         const ValueType     opacity[4],
         const ColorType     color[4]);
-    BezierCurve3(
-        const BezierCurve3&     curve,
-        const MatrixType&       xfm,
-        const bool              basis_conversion = false);
+    BezierCurve3(const BezierCurve3& curve, const MatrixType& xfm);
 
     VectorType evaluate_point(const ValueType t) const;
     ValueType evaluate_width(const ValueType t) const;
     ValueType evaluate_opacity(const ValueType t) const;
     ColorType evaluate_color(const ValueType t) const;
     VectorType evaluate_tangent(const ValueType t) const;
+    void transform_basis(const MatrixType& xfm);
 
     void split(BezierCurve3& c1, BezierCurve3& c2) const;
 };
@@ -362,23 +349,15 @@ BezierCurveBase<T, N>::BezierCurveBase(
 template <typename T, size_t N>
 BezierCurveBase<T, N>::BezierCurveBase(
     const BezierCurveBase&  curve,
-    const MatrixType&       xfm,
-    bool                    basis_conversion)
+    const MatrixType&       xfm)
 {
     for (size_t i = 0; i < N + 1; ++i)
     {
-        if (!basis_conversion)
-            m_ctrl_pts[i] = transform_point(xfm, curve.m_ctrl_pts[i]);
-        else
-            m_ctrl_pts[i] = curve.m_ctrl_pts[i];
-
+        m_ctrl_pts[i] = transform_point(xfm, curve.m_ctrl_pts[i]);
         m_width[i] = curve.m_width[i];
         m_opacity[i] = curve.m_opacity[i];
         m_color[i] = curve.m_color[i];
     }
-
-    if (basis_conversion)
-        transform_basis(xfm);
 }
 
 template <typename T, size_t N>
@@ -450,43 +429,6 @@ inline typename BezierCurveBase<T, N>::VectorType BezierCurveBase<T, N>::transfo
     return VectorType(xpt.x * rcp_w, xpt.y * rcp_w, xpt.z * rcp_w);
 }
 
-
-template <typename T, size_t N>
-inline void BezierCurveBase<T, N>::transform_basis(const MatrixType& xfm)
-{
-    Matrix<ValueType, 4, 3> matrix_points = Matrix<ValueType, 4, 3>();
-    Matrix<ValueType, 4, 3> matrix_colors = Matrix<ValueType, 4, 3>();
-    Matrix<ValueType, 4, 1> matrix_widths = Matrix<ValueType, 4, 1>();
-    Matrix<ValueType, 4, 1> matrix_opacities = Matrix<ValueType, 4, 1>();
-
-    for (size_t i = 0; i < 4; ++i)
-    {
-        matrix_points[3 * i] = m_ctrl_pts[i].x;
-        matrix_points[3 * i + 1] = m_ctrl_pts[i].y;
-        matrix_points[3 * i + 2] = m_ctrl_pts[i].z;
-
-        matrix_colors[3 * i] = m_color[i].r;
-        matrix_colors[3 * i + 1] = m_color[i].g;
-        matrix_colors[3 * i + 2] = m_color[i].b;
-
-        matrix_widths[i] = m_width[i];
-        matrix_opacities[i] = m_opacity[i];
-    }
-
-    Matrix<ValueType, 4, 3> transformed_points = xfm * matrix_points;
-    Matrix<ValueType, 4, 3> transformed_colors = xfm * matrix_colors;
-    Matrix<ValueType, 4, 1> transformed_widths = xfm * matrix_widths;
-    Matrix<ValueType, 4, 1> transformed_opacities = xfm * matrix_opacities;
-
-    for (size_t i = 0; i < 4; ++i)
-    {
-        m_ctrl_pts[i] = VectorType(transformed_points[3 * i], transformed_points[3 * i + 1], transformed_points[3 * i + 2]);
-        m_color[i] = ColorType(transformed_colors[3 * i], transformed_colors[3 * i + 1], transformed_colors[3 * i + 2]);
-        m_opacity[i] = transformed_opacities[i];
-        m_width[i] = transformed_widths[i];
-    }
-}
-
 template <typename T, size_t N>
 size_t BezierCurveBase<T, N>::compute_recursion_depth(const ValueType epsilon) const
 {
@@ -544,9 +486,8 @@ inline BezierCurve1<T>::BezierCurve1(
 template <typename T>
 inline BezierCurve1<T>::BezierCurve1(
     const BezierCurve1&     curve,
-    const MatrixType&       xfm,
-    const bool              basis_conversion)
-  : Base(curve, xfm, basis_conversion)
+    const MatrixType&       xfm)
+  : Base(curve, xfm)
 {
 }
 
@@ -669,9 +610,8 @@ inline BezierCurve2<T>::BezierCurve2(
 template <typename T>
 inline BezierCurve2<T>::BezierCurve2(
     const BezierCurve2&     curve,
-    const MatrixType&       xfm,
-    const bool              basis_conversion)
-  : Base(curve, xfm, basis_conversion)
+    const MatrixType&       xfm)
+  : Base(curve, xfm)
 {
 }
 
@@ -819,9 +759,8 @@ inline BezierCurve3<T>::BezierCurve3(
 template <typename T>
 inline BezierCurve3<T>::BezierCurve3(
     const BezierCurve3&     curve,
-    const MatrixType&       xfm,
-    const bool              basis_conversion)
-  : Base(curve, xfm, basis_conversion)
+    const MatrixType&       xfm)
+  : Base(curve, xfm)
 {
 }
 
@@ -883,6 +822,42 @@ inline typename BezierCurve3<T>::VectorType BezierCurve3<T>::evaluate_tangent(co
             Base::m_ctrl_pts[2],
             Base::m_ctrl_pts[3],
             t);
+}
+
+template <typename T>
+inline void BezierCurve3<T>::transform_basis(const MatrixType& xfm)
+{
+    Matrix<ValueType, 4, 3> matrix_points = Matrix<ValueType, 4, 3>();
+    Matrix<ValueType, 4, 3> matrix_colors = Matrix<ValueType, 4, 3>();
+    Matrix<ValueType, 4, 1> matrix_widths = Matrix<ValueType, 4, 1>();
+    Matrix<ValueType, 4, 1> matrix_opacities = Matrix<ValueType, 4, 1>();
+
+    for (size_t i = 0; i < 4; ++i)
+    {
+        matrix_points[3 * i] = Base::m_ctrl_pts[i].x;
+        matrix_points[3 * i + 1] = Base::m_ctrl_pts[i].y;
+        matrix_points[3 * i + 2] = Base::m_ctrl_pts[i].z;
+
+        matrix_colors[3 * i] = Base::m_color[i].r;
+        matrix_colors[3 * i + 1] = Base::m_color[i].g;
+        matrix_colors[3 * i + 2] = Base::m_color[i].b;
+
+        matrix_widths[i] = Base::m_width[i];
+        matrix_opacities[i] = Base::m_opacity[i];
+    }
+
+    Matrix<ValueType, 4, 3> transformed_points = xfm * matrix_points;
+    Matrix<ValueType, 4, 3> transformed_colors = xfm * matrix_colors;
+    Matrix<ValueType, 4, 1> transformed_widths = xfm * matrix_widths;
+    Matrix<ValueType, 4, 1> transformed_opacities = xfm * matrix_opacities;
+
+    for (size_t i = 0; i < 4; ++i)
+    {
+        Base::m_ctrl_pts[i] = VectorType(transformed_points[3 * i], transformed_points[3 * i + 1], transformed_points[3 * i + 2]);
+        Base::m_color[i] = ColorType(transformed_colors[3 * i], transformed_colors[3 * i + 1], transformed_colors[3 * i + 2]);
+        Base::m_opacity[i] = transformed_opacities[i];
+        Base::m_width[i] = transformed_widths[i];
+    }
 }
 
 template <typename T>
