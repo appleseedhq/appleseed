@@ -191,10 +191,12 @@ namespace
 
         //
         // Transform ray direction in selected projection.
-        // Reference : https://wiki.panotools.org/Fisheye_Projection
-        // https://de.wikipedia.org/wiki/Fischaugenobjektiv
-        // http://michel.thoby.free.fr/Fisheye_history_short/Projections/Fisheye_projection-models.html
+        // Reference : 
+        //   https://wiki.panotools.org/Fisheye_Projection
+        //   https://de.wikipedia.org/wiki/Fischaugenobjektiv
+        //   http://michel.thoby.free.fr/Fisheye_history_short/Projections/Fisheye_projection-models.html
         //
+
         void transform_ray_dir(Vector3d& dir) const
         {
             // Transform the direction vector to be in the xz plane.
