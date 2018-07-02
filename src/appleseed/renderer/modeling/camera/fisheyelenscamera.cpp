@@ -106,6 +106,10 @@ namespace
                     projection_type = "stereographic";
                     break;
 
+                case Thoby:
+                    projection_type = "thoby";
+                    break;
+
                 default:
                     projection_type = "unknown";
             }
@@ -170,6 +174,9 @@ namespace
             else if (projection_type == "stereographic")
                 m_projection_type = Stereographic;
 
+            else if (projection_type == "thoby")
+                m_projection_type = Thoby;
+
             else
             {
                 RENDERER_LOG_ERROR(
@@ -182,6 +189,12 @@ namespace
             return true;
         }
 
+        //
+        // Transform ray direction in selected projection.
+        // Reference : https://wiki.panotools.org/Fisheye_Projection
+        // https://de.wikipedia.org/wiki/Fischaugenobjektiv
+        // http://michel.thoby.free.fr/Fisheye_history_short/Projections/Fisheye_projection-models.html
+        //
         void transform_ray_dir(Vector3d& dir) const
         {
             // Transform the direction vector to be in the xz plane.
@@ -205,6 +218,10 @@ namespace
 
                 case Stereographic:
                     theta2 = 2 * atan(tan_theta1 / 2.0);
+                    break;
+
+                case Thoby:
+                    theta2 = asin(tan_theta1 / 1.47) / 0.713;
                     break;
 
                 default:
@@ -354,7 +371,7 @@ namespace
 
         enum Projection
         {
-            EquisolidAngle, Equidistant, Stereographic
+            EquisolidAngle, Equidistant, Stereographic, Thoby
         };
         Projection m_projection_type;
 
@@ -474,7 +491,8 @@ DictionaryArray FisheyeLensCameraFactory::get_input_metadata() const
                 Dictionary()
                     .insert("Equisolid angle", "equisolid_angle")
                     .insert("Equidistant", "equidistant")
-                    .insert("Stereographic", "stereographic"))
+                    .insert("Stereographic", "stereographic")
+                    .insert("Thoby", "thoby"))
             .insert("default", "equisolid_angle")
             .insert("use", "required"));
 
