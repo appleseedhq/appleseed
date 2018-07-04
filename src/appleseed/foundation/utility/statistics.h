@@ -136,6 +136,25 @@ class Statistics
         std::string to_string() const override;
     };
 
+    template <typename T>
+    struct PercentEntry
+      : public Entry
+    {
+        T                   m_numerator;
+        T                   m_denominator;
+        std::streamsize     m_precision;
+
+        PercentEntry(
+            const std::string&          name,
+            const T                     numerator,
+            const T                     denominator,
+            const std::streamsize       precision);
+
+        std::unique_ptr<Entry> clone() const override;
+        void merge(const Entry* other) override;
+        std::string to_string() const override;
+    };
+
     struct StringEntry
       : public Entry
     {
@@ -409,7 +428,9 @@ void Statistics::insert_percent(
     const T                             denominator,
     const std::streamsize               precision)
 {
-    insert(name, pretty_percent(numerator, denominator, precision));
+    insert(
+        std::unique_ptr<PercentEntry<T>>(
+            new PercentEntry<T>(name, numerator, denominator, precision)));
 }
 
 
@@ -428,6 +449,46 @@ const T* Statistics::Entry::cast(const Entry* entry)
         throw ExceptionTypeMismatch(entry->m_name.c_str());
 
     return typed_entry;
+}
+
+
+//
+// Statistics::PercentEntry class implementation.
+//
+
+template <typename T>
+Statistics::PercentEntry<T>::PercentEntry(
+    const std::string&                  name,
+    const T                             numerator,
+    const T                             denominator,
+    const std::streamsize               precision)
+  : Entry(name)
+  , m_numerator(numerator)
+  , m_denominator(denominator)
+  , m_precision(precision)
+{
+}
+
+template <typename T>
+std::unique_ptr<Statistics::Entry> Statistics::PercentEntry<T>::clone() const
+{
+    return std::unique_ptr<Statistics::Entry>(new PercentEntry(*this));
+}
+
+template <typename T>
+void Statistics::PercentEntry<T>::merge(const Entry* other)
+{
+    const PercentEntry* pother = cast<PercentEntry>(other);
+
+    m_numerator += pother->m_numerator;
+    m_denominator += pother->m_denominator;
+    m_precision = std::max(m_precision, pother->m_precision);
+}
+
+template <typename T>
+std::string Statistics::PercentEntry<T>::to_string() const
+{
+    return pretty_percent(m_numerator, m_denominator, m_precision);
 }
 
 

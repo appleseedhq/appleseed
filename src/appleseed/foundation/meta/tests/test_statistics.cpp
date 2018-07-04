@@ -185,6 +185,32 @@ TEST_SUITE(Foundation_Utility_Statistics)
 
         EXPECT_EQ("  existing value                17,042", stats.to_string());
     }
+
+    TEST_CASE(Merge_GivenNewPercentStatistic_InsertsIt)
+    {
+        Statistics stats;
+        stats.insert_percent("existing value", 5, 10, 1);
+
+        Statistics other_stats;
+        other_stats.insert_percent("new value", 14, 20, 1);
+
+        stats.merge(other_stats);
+
+        EXPECT_EQ("  existing value                50.0%\n  new value                     70.0%", stats.to_string());
+    }
+
+    TEST_CASE(Merge_GivenExistingPercentStatistic_MergesIt)
+    {
+        Statistics stats;
+        stats.insert_percent("existing value", 68, 400, 1);
+
+        Statistics other_stats;
+        other_stats.insert_percent("existing value", 20, 50, 1);
+
+        stats.merge(other_stats);
+
+        EXPECT_EQ("  existing value                19.6%", stats.to_string());
+    }
 }
 
 TEST_SUITE(Foundation_Utility_StatisticsVector)
