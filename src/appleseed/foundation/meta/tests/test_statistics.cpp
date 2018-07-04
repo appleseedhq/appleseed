@@ -186,7 +186,7 @@ TEST_SUITE(Foundation_Utility_Statistics)
         EXPECT_EQ("  existing value                17,042", stats.to_string());
     }
 
-    TEST_CASE(Merge_GivenExistingPercentStatistic_InsertsIt)
+    TEST_CASE(Merge_GivenNewPercentStatistic_InsertsIt)
     {
         Statistics stats;
         stats.insert_percent("existing value", 5, 10, 1);
