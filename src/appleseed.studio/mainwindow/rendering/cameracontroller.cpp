@@ -79,7 +79,6 @@ CameraController::CameraController(QWidget* widget, Project& project)
   : m_widget(widget)
   , m_project(project)
   , m_custom_camera(nullptr)
-  , m_custom_camera_enabled(false)
   , m_enabled(true)
 {
     configure_controller();
@@ -90,7 +89,6 @@ CameraController::CameraController(QWidget* widget, Project& project, Camera* ca
   : m_widget(widget)
   , m_project(project)
   , m_custom_camera(camera)
-  , m_custom_camera_enabled(true)
   , m_enabled(true)
 {
     configure_controller();
@@ -163,17 +161,17 @@ bool CameraController::eventFilter(QObject* object, QEvent* event)
             if (handle_mouse_button_press_event(static_cast<QMouseEvent*>(event)))
                 return true;
             break;
-    
+
           case QEvent::MouseButtonRelease:
             if (handle_mouse_button_release_event(static_cast<QMouseEvent*>(event)))
                 return true;
             break;
-    
+
           case QEvent::MouseMove:
             if (handle_mouse_move_event(static_cast<QMouseEvent*>(event)))
                 return true;
             break;
-    
+
           case QEvent::KeyPress:
             if (handle_key_press_event(static_cast<QKeyEvent*>(event)))
                 return true;
@@ -186,7 +184,7 @@ bool CameraController::eventFilter(QObject* object, QEvent* event)
 
 Camera* CameraController::fetch_camera()
 {
-    if (m_custom_camera_enabled)
+    if (m_custom_camera != nullptr)
         return m_custom_camera;
     else
         return m_project.get_uncached_active_camera();

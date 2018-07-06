@@ -100,7 +100,6 @@ class CameraController
     QWidget*                m_widget;
     renderer::Project&      m_project;
     renderer::Camera*       m_custom_camera;
-    const bool              m_custom_camera_enabled;
     bool                    m_enabled;
 
     ControllerType          m_controller;
