@@ -75,10 +75,20 @@ namespace studio {
 //     controller target if the user wishes so (by pressing 'f').
 //
 
+CameraController::CameraController(QWidget* widget, Project& project)
+  : m_widget(widget)
+  , m_project(project)
+  , m_custom_camera(nullptr)
+  , m_enabled(true)
+{
+    configure_controller();
+    m_widget->installEventFilter(this);
+}
+
 CameraController::CameraController(QWidget* widget, Project& project, Camera* camera)
   : m_widget(widget)
   , m_project(project)
-  , m_camera(camera)
+  , m_custom_camera(camera)
   , m_enabled(true)
 {
     configure_controller();
@@ -102,20 +112,22 @@ Transformd CameraController::get_transform() const
 
 void CameraController::update_camera_transform()
 {
-    if (m_camera != nullptr)
+    if (Camera* camera = fetch_camera())
     {
         // Moving the camera kills camera motion blur.
-        m_camera->transform_sequence().clear();
+        camera->transform_sequence().clear();
 
         // Set the scene camera orientation and position based on the controller.
-        m_camera->transform_sequence().set_transform(0.0f, get_transform());
+        camera->transform_sequence().set_transform(0.0f, get_transform());
     }
 }
 
 void CameraController::save_camera_target()
 {
-    if (m_camera != nullptr)
-        m_camera->get_parameters().insert("controller_target", m_controller.get_target());
+    if (Camera* camera = fetch_camera())
+    {
+        camera->get_parameters().insert("controller_target", m_controller.get_target());
+    }
 }
 
 void CameraController::slot_entity_picked(ScenePicker::PickingResult result)
@@ -149,17 +161,17 @@ bool CameraController::eventFilter(QObject* object, QEvent* event)
             if (handle_mouse_button_press_event(static_cast<QMouseEvent*>(event)))
                 return true;
             break;
-    
+
           case QEvent::MouseButtonRelease:
             if (handle_mouse_button_release_event(static_cast<QMouseEvent*>(event)))
                 return true;
             break;
-    
+
           case QEvent::MouseMove:
             if (handle_mouse_move_event(static_cast<QMouseEvent*>(event)))
                 return true;
             break;
-    
+
           case QEvent::KeyPress:
             if (handle_key_press_event(static_cast<QKeyEvent*>(event)))
                 return true;
@@ -170,17 +182,27 @@ bool CameraController::eventFilter(QObject* object, QEvent* event)
     return QObject::eventFilter(object, event);
 }
 
+Camera* CameraController::fetch_camera()
+{
+    if (m_custom_camera != nullptr)
+        return m_custom_camera;
+    else
+        return m_project.get_uncached_active_camera();
+}
+
 void CameraController::configure_controller()
 {
     // By default, the pivot point is the scene's center.
     m_pivot = Vector3d(m_project.get_scene()->compute_bbox().center());
 
+    Camera* camera = fetch_camera();
+
     // Set the controller orientation and position.
-    if (m_camera != nullptr)
+    if (camera != nullptr)
     {
         // Use the scene's camera.
         m_controller.set_transform(
-            m_camera->transform_sequence().get_earliest_transform().get_local_to_parent());
+            camera->transform_sequence().get_earliest_transform().get_local_to_parent());
     }
     else
     {
@@ -194,8 +216,8 @@ void CameraController::configure_controller()
 
     // Check whether the camera has a controller target.
     const bool has_target =
-        m_camera != nullptr &&
-        m_camera->get_parameters().strings().exist("controller_target");
+        camera != nullptr &&
+        camera->get_parameters().strings().exist("controller_target");
 
     // Retrieve the controller target from the camera.
     Vector3d controller_target;
@@ -203,7 +225,7 @@ void CameraController::configure_controller()
     {
         // The scene's camera has a controller target, retrieve it.
         controller_target =
-            m_camera->get_parameters().get<Vector3d>("controller_target");
+            camera->get_parameters().get<Vector3d>("controller_target");
     }
     else
     {
