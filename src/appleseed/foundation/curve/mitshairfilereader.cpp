@@ -178,8 +178,8 @@ void MitsHairFileReader::push_vertex_properties(Vector3f& v, ICurveBuilder& buil
 {
     builder.push_vertex(v);
     builder.push_vertex_width(m_radius);
-    builder.push_vertex_opacity(1.0f); // Default opacity
-    builder.push_vertex_color(Color3f(0.2, 0.0, 0.7)); // Default color
+    builder.push_vertex_opacity(1.0f);                      // default opacity
+    builder.push_vertex_color(Color3f(0.2f, 0.0f, 0.7f));   // default color
 }
 
 }   // namespace foundation
