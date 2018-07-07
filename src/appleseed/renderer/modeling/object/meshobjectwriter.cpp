@@ -36,8 +36,6 @@
 #include "renderer/modeling/object/triangle.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
-#include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/math/vector.h"
 #include "foundation/mesh/genericmeshfilewriter.h"
 #include "foundation/mesh/imeshwalker.h"
@@ -49,6 +47,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <exception>
 #include <string>
 
 using namespace foundation;
@@ -184,14 +183,7 @@ bool MeshObjectWriter::write(
         MeshObjectWalker walker(object, object_name);
         writer.write(walker);
     }
-    catch (const ExceptionIOError&)
-    {
-        RENDERER_LOG_ERROR(
-            "failed to write mesh file %s: i/o error.",
-            filename);
-        return false;
-    }
-    catch (const Exception& e)
+    catch (const exception& e)
     {
         RENDERER_LOG_ERROR(
             "failed to write mesh file %s: %s.",

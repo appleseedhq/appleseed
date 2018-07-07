@@ -454,14 +454,6 @@ namespace
 
             return false;
         }
-        catch (const ExceptionIOError&)
-        {
-            RENDERER_LOG_ERROR(
-                "failed to load mesh file %s: i/o error.",
-                filename);
-
-            return false;
-        }
         catch (const exception& e)
         {
             RENDERER_LOG_ERROR(
