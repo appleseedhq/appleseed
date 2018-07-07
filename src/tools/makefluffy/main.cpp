@@ -215,7 +215,7 @@ namespace
             points[0] = st.m_v0 * bary[0] + st.m_v1 * bary[1] + st.m_v2 * bary[2];
             widths[0] = params.m_root_width;
             opacities[0] = GScalar(1.0);
-            colors[0] = Color3f(0.2, 0.0, 0.7);
+            colors[0] = Color3f(0.2f, 0.0f, 0.7f);
 
             GScalar f, length;
             do
@@ -231,7 +231,7 @@ namespace
                 points[p] = points[0] + length * (r * st.m_normal + f);
                 widths[p] = lerp(params.m_root_width, params.m_tip_width, r);
                 opacities[p] = GScalar(1.0);
-                colors[p] = Color3f(0.2, 0.0, 0.7);
+                colors[p] = Color3f(0.2f, 0.0f, 0.7f);
             }
 
             const Curve3Type curve(&points[0], &widths[0], &opacities[0], &colors[0]);

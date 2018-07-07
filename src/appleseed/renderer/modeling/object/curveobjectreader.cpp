@@ -133,7 +133,7 @@ namespace {
             }
         }
 
-        void begin_curve_object(unsigned char basis, uint32 count = 0) override
+        void begin_curve_object(unsigned char basis, const size_t count) override
         {
             // Create an empty curve object.
             m_object = static_cast<CurveObject*>(
@@ -232,8 +232,8 @@ namespace {
                     const GVector3 d = sample_sphere_uniform(rand_vector2<GVector2>(rng));
                     push_vertex(r * d);
                     push_vertex_width(curve_width);
-                    push_vertex_color(Color3f(0.2, 0.0, 0.7)); // Default color
-                    push_vertex_opacity(1.0f); // Default opacity
+                    push_vertex_color(Color3f(0.2f, 0.0f, 0.7f));   // default color
+                    push_vertex_opacity(1.0f);                      // default opacity
                 }
                 end_curve();
             }
@@ -266,8 +266,8 @@ namespace {
 
                 push_vertex(d);
                 push_vertex_width(root_width);
-                push_vertex_color(Color3f(0.2, 0.0, 0.7)); // Default color
-                push_vertex_opacity(1.0f); // Default opacity
+                push_vertex_color(Color3f(0.2f, 0.0f, 0.7f));       // default color
+                push_vertex_opacity(1.0f);                          // default opacity
 
                 const GScalar f = rand1(rng, -length_fuzziness, +length_fuzziness);
                 const GScalar length = curve_length * (GScalar(1.0) + f);
@@ -278,8 +278,8 @@ namespace {
                     const GVector3 f = curliness * sample_sphere_uniform(rand_vector2<GVector2>(rng));
                     push_vertex(m_vertices[0] + length * (r * d + f));
                     push_vertex_width(lerp(root_width, tip_width, r));
-                    push_vertex_color(Color3f(0.2, 0.0, 0.7)); // Default color
-                    push_vertex_opacity(1.0f); //Default opacity
+                    push_vertex_color(Color3f(0.2f, 0.0f, 0.7f));   // default color
+                    push_vertex_opacity(1.0f);                      // default opacity
                 }
                 end_curve();
             }
@@ -314,7 +314,8 @@ namespace {
 
         void split_and_store(const Curve3Type& curve, const size_t split_count)
         {
-            if (split_count > 0) {
+            if (split_count > 0)
+            {
                 Curve3Type child1, child2;
                 curve.split(child1, child2);
                 split_and_store(child1, split_count - 1);
@@ -325,11 +326,12 @@ namespace {
 
         void push_curve1()
         {
-            for (uint32 i = 0; i < m_vertices.size() - 1; ++i) {
-                GVector3 points[2] = {m_vertices[i], m_vertices[i + 1]};
-                GScalar widths[2] = {m_widths[i], m_widths[i + 1]};
-                GScalar opacities[2] = {m_opacities[i], m_opacities[i + 1]};
-                Color3f colors[2] = {m_colors[i], m_colors[i + 1]};
+            for (size_t i = 0; i < m_vertices.size() - 1; ++i)
+            {
+                const GVector3 points[2] = {m_vertices[i], m_vertices[i + 1]};
+                const GScalar widths[2] = {m_widths[i], m_widths[i + 1]};
+                const GScalar opacities[2] = {m_opacities[i], m_opacities[i + 1]};
+                const Color3f colors[2] = {m_colors[i], m_colors[i + 1]};
 
                 m_object->push_curve1(Curve1Type(points, widths, opacities, colors));
             }
@@ -337,11 +339,12 @@ namespace {
 
         void push_curve3(int stride)
         {
-            for (uint32 i = 0; i < m_vertices.size() - 3; i = i + stride) {
-                GVector3 points[4] = {m_vertices[i], m_vertices[i + 1], m_vertices[i + 2], m_vertices[i + 3]};
-                GScalar widths[4] = {m_widths[i], m_widths[i + 1], m_widths[i + 2], m_widths[i + 3]};
-                GScalar opacities[4] = {m_opacities[i], m_opacities[i + 1], m_opacities[i + 2], m_opacities[i + 3]};
-                Color3f colors[4] = {m_colors[i], m_colors[i + 1], m_colors[i + 2], m_colors[i + 3]};
+            for (size_t i = 0; i < m_vertices.size() - 3; i += stride)
+            {
+                const GVector3 points[4] = {m_vertices[i], m_vertices[i + 1], m_vertices[i + 2], m_vertices[i + 3]};
+                const GScalar widths[4] = {m_widths[i], m_widths[i + 1], m_widths[i + 2], m_widths[i + 3]};
+                const GScalar opacities[4] = {m_opacities[i], m_opacities[i + 1], m_opacities[i + 2], m_opacities[i + 3]};
+                const Color3f colors[4] = {m_colors[i], m_colors[i + 1], m_colors[i + 2], m_colors[i + 3]};
 
                 split_and_store(Curve3Type(points, widths, opacities, colors), m_split_count);
             }
@@ -349,13 +352,19 @@ namespace {
     };
 }
 
-
 auto_release_ptr<CurveObject> CurveObjectReader::read(
     const SearchPaths&      search_paths,
     const char*             name,
     const ParamArray&       params)
 {
+    CurveObjectBuilder builder(params, name);
+
     const string filepath = params.get<string>("filepath");
+
+    if (filepath == "builtin:hairball")
+        return builder.create_hair_ball();
+    else if (filepath == "builtin:furryball")
+        return builder.create_furry_ball();
 
     const size_t basis = params.get_optional<size_t>("basis", 2);
     if (basis < 1 && basis > 4)
@@ -371,15 +380,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::read(
         return auto_release_ptr<CurveObject>(nullptr);
     }
 
-    CurveObjectBuilder builder(params, name);
-
-    if (filepath == "builtin:hairball")
-        return builder.create_hair_ball();
-    else if (filepath == "builtin:furryball")
-        return builder.create_furry_ball();
-
     const char* filename = search_paths.qualify(filepath.c_str()).c_str();
-
     GenericCurveFileReader reader(filename, radius, basis);
 
     Stopwatch<DefaultWallclockTimer> stopwatch;
