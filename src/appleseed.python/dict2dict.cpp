@@ -196,28 +196,28 @@ namespace
             Vector3d v = from_string<Vector3d>(str);
             return bpy::object(v);
         }
-        catch (ExceptionStringConversionError&) {}
+        catch (const ExceptionStringConversionError&) {}
 
         try // Vector2
         {
             Vector2d v = from_string<Vector2d>(str);
             return bpy::object(v);
         }
-        catch (ExceptionStringConversionError&) {}
+        catch (const ExceptionStringConversionError&) {}
 
         try // int / double
         {
             double d = from_string<double>(str);
             return bpy::object(d);
         }
-        catch (ExceptionStringConversionError&) {}
+        catch (const ExceptionStringConversionError&) {}
 
         try // bool
         {
             bool b = from_string<bool>(str);
             return bpy::object(b);
         }
-        catch (ExceptionStringConversionError&) {}
+        catch (const ExceptionStringConversionError&) {}
 
         // todo: check more types here if needed...
 
