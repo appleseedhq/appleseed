@@ -366,7 +366,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::read(
         return builder.create_furry_ball();
 
     const size_t basis = params.get_optional<size_t>("basis", 2);
-    if (basis < 1 && basis > 4)
+    if (basis < 1 || basis > 4)
     {
         RENDERER_LOG_ERROR("curves basis must be between 1 and 4 but was " FMT_SIZE_T ".", basis);
         return auto_release_ptr<CurveObject>(nullptr);
