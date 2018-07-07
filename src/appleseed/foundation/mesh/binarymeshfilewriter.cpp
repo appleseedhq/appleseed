@@ -48,6 +48,12 @@ namespace foundation
 // BinaryMeshFileWriter class implementation.
 //
 
+namespace
+{
+    // Version of the BinaryMesh file format being written by this code.
+    const uint16 Version = 4;
+}
+
 BinaryMeshFileWriter::BinaryMeshFileWriter(const string& filename)
   : m_filename(filename)
   , m_writer(m_file, 256 * 1024)
@@ -82,8 +88,6 @@ void BinaryMeshFileWriter::write_signature()
 
 void BinaryMeshFileWriter::write_version()
 {
-    const uint16 Version = 3;
-
     checked_write(m_file, Version);
 }
 
@@ -111,7 +115,7 @@ void BinaryMeshFileWriter::write_vertices(const IMeshWalker& walker)
     checked_write(m_writer, count);
 
     for (uint32 i = 0; i < count; ++i)
-        checked_write(m_writer, walker.get_vertex(i));
+        checked_write(m_writer, Vector3f(walker.get_vertex(i)));
 }
 
 void BinaryMeshFileWriter::write_vertex_normals(const IMeshWalker& walker)
@@ -120,7 +124,7 @@ void BinaryMeshFileWriter::write_vertex_normals(const IMeshWalker& walker)
     checked_write(m_writer, count);
 
     for (uint32 i = 0; i < count; ++i)
-        checked_write(m_writer, walker.get_vertex_normal(i));
+        checked_write(m_writer, Vector3f(walker.get_vertex_normal(i)));
 }
 
 void BinaryMeshFileWriter::write_texture_coordinates(const IMeshWalker& walker)
@@ -129,7 +133,7 @@ void BinaryMeshFileWriter::write_texture_coordinates(const IMeshWalker& walker)
     checked_write(m_writer, count);
 
     for (uint32 i = 0; i < count; ++i)
-        checked_write(m_writer, walker.get_tex_coords(i));
+        checked_write(m_writer, Vector2f(walker.get_tex_coords(i)));
 }
 
 void BinaryMeshFileWriter::write_material_slots(const IMeshWalker& walker)
