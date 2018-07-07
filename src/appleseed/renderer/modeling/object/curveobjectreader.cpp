@@ -36,8 +36,6 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include <foundation/core/exceptions/exceptionioerror.h>
-#include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/curve/genericcurvefilereader.h"
 #include "foundation/curve/icurvebuilder.h"
 #include "foundation/curve/icurvefilereader.h"
@@ -65,6 +63,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <exception>
 #include <fstream>
 #include <string>
 
@@ -389,12 +388,6 @@ auto_release_ptr<CurveObject> CurveObjectReader::read(
     try
     {
         reader.read(builder);
-    }
-
-    catch (const ExceptionIOError&)
-    {
-        RENDERER_LOG_ERROR("failed to load curve file %s: i/o error.", filepath.c_str());
-        return auto_release_ptr<CurveObject>(nullptr);
     }
     catch (const exception& e)
     {

@@ -43,8 +43,6 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
-#include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/image/color.h"
 #include "foundation/image/exrimagefilewriter.h"
 #include "foundation/image/image.h"
@@ -67,6 +65,7 @@
 
 // Standard headers.
 #include <algorithm>
+#include <exception>
 #include <memory>
 #include <string>
 
@@ -653,15 +652,7 @@ namespace
                 return false;
             }
         }
-        catch (const ExceptionIOError&)
-        {
-            RENDERER_LOG_ERROR(
-                "failed to write image file %s: i/o error.",
-                bf_file_path.string().c_str());
-
-            return false;
-        }
-        catch (const Exception& e)
+        catch (const exception& e)
         {
             RENDERER_LOG_ERROR(
                 "failed to write image file %s: %s.",

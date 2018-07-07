@@ -432,9 +432,9 @@ bool LightPathRecorder::write(const char* filename) const
 
         return true;
     }
-    catch (const ExceptionIOError&)
+    catch (const ExceptionIOError& e)
     {
-        RENDERER_LOG_ERROR("failed to write paths to %s: i/o error", filename);
+        RENDERER_LOG_ERROR("failed to write paths to %s: %s", filename, e.what());
         return false;
     }
 }

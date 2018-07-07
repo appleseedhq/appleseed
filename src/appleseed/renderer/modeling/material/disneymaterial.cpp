@@ -52,6 +52,7 @@
 
 // Standard headers.
 #include <algorithm>
+#include <exception>
 #include <map>
 #include <memory>
 #include <string>
@@ -782,7 +783,7 @@ bool DisneyMaterial::prepare_layers(const MessageContext& context)
             impl->m_layers.push_back(layer);
         }
     }
-    catch (const Exception& e)
+    catch (const std::exception& e)     // namespace qualification required
     {
         RENDERER_LOG_ERROR("%s: %s.", context.get(), e.what());
         return false;

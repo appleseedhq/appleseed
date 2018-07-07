@@ -35,8 +35,6 @@
 #include "renderer/kernel/intersection/intersectionsettings.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
-#include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/curve/genericcurvefilewriter.h"
 #include "foundation/curve/icurvewalker.h"
 #include "foundation/platform/defaulttimers.h"
@@ -46,6 +44,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <exception>
 #include <string>
 
 using namespace foundation;
@@ -247,12 +246,7 @@ bool CurveObjectWriter::write(
     {
         writer.write(walker);
     }
-    catch (const ExceptionIOError&)
-    {
-        RENDERER_LOG_ERROR("failed to write curve file %s: i/o error.", filepath);
-        return false;
-    }
-    catch (const Exception& e)
+    catch (const exception& e)
     {
         RENDERER_LOG_ERROR("failed to write curve file %s: %s.", filepath, e.what());
         return false;
