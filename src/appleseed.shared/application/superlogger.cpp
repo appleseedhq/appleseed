@@ -106,7 +106,7 @@ void SuperLogger::configure_from_settings(const Dictionary& settings)
             if (from_string<bool>(value))
                 enable_message_coloring();
         }
-        catch (ExceptionStringConversionError)
+        catch (const ExceptionStringConversionError&)
         {
             LOG_ERROR(*this, "invalid value \"%s\" for parameter \"message_coloring\".", value);
         }

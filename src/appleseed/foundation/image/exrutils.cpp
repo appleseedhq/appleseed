@@ -78,7 +78,7 @@ namespace
             header.insert(attr_name.c_str(), V3dAttribute(Imath::V3d(v[0], v[1], v[2])));
             return;
         }
-        catch (ExceptionStringConversionError&) {}
+        catch (const ExceptionStringConversionError&) {}
 
         try // Vector2
         {
@@ -86,7 +86,7 @@ namespace
             header.insert(attr_name.c_str(), V2dAttribute(Imath::V2d(v[0], v[1])));
             return;
         }
-        catch (ExceptionStringConversionError&) {}
+        catch (const ExceptionStringConversionError&) {}
 
         try // int / double / float
         {
@@ -94,7 +94,7 @@ namespace
             header.insert(attr_name.c_str(), FloatAttribute(f));
             return;
         }
-        catch (ExceptionStringConversionError&) {}
+        catch (const ExceptionStringConversionError&) {}
 
         // todo: check more types here if needed...
 
