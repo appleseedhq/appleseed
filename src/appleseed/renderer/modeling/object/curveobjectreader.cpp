@@ -64,7 +64,6 @@
 #include <cmath>
 #include <cstddef>
 #include <exception>
-#include <fstream>
 #include <string>
 
 using namespace foundation;
@@ -91,26 +90,29 @@ namespace {
         CurveObjectBuilder(
             const ParamArray &params,
             const string &name)
-          : m_params(params), m_name(name), m_split_count(0), m_total_vertex_count(0)
+          : m_params(params)
+          , m_name(name)
+          , m_split_count(0)
+          , m_total_vertex_count(0)
         {
         }
 
-        CurveObject* get_object()
+        CurveObject* get_object() const
         {
             return m_object;
         }
 
-        size_t get_curve_count()
+        size_t get_curve_count() const
         {
             return m_object->get_curve_count();
         }
 
-        size_t get_total_vertex_count()
+        size_t get_total_vertex_count() const
         {
             return m_total_vertex_count;
         }
 
-        const char* get_basis()
+        const char* get_basis() const
         {
             switch (m_object->get_basis())
             {
@@ -128,7 +130,6 @@ namespace {
 
               default:
                 return "invalid basis";
-
             }
         }
 
@@ -187,7 +188,6 @@ namespace {
 
         void end_curve_object() override
         {
-
         }
 
         void push_vertex(const Vector3f& v) override
@@ -207,7 +207,7 @@ namespace {
 
         void push_vertex_color(const Color3f& c) override
         {
-            return m_colors.push_back(Color3f(c));
+            return m_colors.push_back(c);
         }
 
         auto_release_ptr<CurveObject> create_hair_ball()
