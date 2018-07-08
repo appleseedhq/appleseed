@@ -1,9 +1,4 @@
 {
-global: *;
-local:
-    extern "C++"
-    {
-        OSL*;
-        boost*;
-    };
+    global: *;
+    local: TIFF*; _TIFF*; _tiff*; png*; jpeg*;
 };
