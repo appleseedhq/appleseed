@@ -38,12 +38,32 @@ TEST_SUITE(Foundation_Utility_Stopwatch)
 {
     struct FakeTimer
     {
-        uint64 m_time = 0;
+        uint64 m_time;
 
-        uint64 frequency() const { return 1; }
-        uint64 read() const { return m_time; }
-        uint64 read_start() const { return read(); }
-        uint64 read_end() const { return read(); }
+        FakeTimer()
+          : m_time(0)
+        {
+        }
+
+        uint64 frequency() const
+        {
+            return 1;
+        }
+
+        uint64 read() const
+        {
+            return m_time;
+        }
+
+        uint64 read_start() const
+        {
+            return read();
+        }
+
+        uint64 read_end() const
+        {
+            return read();
+        }
     };
 
     TEST_CASE(TestUnstartedStopwatch)
