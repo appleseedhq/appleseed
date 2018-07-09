@@ -446,8 +446,11 @@ class PackageBuilder:
         return
 
     def deploy_stage_to_package_directory(self):
+        package_directory = os.path.join(self.settings.package_output_path, "appleseed")
+        progress("Removing existing package directory")
+        safe_delete_directory(package_directory)
         progress("Deploying staging directory to package directory")
-        shutil.copytree("appleseed", os.path.join(self.settings.package_output_path, "appleseed"))
+        shutil.copytree("appleseed", package_directory)
 
     def build_final_zip_file(self):
         progress("Building final zip file from staging directory")
