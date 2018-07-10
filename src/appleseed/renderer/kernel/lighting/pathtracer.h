@@ -622,15 +622,19 @@ inline bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::pass_through(
     SamplingContext&            sampling_context,
     const Alpha                 alpha)
 {
+    // Fully opaque: never pass through.
     if (alpha[0] >= 1.0f)
         return false;
 
+    // Fully transparent: always pass through.
     if (alpha[0] <= 0.0f)
         return true;
 
+    // Generate a uniform sample in [0,1).
     sampling_context.split_in_place(1, 1);
+    const float s = sampling_context.next2<float>();
 
-    return sampling_context.next2<float>() >= alpha[0];
+    return s >= alpha[0];
 }
 
 template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
@@ -638,6 +642,7 @@ inline bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::continue_path_rr(
     SamplingContext&            sampling_context,
     PathVertex&                 vertex)
 {
+    // Don't apply Russian Roulette for the first few bounces.
     if (vertex.m_path_length <= m_rr_min_path_length)
         return true;
 
@@ -788,6 +793,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
             return false;
         }
 
+        // Apply Russian Roulette.
         if (!continue_path_rr(sampling_context, vertex))
             return false;
 
@@ -955,10 +961,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
 
         // Trace the ray across the volume.
         exit_point.clear();
-        shading_context.get_intersector().trace(
-            next_ray,
-            exit_point,
-            nullptr);
+        shading_context.get_intersector().trace(next_ray, exit_point, nullptr);
     }
 
     return true;
