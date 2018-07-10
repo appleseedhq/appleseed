@@ -347,7 +347,7 @@ namespace
                         const Image& image = m_frame.image();
 
                         ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
-                        image_attributes.insert("last pass", pass - 1);
+                        image_attributes.insert("appleseed:LastPass", pass - 1);
 
                         EXRImageFileWriter writer;
                         writer.write(

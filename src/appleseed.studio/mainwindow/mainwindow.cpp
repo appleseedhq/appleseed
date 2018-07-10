@@ -61,6 +61,17 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/genericprogressiveimagefilereader.h"
+#include "foundation/image/image.h"
+#include "foundation/image/imageattributes.h"
+#include "foundation/image/tile.h"
+#include "foundation/math/aabb.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
+#include "foundation/platform/path.h"
+#include "foundation/platform/system.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
@@ -270,10 +281,47 @@ void MainWindow::open_and_render_project(const QString& filepath, const QString&
 
 void MainWindow::open_resumable_render(const QString& filepath)
 {
-    if (!m_project_manager.is_project_open())
-        return;
+    GenericProgressiveImageFileReader reader;
+    reader.open(filepath.toLatin1().data());
 
-    start_rendering(FinalRendering);
+    CanvasProperties props;
+    reader.read_canvas_properties(props);
+
+    ImageAttributes image_attributes;
+    reader.read_image_attributes(image_attributes);
+
+    Project* project = m_project_manager.get_project();
+    Frame* frame = project->get_frame();
+
+    Image& frame_image = frame->image();
+
+    CanvasProperties frame_props = frame_image.properties();
+
+    assert(frame_props.m_canvas_width == props.m_canvas_width);
+    assert(frame_props.m_canvas_height == props.m_canvas_height);
+    assert(frame_props.m_tile_width == props.m_tile_width);
+    assert(frame_props.m_tile_height == props.m_tile_height);
+    assert(frame_props.m_channel_count == props.m_channel_count);
+    assert(frame_props.m_pixel_format == props.m_pixel_format);
+
+    for (size_t tile_y = 0; tile_y < props.m_tile_count_y; ++tile_y)
+    {
+        for (size_t tile_x = 0; tile_x < props.m_tile_count_x; ++tile_x)
+        {
+            unique_ptr<Tile> tile(reader.read_tile(tile_x, tile_y));
+            frame_image.set_tile(tile_x, tile_y, tile.release());
+        }
+    }
+
+    RENDERER_LOG_INFO("correctly opened resumable render at %s",
+        filepath.toLatin1().data());
+
+    const size_t last_pass = image_attributes.get<size_t>("appleseed:LastPass");
+
+    RENDERER_LOG_INFO("resuming at pass %s",
+        pretty_uint(last_pass).c_str());
+
+    //start_rendering(FinalRendering);
 }
 
 bool MainWindow::save_project(QString filepath)
@@ -1418,7 +1466,7 @@ void MainWindow::slot_open_project()
         get_open_filename(
             this,
             "Open...",
-            get_resumable_render_files_filter(),
+            get_project_files_filter(),
             m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
@@ -1447,11 +1495,14 @@ void MainWindow::slot_open_recent()
 
 void MainWindow::slot_open_resumable_render()
 {
+    if (!m_project_manager.is_project_open())
+        return;
+
     QString filepath =
         get_open_filename(
             this,
             "Open...",
-            get_project_files_filter(),
+            get_resumable_render_files_filter(),
             m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
