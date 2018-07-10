@@ -196,7 +196,7 @@ namespace
                 timing_result.m_ticks >= 1000.0
                     ? pretty_uint(static_cast<uint64>(timing_result.m_ticks)).c_str()
                     : pretty_scalar(timing_result.m_ticks).c_str(),
-                plural(timing_result.m_ticks, "clock tick").c_str(),
+                plural(timing_result.m_ticks, "tick").c_str(),
                 callrate_string.c_str());
         }
 

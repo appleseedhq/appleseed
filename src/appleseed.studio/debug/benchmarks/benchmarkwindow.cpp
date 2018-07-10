@@ -212,7 +212,7 @@ namespace
 
             const string ticks_string =
                 pretty_scalar(point.y) + " " +
-                plural(point.y, "clock tick");
+                plural(point.y, "tick");
 
             return
                 QString("%1\n%2")
