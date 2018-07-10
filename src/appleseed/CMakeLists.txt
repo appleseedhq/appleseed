@@ -90,7 +90,7 @@ list (APPEND appleseed_sources
     ${foundation_curve_sources}
 )
 source_group ("foundation\\curve" FILES
-    ${foundation_curves_sources}
+    ${foundation_curve_sources}
 )
 
 set (foundation_image_text_sources
