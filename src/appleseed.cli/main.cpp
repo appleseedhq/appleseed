@@ -128,10 +128,6 @@ namespace
 
     bool run_unit_tests()
     {
-        // Configure our logger.
-        SaveLogFormatterConfig save_g_logger_config(g_logger);
-        g_logger.set_all_formats("{datetime-utc} | {message}");
-
         // Configure the renderer's logger: mute all log messages except warnings and errors.
         SaveLogFormatterConfig save_global_logger_config(global_logger());
         global_logger().set_all_formats(string());
@@ -180,10 +176,6 @@ namespace
 
     void run_unit_benchmarks()
     {
-        // Configure our logger.
-        SaveLogFormatterConfig save_g_logger_config(g_logger);
-        g_logger.set_all_formats("{datetime-utc} | {message}");
-
         // Configure the renderer's logger: mute all log messages except warnings and errors.
         SaveLogFormatterConfig save_global_logger_config(global_logger());
         global_logger().set_all_formats(string());
