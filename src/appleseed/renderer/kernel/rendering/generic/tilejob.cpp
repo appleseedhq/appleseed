@@ -71,6 +71,7 @@ TileJob::TileJob(
   , m_pass_hash(pass_hash)
   , m_spectrum_mode(spectrum_mode)
   , m_abort_switch(abort_switch)
+  , m_finished(false)
 {
     // Either there is no tile callback, or there is the same number
     // of tile callbacks and rendering threads.
@@ -104,6 +105,9 @@ void TileJob::execute(const size_t thread_index)
             m_tile_y,
             m_pass_hash,
             m_abort_switch);
+
+        if (!m_abort_switch.is_aborted())
+            m_finished = true;
     }
     catch (const exception&)
     {
@@ -118,6 +122,11 @@ void TileJob::execute(const size_t thread_index)
     // Call the post-render tile callback.
     if (tile_callback)
         tile_callback->on_tile_end(&m_frame, m_tile_x, m_tile_y);
+}
+
+bool TileJob::is_render_successfull() const
+{
+    return m_finished;
 }
 
 }   // namespace renderer

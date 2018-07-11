@@ -61,6 +61,17 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/genericprogressiveimagefilereader.h"
+#include "foundation/image/image.h"
+#include "foundation/image/imageattributes.h"
+#include "foundation/image/tile.h"
+#include "foundation/math/aabb.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
+#include "foundation/platform/path.h"
+#include "foundation/platform/system.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
@@ -268,6 +279,51 @@ void MainWindow::open_and_render_project(const QString& filepath, const QString&
     open_project_async(filepath);
 }
 
+void MainWindow::open_resumable_render(const QString& filepath)
+{
+    GenericProgressiveImageFileReader reader;
+    reader.open(filepath.toLatin1().data());
+
+    CanvasProperties props;
+    reader.read_canvas_properties(props);
+
+    ImageAttributes image_attributes;
+    reader.read_image_attributes(image_attributes);
+
+    Project* project = m_project_manager.get_project();
+    Frame* frame = project->get_frame();
+
+    Image& frame_image = frame->image();
+
+    CanvasProperties frame_props = frame_image.properties();
+
+    assert(frame_props.m_canvas_width == props.m_canvas_width);
+    assert(frame_props.m_canvas_height == props.m_canvas_height);
+    assert(frame_props.m_tile_width == props.m_tile_width);
+    assert(frame_props.m_tile_height == props.m_tile_height);
+    assert(frame_props.m_channel_count == props.m_channel_count);
+    assert(frame_props.m_pixel_format == props.m_pixel_format);
+
+    for (size_t tile_y = 0; tile_y < props.m_tile_count_y; ++tile_y)
+    {
+        for (size_t tile_x = 0; tile_x < props.m_tile_count_x; ++tile_x)
+        {
+            unique_ptr<Tile> tile(reader.read_tile(tile_x, tile_y));
+            frame_image.set_tile(tile_x, tile_y, tile.release());
+        }
+    }
+
+    RENDERER_LOG_INFO("correctly opened resumable render at %s",
+        filepath.toLatin1().data());
+
+    const size_t last_pass = image_attributes.get<size_t>("appleseed:LastPass");
+
+    RENDERER_LOG_INFO("resuming at pass %s",
+        pretty_uint(last_pass).c_str());
+
+    //start_rendering(FinalRendering);
+}
+
 bool MainWindow::save_project(QString filepath)
 {
     if (!m_project_manager.is_project_open())
@@ -370,6 +426,8 @@ void MainWindow::build_menus()
 
     connect(m_ui->action_file_open_builtin_project_cornellbox, SIGNAL(triggered()), SLOT(slot_open_cornellbox_builtin_project()));
     connect(m_ui->action_file_reload_project, SIGNAL(triggered()), SLOT(slot_reload_project()));
+
+    connect(m_ui->action_file_open_resumable_render, SIGNAL(triggered()), SLOT(slot_open_resumable_render()));
 
     connect(m_ui->action_file_monitor_project, SIGNAL(toggled(bool)), SLOT(slot_toggle_project_file_monitoring(const bool)));
 
@@ -601,6 +659,10 @@ void MainWindow::build_toolbar()
     m_action_open_project = new QAction(load_icons("project_open"), combine_name_and_shortcut("Open Project...", m_ui->action_file_open_project->shortcut()), this);
     connect(m_action_open_project, SIGNAL(triggered()), SLOT(slot_open_project()));
     m_ui->main_toolbar->addAction(m_action_open_project);
+
+    m_action_open_resumable_render = new QAction(load_icons("project_open"), combine_name_and_shortcut("Open Resumable Render...", m_ui->action_file_open_resumable_render->shortcut()), this);
+    connect(m_action_open_resumable_render, SIGNAL(triggered()), SLOT(slot_open_resumable_render()));
+    m_ui->main_toolbar->addAction(m_action_open_resumable_render);
 
     m_action_save_project = new QAction(load_icons("project_save") , combine_name_and_shortcut("Save Project", m_ui->action_file_save_project->shortcut()), this);
     connect(m_action_save_project, SIGNAL(triggered()), SLOT(slot_save_project()));
@@ -1428,6 +1490,27 @@ void MainWindow::slot_open_recent()
     {
         const QString filepath = action->data().toString();
         open_project_async(filepath);
+    }
+}
+
+void MainWindow::slot_open_resumable_render()
+{
+    if (!m_project_manager.is_project_open())
+        return;
+
+    QString filepath =
+        get_open_filename(
+            this,
+            "Open...",
+            get_resumable_render_files_filter(),
+            m_settings,
+            SETTINGS_FILE_DIALOG_PROJECTS);
+
+    if (!filepath.isEmpty())
+    {
+        filepath = QDir::toNativeSeparators(filepath);
+
+        open_resumable_render(filepath);
     }
 }
 
