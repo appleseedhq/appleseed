@@ -42,7 +42,7 @@
 #include "utility/widgetzoomhandler.h"
 
 // OpenColorIO headers.
-#include<OpenColorIO/OpenColorIO.h>
+#include <OpenColorIO/OpenColorIO.h>
 namespace OCIO = OCIO_NAMESPACE;
 
 // Qt headers.

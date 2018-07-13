@@ -46,7 +46,7 @@ TEST_SUITE(Foundation_Math_Half)
         half imath_half;
         Half as_half;
 
-        for (uint16_t i = 0; i < 0xFFFF; ++i)
+        for (uint16 i = 0; i < 0xFFFF; ++i)
         {
             imath_half.setBits(i);
             as_half.set_bits(i);
@@ -66,7 +66,7 @@ TEST_SUITE(Foundation_Math_Half)
         half imath_half;
         Half as_half;
 
-        for (uint16_t i = 0; i < 0xFFFF; ++i)
+        for (uint16 i = 0; i < 0xFFFF; ++i)
         {
             half x;
             x.setBits(i);
