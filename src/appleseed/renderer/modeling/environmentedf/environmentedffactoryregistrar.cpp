@@ -92,13 +92,21 @@ void EnvironmentEDFFactoryRegistrar::reinitialize(const SearchPaths& search_path
     register_factory(auto_release_ptr<FactoryType>(new PreethamEnvironmentEDFFactory()));
 
     // Register factories defined in plugins.
-    register_factories_from_plugins<EnvironmentEDF>(
+  /*  register_factories_from_plugins<EnvironmentEDF>(
         search_paths,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<IEnvironmentEDFFactory* (*)()>(plugin_entry_point);
             register_factory(foundation::auto_release_ptr<IEnvironmentEDFFactory>(create_fn()));
-        });
+        });*/
+
+    collect_plugins<EnvironmentEDF>(
+            [this](void* plugin_entry_point)
+            {
+                auto create_fn = reinterpret_cast<IEnvironmentEDFFactory* (*)()>(plugin_entry_point);
+                register_factory(foundation::auto_release_ptr<IEnvironmentEDFFactory>(create_fn()));
+            }
+    );
 }
 
 EnvironmentEDFFactoryArray EnvironmentEDFFactoryRegistrar::get_factories() const

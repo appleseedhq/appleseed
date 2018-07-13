@@ -86,14 +86,21 @@ void BSSRDFFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
     register_factory(auto_release_ptr<FactoryType>(new RandomwalkBSSRDFFactory()));
     register_factory(auto_release_ptr<FactoryType>(new StandardDipoleBSSRDFFactory()));
 
-    // Register factories defined in plugins.
-    register_factories_from_plugins<BSSRDF>(
+       // Register factories defined in plugins.
+ /*   register_factories_from_plugins<BSSRDF>(
         search_paths,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<IBSSRDFFactory* (*)()>(plugin_entry_point);
             register_factory(foundation::auto_release_ptr<IBSSRDFFactory>(create_fn()));
-        });
+        });*/
+    collect_plugins<BSSRDF>(
+            [this](void* plugin_entry_point)
+            {
+                auto create_fn = reinterpret_cast<IBSSRDFFactory* (*)()>(plugin_entry_point);
+                register_factory(foundation::auto_release_ptr<IBSSRDFFactory>(create_fn()));
+            }
+    );
 }
 
 BSSRDFFactoryArray BSSRDFFactoryRegistrar::get_factories() const

@@ -79,13 +79,21 @@ void ObjectFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
     register_factory(auto_release_ptr<FactoryType>(new MeshObjectFactory()));
 
     // Register factories defined in plugins.
-    register_factories_from_plugins<Object>(
+  /*  register_factories_from_plugins<Object>(
         search_paths,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<IObjectFactory* (*)()>(plugin_entry_point);
             register_factory(foundation::auto_release_ptr<IObjectFactory>(create_fn()));
         });
+*/
+    collect_plugins<Object>(
+            [this](void* plugin_entry_point)
+            {
+                auto create_fn = reinterpret_cast<IObjectFactory* (*)()>(plugin_entry_point);
+                register_factory(foundation::auto_release_ptr<IObjectFactory>(create_fn()));
+            }
+    );
 }
 
 ObjectFactoryArray ObjectFactoryRegistrar::get_factories() const

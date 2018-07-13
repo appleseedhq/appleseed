@@ -107,14 +107,21 @@ void BSDFFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
     register_factory(auto_release_ptr<FactoryType>(new SpecularBRDFFactory()));
     register_factory(auto_release_ptr<FactoryType>(new SpecularBTDFFactory()));
 
-    // Register factories defined in plugins.
-    register_factories_from_plugins<BSDF>(
+   // Register factories defined in plugins.
+   /* register_factories_from_plugins<BSDF>(
         search_paths,
         [this](void* plugin_entry_point)
         {
             auto create_fn = reinterpret_cast<IBSDFFactory* (*)()>(plugin_entry_point);
             register_factory(foundation::auto_release_ptr<IBSDFFactory>(create_fn()));
-        });
+        });*/
+    collect_plugins<BSDF>(
+            [this](void* plugin_entry_point)
+            {
+                auto create_fn = reinterpret_cast<IBSDFFactory* (*)()>(plugin_entry_point);
+                register_factory(foundation::auto_release_ptr<IBSDFFactory>(create_fn()));
+            }
+    );
 }
 
 BSDFFactoryArray BSDFFactoryRegistrar::get_factories() const

@@ -53,7 +53,7 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
-
+#include "renderer/modeling/entity/registerentityfactories.h"
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
 #include "foundation/utility/foreach.h"
@@ -215,6 +215,10 @@ void Project::add_default_configurations()
 
 void Project::reinitialize_factory_registrars()
 {
+      //imp->m_search_paths  need not to be sent to plugins ,..
+    //calling clear_plugins_data() must be  by Project (this) not a plugin , it is a prototype of new plugins loading technique.
+    m_aov_factory_registrar.clear_plugins_data();
+
     m_aov_factory_registrar.reinitialize(impl->m_search_paths);
     m_assembly_factory_registrar.reinitialize(impl->m_search_paths);
     m_bsdf_factory_registrar.reinitialize(impl->m_search_paths);
@@ -229,6 +233,10 @@ void Project::reinitialize_factory_registrars()
     m_surface_shader_factory_registrar.reinitialize(impl->m_search_paths);
     m_texture_factory_registrar.reinitialize(impl->m_search_paths);
     m_volume_factory_registrar.reinitialize(impl->m_search_paths);
+
+    //any plugin  not only m_volume_factory_registrar,, this is a prototype  will be changed later
+    //int is for test , actually we need no template as well as we need to re-construct this part , again it is a prototype nothing more
+    m_volume_factory_registrar.register_factories_from_plugins<int>(impl->m_search_paths);
 }
 
 void Project::collect_asset_paths(StringArray& paths) const
