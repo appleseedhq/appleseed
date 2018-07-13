@@ -250,13 +250,13 @@ QString get_open_filename(
 
     set_value(settings, settings_key + SETTINGS_SELECTED_FILTER, selected_filter);
 
-    if (!filepath.isEmpty())
-    {
-        set_value(
-            settings,
-            settings_key + SETTINGS_LAST_DIRECTORY,
-            QDir::toNativeSeparators(QFileInfo(filepath).path()));
-    }
+    if (filepath.isEmpty())
+        return filepath;
+
+    set_value(
+        settings,
+        settings_key + SETTINGS_LAST_DIRECTORY,
+        QDir::toNativeSeparators(QFileInfo(filepath).path()));
 
     return filepath;
 }
@@ -283,13 +283,13 @@ QStringList get_open_filenames(
 
     set_value(settings, settings_key + SETTINGS_SELECTED_FILTER, selected_filter);
 
-    if (!filepaths.isEmpty())
-    {
-        set_value(
-            settings,
-            settings_key + SETTINGS_LAST_DIRECTORY,
-            QDir::toNativeSeparators(QFileInfo(filepaths.first()).path()));
-    }
+    if (filepaths.isEmpty())
+        return filepaths;
+
+    set_value(
+        settings,
+        settings_key + SETTINGS_LAST_DIRECTORY,
+        QDir::toNativeSeparators(QFileInfo(filepaths.first()).path()));
 
     return filepaths;
 }
@@ -316,24 +316,23 @@ QString get_save_filename(
 
     set_value(settings, settings_key + SETTINGS_SELECTED_FILTER, selected_filter);
 
-    if (!filepath.isEmpty())
-    {
-        set_value(
-            settings,
-            settings_key + SETTINGS_LAST_DIRECTORY,
-            QDir::toNativeSeparators(QFileInfo(filepath).path()));
-    }
+    if (filepath.isEmpty())
+        return filepath;
 
-    QFileInfo finfo(filepath);
+    QFileInfo file_info(filepath);
 
-    // Check if there is any extension.
-    // Use the selected filter as the extension only if the filter has one type.
-    if (finfo.suffix().isEmpty() && selected_filter.count('*') == 1)
+    set_value(
+        settings,
+        settings_key + SETTINGS_LAST_DIRECTORY,
+        QDir::toNativeSeparators(file_info.path()));
+
+    // If the file name has no extension and the selected filter has a single extension
+    // (i.e. it contains one *.ext substring) then add that extension to the file name.
+    if (file_info.suffix().isEmpty() && selected_filter.count('*') == 1)
     {
-        int begin = selected_filter.indexOf("*") + 1;
-        int end = selected_filter.indexOf(")", begin);
-        assert(begin != 0 && end > begin);
-        
+        const int begin = selected_filter.indexOf("*") + 1;
+        const int end = selected_filter.indexOf(")", begin);
+        assert(begin > 0 && end > begin);
         filepath += selected_filter.mid(begin, end - begin);
     }
 
