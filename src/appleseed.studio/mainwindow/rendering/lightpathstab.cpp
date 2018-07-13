@@ -286,6 +286,17 @@ void LightPathsTab::create_scrollarea()
 
 void LightPathsTab::recreate_handlers()
 {
+    // Handler for zooming the render widget in and out with the keyboard or the mouse wheel.
+    m_zoom_handler.reset(
+        new WidgetZoomHandler(
+            m_scroll_area,
+            m_light_paths_widget));
+
+    // Handler for panning the render widget with the mouse.
+    m_pan_handler.reset(
+        new ScrollAreaPanHandler(
+            m_scroll_area));
+
     // Handler for tracking and displaying mouse coordinates.
     m_mouse_tracker.reset(
         new MouseCoordinatesTracker(

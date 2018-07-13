@@ -34,6 +34,8 @@
 #include "mainwindow/rendering/lightpathspickinghandler.h"
 #include "mainwindow/rendering/renderclipboardhandler.h"
 #include "utility/mousecoordinatestracker.h"
+#include "utility/scrollareapanhandler.h"
+#include "utility/widgetzoomhandler.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
@@ -95,6 +97,8 @@ class LightPathsTab
     QToolButton*                                m_next_path_button;
     QLabel*                                     m_info_label;
 
+    std::unique_ptr<WidgetZoomHandler>          m_zoom_handler;
+    std::unique_ptr<ScrollAreaPanHandler>       m_pan_handler;
     std::unique_ptr<MouseCoordinatesTracker>    m_mouse_tracker;
     std::unique_ptr<CameraController>           m_camera_controller;
     std::unique_ptr<LightPathsPickingHandler>   m_screen_space_paths_picking_handler;
