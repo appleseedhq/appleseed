@@ -33,7 +33,7 @@ namespace renderer
 {
 
 //
-// Perceptually uniform sequential color maps from Matplotlib.
+// Perceptually uniform sequential color maps from Matplotlib in sRGB color space.
 //
 // References:
 //
@@ -49,7 +49,7 @@ extern const float ViridisColorMap[3 * 256];
 
 
 //
-// For completeness, the Jet color map popularized by MATLAB.
+// For completeness, the Jet color map popularized by MATLAB, in sRGB color space.
 //
 // References:
 //
