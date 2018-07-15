@@ -208,13 +208,11 @@ shader as_voronoi3d
     matrix in_placementMatrix = matrix(1)
     [[
         string as_maya_attribute_name = "placementMatrix",
-        string label = "Placement Matrix",
-        string page = "Placement",
-        int as_maya_attribute_connectable = 0,
-        int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1,
+        string as_maya_attribute_short_name = "pm",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        string widget = "null",
+        string label = "Placement Matrix"
     ]],
     point in_surfacePoint = P
     [[

@@ -28,10 +28,9 @@
 
 // Ref: $MAYA_LOCATION/docs/Nodes/crater.html
 
-#include "appleseed/fractal/as_fractal_helpers.h"
 #include "appleseed/math/as_math_helpers.h"
-#include "appleseed/maya/as_maya_fractal_helpers.h"
 #include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_recurrence_helpers.h"
 #include "appleseed/maya/as_maya_transform_helpers.h"
 
 shader as_maya_crater

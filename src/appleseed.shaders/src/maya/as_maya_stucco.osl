@@ -28,8 +28,8 @@
 
 // Ref: $MAYA_LOCATION/docs/Nodes/stucco.html
 
-#include "appleseed/maya/as_maya_fractal_helpers.h"
 #include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_recurrence_helpers.h"
 #include "appleseed/maya/as_maya_transform_helpers.h"
 
 shader as_maya_stucco

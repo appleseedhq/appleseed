@@ -90,7 +90,8 @@ shader as_metal
         float max = 1.0,
         string label = "Energy Compensation",
         string page = "Specular",
-        string help = "Energy compensation, to account for energy loss with high roughness. Valid for Beckmann and GGX MDF only."
+        string help = "Energy compensation, to account for energy loss with high roughness. Valid for Beckmann and GGX MDF only.",
+        string widget = "null"
     ]],
     float in_anisotropy_amount = 0.0
     [[

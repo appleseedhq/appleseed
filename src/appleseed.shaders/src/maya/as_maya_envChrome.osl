@@ -160,7 +160,8 @@ shader as_maya_envChrome
     matrix in_placementMatrix = matrix(1)
     [[
         string as_maya_attribute_name = "placementMatrix",
-        string label = "Placement Matrix"
+        string label = "Placement Matrix",
+        string widget = "null"
     ]],
     point in_pointCamera = P
     [[
