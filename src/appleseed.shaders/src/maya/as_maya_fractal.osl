@@ -194,7 +194,11 @@ shader as_maya_fractal
 
         int recursion_level = (int) floor(iterate);
 
-        float time_value = in_time, amplitude = in_amplitude, c = 0.0, val;
+        int frame_number = 0;
+        getattribute("global:frame", frame_number);
+
+        float time_value = in_time + frame_number;
+        float amplitude = in_amplitude, c = 0.0, val;
 
         for (int i = 0; i <= recursion_level; ++i)
         {

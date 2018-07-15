@@ -188,6 +188,12 @@ shader as_attributes
         string as_maya_attribute_short_name = "scl",
         string label = "Shutter Close Time"
     ]],
+    output int out_global_frame = 0
+    [[
+        string as_maya_attribute_name = "globalFrame",
+        string as_maya_attribute_short_name = "gfr",
+        string label = "Global Frame Number"
+    ]],
     output int out_path_ray_depth = 0
     [[
         string as_maya_attribute_name = "pathRayDepth",
@@ -243,6 +249,8 @@ shader as_attributes
     getattribute("camera:shutter", out_camera_shutter);
     getattribute("camera:shutter_open", out_camera_shutter_open);
     getattribute("camera:shutter_close", out_camera_shutter_close);
+    // https://github.com/imageworks/OpenShadingLanguage/pull/828
+    getattribute("global:frame", out_global_frame);
 
     getattribute("path:ray_depth", out_path_ray_depth);
     getattribute("path:ray_has_differentials", out_path_has_ray_differentials);

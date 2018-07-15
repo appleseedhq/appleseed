@@ -157,7 +157,7 @@ shader as_maya_mountain
 
         int recursion_level = (int) iterate;
 
-        float height_color = 0, frequency = 1;
+        float height_color = 0, frequency = 15;
         float slope_x = 0, slope_y = 0, offset_x = 0, offset_y = 0;
         float amplitude = in_amplitude, height_amplitude = in_amplitude;
 
@@ -171,12 +171,12 @@ shader as_maya_mountain
                 height_amplitude *= diff;
             }
 
-            if (amplitude > 0.0)
+            if (amplitude == 0.0)
             {
                 break;
             }
 
-            vector slope = (vector) value_noise_2d(
+            vector slope = snoise(
                 st[0] * frequency + offset_x,
                 st[1] * frequency + offset_y);
 
@@ -189,15 +189,15 @@ shader as_maya_mountain
             frequency *= 2;
             amplitude *= in_boundary;
 
-            height_color += height_amplitude * (float) value_noise_2d(
+            height_color += height_amplitude * ((float) value_noise2d(
                 st[0] * frequency + offset_x,
-                st[1] * frequency + offset_y);
+                st[1] * frequency + offset_y) * 2.0 - 1.0);
 
             height_amplitude *= in_rockRoughness;
         }
 
         float total_color = sqr(slope_x) + sqr(slope_y);
-        float total_alpha = 0.5 * total_color, ratio;
+        float total_alpha = 4.0 * total_color, ratio;
 
         float height_alpha = max(0.0, in_snowAltitude * in_snowDropoff);
 
@@ -230,9 +230,9 @@ shader as_maya_mountain
                 break;
             }
 
-            total_color += amplitude * (float) value_noise_2d(
+            total_color += amplitude * ((float) value_noise2d(
                 st[0] * frequency + offset_x,
-                st[1] * frequency + offset_y);
+                st[1] * frequency + offset_y) * 2.0 - 1.0);
 
             offset_x += 0.1;
             offset_y += 0.03;
@@ -241,7 +241,7 @@ shader as_maya_mountain
             amplitude *= ratio;
         }
 
-        out_outAlpha = 0.5 * (1 + total_color);
+        out_outAlpha = clamp(0.5 * (1 + total_color), 0.0, 1.0);
 
         maya_colorBalance(
             in_colorGain,

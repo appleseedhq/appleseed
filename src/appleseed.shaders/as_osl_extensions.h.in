@@ -51,16 +51,6 @@ float max(color C)  { return max(C[0], max(C[1], C[2])); }
 float min(vector V) { return min(V[0], min(V[1], V[2])); }
 float max(vector V) { return max(V[0], max(V[1], V[2])); }
 
-closure color mix(closure color A, closure color B, float w)
-{
-    return (1.0 - w) * A + w * B;
-}
-
-closure color mix(closure color A, closure color B, color w)
-{
-    return (1.0 - w) * A + w * B;
-}
-
 closure color as_sheen(normal N) BUILTIN;
 
 closure color as_glossy(

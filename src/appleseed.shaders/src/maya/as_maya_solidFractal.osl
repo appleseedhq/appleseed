@@ -228,7 +228,10 @@ shader as_maya_solidFractal
         vector frequency = ripples * 0.5; // better match with .5 factor
         vector offset = vector(0);
 
-        float anim_time = (in_animated) ? in_time + time : 0.0;
+        int frame_number = 0;
+        getattribute("global:frame", frame_number);
+
+        float anim_time = (in_animated) ? in_time + frame_number : 0.0;
         float amplitude = in_amplitude, val, out_value = 0.0;
         float bias_plus1, bias_minus1, sqr_bias_plus1;
 
@@ -245,7 +248,7 @@ shader as_maya_solidFractal
             {
                 amplitude *= iterate - max_iteration;
             }
-            if (amplitude == 0.0) // < EPS ?
+            if (amplitude == 0.0)
             {
                 break;
             }

@@ -44,7 +44,6 @@ shader as_texture3d
     string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_texture.html#label-as-texture3d"
 ]]
 (
-
     string in_filename = ""
     [[
         string as_maya_attribute_name = "filename",

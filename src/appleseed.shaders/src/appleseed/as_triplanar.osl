@@ -103,10 +103,10 @@ shader as_triplanar
     [[
         string as_maya_attribute_name = "placementMatrix",
         string as_maya_attribute_short_name = "pm",
-        int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0,
         string widget = "null",
-        string label = "Placement Matrix"
+        string label = "Placement Matrix",
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
     ]],
     int in_enable_cms = 1
     [[
