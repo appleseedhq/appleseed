@@ -89,7 +89,7 @@ namespace
                     const Tile& diagnostic_tile = image.tile(tile_x, tile_y);
                     Tile& aov_tile = m_image.tile(tile_x, tile_y);
 
-                    aov_tile.copy_from(diagnostic_tile);
+                    //aov_tile.copy_from(diagnostic_tile);
 
                     return;
                 }

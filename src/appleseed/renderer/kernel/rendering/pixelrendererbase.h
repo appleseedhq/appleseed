@@ -72,12 +72,16 @@ class PixelRendererBase
     // This method is called before a tile gets rendered.
     void on_tile_begin(
         const Frame&                frame,
+        const size_t                tile_x,
+        const size_t                tile_y,
         foundation::Tile&           tile,
         TileStack&                  aov_tiles) override;
 
     // This method is called after a tile has been rendered.
     void on_tile_end(
         const Frame&                frame,
+        const size_t                tile_x,
+        const size_t                tile_y,
         foundation::Tile&           tile,
         TileStack&                  aov_tiles) override;
 

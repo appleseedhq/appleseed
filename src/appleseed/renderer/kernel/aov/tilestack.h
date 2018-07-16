@@ -62,6 +62,12 @@ class TileStack
        const size_t                 i,
        const foundation::Color4f&   color) const;
 
+    foundation::Tile& get_tile(
+       const size_t                 index);
+
+    const foundation::Tile& get_tile(
+       const size_t                 index) const;
+
   private:
     foundation::Tile*   m_tiles[MaxAOVCount];
     size_t              m_size;
@@ -97,6 +103,20 @@ inline void TileStack::set_pixel(
     const foundation::Color4f&  color) const
 {
     m_tiles[i]->set_pixel(x, y, color);
+}
+
+inline foundation::Tile& TileStack::get_tile(
+    const size_t                index)
+{
+    assert(index < m_size);
+    return *m_tiles[index];
+}
+
+inline const foundation::Tile& TileStack::get_tile(
+    const size_t                index) const
+{
+    assert(index < m_size);
+    return *m_tiles[index];
 }
 
 }       // namespace renderer

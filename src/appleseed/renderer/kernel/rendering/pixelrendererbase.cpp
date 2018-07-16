@@ -84,6 +84,8 @@ bool PixelRendererBase::are_diagnostics_enabled() const
 
 void PixelRendererBase::on_tile_begin(
     const Frame&            frame,
+    const size_t            tile_x,
+    const size_t            tile_y,
     Tile&                   tile,
     TileStack&              aov_tiles)
 {
@@ -96,6 +98,8 @@ void PixelRendererBase::on_tile_begin(
 
 void PixelRendererBase::on_tile_end(
     const Frame&            frame,
+    const size_t            tile_x,
+    const size_t            tile_y,
     Tile&                   tile,
     TileStack&              aov_tiles)
 {
