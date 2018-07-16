@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "invalidsampleaov.h"
+#include "diagnosticaov.h"
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
@@ -48,6 +48,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <string>
 
 using namespace foundation;
 using namespace std;
@@ -58,15 +59,18 @@ namespace renderer
 namespace
 {
     //
-    // Invalid Sample AOV accumulator.
+    // Diagnostic AOV accumulator.
     //
 
-    class InvalidSampleAOVAccumulator
+    class DiagnosticAOVAccumulator
       : public AOVAccumulator
     {
       public:
-        InvalidSampleAOVAccumulator(Image& image)
+        DiagnosticAOVAccumulator(
+            Image& image,
+            const string& diagnostic_name)
           : m_image(image)
+          , m_diagnostic_name(diagnostic_name)
         {
         }
 
@@ -75,13 +79,11 @@ namespace
             const size_t                tile_x,
             const size_t                tile_y)
         {
-            const string expected_name = "invalid_sample_diagnostic";
-
             for (size_t i = 0, e = frame.aov_images().size(); i < e; ++i)
             {
                 const string aov_name = frame.aov_images().get_name(i);
 
-                if (aov_name == expected_name)
+                if (aov_name == m_diagnostic_name)
                 {
                     const Image& image = frame.aov_images().get_image(i);
                     const Tile& diagnostic_tile = image.tile(tile_x, tile_y);
@@ -95,33 +97,26 @@ namespace
         }
 
       private:
-        Image&      m_image;
+        Image&              m_image;
+        const string        m_diagnostic_name;
     };
 
-
     //
-    // Invalid Sample AOV.
+    // Diagnostic AOV.
     //
 
-    const char* Model = "invalid_sample_aov";
-
-    class InvalidSampleAOV
+    class DiagnosticAOV
       : public AOV
     {
       public:
-        explicit InvalidSampleAOV(const ParamArray& params)
-          : AOV("invalid_sample", params)
+        explicit DiagnosticAOV(const char* name, const ParamArray& params)
+          : AOV(name, params)
         {
         }
 
         void release() override
         {
             delete this;
-        }
-
-        const char* get_model() const override
-        {
-            return Model;
         }
 
         size_t get_channel_count() const override
@@ -164,8 +159,74 @@ namespace
 
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
+            string diagnostic_name = get_name();
+            diagnostic_name += "_diagnostic";
+
             return auto_release_ptr<AOVAccumulator>(
-                new InvalidSampleAOVAccumulator(get_image()));
+                new DiagnosticAOVAccumulator(get_image(), diagnostic_name));
+        }
+    };
+
+    //
+    // Invalid Sample AOV.
+    //
+
+    const char* Invalid_Sample_Model = "invalid_sample_aov";
+
+    class InvalidSampleAOV
+      : public DiagnosticAOV
+    {
+      public:
+        explicit InvalidSampleAOV(const ParamArray& params)
+          : DiagnosticAOV("invalid_sample", params)
+        {
+        }
+
+        const char* get_model() const override
+        {
+            return Invalid_Sample_Model;
+        }
+    };
+
+    //
+    // Pixel Sample AOV.
+    //
+
+    const char* Pixel_Sample_Model = "pixel_sample_aov";
+
+    class PixelSampleAOV
+      : public DiagnosticAOV
+    {
+      public:
+        explicit PixelSampleAOV(const ParamArray& params)
+          : DiagnosticAOV("pixel_sample", params)
+        {
+        }
+
+        const char* get_model() const override
+        {
+            return Pixel_Sample_Model;
+        }
+    };
+
+    //
+    // Pixel Variation AOV.
+    //
+
+    const char* Pixel_Variation_Model = "pixel_variation_aov";
+
+    class PixelVariationAOV
+      : public DiagnosticAOV
+    {
+      public:
+        explicit PixelVariationAOV(const ParamArray& params)
+          : DiagnosticAOV("pixel_variation", params)
+        {
+        }
+
+        const char* get_model() const override
+        {
+            return Pixel_Variation_Model;
         }
     };
 }
@@ -182,14 +243,14 @@ void InvalidSampleAOVFactory::release()
 
 const char* InvalidSampleAOVFactory::get_model() const
 {
-    return Model;
+    return Invalid_Sample_Model;
 }
 
 Dictionary InvalidSampleAOVFactory::get_model_metadata() const
 {
     return
         Dictionary()
-            .insert("name", Model)
+            .insert("name", Invalid_Sample_Model)
             .insert("label", "Invalid Sample");
 }
 
@@ -203,6 +264,76 @@ auto_release_ptr<AOV> InvalidSampleAOVFactory::create(
     const ParamArray&   params) const
 {
     return auto_release_ptr<AOV>(new InvalidSampleAOV(params));
+}
+
+
+//
+// PixelSampleAOVFactory class implementation.
+//
+
+void PixelSampleAOVFactory::release()
+{
+    delete this;
+}
+
+const char* PixelSampleAOVFactory::get_model() const
+{
+    return Pixel_Sample_Model;
+}
+
+Dictionary PixelSampleAOVFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", Pixel_Sample_Model)
+            .insert("label", "Pixel Sample");
+}
+
+DictionaryArray PixelSampleAOVFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
+    return metadata;
+}
+
+auto_release_ptr<AOV> PixelSampleAOVFactory::create(
+    const ParamArray&   params) const
+{
+    return auto_release_ptr<AOV>(new PixelSampleAOV(params));
+}
+
+
+//
+// PixelVariationAOVFactory class implementation.
+//
+
+void PixelVariationAOVFactory::release()
+{
+    delete this;
+}
+
+const char* PixelVariationAOVFactory::get_model() const
+{
+    return Pixel_Variation_Model;
+}
+
+Dictionary PixelVariationAOVFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", Pixel_Variation_Model)
+            .insert("label", "Pixel Variation");
+}
+
+DictionaryArray PixelVariationAOVFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
+    return metadata;
+}
+
+auto_release_ptr<AOV> PixelVariationAOVFactory::create(
+    const ParamArray&   params) const
+{
+    return auto_release_ptr<AOV>(new PixelVariationAOV(params));
 }
 
 }   // namespace renderer

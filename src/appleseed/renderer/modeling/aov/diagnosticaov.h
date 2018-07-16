@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_AOV_PIXELVARIATIONAOV_H
-#define APPLESEED_RENDERER_MODELING_AOV_PIXELVARIATIONAOV_H
+#ifndef APPLESEED_RENDERER_MODELING_AOV_DIAGNOSTICAOV_H
+#define APPLESEED_RENDERER_MODELING_AOV_DIAGNOSTICAOV_H
 
 // appleseed.renderer headers.
 #include "renderer/modeling/aov/iaovfactory.h"
@@ -46,6 +46,58 @@ namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
+
+//
+// A factory for invalid sample AOVs.
+//
+
+class APPLESEED_DLLSYMBOL InvalidSampleAOVFactory
+  : public IAOVFactory
+{
+  public:
+    // Delete this instance.
+    void release() override;
+
+    // Return a string identifying this AOV model.
+    const char* get_model() const override;
+
+    // Return metadata for this AOV model.
+    foundation::Dictionary get_model_metadata() const override;
+
+    // Return metadata for the inputs of this AOV model.
+    foundation::DictionaryArray get_input_metadata() const override;
+
+    // Create a new AOV instance.
+    foundation::auto_release_ptr<AOV> create(
+        const ParamArray&   params) const override;
+};
+
+
+//
+// A factory for pixel sample AOVs.
+//
+
+class APPLESEED_DLLSYMBOL PixelSampleAOVFactory
+  : public IAOVFactory
+{
+  public:
+    // Delete this instance.
+    void release() override;
+
+    // Return a string identifying this AOV model.
+    const char* get_model() const override;
+
+    // Return metadata for this AOV model.
+    foundation::Dictionary get_model_metadata() const override;
+
+    // Return metadata for the inputs of this AOV model.
+    foundation::DictionaryArray get_input_metadata() const override;
+
+    // Create a new AOV instance.
+    foundation::auto_release_ptr<AOV> create(
+        const ParamArray&   params) const override;
+};
+
 
 //
 // A factory for pixel variation AOVs.
@@ -74,4 +126,4 @@ class APPLESEED_DLLSYMBOL PixelVariationAOVFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_AOV_PIXELVARIATIONAOV_H
+#endif  // !APPLESEED_RENDERER_MODELING_AOV_DIAGNOSTICAOV_H
