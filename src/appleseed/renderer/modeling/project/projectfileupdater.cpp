@@ -1806,9 +1806,30 @@ namespace
         }
 
       private:
-        // Remove frame::save_extra_aovs.
+        // Remove pixel_renderer::enable_diagnostics and frame::save_extra_aovs.
         void remove_diagnostic_option()
         {
+            for (each<ConfigurationContainer> i = m_project.configurations(); i; ++i)
+            {
+                Dictionary& root = i->get_parameters();
+
+                if (root.dictionaries().exist("uniform_pixel_renderer"))
+                {
+                    Dictionary& upr = root.dictionary("uniform_pixel_renderer");
+
+                    if (upr.strings().exist("enable_diagnostics"))
+                        upr.strings().remove("enable_diagnostics");
+                }
+
+                if (root.dictionaries().exist("adaptive_pixel_renderer"))
+                {
+                    Dictionary& apr = root.dictionary("adaptive_pixel_renderer");
+
+                    if (apr.strings().exist("enable_diagnostics"))
+                        apr.strings().remove("enable_diagnostics");
+                }
+            }
+
             Frame* frame = m_project.get_frame();
 
             if (frame == nullptr)

@@ -77,11 +77,6 @@ PixelRendererBase::PixelRendererBase(
     }
 }
 
-bool PixelRendererBase::are_diagnostics_enabled() const
-{
-    return m_params.m_diagnostics;
-}
-
 void PixelRendererBase::on_tile_begin(
     const Frame&            frame,
     const size_t            tile_x,
@@ -193,26 +188,6 @@ void PixelRendererBase::on_pixel_end(
 void PixelRendererBase::signal_invalid_sample()
 {
     ++m_invalid_sample_count;
-}
-
-
-//
-// PixelRendererBaseFactory class implementation.
-//
-
-Dictionary PixelRendererBaseFactory::get_params_metadata()
-{
-    Dictionary metadata;
-
-    metadata.dictionaries().insert(
-        "enable_diagnostics",
-        Dictionary()
-            .insert("type", "bool")
-            .insert("default", "false")
-            .insert("label", "Enable Diagnostics")
-            .insert("help", "Enable pixel renderer diagnostics"));
-
-    return metadata;
 }
 
 }   // namespace renderer

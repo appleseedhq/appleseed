@@ -108,12 +108,10 @@ namespace
                 "adaptive pixel renderer settings:\n"
                 "  min samples                   %s\n"
                 "  max samples                   %s\n"
-                "  max variation                 %f\n"
-                "  diagnostics                   %s",
+                "  max variation                 %f",
                 pretty_uint(m_params.m_min_samples).c_str(),
                 pretty_uint(m_params.m_max_samples).c_str(),
-                m_params.m_max_variation,
-                are_diagnostics_enabled() ? "on" : "off");
+                m_params.m_max_variation);
 
             m_sample_renderer->print_settings();
         }
@@ -388,7 +386,7 @@ IPixelRenderer* AdaptivePixelRendererFactory::create(
 
 Dictionary AdaptivePixelRendererFactory::get_params_metadata()
 {
-    Dictionary metadata = PixelRendererBaseFactory::get_params_metadata();
+    Dictionary metadata;
 
     metadata.dictionaries().insert(
         "min_samples",
