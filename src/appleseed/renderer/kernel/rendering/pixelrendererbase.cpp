@@ -66,12 +66,12 @@ PixelRendererBase::PixelRendererBase(
 {
     if (m_params.m_diagnostics)
     {
-        m_invalid_sample_aov_index = frame.create_extra_aov_image("invalid_samples");
+        m_invalid_sample_aov_index = frame.create_extra_aov_image("invalid_sample_diagnostic");
 
         if (m_invalid_sample_aov_index == ~size_t(0) && thread_index == 0)
         {
             RENDERER_LOG_WARNING(
-                "could not create invalid samples aov, maximum number of aovs (" FMT_SIZE_T ") reached.",
+                "could not create invalid sample aov, maximum number of aovs (" FMT_SIZE_T ") reached.",
                 MaxAOVCount);
         }
     }

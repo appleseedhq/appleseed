@@ -1406,10 +1406,16 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/glossyaov.cpp
     renderer/modeling/aov/glossyaov.h
     renderer/modeling/aov/iaovfactory.h
+    renderer/modeling/aov/invalidsampleaov.cpp
+    renderer/modeling/aov/invalidsampleaov.h
     renderer/modeling/aov/normalaov.cpp
     renderer/modeling/aov/normalaov.h
+    renderer/modeling/aov/pixelsampleaov.cpp
+    renderer/modeling/aov/pixelsampleaov.h
     renderer/modeling/aov/pixeltimeaov.cpp
     renderer/modeling/aov/pixeltimeaov.h
+    renderer/modeling/aov/pixelvariationaov.cpp
+    renderer/modeling/aov/pixelvariationaov.h
     renderer/modeling/aov/uvaov.cpp
     renderer/modeling/aov/uvaov.h
 )

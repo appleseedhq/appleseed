@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2018 Kevin Masson, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,21 +26,52 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
-#define APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
+#ifndef APPLESEED_RENDERER_MODELING_AOV_PIXELSAMPLEAOV_H
+#define APPLESEED_RENDERER_MODELING_AOV_PIXELSAMPLEAOV_H
+
+// appleseed.renderer headers.
+#include "renderer/modeling/aov/iaovfactory.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace foundation    { class Dictionary; }
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class AOV; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
 
 //
-// Revision number of the current project file format.
-//
-// Make sure to update the project file updater (renderer::ProjectFileUpdater)
-// when you increment this value.
+// A factory for pixel sample AOVs.
 //
 
-const size_t ProjectFormatRevision = 27;
+class APPLESEED_DLLSYMBOL PixelSampleAOVFactory
+  : public IAOVFactory
+{
+  public:
+    // Delete this instance.
+    void release() override;
+
+    // Return a string identifying this AOV model.
+    const char* get_model() const override;
+
+    // Return metadata for this AOV model.
+    foundation::Dictionary get_model_metadata() const override;
+
+    // Return metadata for the inputs of this AOV model.
+    foundation::DictionaryArray get_input_metadata() const override;
+
+    // Create a new AOV instance.
+    foundation::auto_release_ptr<AOV> create(
+        const ParamArray&   params) const override;
+};
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
+#endif  // !APPLESEED_RENDERER_MODELING_AOV_PIXELSAMPLEAOV_H
