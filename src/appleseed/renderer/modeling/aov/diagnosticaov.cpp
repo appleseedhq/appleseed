@@ -332,7 +332,7 @@ namespace
             return Pixel_Sample_Model;
         }
 
-        void post_process_image() override
+        void post_process_image(const AABB2u& bbox) override
         {
             static const Color3f Blue(0.0f, 0.0f, 1.0f);
             static const Color3f Red(1.0f, 0.0f, 0.0f);
@@ -345,9 +345,9 @@ namespace
 
             Color3f color;
 
-            for (size_t j = 0; j < src_props.m_canvas_height; ++j)
+            for (size_t j = bbox.min.y; j <= bbox.max.y; ++j)
             {
-                for (size_t i = 0; i < src_props.m_canvas_width; ++i)
+                for (size_t i = bbox.min.x; i < bbox.max.x; ++i)
                 {
                     m_image->get_pixel(i, j, color);
                     max_samples = max(color[0], max_samples);
@@ -359,9 +359,9 @@ namespace
                 return;
 
             // Normalize.
-            for (size_t j = 0; j < src_props.m_canvas_height; ++j)
+            for (size_t j = bbox.min.y; j <= bbox.max.y; ++j)
             {
-                for (size_t i = 0; i < src_props.m_canvas_width; ++i)
+                for (size_t i = bbox.min.x; i < bbox.max.x; ++i)
                 {
                     m_image->get_pixel(i, j, color);
 
@@ -389,7 +389,7 @@ namespace
         {
         }
 
-        void post_process_image() override
+        void post_process_image(const AABB2u& bbox) override
         {
             static const Color3f Blue(0.0f, 0.0f, 1.0f);
             static const Color3f Red(1.0f, 0.0f, 0.0f);
@@ -398,9 +398,9 @@ namespace
 
             Color3f color;
 
-            for (size_t j = 0; j < src_props.m_canvas_height; ++j)
+            for (size_t j = bbox.min.y; j <= bbox.max.y; ++j)
             {
-                for (size_t i = 0; i < src_props.m_canvas_width; ++i)
+                for (size_t i = bbox.min.x; i < bbox.max.x; ++i)
                 {
                     m_image->get_pixel(i, j, color);
                     color = lerp(Blue, Red, saturate(color[0]));
