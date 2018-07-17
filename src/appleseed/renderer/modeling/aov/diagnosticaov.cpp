@@ -30,6 +30,7 @@
 #include "diagnosticaov.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/rendering/pixelcontext.h"
@@ -66,39 +67,154 @@ namespace
       : public AOVAccumulator
     {
       public:
-        DiagnosticAOVAccumulator(
-            Image& image,
-            const string& diagnostic_name)
+        DiagnosticAOVAccumulator()
+        {
+        }
+    };
+
+    //
+    // Invalid Sample AOV accumulator.
+    //
+    //
+
+    const uint8 NoState = 0;
+    const uint8 InvalidSample = 1;
+    const uint8 CorrectSample = 2;
+
+    class InvalidSampleAOVAccumulator
+      : public AOVAccumulator
+    {
+      public:
+        explicit InvalidSampleAOVAccumulator(
+            Image& image)
           : m_image(image)
-          , m_diagnostic_name(diagnostic_name)
+          , m_invalid_sample_count(0)
         {
         }
 
-        void on_tile_end(
-            const Frame&                frame,
-            const size_t                tile_x,
-            const size_t                tile_y)
+        void on_tile_begin(
+                const Frame&                frame,
+                const size_t                tile_x,
+                const size_t                tile_y,
+                const size_t                max_spp) override
         {
-            for (size_t i = 0, e = frame.aov_images().size(); i < e; ++i)
+            // Create a tile that stores samples hint.
+            const Tile& tile = frame.image().tile(tile_x, tile_y);
+
+            m_invalid_sample_tile.reset(
+                new Tile(tile.get_width(), tile.get_height(), 1, PixelFormatUInt8));
+            m_invalid_sample_tile->clear(Color<uint8, 1>(0));
+
+            const CanvasProperties& props = frame.image().properties();
+
+            m_tile_origin_x = static_cast<int>(tile_x * props.m_tile_width);
+            m_tile_origin_y = static_cast<int>(tile_y * props.m_tile_height);
+            m_tile_end_x = static_cast<int>(m_tile_origin_x + m_invalid_sample_tile->get_width() - 1);
+            m_tile_end_y = static_cast<int>(m_tile_origin_y + m_invalid_sample_tile->get_height() - 1);
+        }
+
+        void on_tile_end(
+                const Frame&                frame,
+                const size_t                tile_x,
+                const size_t                tile_y) override
+        {
+            // Fill the tile according to samples state.
+            const Tile& tile = frame.image().tile(tile_x, tile_y);
+            Tile& aov_tile = m_image.tile(tile_x, tile_y);
+
+            const size_t width = tile.get_width();
+            const size_t height = tile.get_height();
+
+            for (size_t y = 0; y < height; ++y)
             {
-                const string aov_name = frame.aov_images().get_name(i);
-
-                if (aov_name == m_diagnostic_name)
+                for (size_t x = 0; x < width; ++x)
                 {
-                    const Image& image = frame.aov_images().get_image(i);
-                    const Tile& diagnostic_tile = image.tile(tile_x, tile_y);
-                    Tile& aov_tile = m_image.tile(tile_x, tile_y);
+                    Color<uint8, 1> sample_state;
+                    m_invalid_sample_tile->get_pixel(x, y, sample_state);
 
-                    aov_tile.copy_from(diagnostic_tile);
+                    Color4f color;
 
-                    return;
+                    switch (sample_state[0])
+                    {
+                      case NoState:
+                        color = Color4f(1.0f, 0.0f, 0.0f, 1.0f);
+                        break;
+
+                      case InvalidSample:
+                        color = Color4f(1.0f, 0.0f, 1.0f, 1.0f);
+                        break;
+
+                      case CorrectSample:
+                        tile.get_pixel(x, y, color);
+                        color.rgb().set(0.2f * luminance(color.rgb()));     // 20% of luminance
+                        color.a = 1.0f;
+                        break;
+
+                      assert_otherwise;
+                    }
+
+                    aov_tile.set_pixel(x, y, color);
+                }
+            }
+        }
+
+        void on_pixel_begin(const Vector2i& pi) override
+        {
+            m_invalid_sample_count = 0;
+        }
+
+        void on_pixel_end(const Vector2i& pi) override
+        {
+            // Store a hint corresping to the sample state in the tile.
+            if (pi.x >= m_tile_origin_x &&
+                pi.y >= m_tile_origin_y &&
+                pi.x <= m_tile_end_x &&
+                pi.y <= m_tile_end_y)
+            {
+                const Vector2i pt(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y);
+                m_invalid_sample_tile->set_pixel(pt.x, pt.y,
+                    m_invalid_sample_count > 0 ? &InvalidSample : &CorrectSample);
+            }
+        }
+
+        void write(
+            const PixelContext&         pixel_context,
+            const ShadingPoint&         shading_point,
+            const ShadingComponents&    shading_components,
+            const AOVComponents&        aov_components,
+            ShadingResult&              shading_result) override
+        {
+            // Detect invalid samples.
+            static const size_t MaxWarningsPerThread = 5;
+
+            if (!shading_result.is_valid())
+            {
+                m_invalid_sample_count++;
+
+                if (m_invalid_sample_count <= MaxWarningsPerThread)
+                {
+                    RENDERER_LOG_WARNING(
+                        "%s sample%s at pixel (%s, %s) had nan, negative or infinite components",
+                       pretty_uint(m_invalid_sample_count).c_str(),
+                       m_invalid_sample_count > 1 ? "s" : "",
+                       pretty_uint(pixel_context.get_pixel_coords().x).c_str(),
+                       pretty_uint(pixel_context.get_pixel_coords().y).c_str());
+                }
+                else if (m_invalid_sample_count == MaxWarningsPerThread + 1)
+                {
+                    RENDERER_LOG_WARNING("more invalid samples found, omitting warning messages for brevity.");
                 }
             }
         }
 
       private:
-        Image&              m_image;
-        const string        m_diagnostic_name;
+        Image&                                  m_image;
+        size_t                                  m_invalid_sample_count;
+        std::unique_ptr<foundation::Tile>       m_invalid_sample_tile;
+        int                                     m_tile_origin_x;
+        int                                     m_tile_origin_y;
+        int                                     m_tile_end_x;
+        int                                     m_tile_end_y;
     };
 
     //
@@ -159,11 +275,8 @@ namespace
 
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
-            string diagnostic_name = get_name();
-            diagnostic_name += "_diagnostic";
-
             return auto_release_ptr<AOVAccumulator>(
-                new DiagnosticAOVAccumulator(get_image(), diagnostic_name));
+                new DiagnosticAOVAccumulator());
         }
     };
 
@@ -185,6 +298,12 @@ namespace
         const char* get_model() const override
         {
             return Invalid_Sample_Model;
+        }
+
+        auto_release_ptr<AOVAccumulator> create_accumulator() const override
+        {
+            return auto_release_ptr<AOVAccumulator>(
+                new InvalidSampleAOVAccumulator(get_image()));
         }
     };
 

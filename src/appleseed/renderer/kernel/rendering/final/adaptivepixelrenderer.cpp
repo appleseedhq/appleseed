@@ -87,7 +87,7 @@ namespace
             ISampleRendererFactory*     factory,
             const ParamArray&           params,
             const size_t                thread_index)
-          : PixelRendererBase(frame, thread_index, params)
+          : PixelRendererBase()
           , m_params(params)
           , m_sample_renderer(factory->create(thread_index))
           , m_sample_aov_tile(nullptr)
@@ -234,10 +234,7 @@ namespace
 
                     // Ignore invalid samples.
                     if (!shading_result.is_valid())
-                    {
-                        signal_invalid_sample();
                         continue;
-                    }
 
                     // Merge the sample into the scratch framebuffer.
                     m_scratch_fb->add(

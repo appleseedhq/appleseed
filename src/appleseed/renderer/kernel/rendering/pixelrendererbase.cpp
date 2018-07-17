@@ -52,29 +52,8 @@ namespace renderer
 // PixelRendererBase class implementation.
 //
 
-const uint8 NoState = 0;
-const uint8 InvalidSample = 1;
-const uint8 CorrectSample = 2;
-
-PixelRendererBase::PixelRendererBase(
-    const Frame&        frame,
-    const size_t        thread_index,
-    const ParamArray&   params)
-  : m_params(params)
-  , m_invalid_pixel_count(0)
-  , m_invalid_sample_aov_index(~size_t(0))
+PixelRendererBase::PixelRendererBase()
 {
-    if (m_params.m_diagnostics)
-    {
-        m_invalid_sample_aov_index = frame.create_extra_aov_image("invalid_sample_diagnostic");
-
-        if (m_invalid_sample_aov_index == ~size_t(0) && thread_index == 0)
-        {
-            RENDERER_LOG_WARNING(
-                "could not create invalid sample aov, maximum number of aovs (" FMT_SIZE_T ") reached.",
-                MaxAOVCount);
-        }
-    }
 }
 
 void PixelRendererBase::on_tile_begin(
@@ -84,11 +63,6 @@ void PixelRendererBase::on_tile_begin(
     Tile&                   tile,
     TileStack&              aov_tiles)
 {
-    if (m_invalid_sample_aov_index != ~size_t(0))
-    {
-        m_invalid_sample_diagnostic.reset(
-            new Tile(tile.get_width(), tile.get_height(), 1, PixelFormatUInt8));
-    }
 }
 
 void PixelRendererBase::on_tile_end(
@@ -98,43 +72,6 @@ void PixelRendererBase::on_tile_end(
     Tile&                   tile,
     TileStack&              aov_tiles)
 {
-    if (m_invalid_sample_aov_index != ~size_t(0))
-    {
-        const size_t width = tile.get_width();
-        const size_t height = tile.get_height();
-
-        for (size_t y = 0; y < height; ++y)
-        {
-            for (size_t x = 0; x < width; ++x)
-            {
-                Color<uint8, 1> sample_state;
-                m_invalid_sample_diagnostic->get_pixel(x, y, sample_state);
-
-                Color4f color;
-
-                switch (sample_state[0])
-                {
-                  case NoState:
-                    color = Color4f(1.0f, 0.0f, 0.0f, 1.0f);
-                    break;
-
-                  case InvalidSample:
-                    color = Color4f(1.0f, 0.0f, 1.0f, 1.0f);
-                    break;
-
-                  case CorrectSample:
-                    tile.get_pixel(x, y, color);
-                    color.rgb().set(0.2f * luminance(color.rgb()));     // 20% of luminance
-                    color.a = 1.0f;
-                    break;
-
-                  assert_otherwise;
-                }
-
-                aov_tiles.set_pixel(x, y, m_invalid_sample_aov_index, color);
-            }
-        }
-    }
 }
 
 void PixelRendererBase::on_pixel_begin(
@@ -143,7 +80,6 @@ void PixelRendererBase::on_pixel_begin(
     const AABB2i&               tile_bbox,
     AOVAccumulatorContainer&    aov_accumulators)
 {
-    m_invalid_sample_count = 0;
     aov_accumulators.on_pixel_begin(pi);
 }
 
@@ -154,40 +90,6 @@ void PixelRendererBase::on_pixel_end(
     AOVAccumulatorContainer&    aov_accumulators)
 {
     aov_accumulators.on_pixel_end(pi);
-
-    // todo: mark pixel as faulty in the diagnostic map.
-
-    if (m_invalid_sample_count > 0)
-    {
-        ++m_invalid_pixel_count;
-
-        const size_t MaxWarningsPerThread = 5;
-
-        if (m_invalid_pixel_count <= MaxWarningsPerThread)
-        {
-            RENDERER_LOG_WARNING(
-                FMT_SIZE_T " sample%s at pixel (%d, %d) had nan, negative or infinite components and %s ignored.",
-                m_invalid_sample_count,
-                m_invalid_sample_count > 1 ? "s" : "",
-                pi.x, pi.y,
-                m_invalid_sample_count > 1 ? "were" : "was");
-        }
-        else if (m_invalid_pixel_count == MaxWarningsPerThread + 1)
-        {
-            RENDERER_LOG_WARNING("more invalid samples found, omitting warning messages for brevity.");
-        }
-    }
-
-    if (m_params.m_diagnostics && tile_bbox.contains(pt))
-    {
-        m_invalid_sample_diagnostic->set_pixel(pt.x, pt.y,
-            m_invalid_sample_count > 0 ? &InvalidSample : &CorrectSample);
-    }
-}
-
-void PixelRendererBase::signal_invalid_sample()
-{
-    ++m_invalid_sample_count;
 }
 
 }   // namespace renderer
