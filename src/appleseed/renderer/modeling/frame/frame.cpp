@@ -115,7 +115,6 @@ struct Frame::Impl
     unique_ptr<Image>               m_image;
     unique_ptr<ImageStack>          m_aov_images;
     DenoiserAOV*                    m_denoiser_aov;
-    vector<size_t>                  m_extra_aovs;
 };
 
 Frame::Frame(
@@ -275,20 +274,6 @@ ImageStack& Frame::aov_images() const
 const AOVContainer& Frame::internal_aovs() const
 {
     return impl->m_internal_aovs;
-}
-
-size_t Frame::create_extra_aov_image(const char* name) const
-{
-    const size_t index = aov_images().get_index(name);
-
-    if (index == ~size_t(0) && aov_images().size() < MaxAOVCount)
-    {
-        const size_t add_index = aov_images().append(name, 4, PixelFormatFloat);
-        impl->m_extra_aovs.push_back(add_index);
-        return add_index;
-    }
-
-    return index;
 }
 
 const Filter2f& Frame::get_filter() const
