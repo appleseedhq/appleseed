@@ -279,18 +279,11 @@ namespace
             // Store diagnostics values in the diagnostics tile.
             if ((m_sample_aov_tile || m_variation_aov_tile) && tile_bbox.contains(pt))
             {
-                Color4f value(0.0f, 0.0f, 0.0f, 1.0f);
+                Color3f value(0.0f, 0.0f, 0.0f);
 
                 if (m_sample_aov_tile)
                 {
-                    value[0] =
-                        m_params.m_min_samples == m_params.m_max_samples
-                            ? 1.0f
-                            : fit(
-                                static_cast<float>(trackers[0].get_size()),
-                                static_cast<float>(m_params.m_min_samples),
-                                static_cast<float>(m_params.m_max_samples),
-                                0.0f, 1.0f);
+                    value[0] = trackers[0].get_size();
 
                     m_sample_aov_tile->set_pixel(pt.x, pt.y, value);
                 }

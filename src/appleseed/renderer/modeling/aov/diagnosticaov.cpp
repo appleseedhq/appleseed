@@ -237,12 +237,12 @@ namespace
 
         size_t get_channel_count() const override
         {
-            return 4;
+            return 3;
         }
 
         const char** get_channel_names() const override
         {
-            static const char* ChannelNames[] = {"R", "G", "B", "A"};
+            static const char* ChannelNames[] = {"R", "G", "B"};
             return ChannelNames;
         }
 
@@ -270,7 +270,7 @@ namespace
 
         void clear_image() override
         {
-            m_image->clear(Color4f(0.0f, 0.0f, 0.0f, 1.0f));
+            m_image->clear(Color3f(0.0f, 0.0f, 0.0f));
         }
 
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
@@ -305,22 +305,6 @@ namespace
             return Invalid_Sample_Model;
         }
 
-        size_t get_channel_count() const override
-        {
-            return 3;
-        }
-
-        const char** get_channel_names() const override
-        {
-            static const char* ChannelNames[] = {"R", "G", "B"};
-            return ChannelNames;
-        }
-
-        void clear_image() override
-        {
-            m_image->clear(Color3f(0.0f, 0.0f, 0.0f));
-        }
-
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
@@ -347,6 +331,47 @@ namespace
         {
             return Pixel_Sample_Model;
         }
+
+        void post_process_image() override
+        {
+            static const Color3f Blue(0.0f, 0.0f, 1.0f);
+            static const Color3f Red(1.0f, 0.0f, 0.0f);
+
+            const CanvasProperties& src_props = m_image->properties();
+
+            // Find the maximum and minimum samples count.
+            float max_samples = std::numeric_limits<float>::lowest();
+            float min_samples = std::numeric_limits<float>::max();
+
+            Color3f color;
+
+            for (size_t j = 0; j < src_props.m_canvas_height; ++j)
+            {
+                for (size_t i = 0; i < src_props.m_canvas_width; ++i)
+                {
+                    m_image->get_pixel(i, j, color);
+                    max_samples = max(color[0], max_samples);
+                    min_samples = min(color[0], min_samples);
+                }
+            }
+
+            if (max_samples < min_samples)
+                return;
+
+            // Normalize.
+            for (size_t j = 0; j < src_props.m_canvas_height; ++j)
+            {
+                for (size_t i = 0; i < src_props.m_canvas_width; ++i)
+                {
+                    m_image->get_pixel(i, j, color);
+
+                    float c = fit(color[0], min_samples, max_samples, 0.0f, 1.0f);
+
+                    color = lerp(Blue, Red, saturate(c));
+                    m_image->set_pixel(i, j, color);
+                }
+            }
+        }
     };
 
     //
@@ -362,6 +387,26 @@ namespace
         explicit PixelVariationAOV(const ParamArray& params)
           : DiagnosticAOV("pixel_variation", params)
         {
+        }
+
+        void post_process_image() override
+        {
+            static const Color3f Blue(0.0f, 0.0f, 1.0f);
+            static const Color3f Red(1.0f, 0.0f, 0.0f);
+
+            const CanvasProperties& src_props = m_image->properties();
+
+            Color3f color;
+
+            for (size_t j = 0; j < src_props.m_canvas_height; ++j)
+            {
+                for (size_t i = 0; i < src_props.m_canvas_width; ++i)
+                {
+                    m_image->get_pixel(i, j, color);
+                    color = lerp(Blue, Red, saturate(color[0]));
+                    m_image->set_pixel(i, j, color);
+                }
+            }
         }
 
         const char* get_model() const override
