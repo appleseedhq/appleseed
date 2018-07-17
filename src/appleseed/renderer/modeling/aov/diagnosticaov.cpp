@@ -132,22 +132,22 @@ namespace
                     Color<uint8, 1> sample_state;
                     m_invalid_sample_tile->get_pixel(x, y, sample_state);
 
-                    Color4f color;
+                    Color3f color;
+                    Color4f beauty_color;
 
                     switch (sample_state[0])
                     {
                       case NoState:
-                        color = Color4f(1.0f, 0.0f, 0.0f, 1.0f);
+                        color = Color3f(1.0f, 0.0f, 0.0f);
                         break;
 
                       case InvalidSample:
-                        color = Color4f(1.0f, 0.0f, 1.0f, 1.0f);
+                        color = Color3f(1.0f, 0.0f, 1.0f);
                         break;
 
                       case CorrectSample:
-                        tile.get_pixel(x, y, color);
-                        color.rgb().set(0.2f * luminance(color.rgb()));     // 20% of luminance
-                        color.a = 1.0f;
+                        tile.get_pixel(x, y, beauty_color);
+                        color.set(0.2f * luminance(beauty_color.rgb()));     // 20% of luminance
                         break;
 
                       assert_otherwise;
@@ -295,9 +295,30 @@ namespace
         {
         }
 
+        void release() override
+        {
+            delete this;
+        }
+
         const char* get_model() const override
         {
             return Invalid_Sample_Model;
+        }
+
+        size_t get_channel_count() const override
+        {
+            return 3;
+        }
+
+        const char** get_channel_names() const override
+        {
+            static const char* ChannelNames[] = {"R", "G", "B"};
+            return ChannelNames;
+        }
+
+        void clear_image() override
+        {
+            m_image->clear(Color3f(0.0f, 0.0f, 0.0f));
         }
 
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
