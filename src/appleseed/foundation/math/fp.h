@@ -366,7 +366,7 @@ inline float FP<float>::construct(
 
     const uint32 value =
           (sign     << 31)
-        | (exponent << 22)
+        | (exponent << 23)
         |  mantissa;
 
     return binary_cast<float>(value);

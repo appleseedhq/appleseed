@@ -146,6 +146,44 @@ TEST_SUITE(Foundation_Math_FP_Float)
     {
         EXPECT_EQ(FP<float>::neg_inf(), shift(FP<float>::neg_inf(), -1));
     }
+
+    TEST_CASE(Sign_GivenNegativeAndPositiveFloats_ReturnsOneAndZero)
+    {
+        const float Negative = -0.33f;
+        const float Positive = +0.33f;
+        EXPECT_EQ(1, FP<float>::sign(Negative));
+        EXPECT_EQ(0, FP<float>::sign(Positive));
+    }
+
+    TEST_CASE(Exponent_GivenFloat_ReturnsValidExponent)
+    {
+        // https://www.h-schmidt.net/FloatConverter/IEEE754.html used for
+        // exponent calculation.
+        const float Value = -0.01612f;
+
+        EXPECT_EQ(121, FP<float>::exponent(Value));
+    }
+
+    TEST_CASE(Mantissa_GivenFloat_ReturnsValidMantissa)
+    {
+        // https://www.h-schmidt.net/FloatConverter/IEEE754.html used for
+        // mantissa calculation.
+        const float Value = 0.1234598821f;
+
+        EXPECT_EQ(8181897, FP<float>::mantissa(Value));
+    }
+
+    TEST_CASE(Construct_GivenSignExponentMantissaOfAFloat_ReturnsTheSameNumber)
+    {
+        const float Initial = -0.15f;
+
+        EXPECT_EQ(
+            Initial,
+            FP<float>::construct(
+                FP<float>::sign(Initial),
+                FP<float>::exponent(Initial),
+                FP<float>::mantissa(Initial)));
+    }
 }
 
 TEST_SUITE(Foundation_Math_FP_Double)
@@ -194,5 +232,39 @@ TEST_SUITE(Foundation_Math_FP_Double)
     TEST_CASE(IsQNan_GivenQNan_ReturnsTrue)
     {
         EXPECT_TRUE(FP<double>::is_qnan(FP<double>::qnan()));
+    }
+
+    TEST_CASE(Sign_GivenNegativeAndPositiveFloats_ReturnsOneAndZero)
+    {
+        const double Negative = -0.33;
+        const double Positive = +0.33;
+        EXPECT_EQ(1, FP<double>::sign(Negative));
+        EXPECT_EQ(0, FP<double>::sign(Positive));
+    }
+
+    TEST_CASE(Exponent_GivenFloat_ReturnsValidExponent)
+    {
+        const double Value = -0.01612;
+
+        EXPECT_EQ(1017, FP<double>::exponent(Value));
+    }
+
+    TEST_CASE(Mantissa_GivenFloat_ReturnsValidMantissa)
+    {
+        const double Value = 0.1234598821;
+
+        EXPECT_EQ(4392622436961750, FP<double>::mantissa(Value));
+    }
+
+    TEST_CASE(Construct_GivenSignExponentMantissaOfAFloat_ReturnsTheSameNumber)
+    {
+        const double Initial = -0.15;
+
+        EXPECT_EQ(
+            Initial,
+            FP<double>::construct(
+                FP<double>::sign(Initial),
+                FP<double>::exponent(Initial),
+                FP<double>::mantissa(Initial)));
     }
 }
