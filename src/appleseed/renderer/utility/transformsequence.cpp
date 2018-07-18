@@ -79,10 +79,10 @@ void TransformSequence::clear()
     m_capacity = 0;
     m_size = 0;
 
-    delete [] m_keys;
+    delete[] m_keys;
     m_keys = nullptr;
 
-    delete [] m_interpolators;
+    delete[] m_interpolators;
     m_interpolators = nullptr;
 
     m_can_swap_handedness = false;
@@ -113,7 +113,7 @@ void TransformSequence::set_transform(
         for (size_t i = 0; i < m_size; ++i)
             new (&new_keys[i]) TransformKey(m_keys[i]);
 
-        delete [] m_keys;
+        delete[] m_keys;
         m_keys = new_keys;
     }
 
@@ -181,7 +181,7 @@ void TransformSequence::optimize()
 
 bool TransformSequence::prepare()
 {
-    delete [] m_interpolators;
+    delete[] m_interpolators;
     m_interpolators = nullptr;
 
     bool success = true;

@@ -158,7 +158,7 @@ Image::~Image()
     for (size_t i = 0; i < m_props.m_tile_count; ++i)
         delete m_tiles[i];
 
-    delete [] m_tiles;
+    delete[] m_tiles;
 }
 
 void Image::release()
