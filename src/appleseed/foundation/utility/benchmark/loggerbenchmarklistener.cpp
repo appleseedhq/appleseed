@@ -182,9 +182,13 @@ namespace
             if (timing_result.m_ticks > 0.0)
             {
                 const double freq_mhz = timing_result.m_frequency * 1.0e-6;
+
                 callrate_string =
-                    "(" + pretty_callrate(timing_result, 3) +
-                    " at " + pretty_scalar(freq_mhz, 3) + " MHz)";
+                    format("({0} at {1} MHz, {2} {3})",
+                        pretty_callrate(timing_result, 3),
+                        pretty_scalar(freq_mhz, 3),
+                        pretty_uint(timing_result.m_measurement_count),
+                        plural(timing_result.m_measurement_count, "measurement"));
             }
 
             print_suite_name(benchmark_suite);
