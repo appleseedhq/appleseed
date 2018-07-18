@@ -27,12 +27,18 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "benchmarkserie.h"
+#ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKSERIES_H
+#define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKSERIES_H
+
+// appleseed.foundation headers.
+#include "foundation/utility/api/apiarray.h"
+#include "foundation/utility/benchmark/benchmarkdatapoint.h"
 
 namespace foundation
 {
 
-APPLESEED_DEFINE_APIARRAY(BenchmarkSerie);
+APPLESEED_DECLARE_APIARRAY(BenchmarkSeries, BenchmarkDataPoint);
 
-}   // namespace foundation
+}       // namespace foundation
+
+#endif  // !APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKSERIES_H
