@@ -94,6 +94,7 @@ set (sources
     bindtransform.cpp
     bindutility.cpp
     bindvector.cpp
+    bindvolume.cpp
     dict2dict.cpp
     dict2dict.h
     gillocks.h
