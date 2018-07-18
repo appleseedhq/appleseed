@@ -440,6 +440,7 @@ set (appleseedpython_sources
     ../appleseed.python/bindtransform.cpp
     ../appleseed.python/bindutility.cpp
     ../appleseed.python/bindvector.cpp
+    ../appleseed.python/bindvolume.cpp
     ../appleseed.python/dict2dict.cpp
     ../appleseed.python/dict2dict.h
     ../appleseed.python/gillocks.h
