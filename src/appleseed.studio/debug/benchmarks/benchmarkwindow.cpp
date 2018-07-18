@@ -250,11 +250,11 @@ unique_ptr<ChartBase> BenchmarkWindow::create_chart(
     unique_ptr<IToolTipFormatter> formatter(new ToolTipFormatter());
     chart->set_tooltip_formatter(std::move(formatter));
 
-    const BenchmarkSerie serie = m_benchmark_aggregator.get_serie(case_uid);
+    const BenchmarkSeries& series = m_benchmark_aggregator.get_series(case_uid);
 
-    for (size_t i = 0; i < serie.size(); ++i)
+    for (size_t i = 0; i < series.size(); ++i)
     {
-        const BenchmarkDataPoint& point = serie[i];
+        const BenchmarkDataPoint& point = series[i];
 
         const double x =
             static_cast<double>(

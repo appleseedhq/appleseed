@@ -31,7 +31,7 @@
 #include "foundation/platform/datetime.h"
 #include "foundation/utility/benchmark/benchmarkaggregator.h"
 #include "foundation/utility/benchmark/benchmarkdatapoint.h"
-#include "foundation/utility/benchmark/benchmarkserie.h"
+#include "foundation/utility/benchmark/benchmarkseries.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/test.h"
 #include "foundation/utility/uid.h"
@@ -89,14 +89,14 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
 
         const Dictionary& benchmarks = aggregator.get_benchmarks();
 
-        const BenchmarkSerie& serie =
-            aggregator.get_serie(
+        const BenchmarkSeries& series =
+            aggregator.get_series(
                 benchmarks.dictionaries()
                     .get("Release").dictionaries()
                     .get("Suite")
                     .get<UniqueID>("Case"));
 
-        EXPECT_EQ(1, serie.size());
+        EXPECT_EQ(1, series.size());
     }
 
     TEST_CASE(NonBenchmarkFile)
@@ -118,27 +118,27 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
 
         const Dictionary& benchmarks = aggregator.get_benchmarks();
 
-        const BenchmarkSerie& serie1 =
-            aggregator.get_serie(
+        const BenchmarkSeries& series1 =
+            aggregator.get_series(
                 benchmarks.dictionaries()
                     .get("Release").dictionaries()
                     .get("Suite")
                     .get<UniqueID>("Case1"));
 
-        ASSERT_EQ(1, serie1.size());
-        EXPECT_EQ(Date, serie1[0].get_date());
-        EXPECT_EQ(779.34, serie1[0].get_ticks());
+        ASSERT_EQ(1, series1.size());
+        EXPECT_EQ(Date, series1[0].get_date());
+        EXPECT_EQ(779.34, series1[0].get_ticks());
 
-        const BenchmarkSerie& serie2 =
-            aggregator.get_serie(
+        const BenchmarkSeries& series2 =
+            aggregator.get_series(
                 benchmarks.dictionaries()
                     .get("Release").dictionaries()
                     .get("Suite")
                     .get<UniqueID>("Case2"));
 
-        ASSERT_EQ(1, serie2.size());
-        EXPECT_EQ(Date, serie2[0].get_date());
-        EXPECT_EQ(877.22, serie2[0].get_ticks());
+        ASSERT_EQ(1, series2.size());
+        EXPECT_EQ(Date, series2[0].get_date());
+        EXPECT_EQ(877.22, series2[0].get_ticks());
     }
 
     TEST_CASE(MultipleBenchmarkFiles)
@@ -149,20 +149,20 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
 
         const Dictionary& benchmarks = aggregator.get_benchmarks();
 
-        const BenchmarkSerie& serie =
-            aggregator.get_serie(
+        const BenchmarkSeries& series =
+            aggregator.get_series(
                 benchmarks.dictionaries()
                     .get("Release").dictionaries()
                     .get("Suite")
                     .get<UniqueID>("Case"));
 
-        ASSERT_EQ(2, serie.size());
+        ASSERT_EQ(2, series.size());
 
-        EXPECT_EQ(ptime(date(2009, 5, 21), time_duration(16, 44, 30)), serie[0].get_date());
-        EXPECT_EQ(779.34, serie[0].get_ticks());
+        EXPECT_EQ(ptime(date(2009, 5, 21), time_duration(16, 44, 30)), series[0].get_date());
+        EXPECT_EQ(779.34, series[0].get_ticks());
 
-        EXPECT_EQ(ptime(date(2010, 6, 22), time_duration(17, 45, 31)), serie[1].get_date());
-        EXPECT_EQ(877.22, serie[1].get_ticks());
+        EXPECT_EQ(ptime(date(2010, 6, 22), time_duration(17, 45, 31)), series[1].get_date());
+        EXPECT_EQ(877.22, series[1].get_ticks());
     }
 
     TEST_CASE(Clear_GivenOneBenchmark_RemovesBenchmark)

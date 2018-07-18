@@ -32,7 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/benchmark/benchmarkdatapoint.h"
-#include "foundation/utility/benchmark/benchmarkserie.h"
+#include "foundation/utility/benchmark/benchmarkseries.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
@@ -90,10 +90,10 @@ struct BenchmarkAggregator::Impl
 
     const regex         m_filename_regex;
 
-    typedef map<UniqueID, BenchmarkSerie> SerieMap;
+    typedef map<UniqueID, BenchmarkSeries> SeriesMap;
 
     Dictionary          m_benchmarks;
-    SerieMap            m_series;
+    SeriesMap           m_series;
 
     Impl()
       : m_filename_regex("benchmark\\.(\\d{8})\\.(\\d{6})\\.(\\d{3})\\.xml")
@@ -174,17 +174,17 @@ struct BenchmarkAggregator::Impl
                     const DOMNode* name_attribute = attributes->getNamedItem(transcode("name").c_str());
                     const string name = transcode(name_attribute->getNodeValue());
 
-                    UniqueID serie_uid;
+                    UniqueID series_uid;
 
                     if (cases_dic.strings().exist(name))
-                        serie_uid = cases_dic.get<UniqueID>(name);
+                        series_uid = cases_dic.get<UniqueID>(name);
                     else
                     {
-                        serie_uid = new_guid();
-                        cases_dic.insert(name, serie_uid);
+                        series_uid = new_guid();
+                        cases_dic.insert(name, series_uid);
                     }
 
-                    scan_results(node, date, m_series[serie_uid]);
+                    scan_results(node, date, m_series[series_uid]);
                 }
             }
 
@@ -195,7 +195,7 @@ struct BenchmarkAggregator::Impl
     void scan_results(
         const DOMNode*              node,
         const posix_time::ptime&    date,
-        BenchmarkSerie&             serie)
+        BenchmarkSeries&            series)
     {
         assert(node);
 
@@ -221,7 +221,7 @@ struct BenchmarkAggregator::Impl
                     {
                         const string text = transcode(node->getTextContent());
                         const double ticks = from_string<double>(text);
-                        serie.push_back(BenchmarkDataPoint(date, ticks));
+                        series.push_back(BenchmarkDataPoint(date, ticks));
                     }
 
                     break;
@@ -313,7 +313,7 @@ void BenchmarkAggregator::scan_directory(const char* path)
 
 void BenchmarkAggregator::sort_series()
 {
-    for (each<Impl::SerieMap> i = impl->m_series; i; ++i)
+    for (each<Impl::SeriesMap> i = impl->m_series; i; ++i)
     {
         if (i->second.empty())
             continue;
@@ -327,9 +327,9 @@ const Dictionary& BenchmarkAggregator::get_benchmarks() const
     return impl->m_benchmarks;
 }
 
-const BenchmarkSerie& BenchmarkAggregator::get_serie(const UniqueID case_uid) const
+const BenchmarkSeries& BenchmarkAggregator::get_series(const UniqueID case_uid) const
 {
-    const Impl::SerieMap::const_iterator i = impl->m_series.find(case_uid);
+    const Impl::SeriesMap::const_iterator i = impl->m_series.find(case_uid);
 
     assert(i != impl->m_series.end());
 
