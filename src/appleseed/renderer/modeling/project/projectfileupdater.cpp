@@ -1816,17 +1816,13 @@ namespace
                 if (root.dictionaries().exist("uniform_pixel_renderer"))
                 {
                     Dictionary& upr = root.dictionary("uniform_pixel_renderer");
-
-                    if (upr.strings().exist("enable_diagnostics"))
-                        upr.strings().remove("enable_diagnostics");
+                    upr.strings().remove("enable_diagnostics");
                 }
 
                 if (root.dictionaries().exist("adaptive_pixel_renderer"))
                 {
                     Dictionary& apr = root.dictionary("adaptive_pixel_renderer");
-
-                    if (apr.strings().exist("enable_diagnostics"))
-                        apr.strings().remove("enable_diagnostics");
+                    apr.strings().remove("enable_diagnostics");
                 }
             }
 
@@ -1836,9 +1832,7 @@ namespace
                 return;
 
             ParamArray& frame_params = frame->get_parameters();
-
-            if (frame_params.strings().exist("save_extra_aovs"))
-                frame_params.strings().remove("save_extra_aovs");
+            frame_params.strings().remove("save_extra_aovs");
         }
     };
 }
