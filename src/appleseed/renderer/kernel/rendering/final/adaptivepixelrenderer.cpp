@@ -234,7 +234,10 @@ namespace
 
                     // Ignore invalid samples.
                     if (!shading_result.is_valid())
+                    {
+                        signal_invalid_sample();
                         continue;
+                    }
 
                     // Merge the sample into the scratch framebuffer.
                     m_scratch_fb->add(

@@ -53,6 +53,8 @@ namespace renderer
 //
 
 PixelRendererBase::PixelRendererBase()
+  : m_invalid_pixel_count(0)
+  , m_invalid_sample_count(0)
 {
 }
 
@@ -81,6 +83,7 @@ void PixelRendererBase::on_pixel_begin(
     AOVAccumulatorContainer&    aov_accumulators)
 {
     aov_accumulators.on_pixel_begin(pi);
+    m_invalid_sample_count = 0;
 }
 
 void PixelRendererBase::on_pixel_end(
@@ -89,7 +92,34 @@ void PixelRendererBase::on_pixel_end(
     const AABB2i&               tile_bbox,
     AOVAccumulatorContainer&    aov_accumulators)
 {
+    static const size_t MaxWarningsPerThread = 5;
+
     aov_accumulators.on_pixel_end(pi);
+
+    // Warns the user for bad pixels.
+    if (m_invalid_sample_count > 0)
+    {
+        m_invalid_pixel_count++;
+
+        if (m_invalid_pixel_count <= MaxWarningsPerThread)
+        {
+            RENDERER_LOG_WARNING(
+                "%s sample%s at pixel (%d, %d) had nan, negative or infinite components and %s ignored.",
+                pretty_uint(m_invalid_sample_count).c_str(),
+                m_invalid_sample_count > 1 ? "s" : "",
+                pi.x, pi.y,
+                m_invalid_sample_count > 1 ? "were" : "was");
+        }
+        else if (m_invalid_pixel_count == MaxWarningsPerThread + 1)
+        {
+            RENDERER_LOG_WARNING("more invalid samples found, omitting warning messages for brevity.");
+        }
+    }
+}
+
+void PixelRendererBase::signal_invalid_sample()
+{
+    m_invalid_sample_count++;
 }
 
 }   // namespace renderer

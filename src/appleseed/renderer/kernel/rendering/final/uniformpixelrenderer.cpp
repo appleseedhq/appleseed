@@ -185,6 +185,10 @@ namespace
                             static_cast<float>(pt.y + s.y),
                             shading_result);
                     }
+                    else
+                    {
+                        signal_invalid_sample();
+                    }
                 }
             }
             else
@@ -241,6 +245,10 @@ namespace
                                 static_cast<float>(s.x - pi.x + pt.x),
                                 static_cast<float>(s.y - pi.y + pt.y),
                                 shading_result);
+                        }
+                        else
+                        {
+                            signal_invalid_sample();
                         }
                     }
                 }

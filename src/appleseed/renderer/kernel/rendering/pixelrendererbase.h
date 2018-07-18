@@ -92,6 +92,12 @@ class PixelRendererBase
         const foundation::Vector2i&         pt,
         const foundation::AABB2i&           tile_bbox,
         AOVAccumulatorContainer&            aov_accumulators);
+
+    void signal_invalid_sample();
+
+  private:
+    size_t m_invalid_pixel_count;
+    size_t m_invalid_sample_count;
 };
 
 }       // namespace renderer

@@ -30,7 +30,6 @@
 #include "diagnosticaov.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
 #include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/rendering/pixelcontext.h"
@@ -185,26 +184,8 @@ namespace
             ShadingResult&              shading_result) override
         {
             // Detect invalid samples.
-            static const size_t MaxWarningsPerThread = 5;
-
             if (!shading_result.is_valid())
-            {
                 m_invalid_sample_count++;
-
-                if (m_invalid_sample_count <= MaxWarningsPerThread)
-                {
-                    RENDERER_LOG_WARNING(
-                        "%s sample%s at pixel (%s, %s) had nan, negative or infinite components",
-                       pretty_uint(m_invalid_sample_count).c_str(),
-                       m_invalid_sample_count > 1 ? "s" : "",
-                       pretty_uint(pixel_context.get_pixel_coords().x).c_str(),
-                       pretty_uint(pixel_context.get_pixel_coords().y).c_str());
-                }
-                else if (m_invalid_sample_count == MaxWarningsPerThread + 1)
-                {
-                    RENDERER_LOG_WARNING("more invalid samples found, omitting warning messages for brevity.");
-                }
-            }
         }
 
       private:
@@ -337,8 +318,6 @@ namespace
             static const Color3f Blue(0.0f, 0.0f, 1.0f);
             static const Color3f Red(1.0f, 0.0f, 0.0f);
 
-            const CanvasProperties& src_props = m_image->properties();
-
             // Find the maximum and minimum samples count.
             float max_samples = std::numeric_limits<float>::lowest();
             float min_samples = std::numeric_limits<float>::max();
@@ -393,8 +372,6 @@ namespace
         {
             static const Color3f Blue(0.0f, 0.0f, 1.0f);
             static const Color3f Red(1.0f, 0.0f, 0.0f);
-
-            const CanvasProperties& src_props = m_image->properties();
 
             Color3f color;
 
