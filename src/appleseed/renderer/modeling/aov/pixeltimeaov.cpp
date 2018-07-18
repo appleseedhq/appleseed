@@ -220,8 +220,6 @@ namespace
 
         void post_process_image(const AABB2u& bbox) override
         {
-            const CanvasProperties& src_props = m_image->properties();
-
             // Find the maximum value.
             float max_time = 0.0f;
 
