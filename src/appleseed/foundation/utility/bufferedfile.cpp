@@ -148,7 +148,7 @@ bool BufferedFile::close()
             success = false;
     }
 
-    delete [] m_buffer;
+    delete[] m_buffer;
 
     reset();
 

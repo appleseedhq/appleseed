@@ -1163,7 +1163,7 @@ void spectrum_to_spectrum(
         &output_spectrum[0]);           // [out] point y
 
     if (own_memory)
-        delete [] working_storage;
+        delete[] working_storage;
 }
 
 }       // namespace foundation

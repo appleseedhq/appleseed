@@ -159,7 +159,7 @@ Tile::Tile(const Tile& rhs)
 Tile::~Tile()
 {
     if (m_own_storage)
-        delete [] m_pixel_array;
+        delete[] m_pixel_array;
 }
 
 void Tile::release()

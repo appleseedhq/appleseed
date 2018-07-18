@@ -43,7 +43,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 namespace foundation
 {
 
-APPLESEED_DLLSYMBOL const uint32_t Half::m_h2f_table[65536] = {
+APPLESEED_DLLSYMBOL const uint32_t Half::m_h2f_table[65536] =
+{
     0x00000000,    0x33800000,    0x34000000,    0x34400000,    0x34800000,    0x34a00000,    0x34c00000,    0x34e00000,
     0x35000000,    0x35100000,    0x35200000,    0x35300000,    0x35400000,    0x35500000,    0x35600000,    0x35700000,
     0x35800000,    0x35880000,    0x35900000,    0x35980000,    0x35a00000,    0x35a80000,    0x35b00000,    0x35b80000,
@@ -8237,7 +8238,9 @@ APPLESEED_DLLSYMBOL const uint32_t Half::m_h2f_table[65536] = {
     0xfffe0000,    0xfffe2000,    0xfffe4000,    0xfffe6000,    0xfffe8000,    0xfffea000,    0xfffec000,    0xfffee000,
     0xffff0000,    0xffff2000,    0xffff4000,    0xffff6000,    0xffff8000,    0xffffa000,    0xffffc000,    0xffffe000
 };
-APPLESEED_DLLSYMBOL const uint16_t Half::m_f2h_table[512] = {
+
+APPLESEED_DLLSYMBOL const uint16_t Half::m_f2h_table[512] =
+{
     0x0000,    0x0000,    0x0000,    0x0000,    0x0000,    0x0000,    0x0000,    0x0000,
     0x0000,    0x0000,    0x0000,    0x0000,    0x0000,    0x0000,    0x0000,    0x0000,
     0x0000,    0x0000,    0x0000,    0x0000,    0x0000,    0x0000,    0x0000,    0x0000,

@@ -61,7 +61,7 @@ char* duplicate_string(const char* s)
 
 void free_string(const char* s)
 {
-    delete [] s;
+    delete[] s;
 }
 
 

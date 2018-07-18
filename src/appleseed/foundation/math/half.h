@@ -85,7 +85,6 @@ class Half
     void set_bits(const uint16_t bits);
 
   private:
-
     uint16_t m_bits;
 
     static uint16_t from_float(const float val);
@@ -95,6 +94,7 @@ class Half
     APPLESEED_DLLSYMBOL static const uint32_t m_h2f_table[65536];
     APPLESEED_DLLSYMBOL static const uint16_t m_f2h_table[512];
 };
+
 
 //
 // Half class implementation.

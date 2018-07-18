@@ -155,7 +155,7 @@ ImageImportanceSampler<Payload, Importance>::ImageImportanceSampler(
 template <typename Payload, typename Importance>
 ImageImportanceSampler<Payload, Importance>::~ImageImportanceSampler()
 {
-    delete [] m_cols_cdf;
+    delete[] m_cols_cdf;
 }
 
 template <typename Payload, typename Importance>

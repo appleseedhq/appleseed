@@ -136,7 +136,7 @@ inline Answer<T>::Answer(const size_t max_size)
 template <typename T>
 inline Answer<T>::~Answer()
 {
-    delete [] m_entries;
+    delete[] m_entries;
 }
 
 template <typename T>

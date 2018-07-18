@@ -112,7 +112,7 @@ inline BitMask2::BitMask2(
 
 inline BitMask2::~BitMask2()
 {
-    delete [] m_bits;
+    delete[] m_bits;
 }
 
 inline size_t BitMask2::get_width() const
