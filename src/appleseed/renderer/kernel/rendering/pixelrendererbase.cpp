@@ -52,90 +52,28 @@ namespace renderer
 // PixelRendererBase class implementation.
 //
 
-const uint8 NoState = 0;
-const uint8 InvalidSample = 1;
-const uint8 CorrectSample = 2;
-
-PixelRendererBase::PixelRendererBase(
-    const Frame&        frame,
-    const size_t        thread_index,
-    const ParamArray&   params)
-  : m_params(params)
-  , m_invalid_pixel_count(0)
-  , m_invalid_sample_aov_index(~size_t(0))
+PixelRendererBase::PixelRendererBase()
+  : m_invalid_pixel_count(0)
+  , m_invalid_sample_count(0)
 {
-    if (m_params.m_diagnostics)
-    {
-        m_invalid_sample_aov_index = frame.create_extra_aov_image("invalid_samples");
-
-        if (m_invalid_sample_aov_index == ~size_t(0) && thread_index == 0)
-        {
-            RENDERER_LOG_WARNING(
-                "could not create invalid samples aov, maximum number of aovs (" FMT_SIZE_T ") reached.",
-                MaxAOVCount);
-        }
-    }
-}
-
-bool PixelRendererBase::are_diagnostics_enabled() const
-{
-    return m_params.m_diagnostics;
 }
 
 void PixelRendererBase::on_tile_begin(
     const Frame&            frame,
+    const size_t            tile_x,
+    const size_t            tile_y,
     Tile&                   tile,
     TileStack&              aov_tiles)
 {
-    if (m_invalid_sample_aov_index != ~size_t(0))
-    {
-        m_invalid_sample_diagnostic.reset(
-            new Tile(tile.get_width(), tile.get_height(), 1, PixelFormatUInt8));
-    }
 }
 
 void PixelRendererBase::on_tile_end(
     const Frame&            frame,
+    const size_t            tile_x,
+    const size_t            tile_y,
     Tile&                   tile,
     TileStack&              aov_tiles)
 {
-    if (m_invalid_sample_aov_index != ~size_t(0))
-    {
-        const size_t width = tile.get_width();
-        const size_t height = tile.get_height();
-
-        for (size_t y = 0; y < height; ++y)
-        {
-            for (size_t x = 0; x < width; ++x)
-            {
-                Color<uint8, 1> sample_state;
-                m_invalid_sample_diagnostic->get_pixel(x, y, sample_state);
-
-                Color4f color;
-
-                switch (sample_state[0])
-                {
-                  case NoState:
-                    color = Color4f(1.0f, 0.0f, 0.0f, 1.0f);
-                    break;
-
-                  case InvalidSample:
-                    color = Color4f(1.0f, 0.0f, 1.0f, 1.0f);
-                    break;
-
-                  case CorrectSample:
-                    tile.get_pixel(x, y, color);
-                    color.rgb().set(0.2f * luminance(color.rgb()));     // 20% of luminance
-                    color.a = 1.0f;
-                    break;
-
-                  assert_otherwise;
-                }
-
-                aov_tiles.set_pixel(x, y, m_invalid_sample_aov_index, color);
-            }
-        }
-    }
 }
 
 void PixelRendererBase::on_pixel_begin(
@@ -154,21 +92,20 @@ void PixelRendererBase::on_pixel_end(
     const AABB2i&               tile_bbox,
     AOVAccumulatorContainer&    aov_accumulators)
 {
+    static const size_t MaxWarningsPerThread = 5;
+
     aov_accumulators.on_pixel_end(pi);
 
-    // todo: mark pixel as faulty in the diagnostic map.
-
+    // Warns the user for bad pixels.
     if (m_invalid_sample_count > 0)
     {
-        ++m_invalid_pixel_count;
-
-        const size_t MaxWarningsPerThread = 5;
+        m_invalid_pixel_count++;
 
         if (m_invalid_pixel_count <= MaxWarningsPerThread)
         {
             RENDERER_LOG_WARNING(
-                FMT_SIZE_T " sample%s at pixel (%d, %d) had nan, negative or infinite components and %s ignored.",
-                m_invalid_sample_count,
+                "%s sample%s at pixel (%d, %d) had nan, negative or infinite components and %s ignored.",
+                pretty_uint(m_invalid_sample_count).c_str(),
                 m_invalid_sample_count > 1 ? "s" : "",
                 pi.x, pi.y,
                 m_invalid_sample_count > 1 ? "were" : "was");
@@ -178,37 +115,11 @@ void PixelRendererBase::on_pixel_end(
             RENDERER_LOG_WARNING("more invalid samples found, omitting warning messages for brevity.");
         }
     }
-
-    if (m_params.m_diagnostics && tile_bbox.contains(pt))
-    {
-        m_invalid_sample_diagnostic->set_pixel(pt.x, pt.y,
-            m_invalid_sample_count > 0 ? &InvalidSample : &CorrectSample);
-    }
 }
 
 void PixelRendererBase::signal_invalid_sample()
 {
     ++m_invalid_sample_count;
-}
-
-
-//
-// PixelRendererBaseFactory class implementation.
-//
-
-Dictionary PixelRendererBaseFactory::get_params_metadata()
-{
-    Dictionary metadata;
-
-    metadata.dictionaries().insert(
-        "enable_diagnostics",
-        Dictionary()
-            .insert("type", "bool")
-            .insert("default", "false")
-            .insert("label", "Enable Diagnostics")
-            .insert("help", "Enable pixel renderer diagnostics"));
-
-    return metadata;
 }
 
 }   // namespace renderer

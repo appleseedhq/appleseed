@@ -1786,6 +1786,55 @@ namespace
             params.remove_path("render_stamp_format");
         }
     };
+
+    //
+    // Update from revision 26 to revision 27.
+    //
+
+    class UpdateFromRevision_26
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_26(Project& project)
+          : Updater(project, 26)
+        {
+        }
+
+        void update() override
+        {
+            remove_diagnostic_option();
+        }
+
+      private:
+        // Remove pixel_renderer::enable_diagnostics and frame::save_extra_aovs.
+        void remove_diagnostic_option()
+        {
+            for (each<ConfigurationContainer> i = m_project.configurations(); i; ++i)
+            {
+                Dictionary& root = i->get_parameters();
+
+                if (root.dictionaries().exist("uniform_pixel_renderer"))
+                {
+                    Dictionary& upr = root.dictionary("uniform_pixel_renderer");
+                    upr.strings().remove("enable_diagnostics");
+                }
+
+                if (root.dictionaries().exist("adaptive_pixel_renderer"))
+                {
+                    Dictionary& apr = root.dictionary("adaptive_pixel_renderer");
+                    apr.strings().remove("enable_diagnostics");
+                }
+            }
+
+            Frame* frame = m_project.get_frame();
+
+            if (frame == nullptr)
+                return;
+
+            ParamArray& frame_params = frame->get_parameters();
+            frame_params.strings().remove("save_extra_aovs");
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(
@@ -1844,6 +1893,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(23);
       CASE_UPDATE_FROM_REVISION(24);
       CASE_UPDATE_FROM_REVISION(25);
+      CASE_UPDATE_FROM_REVISION(26);
 
       case ProjectFormatRevision:
         // Project is up-to-date.

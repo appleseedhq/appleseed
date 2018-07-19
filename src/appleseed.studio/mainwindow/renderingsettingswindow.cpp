@@ -467,12 +467,10 @@ namespace
             create_direct_link("uniform_sampler.samples",               "uniform_pixel_renderer.samples");
             create_direct_link("uniform_sampler.force_antialiasing",    "uniform_pixel_renderer.force_antialiasing");
             create_direct_link("uniform_sampler.decorrelate_pixels",    "uniform_pixel_renderer.decorrelate_pixels");
-            create_direct_link("uniform_sampler.enable_diagnostics",    "uniform_pixel_renderer.enable_diagnostics");
 
             create_direct_link("adaptive_sampler.min_samples",          "adaptive_pixel_renderer.min_samples");
             create_direct_link("adaptive_sampler.max_samples",          "adaptive_pixel_renderer.max_samples");
             create_direct_link("adaptive_sampler.quality",              "adaptive_pixel_renderer.quality");
-            create_direct_link("adaptive_sampler.enable_diagnostics",   "adaptive_pixel_renderer.enable_diagnostics");
 
             load_directly_linked_values(config);
         }
@@ -555,10 +553,6 @@ namespace
             m_uniform_sampler_decorrelate_pixels->setToolTip(m_params_metadata.get_path("uniform_pixel_renderer.decorrelate_pixels.help"));
             layout->addWidget(m_uniform_sampler_decorrelate_pixels);
 
-            QCheckBox* enable_diagnostics = create_checkbox("uniform_sampler.enable_diagnostics", "Enable Diagnostic AOVs");
-            enable_diagnostics->setToolTip(m_params_metadata.get_path("uniform_pixel_renderer.enable_diagnostics.help"));
-            layout->addWidget(enable_diagnostics);
-
             connect(
                 m_image_plane_sampler_passes, SIGNAL(valueChanged(const int)),
                 SLOT(slot_changed_image_plane_sampler_passes(const int)));
@@ -586,10 +580,6 @@ namespace
             QDoubleSpinBox* quality = create_double_input("adaptive_sampler.quality", -20.0, +20.0, 2, 0.5);
             quality->setToolTip(m_params_metadata.get_path("adaptive_pixel_renderer.quality.help"));
             sublayout->addRow("Quality:", quality);
-
-            QCheckBox* enable_diagnostics = create_checkbox("adaptive_sampler.enable_diagnostics", "Enable Diagnostic AOVs");
-            enable_diagnostics->setToolTip(m_params_metadata.get_path("adaptive_pixel_renderer.enable_diagnostics.help"));
-            layout->addWidget(enable_diagnostics);
         }
 
       private slots:

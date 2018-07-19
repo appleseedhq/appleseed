@@ -79,7 +79,7 @@ namespace
             ISampleRendererFactory*     factory,
             const ParamArray&           params,
             const size_t                thread_index)
-          : PixelRendererBase(frame, thread_index, params)
+          : PixelRendererBase()
           , m_params(params)
           , m_sample_renderer(factory->create(thread_index))
           , m_sample_count(m_params.m_samples)
@@ -113,12 +113,10 @@ namespace
                 "uniform pixel renderer settings:\n"
                 "  samples                       %s\n"
                 "  force antialiasing            %s\n"
-                "  decorrelate pixels            %s\n"
-                "  diagnostics                   %s",
+                "  decorrelate pixels            %s",
                 pretty_uint(m_params.m_samples).c_str(),
                 m_params.m_force_aa ? "on" : "off",
-                m_params.m_decorrelate ? "on" : "off",
-                are_diagnostics_enabled() ? "on" : "off");
+                m_params.m_decorrelate ? "on" : "off");
 
             m_sample_renderer->print_settings();
         }
@@ -324,7 +322,7 @@ IPixelRenderer* UniformPixelRendererFactory::create(
 
 Dictionary UniformPixelRendererFactory::get_params_metadata()
 {
-    Dictionary metadata = PixelRendererBaseFactory::get_params_metadata();
+    Dictionary metadata;
 
     metadata.dictionaries().insert(
         "samples",

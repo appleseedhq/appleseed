@@ -62,22 +62,21 @@ class PixelRendererBase
 {
   public:
     // Constructor.
-    PixelRendererBase(
-        const Frame&        frame,
-        const size_t        thread_index,
-        const ParamArray&   params);
-
-    bool are_diagnostics_enabled() const;
+    PixelRendererBase();
 
     // This method is called before a tile gets rendered.
     void on_tile_begin(
         const Frame&                frame,
+        const size_t                tile_x,
+        const size_t                tile_y,
         foundation::Tile&           tile,
         TileStack&                  aov_tiles) override;
 
     // This method is called after a tile has been rendered.
     void on_tile_end(
         const Frame&                frame,
+        const size_t                tile_x,
+        const size_t                tile_y,
         foundation::Tile&           tile,
         TileStack&                  aov_tiles) override;
 
@@ -97,33 +96,8 @@ class PixelRendererBase
     void signal_invalid_sample();
 
   private:
-    struct Parameters
-    {
-        const bool m_diagnostics;
-
-        explicit Parameters(const ParamArray& params)
-            : m_diagnostics(params.get_optional<bool>("enable_diagnostics", false))
-        {
-        }
-    };
-
-    size_t                                  m_invalid_sample_count;
-    size_t                                  m_invalid_pixel_count;
-    size_t                                  m_invalid_sample_aov_index;
-    std::unique_ptr<foundation::Tile>       m_invalid_sample_diagnostic;
-    const Parameters                        m_params;
-};
-
-
-//
-// Pixel renderer base factory.
-//
-
-class PixelRendererBaseFactory
-  : public IPixelRendererFactory
-{
-  public:
-    static foundation::Dictionary get_params_metadata();
+    size_t m_invalid_pixel_count;
+    size_t m_invalid_sample_count;
 };
 
 }       // namespace renderer

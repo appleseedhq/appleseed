@@ -42,6 +42,7 @@
 #include "renderer/kernel/rendering/pixelrendererbase.h"
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/kernel/shading/shadingresult.h"
+#include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/utility/settingsparsing.h"
 
@@ -86,22 +87,14 @@ namespace
             ISampleRendererFactory*     factory,
             const ParamArray&           params,
             const size_t                thread_index)
-          : PixelRendererBase(frame, thread_index, params)
+          : PixelRendererBase()
           , m_params(params)
           , m_sample_renderer(factory->create(thread_index))
+          , m_sample_aov_tile(nullptr)
+          , m_variation_aov_tile(nullptr)
         {
-            if (are_diagnostics_enabled())
-            {
-                m_variation_aov_index = frame.create_extra_aov_image("variation");
-                m_samples_aov_index = frame.create_extra_aov_image("samples");
-
-                if ((thread_index == 0) && (m_variation_aov_index == ~size_t(0) || m_samples_aov_index == ~size_t(0)))
-                {
-                    RENDERER_LOG_WARNING(
-                        "could not create some of the diagnostic aovs, maximum number of aovs (" FMT_SIZE_T ") reached.",
-                        MaxAOVCount);
-                }
-            }
+            m_variation_aov_index = frame.aovs().get_index("pixel_variation");
+            m_sample_aov_index = frame.aovs().get_index("pixel_sample");
         }
 
         void release() override
@@ -115,22 +108,27 @@ namespace
                 "adaptive pixel renderer settings:\n"
                 "  min samples                   %s\n"
                 "  max samples                   %s\n"
-                "  max variation                 %f\n"
-                "  diagnostics                   %s",
+                "  max variation                 %f",
                 pretty_uint(m_params.m_min_samples).c_str(),
                 pretty_uint(m_params.m_max_samples).c_str(),
-                m_params.m_max_variation,
-                are_diagnostics_enabled() ? "on" : "off");
+                m_params.m_max_variation);
 
             m_sample_renderer->print_settings();
         }
 
         void on_tile_begin(
             const Frame&            frame,
+            const size_t            tile_x,
+            const size_t            tile_y,
             Tile&                   tile,
             TileStack&              aov_tiles) override
         {
-            PixelRendererBase::on_tile_begin(frame, tile, aov_tiles);
+            PixelRendererBase::on_tile_begin(
+                frame,
+                tile_x,
+                tile_y,
+                tile,
+                aov_tiles);
 
             m_scratch_fb_half_width = truncate<int>(ceil(frame.get_filter().get_xradius()));
             m_scratch_fb_half_height = truncate<int>(ceil(frame.get_filter().get_yradius()));
@@ -142,40 +140,29 @@ namespace
                     frame.aov_images().size(),
                     frame.get_filter()));
 
-            if (are_diagnostics_enabled())
-            {
-                m_diagnostics.reset(new Tile(
-                    tile.get_width(), tile.get_height(), 2, PixelFormatFloat));
-            }
+            if (m_sample_aov_index != ~size_t(0))
+                m_sample_aov_tile = &frame.aovs().get_by_index(m_sample_aov_index)->get_image().tile(tile_x, tile_y);
+
+            if (m_variation_aov_index != ~size_t(0))
+                m_variation_aov_tile = &frame.aovs().get_by_index(m_variation_aov_index)->get_image().tile(tile_x, tile_y);
         }
 
         void on_tile_end(
             const Frame&            frame,
+            const size_t            tile_x,
+            const size_t            tile_y,
             Tile&                   tile,
             TileStack&              aov_tiles) override
         {
-            PixelRendererBase::on_tile_end(frame, tile, aov_tiles);
+            PixelRendererBase::on_tile_end(
+                frame,
+                tile_x,
+                tile_y,
+                tile,
+                aov_tiles);
 
-            if (are_diagnostics_enabled())
-            {
-                const size_t width = tile.get_width();
-                const size_t height = tile.get_height();
-
-                for (size_t y = 0; y < height; ++y)
-                {
-                    for (size_t x = 0; x < width; ++x)
-                    {
-                        Color<float, 2> values;
-                        m_diagnostics->get_pixel(x, y, values);
-
-                        if (m_variation_aov_index != ~size_t(0))
-                            aov_tiles.set_pixel(x, y, m_variation_aov_index, scalar_to_color(values[0]));
-
-                        if (m_samples_aov_index != ~size_t(0))
-                            aov_tiles.set_pixel(x, y, m_samples_aov_index, scalar_to_color(values[1]));
-                    }
-                }
-            }
+            m_sample_aov_tile = nullptr;
+            m_variation_aov_tile = nullptr;
         }
 
         void render_pixel(
@@ -293,28 +280,29 @@ namespace
             }
 
             // Store diagnostics values in the diagnostics tile.
-            if (are_diagnostics_enabled() && tile_bbox.contains(pt))
+            if ((m_sample_aov_tile || m_variation_aov_tile) && tile_bbox.contains(pt))
             {
-                Color<float, 2> values;
+                Color3f value(0.0f, 0.0f, 0.0f);
 
-                values[0] =
-                    saturate(
-                        max(
-                            trackers[0].get_variation(),
-                            trackers[1].get_variation(),
-                            trackers[2].get_variation())
-                        / m_params.m_max_variation);
+                if (m_sample_aov_tile)
+                {
+                    value[0] = trackers[0].get_size();
 
-                values[1] =
-                    m_params.m_min_samples == m_params.m_max_samples
-                        ? 1.0f
-                        : fit(
-                            static_cast<float>(trackers[0].get_size()),
-                            static_cast<float>(m_params.m_min_samples),
-                            static_cast<float>(m_params.m_max_samples),
-                            0.0f, 1.0f);
+                    m_sample_aov_tile->set_pixel(pt.x, pt.y, value);
+                }
 
-                m_diagnostics->set_pixel(pt.x, pt.y, values);
+                if (m_variation_aov_tile)
+                {
+                    value[0] =
+                        saturate(
+                            max(
+                                trackers[0].get_variation(),
+                                trackers[1].get_variation(),
+                                trackers[2].get_variation())
+                            / m_params.m_max_variation);
+
+                    m_variation_aov_tile->set_pixel(pt.x, pt.y, value);
+                }
             }
 
             on_pixel_end(pi, pt, tile_bbox, aov_accumulators);
@@ -350,18 +338,12 @@ namespace
         const Parameters                        m_params;
         auto_release_ptr<ISampleRenderer>       m_sample_renderer;
         size_t                                  m_variation_aov_index;
-        size_t                                  m_samples_aov_index;
+        size_t                                  m_sample_aov_index;
         int                                     m_scratch_fb_half_width;
         int                                     m_scratch_fb_half_height;
         unique_ptr<ShadingResultFrameBuffer>    m_scratch_fb;
-        unique_ptr<Tile>                        m_diagnostics;
-
-        static Color4f scalar_to_color(const float value)
-        {
-            static const Color4f Blue(0.0f, 0.0f, 1.0f, 1.0f);
-            static const Color4f Red(1.0f, 0.0f, 0.0f, 1.0f);
-            return lerp(Blue, Red, saturate(value));
-        }
+        Tile*                                   m_sample_aov_tile;
+        Tile*                                   m_variation_aov_tile;
     };
 }
 
@@ -397,7 +379,7 @@ IPixelRenderer* AdaptivePixelRendererFactory::create(
 
 Dictionary AdaptivePixelRendererFactory::get_params_metadata()
 {
-    Dictionary metadata = PixelRendererBaseFactory::get_params_metadata();
+    Dictionary metadata;
 
     metadata.dictionaries().insert(
         "min_samples",

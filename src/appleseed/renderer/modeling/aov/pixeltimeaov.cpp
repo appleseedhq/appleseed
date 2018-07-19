@@ -218,16 +218,14 @@ namespace
             m_image->clear(Color<float, 1>(0.0f));
         }
 
-        void post_process_image() override
+        void post_process_image(const AABB2u& bbox) override
         {
-            const CanvasProperties& src_props = m_image->properties();
-
             // Find the maximum value.
             float max_time = 0.0f;
 
-            for (size_t j = 0; j < src_props.m_canvas_height; ++j)
+            for (size_t j = bbox.min.y; j <= bbox.max.y; ++j)
             {
-                for (size_t i = 0; i < src_props.m_canvas_width; ++i)
+                for (size_t i = bbox.min.x; i < bbox.max.x; ++i)
                 {
                     float val;
                     m_image->get_pixel(i, j, &val);
@@ -241,9 +239,9 @@ namespace
             const float rcp_max_time = 1.0f / max_time;
 
             // Normalize.
-            for (size_t j = 0; j < src_props.m_canvas_height; ++j)
+            for (size_t j = bbox.min.y; j <= bbox.max.y; ++j)
             {
-                for (size_t i = 0; i < src_props.m_canvas_width; ++i)
+                for (size_t i = bbox.min.x; i < bbox.max.x; ++i)
                 {
                     float c;
                     m_image->get_pixel(i, j, &c);

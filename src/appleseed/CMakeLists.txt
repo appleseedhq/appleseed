@@ -1399,6 +1399,8 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/denoiseraov.h
     renderer/modeling/aov/depthaov.cpp
     renderer/modeling/aov/depthaov.h
+    renderer/modeling/aov/diagnosticaov.cpp
+    renderer/modeling/aov/diagnosticaov.h
     renderer/modeling/aov/diffuseaov.cpp
     renderer/modeling/aov/diffuseaov.h
     renderer/modeling/aov/emissionaov.cpp
