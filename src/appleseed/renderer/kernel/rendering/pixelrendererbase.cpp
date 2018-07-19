@@ -82,8 +82,8 @@ void PixelRendererBase::on_pixel_begin(
     const AABB2i&               tile_bbox,
     AOVAccumulatorContainer&    aov_accumulators)
 {
-    aov_accumulators.on_pixel_begin(pi);
     m_invalid_sample_count = 0;
+    aov_accumulators.on_pixel_begin(pi);
 }
 
 void PixelRendererBase::on_pixel_end(
@@ -119,7 +119,7 @@ void PixelRendererBase::on_pixel_end(
 
 void PixelRendererBase::signal_invalid_sample()
 {
-    m_invalid_sample_count++;
+    ++m_invalid_sample_count;
 }
 
 }   // namespace renderer
