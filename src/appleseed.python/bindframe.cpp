@@ -148,6 +148,7 @@ void bind_frame()
 
         .def("image", &Frame::image, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("aovs", &Frame::aovs, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("post_processing_stages", &Frame::post_processing_stages, bpy::return_value_policy<bpy::reference_existing_object>())
 
         .def("write_main_image", &Frame::write_main_image)
         .def("write_aov_images", &Frame::write_aov_images)
