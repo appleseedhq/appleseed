@@ -83,6 +83,7 @@ set (sources
     bindmeshobject.cpp
     bindmurmurhash.cpp
     bindobject.cpp
+    bindpostprocessingstage.cpp
     bindproject.cpp
     bindquaternion.cpp
     bindrenderercontroller.cpp
