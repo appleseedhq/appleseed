@@ -31,30 +31,26 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTURECOLLECTIONITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionitembase.h"
+#include "mainwindow/project/basegroupitem.h"
+#include "mainwindow/project/multimodelcollectionitem.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
 #include "renderer/api/texture.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
 // Qt headers.
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class BaseGroupItem; } }
 namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class ItemBase; } }
-namespace renderer  { class BaseGroup; }
 class QMenu;
 
 namespace appleseed {
 namespace studio {
 
 class TextureCollectionItem
-  : public CollectionItemBase<renderer::Texture>
+  : public MultiModelCollectionItem<renderer::Texture, renderer::BaseGroup, BaseGroupItem>
 {
     Q_OBJECT
 
@@ -71,6 +67,8 @@ class TextureCollectionItem
     void slot_import_textures();
 
   private:
+    typedef MultiModelCollectionItem<renderer::Texture, renderer::BaseGroup, BaseGroupItem> Base;
+
     renderer::BaseGroup&            m_parent;
     BaseGroupItem*                  m_parent_item;
 

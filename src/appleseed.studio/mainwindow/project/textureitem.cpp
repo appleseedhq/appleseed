@@ -40,6 +40,7 @@
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/texturecollectionitem.h"
 #include "mainwindow/project/textureinstanceitem.h"
+#include "mainwindow/project/tools.h"
 #include "mainwindow/rendering/renderingmanager.h"
 #include "utility/miscellaneous.h"
 
@@ -67,9 +68,69 @@ TextureItem::TextureItem(
     EntityEditorContext&    editor_context,
     Texture*                texture,
     BaseGroup&              parent,
+    BaseGroupItem*          parent_item,
     TextureCollectionItem*  collection_item)
   : Base(editor_context, texture, parent, collection_item)
+  , m_parent(parent)
+  , m_parent_item(parent_item)
 {
+}
+
+QMenu* TextureItem::get_single_item_context_menu() const
+{
+    QMenu* menu = Base::get_single_item_context_menu();
+
+    menu->addSeparator();
+    menu->addAction("Instantiate...", this, SLOT(slot_instantiate()));
+
+    return menu;
+}
+
+void TextureItem::slot_instantiate()
+{
+    const string instance_name_suggestion =
+        make_unique_name(
+            string(m_entity->get_name()) + "_inst",
+            m_parent.texture_instances());
+
+    const string instance_name =
+        get_entity_name_dialog(
+            treeWidget(),
+            "Instantiate Texture",
+            "Texture Instance Name:",
+            instance_name_suggestion);
+
+    if (!instance_name.empty())
+    {
+        m_editor_context.m_rendering_manager.schedule_or_execute(
+            unique_ptr<RenderingManager::IScheduledAction>(
+                new EntityInstantiationAction<TextureItem>(this, instance_name)));
+    }
+}
+
+void TextureItem::do_instantiate(const string& name)
+{
+    auto_release_ptr<TextureInstance> texture_instance(
+        TextureInstanceFactory::create(
+            name.c_str(),
+            ParamArray(),
+            m_entity->get_name()));
+
+    m_parent_item->add_item(texture_instance.get());
+    m_parent.texture_instances().insert(texture_instance);
+
+    // todo: not currently supported.
+    // m_parent.bump_version_id();
+
+    m_editor_context.m_project_builder.slot_notify_project_modification();
+}
+
+void TextureItem::delete_multiple(const QList<ItemBase*>& items)
+{
+    m_editor_context.m_rendering_manager.schedule_or_execute(
+        unique_ptr<RenderingManager::IScheduledAction>(
+            new EntityDeletionAction<TextureItem>(
+                qlist_static_cast<TextureItem*>(items))));
 }
 
 namespace
@@ -113,14 +174,6 @@ namespace
         for (each<AssemblyContainer> i = base_group.assemblies(); i; ++i)
             remove_texture_instances(item_registry, *i, texture_uid);
     }
-}
-
-void TextureItem::delete_multiple(const QList<ItemBase*>& items)
-{
-    m_editor_context.m_rendering_manager.schedule_or_execute(
-        unique_ptr<RenderingManager::IScheduledAction>(
-            new EntityDeletionAction<TextureItem>(
-                qlist_static_cast<TextureItem*>(items))));
 }
 
 void TextureItem::do_delete()
