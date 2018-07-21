@@ -31,7 +31,6 @@
 #include "texturecollectionitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/basegroupitem.h"
 #include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/textureitem.h"
@@ -79,7 +78,7 @@ TextureCollectionItem::TextureCollectionItem(
     TextureContainer&       textures,
     BaseGroup&              parent,
     BaseGroupItem*          parent_item)
-  : CollectionItemBase<Texture>(editor_context, g_class_uid, "Textures")
+  : Base(editor_context, g_class_uid, "Textures", parent, parent_item)
   , m_parent(parent)
   , m_parent_item(parent_item)
 {
@@ -88,7 +87,7 @@ TextureCollectionItem::TextureCollectionItem(
 
 QMenu* TextureCollectionItem::get_single_item_context_menu() const
 {
-    QMenu* menu = CollectionItemBase<Texture>::get_single_item_context_menu();
+    QMenu* menu = Base::get_single_item_context_menu();
 
     menu->addSeparator();
     menu->addAction("Import Textures...", this, SLOT(slot_import_textures()));
@@ -171,6 +170,7 @@ ItemBase* TextureCollectionItem::create_item(Texture* texture)
             m_editor_context,
             texture,
             m_parent,
+            m_parent_item,
             this);
 }
 

@@ -34,18 +34,21 @@
 #include "mainwindow/project/entityactions.h"
 #include "mainwindow/project/multimodelentityitem.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
 // Qt headers.
 #include <QList>
+#include <QObject>
+
+// Standard headers.
+#include <string>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class BaseGroupItem; } }
 namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class TextureCollectionItem; } }
 namespace renderer  { class BaseGroup; }
 namespace renderer  { class Texture; }
+class QMenu;
 
 namespace appleseed {
 namespace studio {
@@ -53,17 +56,31 @@ namespace studio {
 class TextureItem
   : public MultiModelEntityItem<renderer::Texture, renderer::BaseGroup, TextureCollectionItem>
 {
+    Q_OBJECT
+
   public:
     TextureItem(
         EntityEditorContext&    editor_context,
         renderer::Texture*      texture,
         renderer::BaseGroup&    parent,
+        BaseGroupItem*          parent_item,
         TextureCollectionItem*  collection_item);
 
+    QMenu* get_single_item_context_menu() const override;
+
+  private slots:
+    void slot_instantiate() override;
+
   private:
+    friend class EntityInstantiationAction<TextureItem>;
     friend class EntityDeletionAction<TextureItem>;
 
     typedef MultiModelEntityItem<renderer::Texture, renderer::BaseGroup, TextureCollectionItem> Base;
+
+    renderer::BaseGroup&        m_parent;
+    BaseGroupItem*              m_parent_item;
+
+    void do_instantiate(const std::string& name);
 
     void delete_multiple(const QList<ItemBase*>& items) override;
     void do_delete();
