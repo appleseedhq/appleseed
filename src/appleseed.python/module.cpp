@@ -72,6 +72,10 @@ void bind_utility();
 void bind_vector();
 void bind_volume();
 
+#if PY_MAJOR_VERSION == 3
+void bind_blender_progressive_tile_callback();
+#endif
+
 extern "C" void bind_appleseed_python_classes()
 {
     boost::python::scope().attr("APPLESEED_VERSION") = APPLESEED_VERSION;
@@ -125,6 +129,10 @@ extern "C" void bind_appleseed_python_classes()
     bind_renderer_controller();
     bind_tile_callback();
     bind_master_renderer();
+
+#if PY_MAJOR_VERSION == 3
+    bind_blender_progressive_tile_callback();
+#endif
 }
 
 #if PY_MAJOR_VERSION == 2

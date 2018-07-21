@@ -41,6 +41,7 @@ find_package (Boost 1.55 COMPONENTS python)
 
 if (WITH_PYTHON3_BINDINGS)
     find_package (Python3 REQUIRED)
+    find_package (OpenGL REQUIRED)
 endif ()
 
 
@@ -109,8 +110,12 @@ set (sources
 list (APPEND appleseed.python_sources
     ${sources}
 )
+set (blender_progressive_tile_callback_sources
+    bindblenderprogressivetilecallback.cpp
+)
 source_group ("" FILES
     ${sources}
+    ${blender_progressive_tile_callback_sources}
 )
 
 
@@ -136,6 +141,11 @@ endif ()
 if (WITH_PYTHON3_BINDINGS)
     add_library (appleseed.python3 MODULE
         ${appleseed.python_sources}
+        ${blender_progressive_tile_callback_sources}
+    )
+
+    target_link_libraries (appleseed.python3
+        ${OPENGL_LIBRARY}
     )
 
     set_target_properties (appleseed.python3 PROPERTIES

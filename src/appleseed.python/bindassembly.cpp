@@ -152,7 +152,7 @@ void bind_assembly()
         .def("object_instances", &Assembly::object_instances, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("volumes", &Assembly::volumes, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("compute_local_bbox", &Assembly::compute_local_bbox)
-        .def("compute_non_hierarchical_local_bbox", &Assembly::compute_local_bbox);
+        .def("compute_non_hierarchical_local_bbox", &Assembly::compute_non_hierarchical_local_bbox);
 
     bind_typed_entity_map<Assembly>("AssemblyContainer");
 
