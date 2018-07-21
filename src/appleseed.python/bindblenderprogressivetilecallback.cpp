@@ -122,9 +122,9 @@ namespace
             }
 
             // Copy the pixels to the buffer.
-            for(size_t ty = 0; ty < props.m_tile_count_y; ++ty)
+            for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
             {
-                for(size_t tx = 0; tx < props.m_tile_count_x; ++tx)
+                for (size_t tx = 0; tx < props.m_tile_count_x; ++tx)
                     copy_tile(image.tile(tx, ty), props, tx, ty);
             }
 
@@ -248,17 +248,16 @@ namespace
             const size_t x0 = tile_x * props.m_tile_width;
             const size_t y0 = tile_y * props.m_tile_height;
 
-            for (size_t j = 0; j < props.m_tile_height; ++j)
+            for (size_t y = 0, ye = tile.get_height(); y < ye; ++y)
             {
-                const size_t y = y0 + j;
-                const size_t offset = ((y * props.m_canvas_width) + x0) * 4;
+                const size_t offset = (((y0 + y) * props.m_canvas_width) + x0) * 4;
 
                 float* p = m_buffer.data() + offset;
 
-                for (size_t i = 0; i < props.m_tile_width; ++i)
+                for (size_t x = 0, xe = tile.get_width(); x < xe; ++x)
                 {
                     Color4f c;
-                    tile.get_pixel(i, j, c);
+                    tile.get_pixel(x, y, c);
 
                     *p++ = c.r;
                     *p++ = c.g;
