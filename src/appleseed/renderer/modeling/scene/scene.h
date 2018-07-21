@@ -53,6 +53,7 @@ namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
 namespace renderer      { class Camera; }
 namespace renderer      { class OnFrameBeginRecorder; }
+namespace renderer      { class OnRenderBeginRecorder; }
 namespace renderer      { class Project; }
 namespace renderer      { class SurfaceShader; }
 
@@ -110,19 +111,23 @@ class APPLESEED_DLLSYMBOL Scene
     void collect_asset_paths(foundation::StringArray& paths) const override;
     void update_asset_paths(const foundation::StringDictionary& mappings) override;
 
-    // Perform pre-render rendering actions.
-    // Returns true on success, false otherwise.
-    bool on_render_begin(
-        const Project&              project,
-        foundation::IAbortSwitch*   abort_switch = nullptr);
-
-    // Perform post-render rendering actions.
-    void on_render_end(const Project& project);
-
     // Expand all procedural assemblies in the scene.
     virtual bool expand_procedural_assemblies(
         const Project&              project,
         foundation::IAbortSwitch*   abort_switch = nullptr);
+
+    // This method is called once before rendering.
+    // Returns true on success, false otherwise.
+    bool on_render_begin(
+        const Project&              project,
+        const BaseGroup*            parent,
+        OnRenderBeginRecorder&      recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
+
+    // This method is called once after rendering.
+    void on_render_end(
+        const Project&              project,
+        const BaseGroup*            parent) override;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.

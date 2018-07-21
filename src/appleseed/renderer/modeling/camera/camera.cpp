@@ -124,6 +124,8 @@ Camera::~Camera()
 
 bool Camera::on_render_begin(
     const Project&          project,
+    const BaseGroup*        parent,
+    OnRenderBeginRecorder&  recorder,
     IAbortSwitch*           abort_switch)
 {
     m_shutter_open_begin_time = m_params.get_optional<float>(
@@ -280,10 +282,6 @@ void Camera::initialize_shutter_curve_linear()
     impl->m_inverse_cdf_close_point =
         (2.0f * impl->m_normalized_close_begin_time - impl->m_normalized_open_end_time) /
         cbt_minus_oet_plus_one;
-}
-
-void Camera::on_render_end(const Project& project)
-{
 }
 
 bool Camera::on_frame_begin(

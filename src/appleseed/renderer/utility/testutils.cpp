@@ -128,20 +128,20 @@ TestSceneContext::TestSceneContext(TestSceneBase& base)
 #ifndef NDEBUG
     bool success = 
 #endif
-        m_base.m_scene.on_render_begin(m_base.m_project);
+        m_base.m_scene.on_render_begin(m_base.m_project, nullptr, m_render_begin_recorder);
     assert(success);
 
 #ifndef NDEBUG
     success =
 #endif
-        m_base.m_scene.on_frame_begin(m_base.m_project, nullptr, m_recorder);
+        m_base.m_scene.on_frame_begin(m_base.m_project, nullptr, m_frame_begin_recorder);
     assert(success);
 }
 
 TestSceneContext::~TestSceneContext()
 {
-    m_recorder.on_frame_end(m_base.m_project);
-    m_base.m_scene.on_render_end(m_base.m_project);
+    m_frame_begin_recorder.on_frame_end(m_base.m_project);
+    m_render_begin_recorder.on_render_end(m_base.m_project);
 }
 
 

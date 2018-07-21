@@ -31,6 +31,7 @@
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/camera/pinholecamera.h"
 #include "renderer/modeling/entity/onframebeginrecorder.h"
+#include "renderer/modeling/entity/onrenderbeginrecorder.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
@@ -67,11 +68,12 @@ TEST_SUITE(Renderer_Modeling_Camera_PinholeCamera)
                     .insert("resolution", "512 512")
                     .insert("camera", "camera")));
 
-        bool success = project->get_scene()->on_render_begin(project.ref());
+        OnRenderBeginRecorder render_begin_recorder;
+        bool success = project->get_scene()->on_render_begin(project.ref(), nullptr, render_begin_recorder);
         ASSERT_TRUE(success);
 
-        OnFrameBeginRecorder recorder;
-        success = project->get_scene()->on_frame_begin(project.ref(), nullptr, recorder);
+        OnFrameBeginRecorder frame_begin_recorder;
+        success = project->get_scene()->on_frame_begin(project.ref(), nullptr, frame_begin_recorder);
         ASSERT_TRUE(success);
 
         const Camera* camera = project->get_scene()->get_active_camera();
@@ -82,7 +84,7 @@ TEST_SUITE(Renderer_Modeling_Camera_PinholeCamera)
         ASSERT_TRUE(success);
         EXPECT_FEQ(Vector2d(0.5, 0.5), projected);
 
-        recorder.on_frame_end(project.ref());
-        project->get_scene()->on_render_end(project.ref());
+        frame_begin_recorder.on_frame_end(project.ref());
+        render_begin_recorder.on_render_end(project.ref());
     }
 }

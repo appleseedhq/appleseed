@@ -46,6 +46,7 @@
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/display/display.h"
 #include "renderer/modeling/entity/onframebeginrecorder.h"
+#include "renderer/modeling/entity/onrenderbeginrecorder.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/project/project.h"
@@ -354,7 +355,19 @@ struct MasterRenderer::Impl
     {
         while (true)
         {
+            // Construct an abort switch that will allow to abort initialization or rendering.
+            RendererControllerAbortSwitch abort_switch(*m_renderer_controller);
+
             m_renderer_controller->on_rendering_begin();
+
+            // Perform pre-render actions. Don't proceed if that failed.
+            OnRenderBeginRecorder recorder;
+            if (!m_project.get_scene()->on_render_begin(m_project, nullptr, recorder, &abort_switch))
+            {
+                recorder.on_render_end(m_project);
+                m_renderer_controller->on_rendering_abort();
+                return RenderingResult::Aborted;
+            }
 
             const IRendererController::Status status = initialize_and_render_frame();
 
@@ -362,10 +375,27 @@ struct MasterRenderer::Impl
             {
               case IRendererController::TerminateRendering:
                 m_renderer_controller->on_rendering_success();
-                return RenderingResult::Succeeded;
+                break;
 
               case IRendererController::AbortRendering:
                 m_renderer_controller->on_rendering_abort();
+                break;
+
+              case IRendererController::ReinitializeRendering:
+                break;
+
+              assert_otherwise;
+            }
+
+            // Perform post-render actions.
+            recorder.on_render_end(m_project);
+
+            switch (status)
+            {
+              case IRendererController::TerminateRendering:
+                return RenderingResult::Succeeded;
+
+              case IRendererController::AbortRendering:
                 return RenderingResult::Aborted;
 
               case IRendererController::ReinitializeRendering:
@@ -387,6 +417,7 @@ struct MasterRenderer::Impl
             return IRendererController::AbortRendering;
 
         // Expand all procedural assemblies.
+        // todo: could this be done in Scene::on_render_begin()?
         if (!m_project.get_scene()->expand_procedural_assemblies(m_project, &abort_switch))
             return IRendererController::AbortRendering;
 
@@ -410,10 +441,6 @@ struct MasterRenderer::Impl
         // Build or update ray tracing acceleration structures.
         m_project.update_trace_context();
 
-        // Perform pre-render rendering actions.
-        if (!m_project.get_scene()->on_render_begin(m_project, &abort_switch))
-            return IRendererController::AbortRendering;
-
         // Create renderer components.
         RendererComponents components(
             m_project,
@@ -430,9 +457,6 @@ struct MasterRenderer::Impl
 
         // Execute the main rendering loop.
         const auto status = render_frame(components, abort_switch);
-
-        // Perform post-render rendering actions.
-        m_project.get_scene()->on_render_end(m_project);
 
         const CanvasProperties& props = m_project.get_frame()->image().properties();
         m_project.get_light_path_recorder().finalize(
@@ -455,12 +479,12 @@ struct MasterRenderer::Impl
             // Discard recorded light paths.
             m_project.get_light_path_recorder().clear();
 
-            // The on_frame_begin() method of the renderer controller might alter the scene
-            // (e.g. transform the camera), thus it needs to be called before the on_frame_begin()
+            // The `on_frame_begin()` method of the renderer controller might alter the scene
+            // (e.g. transform the camera), thus it needs to be called before the `on_frame_begin()`
             // of the scene which assumes the scene is up-to-date and ready to be rendered.
             m_renderer_controller->on_frame_begin();
 
-            // Perform pre-frame rendering actions. Don't proceed if that failed.
+            // Perform pre-frame actions. Don't proceed if that failed.
             OnFrameBeginRecorder recorder;
             if (!components.get_shading_engine().on_frame_begin(m_project, recorder, &abort_switch) ||
                 !m_project.on_frame_begin(m_project, nullptr, recorder, &abort_switch) ||
@@ -501,7 +525,7 @@ struct MasterRenderer::Impl
 
             assert(!frame_renderer.is_rendering());
 
-            // Perform post-frame rendering actions
+            // Perform post-frame actions.
             recorder.on_frame_end(m_project);
             m_renderer_controller->on_frame_end();
 

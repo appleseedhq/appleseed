@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/onframebeginrecorder.h"
+#include "renderer/modeling/entity/onrenderbeginrecorder.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/api/apistring.h"
@@ -137,6 +138,22 @@ void Entity::collect_asset_paths(StringArray& paths) const
 }
 
 void Entity::update_asset_paths(const StringDictionary& mappings)
+{
+}
+
+bool Entity::on_render_begin(
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnRenderBeginRecorder&  recorder,
+    IAbortSwitch*           abort_switch)
+{
+    recorder.record(this, parent);
+    return true;
+}
+
+void Entity::on_render_end(
+    const Project&          project,
+    const BaseGroup*        parent)
 {
 }
 

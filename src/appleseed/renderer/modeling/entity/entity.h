@@ -55,6 +55,7 @@ namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
 namespace renderer      { class BaseGroup; }
 namespace renderer      { class OnFrameBeginRecorder; }
+namespace renderer      { class OnRenderBeginRecorder; }
 namespace renderer      { class Project; }
 
 namespace renderer
@@ -117,6 +118,19 @@ class APPLESEED_DLLSYMBOL Entity
     virtual void collect_asset_paths(foundation::StringArray& paths) const;
     virtual void update_asset_paths(const foundation::StringDictionary& mappings);
 
+    // This method is called once before rendering.
+    // Returns true on success, false otherwise.
+    virtual bool on_render_begin(
+        const Project&                  project,
+        const BaseGroup*                parent,
+        OnRenderBeginRecorder&          recorder,
+        foundation::IAbortSwitch*       abort_switch = nullptr);
+
+    // This method is called once after rendering.
+    virtual void on_render_end(
+        const Project&                  project,
+        const BaseGroup*                parent);
+
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
@@ -153,6 +167,15 @@ template <typename EntityCollection>
 void invoke_update_asset_paths(
     EntityCollection&                   entities,
     const foundation::StringDictionary& mappings);
+
+// Utility function to invoke on_render_begin() on a collection of entities.
+template <typename EntityCollection>
+bool invoke_on_render_begin(
+    EntityCollection&                   entities,
+    const Project&                      project,
+    const BaseGroup*                    parent,
+    OnRenderBeginRecorder&              recorder,
+    foundation::IAbortSwitch*           abort_switch);
 
 // Utility function to invoke on_frame_begin() on a collection of entities.
 template <typename EntityCollection>
@@ -221,6 +244,26 @@ void invoke_update_asset_paths(
 {
     for (auto& entity : entities)
         entity.update_asset_paths(mappings);
+}
+
+template <typename EntityCollection>
+bool invoke_on_render_begin(
+    EntityCollection&                   entities,
+    const Project&                      project,
+    const BaseGroup*                    parent,
+    OnRenderBeginRecorder&              recorder,
+    foundation::IAbortSwitch*           abort_switch)
+{
+    for (auto& entity : entities)
+    {
+        if (foundation::is_aborted(abort_switch))
+            return false;
+
+        if (!entity.on_render_begin(project, parent, recorder, abort_switch))
+            return false;
+    }
+
+    return true;
 }
 
 template <typename EntityCollection>

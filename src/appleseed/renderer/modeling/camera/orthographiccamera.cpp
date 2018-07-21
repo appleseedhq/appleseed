@@ -57,6 +57,7 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class OnRenderBeginRecorder; }
 
 using namespace foundation;
 using namespace std;
@@ -77,8 +78,8 @@ namespace
     {
       public:
         OrthographicCamera(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : Camera(name, params)
         {
         }
@@ -117,10 +118,12 @@ namespace
         }
 
         bool on_render_begin(
-            const Project&      project,
-            IAbortSwitch*       abort_switch) override
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnRenderBeginRecorder&  recorder,
+            IAbortSwitch*           abort_switch) override
         {
-            if (!Camera::on_render_begin(project, abort_switch))
+            if (!Camera::on_render_begin(project, parent, recorder, abort_switch))
                 return false;
 
             // Extract the film dimensions from the camera parameters.
@@ -144,9 +147,9 @@ namespace
         }
 
         void spawn_ray(
-            SamplingContext&    sampling_context,
-            const Dual2d&       ndc,
-            ShadingRay&         ray) const override
+            SamplingContext&        sampling_context,
+            const Dual2d&           ndc,
+            ShadingRay&             ray) const override
         {
             // Initialize the ray.
             initialize_ray(sampling_context, ray);
@@ -177,12 +180,12 @@ namespace
         }
 
         bool connect_vertex(
-            SamplingContext&    sampling_context,
-            const float         time,
-            const Vector3d&     point,
-            Vector2d&           ndc,
-            Vector3d&           outgoing,
-            float&              importance) const override
+            SamplingContext&        sampling_context,
+            const float             time,
+            const Vector3d&         point,
+            Vector2d&               ndc,
+            Vector3d&               outgoing,
+            float&                  importance) const override
         {
             // Retrieve the camera transform.
             Transformd scratch;
@@ -211,8 +214,8 @@ namespace
         }
 
         bool project_camera_space_point(
-            const Vector3d&     point,
-            Vector2d&           ndc) const override
+            const Vector3d&         point,
+            Vector2d&               ndc) const override
         {
             // Cannot project the point if it is behind the near plane.
             if (point.z > m_near_z)
@@ -226,11 +229,11 @@ namespace
         }
 
         bool project_segment(
-            const float         time,
-            const Vector3d&     a,
-            const Vector3d&     b,
-            Vector2d&           a_ndc,
-            Vector2d&           b_ndc) const override
+            const float             time,
+            const Vector3d&         a,
+            const Vector3d&         b,
+            Vector2d&               a_ndc,
+            Vector2d&               b_ndc) const override
         {
             // Retrieve the camera transform.
             Transformd scratch;

@@ -34,6 +34,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/entity/onframebeginrecorder.h"
+#include "renderer/modeling/entity/onrenderbeginrecorder.h"
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/regionkit.h"
@@ -107,7 +108,8 @@ class TestSceneContext
 
   private:
     TestSceneBase&          m_base;
-    OnFrameBeginRecorder    m_recorder;
+    OnRenderBeginRecorder   m_render_begin_recorder;
+    OnFrameBeginRecorder    m_frame_begin_recorder;
 };
 
 template <typename Base>

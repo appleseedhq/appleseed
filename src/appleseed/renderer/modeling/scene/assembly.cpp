@@ -228,6 +228,32 @@ void Assembly::update_asset_paths(const StringDictionary& mappings)
     invoke_update_asset_paths(volumes(), mappings);
 }
 
+bool Assembly::on_render_begin(
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnRenderBeginRecorder&  recorder,
+    IAbortSwitch*           abort_switch)
+{
+    if (!Entity::on_render_begin(project, parent, recorder, abort_switch))
+        return false;
+
+    if (!BaseGroup::on_render_begin(project, parent, recorder, abort_switch))
+        return false;
+
+    bool success = true;
+    success = success && invoke_on_render_begin(bsdfs(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(bssrdfs(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(edfs(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(surface_shaders(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(materials(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(lights(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(objects(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(object_instances(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(volumes(), project, this, recorder, abort_switch);
+
+    return success;
+}
+
 bool Assembly::on_frame_begin(
     const Project&          project,
     const BaseGroup*        parent,

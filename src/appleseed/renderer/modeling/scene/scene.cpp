@@ -298,36 +298,6 @@ void Scene::update_asset_paths(const StringDictionary& mappings)
     invoke_update_asset_paths(environment_shaders(), mappings);
 }
 
-bool Scene::on_render_begin(
-    const Project&          project,
-    IAbortSwitch*           abort_switch)
-{
-    assert(!m_has_render_data);
-    m_render_data.m_bbox = compute_bbox();
-    m_render_data.m_center = m_render_data.m_bbox.center();
-    m_render_data.m_radius = m_render_data.m_bbox.radius();
-    m_render_data.m_diameter = m_render_data.m_bbox.diameter();
-    m_render_data.m_safe_diameter = m_render_data.m_diameter * GScalar(1.01);
-    m_has_render_data = true;
-
-    for (each<CameraContainer> i = cameras(); i; ++i)
-    {
-        if (!i->on_render_begin(project, abort_switch))
-            return false;
-    }
-
-    return true;
-}
-
-void Scene::on_render_end(const Project& project)
-{
-    assert(m_has_render_data);
-    m_has_render_data = false;
-
-    for (each<CameraContainer> i = cameras(); i; ++i)
-        i->on_render_end(project);
-}
-
 namespace
 {
     bool invoke_procedural_expand(
@@ -366,6 +336,53 @@ bool Scene::expand_procedural_assemblies(
     }
 
     return true;
+}
+
+bool Scene::on_render_begin(
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnRenderBeginRecorder&  recorder,
+    IAbortSwitch*           abort_switch)
+{
+    if (!Entity::on_render_begin(project, parent, recorder, abort_switch))
+        return false;
+
+    if (!BaseGroup::on_render_begin(project, parent,recorder,  abort_switch))
+        return false;
+
+    bool success = true;
+    success = success && impl->m_default_surface_shader->on_render_begin(project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(environment_edfs(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(environment_shaders(), project, this, recorder, abort_switch);
+    if (impl->m_environment.get())
+        success = success && impl->m_environment->on_render_begin(project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(cameras(), project, this, recorder, abort_switch);
+    if (!success)
+        return false;
+
+    assert(!m_has_render_data);
+    m_render_data.m_bbox = compute_bbox();
+    m_render_data.m_center = m_render_data.m_bbox.center();
+    m_render_data.m_radius = m_render_data.m_bbox.radius();
+    m_render_data.m_diameter = m_render_data.m_bbox.diameter();
+    m_render_data.m_safe_diameter = m_render_data.m_diameter * GScalar(1.01);
+    m_has_render_data = true;
+
+    return true;
+}
+
+void Scene::on_render_end(
+    const Project&          project,
+    const BaseGroup*        parent)
+{
+    // `m_has_render_data` may be false if `on_frame_begin()` failed.
+    if (m_has_render_data)
+        m_has_render_data = false;
+
+    for (each<CameraContainer> i = cameras(); i; ++i)
+        i->on_render_end(project, this);
+
+    Entity::on_render_end(project, parent);
 }
 
 bool Scene::on_frame_begin(
