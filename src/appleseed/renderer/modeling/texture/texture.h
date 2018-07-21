@@ -84,6 +84,7 @@ class APPLESEED_DLLSYMBOL Texture
         const TextureInstance&      texture_instance) = 0;
 
     // Load a given tile.
+    // The tile remains owned by the texture.
     virtual foundation::Tile* load_tile(
         const size_t                tile_x,
         const size_t                tile_y) = 0;
