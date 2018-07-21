@@ -485,10 +485,10 @@ include_directories (${CMAKE_CURRENT_BINARY_DIR})
 set (moc_options
     #
     # Work around moc's parsing failures.
-    # See https://bugreports.qt-project.org/browse/QTBUG-22829
+    # See https://bugreports.qt.io/browse/QTBUG-22829
     #
     # BOOST_TT_HAS_OPERATOR_HPP_INCLUDED is already defined in the moc tool itself.
-    # See http://code.qt.io/cgit/qt/qt.git/tree/src/tools/moc/main.cpp#n191
+    # See https://code.qt.io/cgit/qt/qt.git/tree/src/tools/moc/main.cpp#n191
     #
     -DBOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
     -DBOOST_TT_HAS_BIT_AND_HPP_INCLUDED

@@ -176,7 +176,7 @@ void ProjectManager::slot_load_project_async_complete()
 {
     m_is_loading = false;
 
-    // Can't use qobject_cast<>: https://bugreports.qt-project.org/browse/QTBUG-10727.
+    // Can't use qobject_cast<>: https://bugreports.qt.io/browse/QTBUG-10727.
     const bool successful =
         static_cast<QFutureWatcher<bool>*>(sender())->future().result();
 
