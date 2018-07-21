@@ -126,7 +126,7 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
     // They are using a blocking queue connection because we need the receiving slot to
     // have returned in the receiving thread before the emitting thread can continue.
     //
-    // See http://qt-project.org/doc/qt-4.8/qt.html#ConnectionType-enum for more details.
+    // See https://doc.qt.io/archives/qt-4.8/qt.html#ConnectionType-enum for more details.
     //
 
     connect(
