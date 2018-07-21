@@ -57,6 +57,7 @@ namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
 namespace renderer      { class ObjectInstance; }
 namespace renderer      { class OnFrameBeginRecorder; }
+namespace renderer      { class OnRenderBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
@@ -130,6 +131,14 @@ class APPLESEED_DLLSYMBOL Assembly
     // Expose asset file paths referenced by this entity to the outside.
     void collect_asset_paths(foundation::StringArray& paths) const override;
     void update_asset_paths(const foundation::StringDictionary& mappings) override;
+
+    // This method is called once before rendering.
+    // Returns true on success, false otherwise.
+    bool on_render_begin(
+        const Project&              project,
+        const BaseGroup*            parent,
+        OnRenderBeginRecorder&      recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.

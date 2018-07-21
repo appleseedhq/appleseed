@@ -49,6 +49,7 @@ namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class BaseGroup; }
 namespace renderer      { class Frame; }
 namespace renderer      { class OnFrameBeginRecorder; }
+namespace renderer      { class OnRenderBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class RasterizationCamera; }
@@ -106,12 +107,11 @@ class APPLESEED_DLLSYMBOL Camera
 
     // This method is called once before rendering.
     // Returns true on success, false otherwise.
-    virtual bool on_render_begin(
+    bool on_render_begin(
         const Project&                  project,
-        foundation::IAbortSwitch*       abort_switch = nullptr);
-
-    // This method is called once after rendering.
-    virtual void on_render_end(const Project& project);
+        const BaseGroup*                parent,
+        OnRenderBeginRecorder&          recorder,
+        foundation::IAbortSwitch*       abort_switch = nullptr) override;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.

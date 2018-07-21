@@ -166,6 +166,22 @@ void BaseGroup::update_asset_paths(const StringDictionary& mappings)
     invoke_update_asset_paths(assembly_instances(), mappings);
 }
 
+bool BaseGroup::on_render_begin(
+    const Project&              project,
+    const BaseGroup*            parent,
+    OnRenderBeginRecorder&      recorder,
+    IAbortSwitch*               abort_switch)
+{
+    bool success = true;
+    success = success && invoke_on_render_begin(colors(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(textures(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(texture_instances(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(shader_groups(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(assemblies(), project, this, recorder, abort_switch);
+    success = success && invoke_on_render_begin(assembly_instances(), project, this, recorder, abort_switch);
+    return success;
+}
+
 bool BaseGroup::on_frame_begin(
     const Project&              project,
     const BaseGroup*            parent,

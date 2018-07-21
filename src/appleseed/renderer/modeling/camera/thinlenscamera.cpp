@@ -77,6 +77,7 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class OnRenderBeginRecorder; }
 
 using namespace foundation;
 using namespace std;
@@ -234,9 +235,11 @@ namespace
 
         bool on_render_begin(
             const Project&          project,
+            const BaseGroup*        parent,
+            OnRenderBeginRecorder&  recorder,
             IAbortSwitch*           abort_switch) override
         {
-            if (!Camera::on_render_begin(project, abort_switch))
+            if (!Camera::on_render_begin(project, parent, recorder, abort_switch))
                 return false;
 
             m_autofocus_enabled = m_params.get_optional<bool>("autofocus_enabled", true);
