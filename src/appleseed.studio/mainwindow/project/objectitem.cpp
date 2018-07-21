@@ -69,62 +69,16 @@ ObjectItem::ObjectItem(
     Object*                 object,
     Assembly&               parent,
     AssemblyItem*           parent_item)
-  : EntityItemBase<Object>(editor_context, object)
+  : Base(editor_context, object)
   , m_parent(parent)
   , m_parent_item(parent_item)
 {
     set_allow_edition(false);
 }
 
-namespace
-{
-    vector<UniqueID> collect_object_instances(
-        const ObjectInstanceContainer&      object_instances,
-        const UniqueID                      object_uid)
-    {
-        vector<UniqueID> collected;
-
-        for (const_each<ObjectInstanceContainer> i = object_instances; i; ++i)
-        {
-            const Object* object = i->find_object();
-
-            if (object && object->get_uid() == object_uid)
-                collected.push_back(i->get_uid());
-        }
-
-        return collected;
-    }
-
-    void remove_object_instances(
-        ItemRegistry&                       item_registry,
-        Assembly&                           assembly,
-        const UniqueID                      object_uid)
-    {
-        ObjectInstanceContainer& object_instances = assembly.object_instances();
-
-        // Collect the object instances to remove.
-        const vector<UniqueID> remove_list =
-            collect_object_instances(object_instances, object_uid);
-
-        // Remove object instances and their corresponding project items.
-        for (const_each<vector<UniqueID>> i = remove_list; i; ++i)
-        {
-            object_instances.remove(object_instances.get_by_uid(*i));
-            delete item_registry.get_item(*i);
-        }
-
-        if (!remove_list.empty())
-            assembly.bump_version_id();
-
-        // Recurse into child assemblies.
-        for (each<AssemblyContainer> i = assembly.assemblies(); i; ++i)
-            remove_object_instances(item_registry, *i, object_uid);
-    }
-}
-
 QMenu* ObjectItem::get_single_item_context_menu() const
 {
-    QMenu* menu = ItemBase::get_single_item_context_menu();
+    QMenu* menu = Base::get_single_item_context_menu();
 
     menu->addSeparator();
     menu->addAction("Instantiate...", this, SLOT(slot_instantiate()));
@@ -177,6 +131,52 @@ void ObjectItem::delete_multiple(const QList<ItemBase*>& items)
         unique_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<ObjectItem>(
                 qlist_static_cast<ObjectItem*>(items))));
+}
+
+namespace
+{
+    vector<UniqueID> collect_object_instances(
+        const ObjectInstanceContainer&      object_instances,
+        const UniqueID                      object_uid)
+    {
+        vector<UniqueID> collected;
+
+        for (const_each<ObjectInstanceContainer> i = object_instances; i; ++i)
+        {
+            const Object* object = i->find_object();
+
+            if (object && object->get_uid() == object_uid)
+                collected.push_back(i->get_uid());
+        }
+
+        return collected;
+    }
+
+    void remove_object_instances(
+        ItemRegistry&                       item_registry,
+        Assembly&                           assembly,
+        const UniqueID                      object_uid)
+    {
+        ObjectInstanceContainer& object_instances = assembly.object_instances();
+
+        // Collect the object instances to remove.
+        const vector<UniqueID> remove_list =
+            collect_object_instances(object_instances, object_uid);
+
+        // Remove object instances and their corresponding project items.
+        for (const_each<vector<UniqueID>> i = remove_list; i; ++i)
+        {
+            object_instances.remove(object_instances.get_by_uid(*i));
+            delete item_registry.get_item(*i);
+        }
+
+        if (!remove_list.empty())
+            assembly.bump_version_id();
+
+        // Recurse into child assemblies.
+        for (each<AssemblyContainer> i = assembly.assemblies(); i; ++i)
+            remove_object_instances(item_registry, *i, object_uid);
+    }
 }
 
 void ObjectItem::do_delete()
