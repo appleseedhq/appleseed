@@ -34,11 +34,12 @@
 #include "mainwindow/project/entityactions.h"
 #include "mainwindow/project/entityitembase.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
 // Qt headers.
 #include <QList>
+#include <QObject>
+
+// Standard headers.
+#include <string>
 
 // Forward declarations.
 namespace appleseed { namespace studio { class AssemblyItem; } }
@@ -65,14 +66,18 @@ class ObjectItem
 
     QMenu* get_single_item_context_menu() const override;
 
+  private slots:
+    void slot_instantiate() override;
+
   private:
     friend class EntityInstantiationAction<ObjectItem>;
     friend class EntityDeletionAction<ObjectItem>;
 
+    typedef EntityItemBase<renderer::Object> Base;
+
     renderer::Assembly&         m_parent;
     AssemblyItem*               m_parent_item;
 
-    void slot_instantiate() override;
     void do_instantiate(const std::string& name);
 
     void delete_multiple(const QList<ItemBase*>& items) override;

@@ -164,7 +164,7 @@ AssemblyItem::~AssemblyItem()
 
 QMenu* AssemblyItem::get_single_item_context_menu() const
 {
-    QMenu* menu = ItemBase::get_single_item_context_menu();
+    QMenu* menu = BaseGroupItem::get_single_item_context_menu();
 
     menu->addSeparator();
     menu->addAction("Instantiate...", this, SLOT(slot_instantiate()));
