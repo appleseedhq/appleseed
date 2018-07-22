@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/aov/aovtraits.h"
 #include "renderer/modeling/aov/albedoaov.h"
+#include "renderer/modeling/aov/alphatransparency.h"
 #include "renderer/modeling/aov/depthaov.h"
 #include "renderer/modeling/aov/diagnosticaov.h"
 #include "renderer/modeling/aov/diffuseaov.h"
@@ -97,6 +98,7 @@ void AOVFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
     register_factory(auto_release_ptr<FactoryType>(new PixelVariationAOVFactory()));
     register_factory(auto_release_ptr<FactoryType>(new UVAOVFactory()));
     register_factory(auto_release_ptr<FactoryType>(new AlbedoAOVFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new AlphaTransparencyAOVFactory()));
 
     // Register factories defined in plugins.
     register_factories_from_plugins<AOV>(

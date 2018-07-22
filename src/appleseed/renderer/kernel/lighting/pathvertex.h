@@ -93,6 +93,9 @@ class PathVertex
     ScatteringMode::Mode        m_aov_mode;
     Spectrum                    m_albedo;
     bool                        m_albedo_saved;
+    Spectrum                    m_sample_refraction_value;
+    Spectrum                    m_refraction_alpha_value;
+    bool                        m_has_non_refraction_sample;
 
     // Constructor.
     explicit PathVertex(SamplingContext& sampling_context);
@@ -127,6 +130,9 @@ class PathVertex
 inline PathVertex::PathVertex(SamplingContext& sampling_context)
   : m_sampling_context(sampling_context)
   , m_albedo_saved(false)
+  , m_has_non_refraction_sample(false)
+  , m_sample_refraction_value(1.0f)
+  , m_refraction_alpha_value(1.0f)
 {
 }
 

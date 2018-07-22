@@ -254,6 +254,10 @@ namespace
             {
             }
 
+            void store_aov_components(const PathVertex& vertex)
+            {
+            }
+
             bool accept_scattering(
                 const ScatteringMode::Mode  prev_mode,
                 const ScatteringMode::Mode  next_mode) const

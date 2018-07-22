@@ -61,6 +61,8 @@ class BSDFSample
     // Roughness.
     float                           m_max_roughness;        // BSDF roughness
 
+    bool                            m_is_refraction_sample;
+
     // Outputs.
     ScatteringMode::Mode            m_mode;                 // scattering mode
     foundation::Dual3f              m_incoming;             // world space incoming direction, unit-length, defined only if m_mode != None
@@ -99,6 +101,7 @@ inline BSDFSample::BSDFSample(
   , m_shading_basis(shading_point->get_shading_basis())
   , m_outgoing(outgoing)
   , m_mode(ScatteringMode::None)
+  , m_is_refraction_sample(false)
 {
 }
 
