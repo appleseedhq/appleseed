@@ -42,6 +42,14 @@ float erf_inv(const float x);
 float gamma(const float x);
 float gamma_fraction(const float num, const float denom);
 
+// Bessel function.
+float bessel(const float x);
+float log_bessel(const float x);
+
+// Logistic function.
+float logistic(const float location, const float scale);
+float logistic_cdf(const float location, const float scale);
+
 }       // namespace foundation
 
 #endif  // !APPLESEED_FOUNDATION_MATH_SPECIAL_FUNCTIONS_H

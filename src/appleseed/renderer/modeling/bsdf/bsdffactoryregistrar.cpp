@@ -40,6 +40,7 @@
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/bsdf/glassbsdf.h"
 #include "renderer/modeling/bsdf/glossybrdf.h"
+#include "renderer/modeling/bsdf/hairbsdf.h"
 #include "renderer/modeling/bsdf/kelemenbrdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/bsdf/metalbrdf.h"
@@ -81,6 +82,7 @@ BSDFFactoryRegistrar::BSDFFactoryRegistrar(const SearchPaths& search_paths)
     impl->register_factory(auto_release_ptr<FactoryType>(new DisneyBRDFFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new GlassBSDFFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new GlossyBRDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new HairBSDFFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new KelemenBRDFFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new LambertianBRDFFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new MetalBRDFFactory()));

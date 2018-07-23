@@ -442,7 +442,10 @@ void ShadingPoint::refine_and_offset() const
 
             assert(is_curve_primitive());
 
-            m_refine_space_geo_normal = normalize(-refine_space_ray.m_dir);
+            const Vector3d x = normalize(get_dpdu(0));
+            const Vector3d& sn_curve = normalize(-refine_space_ray.m_dir);
+            const Vector3d z = normalize(cross(sn_curve, x));
+            m_refine_space_geo_normal = normalize(cross(z, x));
 
             // todo: this does not look correct, considering the flat ribbon nature of curves.
             const double Eps = 1.0e-6;
@@ -565,9 +568,8 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
                     ? curves->get_curve1(m_primitive_index).evaluate_tangent(v)
                     : curves->get_curve3(m_primitive_index).evaluate_tangent(v);
 
-            const Vector3d& sn = get_original_shading_normal();
-
             m_dpdu = normalize(Vector3d(tangent));
+            const Vector3d& sn = get_original_shading_normal();
             m_dpdv = normalize(cross(sn, m_dpdu));
             m_dndu = m_dndv = Vector3d(0.0);
         }
@@ -764,7 +766,7 @@ void ShadingPoint::compute_triangle_normals() const
 void ShadingPoint::compute_curve_normals() const
 {
     // We assume flat ribbons facing incoming rays.
-    m_geometric_normal = m_original_shading_normal = -m_ray.m_dir;
+    m_geometric_normal = m_original_shading_normal = normalize(-m_ray.m_dir);
 }
 
 void ShadingPoint::compute_shading_basis() const
@@ -808,22 +810,36 @@ void ShadingPoint::compute_shading_basis() const
         tangent = m_assembly_instance_transform.vector_to_parent(tangent);
     }
 
-    // Construct an orthonormal basis.
-    const Vector3d& sn = get_original_shading_normal();
-    const Vector3d bitangent = cross(tangent, sn);
-    const double norm_bitangent = norm(bitangent);
-    if (norm_bitangent >= 1.0e-6)
+
+    if (m_primitive_type == PrimitiveCurve3)
     {
-        const Vector3d t = bitangent / norm_bitangent;
-        const Vector3d s = cross(sn, t);
-        m_shading_basis.build(sn, s, t);
+        // Shading basis for hair BSDF.
+        // todo: add primitive flag to differential curves from hair.
+        const Vector3d x = normalize(get_dpdu(0));
+        const Vector3d sn_curve = normalize(get_original_shading_normal());
+        const Vector3d z = normalize(cross(sn_curve, x));
+        const Vector3d y = cross(z, x);
+        m_shading_basis.build(y, x, z);
     }
     else
     {
-        // Fall back to arbitrary tangents if the tangent and the shading normal are colinear.
-        m_shading_basis.build(sn);
-    }
+        // Construct an orthonormal basis.
+        const Vector3d& sn = get_original_shading_normal();
+        const Vector3d bitangent = cross(tangent, sn);
+        const double norm_bitangent = norm(bitangent);
+        if (norm_bitangent >= 1.0e-6)
+        {
+            const Vector3d t = bitangent / norm_bitangent;
+            const Vector3d s = cross(sn, t);
+            m_shading_basis.build(sn, s, t);
+        }
+        else
+        {
+            // Fall back to arbitrary tangents if the tangent and the shading normal are colinear.
+            m_shading_basis.build(sn);
+        }
 
+    }
     // Apply the basis modifier if the material has one.
     if (material != nullptr)
     {
