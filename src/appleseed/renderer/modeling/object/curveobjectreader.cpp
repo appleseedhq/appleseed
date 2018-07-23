@@ -108,7 +108,7 @@ namespace
                 static_cast<CurveObject*>(
                     CurveObjectFactory().create(m_name.c_str(), m_params).release());
 
-            m_split_count = m_params.get_optional<size_t>("presplits", 0);
+            m_split_count = m_params.get_optional<size_t>("presplits", 3);
 
             m_object->push_basis(basis);
             m_object->push_curve_count(count);

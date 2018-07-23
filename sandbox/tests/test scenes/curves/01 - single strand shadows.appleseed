@@ -133,6 +133,7 @@
             </object>
             <object name="Curve" model="curve_object">
                 <parameter name="filepath" value="test_01.binarycurve" />
+                <parameter name="basis" value="1" />
             </object>
             <object_instance name="Box001_inst" object="Box001.Box001">
                 <transform>
