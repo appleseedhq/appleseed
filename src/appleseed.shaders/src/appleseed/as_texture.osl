@@ -37,7 +37,7 @@ shader as_texture
     string as_maya_node_name = "asTexture",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/2d:swatch/AppleseedRenderSwatch:texture",
     string as_blender_node_name = "asTexture",
-    string as_blender_category = "texture",
+    string as_blender_category = "texture2d",
     string help = "Texture lookup node.",
     string icon = "asTexture.png",
     int as_maya_type_id = 0x001279fa,
@@ -317,13 +317,13 @@ shader as_texture
     {
         uv_coords[0] = mod(in_texture_coords[0], UVWRAP);
         uv_coords[1] = mod(in_texture_coords[1], UVWRAP);
-        
+
         set_wrap_mode(in_s_wrap, in_t_wrap, wrap_mode);
     }
     else
     {
         uv_coords[0] = u;
-        uv_coords[1] = v;        
+        uv_coords[1] = v;
         wrap_mode[0] = "default";
         wrap_mode[1] = "default";
 
@@ -347,7 +347,7 @@ shader as_texture
         //  Finally, OIIO expects _<U>_<V> for the Mudbox/Brush case, and
         //  <UDIM> for the Mari case.
         //
-        
+
         if (in_atlas_type == 1)
         {
             int match[2];
@@ -402,7 +402,7 @@ shader as_texture
 #endif
         }
     }
-       
+
     int numchannels;
     gettextureinfo(in_filename, "channels", numchannels);
 
@@ -438,7 +438,7 @@ shader as_texture
             "missingalpha", in_alpha,
             "alpha", out_alpha,
             "interp", get_interpolation_method(in_interpolation_method));
-        
+
         if (in_enable_cms && max(out_color) > 0.0)
         {
             color linearized_color = color(0);

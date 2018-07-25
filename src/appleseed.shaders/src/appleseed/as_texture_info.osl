@@ -31,7 +31,7 @@ shader as_texture_info
     string as_maya_node_name = "asTextureInfo",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string as_blender_node_name = "asTextureInfo",
-    string as_blender_category = "utility",
+    string as_blender_category = "texture2d",
     string help = "Texture Information node.",
     string icon = "asTextureInfo.png",
     int as_maya_type_id = 0x001279fc,
@@ -49,10 +49,10 @@ shader as_texture_info
         string page = "Texture",
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0,        
+        int gafferNoduleLayoutVisible = 0,
         string help = "Texture file to query information from."
     ]],
-    
+
     output color out_average_color = color(0)
     [[
         string as_maya_attribute_name = "averageColor",
@@ -158,7 +158,7 @@ shader as_texture_info
             return;
         }
     }
-    
+
     gettextureinfo(in_texture_file, "type", out_texture_type);
 
     if (out_texture_type == "Volume Texture")
@@ -206,7 +206,7 @@ shader as_texture_info
             display_window[2], display_window[3], 0.0);
 
         gettextureinfo(in_texture_file, "worldtocamera", out_world_to_camera);
-        gettextureinfo(in_texture_file, "worldtoscreen", out_world_to_screen); 
+        gettextureinfo(in_texture_file, "worldtoscreen", out_world_to_screen);
     }
 
     gettextureinfo(in_texture_file, "channels", out_num_channels);

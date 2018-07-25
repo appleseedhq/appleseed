@@ -37,7 +37,7 @@ shader as_noise2d
     string as_maya_node_name = "asNoise2D",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/2d:swatch/AppleseedRenderSwatch:texture",
     string as_blender_node_name = "asNoise2D",
-    string as_blender_category = "texture",
+    string as_blender_category = "texture2d",
     int as_maya_type_id = 0x001279cb,
     string icon = "asNoise2D.png",
     string help = "Recursive 2D fractal noise.",
@@ -302,7 +302,7 @@ shader as_noise2d
         string page = "Noise.Gabor",
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
-    ]],  
+    ]],
     float in_amplitude = 1.0
     [[
         string as_maya_attribute_name = "amplitude",
