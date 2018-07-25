@@ -33,7 +33,7 @@ shader as_composite_color
     string as_maya_node_name = "asCompositeColor",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string as_blender_node_name = "asCompositeColor",
-    string as_blender_category = "utility",
+    string as_blender_category = "color",
     string help = "Porter-Duff Compositing operators node.",
     string icon = "asCompositeColor.png",
     int as_maya_type_id = 0x001279fd,

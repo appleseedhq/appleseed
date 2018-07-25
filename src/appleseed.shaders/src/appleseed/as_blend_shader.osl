@@ -31,11 +31,11 @@ shader as_blend_shader
     string as_maya_node_name = "asBlendShader",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
     string as_blender_node_name = "asBlendShader",
-    string as_blender_category = "utility",
+    string as_blender_category = "shader",
     string help = "Shader blending or mixing node.",
     string icon = "asBlendShader.png",
     int as_maya_type_id = 0x001279dd,
-    string as_max_class_id = "966011775 1721377247", 
+    string as_max_class_id = "966011775 1721377247",
     string as_max_plugin_type = "material",
     string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_blend_shader.html#label-as-blend-shader"
 ]]
@@ -99,7 +99,7 @@ shader as_blend_shader
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
-    ]],  
+    ]],
     closure color in_color2 = 0
     [[
         string as_maya_attribute_name = "color2",
@@ -175,7 +175,7 @@ shader as_blend_shader
         float max = 1.0,
         string label = "Layer 4 Weight",
         string page = "Layers"
-    ]], 
+    ]],
     int in_layer_visibility4 = 0
     [[
         string as_maya_attribute_name = "layerVisibility4",
@@ -219,7 +219,7 @@ shader as_blend_shader
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
-    ]], 
+    ]],
     closure color in_color6 = 0
     [[
         string as_maya_attribute_name = "color6",
@@ -249,7 +249,7 @@ shader as_blend_shader
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
-    ]], 
+    ]],
     closure color in_color7 = 0
     [[
         string as_maya_attribute_name = "color7",

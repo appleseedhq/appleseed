@@ -35,7 +35,7 @@ shader as_texture3d
     string as_maya_node_name = "asTexture3D",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/3d:swatch/AppleseedRenderSwatch:texture",
     string as_blender_node_name = "asTexture3D",
-    string as_blender_category = "3d_texture",
+    string as_blender_category = "texture3d",
     string help = "A field3d format 3D texture lookup node.",
     string icon = "asTexture3D.png",
     int as_maya_type_id = 0x001279ff,
@@ -117,7 +117,7 @@ shader as_texture3d
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Use the wrapping mode set on the texture, or override it."
-    ]], 
+    ]],
     int in_t_wrap = 0
     [[
         string as_maya_attribute_name = "tWrap",
@@ -206,7 +206,7 @@ shader as_texture3d
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0,        
+        int gafferNoduleLayoutVisible = 0,
         string help = "Scale the size of the filter defined by the partial derivatives along s or implicitly from P, with 0 disabling filtering altogether."
     ]],
     float in_t_width = 1.0
@@ -301,19 +301,19 @@ shader as_texture3d
 #ifdef DEBUG
             string shadername = "";
             getattribute("shader:shadername", shadername);
-            
+
             warning("[DEBUG]: Invalid texture type %s in %s, %s:%d\n",
                     texture_format, shadername, __FILE__, __LINE__);
 #endif
             return;
         }
     }
-    
+
     string wrap_mode[3];
     set_wrap_mode(in_s_wrap, in_t_wrap, in_r_wrap, wrap_mode);
 
     matrix xform;
-    
+
     if (in_coordsys == 0)
     {
         xform = matrix("common", "object") * in_placement_matrix;
