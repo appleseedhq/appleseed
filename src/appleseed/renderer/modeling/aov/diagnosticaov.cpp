@@ -39,6 +39,7 @@
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
@@ -71,31 +72,30 @@ namespace
         }
     };
 
+
     //
-    // Invalid Sample AOV accumulator.
-    //
+    // Invalid Samples AOV accumulator.
     //
 
     const uint8 NoState = 0;
     const uint8 InvalidSample = 1;
-    const uint8 CorrectSample = 2;
+    const uint8 ValidSample = 2;
 
-    class InvalidSampleAOVAccumulator
+    class InvalidSamplesAOVAccumulator
       : public AOVAccumulator
     {
       public:
-        explicit InvalidSampleAOVAccumulator(
-            Image& image)
+        explicit InvalidSamplesAOVAccumulator(Image& image)
           : m_image(image)
           , m_invalid_sample_count(0)
         {
         }
 
         void on_tile_begin(
-                const Frame&                frame,
-                const size_t                tile_x,
-                const size_t                tile_y,
-                const size_t                max_spp) override
+            const Frame&                frame,
+            const size_t                tile_x,
+            const size_t                tile_y,
+            const size_t                max_spp) override
         {
             // Create a tile that stores samples hint.
             const Tile& tile = frame.image().tile(tile_x, tile_y);
@@ -108,14 +108,14 @@ namespace
 
             m_tile_origin_x = static_cast<int>(tile_x * props.m_tile_width);
             m_tile_origin_y = static_cast<int>(tile_y * props.m_tile_height);
-            m_tile_end_x = static_cast<int>(m_tile_origin_x + m_invalid_sample_tile->get_width() - 1);
-            m_tile_end_y = static_cast<int>(m_tile_origin_y + m_invalid_sample_tile->get_height() - 1);
+            m_tile_end_x = static_cast<int>(m_tile_origin_x + m_invalid_sample_tile->get_width());
+            m_tile_end_y = static_cast<int>(m_tile_origin_y + m_invalid_sample_tile->get_height());
         }
 
         void on_tile_end(
-                const Frame&                frame,
-                const size_t                tile_x,
-                const size_t                tile_y) override
+            const Frame&                frame,
+            const size_t                tile_x,
+            const size_t                tile_y) override
         {
             // Fill the tile according to samples state.
             const Tile& tile = frame.image().tile(tile_x, tile_y);
@@ -144,7 +144,7 @@ namespace
                         color = Color3f(1.0f, 0.0f, 1.0f);
                         break;
 
-                      case CorrectSample:
+                      case ValidSample:
                         tile.get_pixel(x, y, beauty_color);
                         color.set(0.2f * luminance(beauty_color.rgb()));     // 20% of luminance
                         break;
@@ -164,15 +164,15 @@ namespace
 
         void on_pixel_end(const Vector2i& pi) override
         {
-            // Store a hint corresping to the sample state in the tile.
+            // Store a hint corresponding to the sample state in the tile.
             if (pi.x >= m_tile_origin_x &&
                 pi.y >= m_tile_origin_y &&
-                pi.x <= m_tile_end_x &&
-                pi.y <= m_tile_end_y)
+                pi.x < m_tile_end_x &&
+                pi.y < m_tile_end_y)
             {
                 const Vector2i pt(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y);
                 m_invalid_sample_tile->set_pixel(pt.x, pt.y,
-                    m_invalid_sample_count > 0 ? &InvalidSample : &CorrectSample);
+                    m_invalid_sample_count > 0 ? &InvalidSample : &ValidSample);
             }
         }
 
@@ -198,6 +198,7 @@ namespace
         int                                     m_tile_end_y;
     };
 
+
     //
     // Diagnostic AOV.
     //
@@ -206,7 +207,7 @@ namespace
       : public AOV
     {
       public:
-        explicit DiagnosticAOV(const char* name, const ParamArray& params)
+        DiagnosticAOV(const char* name, const ParamArray& params)
           : AOV(name, params)
         {
         }
@@ -261,18 +262,19 @@ namespace
         }
     };
 
+
     //
     // Invalid Sample AOV.
     //
 
-    const char* Invalid_Sample_Model = "invalid_sample_aov";
+    const char* Invalid_Samples_Model = "invalid_samples_aov";
 
-    class InvalidSampleAOV
+    class InvalidSamplesAOV
       : public DiagnosticAOV
     {
       public:
-        explicit InvalidSampleAOV(const ParamArray& params)
-          : DiagnosticAOV("invalid_sample", params)
+        explicit InvalidSamplesAOV(const ParamArray& params)
+          : DiagnosticAOV("invalid_samples", params)
         {
         }
 
@@ -283,75 +285,72 @@ namespace
 
         const char* get_model() const override
         {
-            return Invalid_Sample_Model;
+            return Invalid_Samples_Model;
         }
 
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
-                new InvalidSampleAOVAccumulator(get_image()));
+                new InvalidSamplesAOVAccumulator(get_image()));
         }
     };
 
+
     //
-    // Pixel Sample AOV.
+    // Pixel Sample Count AOV.
     //
 
-    const char* Pixel_Sample_Model = "pixel_sample_aov";
+    const char* Pixel_Sample_Count_Model = "pixel_sample_count_aov";
 
-    class PixelSampleAOV
+    class PixelSampleCountAOV
       : public DiagnosticAOV
     {
       public:
-        explicit PixelSampleAOV(const ParamArray& params)
-          : DiagnosticAOV("pixel_sample", params)
+        explicit PixelSampleCountAOV(const ParamArray& params)
+          : DiagnosticAOV("pixel_sample_count", params)
         {
         }
 
         const char* get_model() const override
         {
-            return Pixel_Sample_Model;
+            return Pixel_Sample_Count_Model;
         }
 
-        void post_process_image(const AABB2u& bbox) override
+        void post_process_image(const AABB2u& crop_window) override
         {
             static const Color3f Blue(0.0f, 0.0f, 1.0f);
             static const Color3f Red(1.0f, 0.0f, 0.0f);
 
             // Find the maximum and minimum samples count.
-            float max_samples = std::numeric_limits<float>::lowest();
-            float min_samples = std::numeric_limits<float>::max();
+            float max_samples = 0.0f;
 
             Color3f color;
 
-            for (size_t j = bbox.min.y; j <= bbox.max.y; ++j)
+            for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
             {
-                for (size_t i = bbox.min.x; i < bbox.max.x; ++i)
+                for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
                 {
-                    m_image->get_pixel(i, j, color);
+                    m_image->get_pixel(x, y, color);
                     max_samples = max(color[0], max_samples);
-                    min_samples = min(color[0], min_samples);
                 }
             }
 
-            if (max_samples < min_samples)
-                return;
-
             // Normalize.
-            for (size_t j = bbox.min.y; j <= bbox.max.y; ++j)
+            for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
             {
-                for (size_t i = bbox.min.x; i < bbox.max.x; ++i)
+                for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
                 {
-                    m_image->get_pixel(i, j, color);
+                    m_image->get_pixel(x, y, color);
 
-                    float c = fit(color[0], min_samples, max_samples, 0.0f, 1.0f);
+                    float c = fit(color[0], 0.0f, max_samples, 0.0f, 1.0f);
 
                     color = lerp(Blue, Red, saturate(c));
-                    m_image->set_pixel(i, j, color);
+                    m_image->set_pixel(x, y, color);
                 }
             }
         }
     };
+
 
     //
     // Pixel Variation AOV.
@@ -368,20 +367,20 @@ namespace
         {
         }
 
-        void post_process_image(const AABB2u& bbox) override
+        void post_process_image(const AABB2u& crop_window) override
         {
             static const Color3f Blue(0.0f, 0.0f, 1.0f);
             static const Color3f Red(1.0f, 0.0f, 0.0f);
 
             Color3f color;
 
-            for (size_t j = bbox.min.y; j <= bbox.max.y; ++j)
+            for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
             {
-                for (size_t i = bbox.min.x; i < bbox.max.x; ++i)
+                for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
                 {
-                    m_image->get_pixel(i, j, color);
+                    m_image->get_pixel(x, y, color);
                     color = lerp(Blue, Red, saturate(color[0]));
-                    m_image->set_pixel(i, j, color);
+                    m_image->set_pixel(x, y, color);
                 }
             }
         }
@@ -395,72 +394,72 @@ namespace
 
 
 //
-// InvalidSampleAOVFactory class implementation.
+// InvalidSamplesAOVFactory class implementation.
 //
 
-void InvalidSampleAOVFactory::release()
+void InvalidSamplesAOVFactory::release()
 {
     delete this;
 }
 
-const char* InvalidSampleAOVFactory::get_model() const
+const char* InvalidSamplesAOVFactory::get_model() const
 {
-    return Invalid_Sample_Model;
+    return Invalid_Samples_Model;
 }
 
-Dictionary InvalidSampleAOVFactory::get_model_metadata() const
+Dictionary InvalidSamplesAOVFactory::get_model_metadata() const
 {
     return
         Dictionary()
-            .insert("name", Invalid_Sample_Model)
-            .insert("label", "Invalid Sample");
+            .insert("name", Invalid_Samples_Model)
+            .insert("label", "Invalid Samples");
 }
 
-DictionaryArray InvalidSampleAOVFactory::get_input_metadata() const
+DictionaryArray InvalidSamplesAOVFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
     return metadata;
 }
 
-auto_release_ptr<AOV> InvalidSampleAOVFactory::create(
+auto_release_ptr<AOV> InvalidSamplesAOVFactory::create(
     const ParamArray&   params) const
 {
-    return auto_release_ptr<AOV>(new InvalidSampleAOV(params));
+    return auto_release_ptr<AOV>(new InvalidSamplesAOV(params));
 }
 
 
 //
-// PixelSampleAOVFactory class implementation.
+// PixelSampleCountAOVFactory class implementation.
 //
 
-void PixelSampleAOVFactory::release()
+void PixelSampleCountAOVFactory::release()
 {
     delete this;
 }
 
-const char* PixelSampleAOVFactory::get_model() const
+const char* PixelSampleCountAOVFactory::get_model() const
 {
-    return Pixel_Sample_Model;
+    return Pixel_Sample_Count_Model;
 }
 
-Dictionary PixelSampleAOVFactory::get_model_metadata() const
+Dictionary PixelSampleCountAOVFactory::get_model_metadata() const
 {
     return
         Dictionary()
-            .insert("name", Pixel_Sample_Model)
-            .insert("label", "Pixel Sample");
+            .insert("name", Pixel_Sample_Count_Model)
+            .insert("label", "Pixel Sample Count");
 }
 
-DictionaryArray PixelSampleAOVFactory::get_input_metadata() const
+DictionaryArray PixelSampleCountAOVFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
     return metadata;
 }
 
-auto_release_ptr<AOV> PixelSampleAOVFactory::create(
+auto_release_ptr<AOV> PixelSampleCountAOVFactory::create(
     const ParamArray&   params) const
 {
-    return auto_release_ptr<AOV>(new PixelSampleAOV(params));
+    return auto_release_ptr<AOV>(new PixelSampleCountAOV(params));
 }
 
 

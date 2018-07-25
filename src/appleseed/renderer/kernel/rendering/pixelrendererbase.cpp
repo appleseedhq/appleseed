@@ -77,6 +77,7 @@ void PixelRendererBase::on_tile_end(
 }
 
 void PixelRendererBase::on_pixel_begin(
+    const Frame&                frame,
     const Vector2i&             pi,
     const Vector2i&             pt,
     const AABB2i&               tile_bbox,
@@ -87,6 +88,7 @@ void PixelRendererBase::on_pixel_begin(
 }
 
 void PixelRendererBase::on_pixel_end(
+    const Frame&                frame,
     const Vector2i&             pi,
     const Vector2i&             pt,
     const AABB2i&               tile_bbox,

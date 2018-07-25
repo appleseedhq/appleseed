@@ -31,10 +31,15 @@
 #include "filteredtile.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
+#include "foundation/image/colorspace.h"
 #include "foundation/image/pixel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/atomic.h"
+
+// Standard headers.
+#include <cmath>
 
 using namespace std;
 
@@ -55,10 +60,10 @@ namespace foundation
 //
 
 FilteredTile::FilteredTile(
-    const size_t        width,
-    const size_t        height,
-    const size_t        channel_count,
-    const Filter2f&     filter)
+    const size_t            width,
+    const size_t            height,
+    const size_t            channel_count,
+    const Filter2f&         filter)
   : Tile(width, height, channel_count + 1, PixelFormatFloat)
   , m_crop_window(Vector2u(0, 0), Vector2u(width - 1, height - 1))
   , m_filter(filter)
@@ -66,11 +71,11 @@ FilteredTile::FilteredTile(
 }
 
 FilteredTile::FilteredTile(
-    const size_t        width,
-    const size_t        height,
-    const size_t        channel_count,
-    const AABB2u&       crop_window,
-    const Filter2f&     filter)
+    const size_t            width,
+    const size_t            height,
+    const size_t            channel_count,
+    const AABB2u&           crop_window,
+    const Filter2f&         filter)
   : Tile(width, height, channel_count + 1, PixelFormatFloat)
   , m_crop_window(crop_window)
   , m_filter(filter)
@@ -86,9 +91,9 @@ void FilteredTile::clear()
 }
 
 void FilteredTile::add(
-    const float         x,
-    const float         y,
-    const float*        values)
+    const float             x,
+    const float             y,
+    const float*            values)
 {
     // Convert (x, y) from continuous image space to discrete image space.
     const float dx = x - 0.5f;
@@ -125,9 +130,9 @@ void FilteredTile::add(
 }
 
 void FilteredTile::atomic_add(
-    const float         x,
-    const float         y,
-    const float*        values)
+    const float             x,
+    const float             y,
+    const float*            values)
 {
     // Convert (x, y) from continuous image space to discrete image space.
     const float dx = x - 0.5f;
@@ -161,6 +166,56 @@ void FilteredTile::atomic_add(
                 foundation::atomic_add(ptr++, values[i] * weight);
         }
     }
+}
+
+float FilteredTile::compute_weighted_pixel_variance(
+    const float*            main,
+    const float*            second)
+{
+    // Get weights.
+    const float main_weight = *main++;
+    const float rcp_main_weight = main_weight == 0.0f ? 0.0f : 1.0f / main_weight;
+    const float second_weight = *second++;
+    const float rcp_second_weight = second_weight == 0.0f ? 0.0f : 1.0f / second_weight;
+
+    // Get colors and assign weights.
+    Color4f main_color(abs(main[0]), abs(main[1]), abs(main[2]), abs(main[3]));
+    main_color *= rcp_main_weight;
+
+    Color4f second_color(abs(second[0]), abs(second[1]), abs(second[2]), abs(second[3]));
+    second_color *= rcp_second_weight;
+
+    // Compute variance.
+    return fast_rcp_sqrt(main_color.r + main_color.g + main_color.b) * (
+        abs(main_color.r - second_color.r) +
+        abs(main_color.g - second_color.g) +
+        abs(main_color.b - second_color.b));
+}
+
+float FilteredTile::compute_tile_variance(
+    const AABB2u&           bb,
+    const FilteredTile*     main,
+    const FilteredTile*     second)
+{
+    float error = 0.0f;
+
+    assert(main->get_crop_window() == second->get_crop_window());
+    assert(main->get_crop_window().contains(bb.min));
+    assert(main->get_crop_window().contains(bb.max));
+
+    // Loop over block pixels.
+    for (size_t y = bb.min.y; y <= bb.max.y; ++y)
+    {
+        for (size_t x = bb.min.x; x <= bb.max.x; ++x)
+        {
+            const float* main_ptr = main->pixel(x, y);
+            const float* second_ptr = second->pixel(x, y);
+
+            error += compute_weighted_pixel_variance(main_ptr, second_ptr);
+        }
+    }
+
+    return error;
 }
 
 }   // namespace foundation

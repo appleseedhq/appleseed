@@ -51,7 +51,7 @@ namespace renderer
 // A factory for invalid sample AOVs.
 //
 
-class APPLESEED_DLLSYMBOL InvalidSampleAOVFactory
+class APPLESEED_DLLSYMBOL InvalidSamplesAOVFactory
   : public IAOVFactory
 {
   public:
@@ -74,10 +74,10 @@ class APPLESEED_DLLSYMBOL InvalidSampleAOVFactory
 
 
 //
-// A factory for pixel sample AOVs.
+// A factory for pixel sample count AOVs.
 //
 
-class APPLESEED_DLLSYMBOL PixelSampleAOVFactory
+class APPLESEED_DLLSYMBOL PixelSampleCountAOVFactory
   : public IAOVFactory
 {
   public:
