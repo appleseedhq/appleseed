@@ -79,8 +79,7 @@ namespace
             ISampleRendererFactory*     factory,
             const ParamArray&           params,
             const size_t                thread_index)
-          : PixelRendererBase()
-          , m_params(params)
+          : m_params(params)
           , m_sample_renderer(factory->create(thread_index))
           , m_sample_count(m_params.m_samples)
           , m_sqrt_sample_count(round<int>(sqrt(static_cast<double>(m_params.m_samples))))
@@ -134,7 +133,7 @@ namespace
         {
             const size_t aov_count = frame.aov_images().size();
 
-            on_pixel_begin(pi, pt, tile_bbox, aov_accumulators);
+            on_pixel_begin(frame, pi, pt, tile_bbox, aov_accumulators);
 
             if (m_params.m_decorrelate)
             {
@@ -248,7 +247,7 @@ namespace
                 }
             }
 
-            on_pixel_end(pi, pt, tile_bbox, aov_accumulators);
+            on_pixel_end(frame, pi, pt, tile_bbox, aov_accumulators);
         }
 
         StatisticsVector get_statistics() const override

@@ -87,14 +87,13 @@ namespace
             ISampleRendererFactory*     factory,
             const ParamArray&           params,
             const size_t                thread_index)
-          : PixelRendererBase()
-          , m_params(params)
+          : m_params(params)
           , m_sample_renderer(factory->create(thread_index))
           , m_sample_aov_tile(nullptr)
           , m_variation_aov_tile(nullptr)
         {
             m_variation_aov_index = frame.aovs().get_index("pixel_variation");
-            m_sample_aov_index = frame.aovs().get_index("pixel_sample");
+            m_sample_aov_index = frame.aovs().get_index("pixel_sample_count");
         }
 
         void release() override
@@ -178,7 +177,7 @@ namespace
         {
             const size_t aov_count = frame.aov_images().size();
 
-            on_pixel_begin(pi, pt, tile_bbox, aov_accumulators);
+            on_pixel_begin(frame, pi, pt, tile_bbox, aov_accumulators);
 
             m_scratch_fb->clear();
 
@@ -286,7 +285,7 @@ namespace
 
                 if (m_sample_aov_tile)
                 {
-                    value[0] = trackers[0].get_size();
+                    value[0] = static_cast<float>(trackers[0].get_size());
 
                     m_sample_aov_tile->set_pixel(pt.x, pt.y, value);
                 }
@@ -305,7 +304,7 @@ namespace
                 }
             }
 
-            on_pixel_end(pi, pt, tile_bbox, aov_accumulators);
+            on_pixel_end(frame, pi, pt, tile_bbox, aov_accumulators);
         }
 
         StatisticsVector get_statistics() const override

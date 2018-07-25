@@ -91,7 +91,7 @@ class APPLESEED_DLLSYMBOL AOV
     virtual void clear_image();
 
     // Apply any post processing needed to the AOV image.
-    virtual void post_process_image(const foundation::AABB2u& bbox);
+    virtual void post_process_image(const foundation::AABB2u& crop_window);
 
   protected:
     friend class AOVAccumulatorContainer;

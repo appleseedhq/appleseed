@@ -35,6 +35,7 @@
 #include "renderer/kernel/lighting/pt/ptlightingengine.h"
 #include "renderer/kernel/lighting/sppm/sppmlightingengine.h"
 #include "renderer/kernel/rendering/final/adaptivepixelrenderer.h"
+#include "renderer/kernel/rendering/final/adaptivetilerenderer.h"
 #include "renderer/kernel/rendering/final/uniformpixelrenderer.h"
 #include "renderer/kernel/rendering/generic/genericframerenderer.h"
 #include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
@@ -198,6 +199,10 @@ Dictionary Configuration::get_metadata()
         AdaptivePixelRendererFactory::get_params_metadata());
 
     metadata.dictionaries().insert(
+        "adaptive_tile_renderer",
+        AdaptiveTileRendererFactory::get_params_metadata());
+
+    metadata.dictionaries().insert(
         "generic_frame_renderer",
         GenericFrameRendererFactory::get_params_metadata());
 
@@ -250,6 +255,8 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_final()
     parameters.insert("spectrum_mode", "rgb");
     parameters.insert("sampling_mode", "qmc");
 
+    parameters.insert("passes", 1);
+
     parameters.insert("frame_renderer", "generic");
     parameters.insert("tile_renderer", "generic");
 
@@ -273,6 +280,8 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_interactiv
 
     parameters.insert("spectrum_mode", "rgb");
     parameters.insert("sampling_mode", "qmc");
+
+    parameters.insert("passes", 1);
 
     parameters.insert("frame_renderer", "progressive");
     parameters.insert("sample_generator", "generic");

@@ -36,6 +36,7 @@
 #include "renderer/modeling/texture/texture.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/hash.h"
 #include "foundation/math/scalar.h"
@@ -59,24 +60,6 @@ namespace renderer
 
 namespace
 {
-    // Compute a color from a given integer value.
-    template <typename T>
-    inline Color4f integer_to_color(const T i)
-    {
-        const uint32 u = static_cast<uint32>(i);    // keep the low 32 bits
-
-        const uint32 x = hash_uint32(u);
-        const uint32 y = hash_uint32(u + 1);
-        const uint32 z = hash_uint32(u + 2);
-
-        return
-            Color4f(
-                static_cast<float>(x) * (1.0f / 4294967295.0f),
-                static_cast<float>(y) * (1.0f / 4294967295.0f),
-                static_cast<float>(z) * (1.0f / 4294967295.0f),
-                1.0f);
-    }
-
     // Apply an addressing mode to texture coordinates.
     inline void apply_addressing_mode(
         const TextureAddressingMode addressing_mode,
@@ -227,12 +210,14 @@ Color4f TextureSource::get_texel(
 #ifdef DEBUG_DISPLAY_TEXTURE_TILES
 
     return
-        integer_to_color(
-            mix_uint32(
-                static_cast<uint32>(m_assembly_uid),
-                static_cast<uint32>(m_texture_uid),
-                static_cast<uint32>(tile_x),
-                static_cast<uint32>(tile_y)));
+        Color4f(
+            integer_to_color3(
+                mix_uint32(
+                    static_cast<uint32>(m_assembly_uid),
+                    static_cast<uint32>(m_texture_uid),
+                    static_cast<uint32>(tile_x),
+                    static_cast<uint32>(tile_y))),
+            1.0f);
 
 #endif
 

@@ -32,19 +32,14 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/ipixelrenderer.h"
-#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
-#include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cstddef>
-#include <memory>
 
 // Forward declarations.
-namespace foundation    { class Dictionary; }
 namespace foundation    { class Tile; }
 namespace renderer      { class AOVAccumulatorContainer; }
 namespace renderer      { class Frame; }
@@ -82,12 +77,14 @@ class PixelRendererBase
 
   protected:
     void on_pixel_begin(
+        const Frame&                        frame,
         const foundation::Vector2i&         pi,
         const foundation::Vector2i&         pt,
         const foundation::AABB2i&           tile_bbox,
         AOVAccumulatorContainer&            aov_accumulators);
 
     void on_pixel_end(
+        const Frame&                        frame,
         const foundation::Vector2i&         pi,
         const foundation::Vector2i&         pt,
         const foundation::AABB2i&           tile_bbox,

@@ -31,6 +31,7 @@
 #define APPLESEED_FOUNDATION_IMAGE_TILE_H
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
 #include "foundation/image/pixel.h"
 #include "foundation/platform/types.h"
 
@@ -123,15 +124,15 @@ class APPLESEED_DLLSYMBOL Tile
         const size_t        x,
         const size_t        y,
         const T             components[]);
-    template <typename Color>
+    template <typename T, size_t N>
     void set_pixel(
         const size_t        i,
-        const Color&        color);
-    template <typename Color>
+        const Color<T, N>&  color);
+    template <typename T, size_t N>
     void set_pixel(
         const size_t        x,
         const size_t        y,
-        const Color&        color);
+        const Color<T, N>&  color);
 
     // Structured write access to a given component of a given pixel.
     template <typename T>
@@ -156,15 +157,15 @@ class APPLESEED_DLLSYMBOL Tile
         const size_t        x,
         const size_t        y,
         T                   components[]) const;
-    template <typename Color>
+    template <typename T, size_t N>
     void get_pixel(
         const size_t        i,
-        Color&              color) const;
-    template <typename Color>
+        Color<T, N>&        color) const;
+    template <typename T, size_t N>
     void get_pixel(
         const size_t        x,
         const size_t        y,
-        Color&              color) const;
+        Color<T, N>&        color) const;
 
     // Structured read access to a given component of a given pixel.
     template <typename T>
@@ -238,7 +239,7 @@ inline uint8* Tile::get_storage() const
 }
 
 inline uint8* Tile::pixel(
-    const size_t    i) const
+    const size_t        i) const
 {
     assert(i < m_pixel_count);
 
@@ -249,8 +250,8 @@ inline uint8* Tile::pixel(
 }
 
 inline uint8* Tile::pixel(
-    const size_t    x,
-    const size_t    y) const
+    const size_t        x,
+    const size_t        y) const
 {
     assert(x < m_width);
     assert(y < m_height);
@@ -259,24 +260,24 @@ inline uint8* Tile::pixel(
 }
 
 inline uint8* Tile::component(
-    const size_t    i,
-    const size_t    c) const
+    const size_t        i,
+    const size_t        c) const
 {
     return pixel(i) + c * m_channel_size;
 }
 
 inline uint8* Tile::component(
-    const size_t    x,
-    const size_t    y,
-    const size_t    c) const
+    const size_t        x,
+    const size_t        y,
+    const size_t        c) const
 {
     return pixel(x, y) + c * m_channel_size;
 }
 
 template <typename T>
 inline void Tile::set_pixel(
-    const size_t    i,
-    const T         components[])
+    const size_t        i,
+    const T             components[])
 {
     Pixel::convert_to_format(
         components,                             // source begin
@@ -289,9 +290,9 @@ inline void Tile::set_pixel(
 
 template <typename T>
 inline void Tile::set_pixel(
-    const size_t    x,
-    const size_t    y,
-    const T         components[])
+    const size_t        x,
+    const size_t        y,
+    const T             components[])
 {
     assert(x < m_width);
     assert(y < m_height);
@@ -299,32 +300,32 @@ inline void Tile::set_pixel(
     set_pixel<T>(y * m_width + x, components);
 }
 
-template <typename Color>
+template <typename T, size_t N>
 inline void Tile::set_pixel(
-    const size_t    i,
-    const Color&    color)
+    const size_t        i,
+    const Color<T, N>&  color)
 {
-    assert(sizeof(Color) == m_channel_count * sizeof(color[0]));
+    assert(N == m_channel_count);
 
     set_pixel(i, &color[0]);
 }
 
-template <typename Color>
+template <typename T, size_t N>
 inline void Tile::set_pixel(
-    const size_t    x,
-    const size_t    y,
-    const Color&    color)
+    const size_t        x,
+    const size_t        y,
+    const Color<T, N>&  color)
 {
-    assert(sizeof(Color) == m_channel_count * sizeof(color[0]));
+    assert(N == m_channel_count);
 
     set_pixel(x, y, &color[0]);
 }
 
 template <typename T>
 inline void Tile::set_component(
-    const size_t    i,
-    const size_t    c,
-    const T         value)
+    const size_t        i,
+    const size_t        c,
+    const T             value)
 {
     Pixel::convert_to_format(
         &value,                                 // source begin
@@ -337,10 +338,10 @@ inline void Tile::set_component(
 
 template <typename T>
 inline void Tile::set_component(
-    const size_t    x,
-    const size_t    y,
-    const size_t    c,
-    const T         value)
+    const size_t        x,
+    const size_t        y,
+    const size_t        c,
+    const T             value)
 {
     assert(x < m_width);
     assert(y < m_height);
@@ -350,8 +351,8 @@ inline void Tile::set_component(
 
 template <typename T>
 inline void Tile::get_pixel(
-    const size_t    i,
-    T               components[]) const
+    const size_t        i,
+    T                   components[]) const
 {
     const uint8* src = pixel(i);
 
@@ -366,9 +367,9 @@ inline void Tile::get_pixel(
 
 template <typename T>
 inline void Tile::get_pixel(
-    const size_t    x,
-    const size_t    y,
-    T               components[]) const
+    const size_t        x,
+    const size_t        y,
+    T                   components[]) const
 {
     assert(x < m_width);
     assert(y < m_height);
@@ -376,31 +377,31 @@ inline void Tile::get_pixel(
     get_pixel<T>(y * m_width + x, components);
 }
 
-template <typename Color>
+template <typename T, size_t N>
 inline void Tile::get_pixel(
-    const size_t    i,
-    Color&          color) const
+    const size_t        i,
+    Color<T, N>&        color) const
 {
-    assert(sizeof(Color) == m_channel_count * sizeof(color[0]));
+    assert(N == m_channel_count);
 
     get_pixel(i, &color[0]);
 }
 
-template <typename Color>
+template <typename T, size_t N>
 inline void Tile::get_pixel(
-    const size_t    x,
-    const size_t    y,
-    Color&          color) const
+    const size_t        x,
+    const size_t        y,
+    Color<T, N>&        color) const
 {
-    assert(sizeof(Color) == m_channel_count * sizeof(color[0]));
+    assert(N == m_channel_count);
 
     get_pixel(x, y, &color[0]);
 }
 
 template <typename T>
 inline T Tile::get_component(
-    const size_t    i,
-    const size_t    c) const
+    const size_t        i,
+    const size_t        c) const
 {
     const uint8* src = component(i, c);
 
@@ -418,9 +419,9 @@ inline T Tile::get_component(
 
 template <typename T>
 inline T Tile::get_component(
-    const size_t    x,
-    const size_t    y,
-    const size_t    c) const
+    const size_t        x,
+    const size_t        y,
+    const size_t        c) const
 {
     assert(x < m_width);
     assert(y < m_height);

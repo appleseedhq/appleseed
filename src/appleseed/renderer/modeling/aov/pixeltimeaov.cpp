@@ -37,6 +37,7 @@
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
@@ -85,8 +86,8 @@ namespace
             // Fetch the tile bounds (inclusive).
             m_tile_origin_x = static_cast<int>(tile_x * props.m_tile_width);
             m_tile_origin_y = static_cast<int>(tile_y * props.m_tile_height);
-            m_tile_end_x = static_cast<int>(m_tile_origin_x + m_tile->get_width() - 1);
-            m_tile_end_y = static_cast<int>(m_tile_origin_y + m_tile->get_height() - 1);
+            m_tile_end_x = static_cast<int>(m_tile_origin_x + m_tile->get_width());
+            m_tile_end_y = static_cast<int>(m_tile_origin_y + m_tile->get_height());
 
             m_samples.reserve(max_spp);
         }
@@ -149,8 +150,8 @@ namespace
             return
                 pi.x < m_tile_origin_x ||
                 pi.y < m_tile_origin_y ||
-                pi.x > m_tile_end_x ||
-                pi.y > m_tile_end_y;
+                pi.x >= m_tile_end_x ||
+                pi.y >= m_tile_end_y;
         }
     };
 
@@ -218,14 +219,14 @@ namespace
             m_image->clear(Color<float, 1>(0.0f));
         }
 
-        void post_process_image(const AABB2u& bbox) override
+        void post_process_image(const AABB2u& crop_window) override
         {
             // Find the maximum value.
             float max_time = 0.0f;
 
-            for (size_t j = bbox.min.y; j <= bbox.max.y; ++j)
+            for (size_t j = crop_window.min.y; j <= crop_window.max.y; ++j)
             {
-                for (size_t i = bbox.min.x; i < bbox.max.x; ++i)
+                for (size_t i = crop_window.min.x; i <= crop_window.max.x; ++i)
                 {
                     float val;
                     m_image->get_pixel(i, j, &val);
@@ -239,9 +240,9 @@ namespace
             const float rcp_max_time = 1.0f / max_time;
 
             // Normalize.
-            for (size_t j = bbox.min.y; j <= bbox.max.y; ++j)
+            for (size_t j = crop_window.min.y; j <= crop_window.max.y; ++j)
             {
-                for (size_t i = bbox.min.x; i < bbox.max.x; ++i)
+                for (size_t i = crop_window.min.x; i <= crop_window.max.x; ++i)
                 {
                     float c;
                     m_image->get_pixel(i, j, &c);
