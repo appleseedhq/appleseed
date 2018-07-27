@@ -266,8 +266,7 @@ Dictionary GlossyAOVFactory::get_model_metadata() const
     return
         Dictionary()
             .insert("name", get_model())
-            .insert("label", "Glossy")
-            .insert("default_model", "false");
+            .insert("label", "Glossy");
 }
 
 DictionaryArray GlossyAOVFactory::get_input_metadata() const
@@ -302,8 +301,7 @@ Dictionary DirectGlossyAOVFactory::get_model_metadata() const
     return
         Dictionary()
             .insert("name", get_model())
-            .insert("label", "Direct Glossy")
-            .insert("default_model", "false");
+            .insert("label", "Direct Glossy");
 }
 
 DictionaryArray DirectGlossyAOVFactory::get_input_metadata() const
@@ -338,8 +336,7 @@ Dictionary IndirectGlossyAOVFactory::get_model_metadata() const
     return
         Dictionary()
             .insert("name", get_model())
-            .insert("label", "Indirect Glossy")
-            .insert("default_model", "false");
+            .insert("label", "Indirect Glossy");
 }
 
 DictionaryArray IndirectGlossyAOVFactory::get_input_metadata() const

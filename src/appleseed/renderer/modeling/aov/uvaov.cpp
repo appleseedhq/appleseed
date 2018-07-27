@@ -183,8 +183,7 @@ Dictionary UVAOVFactory::get_model_metadata() const
     return
         Dictionary()
             .insert("name", Model)
-            .insert("label", "UV")
-            .insert("default_model", "false");
+            .insert("label", "UV");
 }
 
 DictionaryArray UVAOVFactory::get_input_metadata() const
