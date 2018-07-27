@@ -50,7 +50,7 @@ class APPLESEED_DLLSYMBOL IAbortSwitch
     virtual ~IAbortSwitch() {}
 
     // Check whether the abort flag is set.
-    virtual bool is_aborted() const = 0;
+    virtual bool is_aborted() = 0;
 };
 
 
