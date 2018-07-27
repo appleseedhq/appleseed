@@ -267,8 +267,7 @@ Dictionary DiffuseAOVFactory::get_model_metadata() const
     return
         Dictionary()
             .insert("name", get_model())
-            .insert("label", "Diffuse")
-            .insert("default_model", "false");
+            .insert("label", "Diffuse");
 }
 
 DictionaryArray DiffuseAOVFactory::get_input_metadata() const
@@ -303,8 +302,7 @@ Dictionary DirectDiffuseAOVFactory::get_model_metadata() const
     return
         Dictionary()
             .insert("name", get_model())
-            .insert("label", "Direct Diffuse")
-            .insert("default_model", "false");
+            .insert("label", "Direct Diffuse");
 }
 
 DictionaryArray DirectDiffuseAOVFactory::get_input_metadata() const
@@ -339,8 +337,7 @@ Dictionary IndirectDiffuseAOVFactory::get_model_metadata() const
     return
         Dictionary()
             .insert("name", get_model())
-            .insert("label", "Indirect Diffuse")
-            .insert("default_model", "false");
+            .insert("label", "Indirect Diffuse");
 }
 
 DictionaryArray IndirectDiffuseAOVFactory::get_input_metadata() const

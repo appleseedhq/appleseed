@@ -138,8 +138,7 @@ Dictionary AlbedoAOVFactory::get_model_metadata() const
     return
         Dictionary()
             .insert("name", get_model())
-            .insert("label", "Albedo")
-            .insert("default_model", "false");
+            .insert("label", "Albedo");
 }
 
 DictionaryArray AlbedoAOVFactory::get_input_metadata() const

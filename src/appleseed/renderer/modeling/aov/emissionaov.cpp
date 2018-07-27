@@ -138,8 +138,7 @@ Dictionary EmissionAOVFactory::get_model_metadata() const
     return
         Dictionary()
             .insert("name", Model)
-            .insert("label", "Emission")
-            .insert("default_model", "false");
+            .insert("label", "Emission");
 }
 
 DictionaryArray EmissionAOVFactory::get_input_metadata() const
