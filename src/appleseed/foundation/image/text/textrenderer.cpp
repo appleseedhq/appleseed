@@ -245,6 +245,10 @@ void TextRenderer::draw_string(
     const int canvas_width = static_cast<int>(props.m_canvas_width);
     const int canvas_height = static_cast<int>(props.m_canvas_height);
 
+    const Color4f color_linear_rgb(
+        srgb_to_linear_rgb(color_srgb.rgb()),
+        color_srgb.a);
+
     // Compute font scaling factor for the desired pixel height.
     const float scale = stbtt_ScaleForPixelHeight(&font_info, font_height);
 
@@ -324,7 +328,7 @@ void TextRenderer::draw_string(
                 const uint8 alpha_uint8 = glyph_bitmap[j * glyph_w + i];
                 if (alpha_uint8 == 0)
                     continue;
-                float alpha = alpha_uint8 * (1.0f / 255.0f);
+                const float alpha = alpha_uint8 * (1.0f / 255.0f);
 
                 // Retrieve background color.
                 Color4f background;
@@ -336,12 +340,10 @@ void TextRenderer::draw_string(
                     background.rgb() = fast_srgb_to_linear_rgb(background.rgb());
                 }
 
-                Color4f pixel = color_srgb;
-
-                // Convert text color from sRGB to linear RGB.
-                pixel.rgb() = fast_srgb_to_linear_rgb(pixel.rgb());
+                Color4f pixel = color_linear_rgb;
 
                 // Premultiply text color.
+                // todo: should only multiply RGB components?!
                 pixel *= pixel.a * alpha;
 
                 // Composite text over background.

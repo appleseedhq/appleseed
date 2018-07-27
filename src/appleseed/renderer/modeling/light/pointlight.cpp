@@ -188,8 +188,8 @@ Dictionary PointLightFactory::get_model_metadata() const
         Dictionary()
             .insert("name", Model)
             .insert("label", "Point Light")
-            .insert("default_model", "true")
-            .insert("help", "A light source that emits light equally in all directions from a point");
+            .insert("help", "A light source that emits light equally in all directions from a point")
+            .insert("default_model", "true");
 }
 
 DictionaryArray PointLightFactory::get_input_metadata() const

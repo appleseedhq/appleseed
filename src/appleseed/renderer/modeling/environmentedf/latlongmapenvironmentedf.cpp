@@ -72,6 +72,9 @@
 #include <cstddef>
 #include <memory>
 
+// Forward declarations.
+namespace renderer  { class OnFrameBeginRecorder; }
+
 using namespace foundation;
 using namespace std;
 

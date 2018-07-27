@@ -35,7 +35,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/atomic.h"
-#include "foundation/platform/compiler.h"
 
 // Qt headers.
 #include <QObject>

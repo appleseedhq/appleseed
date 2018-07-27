@@ -115,10 +115,10 @@ namespace
             if (!Texture::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            assert(m_image.get() != 0 || m_dummy_texture.get() != 0);
-
             if (m_image.get() == nullptr)
                 RENDERER_LOG_WARNING("in-memory 2d texture \"%s\" has no texture data.", get_path().c_str());
+
+            assert(m_image.get() != nullptr || m_dummy_texture.get() != nullptr);
 
             return true;
         }
@@ -153,7 +153,7 @@ namespace
             const size_t            tile_y,
             const Tile*             tile) override
         {
-            // Nothing to do, the tile is owned by the source image.
+            // Nothing to do, the tile is owned by `m_image`.
         }
 
       private:

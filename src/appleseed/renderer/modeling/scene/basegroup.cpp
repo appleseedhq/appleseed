@@ -109,9 +109,7 @@ bool BaseGroup::create_optimized_osl_shader_groups(
         if (is_aborted(abort_switch))
             return true;
 
-        success = success && i->create_optimized_osl_shader_groups(
-            shading_system,
-            abort_switch);
+        success = success && i->create_optimized_osl_shader_groups(shading_system, abort_switch);
     }
 
     for (each<ShaderGroupContainer> i = shader_groups(); i; ++i)
@@ -119,9 +117,7 @@ bool BaseGroup::create_optimized_osl_shader_groups(
         if (is_aborted(abort_switch))
             return true;
 
-        success = success && i->create_optimized_osl_shader_group(
-            shading_system,
-            abort_switch);
+        success = success && i->create_optimized_osl_shader_group(shading_system, abort_switch);
     }
 
     return success;

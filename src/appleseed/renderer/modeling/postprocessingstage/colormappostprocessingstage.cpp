@@ -55,6 +55,7 @@
 // Standard headers.
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <exception>
 #include <memory>
 #include <string>

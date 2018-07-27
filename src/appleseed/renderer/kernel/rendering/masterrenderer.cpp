@@ -144,9 +144,9 @@ struct MasterRenderer::Impl
       , m_display(nullptr)
     {
         m_error_handler = new OIIOErrorHandler();
-    #ifndef NDEBUG
+#ifndef NDEBUG
         m_error_handler->verbosity(OIIO::ErrorHandler::VERBOSE);
-    #endif
+#endif
 
         RENDERER_LOG_DEBUG("creating oiio texture system...");
         m_texture_system = OIIOTextureSystemFactory::create(false);
@@ -177,11 +177,11 @@ struct MasterRenderer::Impl
                 OSL::TypeDesc::STRING,
                 static_cast<int>(VisibilityFlags::Count)),
             VisibilityFlags::Names);
-    #ifndef NDEBUG
+#ifndef NDEBUG
         m_shading_system->attribute("compile_report", 1);
         m_shading_system->attribute("countlayerexecs", 1);
         m_shading_system->attribute("clearmemory", 1);
-    #endif
+#endif
 
         // Register appleseed's closures into OSL's shading system.
         register_closures(*m_shading_system);
@@ -250,7 +250,7 @@ struct MasterRenderer::Impl
             m_shading_system->attribute("searchpath:shader", new_search_path);
         }
 
-        // Re-optimize the shader groups that need updating.
+        // Re-optimize shader groups that need updating.
         return
             m_project.get_scene()->create_optimized_osl_shader_groups(
                 *m_shading_system,
