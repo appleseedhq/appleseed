@@ -93,11 +93,11 @@ class APPLESEED_DLLSYMBOL EDF
     // Retrieve the importance multiplier.
     float get_uncached_importance_multiplier() const;
 
-    // Get the cached light near start value.
-    double get_light_near_start() const;
-
     // Retrieve the light near start value.
     double get_uncached_light_near_start() const;
+
+    // Get the cached light near start value.
+    double get_light_near_start() const;
     
     // Retrieve the approximate contribution.
     virtual float get_uncached_max_contribution() const = 0;

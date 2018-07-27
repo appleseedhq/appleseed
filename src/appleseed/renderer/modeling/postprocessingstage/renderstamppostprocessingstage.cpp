@@ -39,7 +39,6 @@
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/drawing.h"
-#include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/text/textrenderer.h"
@@ -52,10 +51,7 @@
 #include "foundation/utility/string.h"
 
 // Standard headers.
-#include <algorithm>
-#include <memory>
 #include <string>
-#include <vector>
 
 using namespace foundation;
 using namespace std;

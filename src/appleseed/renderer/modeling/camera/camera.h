@@ -201,10 +201,8 @@ class APPLESEED_DLLSYMBOL Camera
     // Check shutter times and emit warnings if needed.
     void check_shutter_times_for_consistency() const;
 
-    void initialize_shutter_curve_bezier();
-
     void initialize_shutter_curve_linear();
-
+    void initialize_shutter_curve_bezier();
     void initialize_shutter_curve_bezier_cdfs(
         const float                     ot,
         const float                     oet,

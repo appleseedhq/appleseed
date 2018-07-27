@@ -48,12 +48,6 @@ namespace foundation
 class BitMask2
 {
   public:
-    size_t  m_width;
-    size_t  m_height;
-    size_t  m_block_width;
-    size_t  m_size;
-    uint8*  m_bits;
-
     // The constructor does not initialize the content of the bit mask.
     BitMask2(
         const size_t    width,
@@ -92,6 +86,13 @@ class BitMask2
         const size_t    y) const;
 
     size_t get_memory_size() const;
+
+  private:
+    size_t  m_width;
+    size_t  m_height;
+    size_t  m_block_width;
+    size_t  m_size;
+    uint8*  m_bits;
 };
 
 

@@ -41,8 +41,8 @@ namespace renderer
 {
 
 //
-// Keep tracks of which entity we have called on_frame_begin() on,
-// and allows to call on_frame_end() on all those entities, in reverse order.
+// Keep tracks of which entities we have called `on_frame_begin()` on,
+// and allows to call `on_frame_end()` on those entities, in reverse order.
 //
 
 class APPLESEED_DLLSYMBOL OnFrameBeginRecorder
@@ -52,6 +52,7 @@ class APPLESEED_DLLSYMBOL OnFrameBeginRecorder
     ~OnFrameBeginRecorder();
 
     void record(Entity* entity, const BaseGroup* parent);
+
     void on_frame_end(const Project& project);
 
   private:

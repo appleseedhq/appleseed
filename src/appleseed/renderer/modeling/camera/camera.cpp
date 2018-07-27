@@ -128,18 +128,25 @@ bool Camera::on_render_begin(
     OnRenderBeginRecorder&  recorder,
     IAbortSwitch*           abort_switch)
 {
-    m_shutter_open_begin_time = m_params.get_optional<float>(
-        "shutter_open_begin_time",
-        ShutterOpenBeginTimeDefaultValue);
-    m_shutter_open_end_time = m_params.get_optional<float>(
-        "shutter_open_end_time",
-        m_shutter_open_begin_time);
-    m_shutter_close_end_time = m_params.get_optional<float>(
-        "shutter_close_end_time",
-        ShutterCloseEndTimeDefaultValue);
-    m_shutter_close_begin_time = m_params.get_optional<float>(
-        "shutter_close_begin_time",
-        m_shutter_close_end_time);
+    m_shutter_open_begin_time =
+        m_params.get_optional<float>(
+            "shutter_open_begin_time",
+            ShutterOpenBeginTimeDefaultValue);
+
+    m_shutter_open_end_time =
+        m_params.get_optional<float>(
+            "shutter_open_end_time",
+            m_shutter_open_begin_time);
+
+    m_shutter_close_end_time =
+        m_params.get_optional<float>(
+            "shutter_close_end_time",
+            ShutterCloseEndTimeDefaultValue);
+
+    m_shutter_close_begin_time =
+        m_params.get_optional<float>(
+            "shutter_close_begin_time",
+            m_shutter_close_end_time);
 
     check_shutter_times_for_consistency();
 
@@ -163,125 +170,11 @@ bool Camera::on_render_begin(
                 m_shutter_close_begin_time);
 
         if (impl->m_use_bezier_shutter_curve)
-        {
             initialize_shutter_curve_bezier();
-        }
-        else
-        {
-            initialize_shutter_curve_linear();
-        }
+        else initialize_shutter_curve_linear();
     }
 
     return true;
-}
-
-void Camera::initialize_shutter_curve_bezier()
-{
-    impl->m_shutter_curve_bezier_cp_normalized =
-    m_params.get_required<Impl::ShutterCurveCP>("shutter_curve_control_points");
-
-    // Normalize time points.
-    for (size_t i = 0; i < Impl::ShutterCurveCP::Dimension; i += 2)
-    {
-        impl->m_shutter_curve_bezier_cp_normalized[i] =
-            inverse_lerp(
-                m_shutter_open_begin_time,
-                m_shutter_close_end_time,
-                impl->m_shutter_curve_bezier_cp_normalized[i]);
-    }
-
-    // Use normalized time, so inverse sampling will end up with normalized time points.
-    initialize_shutter_curve_bezier_cdfs(
-        0.0f,                                               // ot
-        impl->m_normalized_open_end_time,                   // oet
-        impl->m_normalized_close_begin_time,                // cbt
-        1.0f,                                               // ct
-        impl->m_shutter_curve_bezier_cp_normalized[0],      // t00
-        impl->m_shutter_curve_bezier_cp_normalized[2],      // t01
-        impl->m_shutter_curve_bezier_cp_normalized[4],      // t10
-        impl->m_shutter_curve_bezier_cp_normalized[6],      // t11
-        impl->m_shutter_curve_bezier_cp_normalized[1],      // s00
-        impl->m_shutter_curve_bezier_cp_normalized[3],      // s01
-        impl->m_shutter_curve_bezier_cp_normalized[5],      // s10
-        impl->m_shutter_curve_bezier_cp_normalized[7]);     // s11
-
-    impl->m_shutter_curve_bezier_normalization_factor =
-        1.0f / evaluate_polynomial(impl->m_shutter_curve_bezier_close_cdf, 1.0f);
-
-    impl->m_shutter_curve_bezier_open_cdf =
-        impl->m_shutter_curve_bezier_open_cdf *
-        impl->m_shutter_curve_bezier_normalization_factor;
-
-    impl->m_shutter_curve_bezier_close_cdf =
-        impl->m_shutter_curve_bezier_close_cdf *
-        impl->m_shutter_curve_bezier_normalization_factor;
-
-    impl->m_inverse_cdf_open_point = evaluate_polynomial(impl->m_shutter_curve_bezier_open_cdf, 1.0f);
-    impl->m_inverse_cdf_close_point = evaluate_polynomial(impl->m_shutter_curve_bezier_close_cdf, 0.0f);
-}
-
-void Camera::initialize_shutter_curve_linear()
-{
-    float cbt_minus_oet_plus_one =
-        impl->m_normalized_close_begin_time - impl->m_normalized_open_end_time + 1.0f;
-
-    if (cbt_minus_oet_plus_one == 0.0f)
-    {
-        RENDERER_LOG_ERROR(
-            "while defining camera \"%s\": invalid values \"%f\" \"%f\" for parameters \"%s\", \"%s\" "
-            "using default values for parameters \"%s\", \"%s\", \"%s\", \"%s\" "
-            "\"%f\", \"%f\", \"%f\", \"%f\".",
-            get_path().c_str(),
-            m_shutter_open_end_time,
-            m_shutter_close_begin_time,
-            "shutter_open_end_time",
-            "shutter_close_begin_time",
-            "shutter_open_begin_time",
-            "shutter_open_end_time",
-            "shutter_close_begin_time",
-            "shutter_close_begin_time",
-            ShutterOpenBeginTimeDefaultValue,
-            ShutterOpenBeginTimeDefaultValue,
-            ShutterCloseEndTimeDefaultValue,
-            ShutterCloseEndTimeDefaultValue);
-
-        m_shutter_open_begin_time = ShutterOpenBeginTimeDefaultValue;
-        m_shutter_open_end_time = ShutterOpenBeginTimeDefaultValue;
-        m_shutter_close_begin_time = ShutterCloseEndTimeDefaultValue;
-        m_shutter_close_end_time = ShutterCloseEndTimeDefaultValue;
-
-        impl->m_normalized_open_end_time =
-            inverse_lerp(
-                m_shutter_open_begin_time,
-                m_shutter_close_end_time,
-                m_shutter_open_end_time);
-
-        impl->m_normalized_close_begin_time =
-            inverse_lerp(
-                m_shutter_open_begin_time,
-                m_shutter_close_end_time,
-                m_shutter_close_begin_time);
-
-        m_shutter_time_interval = m_shutter_close_end_time - m_shutter_open_begin_time;
-
-        cbt_minus_oet_plus_one =
-            impl->m_normalized_close_begin_time - impl->m_normalized_open_end_time + 1.0f;
-    }
-
-    impl->m_shutter_curve_linear_open_multiplier =
-        cbt_minus_oet_plus_one * impl->m_normalized_open_end_time;
-
-    impl->m_shutter_curve_linear_fully_opened_multiplier = cbt_minus_oet_plus_one / 2.0f;
-
-    impl->m_shutter_curve_linear_close_multiplier =
-        cbt_minus_oet_plus_one * (impl->m_normalized_close_begin_time - 1.0f);
-
-    impl->m_inverse_cdf_open_point =
-        impl->m_normalized_open_end_time / cbt_minus_oet_plus_one;
-
-    impl->m_inverse_cdf_close_point =
-        (2.0f * impl->m_normalized_close_begin_time - impl->m_normalized_open_end_time) /
-        cbt_minus_oet_plus_one;
 }
 
 bool Camera::on_frame_begin(
@@ -448,6 +341,115 @@ void Camera::check_shutter_times_for_consistency() const
             "order should be: open begin time <= open end time <= close begin time <= close end time.",
             get_path().c_str());
     }
+}
+
+void Camera::initialize_shutter_curve_linear()
+{
+    float cbt_minus_oet_plus_one =
+        impl->m_normalized_close_begin_time - impl->m_normalized_open_end_time + 1.0f;
+
+    if (cbt_minus_oet_plus_one == 0.0f)
+    {
+        RENDERER_LOG_ERROR(
+            "while defining camera \"%s\": invalid values \"%f\" \"%f\" for parameters \"%s\", \"%s\" "
+            "using default values for parameters \"%s\", \"%s\", \"%s\", \"%s\" "
+            "\"%f\", \"%f\", \"%f\", \"%f\".",
+            get_path().c_str(),
+            m_shutter_open_end_time,
+            m_shutter_close_begin_time,
+            "shutter_open_end_time",
+            "shutter_close_begin_time",
+            "shutter_open_begin_time",
+            "shutter_open_end_time",
+            "shutter_close_begin_time",
+            "shutter_close_begin_time",
+            ShutterOpenBeginTimeDefaultValue,
+            ShutterOpenBeginTimeDefaultValue,
+            ShutterCloseEndTimeDefaultValue,
+            ShutterCloseEndTimeDefaultValue);
+
+        m_shutter_open_begin_time = ShutterOpenBeginTimeDefaultValue;
+        m_shutter_open_end_time = ShutterOpenBeginTimeDefaultValue;
+        m_shutter_close_begin_time = ShutterCloseEndTimeDefaultValue;
+        m_shutter_close_end_time = ShutterCloseEndTimeDefaultValue;
+
+        impl->m_normalized_open_end_time =
+            inverse_lerp(
+                m_shutter_open_begin_time,
+                m_shutter_close_end_time,
+                m_shutter_open_end_time);
+
+        impl->m_normalized_close_begin_time =
+            inverse_lerp(
+                m_shutter_open_begin_time,
+                m_shutter_close_end_time,
+                m_shutter_close_begin_time);
+
+        m_shutter_time_interval = m_shutter_close_end_time - m_shutter_open_begin_time;
+
+        cbt_minus_oet_plus_one =
+            impl->m_normalized_close_begin_time - impl->m_normalized_open_end_time + 1.0f;
+    }
+
+    impl->m_shutter_curve_linear_open_multiplier =
+        cbt_minus_oet_plus_one * impl->m_normalized_open_end_time;
+
+    impl->m_shutter_curve_linear_fully_opened_multiplier = cbt_minus_oet_plus_one / 2.0f;
+
+    impl->m_shutter_curve_linear_close_multiplier =
+        cbt_minus_oet_plus_one * (impl->m_normalized_close_begin_time - 1.0f);
+
+    impl->m_inverse_cdf_open_point =
+        impl->m_normalized_open_end_time / cbt_minus_oet_plus_one;
+
+    impl->m_inverse_cdf_close_point =
+        (2.0f * impl->m_normalized_close_begin_time - impl->m_normalized_open_end_time) /
+        cbt_minus_oet_plus_one;
+}
+
+void Camera::initialize_shutter_curve_bezier()
+{
+    impl->m_shutter_curve_bezier_cp_normalized =
+    m_params.get_required<Impl::ShutterCurveCP>("shutter_curve_control_points");
+
+    // Normalize time points.
+    for (size_t i = 0; i < Impl::ShutterCurveCP::Dimension; i += 2)
+    {
+        impl->m_shutter_curve_bezier_cp_normalized[i] =
+            inverse_lerp(
+                m_shutter_open_begin_time,
+                m_shutter_close_end_time,
+                impl->m_shutter_curve_bezier_cp_normalized[i]);
+    }
+
+    // Use normalized time, so inverse sampling will end up with normalized time points.
+    initialize_shutter_curve_bezier_cdfs(
+        0.0f,                                               // ot
+        impl->m_normalized_open_end_time,                   // oet
+        impl->m_normalized_close_begin_time,                // cbt
+        1.0f,                                               // ct
+        impl->m_shutter_curve_bezier_cp_normalized[0],      // t00
+        impl->m_shutter_curve_bezier_cp_normalized[2],      // t01
+        impl->m_shutter_curve_bezier_cp_normalized[4],      // t10
+        impl->m_shutter_curve_bezier_cp_normalized[6],      // t11
+        impl->m_shutter_curve_bezier_cp_normalized[1],      // s00
+        impl->m_shutter_curve_bezier_cp_normalized[3],      // s01
+        impl->m_shutter_curve_bezier_cp_normalized[5],      // s10
+        impl->m_shutter_curve_bezier_cp_normalized[7]);     // s11
+
+    impl->m_shutter_curve_bezier_normalization_factor =
+        1.0f / evaluate_polynomial(impl->m_shutter_curve_bezier_close_cdf, 1.0f);
+
+    impl->m_shutter_curve_bezier_open_cdf =
+        impl->m_shutter_curve_bezier_open_cdf *
+        impl->m_shutter_curve_bezier_normalization_factor;
+
+    impl->m_shutter_curve_bezier_close_cdf =
+        impl->m_shutter_curve_bezier_close_cdf *
+        impl->m_shutter_curve_bezier_normalization_factor;
+
+    impl->m_inverse_cdf_open_point = evaluate_polynomial(impl->m_shutter_curve_bezier_open_cdf, 1.0f);
+    impl->m_inverse_cdf_close_point = evaluate_polynomial(impl->m_shutter_curve_bezier_close_cdf, 0.0f);
 }
 
 void Camera::initialize_shutter_curve_bezier_cdfs(

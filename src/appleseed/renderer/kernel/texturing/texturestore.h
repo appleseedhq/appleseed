@@ -110,7 +110,7 @@ class TextureStore
         const Scene&        scene,
         const ParamArray&   params = ParamArray());
 
-    // Acquire an element from the cache. Thread-safe.
+    // Acquire an element from the store. Thread-safe.
     TileRecord& acquire(const TileKey& key);
 
     // Release a previously-acquired element. Thread-safe.

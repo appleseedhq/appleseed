@@ -43,6 +43,7 @@
 #include "foundation/utility/filter.h"
 #include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/stopwatch.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <algorithm>
@@ -52,7 +53,6 @@
 #include <exception>
 #include <limits>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -226,12 +226,6 @@ void BenchmarkSuite::run(
         // Instantiate the benchmark case.
         unique_ptr<IBenchmarkCase> benchmark(factory->create());
 
-        // Recreate the stopwatch (and the underlying timer) for every benchmark
-        // case, since the CPU frequency will fluctuate quite a bit depending on
-        // the CPU load.  We need an up-to-date frequency estimation in order to
-        // compute accurate call rates.
-        Impl::StopwatchType stopwatch(100000);
-
         // Tell the listeners that a benchmark case is about to be executed.
         suite_result.begin_case(*this, *benchmark.get());
 
@@ -240,6 +234,12 @@ void BenchmarkSuite::run(
 #endif
         {
             suite_result.signal_case_execution();
+
+            // Recreate the stopwatch (and the underlying timer) for every benchmark
+            // case, since the CPU frequency will fluctuate quite a bit depending on
+            // the CPU load.  We need an up-to-date frequency estimation in order to
+            // compute accurate call rates.
+            Impl::StopwatchType stopwatch(100000);
 
             // Estimate benchmarking parameters.
             const size_t measurement_count =
@@ -257,32 +257,6 @@ void BenchmarkSuite::run(
                     BenchmarkSuite::Impl::measure_runtime_ticks,
                     measurement_count);
 
-#ifdef GENERATE_BENCHMARK_PLOTS
-            vector<Vector2d> points;
-
-            for (size_t j = 0; j < 100; ++j)
-            {
-                const double ticks =
-                    Impl::measure_runtime(
-                        benchmark.get(),
-                        stopwatch,
-                        BenchmarkSuite::Impl::measure_runtime_ticks,
-                        max<size_t>(1, measurement_count / 100));
-                points.emplace_back(
-                    static_cast<double>(j),
-                    ticks > overhead_ticks ? ticks - overhead_ticks : 0.0);
-            }
-
-            stringstream sstr;
-            sstr << "unit benchmarks/plots/";
-            sstr << get_name() << "_" << benchmark->get_name();
-            sstr << ".gnuplot";
-
-            GnuplotFile plotfile;
-            plotfile.new_plot().set_points(points);
-            plotfile.write(sstr.str());
-#endif
-
             // Gather the timing results.
             TimingResult timing_result;
             timing_result.m_iteration_count = 1;
@@ -297,11 +271,36 @@ void BenchmarkSuite::run(
                 __FILE__,
                 __LINE__,
                 timing_result);
+
+#ifdef GENERATE_BENCHMARK_PLOTS
+            vector<Vector2d> points;
+
+            const size_t PointCount = 100;
+            for (size_t j = 0; j < PointCount; ++j)
+            {
+                const double ticks =
+                    Impl::measure_runtime(
+                        benchmark.get(),
+                        stopwatch,
+                        BenchmarkSuite::Impl::measure_runtime_ticks,
+                        max<size_t>(1, measurement_count / PointCount));
+                points.emplace_back(
+                    static_cast<double>(j),
+                    ticks > overhead_ticks ? ticks - overhead_ticks : 0.0);
+            }
+
+            const string filepath =
+                format("unit benchmarks/plots/{0}_{1}.gnuplot", get_name(), benchmark->get_name());
+
+            GnuplotFile plotfile;
+            plotfile.new_plot().set_points(points);
+            plotfile.write(filepath);
+#endif
         }
 #ifdef NDEBUG
         catch (const exception& e)
         {
-            if (e.what()[0] != '\0')
+            if (!is_empty_string(e.what()))
             {
                 suite_result.write(
                     *this,
