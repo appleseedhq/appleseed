@@ -244,27 +244,30 @@ void RenderingManager::wait_until_rendering_end()
 void RenderingManager::abort_rendering()
 {
     RENDERER_LOG_INFO("aborting rendering...");
-
     m_renderer_controller.set_status(IRendererController::AbortRendering);
 }
 
 void RenderingManager::restart_rendering()
 {
+    RENDERER_LOG_DEBUG("restarting rendering...");
     m_renderer_controller.set_status(IRendererController::RestartRendering);
 }
 
 void RenderingManager::reinitialize_rendering()
 {
+    RENDERER_LOG_DEBUG("reinitializing rendering...");
     m_renderer_controller.set_status(IRendererController::ReinitializeRendering);
 }
 
 void RenderingManager::pause_rendering()
 {
+    RENDERER_LOG_INFO("pausing rendering...");
     m_renderer_controller.set_status(IRendererController::PauseRendering);
 }
 
 void RenderingManager::resume_rendering()
 {
+    RENDERER_LOG_INFO("resuming rendering...");
     m_renderer_controller.set_status(IRendererController::ContinueRendering);
 }
 
