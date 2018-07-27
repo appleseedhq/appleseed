@@ -296,9 +296,12 @@ void Assembly::on_frame_end(
     const Project&          project,
     const BaseGroup*        parent)
 {
-    assert(m_has_render_data);
-    m_render_data.m_procedural_objects.clear();
-    m_has_render_data = false;
+    // `m_has_render_data` may be false if `on_frame_begin()` failed.
+    if (m_has_render_data)
+    {
+        m_render_data.m_procedural_objects.clear();
+        m_has_render_data = false;
+    }
 
     Entity::on_frame_end(project, parent);
 }
