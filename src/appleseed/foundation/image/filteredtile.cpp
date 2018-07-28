@@ -179,14 +179,19 @@ float FilteredTile::compute_weighted_pixel_variance(
     const float rcp_second_weight = second_weight == 0.0f ? 0.0f : 1.0f / second_weight;
 
     // Get colors and assign weights.
-    Color4f main_color(abs(main[0]), abs(main[1]), abs(main[2]), abs(main[3]));
+    Color4f main_color(main[0], main[1], main[2], main[3]);
     main_color *= rcp_main_weight;
 
-    Color4f second_color(abs(second[0]), abs(second[1]), abs(second[2]), abs(second[3]));
+    Color4f second_color(second[0], second[1], second[2], second[3]);
     second_color *= rcp_second_weight;
 
+    const float rgb = abs(main_color.r) + abs(main_color.g) + abs(main_color.b);
+
+    if (rgb == 0.0f)
+        return 0.0f;
+
     // Compute variance.
-    return fast_rcp_sqrt(main_color.r + main_color.g + main_color.b) * (
+    return fast_rcp_sqrt(rgb) * (
         abs(main_color.r - second_color.r) +
         abs(main_color.g - second_color.g) +
         abs(main_color.b - second_color.b));

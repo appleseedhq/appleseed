@@ -96,7 +96,7 @@ namespace
     // Minimum allowed size for a block of pixel before splitting.
     const size_t BlockSplittingThreshold = BlockMinAllowedSize * 2;
     // Threshold used to warn the user if blocks don't converge.
-    const int BlockConvergenceWarningThreshold = 70;
+    const int BlockConvergenceWarningThreshold = 50;
 
 
     //
@@ -166,6 +166,7 @@ namespace
           , m_params(params)
           , m_invalid_sample_count(0)
           , m_sample_aov_tile(nullptr)
+          , m_variation_aov_tile(nullptr)
           , m_sample_renderer(sample_renderer_factory->create(thread_index))
           , m_total_pixel(0)
           , m_total_pixel_converged(0)
@@ -173,6 +174,7 @@ namespace
             compute_tile_margins(frame, thread_index == 0);
 
             m_sample_aov_index = frame.aovs().get_index("pixel_sample_count");
+            m_variation_aov_index = frame.aovs().get_index("pixel_variation");
 
             if (m_params.m_adaptiveness == 0.0f && thread_index == 0)
             {
@@ -189,11 +191,11 @@ namespace
         {
             RENDERER_LOG_INFO(
                 "adaptive tile renderer settings:\n"
-                "  min samples                   %s\n"
+                "  batch size                    %s\n"
                 "  max samples                   %s\n"
                 "  noise threshold               %f\n"
                 "  adaptiveness                  %f",
-                pretty_uint(m_params.m_min_samples).c_str(),
+                pretty_uint(m_params.m_batch_size).c_str(),
                 pretty_uint(m_params.m_max_samples).c_str(),
                 m_params.m_noise_threshold,
                 m_params.m_adaptiveness);
@@ -341,7 +343,7 @@ namespace
                 // Each batch contains 'min' samples.
                 assert(m_params.m_max_samples > pb.m_spp);
                 const size_t remaining_samples = m_params.m_max_samples - pb.m_spp;
-                const size_t batch_size = min(m_params.m_min_samples, remaining_samples);
+                const size_t batch_size = min(m_params.m_batch_size, remaining_samples);
 
                 if (remaining_samples < 1)
                 {
@@ -432,7 +434,7 @@ namespace
                 if (pb.m_converged)
                     tile_converged_pixel += pb_pixel_count;
 
-                if (m_sample_aov_tile == nullptr)
+                if (m_sample_aov_tile == nullptr && m_variation_aov_tile == nullptr)
                     continue;
 
                 for (size_t y = pb_image_aabb.min.y; y <= pb_image_aabb.max.y; ++y)
@@ -442,8 +444,21 @@ namespace
                         // Retrieve the coordinates of the pixel in the padded tile.
                         const Vector2u pt(x, y);
 
-                        Color3f value(static_cast<float>(pb.m_spp), 0.0f, 0.0f);
-                        m_sample_aov_tile->set_pixel(pt.x, pt.y, value);
+                        Color3f value(0.0f);
+
+                        if (m_sample_aov_tile != nullptr)
+                        {
+                            m_sample_aov_tile->get_pixel(pt.x, pt.y, value);
+                            value[0] += static_cast<float>(pb.m_spp);
+                            m_sample_aov_tile->set_pixel(pt.x, pt.y, value);
+                        }
+
+                        if (m_variation_aov_tile != nullptr)
+                        {
+                            m_sample_aov_tile->get_pixel(pt.x, pt.y, value);
+                            value[0] += static_cast<float>(pb.m_block_error);
+                            m_variation_aov_tile->set_pixel(pt.x, pt.y, value);
+                        }
                     }
                 }
             }
@@ -454,10 +469,9 @@ namespace
             // Warn the user if adaptive sampling wasn't efficient on this tile.
             if (static_cast<float>(tile_converged_pixel) / static_cast<float>(pixel_count) < BlockConvergenceWarningThreshold / 100.0f)
             {
-                RENDERER_LOG_WARNING(
-                    "%s of pixels have converged, be sure to increase the maximum number of samples "
-                    "or decrease the noise threshold for better performance",
-                    pretty_percent(tile_converged_pixel, pixel_count, 1).c_str());
+                RENDERER_LOG_WARNING("%s of tile's pixels have converged, average sample/pixel: %s.",
+                    pretty_percent(tile_converged_pixel, pixel_count, 1).c_str(),
+                    pretty_uint(static_cast<size_t>(m_spp.get_mean())).c_str());
             }
 
             // Develop the framebuffer to the tile.
@@ -496,7 +510,7 @@ namespace
         struct Parameters
         {
             const SamplingContext::Mode     m_sampling_mode;
-            const size_t                    m_min_samples;
+            const size_t                    m_batch_size;
             const size_t                    m_max_samples;
             const float                     m_noise_threshold;
             const float                     m_splitting_threshold;
@@ -505,7 +519,7 @@ namespace
 
             explicit Parameters(const ParamArray& params)
               : m_sampling_mode(get_sampling_context_mode(params))
-              , m_min_samples(params.get_required<size_t>("min_samples", 16))
+              , m_batch_size(params.get_required<size_t>("batch_size", 16))
               , m_max_samples(params.get_required<size_t>("max_samples", 256))
               , m_noise_threshold(params.get_required<float>("noise_threshold", 5.0f))
               , m_splitting_threshold(m_noise_threshold * 256.0f)
@@ -521,8 +535,10 @@ namespace
         int                                     m_margin_height;
         const Parameters                        m_params;
         size_t                                  m_sample_aov_index;
+        size_t                                  m_variation_aov_index;
         size_t                                  m_invalid_sample_count;
         Tile*                                   m_sample_aov_tile;
+        Tile*                                   m_variation_aov_tile;
         auto_release_ptr<ISampleRenderer>       m_sample_renderer;
 
         // Members used for statistics.
@@ -568,6 +584,8 @@ namespace
         {
             if (m_sample_aov_index != ~size_t(0))
                 m_sample_aov_tile = &frame.aovs().get_by_index(m_sample_aov_index)->get_image().tile(tile_x, tile_y);
+            if (m_variation_aov_index != ~size_t(0))
+                m_variation_aov_tile = &frame.aovs().get_by_index(m_variation_aov_index)->get_image().tile(tile_x, tile_y);
         }
 
         void on_tile_end(
@@ -578,6 +596,7 @@ namespace
             TileStack&                          aov_tiles)
         {
             m_sample_aov_tile = nullptr;
+            m_variation_aov_tile = nullptr;
         }
 
         void on_pixel_begin(
@@ -881,12 +900,12 @@ Dictionary AdaptiveTileRendererFactory::get_params_metadata()
     Dictionary metadata;
 
     metadata.dictionaries().insert(
-        "min_samples",
+        "batch_size",
         Dictionary()
             .insert("type", "int")
             .insert("default", "8")
-            .insert("label", "Min Samples")
-            .insert("help", "Minimum number of anti-aliasing samples"));
+            .insert("label", "Batch Size")
+            .insert("help", "How many samples to render before each noise calculation"));
 
     metadata.dictionaries().insert(
         "max_samples",
