@@ -470,7 +470,7 @@ namespace
             create_direct_link("adaptive_sampler.max_samples",              "adaptive_pixel_renderer.max_samples");
             create_direct_link("adaptive_sampler.quality",                  "adaptive_pixel_renderer.quality");
 
-            create_direct_link("adaptive_tile_sampler.min_samples",         "adaptive_tile_renderer.min_samples");
+            create_direct_link("adaptive_tile_sampler.batch_size",          "adaptive_tile_renderer.batch_size");
             create_direct_link("adaptive_tile_sampler.max_samples",         "adaptive_tile_renderer.max_samples");
             create_direct_link("adaptive_tile_sampler.noise_threshold",     "adaptive_tile_renderer.noise_threshold");
             create_direct_link("adaptive_tile_sampler.adaptiveness",        "adaptive_tile_renderer.adaptiveness");
@@ -546,8 +546,12 @@ namespace
             parent->addLayout(layout);
 
             create_image_plane_sampling_uniform_sampler_settings(layout);
-            create_image_plane_sampling_adaptive_sampler_settings(layout);
-            create_image_plane_sampling_adaptive_tile_sampler_settings(layout);
+
+            QHBoxLayout* next_layout = create_horizontal_layout();
+            parent->addLayout(next_layout);
+
+            create_image_plane_sampling_adaptive_tile_sampler_settings(next_layout);
+            create_image_plane_sampling_adaptive_sampler_settings(next_layout);
         }
 
         void create_image_plane_sampling_uniform_sampler_settings(QHBoxLayout* parent)
@@ -614,9 +618,9 @@ namespace
             QFormLayout* sublayout = create_form_layout();
             layout->addLayout(sublayout);
 
-            QSpinBox* min_samples = create_integer_input("adaptive_tile_sampler.min_samples", 1, 1000000, 1);
-            min_samples->setToolTip(m_params_metadata.get_path("adaptive_tile_renderer.min_samples.help"));
-            sublayout->addRow("Min Samples:", min_samples);
+            QSpinBox* batch_size = create_integer_input("adaptive_tile_sampler.batch_size", 1, 1000000, 1);
+            batch_size->setToolTip(m_params_metadata.get_path("adaptive_tile_renderer.batch_size.help"));
+            sublayout->addRow("Batch Size:", batch_size);
 
             QSpinBox* max_samples = create_integer_input("adaptive_tile_sampler.max_samples", 1, 1000000, 1);
             max_samples->setToolTip(m_params_metadata.get_path("adaptive_tile_renderer.max_samples.help"));
