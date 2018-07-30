@@ -153,6 +153,14 @@ Dictionary Configuration::get_metadata()
                             .insert("label", "QMC")
                             .insert("help", "Quasi Monte Carlo sampler"))));
 
+    metadata.dictionaries().insert(
+        "passes",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "1")
+            .insert("label", "Passes")
+            .insert("help", "Number of render passes"));
+
     metadata.insert(
         "lighting_engine",
         Dictionary()
