@@ -297,7 +297,6 @@ set (foundation_math_sources
     foundation/math/frustum.h
     foundation/math/half.cpp
     foundation/math/half.h
-    foundation/math/halftables.h
     foundation/math/hash.h
     foundation/math/knn.h
     foundation/math/matrix.h
@@ -378,6 +377,7 @@ set (foundation_meta_benchmarks_sources
     foundation/meta/benchmarks/benchmark_distance.cpp
     foundation/meta/benchmarks/benchmark_fastmath.cpp
     foundation/meta/benchmarks/benchmark_filteredtile.cpp
+    foundation/meta/benchmarks/benchmark_half.cpp
     foundation/meta/benchmarks/benchmark_hash.cpp
     foundation/meta/benchmarks/benchmark_imageimportancesampler.cpp
     foundation/meta/benchmarks/benchmark_integerdivision.cpp

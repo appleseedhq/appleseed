@@ -50,20 +50,20 @@ namespace foundation
 //
 // The functions
 //
-//     foundation::fast_pow2()
-//     foundation::faster_pow2()
-//     foundation::fast_log2()
-//     foundation::faster_log2()
-//     foundation::fast_pow()
-//     foundation::faster_pow()
-//     foundation::fast_log()
-//     foundation::faster_log()
-//     foundation::fast_exp()
-//     foundation::faster_exp()
-//     foundation::fast_sin()
-//     foundation::fast_sin_full()
-//     foundation::fast_cos()
-//     foundation::fast_cos_full()
+//   foundation::fast_pow2()
+//   foundation::faster_pow2()
+//   foundation::fast_log2()
+//   foundation::faster_log2()
+//   foundation::fast_pow()
+//   foundation::faster_pow()
+//   foundation::fast_log()
+//   foundation::faster_log()
+//   foundation::fast_exp()
+//   foundation::faster_exp()
+//   foundation::fast_sin()
+//   foundation::fast_sin_full()
+//   foundation::fast_cos()
+//   foundation::fast_cos_full()
 //
 // were borrowed from https://code.google.com/p/fastapprox/ with minor,
 // non-functional changes. The original copyright notice for this code
