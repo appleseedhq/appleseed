@@ -541,14 +541,6 @@ Dictionary GenericFrameRendererFactory::get_params_metadata()
     Dictionary metadata;
 
     metadata.dictionaries().insert(
-        "passes",
-        Dictionary()
-            .insert("type", "int")
-            .insert("default", "1")
-            .insert("label", "Passes")
-            .insert("help", "Number of render passes"));
-
-    metadata.dictionaries().insert(
         "tile_ordering",
         Dictionary()
             .insert("type", "enum")
