@@ -1842,6 +1842,8 @@ set (renderer_modeling_postprocessingstage_sources
     renderer/modeling/postprocessingstage/colormappostprocessingstage.h
     renderer/modeling/postprocessingstage/ipostprocessingstagefactory.cpp
     renderer/modeling/postprocessingstage/ipostprocessingstagefactory.h
+    renderer/modeling/postprocessingstage/isolinespostprocessingstage.cpp
+    renderer/modeling/postprocessingstage/isolinespostprocessingstage.h
     renderer/modeling/postprocessingstage/postprocessingstage.cpp
     renderer/modeling/postprocessingstage/postprocessingstage.h
     renderer/modeling/postprocessingstage/postprocessingstagecontainer.h
