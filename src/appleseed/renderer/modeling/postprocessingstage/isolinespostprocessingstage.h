@@ -26,17 +26,49 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_POSTPROCESSING_H
-#define APPLESEED_RENDERER_API_POSTPROCESSING_H
+#ifndef APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_ISOLINESPOSTPROCESSINGSTAGE_H
+#define APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_ISOLINESPOSTPROCESSINGSTAGE_H
 
-// API headers.
-#include "renderer/modeling/postprocessingstage/colormappostprocessingstage.h"
+// appleseed.renderer headers.
 #include "renderer/modeling/postprocessingstage/ipostprocessingstagefactory.h"
-#include "renderer/modeling/postprocessingstage/isolinespostprocessingstage.h"
-#include "renderer/modeling/postprocessingstage/postprocessingstage.h"
-#include "renderer/modeling/postprocessingstage/postprocessingstagecontainer.h"
-#include "renderer/modeling/postprocessingstage/postprocessingstagefactoryregistrar.h"
-#include "renderer/modeling/postprocessingstage/postprocessingstagetraits.h"
-#include "renderer/modeling/postprocessingstage/renderstamppostprocessingstage.h"
 
-#endif  // !APPLESEED_RENDERER_API_POSTPROCESSING_H
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace foundation    { class Dictionary; }
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class ParamArray; }
+
+namespace renderer
+{
+
+//
+// A post-processing stage that draws isolines (contours at specific field values).
+//
+
+class APPLESEED_DLLSYMBOL IsolinesPostProcessingStageFactory
+  : public IPostProcessingStageFactory
+{
+  public:
+    // Delete this instance.
+    void release() override;
+
+    // Return a string identifying this stage model.
+    const char* get_model() const override;
+
+    // Return metadata for this stage model.
+    foundation::Dictionary get_model_metadata() const override;
+
+    // Return metadata for the inputs of this stage model.
+    foundation::DictionaryArray get_input_metadata() const override;
+
+    // Create a new stage instance.
+    foundation::auto_release_ptr<PostProcessingStage> create(
+        const char*         name,
+        const ParamArray&   params) const override;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_ISOLINESPOSTPROCESSINGSTAGE_H

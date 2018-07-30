@@ -33,6 +33,7 @@
 #include "renderer/modeling/entity/registerentityfactories.h"
 #include "renderer/modeling/postprocessingstage/colormappostprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/ipostprocessingstagefactory.h"
+#include "renderer/modeling/postprocessingstage/isolinespostprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstagetraits.h"
 #include "renderer/modeling/postprocessingstage/renderstamppostprocessingstage.h"
 
@@ -77,6 +78,7 @@ void PostProcessingStageFactoryRegistrar::reinitialize(const SearchPaths& search
 
     // Register built-in factories.
     register_factory(auto_release_ptr<FactoryType>(new ColorMapPostProcessingStageFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new IsolinesPostProcessingStageFactory()));
     register_factory(auto_release_ptr<FactoryType>(new RenderStampPostProcessingStageFactory()));
 
     // Register factories defined in plugins.
