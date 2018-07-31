@@ -297,7 +297,7 @@ void GenericImageFileWriter::set_generic_image_attributes(const ImageAttributes&
         }
 
         else
-            spec.attribute(attr_name, attr_value.c_str())
+            spec.attribute(attr_name, attr_value.c_str());
     }
 }
 
