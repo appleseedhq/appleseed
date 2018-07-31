@@ -295,6 +295,9 @@ void GenericImageFileWriter::set_generic_image_attributes(const ImageAttributes&
             spec.attribute("YResolution", static_cast<float>(dpm));
             spec.attribute("ResolutionUnit", "cm");
         }
+
+        else
+            spec.attribute(attr_name, attr_value.c_str())
     }
 }
 
