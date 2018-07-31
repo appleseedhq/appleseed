@@ -69,7 +69,7 @@ class APPLESEED_DLLSYMBOL MessageContext
 
 
 //
-// Entity definition message context.
+// Message context when constructing entities.
 //
 
 class APPLESEED_DLLSYMBOL EntityDefMessageContext
@@ -77,6 +77,20 @@ class APPLESEED_DLLSYMBOL EntityDefMessageContext
 {
   public:
     EntityDefMessageContext(
+        const char*     entity_type,
+        const Entity*   entity);
+};
+
+
+//
+// Message context when calling on_frame_begin() on entities.
+//
+
+class APPLESEED_DLLSYMBOL OnFrameBeginMessageContext
+  : public MessageContext
+{
+  public:
+    OnFrameBeginMessageContext(
         const char*     entity_type,
         const Entity*   entity);
 };

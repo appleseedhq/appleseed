@@ -49,6 +49,7 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/math/distance.h"
 #include "foundation/math/hash.h"
@@ -200,22 +201,6 @@ namespace
             static_cast<float>((vec[1] + T(1.0)) * T(0.5)),
             static_cast<float>((vec[2] + T(1.0)) * T(0.5)));
 #endif
-    }
-
-    // Compute a color from a given integer.
-    template <typename T>
-    inline Color3f integer_to_color(const T i)
-    {
-        const uint32 u = static_cast<uint32>(i);    // keep the low 32 bits
-
-        const uint32 x = hash_uint32(u);
-        const uint32 y = hash_uint32(u + 1);
-        const uint32 z = hash_uint32(u + 2);
-
-        return Color3f(
-            static_cast<float>(x) * (1.0f / 4294967295.0f),
-            static_cast<float>(y) * (1.0f / 4294967295.0f),
-            static_cast<float>(z) * (1.0f / 4294967295.0f));
     }
 }
 
@@ -480,13 +465,13 @@ void DiagnosticSurfaceShader::evaluate(
 
       case AssemblyInstances:
         set_result(
-            integer_to_color(shading_point.get_assembly_instance().get_uid()),
+            integer_to_color3<float>(shading_point.get_assembly_instance().get_uid()),
             shading_result);
         break;
 
       case ObjectInstances:
         set_result(
-            integer_to_color(shading_point.get_object_instance().get_uid()),
+            integer_to_color3<float>(shading_point.get_object_instance().get_uid()),
             shading_result);
         break;
 
@@ -496,7 +481,7 @@ void DiagnosticSurfaceShader::evaluate(
                 mix_uint32(
                     static_cast<uint32>(shading_point.get_object_instance().get_uid()),
                     static_cast<uint32>(shading_point.get_region_index()));
-            set_result(integer_to_color(h), shading_result);
+            set_result(integer_to_color3<float>(h), shading_result);
         }
         break;
 
@@ -507,7 +492,7 @@ void DiagnosticSurfaceShader::evaluate(
                     static_cast<uint32>(shading_point.get_object_instance().get_uid()),
                     static_cast<uint32>(shading_point.get_region_index()),
                     static_cast<uint32>(shading_point.get_primitive_index()));
-            set_result(integer_to_color(h), shading_result);
+            set_result(integer_to_color3<float>(h), shading_result);
         }
         break;
 
@@ -515,7 +500,7 @@ void DiagnosticSurfaceShader::evaluate(
         {
             const Material* material = shading_point.get_material();
             if (material)
-                set_result(integer_to_color(material->get_uid()), shading_result);
+                set_result(integer_to_color3<float>(material->get_uid()), shading_result);
             else shading_result.set_main_to_opaque_pink();
         }
         break;

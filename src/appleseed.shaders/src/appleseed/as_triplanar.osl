@@ -35,7 +35,7 @@ shader as_triplanar
     string as_maya_node_name = "asTriPlanar",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string as_blender_node_name = "asTriPlanar",
-    string as_blender_category = "utility",
+    string as_blender_category = "texture3d",
     string help = "Tri-planar projection node.",
     string icon = "asTriPlanar.png",
     int as_maya_type_id = 0x001279e5,
@@ -103,10 +103,10 @@ shader as_triplanar
     [[
         string as_maya_attribute_name = "placementMatrix",
         string as_maya_attribute_short_name = "pm",
-        int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0,
         string widget = "null",
-        string label = "Placement Matrix"
+        string label = "Placement Matrix",
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
     ]],
     int in_enable_cms = 1
     [[
@@ -207,7 +207,7 @@ shader as_triplanar
         int gafferNoduleLayoutVisible = 0,
         string label = "Horizontal Offset",
         string page = "Projection.X Axis"
-    ]], 
+    ]],
     float in_x_axis_vertical_offset = 0.0
     [[
         string as_maya_attribute_name = "xAxisVerticalOffset",
@@ -222,7 +222,7 @@ shader as_triplanar
         string label = "Vertical Offset",
         string page = "Projection.X Axis",
         int divider = 1
-    ]],  
+    ]],
     float in_x_axis_rotation_angle = 0.0
     [[
         string as_maya_attribute_name = "xAxisRotationAngle",
@@ -252,7 +252,7 @@ shader as_triplanar
         int gafferNoduleLayoutVisible = 0,
         string label = "S Wrap Mode",
         string page = "Projection.X Axis"
-    ]],       
+    ]],
     int in_x_axis_twrap = 0
     [[
         string as_maya_attribute_name = "xAxisTWrap",
@@ -393,7 +393,7 @@ shader as_triplanar
         int gafferNoduleLayoutVisible = 0,
         string label = "Horizontal Offset",
         string page = "Projection.Y Axis"
-    ]], 
+    ]],
     float in_y_axis_vertical_offset = 0.0
     [[
         string as_maya_attribute_name = "yAxisVerticalOffset",
@@ -408,7 +408,7 @@ shader as_triplanar
         string label = "Vertical Offset",
         string page = "Projection.Y Axis",
         int divider = 1
-    ]],  
+    ]],
     float in_y_axis_rotation_angle = 0.0
     [[
         string as_maya_attribute_name = "yAxisRotationAngle",
@@ -438,7 +438,7 @@ shader as_triplanar
         int gafferNoduleLayoutVisible = 0,
         string label = "S Wrap Mode",
         string page = "Projection.Y Axis"
-    ]],       
+    ]],
     int in_y_axis_twrap = 0
     [[
         string as_maya_attribute_name = "yAxisTWrap",
@@ -536,7 +536,7 @@ shader as_triplanar
         string label = "Texture Filename",
         string page = "Projection.Z Axis",
         int divider = 1
-    ]],  
+    ]],
     float in_z_axis_width = 1.0
     [[
         string as_maya_attribute_name = "zAxisWidth",
@@ -579,7 +579,7 @@ shader as_triplanar
         int gafferNoduleLayoutVisible = 0,
         string label = "Horizontal Offset",
         string page = "Projection.Z Axis"
-    ]], 
+    ]],
     float in_z_axis_vertical_offset = 0.0
     [[
         string as_maya_attribute_name = "zAxisVerticalOffset",
@@ -594,7 +594,7 @@ shader as_triplanar
         string label = "Vertical Offset",
         string page = "Projection.Z Axis",
         int divider = 1
-    ]],  
+    ]],
     float in_z_axis_rotation_angle = 0.0
     [[
         string as_maya_attribute_name = "zAxisRotationAngle",
@@ -624,7 +624,7 @@ shader as_triplanar
         int gafferNoduleLayoutVisible = 0,
         string label = "S Wrap Mode",
         string page = "Projection.Z Axis"
-    ]],       
+    ]],
     int in_z_axis_twrap = 0
     [[
         string as_maya_attribute_name = "zAxisTWrap",
@@ -713,7 +713,7 @@ shader as_triplanar
         string page = "Projection.Randomization",
         string help = "Connects to an idManifold integer hash output, or lacking one, builds an hash based on the assembly instance name."
     ]],
-    
+
     output color out_color = color(0)
     [[
         string as_maya_attribute_name = "outColor",
@@ -743,7 +743,7 @@ shader as_triplanar
         normal b = B * normal(-1.0, -1.0, 1.0);
         return a * dot(a, b) / a[2] - b;
     }
-    
+
     normal Nn = normalize(in_normal);
     point Pp = in_surface_point;
 
@@ -811,7 +811,7 @@ shader as_triplanar
 
     vector blending = pow(abs_normal, (1.0 - in_blend_softness) * 16);
     blending = blending / (blending[0] + blending[1] + blending[2]);
-    
+
     float x_alpha, y_alpha, z_alpha;
     int exists = 0, numchannels = 0;
     string wrap_mode[2];
@@ -847,7 +847,7 @@ shader as_triplanar
                     normal(x_axis) * 2.0 - 1.0);
 
                 X[2] *= normal_sign[0];
-                
+
                 out_normal += blending[0] * X;
             }
             else
@@ -859,10 +859,10 @@ shader as_triplanar
                         x_axis,
                         in_x_tex_eotf,
                         in_x_tex_rgb_primaries,
-                        in_workingspace_rgb_primaries);  
+                        in_workingspace_rgb_primaries);
                 }
                 // Colors are color managed in Maya, so we cannot correct this
-                // extra *colorpick color* until we have a way to query "CC 
+                // extra *colorpick color* until we have a way to query "CC
                 // Pots" status from within appleseed.
 
                 out_color += blending[0] * in_x_axis_color * x_axis;
@@ -913,7 +913,7 @@ shader as_triplanar
                 out_normal += blending[1] * Y;
             }
             else
-            {            
+            {
                 if (in_enable_cms && max(in_y_axis_color) > 0.0 &&
                     max(y_axis) > 0.0)
                 {
@@ -921,8 +921,8 @@ shader as_triplanar
                         y_axis,
                         in_y_tex_eotf,
                         in_y_tex_rgb_primaries,
-                        in_workingspace_rgb_primaries); 
-                }                
+                        in_workingspace_rgb_primaries);
+                }
                 out_color += blending[1] * in_y_axis_color * y_axis;
                 out_alpha += blending[1] * y_alpha;
             }
@@ -967,7 +967,7 @@ shader as_triplanar
                     normal(z_axis) * 2.0 - 1.0);
 
                 Z[2] *= normal_sign[2];
-                
+
                 out_normal += blending[2] * Z;
             }
             else
@@ -980,7 +980,7 @@ shader as_triplanar
                         in_z_tex_eotf,
                         in_z_tex_rgb_primaries,
                         in_workingspace_rgb_primaries);
-                }                
+                }
                 out_color += blending[2] * in_z_axis_color * z_axis;
                 out_alpha += blending[2] * z_alpha;
             }

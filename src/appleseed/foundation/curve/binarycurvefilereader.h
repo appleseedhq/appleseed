@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2018 Girish Ramesh, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +26,45 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "benchmarkserie.h"
+#ifndef APPLESEED_FOUNDATION_CURVE_BINARYCURVEFILEREADER_H
+#define APPLESEED_FOUNDATION_CURVE_BINARYCURVEFILEREADER_H
+
+// appleseed.foundation headers.
+#include "foundation/curve/icurvefilereader.h"
+
+// Standard headers.
+#include <string>
+
+// Forward declarations.
+namespace foundation    { class BufferedFile; }
+namespace foundation    { class ICurveBuilder; }
+namespace foundation    { class ReaderAdapter; }
 
 namespace foundation
 {
 
-APPLESEED_DEFINE_APIARRAY(BenchmarkSerie);
+//
+// Read for a simple binary curve file format.
+//
 
-}   // namespace foundation
+class BinaryCurveFileReader
+  : public ICurveFileReader
+{
+  public:
+    // Constructor.
+    explicit BinaryCurveFileReader(const std::string& filename);
+
+    // Read a curve file.
+    void read(ICurveBuilder& builder) override;
+
+  private:
+    const std::string           m_filename;
+
+    static void read_and_check_signature(BufferedFile& file);
+    void read_curves(ReaderAdapter& reader, ICurveBuilder& builder);
+    void read_curve(ReaderAdapter &reader, ICurveBuilder &builder);
+};
+
+}       // namespace foundation
+
+#endif  // !APPLESEED_FOUNDATION_CURVE_BINARYCURVEFILEREADER_H

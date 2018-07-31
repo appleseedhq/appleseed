@@ -71,32 +71,42 @@ void BinaryMeshFileReader::read(IMeshBuilder& builder)
     uint16 version;
     checked_read(file, version);
 
-    unique_ptr<ReaderAdapter> reader;
-
     switch (version)
     {
-      // Uncompressed.
+      // Uncompressed, double-precision geometry.
       case 1:
-        reader.reset(new PassthroughReaderAdapter(file));
+        {
+            PassthroughReaderAdapter reader(file);
+            read_meshes<double>(reader, builder);
+        }
         break;
 
-      // LZO-compressed.
+      // LZO-compressed, double-precision geometry.
       case 2:
         throw ExceptionIOError(
             "binarymesh format version 2 is no longer supported; "
             "please use the convertmeshfile tool that ships with appleseed 1.1.0 alpha-21 or earlier");
 
-      // LZ4-compressed.
+      // LZ4-compressed, double-precision geometry.
       case 3:
-        reader.reset(new LZ4CompressedReaderAdapter(file));
+        {
+            LZ4CompressedReaderAdapter reader(file);
+            read_meshes<double>(reader, builder);
+        }
+        break;
+
+      // LZ4-compressed, single-precision geometry.
+      case 4:
+        {
+            LZ4CompressedReaderAdapter reader(file);
+            read_meshes<float>(reader, builder);
+        }
         break;
 
       // Unknown format.
       default:
         throw ExceptionIOError("unknown binarymesh format version");
     }
-
-    read_meshes(*reader.get(), builder);
 }
 
 void BinaryMeshFileReader::read_and_check_signature(BufferedFile& file)
@@ -122,6 +132,7 @@ string BinaryMeshFileReader::read_string(ReaderAdapter& reader)
     return s;
 }
 
+template <typename T>
 void BinaryMeshFileReader::read_meshes(ReaderAdapter& reader, IMeshBuilder& builder)
 {
     try
@@ -141,10 +152,9 @@ void BinaryMeshFileReader::read_meshes(ReaderAdapter& reader, IMeshBuilder& buil
             }
 
             builder.begin_mesh(mesh_name.c_str());
-
-            read_vertices(reader, builder);
-            read_vertex_normals(reader, builder);
-            read_texture_coordinates(reader, builder);
+            read_vertices<T>(reader, builder);
+            read_vertex_normals<T>(reader, builder);
+            read_texture_coordinates<T>(reader, builder);
             read_material_slots(reader, builder);
             read_faces(reader, builder);
 
@@ -158,6 +168,7 @@ void BinaryMeshFileReader::read_meshes(ReaderAdapter& reader, IMeshBuilder& buil
     }
 }
 
+template <typename T>
 void BinaryMeshFileReader::read_vertices(ReaderAdapter& reader, IMeshBuilder& builder)
 {
     uint32 count;
@@ -165,12 +176,13 @@ void BinaryMeshFileReader::read_vertices(ReaderAdapter& reader, IMeshBuilder& bu
 
     for (uint32 i = 0; i < count; ++i)
     {
-        Vector3d v;
+        Vector<T, 3> v;
         checked_read(reader, v);
-        builder.push_vertex(v);
+        builder.push_vertex(Vector3d(v));
     }
 }
 
+template <typename T>
 void BinaryMeshFileReader::read_vertex_normals(ReaderAdapter& reader, IMeshBuilder& builder)
 {
     uint32 count;
@@ -178,12 +190,13 @@ void BinaryMeshFileReader::read_vertex_normals(ReaderAdapter& reader, IMeshBuild
 
     for (uint32 i = 0; i < count; ++i)
     {
-        Vector3d v;
+        Vector<T, 3> v;
         checked_read(reader, v);
-        builder.push_vertex_normal(v);
+        builder.push_vertex_normal(Vector3d(v));
     }
 }
 
+template <typename T>
 void BinaryMeshFileReader::read_texture_coordinates(ReaderAdapter& reader, IMeshBuilder& builder)
 {
     uint32 count;
@@ -191,9 +204,9 @@ void BinaryMeshFileReader::read_texture_coordinates(ReaderAdapter& reader, IMesh
 
     for (uint32 i = 0; i < count; ++i)
     {
-        Vector2d v;
+        Vector<T, 2> v;
         checked_read(reader, v);
-        builder.push_tex_coords(v);
+        builder.push_tex_coords(Vector2d(v));
     }
 }
 

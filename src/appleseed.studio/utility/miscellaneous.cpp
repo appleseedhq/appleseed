@@ -82,6 +82,8 @@ namespace studio {
 
 const QString g_appleseed_image_files_filter = "Bitmap Files (*.exr *.png);;OpenEXR (*.exr);;PNG (*.png);;All Files (*.*)";
 
+const QString g_qt_image_files_filter = "Bitmap Files (*.bmp *.jpg *.png *.tif);;BMP (*.bmp);;JPEG (*.jpg);;PNG (*.png);;TIFF (*.tif);;All Files (*.*)";
+
 namespace
 {
     string join_exts(const vector<string>& exts)
@@ -248,13 +250,13 @@ QString get_open_filename(
 
     set_value(settings, settings_key + SETTINGS_SELECTED_FILTER, selected_filter);
 
-    if (!filepath.isEmpty())
-    {
-        set_value(
-            settings,
-            settings_key + SETTINGS_LAST_DIRECTORY,
-            QDir::toNativeSeparators(QFileInfo(filepath).path()));
-    }
+    if (filepath.isEmpty())
+        return filepath;
+
+    set_value(
+        settings,
+        settings_key + SETTINGS_LAST_DIRECTORY,
+        QDir::toNativeSeparators(QFileInfo(filepath).path()));
 
     return filepath;
 }
@@ -281,13 +283,13 @@ QStringList get_open_filenames(
 
     set_value(settings, settings_key + SETTINGS_SELECTED_FILTER, selected_filter);
 
-    if (!filepaths.isEmpty())
-    {
-        set_value(
-            settings,
-            settings_key + SETTINGS_LAST_DIRECTORY,
-            QDir::toNativeSeparators(QFileInfo(filepaths.first()).path()));
-    }
+    if (filepaths.isEmpty())
+        return filepaths;
+
+    set_value(
+        settings,
+        settings_key + SETTINGS_LAST_DIRECTORY,
+        QDir::toNativeSeparators(QFileInfo(filepaths.first()).path()));
 
     return filepaths;
 }
@@ -303,7 +305,7 @@ QString get_save_filename(
     const QString dir = get_value(settings, settings_key + SETTINGS_LAST_DIRECTORY);
     QString selected_filter = get_value(settings, settings_key + SETTINGS_SELECTED_FILTER);
 
-    const QString filepath =
+    QString filepath =
         QFileDialog::getSaveFileName(
             parent,
             caption,
@@ -314,12 +316,24 @@ QString get_save_filename(
 
     set_value(settings, settings_key + SETTINGS_SELECTED_FILTER, selected_filter);
 
-    if (!filepath.isEmpty())
+    if (filepath.isEmpty())
+        return filepath;
+
+    QFileInfo file_info(filepath);
+
+    set_value(
+        settings,
+        settings_key + SETTINGS_LAST_DIRECTORY,
+        QDir::toNativeSeparators(file_info.path()));
+
+    // If the file name has no extension and the selected filter has a single extension
+    // (i.e. it contains one *.ext substring) then add that extension to the file name.
+    if (file_info.suffix().isEmpty() && selected_filter.count('*') == 1)
     {
-        set_value(
-            settings,
-            settings_key + SETTINGS_LAST_DIRECTORY,
-            QDir::toNativeSeparators(QFileInfo(filepath).path()));
+        const int begin = selected_filter.indexOf("*") + 1;
+        const int end = selected_filter.indexOf(")", begin);
+        assert(begin > 0 && end > begin);
+        filepath += selected_filter.mid(begin, end - begin);
     }
 
     return filepath;

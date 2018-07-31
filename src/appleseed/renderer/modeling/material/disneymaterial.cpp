@@ -52,6 +52,7 @@
 
 // Standard headers.
 #include <algorithm>
+#include <exception>
 #include <map>
 #include <memory>
 #include <string>
@@ -685,7 +686,7 @@ bool DisneyMaterial::on_frame_begin(
     if (!impl->m_brdf->on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
-    const EntityDefMessageContext context("material", this);
+    const OnFrameBeginMessageContext context("material", this);
 
     m_render_data.m_bsdf = impl->m_brdf.get();
     m_render_data.m_basis_modifier = create_basis_modifier(context);
@@ -782,7 +783,7 @@ bool DisneyMaterial::prepare_layers(const MessageContext& context)
             impl->m_layers.push_back(layer);
         }
     }
-    catch (const Exception& e)
+    catch (const std::exception& e)     // namespace qualification required
     {
         RENDERER_LOG_ERROR("%s: %s.", context.get(), e.what());
         return false;

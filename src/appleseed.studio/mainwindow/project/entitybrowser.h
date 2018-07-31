@@ -33,9 +33,6 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditor.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
 // Standard headers.
 #include <string>
 
@@ -43,6 +40,7 @@
 namespace foundation    { class StringDictionary; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class BaseGroup; }
+namespace renderer      { class Frame; }
 namespace renderer      { class Project; }
 namespace renderer      { class Scene; }
 
@@ -125,6 +123,24 @@ class EntityBrowser<renderer::Assembly>
 
   private:
     const renderer::Assembly& m_assembly;
+};
+
+
+//
+// Browse the entities in a frame.
+//
+
+template <>
+class EntityBrowser<renderer::Frame>
+  : public EntityEditor::IEntityBrowser
+{
+  public:
+    explicit EntityBrowser(const renderer::Frame& frame);
+
+    foundation::StringDictionary get_entities(const std::string& type) const;
+
+  private:
+    const renderer::Frame& m_frame;
 };
 
 }       // namespace studio

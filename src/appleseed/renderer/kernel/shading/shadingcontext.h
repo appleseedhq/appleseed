@@ -128,6 +128,10 @@ class ShadingContext
         const foundation::Vector3f& outgoing,
         Spectrum&                   value) const;
 
+    void execute_osl_npr(
+        const ShaderGroup&  shader_group,
+        const ShadingPoint& shading_point) const;
+
     // Choose one of the bsdf closures and set its shading basis in shading point.
     void choose_bsdf_closure_shading_basis(
         const ShadingPoint&         shading_point,

@@ -293,13 +293,14 @@ point rotate (point p, float angle, point a, point b)
 }
 
 
-
 // Color functions
 
 float luminance (color c) BUILTIN;
 color blackbody (float temperatureK) BUILTIN;
 color wavelength_color (float wavelength_nm) BUILTIN;
 
+// transformc() was implemented as a built-in in OSL 1.9, but in previous
+// versions is implemented here.
 
 color transformc (string to, color x)
 {
@@ -426,12 +427,10 @@ color transformc (string from, string to, color x)
 }
 
 
-
 // Matrix functions
 
 float determinant (matrix m) BUILTIN;
 matrix transpose (matrix m) BUILTIN;
-
 
 
 // Pattern generation
@@ -541,7 +540,6 @@ string concat (string a, string b, string c, string d, string e, string f) {
 
 
 // Texture
-
 
 // Closures
 //

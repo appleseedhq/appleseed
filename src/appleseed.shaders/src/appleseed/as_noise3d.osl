@@ -37,7 +37,7 @@ shader as_noise3d
     string as_maya_node_name = "asNoise3D",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/3d:swatch/AppleseedRenderSwatch:texture",
     string as_blender_node_name = "asNoise3D",
-    string as_blender_category = "utility",
+    string as_blender_category = "texture3d",
     int as_maya_type_id = 0x001279ca,
     string icon = "asNoise3D.png",
     string help = "Recursive 3D fractal noise.",
@@ -142,6 +142,7 @@ shader as_noise3d
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
+    // to be removed
     int in_animated_noise = 0
     [[
         string as_maya_attribute_name = "animatedNoise",
@@ -153,7 +154,7 @@ shader as_noise3d
         string page = "Noise.Motion",
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        string widget = "null"
     ]],
     float in_frame_time = 0.0
     [[
@@ -165,7 +166,7 @@ shader as_noise3d
         string page = "Noise.Motion",
         string help = "Frame time, typically frame number."
     ]],
-    float in_time_scale = 1.0
+    float in_time_scale = 0.0
     [[
         string as_maya_attribute_name = "timeScale",
         string as_maya_attribute_short_name = "fqt",
@@ -432,7 +433,7 @@ shader as_noise3d
 
     string noisetype = get_noise_type(in_type);
 
-    if (in_animated_noise)
+    if (in_time_scale > 0.0)
     {
         float frequency_time = in_frame_time * in_time_scale;
 

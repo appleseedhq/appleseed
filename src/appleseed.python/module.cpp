@@ -42,6 +42,7 @@ void bind_bsdf();
 void bind_bssrdf();
 void bind_camera();
 void bind_color();
+void bind_curve_object();
 void bind_display();
 void bind_edf();
 void bind_entity();
@@ -57,6 +58,7 @@ void bind_matrix();
 void bind_mesh_object();
 void bind_murmurhash();
 void bind_object();
+void bind_post_processing_stage();
 void bind_project();
 void bind_quaternion();
 void bind_renderer_controller();
@@ -68,6 +70,11 @@ void bind_tile_callback();
 void bind_transform();
 void bind_utility();
 void bind_vector();
+void bind_volume();
+
+#if PY_MAJOR_VERSION == 3
+void bind_blender_progressive_tile_callback();
+#endif
 
 extern "C" void bind_appleseed_python_classes()
 {
@@ -96,12 +103,14 @@ extern "C" void bind_appleseed_python_classes()
     bind_bsdf();
     bind_bssrdf();
     bind_edf();
+    bind_volume();
     bind_shader_group();
 
     bind_surface_shader();
     bind_material();
     bind_light();
     bind_object();
+    bind_curve_object();
     bind_mesh_object();
     bind_assembly();
 
@@ -111,6 +120,7 @@ extern "C" void bind_appleseed_python_classes()
 
     bind_image();
     bind_aov();
+    bind_post_processing_stage();
     bind_frame();
     bind_fresnel();
     bind_display();
@@ -119,6 +129,10 @@ extern "C" void bind_appleseed_python_classes()
     bind_renderer_controller();
     bind_tile_callback();
     bind_master_renderer();
+
+#if PY_MAJOR_VERSION == 3
+    bind_blender_progressive_tile_callback();
+#endif
 }
 
 #if PY_MAJOR_VERSION == 2

@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2018 Girish Ramesh, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,18 +26,36 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKSERIE_H
-#define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKSERIE_H
+#ifndef APPLESEED_FOUNDATION_CURVE_ICURVEFILEREADER_H
+#define APPLESEED_FOUNDATION_CURVE_ICURVEFILEREADER_H
 
 // appleseed.foundation headers.
-#include "foundation/utility/api/apiarray.h"
-#include "foundation/utility/benchmark/benchmarkdatapoint.h"
+#include "foundation/core/concepts/noncopyable.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace foundation    { class ICurveBuilder; }
 
 namespace foundation
 {
 
-APPLESEED_DECLARE_APIARRAY(BenchmarkSerie, BenchmarkDataPoint);
+//
+// Curve file reader interface.
+//
+
+class APPLESEED_DLLSYMBOL ICurveFileReader
+  : public NonCopyable
+{
+  public:
+    // Destructor.
+    virtual ~ICurveFileReader() {}
+
+    // Read a curve file.
+    virtual void read(ICurveBuilder& builder) = 0;
+};
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKSERIE_H
+#endif  // !APPLESEED_FOUNDATION_CURVE_ICURVEFILEREADER_H

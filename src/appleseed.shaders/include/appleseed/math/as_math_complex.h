@@ -181,7 +181,7 @@ void pow_complex(
     power.imag = exp_real * sintheta;
 }
 
-void log_complex(Complex Z)
+void log_complex(output Complex Z)
 {
     float tmp = Z.imag;
 

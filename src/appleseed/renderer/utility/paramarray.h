@@ -444,9 +444,8 @@ T ParamArray::get_helper(
             if (is_required)
             {
                 RENDERER_LOG_ERROR(
-                    "%s%srequired parameter \"%s\" not found; continuing using value \"%s\".",
+                    "%srequired parameter \"%s\" not found; continuing using value \"%s\".",
                     message_context.get(),
-                    message_context.empty() ? "" : ": ",
                     name,
                     foundation::to_string(default_value).c_str());
             }
@@ -459,9 +458,8 @@ T ParamArray::get_helper(
     }
 
     RENDERER_LOG_ERROR(
-        "%s%sinvalid value \"%s\" for parameter \"%s\"; continuing using value \"%s\".",
+        "%sinvalid value \"%s\" for parameter \"%s\"; continuing using value \"%s\".",
         message_context.get(),
-        message_context.empty() ? "" : ": ",
         is_path ? get_path(name) : get(name),
         name,
         foundation::to_string(default_value).c_str());
@@ -535,9 +533,8 @@ T ParamArray::get_helper(
             if (is_required)
             {
                 RENDERER_LOG_ERROR(
-                    "%s%srequired parameter \"%s\" not found; continuing using value \"%s\".",
+                    "%srequired parameter \"%s\" not found; continuing using value \"%s\".",
                     message_context.get(),
-                    message_context.empty() ? "" : ": ",
                     name,
                     foundation::to_string(default_value).c_str());
             }
@@ -550,9 +547,8 @@ T ParamArray::get_helper(
     }
 
     RENDERER_LOG_ERROR(
-        "%s%sinvalid value \"%s\" for parameter \"%s\"; continuing using value \"%s\".",
+        "%sinvalid value \"%s\" for parameter \"%s\"; continuing using value \"%s\".",
         message_context.get(),
-        message_context.empty() ? "" : ": ",
         is_path ? get_path(name) : get(name),
         name,
         foundation::to_string(default_value).c_str());

@@ -34,13 +34,13 @@
 #include "ui_entityeditorwindow.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/disneymaterialcustomui.h"
 #include "utility/miscellaneous.h"
 
 // Standard headers.
 #include <utility>
 
 // Qt headers.
+#include <QDialogButtonBox>
 #include <QShortcut>
 #include <QString>
 #include <Qt>
@@ -69,7 +69,6 @@ EntityEditorWindow::EntityEditorWindow(
     setWindowTitle(QString::fromStdString(window_title));
     setWindowFlags(Qt::Tool);
     setAttribute(Qt::WA_DeleteOnClose);
-    setObjectName("EntityEditorWindow");
 
     m_entity_editor.reset(
         new EntityEditor(
@@ -110,11 +109,6 @@ void EntityEditorWindow::create_connections()
     connect(
         create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
         SLOT(slot_cancel()));
-}
-
-void EntityEditorWindow::slot_apply(Dictionary values)
-{
-    emit signal_applied(values);
 }
 
 void EntityEditorWindow::slot_accept()

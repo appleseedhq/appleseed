@@ -194,7 +194,7 @@ asf::auto_release_ptr<asr::Project> build_project()
     assembly_instance
         ->transform_sequence()
             .set_transform(
-                0.0,
+                0.0f,
                 asf::Transformd::identity());
     scene->assembly_instances().insert(assembly_instance);
 
@@ -252,7 +252,7 @@ asf::auto_release_ptr<asr::Project> build_project()
     // Place and orient the camera. By default cameras are located in (0.0, 0.0, 0.0)
     // and are looking toward Z- (0.0, 0.0, -1.0).
     camera->transform_sequence().set_transform(
-        0.0,
+        0.0f,
         asf::Transformd::from_local_to_parent(
             asf::Matrix4d::make_rotation(asf::Vector3d(1.0, 0.0, 0.0), asf::deg_to_rad(-20.0)) *
             asf::Matrix4d::make_translation(asf::Vector3d(0.0, 0.8, 11.0))));

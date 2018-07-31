@@ -36,6 +36,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/siphash.h"
 #include "foundation/utility/uid.h"
 #include "foundation/utility/version.h"
@@ -141,6 +142,27 @@ class APPLESEED_DLLSYMBOL Entity
     ~Entity() override;
 };
 
+// Utility function to invoke collect_asset_paths() on a collection of entities.
+template <typename EntityCollection>
+void invoke_collect_asset_paths(
+    const EntityCollection&             entities,
+    foundation::StringArray&            paths);
+
+// Utility function to invoke update_asset_paths() on a collection of entities.
+template <typename EntityCollection>
+void invoke_update_asset_paths(
+    EntityCollection&                   entities,
+    const foundation::StringDictionary& mappings);
+
+// Utility function to invoke on_frame_begin() on a collection of entities.
+template <typename EntityCollection>
+bool invoke_on_frame_begin(
+    EntityCollection&                   entities,
+    const Project&                      project,
+    const BaseGroup*                    parent,
+    OnFrameBeginRecorder&               recorder,
+    foundation::IAbortSwitch*           abort_switch);
+
 
 //
 // Entity class implementation.
@@ -181,6 +203,44 @@ inline ParamArray& Entity::get_parameters()
 inline const ParamArray& Entity::get_parameters() const
 {
     return m_params;
+}
+
+template <typename EntityCollection>
+void invoke_collect_asset_paths(
+    const EntityCollection&             entities,
+    foundation::StringArray&            paths)
+{
+    for (const auto& entity : entities)
+        entity.collect_asset_paths(paths);
+}
+
+template <typename EntityCollection>
+void invoke_update_asset_paths(
+    EntityCollection&                   entities,
+    const foundation::StringDictionary& mappings)
+{
+    for (auto& entity : entities)
+        entity.update_asset_paths(mappings);
+}
+
+template <typename EntityCollection>
+bool invoke_on_frame_begin(
+    EntityCollection&                   entities,
+    const Project&                      project,
+    const BaseGroup*                    parent,
+    OnFrameBeginRecorder&               recorder,
+    foundation::IAbortSwitch*           abort_switch)
+{
+    for (auto& entity : entities)
+    {
+        if (foundation::is_aborted(abort_switch))
+            return false;
+
+        if (!entity.on_frame_begin(project, parent, recorder, abort_switch))
+            return false;
+    }
+
+    return true;
 }
 
 }       // namespace renderer

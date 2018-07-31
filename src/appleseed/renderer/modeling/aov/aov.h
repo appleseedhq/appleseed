@@ -33,6 +33,7 @@
 #include "renderer/modeling/entity/entity.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
@@ -90,7 +91,7 @@ class APPLESEED_DLLSYMBOL AOV
     virtual void clear_image();
 
     // Apply any post processing needed to the AOV image.
-    virtual void post_process_image();
+    virtual void post_process_image(const foundation::AABB2u& crop_window);
 
   protected:
     friend class AOVAccumulatorContainer;

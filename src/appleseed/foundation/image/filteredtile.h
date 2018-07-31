@@ -52,17 +52,17 @@ class FilteredTile
 {
   public:
     FilteredTile(
-        const size_t        width,
-        const size_t        height,
-        const size_t        channel_count,
-        const Filter2f&     filter);
+        const size_t            width,
+        const size_t            height,
+        const size_t            channel_count,
+        const Filter2f&         filter);
 
     FilteredTile(
-        const size_t        width,
-        const size_t        height,
-        const size_t        channel_count,
-        const AABB2u&       crop_window,
-        const Filter2f&     filter);
+        const size_t            width,
+        const size_t            height,
+        const size_t            channel_count,
+        const AABB2u&           crop_window,
+        const Filter2f&         filter);
 
     // Tile properties.
     const AABB2u& get_crop_window() const;
@@ -70,50 +70,50 @@ class FilteredTile
 
     // Direct access to a given pixel.
     float* pixel(
-        const size_t        i) const;
+        const size_t            i) const;
     float* pixel(
-        const size_t        x,
-        const size_t        y) const;
+        const size_t            x,
+        const size_t            y) const;
 
     // Structured write access to a given pixel is not available.
     template <typename T>
     void set_pixel(
-        const size_t        i,
-        const T             components[]);
+        const size_t            i,
+        const T                 components[]);
     template <typename T>
     void set_pixel(
-        const size_t        x,
-        const size_t        y,
-        const T             components[]);
+        const size_t            x,
+        const size_t            y,
+        const T                 components[]);
     template <typename Color>
     void set_pixel(
-        const size_t        i,
-        const Color&        color);
+        const size_t            i,
+        const Color&            color);
     template <typename Color>
     void set_pixel(
-        const size_t        x,
-        const size_t        y,
-        const Color&        color);
+        const size_t            x,
+        const size_t            y,
+        const Color&            color);
 
     // Structured read access to a given pixel.
     template <typename T>
     void get_pixel(
-        const size_t        i,
-        T                   components[]) const;
+        const size_t            i,
+        T                       components[]) const;
     template <typename T>
     void get_pixel(
-        const size_t        x,
-        const size_t        y,
-        T                   components[]) const;
+        const size_t            x,
+        const size_t            y,
+        T                       components[]) const;
     template <typename Color>
     void get_pixel(
-        const size_t        i,
-        Color&              color) const;
+        const size_t            i,
+        Color&                  color) const;
     template <typename Color>
     void get_pixel(
-        const size_t        x,
-        const size_t        y,
-        Color&              color) const;
+        const size_t            x,
+        const size_t            y,
+        Color&                  color) const;
 
     // Set all pixels to black and all weights to zero.
     void clear();
@@ -121,15 +121,29 @@ class FilteredTile
     // The point (x, y) is expressed in continuous image space
     // (https://github.com/appleseedhq/appleseed/wiki/Terminology).
     void add(
-        const float         x,
-        const float         y,
-        const float*        values);
+        const float             x,
+        const float             y,
+        const float*            values);
 
     // Thread-safe variant of add().
     void atomic_add(
-        const float         x,
-        const float         y,
-        const float*        values);
+        const float             x,
+        const float             y,
+        const float*            values);
+
+    // Compute the variance of a weighted pixel given the value of the same pixel with 2 different samples count.
+    // The first given pixel `main` contains N samples.
+    // The second given pixel `second` contains N/2 samples (samples included in `second` are also in `main`).
+    static float compute_weighted_pixel_variance(
+        const float*            main,
+        const float*            second);
+
+    // Compute the variance of the tile `main` for pixels in the bounding box `bb`.
+    // A second tile `second` is used which contains half of the samples of `main`.
+    static float compute_tile_variance(
+        const AABB2u&           bb,
+        const FilteredTile*     main,
+        const FilteredTile*     second);
 
   protected:
     const AABB2u            m_crop_window;

@@ -43,6 +43,7 @@
 #include "renderer/kernel/rendering/debug/debugtilerenderer.h"
 #include "renderer/kernel/rendering/ephemeralshadingresultframebufferfactory.h"
 #include "renderer/kernel/rendering/final/adaptivepixelrenderer.h"
+#include "renderer/kernel/rendering/final/adaptivetilerenderer.h"
 #include "renderer/kernel/rendering/final/uniformpixelrenderer.h"
 #include "renderer/kernel/rendering/generic/genericframerenderer.h"
 #include "renderer/kernel/rendering/generic/genericsamplegenerator.h"
@@ -83,6 +84,7 @@ namespace
         const char*         name)
     {
         ParamArray child = source.child(name);
+        copy_param(child, source, "passes");
         copy_param(child, source, "spectrum_mode");
         copy_param(child, source, "sampling_mode");
         copy_param(child, source, "rendering_threads");
@@ -338,13 +340,11 @@ bool RendererComponents::create_pixel_renderer_factory()
             return false;
         }
 
-        ParamArray params = get_child_and_inherit_globals(m_params, "uniform_pixel_renderer");
-        copy_param(params, m_params, "passes");
         m_pixel_renderer_factory.reset(
             new UniformPixelRendererFactory(
                 m_frame,
                 m_sample_renderer_factory.get(),
-                params));
+                get_child_and_inherit_globals(m_params, "uniform_pixel_renderer")));
 
         return true;
     }
@@ -408,6 +408,29 @@ bool RendererComponents::create_tile_renderer_factory()
 
     if (name.empty())
     {
+        return true;
+    }
+    else if (name == "adaptive")
+    {
+        if (m_sample_renderer_factory.get() == nullptr)
+        {
+            RENDERER_LOG_ERROR("cannot use the adaptive tile renderer without a sample renderer.");
+            return false;
+        }
+
+        if (m_shading_result_framebuffer_factory.get() == nullptr)
+        {
+            RENDERER_LOG_ERROR("cannot use the adaptive tile renderer without a shading result framebuffer.");
+            return false;
+        }
+
+        m_tile_renderer_factory.reset(
+            new AdaptiveTileRendererFactory(
+                m_frame,
+                m_sample_renderer_factory.get(),
+                m_shading_result_framebuffer_factory.get(),
+                get_child_and_inherit_globals(m_params, "adaptive_tile_renderer")));
+
         return true;
     }
     else if (name == "generic")

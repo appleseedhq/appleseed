@@ -37,6 +37,7 @@
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
@@ -85,8 +86,8 @@ namespace
             // Fetch the tile bounds (inclusive).
             m_tile_origin_x = static_cast<int>(tile_x * props.m_tile_width);
             m_tile_origin_y = static_cast<int>(tile_y * props.m_tile_height);
-            m_tile_end_x = static_cast<int>(m_tile_origin_x + m_tile->get_width() - 1);
-            m_tile_end_y = static_cast<int>(m_tile_origin_y + m_tile->get_height() - 1);
+            m_tile_end_x = static_cast<int>(m_tile_origin_x + m_tile->get_width());
+            m_tile_end_y = static_cast<int>(m_tile_origin_y + m_tile->get_height());
 
             m_samples.reserve(max_spp);
         }
@@ -149,8 +150,8 @@ namespace
             return
                 pi.x < m_tile_origin_x ||
                 pi.y < m_tile_origin_y ||
-                pi.x > m_tile_end_x ||
-                pi.y > m_tile_end_y;
+                pi.x >= m_tile_end_x ||
+                pi.y >= m_tile_end_y;
         }
     };
 
@@ -218,20 +219,18 @@ namespace
             m_image->clear(Color<float, 1>(0.0f));
         }
 
-        void post_process_image() override
+        void post_process_image(const AABB2u& crop_window) override
         {
-            const CanvasProperties& src_props = m_image->properties();
-
             // Find the maximum value.
             float max_time = 0.0f;
 
-            for (size_t j = 0; j < src_props.m_canvas_height; ++j)
+            for (size_t j = crop_window.min.y; j <= crop_window.max.y; ++j)
             {
-                for (size_t i = 0; i < src_props.m_canvas_width; ++i)
+                for (size_t i = crop_window.min.x; i <= crop_window.max.x; ++i)
                 {
-                    Color<float, 1> val;
-                    m_image->get_pixel(i, j, val);
-                    max_time = max(val[0], max_time);
+                    float val;
+                    m_image->get_pixel(i, j, &val);
+                    max_time = max(val, max_time);
                 }
             }
 
@@ -241,15 +240,16 @@ namespace
             const float rcp_max_time = 1.0f / max_time;
 
             // Normalize.
-            for (size_t j = 0; j < src_props.m_canvas_height; ++j)
+            for (size_t j = crop_window.min.y; j <= crop_window.max.y; ++j)
             {
-                for (size_t i = 0; i < src_props.m_canvas_width; ++i)
+                for (size_t i = crop_window.min.x; i <= crop_window.max.x; ++i)
                 {
-                    Color<float, 1> c;
-                    m_image->get_pixel(i, j, c);
+                    float c;
+                    m_image->get_pixel(i, j, &c);
 
-                    c[0] *= rcp_max_time;
-                    m_image->set_pixel(i, j, c);
+                    c *= rcp_max_time;
+
+                    m_image->set_pixel(i, j, &c);
                 }
             }
         }

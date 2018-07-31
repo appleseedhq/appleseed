@@ -272,7 +272,7 @@ UnalignedMatrix44<T> invert_matrix(const UnalignedMatrix44<T>& mat)
     {
         return UnalignedMatrix44<T>(inverse(mat.as_foundation_matrix()));
     }
-    catch (ExceptionSingularMatrix&)
+    catch (const ExceptionSingularMatrix&)
     {
         PyErr_SetString(PyExc_RuntimeError, "Singular matrix in appleseed.Matrix.inverse");
         boost::python::throw_error_already_set();

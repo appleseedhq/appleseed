@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/npr/nprclosures.h"
 #include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
 #include "renderer/modeling/bsdf/blinnbrdf.h"
@@ -1606,6 +1607,121 @@ namespace
             shading_system.register_closure(name(), id(), params, nullptr, nullptr);
         }
     };
+
+    // NPR closures.
+
+    struct NPRShadingClosure
+    {
+        struct Params
+        {
+        };
+
+        static const char* name()
+        {
+            return "as_npr_shading";
+        }
+
+        static ClosureID id()
+        {
+            return NPRShadingID;
+        }
+
+        static void register_closure(OSLShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
+        }
+
+        static void convert_closure(
+            CompositeNPRClosure&    composite_closure,
+            const void*             osl_params,
+            const Color3f&          weight,
+            Arena&                  arena)
+        {
+            composite_closure.add_closure<NPRShadingInputValues>(id(), weight, arena);
+        }
+    };
+
+    struct NPRContourClosure
+    {
+        struct Params
+        {
+            OSL::Color3 contour_color;
+            float       contour_opacity;
+            float       contour_width;
+            int         object_id;
+            int         material_id;
+            int         occlusion;
+            float       occlusion_threshold;
+            int         creases;
+            float       creases_threshold;
+        };
+
+        static const char* name()
+        {
+            return "as_npr_contour";
+        }
+
+        static ClosureID id()
+        {
+            return NPRContourID;
+        }
+
+        static void register_closure(OSLShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_COLOR_PARAM(Params, contour_color),
+                CLOSURE_FLOAT_PARAM(Params, contour_opacity),
+                CLOSURE_FLOAT_PARAM(Params, contour_width),
+                CLOSURE_INT_PARAM(Params, object_id),
+                CLOSURE_INT_PARAM(Params, material_id),
+
+                CLOSURE_INT_PARAM(Params, occlusion),
+                CLOSURE_FLOAT_PARAM(Params, occlusion_threshold),
+                CLOSURE_INT_PARAM(Params, creases),
+                CLOSURE_FLOAT_PARAM(Params, creases_threshold),
+
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
+        }
+
+        static void convert_closure(
+            CompositeNPRClosure&    composite_closure,
+            const void*             osl_params,
+            const Color3f&          weight,
+            Arena&                  arena)
+        {
+            const Params* p = static_cast<const Params*>(osl_params);
+
+            int features = 0;
+            if (p->object_id != 0) features |= NPRContourFeatures::ObjectInstanceID;
+            if (p->material_id != 0) features |= NPRContourFeatures::MaterialID;
+            if (p->occlusion != 0) features |= NPRContourFeatures::OcclusionEdges;
+            if (p->creases != 0) features |= NPRContourFeatures::CreaseEdges;
+
+            if (features == 0 || p->contour_opacity == 0.0f || p->contour_width == 0.0f)
+                return;
+
+            NPRContourInputValues* values =
+                composite_closure.add_closure<NPRContourInputValues>(id(), weight, arena);
+
+            values->m_color = Color3f(p->contour_color);
+            values->m_opacity = saturate(p->contour_opacity);
+            values->m_width = max(p->contour_width, 0.0f);
+
+            values->m_occlusion_threshold = max(p->occlusion_threshold, 0.0f);
+            values->m_cos_crease_threshold = cos(deg_to_rad(p->creases_threshold));
+
+            values->m_features = features;
+        }
+    };
 }
 
 
@@ -2089,6 +2205,112 @@ void CompositeEmissionClosure::process_closure_tree(
 
 
 //
+// CompositeNPRClosure class implementation.
+//
+
+CompositeNPRClosure::CompositeNPRClosure(
+    const OSL::ClosureColor*    ci,
+    Arena&                      arena)
+{
+    process_closure_tree(ci, Color3f(1.0f), arena);
+}
+
+template <typename InputValues>
+InputValues* CompositeNPRClosure::add_closure(
+    const ClosureID             closure_type,
+    const Color3f&              weight,
+    Arena&                      arena)
+{
+    // Make sure we have enough space.
+    if APPLESEED_UNLIKELY(get_closure_count() >= MaxClosureEntries)
+    {
+        throw ExceptionOSLRuntimeError(
+            "maximum number of closures in osl shader group exceeded");
+    }
+
+    m_closure_types[m_closure_count] = closure_type;
+    m_weights[m_closure_count].set(weight, g_std_lighting_conditions, Spectrum::Reflectance);
+
+    InputValues* values = arena.allocate<InputValues>();
+    m_input_values[m_closure_count] = values;
+
+    ++m_closure_count;
+
+    return values;
+}
+
+size_t CompositeNPRClosure::get_nth_contour_closure_index(const size_t i) const
+{
+    size_t n = 0;
+
+    for (size_t j = 0 , e = get_closure_count(); j < e ; ++j)
+    {
+        if (get_closure_type(j) == NPRContourID)
+        {
+            if (n == i)
+                return j;
+
+            ++n;
+        }
+    }
+
+    return ~0;
+}
+
+void CompositeNPRClosure::process_closure_tree(
+    const OSL::ClosureColor*    closure,
+    const Color3f&              weight,
+    Arena&                      arena)
+{
+    if (closure == nullptr)
+        return;
+
+    switch (closure->id)
+    {
+      case OSL::ClosureColor::MUL:
+        {
+            const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
+            process_closure_tree(c->closure, weight * Color3f(c->weight), arena);
+        }
+        break;
+
+      case OSL::ClosureColor::ADD:
+        {
+            const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
+            process_closure_tree(c->closureA, weight, arena);
+            process_closure_tree(c->closureB, weight, arena);
+        }
+        break;
+
+      default:
+        {
+            const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
+
+            if (c->id == NPRShadingID)
+            {
+                const Color3f w = weight * Color3f(c->w);
+                NPRShadingClosure::convert_closure(
+                    *this,
+                    c->data(),
+                    w,
+                    arena);
+            }
+            else if (c->id == NPRContourID)
+            {
+                const Color3f w = weight * Color3f(c->w);
+                NPRContourClosure::convert_closure(
+                    *this,
+                    c->data(),
+                    w,
+                    arena);
+            }
+        }
+        break;
+    }
+}
+
+
+//
 // Utility functions implementation.
 //
 
@@ -2188,6 +2410,9 @@ void register_closures(OSLShadingSystem& shading_system)
     register_closure<RandomwalkGlassClosure>(shading_system);
     register_closure<TranslucentClosure>(shading_system);
     register_closure<TransparentClosure>(shading_system);
+
+    register_closure<NPRShadingClosure>(shading_system);
+    register_closure<NPRContourClosure>(shading_system);
 }
 
 }   // namespace renderer

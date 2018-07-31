@@ -157,10 +157,10 @@ ObjectInstance::ObjectInstance(
     impl->m_front_material_mappings = front_material_mappings;
     impl->m_back_material_mappings = back_material_mappings;
 
-    const EntityDefMessageContext message_context("object instance", this);
+    const EntityDefMessageContext context("object instance", this);
 
     // Retrieve visibility flags.
-    m_vis_flags = VisibilityFlags::parse(params.child("visibility"), message_context);
+    m_vis_flags = VisibilityFlags::parse(params.child("visibility"), context);
 
     // Retrieve medium priority.
     m_medium_priority = params.get_optional<int8>("medium_priority", 0);
@@ -171,7 +171,7 @@ ObjectInstance::ObjectInstance(
             "ray_bias_method",
             "none",
             make_vector("none", "normal", "incoming_direction", "outgoing_direction"),
-            message_context);
+            context);
     if (ray_bias_method == "none")
         m_ray_bias_method = RayBiasMethodNone;
     else if (ray_bias_method == "normal")
@@ -485,7 +485,7 @@ bool ObjectInstance::on_frame_begin(
 
     m_transform_swaps_handedness = get_transform().swaps_handedness();
 
-    const EntityDefMessageContext context("object instance", this);
+    const OnFrameBeginMessageContext context("object instance", this);
 
     const bool uses_materials_alpha_mapping =
         renderer::uses_alpha_mapping(m_back_materials) ||

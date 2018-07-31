@@ -226,19 +226,19 @@ void RenderTab::create_toolbar()
     // Save All AOVs button.
     QToolButton* save_aovs_button = new QToolButton();
     save_aovs_button->setIcon(load_icons("rendertab_save_all_aovs"));
-    save_aovs_button->setToolTip("Save All AOVs...");
+    save_aovs_button->setToolTip("Save Raw Frame and AOVs...");
     connect(
         save_aovs_button, SIGNAL(clicked()),
-        SIGNAL(signal_save_all_aovs()));
+        SIGNAL(signal_save_raw_frame_and_aovs()));
     m_toolbar->addWidget(save_aovs_button);
 
     // Quicksave All AOVs button.
     QToolButton* quick_save_aovs_button = new QToolButton();
     quick_save_aovs_button->setIcon(load_icons("rendertab_quicksave_all_aovs"));
-    quick_save_aovs_button->setToolTip("Quicksave All AOVs");
+    quick_save_aovs_button->setToolTip("Quicksave Raw Frame and AOVs");
     connect(
         quick_save_aovs_button, SIGNAL(clicked()),
-        SIGNAL(signal_quicksave_all_aovs()));
+        SIGNAL(signal_quicksave_raw_frame_and_aovs()));
     m_toolbar->addWidget(quick_save_aovs_button);
 
     m_toolbar->addSeparator();
@@ -438,8 +438,7 @@ void RenderTab::recreate_handlers()
     m_camera_controller.reset(
         new CameraController(
             m_render_widget,
-            m_project,
-            m_project.get_uncached_active_camera()));
+            m_project));
     connect(
         m_camera_controller.get(), SIGNAL(signal_camera_change_begin()),
         SIGNAL(signal_camera_change_begin()));

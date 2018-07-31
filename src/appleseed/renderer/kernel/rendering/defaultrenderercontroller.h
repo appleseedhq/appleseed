@@ -59,6 +59,12 @@ class APPLESEED_DLLSYMBOL DefaultRendererController
     // This method is called after rendering was aborted.
     void on_rendering_abort() override;
 
+    // This method is called after rendering was paused.
+    void on_rendering_pause() override;
+
+    // This method is called after rendering was resumed.
+    void on_rendering_resume() override;
+
     // This method is called before rendering a single frame.
     void on_frame_begin() override;
 

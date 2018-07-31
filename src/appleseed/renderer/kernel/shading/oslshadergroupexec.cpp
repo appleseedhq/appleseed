@@ -163,6 +163,16 @@ void OSLShaderGroupExec::execute_bump(
     }
 }
 
+void OSLShaderGroupExec::execute_npr(
+    const ShaderGroup&              shader_group,
+    const ShadingPoint&             shading_point) const
+{
+    do_execute(
+        shader_group,
+        shading_point,
+        VisibilityFlags::NPRRay);
+}
+
 Color3f OSLShaderGroupExec::execute_background(
     const ShaderGroup&              shader_group,
     const Vector3f&                 outgoing) const

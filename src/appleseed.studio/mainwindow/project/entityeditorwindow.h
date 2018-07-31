@@ -31,6 +31,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITORWINDOW_H
 
 // appleseed.studio headers.
+#include "mainwindow/project/customentityui.h"
 #include "mainwindow/project/entityeditor.h"
 
 // appleseed.foundation headers.
@@ -77,15 +78,14 @@ class EntityEditorWindow
 
   private:
     // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
-    Ui::EntityEditorWindow*       m_ui;
+    Ui::EntityEditorWindow*         m_ui;
 
-    std::unique_ptr<EntityEditor> m_entity_editor;
-    foundation::Dictionary        m_initial_values;
+    std::unique_ptr<EntityEditor>   m_entity_editor;
+    foundation::Dictionary          m_initial_values;
 
     void create_connections();
 
   private slots:
-    void slot_apply(foundation::Dictionary values);
     void slot_accept();
     void slot_cancel();
 };

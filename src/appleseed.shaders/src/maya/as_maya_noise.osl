@@ -332,11 +332,14 @@ shader as_maya_noise
         }
         else if (in_noiseType == 4)
         {
+            int frame_number = 0;
+            getattribute("global:frame", frame_number);
+
             if (in_inflection)
             {
                 val = maya_turbulence(
                     coords,
-                    in_time + time,
+                    in_time + frame_number,
                     filter_size,
                     in_amplitude,
                     in_depthMax,
@@ -347,7 +350,7 @@ shader as_maya_noise
             {
                 val = fBm(
                     coords,
-                    in_time + time,
+                    in_time + frame_number,
                     filter_size,
                     in_amplitude,
                     in_depthMax,

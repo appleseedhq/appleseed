@@ -513,7 +513,6 @@ float value_noise2d(float x, float y)
     return mix(a, b, uu[1]);
 }
 
-
 //
 // Reference:
 //

@@ -33,7 +33,7 @@ shader as_blend_color
     string as_maya_node_name = "asBlendColor",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string as_blender_node_name = "asBlendColor",
-    string as_blender_category = "utility",
+    string as_blender_category = "color",
     string help = "Color blend utility node.",
     string icon = "asBlendColor.png",
     int as_maya_type_id = 0x001279d1,

@@ -131,7 +131,7 @@
                 <parameter name="filename" value="Box001.binarymesh" />
             </object>
             <object name="Curve" model="curve_object">
-                <parameter name="filepath" value="single strand.txt" />
+                <parameter name="filepath" value="test_01.binarycurve" />
             </object>
             <object_instance name="Box001_inst" object="Box001.Box001">
                 <transform>

@@ -106,6 +106,10 @@ class OSLShaderGroupExec
         const ShadingPoint&             shading_point,
         const foundation::Vector2f&     s) const;
 
+    void execute_npr(
+        const ShaderGroup&              shader_group,
+        const ShadingPoint&             shading_point) const;
+
     foundation::Color3f execute_background(
         const ShaderGroup&              shader_group,
         const foundation::Vector3f&     outgoing) const;

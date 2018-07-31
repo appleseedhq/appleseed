@@ -61,6 +61,7 @@
 #include "renderer/modeling/light/sunlight.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/postprocessingstage/renderstamppostprocessingstage.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/eventcounters.h"
 #include "renderer/modeling/project/project.h"
@@ -158,12 +159,26 @@ namespace
 
         // Copy a key from one dictionary to same dictionary.
         static void copy_if_exist_no_overwrite(
-            Dictionary&         dict, 
-            const char*         dest_key, 
+            Dictionary&         dict,
+            const char*         dest_key,
             const char*         src_key)
         {
             if (!dict.strings().exist(dest_key))
-                copy_if_exist(dict, dest_key, dict, src_key);            
+                copy_if_exist(dict, dest_key, dict, src_key);
+        }
+
+        // Move a key from one dictionary to another at a given key.
+        static void move_if_exist(
+            Dictionary&         dest,
+            const char*         dest_key,
+            Dictionary&         src,
+            const char*         src_key)
+        {
+            if (src.strings().exist(src_key))
+            {
+                dest.strings().insert(dest_key, src.strings().get(src_key));
+                src.strings().remove(src_key);
+            }
         }
 
         // Move a key from one dictionary to another at a given path.
@@ -1239,7 +1254,7 @@ namespace
             catch (const Exception&)
             {
                 RENDERER_LOG_ERROR(
-                    "while updating gaussianbssrdf \"%s\", failed to convert v parameter.",
+                    "while updating gaussian bssrdf \"%s\": failed to convert v parameter.",
                     bssrdf.get_name());
             }
         }
@@ -1599,7 +1614,7 @@ namespace
     //
     // Update from revision 21 to revision 22.
     //
-    
+
     class UpdateFromRevision_21
       : public Updater
     {
@@ -1628,13 +1643,13 @@ namespace
                         "shutter_close_time");
                 }
             }
-        }  
+        }
     };
 
     //
     // Update from revision 22 to revision 23.
     //
-    
+
     class UpdateFromRevision_22
       : public Updater
     {
@@ -1657,11 +1672,11 @@ namespace
                     else
                     {
                         // camera_params include "focal_distance".
-                        camera_params.strings().insert("autofocus_enabled", false);                        
+                        camera_params.strings().insert("autofocus_enabled", false);
                     }
                 }
             }
-        }  
+        }
     };
 
     //
@@ -1718,7 +1733,7 @@ namespace
     //
     // Update from revision 24 to revision 25.
     //
-    
+
     class UpdateFromRevision_24
       : public Updater
     {
@@ -1740,7 +1755,120 @@ namespace
                     move_if_exist(camera_params, "shutter_close_end_time", "shutter_close_time");
                 }
             }
-        }  
+        }
+    };
+
+    //
+    // Update from revision 25 to revision 26.
+    //
+
+    class UpdateFromRevision_25
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_25(Project& project)
+          : Updater(project, 25)
+        {
+        }
+
+        void update() override
+        {
+            if (m_project.get_frame())
+                update_frame(*m_project.get_frame());
+        }
+
+      private:
+        static void update_frame(Frame& frame)
+        {
+            ParamArray& params = frame.get_parameters();
+
+            if (params.get_optional<bool>("enable_render_stamp"))
+            {
+                // There cannot be any other post-processing stage at this point.
+                assert(frame.post_processing_stages().empty());
+
+                const string format_string = params.get_optional<string>("render_stamp_format");
+                frame.post_processing_stages().insert(
+                    RenderStampPostProcessingStageFactory().create(
+                        "render_stamp",
+                        ParamArray()
+                            .insert("order", 0)
+                            .insert("format_string", format_string)));
+            }
+
+            params.remove_path("enable_render_stamp");
+            params.remove_path("render_stamp_format");
+        }
+    };
+
+    //
+    // Update from revision 26 to revision 27.
+    //
+
+    class UpdateFromRevision_26
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_26(Project& project)
+          : Updater(project, 26)
+        {
+        }
+
+        void update() override
+        {
+            remove_diagnostic_option();
+            update_passes_path();
+        }
+
+      private:
+        // Remove pixel_renderer::enable_diagnostics and frame::save_extra_aovs.
+        void remove_diagnostic_option()
+        {
+            for (Configuration& config : m_project.configurations())
+            {
+                Dictionary& root = config.get_parameters();
+
+                if (root.dictionaries().exist("uniform_pixel_renderer"))
+                {
+                    Dictionary& upr = root.dictionary("uniform_pixel_renderer");
+                    upr.strings().remove("enable_diagnostics");
+                }
+
+                if (root.dictionaries().exist("adaptive_pixel_renderer"))
+                {
+                    Dictionary& apr = root.dictionary("adaptive_pixel_renderer");
+                    apr.strings().remove("enable_diagnostics");
+                }
+            }
+
+            Frame* frame = m_project.get_frame();
+
+            if (frame == nullptr)
+                return;
+
+            ParamArray& frame_params = frame->get_parameters();
+            frame_params.strings().remove("save_extra_aovs");
+        }
+
+        // Move generic_frame_renderer::passes to the root configuration.
+        void update_passes_path()
+        {
+            for (Configuration& config : m_project.configurations())
+            {
+                Dictionary& root = config.get_parameters();
+
+                if (root.dictionaries().exist("generic_frame_renderer"))
+                {
+                    Dictionary& gfr = root.dictionary("generic_frame_renderer");
+
+                    move_if_exist(root, "passes", gfr, "passes");
+
+                    // Remove the dictionnary from the root if it's empty.
+                    if (gfr.empty())
+                        root.dictionaries().remove("generic_frame_renderer");
+                }
+            }
+        }
     };
 }
 
@@ -1799,6 +1927,8 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(22);
       CASE_UPDATE_FROM_REVISION(23);
       CASE_UPDATE_FROM_REVISION(24);
+      CASE_UPDATE_FROM_REVISION(25);
+      CASE_UPDATE_FROM_REVISION(26);
 
       case ProjectFormatRevision:
         // Project is up-to-date.

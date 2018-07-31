@@ -96,7 +96,7 @@ HashTable<KeyType, KeyHasherType, ValueType>::HashTable(const KeyHasherType& key
 template <typename KeyType, typename KeyHasherType, typename ValueType>
 HashTable<KeyType, KeyHasherType, ValueType>::~HashTable()
 {
-    delete [] m_vectors;
+    delete[] m_vectors;
 }
 
 template <typename KeyType, typename KeyHasherType, typename ValueType>
@@ -104,7 +104,7 @@ void HashTable<KeyType, KeyHasherType, ValueType>::resize(const size_t size)
 {
     assert(size == 0 || is_pow2(size));
 
-    delete [] m_vectors;
+    delete[] m_vectors;
 
     m_mask = size > 0 ? size - 1 : 0;
     m_vectors = size > 0 ? new EntryVector[size] : new EntryVector[1];

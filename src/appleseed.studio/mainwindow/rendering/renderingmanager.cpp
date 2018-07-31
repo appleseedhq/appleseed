@@ -102,9 +102,10 @@ namespace
         {
             set_current_thread_name("master_renderer");
 
-            const auto result = m_master_renderer->render();
+            const MasterRenderer::RenderingResult rendering_result =
+                m_master_renderer->render();
 
-            if (result.m_status == MasterRenderer::RenderingResult::Failed)
+            if (rendering_result.m_status == MasterRenderer::RenderingResult::Failed)
                 emit signal_rendering_failed();
         }
     };
@@ -151,6 +152,16 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
     connect(
         &m_renderer_controller, SIGNAL(signal_rendering_abort()),
         SLOT(slot_rendering_end()),
+        Qt::BlockingQueuedConnection);
+
+    connect(
+        &m_renderer_controller, SIGNAL(signal_rendering_pause()),
+        SLOT(slot_rendering_pause()),
+        Qt::BlockingQueuedConnection);
+
+    connect(
+        &m_renderer_controller, SIGNAL(signal_rendering_resume()),
+        SLOT(slot_rendering_resume()),
         Qt::BlockingQueuedConnection);
 
     connect(
@@ -217,6 +228,11 @@ void RenderingManager::start_rendering(
 bool RenderingManager::is_rendering() const
 {
     return m_master_renderer.get() != nullptr;
+}
+
+bool RenderingManager::is_rendering_paused() const
+{
+    return m_renderer_controller.get_status() == IRendererController::PauseRendering;
 }
 
 void RenderingManager::wait_until_rendering_end()
@@ -384,6 +400,20 @@ void RenderingManager::slot_rendering_begin()
     m_rendering_timer.clear();
 
     m_has_camera_changed = false;
+}
+
+void RenderingManager::slot_rendering_pause()
+{
+    assert(m_master_renderer.get());
+
+    m_rendering_timer.pause();
+}
+
+void RenderingManager::slot_rendering_resume()
+{
+    assert(m_master_renderer.get());
+
+    m_rendering_timer.resume();
 }
 
 void RenderingManager::slot_rendering_end()

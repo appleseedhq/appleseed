@@ -33,6 +33,7 @@
 // appleseed.studio headers.
 #include "debug/benchmarks/benchmarkwindow.h"
 #include "debug/tests/testwindow.h"
+#include "mainwindow/falsecolorswindow.h"
 #include "mainwindow/project/projectmanager.h"
 #include "mainwindow/qtlogtarget.h"
 #include "mainwindow/rendering/renderingmanager.h"
@@ -133,6 +134,7 @@ class MainWindow
 
     QAction*                                    m_action_start_interactive_rendering;
     QAction*                                    m_action_start_final_rendering;
+    QAction*                                    m_action_pause_resume_rendering;
     QAction*                                    m_action_stop_rendering;
     QAction*                                    m_action_rendering_settings;
 
@@ -148,6 +150,7 @@ class MainWindow
     std::unique_ptr<RenderingSettingsWindow>    m_rendering_settings_window;
     std::unique_ptr<TestWindow>                 m_test_window;
     std::unique_ptr<BenchmarkWindow>            m_benchmark_window;
+    std::unique_ptr<FalseColorsWindow>          m_false_colors_window;
 
     ProjectManager                              m_project_manager;
     ProjectExplorer*                            m_project_explorer;
@@ -180,6 +183,7 @@ class MainWindow
     void build_recent_files_menu();
     void update_recent_files_menu(const QString& filepath);
     void update_recent_files_menu(const QStringList& files);
+    void update_pause_resume_checkbox(const bool checked);
 
     // Other UI elements.
     void build_toolbar();
@@ -196,6 +200,7 @@ class MainWindow
     void set_file_widgets_enabled(const bool is_enabled, const RenderingMode rendering_mode);
     void set_project_explorer_enabled(const bool is_enabled);
     void set_rendering_widgets_enabled(const bool is_enabled, const RenderingMode rendering_mode);
+    void set_diagnostics_widgets_enabled(const bool is_enabled, const RenderingMode rendering_mode);
     void save_state_before_project_open();
     void restore_state_after_project_open();
 
@@ -222,6 +227,9 @@ class MainWindow
 
     // Rendering.
     void start_rendering(const RenderingMode rendering_mode);
+
+    // Diagnostics.
+    void apply_false_colors_settings();
 
     // Miscellaneous.
     void print_startup_information();
@@ -260,12 +268,17 @@ class MainWindow
         const QString&  filepath,
         const QString&  configuration,
         const bool      successful);
+    void slot_pause_or_resume_rendering(
+        const bool      checked);
     void slot_rendering_end();
     void slot_camera_changed();
 
-    // Shading overrides.
+    // Diagnostics.
     void slot_clear_shading_override();
     void slot_set_shading_override();
+    void slot_show_false_colors_window();
+    void slot_set_false_colors_enabled(const bool enabled);
+    void slot_apply_false_colors_settings_changes(foundation::Dictionary values);
 
     // Render region.
     void slot_clear_render_region();
@@ -273,9 +286,10 @@ class MainWindow
 
     // Render widget actions.
     void slot_render_widget_context_menu(const QPoint& point);
-    void slot_save_frame();
-    void slot_save_all_aovs();
-    void slot_quicksave_all_aovs();
+    void slot_save_raw_frame();
+    void slot_save_raw_frame_and_aovs();
+    void slot_quicksave_raw_frame_and_aovs();
+    void slot_save_post_processed_frame();
     void slot_clear_frame();
     void slot_reset_zoom();
 

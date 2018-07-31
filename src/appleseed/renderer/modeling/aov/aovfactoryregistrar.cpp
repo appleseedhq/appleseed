@@ -33,11 +33,14 @@
 #include "renderer/modeling/aov/aovtraits.h"
 #include "renderer/modeling/aov/albedoaov.h"
 #include "renderer/modeling/aov/depthaov.h"
+#include "renderer/modeling/aov/diagnosticaov.h"
 #include "renderer/modeling/aov/diffuseaov.h"
 #include "renderer/modeling/aov/emissionaov.h"
 #include "renderer/modeling/aov/glossyaov.h"
 #include "renderer/modeling/aov/normalaov.h"
+#include "renderer/modeling/aov/npraovs.h"
 #include "renderer/modeling/aov/pixeltimeaov.h"
+#include "renderer/modeling/aov/positionaov.h"
 #include "renderer/modeling/aov/uvaov.h"
 #include "renderer/modeling/entity/registerentityfactories.h"
 
@@ -89,8 +92,14 @@ void AOVFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
     register_factory(auto_release_ptr<FactoryType>(new GlossyAOVFactory()));
     register_factory(auto_release_ptr<FactoryType>(new IndirectDiffuseAOVFactory()));
     register_factory(auto_release_ptr<FactoryType>(new IndirectGlossyAOVFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new InvalidSamplesAOVFactory()));
     register_factory(auto_release_ptr<FactoryType>(new NormalAOVFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new NPRContourAOVFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new NPRShadingAOVFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new PixelSampleCountAOVFactory()));
     register_factory(auto_release_ptr<FactoryType>(new PixelTimeAOVFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new PixelVariationAOVFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new PositionAOVFactory()));
     register_factory(auto_release_ptr<FactoryType>(new UVAOVFactory()));
     register_factory(auto_release_ptr<FactoryType>(new AlbedoAOVFactory()));
 

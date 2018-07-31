@@ -33,9 +33,6 @@
 // appleseed.studio headers.
 #include "mainwindow/project/frameitem.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/project.h"
-
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
 
@@ -55,7 +52,7 @@ namespace
 
 OutputItem::OutputItem(
     EntityEditorContext&    editor_context,
-    Project&                project)
+    Frame*                  frame)
   : ItemBase(editor_context, g_class_uid, "Output")
 {
     set_allow_deletion(false);
@@ -65,7 +62,7 @@ OutputItem::OutputItem(
     font.setBold(true);
     setFont(0, font);
 
-    insertChild(0, new FrameItem(editor_context, project.get_frame()));
+    insertChild(0, new FrameItem(editor_context, frame));
 }
 
 }   // namespace studio

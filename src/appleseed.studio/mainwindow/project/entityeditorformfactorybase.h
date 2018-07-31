@@ -65,7 +65,7 @@ class EntityEditorFormFactoryBase
         InputMetadataCollection&            metadata) const;
 
   private:
-    const std::string   m_entity_name;
+    const std::string m_entity_name;
 };
 
 }       // namespace studio

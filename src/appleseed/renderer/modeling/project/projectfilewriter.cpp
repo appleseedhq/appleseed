@@ -49,6 +49,7 @@
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/meshobjectwriter.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 #include "renderer/modeling/project/assethandler.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
@@ -283,8 +284,8 @@ namespace
             {
                 Base::reserve(collection.size());
 
-                for (each<Collection> i = collection; i; ++i)
-                    Base::push_back(&*i);
+                for (auto& entity : collection)
+                    Base::push_back(&entity);
 
                 sort(Base::begin(), Base::end(), EntityOrderingPredicate());
             }
@@ -321,6 +322,18 @@ namespace
                     : XMLElement::HasNoContent);
 
             write_params(aov.get_parameters());
+        }
+
+        // Write an <aovs> element.
+        void write_aovs(const Frame& frame)
+        {
+            AOVContainer& aovs = frame.aovs();
+            if (!aovs.empty())
+            {
+                XMLElement element("aovs", m_file, m_indenter);
+                element.write(XMLElement::HasChildElements);
+                write_collection(aovs);
+            }
         }
 
         // Write an <assembly> element.
@@ -396,20 +409,6 @@ namespace
 
             write_params(assembly_instance.get_parameters());
             write_transform_sequence(assembly_instance.transform_sequence());
-        }
-
-        // Write an <aovs> element.
-        void write_aovs(const Frame& frame)
-        {
-            const AOVContainer& aovs = frame.aovs();
-            if (!aovs.empty())
-            {
-                XMLElement element("aovs", m_file, m_indenter);
-                element.write(XMLElement::HasChildElements);
-
-                for (size_t i = 0, e = aovs.size(); i != e; ++i)
-                    write(*aovs.get_by_index(i));
-            }
         }
 
         // Write an <assign_material> element.
@@ -568,11 +567,13 @@ namespace
             element.add_attribute("name", frame.get_name());
             element.write(
                 !frame.get_parameters().empty() ||
-                !frame.aovs().empty()
+                !frame.aovs().empty() ||
+                !frame.post_processing_stages().empty()
                     ? XMLElement::HasChildElements
                     : XMLElement::HasNoContent);
             write_params(frame.get_parameters());
             write_aovs(frame);
+            write_post_processing_stages(frame);
         }
 
         // Write a <light> element.
@@ -708,7 +709,7 @@ namespace
             if (!params.strings().exist("filepath"))
             {
                 const string object_name = object.get_name();
-                const string filename = object_name + ".txt";
+                const string filename = object_name + ".binarycurve";
 
                 if (!(m_options & ProjectFileWriter::OmitWritingGeometryFiles))
                 {
@@ -757,6 +758,24 @@ namespace
 
             if (project.get_frame())
                 write_frame(*project.get_frame());
+        }
+
+        // Write a <post_processing_stage> element.
+        void write(const PostProcessingStage& stage)
+        {
+            write_entity("post_processing_stage", stage);
+        }
+
+        // Write an <post_processing_stages> element.
+        void write_post_processing_stages(const Frame& frame)
+        {
+            PostProcessingStageContainer& stages = frame.post_processing_stages();
+            if (!stages.empty())
+            {
+                XMLElement element("post_processing_stages", m_file, m_indenter);
+                element.write(XMLElement::HasChildElements);
+                write_collection(stages);
+            }
         }
 
         // Write a <scene> element.
@@ -892,7 +911,7 @@ namespace
 }
 
 bool ProjectFileWriter::write(
-    const Project&  project,
+    Project&        project,
     const char*     filepath,
     const int       options,
     const char*     extra_comments)
@@ -904,7 +923,7 @@ bool ProjectFileWriter::write(
 }
 
 bool ProjectFileWriter::write_plain_project_file(
-    const Project&  project,
+    Project&        project,
     const char*     filepath,
     const int       options,
     const char*     extra_comments)
@@ -972,7 +991,7 @@ bool ProjectFileWriter::write_plain_project_file(
 }
 
 bool ProjectFileWriter::write_packed_project_file(
-    const Project&  project,
+    Project&        project,
     const char*     filepath,
     const int       options,
     const char*     extra_comments)

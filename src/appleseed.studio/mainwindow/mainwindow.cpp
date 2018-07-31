@@ -41,6 +41,7 @@
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/pythonconsole/pythonconsolewidget.h"
 #include "mainwindow/rendering/lightpathstab.h"
+#include "mainwindow/rendering/renderwidget.h"
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
@@ -53,6 +54,7 @@
 #include "renderer/api/frame.h"
 #include "renderer/api/lighting.h"
 #include "renderer/api/log.h"
+#include "renderer/api/postprocessing.h"
 #include "renderer/api/project.h"
 #include "renderer/api/rendering.h"
 #include "renderer/api/surfaceshader.h"
@@ -214,6 +216,7 @@ bool MainWindow::open_project(const QString& filepath)
     set_file_widgets_enabled(false, NotRendering);
     set_project_explorer_enabled(false);
     set_rendering_widgets_enabled(false, NotRendering);
+    set_diagnostics_widgets_enabled(false, NotRendering);
 
     const bool successful = m_project_manager.load_project(filepath.toAscii().constData());
 
@@ -245,6 +248,7 @@ void MainWindow::open_project_async(const QString& filepath)
     set_file_widgets_enabled(false, NotRendering);
     set_project_explorer_enabled(false);
     set_rendering_widgets_enabled(false, NotRendering);
+    set_diagnostics_widgets_enabled(false, NotRendering);
 
     m_project_manager.load_project_async(filepath.toAscii().constData());
 }
@@ -326,7 +330,7 @@ QDockWidget* MainWindow::create_dock_widget(const char* dock_name)
     dock_widget->setObjectName(object_name);
     dock_widget->setWindowTitle(dock_name);
 
-    const auto& actions = m_ui->menu_view->actions();
+    const auto actions = m_ui->menu_view->actions();
     QAction* menu_separator = actions.last();
     for (int i = actions.size() - 2; i != 0; --i)
     {
@@ -337,10 +341,12 @@ QDockWidget* MainWindow::create_dock_widget(const char* dock_name)
         }
     }
 
-    m_ui->menu_view->insertAction(menu_separator,
-                                  dock_widget->toggleViewAction());
+    m_ui->menu_view->insertAction(
+        menu_separator,
+        dock_widget->toggleViewAction());
 
     m_minimize_buttons.push_back(new MinimizeButton(dock_widget));
+
     statusBar()->insertPermanentWidget(
         static_cast<int>(m_minimize_buttons.size()),
         m_minimize_buttons.back());
@@ -401,6 +407,7 @@ void MainWindow::build_menus()
 
     connect(m_ui->action_rendering_start_interactive_rendering, SIGNAL(triggered()), SLOT(slot_start_interactive_rendering()));
     connect(m_ui->action_rendering_start_final_rendering, SIGNAL(triggered()), SLOT(slot_start_final_rendering()));
+    connect(m_ui->action_rendering_pause_resume_rendering, SIGNAL(toggled(bool)), SLOT(slot_pause_or_resume_rendering(const bool)));
     connect(m_ui->action_rendering_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
     connect(m_ui->action_rendering_rendering_settings, SIGNAL(triggered()), SLOT(slot_show_rendering_settings_window()));
 
@@ -409,6 +416,8 @@ void MainWindow::build_menus()
     //
 
     build_override_shading_menu_item();
+
+    connect(m_ui->action_diagnostics_false_colors, SIGNAL(triggered()), SLOT(slot_show_false_colors_window()));
 
     //
     // Debug menu.
@@ -568,6 +577,17 @@ void MainWindow::update_recent_files_menu(const QStringList& files)
         m_recently_opened[i]->setVisible(false);
 }
 
+void MainWindow::update_pause_resume_checkbox(const bool checked)
+{
+    bool old_state = m_action_pause_resume_rendering->blockSignals(true);
+    m_action_pause_resume_rendering->setChecked(checked);
+    m_action_pause_resume_rendering->blockSignals(old_state);
+
+    old_state = m_ui->action_rendering_pause_resume_rendering->blockSignals(true);
+    m_ui->action_rendering_pause_resume_rendering->setChecked(checked);
+    m_ui->action_rendering_pause_resume_rendering->blockSignals(old_state);
+}
+
 void MainWindow::build_toolbar()
 {
     //
@@ -608,6 +628,11 @@ void MainWindow::build_toolbar()
     m_action_start_final_rendering = new QAction(load_icons("rendering_start_final"), combine_name_and_shortcut("Start Final Rendering", m_ui->action_rendering_start_final_rendering->shortcut()), this);
     connect(m_action_start_final_rendering, SIGNAL(triggered()), SLOT(slot_start_final_rendering()));
     m_ui->main_toolbar->addAction(m_action_start_final_rendering);
+
+    m_action_pause_resume_rendering = new QAction(load_icons("rendering_pause_resume"), combine_name_and_shortcut("Pause/Resume Rendering", m_ui->action_rendering_pause_resume_rendering->shortcut()), this);
+    m_action_pause_resume_rendering->setCheckable(true);
+    connect(m_action_pause_resume_rendering, SIGNAL(toggled(bool)), SLOT(slot_pause_or_resume_rendering(const bool)));
+    m_ui->main_toolbar->addAction(m_action_pause_resume_rendering);
 
     m_action_stop_rendering = new QAction(load_icons("rendering_stop"), combine_name_and_shortcut("Stop Rendering", m_ui->action_rendering_stop_rendering->shortcut()), this);
     connect(m_action_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
@@ -705,6 +730,8 @@ void MainWindow::update_workspace()
     set_file_widgets_enabled(true, NotRendering);
     set_project_explorer_enabled(true);
     set_rendering_widgets_enabled(true, NotRendering);
+    set_diagnostics_widgets_enabled(true, NotRendering);
+    update_pause_resume_checkbox(false);
     m_ui->attribute_editor_scrollarea_contents->setEnabled(true);
 
     // Add/remove light paths tab.
@@ -840,6 +867,10 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const Rend
     m_ui->action_rendering_start_final_rendering->setEnabled(allow_start);
     m_action_start_final_rendering->setEnabled(allow_start);
 
+    // Rendering -> Pause/Resume Rendering.
+    m_ui->action_rendering_pause_resume_rendering->setEnabled(allow_stop);
+    m_action_pause_resume_rendering->setEnabled(allow_stop);
+
     // Rendering -> Stop Rendering.
     m_ui->action_rendering_stop_rendering->setEnabled(allow_stop);
     m_action_stop_rendering->setEnabled(allow_stop);
@@ -869,6 +900,14 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const Rend
                 is_enabled && is_project_open && rendering_mode != FinalRendering);
         }
     }
+}
+
+void MainWindow::set_diagnostics_widgets_enabled(const bool is_enabled, const RenderingMode rendering_mode)
+{
+    const bool is_project_open = m_project_manager.is_project_open();
+
+    m_ui->menu_diagnostics_override_shading->setEnabled(is_enabled && is_project_open);
+    m_ui->action_diagnostics_false_colors->setEnabled(is_enabled && is_project_open && rendering_mode == NotRendering);
 }
 
 void MainWindow::save_state_before_project_open()
@@ -939,11 +978,11 @@ void MainWindow::add_render_tab(const QString& label)
         render_tab, SIGNAL(signal_clear_render_region()),
         SLOT(slot_clear_render_region()));
     connect(
-        render_tab, SIGNAL(signal_save_all_aovs()),
-        SLOT(slot_save_all_aovs()));
+        render_tab, SIGNAL(signal_save_raw_frame_and_aovs()),
+        SLOT(slot_save_raw_frame_and_aovs()));
     connect(
-        render_tab, SIGNAL(signal_quicksave_all_aovs()),
-        SLOT(slot_quicksave_all_aovs()));
+        render_tab, SIGNAL(signal_quicksave_raw_frame_and_aovs()),
+        SLOT(slot_quicksave_raw_frame_and_aovs()));
     connect(
         render_tab, SIGNAL(signal_reset_zoom()),
         SLOT(slot_reset_zoom()));
@@ -1082,6 +1121,7 @@ void MainWindow::on_project_change()
     recreate_render_tabs();
 
     update_override_shading_menu_item();
+    m_false_colors_window.reset();
 
     if (m_rendering_settings_window.get() != nullptr &&
         m_project_manager.get_project() != nullptr)
@@ -1175,10 +1215,13 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
 {
     assert(m_project_manager.is_project_open());
 
+    m_false_colors_window.reset();
+
     // Enable/disable menus and widgets appropriately.
     set_file_widgets_enabled(false, rendering_mode);
     set_project_explorer_enabled(rendering_mode == InteractiveRendering);
     set_rendering_widgets_enabled(true, rendering_mode);
+    set_diagnostics_widgets_enabled(true, rendering_mode);
     m_ui->attribute_editor_scrollarea_contents->setEnabled(rendering_mode == InteractiveRendering);
 
     // Remove light paths tab.
@@ -1216,6 +1259,59 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
             ? RenderingManager::InteractiveRendering
             : RenderingManager::FinalRendering,
         m_render_tabs["RGB"]);
+}
+
+void MainWindow::apply_false_colors_settings()
+{
+    Project* project = m_project_manager.get_project();
+    assert(project != nullptr);
+
+    Frame* frame = project->get_frame();
+    assert(frame != nullptr);
+
+    Dictionary params = m_settings.child("false_colors");
+
+    if (params.strings().exist("enabled") &&
+        params.strings().get<bool>("enabled"))
+    {
+        // Make a temporary copy of the frame.
+        auto_release_ptr<Frame> frame_copy(
+            FrameFactory::create("frame_copy", frame->get_parameters()));
+        frame_copy->image().copy_from(frame->image());
+
+        // Add required params.
+        params.insert("order", 0);
+
+        // Create a color map post-processing stage.
+        auto_release_ptr<PostProcessingStage> stage(
+            ColorMapPostProcessingStageFactory().create(
+                "__false_colors_post_processing_stage",
+                params));
+
+        // Prepare the post-processing stage.
+        OnFrameBeginRecorder recorder;
+        if (stage->on_frame_begin(*project, nullptr, recorder, nullptr))
+        {
+            // Execute the post-processing stage on the frame copy.
+            stage->execute(frame_copy.ref());
+
+            // Blit the frame copy into the render widget.
+            for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+            {
+                i->second->get_render_widget()->blit_frame(frame_copy.ref());
+                i->second->get_render_widget()->update();
+            }
+        }
+    }
+    else
+    {
+        // Blit the regular frame into the render widget.
+        for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        {
+            i->second->get_render_widget()->blit_frame(*frame);
+            i->second->get_render_widget()->update();
+        }
+    }
 }
 
 void MainWindow::print_startup_information()
@@ -1455,6 +1551,7 @@ void MainWindow::slot_pack_project_as()
         filepath = QDir::toNativeSeparators(filepath);
 
         pack_project(filepath);
+
         // Don't update the Recent Files menu.
     }
 }
@@ -1628,8 +1725,25 @@ void MainWindow::slot_start_rendering_once(const QString& filepath, const QStrin
     }
 }
 
+void MainWindow::slot_pause_or_resume_rendering(const bool checked)
+{
+    if (checked)
+    {
+        assert(!m_rendering_manager.is_rendering_paused());
+        m_rendering_manager.pause_rendering();
+    }
+    else
+    {
+        m_rendering_manager.resume_rendering();
+    }
+
+    update_pause_resume_checkbox(checked);
+}
+
 void MainWindow::slot_rendering_end()
 {
+    apply_false_colors_settings();
+
     update_workspace();
 
     // Restart monitoring the project file if monitoring was enabled
@@ -1706,6 +1820,53 @@ void MainWindow::slot_set_shading_override()
     m_rendering_manager.reinitialize_rendering();
 }
 
+void MainWindow::slot_show_false_colors_window()
+{
+    if (m_false_colors_window.get() == nullptr)
+    {
+        m_false_colors_window.reset(new FalseColorsWindow(this));
+
+        QObject::connect(
+            m_false_colors_window.get(), SIGNAL(signal_set_enabled(const bool)),
+            SLOT(slot_set_false_colors_enabled(const bool)));
+
+        QObject::connect(
+            m_false_colors_window.get(), SIGNAL(signal_applied(foundation::Dictionary)),
+            SLOT(slot_apply_false_colors_settings_changes(foundation::Dictionary)));
+
+        QObject::connect(
+            m_false_colors_window.get(), SIGNAL(signal_accepted(foundation::Dictionary)),
+            SLOT(slot_apply_false_colors_settings_changes(foundation::Dictionary)));
+
+        QObject::connect(
+            m_false_colors_window.get(), SIGNAL(signal_canceled(foundation::Dictionary)),
+            SLOT(slot_apply_false_colors_settings_changes(foundation::Dictionary)));
+    }
+
+    Project* project = m_project_manager.get_project();
+    assert(project);
+
+    m_false_colors_window->initialize(
+        *project,
+        m_settings,
+        m_settings.child("false_colors"));
+
+    m_false_colors_window->showNormal();
+    m_false_colors_window->activateWindow();
+}
+
+void MainWindow::slot_set_false_colors_enabled(const bool enabled)
+{
+    m_settings.push("false_colors").insert("enabled", enabled);
+    apply_false_colors_settings();
+}
+
+void MainWindow::slot_apply_false_colors_settings_changes(Dictionary values)
+{
+    m_settings.push("false_colors").merge(values);
+    apply_false_colors_settings();
+}
+
 namespace
 {
     class ClearRenderRegionAction
@@ -1777,8 +1938,7 @@ void MainWindow::slot_clear_render_region()
 
     if (m_rendering_manager.is_rendering())
         m_rendering_manager.schedule(std::move(clear_render_region_action));
-    else clear_render_region_action.get()->operator()(
-        *m_project_manager.get_project());
+    else clear_render_region_action.get()->operator()(*m_project_manager.get_project());
 
     m_rendering_manager.reinitialize_rendering();
 }
@@ -1790,8 +1950,7 @@ void MainWindow::slot_set_render_region(const QRect& rect)
 
     if (!m_rendering_manager.is_rendering())
     {
-        set_render_region_action.get()->operator()(
-            *m_project_manager.get_project());
+        set_render_region_action.get()->operator()(*m_project_manager.get_project());
 
         if (m_settings.get_path_optional<bool>(SETTINGS_RENDER_REGION_TRIGGERS_RENDERING))
             start_rendering(InteractiveRendering);
@@ -1812,8 +1971,9 @@ void MainWindow::slot_render_widget_context_menu(const QPoint& point)
         return;
 
     QMenu* menu = new QMenu(this);
-    menu->addAction("Save Frame...", this, SLOT(slot_save_frame()));
-    menu->addAction("Save All AOVs...", this, SLOT(slot_save_all_aovs()));
+    menu->addAction("Save Post-Processed Frame...", this, SLOT(slot_save_post_processed_frame()));
+    menu->addAction("Save Raw Frame...", this, SLOT(slot_save_raw_frame()));
+    menu->addAction("Save Raw Frame and AOVs...", this, SLOT(slot_save_raw_frame_and_aovs()));
     menu->addSeparator();
     menu->addAction("Clear All", this, SLOT(slot_clear_frame()));
     menu->exec(point);
@@ -1824,20 +1984,22 @@ namespace
     QString ask_frame_save_file_path(
         QWidget*        parent,
         const QString&  caption,
+        const QString&  filter,
+        const QString&  default_ext,
         ParamArray&     settings)
     {
         QString filepath =
             get_save_filename(
                 parent,
                 caption,
-                g_appleseed_image_files_filter,
+                filter,
                 settings,
                 SETTINGS_FILE_DIALOG_FRAMES);
 
         if (!filepath.isEmpty())
         {
             if (QFileInfo(filepath).suffix().isEmpty())
-                filepath += ".exr";
+                filepath += default_ext;
 
             filepath = QDir::toNativeSeparators(filepath);
         }
@@ -1846,13 +2008,13 @@ namespace
     }
 }
 
-void MainWindow::slot_save_frame()
+void MainWindow::slot_save_raw_frame()
 {
     assert(m_project_manager.is_project_open());
     assert(!m_rendering_manager.is_rendering());
 
     const QString filepath =
-        ask_frame_save_file_path(this, "Save Frame As...", m_settings);
+        ask_frame_save_file_path(this, "Save Raw Frame As...", g_appleseed_image_files_filter, ".exr", m_settings);
 
     if (filepath.isEmpty())
         return;
@@ -1861,13 +2023,13 @@ void MainWindow::slot_save_frame()
     frame->write_main_image(filepath.toAscii().constData());
 }
 
-void MainWindow::slot_save_all_aovs()
+void MainWindow::slot_save_raw_frame_and_aovs()
 {
     assert(m_project_manager.is_project_open());
     assert(!m_rendering_manager.is_rendering());
 
     const QString filepath =
-        ask_frame_save_file_path(this, "Save All AOVs As...", m_settings);
+        ask_frame_save_file_path(this, "Save Raw Frame and AOVs As...", g_appleseed_image_files_filter, ".exr", m_settings);
 
     if (filepath.isEmpty())
         return;
@@ -1891,7 +2053,7 @@ namespace
     }
 }
 
-void MainWindow::slot_quicksave_all_aovs()
+void MainWindow::slot_quicksave_raw_frame_and_aovs()
 {
     assert(m_project_manager.is_project_open());
     assert(!m_rendering_manager.is_rendering());
@@ -1910,6 +2072,23 @@ void MainWindow::slot_quicksave_all_aovs()
         project,
         bf::absolute(
             find_next_available_path(quicksave_dir / "quicksave####.exr")));
+}
+
+void MainWindow::slot_save_post_processed_frame()
+{
+    assert(m_project_manager.is_project_open());
+    assert(!m_rendering_manager.is_rendering());
+
+    const QString filepath =
+        ask_frame_save_file_path(this, "Save Post-Processed Frame As...", g_qt_image_files_filter, ".png", m_settings);
+
+    if (filepath.isEmpty())
+        return;
+
+    // todo: this is sketchy. The render tab should be retrieved from the signal.
+    m_render_tabs["RGB"]->get_render_widget()->capture().save(filepath);
+
+    RENDERER_LOG_INFO("wrote image file %s.", filepath.toStdString().c_str());
 }
 
 void MainWindow::slot_clear_frame()

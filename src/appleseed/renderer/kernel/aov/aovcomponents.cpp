@@ -38,6 +38,8 @@ namespace renderer
 
 AOVComponents::AOVComponents()
   : m_albedo(0.0f)
+  , m_npr_shading(0.0f)
+  , m_npr_contour(0.0f)
 {
 }
 

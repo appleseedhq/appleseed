@@ -32,7 +32,6 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditorcontext.h"
-#include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/outputitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/sceneitem.h"
@@ -46,6 +45,9 @@
 
 // Qt headers.
 #include <QMenu>
+
+// Standard headers.
+#include <cassert>
 
 using namespace foundation;
 using namespace renderer;
@@ -66,10 +68,12 @@ ProjectItem::ProjectItem(EntityEditorContext& editor_context)
 
     Project& project = m_editor_context.m_project;
 
+    assert(project.get_scene() != nullptr);
     m_scene_item = new SceneItem(editor_context, *project.get_scene());
     addChild(m_scene_item);
 
-    m_output_item = new OutputItem(editor_context, project);
+    assert(project.get_frame() != nullptr);
+    m_output_item = new OutputItem(editor_context, project.get_frame());
     addChild(m_output_item);
 }
 
@@ -81,6 +85,14 @@ QMenu* ProjectItem::get_single_item_context_menu() const
     menu->addAction("Edit Search Paths...", this, SLOT(slot_edit_search_paths()));
 
     return menu;
+}
+
+void ProjectItem::expand()
+{
+    setExpanded(true);
+
+    m_scene_item->expand();
+    m_output_item->setExpanded(true);
 }
 
 void ProjectItem::slot_edit_search_paths()
@@ -99,14 +111,6 @@ void ProjectItem::slot_edit_search_paths()
 
     m_search_paths_window->showNormal();
     m_search_paths_window->activateWindow();
-}
-
-void ProjectItem::expand()
-{
-    setExpanded(true);
-
-    m_scene_item->expand();
-    m_output_item->setExpanded(true);
 }
 
 }   // namespace studio

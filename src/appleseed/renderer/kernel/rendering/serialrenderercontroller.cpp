@@ -72,6 +72,16 @@ void SerialRendererController::on_rendering_abort()
     m_controller->on_rendering_abort();
 }
 
+void SerialRendererController::on_rendering_pause()
+{
+    m_controller->on_rendering_pause();
+}
+
+void SerialRendererController::on_rendering_resume()
+{
+    m_controller->on_rendering_resume();
+}
+
 void SerialRendererController::on_frame_begin()
 {
     m_controller->on_frame_begin();

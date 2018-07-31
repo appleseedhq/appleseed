@@ -94,7 +94,7 @@ void AOV::clear_image()
     m_image->clear(Color4f(0.0f));
 }
 
-void AOV::post_process_image()
+void AOV::post_process_image(const AABB2u& crop_window)
 {
 }
 

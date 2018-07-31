@@ -122,17 +122,6 @@ TEST_SUITE(Foundation_Math_AABB)
         EXPECT_FALSE(bbox.is_valid());
     }
 
-    TEST_CASE(TestInvalidateOnUnsignedIntegerAABB)
-    {
-        AABB3u bbox(
-            Vector3u(1, 2, 3),
-            Vector3u(4, 5, 6));
-
-        bbox.invalidate();
-
-        EXPECT_FALSE(bbox.is_valid());
-    }
-
     TEST_CASE(VerifyThatRank0AABBOverlapsWithItself)
     {
         const AABB3d bbox(
@@ -537,3 +526,85 @@ TEST_SUITE(Foundation_Math_AABB)
         EXPECT_TRUE(bbox1 != bbox3);
     }
 }
+
+TEST_SUITE(Foundation_Math_IntegralAABB)
+{
+    TEST_CASE(TestIntersectOnClearlyDisjointIntegralAABB)
+    {
+        const AABB2i bbox(
+            Vector2i(1, 0),
+            Vector2i(4, 2));
+
+        const AABB2i bbox2(
+            Vector2i(5, 0),
+            Vector2i(8, 2));
+
+        const AABB2i bbox3 = AABB2i::intersect(bbox, bbox2);
+
+        EXPECT_FALSE(bbox3.is_valid());
+    }
+
+    TEST_CASE(TestIntersectOnAABBTouchingOnABorder)
+    {
+        const AABB2i bbox(
+            Vector2i(1, 0),
+            Vector2i(4, 2));
+
+        const AABB2i bbox2(
+            Vector2i(4, 0),
+            Vector2i(8, 2));
+
+        const AABB2i bbox3 = AABB2i::intersect(bbox, bbox2);
+
+        EXPECT_TRUE(bbox3.is_valid());
+    }
+
+    TEST_CASE(TestInvalidateOnUnsignedIntegerAABB)
+    {
+        AABB3u bbox(
+            Vector3u(1, 2, 3),
+            Vector3u(4, 5, 6));
+
+        bbox.invalidate();
+
+        EXPECT_FALSE(bbox.is_valid());
+    }
+
+    TEST_CASE(TestOverlapOnIntegralAABB)
+    {
+        const AABB2i bbox1(Vector2i(1, 2), Vector2i(5, 4));
+        const AABB2i bbox2(Vector2i(5, 3), Vector2i(8, 3));
+
+        EXPECT_TRUE(AABB2i::overlap(bbox1, bbox2));
+        EXPECT_TRUE(AABB2i::overlap(bbox2, bbox1));
+    }
+
+    TEST_CASE(TestExtentOnIntegralAABB)
+    {
+        const AABB3i bbox(
+            Vector3i(-1, -2, -3),
+            Vector3i(4, 5, 6));
+
+        EXPECT_EQ(Vector3i(6, 8, 10), bbox.extent());
+    }
+
+    TEST_CASE(TestExtentOn1x1x1IntegralAABB)
+    {
+        const AABB3i bbox(
+            Vector3i(0, 0, 0),
+            Vector3i(0, 0, 0));
+
+        EXPECT_TRUE(bbox.is_valid());
+        EXPECT_EQ(Vector3i(1, 1, 1), bbox.extent());
+    }
+
+    TEST_CASE(TestVolumeOnIntegralAABB)
+    {
+        const AABB3i bbox(
+            Vector3i(-1, -2, -3),
+            Vector3i(4, 5, 6));
+
+        EXPECT_EQ(6 * 8 * 10, bbox.volume());
+    }
+}
+

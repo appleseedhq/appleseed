@@ -38,7 +38,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation    { class BenchmarkSerie; }
+namespace foundation    { class BenchmarkSeries; }
 namespace foundation    { class Dictionary; }
 
 
@@ -63,7 +63,7 @@ class APPLESEED_DLLSYMBOL BenchmarkAggregator
 
     const Dictionary& get_benchmarks() const;
 
-    const BenchmarkSerie& get_serie(const UniqueID case_uid) const;
+    const BenchmarkSeries& get_series(const UniqueID case_uid) const;
 
   private:
     struct Impl;

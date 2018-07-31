@@ -272,51 +272,30 @@ bool Scene::has_participating_media() const
     return assembly_instances_has_participating_media(assembly_instances(), visited_assemblies);
 }
 
-namespace
-{
-    template <typename EntityCollection>
-    void do_collect_asset_paths(
-        StringArray&            paths,
-        const EntityCollection& entities)
-    {
-        for (const_each<EntityCollection> i = entities; i; ++i)
-            i->collect_asset_paths(paths);
-    }
-
-    template <typename EntityCollection>
-    void do_update_asset_paths(
-        const StringDictionary& mappings,
-        EntityCollection&       entities)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-            i->update_asset_paths(mappings);
-    }
-}
-
 void Scene::collect_asset_paths(StringArray& paths) const
 {
     BaseGroup::collect_asset_paths(paths);
 
-    do_collect_asset_paths(paths, cameras());
+    invoke_collect_asset_paths(cameras(), paths);
 
-    if (impl->m_environment.get())
+    if (impl->m_environment.get() != nullptr)
         impl->m_environment->collect_asset_paths(paths);
 
-    do_collect_asset_paths(paths, environment_edfs());
-    do_collect_asset_paths(paths, environment_shaders());
+    invoke_collect_asset_paths(environment_edfs(), paths);
+    invoke_collect_asset_paths(environment_shaders(), paths);
 }
 
 void Scene::update_asset_paths(const StringDictionary& mappings)
 {
     BaseGroup::update_asset_paths(mappings);
 
-    do_update_asset_paths(mappings, cameras());
+    invoke_update_asset_paths(cameras(), mappings);
 
-    if (impl->m_environment.get())
+    if (impl->m_environment.get() != nullptr)
         impl->m_environment->update_asset_paths(mappings);
 
-    do_update_asset_paths(mappings, environment_edfs());
-    do_update_asset_paths(mappings, environment_shaders());
+    invoke_update_asset_paths(environment_edfs(), mappings);
+    invoke_update_asset_paths(environment_shaders(), mappings);
 }
 
 bool Scene::on_render_begin(
@@ -389,30 +368,6 @@ bool Scene::expand_procedural_assemblies(
     return true;
 }
 
-namespace
-{
-    template <typename EntityCollection>
-    bool invoke_on_frame_begin(
-        const Project&          project,
-        const BaseGroup*        parent,
-        EntityCollection&       entities,
-        OnFrameBeginRecorder&   recorder,
-        IAbortSwitch*           abort_switch)
-    {
-        bool success = true;
-
-        for (each<EntityCollection> i = entities; i; ++i)
-        {
-            if (is_aborted(abort_switch))
-                break;
-
-            success = success && i->on_frame_begin(project, parent, recorder, abort_switch);
-        }
-
-        return success;
-    }
-}
-
 bool Scene::on_frame_begin(
     const Project&          project,
     const BaseGroup*        parent,
@@ -422,28 +377,20 @@ bool Scene::on_frame_begin(
     if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
-    m_camera = project.get_uncached_active_camera();
+    if (!BaseGroup::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
 
     bool success = true;
-
     success = success && impl->m_default_surface_shader->on_frame_begin(project, this, recorder, abort_switch);
-
-    success = success && invoke_on_frame_begin(project, this, colors(), recorder, abort_switch);
-    success = success && invoke_on_frame_begin(project, this, textures(), recorder, abort_switch);
-    success = success && invoke_on_frame_begin(project, this, texture_instances(), recorder, abort_switch);
-    success = success && invoke_on_frame_begin(project, this, shader_groups(), recorder, abort_switch);
-
-    success = success && invoke_on_frame_begin(project, this, environment_edfs(), recorder, abort_switch);
-    success = success && invoke_on_frame_begin(project, this, environment_shaders(), recorder, abort_switch);
-
-    if (!is_aborted(abort_switch) && impl->m_environment.get())
+    success = success && invoke_on_frame_begin(environment_edfs(), project, this, recorder, abort_switch);
+    success = success && invoke_on_frame_begin(environment_shaders(), project, this, recorder, abort_switch);
+    if (impl->m_environment.get())
         success = success && impl->m_environment->on_frame_begin(project, this, recorder, abort_switch);
 
-    success = success && invoke_on_frame_begin(project, this, assemblies(), recorder, abort_switch);
-    success = success && invoke_on_frame_begin(project, this, assembly_instances(), recorder, abort_switch);
-
     // Call on_frame_begin() on cameras last because some of them cast rays to sense depth in their autofocus mechanism.
-    success = success && invoke_on_frame_begin(project, this, cameras(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(cameras(), project, this, recorder, abort_switch);
+
+    m_camera = project.get_uncached_active_camera();
 
     return success;
 }

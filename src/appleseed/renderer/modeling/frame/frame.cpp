@@ -35,15 +35,14 @@
 #include "renderer/kernel/aov/aovsettings.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/denoising/denoiser.h"
+#include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/aov/aovfactoryregistrar.h"
 #include "renderer/modeling/aov/denoiseraov.h"
 #include "renderer/modeling/aov/iaovfactory.h"
+#include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/appleseed.h"
-#include "foundation/core/exceptions/exception.h"
-#include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/image/color.h"
 #include "foundation/image/drawing.h"
 #include "foundation/image/genericimagefilewriter.h"
@@ -55,11 +54,10 @@
 #include "foundation/math/scalar.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/path.h"
-#include "foundation/platform/system.h"
-#include "foundation/resources/logo/appleseed-seeds-16.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/iostreamop.h"
+#include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 
@@ -68,6 +66,7 @@
 
 // Standard headers.
 #include <algorithm>
+#include <exception>
 #include <memory>
 #include <string>
 
@@ -87,8 +86,6 @@ namespace renderer
 namespace
 {
     const UniqueID g_class_uid = new_guid();
-
-    const string DefaultRenderStampFormat = "appleseed {lib-version} | Time: {render-time}";
 }
 
 UniqueID Frame::get_class_uid()
@@ -99,26 +96,26 @@ UniqueID Frame::get_class_uid()
 struct Frame::Impl
 {
     // Parameters.
-    size_t                  m_frame_width;
-    size_t                  m_frame_height;
-    size_t                  m_tile_width;
-    size_t                  m_tile_height;
-    string                  m_filter_name;
-    float                   m_filter_radius;
-    unique_ptr<Filter2f>    m_filter;
-    AABB2u                  m_crop_window;
-    bool                    m_render_stamp_enabled;
-    string                  m_render_stamp_format;
-    DenoisingMode           m_denoising_mode;
-    bool                    m_save_extra_aovs;
+    size_t                          m_frame_width;
+    size_t                          m_frame_height;
+    size_t                          m_tile_width;
+    size_t                          m_tile_height;
+    string                          m_filter_name;
+    float                           m_filter_radius;
+    unique_ptr<Filter2f>            m_filter;
+    AABB2u                          m_crop_window;
+    ParamArray                      m_render_info;
+    DenoisingMode                   m_denoising_mode;
+
+    // Child entities.
+    AOVContainer                    m_aovs;
+    AOVContainer                    m_internal_aovs;
+    PostProcessingStageContainer    m_post_processing_stages;
 
     // Images.
-    unique_ptr<Image>       m_image;
-    unique_ptr<ImageStack>  m_aov_images;
-    AOVContainer            m_aovs;
-    AOVContainer            m_internal_aovs;
-    DenoiserAOV*            m_denoiser_aov;
-    vector<size_t>          m_extra_aovs;
+    unique_ptr<Image>               m_image;
+    unique_ptr<ImageStack>          m_aov_images;
+    DenoiserAOV*                    m_denoiser_aov;
 };
 
 Frame::Frame(
@@ -213,15 +210,13 @@ void Frame::print_settings()
 
     RENDERER_LOG_INFO(
         "frame \"%s\" settings:\n"
-        "  camera                        %s\n"
+        "  camera                        \"%s\"\n"
         "  resolution                    %s x %s\n"
         "  tile size                     %s x %s\n"
         "  filter                        %s\n"
         "  filter size                   %f\n"
         "  crop window                   (%s, %s)-(%s, %s)\n"
-        "  denoising mode                %s\n"
-        "  render stamp                  %s\n"
-        "  save extra aovs               %s",
+        "  denoising mode                %s",
         get_path().c_str(),
         camera_name ? camera_name : "none",
         pretty_uint(impl->m_frame_width).c_str(),
@@ -235,9 +230,17 @@ void Frame::print_settings()
         pretty_uint(impl->m_crop_window.max[0]).c_str(),
         pretty_uint(impl->m_crop_window.max[1]).c_str(),
         impl->m_denoising_mode == DenoisingMode::Off ? "off" :
-        impl->m_denoising_mode == DenoisingMode::WriteOutputs ? "write outputs" : "denoise",
-        impl->m_render_stamp_enabled ? "on" : "off",
-        impl->m_save_extra_aovs ? "on" : "off");
+        impl->m_denoising_mode == DenoisingMode::WriteOutputs ? "write outputs" : "denoise");
+}
+
+AOVContainer& Frame::aovs() const
+{
+    return impl->m_aovs;
+}
+
+PostProcessingStageContainer& Frame::post_processing_stages() const
+{
+    return impl->m_post_processing_stages;
 }
 
 const char* Frame::get_active_camera_name() const
@@ -269,28 +272,9 @@ ImageStack& Frame::aov_images() const
     return *impl->m_aov_images;
 }
 
-const AOVContainer& Frame::aovs() const
-{
-    return impl->m_aovs;
-}
-
 const AOVContainer& Frame::internal_aovs() const
 {
     return impl->m_internal_aovs;
-}
-
-size_t Frame::create_extra_aov_image(const char* name) const
-{
-    const size_t index = aov_images().get_index(name);
-
-    if (index == ~size_t(0) && aov_images().size() < MaxAOVCount)
-    {
-        const size_t add_index = aov_images().append(name, 4, PixelFormatFloat);
-        impl->m_extra_aovs.push_back(add_index);
-        return add_index;
-    }
-
-    return index;
 }
 
 const Filter2f& Frame::get_filter() const
@@ -329,86 +313,63 @@ const AABB2u& Frame::get_crop_window() const
     return impl->m_crop_window;
 }
 
-size_t Frame::get_pixel_count() const
+void Frame::collect_asset_paths(StringArray& paths) const
 {
-    return impl->m_crop_window.volume();
+    for (const AOV& aov : aovs())
+        aov.collect_asset_paths(paths);
+
+    for (const PostProcessingStage& stage : post_processing_stages())
+        stage.collect_asset_paths(paths);
+}
+
+void Frame::update_asset_paths(const StringDictionary& mappings)
+{
+    for (AOV& aov : aovs())
+        aov.update_asset_paths(mappings);
+
+    for (PostProcessingStage& stage : post_processing_stages())
+        stage.update_asset_paths(mappings);
+}
+
+bool Frame::on_frame_begin(
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
+    IAbortSwitch*           abort_switch)
+{
+    for (AOV& aov : aovs())
+    {
+        if (is_aborted(abort_switch))
+            return false;
+
+        if (!aov.on_frame_begin(project, parent, recorder, abort_switch))
+            return false;
+    }
+
+    for (PostProcessingStage& stage : post_processing_stages())
+    {
+        if (is_aborted(abort_switch))
+            return false;
+
+        if (!stage.on_frame_begin(project, parent, recorder, abort_switch))
+            return false;
+    }
+
+    return true;
 }
 
 void Frame::post_process_aov_images() const
 {
     for (size_t i = 0, e = aovs().size(); i < e; ++i)
-        aovs().get_by_index(i)->post_process_image();
+        aovs().get_by_index(i)->post_process_image(get_crop_window());
 
     for (size_t i = 0, e = internal_aovs().size(); i < e; ++i)
-        internal_aovs().get_by_index(i)->post_process_image();
+        internal_aovs().get_by_index(i)->post_process_image(get_crop_window());
 }
 
-bool Frame::is_render_stamp_enabled() const
+ParamArray& Frame::render_info()
 {
-    return impl->m_render_stamp_enabled;
-}
-
-void Frame::add_render_stamp(const RenderStampInfo& info) const
-{
-    RENDERER_LOG_INFO("adding render stamp...");
-
-    // Render stamp settings.
-    const float FontSize = 14.0f;
-    const Color4f FontColor(0.8f, 0.8f, 0.8f, 1.0f);
-    const Color4f BackgroundColor(0.0f, 0.0f, 0.0f, 0.9f);
-    const float MarginH = 6.0f;
-    const float MarginV = 4.0f;
-
-    // Compute the final string.
-    string text = impl->m_render_stamp_format;
-    text = replace(text, "{lib-name}", Appleseed::get_lib_name());
-    text = replace(text, "{lib-version}", Appleseed::get_lib_version());
-    text = replace(text, "{lib-variant}", Appleseed::get_lib_variant());
-    text = replace(text, "{lib-config}", Appleseed::get_lib_configuration());
-    text = replace(text, "{lib-build-date}", Appleseed::get_lib_compilation_date());
-    text = replace(text, "{lib-build-time}", Appleseed::get_lib_compilation_time());
-    text = replace(text, "{render-time}", pretty_time(info.m_render_time, 1).c_str());
-    text = replace(text, "{peak-memory}", pretty_size(System::get_peak_process_virtual_memory_size()).c_str());
-
-    // Compute the height in pixels of the string.
-    const CanvasProperties& props = impl->m_image->properties();
-    const float image_height = static_cast<float>(props.m_canvas_height);
-    const float text_height = TextRenderer::compute_string_height(FontSize, text.c_str());
-    const float origin_y = image_height - text_height - MarginV;
-
-    // Draw the background rectangle.
-    Drawing::draw_filled_rect(
-        *impl->m_image,
-        Vector2i(
-            0,
-            truncate<int>(origin_y - MarginV)),
-        Vector2i(
-            static_cast<int>(props.m_canvas_width - 1),
-            static_cast<int>(props.m_canvas_height - 1)),
-        BackgroundColor);
-
-    // Draw the string into the image.
-    TextRenderer::draw_string(
-        *impl->m_image,
-        ColorSpaceLinearRGB,
-        TextRenderer::Font::UbuntuL,
-        FontSize,
-        FontColor,
-        MarginH + appleseed_seeds_16_width + MarginH,
-        origin_y,
-        text.c_str());
-
-    // Blit the appleseed logo.
-    Drawing::blit_bitmap(
-        *impl->m_image,
-        Vector2i(
-            static_cast<int>(MarginH),
-            static_cast<int>(props.m_canvas_height - appleseed_seeds_16_height - MarginV)),
-        appleseed_seeds_16,
-        appleseed_seeds_16_width,
-        appleseed_seeds_16_height,
-        PixelFormatUInt8,
-        Color4f(1.0f, 1.0f, 1.0f, 0.8f));
+    return impl->m_render_info;
 }
 
 Frame::DenoisingMode Frame::get_denoising_mode() const
@@ -666,15 +627,7 @@ namespace
                 return false;
             }
         }
-        catch (const ExceptionIOError&)
-        {
-            RENDERER_LOG_ERROR(
-                "failed to write image file %s: i/o error.",
-                bf_file_path.string().c_str());
-
-            return false;
-        }
-        catch (const Exception& e)
+        catch (const exception& e)
         {
             RENDERER_LOG_ERROR(
                 "failed to write image file %s: %s.",
@@ -758,25 +711,6 @@ bool Frame::write_aov_images(const char* file_path) const
         // Write AOV image.
         if (!write_image(aov_file_path.c_str(), aov->get_image(), aov))
             success = false;
-    }
-
-    if (impl->m_save_extra_aovs)
-    {
-        for (size_t i = 0, e = impl->m_extra_aovs.size(); i < e; ++i)
-        {
-            const size_t image_index = impl->m_extra_aovs[i];
-            const Image& image = aov_images().get_image(image_index);
-
-            // Compute AOV image file path.
-            const string aov_name = aov_images().get_name(image_index);
-            const string safe_aov_name = make_safe_filename(aov_name);
-            const string aov_file_name = base_file_name + "." + safe_aov_name + ".exr";
-            const string aov_file_path = (directory / aov_file_name).string();
-
-            // Write AOV image.
-            if (!write_image(aov_file_path.c_str(), image))
-                success = false;
-        }
     }
 
     return success;
@@ -1006,10 +940,6 @@ void Frame::extract_parameters()
         Vector2u(impl->m_frame_width - 1, impl->m_frame_height - 1));
     impl->m_crop_window = m_params.get_optional<AABB2u>("crop_window", default_crop_window);
 
-    // Retrieve render stamp parameters.
-    impl->m_render_stamp_enabled = m_params.get_optional<bool>("enable_render_stamp", false);
-    impl->m_render_stamp_format = m_params.get_optional<string>("render_stamp_format", DefaultRenderStampFormat);
-
     // Retrieve denoiser parameters.
     {
         const string denoise_mode = m_params.get_optional<string>("denoiser", "off");
@@ -1030,9 +960,6 @@ void Frame::extract_parameters()
             impl->m_denoising_mode = DenoisingMode::Off;
         }
     }
-
-    // Retrieve save extra AOVs parameter
-    impl->m_save_extra_aovs = m_params.get_optional<bool>("save_extra_aovs", false);
 }
 
 
@@ -1222,34 +1149,6 @@ DictionaryArray FrameFactory::get_input_metadata()
             .insert("visible_if",
                 Dictionary()
                     .insert("denoiser", "on")));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "enable_render_stamp")
-            .insert("label", "Enable Render Stamp")
-            .insert("type", "boolean")
-            .insert("use", "optional")
-            .insert("default", "false")
-            .insert("on_change", "rebuild_form"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "render_stamp_format")
-            .insert("label", "Render Stamp Format")
-            .insert("type", "text")
-            .insert("use", "optional")
-            .insert("default", DefaultRenderStampFormat)
-            .insert("visible_if",
-                Dictionary()
-                    .insert("enable_render_stamp", "true")));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "save_extra_aovs")
-            .insert("label", "Save Extra AOVs")
-            .insert("type", "boolean")
-            .insert("use", "optional")
-            .insert("default", "false"));
 
     return metadata;
 }

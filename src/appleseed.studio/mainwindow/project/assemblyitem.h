@@ -35,7 +35,7 @@
 #include "mainwindow/project/entityactions.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+#include "foundation/utility/uid.h"
 
 // Qt headers.
 #include <QList>
@@ -76,6 +76,8 @@ class AssemblyItem
         renderer::BaseGroup&        parent,
         BaseGroupItem*              parent_item);
 
+    ~AssemblyItem() override;
+
     QMenu* get_single_item_context_menu() const override;
 
     void add_item(renderer::BSDF* bsdf);
@@ -101,6 +103,7 @@ class AssemblyItem
     friend class EntityDeletionAction<AssemblyItem>;
 
     renderer::Assembly&             m_assembly;
+    const foundation::UniqueID      m_assembly_uid;
     renderer::BaseGroup&            m_parent;
     BaseGroupItem*                  m_parent_item;
 

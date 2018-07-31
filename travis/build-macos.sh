@@ -49,6 +49,7 @@ echo "-----------"
 mkdir build
 cd build
 cmake -DWITH_DISNEY_MATERIAL=ON -DUSE_STATIC_BOOST=OFF \
+     -DWITH_STUDIO=OFF -DWITH_PYTHON2_BINDINGS=OFF \
      -DUSE_EXTERNAL_ZLIB=ON -DUSE_EXTERNAL_PNG=ON \
      -DUSE_EXTERNAL_EXR=ON -DUSE_EXTERNAL_XERCES=ON\
      -DUSE_EXTERNAL_SEEXPR=ON -DUSE_EXTERNAL_OIIO=ON \
@@ -78,9 +79,9 @@ echo "Running appleseed tests:"
 echo "------------------------"
 ../sandbox/bin/Debug/appleseed.cli --run-unit-tests --verbose-unit-tests
 
-echo "Running appleseed.python tests:"
-echo "-------------------------------"
-export PYTHONPATH=$PYTHONPATH:../sandbox/lib/Debug/python2.7
-python ../sandbox/lib/Debug/python2.7/appleseed/test/runtests.py
+#echo "Running appleseed.python tests:"
+#echo "-------------------------------"
+#export PYTHONPATH=$PYTHONPATH:../sandbox/lib/Debug/python2.7
+#python ../sandbox/lib/Debug/python2.7/appleseed/test/runtests.py
 
 set +e

@@ -70,6 +70,29 @@ source_group ("foundation\\core" FILES
     ${foundation_core_sources}
 )
 
+set (foundation_curve_sources
+    foundation/curve/binarycurvefilereader.cpp
+    foundation/curve/binarycurvefilereader.h
+    foundation/curve/binarycurvefilewriter.cpp
+    foundation/curve/binarycurvefilewriter.h
+    foundation/curve/genericcurvefilereader.cpp
+    foundation/curve/genericcurvefilereader.h
+    foundation/curve/genericcurvefilewriter.cpp
+    foundation/curve/genericcurvefilewriter.h
+    foundation/curve/icurvebuilder.h
+    foundation/curve/icurvefilereader.h
+    foundation/curve/icurvefilewriter.h
+    foundation/curve/icurvewalker.h
+    foundation/curve/mitshairfilereader.cpp
+    foundation/curve/mitshairfilereader.h
+)
+list (APPEND appleseed_sources
+    ${foundation_curve_sources}
+)
+source_group ("foundation\\curve" FILES
+    ${foundation_curve_sources}
+)
+
 set (foundation_image_text_sources
     foundation/image/text/stb_truetype.cpp
     foundation/image/text/stb_truetype.h
@@ -464,6 +487,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_spline.cpp
     foundation/meta/tests/test_statistics.cpp
     foundation/meta/tests/test_stlallocatortestbed.cpp
+    foundation/meta/tests/test_stopwatch.cpp
     foundation/meta/tests/test_string.cpp
     foundation/meta/tests/test_test.cpp
     foundation/meta/tests/test_thread.cpp
@@ -599,8 +623,8 @@ set (foundation_utility_benchmark_sources
     foundation/utility/benchmark/benchmarklistenerbase.h
     foundation/utility/benchmark/benchmarkresult.cpp
     foundation/utility/benchmark/benchmarkresult.h
-    foundation/utility/benchmark/benchmarkserie.cpp
-    foundation/utility/benchmark/benchmarkserie.h
+    foundation/utility/benchmark/benchmarkseries.cpp
+    foundation/utility/benchmark/benchmarkseries.h
     foundation/utility/benchmark/benchmarksuite.cpp
     foundation/utility/benchmark/benchmarksuite.h
     foundation/utility/benchmark/benchmarksuiterepository.cpp
@@ -893,6 +917,7 @@ set (renderer_api_sources
     renderer/api/log.h
     renderer/api/material.h
     renderer/api/object.h
+    renderer/api/postprocessing.h
     renderer/api/project.h
     renderer/api/rasterization.h
     renderer/api/rendering.h
@@ -1094,6 +1119,16 @@ source_group ("renderer\\kernel\\lighting" FILES
     ${renderer_kernel_lighting_sources}
 )
 
+set (renderer_kernel_npr_sources
+    renderer/kernel/npr/nprclosures.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_npr_sources}
+)
+source_group ("renderer\\kernel\\npr" FILES
+    ${renderer_kernel_npr_sources}
+)
+
 set (renderer_kernel_rasterization_sources
     renderer/kernel/rasterization/objectrasterizer.h
     renderer/kernel/rasterization/rasterizationcamera.h
@@ -1125,6 +1160,8 @@ source_group ("renderer\\kernel\\rendering\\debug" FILES
 set (renderer_kernel_rendering_final_sources
     renderer/kernel/rendering/final/adaptivepixelrenderer.cpp
     renderer/kernel/rendering/final/adaptivepixelrenderer.h
+    renderer/kernel/rendering/final/adaptivetilerenderer.cpp
+    renderer/kernel/rendering/final/adaptivetilerenderer.h
     renderer/kernel/rendering/final/pixelsampler.cpp
     renderer/kernel/rendering/final/pixelsampler.h
     renderer/kernel/rendering/final/uniformpixelrenderer.cpp
@@ -1368,6 +1405,8 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/denoiseraov.h
     renderer/modeling/aov/depthaov.cpp
     renderer/modeling/aov/depthaov.h
+    renderer/modeling/aov/diagnosticaov.cpp
+    renderer/modeling/aov/diagnosticaov.h
     renderer/modeling/aov/diffuseaov.cpp
     renderer/modeling/aov/diffuseaov.h
     renderer/modeling/aov/emissionaov.cpp
@@ -1377,8 +1416,12 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/iaovfactory.h
     renderer/modeling/aov/normalaov.cpp
     renderer/modeling/aov/normalaov.h
+    renderer/modeling/aov/npraovs.cpp
+    renderer/modeling/aov/npraovs.h
     renderer/modeling/aov/pixeltimeaov.cpp
     renderer/modeling/aov/pixeltimeaov.h
+    renderer/modeling/aov/positionaov.cpp
+    renderer/modeling/aov/positionaov.h
     renderer/modeling/aov/uvaov.cpp
     renderer/modeling/aov/uvaov.h
 )
@@ -1784,6 +1827,29 @@ source_group ("renderer\\modeling\\object" FILES
     ${renderer_modeling_object_sources}
 )
 
+set (renderer_modeling_postprocessingstage_sources
+    renderer/modeling/postprocessingstage/colormapdata.cpp
+    renderer/modeling/postprocessingstage/colormapdata.h
+    renderer/modeling/postprocessingstage/colormappostprocessingstage.cpp
+    renderer/modeling/postprocessingstage/colormappostprocessingstage.h
+    renderer/modeling/postprocessingstage/ipostprocessingstagefactory.cpp
+    renderer/modeling/postprocessingstage/ipostprocessingstagefactory.h
+    renderer/modeling/postprocessingstage/postprocessingstage.cpp
+    renderer/modeling/postprocessingstage/postprocessingstage.h
+    renderer/modeling/postprocessingstage/postprocessingstagecontainer.h
+    renderer/modeling/postprocessingstage/postprocessingstagefactoryregistrar.cpp
+    renderer/modeling/postprocessingstage/postprocessingstagefactoryregistrar.h
+    renderer/modeling/postprocessingstage/postprocessingstagetraits.h
+    renderer/modeling/postprocessingstage/renderstamppostprocessingstage.cpp
+    renderer/modeling/postprocessingstage/renderstamppostprocessingstage.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_postprocessingstage_sources}
+)
+source_group ("renderer\\modeling\\postprocessingstage" FILES
+    ${renderer_modeling_postprocessingstage_sources}
+)
+
 set (renderer_modeling_project_sources
     renderer/modeling/project/assethandler.cpp
     renderer/modeling/project/assethandler.h
@@ -1892,6 +1958,8 @@ set (renderer_modeling_surfaceshader_sources
     renderer/modeling/surfaceshader/diagnosticsurfaceshader.cpp
     renderer/modeling/surfaceshader/diagnosticsurfaceshader.h
     renderer/modeling/surfaceshader/isurfaceshaderfactory.h
+    renderer/modeling/surfaceshader/nprsurfaceshaderhelper.cpp
+    renderer/modeling/surfaceshader/nprsurfaceshaderhelper.h
     renderer/modeling/surfaceshader/physicalsurfaceshader.cpp
     renderer/modeling/surfaceshader/physicalsurfaceshader.h
     renderer/modeling/surfaceshader/surfaceshader.cpp

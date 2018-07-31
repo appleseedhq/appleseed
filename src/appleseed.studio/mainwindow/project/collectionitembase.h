@@ -31,14 +31,11 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLLECTIONITEMBASE_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/itembase.h"
-#include "mainwindow/project/itemregistry.h"
 #include "utility/treewidget.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
@@ -157,8 +154,8 @@ template <typename Entity>
 template <typename EntityContainer>
 void CollectionItemBase<Entity>::add_items(EntityContainer& entities)
 {
-    for (foundation::each<EntityContainer> i = entities; i; ++i)
-        add_item(&*i);
+    for (auto& entity : entities)
+        add_item(&entity);
 }
 
 template <typename Entity>
@@ -177,15 +174,11 @@ ItemBase* CollectionItemBase<Entity>::create_item(Entity* entity)
 {
     assert(entity);
 
-    ItemBase* item =
+    return
         new ItemBase(
             m_editor_context,
             entity->get_class_uid(),
             entity->get_name());
-
-    m_editor_context.m_item_registry.insert(*entity, item);
-
-    return item;
 }
 
 }       // namespace studio

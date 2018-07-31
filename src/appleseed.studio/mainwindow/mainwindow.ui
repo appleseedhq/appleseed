@@ -88,6 +88,7 @@
     </property>
     <addaction name="action_rendering_start_interactive_rendering"/>
     <addaction name="action_rendering_start_final_rendering"/>
+    <addaction name="action_rendering_pause_resume_rendering"/>
     <addaction name="action_rendering_stop_rendering"/>
     <addaction name="separator"/>
     <addaction name="action_rendering_rendering_settings"/>
@@ -107,6 +108,7 @@
      <addaction name="separator"/>
     </widget>
     <addaction name="menu_diagnostics_override_shading"/>
+    <addaction name="action_diagnostics_false_colors"/>
    </widget>
    <widget class="QMenu" name="menu_debug">
     <property name="title">
@@ -404,6 +406,17 @@
     <string>F5</string>
    </property>
   </action>
+  <action name="action_rendering_pause_resume_rendering">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Pause/Resume Rendering</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F5</string>
+   </property>
+  </action>
   <action name="action_rendering_stop_rendering">
    <property name="text">
     <string>S&amp;top Rendering</string>
@@ -478,6 +491,14 @@
   <action name="action_tools_settings">
    <property name="text">
     <string>&amp;Settings...</string>
+   </property>
+  </action>
+  <action name="action_diagnostics_false_colors">
+   <property name="text">
+    <string>&amp;False Colors...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+F</string>
    </property>
   </action>
  </widget>

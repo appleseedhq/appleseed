@@ -65,10 +65,12 @@
 #include "foundation/utility/stopwatch.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <exception>
 #include <new>
 #include <string>
+#include <vector>
 
 using namespace foundation;
 using namespace std;
@@ -292,22 +294,36 @@ struct MasterRenderer::Impl
         // Initialize thread-local variables.
         Spectrum::set_mode(get_spectrum_mode(m_params));
 
+        // Reset the frame's render info.
+        m_project.get_frame()->render_info().clear();
+
         RenderingResult result;
 
         try
         {
             Stopwatch<DefaultWallclockTimer> stopwatch;
+
+            // Render.
             stopwatch.start();
-
             result.m_status = do_render();
-
             stopwatch.measure();
             result.m_render_time = stopwatch.get_seconds();
 
-            if (result.m_status == RenderingResult::Succeeded)
-                add_render_stamp(result.m_render_time);
+            // Insert render time into the frame's render info.
+            // Note that the frame entity may have replaced during rendering.
+            ParamArray& render_info = m_project.get_frame()->render_info();
+            render_info.insert("render_time", result.m_render_time);
 
-            return result;
+            // Don't proceed further if rendering failed.
+            if (result.m_status != RenderingResult::Succeeded)
+                return result;
+
+            // Post-process.
+            stopwatch.start();
+            postprocess(result);
+            stopwatch.measure();
+            result.m_post_processing_time = stopwatch.get_seconds();
+            render_info.insert("post_processing_time", result.m_post_processing_time);
         }
         catch (const bad_alloc&)
         {
@@ -447,7 +463,8 @@ struct MasterRenderer::Impl
             // Perform pre-frame rendering actions. Don't proceed if that failed.
             OnFrameBeginRecorder recorder;
             if (!components.get_shading_engine().on_frame_begin(m_project, recorder, &abort_switch) ||
-                !m_project.get_scene()->on_frame_begin(m_project, nullptr, recorder, &abort_switch))
+                !m_project.on_frame_begin(m_project, nullptr, recorder, &abort_switch) ||
+                abort_switch.is_aborted())
             {
                 recorder.on_frame_end(m_project);
                 m_renderer_controller->on_frame_end();
@@ -458,19 +475,13 @@ struct MasterRenderer::Impl
             m_project.get_scene()->get_active_camera()->print_settings();
             m_project.get_frame()->print_settings();
 
-            // Don't proceed with rendering if scene preparation was aborted.
-            if (abort_switch.is_aborted())
-            {
-                recorder.on_frame_end(m_project);
-                m_renderer_controller->on_frame_end();
-                return m_renderer_controller->get_status();
-            }
-
             IFrameRenderer& frame_renderer = components.get_frame_renderer();
             assert(!frame_renderer.is_rendering());
 
+            // Start rendering the frame.
             frame_renderer.start_rendering();
 
+            // Wait until the the frame is completed or rendering is aborted.
             const IRendererController::Status status = wait_for_event(frame_renderer);
 
             switch (status)
@@ -527,6 +538,7 @@ struct MasterRenderer::Impl
                 if (is_paused)
                 {
                     frame_renderer.resume_rendering();
+                    m_renderer_controller->on_rendering_resume();
                     is_paused = false;
                 }
                 break;
@@ -535,6 +547,7 @@ struct MasterRenderer::Impl
                 if (!is_paused)
                 {
                     frame_renderer.pause_rendering();
+                    m_renderer_controller->on_rendering_pause();
                     is_paused = true;
                 }
                 break;
@@ -549,37 +562,74 @@ struct MasterRenderer::Impl
         }
     }
 
-    void add_render_stamp(const double render_time)
+    void postprocess(const RenderingResult& rendering_result)
     {
-        const Frame* frame = m_project.get_frame();
+        Frame* frame = m_project.get_frame();
+        assert(frame != nullptr);
 
-        if (frame == nullptr)
+        // Nothing to do if there are no post-processing stages.
+        if (frame->post_processing_stages().empty())
             return;
 
-        if (!frame->is_render_stamp_enabled())
-            return;
+        // Collect post-processing stages.
+        vector<PostProcessingStage*> ordered_stages;
+        ordered_stages.reserve(frame->post_processing_stages().size());
+        for (auto& stage : frame->post_processing_stages())
+            ordered_stages.push_back(&stage);
 
-        Frame::RenderStampInfo info;
-        info.m_render_time = render_time;
+        // Sort post-processing stages in increasing order.
+        sort(
+            ordered_stages.begin(),
+            ordered_stages.end(),
+            [](PostProcessingStage* lhs, PostProcessingStage* rhs)
+            {
+                return lhs->get_order() < rhs->get_order();
+            });
 
-        frame->add_render_stamp(info);
+        // Detect post-processing stages with equal order.
+        size_t previous_stage_index = 0;
+        int previous_order = ordered_stages[0]->get_order();
+        for (size_t i = 1, e = ordered_stages.size(); i < e; ++i)
+        {
+            const int order = ordered_stages[i]->get_order();
+            if (order == previous_order)
+            {
+                RENDERER_LOG_WARNING(
+                    "post-processing stages \"%s\" and \"%s\" have equal order (%d); results will be unpredictable.",
+                    ordered_stages[previous_stage_index]->get_path().c_str(),
+                    ordered_stages[i]->get_path().c_str(),
+                    order);
+            }
+        }
 
+        // Execute post-processing stages.
+        for (auto stage : ordered_stages)
+        {
+            RENDERER_LOG_INFO("executing \"%s\" post-processing stage with order %d on frame \"%s\"...",
+                stage->get_name(), stage->get_order(), frame->get_name());
+            stage->execute(*frame);
+            invoke_tile_callbacks(*frame);
+        }
+    }
+
+    void invoke_tile_callbacks(const Frame& frame)
+    {
         if (m_tile_callback_factory)
         {
             // Invoke the tile callbacks on all tiles.
             // todo: things would be simpler if the tile callback had a method to refresh a whole frame.
             auto_release_ptr<ITileCallback> tile_callback(m_tile_callback_factory->create());
-            const CanvasProperties& frame_props = frame->image().properties();
+            const CanvasProperties& frame_props = frame.image().properties();
             for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
             {
                 for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
-                    tile_callback->on_tile_end(frame, tx, ty);
+                    tile_callback->on_tile_end(&frame, tx, ty);
             }
 
-            // If all we have is a tile callback (and not a tile callback factory), then updates will be
-            // enqueued into the SerialRendererController instead of being executed right away, hence we
-            // need to manually execute them here, otherwise the render stamp is not guaranteed to be
-            // displayed in client applications.
+            // If all we have is a serial tile callback (and not a true tile callback factory), updates
+            // will be enqueued into the SerialRendererController instead of being executed right away,
+            // hence we need to manually execute them here, otherwise the render stamp is not guaranteed
+            // to be displayed in client applications.
             if (m_serial_renderer_controller != nullptr)
                 m_serial_renderer_controller->exec_callbacks();
         }
@@ -643,6 +693,18 @@ const ParamArray& MasterRenderer::get_parameters() const
 MasterRenderer::RenderingResult MasterRenderer::render()
 {
     return impl->render();
+}
+
+
+//
+// MasterRenderer::RenderingResult class implementation.
+//
+
+MasterRenderer::RenderingResult::RenderingResult()
+  : m_status(Failed)
+  , m_render_time(0.0)
+  , m_post_processing_time(0.0)
+{
 }
 
 }   // namespace renderer

@@ -83,7 +83,6 @@ source_group ("include\\appleseed\\color" FILES
 set (include_appleseed_fractal_sources
     include/appleseed/fractal/as_fractal_helpers.h
     include/appleseed/fractal/as_noise_helpers.h
-    include/appleseed/fractal/as_noise_tables.h
 )
 list (APPEND osl_headers
     ${include_appleseed_fractal_sources}
@@ -120,6 +119,8 @@ set (include_appleseed_maya_sources
     include/appleseed/maya/as_maya_layer_helpers.h
     include/appleseed/maya/as_maya_pattern_helpers.h
     include/appleseed/maya/as_maya_ramp_helpers.h
+    include/appleseed/maya/as_maya_recurrence_helpers.h
+    include/appleseed/maya/as_maya_recurrence_tables.h
     include/appleseed/maya/as_maya_transform_helpers.h
 )
 list (APPEND osl_headers
@@ -475,6 +476,18 @@ list (APPEND osl_sources
 )
 source_group ("src\\appleseed" FILES
     ${src_appleseed_sources}
+)
+
+set (src_npr_sources
+     src/npr/as_toon.osl
+     src/npr/as_xtoon.osl
+)
+
+list (APPEND osl_sources
+    ${src_npr_sources}
+)
+source_group ("src\\npr" FILES
+    ${src_npr_sources}
 )
 
 

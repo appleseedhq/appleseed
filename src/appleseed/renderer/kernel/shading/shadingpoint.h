@@ -243,6 +243,9 @@ class ShadingPoint
     // Return the opacity at the intersection point.
     const Alpha& get_alpha() const;
 
+    // Return the interpolated per-vertex color at the intersection point.
+    const foundation::Color3f& get_per_vertex_color() const;
+
     OSL::ShaderGlobals& get_osl_shader_globals() const;
 
     struct OSLObjectTransformInfo
@@ -276,6 +279,7 @@ class ShadingPoint
     friend class AssemblyLeafVisitor;
     friend class CurveLeafVisitor;
     friend class Intersector;
+    friend class NPRSurfaceShaderHelper;
     friend class OSLShaderGroupExec;
     friend class RegionLeafVisitor;
     friend class RendererServices;
@@ -319,8 +323,9 @@ class ShadingPoint
         HasMaterials                    = 1 << 12,
         HasWorldSpacePointVelocity      = 1 << 13,
         HasAlpha                        = 1 << 14,
-        HasScreenSpaceDerivatives       = 1 << 15,
-        HasOSLShaderGlobals             = 1 << 16
+        HasPerVertexColor               = 1 << 15,
+        HasScreenSpaceDerivatives       = 1 << 16,
+        HasOSLShaderGlobals             = 1 << 17
     };
     mutable foundation::uint32          m_members;
 
@@ -355,6 +360,7 @@ class ShadingPoint
     mutable const Material*             m_material;                     // material at intersection point
     mutable const Material*             m_opposite_material;            // opposite material at intersection point
     mutable Alpha                       m_alpha;                        // opacity at intersection point
+    mutable foundation::Color3f         m_color;                        // per-vertex interpolated color at intersection point
 
     // Data required to avoid self-intersections.
     mutable foundation::Vector3d        m_asm_geo_normal;               // assembly instance space geometric normal to hit triangle
@@ -365,6 +371,10 @@ class ShadingPoint
     mutable OSLObjectTransformInfo      m_obj_transform_info;
     mutable OSLTraceData                m_osl_trace_data;
     mutable OSL::ShaderGlobals          m_shader_globals;
+
+    // NPR-related data.
+    mutable foundation::Color3f         m_surface_shader_diffuse;
+    mutable foundation::Color3f         m_surface_shader_glossy;
 
     // Fetch and cache the source geometry.
     void cache_source_geometry() const;
@@ -390,6 +400,7 @@ class ShadingPoint
     void compute_world_space_point_velocity() const;
 
     void compute_alpha() const;
+    void compute_per_vertex_color() const;
 
     void fetch_materials() const;
 
@@ -910,6 +921,16 @@ inline const Alpha& ShadingPoint::get_alpha() const
     }
 
     return m_alpha;
+}
+
+inline const foundation::Color3f& ShadingPoint::get_per_vertex_color() const
+{
+    if (!(m_members & HasPerVertexColor))
+    {
+        compute_per_vertex_color();
+        m_members |= HasPerVertexColor;
+    }
+    return m_color;
 }
 
 inline OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const

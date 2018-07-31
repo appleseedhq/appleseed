@@ -34,7 +34,6 @@
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/basegroupitem.h"
 #include "mainwindow/project/entityeditorcontext.h"
-#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
 
@@ -122,16 +121,12 @@ ItemBase* AssemblyCollectionItem::create_item(Assembly* assembly)
 {
     assert(assembly);
 
-    ItemBase* item =
+    return
         new AssemblyItem(
             m_editor_context,
             *assembly,
             m_parent,
             m_parent_item);
-
-    m_editor_context.m_item_registry.insert(*assembly, item);
-
-    return item;
 }
 
 }   // namespace studio

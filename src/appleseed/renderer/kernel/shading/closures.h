@@ -118,6 +118,10 @@ enum ClosureID
     HoldoutID,
     TransparentID,
 
+    // NPR closures.
+    NPRShadingID,
+    NPRContourID,
+
     NumClosuresIDs
 };
 
@@ -137,7 +141,7 @@ struct ExceptionOSLRuntimeError
 
 
 //
-// Composite OSL closure.
+// Composite OSL closure base class.
 //
 
 class APPLESEED_ALIGN(16) CompositeClosure
@@ -303,6 +307,34 @@ class APPLESEED_ALIGN(16) CompositeEmissionClosure
   private:
     float                           m_pdfs[MaxClosureEntries];
 
+    void process_closure_tree(
+        const OSL::ClosureColor*    closure,
+        const foundation::Color3f&  weight,
+        foundation::Arena&          arena);
+};
+
+
+//
+// Composite OSL NPR closure.
+//
+
+class APPLESEED_ALIGN(16) CompositeNPRClosure
+  : public CompositeClosure
+{
+  public:
+    CompositeNPRClosure(
+        const OSL::ClosureColor*    ci,
+        foundation::Arena&          arena);
+
+    template <typename InputValues>
+    InputValues* add_closure(
+        const ClosureID             closure_type,
+        const foundation::Color3f&  weight,
+        foundation::Arena&          arena);
+
+    size_t get_nth_contour_closure_index(const size_t i) const;
+
+  private:
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
         const foundation::Color3f&  weight,

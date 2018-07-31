@@ -31,6 +31,7 @@
 from __future__ import print_function
 from distutils import archive_util, dir_util
 from xml.etree.ElementTree import ElementTree
+import argparse
 import fnmatch
 import glob
 import os
@@ -226,7 +227,8 @@ class Settings:
 
 class PackageInfo:
 
-    def __init__(self, settings):
+    def __init__(self, settings, no_zip):
+        self.no_zip = no_zip
         self.settings = settings
 
     def load(self):
@@ -247,7 +249,10 @@ class PackageInfo:
     def print_summary(self):
         print("")
         print("  Version:                   " + self.version)
-        print("  Package path:              " + self.package_path)
+        if not self.no_zip:
+            print("  Package path:              " + self.package_path)
+        else:
+            print("  Package directory:         " + self.settings.package_output_path)
         print("")
 
 
@@ -283,7 +288,10 @@ class PackageBuilder:
         self.add_dummy_files_into_empty_directories()
         self.disable_system_qt_plugins()
         self.alter_stage()
-        self.build_final_zip_file()
+        if self.package_info.no_zip:
+            self.deploy_stage_to_package_directory()
+        else:
+            self.build_final_zip_file()
         self.remove_stage()
 
     def remove_leftovers(self):
@@ -436,6 +444,13 @@ class PackageBuilder:
     # This method is overridden in the platform-specific builders below.
     def alter_stage(self):
         return
+
+    def deploy_stage_to_package_directory(self):
+        package_directory = os.path.join(self.settings.package_output_path, "appleseed")
+        progress("Removing existing package directory")
+        safe_delete_directory(package_directory)
+        progress("Deploying staging directory to package directory")
+        shutil.copytree("appleseed", package_directory)
 
     def build_final_zip_file(self):
         progress("Building final zip file from staging directory")
@@ -776,6 +791,14 @@ class LinuxPackageBuilder(PackageBuilder):
 # -------------------------------------------------------------------------------------------------
 
 def main():
+    parser = argparse.ArgumentParser(description="build an appleseed package from sources")
+
+    parser.add_argument("--nozip", help="do not build a final .zip.  Files will be copied to staging directory only", action="store_true")
+
+    args = parser.parse_args()
+
+    no_zip = args.nozip
+
     print("appleseed.package version " + VERSION)
     print("")
 
@@ -786,7 +809,7 @@ def main():
     print("")
 
     settings = Settings()
-    package_info = PackageInfo(settings)
+    package_info = PackageInfo(settings, no_zip)
 
     settings.load()
     package_info.load()

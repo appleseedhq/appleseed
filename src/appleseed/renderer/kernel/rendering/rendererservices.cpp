@@ -106,6 +106,7 @@ RendererServices::RendererServices(
     m_global_attr_getters[OIIO::ustring("object:assembly_instance_name")] = &RendererServices::get_attr_assembly_instance_name;
     m_global_attr_getters[OIIO::ustring("object:object_instance_name")] = &RendererServices::get_attr_object_instance_name;
     m_global_attr_getters[OIIO::ustring("object:object_name")] = &RendererServices::get_attr_object_name;
+
     m_global_attr_getters[OIIO::ustring("camera:resolution")] = &RendererServices::get_attr_camera_resolution;
     m_global_attr_getters[OIIO::ustring("camera:projection")] = &RendererServices::get_attr_camera_projection;
     m_global_attr_getters[OIIO::ustring("camera:pixelaspect")] = &RendererServices::get_attr_camera_pixelaspect;
@@ -117,10 +118,15 @@ RendererServices::RendererServices(
     m_global_attr_getters[OIIO::ustring("camera:shutter")] = &RendererServices::get_attr_camera_shutter;
     m_global_attr_getters[OIIO::ustring("camera:shutter_open")] = &RendererServices::get_attr_camera_shutter_open;
     m_global_attr_getters[OIIO::ustring("camera:shutter_close")] = &RendererServices::get_attr_camera_shutter_close;
+
     m_global_attr_getters[OIIO::ustring("path:ray_depth")] = &RendererServices::get_attr_ray_depth;
     m_global_attr_getters[OIIO::ustring("path:ray_length")] = &RendererServices::get_attr_ray_length;
     m_global_attr_getters[OIIO::ustring("path:ray_ior")] = &RendererServices::get_attr_ray_ior;
     m_global_attr_getters[OIIO::ustring("path:ray_has_differentials")] = &RendererServices::get_attr_ray_has_differentials;
+
+    m_global_attr_getters[OIIO::ustring("surface_shader:diffuse")] = &RendererServices::get_attr_surface_shader_diffuse;
+    m_global_attr_getters[OIIO::ustring("surface_shader:glossy")] = &RendererServices::get_attr_surface_shader_glossy;
+
     m_global_attr_getters[OIIO::ustring("appleseed:version_major")] = &RendererServices::get_attr_appleseed_version_major;
     m_global_attr_getters[OIIO::ustring("appleseed:version_minor")] = &RendererServices::get_attr_appleseed_version_minor;
     m_global_attr_getters[OIIO::ustring("appleseed:version_patch")] = &RendererServices::get_attr_appleseed_version_patch;
@@ -131,6 +137,7 @@ RendererServices::RendererServices(
     m_global_user_data_getters[OIIO::ustring("Bn")] = &RendererServices::get_user_data_bn;
     m_global_user_data_getters[OIIO::ustring("dNdu")] = &RendererServices::get_user_data_dndu;
     m_global_user_data_getters[OIIO::ustring("dNdv")] = &RendererServices::get_user_data_dndv;
+    m_global_user_data_getters[OIIO::ustring("vertex_color")] = &RendererServices::get_user_data_vertex_color;
 }
 
 void RendererServices::initialize(TextureStore& texture_store)
@@ -980,6 +987,42 @@ IMPLEMENT_ATTR_GETTER(ray_has_differentials)
     return false;
 }
 
+IMPLEMENT_ATTR_GETTER(surface_shader_diffuse)
+{
+    if (type == OIIO::TypeDesc::TypeColor)
+    {
+        const ShadingPoint* shading_point = reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+        reinterpret_cast<float*>(val)[0] = shading_point->m_surface_shader_diffuse[0];
+        reinterpret_cast<float*>(val)[1] = shading_point->m_surface_shader_diffuse[1];
+        reinterpret_cast<float*>(val)[2] = shading_point->m_surface_shader_diffuse[2];
+
+        if (derivs)
+            clear_derivatives(type, val);
+
+        return true;
+    }
+
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(surface_shader_glossy)
+{
+    if (type == OIIO::TypeDesc::TypeColor)
+    {
+        const ShadingPoint* shading_point = reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+        reinterpret_cast<float*>(val)[0] = shading_point->m_surface_shader_glossy[0];
+        reinterpret_cast<float*>(val)[1] = shading_point->m_surface_shader_glossy[1];
+        reinterpret_cast<float*>(val)[2] = shading_point->m_surface_shader_glossy[2];
+
+        if (derivs)
+            clear_derivatives(type, val);
+
+        return true;
+    }
+
+    return false;
+}
+
 IMPLEMENT_ATTR_GETTER(appleseed_version_major)
 {
     if (type == OIIO::TypeDesc::TypeInt)
@@ -1145,6 +1188,28 @@ IMPLEMENT_USER_DATA_GETTER(dndv)
         return true;
     }
 
+    return false;
+}
+
+IMPLEMENT_USER_DATA_GETTER(vertex_color)
+{
+    if (type == OIIO::TypeDesc::TypeColor)
+    {
+        const ShadingPoint* shading_point =
+            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+
+        const Color3f& cv = shading_point->get_per_vertex_color();
+        const OSL::Color3 v(cv.r, cv.g, cv.b);
+
+        reinterpret_cast<float*>(val)[0] = v.x;
+        reinterpret_cast<float*>(val)[1] = v.y;
+        reinterpret_cast<float*>(val)[2] = v.z;
+
+        if (derivatives)
+            clear_derivatives(type, val);
+
+        return true;
+    }
     return false;
 }
 
