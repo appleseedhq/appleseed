@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2018 Jino Park, The appleseedhq Organization
+// Copyright (c) 2018 Jino Park, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -95,23 +95,24 @@ namespace
             switch (m_projection_type)
             {
                 case EquisolidAngle:
-                    projection_type = "equisolid angle";
-                    break;
+                  projection_type = "equisolid angle";
+                  break;
                 
                 case Equidistant:
-                    projection_type = "equidistant";
-                    break;
+                  projection_type = "equidistant";
+                  break;
 
                 case Stereographic:
-                    projection_type = "stereographic";
-                    break;
+                  projection_type = "stereographic";
+                  break;
 
                 case Thoby:
-                    projection_type = "thoby";
-                    break;
+                  projection_type = "thoby";
+                  break;
 
                 default:
-                    projection_type = "unknown";
+                  projection_type = "unknown";
+                  break;
             }
 
             RENDERER_LOG_INFO(
@@ -167,16 +168,12 @@ namespace
 
             if (projection_type == "equisolid_angle")
                 m_projection_type = EquisolidAngle;
-
             else if (projection_type == "equidistant")
                 m_projection_type = Equidistant;
-                
             else if (projection_type == "stereographic")
                 m_projection_type = Stereographic;
-
             else if (projection_type == "thoby")
                 m_projection_type = Thoby;
-
             else
             {
                 RENDERER_LOG_ERROR(
@@ -191,7 +188,7 @@ namespace
 
         //
         // Transform ray direction in selected projection.
-        // Reference : 
+        // References: 
         //   https://wiki.panotools.org/Fisheye_Projection
         //   https://de.wikipedia.org/wiki/Fischaugenobjektiv
         //   http://michel.thoby.free.fr/Fisheye_history_short/Projections/Fisheye_projection-models.html
@@ -204,33 +201,34 @@ namespace
             dir = rot.vector_to_parent(dir);
 
             // Tangent of angle between vector(on xz plane) and z+ axis.
-            const double tan_theta1 = dir[0]/dir[2];
+            const double tan_theta1 = dir[0] / dir[2];
             const double theta1 = atan(tan_theta1);
             double theta2 = 0.0;
 
             switch (m_projection_type) 
             {
                 case EquisolidAngle:
-                    theta2 = 2 * asin(tan_theta1 / 2.0);
-                    break;
+                  theta2 = 2 * asin(tan_theta1 / 2.0);
+                  break;
                 
                 case Equidistant:
-                    theta2 = tan_theta1;
-                    break;
+                  theta2 = tan_theta1;
+                  break;
 
                 case Stereographic:
-                    theta2 = 2 * atan(tan_theta1 / 2.0);
-                    break;
+                  theta2 = 2 * atan(tan_theta1 / 2.0);
+                  break;
 
                 case Thoby:
-                    theta2 = asin(tan_theta1 / 1.47) / 0.713;
-                    break;
+                  theta2 = asin(tan_theta1 / 1.47) / 0.713;
+                  break;
 
                 default:
-                    RENDERER_LOG_ERROR(
-                        "this message should not be logged"
-                        "using default value \"equisolid_angle\".");
-                    theta2 = 2 * asin(tan_theta1 / 2.0);
+                  RENDERER_LOG_ERROR(
+                    "this message should not be logged"
+                    "using default value \"equisolid_angle\".");
+                  theta2 = 2 * asin(tan_theta1 / 2.0);
+
             }
 
             const Transformd rot2 = Transformd(Matrix4d::make_rotation_y(theta2 - theta1));
@@ -244,7 +242,6 @@ namespace
             const Dual2d&       ndc,
             ShadingRay&         ray) const override
         {
-
             // Initialize the ray.
             initialize_ray(sampling_context, ray);
 
@@ -373,10 +370,13 @@ namespace
 
         enum Projection
         {
-            EquisolidAngle, Equidistant, Stereographic, Thoby
+            EquisolidAngle, 
+            Equidistant, 
+            Stereographic, 
+            Thoby
         };
-        Projection m_projection_type;
 
+        Projection m_projection_type;
 
         Vector3d ndc_to_camera(const Vector2d& point) const
         {
