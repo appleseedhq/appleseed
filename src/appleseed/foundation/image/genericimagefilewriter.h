@@ -50,7 +50,7 @@ class APPLESEED_DLLSYMBOL GenericImageFileWriter
 {
   public:
     explicit GenericImageFileWriter(const char* filename);
-    ~GenericImageFileWriter();
+    ~GenericImageFileWriter() override;
 
     void append_image(const ICanvas* image);
 
