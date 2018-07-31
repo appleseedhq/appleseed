@@ -52,18 +52,24 @@ class APPLESEED_DLLSYMBOL GenericImageFileWriter
     explicit GenericImageFileWriter(const char* filename);
     ~GenericImageFileWriter() override;
 
+    // Add an image to the image stack
     void append_image(const ICanvas* image);
 
+    // Set the pixel format of the last stacked image
     void set_image_output_format(const PixelFormat output_pixel_format);
 
+    // Set the image channels of the last stacked image
     void set_image_channels(
         const size_t    channel_count,
         const char**    channel_names);
 
+    // Add attributes to the last stacked image
     void set_image_attributes(const ImageAttributes& image_attributes);
 
+    // Return the number of images in the stack
     size_t get_image_count() const;
 
+    // Write all the stacked images (if possible) on disk
     void write();
 
   private:
