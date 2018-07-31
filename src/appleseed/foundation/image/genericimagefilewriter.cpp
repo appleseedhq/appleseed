@@ -68,7 +68,7 @@ GenericImageFileWriter::GenericImageFileWriter(const char* filename) :
     m_writer = OIIO::ImageOutput::create(m_filename);
     if (m_writer == nullptr)
     {
-        const std::string msg = OpenImageIO::geterror();
+        const std::string msg = OIIO::geterror();
         throw ExceptionIOError(msg.c_str());
     }
 }
