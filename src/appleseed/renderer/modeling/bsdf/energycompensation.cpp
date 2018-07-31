@@ -235,7 +235,7 @@ void AlbedoTable2D::write_table_to_image(const bfs::path& filename) const
 
     const std::string file = filename.string();
 
-    GenericImageFileWriter writer( file.c_str() );
+    GenericImageFileWriter writer(file.c_str());
 
     writer.append_image(&image);
     writer.write();
@@ -451,7 +451,7 @@ void AlbedoTable3D::write_table_to_image(const bfs::path& filename) const
 
     const std::string file = filename.string();
 
-    GenericImageFileWriter writer( file.c_str() );
+    GenericImageFileWriter writer(file.c_str());
 
     writer.append_image(&image);
     writer.write();

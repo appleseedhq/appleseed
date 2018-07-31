@@ -1,7 +1,7 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
@@ -58,7 +58,8 @@ struct GenericImageFileWriter::Impl
 };
 
 GenericImageFileWriter::GenericImageFileWriter(const char* filename) :
-    impl( new Impl() )
+    IImageFileWriter(),
+    impl(new Impl())
 {
     assert(filename);
 
@@ -95,30 +96,33 @@ void GenericImageFileWriter::append_image(const ICanvas* image)
     set_image_spec();
 }
 
-OIIO::TypeDesc convert_pixel_format(const PixelFormat format)
+namespace
 {
-    switch (format)
+    OIIO::TypeDesc convert_pixel_format(const PixelFormat format)
     {
-      case PixelFormatUInt8:
-          return OIIO::TypeDesc::UINT8;
-    
-      case PixelFormatUInt16:
-          return OIIO::TypeDesc::UINT16;
-    
-      case PixelFormatUInt32:
-          return OIIO::TypeDesc::UINT32;
-    
-      case PixelFormatHalf:
-          return OIIO::TypeDesc::HALF;
-    
-      case PixelFormatFloat:
-          return OIIO::TypeDesc::FLOAT;
-    
-      case PixelFormatDouble:
-          return OIIO::TypeDesc::DOUBLE;
-    
-      default:
-          return OIIO::TypeDesc::UNKNOWN;
+        switch (format)
+        {
+          case PixelFormatUInt8:
+              return OIIO::TypeDesc::UINT8;
+
+          case PixelFormatUInt16:
+              return OIIO::TypeDesc::UINT16;
+
+          case PixelFormatUInt32:
+              return OIIO::TypeDesc::UINT32;
+
+          case PixelFormatHalf:
+              return OIIO::TypeDesc::HALF;
+
+          case PixelFormatFloat:
+              return OIIO::TypeDesc::FLOAT;
+
+          case PixelFormatDouble:
+              return OIIO::TypeDesc::DOUBLE;
+
+          default:
+              return OIIO::TypeDesc::UNKNOWN;
+        }
     }
 }
 

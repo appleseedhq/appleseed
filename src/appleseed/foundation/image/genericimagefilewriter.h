@@ -1,7 +1,7 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
@@ -30,6 +30,7 @@
 #define APPLESEED_FOUNDATION_IMAGE_GENERICIMAGEFILEWRITER_H
 
 // appleseed.foundation headers.
+#include "foundation/image/iimagefilewriter.h"
 #include "foundation/image/imageattributes.h"
 #include "foundation/image/pixel.h"
 
@@ -45,6 +46,7 @@ namespace foundation
 {
 
 class APPLESEED_DLLSYMBOL GenericImageFileWriter
+  : public IImageFileWriter
 {
   public:
     explicit GenericImageFileWriter(const char* filename);
