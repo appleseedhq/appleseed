@@ -208,7 +208,7 @@ namespace
             switch (m_projection_type) 
             {
                 case EquisolidAngle:
-                  theta2 = 2 * asin(tan_theta1 / 2.0);
+                  theta2 = 2 * asin(tan_theta1 * 0.5);
                   break;
                 
                 case Equidistant:
@@ -216,19 +216,15 @@ namespace
                   break;
 
                 case Stereographic:
-                  theta2 = 2 * atan(tan_theta1 / 2.0);
+                  theta2 = 2 * atan(tan_theta1 * 0.5);
                   break;
 
                 case Thoby:
-                  theta2 = asin(tan_theta1 / 1.47) / 0.713;
+                  theta2 = asin(tan_theta1 * 0.68027) * 1.40252;
                   break;
 
                 default:
-                  RENDERER_LOG_ERROR(
-                    "this message should not be logged"
-                    "using default value \"equisolid_angle\".");
-                  theta2 = 2 * asin(tan_theta1 / 2.0);
-
+                  assert(false);
             }
 
             const Transformd rot2 = Transformd(Matrix4d::make_rotation_y(theta2 - theta1));
