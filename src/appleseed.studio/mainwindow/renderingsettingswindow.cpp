@@ -536,7 +536,7 @@ namespace
                 SLOT(slot_changed_image_plane_sampler(const int)));
 
             m_image_plane_sampler_passes = create_integer_input("general.passes", 1, 1000000, 1);
-            m_image_plane_sampler_passes->setToolTip(m_params_metadata.get_path("generic_frame_renderer.passes.help"));
+            m_image_plane_sampler_passes->setToolTip(m_params_metadata.get_path("passes.help"));
             sublayout->addRow("Passes:", m_image_plane_sampler_passes);
         }
 
