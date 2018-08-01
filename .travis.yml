@@ -63,6 +63,3 @@ matrix:
 script:
   - if [ $TRAVIS_OS_NAME == linux ]; then ./travis/build-linux.sh ; fi
   - if [ $TRAVIS_OS_NAME == osx ]; then ./travis/build-macos.sh ; fi
-
-notifications:
-  slack: appleseedhq:H9o3XAC4e05O0yE4upX1FNkW
