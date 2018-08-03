@@ -194,14 +194,17 @@ namespace
         //   http://michel.thoby.free.fr/Fisheye_history_short/Projections/Fisheye_projection-models.html
         //
 
-        void transform_ray_dir(Vector3d& dir) const
+        Vector3d transform_ray_dir(const Vector3d& dir) const
         {
+            Vector3d new_dir = dir;
+            
             // Transform the direction vector to be in the xz plane.
-            const Transformd rot = Transformd(Matrix4d::make_rotation_z(-atan2 (dir[1], dir[0])));
-            dir = rot.vector_to_parent(dir);
+            // TODO : optimize
+            const Transformd rot = Transformd(Matrix4d::make_rotation_z(-atan2(new_dir[1], new_dir[0])));
+            new_dir = rot.vector_to_parent(new_dir);
 
             // Tangent of angle between vector(on xz plane) and z+ axis.
-            const double tan_theta1 = dir[0] / dir[2];
+            const double tan_theta1 = new_dir[0] / new_dir[2];
             const double theta1 = atan(tan_theta1);
             double theta2 = 0.0;
 
@@ -227,10 +230,13 @@ namespace
                   assert(false);
             }
 
+            // TODO : optimize
             const Transformd rot2 = Transformd(Matrix4d::make_rotation_y(theta2 - theta1));
 
-            dir = rot2.vector_to_parent(dir);
-            dir = rot.vector_to_local(dir);
+            new_dir = rot2.vector_to_parent(new_dir);
+            new_dir = rot.vector_to_local(new_dir);
+            
+            return new_dir;
         }
 
         void spawn_ray(
@@ -250,7 +256,7 @@ namespace
             ray.m_org = transform.get_local_to_parent().extract_translation();
             ray.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(ndc.get_value())));
 
-            transform_ray_dir(ray.m_dir);
+            ray.m_dir = transform_ray_dir(ray.m_dir);
 
             // Compute ray derivatives.
             if (ndc.has_derivatives())
@@ -292,6 +298,7 @@ namespace
             outgoing = point - transform.get_local_to_parent().extract_translation();
 
             // Compute the emitted importance.
+            // TODO
             const Vector3d film_point = ndc_to_camera(ndc);
             const double square_dist_film_lens = square_norm(film_point);
             const double dist_film_lens = sqrt(square_dist_film_lens);
