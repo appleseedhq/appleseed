@@ -45,7 +45,10 @@ shader as_xtoon
     int as_maya_type_id = 0x00127a02,
 
     string as_blender_node_name = "asXToon",
-    string as_blender_category = "shader"
+    string as_blender_category = "shader",
+
+    string as_max_class_id = "111286881, 22109994",
+    string as_max_plugin_type = "material"
 ]]
 (
     //
