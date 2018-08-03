@@ -131,8 +131,15 @@ namespace
             Vector2f    m_a;
             Vector2f    m_b;
 
-            Segment() = default;
-            Segment(const Segment& rhs) = default;
+            Segment()
+            {
+            }
+
+            Segment(const Segment& rhs)
+              : m_a(rhs.m_a)
+              , m_b(rhs.m_b)
+            {
+            }
 
             Segment(
                 const Vector2f& a,
@@ -214,12 +221,12 @@ namespace
 
             switch (mask)
             {
-              case 0b0000: break;
-              case 0b0001: segments.push_back(Segment(ml(), mb())); break;
-              case 0b0010: segments.push_back(Segment(mb(), mr())); break;
-              case 0b0011: segments.push_back(Segment(ml(), mr())); break;
-              case 0b0100: segments.push_back(Segment(mr(), mt())); break;
-              case 0b0101:
+              case 0x0 /* 0b0000 */: break;
+              case 0x1 /* 0b0001 */: segments.push_back(Segment(ml(), mb())); break;
+              case 0x2 /* 0b0010 */: segments.push_back(Segment(mb(), mr())); break;
+              case 0x3 /* 0b0011 */: segments.push_back(Segment(ml(), mr())); break;
+              case 0x4 /* 0b0100 */: segments.push_back(Segment(mr(), mt())); break;
+              case 0x5 /* 0b0101 */:
                   if (f00 + f10 + f01 + f11 < 4.0f * isovalue)
                   {
                       segments.push_back(Segment(mr(), mt()));
@@ -231,11 +238,11 @@ namespace
                       segments.push_back(Segment(mr(), mb()));
                   }
                   break;
-              case 0b0110: segments.push_back(Segment(mb(), mt())); break;
-              case 0b0111: segments.push_back(Segment(ml(), mt())); break;
-              case 0b1000: segments.push_back(Segment(mt(), ml())); break;
-              case 0b1001: segments.push_back(Segment(mt(), mb())); break;
-              case 0b1010:
+              case 0x6 /* 0b0110 */: segments.push_back(Segment(mb(), mt())); break;
+              case 0x7 /* 0b0111 */: segments.push_back(Segment(ml(), mt())); break;
+              case 0x8 /* 0b1000 */: segments.push_back(Segment(mt(), ml())); break;
+              case 0x9 /* 0b1001 */: segments.push_back(Segment(mt(), mb())); break;
+              case 0xA /* 0b1010 */:
                   if (f00 + f10 + f01 + f11 < 4.0f * isovalue)
                   {
                       segments.push_back(Segment(mt(), ml()));
@@ -247,11 +254,11 @@ namespace
                       segments.push_back(Segment(mb(), ml()));
                   }
                   break;
-              case 0b1011: segments.push_back(Segment(mt(), mr())); break;
-              case 0b1100: segments.push_back(Segment(mr(), ml())); break;
-              case 0b1101: segments.push_back(Segment(mr(), mb())); break;
-              case 0b1110: segments.push_back(Segment(mb(), ml())); break;
-              case 0b1111: break;
+              case 0xB /* 0b1011 */: segments.push_back(Segment(mt(), mr())); break;
+              case 0xC /* 0b1100 */: segments.push_back(Segment(mr(), ml())); break;
+              case 0xD /* 0b1101 */: segments.push_back(Segment(mr(), mb())); break;
+              case 0xE /* 0b1110 */: segments.push_back(Segment(mb(), ml())); break;
+              case 0xF /* 0b1111 */: break;
               assert_otherwise;
             }
         }
