@@ -175,11 +175,6 @@ namespace
 
             m_sample_aov_index = frame.aovs().get_index("pixel_sample_count");
             m_variation_aov_index = frame.aovs().get_index("pixel_variation");
-
-            if (m_params.m_adaptiveness == 0.0f && thread_index == 0)
-            {
-                RENDERER_LOG_WARNING("adaptiveness is set to 0, use the uniform renderer for better performance");
-            }
         }
 
         void release() override
@@ -192,13 +187,13 @@ namespace
             RENDERER_LOG_INFO(
                 "adaptive tile renderer settings:\n"
                 "  batch size                    %s\n"
+                "  min samples                   %s\n"
                 "  max samples                   %s\n"
-                "  noise threshold               %f\n"
-                "  adaptiveness                  %f",
+                "  noise threshold               %f",
                 pretty_uint(m_params.m_batch_size).c_str(),
-                pretty_uint(m_params.m_max_samples).c_str(),
-                m_params.m_noise_threshold,
-                m_params.m_adaptiveness);
+                pretty_uint(m_params.m_min_samples).c_str(),
+                m_params.m_max_samples > 0 ? pretty_uint(m_params.m_max_samples).c_str() : "unlimited",
+                m_params.m_noise_threshold);
 
             RENDERER_LOG_DEBUG("adaptive tile renderer splitting threshold: %f",
                 m_params.m_splitting_threshold);
@@ -270,23 +265,20 @@ namespace
             assert(framebuffer);
 
             // Create the buffer into which we will accumulate every second samples.
-            ShadingResultFrameBuffer* second_framebuffer = nullptr;
-
             // If rendering multiple passes, the permanent buffer factory will return
             // the same buffer so we must create a new one.
-            second_framebuffer = new ShadingResultFrameBuffer(
-                tile.get_width(),
-                tile.get_height(),
-                frame.aov_images().size(),
-                tile_bbox,
-                frame.get_filter());
+            unique_ptr<ShadingResultFrameBuffer> second_framebuffer(
+                new ShadingResultFrameBuffer(
+                    tile.get_width(),
+                    tile.get_height(),
+                    frame.aov_images().size(),
+                    tile_bbox,
+                    frame.get_filter()));
 
             if (m_params.m_passes > 1)
                 second_framebuffer->copy_from(*framebuffer);
             else
                 second_framebuffer->clear();
-
-            assert(second_framebuffer);
 
             const size_t pixel_count = framebuffer->get_width() * framebuffer->get_height();
 
@@ -298,16 +290,20 @@ namespace
             create_rendering_blocks(rendering_blocks, padded_tile_bbox, framebuffer->get_crop_window());
 
             // First uniform pass based on adaptiveness parameter.
-            if (m_params.m_adaptiveness < 1.0f)
+            if (m_params.m_min_samples > 0)
             {
-                for (size_t i = 0; i < rendering_blocks.size(); ++i)
-                {
-                    PixelBlock& pb = rendering_blocks.front();
-                    rendering_blocks.pop_front();
+                const size_t batch_size =
+                    m_params.m_max_samples > 0
+                        ? min(m_params.m_min_samples, m_params.m_max_samples)
+                        : m_params.m_min_samples;
 
-                    // First batch contains `max_samples` * `1 - adaptiveness`
-                    const size_t batch_size = static_cast<size_t>(
-                        m_params.m_max_samples * (1.0f - m_params.m_adaptiveness));
+                deque<PixelBlock> blocks = rendering_blocks;
+                rendering_blocks.clear();
+
+                while (!blocks.empty())
+                {
+                    PixelBlock pb = blocks.front();
+                    blocks.pop_front();
 
                     // Draw samples.
                     sample_pixel_block(
@@ -315,7 +311,7 @@ namespace
                             abort_switch,
                             batch_size,
                             framebuffer,
-                            second_framebuffer,
+                            second_framebuffer.get(),
                             tile_origin_x,
                             tile_origin_y,
                             frame,
@@ -330,22 +326,28 @@ namespace
             while (true)
             {
                 // Check if image is converged or rendering was aborted.
-                if (abort_switch.is_aborted() || rendering_blocks.size() < 1)
+                if (abort_switch.is_aborted() || rendering_blocks.empty())
                 {
                     finished_blocks.insert(finished_blocks.end(), rendering_blocks.begin(), rendering_blocks.end());
-                    break;
+
+                    if (rendering_blocks.empty())
+                        break;
+                    else
+                        return;
                 }
 
                 // Sample the block in front of the deque.
-                PixelBlock& pb = rendering_blocks.front();
+                PixelBlock pb = rendering_blocks.front();
                 rendering_blocks.pop_front();
 
                 // Each batch contains 'min' samples.
-                assert(m_params.m_max_samples > pb.m_spp);
-                const size_t remaining_samples = m_params.m_max_samples - pb.m_spp;
-                const size_t batch_size = min(m_params.m_batch_size, remaining_samples);
+                assert(pb.m_spp < m_params.m_max_samples || m_params.m_max_samples == 0);
+                const size_t batch_size =
+                    m_params.m_max_samples > 0
+                        ? min(m_params.m_batch_size, m_params.m_max_samples - pb.m_spp)
+                        : m_params.m_batch_size;
 
-                if (remaining_samples < 1)
+                if (batch_size == 0)
                 {
                     finished_blocks.push_back(pb);
                     continue;
@@ -357,7 +359,7 @@ namespace
                     abort_switch,
                     batch_size,
                     framebuffer,
-                    second_framebuffer,
+                    second_framebuffer.get(),
                     tile_origin_x,
                     tile_origin_y,
                     frame,
@@ -365,57 +367,53 @@ namespace
                     pass_hash,
                     aov_count);
 
-                // Check if this was the last batch.
-                if (remaining_samples - batch_size < 1)
+                const AABB2u block_image_bb = AABB2i::intersect(framebuffer->get_crop_window(), pb.m_surface);
+
+                // Evaluate block's noise amount.
+                pb.m_block_error = FilteredTile::compute_tile_variance(
+                    block_image_bb,
+                    framebuffer,
+                    second_framebuffer.get());
+
+                if (batch_size < m_params.m_batch_size)
                 {
+                    // It was the last batch.
                     finished_blocks.push_back(pb);
                 }
-                else
+                else if (pb.m_block_error <= m_params.m_noise_threshold)
                 {
-                    const AABB2u& block_image_bb = AABB2i::intersect(framebuffer->get_crop_window(), pb.m_surface);
-
-                    // Evaluate block's noise amount.
-                    pb.m_block_error = FilteredTile::compute_tile_variance(
-                        block_image_bb,
-                        framebuffer,
-                        second_framebuffer);
-
-                    // Decide if the blocks needs to be splitted, sampled or if it has converged.
-                    if (pb.m_block_error <= m_params.m_noise_threshold)
+                    // The block has converged.
+                    pb.m_converged = true;
+                    finished_blocks.push_back(pb);
+                }
+                else if (pb.m_block_error <= m_params.m_splitting_threshold)
+                {
+                    // The block needs to be splitted.
+                    if (pb.m_main_axis == PixelBlock::Axis::Horizontal
+                        && block_image_bb.extent(0) >= BlockSplittingThreshold)
                     {
-                        pb.m_converged = true;
-                        finished_blocks.push_back(pb);
+                        split_pixel_block(
+                            pb,
+                            rendering_blocks,
+                            (block_image_bb.min.x + block_image_bb.max.x) / 2);
                     }
-                    else if (pb.m_block_error <= m_params.m_splitting_threshold)
+                    else if (pb.m_main_axis == PixelBlock::Axis::Vertical
+                        && block_image_bb.extent(1) >= BlockSplittingThreshold)
                     {
-                        if (pb.m_main_axis == PixelBlock::Axis::Horizontal
-                                && block_image_bb.extent(0) >= BlockSplittingThreshold)
-                        {
-                            split_pixel_block(
-                                pb,
-                                rendering_blocks,
-                                static_cast<int>(block_image_bb.min.x)
-                                + static_cast<int>(block_image_bb.extent(0) * 0.5f - 0.5f));
-                        }
-                        else if (pb.m_main_axis == PixelBlock::Axis::Vertical
-                                && block_image_bb.extent(1) >= BlockSplittingThreshold)
-                        {
-                            split_pixel_block(
-                                pb,
-                                rendering_blocks,
-                                static_cast<int>(block_image_bb.min.y)
-                                + static_cast<int>(block_image_bb.extent(1) * 0.5f - 0.5f));
-                        }
-                        else
-                        {
-                            rendering_blocks.push_front(pb);
-                        }
+                        split_pixel_block(
+                            pb,
+                            rendering_blocks,
+                            (block_image_bb.min.y + block_image_bb.max.y) / 2);
                     }
                     else
                     {
-                        // Block's variance is too high and it needs to be sampled.
                         rendering_blocks.push_front(pb);
                     }
+                }
+                else
+                {
+                    // Block's variance is too high and it needs to be sampled.
+                    rendering_blocks.push_front(pb);
                 }
             }
 
@@ -480,9 +478,6 @@ namespace
             // Release the framebuffer.
             m_framebuffer_factory->destroy(framebuffer);
 
-            // Delete the accumulation buffer.
-            delete second_framebuffer;
-
             // Inform the AOV accumulators that we are done rendering a tile.
             m_aov_accumulators.on_tile_end(frame, tile_x, tile_y);
 
@@ -511,19 +506,19 @@ namespace
         {
             const SamplingContext::Mode     m_sampling_mode;
             const size_t                    m_batch_size;
+            const size_t                    m_min_samples;
             const size_t                    m_max_samples;
             const float                     m_noise_threshold;
             const float                     m_splitting_threshold;
-            const float                     m_adaptiveness;
             const size_t                    m_passes;
 
             explicit Parameters(const ParamArray& params)
               : m_sampling_mode(get_sampling_context_mode(params))
               , m_batch_size(params.get_required<size_t>("batch_size", 16))
+              , m_min_samples(params.get_required<size_t>("min_samples", 0))
               , m_max_samples(params.get_required<size_t>("max_samples", 256))
               , m_noise_threshold(params.get_required<float>("noise_threshold", 5.0f))
               , m_splitting_threshold(m_noise_threshold * 256.0f)
-              , m_adaptiveness(params.get_optional<float>("adaptiveness", 0.9f))
               , m_passes(params.get_optional<size_t>("passes", 1))
             {
             }
@@ -665,8 +660,7 @@ namespace
                     split_pixel_block(
                         pb,
                         initial_blocks,
-                        static_cast<int>(block_image_bb.min.x)
-                        + static_cast<int>(block_image_bb.extent(0) * 0.5f - 0.5f));
+                        (block_image_bb.min.x + block_image_bb.max.x) / 2);
                 }
                 else if (pb.m_main_axis == PixelBlock::Axis::Vertical
                         && block_image_bb.extent(1) >= BlockSplittingThreshold)
@@ -674,8 +668,7 @@ namespace
                     split_pixel_block(
                         pb,
                         initial_blocks,
-                        static_cast<int>(block_image_bb.min.y)
-                        + static_cast<int>(block_image_bb.extent(1) * 0.5f - 0.5f));
+                        (block_image_bb.min.y + block_image_bb.max.y) / 2);
                 }
             }
         }
@@ -903,9 +896,17 @@ Dictionary AdaptiveTileRendererFactory::get_params_metadata()
         "batch_size",
         Dictionary()
             .insert("type", "int")
-            .insert("default", "8")
+            .insert("default", "16")
             .insert("label", "Batch Size")
-            .insert("help", "How many samples to render before each noise calculation"));
+            .insert("help", "How many samples to render before each convergence estimation"));
+
+    metadata.dictionaries().insert(
+        "min_samples",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "0")
+            .insert("label", "Min Samples")
+            .insert("help", "Number of uniform samples to render before adaptive sampling"));
 
     metadata.dictionaries().insert(
         "max_samples",
@@ -913,23 +914,15 @@ Dictionary AdaptiveTileRendererFactory::get_params_metadata()
             .insert("type", "int")
             .insert("default", "256")
             .insert("label", "Max Samples")
-            .insert("help", "Maximum number of anti-aliasing samples"));
+            .insert("help", "Maximum number of anti-aliasing samples (0 for unlimited)"));
 
     metadata.dictionaries().insert(
         "noise_threshold",
         Dictionary()
             .insert("type", "float")
-            .insert("default", "5.0")
+            .insert("default", "1.0")
             .insert("label", "Noise Threshold")
-            .insert("help", "Rendering stop threshold"));
-
-    metadata.dictionaries().insert(
-        "adaptiveness",
-        Dictionary()
-            .insert("type", "float")
-            .insert("default", "0.9")
-            .insert("label", "Adaptiveness")
-            .insert("help", "Quantity of samples generated adaptively"));
+            .insert("help", "Maximum amount of noise allowed in the image"));
 
     return metadata;
 }

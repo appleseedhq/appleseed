@@ -39,6 +39,7 @@
 #include "foundation/platform/atomic.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cmath>
 
 using namespace std;
@@ -216,7 +217,7 @@ float FilteredTile::compute_tile_variance(
             const float* main_ptr = main->pixel(x, y);
             const float* second_ptr = second->pixel(x, y);
 
-            error += compute_weighted_pixel_variance(main_ptr, second_ptr);
+            error = max(error, compute_weighted_pixel_variance(main_ptr, second_ptr));
         }
     }
 
