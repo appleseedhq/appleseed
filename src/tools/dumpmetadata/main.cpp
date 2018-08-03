@@ -48,6 +48,7 @@
 #include "renderer/api/light.h"
 #include "renderer/api/material.h"
 #include "renderer/api/object.h"
+#include "renderer/api/postprocessing.h"
 #include "renderer/api/project.h"
 #include "renderer/api/surfaceshader.h"
 #include "renderer/api/texture.h"
@@ -155,6 +156,7 @@ namespace
         dump_metadata_xml<Light>(file, indenter);
         dump_metadata_xml<Material>(file, indenter);
         dump_metadata_xml<Object>(file, indenter);
+        dump_metadata_xml<PostProcessingStage>(file, indenter);
         dump_metadata_xml<SurfaceShader>(file, indenter);
         dump_metadata_xml<Texture>(file, indenter);
         dump_metadata_xml<Volume>(file, indenter);
@@ -299,6 +301,7 @@ namespace
         dump_metadata_markdown<Light>(section_number++, file);
         dump_metadata_markdown<Material>(section_number++, file);
         dump_metadata_markdown<Object>(section_number++, file);
+        dump_metadata_markdown<PostProcessingStage>(section_number++, file);
         dump_metadata_markdown<SurfaceShader>(section_number++, file);
         dump_metadata_markdown<Texture>(section_number++, file);
         dump_metadata_markdown<Volume>(section_number++, file);
