@@ -471,9 +471,9 @@ namespace
             create_direct_link("adaptive_sampler.quality",                  "adaptive_pixel_renderer.quality");
 
             create_direct_link("adaptive_tile_sampler.batch_size",          "adaptive_tile_renderer.batch_size");
+            create_direct_link("adaptive_tile_sampler.min_samples",         "adaptive_tile_renderer.min_samples");
             create_direct_link("adaptive_tile_sampler.max_samples",         "adaptive_tile_renderer.max_samples");
             create_direct_link("adaptive_tile_sampler.noise_threshold",     "adaptive_tile_renderer.noise_threshold");
-            create_direct_link("adaptive_tile_sampler.adaptiveness",        "adaptive_tile_renderer.adaptiveness");
 
             load_general_sampler(config);
             load_directly_linked_values(config);
@@ -622,17 +622,17 @@ namespace
             batch_size->setToolTip(m_params_metadata.get_path("adaptive_tile_renderer.batch_size.help"));
             sublayout->addRow("Batch Size:", batch_size);
 
-            QSpinBox* max_samples = create_integer_input("adaptive_tile_sampler.max_samples", 1, 1000000, 1);
+            QSpinBox* min_samples = create_integer_input("adaptive_tile_sampler.min_samples", 0, 1000000, 1);
+            min_samples->setToolTip(m_params_metadata.get_path("adaptive_tile_renderer.min_samples.help"));
+            sublayout->addRow("Min Samples:", min_samples);
+
+            QSpinBox* max_samples = create_integer_input("adaptive_tile_sampler.max_samples", 0, 1000000, 1);
             max_samples->setToolTip(m_params_metadata.get_path("adaptive_tile_renderer.max_samples.help"));
             sublayout->addRow("Max Samples:", max_samples);
 
-            QDoubleSpinBox* noise_threshold = create_double_input("adaptive_tile_sampler.noise_threshold", 0.0, 25.0, 3, 0.1);
+            QDoubleSpinBox* noise_threshold = create_double_input("adaptive_tile_sampler.noise_threshold", 0.0, 25.0, 1, 0.02);
             noise_threshold->setToolTip(m_params_metadata.get_path("adaptive_tile_renderer.noise_threshold.help"));
             sublayout->addRow("Noise Threshold:", noise_threshold);
-
-            QDoubleSpinBox* adaptiveness = create_double_input("adaptive_tile_sampler.adaptiveness", 0.0, 1.0, 1, 0.1);
-            adaptiveness->setToolTip(m_params_metadata.get_path("adaptive_tile_renderer.adaptiveness.help"));
-            sublayout->addRow("Adaptiveness", adaptiveness);
         }
 
         void load_general_sampler(const Configuration& config)
