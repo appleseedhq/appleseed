@@ -30,6 +30,9 @@
 #include "foundation/platform/python.h"
 #include "foundation/utility/murmurhash.h"
 
+// Standard headers.
+#include <string>
+
 namespace bpy = boost::python;
 using namespace foundation;
 
@@ -37,6 +40,11 @@ void bind_murmurhash()
 {
     bpy::class_<MurmurHash>("MurmurHash")
         .def(bpy::init<>())
+        .def("append", (MurmurHash& (MurmurHash::*)(const float&)) &MurmurHash::append, bpy::return_self<>())
+        .def("append", (MurmurHash& (MurmurHash::*)(const double&)) &MurmurHash::append, bpy::return_self<>())
+        .def("append", (MurmurHash& (MurmurHash::*)(const int&)) &MurmurHash::append, bpy::return_self<>())
+        .def("append", (MurmurHash& (MurmurHash::*)(const char*)) &MurmurHash::append, bpy::return_self<>())
+        .def("append", (MurmurHash& (MurmurHash::*)(const std::string&)) &MurmurHash::append, bpy::return_self<>())
         .add_property("h1", &MurmurHash::h1)
         .add_property("h2", &MurmurHash::h2)
         .def(bpy::self == bpy::self)
