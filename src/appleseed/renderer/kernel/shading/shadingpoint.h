@@ -375,6 +375,7 @@ class ShadingPoint
     // NPR-related data.
     mutable foundation::Color3f         m_surface_shader_diffuse;
     mutable foundation::Color3f         m_surface_shader_glossy;
+    mutable foundation::Color3f         m_surface_shader_emission;
 
     // Fetch and cache the source geometry.
     void cache_source_geometry() const;

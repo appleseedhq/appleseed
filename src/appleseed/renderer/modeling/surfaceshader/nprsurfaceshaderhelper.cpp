@@ -100,6 +100,11 @@ void NPRSurfaceShaderHelper::evaluate_npr(
         radiance.m_indirect_glossy[1],
         radiance.m_indirect_glossy[2]);
 
+    shading_point.m_surface_shader_emission = Color3f(
+        radiance.m_emission[0],
+        radiance.m_emission[1],
+        radiance.m_emission[2]);
+
     // Execute the OSL shader.
     shading_context.execute_osl_npr(*sg, shading_point);
 

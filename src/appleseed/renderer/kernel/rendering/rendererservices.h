@@ -330,6 +330,7 @@ class RendererServices
     // NPR attributes.
     DECLARE_ATTR_GETTER(surface_shader_diffuse);
     DECLARE_ATTR_GETTER(surface_shader_glossy);
+    DECLARE_ATTR_GETTER(surface_shader_emission);
 
     // appleseed version attributes.
     DECLARE_ATTR_GETTER(appleseed_version_major);
