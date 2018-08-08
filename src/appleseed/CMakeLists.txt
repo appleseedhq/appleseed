@@ -1013,6 +1013,13 @@ set (renderer_kernel_intersection_sources
     renderer/kernel/intersection/triangletree.h
     renderer/kernel/intersection/trianglevertexinfo.h
 )
+
+if (WITH_EMBREE)
+    list (APPEND renderer_kernel_intersection_sources
+        renderer/kernel/intersection/embreescene.cpp
+        renderer/kernel/intersection/embreescene.h)
+endif ()
+
 list (APPEND appleseed_sources
     ${renderer_kernel_intersection_sources}
 )
@@ -2102,6 +2109,7 @@ link_against_zlib (appleseed)
 
 link_against_oiio (appleseed)
 link_against_osl (appleseed)
+link_against_embree (appleseed)
 
 if (WITH_DISNEY_MATERIAL)
     link_against_seexpr (appleseed)

@@ -410,7 +410,7 @@ void ShadingPoint::refine_and_offset() const
                 m_front_point,
                 m_back_point);
     #else
-            Intersector::offset(
+            Intersector::fixed_offset(
                 local_ray.m_org,
                 m_asm_geo_normal,
                 m_front_point,
@@ -420,6 +420,7 @@ void ShadingPoint::refine_and_offset() const
         break;
 
       case PrimitiveProceduralSurface:
+        // TODO: do we need to refine & offset here as well?
         m_front_point = m_back_point = local_ray.m_org;
         break;
 

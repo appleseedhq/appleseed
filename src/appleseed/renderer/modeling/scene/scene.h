@@ -48,13 +48,16 @@
 #include <cassert>
 
 // Forward declarations.
-namespace foundation    { class IAbortSwitch; }
-namespace foundation    { class StringArray; }
-namespace foundation    { class StringDictionary; }
 namespace renderer      { class Camera; }
+#ifdef APPLESEED_WITH_EMBREE
+namespace renderer      { class EmbreeDevice; }
+#endif
+namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class OnRenderBeginRecorder; }
 namespace renderer      { class Project; }
+namespace foundation    { class StringArray; }
+namespace foundation    { class StringDictionary; }
 namespace renderer      { class SurfaceShader; }
 
 namespace renderer
@@ -141,6 +144,12 @@ class APPLESEED_DLLSYMBOL Scene
     void on_frame_end(
         const Project&              project,
         const BaseGroup*            parent) override;
+
+#ifdef APPLESEED_WITH_EMBREE
+
+    const EmbreeDevice& get_embree_device() const;
+
+#endif
 
     struct RenderData
     {

@@ -197,6 +197,14 @@ macro (link_against_seexpreditor target)
     target_link_libraries (${target} ${SEEXPREDITOR_LIBRARIES})
 endmacro ()
 
+macro (link_against_embree target)
+    if (USE_EXTERNAL_EMBREE)
+        target_link_libraries (${target} ${EMBREE_LIBRARIES})
+    else ()
+        #TODO
+    endif ()
+endmacro ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Copy a target binary to the sandbox.

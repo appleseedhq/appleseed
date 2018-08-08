@@ -91,6 +91,7 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
         }
     };
 
+    template <bool UseEmbree>
     struct Fixture
       : public StaticTestSceneContext<TestScene>
     {
@@ -105,10 +106,14 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
           , m_texture_cache(m_texture_store)
           , m_intersector(m_trace_context, m_texture_cache)
         {
+#ifdef APPLESEED_WITH_EMBREE
+            m_trace_context.set_use_embree(UseEmbree);
+#endif
+            m_trace_context.update();
         }
     };
 
-    TEST_CASE_F(Trace_GivenAssemblyContainingEmptyBoundingBoxAndRayWithTMaxInsideAssembly_ReturnsFalse, Fixture)
+    TEST_CASE_F(Trace_GivenAssemblyContainingEmptyBoundingBoxAndRayWithTMaxInsideAssembly_ReturnsFalse, Fixture<false>)
     {
         const ShadingRay ray(
             Vector3d(0.0, 0.0, 2.0),
@@ -125,7 +130,7 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
         EXPECT_FALSE(hit);
     }
 
-    TEST_CASE_F(TraceProbe_GivenAssemblyContainingEmptyBoundingBoxAndRayWithTMaxInsideAssembly_ReturnsFalse, Fixture)
+    TEST_CASE_F(TraceProbe_GivenAssemblyContainingEmptyBoundingBoxAndRayWithTMaxInsideAssembly_ReturnsFalse, Fixture<false>)
     {
         const ShadingRay ray(
             Vector3d(0.0, 0.0, 2.0),
@@ -140,4 +145,41 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
 
         EXPECT_FALSE(hit);
     }
+
+#ifdef APPLESEED_WITH_EMBREE
+
+    TEST_CASE_F(Trace_Embree_GivenAssemblyContainingEmptyBoundingBoxAndRayWithTMaxInsideAssembly_ReturnsFalse, Fixture<true>)
+    {
+        const ShadingRay ray(
+            Vector3d(0.0, 0.0, 2.0),
+            Vector3d(0.0, 0.0, -1.0),
+            0.0,                                // tmin
+            2.0,                                // tmax
+            ShadingRay::Time(),
+            VisibilityFlags::CameraRay,
+            0);                                 // depth
+
+        ShadingPoint shading_point;
+        const bool hit = m_intersector.trace(ray, shading_point);
+
+        EXPECT_FALSE(hit);
+    }
+
+    TEST_CASE_F(TraceProbe_Embree_GivenAssemblyContainingEmptyBoundingBoxAndRayWithTMaxInsideAssembly_ReturnsFalse, Fixture<true>)
+    {
+        const ShadingRay ray(
+            Vector3d(0.0, 0.0, 2.0),
+            Vector3d(0.0, 0.0, -1.0),
+            0.0,                                // tmin
+            2.0,                                // tmax
+            ShadingRay::Time(),
+            VisibilityFlags::CameraRay,
+            0);                                 // depth
+
+        const bool hit = m_intersector.trace_probe(ray);
+
+        EXPECT_FALSE(hit);
+    }
+
+#endif // ifdef APPLESEED_WITH_EMBREE
 }

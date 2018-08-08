@@ -1292,6 +1292,10 @@ namespace
             QVBoxLayout* layout = new QVBoxLayout();
             container()->setLayout(layout);
 
+#ifdef APPLESEED_WITH_EMBREE
+            create_system_use_embree_settings(layout);
+#endif
+
             create_system_override_rendering_threads_settings(layout);
             create_system_override_texture_store_max_size_settings(layout);
             create_system_override_tile_ordering_settings(layout);
@@ -1337,6 +1341,15 @@ namespace
         }
 
       private:
+#ifdef APPLESEED_WITH_EMBREE
+        void create_system_use_embree_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = create_checkable_groupbox("use_embree", "Use Embree");
+            parent->addWidget(groupbox);
+            create_direct_link("use_embree", "use_embree", "false");
+        }
+#endif
+
         void create_system_override_rendering_threads_settings(QVBoxLayout* parent)
         {
             QGroupBox* groupbox = create_checkable_groupbox("rendering_threads.override", "Override");

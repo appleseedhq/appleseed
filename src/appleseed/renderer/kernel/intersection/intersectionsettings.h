@@ -147,6 +147,18 @@ const size_t CurveTreeStackSize = 64;
 
 
 //
+// Embree settings.
+//
+
+#ifdef APPLESEED_WITH_EMBREE
+
+// Size of the EmbreeScene access cache.
+const size_t EmbreeSceneAccessCacheLines = 128;
+const size_t EmbreeSceneAccessCacheWays = 2;
+
+#endif
+
+//
 // Miscellaneous settings.
 //
 
