@@ -78,7 +78,8 @@ GenericImageFileWriter::GenericImageFileWriter(const char* filename) :
 GenericImageFileWriter::~GenericImageFileWriter()
 {
     // Destroy the ImageOutput stucture.
-    OIIO::ImageOutput::destroy(m_writer);
+    if (m_writer != nullptr)
+        OIIO::ImageOutput::destroy(m_writer);
 
     delete impl;
 }
