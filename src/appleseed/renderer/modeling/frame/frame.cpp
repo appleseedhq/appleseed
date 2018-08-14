@@ -44,12 +44,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
-#include "foundation/image/drawing.h"
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/image/imageattributes.h"
 #include "foundation/image/pixel.h"
-#include "foundation/image/text/textrenderer.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/defaulttimers.h"
