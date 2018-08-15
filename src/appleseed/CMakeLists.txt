@@ -1013,13 +1013,12 @@ set (renderer_kernel_intersection_sources
     renderer/kernel/intersection/triangletree.h
     renderer/kernel/intersection/trianglevertexinfo.h
 )
-
 if (WITH_EMBREE)
     list (APPEND renderer_kernel_intersection_sources
         renderer/kernel/intersection/embreescene.cpp
-        renderer/kernel/intersection/embreescene.h)
+        renderer/kernel/intersection/embreescene.h
+    )
 endif ()
-
 list (APPEND appleseed_sources
     ${renderer_kernel_intersection_sources}
 )
@@ -2099,9 +2098,9 @@ append_custom_preprocessor_definitions (appleseed
 
 #--------------------------------------------------------------------------------------------------
 # Static libraries.
+# Static libraries must be specified in order of reverse-dependency.
 #--------------------------------------------------------------------------------------------------
 
-# Static libraries must be specified in order of reverse-dependency.
 link_against_platform (appleseed)
 link_against_libpng (appleseed)
 link_against_xercesc (appleseed)
@@ -2111,7 +2110,10 @@ link_against_zlib (appleseed)
 
 link_against_oiio (appleseed)
 link_against_osl (appleseed)
-link_against_embree (appleseed)
+
+if (WITH_EMBREE)
+    link_against_embree (appleseed)
+endif ()
 
 if (WITH_DISNEY_MATERIAL)
     link_against_seexpr (appleseed)
