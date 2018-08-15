@@ -658,6 +658,7 @@ namespace
             float           anisotropy;
             float           ior;
             float           energy_compensation;
+            float           fresnel_weight;
         };
 
         static const char* name()
@@ -683,6 +684,7 @@ namespace
             // Initialize keyword parameter defaults.
             Params* params = new (data) Params();
             params->energy_compensation = 0.0f;
+            params->fresnel_weight = 1.0f;
         }
 
         static void register_closure(OSLShadingSystem& shading_system)
@@ -697,6 +699,7 @@ namespace
                 CLOSURE_FLOAT_PARAM(Params, anisotropy),
                 CLOSURE_FLOAT_PARAM(Params, ior),
                 CLOSURE_FLOAT_KEYPARAM(Params, energy_compensation, "energy_compensation"),
+                CLOSURE_FLOAT_KEYPARAM(Params, fresnel_weight, "fresnel_weight"),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
@@ -723,6 +726,8 @@ namespace
             ClosureID cid;
 
             const float roughness = saturate(p->roughness);
+            const float fresnel_weight = saturate(p->fresnel_weight);
+
             const float highlight_falloff = saturate(p->highlight_falloff);
             const float ior = max(p->ior, 0.001f);
             float w = luminance(weight);
@@ -730,17 +735,17 @@ namespace
             if (p->dist == g_ggx_str)
             {
                 cid = GlossyGGXID;
-                w *= sample_weight<GGXMDF>(roughness, ior);
+                w *= sample_weight<GGXMDF>(roughness, ior, fresnel_weight);
             }
             else if (p->dist == g_beckmann_str)
             {
                 cid = GlossyBeckmannID;
-                w *= sample_weight<BeckmannMDF>(roughness, ior);
+                w *= sample_weight<BeckmannMDF>(roughness, ior, fresnel_weight);
             }
             else if (p->dist == g_std_str)
             {
                 cid = GlossySTDID;
-                w *= sample_weight_std(roughness, highlight_falloff, ior);
+                w *= sample_weight_std(roughness, highlight_falloff, ior, fresnel_weight);
             }
             else
             {
@@ -765,27 +770,37 @@ namespace
             values->m_highlight_falloff = highlight_falloff;
             values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
             values->m_ior = ior;
-            values->m_fresnel_weight = 1.0f;
+            values->m_fresnel_weight = fresnel_weight;
             values->m_energy_compensation = saturate(p->energy_compensation);
         }
 
         template <typename MDF>
-        static float sample_weight(const float roughness, const float ior)
+        static float sample_weight(
+            const float roughness,
+            const float ior,
+            const float fresnel_weight)
         {
             const float eavg = get_average_albedo(MDF(), roughness);
-            const float favg = average_fresnel_reflectance_dielectric(ior);
+            const float favg = lerp(
+                1.0f,
+                average_fresnel_reflectance_dielectric(ior),
+                fresnel_weight);
             return eavg * favg;
         }
 
         static float sample_weight_std(
             const float roughness,
             const float highlight_falloff,
-            const float ior)
+            const float ior,
+            const float fresnel_weight)
         {
             const float eavg0 = get_average_albedo(GGXMDF(), roughness);
             const float eavg1 = get_average_albedo(BeckmannMDF(), roughness);
             const float eavg = lerp(eavg0, eavg1, highlight_falloff);
-            const float favg = average_fresnel_reflectance_dielectric(ior);
+            const float favg = lerp(
+                1.0f,
+                average_fresnel_reflectance_dielectric(ior),
+                fresnel_weight);
             return eavg * favg;
         }
     };
