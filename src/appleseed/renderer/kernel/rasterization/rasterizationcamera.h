@@ -40,6 +40,8 @@ class APPLESEED_DLLSYMBOL RasterizationCamera
   public:
     double  m_aspect_ratio;     // aspect ratio of the film (width / height)
     double  m_hfov;             // horizontal field of view in radians
+    double  m_shift_x;          // horizontal camera shift
+    double  m_shift_y;          // vertical camera shift
 };
 
 }       // namespace renderer

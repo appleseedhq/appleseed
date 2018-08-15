@@ -224,6 +224,7 @@ namespace
             RasterizationCamera rc;
             rc.m_aspect_ratio = 1024.0 / 576.0;
             rc.m_hfov = deg_to_rad(54.0);
+            rc.m_shift_x = rc.m_shift_y = 0.0;
             return rc;
         }
 

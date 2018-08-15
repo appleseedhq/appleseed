@@ -51,12 +51,8 @@
 
 // Standard headers.
 #include <algorithm>
+#include <cmath>
 #include <string>
-
-// Platform headers.
-#ifdef __APPLE__
-#include <GLKit/GLKMatrix4.h>
-#endif
 
 using namespace foundation;
 using namespace renderer;
@@ -213,7 +209,7 @@ namespace
         void end_object() override
         {
             glEnd();
-        };
+        }
 
         void rasterize(const Triangle& triangle) override
         {
@@ -288,21 +284,22 @@ void LightPathsWidget::paintGL()
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-#ifdef __APPLE__
-    glMultMatrixf(
-        GLKMatrix4MakePerspective(
-            rc.m_hfov / rc.m_aspect_ratio,
-            rc.m_aspect_ratio,
-            0.01,
-            1000.0
-        ).m);
-#else
-    gluPerspective(
-        rad_to_deg(rc.m_hfov) / rc.m_aspect_ratio,
-        rc.m_aspect_ratio,
-        0.01,
-        1000.0);
-#endif
+
+    const double ZNear = 0.01;
+    const double ZFar = 1000.0;
+
+    const double fy = tan(rc.m_hfov / rc.m_aspect_ratio * 0.5) * ZNear;
+    const double fx = fy * rc.m_aspect_ratio;
+
+    const double shift_x = rc.m_shift_x * 2.0 * fx;
+    const double shift_y = rc.m_shift_y * 2.0 * fy;
+
+    const double left   = -fx + shift_x;
+    const double right  =  fx + shift_x;
+    const double top    = -fy + shift_y;
+    const double bottom =  fy + shift_y;
+
+    glFrustum(left, right, top, bottom, ZNear, ZFar);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();

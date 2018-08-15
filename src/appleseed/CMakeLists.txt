@@ -1551,6 +1551,8 @@ set (renderer_modeling_camera_sources
     renderer/modeling/camera/icamerafactory.h
     renderer/modeling/camera/orthographiccamera.cpp
     renderer/modeling/camera/orthographiccamera.h
+    renderer/modeling/camera/perspectivecamera.cpp
+    renderer/modeling/camera/perspectivecamera.h
     renderer/modeling/camera/pinholecamera.cpp
     renderer/modeling/camera/pinholecamera.h
     renderer/modeling/camera/sphericalcamera.cpp

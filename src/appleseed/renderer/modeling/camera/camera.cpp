@@ -156,7 +156,7 @@ bool Camera::on_render_begin(
     if (m_motion_blur_enabled)
     {
         impl->m_use_bezier_shutter_curve = has_param("shutter_curve_control_points");
-        
+
         impl->m_normalized_open_end_time =
             inverse_lerp(
                 m_shutter_open_begin_time,
@@ -257,55 +257,6 @@ Vector2d Camera::extract_film_dimensions() const
     return film_dimensions;
 }
 
-double Camera::extract_focal_length(const double film_width) const
-{
-    const double DefaultFocalLength = 0.035;    // in meters
-    const double DefaultHFov = 54.0;            // in degrees
-
-    if (has_param("focal_length"))
-    {
-        if (has_param("horizontal_fov"))
-        {
-            RENDERER_LOG_WARNING(
-                "while defining camera \"%s\": the parameter \"horizontal_fov\" "
-                "has precedence over \"focal_length\".",
-                get_path().c_str());
-
-            const double hfov = get_greater_than_zero("horizontal_fov", DefaultHFov);
-            return hfov_to_focal_length(film_width, deg_to_rad(hfov));
-        }
-        else
-        {
-            return get_greater_than_zero("focal_length", DefaultFocalLength);
-        }
-    }
-    else if (has_param("horizontal_fov"))
-    {
-        const double hfov = get_greater_than_zero("horizontal_fov", DefaultHFov);
-        return hfov_to_focal_length(film_width, deg_to_rad(hfov));
-    }
-    else
-    {
-        RENDERER_LOG_ERROR(
-            "while defining camera \"%s\": no \"horizontal_fov\" or \"focal_length\" parameter found; "
-            "using default focal length value \"%f\".",
-            get_path().c_str(),
-            DefaultFocalLength);
-
-        return DefaultFocalLength;
-    }
-}
-
-double Camera::hfov_to_focal_length(const double film_width, const double hfov)
-{
-    return 0.5 * film_width / tan(0.5 * hfov);
-}
-
-double Camera::focal_length_to_hfov(const double film_width, const double focal_length)
-{
-    return 2.0 * atan(film_width / (2.0 * focal_length));
-}
-
 double Camera::extract_near_z() const
 {
     const double DefaultNearZ = -0.001;         // in meters
@@ -325,6 +276,13 @@ double Camera::extract_near_z() const
     }
 
     return near_z;
+}
+
+Vector2d Camera::extract_shift() const
+{
+    return Vector2d(
+        m_params.get_optional<double>("shift_x", 0.0),
+        m_params.get_optional<double>("shift_y", 0.0));
 }
 
 void Camera::check_shutter_times_for_consistency() const
@@ -786,6 +744,92 @@ DictionaryArray CameraFactory::get_input_metadata()
             .insert("use", "optional"));
 
     return metadata;
+}
+
+void CameraFactory::add_film_metadata(DictionaryArray& metadata)
+{
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "film_dimensions")
+            .insert("label", "Film Dimensions")
+            .insert("type", "text")
+            .insert("use", "required"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "film_width")
+            .insert("label", "Film Width")
+            .insert("type", "text")
+            .insert("use", "required"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "film_height")
+            .insert("label", "Film Height")
+            .insert("type", "text")
+            .insert("use", "required"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "aspect_ratio")
+            .insert("label", "Aspect Ratio")
+            .insert("type", "text")
+                .insert("use", "required"));
+}
+
+void CameraFactory::add_lens_metadata(DictionaryArray& metadata)
+{
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "focal_length")
+            .insert("label", "Focal Length")
+            .insert("type", "text")
+            .insert("use", "required"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "horizontal_fov")
+            .insert("label", "Horizontal FOV")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "180.0")
+                    .insert("type", "soft"))
+                .insert("use", "required"));
+}
+
+void CameraFactory::add_clipping_metadata(DictionaryArray& metadata)
+{
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "near_z")
+            .insert("label", "Near Z")
+            .insert("type", "text")
+            .insert("use", "optional")
+            .insert("default", "-0.001"));
+}
+
+void CameraFactory::add_shift_metadata(DictionaryArray& metadata)
+{
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "shift_x")
+            .insert("label", "Shift X")
+            .insert("type", "text")
+            .insert("use", "optional")
+            .insert("default", "0.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "shift_y")
+            .insert("label", "Shift Y")
+            .insert("type", "text")
+            .insert("use", "optional")
+            .insert("default", "0.0"));
 }
 
 }   // namespace renderer

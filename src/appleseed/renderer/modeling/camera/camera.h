@@ -75,7 +75,7 @@ class APPLESEED_DLLSYMBOL Camera
         const ParamArray&               params);
 
     // Destructor.
-    ~Camera();
+    ~Camera() override;
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
@@ -170,10 +170,11 @@ class APPLESEED_DLLSYMBOL Camera
     // Return a camera representation suitable for rasterization.
     virtual RasterizationCamera get_rasterization_camera() const = 0;
 
-  protected:
+  private:
     struct Impl;
     Impl* impl;
 
+  protected:
     TransformSequence   m_transform_sequence;
 
     // Shutter parameters.
@@ -187,16 +188,11 @@ class APPLESEED_DLLSYMBOL Camera
     // Utility function to retrieve the film dimensions (in meters) from the camera parameters.
     foundation::Vector2d extract_film_dimensions() const;
 
-    // Utility function to retrieve the focal length (in meters) from the camera parameters.
-    double extract_focal_length(const double film_width) const;
-
-    // Focal length <-> horizontal field of view conversion functions.
-    // Focal length and film width are expressed in meters; horizontal field of view is expressed in radians.
-    static double hfov_to_focal_length(const double film_width, const double hfov);
-    static double focal_length_to_hfov(const double film_width, const double focal_length);
-
     // Utility function to retrieve the abscissa (in meters) of the near plane from the camera parameters.
     double extract_near_z() const;
+
+    // Utility function to retrieve the shift from the camera parameters.
+    foundation::Vector2d extract_shift() const;
 
     // Check shutter times and emit warnings if needed.
     void check_shutter_times_for_consistency() const;
@@ -250,6 +246,11 @@ class APPLESEED_DLLSYMBOL CameraFactory
   public:
     // Return a set of input metadata common to all camera models.
     static foundation::DictionaryArray get_input_metadata();
+
+    static void add_film_metadata(foundation::DictionaryArray& metadata);
+    static void add_lens_metadata(foundation::DictionaryArray& metadata);
+    static void add_clipping_metadata(foundation::DictionaryArray& metadata);
+    static void add_shift_metadata(foundation::DictionaryArray& metadata);
 };
 
 
