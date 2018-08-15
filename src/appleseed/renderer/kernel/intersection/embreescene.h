@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit https://appleseedhq.net/ for additional information and resources.
@@ -63,11 +64,10 @@ class EmbreeDevice
     ~EmbreeDevice();
 
   private:
-    struct Impl;
-
-    Impl* impl;
-
     friend class EmbreeScene;
+
+    struct Impl;
+    Impl* impl;
 };
 
 class EmbreeScene
@@ -95,8 +95,7 @@ class EmbreeScene
 
   private:
     struct Impl;
-
-    Impl*                       impl;
+    Impl* impl;
 };
 
 typedef std::map<
@@ -133,7 +132,7 @@ class EmbreeSceneFactory
     const EmbreeScene::Arguments        m_arguments;
 };
 
-} // namespace renderer
+}       // namespace renderer
 
-#endif // APPLESEED_WITH_EMBREE
-#endif // APPLESEED_RENDERER_KERNEL_INTERSECTION_EMBREESCENE_H
+#endif  // APPLESEED_WITH_EMBREE
+#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_EMBREESCENE_H
