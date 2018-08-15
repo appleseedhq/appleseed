@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit https://appleseedhq.net/ for additional information and resources.
@@ -62,10 +63,11 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
+namespace renderer
+{
 
 namespace
 {
-
     struct APPLESEED_SIMD4_ALIGN RayBuffer
     {
         float m_buffer[8];
@@ -261,14 +263,11 @@ namespace
     
         embree_ray.tnear = static_cast<float>(shading_ray.m_tmin) + tnear_offset;
     }
+}
 
-} // namespace
-
-namespace renderer
-{
 
 //
-//  EmbreeDevice implementation.
+//  EmbreeDevice class implementation.
 //
 
 struct EmbreeDevice::Impl
@@ -288,8 +287,9 @@ EmbreeDevice::~EmbreeDevice()
     delete impl;
 }
 
+
 //
-//  EmbreeScene implementation.
+//  EmbreeScene class implementation.
 //
 
 struct EmbreeScene::Impl
@@ -535,4 +535,4 @@ unique_ptr<EmbreeScene> EmbreeSceneFactory::create()
     return unique_ptr<EmbreeScene>(new EmbreeScene(m_arguments));
 }
 
-} // namespace renderer
+}   // namespace renderer
