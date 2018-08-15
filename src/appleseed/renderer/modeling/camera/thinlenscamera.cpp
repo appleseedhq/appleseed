@@ -34,12 +34,11 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
-#include "renderer/kernel/rasterization/rasterizationcamera.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
-#include "renderer/modeling/camera/camera.h"
+#include "renderer/modeling/camera/perspectivecamera.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/sourceinputs.h"
@@ -52,7 +51,6 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/math/dual.h"
-#include "foundation/math/intersection/planesegment.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/sampling/imageimportancesampler.h"
 #include "foundation/math/sampling/mappings.h"
@@ -176,13 +174,13 @@ namespace
     const char* Model = "thinlens_camera";
 
     class ThinLensCamera
-      : public Camera
+      : public PerspectiveCamera
     {
       public:
         ThinLensCamera(
             const char*             name,
             const ParamArray&       params)
-          : Camera(name, params)
+          : PerspectiveCamera(name, params)
         {
             m_inputs.declare("diaphragm_map", InputFormatSpectralReflectance, "");
         }
@@ -211,6 +209,8 @@ namespace
                 "  diaphragm blades              %s\n"
                 "  diaphragm tilt angle          %f\n"
                 "  near-z                        %f\n"
+                "  shift x                       %f\n"
+                "  shift y                       %f\n"
                 "  shutter open begin time       %f\n"
                 "  shutter open end time         %f\n"
                 "  shutter close begin time      %f\n"
@@ -227,6 +227,8 @@ namespace
                 pretty_uint(m_diaphragm_blade_count).c_str(),
                 m_diaphragm_tilt_angle,
                 m_near_z,
+                m_shift.x,
+                m_shift.y,
                 m_shutter_open_begin_time,
                 m_shutter_open_end_time,
                 m_shutter_close_begin_time,
@@ -239,16 +241,10 @@ namespace
             OnRenderBeginRecorder&  recorder,
             IAbortSwitch*           abort_switch) override
         {
-            if (!Camera::on_render_begin(project, parent, recorder, abort_switch))
+            if (!PerspectiveCamera::on_render_begin(project, parent, recorder, abort_switch))
                 return false;
 
             m_autofocus_enabled = m_params.get_optional<bool>("autofocus_enabled", true);
-
-            // Extract the film dimensions from the camera parameters.
-            m_film_dimensions = extract_film_dimensions();
-
-            // Extract the focal length from the camera parameters.
-            m_focal_length = extract_focal_length(m_film_dimensions[0]);
 
             // Extract the focal distance from the camera parameters.
             extract_focal_distance(
@@ -260,17 +256,6 @@ namespace
             m_diaphragm_map_bound = build_diaphragm_importance_sampler(*project.get_scene());
             extract_diaphragm_blade_count();
             extract_diaphragm_tilt_angle();
-
-            // Extract the abscissa of the near plane from the camera parameters.
-            m_near_z = extract_near_z();
-
-            // Precompute reciprocals of film dimensions.
-            m_rcp_film_width = 1.0 / m_film_dimensions[0];
-            m_rcp_film_height = 1.0 / m_film_dimensions[1];
-
-            // Precompute pixel area.
-            const size_t pixel_count = project.get_frame()->image().properties().m_pixel_count;
-            m_pixel_area = m_film_dimensions[0] * m_film_dimensions[1] / pixel_count;
 
             // Precompute lens radius.
             m_lens_radius = 0.5 * m_focal_length / extract_f_stop();
@@ -411,72 +396,16 @@ namespace
             return true;
         }
 
-        bool project_camera_space_point(
-            const Vector3d&         point,
-            Vector2d&               ndc) const override
-        {
-            // Cannot project the point if it is behind the near plane.
-            if (point.z > m_near_z)
-                return false;
-
-            // Project the point onto the film plane.
-            ndc = camera_to_ndc(point);
-
-            // Projection was successful.
-            return true;
-        }
-
-        bool project_segment(
-            const float             time,
-            const Vector3d&         a,
-            const Vector3d&         b,
-            Vector2d&               a_ndc,
-            Vector2d&               b_ndc) const override
-        {
-            // Retrieve the camera transform.
-            Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
-
-            // Transform the segment to camera space.
-            Vector3d local_a = transform.point_to_local(a);
-            Vector3d local_b = transform.point_to_local(b);
-
-            // Clip the segment against the near plane.
-            if (!clip(Vector4d(0.0, 0.0, 1.0, -m_near_z), local_a, local_b))
-                return false;
-
-            // Project the segment onto the film plane.
-            a_ndc = camera_to_ndc(local_a);
-            b_ndc = camera_to_ndc(local_b);
-
-            // Projection was successful.
-            return true;
-        }
-
-        RasterizationCamera get_rasterization_camera() const override
-        {
-            RasterizationCamera rc;
-            rc.m_aspect_ratio = m_film_dimensions[0] / m_film_dimensions[1];
-            rc.m_hfov = focal_length_to_hfov(m_film_dimensions[0], m_focal_length);
-            return rc;
-        }
-
       private:
         // Parameters.
-        Vector2d            m_film_dimensions;          // film dimensions in camera space, in meters
-        double              m_focal_length;             // focal length in camera space, in meters
         bool                m_autofocus_enabled;        // is autofocus enabled?
         bool                m_diaphragm_map_bound;      // is a diaphragm_map bound to the camera
         Vector2d            m_autofocus_target;         // autofocus target on film plane, in NDC
         double              m_focal_distance;           // focal distance in camera space
         size_t              m_diaphragm_blade_count;    // number of blades of the diaphragm, 0 for round aperture
         double              m_diaphragm_tilt_angle;     // tilt angle of the diaphragm in radians
-        double              m_near_z;                   // Z value of the near plane in camera space, in meters
 
         // Precomputed values.
-        double              m_rcp_film_width;           // film width reciprocal in camera space
-        double              m_rcp_film_height;          // film height reciprocal in camera space
-        double              m_pixel_area;               // pixel area in meters, in camera space
         double              m_lens_radius;              // radius of the lens in camera space
         double              m_focal_ratio;              // focal distance / focal length
         double              m_rcp_focal_ratio;          // focal length / focal distance
@@ -638,24 +567,6 @@ namespace
             }
         }
 
-        Vector3d ndc_to_camera(const Vector2d& point) const
-        {
-            return
-                Vector3d(
-                    (0.5 - point.x) * m_film_dimensions[0],
-                    (point.y - 0.5) * m_film_dimensions[1],
-                    m_focal_length);
-        }
-
-        Vector2d camera_to_ndc(const Vector3d& point) const
-        {
-            const double k = m_focal_length / point.z;
-            return
-                Vector2d(
-                    0.5 - (point.x * k * m_rcp_film_width),
-                    0.5 + (point.y * k * m_rcp_film_height));
-        }
-
         Vector3d sample_lens(SamplingContext& sampling_context) const
         {
             if (m_diaphragm_map_bound)
@@ -736,55 +647,8 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
 {
     DictionaryArray metadata = CameraFactory::get_input_metadata();
 
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "film_dimensions")
-            .insert("label", "Film Dimensions")
-            .insert("type", "text")
-            .insert("use", "required"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "film_width")
-            .insert("label", "Film Width")
-            .insert("type", "text")
-            .insert("use", "required"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "film_height")
-            .insert("label", "Film Height")
-            .insert("type", "text")
-            .insert("use", "required"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "aspect_ratio")
-            .insert("label", "Aspect Ratio")
-            .insert("type", "text")
-            .insert("use", "required"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "focal_length")
-            .insert("label", "Focal Length")
-            .insert("type", "text")
-            .insert("use", "required"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "horizontal_fov")
-            .insert("label", "Horizontal FOV")
-            .insert("type", "numeric")
-            .insert("min",
-                Dictionary()
-                    .insert("value", "1.0")
-                    .insert("type", "soft"))
-            .insert("max",
-                Dictionary()
-                    .insert("value", "180.0")
-                    .insert("type", "soft"))
-            .insert("use", "required"));
+    CameraFactory::add_film_metadata(metadata);
+    CameraFactory::add_lens_metadata(metadata);
 
     metadata.push_back(
         Dictionary()
@@ -875,13 +739,8 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional"));
 
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "near_z")
-            .insert("label", "Near Z")
-            .insert("type", "text")
-            .insert("use", "optional")
-            .insert("default", "-0.001"));
+    CameraFactory::add_clipping_metadata(metadata);
+    CameraFactory::add_shift_metadata(metadata);
 
     return metadata;
 }

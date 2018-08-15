@@ -260,6 +260,7 @@ namespace
             RasterizationCamera rc;
             rc.m_aspect_ratio = m_film_dimensions[0] / m_film_dimensions[1];
             rc.m_hfov = deg_to_rad(54.0);
+            rc.m_shift_x = rc.m_shift_y = 0.0;
             return rc;
         }
 
@@ -320,41 +321,8 @@ DictionaryArray OrthographicCameraFactory::get_input_metadata() const
 {
     DictionaryArray metadata = CameraFactory::get_input_metadata();
 
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "film_dimensions")
-            .insert("label", "Film Dimensions")
-            .insert("type", "text")
-            .insert("use", "required"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "film_width")
-            .insert("label", "Film Width")
-            .insert("type", "text")
-            .insert("use", "required"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "film_height")
-            .insert("label", "Film Height")
-            .insert("type", "text")
-            .insert("use", "required"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "aspect_ratio")
-            .insert("label", "Aspect Ratio")
-            .insert("type", "text")
-            .insert("use", "required"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "near_z")
-            .insert("label", "Near Z")
-            .insert("type", "text")
-            .insert("use", "optional")
-            .insert("default", "-0.001"));
+    CameraFactory::add_film_metadata(metadata);
+    CameraFactory::add_clipping_metadata(metadata);
 
     return metadata;
 }
