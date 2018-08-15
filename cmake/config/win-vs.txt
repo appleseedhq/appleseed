@@ -374,8 +374,26 @@ macro (link_against_embree target)
         target_link_libraries (${target} ${EMBREE_LIBRARIES})
     else ()
         target_link_libraries (${target} 
-            debug ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/embree3.lib
-            optimized ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/embree3.lib
+            # Order matters here.
+            # See appleseed-deps\src\embree\readme.pdf, section 3.3 CMake Configuration for details.
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/lexers.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/math.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/simd.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/sys.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/tasking.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/embree3.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/embree_sse42.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/embree_avx.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/embree_avx2.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/lexers.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/math.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/simd.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/sys.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/tasking.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/embree3.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/embree_sse42.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/embree_avx.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/embree_avx2.lib
         )
     endif ()
 endmacro ()

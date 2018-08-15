@@ -328,7 +328,9 @@ inline AssemblyLeafVisitor::AssemblyLeafVisitor(
   , m_region_tree_cache(region_tree_cache)
   , m_triangle_tree_cache(triangle_tree_cache)
   , m_curve_tree_cache(curve_tree_cache)
+#ifdef APPLESEED_WITH_EMBREE
   , m_embree_scene_cache(embree_scene_cache)
+#endif
   , m_parent_shading_point(parent_shading_point)
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
   , m_triangle_tree_stats(triangle_tree_stats)
@@ -360,7 +362,9 @@ inline AssemblyLeafProbeVisitor::AssemblyLeafProbeVisitor(
   , m_region_tree_cache(region_tree_cache)
   , m_triangle_tree_cache(triangle_tree_cache)
   , m_curve_tree_cache(curve_tree_cache)
+#ifdef APPLESEED_WITH_EMBREE
   , m_embree_scene_cache(embree_scene_cache)
+#endif
   , m_parent_shading_point(parent_shading_point)
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
   , m_triangle_tree_stats(triangle_tree_stats)
