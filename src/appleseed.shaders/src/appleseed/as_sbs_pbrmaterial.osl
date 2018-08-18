@@ -50,7 +50,7 @@ shader as_sbs_pbrmaterial
         float max = 1.0,
         string label = "Ambient Occlusion",
         string page = "Ambient Occlusion",
-        string help = "Ambient occlusion channel"
+        string help = "Ambient occlusion channel texture from Substance Painter."
         // Default linear-encoded by SBS
     ]],
     color in_baseColor = color(0.5)
@@ -102,7 +102,7 @@ shader as_sbs_pbrmaterial
         float max = 1.0,
         string label = "Scale",
         string page = "Height",
-        string help = "Provided significant physical detail to the surface by manipulating the vertices of the mesh."
+        string help = "A scaling factor for the height bump mapping."
         // linear encoded
     ]],
     float in_metallic = 0.0
@@ -189,7 +189,8 @@ shader as_sbs_pbrmaterial
         float max = 1.0,
         string label = "Refraction",
         string page = "Refraction",
-        string help = "Refraction channel"
+        string help = "Refraction channel",
+        int divider = 1
         // linear encoded
     ]],
     float in_refractionIOR = 1.5
@@ -199,9 +200,18 @@ shader as_sbs_pbrmaterial
         float min = 0.0,
         float softmax = 5.0,
         float max = 10.0,
+        string widget = "slider",
+        float slidermin = 1.0,
+        float slidermax = 10.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
         string label = "IOR",
         string page = "Refraction",
-        string help = "Index of Refraction"
+        string help = "Index of Refraction",
+        int divider = 1
     ]],
     float in_scattering = 0.0
     [[
@@ -270,6 +280,9 @@ shader as_sbs_pbrmaterial
         int min = 0,
         int max = 100,
         int softmax = 8,
+        string widget = "slider",
+        int slidermin = 0,
+        int slidermax = 10,
         string label = "Ray Depth",
         string page = "Advanced",
         int as_maya_attribute_connectable = 0,
@@ -362,22 +375,23 @@ shader as_sbs_pbrmaterial
     
     // The SBS MDL does a linear blend between the specular BTDF and a 
     // diffuse BRDF according to the refraction parameter, then adds the
-    // specular BRDF on top. We can do this using the glass BSDF by building
+    // specular BRDF on top, then blends everything with a conductor BRDF.
+    // We can do this using the glass BSDF by building
     // the respective reflection and transmission weights for the closure.
     //
 
-    closure color btdf = 0, brdf = 0;
+    closure color bsdf = 0;
 
     if (in_refraction > 0.0)
     {
-        closure color specular_btdf = as_glass(
+        bsdf += in_refraction * in_opacity * as_glass(
             "ggx",
             Nn,
             vector(0),  // tangent
             color(1),   // surface transmittance
             color(0),   // reflection tint
             diffuse_color,
-            0.0,        // roughness
+            0.01,       // roughness
             0.0,        // highlight falloff
             0.0,        // anisotropic amount
             in_refractionIOR,
@@ -385,13 +399,12 @@ shader as_sbs_pbrmaterial
             in_absorption * 10.0, // original range [0,0.1], find match
             "energy_compensation", 0.0);
 
-        closure color diffuse_btdf = diffuse_color * diffuse(Nn);
-
-        btdf = mix(diffuse_btdf, specular_btdf, in_refraction);
+        bsdf += (1.0 - in_refraction) * in_opacity *
+            diffuse_color * diffuse(Nn);
     }
     else
     {
-        btdf = diffuse_color * diffuse(Nn);
+        bsdf = in_opacity * diffuse_color * diffuse(Nn);
     }
 
     if (in_specularLevel > 0.0)
@@ -409,55 +422,60 @@ shader as_sbs_pbrmaterial
 
         // Schlick Fresnel approximation to layer the specular BRDF over the
         // diffuse|specular BTDF mix.
-        float F0 = in_specularLevel * 0.08;            
-        float F90 = 1.0;
-        float tmp = 1.0 - max(0.0, dot(normalize(-I), Nn));
-        float F = F0 + (F90 - F0) * pow(tmp, 5.0);
 
-        btdf *= 1.0 - F;
-
-        // Compute the dielectric brdf, which is added with the btdf.
-        float sqrt_f0 = sqrt(F);
-        float eta = (sqrt_f0 + 1.0) / max(1.0e-6, 1.0 - sqrt_f0);
-
-        closure color dielectric_brdf = as_glossy(
-            "ggx",
-            Nn,
-            tangent,
-            in_roughness,
-            0.0,        // highlight falloff
-            in_anisotropyLevel,
-            eta,
-            "energy_compensation", 0.0);
-
-        closure color bsdf = btdf + dielectric_brdf;
-
-        if (in_metallic > 0.0)
+        if (in_specularLevel > 0.0)
         {
-            closure color conductor_brdf = as_metal(
+            float F0 = in_specularLevel * 0.08; // from MDL (dielectric)
+            float F90 = 1.0;
+
+            float tmp = 1.0 - max(0.0, dot(normalize(-I), Nn));
+            float F = (tmp > 0.0) ? F0 + (F90 - F0) * pow(tmp, 5.0) : 0.0;
+
+            bsdf *= 1.0 - F;
+
+            // Compute the dielectric brdf, which is added with the btdf.
+            float sqrt_f0 = sqrt(F0);
+            float eta = (sqrt_f0 + 1.0) / max(1.0e-6, 1.0 - sqrt_f0);
+
+            bsdf += in_opacity * as_glossy(
+                "ggx",
+                Nn,
+                tangent,
+                max(0.01, in_roughness),
+                0.0,
+                in_anisotropyLevel,
+                eta,
+                // disable fresnel weight to scale by F above
+                "energy_compensation", 0.0);
+        }
+
+        float metallicness = clamp(in_metallic, 0.0, 1.0);
+
+        if (metallicness > 0.0)
+        {
+            bsdf *= 1.0 - metallicness;
+            bsdf += in_opacity * metallicness * as_metal(
                 "ggx",
                 Nn,
                 tangent,
                 in_baseColor,
-                color(1),   // edge tint
-                in_roughness,
+                color(1.0), // edge tint
+                max(0.01, in_roughness),
                 0.0,        // highlight falloff
                 in_anisotropyLevel,
                 "energy_compensation", 0.0);
-
-            bsdf = mix(bsdf, conductor_brdf, in_metallic);
         }
-
         out_outColor += bsdf;
     }
     else
     {
-        out_outColor += btdf;
+        out_outColor += bsdf;
     }
 
-    if (max(in_emissiveIntensity * in_emissiveColor) > 0.0)
+    if (raytype("light") &&
+        max(in_emissiveIntensity * in_emissiveColor) > 0.0)
     {
-        out_outColor += in_emissiveIntensity *
+        out_outColor += in_opacity * in_emissiveIntensity *
             in_emissiveColor * 2.86 * emission();
     }
 }

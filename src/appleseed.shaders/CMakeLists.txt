@@ -538,15 +538,15 @@ foreach (osl_source ${osl_sources})
     )
 
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set (OSL_OPTIONS -O0 -DDEBUG)
+        set (OSLC_OPTIONS -O0 -DDEBUG)
     else ()
-        set (OSL_OPTIONS -O2 -DNDEBUG)
+        set (OSLC_OPTIONS -O2 -DNDEBUG)
     endif ()
 
     add_custom_command (
         OUTPUT ${oso_dir}/${oso_filename}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${oso_dir}
-        COMMAND ${PROJECT_SOURCE_DIR}/sandbox/bin/oslc ${OSL_OPTIONS}
+        COMMAND ${PROJECT_SOURCE_DIR}/sandbox/bin/oslc ${OSLC_OPTIONS}
             -I"${PROJECT_SOURCE_DIR}/src/appleseed.shaders/include"
             -o "${oso_dir}/${oso_filename}" "${PROJECT_SOURCE_DIR}/src/appleseed.shaders/${osl_source}"
         MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/${osl_source}

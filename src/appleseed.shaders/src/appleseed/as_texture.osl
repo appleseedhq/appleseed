@@ -310,22 +310,22 @@ shader as_texture
         }
     }
 
-    string wrap_mode[2], texname = in_filename;
     float uv_coords[2];
+    string wrap_mode[2], texname = "";
+
+    set_wrap_mode(in_s_wrap, in_t_wrap, wrap_mode);
 
     if (in_atlas_type == 0)
     {
+        texname = in_filename;
+
         uv_coords[0] = in_texture_coords[0];
         uv_coords[1] = in_texture_coords[1];
-
-        set_wrap_mode(in_s_wrap, in_t_wrap, wrap_mode);
     }
     else
     {
         uv_coords[0] = u;
         uv_coords[1] = v;
-        wrap_mode[0] = "default";
-        wrap_mode[1] = "default";
 
         //
         // Reference:
@@ -374,22 +374,19 @@ shader as_texture
         }
         else if (in_atlas_type == 3)
         {
-            string results[20], texname = "";
-            int nums = split(in_filename, results, "."), found_tiles = 0;
+            // We assume the file name consists of whatever convention, but 
+            // that the UDIM is the first occurrence of 4 digits separated
+            // by a dot character, with the 1st one in [1-9] range and the
+            // remaining 3 in [0-9] range.
 
-            for (int i = 0; i < nums; ++i)
+            int match[2];
+
+            if (regex_search(in_filename, match, "\.[1-9][0-9]{3}\."))
             {
-                if (!found_tiles && regex_search(results[i], "^[0-9]{4}"))
-                {
-                    results[i] = "<UDIM>";
-                    found_tiles = 1;
-                }
-                texname = concat(texname, results[i]);
-
-                if (i < nums - 1)
-                {
-                    texname = concat(texname, results[i]);
-                }
+                texname = concat(
+                    substr(in_filename, 0, match[0]),
+                    ".<UDIM>.",
+                    substr(in_filename, match[1]));
             }
         }
         else
