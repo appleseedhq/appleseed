@@ -1,0 +1,1075 @@
+
+//
+// This source file is part of appleseed.
+// Visit https://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2018 Esteban Tovagliari, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/color/as_color_blend_modes.h"
+#include "appleseed/math/as_math_helpers.h"
+
+//
+// References:
+//
+//  A Non-Photorealistic Lighting Model For Automatic Technical Illustration
+//  http://www.cs.northwestern.edu/~ago820/SIG98/abstract.html
+//
+//  Non-Photorealistic Computer Graphics: Modeling, Rendering, and Animation
+//  (The Morgan Kaufmann Series in Computer Graphics),
+//  ISBN-13: 978-1558607873
+//
+
+shader as_toon
+[[
+    string as_maya_node_name = "asToon",
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
+    string as_blender_node_name = "asToon",
+    string as_blender_category = "shader",
+    string help = "Non-Photo-Realistic (NPR) Toon material node",
+    string icon = "asToon.png",
+    int as_maya_type_id = 0x00127a01,
+    string as_max_class_id = "163266005, 1857516981",
+    string as_max_plugin_type = "material",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_toon.html#label-as-toon"
+]]
+(
+    //
+    // Incandescence term
+    //
+    float in_incandescence_weight = 0.0
+    [[
+        string as_maya_attribute_name = "incandescenceWeight",
+        string as_maya_attribute_short_name = "iwe",
+        float min = 0.0,
+        float softmax = 1.0,
+        float max = 100.0,
+        string label = "Weight",
+        string page = "Incandescence",
+        string help = "Global incandescence term contribution.",
+        int divider = 1
+    ]],
+    float in_incandescence_attenuation = 0.2
+    [[
+        string as_maya_attribute_name = "incandescenceAttenuation",
+        string as_maya_attribute_short_name = "iat",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Attenuation",
+        string page = "Incandescence",
+        string help = "Viewer based attenuation factor for the incandescence term."
+    ]],
+    color in_incandescence_tint = color(1)
+    [[
+        string as_maya_attribute_name = "incandescenceTint",
+        string as_maya_attribute_short_name = "iti",
+        string label = "Incandescence Tint",
+        string page = "Incandescence.Toon",
+        string help = "Global incandescence tint."
+    ]],
+    string in_edf_blend_mode = "Multiply"
+    [[
+        string as_maya_attribute_name = "edfBlendMode",
+        string as_maya_attribute_short_name = "ebm",
+        string widget = "popup",
+        string options = "Darken|Multiply|Color Burn|Linear Burn|Lighten|Screen|Color Dodge|Linear Dodge|Overlay|Soft Light|Hard Light|Vivid Light|Linear Light|Pin Light|Difference|Exclusion|Subtract|Divide|Hue|Saturation|Color|Luminosity",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Blending Mode",
+        string page = "Incandescence.Toon",
+        string help = "Blending mode for the tint factor over the cel shading effect.",
+        int divider = 1
+    ]],
+    color in_edf_dark_color = color(0, 0.17, 0.28)
+    [[
+        string as_maya_attribute_name = "edfDarkColor",
+        string as_maya_attribute_short_name = "edc",
+        string label = "EDF Dark Color",
+        string page = "Incandescence.Toon",
+        string help = "Incandescence dark color"
+    ]],
+    float in_edf_dark_level = 0.3
+    [[
+        string as_maya_attribute_name = "edfDarkLevel",
+        string as_maya_attribute_short_name = "edl",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "EDF Dark Level",
+        string page = "Incandescence.Toon",
+        string help = "Incandescence dark color to mid-tones threshold",
+        int divider = 1
+    ]],
+    color in_edf_midtone_color = color(0.035, 0.31, 0.5)
+    [[
+        string as_maya_attribute_name = "edfMidtoneColor",
+        string as_maya_attribute_short_name = "emc",
+        string label = "EDF Midtone Color",
+        string page = "Incandescence.Toon",
+        string help = "Incandescence mid-tones color."
+    ]],
+    float in_edf_midtone_level = 0.7
+    [[
+        string as_maya_attribute_name = "edfMidtoneLevel",
+        string as_maya_attribute_short_name = "eml",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "EDF Midtone Level",
+        string page = "Incandescence.Toon",
+        string help = "Incandescence midtones to bright color threshold.",
+        int divider = 1
+    ]],
+    color in_edf_bright_color = color(0.43, 0.65, 0.8)
+    [[
+        string as_maya_attribute_name = "edfBrightColor",
+        string as_maya_attribute_short_name = "ebc",
+        string label = "EDF Bright Color",
+        string page = "Incandescence.Toon",
+        string help = "Incandescence bright color.",
+        int divider = 1
+    ]],
+    float in_edf_softness = 0.05
+    [[
+        string as_maya_attribute_name = "edfSoftness",
+        string as_maya_attribute_short_name = "eso",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "EDF Softness",
+        string page = "Incandescence.Toon" ,
+        string help = "Softness of tonal range transition, higher values produce softner results, lower values produce sharper transitions"
+    ]],
+    int in_incandescence_area_normalize = 0
+    [[
+        string as_maya_attribute_name = "incandescenceAreaNormalize",
+        string as_maya_attribute_short_name = "ian",
+        string label = "Normalize by Area",
+        string page = "Incandescence.Advanced",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Normalize incandescence term by surface area toggle."
+    ]],
+
+    //
+    // Diffuse term (BRDF)
+    //
+    float in_diffuse_weight = 1.0
+    [[
+        string as_maya_attribute_name = "diffuseWeight",
+        string as_maya_attribute_short_name = "dwe",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Diffuse Weight",
+        string page = "Diffuse",
+        string help = "Global diffuse term contribution to the final shading.",
+        int divider = 1
+    ]],
+    color in_diffuse_tint = color(1)
+    [[
+        string as_maya_attribute_name = "diffuseTint",
+        string as_maya_attribute_short_name = "dti",
+        string label = "Diffuse Tint",
+        string page = "Diffuse.Toon",
+        string help = "Global diffuse term tint."
+    ]],
+    string in_diffuse_blend_mode = "Multiply"
+    [[
+        string as_maya_attribute_name = "diffuseBlendMode",
+        string as_maya_attribute_short_name = "dbm",
+        string widget = "popup",
+        string options = "Darken|Multiply|Color Burn|Linear Burn|Lighten|Screen|Color Dodge|Linear Dodge|Overlay|Soft Light|Hard Light|Vivid Light|Linear Light|Pin Light|Difference|Exclusion|Subtract|Divide|Hue|Saturation|Color|Luminosity",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Blending Mode",
+        string page = "Diffuse.Toon",
+        string help = "Blending mode for the tint factor over the cel shading effect.",
+        int divider = 1
+    ]],
+    color in_shadow_color = color(0.13, 0, 0)
+    [[
+        string as_maya_attribute_name = "shadowColor",
+        string as_maya_attribute_short_name = "shc",
+        string label = "Shadow Color",
+        string page = "Diffuse.Toon",
+        string help = "Shadows or umbra color."
+    ]],
+    float in_shadow_level = 0.15
+    [[
+        string as_maya_attribute_name = "shadowLevel",
+        string as_maya_attribute_short_name = "shl",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Shadow Level",
+        string page = "Diffuse.Toon",
+        string help = "Umbra to penumbra separation threshold.",
+        int divider = 1
+    ]],
+    color in_midtone_color = color(0.19, 0.09, 0.27)
+    [[
+        string as_maya_attribute_name = "midtoneColor",
+        string as_maya_attribute_short_name = "mtc",
+        string label = "Midtone Color",
+        string page = "Diffuse.Toon",
+        string help = "Mid-tones or penumbra color."
+    ]],
+    float in_midtone_level = 0.3
+    [[
+        string as_maya_attribute_name = "midtoneLevel",
+        string as_maya_attribute_short_name = "mtl",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Midtone Level",
+        string page = "Diffuse.Toon",
+        string help = "Penumbra to highlights separation threshold.",
+        int divider = 1
+    ]],
+    color in_highlight_color = color(0.13, 0.28, 0.55)
+    [[
+        string as_maya_attribute_name = "highlightColor",
+        string as_maya_attribute_short_name = "hic",
+        string label = "Highlight Color",
+        string page = "Diffuse.Toon",
+        string help = "Highlights color",
+        int divider = 1
+    ]],
+    float in_diffuse_softness = 0.05
+    [[
+        string as_maya_attribute_name = "diffuseSoftness",
+        string as_maya_attribute_short_name = "dso",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Diffuse Softness",
+        string page = "Diffuse.Toon" ,
+        string help = "Softness of tonal range transition, higher values produce softner results, lower values produce sharper transitions"
+    ]],
+    int in_diffuse_ray_depth = 2
+    [[
+        string as_maya_attribute_name = "diffuseRayDepth",
+        string as_maya_attribute_short_name = "drd",
+        int min = 0,
+        int max = 16,
+        int softmax = 8,
+        string widget = "slider",
+        int slidermin = 0,
+        int slidermax = 8,
+        string label = "Diffuse Ray Depth",
+        string page = "Diffuse.Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Maximum number of diffuse path bounces."
+    ]],
+
+    //
+    // Specular term (BRDF)
+    //
+    float in_specular_weight = 1.0
+    [[
+        string as_maya_attribute_name = "specularWeight",
+        string as_maya_attribute_short_name = "swe",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Specular Weight",
+        string page = "Specular",
+        string help = "Global specular reflection contribution."
+    ]],
+    float in_specular_roughness = 0.1
+    [[
+        string as_maya_attribute_name = "specularRoughness",
+        string as_maya_attribute_short_name = "rou",
+        float min = 0.0,
+        float max = 1.0,
+        int as_maya_attribute_keyable = 1,
+        string label = "Specular Roughness",
+        string page = "Specular",
+        string help = "Specular roughness, lower values have sharper reflections, higher values smoother reflections.",
+        int divider = 1
+    ]],
+    float in_ior = 1.5
+    [[
+        string as_maya_attribute_name = "indexOfRefraction",
+        string as_maya_attribute_short_name = "ior",
+        float min = 1.0,
+        float softmax = 2.5,
+        float max = 50.0,
+        string widget = "slider",
+        float slidermin = 1.0,
+        float slidermax = 5.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Index Of Refraction",
+        string page = "Specular",
+        string help = "Index of refraction for reflection and transmission."
+    ]],
+
+    //
+    // BRDF anisotropy
+    //
+    float in_anisotropy_amount = 0.0
+    [[
+        string as_maya_attribute_name = "anisotropyAmount",
+        string as_maya_attribute_short_name = "anw",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Anisotropy Amount",
+        string page = "Specular.Anisotropy",
+        string help = "Amount of anisotropy, 0 producing isotropic specular highlights, and 1 fully anisotropic highlights."
+    ]],
+    float in_anisotropy_angle = 0.0
+    [[
+        string as_maya_attribute_name = "anisotropyAngle",
+        string as_maya_attribute_short_name = "ana",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Anisotropy Angle",
+        string page = "Specular.Anisotropy",
+        string help = "Anisotropy angle, mapping a value in [0,1] range to [0,360] degrees rotation.",
+        int divider = 1
+    ]],
+    int in_anisotropy_mode = 0
+    [[
+        string as_maya_attribute_name = "anisotropyMode",
+        string as_maya_attribute_short_name = "anm",
+        string widget = "mapper",
+        string options = "Anisotropy Map:0|Explicit Vector:1",
+        string label = "Anisotropy Mode",
+        string page = "Specular.Anisotropy",
+        string help = "Use tangent vector field map, or explicit vector.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    color in_anisotropy_map = color(0)
+    [[
+        string as_maya_attribute_name = "anisotropyMap",
+        string as_maya_attribute_short_name = "ama",
+        string label = "Anisotropy Vector Map",
+        string page = "Specular.Anisotropy",
+        string help = "Anisotropy vector map, with XY encoded in RG channels.",
+        int divider = 1
+    ]],
+    vector in_anisotropy_direction = vector(0)
+    [[
+        string as_maya_attribute_name = "anisotropyDirection",
+        string as_maya_attribute_short_name = "and",
+        string label = "Anisotropy Vector",
+        string page = "Specular.Anisotropy",
+        string help = "Explicit anisotropy vector, such as the vector output by a tangent field node."
+    ]],
+
+    //
+    // NPR controls
+    //
+    color in_specular_tint = color(1)
+    [[
+        string as_maya_attribute_name = "specularTint",
+        string as_maya_attribute_short_name = "sti",
+        string label = "Specular Tint",
+        string page = "Specular.Toon",
+        string help = "Global specular reflection tint."
+    ]],
+    string in_specular_blend_mode = "Multiply"
+    [[
+        string as_maya_attribute_name = "specularBlendMode",
+        string as_maya_attribute_short_name = "sbm",
+        string widget = "popup",
+        string options = "Darken|Multiply|Color Burn|Linear Burn|Lighten|Screen|Color Dodge|Linear Dodge|Overlay|Soft Light|Hard Light|Vivid Light|Linear Light|Pin Light|Difference|Exclusion|Subtract|Divide|Hue|Saturation|Color|Luminosity",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Blending Mode",
+        string page = "Specular.Toon",
+        string help = "Blending mode for the tint factor over the cel shading effect.",
+        int divider = 1
+    ]],
+    color in_glossy_color = color(1.0, 0.55, 0.2)
+    [[
+        string as_maya_attribute_name = "glossyColor",
+        string as_maya_attribute_short_name = "glc",
+        string label = "Glossy Color",
+        string page = "Specular.Toon",
+        string help = "Specular glossy color."
+    ]],
+    float in_glossy_level = 0.25
+    [[
+        string as_maya_attribute_name = "glossyLevel",
+        string as_maya_attribute_short_name = "gll",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Glossy Level",
+        string page = "Specular.Toon",
+        string help = "Specular highlight to no highlights transition threshold.",
+        int divider = 1
+    ]],
+    float in_glossy_softness = 0.05
+    [[
+        string as_maya_attribute_name = "glossySoftness",
+        string as_maya_attribute_short_name = "glo",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Glossy Softness",
+        string page = "Specular.Toon",
+        string help = "Softness of transition from specular highlight to no highlights area."
+    ]],
+    float in_facing_attenuation = 0.0
+    [[
+        string as_maya_attribute_name = "facingAttenuation",
+        string as_Maya_attribute_short_name = "fat",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Facing Attenuation",
+        string page = "Specular.Toon",
+        string help = "Attenuate facing incidence reflection, similar to Fresnel, retaining reflection intensity at the grazing angles."
+    ]],
+    int in_specular_ray_depth = 2
+    [[
+        string as_maya_attribute_name = "specularRayDepth",
+        string as_maya_attribute_short_name = "srd",
+        int min = 0,
+        int max = 16,
+        int softmax = 8,
+        string widget = "slider",
+        int slidermin = 0,
+        int slidermax = 8,
+        string label = "Specular Ray Depth",
+        string page = "Specular.Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Maximum number of specular reflection bounces."
+    ]],
+
+    //
+    // Extra rim lighting
+    //
+    float in_rim_weight = 1.0
+    [[
+        string as_maya_attribute_name = "rimWeight",
+        string as_maya_attribute_short_name = "rwe",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Rim Weight",
+        string page = "Rim",
+        string help = "Global rim reflection contribution."
+    ]],
+    color in_rim_tint = color(1)
+    [[
+        string as_maya_attribute_name = "rimTint",
+        string as_maya_attribute_short_name = "rti",
+        string label = "Rim Tint",
+        string page = "Rim.Toon",
+        string help = "Global rim reflection tint."
+    ]],
+    string in_rim_blend_mode = "Multiply"
+    [[
+        string as_maya_attribute_name = "rimBlendMode",
+        string as_maya_attribute_short_name = "rbm",
+        string widget = "popup",
+        string options = "Darken|Multiply|Color Burn|Linear Burn|Lighten|Screen|Color Dodge|Linear Dodge|Overlay|Soft Light|Hard Light|Vivid Light|Linear Light|Pin Light|Difference|Exclusion|Subtract|Divide|Hue|Saturation|Color|Luminosity",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Blending Mode",
+        string page = "Rim.Toon",
+        string help = "Blending mode for the tint factor over the cel shading effect.",
+        int divider = 1
+    ]],
+    float in_rim_softness = 0.05
+    [[
+        string as_maya_attribute_name = "rimSoftness",
+        string as_maya_attribute_short_name = "rso",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Rim Softness",
+        string page = "Rim.Toon",
+        string help = "Softness of transition from rim highlight to no highlights area."
+    ]],
+
+    //
+    // Bump control
+    //
+    normal in_bump_normal = N
+    [[
+        string as_maya_attribute_name = "normalCamera",
+        string as_maya_attribute_short_name = "n",
+        string label = "Bump Normal",
+        string widget = "maya_bump",
+        string page = "Bump"
+    ]],
+    normal in_specular_normal = N
+    [[
+        string as_maya_attribute_name = "specularNormal",
+        string as_maya_attribute_short_name = "nsp",
+        string label = "Specular Normal",
+        string widget = "maya_bump",
+        string page = "Bump",
+        int divider = 1
+    ]],
+    string in_normal_control = "Combined Bump"
+    [[
+        string as_maya_attribute_name = "normalControl",
+        string as_maya_attribute_short_name = "ncn",
+        string widget = "popup",
+        string options = "Diffuse Affects Both|Split Bump",
+        string label = "Bump Control",
+        string help = "In combined bump, the diffuse bump normal\n affects specular and diffuse bump. In \n split bump mode, you need to specify\n separate bumps for the diffuse and specular terms.",
+        string page = "Bump",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int divider = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    color in_transparency = color(0)
+    [[
+        string as_maya_attribute_name = "transparency",
+        string as_maya_attribute_short_name = "it",
+        string label = "Transparency Color",
+        string page = "Transparency"
+    ]],
+
+    //
+    // Contours/edge-detection
+    //
+    color in_contour_color = color(0.0)
+    [[
+        string as_maya_attribute_name = "contourColor",
+        string as_maya_attribute_short_name = "ctc",
+        string label = "Color",
+        string page = "Contours",
+        string help = "Global contour tint."
+    ]],
+    float in_contour_opacity = 1.0
+    [[
+        string as_maya_attribute_name = "contourOpacity",
+        string as_maya_attribute_short_name = "cto",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Opacity",
+        string page = "Contours",
+        string help = "Global contour opacity",
+        int divider = 1
+    ]],
+    float in_contour_width = 1.0
+    [[
+        string as_maya_attribute_name = "contourWidth",
+        string as_maya_attribute_short_name = "ctw",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Width",
+        string page = "Contours",
+        string help = "Global contour line width or thickness.",
+        int divider = 1
+    ]],
+    int in_contour_object = 0
+    [[
+        string as_maya_attribute_name = "contourObj",
+        string as_maya_attribute_short_name = "ctj",
+        string widget = "checkBox",
+        string label = "Object",
+        string page = "Contours",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        string help = "Generate contours based on object ID."
+    ]],
+    int in_contour_material = 0
+    [[
+        string as_maya_attribute_name = "contourMtl",
+        string as_maya_attribute_short_name = "ctm",
+        string widget = "checkBox",
+        string label = "Material",
+        string page = "Contours",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        string help = "Generate contours based on material ID."
+    ]],
+    int in_contour_occlusion = 0
+    [[
+        string as_maya_attribute_name = "contourOcc",
+        string as_maya_attribute_short_name = "occ",
+        string widget = "checkBox",
+        string label = "Occlusion",
+        string page = "Contours",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        string help = "Generate contours based on ambient occlusion."
+    ]],
+    int in_contour_creases = 0
+    [[
+        string as_maya_attribute_name = "contourCrease",
+        string as_maya_attribute_short_name = "crc",
+        string widget = "checkBox",
+        string label = "Creases",
+        string page = "Contours",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        string help = "Generate contours based on mesh creases.",
+        int divider = 1
+    ]],
+    float in_occlusion_threshold = 0.1
+    [[
+        string as_maya_attribute_name = "occlusionThreshold",
+        string as_maya_attribute_short_name = "och",
+        float min = 0.0,
+        string label = "Occlusion threshold",
+        string page = "Contours",
+        string help = "Occlusion threshold for contour lines."
+    ]],
+    float in_crease_threshold = 15
+    [[
+        string as_maya_attribute_name = "creaseThreshold",
+        string as_maya_attribute_short_name = "crh",
+        float min = 0.0,
+        string label = "Crease threshold",
+        string page = "Contours",
+        string help = "Creases threshold for contour lines."
+    ]],
+
+    //
+    // Matte holdouts
+    //
+    int in_enable_matte = 0
+    [[
+        string as_maya_attribute_name = "enableMatte",
+        string as_maya_attribute_short_name = "ema",
+        string widget = "checkBox",
+        string label = "Enable Matte Opacity",
+        string page = "Matte Opacity",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int divider = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    float in_matte_opacity = 0.0
+    [[
+        string as_maya_attribute_name = "matteOpacity",
+        string as_maya_attribute_short_name = "mao",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Matte Opacity",
+        string page = "Matte Opacity",
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    color in_matte_opacity_color = color(1, 0.5, 0)
+    [[
+        string as_maya_attribute_name = "matteOpacityColor",
+        string as_maya_attribute_short_name = "mac",
+        string label = "Matte Opacity Color",
+        string page = "Matte Opacity",
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+
+    //
+    vector Tn = vector(0)
+    [[
+        int lockgeom = 0,
+        int as_maya_attribute_hidden = 1,
+        string widget = "null",
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    vector Bn = vector(0)
+    [[
+        int lockgeom = 0,
+        int as_maya_attribute_hidden = 1,
+        string widget = "null",
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+
+    ]],
+
+    output closure color out_outColor = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null"
+    ]],
+    output closure color out_outTransparency = 0
+    [[
+        string as_maya_attribute_name = "outTransparency",
+        string as_maya_attribute_short_name = "ot",
+        string widget = "null"
+    ]],
+    output closure color out_outMatteOpacity = 0
+    [[
+        string as_maya_attribute_name = "outMatteOpacity",
+        string as_maya_attribute_short_name = "om",
+        string widget = "null",
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]]
+)
+{
+    if (max(in_transparency) > 0.0)
+    {
+        out_outTransparency = in_transparency * transparent();
+        out_outColor += out_outTransparency;
+    }
+
+    if (raytype("shadow") || raytype("transparency"))
+    {
+        return;
+    }
+
+    if (in_transparency == 1.0)
+    {
+        return;
+    }
+
+    if (!raytype("npr"))
+    {
+        color opacity = 1.0 - in_transparency;
+
+        if (raytype("light"))
+        {
+            color edf = in_incandescence_weight * in_incandescence_tint;
+
+            if (max(edf) > 0.0)
+            {
+                if (in_incandescence_area_normalize)
+                {
+                    edf /= surfacearea();
+                }
+                out_outColor += opacity * edf * emission();
+            }
+        }
+
+        normal diffuseN, specularN;
+
+        if (in_normal_control == "Both")
+        {
+            diffuseN = specularN = normalize(in_bump_normal);
+        }
+        else
+        {
+            diffuseN = normalize(in_bump_normal);
+            specularN = normalize(in_specular_normal);
+        }
+
+        int ray_depth = 0;
+        int status = getattribute("path:ray_depth", ray_depth);
+
+        if (ray_depth <= in_diffuse_ray_depth)
+        {
+            out_outColor += in_diffuse_weight * diffuse(diffuseN);
+        }
+
+        if (!raytype("diffuse") && in_specular_weight > 0.0)
+        {
+            vector tangent = Tn;
+
+            if (in_anisotropy_amount > 0.0)
+            {
+                if (in_anisotropy_mode == 0)
+                {
+                    if (isconnected(in_anisotropy_map))
+                    {
+                        vector vector_map = normalize(
+                            (vector) in_anisotropy_map * 2.0 - 1.0);
+
+                        tangent = normalize(
+                            vector_map[0] * Tn +
+                            vector_map[1] * Bn +
+                            vector_map[2] * diffuseN);
+                    }
+                }
+                else
+                {
+                    tangent = in_anisotropy_direction;
+                }
+
+                if (in_anisotropy_angle > 0.0)
+                {
+                    tangent = rotate(
+                        tangent,
+                        in_anisotropy_angle * M_2PI,
+                        point(0),
+                        point(N));
+                }
+            }
+
+            // BSDF can be called if we support transmission rays for NPR,
+            // controlled via BRDF,BTDF weights in i.e, glass BSDF.
+
+            out_outColor += in_specular_weight * as_glossy(
+                "beckmann",
+                specularN,
+                tangent,
+                in_specular_roughness,
+                0.0, // specular spread for Student t-MDF
+                in_anisotropy_amount,
+                in_ior);
+        }
+    }
+    else // NPR ray
+    {
+        // EDF NPR.
+
+        color emission_term = color(0);
+
+        if (max(in_incandescence_weight * in_incandescence_tint) > 0.0)
+        {
+            int status = getattribute("surface_shader:emission", emission_term);
+
+            float facing_ratio = dot(normalize(-I), normalize(in_bump_normal));
+            float attenuation = (in_incandescence_attenuation * 4.0) + 1.0;
+
+            facing_ratio = pow(max(0.0, facing_ratio), attenuation);
+
+            float emission_Y = clamp(
+                luminance(emission_term * facing_ratio),
+                0.0,
+                1.0);
+
+            // This is the luminance of the scene-linear code values, but
+            // the toon/NPR value remapping is a perceptual remapping. We
+            // could try and get the output transform and do a precise
+            // mapping according to the ODT, or we can simplify things and
+            // use a simple gamma function with 2.2 exponent.
+            //
+            emission_Y = pow(emission_Y, 1.0 / 2.2);
+
+            float edf_dark_level = min(in_edf_dark_level, in_edf_midtone_level);
+
+            float edf_dark = smoothstep(
+                edf_dark_level,
+                min(1.0, edf_dark_level + in_edf_softness),
+                emission_Y);
+
+            float edf_midtones = smoothstep(
+                in_edf_midtone_level,
+                min(1.0, in_edf_midtone_level + in_edf_softness),
+                emission_Y);
+
+            emission_term = mix(
+                in_edf_dark_color,
+                in_edf_midtone_color,
+                edf_dark);
+
+            emission_term = mix(
+                emission_term,
+                in_edf_bright_color,
+                edf_midtones);
+        }
+
+        // Final blended tint factor for EDF:
+        emission_term = blend_color(
+            in_edf_blend_mode,
+            emission_term,
+            in_incandescence_tint);
+
+        emission_term = max(0.0, emission_term);
+
+        // Diffuse BRDF NPR.
+
+        color diffuse_term = color(0), diffuse_col = color(0);
+
+        if (max(in_diffuse_weight * in_diffuse_tint) > 0.0)
+        {
+            getattribute("surface_shader:diffuse", diffuse_term);
+
+            float diffuse_Y = clamp(luminance(diffuse_term), 0.0, 1.0);
+
+            // Get diffuse color only, to retain light color blending later.
+
+            color diffuse_hsv = transformc("rgb", "hsv", diffuse_term);
+            diffuse_col = transformc("hsv", "rgb",
+                color(diffuse_hsv[0], diffuse_hsv[1], 1.0));
+
+            // The same perceptual mapping considerations apply here.
+            diffuse_Y = pow(diffuse_Y, 1.0 / 2.2);
+
+            float shadows_level = min(in_shadow_level, in_midtone_level);
+
+            float umbra = smoothstep(
+                shadows_level,
+                min(1.0, shadows_level + in_diffuse_softness),
+                diffuse_Y);
+
+            float penumbra = smoothstep(
+                in_midtone_level,
+                min(1.0, in_midtone_level + in_diffuse_softness),
+                diffuse_Y);
+
+            diffuse_term = mix(
+                in_shadow_color,
+                in_midtone_color,
+                umbra);
+
+            diffuse_term = mix(
+                diffuse_term,
+                in_highlight_color,
+                penumbra);
+        }
+
+        // Rim lighting, only for 1 bounce.
+        int ray_depth = 0;
+        int status = getattribute("path:ray_depth", ray_depth);
+
+        if (ray_depth < 2 && in_rim_weight > 0.0)
+        {
+            color rim_term = color(0);
+
+            getattribute("surface_shader:diffuse", rim_term);
+
+            float diffuse_Y = clamp(luminance(rim_term), 0.0, 1.0);
+            float mixing = smoothstep(0.5, 0.9, diffuse_Y);
+
+            float facing = 1.0 - max(0.0, dot(normalize(in_bump_normal),
+                                              normalize(-I)));
+
+            float rim_factor = mixing *
+                pow(facing, max(2.0, sqrt(in_rim_softness) * 10));
+
+            rim_factor = clamp(rim_factor, 0.0, 1.0);
+            rim_factor = smoothstep(
+                max(0.0, 0.5 - in_rim_softness),
+                min(1.0, 0.5 + in_rim_softness),
+                rim_factor);
+
+            rim_factor = clamp(rim_factor, 0.0, 1.0);
+
+            diffuse_term = mix(
+                diffuse_term,
+                in_rim_weight * in_rim_tint,
+                rim_factor);
+        }
+
+        // Overlay diffuse tint after diffuse+rim lighting.
+        diffuse_term = blend_color(
+            in_diffuse_blend_mode,
+            diffuse_term,
+            in_diffuse_tint);
+
+        diffuse_term = max(0.0, diffuse_term);
+
+        // Final blend with pure light color, with its HSV V value set to 1.0.
+        diffuse_term *= diffuse_col;
+
+        // Specular BRDF.
+
+        color specular_term = color(0);
+
+        if (max(in_specular_weight * in_specular_tint) > 0.0)
+        {
+            getattribute("surface_shader:glossy", specular_term);
+
+            float specular_Y = clamp(luminance(specular_term), 0.0, 1.0);
+
+            // Get the pure light color, set HSV V to 1.0 for final blend.
+            color specular_hsv = transformc("rgb", "hsv", specular_term);
+            color specular_col = transformc("hsv", "rgb",
+                color(specular_hsv[0], specular_hsv[1], 1.0));
+
+            // The same perceptual mapping considerations apply here.
+            specular_Y = pow(specular_Y, 1.0 / 2.2);
+
+            float highlight = smoothstep(
+                in_glossy_level,
+                min(1.0, in_glossy_level + in_glossy_softness),
+                specular_Y);
+
+            specular_term = mix(
+                color(0),
+                in_glossy_color,
+                highlight);
+
+            // Apply Fresnel like facing incidence attenuation.
+            if (in_facing_attenuation > 0.0)
+            {
+                float cos_theta_o = max(0.0,
+                    dot(normalize(-I), normalize(in_bump_normal)));
+
+                float tmp = 1.0 - in_facing_attenuation;
+                float F = tmp + (1.0 - tmp) * (1.0 - pow(cos_theta_o, 5));
+
+                specular_term *= 1.0; //F;
+            }
+
+            specular_term = blend_color(
+                in_specular_blend_mode,
+                specular_term,
+                in_specular_tint);
+
+            specular_term = max(0.0, specular_term);
+
+            // Final blend with pure light color, with its HSV V set to 1.0
+            specular_term *= specular_col;
+        }
+
+        // Final NPR term.
+        out_outColor = (emission_term + diffuse_term + specular_term) *
+            as_npr_shading();
+
+        // Contours.
+        out_outColor += as_npr_contour(
+            in_contour_color,
+            in_contour_opacity,
+            in_contour_width,
+            in_contour_object,
+            in_contour_material,
+            in_contour_occlusion,
+            in_occlusion_threshold,
+            in_contour_creases,
+            in_crease_threshold);
+
+        // Matte holdouts, masks in the final "npr" path.
+        if (in_enable_matte)
+        {
+            out_outMatteOpacity = in_matte_opacity *
+                in_matte_opacity_color * holdout();
+
+            out_outColor += out_outMatteOpacity;
+        }
+    }
+}
