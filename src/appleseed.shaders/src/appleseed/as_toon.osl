@@ -546,7 +546,7 @@ shader as_toon
         string page = "Bump",
         int divider = 1
     ]],
-    string in_normal_control = "Combined Bump"
+    string in_normal_control = "Diffuse Affects Both"
     [[
         string as_maya_attribute_name = "normalControl",
         string as_maya_attribute_short_name = "ncn",
@@ -786,7 +786,7 @@ shader as_toon
 
         normal diffuseN, specularN;
 
-        if (in_normal_control == "Both")
+        if (in_normal_control == "Diffuse Affects Both")
         {
             diffuseN = specularN = normalize(in_bump_normal);
         }
