@@ -202,10 +202,7 @@ void GenericImageFileWriter::set_image_spec()
     const boost::filesystem::path filepath(m_filename);
     const std::string extension = lower_case(filepath.extension().string());
 
-    if (extension == ".png")
-        set_image_output_format(PixelFormat::PixelFormatUInt8);
-    else
-        set_image_output_format(props.m_pixel_format);
+    set_image_output_format(props.m_pixel_format);
 }
 
 void GenericImageFileWriter::set_exr_image_attributes(const ImageAttributes& image_attributes)
