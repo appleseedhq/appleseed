@@ -255,9 +255,9 @@ namespace
         _mm_store_ps(&embree_ray.org_x, _mm_load_ps(buffer.org()));
         _mm_store_ps(&embree_ray.dir_x, _mm_load_ps(buffer.dir()));
 
-        embree_ray.tfar     = static_cast<float>(shading_ray.m_tmax);
-        embree_ray.time     = static_cast<float>(shading_ray.m_time.m_normalized);
-        embree_ray.mask     = shading_ray.m_flags;
+        embree_ray.tfar = static_cast<float>(shading_ray.m_tmax);
+        embree_ray.time = static_cast<float>(shading_ray.m_time.m_normalized);
+        embree_ray.mask = shading_ray.m_flags;
 
         const float tnear_offset = get_tnear_offset(embree_ray);
     
@@ -278,6 +278,7 @@ struct EmbreeDevice::Impl
 EmbreeDevice::EmbreeDevice()
   : impl(new Impl)
 {
+    // todo: set number of threads.
     impl->m_device = rtcNewDevice(nullptr);
 };
 
@@ -528,7 +529,8 @@ EmbreeScene::~EmbreeScene()
 
 EmbreeSceneFactory::EmbreeSceneFactory(const EmbreeScene::Arguments& arguments)
   : m_arguments(arguments)
-{}
+{
+}
 
 unique_ptr<EmbreeScene> EmbreeSceneFactory::create()
 {
