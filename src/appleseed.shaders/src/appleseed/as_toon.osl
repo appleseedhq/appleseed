@@ -1033,7 +1033,7 @@ shader as_toon
                 float tmp = 1.0 - in_facing_attenuation;
                 float F = tmp + (1.0 - tmp) * (1.0 - pow(cos_theta_o, 5));
 
-                specular_term *= 1.0; //F;
+                specular_term *= F;
             }
 
             specular_term = blend_color(
