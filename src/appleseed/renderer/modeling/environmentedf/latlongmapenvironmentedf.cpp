@@ -212,7 +212,9 @@ namespace
             if (environment->get_uncached_environment_edf() == this)
             {
                 check_non_zero_emission("radiance", "radiance_multiplier");
-                build_importance_map(*project.get_scene(), abort_switch);
+
+                if (m_importance_sampler.get() == nullptr)
+                    build_importance_map(*project.get_scene(), abort_switch);
             }
 
             return true;
