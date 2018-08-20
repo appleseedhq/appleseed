@@ -45,9 +45,9 @@
 using namespace foundation;
 using namespace std;
 
-TEST_SUITE(Foundation_Image_EXRImageFileWriter)
+TEST_SUITE(Foundation_Image_GenericImageFileWriter)
 {
-    static const char* Filename = "unit tests/outputs/test_exrimagefilewriter.exr";
+    static const char* Filename = "unit tests/outputs/test_genericimagefilewriter.exr";
     static const Color4b Reference(50, 100, 150, 42);
 
     void write_test_openexr_file_to_disk()

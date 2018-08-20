@@ -429,11 +429,11 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_datetime.cpp
     foundation/meta/tests/test_dictionary.cpp
     foundation/meta/tests/test_distance.cpp
-    foundation/meta/tests/test_exrimagefilewriter.cpp
     foundation/meta/tests/test_fastmath.cpp
     foundation/meta/tests/test_filteredtile.cpp
     foundation/meta/tests/test_fp.cpp
     foundation/meta/tests/test_fresnel.cpp
+    foundation/meta/tests/test_genericimagefilewriter.cpp
     foundation/meta/tests/test_genericprogressiveimagefilereader.cpp
     foundation/meta/tests/test_half.cpp
     foundation/meta/tests/test_hash.cpp
