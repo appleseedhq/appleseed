@@ -395,7 +395,7 @@ namespace
                         split_pixel_block(
                             pb,
                             rendering_blocks,
-                            (block_image_bb.min.x + block_image_bb.max.x) / 2);
+                            static_cast<int>((block_image_bb.min.x + block_image_bb.max.x) / 2));
                     }
                     else if (pb.m_main_axis == PixelBlock::Axis::Vertical
                         && block_image_bb.extent(1) >= BlockSplittingThreshold)
@@ -403,7 +403,7 @@ namespace
                         split_pixel_block(
                             pb,
                             rendering_blocks,
-                            (block_image_bb.min.y + block_image_bb.max.y) / 2);
+                            static_cast<int>((block_image_bb.min.y + block_image_bb.max.y) / 2));
                     }
                     else
                     {
@@ -660,7 +660,7 @@ namespace
                     split_pixel_block(
                         pb,
                         initial_blocks,
-                        (block_image_bb.min.x + block_image_bb.max.x) / 2);
+                        static_cast<int>((block_image_bb.min.x + block_image_bb.max.x) / 2));
                 }
                 else if (pb.m_main_axis == PixelBlock::Axis::Vertical
                         && block_image_bb.extent(1) >= BlockSplittingThreshold)
@@ -668,7 +668,7 @@ namespace
                     split_pixel_block(
                         pb,
                         initial_blocks,
-                        (block_image_bb.min.y + block_image_bb.max.y) / 2);
+                        static_cast<int>((block_image_bb.min.y + block_image_bb.max.y) / 2));
                 }
             }
         }
