@@ -106,6 +106,12 @@ if (is_x86)
             -msse2                                      # enable SSE instruction sets up to SSE 2
         )
     endif ()
+    if (USE_F16C)
+        set (c_compiler_flags_common
+            ${c_compiler_flags_common}
+            -mf16c                                      # enable F16C instructions
+        )
+    endif ()
     if (USE_SSE42)
         set (c_compiler_flags_common
             ${c_compiler_flags_common}
@@ -123,7 +129,6 @@ if (is_x86)
             ${c_compiler_flags_common}
             -mavx2                                      # enable AVX2 instruction set
             -mfma                                       # enable FMA instruction
-            -mf16c                                      # enable F16C instructions
             -ffp-contract=off                           # for now only explicit fmadd
         )
     endif ()
