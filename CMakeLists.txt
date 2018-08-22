@@ -135,6 +135,7 @@ endif ()
 # SIMD options.
 if (is_x86)
     option (USE_SSE                         "Use SSE instruction sets up to version 2"              ON)
+    option (USE_F16C                        "Use F16C instruction set"                              ON)
     if (TARGET_ARCH MATCHES "x86_64")
         option (USE_SSE42                   "Use SSE instruction sets up to version 4.2"            OFF)
         option (USE_AVX                     "Use AVX instruction set"                               OFF)
@@ -353,6 +354,11 @@ set (preprocessor_definitions_common
     ${preprocessor_definitions_common}
 )
 
+# $ORIGIN support in rpath.
+if (UNIX AND NOT APPLE)
+    set (USE_RPATH_ORIGIN TRUE)
+endif ()
+
 if (is_x86)
     set (preprocessor_definitions_common
         ${preprocessor_definitions_common}
@@ -360,33 +366,35 @@ if (is_x86)
     )
 endif ()
 
-# $ORIGIN support in rpath.
-if (UNIX AND NOT APPLE)
-    set (USE_RPATH_ORIGIN TRUE)
-endif ()
-
 # SIMD.
 if (is_x86)
     if (USE_AVX2)
-        set (USE_AVX TRUE)
         set (preprocessor_definitions_common
             ${preprocessor_definitions_common}
             APPLESEED_USE_AVX2
         )
+        set (USE_AVX TRUE)
     endif ()
     if (USE_AVX)
-        set (USE_SSE42 TRUE)
         set (preprocessor_definitions_common
             ${preprocessor_definitions_common}
             APPLESEED_USE_AVX
         )
+        set (USE_SSE42 TRUE)
     endif ()
     if (USE_SSE42)
-        set (USE_SSE TRUE)
         set (preprocessor_definitions_common
             ${preprocessor_definitions_common}
             APPLESEED_USE_SSE42
         )
+        set (USE_F16C TRUE)
+    endif ()
+    if (USE_F16C)
+        set (preprocessor_definitions_common
+            ${preprocessor_definitions_common}
+            APPLESEED_USE_F16C
+        )
+        set (USE_SSE TRUE)
     endif ()
     if (USE_SSE)
         set (preprocessor_definitions_common

@@ -52,17 +52,13 @@ TEST_SUITE(Foundation_Math_Half)
             const float expected_float = half_to_float(expected_half);
 
             const Half actual_half = float_to_half(expected_float);
+            const float actual_float = half_to_float(actual_half);
 
-            if (FP<float>::is_neg_zero(expected_float))
-            {
-                // float_to_half() converts -0.0f to 0.
-                EXPECT_EQ(0, actual_half.bits());
-            }
-            else
-            {
-                // Bitwise comparison since we expect an exact match.
-                EXPECT_EQ(expected_half.bits(), actual_half.bits());
-            }
+            if (FP<float>::is_qnan(expected_float))
+                EXPECT_TRUE(FP<float>::is_qnan(actual_float));
+            else if (FP<float>::is_snan(expected_float))
+                EXPECT_TRUE(FP<float>::is_snan(actual_float));
+            else EXPECT_EQ(expected_float, actual_float);
         }
     }
 
@@ -99,23 +95,6 @@ TEST_SUITE(Foundation_Math_Half)
         }
     }
 
-    TEST_CASE(HalfToFloatAlt_MatchesHalfToFloat)
-    {
-        for (size_t i = 0x0000; i <= 0xFFFF; ++i)
-        {
-            const Half half = Half::from_bits(static_cast<uint16>(i));
-
-            const float expected_float = half_to_float(half);
-            const float actual_float = half_to_float_alt(half);
-
-            if (FP<float>::is_qnan(expected_float))
-                EXPECT_TRUE(FP<float>::is_qnan(actual_float));
-            else if (FP<float>::is_snan(expected_float))
-                EXPECT_TRUE(FP<float>::is_snan(actual_float));
-            else EXPECT_EQ(expected_float, actual_float);
-        }
-    }
-
     TEST_CASE(HalfToFloat_MatchesImath)
     {
         for (size_t i = 0x0000; i <= 0xFFFF; ++i)
@@ -146,20 +125,17 @@ TEST_SUITE(Foundation_Math_Half)
             x.setBits(static_cast<uint16>(i));
             const float f = x;
 
-            // Convert float to Imath's half and appleseed's Half.
             const half imath_half(f);
-            const Half as_half = float_to_half(f);
+            const float imath_float = static_cast<float>(imath_half);
 
-            if (FP<float>::is_neg_zero(f))
-            {
-                // float_to_half() converts -0.0f to 0.
-                EXPECT_EQ(0, as_half.bits());
-            }
-            else
-            {
-                // Bitwise comparison since we expect an exact match.
-                EXPECT_EQ(imath_half.bits(), as_half.bits());
-            }
+            const Half as_half = float_to_half(f);
+            const float as_float = half_to_float(as_half);
+
+            if (FP<float>::is_qnan(imath_float))
+                EXPECT_TRUE(FP<float>::is_qnan(as_float));
+            else if (FP<float>::is_snan(imath_float))
+                EXPECT_TRUE(FP<float>::is_snan(as_float));
+            else EXPECT_EQ(imath_float, as_float);
         }
     }
 }
