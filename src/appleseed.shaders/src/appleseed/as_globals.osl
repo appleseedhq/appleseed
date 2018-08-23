@@ -169,19 +169,19 @@ shader as_globals
     output float out_u_coord = u
     [[
         string as_maya_attribute_name = "outUCoord",
-        string as_maya_attribute_short_name = "ouu",
+        string as_maya_attribute_short_name = "ouc",
         string label = "U Coordinate"
     ]],
     output float out_v_coord = v
     [[
         string as_maya_attribute_name = "outVCoord",
-        string as_maya_attribute_short_name = "ovv",
+        string as_maya_attribute_short_name = "ovc",
         string label = "V Coordinate"
     ]],
-    output float out_uv_coord[2] = {out_u_coord, out_v_coord}
+    output float out_uv_coord[2] = {u, v}
     [[
-        string as_maya_attribute_name = "outUVCoords",
-        string as_maya_attribute_short_name = "ouv",
+        string as_maya_attribute_name = "outUV",
+        string as_maya_attribute_short_name = "o",
         string label = "UV Coords",
         int divider = 1
     ]],
