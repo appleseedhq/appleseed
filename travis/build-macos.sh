@@ -10,9 +10,13 @@ export DYLD_LIBRARY_PATH=$THISDIR/local/lib:$DYLD_LIBRARY_PATH
 
 echo "Setting up the deps:"
 echo "--------------------"
-brew upgrade boost
-brew install boost-python zlib xerces-c llvm@3.9 openimageio
 
+echo "============= Updating the formulas"
+brew update
+brew upgrade
+
+echo "============= Installing deps"
+brew install boost-python zlib xerces-c llvm@3.9 openimageio
 brew tap cartr/qt4
 brew tap-pin cartr/qt4
 brew install qt@4 pyqt@4
