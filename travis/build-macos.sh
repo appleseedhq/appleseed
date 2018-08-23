@@ -11,6 +11,11 @@ export DYLD_LIBRARY_PATH=$THISDIR/local/lib:$DYLD_LIBRARY_PATH
 echo "Setting up the deps:"
 echo "--------------------"
 
+echo "Updating the formulas"
+brew update
+echo "Info on installed boost"
+brew info boost
+
 echo "Upgrading boost"
 brew upgrade boost
 echo "Installing deps"
