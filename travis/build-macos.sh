@@ -13,11 +13,7 @@ echo "--------------------"
 
 echo "Updating the formulas"
 brew update
-echo "Info on installed boost"
-brew info boost
-
-echo "Upgrading boost"
-brew upgrade boost
+brew upgrade
 echo "Installing deps"
 brew install boost-python zlib xerces-c llvm@3.9 openimageio
 
