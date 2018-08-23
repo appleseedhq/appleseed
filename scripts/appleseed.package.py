@@ -50,7 +50,7 @@ import zipfile
 # Constants.
 # -------------------------------------------------------------------------------------------------
 
-VERSION = "2.5.3"
+VERSION = "2.5.4"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
@@ -422,9 +422,10 @@ class PackageBuilder:
         copy_glob(os.path.join(self.settings.appleseed_path, "sandbox/schemas/*.xsd"), "appleseed/schemas/")
 
     def add_text_files_to_stage(self):
-        progress("Adding LICENSE.txt and README.md files")
+        progress("Adding text files")
         shutil.copy(os.path.join(self.settings.appleseed_path, "LICENSE.txt"), "appleseed/")
         shutil.copy(os.path.join(self.settings.appleseed_path, "README.md"), "appleseed/")
+        shutil.copy(os.path.join(self.settings.appleseed_path, "THIRDPARTIES.txt"), "appleseed/")
 
     def add_dummy_files_into_empty_directories(self):
         progress("Adding dummy files to preserve empty directories")
