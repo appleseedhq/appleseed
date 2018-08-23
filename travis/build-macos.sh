@@ -10,7 +10,10 @@ export DYLD_LIBRARY_PATH=$THISDIR/local/lib:$DYLD_LIBRARY_PATH
 
 echo "Setting up the deps:"
 echo "--------------------"
+
+echo "Upgrading boost"
 brew upgrade boost
+echo "Installing deps"
 brew install boost-python zlib xerces-c llvm@3.9 openimageio
 
 brew tap cartr/qt4
