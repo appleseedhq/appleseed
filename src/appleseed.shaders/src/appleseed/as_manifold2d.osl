@@ -1,0 +1,500 @@
+
+//
+// This source file is part of appleseed.
+// Visit https://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2018 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/maya/as_maya_helpers.h"
+
+shader as_manifold2D
+[[
+    string as_maya_node_name = "asManifold2D",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string as_blender_node_name = "asManifold2D",
+    string as_blender_category = "utility",
+    string icon = "asManifold2D.png",
+    string help = "Node to place and transform UV coordinates.",
+    int as_maya_type_id = 0x00127a05,
+    string as_max_class_id = "1185226119 622806922",
+    string as_max_plugin_type = "texture",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_manifold2D.html#label-as-manifold2D"
+]]
+(
+    float in_uv_coord[2] = {u, v}
+    [[
+        string as_maya_attribute_name = "uvCoord",
+        string label = "UV Coordinates",
+        string page = "Coordinates",
+        int as_max_attribute_hidden = 1
+    ]],
+    float in_uv_filter_size[2] = {
+        UNDEFINED_UVFILTER, UNDEFINED_UVFILTER}
+    [[
+        string as_maya_attribute_name = "uvFilterSize",
+        string as_maya_attribute_short_name = "uvf",
+        string label = "UV Filter Size",
+        string page = "Coordinates",
+        string help = "UV coordinates filter widths",
+        int divider = 1
+    ]],
+    int in_bypass_uv = 0
+    [[
+        string as_maya_attribute_name = "bypassUV",
+        string as_maya_attribute_short_name = "buv",
+        string widget = "checkBox",
+        string label = "Bypass UV transforms",
+        string page = "Transforms",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    int in_compute_filters = 1
+    [[
+        string as_maya_attribute_name = "computeFilters",
+        string as_maya_attribute_short_name = "cfi",
+        string widget = "checkBox",
+        string label = "Compute UV Filters",
+        string page = "Transforms",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Compute the filter widths of the UV coordinates.",
+        int divider = 1
+    ]],
+
+    //
+    // UV frame
+    float in_scale_frame[2] = {1.0, 1.0}
+    [[
+        string as_maya_attribute_name = "scaleFrame",
+        string as_maya_attribute_short_name = "sfr",
+        string label = "Scale UV Frame",
+        string page = "Frame",
+        string help = "Scale the UV frame."
+    ]],
+    float in_translate_frame[2] = {0.0, 0.0}
+    [[
+        string as_maya_attribute_name = "translateFrame",
+        string as_maya_attribute_short_name = "tfr",
+        string label = "Translate UV Frame",
+        string page = "Frame",
+        string help = "Translate the UV frame.",
+        int divider = 1
+    ]],
+    float in_rotate_frame = 0.0
+    [[
+        string as_maya_attribute_name = "rotateFrame",
+        string as_maya_attribute_short_name = "rfr",
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Rotate UV Frame",
+        string page = "Frame",
+        string help = "Rotate the UV frame, where values in the unrestricted interval [0,1] map to [0,360] degrees."
+    ]],
+    float in_frame_center[2] = {0.5, 0.5}
+    [[
+        string as_maya_attribute_name = "frameCenter",
+        string as_maya_attribute_short_name = "fce",
+        string label = "UV Frame Center",
+        string page = "Frame",
+        int divider = 1
+    ]],
+    string in_wrap_mode_u = "Periodic"
+    [[
+        string as_maya_attribute_namne = "wrapModeU",
+        string as_maya_attribute_short_name = "wmu",
+        string widget = "popup",
+        string options = "Periodic|Mirror|Clamp|Default Color",
+        string label = "Wrap Along U",
+        string page = "Frame",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Wrap mode outside the [0,1] UV square. Textures already  have their wrap modes, but you might want to use this for a procedural texture."
+    ]],
+    string in_wrap_mode_v = "Periodic"
+    [[
+        string as_maya_attribute_name = "wrapModeV",
+        string as_maya_attribute_short_name = "wmv",
+        string widget = "popup",
+        string options = "Periodic|Mirror|Clamp|Default Color",
+        string label = "Wrap Along V",
+        string page = "Frame",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Wrap mode outside the [0,1] UV square. Textures already have their wrap modes, but you might want to use this for a procedural texture.",
+        int divider = 1
+    ]],
+
+    //
+    // Main UV transforms
+    float in_uv_tiles[2] = {1,1}
+    [[
+        string as_maya_attribute_name = "uvTiles",
+        string as_maya_attribute_short_name = "uvt",
+        string label = "UV Tiles",
+        string page = "Transform",
+        string help = "Number of UV tiles."
+    ]],
+    float in_offset_tiles[2] = {0.0, 0.0}
+    [[
+        string as_maya_attribute_name = "offsetTiles",
+        string as_maya_attribute_short_name = "oti",
+        string label = "Offset Tiles",
+        string page = "Transform",
+        string help = "Offset UV Tiles along U, V or both.",
+        int divider = 1
+    ]],
+    float in_rotate_tiles = 0.0
+    [[
+        string as_maya_attribute_name = "rotateTiles",
+        string as_maya_attribute_short_name = "rti",
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Tiles Rotation",
+        string page = "Transform",
+        string help = "Rotate the UV tiles, where the unrestricted interval [0,1] maps to [0,360] degrees."
+    ]],
+    float in_tiles_center[2] = {0.5, 0.5}
+    [[
+        string as_maya_attribute_name = "tilesCenter",
+        string as_maya_attribute_short_name = "tle",
+        string label = "Tiles Center",
+        string page = "Transform",
+        string help = "The center of rotation for the UV tiles.",
+        int divider = 1
+    ]],
+    float in_tiles_coverage[2] = {1.0, 1.0}
+    [[
+        string as_maya_attribute_name = "tilesCoverage",
+        string as_maya_attribute_short_name = "tco",
+        string label = "Tiles Coverage",
+        string page = "Transform",
+        string help = "The amount of area of the UV frame to cover."
+    ]],
+
+    //
+    // Individual tiles control
+    int in_mirror_u = 0
+    [[
+        string as_maya_attribute_name = "mirrorU",
+        string as_maya_attribute_short_name = "mru",
+        string label = "Mirror U",
+        string widget = "checkBox",
+        string page = "Transform.Tile",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,        
+        string help = "Mirror the UV tile along the U direction."
+    ]],
+    int in_mirror_v = 0
+    [[
+        string as_maya_attribute_name = "mirrorV",
+        string as_maya_attribute_short_name = "mrv",
+        string label = "Mirror V",
+        string widget = "checkBox",
+        string page = "Transform.Tile",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Mirror the UV tile along the V direction."
+    ]],
+    int in_wrap_u = 0
+    [[
+        string as_maya_attribute_name = "wrapU",
+        string as_maya_attribute_short_name = "wru",
+        string label = "Wrap U",
+        string widget = "checkBox",
+        string page = "Transform.Tile",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Wrap the UV tile along the U direction."
+    ]],
+    int in_wrap_v = 0
+    [[
+        string as_maya_attribute_name = "wrapV",
+        string as_maya_attribute_short_name = "wrv",
+        string label = "Wrap V",
+        string widget = "checkBox",
+        string page = "Transform.Tile",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Wrap the UV tile along the V direction."
+    ]],
+    int in_stagger_uv = 0
+    [[
+        string as_maya_attribute_name = "stagger",
+        string as_maya_attribute_short_name = "sta",
+        string label = "Stagger",
+        string widget = "checkBox",
+        string page = "Transform.Tile",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Stagger each row half the tile width."
+    ]],
+    int in_swap_uv = 0
+    [[
+        string as_maya_attribute_name = "swapUV",
+        string as_maya_attribute_short_name = "swu",
+        string label = "Swap UVs",
+        string widget = "checkBox",
+        string page = "Transform.Tile",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Swap the U and V coordinates."
+    ]],
+
+    //
+    // Distortion
+    float in_noise_uv[2] = {0.0, 0.0}
+    [[
+        string as_maya_attribute_name = "noiseUV",
+        string as_maya_attribute_short_name = "nuv",
+        string label = "Distort UV",
+        string page = "Noise",
+        string help = "Distort U, V, or UV coordinates with a signed Perlin noise function."
+    ]],
+
+    //
+    // Outputs
+    output float out_uvcoord[2] = {0.0, 0.0}
+    [[
+        string as_maya_attribute_name = "outUV",
+        string as_maya_attribute_short_name = "ouv",
+        string label = "UV Coords",
+        string widget = "null"
+    ]],
+    output float out_uvcoord_filter[2] = {
+        UNDEFINED_UVFILTER, UNDEFINED_UVFILTER}
+    [[
+        string as_maya_attribute_name = "outUVFilter",
+        string as_maya_attribute_short_name = "ouf",
+        string label = "UV Filter Size",
+        string widget = "null"
+    ]]
+)
+{
+    if (in_bypass_uv)
+    {
+        out_uvcoord = in_uv_coord;
+
+        if (in_compute_filters)
+        {
+            out_uvcoord_filter[0] = filterwidth(in_uv_filter_size[0]);
+            out_uvcoord_filter[1] = filterwidth(in_uv_filter_size[1]);
+        }
+        else
+        {
+            out_uvcoord_filter = in_uv_filter_size;
+        }
+        return;
+    }
+
+    // Distort first
+
+    float st[2] = {in_uv_coord[0], in_uv_coord[1]};
+
+    if (in_noise_uv[0] > 0.0 || in_noise_uv[1] > 0.0)
+    {
+        vector uvnoise = noise("snoise", st[0] * 15.0, st[1] * 15.0);
+
+        if (in_noise_uv[0] > 0.0)
+        {
+            st[0] += in_noise_uv[0] * uvnoise[0];
+        }
+        if (in_noise_uv[1] > 0.0)
+        {
+            st[1] += in_noise_uv[1] * uvnoise[1];
+        }
+    }
+
+    st[0] /= max(EPS, in_scale_frame[0]);
+    st[1] /= max(EPS, in_scale_frame[1]);
+
+    st[0] += in_translate_frame[0];
+    st[1] += in_translate_frame[1];
+
+    if (in_rotate_frame != 0.0) // fract(x) != 0
+    {
+        point rot = rotate(
+            point(st[0], st[1], 0.0),
+            in_rotate_frame * M_2PI,
+            point(in_frame_center[0], in_frame_center[1], 0.0),
+            point(in_frame_center[0], in_frame_center[1], 1.0));
+
+        st[0] = rot[0];
+        st[1] = rot[1];
+    }
+
+    float coverage[2] =
+    {
+        max(EPS, in_tiles_coverage[0]),
+        max(EPS, in_tiles_coverage[1])
+    };
+
+    if (coverage[0] < 1.0 || coverage[1] < 1.0)
+    {
+        st[0] /= coverage[0];
+        st[1] /= coverage[1];
+
+        if (in_offset_tiles[0] != 0)
+        {
+            st[0] -= in_offset_tiles[0] / coverage[0];
+        }
+        if (in_offset_tiles[1] != 0)
+        {
+            st[1] -= in_offset_tiles[1] / coverage[1];
+        }
+    }
+
+    if (in_wrap_u)
+    {
+        st[0] = mod(st[0], 1.0 / coverage[0]);
+    }
+    if (in_wrap_v)
+    {
+        st[1] = mod(st[1], 1.0 / coverage[1]);
+    }
+
+    // Outside the UV frame, set the tiling mode
+
+    if (st[0] < 0.0 || st[0] > 1.0 || st[1] < 0.0 || st[1] > 1.0)
+    {
+        if (in_wrap_mode_u == "Periodic")
+        {
+            st[0] = mod(st[0], 1.0);
+        }
+        else if (in_wrap_mode_u == "Mirror")
+        {
+            if (mod(st[0], 2) >= 1)
+                st[0] = 2.0 * floor(st[0]) - st[0] + 1.0;
+        }
+        else if (in_wrap_mode_u == "Clamp")
+        {
+            st[0] = clamp(st[0], 0.0, 1.0);
+        }
+        else
+        {
+            st[0] = OUTSIDE_UVFRAME; // default color on downstream nodes
+        }
+
+        if (in_wrap_mode_v == "Periodic")
+        {
+            st[1] = mod(st[1], 1.0);
+        }
+        else if (in_wrap_mode_v == "Mirror")
+        {
+            if (mod(st[1], 2) >= 1)
+                st[1] = 2.0 * floor(st[1]) - st[1] + 1.0;
+        }
+        else if (in_wrap_mode_v == "Clamp")
+        {
+            st[1] = clamp(st[1], 0.0, 1.0);
+        }
+        else
+        {
+            st[1] = OUTSIDE_UVFRAME; // default color on downstream nodes
+        }
+    }
+    else
+    {
+        st[0] *= in_uv_tiles[0];
+        st[1] *= in_uv_tiles[1];
+        st[0] += in_offset_tiles[0];
+        st[1] += in_offset_tiles[1];
+
+        if (in_stagger_uv && mod(st[1], 2) >= 1)
+        {
+            st[0] += 0.5;
+        }
+        if (in_mirror_u && mod(st[0], 2) >= 1.0)
+        {
+            st[0] = 2.0 * floor(st[0]) - st[0] + 1.0;
+        }
+        if (in_mirror_v && mod(st[1], 2) >= 1.0)
+        {
+            st[1] = 2.0 * floor(st[1]) - st[1] + 1.0;
+        }
+
+        if (in_rotate_tiles != 0)
+        {
+            point rot = rotate(
+                point(st[0], st[1], 0.0),
+                in_rotate_tiles * M_2PI,
+                point(in_tiles_center[0], in_tiles_center[1], 0.0),
+                point(in_tiles_center[0], in_tiles_center[1], 1.0));
+
+            st[0] = rot[0];
+            st[1] = rot[1];
+        }
+    }
+
+    if (in_swap_uv)
+    {
+        float tmp = st[0];
+        st[0] = st[1];
+        st[1] = tmp;
+    }
+
+    out_uvcoord = st;
+
+    if (in_compute_filters)
+    {
+        if (out_uvcoord[0] != OUTSIDE_UVFRAME)
+        {
+            out_uvcoord_filter[0] = filterwidth(out_uvcoord[0]);
+        }
+        if (out_uvcoord[1] != OUTSIDE_UVFRAME)
+        {
+            out_uvcoord_filter[1] = filterwidth(out_uvcoord[1]);
+        }
+    }
+}

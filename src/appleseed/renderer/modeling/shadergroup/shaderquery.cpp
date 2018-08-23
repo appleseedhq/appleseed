@@ -122,7 +122,17 @@ struct ShaderQuery::Impl
         const bool is_array = param.type.arraylen != 0;
         dictionary.insert("isarray", is_array);
         if (is_array)
+        {
+            // Special float[2] cases (maya, UVs, etc).
+            if (param.type.arraylen == 2 && param.type.elementtype() == OSL::TypeDesc::TypeFloat)
+            {
+                dictionary.insert(
+                    "default",
+                    Vector2f(param.fdefault[0], param.fdefault[1]));
+            }
+
             dictionary.insert("arraylen", param.type.arraylen);
+        }
 
         if (param.validdefault && !is_array)
             copy_value_to_dict(param, "default", dictionary);
