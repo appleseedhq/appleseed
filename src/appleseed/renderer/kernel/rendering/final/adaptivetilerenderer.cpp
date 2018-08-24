@@ -89,14 +89,17 @@ namespace renderer
 namespace
 {
 
-    // Minimum allowed size for a block of pixel.
+    // Minimum allowed size for a block of pixels.
     const size_t BlockMinAllowedSize = 8;
-    // Maximum allowed size for a block of pixel. A low value may introduce artifacts.
+
+    // Maximum allowed size for a block of pixels. A low value may introduce artifacts.
     const size_t BlockMaxAllowedSize = 40;
-    // Minimum allowed size for a block of pixel before splitting.
+
+    // Minimum allowed size for a block of pixels before splitting.
     const size_t BlockSplittingThreshold = BlockMinAllowedSize * 2;
+
     // Threshold used to warn the user if blocks don't converge.
-    const int BlockConvergenceWarningThreshold = 50;
+    const float BlockConvergenceWarningThreshold = 0.5f;
 
 
     //
@@ -208,13 +211,11 @@ namespace
             const size_t                        pass_hash,
             IAbortSwitch&                       abort_switch) override
         {
-            const size_t frame_width = frame.image().properties().m_canvas_width;
-            const size_t aov_count = frame.aov_images().size();
-
             // Retrieve frame properties.
             const CanvasProperties& frame_properties = frame.image().properties();
             assert(tile_x < frame_properties.m_tile_count_x);
             assert(tile_y < frame_properties.m_tile_count_y);
+            const size_t aov_count = frame.aov_images().size();
 
             // Retrieve tile properties.
             Tile& tile = frame.image().tile(tile_x, tile_y);
@@ -307,17 +308,18 @@ namespace
 
                     // Draw samples.
                     sample_pixel_block(
-                            pb,
-                            abort_switch,
-                            batch_size,
-                            framebuffer,
-                            second_framebuffer.get(),
-                            tile_origin_x,
-                            tile_origin_y,
-                            frame,
-                            frame_width,
-                            pass_hash,
-                            aov_count);
+                        pb,
+                        abort_switch,
+                        batch_size,
+                        framebuffer,
+                        second_framebuffer.get(),
+                        tile_origin_x,
+                        tile_origin_y,
+                        frame,
+                        frame_properties.m_canvas_width,
+                        frame_properties.m_canvas_height,
+                        pass_hash,
+                        aov_count);
 
                     rendering_blocks.push_back(pb);
                 }
@@ -363,7 +365,8 @@ namespace
                     tile_origin_x,
                     tile_origin_y,
                     frame,
-                    frame_width,
+                    frame_properties.m_canvas_width,
+                    frame_properties.m_canvas_height,
                     pass_hash,
                     aov_count);
 
@@ -423,7 +426,7 @@ namespace
             for (size_t i = 0, n = finished_blocks.size(); i < n; ++i)
             {
                 const PixelBlock& pb = finished_blocks[i];
-                const AABB2u& pb_image_aabb = AABB2i::intersect(framebuffer->get_crop_window(), pb.m_surface);
+                const AABB2u pb_image_aabb = AABB2i::intersect(framebuffer->get_crop_window(), pb.m_surface);
                 const size_t pb_pixel_count = static_cast<size_t>(pb_image_aabb.volume());
 
                 // Update statistics.
@@ -465,7 +468,7 @@ namespace
             m_total_pixel_converged += tile_converged_pixel;
 
             // Warn the user if adaptive sampling wasn't efficient on this tile.
-            if (static_cast<float>(tile_converged_pixel) / static_cast<float>(pixel_count) < BlockConvergenceWarningThreshold / 100.0f)
+            if (static_cast<float>(tile_converged_pixel) < BlockConvergenceWarningThreshold * pixel_count)
             {
                 RENDERER_LOG_WARNING("%s of tile's pixels have converged, average sample/pixel: %s.",
                     pretty_percent(tile_converged_pixel, pixel_count, 1).c_str(),
@@ -489,8 +492,9 @@ namespace
         {
             Statistics stats;
 
-            // How many samples per pixel were made.
+            // How many samples per pixel were computed.
             stats.insert("samples/pixel", m_spp);
+
             // Converged pixels over total pixels.
             stats.insert_percent("convergence rate", m_total_pixel_converged, m_total_pixel);
 
@@ -504,20 +508,20 @@ namespace
       private:
         struct Parameters
         {
-            const SamplingContext::Mode     m_sampling_mode;
-            const size_t                    m_batch_size;
-            const size_t                    m_min_samples;
-            const size_t                    m_max_samples;
-            const float                     m_noise_threshold;
-            const float                     m_splitting_threshold;
-            const size_t                    m_passes;
+            const SamplingContext::Mode         m_sampling_mode;
+            const size_t                        m_batch_size;
+            const size_t                        m_min_samples;
+            const size_t                        m_max_samples;
+            const float                         m_noise_threshold;
+            const float                         m_splitting_threshold;
+            const size_t                        m_passes;
 
             explicit Parameters(const ParamArray& params)
               : m_sampling_mode(get_sampling_context_mode(params))
               , m_batch_size(params.get_required<size_t>("batch_size", 16))
               , m_min_samples(params.get_required<size_t>("min_samples", 0))
               , m_max_samples(params.get_required<size_t>("max_samples", 256))
-              , m_noise_threshold(params.get_required<float>("noise_threshold", 5.0f))
+              , m_noise_threshold(params.get_required<float>("noise_threshold", 1.0f))
               , m_splitting_threshold(m_noise_threshold * 256.0f)
               , m_passes(params.get_optional<size_t>("passes", 1))
             {
@@ -639,31 +643,31 @@ namespace
         {
             deque<PixelBlock> initial_blocks(1, PixelBlock(padded_tile_bbox));
 
-            while (initial_blocks.size() > 0)
+            while (!initial_blocks.empty())
             {
-                PixelBlock& pb = initial_blocks.front();
+                PixelBlock pb = initial_blocks.front();
                 initial_blocks.pop_front();
 
-                const AABB2u& block_image_bb = AABB2i::intersect(frame_bbox, pb.m_surface);
+                const AABB2u block_image_bb = AABB2i::intersect(frame_bbox, pb.m_surface);
 
-                if (block_image_bb.extent(0) <= BlockMaxAllowedSize
-                    && block_image_bb.extent(1) <= BlockMaxAllowedSize)
+                if (block_image_bb.extent(0) <= BlockMaxAllowedSize &&
+                    block_image_bb.extent(1) <= BlockMaxAllowedSize)
                 {
                     rendering_blocks.push_front(pb);
                     continue;
                 }
 
                 // Split the block if it's too big.
-                if (pb.m_main_axis == PixelBlock::Axis::Horizontal
-                        && block_image_bb.extent(0) >= BlockSplittingThreshold)
+                if (pb.m_main_axis == PixelBlock::Axis::Horizontal &&
+                    block_image_bb.extent(0) >= BlockSplittingThreshold)
                 {
                     split_pixel_block(
                         pb,
                         initial_blocks,
                         static_cast<int>((block_image_bb.min.x + block_image_bb.max.x) / 2));
                 }
-                else if (pb.m_main_axis == PixelBlock::Axis::Vertical
-                        && block_image_bb.extent(1) >= BlockSplittingThreshold)
+                else if (pb.m_main_axis == PixelBlock::Axis::Vertical &&
+                         block_image_bb.extent(1) >= BlockSplittingThreshold)
                 {
                     split_pixel_block(
                         pb,
@@ -683,10 +687,11 @@ namespace
             const int                           tile_origin_y,
             const Frame&                        frame,
             const size_t                        frame_width,
+            const size_t                        frame_height,
             const size_t                        pass_hash,
             const size_t                        aov_count)
         {
-            // Loop over block's pixels.
+            // Loop over the block's pixels.
             for (int y = pb.m_surface.min.y; y <= pb.m_surface.max.y; ++y)
             {
                 for (int x = pb.m_surface.min.x; x <= pb.m_surface.max.x; ++x)
@@ -713,8 +718,10 @@ namespace
 #endif
 
                     const size_t pixel_index = pi.y * frame_width + pi.x;
-                    const size_t instance = hash_uint32(static_cast<uint32>(pass_hash + pixel_index +
-                        (pb.m_spp * frame_width * frame.image().properties().m_canvas_height)));
+                    const size_t instance =
+                        hash_uint32(
+                            static_cast<uint32>(
+                                pass_hash + pixel_index + (pb.m_spp * frame_width * frame_height)));
 
                     // Render this pixel.
                     sample_pixel(
@@ -750,13 +757,11 @@ namespace
             SamplingContext sampling_context(
                 rng,
                 m_params.m_sampling_mode,
-                2,                          // number of dimensions
-                0,                          // number of samples -- unknown
-                instance);                  // initial instance number
+                2,                              // number of dimensions
+                batch_size,                     // number of samples
+                instance);                      // initial instance number
 
-            bool second = false;
-
-            for (size_t j = 0; j < batch_size; ++j)
+            for (size_t i = 0; i < batch_size; ++i)
             {
                 // Generate a uniform sample in [0,1)^2.
                 const Vector2d s = sampling_context.next2<Vector2d>();
@@ -790,15 +795,14 @@ namespace
                     static_cast<float>(pt.y + s.y),
                     shading_result);
 
-                if (second)
+                // Only half the samples go into the second scratch framebuffer.
+                if (i & 1)
                 {
                     second_framebuffer->add(
-                            static_cast<float>(pt.x + s.x),
-                            static_cast<float>(pt.y + s.y),
-                            shading_result);
+                        static_cast<float>(pt.x + s.x),
+                        static_cast<float>(pt.y + s.y),
+                        shading_result);
                 }
-
-                second = !second;
             }
 
             on_pixel_end(frame, pi, pt);
@@ -806,25 +810,25 @@ namespace
 
         // Split the given block in two.
         void split_pixel_block(
-            PixelBlock&                         pb,
+            const PixelBlock&                   pb,
             deque<PixelBlock>&                  blocks,
-            const int&                          splitting_point) const
+            const int                           splitting_point) const
         {
             AABB2i f_half = pb.m_surface, s_half = pb.m_surface;
 
             if (pb.m_main_axis == PixelBlock::Axis::Horizontal)
             {
-                assert(pb.m_surface.min.x < splitting_point);
-                assert(pb.m_surface.max.x > splitting_point);
-                // Split horizontaly.
+                // Split horizontally.
+                assert(splitting_point > pb.m_surface.min.x);
+                assert(splitting_point < pb.m_surface.max.x);
                 f_half.max.x = splitting_point;
                 s_half.min.x = splitting_point + 1;
             }
             else
             {
-                assert(pb.m_surface.min.y < splitting_point);
-                assert(pb.m_surface.max.y > splitting_point);
-                // Split verticaly.
+                // Split vertically.
+                assert(splitting_point > pb.m_surface.min.y);
+                assert(splitting_point < pb.m_surface.max.y);
                 f_half.max.y = splitting_point;
                 s_half.min.y = splitting_point + 1;
             }
@@ -842,14 +846,6 @@ namespace
 
             blocks.push_front(s_block);
             blocks.push_front(f_block);
-        }
-
-        static Color4f colorize_samples(
-            const float                         value)
-        {
-            static const Color4f Blue(0.0f, 0.0f, 1.0f, 1.0f);
-            static const Color4f Orange(1.0f, 0.6f, 0.0f, 1.0f);
-            return lerp(Blue, Orange, saturate(value));
         }
     };
 }
