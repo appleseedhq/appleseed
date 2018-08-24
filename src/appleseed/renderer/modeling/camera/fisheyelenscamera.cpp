@@ -194,51 +194,6 @@ namespace
         //   http://michel.thoby.free.fr/Fisheye_history_short/Projections/Fisheye_projection-models.html
         //
 
-        Vector3d transform_ray_dir(const Vector3d& dir) const
-        {
-            Vector3d new_dir = dir;
-            
-            // Transform the direction vector to be in the xz plane.
-            // TODO : optimize
-            const Transformd rot = Transformd(Matrix4d::make_rotation_z(-atan2(new_dir[1], new_dir[0])));
-            new_dir = rot.vector_to_parent(new_dir);
-
-            // Tangent of angle between vector(on xz plane) and z+ axis.
-            const double tan_theta1 = new_dir[0] / new_dir[2];
-            const double theta1 = atan(tan_theta1);
-            double theta2 = 0.0;
-
-            switch (m_projection_type) 
-            {
-                case EquisolidAngle:
-                  theta2 = 2 * asin(tan_theta1 * 0.5);
-                  break;
-                
-                case Equidistant:
-                  theta2 = tan_theta1;
-                  break;
-
-                case Stereographic:
-                  theta2 = 2 * atan(tan_theta1 * 0.5);
-                  break;
-
-                case Thoby:
-                  theta2 = asin(tan_theta1 * 0.68027) * 1.40252;
-                  break;
-
-                default:
-                  assert(false);
-            }
-
-            // TODO : optimize
-            const Transformd rot2 = Transformd(Matrix4d::make_rotation_y(theta2 - theta1));
-
-            new_dir = rot2.vector_to_parent(new_dir);
-            new_dir = rot.vector_to_local(new_dir);
-            
-            return new_dir;
-        }
-
         void spawn_ray(
             SamplingContext&    sampling_context,
             const Dual2d&       ndc,
@@ -256,8 +211,6 @@ namespace
             ray.m_org = transform.get_local_to_parent().extract_translation();
             ray.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(ndc.get_value())));
 
-            ray.m_dir = transform_ray_dir(ray.m_dir);
-
             // Compute ray derivatives.
             if (ndc.has_derivatives())
             {
@@ -266,9 +219,7 @@ namespace
                 ray.m_rx.m_org = ray.m_org;
                 ray.m_ry.m_org = ray.m_org;
                 ray.m_rx.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(px)));
-                transform_ray_dir(ray.m_rx.m_dir);
                 ray.m_ry.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(py)));
-                transform_ray_dir(ray.m_ry.m_dir);
                 ray.m_has_differentials = true;
             }
         }
@@ -383,20 +334,90 @@ namespace
 
         Vector3d ndc_to_camera(const Vector2d& point) const
         {
+            // TODO : refactor
+
+            const double x = (0.5 - point.x) * m_film_dimensions[0];
+            const double y = (point.y - 0.5) * m_film_dimensions[1];
+            const double radius_1 = sqrt(x * x + y * y);
+
+            const double tan_theta1 = radius_1 / m_focal_length;
+            double theta2 = 0.0;
+
+            switch (m_projection_type) 
+            {
+                case EquisolidAngle:
+                  theta2 = 2 * asin(tan_theta1 * 0.5);
+                  break;
+                
+                case Equidistant:
+                  theta2 = tan_theta1;
+                  break;
+
+                case Stereographic:
+                  theta2 = 2 * atan(tan_theta1 * 0.5);
+                  break;
+
+                case Thoby:
+                  theta2 = asin(tan_theta1 * 0.68027) * 1.40252;
+                  break;
+
+                default:
+                  assert(false);
+            }
+
+            const double radius_diff = tan(theta2) * m_focal_length - radius_1;
+
             return
                 Vector3d(
-                    (0.5 - point.x) * m_film_dimensions[0],
-                    (point.y - 0.5) * m_film_dimensions[1],
+                    (0.5 - point.x) * m_film_dimensions[0] + radius_diff * x / radius_1,
+                    (point.y - 0.5) * m_film_dimensions[1] + radius_diff * y / radius_1,
                     m_focal_length);
         }
 
         Vector2d camera_to_ndc(const Vector3d& point) const
         {
+            // TODO : refactor
             const double k = m_focal_length / point.z;
+            
+            const double x = 0.5 - (point.x * k * m_rcp_film_width);
+            const double y = 0.5 + (point.y * k * m_rcp_film_height);
+            
+            const double radius_2 = sqrt(x * x + y * y);
+
+            const double cos_ = x / radius_2;
+            const double sin_ = y / radius_2;
+            
+            const double theta2 = atan(radius_2 / m_focal_length);
+            double tan_theta1 = 0.0;
+
+            switch (m_projection_type) 
+            {
+                case EquisolidAngle:
+                  tan_theta1 = 2 * sin(theta2 / 2);
+                  break;
+                
+                case Equidistant:
+                  tan_theta1 = theta2;
+                  break;
+
+                case Stereographic:
+                  tan_theta1 = 2 * tan(theta2 / 2);
+                  break;
+
+                case Thoby:
+                  tan_theta1 = 1.47 * sin(0.713 * theta2);
+                  break;
+
+                default:
+                  assert(false);
+            }
+
+            const double radius_1 = tan_theta1 * m_focal_length;
+
             return
                 Vector2d(
-                    0.5 - (point.x * k * m_rcp_film_width),
-                    0.5 + (point.y * k * m_rcp_film_height));
+                    radius_1 * cos_,
+                    radius_1 * sin_);
         }
     };
 }
