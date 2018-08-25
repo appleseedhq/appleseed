@@ -31,7 +31,9 @@
 #include "scene.h"
 
 // appleseed.renderer headers.
+#ifdef APPLESEED_WITH_EMBREE
 #include "renderer/kernel/intersection/embreescene.h"
+#endif
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
