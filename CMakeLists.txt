@@ -293,7 +293,7 @@ include_directories (
 if (USE_EXTERNAL_ZLIB)
     include_directories (${ZLIB_INCLUDE_DIRS})
 else ()
-    include_directories (${APPLESEED_DEPS_STAGE_DIR}/zlib/include)
+    include_directories (${APPLESEED_DEPS_STAGE_DIR}/zlib-debug/include)
 endif ()
 
 if (USE_EXTERNAL_PNG)

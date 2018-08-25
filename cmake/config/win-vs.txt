@@ -225,8 +225,8 @@ macro (link_against_zlib target)
         target_link_libraries (${target} ${ZLIB_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/zlib/lib/zlibstaticd.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/zlib/lib/zlibstatic.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/zlib-debug/lib/zlibstaticd.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/zlib-release/lib/zlibstatic.lib
         )
     endif ()
 endmacro ()
