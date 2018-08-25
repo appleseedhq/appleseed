@@ -74,6 +74,9 @@ class APPLESEED_DLLSYMBOL BaseGroup
     // Access the OSL shader groups.
     ShaderGroupContainer& shader_groups() const;
 
+    // Clear the base group contents.
+    void clear();
+
     // Create OSL shader groups and optimize them.
     bool create_optimized_osl_shader_groups(
         OSLShadingSystem&           shading_system,

@@ -178,6 +178,21 @@ VolumeContainer& Assembly::volumes() const
     return impl->m_volumes;
 }
 
+void Assembly::clear()
+{
+    BaseGroup::clear();
+
+    impl->m_bsdfs.clear();
+    impl->m_bssrdfs.clear();
+    impl->m_edfs.clear();
+    impl->m_surface_shaders.clear();
+    impl->m_materials.clear();
+    impl->m_lights.clear();
+    impl->m_objects.clear();
+    impl->m_object_instances.clear();
+    impl->m_volumes.clear();
+}
+
 GAABB3 Assembly::compute_local_bbox() const
 {
     GAABB3 bbox = compute_non_hierarchical_local_bbox();

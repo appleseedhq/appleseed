@@ -98,6 +98,16 @@ ShaderGroupContainer& BaseGroup::shader_groups() const
     return impl->m_shader_groups;
 }
 
+void BaseGroup::clear()
+{
+    impl->m_colors.clear();
+    impl->m_textures.clear();
+    impl->m_texture_instances.clear();
+    impl->m_shader_groups.clear();
+    impl->m_assemblies.clear();
+    impl->m_assembly_instances.clear();
+}
+
 bool BaseGroup::create_optimized_osl_shader_groups(
     OSLShadingSystem&           shading_system,
     IAbortSwitch*               abort_switch)
