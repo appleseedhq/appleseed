@@ -117,6 +117,9 @@ class APPLESEED_DLLSYMBOL Assembly
     // Access the volumes.
     VolumeContainer& volumes() const;
 
+    // Clear the assembly contents.
+    void clear();
+
     // Return true if this assembly is tagged as flushable.
     bool is_flushable() const;
 

@@ -136,7 +136,8 @@ void bind_assembly()
         .def("texture_instances", &BaseGroup::texture_instances, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("shader_groups", &BaseGroup::shader_groups, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("assemblies", &BaseGroup::assemblies, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def("assembly_instances", &BaseGroup::assembly_instances, bpy::return_value_policy<bpy::reference_existing_object>());
+        .def("assembly_instances", &BaseGroup::assembly_instances, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("clear", &BaseGroup::clear);
 
     bpy::class_<Assembly, auto_release_ptr<Assembly>, bpy::bases<Entity, BaseGroup>, boost::noncopyable>("Assembly", bpy::no_init)
         .def("__init__", bpy::make_constructor(create_assembly))
@@ -151,6 +152,7 @@ void bind_assembly()
         .def("objects", &Assembly::objects, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("object_instances", &Assembly::object_instances, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("volumes", &Assembly::volumes, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("clear", &Assembly::clear)
         .def("compute_local_bbox", &Assembly::compute_local_bbox)
         .def("compute_non_hierarchical_local_bbox", &Assembly::compute_non_hierarchical_local_bbox);
 
