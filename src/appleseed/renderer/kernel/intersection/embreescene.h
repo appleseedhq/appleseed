@@ -29,7 +29,6 @@
 #ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_EMBREESCENE_H
 #define APPLESEED_RENDERER_KERNEL_INTERSECTION_EMBREESCENE_H
 
-#ifdef APPLESEED_WITH_EMBREE
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -38,9 +37,13 @@
 #include "renderer/modeling/scene/objectinstance.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/poolallocator.h"
 #include "foundation/utility/uid.h"
+
+// Embree headers.
+#include <embree3/rtcore.h>
 
 // Standard headers.
 #include <map>
@@ -55,9 +58,14 @@ namespace renderer { class ShadingRay; }
 namespace renderer
 {
 
+class EmbreeGeometryData;
+
+typedef std::vector<std::unique_ptr<EmbreeGeometryData>>  EmbreeGeometryDataContainer;
+
 class EmbreeScene;
 
 class EmbreeDevice
+  : public foundation::NonCopyable
 {
   public:
     EmbreeDevice();
@@ -66,11 +74,11 @@ class EmbreeDevice
   private:
     friend class EmbreeScene;
 
-    struct Impl;
-    Impl* impl;
+    RTCDevice m_device;
 };
 
 class EmbreeScene
+  : public foundation::NonCopyable
 {
   public:
     struct Arguments
@@ -94,8 +102,9 @@ class EmbreeScene
     bool occlude(const ShadingRay& shading_ray) const;
 
   private:
-    struct Impl;
-    Impl* impl;
+    RTCDevice                   m_device;
+    RTCScene                    m_scene;
+    EmbreeGeometryDataContainer m_geometry_container;
 };
 
 typedef std::map<
@@ -134,5 +143,4 @@ class EmbreeSceneFactory
 
 }       // namespace renderer
 
-#endif  // APPLESEED_WITH_EMBREE
 #endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_EMBREESCENE_H

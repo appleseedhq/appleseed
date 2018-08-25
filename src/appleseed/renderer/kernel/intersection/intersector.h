@@ -32,7 +32,9 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/curvetree.h"
+#ifdef APPLESEED_WITH_EMBREE
 #include "renderer/kernel/intersection/embreescene.h"
+#endif
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/intersection/regiontree.h"
 #include "renderer/kernel/intersection/triangletree.h"

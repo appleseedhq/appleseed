@@ -53,12 +53,6 @@
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/stopwatch.h"
 
-// Embree headers.
-#include <embree3/rtcore.h>
-
-// Standard headers.
-#include <memory>
-
 using namespace foundation;
 using namespace renderer;
 using namespace std;
@@ -66,73 +60,47 @@ using namespace std;
 namespace renderer
 {
 
+class EmbreeGeometryData
+  : public NonCopyable
+{
+  public:
+    // Vertex data.
+    GVector3*               m_vertices;
+    unsigned int            m_vertices_count;
+    unsigned int            m_vertices_stride;
+
+    // Primitive data.
+    uint32*                 m_primitives;
+    size_t                  m_primitives_count;
+    size_t                  m_primitives_stride;
+
+    // Instance data.
+    size_t                  m_object_instance_idx;
+    uint32                  m_vis_flags;
+    unsigned int            m_motion_steps_count;
+
+    RTCGeometryType         m_geometry_type;
+    RTCGeometry             m_geometry_handle;
+
+    EmbreeGeometryData()
+      : m_vertices(nullptr)
+      , m_primitives(nullptr)
+      , m_geometry_handle(nullptr)
+    {}
+
+    ~EmbreeGeometryData()
+    {
+        delete[] m_vertices;
+        delete[] m_primitives;
+        rtcReleaseGeometry(m_geometry_handle);
+    }
+};
+
 namespace
 {
-    struct APPLESEED_SIMD4_ALIGN RayBuffer
-    {
-        float m_buffer[8];
-
-        RayBuffer(const Vector3d& org, const Vector3d& dir)
-        {
-            m_buffer[0] = static_cast<float>(org.x);
-            m_buffer[1] = static_cast<float>(org.y);
-            m_buffer[2] = static_cast<float>(org.z);
-            m_buffer[4] = static_cast<float>(dir.x);
-            m_buffer[5] = static_cast<float>(dir.y);
-            m_buffer[6] = static_cast<float>(dir.z);
-        }
-
-        const float* org() const
-        {
-            return &m_buffer[0];
-        }
-
-        const float* dir() const
-        {
-            return &m_buffer[4];
-        }
-    };
-
-    struct GeometryData
-    {
-        // Vertex data.
-        GVector3*               m_vertices;
-        unsigned int            m_vertices_count;
-        unsigned int            m_vertices_stride;
-
-        // Primitive data.
-        uint32*                 m_primitives;
-        size_t                  m_primitives_count;
-        size_t                  m_primitives_stride;
-
-        // Instance data.
-        size_t                  m_object_instance_idx;
-        uint32                  m_vis_flags;
-        unsigned int            m_motion_steps_count;
-
-        RTCGeometryType         m_geometry_type;
-        RTCGeometry             m_geometry_handle;
-
-        GeometryData()
-          : m_vertices(nullptr)
-          , m_primitives(nullptr)
-          , m_geometry_handle(nullptr)
-        {}
-
-        ~GeometryData()
-        {
-            delete[] m_vertices;
-            delete[] m_primitives;
-            rtcReleaseGeometry(m_geometry_handle);
-        }
-    };
-
-    typedef vector<unique_ptr<GeometryData>>            GeometryDataContainer;
-    typedef GeometryDataContainer::const_iterator       GeometryDataContainerIterator;
-
     void collect_triangle_data(
         const ObjectInstance&   object_instance,
-        GeometryData&           geometry_data)
+        EmbreeGeometryData&     geometry_data)
     {
         assert(geometry_data.m_geometry_type == RTC_GEOMETRY_TYPE_TRIANGLE);
 
@@ -198,7 +166,7 @@ namespace
 
     void collect_curve_data(
         const ObjectInstance&   object_instance,
-        GeometryData&           geometry_data)
+        EmbreeGeometryData&     geometry_data)
     {
         //const Transformd& transform = object_instance.get_transform();
 
@@ -208,7 +176,7 @@ namespace
             //
             // [Note: Girish] Retrieve data from CurveObject here and push it to geometry_data.
             //
-        
+
             break;
 
         default:
@@ -226,9 +194,8 @@ namespace
             FP<float>::exponent(ray.org_y),
             FP<float>::exponent(ray.org_z));
 
-
         // Calculate exponent-adaptive offset.
-        // Note: float is represented in memory  
+        // Note: float is represented in memory
         // as 1 sign bit, 8 exponent bits and 23 mantissa bits.
         // Higher 24th bit is always 1 in normalized form, hence it's ommited.
         // Mantissa of constructed float will overlap no more than 11 last bits of
@@ -247,20 +214,23 @@ namespace
     }
 
     void shading_ray_to_embree_ray(
-        const ShadingRay&   shading_ray,
-        RTCRay&             embree_ray)
+        const ShadingRay&       shading_ray,
+        RTCRay&                 embree_ray)
     {
-        const RayBuffer buffer(shading_ray.m_org, shading_ray.m_dir);
+        embree_ray.org_x = static_cast<float>(shading_ray.m_org.x);
+        embree_ray.org_y = static_cast<float>(shading_ray.m_org.y);
+        embree_ray.org_z = static_cast<float>(shading_ray.m_org.z);
 
-        _mm_store_ps(&embree_ray.org_x, _mm_load_ps(buffer.org()));
-        _mm_store_ps(&embree_ray.dir_x, _mm_load_ps(buffer.dir()));
+        embree_ray.dir_x = static_cast<float>(shading_ray.m_dir.x);
+        embree_ray.dir_y = static_cast<float>(shading_ray.m_dir.y);
+        embree_ray.dir_z = static_cast<float>(shading_ray.m_dir.z);
 
         embree_ray.tfar = static_cast<float>(shading_ray.m_tmax);
         embree_ray.time = static_cast<float>(shading_ray.m_time.m_normalized);
         embree_ray.mask = shading_ray.m_flags;
 
         const float tnear_offset = get_tnear_offset(embree_ray);
-    
+
         embree_ray.tnear = static_cast<float>(shading_ray.m_tmin) + tnear_offset;
     }
 }
@@ -270,22 +240,15 @@ namespace
 //  EmbreeDevice class implementation.
 //
 
-struct EmbreeDevice::Impl
-{
-    RTCDevice m_device;
-};
-
 EmbreeDevice::EmbreeDevice()
-  : impl(new Impl)
 {
     // todo: set number of threads.
-    impl->m_device = rtcNewDevice(nullptr);
+    m_device = rtcNewDevice(nullptr);
 };
 
 EmbreeDevice::~EmbreeDevice()
 {
-    rtcReleaseDevice(impl->m_device);
-    delete impl;
+    rtcReleaseDevice(m_device);
 }
 
 
@@ -293,15 +256,7 @@ EmbreeDevice::~EmbreeDevice()
 //  EmbreeScene class implementation.
 //
 
-struct EmbreeScene::Impl
-{
-    RTCDevice                   m_device;
-    RTCScene                    m_scene;
-    GeometryDataContainer       m_geometry_container;
-};
-
 EmbreeScene::EmbreeScene(const EmbreeScene::Arguments& arguments)
-  : impl(new Impl())
 {
     // Start stopwatch.
     Stopwatch<DefaultWallclockTimer> stopwatch;
@@ -309,18 +264,18 @@ EmbreeScene::EmbreeScene(const EmbreeScene::Arguments& arguments)
 
     Statistics statistics;
 
-    impl->m_scene = rtcNewScene(arguments.m_device.impl->m_device);
-    impl->m_device = arguments.m_device.impl->m_device;
+    m_device = arguments.m_device.m_device;
+    m_scene = rtcNewScene(m_device);
 
     rtcSetSceneBuildQuality(
-        impl->m_scene,
+        m_scene,
         RTCBuildQuality::RTC_BUILD_QUALITY_HIGH);
 
     const ObjectInstanceContainer& instance_container = arguments.m_assembly.object_instances();
 
     const size_t instance_count = instance_container.size();
 
-    impl->m_geometry_container.reserve(instance_count);
+    m_geometry_container.reserve(instance_count);
 
     for (size_t instance_idx = 0; instance_idx < instance_count; ++instance_idx)
     {
@@ -330,7 +285,7 @@ EmbreeScene::EmbreeScene(const EmbreeScene::Arguments& arguments)
         RTCGeometry geometry_handle;
 
         // Set per instance data.
-        unique_ptr<GeometryData> geometry_data(new GeometryData());
+        unique_ptr<EmbreeGeometryData> geometry_data(new EmbreeGeometryData());
         geometry_data->m_object_instance_idx = instance_idx;
         geometry_data->m_vis_flags = object_instance->get_vis_flags();
 
@@ -347,15 +302,15 @@ EmbreeScene::EmbreeScene(const EmbreeScene::Arguments& arguments)
             collect_triangle_data(*object_instance, *geometry_data);
 
             geometry_handle = rtcNewGeometry(
-                impl->m_device, 
+                m_device,
                 RTC_GEOMETRY_TYPE_TRIANGLE);
 
             rtcSetGeometryBuildQuality(
-                geometry_handle, 
+                geometry_handle,
                 RTCBuildQuality::RTC_BUILD_QUALITY_HIGH);
 
             rtcSetGeometryTimeStepCount(
-                geometry_handle, 
+                geometry_handle,
                 geometry_data->m_motion_steps_count);
 
             geometry_data->m_geometry_handle = geometry_handle;
@@ -405,11 +360,11 @@ EmbreeScene::EmbreeScene(const EmbreeScene::Arguments& arguments)
             collect_curve_data(*object_instance, *geometry_data);
 
             geometry_handle = rtcNewGeometry(
-                impl->m_device, 
+                m_device,
                 RTC_GEOMETRY_TYPE_FLAT_BEZIER_CURVE);
 
             rtcSetGeometryBuildQuality(
-                geometry_handle, 
+                geometry_handle,
                 RTCBuildQuality::RTC_BUILD_QUALITY_HIGH);
 
             // Set vertices. (x_pos, y_pos, z_pos, radii)
@@ -441,11 +396,11 @@ EmbreeScene::EmbreeScene(const EmbreeScene::Arguments& arguments)
             continue;
         }
 
-        rtcAttachGeometryByID(impl->m_scene, geometry_handle, static_cast<unsigned int>(instance_idx));
-        impl->m_geometry_container.push_back(std::move(geometry_data));
+        rtcAttachGeometryByID(m_scene, geometry_handle, static_cast<unsigned int>(instance_idx));
+        m_geometry_container.push_back(std::move(geometry_data));
     }
 
-    rtcCommitScene(impl->m_scene);
+    rtcCommitScene(m_scene);
 
     statistics.insert_time("total build time", stopwatch.measure().get_seconds());
 
@@ -453,6 +408,11 @@ EmbreeScene::EmbreeScene(const EmbreeScene::Arguments& arguments)
         StatisticsVector::make(
             "Embree scene #" + to_string(arguments.m_assembly.get_uid()) + " statistics",
             statistics).to_string().c_str());
+}
+
+EmbreeScene::~EmbreeScene()
+{
+    rtcReleaseScene(m_scene);
 }
 
 void EmbreeScene::intersect(ShadingPoint& shading_point) const
@@ -465,16 +425,13 @@ void EmbreeScene::intersect(ShadingPoint& shading_point) const
 
     rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
 
-    rtcIntersect1(
-        impl->m_scene,
-        &context,
-        &rayhit);
-    
+    rtcIntersect1(m_scene, &context, &rayhit);
+
     if (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID)
     {
-        assert(rayhit.hit.geomID < impl->m_geometry_container.size());
+        assert(rayhit.hit.geomID < m_geometry_container.size());
 
-        const auto& geometry_data = impl->m_geometry_container[rayhit.hit.geomID];
+        const auto& geometry_data = m_geometry_container[rayhit.hit.geomID];
         assert(geometry_data);
 
         shading_point.m_bary[0] = rayhit.hit.u;
@@ -509,22 +466,14 @@ bool EmbreeScene::occlude(const ShadingRay& shading_ray) const
     shading_ray_to_embree_ray(shading_ray, ray);
 
     rtcOccluded1(
-        impl->m_scene,
+        m_scene,
         &context,
         &ray);
-    
+
     if (ray.tfar < signed_min<float>())
-    {
         return true;
-    }
 
     return false;
-}
-
-EmbreeScene::~EmbreeScene()
-{
-    rtcReleaseScene(impl->m_scene);
-    delete impl;
 }
 
 EmbreeSceneFactory::EmbreeSceneFactory(const EmbreeScene::Arguments& arguments)
