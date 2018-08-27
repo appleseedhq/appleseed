@@ -1048,8 +1048,8 @@ void ShadingPoint::initialize_osl_shader_globals(
             m_shader_globals.dPdx = Vector3f(get_dpdx());
             m_shader_globals.dPdy = Vector3f(get_dpdy());
             m_shader_globals.dPdz = Vector3f(0.0);
-            m_shader_globals.dIdx = Vector3f(ray.m_rx.m_dir);
-            m_shader_globals.dIdy = Vector3f(ray.m_ry.m_dir);
+            m_shader_globals.dIdx = Vector3f(ray.m_rx.m_dir - ray.m_dir);
+            m_shader_globals.dIdy = Vector3f(ray.m_ry.m_dir - ray.m_dir);
         }
         else
         {
