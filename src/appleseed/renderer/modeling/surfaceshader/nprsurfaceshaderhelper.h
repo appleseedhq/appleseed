@@ -33,7 +33,6 @@
 #include "renderer/global/globaltypes.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
 
 // Standard headers.
@@ -42,6 +41,7 @@
 // Forward declarations.
 namespace renderer      { class AOVComponents; }
 namespace renderer      { class CompositeNPRClosure; }
+namespace renderer      { class NPRContourInputValues; }
 namespace renderer      { class ShaderGroup; }
 namespace renderer      { class ShadingComponents; }
 namespace renderer      { class ShadingContext; }
@@ -57,33 +57,34 @@ namespace renderer
 // This class is used by the PhysicalSurfaceShader when the
 // object materials include NPR components.
 //
+// Reference:
+//
+//   Ray Tracing NPR-Style Feature Lines
+//   http://www.sci.utah.edu/publications/choudhury09/NPR-lines.NPAR09.pdf
+//
 
 class NPRSurfaceShaderHelper
-  : foundation::NonCopyable
 {
   public:
-    void evaluate(
+    static void evaluate(
         SamplingContext&            sampling_context,
         const ShadingContext&       shading_context,
         const ShadingPoint&         shading_point,
         AOVComponents&              components,
-        ShadingComponents&          radiance) const;
+        ShadingComponents&          radiance);
 
   private:
-    void evaluate_npr(
-        SamplingContext&            sampling_context,
-        const ShadingContext&       shading_context,
-        const ShadingPoint&         shading_point,
-        const ShaderGroup*          sg,
-        ShadingComponents&          radiance,
-        AOVComponents&              components) const;
-
-    foundation::Color4f evaluate_npr_contour(
+    static foundation::Color4f evaluate_npr_contour(
         SamplingContext&            sampling_context,
         const ShadingContext&       shading_context,
         const ShadingPoint&         shading_point,
         const CompositeNPRClosure&  c,
-        const size_t                closure_index) const;
+        const size_t                closure_index);
+
+    static bool is_same_object(
+        const int                   features,
+        const ShadingPoint&         shading_point,
+        const ShadingPoint&         other_shading_point);
 };
 
 }       // namespace renderer

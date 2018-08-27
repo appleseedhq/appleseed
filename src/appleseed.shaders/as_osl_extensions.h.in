@@ -170,6 +170,8 @@ closure color as_npr_contour(
     float       occlusion_threshold,
     int         creases,
     float       creases_threshold
+    // keyword arguments:
+    //   int    "quality" = 1
 ) BUILTIN;
 
 #endif  // AS_OSL_EXTENSIONS_H
