@@ -1674,6 +1674,7 @@ namespace
             float       occlusion_threshold;
             int         creases;
             float       creases_threshold;
+            int         quality;
         };
 
         static const char* name()
@@ -1684,6 +1685,16 @@ namespace
         static ClosureID id()
         {
             return NPRContourID;
+        }
+
+        static void prepare_closure(
+            OSL::RendererServices*      render_services,
+            int                         id,
+            void*                       data)
+        {
+            // Initialize keyword parameter defaults.
+            Params* params = new (data) Params();
+            params->quality = 1;
         }
 
         static void register_closure(OSLShadingSystem& shading_system)
@@ -1701,10 +1712,11 @@ namespace
                 CLOSURE_INT_PARAM(Params, creases),
                 CLOSURE_FLOAT_PARAM(Params, creases_threshold),
 
+                CLOSURE_INT_KEYPARAM(Params, quality, "quality"),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
+            shading_system.register_closure(name(), id(), params, &prepare_closure, nullptr);
         }
 
         static void convert_closure(
@@ -1735,6 +1747,7 @@ namespace
             values->m_cos_crease_threshold = cos(deg_to_rad(p->creases_threshold));
 
             values->m_features = features;
+            values->m_quality = static_cast<size_t>(clamp(p->quality, 1, 4));
         }
     };
 }

@@ -131,7 +131,7 @@ namespace
                 if (const ShaderGroup* sg = material->get_render_data().m_shader_group)
                 {
                     if (sg->has_npr())
-                        m_npr_surface_shader.evaluate(sampling_context, shading_context, shading_point, components, radiance);
+                        NPRSurfaceShaderHelper::evaluate(sampling_context, shading_context, shading_point, components, radiance);
                 }
             }
 
@@ -145,8 +145,7 @@ namespace
         }
 
       private:
-        size_t                  m_lighting_samples;
-        NPRSurfaceShaderHelper  m_npr_surface_shader;
+        size_t m_lighting_samples;
     };
 }
 
