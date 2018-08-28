@@ -1,0 +1,463 @@
+
+//
+// This source file is part of appleseed.
+// Visit https://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2018 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Reference:
+
+shader as_sbs_pbrmaterial
+[[
+    string as_maya_node_name = "asSbsPbrMaterial",
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
+    string as_blender_node_name = "asSbsPbrMaterial",
+    string as_blender_category = "shader",
+    string help = "Substance Painter PBR material.",
+    string icon = "asSbsPbrMaterial.png",
+    int as_maya_type_id = 0x001279c3,
+    string as_max_class_id = "2003578504 779682628",
+    string as_max_plugin_type = "material",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_sbs_pbrmaterial.html#label-as-sbs-pbrmaterial"
+]]
+(
+    float in_ambientOcclusion = 1.0
+    [[
+        string as_maya_attribute_name = "ambientOcclusion",
+        string as_maya_attribute_short_name = "aoc",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Ambient Occlusion",
+        string page = "Ambient Occlusion",
+        string help = "Ambient occlusion channel"
+        // Default linear-encoded by SBS
+    ]],
+    color in_baseColor = color(0.5)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Surface Color",
+        string page = "Base Color",
+        string help = "Diffuse base color or surface color channel."
+        // Default sRGB encoded by SBS
+    ]],
+    color in_emissiveColor = color(0)
+    [[
+        string as_maya_attribute_name = "emissiveColor",
+        string as_maya_attribute_short_name = "ecl",
+        string label = "Emissive Color",
+        string page = "Emissive",
+        string help = "Emissive channel",
+        // Default sRGB encoded by SBS
+    ]],
+    float in_emissiveIntensity = 1.0
+    [[
+        string as_maya_attribute_name = "emissiveIntensity",
+        string as_maya_attribute_short_name = "emi",
+        float min = 0.0,
+        float softmax = 1.0,
+        float max = 10.0,
+        string label = "Emissive Intensity",
+        string page = "Emissive",
+        string help = "Controls how much light is emitted from the surface."
+    ]],
+    float in_height = 0.5
+    [[
+        string as_maya_attribute_name = "height",
+        string as_maya_attribute_short_name = "hei",
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Height",
+        string page = "Height",
+        string help = "Height channel."
+        // hidden
+        // linear-encoded
+    ]],
+    float in_heightScale = 0.0
+    [[
+        string as_maya_attribute_name = "heightScale",
+        string as_maya_attribute_short_name = "hsc",
+        float min = -1.0,
+        float max = 1.0,
+        string label = "Scale",
+        string page = "Height",
+        string help = "Provided significant physical detail to the surface by manipulating the vertices of the mesh."
+        // linear encoded
+    ]],
+    float in_metallic = 0.0
+    [[
+        string as_maya_attribute_name = "metallic",
+        string as_maya_attribute_short_name = "met",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Metallic",
+        string page = "Metallic",
+        string help = "Metallicness channel."
+        // linear encoded
+    ]],
+    normal in_normal = N
+    [[
+        string as_maya_attribute_name = "normalCamera",
+        string as_maya_attribute_short_name = "n",
+        string label = "Normal",
+        string page = "Normal",
+        string help = "Normal channel"
+        // linear encoded
+    ]],
+    float in_roughness = 0.5
+    [[
+        string as_maya_attribute_name = "roughness",
+        string as_maya_attribute_short_name = "rou",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Roughness",
+        string page = "Roughness",
+        string help = "Roughness channel."
+        // linear encoded
+    ]],
+    float in_opacity = 1.0
+    [[
+        string as_maya_attribute_name = "opacity",
+        string as_maya_attribute_short_name = "opa",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Opacity",
+        string page = "Opacity",
+        string help = "Opacity channel"
+        // linear encoded
+    ]],
+    float in_specularLevel = 0.5
+    [[
+        string as_maya_attribute_name = "specularLevel",
+        string as_maya_attribute_short_name = "spl",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Specular Level",
+        string page = "Specular",
+        string help = "Specular level channel."
+        // linear encoded
+    ]],
+    float in_anisotropyLevel = 0.0
+    [[
+        string as_maya_attribute_name = "anisotropyLevel",
+        string as_maya_attribute_short_name = "anl",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Anisotropy Level",
+        string page = "Anisotropy",
+        string help = "Anisotropy Level channel"
+        // linear encoded
+    ]],
+    float in_anisotropyAngle = 0.0
+    [[
+        string as_maya_attribute_name = "anisotropyAngle",
+        string as_maya_attribute_short_name = "ana",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Anisotropy Angle",
+        string page = "Anisotropy",
+        string help = "Anisotropy Angle channel, where 1 = 360 degrees."
+        // see base.mdl for reference
+        // linear encoded
+    ]],
+    float in_refraction = 0.0
+    [[
+        string as_maya_attribute_name = "refraction",
+        string as_maya_attribute_short_name = "rfa",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Refraction",
+        string page = "Refraction",
+        string help = "Refraction channel"
+        // linear encoded
+    ]],
+    float in_refractionIOR = 1.5
+    [[
+        string as_maya_attribute_name = "refractionIOR",
+        string as_maya_attribute_short_name = "ior",
+        float min = 0.0,
+        float softmax = 5.0,
+        float max = 10.0,
+        string label = "IOR",
+        string page = "Refraction",
+        string help = "Index of Refraction"
+    ]],
+    float in_scattering = 0.0
+    [[
+        string as_maya_attribute_name = "scattering",
+        string as_maya_attribute_short_name = "sca",
+        float min = 0.0,
+        float max = 0.1,
+        string label = "Scattering",
+        string page = "Refraction",
+        string help = "Controls how much light is scattered through the surface."
+    ]],
+    float in_absorption = 0.0
+    [[
+        string as_maya_attribute_name = "absorption",
+        string as_maya_attribute_short_name = "abs",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Absorption",
+        string page = "Refraction",
+        string help = "Controls how much light is absorbed through the surface."
+    ]],
+    color in_absorptionColor = color(1)
+    [[
+        string as_maya_attribute_name = "absorptionColor",
+        string as_maya_attribute_short_name = "abc",
+        string label = "Absorption Color",
+        string page = "Refraction",
+        string help = "Simulates shifts in color when light passes through the surface."
+    ]],
+    int in_enable_matte = 0
+    [[
+        string as_maya_attribute_name = "enableMatte",
+        string as_maya_attribute_short_name = "ema",
+        string widget = "checkBox",
+        string label = "Enable Matte Opacity",
+        string page = "Matte Opacity",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    float in_matte_opacity = 0.0
+    [[
+        string as_maya_attribute_name = "matteOpacity",
+        string as_maya_attribute_short_name = "mao",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Matte Opacity",
+        string page = "Matte Opacity",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    color in_matte_opacity_color = color(1,0.5,0)
+    [[
+        string as_maya_attribute_name = "matteOpacityColor",
+        string as_maya_attribute_short_name = "mac",
+        string label = "Matte Opacity Color",
+        string page = "Matte Opacity",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_maximum_ray_depth = 4
+    [[
+        string as_maya_attribute_name = "maximumRayDepth",
+        string as_maya_attribute_short_name = "mr",
+        int min = 0,
+        int max = 100,
+        int softmax = 8,
+        string label = "Ray Depth",
+        string page = "Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    
+    // primvars
+    vector Tn = vector(0)
+    [[
+        int lockgeom = 0,
+        int as_maya_attribute_hidden = 1,
+        string widget = "null",
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    vector Bn = vector(0)
+    [[
+        int lockgeom = 0,
+        int as_maya_attribute_hidden = 1,
+        string widget = "null",
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+        
+    ]],
+
+    // output
+    output closure color out_outColor = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null"
+    ]],
+    output closure color out_outTransparency = 0
+    [[
+        string as_maya_attribute_name = "outTransparency",
+        string as_maya_attribute_short_name = "ot",
+        string widget = "null"
+    ]],
+    output closure color out_outMatteOpacity = 0
+    [[
+        string as_maya_attribute_name = "outMatteOpacity",
+        string as_maya_attribute_short_name = "om",
+        string widget = "null",
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]]
+)
+{
+    if (in_opacity < 1.0)
+    {
+        out_outTransparency = (1.0 - in_opacity) * transparent();
+        out_outColor += out_outTransparency;
+    }
+
+    if (raytype("shadow") || raytype("transparency"))
+    {
+        return;
+    }
+
+    int ray_depth = 0;
+    int status = getattribute("path:ray_depth", ray_depth);
+
+    if (!status || ray_depth > in_maximum_ray_depth)
+    {
+        return;
+    }
+
+    if (in_enable_matte)
+    {
+        out_outMatteOpacity = in_matte_opacity *
+            in_matte_opacity_color * holdout();
+
+        out_outColor += out_outMatteOpacity;
+    }
+
+    if (in_opacity == 0.0)
+    {
+        return;
+    }
+    
+    // AO mix
+    color diffuse_color = in_baseColor * in_ambientOcclusion;
+
+    normal Nn = normalize(in_normal);
+    vector tangent = Tn;
+    
+    // The SBS MDL does a linear blend between the specular BTDF and a 
+    // diffuse BRDF according to the refraction parameter, then adds the
+    // specular BRDF on top. We can do this using the glass BSDF by building
+    // the respective reflection and transmission weights for the closure.
+    //
+
+    closure color btdf = 0, brdf = 0;
+
+    if (in_refraction > 0.0)
+    {
+        closure color specular_btdf = as_glass(
+            "ggx",
+            Nn,
+            vector(0),  // tangent
+            color(1),   // surface transmittance
+            color(0),   // reflection tint
+            diffuse_color,
+            0.0,        // roughness
+            0.0,        // highlight falloff
+            0.0,        // anisotropic amount
+            in_refractionIOR,
+            in_absorptionColor,
+            in_absorption * 10.0, // original range [0,0.1], find match
+            "energy_compensation", 0.0);
+
+        closure color diffuse_btdf = diffuse_color * diffuse(Nn);
+
+        btdf = mix(diffuse_btdf, specular_btdf, in_refraction);
+    }
+    else
+    {
+        btdf = diffuse_color * diffuse(Nn);
+    }
+
+    if (in_specularLevel > 0.0)
+    {
+        vector tangent = Tn;         
+
+        if (in_anisotropyLevel > 0.0 && in_anisotropyAngle > 0.0)
+        {
+            tangent = rotate(
+                tangent,
+                in_anisotropyAngle * M_2PI,
+                point(0),
+                point(in_normal));
+        }
+
+        // Schlick Fresnel approximation to layer the specular BRDF over the
+        // diffuse|specular BTDF mix.
+        float F0 = in_specularLevel * 0.08;            
+        float F90 = 1.0;
+        float tmp = 1.0 - max(0.0, dot(normalize(-I), Nn));
+        float F = F0 + (F90 - F0) * pow(tmp, 5.0);
+
+        btdf *= 1.0 - F;
+
+        // Compute the dielectric brdf, which is added with the btdf.
+        float sqrt_f0 = sqrt(F);
+        float eta = (sqrt_f0 + 1.0) / max(1.0e-6, 1.0 - sqrt_f0);
+
+        closure color dielectric_brdf = as_glossy(
+            "ggx",
+            Nn,
+            tangent,
+            in_roughness,
+            0.0,        // highlight falloff
+            in_anisotropyLevel,
+            eta,
+            "energy_compensation", 0.0);
+
+        closure color bsdf = btdf + dielectric_brdf;
+
+        if (in_metallic > 0.0)
+        {
+            closure color conductor_brdf = as_metal(
+                "ggx",
+                Nn,
+                tangent,
+                in_baseColor,
+                color(1),   // edge tint
+                in_roughness,
+                0.0,        // highlight falloff
+                in_anisotropyLevel,
+                "energy_compensation", 0.0);
+
+            bsdf = mix(bsdf, conductor_brdf, in_metallic);
+        }
+
+        out_outColor += bsdf;
+    }
+    else
+    {
+        out_outColor += btdf;
+    }
+
+    if (max(in_emissiveIntensity * in_emissiveColor) > 0.0)
+    {
+        out_outColor += in_emissiveIntensity *
+            in_emissiveColor * 2.86 * emission();
+    }
+}
