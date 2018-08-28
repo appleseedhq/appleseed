@@ -458,7 +458,7 @@ set (src_appleseed_sources
      src/appleseed/as_noise3d.osl
      src/appleseed/as_plastic.osl
      src/appleseed/as_ray_switch.osl
-	 src/appleseed/as_sbs_pbrmaterial.osl
+     src/appleseed/as_sbs_pbrmaterial.osl
      src/appleseed/as_space_transform.osl
      src/appleseed/as_standard_surface.osl
      src/appleseed/as_subsurface.osl
