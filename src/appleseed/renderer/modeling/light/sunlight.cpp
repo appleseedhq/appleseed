@@ -570,11 +570,17 @@ DictionaryArray SunLightFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "turbidity")
             .insert("label", "Turbidity")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "8.0")
+                    .insert("type", "hard"))
             .insert("use", "required")
-            .insert("default", "4.0")
+            .insert("default", "2.0")
             .insert("help", "Atmospheric haziness"));
 
     metadata.push_back(
