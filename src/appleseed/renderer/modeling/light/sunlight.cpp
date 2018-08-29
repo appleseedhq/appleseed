@@ -80,13 +80,12 @@ namespace
 
     const char* Model = "sun_light";
 
+    // Sun's radius, in millions of km.
+    // Reference: https://en.wikipedia.org/wiki/Solar_radius
+    const float SunRadius = 0.6957f;
+
     // The smallest valid turbidity value.
     const float BaseTurbidity = 2.0f;
-
-    // Solid angle sustained by the Sun, as seen from Earth (in steradians).
-    // Reference: http://en.wikipedia.org/wiki/Solid_angle#Sun_and_Moon
-
-    const float SunRadius = 0.6957f; // millions of km
 
     class SunLight
       : public Light
@@ -138,13 +137,13 @@ namespace
                 m_values.m_distance = 149.6f;
             }
 
-            // Compute SunSolidAngle that depends on distance between Sun and scene.
-            // angular_diameter = 2 * arctan(sun_radius / (distance))
-            m_sun_solid_angle = TwoPi<float>() * (1 - cos(atan(SunRadius / m_values.m_distance)));
+            // Compute the Sun's solid angle.
+            // Reference: https://en.wikipedia.org/wiki/Solid_angle#Sun_and_Moon
+            m_sun_solid_angle = TwoPi<float>() * (1.0f - cos(atan(SunRadius / m_values.m_distance)));
 
             // If the Sun light is bound to an environment EDF, let it override the Sun's direction and turbidity.
             const EnvironmentEDF* env_edf = dynamic_cast<EnvironmentEDF*>(m_inputs.get_entity("environment_edf"));
-            if (env_edf)
+            if (env_edf != nullptr)
                 apply_env_edf_overrides(env_edf);
 
             // Apply turbidity bias.
@@ -269,14 +268,14 @@ namespace
         {
             float           m_turbidity;                // atmosphere turbidity
             float           m_radiance_multiplier;      // emitted radiance multiplier
-            float           m_size_multiplier;          // sun size multiplier
-            float           m_distance;                 // distance between Sun and scene
+            float           m_size_multiplier;          // Sun size multiplier
+            float           m_distance;                 // distance between Sun and scene, in millions of km
         };
 
         Vector3d            m_scene_center;             // world space
         double              m_scene_radius;             // world space
         double              m_safe_scene_diameter;      // world space
-        float               m_sun_solid_angle;
+        float               m_sun_solid_angle;          // Sun's solid angle, in steradians
 
         InputValues         m_values;
 
@@ -288,8 +287,10 @@ namespace
             // Use the Sun direction from the EDF if it has one.
             const Source* sun_theta_src = env_edf->get_inputs().source("sun_theta");
             const Source* sun_phi_src = env_edf->get_inputs().source("sun_phi");
-            if (sun_theta_src && sun_theta_src->is_uniform() &&
-                sun_phi_src && sun_phi_src->is_uniform())
+            if (sun_theta_src != nullptr &&
+                sun_theta_src->is_uniform() &&
+                sun_phi_src != nullptr &&
+                sun_phi_src->is_uniform())
             {
                 float sun_theta, sun_phi;
                 sun_theta_src->evaluate_uniform(sun_theta);
@@ -305,8 +306,10 @@ namespace
             // Use the Sun turbidity from the EDF if it has one.
             const Source* turbidity_src = env_edf->get_inputs().source("turbidity");
             const Source* turbidity_multiplier_src = env_edf->get_inputs().source("turbidity_multiplier");
-            if (turbidity_src && turbidity_src->is_uniform() &&
-                turbidity_multiplier_src && turbidity_multiplier_src->is_uniform())
+            if (turbidity_src != nullptr &&
+                turbidity_src->is_uniform() &&
+                turbidity_multiplier_src != nullptr &&
+                turbidity_multiplier_src->is_uniform())
             {
                 float turbidity_multiplier;
                 turbidity_multiplier_src->evaluate_uniform(turbidity_multiplier);
@@ -433,17 +436,6 @@ namespace
             }
         }
 
-        static double compute_sun_radius(const double distance, const double scene_diameter)
-        {
-            // sun diameter = 1.3914
-            // angular_diameter = 2 * arctan(sun_diameter / (2 * distance))
-            // tan(angular_diameter / 2) * distance = sun_radius
-            // tan(angular_diameter / 2) * scene_diameter = virtual_sun_radius
-            // -> virtual_sun_radius = sun_radius * scene_diameter / distance
-
-            return SunRadius * scene_diameter / distance;
-        }
-
         void sample_disk(
             const Transformd&       light_transform,
             const Vector2d&         s,
@@ -487,11 +479,18 @@ namespace
             Spectrum&               value,
             float&                  probability) const
         {
+            // sun_diameter = 1.3914
+            // angular_diameter = 2 * arctan(sun_diameter / (2 * distance))
+            // tan(angular_diameter / 2) * distance = sun_radius
+            // tan(angular_diameter / 2) * scene_diameter = virtual_sun_radius
+            // -> virtual_sun_radius = sun_radius * scene_diameter / distance
+            double sun_radius = SunRadius * m_safe_scene_diameter / m_values.m_distance;
+            sun_radius *= m_values.m_size_multiplier;
+
             outgoing = -normalize(light_transform.get_parent_z());
 
             const Basis3d basis(outgoing);
             const Vector2d p = sample_disk_uniform(s);
-            const double sun_radius = compute_sun_radius(m_values.m_distance, m_safe_scene_diameter) * m_values.m_size_multiplier;
 
             position =
                   target_point
@@ -512,16 +511,16 @@ namespace
             value *= m_sun_solid_angle;
 
             //
-            // The sun is represented by a disk of finite radius. The sun's illumination
-            // at a given point of the scene is computed by integrating the sun's
+            // The Sun is represented by a disk of finite radius. The Sun's illumination
+            // at a given point of the scene is computed by integrating the Sun's
             // contribution over that disk. The probability density of a given sample on
-            // that disk is 1 / sun's disk surface area.
+            // that disk is 1 / Sun's disk surface area.
             //
-            // Since compute_sun_radiance() assumes that the sun is reduced to a point
+            // Since compute_sun_radiance() assumes that the Sun is reduced to a point
             // infinitely far away, it's really returning an irradiance, and we need to
             // convert it back to a radiance by dividing its return value by the surface
-            // area of the sun's disk, which is equivalent to multiplying the probability
-            // density by the sun disk's surface area, which leaves us with probability = 1.
+            // area of the Sun's disk, which is equivalent to multiplying the probability
+            // density by the Sun disk's surface area, which leaves us with probability = 1.
             //
 
             probability = 1.0f;
