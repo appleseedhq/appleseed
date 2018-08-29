@@ -160,7 +160,7 @@ void IEnvironmentEDFFactory::add_common_sky_input_metadata(DictionaryArray& meta
             .insert("type", "text")
             .insert("use", "optional")
             .insert("default", "0.0")
-            .insert("help", "Rotate the sky horizontally by a given number of degrees"));
+            .insert("help", "Shift the horizon vertically"));
 }
 
 }   // namespace renderer
