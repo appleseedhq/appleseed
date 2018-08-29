@@ -53,12 +53,6 @@ class APPLESEED_DLLSYMBOL IImageFileWriter
   public:
     // Destructor.
     virtual ~IImageFileWriter() {}
-
-    // Write an image file.
-    virtual void write(
-        const char*             filename,
-        const ICanvas&          image,
-        const ImageAttributes&  image_attributes = ImageAttributes()) = 0;
 };
 
 }       // namespace foundation

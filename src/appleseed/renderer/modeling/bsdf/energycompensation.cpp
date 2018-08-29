@@ -32,7 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
-#include "foundation/image/exrimagefilewriter.h"
+#include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
@@ -233,8 +233,12 @@ void AlbedoTable2D::write_table_to_image(const bfs::path& filename) const
     for (size_t i = 0; i < TableSize; ++i)
         image.set_pixel(i, TableSize, Color3f(p[i]));
 
-    EXRImageFileWriter writer;
-    writer.write(filename.string().c_str(), image);
+    const std::string file = filename.string();
+
+    GenericImageFileWriter writer(file.c_str());
+
+    writer.append_image(&image);
+    writer.write();
 }
 
 void AlbedoTable2D::write_table_to_cpp_array(
@@ -445,8 +449,12 @@ void AlbedoTable3D::write_table_to_image(const bfs::path& filename) const
         }
     }
 
-    EXRImageFileWriter writer;
-    writer.write(filename.string().c_str(), image);
+    const std::string file = filename.string();
+
+    GenericImageFileWriter writer(file.c_str());
+
+    writer.append_image(&image);
+    writer.write();
 }
 
 void AlbedoTable3D::write_table_to_cpp_array(

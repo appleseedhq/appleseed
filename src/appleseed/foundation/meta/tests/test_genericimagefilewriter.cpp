@@ -29,7 +29,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
-#include "foundation/image/exrimagefilewriter.h"
+#include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/genericprogressiveimagefilereader.h"
 #include "foundation/image/image.h"
 #include "foundation/image/imageattributes.h"
@@ -45,9 +45,9 @@
 using namespace foundation;
 using namespace std;
 
-TEST_SUITE(Foundation_Image_EXRImageFileWriter)
+TEST_SUITE(Foundation_Image_GenericImageFileWriter)
 {
-    static const char* Filename = "unit tests/outputs/test_exrimagefilewriter.exr";
+    static const char* Filename = "unit tests/outputs/test_genericimagefilewriter.exr";
     static const Color4b Reference(50, 100, 150, 42);
 
     void write_test_openexr_file_to_disk()
@@ -64,8 +64,11 @@ TEST_SUITE(Foundation_Image_EXRImageFileWriter)
         attrs.insert("appleseed:test:IntAttr", 32);
         attrs.insert("appleseed:test:UnsignedIntAttr", static_cast<size_t>(32));
 
-        EXRImageFileWriter writer;
-        writer.write(Filename, image, attrs);
+        GenericImageFileWriter writer(Filename);
+
+        writer.append_image(&image);
+        writer.set_image_attributes(attrs);
+        writer.write();
     }
 
     TEST_CASE(CorrectlyWriteTestImage)

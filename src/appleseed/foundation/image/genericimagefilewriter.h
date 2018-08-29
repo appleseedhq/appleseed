@@ -7,6 +7,7 @@
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 // Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2018 Thomas Manceau, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,29 +34,67 @@
 // appleseed.foundation headers.
 #include "foundation/image/iimagefilewriter.h"
 #include "foundation/image/imageattributes.h"
+#include "foundation/image/pixel.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+// OpenImageIO headers.
+#include "foundation/platform/_beginoiioheaders.h"
+#include "OpenImageIO/imageio.h"
+#include "foundation/platform/_endoiioheaders.h"
 
 // Forward declarations.
-namespace foundation    { class ICanvas; }
+namespace foundation { class ICanvas; }
 
 namespace foundation
 {
-
-//
-// Generic image file writer.
-//
 
 class APPLESEED_DLLSYMBOL GenericImageFileWriter
   : public IImageFileWriter
 {
   public:
-    // Write an image file.
-    void write(
-        const char*             filename,
-        const ICanvas&          image,
-        const ImageAttributes&  image_attributes = ImageAttributes()) override;
+    explicit GenericImageFileWriter(const char* filename);
+    ~GenericImageFileWriter() override;
+
+    // Add an image to the image stack
+    void append_image(const ICanvas* image);
+
+    // Set the pixel format of the last stacked image
+    void set_image_output_format(const PixelFormat output_pixel_format);
+
+    // Set the image channels of the last stacked image
+    void set_image_channels(
+        const size_t    channel_count,
+        const char**    channel_names);
+
+    // Add attributes to the last stacked image
+    void set_image_attributes(const ImageAttributes& image_attributes);
+
+    // Return the number of images in the stack
+    size_t get_image_count() const;
+
+    // Write all the stacked images (if possible) on disk
+    void write();
+
+  private:
+    void close_file();
+
+    void set_image_spec();
+    
+    void set_generic_image_attributes(const ImageAttributes& image_attributes);
+    void set_exr_image_attributes(const ImageAttributes& image_attributes);
+    
+    void write(const size_t image_index);
+    void write_single_image();
+    void write_multi_images();
+
+    void write_scanlines(const size_t image_index);
+    void write_tiles(const size_t image_index);
+
+  private:
+    struct Impl;
+    Impl* impl;
+
+    OIIO::ImageOutput*  m_writer;
+    const char*         m_filename;
 };
 
 }       // namespace foundation

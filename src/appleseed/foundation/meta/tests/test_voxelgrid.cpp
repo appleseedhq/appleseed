@@ -125,8 +125,10 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
                 }
             }
 
-            GenericImageFileWriter writer;
-            writer.write(filename, image);
+            GenericImageFileWriter writer(filename);
+
+            writer.append_image(&image);
+            writer.write();
         }
     };
 
@@ -426,8 +428,12 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
             }
         }
 
-        GenericImageFileWriter writer;
-        writer.write("unit tests/outputs/test_voxelgrid_bilinear_filtering_exploration_source.png", source);
-        writer.write("unit tests/outputs/test_voxelgrid_bilinear_filtering_exploration_target.png", target);
+        GenericImageFileWriter source_writer("unit tests/outputs/test_voxelgrid_bilinear_filtering_exploration_source.png");
+        source_writer.append_image(&source);
+        source_writer.write();
+
+        GenericImageFileWriter target_writer("unit tests/outputs/test_voxelgrid_bilinear_filtering_exploration_target.png");
+        target_writer.append_image(&target);
+        target_writer.write();
     }
 }

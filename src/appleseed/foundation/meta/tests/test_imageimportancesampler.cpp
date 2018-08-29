@@ -126,8 +126,10 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
                 Color4f(1.0f, 0.0f, 1.0f, 1.0f));
         }
 
-        GenericImageFileWriter writer;
-        writer.write(output_image, *image.get());
+        GenericImageFileWriter writer(output_image);
+
+        writer.append_image(image.get());
+        writer.write();
     }
 
     TEST_CASE(ImportanceSampleWhiteImage)

@@ -73,7 +73,10 @@ TEST_SUITE(Foundation_Math_Noise)
             }
         }
 
-        GenericImageFileWriter().write(image_filename, image);
+        GenericImageFileWriter writer(image_filename);
+
+        writer.append_image(&image);
+        writer.write();
     }
 
     float noise_function(const Vector2f& p)

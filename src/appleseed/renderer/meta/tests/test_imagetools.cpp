@@ -74,8 +74,10 @@ TEST_SUITE(ImageTools)
             output->set_pixel(x, y, saturate((i % 2) ? IsoLumRed : IsoLumBlue));
         }
 
-        GenericImageFileWriter writer;
-        writer.write("unit tests/outputs/test_compareimages_checkpointsisoluminance.png", *output.get());
+        GenericImageFileWriter writer("unit tests/outputs/test_compareimages_checkpointsisoluminance.png");
+
+        writer.append_image(output.get());
+        writer.write();
     }
 
     struct ExceptionNonMatchingImageCharacteristics : public Exception {};
@@ -289,8 +291,10 @@ TEST_SUITE(ImageTools)
                 *apply(*left_image.get(), *right_image.get(), op).get(),
                 ColorMultiply(1.0f));
 
-        GenericImageFileWriter writer;
-        writer.write("unit tests/outputs/test_imagetools_compareimages.png", *result.get());
+        OIIOImageFileWriter writer("unit tests/outputs/test_imagetools_compareimages.png");
+
+        writer.append_image(result.get());
+        writer.write();
     }
 
 #endif
@@ -361,8 +365,10 @@ TEST_SUITE(ImageTools)
             }
         }
 
-        GenericImageFileWriter writer;
-        writer.write("unit tests/outputs/test_imagetools_tweakimage.png", output_image);
+        OIIOImageFileWriter writer("unit tests/outputs/test_imagetools_tweakimage.png");
+
+        writer.append_image(output_image);
+        writer.write();
     }
 
 #endif
@@ -426,8 +432,10 @@ TEST_SUITE(ImageTools)
             }
         }
 
-        GenericImageFileWriter writer;
-        writer.write("unit tests/outputs/test_imagetools_spherebump.exr", image);
+        OIIOImageFileWriter writer("unit tests/outputs/test_imagetools_spherebump.exr");
+
+        writer.append_image(image);
+        writer.write();
     }
 
 #endif
@@ -457,8 +465,10 @@ TEST_SUITE(ImageTools)
             }
         }
 
-        GenericImageFileWriter writer;
-        writer.write("unit tests/outputs/test_imagetools_sinebump.exr", image);
+        OIIOImageFileWriter writer("unit tests/outputs/test_imagetools_sinebump.exr");
+
+        writer.append_image(image);
+        writer.write();
     }
 
 #endif

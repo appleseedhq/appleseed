@@ -42,6 +42,28 @@ namespace foundation
 //
 // Image attributes.
 //
+//
+// Here is a non-exhaustive list of attributes you can fill for images:
+//
+// - author: The author of the image. [string]
+// - copyright: Any copyright notice or owner of the image. [string]
+// - title: The name of the overall document that this image is a part of. [string]
+// - description: The image description. [string]
+// - date: The creation date of the image. [string]
+// - software: The software that was used to create the image. [string]
+// - computer: The name or identity of the computer that created the image. [string]
+// - image_name: The name of the image. [string]
+// - white_xy_chromaticity: The white chromaticity of the image. [vector2]
+// - red_xy_chromaticity: The red chromaticity of the image. [vector2]
+// - green_xy_chromaticity: The green chromaticity of the image. [vector2]
+// - blue_xy_chromaticity: The blue chromaticity of the image. [vector2]
+// - color_space: The color space of the image. [string]
+//      - linear
+//      - sRGB
+// - compression: The compression mode of the image. [string]
+// - compression_quality: The compression quality of the image between 0 and 100. [int]
+// - dpi: The resolution of the image in dots per inch. [int]
+//
 
 class APPLESEED_DLLSYMBOL ImageAttributes
   : public StringDictionary

@@ -44,11 +44,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
-#include "foundation/image/exrimagefilewriter.h"
+#include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/image/imageattributes.h"
 #include "foundation/image/pixel.h"
-#include "foundation/image/pngimagefilewriter.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/defaulttimers.h"
@@ -487,45 +486,30 @@ namespace
     void write_exr_image(
         const bf::path&         file_path,
         const Image&            image,
-        const ImageAttributes&  image_attributes,
+        ImageAttributes&        image_attributes,
         const AOV*              aov)
     {
         create_parent_directories(file_path);
 
-        EXRImageFileWriter writer;
+        const std::string filename = file_path.string();
+
+        GenericImageFileWriter writer(filename.c_str());
+
+        writer.append_image(&image);
 
         if (aov)
         {
+            // If the AOV has color data, assume we can save it as half floats.
             if (aov->has_color_data())
-            {
-                // If the AOV has color data, assume we can save it as half floats.
-                const CanvasProperties& props = image.properties();
-                const Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
+                writer.set_image_output_format(PixelFormatHalf);
 
-                writer.write(
-                    file_path.string().c_str(),
-                    half_image,
-                    image_attributes,
-                    aov->get_channel_count(),
-                    aov->get_channel_names());
-            }
-            else
-            {
-                writer.write(
-                    file_path.string().c_str(),
-                    image,
-                    image_attributes,
-                    aov->get_channel_count(),
-                    aov->get_channel_names());
-            }
+            writer.set_image_channels(aov->get_channel_count(), aov->get_channel_names());
         }
-        else
-        {
-            writer.write(
-                file_path.string().c_str(),
-                image,
-                image_attributes);
-        }
+
+        image_attributes.insert("color_space", "linear");
+        writer.set_image_attributes(image_attributes);
+
+        writer.write();
     }
 
     void transform_to_srgb(Tile& tile)
@@ -568,7 +552,7 @@ namespace
     void write_png_image(
         const bf::path&         file_path,
         const Image&            image,
-        const ImageAttributes&  image_attributes)
+        ImageAttributes&        image_attributes)
     {
         const CanvasProperties& props = image.properties();
 
@@ -579,11 +563,18 @@ namespace
 
         create_parent_directories(file_path);
 
-        PNGImageFileWriter writer;
-        writer.write(
-            file_path.string().c_str(),
-            transformed_image,
-            image_attributes);
+        const std::string filename = file_path.string();
+
+        GenericImageFileWriter writer(filename.c_str());
+
+        writer.append_image(&transformed_image);
+
+        writer.set_image_output_format(PixelFormat::PixelFormatUInt8);
+
+        image_attributes.insert("color_space", "sRGB");
+        writer.set_image_attributes(image_attributes);
+
+        writer.write();
     }
 
     bool write_image(
@@ -775,25 +766,26 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
 
-    create_parent_directories(file_path);
-
-    EXRImageFileWriter writer;
-
     ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
     add_chromaticities(image_attributes);
+    image_attributes.insert("color_space", "linear");
 
     std::vector<Image> images;
 
-    writer.begin_multipart_exr();
+    create_parent_directories(file_path);
 
-    static const char* ChannelNames[] = { "R", "G", "B", "A" };
+    GenericImageFileWriter writer(file_path);
 
     // Always save the main image as half floats.
     {
         const Image& image = *impl->m_image;
         const CanvasProperties& props = image.properties();
         images.emplace_back(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
-        writer.append_part("beauty", images.back(), image_attributes, 4, ChannelNames);
+
+        image_attributes.insert("image_name", "beauty");
+
+        writer.append_image(&(images.back()));
+        writer.set_image_attributes(image_attributes);
     }
 
     for (size_t i = 0, e = impl->m_aovs.size(); i < e; ++i)
@@ -807,14 +799,18 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
             // If the AOV has color data, assume we can save it as half floats.
             const CanvasProperties& props = image.properties();
             images.emplace_back(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
-            writer.append_part(aov_name.c_str(), images.back(), image_attributes, aov->get_channel_count(), aov->get_channel_names());
+            writer.append_image(&(images.back()));
         }
         else
-            writer.append_part(aov_name.c_str(), image, image_attributes, aov->get_channel_count(), aov->get_channel_names());
+            writer.append_image(&image);
+
+        image_attributes.insert("image_name", aov_name.c_str());
+
+        writer.set_image_channels(aov->get_channel_count(), aov->get_channel_names());
+        writer.set_image_attributes(image_attributes);
     }
 
-    create_parent_directories(file_path);
-    writer.write_multipart_exr(file_path);
+    writer.write();
 
     RENDERER_LOG_INFO(
         "wrote multipart exr image file %s in %s.",
