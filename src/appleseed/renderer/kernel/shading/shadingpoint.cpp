@@ -402,20 +402,20 @@ void ShadingPoint::refine_and_offset() const
             m_asm_geo_normal = faceforward(m_asm_geo_normal, local_ray.m_dir);
 
             // Compute the offset points in assembly instance space.
-    #ifdef RENDERER_ADAPTIVE_OFFSET
+#ifdef RENDERER_ADAPTIVE_OFFSET
             Intersector::adaptive_offset(
                 m_triangle_support_plane,
                 local_ray.m_org,
                 m_asm_geo_normal,
                 m_front_point,
                 m_back_point);
-    #else
+#else
             Intersector::fixed_offset(
                 local_ray.m_org,
                 m_asm_geo_normal,
                 m_front_point,
                 m_back_point);
-    #endif
+#endif
         }
         break;
 
