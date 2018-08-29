@@ -203,14 +203,14 @@ namespace
                 "  film width                    %f\n"
                 "  film height                   %f\n"
                 "  focal length                  %f\n"
+                "  f-number                      %f\n"
                 "  autofocus                     %s\n"
                 "  autofocus target              %f, %f\n"
                 "  diaphragm map                 %s\n"
                 "  diaphragm blades              %s\n"
                 "  diaphragm tilt angle          %f\n"
                 "  near-z                        %f\n"
-                "  shift x                       %f\n"
-                "  shift y                       %f\n"
+                "  shift                         %f, %f\n"
                 "  shutter open begin time       %f\n"
                 "  shutter open end time         %f\n"
                 "  shutter close begin time      %f\n"
@@ -220,6 +220,7 @@ namespace
                 m_film_dimensions[0],
                 m_film_dimensions[1],
                 m_focal_length,
+                m_f_number,
                 m_autofocus_enabled ? "on" : "off",
                 m_autofocus_target[0],
                 m_autofocus_target[1],
@@ -244,21 +245,25 @@ namespace
             if (!PerspectiveCamera::on_render_begin(project, parent, recorder, abort_switch))
                 return false;
 
+            // Extract autofocus status.
             m_autofocus_enabled = m_params.get_optional<bool>("autofocus_enabled", true);
 
-            // Extract the focal distance from the camera parameters.
+            // Extract autofocus target and focal distance.
             extract_focal_distance(
                 m_autofocus_enabled,
                 m_autofocus_target,
                 m_focal_distance);
 
-            // Extract the diaphragm configuration from the camera parameters.
+            // Extract diaphragm configuration.
             m_diaphragm_map_bound = build_diaphragm_importance_sampler(*project.get_scene());
             extract_diaphragm_blade_count();
             extract_diaphragm_tilt_angle();
 
+            // Extract F-number.
+            m_f_number = extract_f_number();
+
             // Precompute lens radius.
-            m_lens_radius = 0.5 * m_focal_length / extract_f_stop();
+            m_lens_radius = 0.5 * m_focal_length / m_f_number;
 
             // Build the diaphragm polygon.
             if (!m_diaphragm_map_bound && m_diaphragm_blade_count > 0)
@@ -398,10 +403,11 @@ namespace
 
       private:
         // Parameters.
+        double              m_f_number;                 // F-number
         bool                m_autofocus_enabled;        // is autofocus enabled?
-        bool                m_diaphragm_map_bound;      // is a diaphragm_map bound to the camera
         Vector2d            m_autofocus_target;         // autofocus target on film plane, in NDC
         double              m_focal_distance;           // focal distance in camera space
+        bool                m_diaphragm_map_bound;      // is a diaphragm map bound to the camera
         size_t              m_diaphragm_blade_count;    // number of blades of the diaphragm, 0 for round aperture
         double              m_diaphragm_tilt_angle;     // tilt angle of the diaphragm in radians
 
@@ -479,11 +485,11 @@ namespace
             }
         }
 
-        double extract_f_stop() const
+        double extract_f_number() const
         {
-            const double DefaultFStop = 8.0;
+            const double DefaultFNumber = 8.0;
 
-            return get_greater_than_zero("f_stop", DefaultFStop);
+            return get_greater_than_zero("f_stop", DefaultFNumber);
         }
 
         void extract_diaphragm_tilt_angle()
@@ -653,7 +659,7 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
     metadata.push_back(
         Dictionary()
             .insert("name", "f_stop")
-            .insert("label", "F-Number")
+            .insert("label", "F-number")
             .insert("type", "numeric")
             .insert("min",
                 Dictionary()
