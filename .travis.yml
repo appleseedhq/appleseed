@@ -44,9 +44,6 @@ matrix:
           compiler: gcc
           env: GCC_VERSION=6
 
-        - os: osx
-          compiler: clang
-
     exclude:
         - os: osx
           compiler: gcc
