@@ -63,6 +63,7 @@ class SHAREDDLL CommandLineHandlerBase
     // Add individual default command line options.
     void add_help_option();
     void add_version_option();
+    void add_libraries_option();
     void add_system_option();
     void add_message_verbosity_option();
     void add_message_coloring_option();
@@ -93,6 +94,7 @@ class SHAREDDLL CommandLineHandlerBase
     Impl* impl;
 
     void print_version_information(SuperLogger& logger) const;
+    void print_libraries_information(SuperLogger& logger) const;
 };
 
 }       // namespace shared
