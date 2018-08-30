@@ -165,7 +165,6 @@ namespace
             m_scene_center = Vector3d(scene_data.m_center);
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
-            m_sun_solid_angle = 6.87e-5f;
 
             precompute_constants();
 
