@@ -231,7 +231,7 @@ void CommandLineHandlerBase::print_version_information(SuperLogger& logger) cons
         "compiled on %s at %s using %s version %s\n"
         "copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited.\n"
         "copyright (c) 2014-2018 The appleseedhq Organization.\n"
-        "this software is released under the MIT license (http://opensource.org/licenses/MIT).\n"
+        "this software is released under the MIT license (https://opensource.org/licenses/MIT).\n"
         "visit https://appleseedhq.net/ for additional information and resources.",
         impl->m_application_name.c_str(),
         Appleseed::get_lib_name(),
