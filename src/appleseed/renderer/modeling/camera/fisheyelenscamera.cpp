@@ -334,11 +334,11 @@ namespace
 
         Vector3d ndc_to_camera(const Vector2d& point) const
         {
-            // TODO : refactor
-
             const double x = (0.5 - point.x) * m_film_dimensions[0];
             const double y = (point.y - 0.5) * m_film_dimensions[1];
+
             const double radius_1 = sqrt(x * x + y * y);
+            const double rcp_radius_1 = 1 / radius_1;
 
             const double tan_theta1 = radius_1 / m_focal_length;
             double theta2 = 0.0;
@@ -369,23 +369,23 @@ namespace
 
             return
                 Vector3d(
-                    (0.5 - point.x) * m_film_dimensions[0] + radius_diff * x / radius_1,
-                    (point.y - 0.5) * m_film_dimensions[1] + radius_diff * y / radius_1,
+                    (0.5 - point.x) * m_film_dimensions[0] + radius_diff * x * rcp_radius_1,
+                    (point.y - 0.5) * m_film_dimensions[1] + radius_diff * y * rcp_radius_1,
                     m_focal_length);
         }
 
         Vector2d camera_to_ndc(const Vector3d& point) const
         {
-            // TODO : refactor
             const double k = m_focal_length / point.z;
             
             const double x = 0.5 - (point.x * k * m_rcp_film_width);
             const double y = 0.5 + (point.y * k * m_rcp_film_height);
             
             const double radius_2 = sqrt(x * x + y * y);
+            const double rcp_radius_2 = 1 / radius_2;
 
-            const double cos_ = x / radius_2;
-            const double sin_ = y / radius_2;
+            const double cos_ = x * rcp_radius_2;
+            const double sin_ = y * rcp_radius_2;
             
             const double theta2 = atan(radius_2 / m_focal_length);
             double tan_theta1 = 0.0;
@@ -393,7 +393,7 @@ namespace
             switch (m_projection_type) 
             {
                 case EquisolidAngle:
-                  tan_theta1 = 2 * sin(theta2 / 2);
+                  tan_theta1 = 2 * sin(theta2 * 0.5);
                   break;
                 
                 case Equidistant:
@@ -401,7 +401,7 @@ namespace
                   break;
 
                 case Stereographic:
-                  tan_theta1 = 2 * tan(theta2 / 2);
+                  tan_theta1 = 2 * tan(theta2 * 0.5);
                   break;
 
                 case Thoby:
