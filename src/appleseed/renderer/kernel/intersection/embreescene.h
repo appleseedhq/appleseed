@@ -29,7 +29,6 @@
 #ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_EMBREESCENE_H
 #define APPLESEED_RENDERER_KERNEL_INTERSECTION_EMBREESCENE_H
 
-
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
