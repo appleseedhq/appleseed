@@ -296,11 +296,13 @@ void Project::update_trace_context()
 }
 
 #ifdef APPLESEED_WITH_EMBREE
+
 void Project::set_use_embree(const bool value)
 {
     if (impl->m_trace_context.get() != nullptr)
         impl->m_trace_context->set_use_embree(value);
 }
+
 #endif
 
 void Project::add_base_configurations()

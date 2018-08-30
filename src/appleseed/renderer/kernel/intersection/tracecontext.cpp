@@ -90,10 +90,12 @@ void TraceContext::update()
 }
 
 #ifdef APPLESEED_WITH_EMBREE
+
 void TraceContext::set_use_embree(const bool value)
 {
     m_assembly_tree->set_use_embree(value);
 }
+
 #endif
 
 }   // namespace renderer

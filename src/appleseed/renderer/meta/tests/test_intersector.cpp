@@ -181,5 +181,5 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
         EXPECT_FALSE(hit);
     }
 
-#endif // ifdef APPLESEED_WITH_EMBREE
+#endif  // APPLESEED_WITH_EMBREE
 }
