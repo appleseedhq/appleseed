@@ -606,6 +606,8 @@ set (foundation_utility_api_sources
     foundation/utility/api/apiarray.h
     foundation/utility/api/apistring.cpp
     foundation/utility/api/apistring.h
+    foundation/utility/api/apistringpair.cpp
+    foundation/utility/api/apistringpair.h
     foundation/utility/api/specializedapiarrays.cpp
     foundation/utility/api/specializedapiarrays.h
 )
