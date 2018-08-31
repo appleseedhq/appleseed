@@ -35,15 +35,25 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
+#include "foundation/core/thirdparties.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/api/apistring.h"
+#include "foundation/utility/api/apistringpair.h"
 
 // Qt headers.
 #include <QKeySequence>
 #include <QShortcut>
 #include <QString>
 #include <Qt>
+#include <QtGlobal>
+
+// Standard headers.
+#include <algorithm>
+#include <cstddef>
+#include <vector>
 
 using namespace foundation;
+using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -61,7 +71,7 @@ AboutWindow::AboutWindow(QWidget* parent)
         Qt::CustomizeWindowHint |
         Qt::WindowCloseButtonHint);
 
-    set_version_string();
+    set_version_strings();
 
     setFixedSize(width(), sizeHint().height());
 
@@ -77,9 +87,9 @@ AboutWindow::~AboutWindow()
     delete m_ui;
 }
 
-void AboutWindow::set_version_string()
+void AboutWindow::set_version_strings()
 {
-    const QString version_string =
+    m_ui->label_version_string->setText(
         QString(
             "<p><b>Version %1</b>, %4 Configuration</p>"
             "<p>Compiled on %5 at %6 using %7 version %8</p>")
@@ -88,9 +98,35 @@ void AboutWindow::set_version_string()
             .arg(Appleseed::get_lib_compilation_date())
             .arg(Appleseed::get_lib_compilation_time())
             .arg(Compiler::get_compiler_name())
-            .arg(Compiler::get_compiler_version());
+            .arg(Compiler::get_compiler_version()));
 
-    m_ui->label_version_string->setText(version_string);
+    LibraryVersionArray versions = ThirdParties::get_versions();
+    versions.push_back(APIStringPair("Qt", QT_VERSION_STR));
+
+    // Create a vector of indices into `versions` to allow enumerating libraries in sorted order.
+    vector<size_t> versions_indices(versions.size());
+    for (size_t i = 0, e = versions.size(); i < e; ++i)
+        versions_indices[i] = i;
+    sort(
+        versions_indices.begin(),
+        versions_indices.end(),
+        [&versions](const size_t lhs, const size_t rhs)
+        {
+            return strcmp(versions[lhs].m_first.c_str(), versions[rhs].m_first.c_str()) < 0;
+        });
+
+    QString details;
+    for (size_t i = 0, e = versions_indices.size(); i < e; ++i)
+    {
+        const APIStringPair& version = versions[versions_indices[i]];
+        details +=
+            QString("  %1 %2<br>")
+                .arg(version.m_first.c_str())
+                .arg(version.m_second.c_str());
+    }
+
+    m_ui->label_details->setText(
+        m_ui->label_details->text() + "<p>" + details + "</p>");
 }
 
 }   // namespace studio
