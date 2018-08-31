@@ -94,7 +94,7 @@ void GenericImageFileWriter::append_image(const ICanvas* image)
     assert(image);
 
     impl->m_canvas.push_back(image);
-    impl->m_spec.push_back(OIIO::ImageSpec{});
+    impl->m_spec.push_back(OIIO::ImageSpec());
 
     set_image_spec();
 }

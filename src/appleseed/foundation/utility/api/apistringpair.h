@@ -49,9 +49,9 @@ class APPLESEED_DLLSYMBOL APIStringPair
     APIString m_second;
 
     // Constructors.
-    APIStringPair() = default;
+    APIStringPair();
     APIStringPair(const APIString& first, const APIString& second);
-    APIStringPair(const APIStringPair& rhs) = default;
+    APIStringPair(const APIStringPair& rhs);
 
     // Comparison operators.
     bool operator==(const APIStringPair& rhs) const;
