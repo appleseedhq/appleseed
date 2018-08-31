@@ -36,9 +36,19 @@ namespace foundation
 // APIStringPair class implementation.
 //
 
+APIStringPair::APIStringPair()
+{
+}
+
 APIStringPair::APIStringPair(const APIString& first, const APIString& second)
   : m_first(first)
   , m_second(second)
+{
+}
+
+APIStringPair::APIStringPair(const APIStringPair& rhs)
+  : m_first(rhs.m_first)
+  , m_second(rhs.m_second)
 {
 }
 
