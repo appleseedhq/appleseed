@@ -67,7 +67,7 @@ namespace
         }
     };
 
-    InitializeLightWavelengths initialize_light_wavelengths;
+    InitializeLightWavelengths g_initialize_light_wavelengths;
 }
 
 

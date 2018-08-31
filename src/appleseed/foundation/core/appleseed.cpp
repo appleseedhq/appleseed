@@ -128,12 +128,12 @@ namespace
         }
     };
 
-    SyntheticVersionString s_synthetic_version_string;
+    SyntheticVersionString g_synthetic_version_string;
 }
 
 const char* Appleseed::get_synthetic_version_string()
 {
-    return s_synthetic_version_string.m_value.c_str();
+    return g_synthetic_version_string.m_value.c_str();
 }
 
 }   // namespace foundation

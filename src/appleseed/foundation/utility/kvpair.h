@@ -47,11 +47,26 @@ namespace foundation
 //
 
 template <typename KeyType, typename ValueType>
-struct APPLESEED_DLLSYMBOL KeyValuePair
+class APPLESEED_DLLSYMBOL KeyValuePair
 {
+  public:
     const KeyType   m_key;
     const ValueType m_value;
 };
+
+template <typename KeyValuePairType, typename LookupKeyType>
+const KeyValuePairType* lookup_kvpair_array(
+    const KeyValuePairType  kvpairs[],
+    const size_t            size,
+    const LookupKeyType     key);
+
+#define LOOKUP_KVPAIR_ARRAY(kvpairs, key) \
+    foundation::lookup_kvpair_array(kvpairs, COUNT_OF(kvpairs), key)
+
+
+//
+// KeyValuePair class implementation.
+//
 
 template <typename KeyValuePairType, typename LookupKeyType>
 const KeyValuePairType* lookup_kvpair_array(
@@ -67,9 +82,6 @@ const KeyValuePairType* lookup_kvpair_array(
 
     return nullptr;
 }
-
-#define LOOKUP_KVPAIR_ARRAY(kvpairs, key) \
-    foundation::lookup_kvpair_array(kvpairs, COUNT_OF(kvpairs), key)
 
 }       // namespace foundation
 
