@@ -31,9 +31,16 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstring>
+
+using namespace std;
 
 namespace foundation
 {
+
+//
+// APIString class implementation.
+//
 
 APIString::APIString()
   : m_s(nullptr)
@@ -46,7 +53,7 @@ APIString::APIString(const char* s)
 }
 
 APIString::APIString(const APIString& rhs)
-  : m_s(rhs.m_s ? duplicate_string(rhs.m_s) : nullptr)
+  : m_s(rhs.m_s != nullptr ? duplicate_string(rhs.m_s) : nullptr)
 {
 }
 
@@ -58,18 +65,34 @@ APIString::~APIString()
 APIString& APIString::operator=(const APIString& rhs)
 {
     free_string(m_s);
-    m_s = rhs.m_s ? duplicate_string(rhs.m_s) : nullptr;
+    m_s = rhs.m_s != nullptr ? duplicate_string(rhs.m_s) : nullptr;
     return *this;
 }
 
-const char* APIString::c_str() const
+bool APIString::operator==(const APIString& rhs) const
 {
-    return m_s ? m_s : "";
+    if (m_s == nullptr && rhs.m_s == nullptr)
+        return true;
+
+    if (m_s == nullptr || rhs.m_s == nullptr)
+        return false;
+
+    return strcmp(m_s, rhs.m_s) == 0;
+}
+
+bool APIString::operator!=(const APIString& rhs) const
+{
+    return !(*this == rhs);
 }
 
 bool APIString::empty() const
 {
-    return m_s ? m_s[0] == '\0' : true;
+    return m_s != nullptr ? m_s[0] == '\0' : true;
+}
+
+const char* APIString::c_str() const
+{
+    return m_s != nullptr ? m_s : "";
 }
 
 }   // namespace foundation

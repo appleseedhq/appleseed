@@ -48,21 +48,44 @@ namespace foundation
 class APPLESEED_DLLSYMBOL APIString
 {
   public:
+    // Constructors.
     APIString();
-    explicit APIString(const char* s);
+    APIString(const char* s);
+    APIString(const std::string& s);
     APIString(const APIString& rhs);
 
+    // Destructor.
     ~APIString();
 
+    // Assignment operator.
     APIString& operator=(const APIString& rhs);
 
-    const char* c_str() const;
+    // Comparison operators.
+    bool operator==(const APIString& rhs) const;
+    bool operator!=(const APIString& rhs) const;
 
+    // Return true if the string is empty.
     bool empty() const;
+
+    // Access the string as a C string.
+    const char* c_str() const;
 
   private:
     const char* m_s;
 };
+
+template <>
+std::string to_string(const APIString& value);
+
+
+//
+// APIString class implementation.
+//
+
+inline APIString::APIString(const std::string& s)
+  : m_s(duplicate_string(s.c_str()))
+{
+}
 
 template <>
 inline std::string to_string(const APIString& value)
