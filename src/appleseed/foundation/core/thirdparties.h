@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,37 +26,29 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_HELP_ABOUT_ABOUTWINDOW_H
-#define APPLESEED_STUDIO_HELP_ABOUT_ABOUTWINDOW_H
+#ifndef APPLESEED_FOUNDATION_CORE_THIRDPARTIES_H
+#define APPLESEED_FOUNDATION_CORE_THIRDPARTIES_H
 
-// Qt headers.
-#include <QObject>
-#include <QWidget>
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/api/apiarray.h"
+#include "foundation/utility/api/apistringpair.h"
 
-// Forward declarations.
-namespace Ui { class AboutWindow; }
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
-namespace appleseed {
-namespace studio {
-
-class AboutWindow
-  : public QWidget
+namespace foundation
 {
-    Q_OBJECT
 
+APPLESEED_DECLARE_APIARRAY(LibraryVersionArray, APIStringPair);
+
+class APPLESEED_DLLSYMBOL ThirdParties
+  : public NonCopyable
+{
   public:
-    explicit AboutWindow(QWidget* parent = nullptr);
-
-    ~AboutWindow() override;
-
-  private:
-    // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
-    Ui::AboutWindow* m_ui;
-
-    void set_version_strings();
+    static LibraryVersionArray get_versions();
 };
 
-}       // namespace studio
-}       // namespace appleseed
+}       // namespace foundation
 
-#endif  // !APPLESEED_STUDIO_HELP_ABOUT_ABOUTWINDOW_H
+#endif  // !APPLESEED_FOUNDATION_CORE_THIRDPARTIES_H
