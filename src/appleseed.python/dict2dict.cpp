@@ -116,7 +116,7 @@ namespace
 
             if (PyLong_Check(value.ptr()))
             {
-                bpy::extract<int> extractor(value);
+                bpy::extract<int64> extractor(value);
                 if (extractor.check())
                 {
                     result.insert(key_extractor(), extractor());
@@ -164,10 +164,25 @@ namespace
                 }
             }
 
-            // todo: add conversions from bpy::tuple to Vector<T, N>.
-            // ...
+            // Vector3f
+            {
+                bpy::extract<Vector3f> extractor(value);
+                if (extractor.check())
+                {
+                    result.insert(key_extractor(), extractor());
+                    continue;
+                }
+            }
 
-            // todo: check more types here if needed...
+            // Vector3d
+            {
+                bpy::extract<Vector3d> extractor(value);
+                if (extractor.check())
+                {
+                    result.insert(key_extractor(), extractor());
+                    continue;
+                }
+            }
 
             // dict
             {
@@ -193,33 +208,38 @@ namespace
 
         try // Vector3
         {
-            Vector3d v = from_string<Vector3d>(str);
+            const Vector3d v = from_string<Vector3d>(str);
             return bpy::object(v);
         }
         catch (const ExceptionStringConversionError&) {}
 
         try // Vector2
         {
-            Vector2d v = from_string<Vector2d>(str);
+            const Vector2d v = from_string<Vector2d>(str);
             return bpy::object(v);
         }
         catch (const ExceptionStringConversionError&) {}
 
-        try // int / double
+        try // int / long
         {
-            double d = from_string<double>(str);
+            const int64 d = from_string<int64>(str);
+            return bpy::object(d);
+        }
+        catch (const ExceptionStringConversionError&) {}
+
+        try // double
+        {
+            const double d = from_string<double>(str);
             return bpy::object(d);
         }
         catch (const ExceptionStringConversionError&) {}
 
         try // bool
         {
-            bool b = from_string<bool>(str);
+            const bool b = from_string<bool>(str);
             return bpy::object(b);
         }
         catch (const ExceptionStringConversionError&) {}
-
-        // todo: check more types here if needed...
 
         // As a fallback, return a string.
         return bpy::object(str);
