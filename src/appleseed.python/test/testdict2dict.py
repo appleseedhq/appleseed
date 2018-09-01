@@ -41,8 +41,13 @@ class TestDict2Dict(unittest.TestCase):
     def test_roundtrip(self):
         src_params = {
             'int': 1,
+            'positive_long': long(8 * 1024 * 1024 * 1024),
+            'negative_long': long(-8 * 1024 * 1024 * 1024),
             'float': 2.0,
-            'string': 'string'
+            'string': 'string',
+            'bool': False,
+            'vector2d' : asr.Vector2d(3.0, 4.0),
+            'vector3d' : asr.Vector3d(3.0, 4.0, 5.0)
         }
 
         light = asr.Light('point_light', 'light', src_params)
