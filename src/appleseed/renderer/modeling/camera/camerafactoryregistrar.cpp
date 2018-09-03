@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/camera/cameratraits.h"
+#include "renderer/modeling/camera/fisheyelenscamera.h"
 #include "renderer/modeling/camera/orthographiccamera.h"
 #include "renderer/modeling/camera/pinholecamera.h"
 #include "renderer/modeling/camera/sphericalcamera.h"
@@ -78,6 +79,7 @@ void CameraFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
     unload_all_plugins();
 
     // Register built-in factories.
+    register_factory(auto_release_ptr<FactoryType>(new FisheyeLensCameraFactory()));
     register_factory(auto_release_ptr<FactoryType>(new OrthographicCameraFactory()));
     register_factory(auto_release_ptr<FactoryType>(new PinholeCameraFactory()));
     register_factory(auto_release_ptr<FactoryType>(new SphericalCameraFactory()));
