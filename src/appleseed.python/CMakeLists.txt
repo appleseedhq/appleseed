@@ -32,7 +32,6 @@
 # Packages.
 #--------------------------------------------------------------------------------------------------
 
-# Boost.
 if (NOT PYTHON_MAJOR_VERSION STREQUAL "2")
     message (FATAL_ERROR "Python 2.x needed")
 endif ()
@@ -160,6 +159,7 @@ if (WITH_PYTHON3_BINDINGS)
     endif ()
 endif ()
 
+
 #--------------------------------------------------------------------------------------------------
 # Include paths.
 #--------------------------------------------------------------------------------------------------
@@ -174,6 +174,7 @@ target_include_directories (appleseed.python PRIVATE ${PYTHON_INCLUDE_DIRS})
 if (WITH_PYTHON3_BINDINGS)
     target_include_directories (appleseed.python3 PRIVATE ${PYTHON3_INCLUDE_DIRS})
 endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Preprocessor definitions.
@@ -192,6 +193,7 @@ if (WITH_PYTHON3_BINDINGS)
         APPLESEED_ENABLE_IMATH_INTEROP
     )
 endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Static libraries.
@@ -213,12 +215,13 @@ if (WITH_PYTHON3_BINDINGS)
         ${PYTHON3_LIBRARIES}
     )
 
-     if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
         target_link_libraries (appleseed.python3
             util
         )
-     endif ()
+    endif ()
 endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Post-build commands.
@@ -236,11 +239,13 @@ if (WITH_PYTHON3_BINDINGS)
     add_copy_target_to_sandbox_py_module_command (appleseed.python3 appleseed)
 endif ()
 
+
 #--------------------------------------------------------------------------------------------------
 # Installation.
 #--------------------------------------------------------------------------------------------------
 
 set (py_module_dst "lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/appleseed")
+
 install (FILES __init__.py DESTINATION ${py_module_dst})
 install (FILES logtarget.py DESTINATION ${py_module_dst})
 install (DIRECTORY test DESTINATION ${py_module_dst})
