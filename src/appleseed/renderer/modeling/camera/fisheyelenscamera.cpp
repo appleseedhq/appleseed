@@ -91,25 +91,25 @@ namespace
             const char* projection_type;
             switch (m_projection_type)
             {
-                case EquisolidAngle:
-                  projection_type = "equisolid angle";
-                  break;
+              case EquisolidAngle:
+                projection_type = "equisolid angle";
+                break;
                 
-                case Equidistant:
-                  projection_type = "equidistant";
-                  break;
+              case Equidistant:
+                projection_type = "equidistant";
+                break;
 
-                case Stereographic:
-                  projection_type = "stereographic";
-                  break;
+              case Stereographic:
+                projection_type = "stereographic";
+                break;
 
-                case Thoby:
-                  projection_type = "thoby";
-                  break;
+              case Thoby:
+                projection_type = "thoby";
+                break;
 
-                default:
-                  projection_type = "unknown";
-                  break;
+              default:
+                projection_type = "unknown";
+                break;
             }
 
             RENDERER_LOG_INFO(
@@ -227,24 +227,24 @@ namespace
 
             switch (m_projection_type) 
             {
-                case EquisolidAngle:
-                  theta2 = 2 * asin(tan_theta1 * 0.5);
-                  break;
+              case EquisolidAngle:
+                theta2 = 2 * asin(tan_theta1 * 0.5);
+                break;
                 
-                case Equidistant:
-                  theta2 = tan_theta1;
-                  break;
+              case Equidistant:
+                theta2 = tan_theta1;
+                break;
 
-                case Stereographic:
-                  theta2 = 2 * atan(tan_theta1 * 0.5);
-                  break;
+              case Stereographic:
+                theta2 = 2 * atan(tan_theta1 * 0.5);
+                break;
 
-                case Thoby:
-                  theta2 = asin(tan_theta1 * 0.68027) * 1.40252;
-                  break;
+              case Thoby:
+                theta2 = asin(tan_theta1 * 0.68027) * 1.40252;
+                break;
 
-                default:
-                  assert(false);
+              default:
+                assert(false);
             }
 
             const double radius_diff = tan(theta2) * m_focal_length - radius_1;
@@ -274,24 +274,24 @@ namespace
 
             switch (m_projection_type) 
             {
-                case EquisolidAngle:
-                  tan_theta1 = 2 * sin(theta2 * 0.5);
-                  break;
+              case EquisolidAngle:
+                tan_theta1 = 2 * sin(theta2 * 0.5);
+                break;
                 
-                case Equidistant:
-                  tan_theta1 = theta2;
-                  break;
+              case Equidistant:
+                tan_theta1 = theta2;
+                break;
 
-                case Stereographic:
-                  tan_theta1 = 2 * tan(theta2 * 0.5);
-                  break;
+              case Stereographic:
+                tan_theta1 = 2 * tan(theta2 * 0.5);
+                break;
 
-                case Thoby:
-                  tan_theta1 = 1.47 * sin(0.713 * theta2);
-                  break;
+              case Thoby:
+                tan_theta1 = 1.47 * sin(0.713 * theta2);
+                break;
 
-                default:
-                  assert(false);
+              default:
+                assert(false);
             }
 
             const double radius_1 = tan_theta1 * m_focal_length;
