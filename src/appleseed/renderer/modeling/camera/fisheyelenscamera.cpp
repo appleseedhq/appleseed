@@ -245,6 +245,35 @@ namespace
 
         Projection m_projection_type;
 
+
+//
+//                    |  axis 
+//                    |
+//        #-----------------------------------  _
+//       # \                                ^ \  \ 
+//      #   \                             ^    \  \  radius_2
+//     #     \        |                 ^       \  \ 
+//    #       \                       ^          \  \ 
+//    #        \                    ^             \  \ 
+//   #         *------------------^----------------\  \  _
+//   #        *  \    |         ^   )           ""  \  \  \ 
+//   #       *    \           ^       )    ""        \  \  \ radius_1 = sqrt(x^2 + y^2)
+//   #      *      \        ^        "")              \  \  \ 
+//   #      *       \     ^   ""       ) theta2        \  \  \ 
+//   #      *        \| ^"  ) theta1  )                 \  -  -
+//   #      *         o--------------------------------------------------> axis
+//    #      *       /                                   |
+//     #      *     /                               m_focal_length
+//      #      *   / 
+//       #      * / radius_1                                """""""" : original ray direction.
+//        #      /                                          ^^^^^^^^ : transformed ray direction.
+//          #   /   
+//            #/ radius_2
+//            /
+//           /
+//          /  axis
+//
+
         Vector3d ndc_to_camera(const Vector2d& point) const
         {
             const double x = (0.5 - point.x) * m_film_dimensions[0];
