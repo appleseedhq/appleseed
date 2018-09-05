@@ -137,6 +137,38 @@ namespace
                 projection_type);
         }
 
+        bool on_render_begin(
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnRenderBeginRecorder&  recorder,
+            IAbortSwitch*           abort_switch) override
+        {
+            if (!PerspectiveCamera::on_render_begin(project, parent, recorder, abort_switch))
+                return false;
+
+            // Extract autofocus status.
+            const string projection_type = m_params.get_required<string>("projection_type", "equisolid_angle");
+
+            if (projection_type == "equisolid_angle")
+                 m_projection_type = EquisolidAngle;
+             else if (projection_type == "equidistant")
+                 m_projection_type = Equidistant;
+             else if (projection_type == "stereographic")
+                 m_projection_type = Stereographic;
+             else if (projection_type == "thoby")
+                 m_projection_type = Thoby;
+             else
+             {
+                 RENDERER_LOG_ERROR(
+                     "invalid value \"%s\" for parameter \"projection_type\", "
+                     "using default value \"equisolid_angle\".",
+                     projection_type.c_str());
+                 m_projection_type = EquisolidAngle;
+             }
+
+            return true;
+        }
+
         void spawn_ray(
             SamplingContext&        sampling_context,
             const Dual2d&           ndc,
