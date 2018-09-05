@@ -325,9 +325,6 @@ namespace
             
             const double radius_2 = sqrt(x * x + y * y);
             const double rcp_radius_2 = 1.0 / radius_2;
-
-            const double cos_ = x * rcp_radius_2;
-            const double sin_ = y * rcp_radius_2;
             
             const double theta2 = atan(radius_2 / m_focal_length);
             double tan_theta1 = 0.0;
@@ -358,8 +355,8 @@ namespace
 
             return
                 Vector2d(
-                    radius_1 * cos_,
-                    radius_1 * sin_);
+                    radius_1 * x * rcp_radius_2,
+                    radius_1 * y * rcp_radius_2);
         }
     };
 }
