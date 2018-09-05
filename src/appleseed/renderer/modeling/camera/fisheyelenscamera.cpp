@@ -311,8 +311,8 @@ namespace
 
             return
                 Vector3d(
-                    (0.5 - point.x) * m_film_dimensions[0] + radius_diff * x * rcp_radius_1,
-                    (point.y - 0.5) * m_film_dimensions[1] + radius_diff * y * rcp_radius_1,
+                    x + radius_diff * x * rcp_radius_1,
+                    y + radius_diff * y * rcp_radius_1,
                     m_focal_length);
         }
 
