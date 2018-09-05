@@ -91,19 +91,19 @@ namespace
             const char* projection_type;
             switch (m_projection_type)
             {
-              case EquisolidAngle:
+              case Projection::EquisolidAngle:
                 projection_type = "equisolid angle";
                 break;
                 
-              case Equidistant:
+              case Projection::Equidistant:
                 projection_type = "equidistant";
                 break;
 
-              case Stereographic:
+              case Projection::Stereographic:
                 projection_type = "stereographic";
                 break;
 
-              case Thoby:
+              case Projection::Thoby:
                 projection_type = "thoby";
                 break;
 
@@ -146,24 +146,23 @@ namespace
             if (!PerspectiveCamera::on_render_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            // Extract autofocus status.
             const string projection_type = m_params.get_required<string>("projection_type", "equisolid_angle");
 
             if (projection_type == "equisolid_angle")
-                 m_projection_type = EquisolidAngle;
+                 m_projection_type = Projection::EquisolidAngle;
              else if (projection_type == "equidistant")
-                 m_projection_type = Equidistant;
+                 m_projection_type = Projection::Equidistant;
              else if (projection_type == "stereographic")
-                 m_projection_type = Stereographic;
+                 m_projection_type = Projection::Stereographic;
              else if (projection_type == "thoby")
-                 m_projection_type = Thoby;
+                 m_projection_type = Projection::Thoby;
              else
              {
                  RENDERER_LOG_ERROR(
                      "invalid value \"%s\" for parameter \"projection_type\", "
                      "using default value \"equisolid_angle\".",
                      projection_type.c_str());
-                 m_projection_type = EquisolidAngle;
+                 m_projection_type = Projection::EquisolidAngle;
              }
 
             return true;
@@ -236,7 +235,7 @@ namespace
         }
 
       private:
-        enum Projection
+        enum class Projection
         {
             EquisolidAngle, 
             Equidistant, 
@@ -252,26 +251,26 @@ namespace
             const double y = (point.y - 0.5) * m_film_dimensions[1];
 
             const double radius_1 = sqrt(x * x + y * y);
-            const double rcp_radius_1 = 1 / radius_1;
+            const double rcp_radius_1 = 1.0 / radius_1;
 
             const double tan_theta1 = radius_1 / m_focal_length;
             double theta2 = 0.0;
 
             switch (m_projection_type) 
             {
-              case EquisolidAngle:
-                theta2 = 2 * asin(tan_theta1 * 0.5);
+              case Projection::EquisolidAngle:
+                theta2 = 2.0 * asin(tan_theta1 * 0.5);
                 break;
                 
-              case Equidistant:
+              case Projection::Equidistant:
                 theta2 = tan_theta1;
                 break;
 
-              case Stereographic:
-                theta2 = 2 * atan(tan_theta1 * 0.5);
+              case Projection::Stereographic:
+                theta2 = 2.0 * atan(tan_theta1 * 0.5);
                 break;
 
-              case Thoby:
+              case Projection::Thoby:
                 theta2 = asin(tan_theta1 * 0.68027) * 1.40252;
                 break;
 
@@ -296,7 +295,7 @@ namespace
             const double y = 0.5 + (point.y * k * m_rcp_film_height);
             
             const double radius_2 = sqrt(x * x + y * y);
-            const double rcp_radius_2 = 1 / radius_2;
+            const double rcp_radius_2 = 1.0 / radius_2;
 
             const double cos_ = x * rcp_radius_2;
             const double sin_ = y * rcp_radius_2;
@@ -306,19 +305,19 @@ namespace
 
             switch (m_projection_type) 
             {
-              case EquisolidAngle:
-                tan_theta1 = 2 * sin(theta2 * 0.5);
+              case Projection::EquisolidAngle:
+                tan_theta1 = 2.0 * sin(theta2 * 0.5);
                 break;
                 
-              case Equidistant:
+              case Projection::Equidistant:
                 tan_theta1 = theta2;
                 break;
 
-              case Stereographic:
-                tan_theta1 = 2 * tan(theta2 * 0.5);
+              case Projection::Stereographic:
+                tan_theta1 = 2.0 * tan(theta2 * 0.5);
                 break;
 
-              case Thoby:
+              case Projection::Thoby:
                 tan_theta1 = 1.47 * sin(0.713 * theta2);
                 break;
 
