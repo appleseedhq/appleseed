@@ -39,15 +39,14 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer      { class AOVComponents; }
-namespace renderer      { class CompositeNPRClosure; }
-namespace renderer      { class NPRContourInputValues; }
-namespace renderer      { class ShaderGroup; }
-namespace renderer      { class ShadingComponents; }
-namespace renderer      { class ShadingContext; }
-namespace renderer      { class ShadingPoint; }
-namespace renderer      { class ShadingResult; }
-
+namespace renderer  { class AOVComponents; }
+namespace renderer  { class CompositeNPRClosure; }
+namespace renderer  { struct NPRContourInputValues; }
+namespace renderer  { class ShaderGroup; }
+namespace renderer  { class ShadingComponents; }
+namespace renderer  { class ShadingContext; }
+namespace renderer  { class ShadingPoint; }
+namespace renderer  { class ShadingResult; }
 
 namespace renderer
 {
