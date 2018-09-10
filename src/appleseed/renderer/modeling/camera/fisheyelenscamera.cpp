@@ -274,9 +274,10 @@ namespace
 //          /  axis
 //
 //
-// Fisheye lens is implemented in a way to distort ray direction. 
-// Direction 1 is same as ray direction in perspective camera, and 
-// direction 2 is distorted ray direction to render in fisheye lens camera.
+// Fisheye lens is implemented in a way to distort ray direction in pinhole 
+// camera. Direction 1 is same as ray direction in perspective camera. It 
+// represents direction to NDC. Direction 2 is distorted ray direction to render 
+// in fisheye lens camera. It represents actual ray direction in camera space.
 //
 
         // It transforms ray direction from 1 to 2. 
