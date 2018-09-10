@@ -259,21 +259,27 @@ namespace
 //   #        *  \    |         ^   )           ""  \  \  \. 
 //   #       *    \           ^       )    ""        \  \  \ radius_1
 //   #      *      \        ^        "")              \  \  \. 
-//   #      *       \     ^   ""       ) theta2        \  \  \. 
-//   #      *        \| ^"  ) theta1  )                 \  -  -
+//   #      *       \     ^   ""       ) theta_2       \  \  \. 
+//   #      *        \| ^"  ) theta_1 )                 \  _  _
 //   #      *         o--------------------------------------------------> axis
 //    #      *       /                                   |
 //     #      *     /                               m_focal_length
 //      #      *   / 
-//       #      * / radius_1                                """""""" : original ray direction.
-//        #      /                                          ^^^^^^^^ : transformed ray direction.
+//       #      * / radius_1                                """""""" : Direction 1.
+//        #      /                                          ^^^^^^^^ : Direction 2.
 //          #   /   
 //            #/ radius_2
 //            /
 //           /
 //          /  axis
 //
+//
+// Fisheye lens is implemented in a way to distort ray direction. 
+// Direction 1 is same as ray direction in perspective camera, and 
+// direction 2 is distorted ray direction to render in fisheye lens camera.
+//
 
+        // It transforms ray direction from 1 to 2. 
         Vector3d ndc_to_camera(const Vector2d& point) const
         {
             const double x = (0.5 - point.x) * m_film_dimensions[0];
@@ -282,40 +288,41 @@ namespace
             const double radius_1 = sqrt(x * x + y * y);
             const double rcp_radius_1 = 1.0 / radius_1;
 
-            const double tan_theta1 = radius_1 / m_focal_length;
-            double theta2 = 0.0;
+            const double tan_theta_1 = radius_1 / m_focal_length;
+            double theta_2 = 0.0;
 
             switch (m_projection_type) 
             {
               case Projection::EquisolidAngle:
-                theta2 = 2.0 * asin(tan_theta1 * 0.5);
+                theta_2 = 2.0 * asin(tan_theta_1 * 0.5);
                 break;
                 
               case Projection::Equidistant:
-                theta2 = tan_theta1;
+                theta_2 = tan_theta_1;
                 break;
 
               case Projection::Stereographic:
-                theta2 = 2.0 * atan(tan_theta1 * 0.5);
+                theta_2 = 2.0 * atan(tan_theta_1 * 0.5);
                 break;
 
               case Projection::Thoby:
-                theta2 = asin(tan_theta1 * 0.68027) * 1.40252;
+                theta_2 = asin(tan_theta_1 * 0.68027) * 1.40252;
                 break;
 
               default:
                 assert(false);
             }
 
-            const double radius_diff = tan(theta2) * m_focal_length - radius_1;
+            const double radius_diff = tan(theta_2) * m_focal_length - radius_1;
 
             return
                 Vector3d(
-                    x + radius_diff * x * rcp_radius_1,
-                    y + radius_diff * y * rcp_radius_1,
+                    x + radius_diff * x * rcp_radius_1 - m_shift.x,
+                    y + radius_diff * y * rcp_radius_1 - m_shift.y,
                     m_focal_length);
         }
 
+        // It transforms ray direction from 2 to 1. 
         Vector2d camera_to_ndc(const Vector3d& point) const
         {
             const double k = m_focal_length / point.z;
@@ -326,37 +333,37 @@ namespace
             const double radius_2 = sqrt(x * x + y * y);
             const double rcp_radius_2 = 1.0 / radius_2;
             
-            const double theta2 = atan(radius_2 / m_focal_length);
-            double tan_theta1 = 0.0;
+            const double theta_2 = atan(radius_2 / m_focal_length);
+            double tan_theta_1 = 0.0;
 
             switch (m_projection_type) 
             {
               case Projection::EquisolidAngle:
-                tan_theta1 = 2.0 * sin(theta2 * 0.5);
+                tan_theta_1 = 2.0 * sin(theta_2 * 0.5);
                 break;
                 
               case Projection::Equidistant:
-                tan_theta1 = theta2;
+                tan_theta_1 = theta_2;
                 break;
 
               case Projection::Stereographic:
-                tan_theta1 = 2.0 * tan(theta2 * 0.5);
+                tan_theta_1 = 2.0 * tan(theta_2 * 0.5);
                 break;
 
               case Projection::Thoby:
-                tan_theta1 = 1.47 * sin(0.713 * theta2);
+                tan_theta_1 = 1.47 * sin(0.713 * theta_2);
                 break;
 
               default:
                 assert(false);
             }
 
-            const double radius_1 = tan_theta1 * m_focal_length;
+            const double radius_1 = tan_theta_1 * m_focal_length;
 
             return
                 Vector2d(
-                    radius_1 * x * rcp_radius_2,
-                    radius_1 * y * rcp_radius_2);
+                    radius_1 * x * rcp_radius_2 - m_shift.x,
+                    radius_1 * y * rcp_radius_2 - m_shift.y);
         }
     };
 }
