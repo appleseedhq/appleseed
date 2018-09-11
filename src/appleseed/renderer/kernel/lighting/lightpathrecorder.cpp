@@ -106,7 +106,7 @@ size_t LightPathRecorder::get_light_path_count() const
     for (const auto& stream : impl->m_streams)
         count += stream->m_paths.size();
 
-    return count;;
+    return count;
 }
 
 LightPathStream* LightPathRecorder::create_stream()
@@ -249,7 +249,7 @@ void LightPathRecorder::get_light_path_vertex(
     assert(impl->m_streams.size() == 1);
     const LightPathStream* stream = impl->m_streams[0].get();
 
-    assert(index < stream->m_vertices.size());;
+    assert(index < stream->m_vertices.size());
     const auto& source_vertex = stream->m_vertices[index];
 
     result.m_entity = source_vertex.m_entity;

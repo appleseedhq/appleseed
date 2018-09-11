@@ -216,7 +216,7 @@ void Frame::print_settings()
         "  crop window                   (%s, %s)-(%s, %s)\n"
         "  denoising mode                %s",
         get_path().c_str(),
-        camera_name ? camera_name : "none",
+        camera_name != nullptr ? camera_name : "none",
         pretty_uint(impl->m_frame_width).c_str(),
         pretty_uint(impl->m_frame_height).c_str(),
         pretty_uint(impl->m_tile_width).c_str(),
@@ -243,10 +243,10 @@ PostProcessingStageContainer& Frame::post_processing_stages() const
 
 const char* Frame::get_active_camera_name() const
 {
-    if (m_params.strings().exist("camera"))
-        return m_params.strings().get("camera");
-
-    return nullptr;
+    return
+        m_params.strings().exist("camera")
+            ? m_params.strings().get("camera")
+            : nullptr;
 }
 
 Image& Frame::image() const
