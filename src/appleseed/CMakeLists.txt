@@ -32,6 +32,25 @@
 # Source files.
 #--------------------------------------------------------------------------------------------------
 
+set (foundation_array_sources
+    foundation/array/algorithm.cpp
+    foundation/array/algorithm.h
+    foundation/array/applyvisitor.h
+    foundation/array/array.h
+    foundation/array/array.cpp
+    foundation/array/arrayref.h
+    foundation/array/arraytraits.h
+    foundation/array/arrayview.h
+    foundation/array/exception.cpp
+    foundation/array/exception.h
+)
+list (APPEND appleseed_sources
+    ${foundation_array_sources}
+)
+source_group ("foundation\\array" FILES
+    ${foundation_array_sources}
+)
+
 set (foundation_core_concepts_sources
     foundation/core/concepts/iunknown.h
     foundation/core/concepts/noncopyable.h
@@ -411,6 +430,9 @@ source_group ("foundation\\meta\\benchmarks" FILES
 set (foundation_meta_tests_sources
     foundation/meta/tests/test_aabb.cpp
     foundation/meta/tests/test_analysis.cpp
+    foundation/meta/tests/test_array.cpp
+    foundation/meta/tests/test_arrayalgorithm.cpp
+    foundation/meta/tests/test_arrayvisitor.cpp
     foundation/meta/tests/test_attributeset.cpp
     foundation/meta/tests/test_autoreleaseptr.cpp
     foundation/meta/tests/test_benchmarkaggregator.cpp
