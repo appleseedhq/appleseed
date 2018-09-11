@@ -110,29 +110,6 @@ void AOVAccumulator::write(
 {
 }
 
-namespace
-{
-    //
-    // BeautyAOVAccumulator class.
-    //
-
-    class BeautyAOVAccumulator
-      : public AOVAccumulator
-    {
-      public:
-        void write(
-            const PixelContext&         pixel_context,
-            const ShadingPoint&         shading_point,
-            const ShadingComponents&    shading_components,
-            const AOVComponents&        aov_components,
-            ShadingResult&              shading_result) override
-        {
-            shading_result.m_main.rgb() =
-                shading_components.m_beauty.to_rgb(g_std_lighting_conditions);
-        }
-    };
-}
-
 
 //
 // UnfilteredAOVAccumulator class implementation.
@@ -191,6 +168,25 @@ AOVAccumulatorContainer::AOVAccumulatorContainer(const Frame& frame)
         const AOV* aov = frame.internal_aovs().get_by_index(i);
         insert(aov->create_accumulator());
     }
+}
+
+namespace
+{
+    class BeautyAOVAccumulator
+      : public AOVAccumulator
+    {
+      public:
+        void write(
+            const PixelContext&         pixel_context,
+            const ShadingPoint&         shading_point,
+            const ShadingComponents&    shading_components,
+            const AOVComponents&        aov_components,
+            ShadingResult&              shading_result) override
+        {
+            shading_result.m_main.rgb() =
+                shading_components.m_beauty.to_rgb(g_std_lighting_conditions);
+        }
+    };
 }
 
 void AOVAccumulatorContainer::init()

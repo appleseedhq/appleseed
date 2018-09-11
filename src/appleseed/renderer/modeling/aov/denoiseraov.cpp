@@ -66,7 +66,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Denoiser AOV accumulator.
     //
@@ -261,6 +260,7 @@ namespace
 
     const char* DenoiserModel = "denoiser_aov";
 }
+
 
 //
 // Denoiser AOV class implementation.
@@ -484,6 +484,7 @@ bool DenoiserAOV::write_images(const char* file_path) const
     return result;
 }
 
+
 //
 // DenoiserAOVFactory class implementation.
 //
@@ -492,9 +493,9 @@ foundation::auto_release_ptr<DenoiserAOV> DenoiserAOVFactory::create(
     const float  max_hist_value,
     const size_t num_bins)
 {
-    return auto_release_ptr<DenoiserAOV>(new DenoiserAOV(
-        max_hist_value,
-        num_bins));
+    return
+        auto_release_ptr<DenoiserAOV>(
+            new DenoiserAOV(max_hist_value, num_bins));
 }
 
 }   // namespace renderer

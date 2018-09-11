@@ -67,8 +67,8 @@ namespace
     {
       public:
         IsolinesPostProcessingStage(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : PostProcessingStage(name, params)
         {
         }
@@ -263,6 +263,21 @@ namespace
             }
         }
 
+        static float get_pixel_value(
+            const Image&                image,
+            const CanvasProperties&     props,
+            const size_t                x,
+            const size_t                y)
+        {
+            assert(x < props.m_canvas_width);
+            assert(y < props.m_canvas_height);
+
+            Color4f c;
+            image.get_pixel(x, y, c);
+
+            return luminance(c.rgb());
+        }
+
         void rasterize(
             Image&                      image,
             const CanvasProperties&     props,
@@ -357,21 +372,6 @@ namespace
                     image.set_pixel(px, py, pixel);
                 }
             }
-        }
-
-        static float get_pixel_value(
-            const Image&                image,
-            const CanvasProperties&     props,
-            const size_t                x,
-            const size_t                y)
-        {
-            assert(x < props.m_canvas_width);
-            assert(y < props.m_canvas_height);
-
-            Color4f c;
-            image.get_pixel(x, y, c);
-
-            return luminance(c.rgb());
         }
     };
 }

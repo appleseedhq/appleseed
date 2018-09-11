@@ -70,8 +70,8 @@ namespace
     {
       public:
         RenderStampPostProcessingStage(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : PostProcessingStage(name, params)
         {
         }
