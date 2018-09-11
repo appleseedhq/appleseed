@@ -32,6 +32,27 @@
 # Source files.
 #--------------------------------------------------------------------------------------------------
 
+set (foundation_array_sources
+    foundation/array/algorithm.cpp
+    foundation/array/algorithm.h
+    foundation/array/applyvisitor.h
+    foundation/array/array.cpp
+    foundation/array/array.h
+    foundation/array/arrayref.h
+    foundation/array/arraytraits.h
+    foundation/array/arrayview.h
+    foundation/array/exception.cpp
+    foundation/array/exception.h
+    foundation/array/meshalgorithm.cpp
+    foundation/array/meshalgorithm.h
+)
+list (APPEND appleseed_sources
+    ${foundation_array_sources}
+)
+source_group ("foundation\\array" FILES
+    ${foundation_array_sources}
+)
+
 set (foundation_core_concepts_sources
     foundation/core/concepts/iunknown.h
     foundation/core/concepts/noncopyable.h
@@ -286,6 +307,7 @@ set (foundation_math_sources
     foundation/math/bvh.h
     foundation/math/cdf.h
     foundation/math/combination.h
+    foundation/math/compressedunitvector.h
     foundation/math/distance.h
     foundation/math/dual.h
     foundation/math/fastmath.h
@@ -410,6 +432,9 @@ source_group ("foundation\\meta\\benchmarks" FILES
 set (foundation_meta_tests_sources
     foundation/meta/tests/test_aabb.cpp
     foundation/meta/tests/test_analysis.cpp
+    foundation/meta/tests/test_array.cpp
+    foundation/meta/tests/test_arrayalgorithm.cpp
+    foundation/meta/tests/test_arrayapplyvisitor.cpp
     foundation/meta/tests/test_attributeset.cpp
     foundation/meta/tests/test_autoreleaseptr.cpp
     foundation/meta/tests/test_benchmarkaggregator.cpp
@@ -429,7 +454,9 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_color.cpp
     foundation/meta/tests/test_colorspace.cpp
     foundation/meta/tests/test_commandlineparser.cpp
+    foundation/meta/tests/test_compressedunitvector.cpp
     foundation/meta/tests/test_concepts.cpp
+    foundation/meta/tests/test_copyonwrite.cpp
     foundation/meta/tests/test_countof.cpp
     foundation/meta/tests/test_datetime.cpp
     foundation/meta/tests/test_dictionary.cpp
@@ -827,6 +854,7 @@ set (foundation_utility_sources
     foundation/utility/casts.h
     foundation/utility/cc.h
     foundation/utility/commandlineparser.h
+    foundation/utility/copyonwrite.h
     foundation/utility/countof.h
     foundation/utility/filter.h
     foundation/utility/foreach.h
