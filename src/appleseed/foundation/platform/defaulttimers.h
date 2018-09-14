@@ -49,9 +49,6 @@ class APPLESEED_DLLSYMBOL DefaultProcessorTimer
   : public NonCopyable
 {
   public:
-    // Constructor.
-    DefaultProcessorTimer();
-
     // Get the timer frequency, in Hz.
     uint64 frequency();
 
@@ -63,11 +60,6 @@ class APPLESEED_DLLSYMBOL DefaultProcessorTimer
 
     // For benchmarking, read the timer value after the benchmark ends.
     uint64 read_end() { return read(); }
-
-#ifdef _WIN32
-  private:
-    bool m_has_qpc;     // is QueryPerformanceCounter() available?
-#endif
 };
 
 
