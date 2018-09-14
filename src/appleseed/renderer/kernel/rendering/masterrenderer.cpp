@@ -638,7 +638,7 @@ struct MasterRenderer::Impl
         for (auto stage : ordered_stages)
         {
             RENDERER_LOG_INFO("executing \"%s\" post-processing stage with order %d on frame \"%s\"...",
-                stage->get_name(), stage->get_order(), frame->get_name());
+                stage->get_path().c_str(), stage->get_order(), frame->get_path().c_str());
             stage->execute(*frame);
             invoke_tile_callbacks(*frame);
         }
