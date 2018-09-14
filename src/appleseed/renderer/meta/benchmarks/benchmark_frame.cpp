@@ -32,38 +32,31 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/color.h"
-#include "foundation/image/pixel.h"
-#include "foundation/image/tile.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/benchmark.h"
 
-// Standard headers.
-#include <memory>
-
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 BENCHMARK_SUITE(Renderer_Modeling_Frame)
 {
-    template <PixelFormat pf>
-    struct Fixture
+    BENCHMARK_CASE(Create_DenoiserOff)
     {
-        auto_release_ptr<Frame> m_frame;
-        unique_ptr<Tile>        m_tile;
+        auto_release_ptr<Frame> frame(
+            FrameFactory::create("frame",
+                ParamArray()
+                    .insert("resolution", "1024 1024")
+                    .insert("tile_size", "32 32")
+                    .insert("denoiser", "off")));
+    }
 
-        Fixture()
-          : m_frame(
-                FrameFactory::create("frame",
-                    ParamArray()
-                        .insert("resolution", "1280 720")
-                        .insert("tile_size", "32 32")
-                        .insert("pixel_format", "float")
-                        .insert("color_space", "srgb")))
-          , m_tile(new Tile(32, 32, 4, pf))
-        {
-            m_tile->clear(Color4f(0.8f, -0.3f, 0.6f, 0.5f));
-        }
-    };
+    BENCHMARK_CASE(Create_DenoiserOn)
+    {
+        auto_release_ptr<Frame> frame(
+            FrameFactory::create("frame",
+                ParamArray()
+                    .insert("resolution", "1024 1024")
+                    .insert("tile_size", "32 32")
+                    .insert("denoiser", "on")));
+    }
 }
