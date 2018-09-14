@@ -94,14 +94,7 @@ Tile::Tile(
         m_own_storage = true;
     }
 
-    Pixel::convert(
-        tile.m_pixel_format,                        // source format
-        tile.m_pixel_array,                         // source begin
-        tile.m_pixel_array + tile.m_array_size,     // source end
-        1,                                          // source stride
-        m_pixel_format,                             // destination format
-        m_pixel_array,                              // destination
-        1);                                         // destination stride
+    copy_from(tile);
 }
 
 Tile::Tile(
@@ -130,14 +123,14 @@ Tile::Tile(
     }
 
     Pixel::convert_and_shuffle(
-        tile.m_pixel_format,                        // source format
-        tile.m_channel_count,                       // source channels
-        tile.m_pixel_array,                         // source begin
-        tile.m_pixel_array + tile.m_array_size,     // source end
-        m_pixel_format,                             // destination format
-        m_channel_count,                            // destination channels
-        m_pixel_array,                              // destination
-        shuffle_table);                             // channel shuffling table
+        tile.m_pixel_format,                            // source format
+        tile.m_channel_count,                           // source channels
+        tile.m_pixel_array,                             // source begin
+        tile.m_pixel_array + tile.m_array_size,         // source end
+        m_pixel_format,                                 // destination format
+        m_channel_count,                                // destination channels
+        m_pixel_array,                                  // destination
+        shuffle_table);                                 // channel shuffling table
 }
 
 Tile::Tile(const Tile& rhs)
@@ -149,11 +142,13 @@ Tile::Tile(const Tile& rhs)
   , m_channel_size(rhs.m_channel_size)
   , m_pixel_size(rhs.m_pixel_size)
   , m_array_size(rhs.m_array_size)
+  , m_pixel_array(new uint8[rhs.m_array_size])
+  , m_own_storage(true)
 {
-    m_pixel_array = new uint8[m_array_size];
-    m_own_storage = true;
-
-    memcpy(m_pixel_array, rhs.m_pixel_array, m_array_size);
+    memcpy(
+        m_pixel_array,                                  // destination
+        rhs.m_pixel_array,                              // source
+        rhs.m_array_size);                              // bytes to copy
 }
 
 Tile::~Tile()
@@ -178,14 +173,24 @@ void Tile::copy_from(const Tile& source)
     assert(m_height == source.m_height);
     assert(m_channel_count == source.m_channel_count);
 
-    Pixel::convert(
-        source.m_pixel_format,                      // source format
-        source.m_pixel_array,                       // source begin
-        source.m_pixel_array + source.m_array_size, // source end
-        1,                                          // source stride
-        m_pixel_format,                             // destination format
-        m_pixel_array,                              // destination
-        1);                                         // destination stride
+    if (m_pixel_format == source.m_pixel_format)
+    {
+        memcpy(
+            m_pixel_array,                              // destination
+            source.m_pixel_array,                       // source
+            source.m_array_size);                       // bytes to copy
+    }
+    else
+    {
+        Pixel::convert(
+            source.m_pixel_format,                      // source format
+            source.m_pixel_array,                       // source begin
+            source.m_pixel_array + source.m_array_size, // source end
+            1,                                          // source stride
+            m_pixel_format,                             // destination format
+            m_pixel_array,                              // destination
+            1);                                         // destination stride
+    }
 }
 
 }   // namespace foundation
