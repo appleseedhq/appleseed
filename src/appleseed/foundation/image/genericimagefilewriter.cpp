@@ -290,9 +290,9 @@ void GenericImageFileWriter::set_generic_image_attributes(const ImageAttributes&
         else if (attr_name == "dpi")
         {
             const size_t dpi = from_string<size_t>(attr_value);
-            const double dpm = dpi * (100.0 / 2.54);
-            spec.attribute("XResolution", static_cast<float>(dpm));
-            spec.attribute("YResolution", static_cast<float>(dpm));
+            const float dpm = dpi * (100.0f / 2.54f);
+            spec.attribute("XResolution", dpm);
+            spec.attribute("YResolution", dpm);
             spec.attribute("ResolutionUnit", "cm");
         }
 
