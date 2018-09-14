@@ -75,13 +75,12 @@ class Stopwatch
     // The stopwatch keeps running.
     Stopwatch& measure();
 
-    // Read the number of timer ticks elapsed since the last call to start().
-    // measure() must have been called prior to calling this method.
-    // Ticks are adjusted for overhead.
+    // Read the number of timer ticks recorded by the last call to measure().
+    // Overhead is subtracted from the returned value.
     uint64 get_ticks() const;
 
-    // Read the number of seconds elapsed since the last call to start().
-    // measure() must have been called prior to calling this method.
+    // Read the number of seconds recorded by the last call to measure().
+    // Overhead is subtracted from the returned value.
     double get_seconds() const;
 
   private:
