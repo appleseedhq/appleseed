@@ -286,6 +286,7 @@ set (foundation_math_sources
     foundation/math/bvh.h
     foundation/math/cdf.h
     foundation/math/combination.h
+    foundation/math/compressedunitvector.h
     foundation/math/distance.h
     foundation/math/dual.h
     foundation/math/fastmath.h
@@ -429,6 +430,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_color.cpp
     foundation/meta/tests/test_colorspace.cpp
     foundation/meta/tests/test_commandlineparser.cpp
+    foundation/meta/tests/test_compressedunitvector.cpp
     foundation/meta/tests/test_concepts.cpp
     foundation/meta/tests/test_copyonwrite.cpp
     foundation/meta/tests/test_countof.cpp
