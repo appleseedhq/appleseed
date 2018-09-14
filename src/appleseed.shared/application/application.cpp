@@ -73,7 +73,7 @@ void Application::check_installation(Logger& logger)
 bool Application::is_compatible_with_host(const char** missing_feature)
 {
 #ifdef APPLESEED_X86
-    System::X86CpuFeatures features;
+    System::X86CPUFeatures features;
     System::detect_x86_cpu_features(features);
 
 #ifdef APPLESEED_USE_SSE
