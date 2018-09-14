@@ -1024,7 +1024,6 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         ParamArray params;
         params.insert("camera", "camera");
         params.insert("resolution", "512 512");
-        params.insert("color_space", "srgb");
         auto_release_ptr<Frame> frame(FrameFactory::create("beauty", params));
 
         // Attach the frame to the project.
