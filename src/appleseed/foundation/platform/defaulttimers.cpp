@@ -56,39 +56,21 @@ namespace foundation
 // DefaultProcessorTimer class implementation.
 //
 
-DefaultProcessorTimer::DefaultProcessorTimer()
-{
-// Windows.
-#if defined _WIN32
-
-    // Check whether QueryPerformanceCounter() is available.
-    LARGE_INTEGER frequency;
-    m_has_qpc = QueryPerformanceFrequency(&frequency) != 0;
-
-#endif
-}
-
 uint64 DefaultProcessorTimer::frequency()
 {
 // Windows.
 #if defined _WIN32
 
-    if (m_has_qpc)
-    {
-        LARGE_INTEGER frequency;
-        QueryPerformanceFrequency(&frequency);
-        return static_cast<uint64>(frequency.QuadPart);
-    }
-    else
-    {
-        return static_cast<uint64>(CLOCKS_PER_SEC);
-    }
+    // QueryPerformanceFrequency() never returns FALSE on Windows XP and later:
+    // https://docs.microsoft.com/en-us/windows/desktop/sysinfo/acquiring-high-resolution-time-stamps#faq-about-programming-with-qpc-and-tsc
+    LARGE_INTEGER frequency;
+    QueryPerformanceFrequency(&frequency);
+    return static_cast<uint64>(frequency.QuadPart);
 
 // Linux and FreeBSD.
 #elif defined __linux__ || defined __FreeBSD__
 
-    const uint64 NsPerSecond = 1000000000;
-    return NsPerSecond;
+    return 1000000000ULL;
 
 // Other platforms.
 #else
@@ -103,25 +85,18 @@ uint64 DefaultProcessorTimer::read()
 // Windows.
 #if defined _WIN32
 
-    if (m_has_qpc)
-    {
-        LARGE_INTEGER count;
-        QueryPerformanceCounter(&count);
-        return static_cast<uint64>(count.QuadPart);
-    }
-    else
-    {
-        return static_cast<uint64>(clock());
-    }
+    LARGE_INTEGER count;
+    QueryPerformanceCounter(&count);
+    return static_cast<uint64>(count.QuadPart);
 
 // Linux and FreeBSD.
 #elif defined __linux__ || defined __FreeBSD__
 
     struct timespec ts;
-    if (clock_gettime(CLOCK_MONOTONIC, &ts) == 0)
-        return static_cast<uint64>(ts.tv_sec) * frequency() + static_cast<uint64>(ts.tv_nsec);
-
-    return 0;
+    return
+        clock_gettime(CLOCK_MONOTONIC, &ts) == 0
+            ? static_cast<uint64>(ts.tv_sec) * 1000000000ULL + static_cast<uint64>(ts.tv_nsec)
+            : 0;
 
 // Other platforms.
 #else
