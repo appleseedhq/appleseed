@@ -50,6 +50,7 @@
     // Standard headers.
     #include <cassert>
     #include <cstdlib>
+    #include <string>
 
     // Platform headers.
     #include "psapi.h"
@@ -107,9 +108,14 @@ namespace foundation
 
 namespace
 {
-    void cpuid(int32 cpuinfo[4], const int32 index)
+    // EAX is set to the value of `index`. Results are returned in `cpuinfo`:
+    //   cpuinfo[0] == EAX
+    //   cpuinfo[1] == EBX
+    //   cpuinfo[2] == ECX
+    //   cpuinfo[3] == EDX
+    void cpuid(uint32 cpuinfo[4], const uint32 index)
     {
-        __cpuidex(cpuinfo, index, 0);
+        __cpuidex(reinterpret_cast<int*>(cpuinfo), static_cast<int>(index), 0);
     }
 
     uint64 xgetbv(const int32 index)
@@ -252,7 +258,12 @@ uint64 System::get_peak_process_virtual_memory_size()
 
 namespace
 {
-    void cpuid(int32 cpuinfo[4], const int32 index)
+    // EAX is set to the value of `index`. Results are returned in `cpuinfo`:
+    //   cpuinfo[0] == EAX
+    //   cpuinfo[1] == EBX
+    //   cpuinfo[2] == ECX
+    //   cpuinfo[3] == EDX
+    void cpuid(uint32 cpuinfo[4], const uint32 index)
     {
         __cpuid_count(
             index,
@@ -373,7 +384,12 @@ uint64 System::get_peak_process_virtual_memory_size()
 
 namespace
 {
-    void cpuid(int32 cpuinfo[4], const int32 index)
+    // EAX is set to the value of `index`. Results are returned in `cpuinfo`:
+    //   cpuinfo[0] == EAX
+    //   cpuinfo[1] == EBX
+    //   cpuinfo[2] == ECX
+    //   cpuinfo[3] == EDX
+    void cpuid(uint32 cpuinfo[4], const uint32 index)
     {
         __cpuid_count(
             index,
@@ -876,20 +892,21 @@ uint64 System::get_peak_process_virtual_memory_size()
 void System::print_information(Logger& logger)
 {
 #ifdef APPLESEED_X86
-    X86CpuFeatures features;
+    X86CPUFeatures features;
     detect_x86_cpu_features(features);
 
     stringstream isabuilder;
-    if (features.m_hw_sse) isabuilder << "sse ";
-    if (features.m_hw_sse2) isabuilder << "sse2 ";
-    if (features.m_hw_sse3) isabuilder << "sse3 ";
-    if (features.m_hw_ssse3) isabuilder << "ssse3 ";
-    if (features.m_hw_sse41) isabuilder << "sse4.1 ";
-    if (features.m_hw_sse42) isabuilder << "sse4.2 ";
-    if (features.m_hw_sse4a) isabuilder << "sse4a ";
-    if (features.m_hw_avx) isabuilder << "avx ";
-    if (features.m_hw_avx2) isabuilder << "avx2 ";
-    if (features.m_hw_fma3) isabuilder << "fma3 ";
+    if (features.m_hw_sse) isabuilder << "SSE ";
+    if (features.m_hw_sse2) isabuilder << "SSE2 ";
+    if (features.m_hw_sse3) isabuilder << "SSE3 ";
+    if (features.m_hw_ssse3) isabuilder << "SSSE3 ";
+    if (features.m_hw_sse41) isabuilder << "SSE4.1 ";
+    if (features.m_hw_sse42) isabuilder << "SSE4.2 ";
+    if (features.m_hw_sse4a) isabuilder << "SSE4a ";
+    if (features.m_hw_avx) isabuilder << "AVX ";
+    if (features.m_hw_avx2) isabuilder << "AVX2 ";
+    if (features.m_hw_fma3) isabuilder << "FMA3 ";
+    if (features.m_hw_f16c) isabuilder << "F16C ";
 
     string isa = isabuilder.str();
     isa = isa.empty() ? "none" : trim_right(isa);
@@ -901,6 +918,9 @@ void System::print_information(Logger& logger)
         __LINE__,
         "system information:\n"
         "  architecture                  %s\n"
+#ifdef APPLESEED_X86
+        "  vendor                        %s\n"
+#endif
         "  logical cores                 %s\n"
         "  L1 data cache                 size %s, line size %s\n"
         "  L2 cache                      size %s, line size %s\n"
@@ -910,9 +930,14 @@ void System::print_information(Logger& logger)
 #endif
         "  physical memory               size %s\n"
         "  virtual memory                size %s\n"
-        "  default wallclock timer       %s hz\n"
-        "  default processor timer       %s hz",
+        "  default wallclock timer       %s Hz\n"
+        "  default processor timer       %s Hz",
         get_cpu_architecture(),
+#ifdef APPLESEED_X86
+        features.m_vendor == X86CPUFeatures::Vendor::Intel ? "Intel" :
+        features.m_vendor == X86CPUFeatures::Vendor::AMD ? "AMD" :
+        "unknown",
+#endif
         pretty_uint(get_logical_cpu_core_count()).c_str(),
         pretty_size(get_l1_data_cache_size()).c_str(),
         pretty_size(get_l1_data_cache_line_size()).c_str(),
@@ -967,7 +992,7 @@ namespace
     {
         // Reference: http://stackoverflow.com/a/22521619/922184
 
-        int32 cpuinfo[4];
+        uint32 cpuinfo[4];
         cpuid(cpuinfo, 1);
 
         const bool os_uses_xsave_xrstor = (cpuinfo[2] & (1 << 27)) != 0;
@@ -995,7 +1020,7 @@ namespace
     {
         char vendor[13];
 
-        int32 cpuinfo[4];
+        uint32 cpuinfo[4];
         cpuid(cpuinfo, 0);
 
         memcpy(vendor + 0, &cpuinfo[1], 4);
@@ -1007,7 +1032,7 @@ namespace
     }
 }
 
-void System::detect_x86_cpu_features(X86CpuFeatures& features)
+void System::detect_x86_cpu_features(X86CPUFeatures& features)
 {
     //
     // Based on the excellent FeatureDetector project by Alexander J. Yee:
@@ -1016,66 +1041,76 @@ void System::detect_x86_cpu_features(X86CpuFeatures& features)
 
     memset(&features, 0, sizeof(features));
 
+    // CPU vendor.
+    const string vendor = get_vendor_string();
+    features.m_vendor =
+        vendor == "GenuineIntel" ? X86CPUFeatures::Vendor::Intel :
+        vendor == "AuthenticAMD" ? X86CPUFeatures::Vendor::AMD :
+        X86CPUFeatures::Vendor::Unknown;
+
+    // EAX=0: Get vendor ID.
+    uint32 cpuinfo[4];
+    cpuid(cpuinfo, 0x00000000);
+    const uint32 highest_function_id = cpuinfo[0];
+
+    if (highest_function_id >= 0x00000001)
+    {
+        // EAX=1: Processor Info and Feature Bits.
+        cpuid(cpuinfo, 0x00000001);
+        features.m_hw_mmx           = (cpuinfo[3] & (1UL << 23)) != 0;
+        features.m_hw_sse           = (cpuinfo[3] & (1UL << 25)) != 0;
+        features.m_hw_sse2          = (cpuinfo[3] & (1UL << 26)) != 0;
+        features.m_hw_sse3          = (cpuinfo[2] & (1UL <<  0)) != 0;
+        features.m_hw_ssse3         = (cpuinfo[2] & (1UL <<  9)) != 0;
+        features.m_hw_sse41         = (cpuinfo[2] & (1UL << 19)) != 0;
+        features.m_hw_sse42         = (cpuinfo[2] & (1UL << 20)) != 0;
+        features.m_hw_aes           = (cpuinfo[2] & (1UL << 25)) != 0;
+        features.m_hw_avx           = (cpuinfo[2] & (1UL << 28)) != 0;
+        features.m_hw_fma3          = (cpuinfo[2] & (1UL << 12)) != 0;
+        features.m_hw_rdrand        = (cpuinfo[2] & (1UL << 30)) != 0;
+        features.m_hw_f16c          = (cpuinfo[2] & (1UL << 29)) != 0;
+    }
+
+    if (highest_function_id >= 0x00000007)
+    {
+        // EAX=7: Extended Features.
+        cpuid(cpuinfo, 0x00000007);
+        features.m_hw_avx2          = (cpuinfo[1] & (1UL <<  5)) != 0;
+        features.m_hw_bmi1          = (cpuinfo[1] & (1UL <<  3)) != 0;
+        features.m_hw_bmi2          = (cpuinfo[1] & (1UL <<  8)) != 0;
+        features.m_hw_adx           = (cpuinfo[1] & (1UL << 19)) != 0;
+        features.m_hw_mpx           = (cpuinfo[1] & (1UL << 14)) != 0;
+        features.m_hw_sha           = (cpuinfo[1] & (1UL << 29)) != 0;
+        features.m_hw_prefetchwt1   = (cpuinfo[2] & (1UL <<  0)) != 0;
+        features.m_hw_avx512_f      = (cpuinfo[1] & (1UL << 16)) != 0;
+        features.m_hw_avx512_cd     = (cpuinfo[1] & (1UL << 28)) != 0;
+        features.m_hw_avx512_pf     = (cpuinfo[1] & (1UL << 26)) != 0;
+        features.m_hw_avx512_er     = (cpuinfo[1] & (1UL << 27)) != 0;
+        features.m_hw_avx512_vl     = (cpuinfo[1] & (1UL << 31)) != 0;
+        features.m_hw_avx512_bw     = (cpuinfo[1] & (1UL << 30)) != 0;
+        features.m_hw_avx512_dq     = (cpuinfo[1] & (1UL << 17)) != 0;
+        features.m_hw_avx512_ifma   = (cpuinfo[1] & (1UL << 21)) != 0;
+        features.m_hw_avx512_vbmi   = (cpuinfo[2] & (1UL <<  1)) != 0;
+    }
+
+    // EAX=0x80000000: Get Highest Extended Function Supported.
+    cpuid(cpuinfo, 0x80000000);
+    const uint32 highest_ext_function_id = cpuinfo[0];
+
+    if (highest_ext_function_id >= 0x80000001)
+    {
+        // EAX=0x80000001: Extended Processor Info and Feature Bits.
+        cpuid(cpuinfo, 0x80000001);
+        features.m_hw_x64           = (cpuinfo[3] & (1UL << 29)) != 0;
+        features.m_hw_abm           = (cpuinfo[2] & (1UL <<  5)) != 0;
+        features.m_hw_sse4a         = (cpuinfo[2] & (1UL <<  6)) != 0;
+        features.m_hw_fma4          = (cpuinfo[2] & (1UL << 16)) != 0;
+        features.m_hw_xop           = (cpuinfo[2] & (1UL << 11)) != 0;
+    }
+
+    // OS support for AVX and AVX-512 instruction sets.
     features.m_os_avx = detect_os_avx();
     features.m_os_avx512 = detect_os_avx512();
-
-    const string vendor(get_vendor_string());
-    features.m_vendor_intel = vendor == "GenuineIntel";
-    features.m_vendor_amd = vendor == "AuthenticAMD";
-
-    int32 cpuinfo[4];
-    cpuid(cpuinfo, 0);
-    int ids = cpuinfo[0];
-
-    cpuid(cpuinfo, 0x80000000);
-    uint32_t exids = cpuinfo[0];
-
-    if (ids >= 0x00000001)
-    {
-        cpuid(cpuinfo, 0x00000001);
-        features.m_hw_mmx           = (cpuinfo[3] & ((int)1 << 23)) != 0;
-        features.m_hw_sse           = (cpuinfo[3] & ((int)1 << 25)) != 0;
-        features.m_hw_sse2          = (cpuinfo[3] & ((int)1 << 26)) != 0;
-        features.m_hw_sse3          = (cpuinfo[2] & ((int)1 <<  0)) != 0;
-        features.m_hw_ssse3         = (cpuinfo[2] & ((int)1 <<  9)) != 0;
-        features.m_hw_sse41         = (cpuinfo[2] & ((int)1 << 19)) != 0;
-        features.m_hw_sse42         = (cpuinfo[2] & ((int)1 << 20)) != 0;
-        features.m_hw_aes           = (cpuinfo[2] & ((int)1 << 25)) != 0;
-        features.m_hw_avx           = (cpuinfo[2] & ((int)1 << 28)) != 0;
-        features.m_hw_fma3          = (cpuinfo[2] & ((int)1 << 12)) != 0;
-        features.m_hw_rdrand        = (cpuinfo[2] & ((int)1 << 30)) != 0;
-    }
-
-    if (ids >= 0x00000007)
-    {
-        cpuid(cpuinfo, 0x00000007);
-        features.m_hw_avx2          = (cpuinfo[1] & ((int)1 <<  5)) != 0;
-        features.m_hw_bmi1          = (cpuinfo[1] & ((int)1 <<  3)) != 0;
-        features.m_hw_bmi2          = (cpuinfo[1] & ((int)1 <<  8)) != 0;
-        features.m_hw_adx           = (cpuinfo[1] & ((int)1 << 19)) != 0;
-        features.m_hw_mpx           = (cpuinfo[1] & ((int)1 << 14)) != 0;
-        features.m_hw_sha           = (cpuinfo[1] & ((int)1 << 29)) != 0;
-        features.m_hw_prefetchwt1   = (cpuinfo[2] & ((int)1 <<  0)) != 0;
-        features.m_hw_avx512_f      = (cpuinfo[1] & ((int)1 << 16)) != 0;
-        features.m_hw_avx512_cd     = (cpuinfo[1] & ((int)1 << 28)) != 0;
-        features.m_hw_avx512_pf     = (cpuinfo[1] & ((int)1 << 26)) != 0;
-        features.m_hw_avx512_er     = (cpuinfo[1] & ((int)1 << 27)) != 0;
-        features.m_hw_avx512_vl     = (cpuinfo[1] & ((int)1 << 31)) != 0;
-        features.m_hw_avx512_bw     = (cpuinfo[1] & ((int)1 << 30)) != 0;
-        features.m_hw_avx512_dq     = (cpuinfo[1] & ((int)1 << 17)) != 0;
-        features.m_hw_avx512_ifma   = (cpuinfo[1] & ((int)1 << 21)) != 0;
-        features.m_hw_avx512_vbmi   = (cpuinfo[2] & ((int)1 <<  1)) != 0;
-    }
-
-    if (exids >= 0x80000001)
-    {
-        cpuid(cpuinfo, 0x80000001);
-        features.m_hw_x64           = (cpuinfo[3] & ((int)1 << 29)) != 0;
-        features.m_hw_abm           = (cpuinfo[2] & ((int)1 <<  5)) != 0;
-        features.m_hw_sse4a         = (cpuinfo[2] & ((int)1 <<  6)) != 0;
-        features.m_hw_fma4          = (cpuinfo[2] & ((int)1 << 16)) != 0;
-        features.m_hw_xop           = (cpuinfo[2] & ((int)1 << 11)) != 0;
-    }
 }
 
 #endif
