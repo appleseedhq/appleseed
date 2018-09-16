@@ -448,12 +448,46 @@ void EmbreeScene::intersect(ShadingPoint& shading_point) const
         const uint32 v1_idx = geometry_data->m_primitives[rayhit.hit.primID * 3 + 1];
         const uint32 v2_idx = geometry_data->m_primitives[rayhit.hit.primID * 3 + 2];
 
-        const TriangleType triangle(
-            Vector3d(geometry_data->m_vertices[v0_idx]),
-            Vector3d(geometry_data->m_vertices[v1_idx]),
-            Vector3d(geometry_data->m_vertices[v2_idx]));
+        if (geometry_data->m_motion_steps_count > 1)
+        {
+            const uint32 last_motion_step_idx = geometry_data->m_motion_steps_count - 1;
+            
+            const uint32 motion_step_begin_idx = static_cast<uint32>(rayhit.ray.time * last_motion_step_idx);
+            const uint32 motion_step_end_idx = motion_step_begin_idx + 1;
 
-        shading_point.m_triangle_support_plane.initialize(triangle);
+            const uint32 motion_step_begin_offset = motion_step_begin_idx * geometry_data->m_vertices_count;
+            const uint32 motion_step_end_offset = motion_step_end_idx * geometry_data->m_vertices_count;
+
+            const float motion_step_begin_time = static_cast<float>(motion_step_begin_idx) / last_motion_step_idx;
+            
+            // Linear interpolation coefficients.
+            const float p = (rayhit.ray.time - motion_step_begin_time) * last_motion_step_idx;
+            const float q = 1.0f - p;
+
+            assert(p > 0.0f && p <= 1.0f);
+
+            const TriangleType triangle(
+                Vector3d(
+                    geometry_data->m_vertices[motion_step_begin_offset + v0_idx] * q 
+                    + geometry_data->m_vertices[motion_step_end_offset + v0_idx] * p),
+                Vector3d(
+                    geometry_data->m_vertices[motion_step_begin_offset + v1_idx] * q 
+                    + geometry_data->m_vertices[motion_step_end_offset + v1_idx] * p),
+                Vector3d(
+                    geometry_data->m_vertices[motion_step_begin_offset + v2_idx] * q 
+                    + geometry_data->m_vertices[motion_step_end_offset + v2_idx] * p));
+            
+            shading_point.m_triangle_support_plane.initialize(triangle);
+        }
+        else
+        {
+            const TriangleType triangle(
+                Vector3d(geometry_data->m_vertices[v0_idx]),
+                Vector3d(geometry_data->m_vertices[v1_idx]),
+                Vector3d(geometry_data->m_vertices[v2_idx]));
+
+            shading_point.m_triangle_support_plane.initialize(triangle);
+        }
     }
 }
 
