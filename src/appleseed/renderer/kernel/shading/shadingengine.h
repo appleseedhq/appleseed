@@ -116,25 +116,23 @@ inline void ShadingEngine::shade(
 {
     if (shading_point.hit_surface())
     {
-        return
-            shade_hit_point(
-                sampling_context,
-                pixel_context,
-                shading_context,
-                shading_point,
-                aov_accumulators,
-                shading_result);
+        shade_hit_point(
+            sampling_context,
+            pixel_context,
+            shading_context,
+            shading_point,
+            aov_accumulators,
+            shading_result);
     }
     else
     {
-        return
-            shade_environment(
-                sampling_context,
-                pixel_context,
-                shading_context,
-                shading_point,
-                aov_accumulators,
-                shading_result);
+        shade_environment(
+            sampling_context,
+            pixel_context,
+            shading_context,
+            shading_point,
+            aov_accumulators,
+            shading_result);
     }
 }
 
