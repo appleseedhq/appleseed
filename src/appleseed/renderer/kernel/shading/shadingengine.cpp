@@ -191,8 +191,6 @@ void ShadingEngine::shade_environment(
             aov_value,
             shading_result);
     }
-    else
-        shading_result.m_main.set(0.0f);
 }
 
 }   // namespace renderer

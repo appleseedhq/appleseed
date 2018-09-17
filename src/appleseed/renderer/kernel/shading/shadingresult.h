@@ -36,7 +36,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
-#include "foundation/utility/poison.h"
 
 // Standard headers.
 #include <cassert>
@@ -61,7 +60,7 @@ class ShadingResult
     size_t              m_aov_count;
 
     // Constructor.
-    // AOVs are cleared to transparent black but the main output is left uninitialized.
+    // The main output and AOVs are cleared to transparent black.
     explicit ShadingResult(const size_t aov_count = 0);
 
     // Return false if the main output contains NaN, negative or infinite values.
@@ -90,9 +89,7 @@ inline ShadingResult::ShadingResult(const size_t aov_count)
 {
     assert(aov_count <= MaxAOVCount);
 
-#ifdef DEBUG
-    poison(*this);
-#endif
+    m_main.set(0.0f);
 
     // Set all AOVs to transparent black.
     for (size_t i = 0, e = m_aov_count; i < e; ++i)
@@ -100,21 +97,5 @@ inline ShadingResult::ShadingResult(const size_t aov_count)
 }
 
 }       // namespace renderer
-
-namespace foundation
-{
-    template <>
-    class PoisonImpl<renderer::ShadingResult>
-    {
-      public:
-        static void do_poison(renderer::ShadingResult& result)
-        {
-            poison(result.m_main);
-
-            for (size_t i = 0, e = result.m_aov_count; i < e; ++i)
-                poison(result.m_aovs[i]);
-        }
-    };
-}
 
 #endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRESULT_H
