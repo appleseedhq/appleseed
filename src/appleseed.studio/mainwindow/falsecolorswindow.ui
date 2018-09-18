@@ -13,8 +13,8 @@
   <property name="windowTitle">
    <string>False Colors</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
     <widget class="QScrollArea" name="scrollarea">
      <property name="widgetResizable">
       <bool>true</bool>
@@ -24,24 +24,42 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>462</width>
-        <height>261</height>
+        <width>476</width>
+        <height>341</height>
        </rect>
       </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QGroupBox" name="groupbox_false_colors">
+         <property name="title">
+          <string>Enable &amp;False Colors</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalspacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
      </widget>
     </widget>
    </item>
-   <item row="2" column="0">
+   <item>
     <widget class="QDialogButtonBox" name="buttonbox">
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QCheckBox" name="checkbox_enable_false_colors">
-     <property name="text">
-      <string>&amp;Enable False Colors</string>
      </property>
     </widget>
    </item>

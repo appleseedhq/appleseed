@@ -207,18 +207,26 @@ bool EntityEditor::is_input_widget_visible(const Dictionary& metadata, const Dic
     if (!metadata.dictionaries().exist("visible_if"))
         return true;
 
+    // Conditions in a visible_if clause must be all true for the input widget to be visible
+    // (in other words they are combined with AND operations).
+
     const StringDictionary& visible_if = metadata.dictionary("visible_if").strings();
 
-    if (visible_if.empty())
-        return false;
+    for (const auto& condition : visible_if)
+    {
+        const char* key = condition.key();
+        const char* value = condition.value();
 
-    const char* key = visible_if.begin().key();
-    const char* value = visible_if.begin().value();
+        const bool condition_met =
+            values.strings().exist(key)
+                ? values.strings().get<string>(key) == value
+                : get_input_metadata(key).get<string>("default") == value;
 
-    return
-        values.strings().exist(key)
-            ? values.strings().get<string>(key) == value
-            : get_input_metadata(key).get<string>("default") == value;
+        if (!condition_met)
+            return false;
+    }
+
+    return true;
 }
 
 void EntityEditor::create_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
