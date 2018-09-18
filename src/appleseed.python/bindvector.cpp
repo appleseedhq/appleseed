@@ -229,14 +229,17 @@ namespace
 void bind_vector()
 {
     do_bind_vector<int, 2>("Vector2i");
+    do_bind_vector<size_t, 2>("Vector2u");
     do_bind_vector<float, 2>("Vector2f");
     do_bind_vector<double, 2>("Vector2d");
 
     do_bind_vector<int, 3>("Vector3i");
+    do_bind_vector<size_t, 3>("Vector3u");
     do_bind_vector<float, 3>("Vector3f");
     do_bind_vector<double, 3>("Vector3d");
 
     do_bind_vector<int, 4>("Vector4i");
+    do_bind_vector<size_t, 4>("Vector4u");
     do_bind_vector<float, 4>("Vector4f");
     do_bind_vector<double, 4>("Vector4d");
 
