@@ -30,12 +30,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/camera/pinholecamera.h"
-#include "renderer/modeling/entity/onframebeginrecorder.h"
-#include "renderer/modeling/entity/onrenderbeginrecorder.h"
-#include "renderer/modeling/frame/frame.h"
-#include "renderer/modeling/project/project.h"
-#include "renderer/modeling/scene/scene.h"
-#include "renderer/utility/paramarray.h"
+#include "renderer/utility/projectpoints.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -50,8 +45,7 @@ TEST_SUITE(Renderer_Modeling_Camera_PinholeCamera)
 {
     TEST_CASE(ProjectPoint_GivenIdentityCameraAndPointArgumentIsOnZAxis_ReturnsCenterOfImagePlane)
     {
-        auto_release_ptr<Scene> scene(SceneFactory::create());
-        scene->cameras().insert(
+        auto_release_ptr<Camera> camera(
             PinholeCameraFactory().create(
                 "camera",
                 ParamArray()
@@ -59,32 +53,13 @@ TEST_SUITE(Renderer_Modeling_Camera_PinholeCamera)
                     .insert("film_height", "0.025")
                     .insert("focal_length", "0.035")));
 
-        auto_release_ptr<Project> project(ProjectFactory::create("test"));
-        project->set_scene(scene);
-        project->set_frame(
-            FrameFactory::create(
-                "frame",
-                ParamArray()
-                    .insert("resolution", "512 512")
-                    .insert("camera", "camera")));
-
-        OnRenderBeginRecorder render_begin_recorder;
-        bool success = project->get_scene()->on_render_begin(project.ref(), nullptr, render_begin_recorder);
-        ASSERT_TRUE(success);
-
-        OnFrameBeginRecorder frame_begin_recorder;
-        success = project->get_scene()->on_frame_begin(project.ref(), nullptr, frame_begin_recorder);
-        ASSERT_TRUE(success);
-
-        const Camera* camera = project->get_scene()->get_active_camera();
+        const ProjectPoints proj(camera, Vector2u(512, 512));
+        ASSERT_TRUE(proj.is_initialized());
 
         Vector2d projected;
-        success = camera->project_point(0.0f, Vector3d(0.0, 0.0, -1.0), projected);
+        const bool success = proj.project_point(0.0f, Vector3d(0.0, 0.0, -1.0), projected);
 
         ASSERT_TRUE(success);
         EXPECT_FEQ(Vector2d(0.5, 0.5), projected);
-
-        frame_begin_recorder.on_frame_end(project.ref());
-        render_begin_recorder.on_render_end(project.ref());
     }
 }
