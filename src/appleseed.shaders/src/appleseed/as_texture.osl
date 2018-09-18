@@ -315,8 +315,8 @@ shader as_texture
 
     if (in_atlas_type == 0)
     {
-        uv_coords[0] = mod(in_texture_coords[0], UVWRAP);
-        uv_coords[1] = mod(in_texture_coords[1], UVWRAP);
+        uv_coords[0] = in_texture_coords[0];
+        uv_coords[1] = in_texture_coords[1];
 
         set_wrap_mode(in_s_wrap, in_t_wrap, wrap_mode);
     }
