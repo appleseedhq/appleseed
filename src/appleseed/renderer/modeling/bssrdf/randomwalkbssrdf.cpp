@@ -582,6 +582,7 @@ namespace
                     shading_point_ptr);
                 if (!shading_points[next_point_idx].is_valid())
                     return false;
+                // todo: check if the hit is on the same SSS set.
                 const double ray_length = shading_points[next_point_idx].get_distance();
 
                 // Check if volume scattering event occurred and compute transmission.
