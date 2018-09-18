@@ -1269,39 +1269,29 @@ void MainWindow::apply_false_colors_settings()
     Frame* frame = project->get_frame();
     assert(frame != nullptr);
 
-    Dictionary params = m_settings.child("false_colors");
+    const ParamArray& false_colors_params = m_settings.child("false_colors");
+    const bool false_colors_enabled = false_colors_params.get_optional<bool>("enabled", false);
 
-    if (params.strings().exist("enabled") &&
-        params.strings().get<bool>("enabled"))
+    if (false_colors_enabled)
     {
         // Make a temporary copy of the frame.
-        auto_release_ptr<Frame> frame_copy(
-            FrameFactory::create("frame_copy", frame->get_parameters()));
-        frame_copy->image().copy_from(frame->image());
+        // Render info, AOVs and other data are not copied.
+        // todo: creating a frame with denoising enabled is very expensive, see benchmark_frame.cpp.
+        auto_release_ptr<Frame> working_frame =
+            FrameFactory::create(
+                (string(frame->get_name()) + "_copy").c_str(),
+                frame->get_parameters()
+                    .remove_path("denoiser"));
+        working_frame->image().copy_from(frame->image());
 
-        // Add required params.
-        params.insert("order", 0);
-
-        // Create a color map post-processing stage.
+        // Create post-processing stage.
         auto_release_ptr<PostProcessingStage> stage(
             ColorMapPostProcessingStageFactory().create(
                 "__false_colors_post_processing_stage",
-                params));
+                false_colors_params));
 
-        // Prepare the post-processing stage.
-        OnFrameBeginRecorder recorder;
-        if (stage->on_frame_begin(*project, nullptr, recorder, nullptr))
-        {
-            // Execute the post-processing stage on the frame copy.
-            stage->execute(frame_copy.ref());
-
-            // Blit the frame copy into the render widget.
-            for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
-            {
-                i->second->get_render_widget()->blit_frame(frame_copy.ref());
-                i->second->get_render_widget()->update();
-            }
-        }
+        // Apply post-processing stage.
+        apply_post_processing_stage(stage.ref(), working_frame.ref());
     }
     else
     {
@@ -1309,6 +1299,32 @@ void MainWindow::apply_false_colors_settings()
         for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
         {
             i->second->get_render_widget()->blit_frame(*frame);
+            i->second->get_render_widget()->update();
+        }
+    }
+}
+
+void MainWindow::apply_post_processing_stage(
+    PostProcessingStage&        stage,
+    Frame&                      working_frame)
+{
+    Project* project = m_project_manager.get_project();
+    assert(project != nullptr);
+
+    Frame* frame = project->get_frame();
+    assert(frame != nullptr);
+
+    // Prepare the post-processing stage.
+    OnFrameBeginRecorder recorder;
+    if (stage.on_frame_begin(*project, nullptr, recorder, nullptr))
+    {
+        // Execute the post-processing stage.
+        stage.execute(working_frame);
+
+        // Blit the frame copy into the render widget.
+        for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        {
+            i->second->get_render_widget()->blit_frame(working_frame);
             i->second->get_render_widget()->update();
         }
     }
@@ -1827,10 +1843,6 @@ void MainWindow::slot_show_false_colors_window()
         m_false_colors_window.reset(new FalseColorsWindow(this));
 
         QObject::connect(
-            m_false_colors_window.get(), SIGNAL(signal_set_enabled(const bool)),
-            SLOT(slot_set_false_colors_enabled(const bool)));
-
-        QObject::connect(
             m_false_colors_window.get(), SIGNAL(signal_applied(foundation::Dictionary)),
             SLOT(slot_apply_false_colors_settings_changes(foundation::Dictionary)));
 
@@ -1853,12 +1865,6 @@ void MainWindow::slot_show_false_colors_window()
 
     m_false_colors_window->showNormal();
     m_false_colors_window->activateWindow();
-}
-
-void MainWindow::slot_set_false_colors_enabled(const bool enabled)
-{
-    m_settings.push("false_colors").insert("enabled", enabled);
-    apply_false_colors_settings();
 }
 
 void MainWindow::slot_apply_false_colors_settings_changes(Dictionary values)

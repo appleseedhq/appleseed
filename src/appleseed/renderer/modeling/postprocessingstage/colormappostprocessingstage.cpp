@@ -44,12 +44,19 @@
 #include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/image.h"
 #include "foundation/image/text/textrenderer.h"
+#include "foundation/math/aabb.h"
+#include "foundation/math/distance.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/defaulttimers.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/countof.h"
 #include "foundation/utility/makevector.h"
+#include "foundation/utility/otherwise.h"
 #include "foundation/utility/searchpaths.h"
+#include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -167,7 +174,7 @@ namespace
                 }
             }
 
-            m_auto_range = m_params.get_optional<bool>("auto_range", true);
+            m_auto_range = m_params.get_optional<bool>("auto_range", true, context);
 
             if (m_auto_range)
             {
@@ -176,12 +183,15 @@ namespace
             }
             else
             {
-                m_range_min = m_params.get_required<float>("range_min", 0.0f);
-                m_range_max = m_params.get_required<float>("range_max", 1.0f);
+                m_range_min = m_params.get_required<float>("range_min", 0.0f, context);
+                m_range_max = m_params.get_required<float>("range_max", 1.0f, context);
             }
 
-            m_add_legend_bar = m_params.get_optional<bool>("add_legend_bar", true);
-            m_legend_bar_ticks = m_params.get_optional<size_t>("legend_bar_ticks", 8);
+            m_add_legend_bar = m_params.get_optional<bool>("add_legend_bar", true, context);
+            m_legend_bar_ticks = m_params.get_optional<size_t>("legend_bar_ticks", 8, context);
+
+            m_render_isolines = m_params.get_optional<bool>("render_isolines", false, context);
+            m_line_thickness = m_params.get_optional<float>("line_thickness", 1.0f, context);
 
             return true;
         }
@@ -212,19 +222,59 @@ namespace
                 min_luminance,
                 max_luminance);
 
+            SegmentVector isoline_segments;
+
+            if (m_render_isolines)
+                collect_isoline_segments(isoline_segments, frame, min_luminance, max_luminance);
+
             remap_colors(frame, min_luminance, max_luminance);
+
+            if (m_render_isolines)
+                render_isoline_segments(frame, isoline_segments);
 
             if (m_add_legend_bar)
                 add_legend_bar(frame, min_luminance, max_luminance);
         }
 
       private:
+        struct Segment
+        {
+            Vector2f    m_a;
+            Vector2f    m_b;
+
+            Segment()
+            {
+            }
+
+            Segment(const Segment& rhs)
+              : m_a(rhs.m_a)
+              , m_b(rhs.m_b)
+            {
+            }
+
+            Segment(
+                const Vector2f& a,
+                const Vector2f& b)
+              : m_a(a)
+              , m_b(b)
+            {
+            }
+        };
+
+        typedef vector<Segment> SegmentVector;
+
         vector<Color3f>     m_palette;
         bool                m_auto_range;
         float               m_range_min;
         float               m_range_max;
         bool                m_add_legend_bar;
         size_t              m_legend_bar_ticks;
+        bool                m_render_isolines;
+        float               m_line_thickness;
+
+        //
+        // Color mapping.
+        //
 
         void set_palette_from_array(const float* values, const size_t entry_count)
         {
@@ -382,6 +432,283 @@ namespace
                     label.c_str());
             }
         }
+
+        //
+        // Isolines rendering.
+        //
+
+        void collect_isoline_segments(
+            SegmentVector&              segments,
+            const Frame&                frame,
+            const float                 min_luminance,
+            const float                 max_luminance) const
+        {
+            const Image& image = frame.image();
+            const CanvasProperties& props = image.properties();
+
+            if (props.m_canvas_width <= 1 || props.m_canvas_height <= 1)
+                return;
+
+            Stopwatch<DefaultWallclockTimer> sw(0);
+            sw.start();
+
+            for (size_t level = 0; level < m_legend_bar_ticks; ++level)
+            {
+                const float isovalue =
+                    fit<size_t, float>(level, 0, m_legend_bar_ticks - 1, min_luminance, max_luminance);
+
+                for (size_t y = 0, end_y = props.m_canvas_height - 1; y < end_y; ++y)
+                {
+                    for (size_t x = 0, end_x = props.m_canvas_width - 1; x < end_x; ++x)
+                        find_isoline_segment(image, props, x, y, isovalue, segments);
+                }
+            }
+
+            sw.measure();
+            RENDERER_LOG_DEBUG("post-processing stage \"%s\": isolines detection (" FMT_SIZE_T " segment%s) executed in %s.",
+                get_path().c_str(),
+                segments.size(),
+                segments.size() > 1 ? "s" : "",
+                pretty_time(sw.get_seconds()).c_str());
+        }
+
+        void render_isoline_segments(
+            Frame&                      frame,
+            const SegmentVector&        segments) const
+        {
+            Image& image = frame.image();
+            const CanvasProperties& props = image.properties();
+
+            Stopwatch<DefaultWallclockTimer> sw(0);
+            sw.start();
+
+            for (const Segment& seg : segments)
+                rasterize_isoline_segment(image, props, seg);
+
+            sw.measure();
+            RENDERER_LOG_DEBUG("post-processing stage \"%s\": isolines rendering (" FMT_SIZE_T " segment%s) executed in %s.",
+                get_path().c_str(),
+                segments.size(),
+                segments.size() > 1 ? "s" : "",
+                pretty_time(sw.get_seconds()).c_str());
+        }
+
+        static void find_isoline_segment(
+            const Image&                image,
+            const CanvasProperties&     props,
+            const size_t                x,
+            const size_t                y,
+            const float                 isovalue,
+            SegmentVector&              segments)
+        {
+            //
+            // Reference:
+            //
+            //   https://en.wikipedia.org/wiki/Marching_squares
+            //
+
+            assert(x < props.m_canvas_width - 1);
+            assert(y < props.m_canvas_height - 1);
+
+            // Retrieve value at each pixel of 2x2 block with (x, y) as top-left corner.
+            const float f00 = get_pixel_value(image, props, x + 0, y + 0);
+            const float f10 = get_pixel_value(image, props, x + 1, y + 0);
+            const float f01 = get_pixel_value(image, props, x + 0, y + 1);
+            const float f11 = get_pixel_value(image, props, x + 1, y + 1);
+
+            // Corners are numbered clockwise starting in top-left corner.
+            const size_t b00 = f00 > isovalue ? 1 << 3 : 0;
+            const size_t b10 = f10 > isovalue ? 1 << 2 : 0;
+            const size_t b11 = f11 > isovalue ? 1 << 1 : 0;
+            const size_t b01 = f01 > isovalue ? 1 << 0 : 0;
+            const size_t mask = b00 + b10 + b11 + b01;
+
+            // Compute middle of top edge.
+            const auto mt = [x, y, f00, f10, isovalue]()
+            {
+                return Vector2f(
+                    static_cast<float>(x) + inverse_lerp(f00, f10, isovalue),
+                    static_cast<float>(y) + 0.0f);
+            };
+
+            // Compute middle of right edge.
+            const auto mr = [x, y, f10, f11, isovalue]()
+            {
+                return Vector2f(
+                    static_cast<float>(x) + 1.0f,
+                    static_cast<float>(y) + inverse_lerp(f10, f11, isovalue));
+            };
+
+            // Compute middle of bottom edge.
+            const auto mb = [x, y, f01, f11, isovalue]()
+            {
+                return Vector2f(
+                    static_cast<float>(x) + inverse_lerp(f01, f11, isovalue),
+                    static_cast<float>(y) + 1.0f);
+            };
+
+            // Compute middle of left edge.
+            const auto ml = [x, y, f00, f01, isovalue]()
+            {
+                return Vector2f(
+                    static_cast<float>(x) + 0.0f,
+                    static_cast<float>(y) + inverse_lerp(f00, f01, isovalue));
+            };
+
+            switch (mask)
+            {
+              case 0x0 /* 0b0000 */: break;
+              case 0x1 /* 0b0001 */: segments.emplace_back(ml(), mb()); break;
+              case 0x2 /* 0b0010 */: segments.emplace_back(mb(), mr()); break;
+              case 0x3 /* 0b0011 */: segments.emplace_back(ml(), mr()); break;
+              case 0x4 /* 0b0100 */: segments.emplace_back(mr(), mt()); break;
+              case 0x5 /* 0b0101 */:
+                if (f00 + f10 + f01 + f11 < 4.0f * isovalue)
+                {
+                    segments.emplace_back(mr(), mt());
+                    segments.emplace_back(ml(), mb());
+                }
+                else
+                {
+                    segments.emplace_back(ml(), mt());
+                    segments.emplace_back(mr(), mb());
+                }
+                break;
+              case 0x6 /* 0b0110 */: segments.emplace_back(mb(), mt()); break;
+              case 0x7 /* 0b0111 */: segments.emplace_back(ml(), mt()); break;
+              case 0x8 /* 0b1000 */: segments.emplace_back(mt(), ml()); break;
+              case 0x9 /* 0b1001 */: segments.emplace_back(mt(), mb()); break;
+              case 0xA /* 0b1010 */:
+                if (f00 + f10 + f01 + f11 < 4.0f * isovalue)
+                {
+                    segments.emplace_back(mt(), ml());
+                    segments.emplace_back(mb(), mr());
+                }
+                else
+                {
+                    segments.emplace_back(mt(), mr());
+                    segments.emplace_back(mb(), ml());
+                }
+                break;
+              case 0xB /* 0b1011 */: segments.emplace_back(mt(), mr()); break;
+              case 0xC /* 0b1100 */: segments.emplace_back(mr(), ml()); break;
+              case 0xD /* 0b1101 */: segments.emplace_back(mr(), mb()); break;
+              case 0xE /* 0b1110 */: segments.emplace_back(mb(), ml()); break;
+              case 0xF /* 0b1111 */: break;
+              assert_otherwise;
+            }
+        }
+
+        static float get_pixel_value(
+            const Image&                image,
+            const CanvasProperties&     props,
+            const size_t                x,
+            const size_t                y)
+        {
+            assert(x < props.m_canvas_width);
+            assert(y < props.m_canvas_height);
+
+            Color4f c;
+            image.get_pixel(x, y, c);
+
+            return luminance(c.rgb());
+        }
+
+        void rasterize_isoline_segment(
+            Image&                      image,
+            const CanvasProperties&     props,
+            const Segment&              seg) const
+        {
+            const Color4f SegColorSRGB(1.0f, 1.0f, 1.0f, 0.8f);     // in sRGB color space
+            const size_t SubpixelGridSize = 4;
+            const float HalfSubpixel = 0.5f / SubpixelGridSize;
+            const float Eps = 1.0e-6f;
+
+            const float seg_radius = 0.5f * m_line_thickness;
+            const float seg_square_radius = square(seg_radius);
+
+            // Convert segment color to sRGB, premultipied alpha.
+            Color4f seg_color_linear_rgb(
+                srgb_to_linear_rgb(SegColorSRGB.rgb()) * SegColorSRGB.a,
+                SegColorSRGB.a);
+
+            // Compute bounding box of segment, accounting for its thickness.
+            AABB2f bbox;
+            bbox.invalidate();
+            bbox.insert(seg.m_a);
+            bbox.insert(seg.m_b);
+            bbox.grow(Vector2f(seg_radius + Eps));
+
+            // Compute bounding box of segment in pixels.
+            int ixmin = truncate<int>(fast_floor(bbox.min.x));
+            int ixmax = truncate<int>(fast_floor(bbox.max.x));    // used to be fast_ceil() but this is probably correct
+            int iymin = truncate<int>(fast_floor(bbox.min.y));
+            int iymax = truncate<int>(fast_floor(bbox.max.y));
+            assert(ixmin <= ixmax);
+            assert(iymin <= iymax);
+
+            // Clamp bounding box to the image.
+            const int iw = static_cast<int>(props.m_canvas_width);
+            const int ih = static_cast<int>(props.m_canvas_height);
+            if (ixmin < 0) ixmin = 0;
+            if (iymin < 0) iymin = 0;
+            if (ixmax > iw - 1) ixmax = iw - 1;
+            if (iymax > ih - 1) iymax = ih - 1;
+
+            // Iterate over pixels.
+            for (size_t py = iymin; py <= iymax; ++py)
+            {
+                const float fy = static_cast<float>(py);
+
+                for (size_t px = ixmin; px <= ixmax; ++px)
+                {
+                    const float fx = static_cast<float>(px);
+
+                    // Number of subpixels covered by the segment.
+                    size_t hits = 0;
+
+                    // Iterate over subpixels.
+                    for (size_t sy = 0; sy < SubpixelGridSize; ++sy)
+                    {
+                        Vector2f p;
+                        p.y =
+                            fit<size_t, float>(
+                                sy, 0, SubpixelGridSize - 1,
+                                fy + HalfSubpixel, fy + 1.0f - HalfSubpixel);
+
+                        for (size_t sx = 0; sx < SubpixelGridSize; ++sx)
+                        {
+                            p.x =
+                                fit<size_t, float>(
+                                    sx, 0, SubpixelGridSize - 1,
+                                    fx + HalfSubpixel, fx + 1.0f - HalfSubpixel);
+
+                            const float d2 = square_distance_point_segment(p, seg.m_a, seg.m_b);
+
+                            if (d2 <= seg_square_radius)
+                                ++hits;
+                        }
+                    }
+
+                    if (hits == 0)
+                        continue;
+
+                    // Retrieve background color.
+                    Color4f background;
+                    image.get_pixel(px, py, background);
+
+                    // Compute pixel color.
+                    Color4f pixel = seg_color_linear_rgb;
+                    pixel *= static_cast<float>(hits) / square(SubpixelGridSize);
+
+                    // Composite pixel color over background.
+                    pixel += (1.0f - pixel.a) * background;
+
+                    // Write final color to image.
+                    image.set_pixel(px, py, pixel);
+                }
+            }
+        }
     };
 }
 
@@ -516,6 +843,34 @@ DictionaryArray ColorMapPostProcessingStageFactory::get_input_metadata() const
             .insert("visible_if",
                 Dictionary()
                     .insert("add_legend_bar", "true")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "render_isolines")
+            .insert("label", "Render Isolines")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "false")
+            .insert("on_change", "rebuild_form"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "line_thickness")
+            .insert("label", "Line Thickness")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.5")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "5.0")
+                    .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "1.0")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("render_isolines", "true")));
 
     return metadata;
 }
