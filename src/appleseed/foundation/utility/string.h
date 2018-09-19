@@ -109,6 +109,12 @@ APPLESEED_DLLSYMBOL void free_string(const char* s);
 // Convert a C string allocated by duplicate_string() to an std::string, and dellocate the C string.
 APPLESEED_FORCE_INLINE std::string convert_to_std_string(const char* s);
 
+// Compare two strings lexicographically, regardless of their case.
+// Returns -1 if lhs < rhs, +1 if lhs > rhs, and 0 if lhs == rhs.
+APPLESEED_DLLSYMBOL int strcmp_nocase(
+    const char*             lhs,
+    const char*             rhs);
+
 
 //
 // C++ strings manipulation functions.
@@ -567,20 +573,7 @@ inline int strcmp_nocase(
     const std::string&      lhs,
     const std::string&      rhs)
 {
-    std::string::const_iterator lhs_it = lhs.begin();
-    std::string::const_iterator rhs_it = rhs.begin();
-
-    while (lhs_it != lhs.end() && rhs_it != rhs.end())
-    {
-        if (std::toupper(*lhs_it) != std::toupper(*rhs_it))
-            return (std::toupper(*lhs_it) < std::toupper(*rhs_it)) ? -1 : 1;
-        ++lhs_it;
-        ++rhs_it;
-    }
-
-    if (lhs.size() == rhs.size())
-        return 0;
-    else return lhs.size() < rhs.size() ? -1 : 1;
+    return strcmp_nocase(lhs.c_str(), rhs.c_str());
 }
 
 inline std::string pad_left(
