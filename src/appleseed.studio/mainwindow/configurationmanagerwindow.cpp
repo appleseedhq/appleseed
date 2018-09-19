@@ -48,7 +48,7 @@ namespace studio {
 //
 
 ConfigurationManagerWindow::ConfigurationManagerWindow(QWidget* parent)
-  : QWidget(parent)
+  : WindowBase(parent, "configuration_manager_window")
   , m_ui(new Ui::ConfigurationManagerWindow())
 {
     m_ui->setupUi(this);
@@ -71,6 +71,8 @@ ConfigurationManagerWindow::ConfigurationManagerWindow(QWidget* parent)
     connect(
         create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
         this, SLOT(close()));
+
+    WindowBase::load_settings();
 }
 
 ConfigurationManagerWindow::~ConfigurationManagerWindow()

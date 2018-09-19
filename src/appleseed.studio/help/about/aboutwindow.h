@@ -30,24 +30,29 @@
 #ifndef APPLESEED_STUDIO_HELP_ABOUT_ABOUTWINDOW_H
 #define APPLESEED_STUDIO_HELP_ABOUT_ABOUTWINDOW_H
 
+// appleseed.studio headers.
+#include "utility/windowbase.h"
+
 // Qt headers.
 #include <QObject>
-#include <QWidget>
 
 // Forward declarations.
 namespace Ui { class AboutWindow; }
+class QWidget;
 
 namespace appleseed {
 namespace studio {
 
 class AboutWindow
-  : public QWidget
+  : public WindowBase
 {
     Q_OBJECT
 
   public:
+    // Constructor.
     explicit AboutWindow(QWidget* parent = nullptr);
 
+    // Destructor.
     ~AboutWindow() override;
 
   private:

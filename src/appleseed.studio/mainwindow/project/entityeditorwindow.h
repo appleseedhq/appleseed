@@ -33,13 +33,13 @@
 // appleseed.studio headers.
 #include "mainwindow/project/customentityui.h"
 #include "mainwindow/project/entityeditor.h"
+#include "utility/windowbase.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
 
 // Qt headers.
 #include <QObject>
-#include <QWidget>
 
 // Standard headers.
 #include <memory>
@@ -49,16 +49,18 @@
 namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
 namespace Ui        { class EntityEditorWindow; }
+class QWidget;
 
 namespace appleseed {
 namespace studio {
 
 class EntityEditorWindow
-  : public QWidget
+  : public WindowBase
 {
     Q_OBJECT
 
   public:
+    // Constructor.
     EntityEditorWindow(
         QWidget*                                        parent,
         const std::string&                              window_title,
@@ -69,6 +71,7 @@ class EntityEditorWindow
         std::unique_ptr<CustomEntityUI>                 custom_entity_ui,
         const foundation::Dictionary&                   values = foundation::Dictionary());
 
+    // Destructor.
     ~EntityEditorWindow() override;
 
   signals:

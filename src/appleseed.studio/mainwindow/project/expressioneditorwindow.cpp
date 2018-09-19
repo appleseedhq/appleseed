@@ -90,7 +90,7 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     const QString&  widget_name,
     const string&   expression,
     QWidget*        parent)
-  : QWidget(parent)
+  : WindowBase(parent, "expression_editor_window")
   , m_ui(new Ui::ExpressionEditorWindow())
   , m_project(project)
   , m_settings(settings)
@@ -181,6 +181,8 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     connect(
         create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
         SLOT(close()));
+
+    WindowBase::load_settings();
 }
 
 ExpressionEditorWindow::~ExpressionEditorWindow()

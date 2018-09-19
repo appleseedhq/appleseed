@@ -60,7 +60,7 @@ namespace appleseed {
 namespace studio {
 
 AboutWindow::AboutWindow(QWidget* parent)
-  : QWidget(parent)
+  : WindowBase(parent, "about_window")
   , m_ui(new Ui::AboutWindow())
 {
     m_ui->setupUi(this);
@@ -81,6 +81,8 @@ AboutWindow::AboutWindow(QWidget* parent)
     connect(
         new QShortcut(QKeySequence(Qt::Key_Escape), this), SIGNAL(activated()),
         this, SLOT(close()));
+
+    WindowBase::load_settings();
 }
 
 AboutWindow::~AboutWindow()

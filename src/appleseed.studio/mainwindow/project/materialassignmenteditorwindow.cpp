@@ -61,6 +61,7 @@
 #include <QString>
 #include <Qt>
 #include <QVBoxLayout>
+#include <QWidget>
 
 // Standard headers.
 #include <cstddef>
@@ -80,7 +81,7 @@ MaterialAssignmentEditorWindow::MaterialAssignmentEditorWindow(
     ObjectInstanceItem&     object_instance_item,
     EntityEditorContext&    editor_context,
     QWidget*                parent)
-  : QWidget(parent)
+  : WindowBase(parent, "material_assignment_editor_window")
   , m_ui(new Ui::MaterialAssignmentEditorWindow())
   , m_object_instance(object_instance)
   , m_object_instance_item(object_instance_item)
@@ -107,6 +108,8 @@ MaterialAssignmentEditorWindow::MaterialAssignmentEditorWindow(
     connect(
         create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
         SLOT(slot_cancel()));
+
+    WindowBase::load_settings();
 }
 
 MaterialAssignmentEditorWindow::~MaterialAssignmentEditorWindow()

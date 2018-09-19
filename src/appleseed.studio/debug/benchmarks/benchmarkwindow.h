@@ -33,6 +33,7 @@
 // appleseed.studio headers.
 #include "debug/benchmarks/benchmarkrunnerthread.h"
 #include "utility/chartwidget.h"
+#include "utility/windowbase.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -41,7 +42,6 @@
 
 // Qt headers.
 #include <QObject>
-#include <QWidget>
 
 // Standard headers.
 #include <cstddef>
@@ -49,13 +49,13 @@
 
 // Forward declarations.
 namespace Ui    { class BenchmarkWindow; }
-class QCloseEvent;
+class QWidget;
 
 namespace appleseed {
 namespace studio {
 
 class BenchmarkWindow
-  : public QWidget
+  : public WindowBase
 {
     Q_OBJECT
 
@@ -65,8 +65,6 @@ class BenchmarkWindow
 
     // Destructor.
     ~BenchmarkWindow() override;
-
-    void closeEvent(QCloseEvent* event) override;
 
   private:
     // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.

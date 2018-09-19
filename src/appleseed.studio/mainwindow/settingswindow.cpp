@@ -62,7 +62,7 @@ namespace studio {
 //
 
 SettingsWindow::SettingsWindow(ParamArray& settings, QWidget* parent)
-  : QWidget(parent)
+  : WindowBase(parent, "settings_window")
   , m_ui(new Ui::SettingsWindow())
   , m_settings(settings)
 {
@@ -71,6 +71,8 @@ SettingsWindow::SettingsWindow(ParamArray& settings, QWidget* parent)
     setWindowFlags(Qt::Window);
 
     build_connections();
+
+    WindowBase::load_settings();
 
     load_settings();
 }

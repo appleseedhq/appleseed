@@ -29,10 +29,12 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_EXPRESSIONEDITORWINDOW_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_EXPRESSIONEDITORWINDOW_H
 
+// appleseed.studio headers.
+#include "utility/windowbase.h"
+
 // Qt headers.
 #include <QObject>
 #include <QString>
-#include <QWidget>
 
 // Standard headers.
 #include <string>
@@ -42,6 +44,7 @@ namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
 namespace Ui        { class ExpressionEditorWindow; }
 class QLabel;
+class QWidget;
 class SeExprEdBrowser;
 class SeExprEditor;
 
@@ -49,7 +52,7 @@ namespace appleseed {
 namespace studio {
 
 class ExpressionEditorWindow
-  : public QWidget
+  : public WindowBase
 {
     Q_OBJECT
 
