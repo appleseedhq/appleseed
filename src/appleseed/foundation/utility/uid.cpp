@@ -30,19 +30,15 @@
 // Interface header.
 #include "uid.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/thread.h"
+// Boost headers.
+#include "boost/atomic/atomic.hpp"
 
 namespace foundation
 {
 
 UniqueID new_guid()
 {
-    static boost::mutex mutex;
-    boost::mutex::scoped_lock lock(mutex);
-
-    static UniqueID next_uid = 0;
-
+    static boost::atomic<UniqueID> next_uid(0);
     return next_uid++;
 }
 

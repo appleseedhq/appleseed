@@ -69,7 +69,7 @@ class APPLESEED_DLLSYMBOL Identifiable
     UniqueID get_uid() const;
 
   private:
-    const UniqueID  m_unique_id;
+    const UniqueID m_unique_id;
 };
 
 
