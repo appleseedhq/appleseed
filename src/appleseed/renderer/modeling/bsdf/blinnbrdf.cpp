@@ -271,7 +271,7 @@ DictionaryArray BlinnBRDFFactory::get_input_metadata() const
             .insert("label", "Exponent")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "0.5"));
 

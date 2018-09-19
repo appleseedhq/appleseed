@@ -538,7 +538,7 @@ DictionaryArray AshikhminBRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "0.5"));
 
@@ -548,7 +548,7 @@ DictionaryArray AshikhminBRDFFactory::get_input_metadata() const
             .insert("label", "Diffuse Reflectance Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -560,7 +560,7 @@ DictionaryArray AshikhminBRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "0.5"));
 
@@ -570,7 +570,7 @@ DictionaryArray AshikhminBRDFFactory::get_input_metadata() const
             .insert("label", "Glossy Reflectance Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -580,7 +580,7 @@ DictionaryArray AshikhminBRDFFactory::get_input_metadata() const
             .insert("label", "Fresnel Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -590,7 +590,7 @@ DictionaryArray AshikhminBRDFFactory::get_input_metadata() const
             .insert("label", "Shininess U")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "100.0"));
 
@@ -600,7 +600,7 @@ DictionaryArray AshikhminBRDFFactory::get_input_metadata() const
             .insert("label", "Shininess V")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "100.0"));
 

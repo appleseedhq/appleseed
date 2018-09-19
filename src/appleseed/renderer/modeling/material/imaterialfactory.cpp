@@ -61,7 +61,7 @@ void IMaterialFactory::add_alpha_map_metadata(DictionaryArray& metadata)
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("min",
                 Dictionary()
                     .insert("value", "0.0")
@@ -81,7 +81,7 @@ void IMaterialFactory::add_displacement_metadata(DictionaryArray& metadata)
             .insert("label", "Displacement Map")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional"));
 
     metadata.push_back(
