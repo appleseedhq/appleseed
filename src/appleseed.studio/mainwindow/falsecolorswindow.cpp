@@ -103,7 +103,7 @@ namespace
 }
 
 FalseColorsWindow::FalseColorsWindow(QWidget* parent)
-  : QWidget(parent)
+  : WindowBase(parent, "false_colors_window")
   , m_ui(new Ui::FalseColorsWindow())
 {
     m_ui->setupUi(this);
@@ -111,6 +111,8 @@ FalseColorsWindow::FalseColorsWindow(QWidget* parent)
     setWindowFlags(Qt::Window);
 
     create_connections();
+
+    WindowBase::load_settings();
 }
 
 FalseColorsWindow::~FalseColorsWindow()

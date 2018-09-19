@@ -30,10 +30,12 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERINGSETTINGSWINDOW_H
 #define APPLESEED_STUDIO_MAINWINDOW_RENDERINGSETTINGSWINDOW_H
 
+// appleseed.studio headers.
+#include "utility/windowbase.h"
+
 // Qt headers.
 #include <QObject>
 #include <QString>
-#include <QWidget>
 
 // Standard headers.
 #include <map>
@@ -45,6 +47,7 @@ namespace appleseed { namespace studio { class ProjectManager; } }
 namespace appleseed { namespace studio { class RenderSettingsPanel; } }
 namespace renderer  { class Configuration; }
 namespace Ui        { class RenderingSettingsWindow; }
+class QWidget;
 
 namespace appleseed {
 namespace studio {
@@ -54,7 +57,7 @@ namespace studio {
 //
 
 class RenderingSettingsWindow
-  : public QWidget
+  : public WindowBase
 {
     Q_OBJECT
 

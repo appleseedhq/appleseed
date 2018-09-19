@@ -35,20 +35,18 @@
 #include "debug/tests/testoutputwidgetdecorator.h"
 #include "debug/tests/testresultwidgetdecorator.h"
 #include "debug/tests/testrunnerthread.h"
+#include "utility/windowbase.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
-
-// Qt headers.
-#include <QWidget>
 
 // Standard headers.
 #include <memory>
 
 // Forward declarations.
 namespace Ui    { class TestWindow; }
-class QCloseEvent;
 class QTreeWidgetItem;
+class QWidget;
 
 namespace appleseed {
 namespace studio {
@@ -58,7 +56,7 @@ namespace studio {
 //
 
 class TestWindow
-  : public QWidget
+  : public WindowBase
 {
     Q_OBJECT
 
@@ -68,8 +66,6 @@ class TestWindow
 
     // Destructor.
     ~TestWindow() override;
-
-    void closeEvent(QCloseEvent* event) override;
 
   private:
     // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.

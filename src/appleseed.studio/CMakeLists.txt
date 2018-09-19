@@ -371,6 +371,8 @@ set (utility_sources
     utility/treewidget.h
     utility/widgetzoomhandler.cpp
     utility/widgetzoomhandler.h
+    utility/windowbase.cpp
+    utility/windowbase.h
 )
 list (APPEND appleseed.studio_sources
     ${utility_sources}

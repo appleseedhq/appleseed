@@ -33,9 +33,6 @@
 // UI definition header.
 #include "ui_benchmarkwindow.h"
 
-// appleseed.studio headers.
-#include "utility/settingskeys.h"
-
 // appleseed.shared headers.
 #include "application/application.h"
 
@@ -54,7 +51,6 @@
 #include <QKeySequence>
 #include <QList>
 #include <QPushButton>
-#include <QSettings>
 #include <QShortcut>
 #include <QStringList>
 #include <Qt>
@@ -80,7 +76,7 @@ namespace studio {
 //
 
 BenchmarkWindow::BenchmarkWindow(QWidget* parent)
-  : QWidget(parent)
+  : WindowBase(parent, "benchmark_window")
   , m_ui(new Ui::BenchmarkWindow())
   , m_chart_widget(this)
 {
@@ -104,19 +100,12 @@ BenchmarkWindow::BenchmarkWindow(QWidget* parent)
         &m_benchmark_runner_thread, SIGNAL(signal_finished()),
         this, SLOT(slot_on_benchmarks_execution_complete()));
 
-    const QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
-    restoreGeometry(settings.value("benchmark_window_geometry").toByteArray());
+    WindowBase::load_settings();
 }
 
 BenchmarkWindow::~BenchmarkWindow()
 {
     delete m_ui;
-}
-
-void BenchmarkWindow::closeEvent(QCloseEvent* event)
-{
-    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
-    settings.setValue("benchmark_window_geometry", saveGeometry());
 }
 
 void BenchmarkWindow::build_connections()
@@ -218,7 +207,6 @@ namespace
                 QString("%1\n%2")
                     .arg(QString::fromStdString(date_string))
                     .arg(QString::fromStdString(ticks_string));
-
         }
     };
 }

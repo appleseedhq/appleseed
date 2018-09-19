@@ -69,6 +69,7 @@
 #include <QSpinBox>
 #include <Qt>
 #include <QVBoxLayout>
+#include <QWidget>
 
 // Standard headers.
 #include <algorithm>
@@ -1397,7 +1398,7 @@ namespace
 //
 
 RenderingSettingsWindow::RenderingSettingsWindow(ProjectManager& project_manager, QWidget* parent)
-  : QWidget(parent)
+  : WindowBase(parent, "rendering_settings_window")
   , m_ui(new Ui::RenderingSettingsWindow())
   , m_project_manager(project_manager)
 {
@@ -1409,6 +1410,8 @@ RenderingSettingsWindow::RenderingSettingsWindow(ProjectManager& project_manager
     m_ui->scrollareawidget->hide();
 
     create_connections();
+
+    WindowBase::load_settings();
 
     reload();
 }

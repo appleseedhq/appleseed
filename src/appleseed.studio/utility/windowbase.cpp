@@ -26,61 +26,41 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_SETTINGSWINDOW_H
-#define APPLESEED_STUDIO_MAINWINDOW_SETTINGSWINDOW_H
+// Interface header.
+#include "windowbase.h"
 
 // appleseed.studio headers.
-#include "utility/windowbase.h"
+#include "utility/settingskeys.h"
 
 // Qt headers.
-#include <QObject>
-
-// Forward declarations.
-namespace renderer  { class ParamArray; }
-namespace Ui        { class SettingsWindow; }
-class QWidget;
+#include <QSettings>
+#include <QVariant>
 
 namespace appleseed {
 namespace studio {
 
-//
-// Settings window.
-//
-
-class SettingsWindow
-  : public WindowBase
+WindowBase::WindowBase(QWidget* parent, const QString& id)
+  : QWidget(parent)
+  , m_geometry_settings_key(id + "_geometry")
 {
-    Q_OBJECT
+}
 
-  public:
-    // Constructor.
-    SettingsWindow(
-        renderer::ParamArray&   settings,
-        QWidget*                parent = nullptr);
+void WindowBase::closeEvent(QCloseEvent* event)
+{
+    save_settings();
+}
 
-    // Destructor.
-    ~SettingsWindow() override;
+void WindowBase::save_settings()
+{
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    settings.setValue(m_geometry_settings_key, saveGeometry());
+}
 
-  signals:
-    void signal_settings_modified() const;
+void WindowBase::load_settings()
+{
+    const QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    restoreGeometry(settings.value(m_geometry_settings_key).toByteArray());
+}
 
-  private:
-    // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
-    Ui::SettingsWindow*     m_ui;
-
-    renderer::ParamArray&   m_settings;
-
-    void build_connections();
-
-    void load_settings();
-    void save_settings();
-
-  private slots:
-    void slot_save_configuration_and_close();
-    void slot_restore_configuration_and_close();
-};
-
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_SETTINGSWINDOW_H
+}   // namespace studio
+}   // namespace appleseed

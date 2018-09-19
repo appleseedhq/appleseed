@@ -31,13 +31,13 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditor.h"
+#include "utility/windowbase.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
 
 // Qt headers.
 #include <QObject>
-#include <QWidget>
 
 // Standard headers.
 #include <memory>
@@ -46,18 +46,21 @@
 namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
 namespace Ui        { class FalseColorsWindow; }
+class QWidget;
 
 namespace appleseed {
 namespace studio {
 
 class FalseColorsWindow
-  : public QWidget
+  : public WindowBase
 {
     Q_OBJECT
 
   public:
+    // Constructor.
     explicit FalseColorsWindow(QWidget* parent);
 
+    // Destructor.
     ~FalseColorsWindow() override;
 
     void initialize(

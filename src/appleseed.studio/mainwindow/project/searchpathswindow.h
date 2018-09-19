@@ -29,13 +29,16 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_SEARCHPATHSWINDOW_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_SEARCHPATHSWINDOW_H
 
+// appleseed.studio headers.
+#include "utility/windowbase.h"
+
 // Qt headers.
 #include <QObject>
-#include <QWidget>
 
 // Forward declarations.
 namespace renderer  { class Project; }
 namespace Ui        { class SearchPathsWindow; }
+class QWidget;
 
 namespace appleseed {
 namespace studio {
@@ -45,7 +48,7 @@ namespace studio {
 //
 
 class SearchPathsWindow
-  : public QWidget
+  : public WindowBase
 {
     Q_OBJECT
 

@@ -70,7 +70,7 @@ namespace
 SearchPathsWindow::SearchPathsWindow(
     const Project&  project,
     QWidget*        parent)
-  : QWidget(parent)
+  : WindowBase(parent, "search_paths_window")
   , m_ui(new Ui::SearchPathsWindow())
   , m_project(project)
   , m_edit_committed(false)
@@ -101,6 +101,8 @@ SearchPathsWindow::SearchPathsWindow(
     connect(new QShortcut(QKeySequence(Qt::Key_Delete), this), SIGNAL(activated()), SLOT(slot_remove()));
     connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Up), this), SIGNAL(activated()), SLOT(slot_move_up()));
     connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Down), this), SIGNAL(activated()), SLOT(slot_move_down()));
+
+    WindowBase::load_settings();
 
     // Project root path.
     if (m_project.search_paths().has_root_path())

@@ -26,61 +26,40 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_SETTINGSWINDOW_H
-#define APPLESEED_STUDIO_MAINWINDOW_SETTINGSWINDOW_H
-
-// appleseed.studio headers.
-#include "utility/windowbase.h"
+#ifndef APPLESEED_STUDIO_UTILITY_WINDOWBASE_H
+#define APPLESEED_STUDIO_UTILITY_WINDOWBASE_H
 
 // Qt headers.
 #include <QObject>
+#include <QString>
+#include <QWidget>
 
 // Forward declarations.
-namespace renderer  { class ParamArray; }
-namespace Ui        { class SettingsWindow; }
-class QWidget;
+class QCloseEvent;
 
 namespace appleseed {
 namespace studio {
 
-//
-// Settings window.
-//
-
-class SettingsWindow
-  : public WindowBase
+class WindowBase
+  : public QWidget
 {
     Q_OBJECT
 
   public:
     // Constructor.
-    SettingsWindow(
-        renderer::ParamArray&   settings,
-        QWidget*                parent = nullptr);
+    WindowBase(QWidget* parent, const QString& id);
 
-    // Destructor.
-    ~SettingsWindow() override;
+    void closeEvent(QCloseEvent* event) override;
 
-  signals:
-    void signal_settings_modified() const;
+  protected:
+    void save_settings();
+    void load_settings();
 
   private:
-    // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
-    Ui::SettingsWindow*     m_ui;
-
-    renderer::ParamArray&   m_settings;
-
-    void build_connections();
-
-    void load_settings();
-    void save_settings();
-
-  private slots:
-    void slot_save_configuration_and_close();
-    void slot_restore_configuration_and_close();
+    const QString m_geometry_settings_key;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_SETTINGSWINDOW_H
+#endif  // !APPLESEED_STUDIO_UTILITY_WINDOWBASE_H

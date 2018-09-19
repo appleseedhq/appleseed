@@ -36,7 +36,6 @@
 // appleseed.studio headers.
 #include "debug/tests/testoutputitem.h"
 #include "utility/miscellaneous.h"
-#include "utility/settingskeys.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/test.h"
@@ -46,11 +45,11 @@
 #include <QKeySequence>
 #include <QMetaType>
 #include <QPushButton>
-#include <QSettings>
 #include <QShortcut>
 #include <QStringList>
 #include <Qt>
 #include <QTreeWidget>
+#include <QVariant>
 
 // Standard headers.
 #include <cstddef>
@@ -70,7 +69,7 @@ namespace studio {
 //
 
 TestWindow::TestWindow(QWidget* parent)
-  : QWidget(parent)
+  : WindowBase(parent, "test_window")
   , m_ui(new Ui::TestWindow())
 {
     m_ui->setupUi(this);
@@ -97,8 +96,7 @@ TestWindow::TestWindow(QWidget* parent)
     m_ui->treewidget_output->header()->resizeSection(0, 500);
     m_ui->treewidget_output->sortItems(0, Qt::AscendingOrder);
 
-    const QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
-    restoreGeometry(settings.value("test_window_geometry").toByteArray());
+    WindowBase::load_settings();
 
     create_test_runner_thread();
 }
@@ -106,12 +104,6 @@ TestWindow::TestWindow(QWidget* parent)
 TestWindow::~TestWindow()
 {
     delete m_ui;
-}
-
-void TestWindow::closeEvent(QCloseEvent* event)
-{
-    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
-    settings.setValue("test_window_geometry", saveGeometry());
 }
 
 void TestWindow::create_test_runner_thread()

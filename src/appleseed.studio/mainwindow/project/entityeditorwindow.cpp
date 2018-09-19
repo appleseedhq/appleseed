@@ -36,14 +36,14 @@
 // appleseed.studio headers.
 #include "utility/miscellaneous.h"
 
-// Standard headers.
-#include <utility>
-
 // Qt headers.
 #include <QDialogButtonBox>
 #include <QShortcut>
 #include <QString>
 #include <Qt>
+
+// Standard headers.
+#include <utility>
 
 using namespace foundation;
 using namespace renderer;
@@ -61,7 +61,7 @@ EntityEditorWindow::EntityEditorWindow(
     unique_ptr<EntityEditor::IEntityBrowser>    entity_browser,
     unique_ptr<CustomEntityUI>                  custom_entity_ui,
     const Dictionary&                           values)
-  : QWidget(parent)
+  : WindowBase(parent, "entity_editor_window")
   , m_ui(new Ui::EntityEditorWindow())
 {
     m_ui->setupUi(this);
@@ -83,6 +83,8 @@ EntityEditorWindow::EntityEditorWindow(
     m_initial_values = m_entity_editor->get_values();
 
     create_connections();
+
+    WindowBase::load_settings();
 }
 
 EntityEditorWindow::~EntityEditorWindow()

@@ -30,6 +30,9 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALASSIGNMENTEDITORWINDOW_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALASSIGNMENTEDITORWINDOW_H
 
+// appleseed.studio headers.
+#include "utility/windowbase.h"
+
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
 
@@ -40,7 +43,6 @@
 #include <QComboBox>
 #include <QLineEdit>
 #include <QObject>
-#include <QWidget>
 
 // Standard headers.
 #include <map>
@@ -55,12 +57,13 @@ class QGridLayout;
 class QPushButton;
 class QString;
 class QVBoxLayout;
+class QWidget;
 
 namespace appleseed {
 namespace studio {
 
 class MaterialAssignmentEditorWindow
-  : public QWidget
+  : public WindowBase
 {
     Q_OBJECT
 
