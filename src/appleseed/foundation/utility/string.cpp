@@ -64,6 +64,53 @@ void free_string(const char* s)
     delete[] s;
 }
 
+int strcmp_nocase(
+    const char* lhs,
+    const char* rhs)
+{
+    assert(lhs != nullptr);
+    assert(rhs != nullptr);
+
+    for (; ; ++lhs, ++rhs)
+    {
+        const char lhs_c = *lhs;
+        const char rhs_c = *rhs;
+
+        if (lhs_c != 0)
+        {
+            if (rhs_c != 0)
+            {
+                const int lhs_upper_c = std::toupper(lhs_c);
+                const int rhs_upper_c = std::toupper(rhs_c);
+
+                if (lhs_upper_c < rhs_upper_c)
+                    return -1;
+
+                if (lhs_upper_c > rhs_upper_c)
+                    return +1;
+            }
+            else
+            {
+                // Left-hand string is longer than right-hand one.
+                return +1;
+            }
+        }
+        else
+        {
+            if (rhs_c != 0)
+            {
+                // Left-hand string is shorter than right-hand one.
+                return -1;
+            }
+            else
+            {
+                // Strings have equal length.
+                return 0;
+            }
+        }
+    }
+}
+
 
 //
 // Fast string-to-number functions implementation.
