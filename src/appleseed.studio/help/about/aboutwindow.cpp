@@ -39,6 +39,7 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/apistringpair.h"
+#include "foundation/utility/string.h"
 
 // Qt headers.
 #include <QKeySequence>
@@ -112,7 +113,7 @@ void AboutWindow::set_version_strings()
         versions_indices.end(),
         [&versions](const size_t lhs, const size_t rhs)
         {
-            return strcmp(versions[lhs].m_first.c_str(), versions[rhs].m_first.c_str()) < 0;
+            return strcmp_nocase(versions[lhs].m_first.c_str(), versions[rhs].m_first.c_str()) < 0;
         });
 
     QString details;
