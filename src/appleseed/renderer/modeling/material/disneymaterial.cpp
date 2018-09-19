@@ -436,7 +436,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "[0.9, 0.9, 0.9]"));
 
@@ -446,7 +446,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("label", "Subsurface")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "0.0"));
 
@@ -456,7 +456,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("label", "Metallic")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "0.0"));
 
@@ -466,7 +466,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("label", "Specular")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "0.0"));
 
@@ -476,7 +476,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("label", "Specular Tint")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "0.0"));
 
@@ -486,7 +486,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("label", "Anisotropic")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "0.0"));
 
@@ -496,7 +496,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("label", "Roughness")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "0.1"));
 
@@ -506,7 +506,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("label", "Sheen")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "0.0"));
 
@@ -516,7 +516,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("label", "Sheen Tint")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "0.0"));
 
@@ -526,7 +526,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("label", "Clearcoat")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "0.0"));
 
@@ -536,7 +536,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("label", "Clearcoat Gloss")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 

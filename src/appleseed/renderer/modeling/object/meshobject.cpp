@@ -466,7 +466,7 @@ DictionaryArray MeshObjectFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("min",
                 Dictionary()
                     .insert("value", "0.0")

@@ -80,7 +80,7 @@ void IEnvironmentEDFFactory::add_common_sky_input_metadata(DictionaryArray& meta
             .insert("label", "Turbidity")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "1.0")
             .insert("help", "Atmospheric haziness"));
