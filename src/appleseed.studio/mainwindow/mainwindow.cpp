@@ -91,6 +91,7 @@
 #include <QStringList>
 #include <Qt>
 #include <QUrl>
+#include <QVariant>
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
@@ -1456,16 +1457,16 @@ void MainWindow::slot_clear_recent_missing_project_files()
 {
     QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
     QStringList files = settings.value("recent_file_list").toStringList();
-    QStringList existent_files;
+    QStringList existing_files;
 
     for (int i = 0; i < files.size(); i++)
     {
         if (QFileInfo(files[i]).isFile())
-            existent_files << files[i];
+            existing_files << files[i];
     }
 
-    settings.setValue("recent_file_list", existent_files);
-    update_recent_files_menu(existent_files);
+    settings.setValue("recent_file_list", existing_files);
+    update_recent_files_menu(existing_files);
 }
 
 void MainWindow::slot_open_cornellbox_builtin_project()
@@ -1667,7 +1668,6 @@ void MainWindow::slot_save_settings()
             const bf::path user_settings_path(p);
             bf::create_directories(user_settings_path);
             const string user_settings_file_path = (user_settings_path / "appleseed.studio.xml").string();
-
             if (writer.write(user_settings_file_path.c_str(), m_settings))
             {
                 RENDERER_LOG_INFO("successfully saved settings to %s.", user_settings_file_path.c_str());
@@ -1682,7 +1682,6 @@ void MainWindow::slot_save_settings()
     // As a fallback, try to save the settings to the appleseed's installation directory.
     const bf::path root_path(Application::get_root_path());
     const string settings_file_path = (root_path / "settings" / "appleseed.studio.xml").string();
-
     if (writer.write(settings_file_path.c_str(), m_settings))
     {
         RENDERER_LOG_INFO("successfully saved settings to %s.", settings_file_path.c_str());
