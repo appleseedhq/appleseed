@@ -93,6 +93,8 @@ LibraryVersionArray ThirdParties::get_versions()
 
     LibraryVersionArray versions;
 
+    // Keep entries sorted alphabetically.
+
     versions.push_back(APIStringPair("BCD", BCDVersion));
     versions.push_back(APIStringPair("Boost", format("{0}.{1}.{2}", BOOST_VERSION / 100000, (BOOST_VERSION / 100) % 1000, BOOST_VERSION % 100)));
 
