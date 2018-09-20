@@ -35,6 +35,7 @@
 // Standard headers.
 #include <cstddef>
 #include <memory>
+#include <type_traits>
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -191,7 +192,7 @@ namespace
     template <typename T, size_t N>
     void do_bind_vector(const char* class_name)
     {
-        bpy::class_<Vector<T, N>>(class_name)
+        auto c = bpy::class_<Vector<T, N>>(class_name)
             .def(bpy::init<>())
             .def(bpy::init<T>())
             .def("__init__", bpy::make_constructor(&VectorHelper<T, N>::construct))
@@ -214,13 +215,16 @@ namespace
             .def(bpy::self /= T())
             .def(bpy::self / bpy::self)
             .def(bpy::self / T())
-            .def(-bpy::self)
             .def(bpy::self == bpy::self)
             .def(bpy::self != bpy::self)
 
             // Because of a bug in Boost.Python, this needs the extra self_ns qualification.
             .def(bpy::self_ns::str(bpy::self))
             .def(bpy::self_ns::repr(bpy::self));
+
+        // Only expose the negation operator if T is signed.
+        if (is_signed<T>::value)
+            c.def(-bpy::self);
 
         bpy::def("dot", &VectorHelper<T, N>::dot);
     }
