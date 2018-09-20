@@ -1311,7 +1311,7 @@ void MainWindow::apply_post_processing_stage(
     Project* project = m_project_manager.get_project();
     assert(project != nullptr);
 
-    Frame* frame = project->get_frame();
+    APPLESEED_UNUSED Frame* frame = project->get_frame();
     assert(frame != nullptr);
 
     // Prepare the post-processing stage.
