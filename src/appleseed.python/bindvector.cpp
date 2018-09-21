@@ -189,63 +189,72 @@ namespace
         }
     };
 
+    struct Signed {};
+    struct Unsigned {};
+
+    // Expose operators that work on both vectors with signed and unsigned components.
     template <typename T, size_t N>
-    void do_bind_vector(const char* class_name)
+    bpy::class_<Vector<T, N>> do_bind_vector(const char* class_name, const Unsigned&)
     {
-        auto c = bpy::class_<Vector<T, N>>(class_name)
-            .def(bpy::init<>())
-            .def(bpy::init<T>())
-            .def("__init__", bpy::make_constructor(&VectorHelper<T, N>::construct))
-            .def("__init__", bpy::make_constructor(&construct_vec_from_list<T, N>))
-
-            // operator[]
-            .def("__getitem__", &vector_indexer<T, N>::get)
-            .def("__setitem__", &vector_indexer<T, N>::set)
-
-            // Operators.
-            .def(bpy::self += bpy::self)
-            .def(bpy::self + bpy::self)
-            .def(bpy::self -= bpy::self)
-            .def(bpy::self - bpy::self)
-
-            .def(bpy::self *= T())
-            .def(bpy::self * T())
-            .def(T() * bpy::self)
-
-            .def(bpy::self /= T())
-            .def(bpy::self / bpy::self)
-            .def(bpy::self / T())
-            .def(bpy::self == bpy::self)
-            .def(bpy::self != bpy::self)
-
-            // Because of a bug in Boost.Python, this needs the extra self_ns qualification.
-            .def(bpy::self_ns::str(bpy::self))
-            .def(bpy::self_ns::repr(bpy::self));
-
-        // Only expose the negation operator if T is signed.
-        if (is_signed<T>::value)
-            c.def(-bpy::self);
-
         bpy::def("dot", &VectorHelper<T, N>::dot);
+
+        return
+            bpy::class_<Vector<T, N>>(class_name)
+                .def(bpy::init<>())
+                .def(bpy::init<T>())
+                .def("__init__", bpy::make_constructor(&VectorHelper<T, N>::construct))
+                .def("__init__", bpy::make_constructor(&construct_vec_from_list<T, N>))
+
+                // operator[]
+                .def("__getitem__", &vector_indexer<T, N>::get)
+                .def("__setitem__", &vector_indexer<T, N>::set)
+
+                // Operators.
+                .def(bpy::self += bpy::self)
+                .def(bpy::self + bpy::self)
+                .def(bpy::self -= bpy::self)
+                .def(bpy::self - bpy::self)
+
+                .def(bpy::self *= T())
+                .def(bpy::self * T())
+                .def(T() * bpy::self)
+
+                .def(bpy::self /= T())
+                .def(bpy::self / bpy::self)
+                .def(bpy::self / T())
+                .def(bpy::self == bpy::self)
+                .def(bpy::self != bpy::self)
+
+                // Because of a bug in Boost.Python, this needs the extra self_ns qualification.
+                .def(bpy::self_ns::str(bpy::self))
+                .def(bpy::self_ns::repr(bpy::self));
+    }
+
+    // Expose operators that only work on vectors with signed components.
+    template <typename T, size_t N>
+    void do_bind_vector(const char* class_name, const Signed&)
+    {
+        do_bind_vector<T, N>(class_name, Unsigned())
+            .def(-bpy::self);
     }
 }
 
 void bind_vector()
 {
-    do_bind_vector<int, 2>("Vector2i");
-    do_bind_vector<size_t, 2>("Vector2u");
-    do_bind_vector<float, 2>("Vector2f");
-    do_bind_vector<double, 2>("Vector2d");
+    do_bind_vector<int, 2>("Vector2i", Signed());
+    do_bind_vector<size_t, 2>("Vector2u", Unsigned());
+    do_bind_vector<float, 2>("Vector2f", Signed());
+    do_bind_vector<double, 2>("Vector2d", Signed());
 
-    do_bind_vector<int, 3>("Vector3i");
-    do_bind_vector<size_t, 3>("Vector3u");
-    do_bind_vector<float, 3>("Vector3f");
-    do_bind_vector<double, 3>("Vector3d");
+    do_bind_vector<int, 3>("Vector3i", Signed());
+    do_bind_vector<size_t, 3>("Vector3u", Unsigned());
+    do_bind_vector<float, 3>("Vector3f", Signed());
+    do_bind_vector<double, 3>("Vector3d", Signed());
 
-    do_bind_vector<int, 4>("Vector4i");
-    do_bind_vector<size_t, 4>("Vector4u");
-    do_bind_vector<float, 4>("Vector4f");
-    do_bind_vector<double, 4>("Vector4d");
+    do_bind_vector<int, 4>("Vector4i", Signed());
+    do_bind_vector<size_t, 4>("Vector4u", Unsigned());
+    do_bind_vector<float, 4>("Vector4f", Signed());
+    do_bind_vector<double, 4>("Vector4d", Signed());
 
     bpy::def("norm", &VectorHelper<float,  2>::norm);
     bpy::def("norm", &VectorHelper<double, 2>::norm);
