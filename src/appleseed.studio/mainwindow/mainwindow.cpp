@@ -1311,9 +1311,6 @@ void MainWindow::apply_post_processing_stage(
     Project* project = m_project_manager.get_project();
     assert(project != nullptr);
 
-    APPLESEED_UNUSED Frame* frame = project->get_frame();
-    assert(frame != nullptr);
-
     // Prepare the post-processing stage.
     OnFrameBeginRecorder recorder;
     if (stage.on_frame_begin(*project, nullptr, recorder, nullptr))
