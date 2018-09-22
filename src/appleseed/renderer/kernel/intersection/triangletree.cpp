@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/intersection/intersectionfilter.h"
+#include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/intersection/triangleencoder.h"
 #include "renderer/kernel/intersection/triangleitemhandler.h"
 #include "renderer/kernel/intersection/trianglevertexinfo.h"
@@ -53,6 +54,7 @@
 #include "renderer/utility/bbox.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
+#include "renderer/utility/triangle.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/area.h"
@@ -1420,6 +1422,10 @@ bool TriangleLeafVisitor::visit(
                 m_shading_point.m_ray.m_tmax = t;
                 m_shading_point.m_bary[0] = static_cast<float>(u);
                 m_shading_point.m_bary[1] = static_cast<float>(v);
+                m_shading_point.m_offset_function = [](const ShadingPoint& shading_point)
+                    {
+                        return refine(shading_point);
+                    };
             }
         }
         else
@@ -1476,6 +1482,11 @@ bool TriangleLeafVisitor::visit(
                 m_shading_point.m_ray.m_tmax = t;
                 m_shading_point.m_bary[0] = static_cast<float>(u);
                 m_shading_point.m_bary[1] = static_cast<float>(v);
+                m_shading_point.m_offset_function = [](const ShadingPoint& shading_point)
+                    {
+                        RENDERER_LOG_ERROR("Refine is called!");
+                        return refine(shading_point);
+                    };
             }
         }
     }
@@ -1502,6 +1513,166 @@ void TriangleLeafVisitor::read_hit_triangle_data() const
         const TriangleReader reader(*m_hit_triangle);
         m_shading_point.m_triangle_support_plane.initialize(reader.m_triangle);
     }
+}
+
+bool TriangleLeafVisitor::refine(const ShadingPoint& shading_point)
+{
+    // Compute the location of the intersection point in assembly instance space.
+    ShadingRay::RayType local_ray = shading_point.m_assembly_instance_transform.to_local(shading_point.m_ray);
+    local_ray.m_org += local_ray.m_tmax * local_ray.m_dir;
+
+    // Refine the location of the intersection point.
+    const size_t RefinementSteps = 2;
+
+    for (size_t i = 0; i < RefinementSteps; ++i)
+    {
+        const double t = shading_point.m_triangle_support_plane.intersect(local_ray.m_org, local_ray.m_dir);
+        local_ray.m_org += t * local_ray.m_dir;
+    }
+
+    // Compute the geometric normal to the hit triangle in assembly instance space.
+    // Note that it doesn't need to be normalized at this point.
+    shading_point.m_asm_geo_normal = Vector3d(
+        compute_triangle_normal(
+            shading_point.m_v0,
+            shading_point.m_v1,
+            shading_point.m_v2));
+
+    shading_point.m_asm_geo_normal = shading_point.m_object_instance->get_transform().normal_to_parent(shading_point.m_asm_geo_normal);
+    shading_point.m_asm_geo_normal = faceforward(shading_point.m_asm_geo_normal, local_ray.m_dir);
+
+    // Compute the offset points in assembly instance space.
+    // TODO: should be free functions, but have to be members of ShadingPoint's friend class.
+#ifdef RENDERER_ADAPTIVE_OFFSET
+    TriangleLeafVisitor::adaptive_offset(
+        shading_point.m_triangle_support_plane,
+        local_ray.m_org,
+        shading_point.m_asm_geo_normal,
+        shading_point.m_front_point,
+        shading_point.m_back_point);
+#else
+    TriangleLeafVisitor::fixed_offset(
+        local_ray.m_org,
+        m_asm_geo_normal,
+        m_front_point,
+        m_back_point);
+#endif
+
+    return true;
+}
+
+void TriangleLeafVisitor::fixed_offset(
+    const Vector3d&                 p,
+    Vector3d                        n,
+    Vector3d&                       front,
+    Vector3d&                       back)
+{
+    //
+    // Reference:
+    //
+    //   Quasi-Monte Carlo light transport simulation by efficient ray tracing
+    //   http://vts.uni-ulm.de/docs/2008/6265/vts_6265_8393.pdf
+    //
+
+    // Offset parameters.
+    const double Threshold = 1.0e-25;
+    const int EpsMag = 8;
+    static const int EpsLut[2] = { EpsMag, -EpsMag };
+
+    // Check which components of p are close to the origin.
+    const bool is_small[3] =
+    {
+        abs(p[0]) < Threshold,
+        abs(p[1]) < Threshold,
+        abs(p[2]) < Threshold
+    };
+
+    // If any of the components of p is close to the origin, we need to normalize n.
+    if (is_small[0] | is_small[1] | is_small[2])
+        n = normalize(n);
+
+    // Compute the offset points.
+    for (size_t i = 0; i < 3; ++i)
+    {
+        if (is_small[i])
+        {
+            const double shift = n[i] * Threshold;
+            front[i] = p[i] + shift;
+            back[i] = p[i] - shift;
+        }
+        else
+        {
+            const uint64 pi = binary_cast<uint64>(p[i]);
+            const int shift = EpsLut[(pi ^ binary_cast<uint64>(n[i])) >> 63];
+            front[i] = binary_cast<double>(pi + shift);
+            back[i] = binary_cast<double>(pi - shift);
+        }
+    }
+}
+
+namespace
+{
+    Vector3d adaptive_offset_point_step(
+        const Vector3d&                 p,
+        const Vector3d&                 n,
+        const int64                     mag)
+    {
+        const double Threshold = 1.0e-25;
+        const int64 eps_lut[2] = { mag, -mag };
+
+        Vector3d result;
+
+        for (size_t i = 0; i < 3; ++i)
+        {
+            if (abs(p[i]) < Threshold)
+                result[i] = p[i] + n[i] * Threshold;
+            else
+            {
+                const uint64 pi = binary_cast<uint64>(p[i]);
+                const int64 shift = eps_lut[(pi ^ binary_cast<uint64>(n[i])) >> 63];
+                result[i] = binary_cast<double>(pi + shift);
+            }
+        }
+
+        return result;
+    }
+
+    Vector3d adaptive_offset_point(
+        const TriangleSupportPlaneType& support_plane,
+        const Vector3d&                 p,
+        const Vector3d&                 n,
+        const int64                     initial_mag)
+    {
+        int64 mag = initial_mag;
+        Vector3d result = p;
+
+        for (size_t i = 0; i < 64; ++i)
+        {
+            result = adaptive_offset_point_step(result, n, mag);
+
+            if (support_plane.intersect(result, n) < 0.0)
+                break;
+
+            mag *= 2;
+        }
+
+        return result;
+    }
+}
+
+void TriangleLeafVisitor::adaptive_offset(
+    const TriangleSupportPlaneType& support_plane,
+    const Vector3d&                 p,
+    Vector3d                        n,
+    Vector3d&                       front,
+    Vector3d&                       back)
+{
+    const int64 InitialMag = 8;
+
+    n = normalize(n);
+
+    front = adaptive_offset_point(support_plane, p, n, InitialMag);
+    back = adaptive_offset_point(support_plane, p, -n, InitialMag);
 }
 
 

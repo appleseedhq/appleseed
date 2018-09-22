@@ -865,6 +865,7 @@ bool AssemblyLeafVisitor::visit(
             m_shading_point.m_region_index = local_shading_point.m_region_index;
             m_shading_point.m_primitive_index = local_shading_point.m_primitive_index;
             m_shading_point.m_triangle_support_plane = local_shading_point.m_triangle_support_plane;
+            m_shading_point.m_offset_function = local_shading_point.m_offset_function;
         }
 
         // Check the intersection between the ray and procedural objects.

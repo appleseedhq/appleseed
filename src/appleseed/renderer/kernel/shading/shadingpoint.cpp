@@ -377,69 +377,16 @@ void ShadingPoint::refine_and_offset() const
 {
     assert(hit_surface());
     assert(!(m_members & ShadingPoint::HasRefinedPoints));
-
     cache_source_geometry();
 
-    // Compute the location of the intersection point in assembly instance space.
-    ShadingRay::RayType local_ray = m_assembly_instance_transform.to_local(m_ray);
-    local_ray.m_org += local_ray.m_tmax * local_ray.m_dir;
-
-    switch (m_primitive_type)
+    if (!m_offset_function || !m_offset_function(*this))
     {
-      case PrimitiveTriangle:
-        {
-            // Refine the location of the intersection point.
-            local_ray.m_org =
-                Intersector::refine(
-                    m_triangle_support_plane,
-                    local_ray.m_org,
-                    local_ray.m_dir);
-
-            // Compute the geometric normal to the hit triangle in assembly instance space.
-            // Note that it doesn't need to be normalized at this point.
-            m_asm_geo_normal = Vector3d(compute_triangle_normal(m_v0, m_v1, m_v2));
-            m_asm_geo_normal = m_object_instance->get_transform().normal_to_parent(m_asm_geo_normal);
-            m_asm_geo_normal = faceforward(m_asm_geo_normal, local_ray.m_dir);
-
-            // Compute the offset points in assembly instance space.
-#ifdef RENDERER_ADAPTIVE_OFFSET
-            Intersector::adaptive_offset(
-                m_triangle_support_plane,
-                local_ray.m_org,
-                m_asm_geo_normal,
-                m_front_point,
-                m_back_point);
-#else
-            Intersector::fixed_offset(
-                local_ray.m_org,
-                m_asm_geo_normal,
-                m_front_point,
-                m_back_point);
-#endif
-        }
-        break;
-
-      case PrimitiveProceduralSurface:
-        // TODO: do we need to refine & offset here as well?
+        // Compute the location of the intersection point in assembly instance space.
+        ShadingRay::RayType local_ray = m_assembly_instance_transform.to_local(m_ray);
+        local_ray.m_org += local_ray.m_tmax * local_ray.m_dir;
         m_front_point = m_back_point = local_ray.m_org;
-        break;
-
-      case PrimitiveCurve1:
-      case PrimitiveCurve3:
-        {
-            assert(is_curve_primitive());
-
-            m_asm_geo_normal = normalize(-local_ray.m_dir);
-
-            // todo: this does not look correct, considering the flat ribbon nature of curves.
-            const double Eps = 1.0e-6;
-            m_front_point = local_ray.m_org + Eps * m_asm_geo_normal;
-            m_back_point = local_ray.m_org - Eps * m_asm_geo_normal;
-        }
-        break;
-
-      assert_otherwise;
     }
+
 
     // The refined intersection points are now available.
     m_members |= ShadingPoint::HasRefinedPoints;
@@ -1188,6 +1135,11 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform(const 
         assembly_xform.get_parent_to_local());
 
     return Matrix4f(m);
+}
+
+void ShadingPoint::set_offset_function(const OffsetFunction& function)
+{
+    m_offset_function = function;
 }
 
 }   // namespace renderer

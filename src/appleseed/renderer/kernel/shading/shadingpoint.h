@@ -64,6 +64,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <functional>
 
 // Forward declarations.
 namespace renderer  { class Object; }
@@ -96,6 +97,9 @@ class ShadingPoint
 
         PrimitiveVolume             = 1 << 4
     };
+
+    // Offset request callback type. Returns true if offset was successfuly done.
+    typedef std::function<bool (const ShadingPoint&)> OffsetFunction;
 
     // Constructor, calls clear().
     ShadingPoint();
@@ -248,6 +252,8 @@ class ShadingPoint
 
     OSL::ShaderGlobals& get_osl_shader_globals() const;
 
+    void set_offset_function(const OffsetFunction& function);
+
     struct OSLObjectTransformInfo
     {
         bool is_animated() const;
@@ -367,6 +373,7 @@ class ShadingPoint
     mutable foundation::Vector3d        m_asm_geo_normal;               // assembly instance space geometric normal to hit triangle
     mutable foundation::Vector3d        m_front_point;                  // hit point refined to front, in assembly instance space
     mutable foundation::Vector3d        m_back_point;                   // hit point refined to back, in assembly instance space
+    OffsetFunction                      m_offset_function;              // geometry-specific offset function
 
     // OSL-related data.
     mutable OSLObjectTransformInfo      m_obj_transform_info;
@@ -442,6 +449,7 @@ inline ShadingPoint::ShadingPoint(const ShadingPoint& rhs)
   , m_primitive_index(rhs.m_primitive_index)
   , m_triangle_support_plane(rhs.m_triangle_support_plane)
   , m_members(0)
+  , m_offset_function(rhs.m_offset_function)
 {
 }
 
@@ -461,6 +469,7 @@ inline ShadingPoint& ShadingPoint::operator=(const ShadingPoint& rhs)
     m_region_index = rhs.m_region_index;
     m_primitive_index = rhs.m_primitive_index;
     m_triangle_support_plane = rhs.m_triangle_support_plane;
+    m_offset_function = rhs.m_offset_function;
     m_members = 0;
     return *this;
 }
@@ -472,6 +481,7 @@ APPLESEED_FORCE_INLINE void ShadingPoint::clear()
     m_texture_cache = nullptr;
     m_scene = nullptr;
     m_primitive_type = PrimitiveNone;
+    m_offset_function = OffsetFunction();
     m_members = 0;
 }
 

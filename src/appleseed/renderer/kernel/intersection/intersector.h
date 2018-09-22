@@ -75,21 +75,10 @@ class Intersector
         const TraceContext&                 trace_context,
         TextureCache&                       texture_cache,
         const bool                          report_self_intersections = false);
-
-    // Refine the location of a point on a surface.
-    static foundation::Vector3d refine(
-        const TriangleSupportPlaneType&     support_plane,
-        const foundation::Vector3d&         point,
-        const foundation::Vector3d&         direction);     // incoming or outgoing direction
-
+   
     // Offset a point away from a surface represented by its normal.
+    // TODO: remove this method in favour of dispatched primitive-specific call in rendererservices.
     static void fixed_offset(
-        const foundation::Vector3d&         p,
-        foundation::Vector3d                n,
-        foundation::Vector3d&               front,
-        foundation::Vector3d&               back);
-    static void adaptive_offset(
-        const TriangleSupportPlaneType&     support_plane,
         const foundation::Vector3d&         p,
         foundation::Vector3d                n,
         foundation::Vector3d&               front,

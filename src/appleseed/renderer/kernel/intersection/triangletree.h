@@ -37,6 +37,7 @@
 #include "renderer/kernel/intersection/regioninfo.h"
 #include "renderer/kernel/intersection/trianglekey.h"
 #include "renderer/kernel/intersection/trianglevertexinfo.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
@@ -62,7 +63,6 @@ namespace renderer      { class Assembly; }
 namespace renderer      { class IntersectionFilter; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Scene; }
-namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
@@ -236,6 +236,23 @@ class TriangleLeafVisitor
     GTriangleType           m_interpolated_triangle;
     const GTriangleType*    m_hit_triangle;
     size_t                  m_hit_triangle_index;
+
+    // Refine the location of a point on a surface.
+    static bool refine(const ShadingPoint& shading_point);
+
+    // Offset a point away from a surface represented by its normal.
+    static void fixed_offset(
+        const foundation::Vector3d&         p,
+        foundation::Vector3d                n,
+        foundation::Vector3d&               front,
+        foundation::Vector3d&               back);
+
+    static void adaptive_offset(
+        const TriangleSupportPlaneType&     support_plane,
+        const foundation::Vector3d&         p,
+        foundation::Vector3d                n,
+        foundation::Vector3d&               front,
+        foundation::Vector3d&               back);
 };
 
 
