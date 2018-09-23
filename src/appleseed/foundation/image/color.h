@@ -307,6 +307,10 @@ class Color<T, 4>
     // Apply/undo alpha premultiplication in place.
     void premultiply_in_place();
     void unpremultiply_in_place();
+
+    // Retrieve premultiplied/unpremultiplied copies of this color.
+    Color premultiplied() const;
+    Color unpremultiplied() const;
 };
 
 
@@ -1115,13 +1119,40 @@ inline void Color<T, 4>::premultiply_in_place()
 template <typename T>
 inline void Color<T, 4>::unpremultiply_in_place()
 {
-    if (a > T(0.0))
+    if (a != T(0.0))
     {
         const T rcp_a = T(1.0) / a;
         r *= rcp_a;
         g *= rcp_a;
         b *= rcp_a;
     }
+}
+
+template <typename T>
+inline Color<T, 4> Color<T, 4>:: premultiplied() const
+{
+    return
+        Color(
+            r * a,
+            g * a,
+            b * a,
+            a);
+}
+
+template <typename T>
+inline Color<T, 4> Color<T, 4>::unpremultiplied() const
+{
+    if (a != T(0.0))
+    {
+        const T rcp_a = T(1.0) / a;
+        return
+            Color(
+                r * rcp_a,
+                g * rcp_a,
+                b * rcp_a,
+                a);
+    }
+    else return *this;
 }
 
 
