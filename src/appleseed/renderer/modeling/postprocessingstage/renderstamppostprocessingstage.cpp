@@ -104,8 +104,8 @@ namespace
             // Render stamp settings.
             const auto Font = TextRenderer::Font::UbuntuL;
             const float FontHeight = 14.0f;
-            const Color4f FontColor(srgb_to_linear_rgb(Color3f(0.8f, 0.8f, 0.8f)), 1.0f);   // linear RGB
-            const Color4f BackgroundColor(0.0f, 0.0f, 0.0f, 0.9f);                          // linear RGB
+            const Color4f FontColor(srgb_to_linear_rgb(Color3f(0.9f, 0.9f, 0.9f)), 1.0f);   // linear RGB
+            const Color4f BackgroundColor(0.0f, 0.0f, 0.0f, 0.95f);                         // linear RGB
             const Color4f LogoTint(1.0f, 1.0f, 1.0f, 0.8f);                                 // linear RGB
             const float MarginH = 6.0f;
             const float MarginV = 4.0f;

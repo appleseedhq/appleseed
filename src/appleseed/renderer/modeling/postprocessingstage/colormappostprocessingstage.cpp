@@ -347,7 +347,7 @@ namespace
             const float LegendBarMinWidth = 1.0f;                   // minimum width in pixels of the legend bar
             const float LegendBarMaxWidth = 30.0f;                  // maximum width in pixels of the legend bar
             const float LegendBarLeftMargin = 10.0f;                // margin in pixels on the left of the legend bar
-            const size_t LegendBarVerticalMargin = 20;              // margin in pixels at top and bottom of the legend bar
+            const size_t LegendBarVerticalMargin = 22;              // margin in pixels at top and bottom of the legend bar
             const size_t TickMarkLength = 6;                        // length in pixel of tick marks
             const Color4f TickMarkColor(1.0f, 1.0f, 1.0f, 1.0f);    // color of tick marks in linear RGB
             const auto LabelFont = TextRenderer::Font::UbuntuL;     // font for tick labels
