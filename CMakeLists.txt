@@ -104,7 +104,7 @@ option (WITH_TOOLS                          "Build appleseed tools"             
 option (WITH_PYTHON2_BINDINGS               "Build Python bindings for Python 2"                    ON)
 option (WITH_PYTHON3_BINDINGS               "Build Python bindings for Python 3"                    OFF)
 option (WITH_DISNEY_MATERIAL                "Build Disney material"                                 OFF)
-option (WITH_EMBREE                         "Include support for Embree intersection backend"       ON)
+option (WITH_EMBREE                         "Include support for Embree intersection backend"       OFF)
 option (WITH_HEADERS                        "Install header files (to build samples)"               ON)
 option (WITH_SAMPLES                        "Install sample files (requires headers)"               ON)
 option (WITH_TESTS                          "Install unit tests and benchmarks"                     ON)
