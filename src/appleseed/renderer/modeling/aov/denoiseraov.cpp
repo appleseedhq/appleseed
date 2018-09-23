@@ -130,7 +130,7 @@ namespace
                 return;
 
             // Accumulate unpremultiplied samples.
-            m_accum.unpremultiply();
+            m_accum.unpremultiply_in_place();
 
             // Update the num samples channel.
             m_histograms.get(pi.y, pi.x, static_cast<int>(m_samples_channel_index)) += 1.0f;
@@ -222,7 +222,7 @@ namespace
             {
                 // Composite over the previous sample.
                 Color4f main = shading_result.m_main;
-                main.premultiply();
+                main.premultiply_in_place();
                 m_accum += (1.0f - m_accum.a) * shading_result.m_main;
                 ++m_sample_count;
             }
