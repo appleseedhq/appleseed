@@ -75,7 +75,6 @@ TEST_SUITE(ImageTools)
         }
 
         GenericImageFileWriter writer("unit tests/outputs/test_compareimages_checkpointsisoluminance.png");
-
         writer.append_image(output.get());
         writer.write();
     }
@@ -292,7 +291,6 @@ TEST_SUITE(ImageTools)
                 ColorMultiply(1.0f));
 
         OIIOImageFileWriter writer("unit tests/outputs/test_imagetools_compareimages.png");
-
         writer.append_image(result.get());
         writer.write();
     }
@@ -366,7 +364,6 @@ TEST_SUITE(ImageTools)
         }
 
         OIIOImageFileWriter writer("unit tests/outputs/test_imagetools_tweakimage.png");
-
         writer.append_image(output_image);
         writer.write();
     }
@@ -433,7 +430,6 @@ TEST_SUITE(ImageTools)
         }
 
         OIIOImageFileWriter writer("unit tests/outputs/test_imagetools_spherebump.exr");
-
         writer.append_image(image);
         writer.write();
     }
@@ -466,7 +462,6 @@ TEST_SUITE(ImageTools)
         }
 
         OIIOImageFileWriter writer("unit tests/outputs/test_imagetools_sinebump.exr");
-
         writer.append_image(image);
         writer.write();
     }

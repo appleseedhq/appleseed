@@ -144,7 +144,6 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
         }
 
         GenericImageFileWriter writer(filename);
-
         writer.append_image(&image);
         writer.write();
     }

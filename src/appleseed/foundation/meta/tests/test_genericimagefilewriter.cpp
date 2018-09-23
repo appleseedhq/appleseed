@@ -65,7 +65,6 @@ TEST_SUITE(Foundation_Image_GenericImageFileWriter)
         attrs.insert("appleseed:test:UnsignedIntAttr", static_cast<size_t>(32));
 
         GenericImageFileWriter writer(Filename);
-
         writer.append_image(&image);
         writer.set_image_attributes(attrs);
         writer.write();

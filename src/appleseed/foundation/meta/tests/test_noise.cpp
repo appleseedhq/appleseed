@@ -74,7 +74,6 @@ TEST_SUITE(Foundation_Math_Noise)
         }
 
         GenericImageFileWriter writer(image_filename);
-
         writer.append_image(&image);
         writer.write();
     }

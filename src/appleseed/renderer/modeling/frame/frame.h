@@ -73,7 +73,7 @@ namespace renderer
 //
 // Frame class.
 //
-// Pixels in a frame are always expressed in the linear RGB color space.
+// Pixels in a frame are expressed in linear RGB and use premultiplied alpha.
 //
 
 class APPLESEED_DLLSYMBOL Frame

@@ -79,7 +79,7 @@ void Drawing::draw_dot(
     const Vector2d&     position,
     const Color4f&      color)
 {
-    static size_t DotIntensity[16] =
+    static const uint8 DotAlphaMask[16] =
     {
          24, 171, 178,  48,
         159, 255, 255, 207,
@@ -103,7 +103,7 @@ void Drawing::draw_dot(
 
             if (ix >= 0 && iy >= 0 && ix < w && iy < h)
             {
-                const float alpha = color.a * DotIntensity[y * 4 + x] * (1.0f / 255.0f);
+                const float alpha = color.a * DotAlphaMask[y * 4 + x] * (1.0f / 255.0f);
 
                 Color4f background;
                 image.get_pixel(

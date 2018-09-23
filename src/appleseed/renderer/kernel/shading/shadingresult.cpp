@@ -86,35 +86,4 @@ bool ShadingResult::is_valid() const
     return true;
 }
 
-void ShadingResult::composite_over(const ShadingResult& background)
-{
-    //
-    // Shading results use premultiplied alpha.
-    //
-
-    m_main += (1.0f - m_main.a) * background.m_main;
-
-    for (size_t i = 0, e = m_aov_count; i < e; ++i)
-    {
-        Color4f& aov = m_aovs[i];
-        aov += (1.0f - aov.a) * background.m_aovs[i];
-    }
-}
-
-void ShadingResult::apply_alpha_premult()
-{
-    m_main.rgb() *= m_main.a;
-
-    for (size_t i = 0, e = m_aov_count; i < e; ++i)
-    {
-        Color4f& aov = m_aovs[i];
-        aov.rgb() *= aov.a;
-    }
-}
-
-void ShadingResult::set_main_to_opaque_pink()
-{
-    m_main = Color4f(1.0f, 0.0f, 1.0f, 1.0f);
-}
-
 }   // namespace renderer

@@ -126,7 +126,6 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
             }
 
             GenericImageFileWriter writer(filename);
-
             writer.append_image(&image);
             writer.write();
         }
