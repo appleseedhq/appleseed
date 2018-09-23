@@ -145,7 +145,7 @@ void NPRSurfaceShaderHelper::evaluate(
         // Composite the contour over beauty.
         if (contour.a != 0.0f)
         {
-            contour.premultiply();
+            contour.premultiply_in_place();
             beauty *= 1.0f - contour.a;
             beauty += contour.rgb();
         }

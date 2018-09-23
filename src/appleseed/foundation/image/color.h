@@ -304,9 +304,9 @@ class Color<T, 4>
     ValueType& operator[](const size_t i);
     const ValueType& operator[](const size_t i) const;
 
-    // Apply/undo alpha premultiplication.
-    void premultiply();
-    void unpremultiply();
+    // Apply/undo alpha premultiplication in place.
+    void premultiply_in_place();
+    void unpremultiply_in_place();
 };
 
 
@@ -1105,7 +1105,7 @@ inline const T& Color<T, 4>::operator[](const size_t i) const
 }
 
 template <typename T>
-inline void Color<T, 4>::premultiply()
+inline void Color<T, 4>::premultiply_in_place()
 {
     r *= a;
     g *= a;
@@ -1113,7 +1113,7 @@ inline void Color<T, 4>::premultiply()
 }
 
 template <typename T>
-inline void Color<T, 4>::unpremultiply()
+inline void Color<T, 4>::unpremultiply_in_place()
 {
     if (a > T(0.0))
     {

@@ -528,10 +528,10 @@ namespace
             Color4f color(*pixel_ptr);
 
             // Apply color space conversion and clamping.
-            color.unpremultiply();
+            color.unpremultiply_in_place();
             color.rgb() = fast_linear_rgb_to_srgb(color.rgb());
             color = saturate(color);
-            color.premultiply();
+            color.premultiply_in_place();
 
             // Store the pixel color.
             *pixel_ptr = color;

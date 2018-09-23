@@ -1,4 +1,4 @@
-﻿
+
 //
 // This source file is part of appleseed.
 // Visit https://appleseedhq.net/ for additional information and resources.
@@ -76,7 +76,7 @@ namespace
             {
                 Color4f c;
                 src.get_pixel(i, j, c);
-                c.unpremultiply();
+                c.unpremultiply_in_place();
 
                 dst.set(static_cast<int>(j), static_cast<int>(i), 0, c[0]);
                 dst.set(static_cast<int>(j), static_cast<int>(i), 1, c[1]);
@@ -105,7 +105,7 @@ namespace
                 c[1] = src.get(static_cast<int>(j), static_cast<int>(i), 1);
                 c[2] = src.get(static_cast<int>(j), static_cast<int>(i), 2);
 
-                c.premultiply();
+                c.premultiply_in_place();
                 dst.set_pixel(i, j, c);
             }
         }
