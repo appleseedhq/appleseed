@@ -34,7 +34,6 @@
 #include "foundation/image/color.h"
 #include "foundation/image/pixel.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
@@ -48,16 +47,16 @@ namespace foundation
 //
 // A collection of simple, unoptimized drawing routines.
 //
+// Requirements:
+//   - Source and target images must be RGBA, linear space, premultiplied alpha
+//   - Color arguments should be RGBA, linear space, straight alpha
+//
 // Supported:
-//   - RGBA images
-//   - Any pixel format
 //   - Pixel format conversions
-//   - Any number of channels
 //   - Clipping
 //
 // Not supported:
-//   - Non-RGBA images
-//   - Color space conversions (image and pixel color spaces must match)
+//   - Color space conversions
 //
 
 class Drawing
@@ -65,26 +64,26 @@ class Drawing
   public:
     // Draw a filled rectangle without anti-aliasing.
     static void draw_filled_rect(
-        Image&              image,
-        const Vector2i&     from,       // inclusive
-        const Vector2i&     to,         // inclusive
-        const Color4f&      color);
+        Image&              image,                  // RGBA, linear space, premultiplied alpha
+        const Vector2i&     from,                   // inclusive
+        const Vector2i&     to,                     // inclusive
+        const Color4f&      color);                 // RGBA, linear space, straight alpha
 
     // Draw an antialiased 4x4 pixel dot.
     static void draw_dot(
-        Image&              image,
-        const Vector2d&     position,
-        const Color4f&      color);
+        Image&              image,                  // RGBA, linear space, premultiplied alpha
+        const Vector2d&     position,               // position of the center of the dot
+        const Color4f&      color);                 // RGBA, linear space, straight alpha
 
-    // Blit an RGBA bitmap with any pixel format.
+    // Blit a bitmap.
     static void blit_bitmap(
-        Image&              image,
-        const Vector2i&     position,   // position of the top-left corner
-        const uint8*        bitmap,
+        Image&              image,                  // RGBA, linear space, premultiplied alpha
+        const Vector2i&     position,               // position of the top-left corner
+        const void*         bitmap,                 // RGBA, linear space, premultiplied alpha
         const size_t        bitmap_width,
         const size_t        bitmap_height,
         const PixelFormat   bitmap_pixel_format,
-        const Color4f&      multiplier);
+        const Color4f&      tint);                  // RGBA, linear space, straight alpha
 };
 
 }       // namespace foundation

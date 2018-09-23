@@ -40,7 +40,6 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
-#include "foundation/image/colorspace.h"
 #include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/image.h"
 #include "foundation/image/text/textrenderer.h"
@@ -350,10 +349,10 @@ namespace
             const float LegendBarLeftMargin = 10.0f;                // margin in pixels on the left of the legend bar
             const size_t LegendBarVerticalMargin = 20;              // margin in pixels at top and bottom of the legend bar
             const size_t TickMarkLength = 6;                        // length in pixel of tick marks
-            const Color4f TickMarkColor(1.0f, 1.0f, 1.0f, 1.0f);    // color of tick marks
+            const Color4f TickMarkColor(1.0f, 1.0f, 1.0f, 1.0f);    // color of tick marks in linear RGB
             const auto LabelFont = TextRenderer::Font::UbuntuL;     // font for tick labels
             const float LabelFontHeight = 14.0f;                    // height in pixel of tick labels
-            const Color4f LabelFontColor(1.0f, 1.0f, 1.0f, 1.0f);   // color of tick labels
+            const Color4f LabelFontColor(1.0f, 1.0f, 1.0f, 1.0f);   // color of tick labels in linear RGB
 
             Image& image = frame.image();
             const CanvasProperties& props = image.properties();
@@ -423,7 +422,6 @@ namespace
                 // Draw tick label.
                 TextRenderer::draw_string(
                     image,
-                    ColorSpaceLinearRGB,
                     LabelFont,
                     LabelFontHeight,
                     LabelFontColor,
@@ -619,18 +617,14 @@ namespace
             const CanvasProperties&     props,
             const Segment&              seg) const
         {
-            const Color4f SegColorSRGB(1.0f, 1.0f, 1.0f, 0.8f);     // in sRGB color space
+            const Color4f SegmentColor(1.0f, 1.0f, 1.0f, 0.8f);     // segment color in linear RGB
             const size_t SubpixelGridSize = 4;
+            const float RcpSubpixelCount = 1.0f / square(SubpixelGridSize);
             const float HalfSubpixel = 0.5f / SubpixelGridSize;
             const float Eps = 1.0e-6f;
 
             const float seg_radius = 0.5f * m_line_thickness;
             const float seg_square_radius = square(seg_radius);
-
-            // Convert segment color to sRGB, premultipied alpha.
-            Color4f seg_color_linear_rgb(
-                srgb_to_linear_rgb(SegColorSRGB.rgb()) * SegColorSRGB.a,
-                SegColorSRGB.a);
 
             // Compute bounding box of segment, accounting for its thickness.
             AABB2f bbox;
@@ -641,7 +635,7 @@ namespace
 
             // Compute bounding box of segment in pixels.
             int ixmin = truncate<int>(fast_floor(bbox.min.x));
-            int ixmax = truncate<int>(fast_floor(bbox.max.x));    // used to be fast_ceil() but this is probably correct
+            int ixmax = truncate<int>(fast_floor(bbox.max.x));      // used to be fast_ceil() but this is probably correct
             int iymin = truncate<int>(fast_floor(bbox.min.y));
             int iymax = truncate<int>(fast_floor(bbox.max.y));
             assert(ixmin <= ixmax);
@@ -693,19 +687,22 @@ namespace
                     if (hits == 0)
                         continue;
 
+                    const float alpha = static_cast<float>(hits) * RcpSubpixelCount;
+
                     // Retrieve background color.
-                    Color4f background;
-                    image.get_pixel(px, py, background);
+                    Color4f background_premult;
+                    image.get_pixel(px, py, background_premult);
 
                     // Compute pixel color.
-                    Color4f pixel = seg_color_linear_rgb;
-                    pixel *= static_cast<float>(hits) / square(SubpixelGridSize);
+                    Color4f color_premult = SegmentColor;
+                    color_premult.a *= alpha;
+                    color_premult.premultiply_in_place();
 
                     // Composite pixel color over background.
-                    pixel += (1.0f - pixel.a) * background;
+                    color_premult += background_premult * (1.0f - color_premult.a);
 
                     // Write final color to image.
-                    image.set_pixel(px, py, pixel);
+                    image.set_pixel(px, py, color_premult);
                 }
             }
         }
