@@ -47,7 +47,7 @@ namespace renderer
 //
 // The result of shading an image sample.
 //
-// All colors are expressed in linear RGB.
+// All colors are expressed in linear RGB and use premultiplied alpha.
 //
 
 class ShadingResult
@@ -91,9 +91,32 @@ inline ShadingResult::ShadingResult(const size_t aov_count)
 
     m_main.set(0.0f);
 
-    // Set all AOVs to transparent black.
     for (size_t i = 0, e = m_aov_count; i < e; ++i)
         m_aovs[i].set(0.0f);
+}
+
+inline void ShadingResult::composite_over(const ShadingResult& background)
+{
+    m_main += (1.0f - m_main.a) * background.m_main;
+
+    for (size_t i = 0, e = m_aov_count; i < e; ++i)
+    {
+        foundation::Color4f& aov = m_aovs[i];
+        aov += (1.0f - aov.a) * background.m_aovs[i];
+    }
+}
+
+inline void ShadingResult::apply_alpha_premult()
+{
+    m_main.premultiply_in_place();
+
+    for (size_t i = 0, e = m_aov_count; i < e; ++i)
+        m_aovs[i].premultiply_in_place();
+}
+
+inline void ShadingResult::set_main_to_opaque_pink()
+{
+    m_main = foundation::Color4f(1.0f, 0.0f, 1.0f, 1.0f);
 }
 
 }       // namespace renderer

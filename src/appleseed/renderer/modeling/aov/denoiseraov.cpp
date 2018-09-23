@@ -163,7 +163,7 @@ namespace
                 // Clamp to 0.
                 value = max(value, 0.0f);
 
-                // Exponential scaling
+                // Exponential scaling.
                 if (m_gamma > 1.0f) value = pow(value, m_rcp_gamma);
 
                 // Normalize to the maximum value.

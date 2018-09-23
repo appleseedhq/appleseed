@@ -127,7 +127,6 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
         }
 
         GenericImageFileWriter writer(output_image);
-
         writer.append_image(image.get());
         writer.write();
     }
