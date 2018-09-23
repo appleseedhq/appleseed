@@ -597,6 +597,7 @@ set (foundation_resources_logo_sources
     foundation/resources/logo/appleseed-seeds-32.h
     foundation/resources/logo/appleseed-seeds-64.cpp
     foundation/resources/logo/appleseed-seeds-64.h
+    foundation/resources/logo/generatelogofiles.cpp
 )
 list (APPEND appleseed_sources
     ${foundation_resources_logo_sources}
