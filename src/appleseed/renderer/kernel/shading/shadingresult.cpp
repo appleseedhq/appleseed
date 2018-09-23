@@ -91,13 +91,6 @@ void ShadingResult::composite_over(const ShadingResult& background)
     //
     // Shading results use premultiplied alpha.
     //
-    // References and interesting resources on alpha compositing:
-    //
-    //   http://keithp.com/~keithp/porterduff/p253-porter.pdf
-    //   http://en.wikipedia.org/wiki/Alpha_compositing
-    //   http://dvd-hq.info/alpha_matting.php
-    //   http://my.opera.com/emoller/blog/2012/08/28/alpha-blending
-    //
 
     m_main += (1.0f - m_main.a) * background.m_main;
 

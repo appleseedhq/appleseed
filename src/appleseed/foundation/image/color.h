@@ -304,6 +304,15 @@ class Color<T, 4>
     ValueType& operator[](const size_t i);
     const ValueType& operator[](const size_t i) const;
 
+    //
+    // References and interesting resources on alpha compositing:
+    //
+    //   http://keithp.com/~keithp/porterduff/p253-porter.pdf
+    //   http://en.wikipedia.org/wiki/Alpha_compositing
+    //   http://dvd-hq.info/alpha_matting.php
+    //   http://my.opera.com/emoller/blog/2012/08/28/alpha-blending
+    //
+
     // Apply/undo alpha premultiplication in place.
     void premultiply_in_place();
     void unpremultiply_in_place();
