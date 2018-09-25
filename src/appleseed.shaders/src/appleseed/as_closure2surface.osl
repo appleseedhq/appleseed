@@ -26,9 +26,16 @@
 // THE SOFTWARE.
 //
 
-surface as_maya_closure2Surface
+surface as_closure2surface
+[[
+    string as_blender_node_name = "asClosure2Surface",
+    string as_blender_category = "surface"
+]]
 (
     closure color in_input = 0
+    [[
+        string label = "Input"
+    ]]
 )
 {
     Ci = in_input;
