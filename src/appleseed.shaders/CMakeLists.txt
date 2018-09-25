@@ -281,6 +281,7 @@ set (src_appleseed_sources
      src/appleseed/as_blend_color.osl
      src/appleseed/as_blend_shader.osl
      src/appleseed/as_bump.osl
+     src/appleseed/as_closure2surface.osl
      src/appleseed/as_color_transform.osl
      src/appleseed/as_composite_color.osl
      src/appleseed/as_create_mask.osl
@@ -306,6 +307,7 @@ set (src_appleseed_sources
      src/appleseed/as_switch_texture.osl
      src/appleseed/as_swizzle.osl
      src/appleseed/as_texture.osl
+     src/appleseed/as_texture2surface.osl
      src/appleseed/as_texture3d.osl
      src/appleseed/as_texture_info.osl
      src/appleseed/as_toon.osl
