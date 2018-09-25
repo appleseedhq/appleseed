@@ -36,7 +36,7 @@ shader as_sbs_pbrmaterial
     string as_blender_category = "shader",
     string help = "Substance Painter PBR material.",
     string icon = "asSbsPbrMaterial.png",
-    int as_maya_type_id = 0x001279c3,
+    int as_maya_type_id = 0x00127a04,
     string as_max_class_id = "2003578504 779682628",
     string as_max_plugin_type = "material",
     string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_sbs_pbrmaterial.html#label-as-sbs-pbrmaterial"
@@ -291,7 +291,7 @@ shader as_sbs_pbrmaterial
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
-    
+
     // primvars
     vector Tn = vector(0)
     [[
@@ -308,7 +308,7 @@ shader as_sbs_pbrmaterial
         string widget = "null",
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
-        
+
     ]],
 
     // output
@@ -366,14 +366,14 @@ shader as_sbs_pbrmaterial
     {
         return;
     }
-    
+
     // AO mix
     color diffuse_color = in_baseColor * in_ambientOcclusion;
 
     normal Nn = normalize(in_normal);
     vector tangent = Tn;
-    
-    // The SBS MDL does a linear blend between the specular BTDF and a 
+
+    // The SBS MDL does a linear blend between the specular BTDF and a
     // diffuse BRDF according to the refraction parameter, then adds the
     // specular BRDF on top, then blends everything with a conductor BRDF.
     // We can do this using the glass BSDF by building
@@ -409,7 +409,7 @@ shader as_sbs_pbrmaterial
 
     if (in_specularLevel > 0.0)
     {
-        vector tangent = Tn;         
+        vector tangent = Tn;
 
         if (in_anisotropyLevel > 0.0 && in_anisotropyAngle > 0.0)
         {
