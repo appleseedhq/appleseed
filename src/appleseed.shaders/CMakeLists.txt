@@ -479,17 +479,6 @@ source_group ("src\\appleseed" FILES
     ${src_appleseed_sources}
 )
 
-set (src_npr_sources
-     src/npr/as_xtoon.osl
-)
-
-list (APPEND osl_sources
-    ${src_npr_sources}
-)
-source_group ("src\\npr" FILES
-    ${src_npr_sources}
-)
-
 
 #--------------------------------------------------------------------------------------------------
 # Prepare the sandbox.
