@@ -362,7 +362,6 @@ set (src_maya_sources
      src/maya/as_maya_checker.osl
      src/maya/as_maya_clamp.osl
      src/maya/as_maya_clearCoat.osl
-     src/maya/as_maya_closure2Surface.osl
      src/maya/as_maya_cloth.osl
      src/maya/as_maya_cloud.osl
      src/maya/as_maya_color2Components.osl
@@ -416,7 +415,6 @@ set (src_maya_sources
      src/maya/as_maya_solidFractal.osl
      src/maya/as_maya_stencil.osl
      src/maya/as_maya_stucco.osl
-     src/maya/as_maya_texture2Surface.osl
      src/maya/as_maya_transposeMatrix.osl
      src/maya/as_maya_tripleShadingSwitch.osl
      src/maya/as_maya_uv2Components.osl
