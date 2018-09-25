@@ -356,6 +356,16 @@ bool Scene::on_render_begin(
     if (!BaseGroup::on_render_begin(project, parent,recorder,  abort_switch))
         return false;
 
+    // The scene's render data must be computed before `on_render_begin()` is called on child entities,
+    // because child entities such as cameras may retrieve the scene's bounding box or diameter.
+    assert(!m_has_render_data);
+    m_render_data.m_bbox = compute_bbox();
+    m_render_data.m_center = m_render_data.m_bbox.center();
+    m_render_data.m_radius = m_render_data.m_bbox.radius();
+    m_render_data.m_diameter = m_render_data.m_bbox.diameter();
+    m_render_data.m_safe_diameter = m_render_data.m_diameter * GScalar(1.01);
+    m_has_render_data = true;
+
     bool success = true;
     success = success && impl->m_default_surface_shader->on_render_begin(project, this, recorder, abort_switch);
     success = success && invoke_on_render_begin(environment_edfs(), project, this, recorder, abort_switch);
@@ -365,14 +375,6 @@ bool Scene::on_render_begin(
     success = success && invoke_on_render_begin(cameras(), project, this, recorder, abort_switch);
     if (!success)
         return false;
-
-    assert(!m_has_render_data);
-    m_render_data.m_bbox = compute_bbox();
-    m_render_data.m_center = m_render_data.m_bbox.center();
-    m_render_data.m_radius = m_render_data.m_bbox.radius();
-    m_render_data.m_diameter = m_render_data.m_bbox.diameter();
-    m_render_data.m_safe_diameter = m_render_data.m_diameter * GScalar(1.01);
-    m_has_render_data = true;
 
     return true;
 }
