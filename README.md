@@ -1,4 +1,4 @@
-# appleseed [![Build Status](https://travis-ci.org/appleseedhq/appleseed.svg?branch=master)](https://travis-ci.org/appleseedhq/appleseed) | [![Build status](https://ci.appveyor.com/api/projects/status/7550aaymiusjpk20?svg=true)](https://ci.appveyor.com/project/appleseedhq/appleseed)
+# appleseed [![Build Status](https://travis-ci.org/appleseedhq/appleseed.svg?branch=master)](https://travis-ci.org/appleseedhq/appleseed) [![Build status](https://ci.appveyor.com/api/projects/status/7550aaymiusjpk20?svg=true)](https://ci.appveyor.com/project/appleseedhq/appleseed)
 
 ![Interior Scene by Juan Carlos Gutiérrez](https://github.com/appleseedhq/appleseedhq.github.io/raw/master/img/renders/jc-interior.jpg)
 
