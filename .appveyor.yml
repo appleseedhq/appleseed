@@ -34,7 +34,7 @@ for:
   - cmd: >-
       appveyor DownloadFile https://github.com/appleseedhq/appleseed-deps/releases/download/v17/appleseed-deps-stage-win64-vs140-v17.zip
 
-      appveyor DownloadFile https://www.dropbox.com/s/jh7tud1tovujwd3/boost_1_55_0_2015_py35.zip?dl=1
+      appveyor DownloadFile https://github.com/appleseedhq/appveyor-deps/releases/download/v1/boost_1_55_0_2015_py35.zip
 
       7z x appleseed-deps-stage-win64-vs140-v17.zip -oappleseed-deps-stage-win64-vs140-v17
 
@@ -73,7 +73,7 @@ for:
   - cmd: >-
       appveyor DownloadFile https://github.com/appleseedhq/appleseed-deps/releases/download/v17/appleseed-deps-stage-win64-vs120-v17.zip
 
-      appveyor DownloadFile https://www.dropbox.com/s/6udh8im60pszb88/boost_1_55_0_2013_py35.zip?dl=1
+      appveyor DownloadFile https://github.com/appleseedhq/appveyor-deps/releases/download/v1/boost_1_55_0_2013_py35.zip
 
       7z x appleseed-deps-stage-win64-vs120-v17.zip -oappleseed-deps-stage-win64-vs120-v17
 
