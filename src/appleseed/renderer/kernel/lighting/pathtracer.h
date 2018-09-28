@@ -239,9 +239,8 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
     while (true)
     {
         if (clear_arena)
-        {
             shading_context.get_arena().clear();
-        }
+
         ShadingPoint* next_shading_point = m_shading_point_arena.allocate<ShadingPoint>();
 
 #ifndef NDEBUG
@@ -255,9 +254,12 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         // Put a hard limit on the number of iterations.
         if (m_iterations++ == m_max_iterations)
         {
-            RENDERER_LOG_WARNING(
-                "reached hard iteration limit (%s), breaking path tracing loop.",
-                foundation::pretty_int(m_max_iterations).c_str());
+            if (m_max_bounces < m_max_iterations)
+            {
+                RENDERER_LOG_WARNING(
+                    "reached hard iteration limit (%s), breaking path tracing loop.",
+                    foundation::pretty_int(m_max_iterations).c_str());
+            }
             break;
         }
 
