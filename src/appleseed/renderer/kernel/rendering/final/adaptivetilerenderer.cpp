@@ -110,8 +110,10 @@ namespace
     {
         // The bounding box of the block, including tile's margin.
         AABB2i          m_surface;
+
         // Samples/pixel made in this block.
         size_t          m_spp;
+
         // Noise amount of the pixel block.
         float           m_block_error;
         bool            m_converged;
@@ -125,19 +127,17 @@ namespace
         // Orientation of the block.
         Axis            m_main_axis;
 
-        explicit PixelBlock(
-            const AABB2i&       surface)
+        explicit PixelBlock(const AABB2i& surface)
           : m_surface(surface)
           , m_spp(0)
-          , m_block_error(0)
+          , m_block_error(0.0f)
           , m_converged(false)
         {
             assert(m_surface.is_valid());
-
-            if (m_surface.extent(0) >= m_surface.extent(1))
-                m_main_axis = Axis::Horizontal; // block is wider
-            else
-                m_main_axis = Axis::Vertical; // block is taller
+            m_main_axis =
+                m_surface.extent(0) >= m_surface.extent(1)
+                    ? Axis::Horizontal  // block is wider
+                    : Axis::Vertical;   // block is taller
         }
     };
 
@@ -373,10 +373,11 @@ namespace
                 const AABB2u block_image_bb = AABB2i::intersect(framebuffer->get_crop_window(), pb.m_surface);
 
                 // Evaluate block's noise amount.
-                pb.m_block_error = FilteredTile::compute_tile_variance(
-                    block_image_bb,
-                    framebuffer,
-                    second_framebuffer.get());
+                pb.m_block_error =
+                    FilteredTile::compute_tile_variance(
+                        block_image_bb,
+                        framebuffer,
+                        second_framebuffer.get());
 
                 if (batch_size < m_params.m_batch_size)
                 {
