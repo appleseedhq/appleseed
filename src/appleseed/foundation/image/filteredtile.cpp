@@ -192,10 +192,11 @@ float FilteredTile::compute_weighted_pixel_variance(
         return 0.0f;
 
     // Compute variance.
-    return fast_rcp_sqrt(rgb) * (
-        abs(main_color.r - second_color.r) +
-        abs(main_color.g - second_color.g) +
-        abs(main_color.b - second_color.b));
+    return
+        fast_rcp_sqrt(rgb) * (
+            abs(main_color.r - second_color.r) +
+            abs(main_color.g - second_color.g) +
+            abs(main_color.b - second_color.b));
 }
 
 float FilteredTile::compute_tile_variance(
