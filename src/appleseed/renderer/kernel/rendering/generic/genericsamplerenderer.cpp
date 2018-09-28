@@ -228,8 +228,7 @@ namespace
                         shading_result);
 
                     // Apply alpha premultiplication.
-                    if (shading_point_ptr->hit_surface())
-                        shading_result.apply_alpha_premult();
+                    shading_result.apply_alpha_premult();
                 }
                 else
                 {
@@ -244,8 +243,7 @@ namespace
                         local_result);
 
                     // Apply alpha premultiplication.
-                    if (shading_point_ptr->hit_surface())
-                        local_result.apply_alpha_premult();
+                    local_result.apply_alpha_premult();
 
                     // Compositing.
                     shading_result.composite_over(local_result);
