@@ -6,7 +6,7 @@
             _geometry
         </search_path>
         <search_path>
-            ../../../shaders/gaffer
+            _shaders
         </search_path>
         <search_path>
             ../_assets/textures
@@ -66,12 +66,12 @@
                 <parameter name="reflectance_multiplier" value="1.0" />
             </bsdf>
             <shader_group name="glass">
-                <shader type="shader" name="surface/as_glass_surface" layer="as_glass_surface1">
+                <shader type="shader" name="as_glass_surface" layer="as_glass_surface1">
                     <parameter name="Distribution" value="string ggx" />
                     <parameter name="Ior" value="float 1.5" />
                     <parameter name="Roughness" value="float 0.1" />
                 </shader>
-                <shader type="surface" name="material/as_material_builder" layer="appleseedRenderer:surface">
+                <shader type="surface" name="as_material_builder" layer="appleseedRenderer:surface">
                 </shader>
                 <connect_shaders src_layer="as_glass_surface1" src_param="BSDF" dst_layer="appleseedRenderer:surface" dst_param="BSDF" />
             </shader_group>

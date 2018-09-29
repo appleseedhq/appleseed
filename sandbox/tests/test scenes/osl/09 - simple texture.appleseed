@@ -6,7 +6,7 @@
             _geometry
         </search_path>
         <search_path>
-            ../../../shaders/gaffer
+            _shaders
         </search_path>
         <search_path>
             ../_assets/textures
@@ -66,17 +66,17 @@
                 <parameter name="reflectance_multiplier" value="1.0" />
             </bsdf>
             <shader_group name="simple_tex">
-                <shader type="shader" name="transform/as_map2d" layer="map1">
+                <shader type="shader" name="as_map2d" layer="map1">
                     <parameter name="Repeat" value="vector 2 2 2" />
                 </shader>
-                <shader type="shader" name="texture2d/as_color_texture" layer="tex1">
+                <shader type="shader" name="as_color_texture" layer="tex1">
                     <parameter name="Filename" value="string UVCheckerMap03-512.exr" />
                 </shader>
-                <shader type="shader" name="surface/as_diffuse_surface" layer="diffuse1">
+                <shader type="shader" name="as_diffuse_surface" layer="diffuse1">
                     <parameter name="Reflectance" value="float 0.8" />
                     <parameter name="Roughness" value="float 0" />
                 </shader>
-                <shader type="surface" name="material/as_material_builder" layer="surface1">
+                <shader type="surface" name="as_material_builder" layer="surface1">
                 </shader>
                 <connect_shaders src_layer="map1" src_param="UOut" dst_layer="tex1" dst_param="U" />
                 <connect_shaders src_layer="map1" src_param="VOut" dst_layer="tex1" dst_param="V" />

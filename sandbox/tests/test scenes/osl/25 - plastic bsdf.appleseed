@@ -6,7 +6,7 @@
             _geometry
         </search_path>
         <search_path>
-            ../../../shaders/gaffer
+            _shaders
         </search_path>
         <search_path>
             ../_assets/textures
@@ -66,7 +66,7 @@
                 <parameter name="reflectance_multiplier" value="1.0" />
             </bsdf>
             <shader_group name="plastic">
-                <shader type="shader" name="surface/as_plastic_surface" layer="as_plastic_surface1">
+                <shader type="shader" name="as_plastic_surface" layer="as_plastic_surface1">
                     <parameter name="DiffuseColor" value="color 0.9 0.2 0.1" />
                     <parameter name="Distribution" value="string gtr1" />
                     <parameter name="IOR" value="float 1.55" />
@@ -75,7 +75,7 @@
                     <parameter name="SpecularColor" value="color 1 1 1" />
                     <parameter name="Spread" value="float 0.2" />
                 </shader>
-                <shader type="surface" name="material/as_material_builder" layer="appleseedRenderer:surface">
+                <shader type="surface" name="as_material_builder" layer="appleseedRenderer:surface">
                 </shader>
                 <connect_shaders src_layer="as_plastic_surface1" src_param="BSDF" dst_layer="appleseedRenderer:surface" dst_param="BSDF" />
             </shader_group>

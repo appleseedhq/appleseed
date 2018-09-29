@@ -6,7 +6,7 @@
             _geometry
         </search_path>
         <search_path>
-            ../../../shaders/gaffer
+            _shaders
         </search_path>
         <search_path>
             ../_assets/textures
@@ -66,7 +66,7 @@
                 <parameter name="reflectance_multiplier" value="1.0" />
             </bsdf>
             <shader_group name="bump_test">
-                <shader type="shader" name="texture3d/as_noise3d" layer="noise1">
+                <shader type="shader" name="as_noise3d" layer="noise1">
                     <parameter name="AnisotropyMode" value="int 0" />
                     <parameter name="Bandwidth" value="float 1" />
                     <parameter name="Direction" value="vector 0 0 0" />
@@ -77,15 +77,15 @@
                     <parameter name="Period" value="vector 1 1 1" />
                     <parameter name="Periodic" value="int 0" />
                 </shader>
-                <shader type="shader" name="normal/as_bump_map" layer="bump1">
+                <shader type="shader" name="as_bump_map" layer="bump1">
                     <parameter name="Amount" value="float 0.01" />
                     <parameter name="Method" value="string classic" />
                 </shader>
-                <shader type="shader" name="surface/as_metal_surface" layer="metal1">
+                <shader type="shader" name="as_metal_surface" layer="metal1">
                     <parameter name="Reflectance" value="float 0.6" />
                     <parameter name="Roughness" value="float 0.3" />
                 </shader>
-                <shader type="surface" name="material/as_material_builder" layer="surface1">
+                <shader type="surface" name="as_material_builder" layer="surface1">
                 </shader>
                 <connect_shaders src_layer="noise1" src_param="FloatOut" dst_layer="bump1" dst_param="Height" />
                 <connect_shaders src_layer="bump1" src_param="NormalOut" dst_layer="metal1" dst_param="Normal" />
