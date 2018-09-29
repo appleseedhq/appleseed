@@ -6,7 +6,7 @@
             _geometry
         </search_path>
         <search_path>
-            ../../../shaders/gaffer
+            _shaders
         </search_path>
         <search_path>
             ../_assets/textures
@@ -43,12 +43,12 @@
                 <parameter name="radiance_multiplier" value="3" />
             </edf>
             <shader_group name="right_light_shader_group">
-                <shader type="shader" name="surface/as_emission_surface" layer="1_as_emission">
+                <shader type="shader" name="as_emission_surface" layer="1_as_emission">
                     <parameter name="Color" value="color 1 1 1" />
                     <parameter name="Emission" value="float 3" />
                     <parameter name="Normalize" value="int 0" />
                 </shader>
-                <shader type="surface" name="material/as_material_builder" layer="appleseedRenderer:surface">
+                <shader type="surface" name="as_material_builder" layer="appleseedRenderer:surface">
                 </shader>
                 <connect_shaders src_layer="1_as_emission" src_param="BSDF" dst_layer="appleseedRenderer:surface" dst_param="BSDF" />
             </shader_group>

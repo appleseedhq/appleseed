@@ -6,7 +6,7 @@
             _geometry
         </search_path>
         <search_path>
-            ../../../shaders/gaffer
+            _shaders
         </search_path>
         <search_path>
             ../_assets/textures
@@ -67,10 +67,10 @@
                 <parameter name="transmittance_multiplier" value="1.0" />
             </bsdf>
             <shader_group name="translucent">
-                <shader type="shader" name="surface/as_translucent_surface" layer="translucent1">
+                <shader type="shader" name="as_translucent_surface" layer="translucent1">
                     <parameter name="Transmittance" value="float 0.5" />
                 </shader>
-                <shader type="surface" name="material/as_material_builder" layer="surface1">
+                <shader type="surface" name="as_material_builder" layer="surface1">
                 </shader>
                 <connect_shaders src_layer="translucent1" src_param="BTDF" dst_layer="surface1" dst_param="BSDF" />
             </shader_group>

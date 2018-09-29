@@ -3,7 +3,7 @@
 <project format_revision="21">
     <search_paths>
         <search_path>
-            ../../../shaders/gaffer
+            _shaders
         </search_path>
     </search_paths>
     <scene>
@@ -25,21 +25,21 @@
         <environment name="environment" model="generic_environment" />
         <assembly name="assembly">
             <shader_group name="/scene/floor_shader_group">
-                <shader type="shader" name="surface/as_diffuse_surface" layer="1_as_diffuse_surface">
+                <shader type="shader" name="as_diffuse_surface" layer="1_as_diffuse_surface">
                     <parameter name="Color" value="color 1 1 1" />
                     <parameter name="Reflectance" value="float 0.8" />
                 </shader>
-                <shader type="surface" name="material/as_material_builder" layer="appleseedRenderer:surface">
+                <shader type="surface" name="as_material_builder" layer="appleseedRenderer:surface">
                 </shader>
                 <connect_shaders src_layer="1_as_diffuse_surface" src_param="BRDF" dst_layer="appleseedRenderer:surface" dst_param="BSDF" />
             </shader_group>
             <shader_group name="/scene/spheres/sphere_shader_group">
-                <shader type="shader" name="surface/as_emission_surface" layer="1_as_emission">
+                <shader type="shader" name="as_emission_surface" layer="1_as_emission">
                     <parameter name="Color" value="color 1 1 1" />
                     <parameter name="Emission" value="float 20" />
                     <parameter name="Normalize" value="int 1" />
                 </shader>
-                <shader type="surface" name="material/as_material_builder" layer="appleseedRenderer:surface">
+                <shader type="surface" name="as_material_builder" layer="appleseedRenderer:surface">
                 </shader>
                 <connect_shaders src_layer="1_as_emission" src_param="BSDF" dst_layer="appleseedRenderer:surface" dst_param="BSDF" />
             </shader_group>
