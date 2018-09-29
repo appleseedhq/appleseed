@@ -53,18 +53,6 @@ source_group ("" FILES
     ${standard_osl_headers}
 )
 
-set (include_appleseed_gaffer_sources
-    include/appleseed/gaffer/color.h
-    include/appleseed/gaffer/transform.h
-    include/appleseed/gaffer/udim.h
-)
-list (APPEND osl_headers
-    ${include_appleseed_gaffer_sources}
-)
-source_group ("include\\appleseed\\gaffer" FILES
-    ${include_appleseed_gaffer_sources}
-)
-
 set (include_appleseed_color_sources
     include/appleseed/color/as_chromatic_adaptation.h
     include/appleseed/color/as_color_blend_modes.h
