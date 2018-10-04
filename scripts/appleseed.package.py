@@ -637,6 +637,10 @@ class MacPackageBuilder(PackageBuilder):
                 fatal("Failed to parse line from otool(1) output: " + line)
             lib = m.group(1)
 
+            # Ignore libs relative to @rpath.
+            if "@rpath" in lib:
+                continue
+
             # Ignore libs relative to @loader_path.
             if "@loader_path" in lib:
                 continue
