@@ -111,7 +111,7 @@ namespace
             RENDERER_LOG_INFO(
                 "uniform pixel renderer settings:\n"
                 "  samples                       %s\n"
-                "  force antialiasing            %s\n"
+                "  force anti-aliasing           %s\n"
                 "  decorrelate pixels            %s",
                 pretty_uint(m_params.m_samples).c_str(),
                 m_params.m_force_aa ? "on" : "off",
