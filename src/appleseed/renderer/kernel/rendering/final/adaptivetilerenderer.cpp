@@ -392,17 +392,17 @@ namespace
                 }
                 else if (pb.m_block_error <= m_params.m_splitting_threshold)
                 {
-                    // The block needs to be splitted.
-                    if (pb.m_main_axis == PixelBlock::Axis::Horizontal
-                        && block_image_bb.extent(0) >= BlockSplittingThreshold)
+                    // The block needs to be split.
+                    if (pb.m_main_axis == PixelBlock::Axis::Horizontal &&
+                        block_image_bb.extent(0) >= BlockSplittingThreshold)
                     {
                         split_pixel_block(
                             pb,
                             rendering_blocks,
                             static_cast<int>((block_image_bb.min.x + block_image_bb.max.x) / 2));
                     }
-                    else if (pb.m_main_axis == PixelBlock::Axis::Vertical
-                        && block_image_bb.extent(1) >= BlockSplittingThreshold)
+                    else if (pb.m_main_axis == PixelBlock::Axis::Vertical &&
+                             block_image_bb.extent(1) >= BlockSplittingThreshold)
                     {
                         split_pixel_block(
                             pb,
