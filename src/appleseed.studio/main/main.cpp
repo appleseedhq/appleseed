@@ -112,15 +112,17 @@ namespace
         }
 
         // If the PYTHONHOME environment variable is defined, use the Python installation it points to.
-        // If it is not defined, use the bundled Python installation.
+        // Otherwise use the Python installation bundled with appleseed.
         if (getenv("PYTHONHOME") == nullptr)
         {
 #if defined _WIN32 || __APPLE__
+            // On Windows, Python's standard libraries are located in python27\Lib\.
             const string python_path =
                 bf::canonical(
                     bf::path(Application::get_root_path()) / "python27"
                 ).make_preferred().string();
 #else
+            // On Linux and macOS, Python's standard libraries are located in lib/python2.7/.
             const string python_path =
                 bf::canonical(
                     bf::path(Application::get_root_path())
