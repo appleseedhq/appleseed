@@ -471,9 +471,9 @@ namespace
             // Warn the user if adaptive sampling wasn't efficient on this tile.
             if (static_cast<float>(tile_converged_pixel) < BlockConvergenceWarningThreshold * pixel_count)
             {
-                RENDERER_LOG_WARNING("%s of tile's pixels have converged, average sample/pixel: %s.",
+                RENDERER_LOG_WARNING("%s of this tile's pixels have converged, average samples/pixel is %s.",
                     pretty_percent(tile_converged_pixel, pixel_count, 1).c_str(),
-                    pretty_uint(static_cast<size_t>(m_spp.get_mean())).c_str());
+                    pretty_scalar(m_spp.get_mean(), 1).c_str());
             }
 
             // Develop the framebuffer to the tile.
