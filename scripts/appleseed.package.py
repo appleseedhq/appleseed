@@ -527,6 +527,7 @@ class MacPackageBuilder(PackageBuilder):
     def alter_stage(self):
         safe_delete_file("appleseed/bin/.DS_Store")
         self.add_dependencies_to_stage()
+        self.add_python_to_stage()
         self.fixup_binaries()
         self.create_qt_conf_file()
         os.rename("appleseed/bin/appleseed.studio", "appleseed/bin/appleseed-studio")
@@ -538,6 +539,14 @@ class MacPackageBuilder(PackageBuilder):
         self.copy_qt_framework("QtGui")
         self.copy_qt_resources("QtGui")
         self.copy_qt_framework("QtOpenGL")
+
+    def add_python_to_stage(self):
+        progress("Mac-specific: Adding Python 2.7 to staging directory")
+        safe_make_directory("appleseed/python27")
+        shutil.copytree(os.path.join(self.settings.python_path, "bin"), "appleseed/python27/bin")
+        shutil.copytree(os.path.join(self.settings.python_path, "include"), "appleseed/python27/include")
+        shutil.copytree(os.path.join(self.settings.python_path, "lib"), "appleseed/python27/lib")
+        shutil.copytree(os.path.join(self.settings.python_path, "share"), "appleseed/python27/share")
 
     def copy_qt_framework(self, framework_name):
         framework_dir = framework_name + ".framework"
