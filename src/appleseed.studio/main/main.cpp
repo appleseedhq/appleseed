@@ -115,7 +115,7 @@ namespace
         // If it is not defined, use the bundled Python installation.
         if (getenv("PYTHONHOME") == nullptr)
         {
-#ifdef _WIN32
+#if defined _WIN32 || __APPLE__
             const string python_path =
                 bf::canonical(
                     bf::path(Application::get_root_path()) / "python27"
