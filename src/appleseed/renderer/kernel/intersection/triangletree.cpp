@@ -43,10 +43,8 @@
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/material/material.h"
-#include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/object.h"
-#include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/object/triangle.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
@@ -347,23 +345,17 @@ namespace
             if (strcmp(object.get_model(), MeshObjectFactory().get_model()) != 0)
                 continue;
 
-            // Retrieve the region kit of the object.
-            Access<RegionKit> region_kit(&object.get_region_kit());
-
-            // Retrieve the region.
-            const IRegion* region = (*region_kit)[0];
-
-            // Retrieve the tessellation of the region.
-            Access<StaticTriangleTess> tess(&region->get_static_triangle_tess());
+            const MeshObject& mesh = static_cast<const MeshObject&>(object);
+            const StaticTriangleTess& tess = mesh.get_static_triangle_tess();
 
             // Collect the triangles from this tessellation.
-            if (tess->get_motion_segment_count() > 0)
+            if (tess.get_motion_segment_count() > 0)
             {
                 collect_moving_triangles(
                     arguments.m_bbox,
                     *object_instance,
                     i,
-                    tess.ref(),
+                    tess,
                     time,
                     save_memory,
                     triangle_keys,
@@ -378,7 +370,7 @@ namespace
                     arguments.m_bbox,
                     *object_instance,
                     i,
-                    tess.ref(),
+                    tess,
                     save_memory,
                     triangle_keys,
                     triangle_vertex_infos,

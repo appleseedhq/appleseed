@@ -37,7 +37,6 @@
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/curveobject.h"
-#include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/object/triangle.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
@@ -279,15 +278,12 @@ class ShadingPoint
     friend class Intersector;
     friend class NPRSurfaceShaderHelper;
     friend class OSLShaderGroupExec;
-    friend class RegionLeafVisitor;
     friend class RendererServices;
     friend class ShadingPointBuilder;
     friend class TriangleLeafVisitor;
     friend class foundation::PoisonImpl<ShadingPoint>;
 
     // Context.
-    RegionKitAccessCache*               m_region_kit_cache;
-    StaticTriangleTessAccessCache*      m_tess_cache;
     TextureCache*                       m_texture_cache;
     const Scene*                        m_scene;
     mutable ShadingRay                  m_ray;                              // world space ray (m_tmax = distance to intersection)
@@ -423,9 +419,7 @@ APPLESEED_FORCE_INLINE ShadingPoint::ShadingPoint()
 }
 
 inline ShadingPoint::ShadingPoint(const ShadingPoint& rhs)
-  : m_region_kit_cache(rhs.m_region_kit_cache)
-  , m_tess_cache(rhs.m_tess_cache)
-  , m_texture_cache(rhs.m_texture_cache)
+  : m_texture_cache(rhs.m_texture_cache)
   , m_scene(rhs.m_scene)
   , m_ray(rhs.m_ray)
   , m_primitive_type(rhs.m_primitive_type)
@@ -442,8 +436,6 @@ inline ShadingPoint::ShadingPoint(const ShadingPoint& rhs)
 
 inline ShadingPoint& ShadingPoint::operator=(const ShadingPoint& rhs)
 {
-    m_region_kit_cache = rhs.m_region_kit_cache;
-    m_tess_cache = rhs.m_tess_cache;
     m_texture_cache = rhs.m_texture_cache;
     m_scene = rhs.m_scene;
     m_ray = rhs.m_ray;
@@ -461,8 +453,6 @@ inline ShadingPoint& ShadingPoint::operator=(const ShadingPoint& rhs)
 
 APPLESEED_FORCE_INLINE void ShadingPoint::clear()
 {
-    m_region_kit_cache = nullptr;
-    m_tess_cache = nullptr;
     m_texture_cache = nullptr;
     m_scene = nullptr;
     m_primitive_type = PrimitiveNone;

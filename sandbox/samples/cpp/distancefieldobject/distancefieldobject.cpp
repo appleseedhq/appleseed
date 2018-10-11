@@ -80,7 +80,6 @@ namespace
             const char*                 name,
             const asr::ParamArray&      params)
           : asr::ProceduralObject(name, params)
-          , m_lazy_region_kit(&m_region_kit)
         {
         }
 
@@ -100,12 +99,6 @@ namespace
         asr::GAABB3 compute_local_bbox() const override
         {
             return asr::GAABB3(asr::GVector3(-2.0f), asr::GVector3(2.0f));
-        }
-
-        // Return the region kit of the object.
-        asf::Lazy<asr::RegionKit>& get_region_kit() override
-        {
-            return m_lazy_region_kit;
         }
 
         // Access materials slots.
@@ -159,8 +152,6 @@ namespace
         }
 
       private:
-        asr::RegionKit              m_region_kit;
-        asf::Lazy<asr::RegionKit>   m_lazy_region_kit;
 
         //
         // Signed distance function.

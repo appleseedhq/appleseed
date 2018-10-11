@@ -75,7 +75,6 @@ namespace
             const char*                 name,
             const asr::ParamArray&      params)
           : asr::ProceduralObject(name, params)
-          , m_lazy_region_kit(&m_region_kit)
         {
         }
 
@@ -113,12 +112,6 @@ namespace
         {
             const auto r = static_cast<asr::GScalar>(get_uncached_radius());
             return asr::GAABB3(asr::GVector3(-r), asr::GVector3(r));
-        }
-
-        // Return the region kit of the object.
-        asf::Lazy<asr::RegionKit>& get_region_kit() override
-        {
-            return m_lazy_region_kit;
         }
 
         // Access materials slots.
@@ -202,8 +195,6 @@ namespace
         }
 
       private:
-        asr::RegionKit              m_region_kit;
-        asf::Lazy<asr::RegionKit>   m_lazy_region_kit;
         double                      m_radius;
         double                      m_rcp_radius;
 

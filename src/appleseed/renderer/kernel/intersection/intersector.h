@@ -39,7 +39,6 @@
 #include "renderer/kernel/intersection/triangletree.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
-#include "renderer/modeling/object/regionkit.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -141,9 +140,6 @@ class Intersector
 #ifdef APPLESEED_WITH_EMBREE
     mutable EmbreeSceneAccessCache                  m_embree_scene_cache;
 #endif
-    mutable RegionKitAccessCache                    m_region_kit_cache;
-    mutable StaticTriangleTessAccessCache           m_tess_cache;
-
     // Intersection statistics.
     mutable foundation::uint64                      m_shading_ray_count;
     mutable foundation::uint64                      m_probe_ray_count;

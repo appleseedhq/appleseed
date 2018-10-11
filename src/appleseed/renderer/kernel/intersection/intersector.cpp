@@ -250,8 +250,6 @@ bool Intersector::trace(
     ++m_shading_ray_count;
 
     // Initialize the shading point.
-    shading_point.m_region_kit_cache = &m_region_kit_cache;
-    shading_point.m_tess_cache = &m_tess_cache;
     shading_point.m_texture_cache = &m_texture_cache;
     shading_point.m_scene = &m_trace_context.get_scene();
     shading_point.m_ray = ray;
@@ -371,8 +369,6 @@ void Intersector::make_surface_shading_point(
 #endif
 
     // Context.
-    shading_point.m_region_kit_cache = &m_region_kit_cache;
-    shading_point.m_tess_cache = &m_tess_cache;
     shading_point.m_texture_cache = &m_texture_cache;
     shading_point.m_scene = &m_trace_context.get_scene();
     shading_point.m_ray = shading_ray;
@@ -406,8 +402,6 @@ void Intersector::make_volume_shading_point(
     assert(volume_ray.get_current_medium() != nullptr);
 
     // Context.
-    shading_point.m_region_kit_cache = &m_region_kit_cache;
-    shading_point.m_tess_cache = &m_tess_cache;
     shading_point.m_texture_cache = &m_texture_cache;
     shading_point.m_scene = &m_trace_context.get_scene();
 
@@ -495,14 +489,6 @@ StatisticsVector Intersector::get_statistics() const
     vec.insert(
         "triangle tree access cache statistics",
         make_dual_stage_cache_stats(m_triangle_tree_cache));
-
-    vec.insert(
-        "region kit access cache statistics",
-        make_dual_stage_cache_stats(m_region_kit_cache));
-
-    vec.insert(
-        "tessellation access cache statistics",
-        make_dual_stage_cache_stats(m_tess_cache));
 
     return vec;
 }

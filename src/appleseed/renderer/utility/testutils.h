@@ -37,7 +37,6 @@
 #include "renderer/modeling/entity/onrenderbeginrecorder.h"
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/object/object.h"
-#include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/project/project.h"
 
 // appleseed.foundation headers.
@@ -45,7 +44,6 @@
 #include "foundation/image/color.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/lazy.h"
 
 // Standard headers.
 #include <cstddef>
@@ -173,15 +171,11 @@ class BoundingBoxObject
 
     GAABB3 compute_local_bbox() const override;
 
-    foundation::Lazy<RegionKit>& get_region_kit() override;
-
     size_t get_material_slot_count() const override;
     const char* get_material_slot(const size_t index) const override;
 
   private:
     GAABB3                          m_bbox;
-    RegionKit                       m_region_kit;
-    foundation::Lazy<RegionKit>     m_lazy_region_kit;
 };
 
 }       // namespace renderer

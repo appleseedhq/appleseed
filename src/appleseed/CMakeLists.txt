@@ -1814,7 +1814,6 @@ set (renderer_modeling_object_sources
     renderer/modeling/object/curveobjectwriter.h
     renderer/modeling/object/iobjectfactory.cpp
     renderer/modeling/object/iobjectfactory.h
-    renderer/modeling/object/iregion.h
     renderer/modeling/object/meshobject.cpp
     renderer/modeling/object/meshobject.h
     renderer/modeling/object/meshobjectoperations.cpp
@@ -1832,7 +1831,6 @@ set (renderer_modeling_object_sources
     renderer/modeling/object/objecttraits.h
     renderer/modeling/object/proceduralobject.cpp
     renderer/modeling/object/proceduralobject.h
-    renderer/modeling/object/regionkit.h
     renderer/modeling/object/triangle.h
 )
 list (APPEND appleseed_sources

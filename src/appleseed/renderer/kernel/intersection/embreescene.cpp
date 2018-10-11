@@ -34,7 +34,6 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/object/curveobject.h"
-#include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/triangle.h"
@@ -110,21 +109,16 @@ namespace
         // Retrieve the object.
         Object& object = object_instance.get_object();
 
-        // TODO: remove regions.
-        // Retrieve the region kit of the object.
-        const Access<RegionKit> region_kit(&object.get_region_kit());
+        const MeshObject& mesh = static_cast<const MeshObject&>(object);
+        const StaticTriangleTess& tess = mesh.get_static_triangle_tess();
 
-        assert(region_kit->size() == 1);
-        const size_t region_idx = 0;
-        const IRegion* region = region_kit->at(region_idx);
-        const Access<StaticTriangleTess> tess(&region->get_static_triangle_tess());
-        const unsigned int motion_steps_count = static_cast<unsigned int>(tess->get_motion_segment_count()) + 1;
+        const unsigned int motion_steps_count = static_cast<unsigned int>(tess.get_motion_segment_count()) + 1;
         geometry_data.m_motion_steps_count = motion_steps_count;
 
         //
         // Retrieve per vertex data.
         //
-        const unsigned int vertices_count = static_cast<unsigned int>(tess->m_vertices.size());
+        const unsigned int vertices_count = static_cast<unsigned int>(tess.m_vertices.size());
         geometry_data.m_vertices_count = vertices_count;
         geometry_data.m_vertices_stride = sizeof(GVector3);
 
@@ -134,7 +128,7 @@ namespace
         // Retrieve assembly space vertices.
         for (size_t i = 0; i < vertices_count; ++i)
         {
-            const GVector3& vertex_os = tess->m_vertices[i];
+            const GVector3& vertex_os = tess.m_vertices[i];
             geometry_data.m_vertices[i] = transform.point_to_parent(vertex_os);
         }
 
@@ -142,7 +136,7 @@ namespace
         {
             for (size_t i = 0; i < vertices_count; ++i)
             {
-                const GVector3& vertex_os = tess->get_vertex_pose(i, m - 1);
+                const GVector3& vertex_os = tess.get_vertex_pose(i, m - 1);
                 geometry_data.m_vertices[vertices_count * m + i] = transform.point_to_parent(vertex_os);
             }
         }
@@ -150,7 +144,7 @@ namespace
         //
         // Retrieve per primitive data.
         //
-        const size_t primitives_count = tess->m_primitives.size();
+        const size_t primitives_count = tess.m_primitives.size();
 
         geometry_data.m_primitives = new uint32[primitives_count * 3];
         geometry_data.m_primitives_stride = sizeof(uint32) * 3;
@@ -158,9 +152,9 @@ namespace
 
         for (size_t i = 0; i < primitives_count; ++i)
         {
-            geometry_data.m_primitives[i * 3] = tess->m_primitives[i].m_v0;
-            geometry_data.m_primitives[i * 3 + 1] = tess->m_primitives[i].m_v1;
-            geometry_data.m_primitives[i * 3 + 2] = tess->m_primitives[i].m_v2;
+            geometry_data.m_primitives[i * 3] = tess.m_primitives[i].m_v0;
+            geometry_data.m_primitives[i * 3 + 1] = tess.m_primitives[i].m_v1;
+            geometry_data.m_primitives[i * 3 + 2] = tess.m_primitives[i].m_v2;
         }
     };
 

@@ -60,8 +60,6 @@ namespace
 
 struct CurveObject::Impl
 {
-    RegionKit           m_region_kit;
-    Lazy<RegionKit>     m_lazy_region_kit;
     CurveBasis          m_basis;
     size_t              m_curve_count;
     vector<Curve1Type>  m_curves1;
@@ -69,7 +67,6 @@ struct CurveObject::Impl
     vector<string>      m_material_slots;
 
     Impl()
-      : m_lazy_region_kit(&m_region_kit)
     {
     }
 
@@ -117,11 +114,6 @@ const char* CurveObject::get_model() const
 GAABB3 CurveObject::compute_local_bbox() const
 {
     return impl->compute_bounds();
-}
-
-Lazy<RegionKit>& CurveObject::get_region_kit()
-{
-    return impl->m_lazy_region_kit;
 }
 
 void CurveObject::push_basis(const CurveBasis basis)
