@@ -1000,9 +1000,6 @@ set (renderer_kernel_intersection_sources
     renderer/kernel/intersection/intersector.cpp
     renderer/kernel/intersection/intersector.h
     renderer/kernel/intersection/probevisitorbase.h
-    renderer/kernel/intersection/regioninfo.h
-    renderer/kernel/intersection/regiontree.cpp
-    renderer/kernel/intersection/regiontree.h
     renderer/kernel/intersection/tracecontext.cpp
     renderer/kernel/intersection/tracecontext.h
     renderer/kernel/intersection/treerepository.h

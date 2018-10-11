@@ -274,7 +274,6 @@ bool Intersector::trace(
     AssemblyLeafVisitor visitor(
         shading_point,
         assembly_tree,
-        m_region_tree_cache,
         m_triangle_tree_cache,
         m_curve_tree_cache,
 #ifdef APPLESEED_WITH_EMBREE
@@ -332,7 +331,6 @@ bool Intersector::trace_probe(
     AssemblyTreeProbeIntersector intersector;
     AssemblyLeafProbeVisitor visitor(
         assembly_tree,
-        m_region_tree_cache,
         m_triangle_tree_cache,
         m_curve_tree_cache,
 #ifdef APPLESEED_WITH_EMBREE
@@ -496,10 +494,6 @@ StatisticsVector Intersector::get_statistics() const
         "triangle trees intersection statistics",
         m_triangle_tree_traversal_stats.get_statistics());
 #endif
-
-    vec.insert(
-        "region tree access cache statistics",
-        make_dual_stage_cache_stats(m_region_tree_cache));
 
     vec.insert(
         "triangle tree access cache statistics",

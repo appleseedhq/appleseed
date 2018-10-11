@@ -36,7 +36,6 @@
 #include "renderer/kernel/intersection/embreescene.h"
 #endif
 #include "renderer/kernel/intersection/intersectionsettings.h"
-#include "renderer/kernel/intersection/regiontree.h"
 #include "renderer/kernel/intersection/triangletree.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
@@ -138,7 +137,6 @@ class Intersector
     const bool                                      m_report_self_intersections;
 
     // Access caches.
-    mutable RegionTreeAccessCache                   m_region_tree_cache;
     mutable TriangleTreeAccessCache                 m_triangle_tree_cache;
     mutable CurveTreeAccessCache                    m_curve_tree_cache;
 #ifdef APPLESEED_WITH_EMBREE

@@ -59,24 +59,6 @@ const double AssemblyTreeTriangleIntersectionCost = 10.0;
 
 
 //
-// Region tree settings.
-//
-
-// Maximum region duplication rate.
-const double RegionTreeMaxDuplication = 2.0;
-
-// Maximum number of regions per leaf.
-const size_t RegionTreeMaxLeafSize = 64;
-
-// Maximum depth of the tree.
-const size_t RegionTreeMaxDepth = 16;
-
-// Size of the region tree access cache.
-const size_t RegionTreeAccessCacheLines = 16;
-const size_t RegionTreeAccessCacheWays = 1;
-
-
-//
 // Triangle tree settings.
 //
 
