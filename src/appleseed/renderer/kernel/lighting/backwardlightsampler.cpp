@@ -90,7 +90,7 @@ BackwardLightSampler::BackwardLightSampler(
             }
         });
     m_non_physical_light_count = m_non_physical_lights.size();
-    
+
     // Collect all light-emitting triangles.
     collect_emitting_triangles(
         scene.assembly_instances(),
@@ -201,7 +201,6 @@ float BackwardLightSampler::evaluate_pdf(
     const EmittingTriangleKey triangle_key(
         light_shading_point.get_assembly_instance().get_uid(),
         light_shading_point.get_object_instance_index(),
-        light_shading_point.get_region_index(),
         light_shading_point.get_primitive_index());
 
     const auto* triangle_ptr = m_emitting_triangle_hash_table.get(triangle_key);

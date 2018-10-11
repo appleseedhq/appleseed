@@ -1498,7 +1498,6 @@ void TriangleLeafVisitor::read_hit_triangle_data() const
         // Copy the triangle key.
         const TriangleKey& triangle_key = m_tree.m_triangle_keys[m_hit_triangle_index];
         m_shading_point.m_object_instance_index = triangle_key.get_object_instance_index();
-        m_shading_point.m_region_index = 0;
         m_shading_point.m_primitive_index = triangle_key.get_triangle_index();
 
         // Compute and store the support plane of the hit triangle.

@@ -116,7 +116,6 @@ class Intersector
         const AssemblyInstance*             assembly_instance,
         const foundation::Transformd&       assembly_instance_transform,
         const size_t                        object_instance_index,
-        const size_t                        region_index,
         const size_t                        primitive_index,
         const TriangleSupportPlaneType&     triangle_support_plane) const;
 

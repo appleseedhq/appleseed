@@ -90,7 +90,6 @@ void LightSamplerBase::build_emitting_triangle_hash_table()
         const EmittingTriangleKey emitting_triangle_key(
             emitting_triangle.m_assembly_instance->get_uid(),
             emitting_triangle.m_object_instance_index,
-            emitting_triangle.m_region_index,
             emitting_triangle.m_triangle_index);
 
         m_emitting_triangle_hash_table.insert(emitting_triangle_key, &emitting_triangle);
@@ -280,7 +279,6 @@ void LightSamplerBase::collect_emitting_triangles(
                         EmittingTriangle emitting_triangle;
                         emitting_triangle.m_assembly_instance = &assembly_instance;
                         emitting_triangle.m_object_instance_index = object_instance_index;
-                        emitting_triangle.m_region_index = region_index;
                         emitting_triangle.m_triangle_index = triangle_index;
                         emitting_triangle.m_v0 = v0;
                         emitting_triangle.m_v1 = v1;

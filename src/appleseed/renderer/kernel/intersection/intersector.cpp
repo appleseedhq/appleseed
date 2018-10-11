@@ -215,7 +215,6 @@ namespace
         return
             lhs.get_primitive_type() == rhs.get_primitive_type() &&
             lhs.get_primitive_index() == rhs.get_primitive_index() &&
-            lhs.get_region_index() == rhs.get_region_index() &&
             lhs.get_object_instance_index() == rhs.get_object_instance_index() &&
             lhs.get_assembly_instance().get_uid() == rhs.get_assembly_instance().get_uid();
     }
@@ -362,7 +361,6 @@ void Intersector::make_surface_shading_point(
     const AssemblyInstance*             assembly_instance,
     const Transformd&                   assembly_instance_transform,
     const size_t                        object_instance_index,
-    const size_t                        region_index,
     const size_t                        primitive_index,
     const TriangleSupportPlaneType&     triangle_support_plane) const
 {
@@ -386,7 +384,6 @@ void Intersector::make_surface_shading_point(
     shading_point.m_assembly_instance_transform = assembly_instance_transform;
     shading_point.m_assembly_instance_transform_seq = &assembly_instance->transform_sequence();
     shading_point.m_object_instance_index = object_instance_index;
-    shading_point.m_region_index = region_index;
     shading_point.m_primitive_index = primitive_index;
     shading_point.m_triangle_support_plane = triangle_support_plane;
 

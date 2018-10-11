@@ -196,7 +196,7 @@ void ShadingPoint::fetch_triangle_source_geometry() const
             m_object->get_uid(), m_object->get_region_kit());
 
     // Retrieve the region.
-    const IRegion* region = region_kit[m_region_index];
+    const IRegion* region = region_kit[0];
 
     // Retrieve the tessellation of the region.
     assert(m_tess_cache);
@@ -866,7 +866,7 @@ void ShadingPoint::compute_world_space_point_velocity() const
                 m_object->get_uid(), m_object->get_region_kit());
 
         // Retrieve the region.
-        const IRegion* region = region_kit[m_region_index];
+        const IRegion* region = region_kit[0];
 
         // Retrieve the tessellation of the region.
         assert(m_tess_cache);
@@ -1220,7 +1220,6 @@ void PoisonImpl<renderer::ShadingPoint>::do_poison(renderer::ShadingPoint& point
     poison(point.m_assembly_instance_transform);
     poison(point.m_assembly_instance_transform_seq);
     poison(point.m_object_instance_index);
-    poison(point.m_region_index);
     poison(point.m_primitive_index);
     poison(point.m_triangle_support_plane);
 

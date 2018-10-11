@@ -749,7 +749,6 @@ bool AssemblyLeafVisitor::visit(
             m_shading_point.m_assembly_instance_transform = assembly_instance_transform;
             m_shading_point.m_assembly_instance_transform_seq = assembly_instance_transform_seq;
             m_shading_point.m_object_instance_index = local_shading_point.m_object_instance_index;
-            m_shading_point.m_region_index = local_shading_point.m_region_index;
             m_shading_point.m_primitive_index = local_shading_point.m_primitive_index;
             m_shading_point.m_triangle_support_plane = local_shading_point.m_triangle_support_plane;
         }
@@ -792,7 +791,6 @@ bool AssemblyLeafVisitor::visit(
                     m_shading_point.m_assembly_instance_transform = assembly_instance_transform;
                     m_shading_point.m_assembly_instance_transform_seq = assembly_instance_transform_seq;
                     m_shading_point.m_object_instance_index = j;
-                    m_shading_point.m_region_index = 0;
                     m_shading_point.m_primitive_index = 0;
                     m_shading_point.m_primitive_pa = result.m_material_slot;
                     m_shading_point.m_geometric_normal = object_instance_transform.normal_to_parent(result.m_geometric_normal);

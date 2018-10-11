@@ -100,7 +100,6 @@ const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
     { "ambient_occlusion",          AmbientOcclusion },
     { "assembly_instances",         AssemblyInstances },
     { "object_instances",           ObjectInstances },
-    { "regions",                    Regions },
     { "primitives",                 Primitives },
     { "materials",                  Materials },
     { "ray_spread",                 RaySpread },
@@ -126,7 +125,6 @@ const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingMod
     { "ambient_occlusion",          "Ambient Occlusion" },
     { "assembly_instances",         "Assembly Instances" },
     { "object_instances",           "Object Instances" },
-    { "regions",                    "Regions" },
     { "primitives",                 "Primitives" },
     { "materials",                  "Materials" },
     { "ray_spread",                 "Ray Spread" },
@@ -475,22 +473,11 @@ void DiagnosticSurfaceShader::evaluate(
             shading_result);
         break;
 
-      case Regions:
-        {
-            const uint32 h =
-                mix_uint32(
-                    static_cast<uint32>(shading_point.get_object_instance().get_uid()),
-                    static_cast<uint32>(shading_point.get_region_index()));
-            set_result(integer_to_color3<float>(h), shading_result);
-        }
-        break;
-
       case Primitives:
         {
             const uint32 h =
                 mix_uint32(
                     static_cast<uint32>(shading_point.get_object_instance().get_uid()),
-                    static_cast<uint32>(shading_point.get_region_index()),
                     static_cast<uint32>(shading_point.get_primitive_index()));
             set_result(integer_to_color3<float>(h), shading_result);
         }

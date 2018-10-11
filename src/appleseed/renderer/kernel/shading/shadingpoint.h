@@ -231,9 +231,6 @@ class ShadingPoint
     // Return the index, within the assembly, of the object instance that was hit.
     size_t get_object_instance_index() const;
 
-    // Return the index, within the object, of the region containing the hit triangle.
-    size_t get_region_index() const;
-
     // Return the index of the hit primitive.
     size_t get_primitive_index() const;
 
@@ -302,7 +299,6 @@ class ShadingPoint
     foundation::Transformd              m_assembly_instance_transform;      // transform of the hit assembly instance at ray time
     const TransformSequence*            m_assembly_instance_transform_seq;  // transform sequence of the hit assembly instance.
     size_t                              m_object_instance_index;            // index of the object instance that was hit
-    size_t                              m_region_index;                     // index of the region containing the hit triangle
     size_t                              m_primitive_index;                  // index of the hit primitive
     TriangleSupportPlaneType            m_triangle_support_plane;           // support plane of the hit triangle
 
@@ -438,7 +434,6 @@ inline ShadingPoint::ShadingPoint(const ShadingPoint& rhs)
   , m_assembly_instance_transform(rhs.m_assembly_instance_transform)
   , m_assembly_instance_transform_seq(rhs.m_assembly_instance_transform_seq)
   , m_object_instance_index(rhs.m_object_instance_index)
-  , m_region_index(rhs.m_region_index)
   , m_primitive_index(rhs.m_primitive_index)
   , m_triangle_support_plane(rhs.m_triangle_support_plane)
   , m_members(0)
@@ -458,7 +453,6 @@ inline ShadingPoint& ShadingPoint::operator=(const ShadingPoint& rhs)
     m_assembly_instance_transform = rhs.m_assembly_instance_transform;
     m_assembly_instance_transform_seq = rhs.m_assembly_instance_transform_seq;
     m_object_instance_index = rhs.m_object_instance_index;
-    m_region_index = rhs.m_region_index;
     m_primitive_index = rhs.m_primitive_index;
     m_triangle_support_plane = rhs.m_triangle_support_plane;
     m_members = 0;
@@ -893,12 +887,6 @@ inline size_t ShadingPoint::get_object_instance_index() const
 {
     assert(hit_surface());
     return m_object_instance_index;
-}
-
-inline size_t ShadingPoint::get_region_index() const
-{
-    assert(hit_surface());
-    return m_region_index;
 }
 
 inline size_t ShadingPoint::get_primitive_index() const
