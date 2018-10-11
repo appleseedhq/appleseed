@@ -102,11 +102,11 @@ namespace
 
         bool is_aborted() override
         {
+            // Don't abort on IRendererController::ReinitializeRendering since this causes render setup to abort.
             const IRendererController::Status status = m_renderer_controller.get_status();
             return
                 status == IRendererController::TerminateRendering ||
-                status == IRendererController::AbortRendering ||
-                status == IRendererController::ReinitializeRendering;
+                status == IRendererController::AbortRendering;
         }
 
       private:
