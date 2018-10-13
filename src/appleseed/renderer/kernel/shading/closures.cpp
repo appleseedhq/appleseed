@@ -1623,7 +1623,9 @@ namespace
         }
     };
 
+    //
     // NPR closures.
+    //
 
     struct NPRShadingClosure
     {

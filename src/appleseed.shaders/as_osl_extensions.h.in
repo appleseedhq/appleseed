@@ -156,7 +156,6 @@ closure color as_plastic(
     float       diffuse_weight,
     float       scattering) BUILTIN;
 
-
 closure color as_npr_shading() BUILTIN;
 
 closure color as_npr_contour(

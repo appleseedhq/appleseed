@@ -245,7 +245,7 @@ namespace
                     // Apply alpha premultiplication.
                     local_result.apply_alpha_premult();
 
-                    // Compositing.
+                    // Composite `shading_result` over `local_result`.
                     shading_result.composite_over(local_result);
                 }
 

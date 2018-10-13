@@ -305,8 +305,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
         // Handle false intersections.
         if (ray.get_current_medium() &&
-            ray.get_current_medium()->m_object_instance->get_medium_priority() >
-                object_instance.get_medium_priority() &&
+            ray.get_current_medium()->m_object_instance->get_medium_priority() > object_instance.get_medium_priority() &&
             material_data.m_bsdf != nullptr)
         {
             // Construct a ray that continues in the same direction as the incoming ray.
@@ -435,17 +434,15 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         // Evaluate the inputs of the BSDF.
         if (vertex.m_bsdf)
         {
-            vertex.m_bsdf_data = vertex.m_bsdf->evaluate_inputs(
-                shading_context,
-                *vertex.m_shading_point);
+            vertex.m_bsdf_data =
+                vertex.m_bsdf->evaluate_inputs(shading_context, *vertex.m_shading_point);
         }
 
         // Evaluate the inputs of the BSSRDF.
         if (vertex.m_bssrdf)
         {
-            vertex.m_bssrdf_data = vertex.m_bssrdf->evaluate_inputs(
-                shading_context,
-                *vertex.m_shading_point);
+            vertex.m_bssrdf_data =
+                vertex.m_bssrdf->evaluate_inputs(shading_context, *vertex.m_shading_point);
         }
 
         // Let the path visitor handle a hit.
@@ -490,13 +487,13 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         {
             // Sample the BSSRDF and terminate the path if no incoming point is found.
             if (!vertex.m_bssrdf->sample(
-                shading_context,
-                sampling_context,
-                vertex.m_bssrdf_data,
-                *vertex.m_shading_point,
-                foundation::Vector3f(vertex.m_outgoing.get_value()),
-                bssrdf_sample,
-                bsdf_sample))
+                    shading_context,
+                    sampling_context,
+                    vertex.m_bssrdf_data,
+                    *vertex.m_shading_point,
+                    foundation::Vector3f(vertex.m_outgoing.get_value()),
+                    bssrdf_sample,
+                    bsdf_sample))
                 break;
 
             // Update the path throughput.
@@ -544,9 +541,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
             if (entering)
             {
                 const float ior = vertex.m_bsdf == nullptr ? 1.0f :
-                    vertex.m_bsdf->sample_ior(
-                        sampling_context,
-                        vertex.m_bsdf_data);
+                    vertex.m_bsdf->sample_ior(sampling_context, vertex.m_bsdf_data);
                 next_ray.add_medium(ray, &object_instance, vertex.get_material(), ior);
             }
             else
@@ -577,9 +572,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                         *vertex.m_shading_point);
                 }
 
-                const void* data = render_data.m_bsdf->evaluate_inputs(
-                    shading_context,
-                    *vertex.m_shading_point);
+                const void* data = render_data.m_bsdf->evaluate_inputs(shading_context, *vertex.m_shading_point);
                 const float distance = static_cast<float>(norm(vertex.get_point() - medium_start));
                 Spectrum absorption;
                 render_data.m_bsdf->compute_absorption(data, distance, absorption);
