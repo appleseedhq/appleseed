@@ -321,15 +321,16 @@ namespace
             static const Color3f Blue(0.0f, 0.0f, 1.0f);
             static const Color3f Red(1.0f, 0.0f, 0.0f);
 
-            // Find the maximum sample count.
-            float max_samples = 0.0f;
+            // Find the maximum number of samples per pixel.
+            float max_spp = 0.0f;
+
             for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
             {
                 for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
                 {
                     Color3f color;
                     m_image->get_pixel(x, y, color);
-                    max_samples = max(color[0], max_samples);
+                    max_spp = max(color[0], max_spp);
                 }
             }
 
@@ -341,10 +342,16 @@ namespace
                     Color3f color;
                     m_image->get_pixel(x, y, color);
 
-                    const float c = fit(color[0], 0.0f, max_samples, 0.0f, 1.0f);
-                    assert(c >= 0.0f && c <= 1.0f);
-
-                    m_image->set_pixel(x, y, lerp(Blue, Red, c));
+                    if (max_spp != 0.0f)
+                    {
+                        const float c = fit(color[0], 0.0f, max_spp, 0.0f, 1.0f);
+                        assert(c >= 0.0f && c <= 1.0f);
+                        m_image->set_pixel(x, y, lerp(Blue, Red, c));
+                    }
+                    else
+                    {
+                        m_image->set_pixel(x, y, Red);
+                    }
                 }
             }
         }
@@ -371,15 +378,37 @@ namespace
             static const Color3f Blue(0.0f, 0.0f, 1.0f);
             static const Color3f Red(1.0f, 0.0f, 0.0f);
 
-            Color3f color;
+            // Find the maximum variation.
+            float max_variation = 0.0f;
 
             for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
             {
                 for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
                 {
+                    Color3f color;
                     m_image->get_pixel(x, y, color);
-                    color = lerp(Blue, Red, saturate(color[0]));
-                    m_image->set_pixel(x, y, color);
+                    max_variation = max(color[0], max_variation);
+                }
+            }
+
+            // Normalize.
+            for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
+            {
+                for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
+                {
+                    Color3f color;
+                    m_image->get_pixel(x, y, color);
+
+                    if (max_variation != 0.0f)
+                    {
+                        const float c = fit(color[0], 0.0f, max_variation, 0.0f, 1.0f);
+                        assert(c >= 0.0f && c <= 1.0f);
+                        m_image->set_pixel(x, y, lerp(Blue, Red, c));
+                    }
+                    else
+                    {
+                        m_image->set_pixel(x, y, Blue);
+                    }
                 }
             }
         }
