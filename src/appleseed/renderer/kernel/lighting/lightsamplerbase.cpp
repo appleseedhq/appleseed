@@ -47,6 +47,10 @@ using namespace std;
 namespace renderer
 {
 
+//
+// LightSamplerBase class implementation.
+//
+
 LightSamplerBase::LightSamplerBase(const ParamArray& params)
   : m_params(params)
   , m_emitting_triangle_hash_table(m_triangle_key_hasher)
