@@ -52,6 +52,7 @@
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/aabb.h"
+#include "foundation/math/fastmath.h"
 #include "foundation/math/filter.h"
 #include "foundation/math/ordering.h"
 #include "foundation/math/population.h"
@@ -68,6 +69,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cmath>
 #include <deque>
 #include <memory>
 #include <string>
@@ -140,6 +142,72 @@ namespace
                     : Axis::Vertical;   // block is taller
         }
     };
+
+
+    //
+    // Calculation of noise level inside a block or a pixel.
+    //
+
+    // Compute the variance of a weighted pixel given the value of the same pixel with 2 different samples count.
+    // The first given pixel `main` contains N samples.
+    // The second given pixel `second` contains N/2 samples (samples included in `second` are also in `main`).
+    float compute_weighted_pixel_variance(
+        const float*            main,
+        const float*            second)
+    {
+        // Get weights.
+        const float main_weight = *main++;
+        const float rcp_main_weight = main_weight == 0.0f ? 0.0f : 1.0f / main_weight;
+        const float second_weight = *second++;
+        const float rcp_second_weight = second_weight == 0.0f ? 0.0f : 1.0f / second_weight;
+
+        // Get colors and assign weights.
+        Color4f main_color(main[0], main[1], main[2], main[3]);
+        main_color *= rcp_main_weight;
+
+        Color4f second_color(second[0], second[1], second[2], second[3]);
+        second_color *= rcp_second_weight;
+
+        const float rgb = abs(main_color.r) + abs(main_color.g) + abs(main_color.b);
+
+        if (rgb == 0.0f)
+            return 0.0f;
+
+        // Compute variance.
+        return
+            fast_rcp_sqrt(rgb) * (
+                abs(main_color.r - second_color.r) +
+                abs(main_color.g - second_color.g) +
+                abs(main_color.b - second_color.b));
+    }
+
+    // Compute the variance of the tile `main` for pixels in the bounding box `bb`.
+    // A second tile `second` is used which contains half of the samples of `main`.
+    float compute_tile_variance(
+        const AABB2u&           bb,
+        const FilteredTile*     main,
+        const FilteredTile*     second)
+    {
+        float error = 0.0f;
+
+        assert(main->get_crop_window() == second->get_crop_window());
+        assert(main->get_crop_window().contains(bb.min));
+        assert(main->get_crop_window().contains(bb.max));
+
+        // Loop over block pixels.
+        for (size_t y = bb.min.y; y <= bb.max.y; ++y)
+        {
+            for (size_t x = bb.min.x; x <= bb.max.x; ++x)
+            {
+                const float* main_ptr = main->pixel(x, y);
+                const float* second_ptr = second->pixel(x, y);
+
+                error = max(error, compute_weighted_pixel_variance(main_ptr, second_ptr));
+            }
+        }
+
+        return error;
+    }
 
 
     //
@@ -343,7 +411,7 @@ namespace
                 rendering_blocks.pop_front();
 
                 // Each batch contains 'min' samples.
-                assert(pb.m_spp < m_params.m_max_samples || m_params.m_max_samples == 0);
+                assert(pb.m_spp <= m_params.m_max_samples || m_params.m_max_samples == 0);
                 const size_t batch_size =
                     m_params.m_max_samples > 0
                         ? min(m_params.m_batch_size, m_params.m_max_samples - pb.m_spp)
@@ -374,7 +442,7 @@ namespace
 
                 // Evaluate block's noise amount.
                 pb.m_block_error =
-                    FilteredTile::compute_tile_variance(
+                    compute_tile_variance(
                         block_image_bb,
                         framebuffer,
                         second_framebuffer.get());
@@ -424,11 +492,15 @@ namespace
             // Rendering finished, fill diagnostic AOVs and update statistics.
             size_t tile_converged_pixel = 0;
 
+            float average_noise_level = 0.0f;
+
             for (size_t i = 0, n = finished_blocks.size(); i < n; ++i)
             {
                 const PixelBlock& pb = finished_blocks[i];
                 const AABB2u pb_image_aabb = AABB2i::intersect(framebuffer->get_crop_window(), pb.m_surface);
                 const size_t pb_pixel_count = static_cast<size_t>(pb_image_aabb.volume());
+
+                average_noise_level += pb.m_block_error * pb_pixel_count;
 
                 // Update statistics.
                 m_spp.insert(pb.m_spp, pb_pixel_count);
@@ -475,6 +547,13 @@ namespace
                     pretty_percent(tile_converged_pixel, pixel_count, 1).c_str(),
                     pretty_scalar(m_spp.get_mean(), 1).c_str());
             }
+
+            // Inform the user about the tile average noise level.
+            average_noise_level /= static_cast<float>(pixel_count);
+            RENDERER_LOG_INFO("tile (" FMT_SIZE_T ", " FMT_SIZE_T ") average noise level: %f.",
+                tile_x,
+                tile_y,
+                average_noise_level);
 
             // Develop the framebuffer to the tile.
             framebuffer->develop_to_tile(tile, aov_tiles);
@@ -758,9 +837,9 @@ namespace
             SamplingContext sampling_context(
                 rng,
                 m_params.m_sampling_mode,
-                2,                              // number of dimensions
-                batch_size,                     // number of samples
-                instance);                      // initial instance number
+                2,                          // number of dimensions
+                0,                          // number of samples -- unknown
+                instance);                  // initial instance number
 
             for (size_t i = 0; i < batch_size; ++i)
             {
