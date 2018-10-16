@@ -31,7 +31,6 @@
 #include "filteredtile.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/colorspace.h"
 #include "foundation/image/pixel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
