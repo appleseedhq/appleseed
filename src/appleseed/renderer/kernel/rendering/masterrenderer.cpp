@@ -260,48 +260,21 @@ struct MasterRenderer::Impl
                 &abort_switch);
     }
 
-    // Return true if the scene passes basic integrity checks.
-    bool check_scene() const
-    {
-        if (m_project.get_scene() == nullptr)
-        {
-            RENDERER_LOG_ERROR("project does not contain a scene.");
-            return false;
-        }
-
-        if (m_project.get_frame() == nullptr)
-        {
-            RENDERER_LOG_ERROR("project does not contain a frame.");
-            return false;
-        }
-
-        if (m_project.get_uncached_active_camera() == nullptr)
-        {
-            RENDERER_LOG_ERROR("no active camera in project.");
-            return false;
-        }
-
-        return true;
-    }
-
-    // Bind all scene entities inputs. Return true on success, false otherwise.
-    bool bind_scene_entities_inputs() const
-    {
-        InputBinder input_binder(*m_project.get_scene());
-        input_binder.bind();
-        return input_binder.get_error_count() == 0;
-    }
-
     // Render the project.
     MasterRenderer::RenderingResult render()
     {
+        // RenderingResult is initialized to Failed.
+        RenderingResult result;
+
+        // Perform basic integrity checks on the scene.
+        if (!check_scene())
+            return result;
+
         // Initialize thread-local variables.
         Spectrum::set_mode(get_spectrum_mode(m_params));
 
         // Reset the frame's render info.
         m_project.get_frame()->render_info().clear();
-
-        RenderingResult result;
 
         try
         {
@@ -351,6 +324,30 @@ struct MasterRenderer::Impl
 #endif
 
         return result;
+    }
+
+    // Return true if the scene passes basic integrity checks.
+    bool check_scene() const
+    {
+        if (m_project.get_scene() == nullptr)
+        {
+            RENDERER_LOG_ERROR("project does not contain a scene.");
+            return false;
+        }
+
+        if (m_project.get_frame() == nullptr)
+        {
+            RENDERER_LOG_ERROR("project does not contain a frame.");
+            return false;
+        }
+
+        if (m_project.get_uncached_active_camera() == nullptr)
+        {
+            RENDERER_LOG_ERROR("no active camera in project.");
+            return false;
+        }
+
+        return true;
     }
 
     // Render a frame until completed or aborted and handle reinitialization events.
@@ -415,15 +412,6 @@ struct MasterRenderer::Impl
         // Construct an abort switch that will allow to abort initialization or rendering.
         RendererControllerAbortSwitch abort_switch(*m_renderer_controller);
 
-        // Perform basic integrity checks on the scene.
-        if (!check_scene())
-            return IRendererController::AbortRendering;
-
-        // Expand all procedural assemblies.
-        // todo: could this be done in Scene::on_render_begin()?
-        if (!m_project.get_scene()->expand_procedural_assemblies(m_project, &abort_switch))
-            return IRendererController::AbortRendering;
-
         // Bind entities inputs. This must be done before creating/updating the trace context.
         if (!bind_scene_entities_inputs())
             return IRendererController::AbortRendering;
@@ -475,6 +463,14 @@ struct MasterRenderer::Impl
         RENDERER_LOG_DEBUG("%s", texture_store.get_statistics().to_string().c_str());
 
         return status;
+    }
+
+    // Bind all scene entities inputs. Return true on success, false otherwise.
+    bool bind_scene_entities_inputs() const
+    {
+        InputBinder input_binder(*m_project.get_scene());
+        input_binder.bind();
+        return input_binder.get_error_count() == 0;
     }
 
     // Render a frame until completed or aborted and handle restart events.
