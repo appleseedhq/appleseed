@@ -33,7 +33,7 @@
 //
 // Quick reminder about Visual Studio versions:
 //
-//   Visual Studio 2017   MSVC++ 15.0   _MSC_VER == 1910
+//   Visual Studio 2017   MSVC++ 14.1   _MSC_VER == 1910
 //   Visual Studio 2015   MSVC++ 14.0   _MSC_VER == 1900
 //   Visual Studio 2013   MSVC++ 12.0   _MSC_VER == 1800
 //   Visual Studio 2012   MSVC++ 11.0   _MSC_VER == 1700 (oldest supported version)
