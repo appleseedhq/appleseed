@@ -356,6 +356,9 @@ bool Scene::on_render_begin(
     if (!BaseGroup::on_render_begin(project, parent,recorder,  abort_switch))
         return false;
 
+    if (!expand_procedural_assemblies(project, abort_switch))
+        return false;
+
     // The scene's render data must be computed before `on_render_begin()` is called on child entities,
     // because child entities such as cameras may retrieve the scene's bounding box or diameter.
     assert(!m_has_render_data);
