@@ -478,6 +478,8 @@ namespace
             Spectrum&               value,
             float&                  probability) const
         {
+            assert(m_safe_scene_diameter > 0.0);
+
             // sun_diameter = 1.3914
             // angular_diameter = 2 * arctan(sun_diameter / (2 * distance))
             // tan(angular_diameter / 2) * distance = sun_radius
