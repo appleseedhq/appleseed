@@ -145,4 +145,18 @@ void Light::sample(
             probability);
 }
 
+bool Light::get_cast_shadows() const
+{
+
+  return m_cast_shadows;
+
+}
+
+void Light::set_cast_shadows(const bool cast_shadows)
+{
+
+  m_cast_shadows = cast_shadows;
+
+}
+
 }   // namespace renderer

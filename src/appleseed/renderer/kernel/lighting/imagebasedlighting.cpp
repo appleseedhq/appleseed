@@ -204,9 +204,23 @@ void compute_ibl_environment_sampling(
 
         // Discard occluded samples.
         Spectrum transmission;
-        material_sampler.trace_simple(shading_context, incoming, transmission);
-        if (is_zero(transmission))
-            continue;
+        if(environment_edf.get_cast_shadows())
+        {
+            const ShadingPoint& shading_point = material_sampler.trace(
+                shading_context,
+                incoming,
+                transmission);
+
+            if (shading_point.hit_surface()){}
+                continue;
+
+            if (is_zero(transmission))
+                continue;
+        }
+        else
+        {
+            transmission.set(1.0f);
+        }
 
         // Evaluate the BSDF.
         DirectShadingComponents material_value;

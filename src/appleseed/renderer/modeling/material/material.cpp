@@ -297,4 +297,19 @@ Material::RenderData::DefaultTangentMode Material::get_default_tangent_mode() co
                                             RenderData::DefaultTangentMode::Radial;
 }
 
+bool Material::get_cast_shadows() const
+{
+
+  return m_cast_shadows;
+
+}
+
+void Material::set_cast_shadows(const bool cast_shadows)
+{
+    if(has_emission())
+    {
+        m_cast_shadows = cast_shadows;
+    }
+}
+
 }   // namespace renderer
