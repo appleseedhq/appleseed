@@ -160,13 +160,13 @@ class APPLESEED_DLLSYMBOL Material
     // Render-time data are available between on_frame_begin() and on_frame_end() calls.
     const RenderData& get_render_data() const;
 
-    virtual bool get_cast_shadows() const;
-    virtual void set_cast_shadows(const bool cast_shadows);
+    bool get_cast_shadows() const;
+    void set_cast_shadows(const bool cast_shadows);
 
   protected:
     bool        m_has_render_data;
     RenderData  m_render_data;
-    bool        m_cast_shadows = true;
+    bool        m_cast_shadows;
 
     // Constructor.
     Material(

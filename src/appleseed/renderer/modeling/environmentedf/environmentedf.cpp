@@ -62,6 +62,7 @@ EnvironmentEDF::EnvironmentEDF(
   : ConnectableEntity(g_class_uid, params)
 {
     set_name(name);
+    m_env_cast_shadows = true;
 }
 
 bool EnvironmentEDF::on_frame_begin(
@@ -124,16 +125,12 @@ bool EnvironmentEDF::on_frame_begin(
 
 bool EnvironmentEDF::get_cast_shadows() const
 {
-
   return m_env_cast_shadows;
-
 }
 
 void EnvironmentEDF::set_cast_shadows(const bool cast_shadows)
 {
-
   m_env_cast_shadows = cast_shadows;
-
 }
 
 }   // namespace renderer

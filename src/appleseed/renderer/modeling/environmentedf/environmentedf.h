@@ -114,13 +114,13 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
     virtual float evaluate_pdf(
         const foundation::Vector3f& outgoing) const = 0;        // world space emission direction, unit-length
 
-    virtual bool get_cast_shadows() const;
+    bool get_cast_shadows() const;
 
-    virtual void set_cast_shadows(const bool cast_shadows);
+    void set_cast_shadows(const bool cast_shadows);
 
   protected:
     TransformSequence m_transform_sequence;
-    bool m_env_cast_shadows = true;
+    bool m_env_cast_shadows;
 };
 
 

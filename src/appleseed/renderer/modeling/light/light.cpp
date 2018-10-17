@@ -76,6 +76,7 @@ Light::Light(
   , m_flags(0)
 {
     set_name(name);
+    m_cast_shadows = true;
 }
 
 Light::~Light()
