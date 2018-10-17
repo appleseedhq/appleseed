@@ -3,6 +3,9 @@
 <project format_revision="21">
     <search_paths>
         <search_path>
+            ../../../shaders/appleseed
+        </search_path>
+        <search_path>
             ../../../shaders/maya
         </search_path>
     </search_paths>
@@ -46,7 +49,7 @@
                     <parameter name="in_translucence" value="float 0" />
                     <parameter name="in_transparency" value="color 0 0 0" />
                 </shader>
-                <shader type="surface" name="as_maya_closure2Surface" layer="closureToSurface">
+                <shader type="surface" name="as_closure2surface" layer="closureToSurface">
                 </shader>
                 <connect_shaders src_layer="lambert1" src_param="out_outColor" dst_layer="closureToSurface" dst_param="in_input" />
             </shader_group>

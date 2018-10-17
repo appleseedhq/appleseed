@@ -3,6 +3,9 @@
 <project format_revision="21">
     <search_paths>
         <search_path>
+            ../../../shaders/appleseed
+        </search_path>
+        <search_path>
             ../../../shaders/maya
         </search_path>
     </search_paths>
@@ -66,7 +69,7 @@
                     <parameter name="in_translucenceFocus" value="float 0.5" />
                     <parameter name="in_transparency" value="color 0 0 0" />
                 </shader>
-                <shader type="surface" name="as_maya_closure2Surface" layer="closureToSurface">
+                <shader type="surface" name="as_closure2surface" layer="closureToSurface">
                 </shader>
                 <connect_shaders src_layer="blinn1" src_param="out_outColor" dst_layer="closureToSurface" dst_param="in_input" />
             </shader_group>
@@ -120,7 +123,7 @@
                     <parameter name="in_translucenceFocus" value="float 0.5" />
                     <parameter name="in_transparency" value="color 0 0 0" />
                 </shader>
-                <shader type="surface" name="as_maya_closure2Surface" layer="closureToSurface">
+                <shader type="surface" name="as_closure2surface" layer="closureToSurface">
                 </shader>
                 <connect_shaders src_layer="place2dTexture1" src_param="out_outUV" dst_layer="checker1" dst_param="in_uvCoord" />
                 <connect_shaders src_layer="place2dTexture1" src_param="out_outUvFilterSize" dst_layer="checker1" dst_param="in_uvFilterSize" />
