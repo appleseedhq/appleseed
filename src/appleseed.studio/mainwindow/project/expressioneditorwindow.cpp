@@ -59,6 +59,7 @@
 #include <QDesktopServices>
 #include <QFileInfo>
 #include <QHBoxLayout>
+#include <QKeySequence>
 #include <QLabel>
 #include <QPushButton>
 #include <QScrollArea>
@@ -118,31 +119,39 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     controls_scrollarea->setWidget(controls);
     left_layout->addWidget(controls_scrollarea);
 
-    // Clear, Save, Load, Example buttons.
-    QHBoxLayout* file_buttonbox = new QHBoxLayout();
-    QPushButton* clear_button = new QPushButton("Clear");
-    clear_button->setToolTip("Ctrl+N");
+    // Clear button.
     QShortcut* clear_shortcut = new QShortcut(QKeySequence("Ctrl+N"), this);
-    connect(clear_button, SIGNAL(clicked()), SLOT(slot_clear_expression()));
     connect(clear_shortcut, SIGNAL(activated()), SLOT(slot_clear_expression()));
-    QPushButton* save_button = new QPushButton("Save");
-    save_button->setToolTip("Ctrl+S");
+    QPushButton* clear_button = new QPushButton("Clear");
+    clear_button->setToolTip(clear_shortcut->key().toString(QKeySequence::NativeText));
+    connect(clear_button, SIGNAL(clicked()), SLOT(slot_clear_expression()));
+
+    // Save button.
     QShortcut* save_shortcut = new QShortcut(QKeySequence("Ctrl+S"), this);
-    connect(save_button, SIGNAL(clicked()), SLOT(slot_save_script()));
     connect(save_shortcut, SIGNAL(activated()), SLOT(slot_save_script()));
-    QPushButton* load_button = new QPushButton("Load");
-    load_button->setToolTip("Ctrl+O");
+    QPushButton* save_button = new QPushButton("Save");
+    save_button->setToolTip(save_shortcut->key().toString(QKeySequence::NativeText));
+    connect(save_button, SIGNAL(clicked()), SLOT(slot_save_script()));
+
+    // Load button.
     QShortcut* load_shortcut = new QShortcut(QKeySequence("Ctrl+O"), this);
-    connect(load_button, SIGNAL(clicked()), SLOT(slot_load_script()));
     connect(load_shortcut, SIGNAL(activated()), SLOT(slot_load_script()));
-    QPushButton *help_button = new QPushButton("Help");
+    QPushButton* load_button = new QPushButton("Load");
+    load_button->setToolTip(load_shortcut->key().toString(QKeySequence::NativeText));
+    connect(load_button, SIGNAL(clicked()), SLOT(slot_load_script()));
+
+    // Help button.
+    QPushButton* help_button = new QPushButton("Help");
     connect(help_button, SIGNAL(clicked()), SLOT(slot_show_help()));
+
+    // Examples button.
     QPushButton* examples_button = new QPushButton("Examples");
     connect(examples_button, SIGNAL(clicked()), SLOT(slot_show_examples()));
 
+    QHBoxLayout* file_buttonbox = new QHBoxLayout();
     file_buttonbox->addWidget(clear_button);
-    file_buttonbox->addWidget(save_button);
     file_buttonbox->addWidget(load_button);
+    file_buttonbox->addWidget(save_button);
     file_buttonbox->addWidget(help_button);
     file_buttonbox->addWidget(examples_button);
     left_layout->addLayout(file_buttonbox);

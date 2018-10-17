@@ -71,12 +71,14 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
     QSplitter* console_body = new QSplitter(this);
     console_body->setOrientation(Qt::Vertical);
 
+    // Output at the top.
+    m_output = new PythonOutput(console_body);
+    console_body->addWidget(m_output);
+
+    // Input at the bottom.
     m_input = new PythonEditor(console_body);
     connect(m_input, SIGNAL(textChanged()), this, SLOT(slot_file_changed()));
-
-    m_output = new PythonOutput(console_body);
-
-    console_body->addWidget(m_output);
+    connect(m_input, SIGNAL(selectionChanged()), this, SLOT(slot_change_exec_selection_button_state()));
     console_body->addWidget(m_input);
 
     m_action_new_file =
@@ -99,30 +101,46 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
     connect(m_action_save_file_as, SIGNAL(triggered()), this, SLOT(slot_save_file_as()));
     addAction(m_action_save_file_as);
 
+    const QKeySequence action_execute_all_shortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Return);
     m_action_execute_all =
-        new QAction(load_icons("python_execute_all"), "Execute All Code (Ctrl+Shift+Enter)", this);
-    m_action_execute_all->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Return);
+        new QAction(
+            load_icons("python_execute_all"),
+            combine_name_and_shortcut("Execute All Code", action_execute_all_shortcut),
+            this);
+    m_action_execute_all->setShortcut(action_execute_all_shortcut);
     m_action_execute_all->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(m_action_execute_all, SIGNAL(triggered()), this, SLOT(slot_execute_all()));
     addAction(m_action_execute_all);
 
+    const QKeySequence action_execute_selection_shortcut(Qt::CTRL + Qt::Key_Return);
     m_action_execute_selection =
-        new QAction(load_icons("python_execute_selection"), "Execute Selected Code (Ctrl+Enter)", this);
-    m_action_execute_selection->setShortcut(Qt::CTRL + Qt::Key_Return);
+        new QAction(
+            load_icons("python_execute_selection"),
+            combine_name_and_shortcut("Execute Selected Code", action_execute_selection_shortcut),
+            this);
+    m_action_execute_selection->setShortcut(action_execute_selection_shortcut);
     m_action_execute_selection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     m_action_execute_selection->setEnabled(false);
     connect(m_action_execute_selection, SIGNAL(triggered()), this, SLOT(slot_execute_selection()));
     addAction(m_action_execute_selection);
 
+    const QKeySequence action_clear_selection_shortcut(Qt::CTRL + Qt::Key_D);
     m_action_clear_selection =
-        new QAction(load_icons("python_clear_output"), "Clear Console Output (Ctrl+D)", this);
-    m_action_clear_selection->setShortcut(Qt::CTRL + Qt::Key_D);
+        new QAction(
+            load_icons("python_clear_output"),
+            combine_name_and_shortcut("Clear Console Output", action_clear_selection_shortcut),
+            this);
+    m_action_clear_selection->setShortcut(action_clear_selection_shortcut);
     m_action_clear_selection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(m_action_clear_selection, SIGNAL(triggered()), this, SLOT(slot_clear_output()));
     addAction(m_action_clear_selection);
 
-    m_action_focus_on_input = new QAction("Focus on Console Input", this);
-    m_action_focus_on_input->setShortcut(Qt::CTRL + Qt::Key_L);
+    const QKeySequence action_focus_on_input_shortcut(Qt::CTRL + Qt::Key_L);
+    m_action_focus_on_input =
+        new QAction(
+            combine_name_and_shortcut("Focus on Console Input", action_focus_on_input_shortcut),
+            this);
+    m_action_focus_on_input->setShortcut(action_focus_on_input_shortcut);
     connect(m_action_focus_on_input, SIGNAL(triggered()), m_input, SLOT(setFocus()));
     addAction(m_action_focus_on_input);
 
@@ -137,13 +155,10 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
     toolbar->addAction(m_action_execute_all);
     toolbar->addAction(m_action_clear_selection);
 
-    connect(m_input, SIGNAL(selectionChanged()), this, SLOT(slot_change_exec_selection_button_state()));
-
     QVBoxLayout* layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(toolbar);
     layout->addWidget(console_body);
-
     setLayout(layout);
 
     PythonInterpreter::instance().initialize(OutputRedirector(m_output));
@@ -153,14 +168,13 @@ void PythonConsoleWidget::wheelEvent(QWheelEvent* event)
 {
     if (QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
     {
-        int new_font_size = font().pointSize() - event->delta() / 120;
+        const int new_font_size = font().pointSize() - event->delta() / 120;
 
         QFont new_font = m_output->font();
         new_font.setPointSize(new_font_size);
         m_output->setFont(new_font);
     }
-    else
-        QWidget::wheelEvent(event);
+    else QWidget::wheelEvent(event);
 }
 
 void PythonConsoleWidget::slot_file_changed()
