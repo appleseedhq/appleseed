@@ -30,8 +30,6 @@
 #include "diagnosticaov.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/aov/aovaccumulator.h"
-#include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
@@ -39,7 +37,6 @@
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/aabb.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
@@ -48,7 +45,6 @@
 #include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
-#include <cstddef>
 #include <string>
 
 using namespace foundation;
@@ -200,74 +196,10 @@ namespace
 
 
     //
-    // Diagnostic AOV.
-    //
-
-    class DiagnosticAOV
-      : public AOV
-    {
-      public:
-        DiagnosticAOV(const char* name, const ParamArray& params)
-          : AOV(name, params)
-        {
-        }
-
-        void release() override
-        {
-            delete this;
-        }
-
-        size_t get_channel_count() const override
-        {
-            return 3;
-        }
-
-        const char** get_channel_names() const override
-        {
-            static const char* ChannelNames[] = {"R", "G", "B"};
-            return ChannelNames;
-        }
-
-        bool has_color_data() const override
-        {
-            return false;
-        }
-
-        void create_image(
-            const size_t canvas_width,
-            const size_t canvas_height,
-            const size_t tile_width,
-            const size_t tile_height,
-            ImageStack&  aov_images) override
-        {
-            m_image =
-                new Image(
-                    canvas_width,
-                    canvas_height,
-                    tile_width,
-                    tile_height,
-                    get_channel_count(),
-                    PixelFormatFloat);
-        }
-
-        void clear_image() override
-        {
-            m_image->clear(Color3f(0.0f, 0.0f, 0.0f));
-        }
-
-        auto_release_ptr<AOVAccumulator> create_accumulator() const override
-        {
-            return auto_release_ptr<AOVAccumulator>(
-                new DiagnosticAOVAccumulator());
-        }
-    };
-
-
-    //
     // Invalid Sample AOV.
     //
 
-    const char* Invalid_Samples_Model = "invalid_samples_aov";
+    const char* InvalidSamplesAOVModel = "invalid_samples_aov";
 
     class InvalidSamplesAOV
       : public DiagnosticAOV
@@ -285,7 +217,7 @@ namespace
 
         const char* get_model() const override
         {
-            return Invalid_Samples_Model;
+            return InvalidSamplesAOVModel;
         }
 
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
@@ -297,72 +229,10 @@ namespace
 
 
     //
-    // Pixel Sample Count AOV.
-    //
-
-    const char* Pixel_Sample_Count_Model = "pixel_sample_count_aov";
-
-    class PixelSampleCountAOV
-      : public DiagnosticAOV
-    {
-      public:
-        explicit PixelSampleCountAOV(const ParamArray& params)
-          : DiagnosticAOV("pixel_sample_count", params)
-        {
-        }
-
-        const char* get_model() const override
-        {
-            return Pixel_Sample_Count_Model;
-        }
-
-        void post_process_image(const AABB2u& crop_window) override
-        {
-            static const Color3f Blue(0.0f, 0.0f, 1.0f);
-            static const Color3f Red(1.0f, 0.0f, 0.0f);
-
-            // Find the maximum number of samples per pixel.
-            float max_spp = 0.0f;
-
-            for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
-            {
-                for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
-                {
-                    Color3f color;
-                    m_image->get_pixel(x, y, color);
-                    max_spp = max(color[0], max_spp);
-                }
-            }
-
-            // Normalize.
-            for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
-            {
-                for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
-                {
-                    Color3f color;
-                    m_image->get_pixel(x, y, color);
-
-                    if (max_spp != 0.0f)
-                    {
-                        const float c = fit(color[0], 0.0f, max_spp, 0.0f, 1.0f);
-                        assert(c >= 0.0f && c <= 1.0f);
-                        m_image->set_pixel(x, y, lerp(Blue, Red, c));
-                    }
-                    else
-                    {
-                        m_image->set_pixel(x, y, Red);
-                    }
-                }
-            }
-        }
-    };
-
-
-    //
     // Pixel Variation AOV.
     //
 
-    const char* Pixel_Variation_Model = "pixel_variation_aov";
+    const char* PixelVariationAOVModel = "pixel_variation_aov";
 
     class PixelVariationAOV
       : public DiagnosticAOV
@@ -415,9 +285,182 @@ namespace
 
         const char* get_model() const override
         {
-            return Pixel_Variation_Model;
+            return PixelVariationAOVModel;
         }
     };
+}
+
+
+//
+// Diagnostic AOV class implementation.
+//
+
+DiagnosticAOV::DiagnosticAOV(const char* name, const ParamArray& params)
+  : AOV(name, params)
+{
+}
+
+void DiagnosticAOV::release()
+{
+    delete this;
+}
+
+size_t DiagnosticAOV::get_channel_count() const
+{
+    return 3;
+}
+
+const char** DiagnosticAOV::get_channel_names() const
+{
+    static const char* ChannelNames[] = {"R", "G", "B"};
+    return ChannelNames;
+}
+
+bool DiagnosticAOV::has_color_data() const
+{
+    return false;
+}
+
+void DiagnosticAOV::create_image(
+    const size_t canvas_width,
+    const size_t canvas_height,
+    const size_t tile_width,
+    const size_t tile_height,
+    ImageStack&  aov_images)
+{
+    m_image =
+        new Image(
+            canvas_width,
+            canvas_height,
+            tile_width,
+            tile_height,
+            get_channel_count(),
+            PixelFormatFloat);
+}
+
+void DiagnosticAOV::clear_image()
+{
+    m_image->clear(Color3f(0.0f, 0.0f, 0.0f));
+}
+
+auto_release_ptr<AOVAccumulator> DiagnosticAOV::create_accumulator() const
+{
+    return auto_release_ptr<AOVAccumulator>(
+        new DiagnosticAOVAccumulator());
+}
+
+
+//
+// PixelSampleCountAOV class implementation.
+//
+
+namespace
+{
+    const char* PixelSampleCountAOVModel = "pixel_sample_count_aov";
+}
+
+PixelSampleCountAOV::PixelSampleCountAOV(const ParamArray& params)
+  : DiagnosticAOV("pixel_sample_count", params)
+  , m_min_spp(0)
+  , m_max_spp(0)
+{
+}
+
+const char* PixelSampleCountAOV::get_model() const
+{
+    return PixelSampleCountAOVModel;
+}
+
+namespace
+{
+    // Return the maximum sample/pixel count from `image`'s pixels inside of `crop_window`.
+    float get_max_spp_count(
+        const Image*  image,
+        const AABB2u& crop_window)
+    {
+        float max_spp = 0.0f;
+
+        for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
+        {
+            for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
+            {
+                Color3f color;
+                image->get_pixel(x, y, color);
+                max_spp = max(color[0], max_spp);
+            }
+        }
+
+        return max_spp;
+    }
+
+    void fill_aov(
+        Image*          image,
+        const AABB2u&   crop_window,
+        const Color3f&  color)
+    {
+        for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
+        {
+            for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
+            {
+                image->set_pixel(x, y, color);
+            }
+        }
+    }
+}
+
+void PixelSampleCountAOV::post_process_image(const AABB2u& crop_window)
+{
+    static const Color3f Blue(0.0f, 0.0f, 1.0f);
+    static const Color3f Red(1.0f, 0.0f, 0.0f);
+
+    // At this point, the AOV is filled with real sample/pixel count values.
+    //
+    // We want to normalize it so that high sample/pixel count are red and
+    // low sample/pixel count are blue.
+    //
+    // If the renderer is uniform, the AOV should be empty
+    // and the exported AOV will be completely red.
+    //
+    // Otherwise, if the renderer is adaptive we use
+    // the user min and max sample/pixel count to determine the final color.
+    // If the user max sample/pixel count is 0 (infinite) then we use the
+    // actual max sample/pixel count.
+
+    const float min_spp = static_cast<float>(m_min_spp);
+    const float max_spp =
+        m_max_spp == 0
+            ? get_max_spp_count(m_image, crop_window)
+            : static_cast<float>(m_max_spp);
+
+    if (max_spp == 0.0f)
+    {
+        fill_aov(m_image, crop_window, Red);
+        return;
+    }
+
+    assert(max_spp > min_spp);
+
+    // Normalize.
+    for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
+    {
+        for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
+        {
+            Color3f color;
+            m_image->get_pixel(x, y, color);
+
+            const float c = saturate(fit(color[0], min_spp, max_spp, 0.0f, 1.0f));
+
+            m_image->set_pixel(x, y, lerp(Blue, Red, c));
+        }
+    }
+}
+
+void PixelSampleCountAOV::set_normalization_range(
+    const size_t        min_spp,
+    const size_t        max_spp)
+{
+    m_min_spp = min_spp;
+    m_max_spp = max_spp;
 }
 
 
@@ -432,14 +475,14 @@ void InvalidSamplesAOVFactory::release()
 
 const char* InvalidSamplesAOVFactory::get_model() const
 {
-    return Invalid_Samples_Model;
+    return InvalidSamplesAOVModel;
 }
 
 Dictionary InvalidSamplesAOVFactory::get_model_metadata() const
 {
     return
         Dictionary()
-            .insert("name", Invalid_Samples_Model)
+            .insert("name", InvalidSamplesAOVModel)
             .insert("label", "Invalid Samples");
 }
 
@@ -467,14 +510,14 @@ void PixelSampleCountAOVFactory::release()
 
 const char* PixelSampleCountAOVFactory::get_model() const
 {
-    return Pixel_Sample_Count_Model;
+    return PixelSampleCountAOVModel;
 }
 
 Dictionary PixelSampleCountAOVFactory::get_model_metadata() const
 {
     return
         Dictionary()
-            .insert("name", Pixel_Sample_Count_Model)
+            .insert("name", PixelSampleCountAOVModel)
             .insert("label", "Pixel Sample Count");
 }
 
@@ -502,14 +545,14 @@ void PixelVariationAOVFactory::release()
 
 const char* PixelVariationAOVFactory::get_model() const
 {
-    return Pixel_Variation_Model;
+    return PixelVariationAOVModel;
 }
 
 Dictionary PixelVariationAOVFactory::get_model_metadata() const
 {
     return
         Dictionary()
-            .insert("name", Pixel_Variation_Model)
+            .insert("name", PixelVariationAOVModel)
             .insert("label", "Pixel Variation");
 }
 

@@ -30,22 +30,81 @@
 #define APPLESEED_RENDERER_MODELING_AOV_DIAGNOSTICAOV_H
 
 // appleseed.renderer headers.
+#include "renderer/kernel/aov/aovaccumulator.h"
+#include "renderer/kernel/aov/imagestack.h"
+#include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/aov/iaovfactory.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
-namespace renderer      { class AOV; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
+
+//
+// Diagnostic AOV.
+//
+
+class DiagnosticAOV
+  : public AOV
+{
+  public:
+    DiagnosticAOV(const char* name, const ParamArray& params);
+
+    void release() override;
+
+    size_t get_channel_count() const override;
+
+    const char** get_channel_names() const override;
+
+    bool has_color_data() const override;
+
+    void create_image(
+        const size_t canvas_width,
+        const size_t canvas_height,
+        const size_t tile_width,
+        const size_t tile_height,
+        ImageStack&  aov_images) override;
+
+    void clear_image() override;
+
+    foundation::auto_release_ptr<AOVAccumulator> create_accumulator() const override;
+};
+
+
+//
+// Pixel Sample Count AOV.
+//
+
+class PixelSampleCountAOV
+  : public DiagnosticAOV
+{
+  public:
+    explicit PixelSampleCountAOV(const ParamArray& params);
+
+    const char* get_model() const override;
+
+    void post_process_image(const foundation::AABB2u& crop_window) override;
+
+    void set_normalization_range(const size_t min_spp, const size_t max_spp);
+
+  private:
+    size_t m_min_spp;
+    size_t m_max_spp;
+};
+
 
 //
 // A factory for invalid sample AOVs.
