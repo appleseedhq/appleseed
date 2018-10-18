@@ -191,7 +191,9 @@ size_t CurveObject::push_curve3(const Curve3Type& curve)
             CurveMatrixType::from_array(BezierInverseBasisArray) * CurveMatrixType::from_array(CatmullRomBasisArray));
         break;
     }
+
     impl->m_curves3.push_back(t_curve);
+
     return index;
 }
 

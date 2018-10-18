@@ -59,7 +59,7 @@ class ExceptionNotImplemented
 inline ExceptionNotImplemented::ExceptionNotImplemented()
   : Exception("reached non-implemented code path")
 {
-    assert(!"reached non-implemented code path");
+    assert(!"Reached non-implemented code path.");
 }
 
 }       // namespace foundation

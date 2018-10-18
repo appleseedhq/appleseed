@@ -31,12 +31,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionioerror.h"
-#include "foundation/math/vector.h"
 #include "foundation/curve/icurvebuilder.h"
 #include "foundation/image/color.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/bufferedfile.h"
-#include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <cstring>
@@ -78,12 +77,12 @@ void BinaryCurveFileReader::read(ICurveBuilder& builder)
       // Uncompressed.
       case 1:
         reader.reset(new PassthroughReaderAdapter(file));
-            break;
+        break;
 
       // LZ4-compressed.
       case 2:
         reader.reset(new LZ4CompressedReaderAdapter(file));
-            break;
+        break;
 
       // Unknown format.
       default:
@@ -132,6 +131,7 @@ void BinaryCurveFileReader::read_curves(ReaderAdapter& reader, ICurveBuilder& bu
                 read_curve(reader, builder);
                 builder.end_curve();
             }
+
             builder.end_curve_object();
         }
     }
