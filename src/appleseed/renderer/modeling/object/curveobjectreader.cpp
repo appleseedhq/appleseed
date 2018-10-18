@@ -211,6 +211,8 @@ namespace
             const size_t ControlPointCount = 4;
             const size_t curve_count = m_params.get_optional<size_t>("curves", 100);
             const GScalar curve_width = m_params.get_optional<GScalar>("width", GScalar(0.002));
+
+            // todo: does this code really work with any basis?
             const unsigned char basis = m_params.get_optional<unsigned char>("basis", 2);
 
             begin_curve_object(basis, curve_count);
@@ -249,6 +251,8 @@ namespace
             const GScalar root_width = m_params.get_optional<GScalar>("root_width", GScalar(0.001));
             const GScalar tip_width = m_params.get_optional<GScalar>("tip_width", GScalar(0.0001));
             const GScalar curliness = m_params.get_optional<GScalar>("curliness", GScalar(0.5));
+
+            // todo: does this code really work with any basis?
             const unsigned char basis = m_params.get_optional<unsigned char>("basis", 2);
 
             begin_curve_object(basis, curve_count);

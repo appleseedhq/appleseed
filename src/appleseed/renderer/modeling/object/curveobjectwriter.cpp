@@ -151,6 +151,7 @@ namespace
 
             for (size_t i = 0, e = m_object.get_curve1_count(); i < e; ++i)
             {
+                // todo: why use feq() here?
                 if (m_vertices.empty() || !feq(m_vertices.back(), m_object.get_curve1(i).get_control_point(0)))
                 {
                     m_vertices.push_back(m_object.get_curve1(i).get_control_point(0));
@@ -183,6 +184,7 @@ namespace
 
             for (size_t i = 0, e = m_object.get_curve3_count(); i < e; ++i)
             {
+                // todo: why use feq() here?
                 if (m_vertices.empty() || !feq(m_vertices.back(), m_object.get_curve3(i).get_control_point(0)))
                 {
                     m_vertices.push_back(m_object.get_curve3(i).get_control_point(0));
