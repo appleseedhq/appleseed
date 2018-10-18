@@ -53,7 +53,7 @@ namespace foundation
 //   std::vector of Aligned Elements
 //   http://thetweaker.wordpress.com/2010/05/05/stdvector-of-aligned-elements/
 //
-//   std::vector of Aligned Elements – Revisited
+//   std::vector of Aligned Elements Revisited
 //   http://thetweaker.wordpress.com/2010/08/15/stdvector-of-aligned-elements-revisited/
 //
 //   StackOverflow: Self-contained, STL-compatible implementation of std::vector
