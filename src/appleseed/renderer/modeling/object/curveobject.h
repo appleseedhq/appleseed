@@ -179,7 +179,7 @@ class APPLESEED_DLLSYMBOL CurveObject
     friend class CurveObjectFactory;
 
     struct Impl;
-    Impl*  impl;
+    Impl* impl;
 
     // Constructor.
     CurveObject(

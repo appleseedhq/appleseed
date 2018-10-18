@@ -69,7 +69,7 @@ class MitsHairFileReader
     static void read_and_check_signature(BufferedFile& file);
 
     void read_curves(ReaderAdapter& reader, ICurveBuilder& builder);
-    void push_vertex_properties(Vector3f& v, ICurveBuilder& builder);
+    void push_vertex_properties(const Vector3f& v, ICurveBuilder& builder);
 };
 
 }       // namespace foundation

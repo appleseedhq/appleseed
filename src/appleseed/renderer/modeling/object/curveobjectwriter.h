@@ -32,13 +32,6 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// appleseed.renderer headers.
-#include "renderer/modeling/object/curveobject.h"
-
-// Standard headers.
-#include <fstream>
-#include <ostream>
-
 // Forward declarations.
 namespace renderer  { class CurveObject; }
 

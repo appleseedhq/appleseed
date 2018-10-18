@@ -174,7 +174,7 @@ void MitsHairFileReader::read_curves(ReaderAdapter& reader, ICurveBuilder& build
     }
 }
 
-void MitsHairFileReader::push_vertex_properties(Vector3f& v, ICurveBuilder& builder)
+void MitsHairFileReader::push_vertex_properties(const Vector3f& v, ICurveBuilder& builder)
 {
     builder.push_vertex(v);
     builder.push_vertex_width(m_radius);

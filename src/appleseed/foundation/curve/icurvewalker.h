@@ -31,8 +31,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/vector.h"
 #include "foundation/image/color.h"
+#include "foundation/math/vector.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
