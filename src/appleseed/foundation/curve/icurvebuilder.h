@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/curve/curvebasis.h"
 #include "foundation/image/color.h"
 #include "foundation/math/vector.h"
 
@@ -55,7 +56,7 @@ class APPLESEED_DLLSYMBOL ICurveBuilder
     virtual ~ICurveBuilder() {}
 
     // Begin the definition of a curve object.
-    virtual void begin_curve_object(unsigned char basis, const size_t count = 0) = 0;
+    virtual void begin_curve_object(const CurveBasis basis, const size_t count = 0) = 0;
 
     // Begin the definition of a curve.
     virtual void begin_curve() = 0;

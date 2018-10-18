@@ -77,6 +77,8 @@ set (foundation_curve_sources
     foundation/curve/binarycurvefilereader.h
     foundation/curve/binarycurvefilewriter.cpp
     foundation/curve/binarycurvefilewriter.h
+    foundation/curve/curvebasis.cpp
+    foundation/curve/curvebasis.h
     foundation/curve/genericcurvefilereader.cpp
     foundation/curve/genericcurvefilereader.h
     foundation/curve/genericcurvefilewriter.cpp

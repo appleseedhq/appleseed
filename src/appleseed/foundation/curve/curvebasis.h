@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Girish Ramesh, The appleseedhq Organization
+// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,46 +26,31 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEREADER_H
-#define APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEREADER_H
-
-// appleseed.foundation headers.
-#include "foundation/curve/icurvefilereader.h"
-
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
-// Standard headers.
-#include <cstddef>
-
-// Forward declarations.
-namespace foundation    { class ICurveBuilder; }
+#ifndef APPLESEED_FOUNDATION_CURVE_CURVEBASIS_H
+#define APPLESEED_FOUNDATION_CURVE_CURVEBASIS_H
 
 namespace foundation
 {
 
-//
-// Read a curve file using the right reader based on the extension of the curve file name.
-//
-
-class APPLESEED_DLLSYMBOL GenericCurveFileReader
-  : public ICurveFileReader
+enum class CurveBasis
 {
-  public:
-    // Constructor.
-    GenericCurveFileReader(const char* filename, const float radius, const size_t degree);
-
-    // Destructor.
-    ~GenericCurveFileReader() override;
-
-    // Read a curve object.
-    void read(ICurveBuilder& builder) override;
-
-  private:
-    struct Impl;
-    Impl* impl;
+    Linear      = 1,
+    Bezier      = 2,
+    BSpline     = 3,
+    CatmullRom  = 4
 };
+
+const char* get_curve_basis_name(const CurveBasis basis);
+
+// Inverse Bezier basis array.
+extern const float BezierInverseBasisArray[16];
+
+// B-Spline basis matrix array.
+extern const float BSplineBasisArray[16];
+
+// Catmull-Rom basis matrix array.
+extern const float CatmullRomBasisArray[16];
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEREADER_H
+#endif  // !APPLESEED_FOUNDATION_CURVE_CURVEBASIS_H

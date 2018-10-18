@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Girish Ramesh, The appleseedhq Organization
+// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,46 +26,82 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEREADER_H
-#define APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEREADER_H
-
-// appleseed.foundation headers.
-#include "foundation/curve/icurvefilereader.h"
-
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
-// Standard headers.
-#include <cstddef>
-
-// Forward declarations.
-namespace foundation    { class ICurveBuilder; }
+// Interface header.
+#include "curvebasis.h"
 
 namespace foundation
 {
 
-//
-// Read a curve file using the right reader based on the extension of the curve file name.
-//
-
-class APPLESEED_DLLSYMBOL GenericCurveFileReader
-  : public ICurveFileReader
+const char* get_curve_basis_name(const CurveBasis basis)
 {
-  public:
-    // Constructor.
-    GenericCurveFileReader(const char* filename, const float radius, const size_t degree);
+    switch (basis)
+    {
+      case CurveBasis::Linear: return "linear";
+      case CurveBasis::Bezier: return "bezier";
+      case CurveBasis::BSpline: return "b-spline";
+      case CurveBasis::CatmullRom: return "catmull-rom";
+      default: return "unknown";
+    }
+}
 
-    // Destructor.
-    ~GenericCurveFileReader() override;
-
-    // Read a curve object.
-    void read(ICurveBuilder& builder) override;
-
-  private:
-    struct Impl;
-    Impl* impl;
+const float BezierInverseBasisArray[16] =
+{
+    1.0f,
+    0.0f,
+    0.0f,
+    0.0f,
+    1.0f,
+    0.33333f,
+    0.0f,
+    0.0f,
+    1.0f,
+    0.66666f,
+    0.33333f,
+    0.0f,
+    1.0f,
+    1.0f,
+    1.0f,
+    1.0f
 };
 
-}       // namespace foundation
+const float BSplineBasisArray[16] =
+{
+     0.16666f,
+     0.66666f,
+     0.16666f,
+     0.0f,
+    -0.5f,
+     0.0f,
+     0.5f,
+     0.0f,
+     0.5f,
+    -1.0f,
+     0.5f,
+     0.0f,
+    -0.16666f,
+     0.5f,
+    -0.5f,
+     0.16666f
+};
 
-#endif  // !APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEREADER_H
+const float CatmullRomBasisArray[16] =
+{
+     0.0f,
+     1.0f,
+     0.0f,
+     0.0f,
+    -0.5f,
+     0.0f,
+     0.5f,
+     0.0f,
+     1.0f,
+    -2.5f,
+     2.0f,
+    -0.5f,
+    -0.5f,
+     1.5f,
+    -1.5f,
+     0.5f
+};
+
+}   // namespace foundation
