@@ -33,11 +33,14 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
+#include "renderer/modeling/object/curveobject.h"
 
 // appleseed.foundation headers.
 #include "foundation/curve/genericcurvefilewriter.h"
 #include "foundation/curve/icurvewalker.h"
+#include "foundation/math/scalar.h"
 #include "foundation/platform/defaulttimers.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
@@ -47,6 +50,7 @@
 #include <cstddef>
 #include <exception>
 #include <string>
+#include <vector>
 
 using namespace foundation;
 using namespace std;
@@ -72,29 +76,9 @@ namespace
             create_parameters();
         }
 
-        size_t get_basis() const override
+        CurveBasis get_basis() const override
         {
-            switch (m_object.get_basis())
-            {
-              case CurveBasis::Bezier:
-              case CurveBasis::Bspline:
-              case CurveBasis::Catmullrom:
-                return static_cast<unsigned char>(CurveBasis::Bezier);
-            }
-
-            return static_cast<unsigned char>(m_object.get_basis());
-        }
-
-        const char* get_basis_string() const
-        {
-            switch (m_object.get_basis())
-            {
-              case CurveBasis::Linear:
-                return "linear";
-
-              default:
-                return "bezier";
-            }
+            return m_object.get_basis();
         }
 
         size_t get_curve_count() const override
@@ -224,8 +208,8 @@ namespace
                 break;
 
               case CurveBasis::Bezier:
-              case CurveBasis::Bspline:
-              case CurveBasis::Catmullrom:
+              case CurveBasis::BSpline:
+              case CurveBasis::CatmullRom:
                 create_curve3_parameters();
                 break;
 
@@ -260,10 +244,12 @@ bool CurveObjectWriter::write(
     stopwatch.measure();
 
     RENDERER_LOG_INFO(
-        "wrote curve file %s (%s %s, %s %s, %s %s) in %s.", filepath,
-        pretty_int(walker.get_curve_count()).c_str(),"curves",
-        walker.get_basis_string(), "type",
-        pretty_int(walker.get_total_vertex_count()).c_str(),
+        "wrote curve file %s (%s %s, %s type, %s %s) in %s.",
+        filepath,
+        pretty_uint(walker.get_curve_count()).c_str(),
+        walker.get_curve_count() > 1 ? "curves" : "curve",
+        get_curve_basis_name(object.get_basis()),
+        pretty_uint(walker.get_total_vertex_count()).c_str(),
         walker.get_total_vertex_count() > 1 ? "vertices" : "vertex",
         pretty_time(stopwatch.get_seconds()).c_str());
 

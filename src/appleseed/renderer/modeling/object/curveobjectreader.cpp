@@ -97,38 +97,12 @@ namespace
             return m_object;
         }
 
-        size_t get_curve_count() const
-        {
-            return m_object->get_curve_count();
-        }
-
         size_t get_total_vertex_count() const
         {
             return m_total_vertex_count;
         }
 
-        const char* get_basis() const
-        {
-            switch (m_object->get_basis())
-            {
-              case CurveBasis::Linear:
-                return "linear";
-
-              case CurveBasis::Bezier:
-                return "bezier";
-
-              case CurveBasis::Bspline:
-                return "b-spline";
-
-              case CurveBasis::Catmullrom:
-                return "catmull-rom";
-
-              default:
-                return "invalid basis";
-            }
-        }
-
-        void begin_curve_object(unsigned char basis, const size_t count) override
+        void begin_curve_object(const CurveBasis basis, const size_t count) override
         {
             // Create an empty curve object.
             m_object =
@@ -148,8 +122,8 @@ namespace
                 break;
 
               case CurveBasis::Bezier:
-              case CurveBasis::Bspline:
-              case CurveBasis::Catmullrom:
+              case CurveBasis::BSpline:
+              case CurveBasis::CatmullRom:
                 m_object->reserve_curves3(count);
                 m_object->reserve_curves1(0);
                 break;
@@ -176,8 +150,8 @@ namespace
                 push_curve3(3);
                 break;
 
-              case CurveBasis::Bspline:
-              case CurveBasis::Catmullrom:
+              case CurveBasis::BSpline:
+              case CurveBasis::CatmullRom:
                 push_curve3(1);
                 break;
 
@@ -221,7 +195,7 @@ namespace
             const unsigned char basis = m_params.get_optional<unsigned char>("basis", 2);
             assert(basis >= 1 && basis <= 4);
 
-            begin_curve_object(basis, curve_count);
+            begin_curve_object(static_cast<CurveBasis>(basis), curve_count);
 
             MersenneTwister rng;
 
@@ -262,7 +236,7 @@ namespace
             const unsigned char basis = m_params.get_optional<unsigned char>("basis", 2);
             assert(basis >= 1 && basis <= 4);
 
-            begin_curve_object(basis, curve_count);
+            begin_curve_object(static_cast<CurveBasis>(basis), curve_count);
 
             MersenneTwister rng;
 
@@ -416,10 +390,12 @@ auto_release_ptr<CurveObject> CurveObjectReader::read(
     stopwatch.measure();
 
     RENDERER_LOG_INFO(
-        "loaded curve file %s (%s %s, %s %s, %s %s) in %s.", filepath.c_str(),
-        pretty_int(builder.get_curve_count()).c_str(),"curves",
-        builder.get_basis(), "type",
-        pretty_int(builder.get_total_vertex_count()).c_str(),
+        "loaded curve file %s (%s %s, %s type, %s %s) in %s.",
+        filepath.c_str(),
+        pretty_uint(builder.get_object()->get_curve_count()).c_str(),
+        builder.get_object()->get_curve_count() > 1 ? "curves" : "curve",
+        get_curve_basis_name(builder.get_object()->get_basis()),
+        pretty_uint(builder.get_total_vertex_count()).c_str(),
         builder.get_total_vertex_count() > 1 ? "vertices" : "vertex",
         pretty_time(stopwatch.get_seconds()).c_str());
 

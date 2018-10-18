@@ -110,11 +110,11 @@ void BinaryCurveFileReader::read_curves(ReaderAdapter& reader, ICurveBuilder& bu
         while (true)
         {
             // Read the basis and curve count.
-            unsigned char basis;
+            unsigned char curve_basis;
             uint32 curve_count;
             try
             {
-                checked_read(reader, basis);
+                checked_read(reader, curve_basis);
                 checked_read(reader, curve_count);
             }
             catch (const ExceptionEOF&)
@@ -123,7 +123,10 @@ void BinaryCurveFileReader::read_curves(ReaderAdapter& reader, ICurveBuilder& bu
                 break;
             }
 
-            builder.begin_curve_object(basis, curve_count);
+            if (curve_basis < 1 || curve_basis > 4)
+                throw ExceptionIOError();
+
+            builder.begin_curve_object(static_cast<CurveBasis>(curve_basis), curve_count);
 
             for (uint32 i = 0; i < curve_count; ++i)
             {

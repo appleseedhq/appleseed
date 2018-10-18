@@ -64,7 +64,7 @@ class MitsHairFileReader
   private:
     const std::string       m_filename;
     const float             m_radius;
-    const size_t            m_basis;
+    const size_t            m_degree;
 
     static void read_and_check_signature(BufferedFile& file);
 

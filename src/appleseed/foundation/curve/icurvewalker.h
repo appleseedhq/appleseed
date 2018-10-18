@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/curve/curvebasis.h"
 #include "foundation/image/color.h"
 #include "foundation/math/vector.h"
 
@@ -55,7 +56,7 @@ class APPLESEED_DLLSYMBOL ICurveWalker
     virtual ~ICurveWalker() {}
 
     // Return the basis of the curve.
-    virtual size_t get_basis() const = 0;
+    virtual CurveBasis get_basis() const = 0;
 
     // Return the number of curves.
     virtual size_t get_curve_count() const = 0;

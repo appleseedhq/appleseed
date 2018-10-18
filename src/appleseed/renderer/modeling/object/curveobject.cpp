@@ -124,16 +124,19 @@ Lazy<RegionKit>& CurveObject::get_region_kit()
     return impl->m_lazy_region_kit;
 }
 
+void CurveObject::push_basis(const CurveBasis basis)
+{
+    impl->m_basis = basis;
+}
+
 CurveBasis CurveObject::get_basis() const
 {
     return impl->m_basis;
 }
 
-void CurveObject::push_basis(unsigned char b)
+void CurveObject::push_curve_count(const size_t count)
 {
-    assert(static_cast<CurveBasis>(b) <= CurveBasis::Catmullrom);
-
-    impl->m_basis = static_cast<CurveBasis>(b);
+    impl->m_curve_count = count;
 }
 
 size_t CurveObject::get_curve_count() const
@@ -144,19 +147,14 @@ size_t CurveObject::get_curve_count() const
         return get_curve1_count();
 
       case CurveBasis::Bezier:
-      case CurveBasis::Bspline:
-      case CurveBasis::Catmullrom:
+      case CurveBasis::BSpline:
+      case CurveBasis::CatmullRom:
         return get_curve3_count();
 
       default:
         assert(!"Invalid curve basis.");
         return 0;
     }
-}
-
-void CurveObject::push_curve_count(const size_t c)
-{
-    impl->m_curve_count = c;
 }
 
 void CurveObject::reserve_curves1(const size_t count)
@@ -183,12 +181,16 @@ size_t CurveObject::push_curve3(const Curve3Type& curve)
 
     switch (get_basis())
     {
-      case CurveBasis::Bspline:
+      case CurveBasis::Bezier:
+        // Do nothing.
+        break;
+
+      case CurveBasis::BSpline:
         t_curve.transform_basis(
             CurveMatrixType::from_array(BezierInverseBasisArray) * CurveMatrixType::from_array(BSplineBasisArray));
         break;
 
-      case CurveBasis::Catmullrom:
+      case CurveBasis::CatmullRom:
         t_curve.transform_basis(
             CurveMatrixType::from_array(BezierInverseBasisArray) * CurveMatrixType::from_array(CatmullRomBasisArray));
         break;
