@@ -76,7 +76,6 @@ Light::Light(
   , m_flags(0)
 {
     set_name(name);
-    m_cast_shadows = true;
 }
 
 Light::~Light()
@@ -114,6 +113,11 @@ bool Light::on_frame_begin(
     else
         m_flags &= ~CastIndirectLight;
 
+    if (m_params.get_optional<bool>("cast_shadows", true))
+        m_cast_shadows = true;
+    else
+        m_cast_shadows = false;
+
     if (get_uncached_importance_multiplier() <= 0.0)
     {
         RENDERER_LOG_WARNING(
@@ -150,13 +154,6 @@ bool Light::get_cast_shadows() const
 {
 
   return m_cast_shadows;
-
-}
-
-void Light::set_cast_shadows(const bool cast_shadows)
-{
-
-  m_cast_shadows = cast_shadows;
 
 }
 

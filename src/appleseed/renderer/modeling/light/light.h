@@ -135,7 +135,6 @@ class APPLESEED_DLLSYMBOL Light
         const foundation::Vector3d&     position) const = 0;        // world space emission position
 
     bool get_cast_shadows() const;
-    void set_cast_shadows(const bool cast_shadows);
 
   protected:
     int m_flags;

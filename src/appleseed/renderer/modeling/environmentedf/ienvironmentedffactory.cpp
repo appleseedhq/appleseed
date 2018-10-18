@@ -161,6 +161,15 @@ void IEnvironmentEDFFactory::add_common_sky_input_metadata(DictionaryArray& meta
             .insert("use", "optional")
             .insert("default", "0.0")
             .insert("help", "Shift the horizon vertically"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "env_cast_shadows")
+            .insert("label", "Cast Shadows")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "true")
+            .insert("help", "If enabled, the environment casts shadows"));
 }
 
 }   // namespace renderer

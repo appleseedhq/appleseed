@@ -584,6 +584,15 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("help", "Environment texture vertical shift in degrees"));
 
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "env_cast_shadows")
+            .insert("label", "Cast Shadows")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "true")
+            .insert("help", "If enabled, the environment casts shadows"));
+
     return metadata;
 }
 

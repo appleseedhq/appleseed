@@ -116,8 +116,6 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
 
     bool get_cast_shadows() const;
 
-    void set_cast_shadows(const bool cast_shadows);
-
   protected:
     TransformSequence m_transform_sequence;
     bool m_env_cast_shadows;
