@@ -38,6 +38,7 @@
 #include "foundation/curve/genericcurvefilewriter.h"
 #include "foundation/curve/icurvewalker.h"
 #include "foundation/platform/defaulttimers.h"
+#include "foundation/utility/otherwise.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 
@@ -227,6 +228,8 @@ namespace
               case CurveBasis::Catmullrom:
                 create_curve3_parameters();
                 break;
+
+              assert_otherwise;
             }
         }
     };

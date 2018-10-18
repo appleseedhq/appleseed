@@ -35,6 +35,7 @@
 // appleseed.foundation headers.
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/otherwise.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -148,6 +149,7 @@ size_t CurveObject::get_curve_count() const
         return get_curve3_count();
 
       default:
+        assert(!"Invalid curve basis.");
         return 0;
     }
 }
@@ -190,6 +192,8 @@ size_t CurveObject::push_curve3(const Curve3Type& curve)
         t_curve.transform_basis(
             CurveMatrixType::from_array(BezierInverseBasisArray) * CurveMatrixType::from_array(CatmullRomBasisArray));
         break;
+
+      assert_otherwise;
     }
 
     impl->m_curves3.push_back(t_curve);
