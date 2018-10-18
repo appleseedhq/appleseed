@@ -153,6 +153,8 @@ namespace
                 m_object->reserve_curves3(count);
                 m_object->reserve_curves1(0);
                 break;
+
+              assert_otherwise;
             }
         }
 
@@ -178,7 +180,10 @@ namespace
               case CurveBasis::Catmullrom:
                 push_curve3(1);
                 break;
+
+              assert_otherwise;
             }
+
             m_total_vertex_count += m_vertices.size();
         }
 
@@ -214,6 +219,7 @@ namespace
 
             // todo: does this code really work with any basis?
             const unsigned char basis = m_params.get_optional<unsigned char>("basis", 2);
+            assert(basis >= 1 && basis <= 4);
 
             begin_curve_object(basis, curve_count);
 
@@ -254,6 +260,7 @@ namespace
 
             // todo: does this code really work with any basis?
             const unsigned char basis = m_params.get_optional<unsigned char>("basis", 2);
+            assert(basis >= 1 && basis <= 4);
 
             begin_curve_object(basis, curve_count);
 
@@ -330,6 +337,8 @@ namespace
 
         void push_curve1()
         {
+            assert(m_vertices.size() >= 2);
+
             for (size_t i = 0; i < m_vertices.size() - 1; ++i)
             {
                 const GVector3 points[2] = { m_vertices[i], m_vertices[i + 1] };
@@ -343,6 +352,8 @@ namespace
 
         void push_curve3(const size_t stride)
         {
+            assert(m_vertices.size() >= 4);
+
             for (size_t i = 0; i < m_vertices.size() - 3; i += stride)
             {
                 const GVector3 points[4] = { m_vertices[i], m_vertices[i + 1], m_vertices[i + 2], m_vertices[i + 3] };
