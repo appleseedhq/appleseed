@@ -242,7 +242,11 @@ void CurveObject::collect_asset_paths(StringArray& paths) const
 void CurveObject::update_asset_paths(const StringDictionary& mappings)
 {
     if (m_params.strings().exist("filepath"))
-        m_params.set("filepath", mappings.get(m_params.get("filepath")));
+    {
+        const string filepath = m_params.get<string>("filepath");
+        if (!starts_with(filepath, "builtin:"))
+            m_params.set("filepath", mappings.get(filepath.c_str()));
+    }
 }
 
 
