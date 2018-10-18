@@ -380,8 +380,10 @@ auto_release_ptr<CurveObject> CurveObjectReader::read(
         return auto_release_ptr<CurveObject>(nullptr);
     }
 
-    const char* filename = search_paths.qualify(filepath.c_str()).c_str();
-    GenericCurveFileReader reader(filename, radius, basis);
+    GenericCurveFileReader reader(
+        search_paths.qualify(filepath.c_str()).c_str(),
+        radius,
+        basis);
 
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
