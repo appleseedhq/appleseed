@@ -60,7 +60,7 @@ shader as_globals
     [[
         string as_maya_attribute_name = "worldPref",
         string as_maya_attribute_short_name = "wpr",
-        string label = "Referecence Point",
+        string label = "Reference Point",
         string help = "World space reference point Pref."
     ]],
     output point out_world_Ps = Ps
