@@ -129,7 +129,7 @@ bool EnvironmentEDF::on_frame_begin(
 
 bool EnvironmentEDF::get_cast_shadows() const
 {
-  return m_env_cast_shadows;
+    return m_env_cast_shadows;
 }
 
 }   // namespace renderer

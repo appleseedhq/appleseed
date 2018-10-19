@@ -152,9 +152,7 @@ void Light::sample(
 
 bool Light::get_cast_shadows() const
 {
-
-  return m_cast_shadows;
-
+    return m_cast_shadows;
 }
 
 }   // namespace renderer
