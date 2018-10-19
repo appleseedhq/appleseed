@@ -138,11 +138,11 @@ class APPLESEED_DLLSYMBOL Light
 
   protected:
     int m_flags;
-    bool m_cast_shadows;
 
   private:
     struct Impl;
     Impl* impl;
+    bool m_cast_shadows;
 };
 
 

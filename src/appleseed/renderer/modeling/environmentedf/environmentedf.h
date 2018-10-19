@@ -118,6 +118,8 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
 
   protected:
     TransformSequence m_transform_sequence;
+
+  private:
     bool m_env_cast_shadows;
 };
 
