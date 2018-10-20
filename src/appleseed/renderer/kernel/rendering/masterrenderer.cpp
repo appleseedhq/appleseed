@@ -355,10 +355,18 @@ struct MasterRenderer::Impl
     {
         while (true)
         {
+            m_renderer_controller->on_rendering_begin();
+
             // Construct an abort switch that will allow to abort initialization or rendering.
             RendererControllerAbortSwitch abort_switch(*m_renderer_controller);
 
-            m_renderer_controller->on_rendering_begin();
+            // Expand procedural assemblies before scene entities inputs are bound.
+            if (!m_project.get_scene()->expand_procedural_assemblies(m_project, &abort_switch))
+                return RenderingResult::Aborted;
+
+            // Bind scene entities inputs.
+            if (!bind_scene_entities_inputs())
+                return RenderingResult::Aborted;
 
             // Perform pre-render actions. Don't proceed if that failed.
             OnRenderBeginRecorder recorder;
@@ -406,15 +414,19 @@ struct MasterRenderer::Impl
         }
     }
 
+    // Bind all scene entities inputs. Return true on success, false otherwise.
+    bool bind_scene_entities_inputs() const
+    {
+        InputBinder input_binder(*m_project.get_scene());
+        input_binder.bind();
+        return input_binder.get_error_count() == 0;
+    }
+
     // Initialize rendering components and render a frame.
     IRendererController::Status initialize_and_render_frame()
     {
         // Construct an abort switch that will allow to abort initialization or rendering.
         RendererControllerAbortSwitch abort_switch(*m_renderer_controller);
-
-        // Bind entities inputs. This must be done before creating/updating the trace context.
-        if (!bind_scene_entities_inputs())
-            return IRendererController::AbortRendering;
 
         // Create the texture store.
         TextureStore texture_store(
@@ -446,6 +458,7 @@ struct MasterRenderer::Impl
             m_params.get_optional<bool>("use_embree", false));
 #endif
 
+        // Updating the trace context causes ray tracing acceleration structures to be updated or rebuilt.
         m_project.update_trace_context();
 
         // Print renderer component settings.
@@ -465,14 +478,6 @@ struct MasterRenderer::Impl
         return status;
     }
 
-    // Bind all scene entities inputs. Return true on success, false otherwise.
-    bool bind_scene_entities_inputs() const
-    {
-        InputBinder input_binder(*m_project.get_scene());
-        input_binder.bind();
-        return input_binder.get_error_count() == 0;
-    }
-
     // Render a frame until completed or aborted and handle restart events.
     IRendererController::Status render_frame(
         RendererComponents&     components,
@@ -480,13 +485,13 @@ struct MasterRenderer::Impl
     {
         while (true)
         {
-            // Discard recorded light paths.
-            m_project.get_light_path_recorder().clear();
-
             // The `on_frame_begin()` method of the renderer controller might alter the scene
             // (e.g. transform the camera), thus it needs to be called before the `on_frame_begin()`
             // of the scene which assumes the scene is up-to-date and ready to be rendered.
             m_renderer_controller->on_frame_begin();
+
+            // Discard recorded light paths.
+            m_project.get_light_path_recorder().clear();
 
             // Perform pre-frame actions. Don't proceed if that failed.
             OnFrameBeginRecorder recorder;
