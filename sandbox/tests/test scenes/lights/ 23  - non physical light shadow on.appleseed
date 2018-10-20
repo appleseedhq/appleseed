@@ -41,8 +41,8 @@
         </color>
         <environment_edf name="environment_edf" model="gradient_environment_edf">
             <parameter name="env_cast_shadows" value="false" />
-            <parameter name="horizon_radiance" value="horizon_radiance" />
-            <parameter name="zenith_radiance" value="zenith_radiance" />
+            <parameter name="horizon_radiance" value="0.0" />
+            <parameter name="zenith_radiance" value="0.0" />
         </environment_edf>
         <environment_shader name="environment_shader" model="edf_environment_shader">
             <parameter name="alpha_value" value="1.0" />
@@ -107,7 +107,7 @@
                 <parameter name="exposure" value="0.0" />
                 <parameter name="importance_multiplier" value="1.0" />
                 <parameter name="intensity" value="Lamp_intensity" />
-                <parameter name="intensity_multiplier" value="1.0" />
+                <parameter name="intensity_multiplier" value="50.0" />
                 <transform>
                     <matrix>
                         -0.290864646434784 -0.771100819110870 0.566393196582794 4.076245307922363
