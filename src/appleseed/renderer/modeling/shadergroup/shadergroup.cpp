@@ -226,8 +226,10 @@ bool ShaderGroup::create_optimized_osl_shader_group(
         report_has_closure(g_subsurface_str.c_str(), HasSubsurface);
         report_has_closure(g_holdout_str.c_str(), HasHoldout);
         report_has_closure(g_debug_str.c_str(), HasDebug);
-
         report_has_closure("NPR", HasNPR);
+
+        get_shadergroup_globals_info(shading_system);
+        report_uses_global("dPdtime", UsesdPdTime);
 
         return true;
     }
