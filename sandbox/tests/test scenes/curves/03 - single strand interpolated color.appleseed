@@ -65,11 +65,11 @@
                     <parameter name="in_matte_opacity" value="float 0" />
                     <parameter name="in_matte_opacity_color" value="color 1 1 1" />
                     <parameter name="in_maximum_ray_depth" value="int 4" />
-                    <parameter name="in_metallic_amount" value="float 1" />
+                    <parameter name="in_metallic_amount" value="float 0" />
                     <parameter name="in_roughness" value="float 0.2" />
                     <parameter name="in_sheen_amount" value="float 0" />
                     <parameter name="in_sheen_tint" value="float 0.5" />
-                    <parameter name="in_specular_amount" value="float 1" />
+                    <parameter name="in_specular_amount" value="float 0" />
                     <parameter name="in_specular_tint" value="float 0" />
                     <parameter name="in_subsurface_amount" value="float 0" />
                 </shader>
