@@ -115,7 +115,7 @@ class APPLESEED_DLLSYMBOL Scene
     void update_asset_paths(const foundation::StringDictionary& mappings) override;
 
     // Expand all procedural assemblies in the scene.
-    virtual bool expand_procedural_assemblies(
+    bool expand_procedural_assemblies(
         const Project&              project,
         foundation::IAbortSwitch*   abort_switch = nullptr);
 
