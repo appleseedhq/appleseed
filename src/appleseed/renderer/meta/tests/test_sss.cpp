@@ -235,11 +235,13 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     {
         MersenneTwister rng;
 
+        const float range_size = 1.0f / static_cast<float>(sample_count);
+
         float integral = 0.0f;
 
         for (size_t i = 0; i < sample_count; ++i)
         {
-            const float s = rand_float2(rng);
+            const float s = i * range_size + rand_float2(rng) * range_size;
             const float radius = bssrdf_eval.sample_profile(s);
             const float pdf = bssrdf_eval.evaluate_profile_pdf(radius);
             if (pdf > 0.0f)
@@ -538,11 +540,13 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     {
         MersenneTwister rng;
 
+        const float range_size = 1.0f / static_cast<float>(sample_count);
+
         float integral = 0.0f;
 
         for (size_t i = 0; i < sample_count; ++i)
         {
-            const float s = rand_float2(rng);
+            const float s = i * range_size + rand_float2(rng) * range_size;
             const float cosine = sample_cosine_dwivedi(mu, s);
             const float pdf = evaluate_cosine_dwivedi(mu, cosine);
             integral += 0.5f * (cosine + 1.0f) / pdf;
