@@ -155,10 +155,10 @@ def merge_tree(src, dst, symlinks=False, ignore=None):
             elif os.path.isdir(srcname):
                 merge_tree(srcname, dstname, symlinks, ignore)
             else:
-                # Will raise a SpecialFileError for unsupported file types
+                # Will raise a SpecialFileError for unsupported file types.
                 shutil.copy2(srcname, dstname)
-        # catch the Error from the recursive copytree so that we can
-        # continue with other files
+        # Catch the Error from the recursive copytree so that we can
+        # continue with other files.
         except Error, err:
             errors.extend(err.args[0])
         except EnvironmentError, why:
@@ -167,7 +167,7 @@ def merge_tree(src, dst, symlinks=False, ignore=None):
         shutil.copystat(src, dst)
     except OSError, why:
         if WindowsError is not None and isinstance(why, WindowsError):
-            # Copying file access times may fail on Windows
+            # Copying file access times may fail on Windows.
             pass
         else:
             errors.append((src, dst, str(why)))
