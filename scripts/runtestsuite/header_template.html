@@ -38,7 +38,7 @@
                 });
             }
 
-            function gatherUpdateCommands() {
+            function gatherAllUpdateCommands() {
                 $("ul.commands").empty();
                 $(".result").each(function () {
                     var result = $(this);
@@ -49,6 +49,13 @@
                     }
                 });
                 $("ul.commands").append("<li></li>")
+            }
+
+            function toggleAllUpdateCheckboxes() {
+                $("input.update-checkbox").each(function () {
+                    var $checkbox = $(this);
+                    $checkbox.prop("checked", !$checkbox.prop("checked"));
+                });
             }
 
             $(document).ready(function () {
@@ -94,10 +101,16 @@
                 });
 
                 $(".result").on("click", "input.update-checkbox", function () {
-                    gatherUpdateCommands();
+                    gatherAllUpdateCommands();
                 });
 
-                gatherUpdateCommands();
+                $("a#toggleAllUpdateCheckboxes").click(function () {
+                    toggleAllUpdateCheckboxes();
+                    gatherAllUpdateCommands();
+                    return false;
+                });
+
+                gatherAllUpdateCommands();
             });
         </script>
         <style type="text/css">
