@@ -292,7 +292,7 @@ namespace
 
 
 //
-// Diagnostic AOV class implementation.
+// DiagnosticAOV class implementation.
 //
 
 DiagnosticAOV::DiagnosticAOV(const char* name, const ParamArray& params)
@@ -312,7 +312,7 @@ size_t DiagnosticAOV::get_channel_count() const
 
 const char** DiagnosticAOV::get_channel_names() const
 {
-    static const char* ChannelNames[] = {"R", "G", "B"};
+    static const char* ChannelNames[] = { "R", "G", "B" };
     return ChannelNames;
 }
 
@@ -413,18 +413,20 @@ void PixelSampleCountAOV::post_process_image(const AABB2u& crop_window)
     static const Color3f Blue(0.0f, 0.0f, 1.0f);
     static const Color3f Red(1.0f, 0.0f, 0.0f);
 
+    //
     // At this point, the AOV is filled with real sample/pixel count values.
     //
-    // We want to normalize it so that high sample/pixel count are red and
-    // low sample/pixel count are blue.
+    // We want to normalize it so that high sample/pixel counts are red and
+    // low sample/pixel counts are blue.
     //
-    // If the renderer is uniform, the AOV should be empty
-    // and the exported AOV will be completely red.
+    // If the Uniform Pixel Renderer is used, the AOV should be empty and
+    // the exported AOV will be completely red.
     //
-    // Otherwise, if the renderer is adaptive we use
-    // the user min and max sample/pixel count to determine the final color.
-    // If the user max sample/pixel count is 0 (infinite) then we use the
-    // actual max sample/pixel count.
+    // Otherwise, if the Adaptive Tile Renderer is used, we use the user's
+    // min and max sample/pixel counts to determine the final color. If the
+    // user's max sample/pixel count is 0 (infinite) then we use the actual
+    // max sample/pixel count found in the image.
+    //
 
     const float min_spp = static_cast<float>(m_min_spp);
     const float max_spp =
