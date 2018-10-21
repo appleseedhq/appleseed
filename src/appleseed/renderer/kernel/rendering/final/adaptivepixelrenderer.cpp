@@ -43,6 +43,7 @@
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
+#include "renderer/modeling/aov/diagnosticaov.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/utility/settingsparsing.h"
 
@@ -94,6 +95,17 @@ namespace
         {
             m_variation_aov_index = frame.aovs().get_index("pixel_variation");
             m_sample_aov_index = frame.aovs().get_index("pixel_sample_count");
+
+            // Send sampling parameters to the sample count AOV.
+            if (m_sample_aov_index != ~size_t(0))
+            {
+                PixelSampleCountAOV* sample_aov =
+                    static_cast<PixelSampleCountAOV*>(
+                        frame.aovs().get_by_index(m_sample_aov_index));
+
+                // The AOV takes care of normalizing values depending on sampling parameters.
+                sample_aov->set_normalization_range(m_params.m_min_samples, m_params.m_max_samples);
+            }
         }
 
         void release() override

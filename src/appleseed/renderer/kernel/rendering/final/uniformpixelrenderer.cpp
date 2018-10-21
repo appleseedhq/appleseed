@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/rendering/final/pixelsampler.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
@@ -40,6 +41,8 @@
 #include "renderer/kernel/rendering/pixelrendererbase.h"
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/kernel/shading/shadingresult.h"
+#include "renderer/modeling/aov/aov.h"
+#include "renderer/modeling/aov/diagnosticaov.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/utility/settingsparsing.h"
 
@@ -98,6 +101,19 @@ namespace
                         m_sqrt_sample_count,
                         m_sqrt_sample_count);
                 }
+            }
+
+            const size_t sample_aov_index = frame.aovs().get_index("pixel_sample_count");
+
+            // If the sample count AOV is enabled, we need to reset its normalization
+            // range in case an adaptive render was done previously.
+            if (sample_aov_index != ~size_t(0))
+            {
+                PixelSampleCountAOV* sample_aov =
+                    static_cast<PixelSampleCountAOV*>(
+                        frame.aovs().get_by_index(sample_aov_index));
+
+                sample_aov->set_normalization_range(0, 0);
             }
         }
 
