@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
-#include "renderer/kernel/aov/imagestack.h"
 #include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/aov/iaovfactory.h"
 
@@ -48,6 +47,7 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class ImageStack; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
