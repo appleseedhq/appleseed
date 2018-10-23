@@ -43,6 +43,8 @@ set (foundation_array_sources
     foundation/array/arrayview.h
     foundation/array/exception.cpp
     foundation/array/exception.h
+    foundation/array/meshalgorithm.cpp
+    foundation/array/meshalgorithm.h
 )
 list (APPEND appleseed_sources
     ${foundation_array_sources}
