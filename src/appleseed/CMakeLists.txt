@@ -297,6 +297,7 @@ set (foundation_math_sources
     foundation/math/bsp.h
     foundation/math/bvh.h
     foundation/math/cdf.h
+    foundation/math/cmath.h
     foundation/math/combination.h
     foundation/math/distance.h
     foundation/math/dual.h
