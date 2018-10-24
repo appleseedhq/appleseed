@@ -84,6 +84,22 @@ source_group ("foundation\\core" FILES
     ${foundation_core_sources}
 )
 
+if (WITH_GPU)
+    set (foundation_cuda_sources
+        foundation/cuda/cudadevice.cpp
+        foundation/cuda/cudadevice.h
+        foundation/cuda/exception.cpp
+        foundation/cuda/exception.h
+    )
+
+    list (APPEND appleseed_sources
+        ${foundation_cuda_sources}
+    )
+    source_group ("foundation\\cuda" FILES
+        ${foundation_cuda_sources}
+    )
+endif()
+
 set (foundation_curve_sources
     foundation/curve/binarycurvefilereader.cpp
     foundation/curve/binarycurvefilereader.h
