@@ -109,6 +109,31 @@ Dictionary Configuration::get_metadata()
 {
     Dictionary metadata;
 
+#if APPLESEED_WITH_GPU
+    metadata.insert(
+        "device",
+        Dictionary()
+        .insert("type", "enum")
+        .insert("values", "cpu|gpu")
+        .insert("default", "cpu")
+        .insert("label", "Device")
+        .insert("help", "Render device")
+        .insert(
+            "options",
+            Dictionary()
+            .insert(
+                "cpu",
+                Dictionary()
+                .insert("label", "CPU")
+                .insert("help", "CPU device"))
+            .insert(
+                "gpu",
+                Dictionary()
+                .insert("label", "GPU")
+                .insert("help", "GPU device"))
+        ));
+#endif
+
     metadata.insert(
         "spectrum_mode",
         Dictionary()
@@ -200,7 +225,7 @@ Dictionary Configuration::get_metadata()
             .insert("help", "Whether to use Embree ray tracing kernels or appleseed internal ones"));
 
 #endif
-    
+
     metadata.dictionaries().insert(
         "light_sampler",
         BackwardLightSampler::get_params_metadata());

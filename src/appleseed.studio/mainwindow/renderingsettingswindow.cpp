@@ -425,6 +425,16 @@ namespace
             QFormLayout* layout = create_form_layout();
             container()->setLayout(layout);
 
+#ifdef APPLESEED_WITH_GPU
+            QComboBox* device_combobox = create_combobox("device");
+            device_combobox->setToolTip(m_params_metadata.get_path("device.help"));
+            device_combobox->addItem("CPU", "cpu");
+            device_combobox->addItem("GPU", "gpu");
+            layout->addRow("Device:", device_combobox);
+
+            create_direct_link("device", "device", "cpu");
+#endif
+
             QComboBox* color_pipeline_combobox = create_combobox("spectrum_mode");
             color_pipeline_combobox->setToolTip(m_params_metadata.get_path("spectrum_mode.help"));
             color_pipeline_combobox->addItem("RGB", "rgb");

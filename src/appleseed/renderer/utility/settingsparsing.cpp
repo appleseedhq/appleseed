@@ -48,6 +48,20 @@ using namespace std;
 namespace renderer
 {
 
+const char* get_render_device(const ParamArray& params)
+{
+    const string device =
+        params.get_optional<string>(
+            "device",
+            "cpu",
+            make_vector("cpu", "gpu"));
+
+    if (device == "cpu")
+        return "cpu";
+
+    return "gpu";
+}
+
 Spectrum::Mode get_spectrum_mode(const ParamArray& params)
 {
     const string spectrum_mode =
