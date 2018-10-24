@@ -67,7 +67,7 @@ void TileJobFactory::create(
 
     // Generate tiles ordering.
     vector<size_t> tiles;
-    generate_tile_ordering(props, tile_ordering, tiles);
+    generate_tile_ordering(props, tile_ordering, m_rng, tiles);
 
     // Make sure the right number of tiles was created.
     assert(tiles.size() == props.m_tile_count);
@@ -99,6 +99,7 @@ void TileJobFactory::create(
 void TileJobFactory::generate_tile_ordering(
     const CanvasProperties&             frame_properties,
     const TileOrdering                  tile_ordering,
+    MersenneTwister&                    rng,
     vector<size_t>&                     tiles)
 {
     switch (tile_ordering)
@@ -127,7 +128,7 @@ void TileJobFactory::generate_tile_ordering(
         random_ordering(
             tiles,
             frame_properties.m_tile_count,
-            m_rng);
+            rng);
         break;
 
       assert_otherwise;

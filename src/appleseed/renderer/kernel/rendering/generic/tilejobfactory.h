@@ -78,13 +78,14 @@ class TileJobFactory
         TileJobVector&                      tile_jobs,
         foundation::IAbortSwitch&           abort_switch);
 
-  private:
-    foundation::MersenneTwister             m_rng;
-
-    void generate_tile_ordering(
+    static void generate_tile_ordering(
         const foundation::CanvasProperties& frame_properties,
         const TileOrdering                  tile_ordering,
+        foundation::MersenneTwister&        rng,
         std::vector<size_t>&                tiles);
+
+  private:
+    foundation::MersenneTwister             m_rng;
 };
 
 }   // namespace renderer
