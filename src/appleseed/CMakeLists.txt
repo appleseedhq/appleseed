@@ -29,6 +29,18 @@
 
 
 #--------------------------------------------------------------------------------------------------
+# Include directories.
+#--------------------------------------------------------------------------------------------------
+
+if (WITH_GPU)
+    include_directories(
+        ${CUDA_INCLUDE_DIRS}
+        ${OPTIX_INCLUDE_DIR}
+    )
+endif ()
+
+
+#--------------------------------------------------------------------------------------------------
 # Source files.
 #--------------------------------------------------------------------------------------------------
 
@@ -2120,6 +2132,13 @@ endif ()
 
 if (WITH_DISNEY_MATERIAL)
     link_against_seexpr (appleseed)
+endif ()
+
+if (WITH_GPU)
+    target_link_libraries (appleseed
+        ${OPTIX_LIBRARIES}
+        ${CUDA_CUDA_LIBRARY}
+    )
 endif ()
 
 target_link_libraries (appleseed
