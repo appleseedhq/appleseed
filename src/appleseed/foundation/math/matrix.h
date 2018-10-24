@@ -86,23 +86,33 @@ class Matrix
 #if !defined(_MSC_VER) || _MSC_VER >= 1800
     Matrix() = default;                                     // leave all components uninitialized
 #else
+    APPLESEED_HOST_DEVICE_INLINE
     Matrix() {}                                             // leave all components uninitialized
 #endif
+    APPLESEED_HOST_DEVICE_INLINE
     explicit Matrix(const ValueType val);                   // set all components to `val`
 
     // Construct a matrix from another matrix of a different type.
     template <typename U>
+    APPLESEED_HOST_DEVICE_INLINE
     explicit Matrix(const Matrix<U, M, N>& rhs);
 
     // Construct a matrix from an array of M * N scalars.
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType from_array(const ValueType* rhs);
 
     // Unchecked array subscripting.
+    APPLESEED_HOST_DEVICE_INLINE
     ValueType& operator[](const size_t i);
+
+    APPLESEED_HOST_DEVICE_INLINE
     const ValueType& operator[](const size_t i) const;
 
     // Unchecked Fortran-style subscripting (0-based).
+    APPLESEED_HOST_DEVICE_INLINE
     ValueType& operator()(const size_t row, const size_t col);
+
+    APPLESEED_HOST_DEVICE_INLINE
     const ValueType& operator()(const size_t row, const size_t col) const;
 
   private:
@@ -118,49 +128,97 @@ class PoisonImpl<Matrix<T, M, N>>
 };
 
 // Exact inequality and equality tests.
-template <typename T, size_t M, size_t N> bool operator!=(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs);
-template <typename T, size_t M, size_t N> bool operator==(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs);
+template <typename T, size_t M, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+bool operator!=(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs);
+
+template <typename T, size_t M, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+bool operator==(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs);
 
 // Approximate equality tests.
-template <typename T, size_t M, size_t N> bool feq(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs);
-template <typename T, size_t M, size_t N> bool feq(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs, const T eps);
+template <typename T, size_t M, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+bool feq(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs);
+
+template <typename T, size_t M, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+bool feq(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs, const T eps);
 
 // Approximate zero tests.
-template <typename T, size_t M, size_t N> bool fz(const Matrix<T, M, N>& m);
-template <typename T, size_t M, size_t N> bool fz(const Matrix<T, M, N>& m, const T eps);
+template <typename T, size_t M, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+bool fz(const Matrix<T, M, N>& m);
+
+template <typename T, size_t M, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+bool fz(const Matrix<T, M, N>& m, const T eps);
 
 // Matrix arithmetic.
-template <typename T, size_t M, size_t N> Matrix<T, M, N>  operator+ (const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs);
-template <typename T, size_t M, size_t N> Matrix<T, M, N>  operator- (const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs);
-template <typename T, size_t M, size_t N> Matrix<T, M, N>  operator- (const Matrix<T, M, N>& lhs);
-template <typename T, size_t M, size_t N> Matrix<T, M, N>  operator* (const Matrix<T, M, N>& lhs, const T rhs);
-template <typename T, size_t M, size_t N> Matrix<T, M, N>  operator* (const T lhs, const Matrix<T, M, N>& rhs);
-template <typename T, size_t M, size_t N> Matrix<T, M, N>  operator/ (const Matrix<T, M, N>& lhs, const T rhs);
-template <typename T, size_t M, size_t N> Matrix<T, M, N>& operator+=(Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs);
-template <typename T, size_t M, size_t N> Matrix<T, M, N>& operator-=(Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs);
-template <typename T, size_t M, size_t N> Matrix<T, M, N>& operator*=(Matrix<T, M, N>& lhs, const T rhs);
-template <typename T, size_t M, size_t N> Matrix<T, M, N>& operator/=(Matrix<T, M, N>& lhs, const T rhs);
+template <typename T, size_t M, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N>  operator+ (const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs);
+
+template <typename T, size_t M, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N>  operator- (const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs);
+
+template <typename T, size_t M, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N>  operator- (const Matrix<T, M, N>& lhs);
+
+template <typename T, size_t M, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N>  operator* (const Matrix<T, M, N>& lhs, const T rhs);
+
+template <typename T, size_t M, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N>  operator* (const T lhs, const Matrix<T, M, N>& rhs);
+
+template <typename T, size_t M, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N>  operator/ (const Matrix<T, M, N>& lhs, const T rhs);
+
+template <typename T, size_t M, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N>& operator+=(Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs);
+
+template <typename T, size_t M, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N>& operator-=(Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs);
+
+template <typename T, size_t M, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N>& operator*=(Matrix<T, M, N>& lhs, const T rhs);
+
+template <typename T, size_t M, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N>& operator/=(Matrix<T, M, N>& lhs, const T rhs);
 
 // Matrix-matrix multiplication (MxN * NxK = MxK).
 template <typename T, size_t M, size_t N, size_t K>
+APPLESEED_HOST_DEVICE_INLINE
 Matrix<T, M, K> operator*(
     const Matrix<T, M, N>&  lhs,
     const Matrix<T, N, K>&  rhs);
 
 // Matrix-vector multiplication (MxN * Nx1 = Mx1).
 template <typename T, size_t M, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
 Vector<T, M> operator*(
     const Matrix<T, M, N>&  m,
     const Vector<T, N>&     v);
 
 // Vector-matrix multiplication (1xM * MxN = 1xN).
 template <typename T, size_t M, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
 Vector<T, N> operator*(
     const Vector<T, M>&     v,
     const Matrix<T, M, N>&  m);
 
 // Matrix transposition.
 template <typename T, size_t M, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
 Matrix<T, N, M> transpose(const Matrix<T, M, N>& mat);
 
 
@@ -187,27 +245,38 @@ class Matrix<T, N, N>
 #else
     Matrix() {}                                             // leave all components uninitialized
 #endif
+    APPLESEED_HOST_DEVICE_INLINE
     explicit Matrix(const ValueType val);                   // set all components to `val`
 
     // Construct a matrix from another matrix of a different type.
     template <typename U>
+    APPLESEED_HOST_DEVICE_INLINE
     Matrix(const Matrix<U, N, N>& rhs);
 
     // Construct a matrix from an array of N * N scalars.
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType from_array(const ValueType* rhs);
 
     // Construct and return the NxN identity matrix.
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_identity();
 
     // Return the NxN identity matrix.
+    APPLESEED_HOST_DEVICE_INLINE
     static const MatrixType& identity();
 
     // Unchecked array subscripting.
+    APPLESEED_HOST_DEVICE_INLINE
     ValueType& operator[](const size_t i);
+
+    APPLESEED_HOST_DEVICE_INLINE
     const ValueType& operator[](const size_t i) const;
 
     // Unchecked Fortran-style subscripting (0-based).
+    APPLESEED_HOST_DEVICE_INLINE
     ValueType& operator()(const size_t row, const size_t col);
+
+    APPLESEED_HOST_DEVICE_INLINE
     const ValueType& operator()(const size_t row, const size_t col) const;
 
   private:
@@ -219,10 +288,12 @@ class Matrix<T, N, N>
 
 // Matrix trace.
 template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
 T trace(const Matrix<T, N, N>& mat);
 
 // Matrix determinant.
 template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
 T det(const Matrix<T, N, N>& mat);
 
 // Exception thrown when attempting to invert a singular matrix.
@@ -259,10 +330,12 @@ class Matrix<T, 3, 3>
 #else
     Matrix() {}                                             // leave all components uninitialized
 #endif
+    APPLESEED_HOST_DEVICE_INLINE
     explicit Matrix(const ValueType val);                   // set all components to `val`
 
     // Construct a matrix from another matrix of a different type.
     template <typename U>
+    APPLESEED_HOST_DEVICE_INLINE
     Matrix(const Matrix<U, 3, 3>& rhs);
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
@@ -276,72 +349,103 @@ class Matrix<T, 3, 3>
 #endif
 
     // Construct a matrix from an array of 9 scalars.
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType from_array(const ValueType* rhs);
 
     // Construct and return the 3x3 identity matrix.
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_identity();
 
     // Return the 3x3 identity matrix.
+    APPLESEED_HOST_DEVICE_INLINE
     static const MatrixType& identity();
 
     // Build canonical transformation matrices.
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_scaling(const Vector<T, 3>& s);
+
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_rotation_x(
         const ValueType         angle);                     // rotation angle, in radians
+
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_rotation_y(
         const ValueType         angle);                     // rotation angle, in radians
+
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_rotation_z(
         const ValueType         angle);                     // rotation angle, in radians
+
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_rotation_x(
         const ValueType         cos_angle,                  // cosine of the rotation angle
         const ValueType         sin_angle);                 // sine of the rotation angle
+
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_rotation_y(
         const ValueType         cos_angle,                  // cosine of the rotation angle
         const ValueType         sin_angle);                 // sine of the rotation angle
+
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_rotation_z(
         const ValueType         cos_angle,                  // cosine of the rotation angle
         const ValueType         sin_angle);                 // sine of the rotation angle
 
     // Build a rotation matrix from Euler angles.
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_rotation(
         const ValueType         yaw,                        // rotation angle, in radians
         const ValueType         pitch,                      // rotation angle, in radians
         const ValueType         roll);                      // rotation angle, in radians
 
     // Build a rotation matrix from an axis and an angle.
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_rotation(
         const Vector<T, 3>&     axis,                       // rotation axis, unit-length
         const ValueType         angle);                     // rotation angle, in radians
+
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_rotation(
         const Vector<T, 3>&     axis,                       // rotation axis, unit-length
         const ValueType         cos_angle,                  // cosine of the rotation angle
         const ValueType         sin_angle);                 // sine of the rotation angle
 
     // Build a rotation matrix from a unit quaternion.
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_rotation(
         const Quaternion<T>&    q);                         // unit quaternion
 
     // Unchecked array subscripting.
+    APPLESEED_HOST_DEVICE_INLINE
     ValueType& operator[](const size_t i);
+
+    APPLESEED_HOST_DEVICE_INLINE
     const ValueType& operator[](const size_t i) const;
 
     // Unchecked Fortran-style subscripting (0-based).
+    APPLESEED_HOST_DEVICE_INLINE
     ValueType& operator()(const size_t row, const size_t col);
+
+    APPLESEED_HOST_DEVICE_INLINE
     const ValueType& operator()(const size_t row, const size_t col) const;
 
     // Extract the scaling factors from a transformation matrix.
+    APPLESEED_HOST_DEVICE_INLINE
     Vector<T, 3> extract_scaling() const;
 
     // Extract Euler angles from a rotation matrix.
+    APPLESEED_HOST_DEVICE_INLINE
     void extract_euler_angles(
         ValueType&              yaw,
         ValueType&              pitch,
         ValueType&              roll) const;
 
     // Extract a unit quaternion from a rotation matrix.
+    APPLESEED_HOST_DEVICE_INLINE
     Quaternion<T> extract_unit_quaternion() const;
 
     // Decompose a matrix into scaling -> rotation.
+    APPLESEED_HOST_DEVICE_INLINE
     void decompose(
         Vector<T, 3>&           scaling,
         Quaternion<T>&          rotation) const;
@@ -355,6 +459,7 @@ class Matrix<T, 3, 3>
 
 // Rotate a given vector by a given angle around a given axis.
 template <typename T>
+APPLESEED_HOST_DEVICE_INLINE
 Vector<T, 3> rotate(
     const Vector<T, 3>&     v,
     const Vector<T, 3>&     axis,
@@ -384,10 +489,12 @@ class Matrix<T, 4, 4>
 #else
     Matrix() {}                                             // leave all components uninitialized
 #endif
+    APPLESEED_HOST_DEVICE_INLINE
     explicit Matrix(const ValueType val);                   // set all components to `val`
 
     // Construct a matrix from another matrix of a different type.
     template <typename U>
+    APPLESEED_HOST_DEVICE_INLINE
     Matrix(const Matrix<U, 4, 4>& rhs);
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
@@ -401,74 +508,107 @@ class Matrix<T, 4, 4>
 #endif
 
     // Construct a matrix from an array of 16 scalars.
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType from_array(const ValueType* rhs);
 
     // Construct and return the 4x4 identity matrix.
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_identity();
 
     // Return the 4x4 identity matrix.
+    APPLESEED_HOST_DEVICE_INLINE
     static const MatrixType& identity();
 
     // Build canonical transformation matrices.
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_translation(const Vector<T, 3>& v);
+
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_scaling(const Vector<T, 3>& s);
+
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_rotation_x(
         const ValueType         angle);                     // rotation angle, in radians
+
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_rotation_y(
         const ValueType         angle);                     // rotation angle, in radians
+
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_rotation_z(
         const ValueType         angle);                     // rotation angle, in radians
+
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_rotation_x(
         const ValueType         cos_angle,                  // cosine of the rotation angle
         const ValueType         sin_angle);                 // sine of the rotation angle
+
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_rotation_y(
         const ValueType         cos_angle,                  // cosine of the rotation angle
         const ValueType         sin_angle);                 // sine of the rotation angle
+
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_rotation_z(
         const ValueType         cos_angle,                  // cosine of the rotation angle
         const ValueType         sin_angle);                 // sine of the rotation angle
 
     // Build a rotation matrix from Euler angles.
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_rotation(
         const ValueType         yaw,                        // rotation angle, in radians
         const ValueType         pitch,                      // rotation angle, in radians
         const ValueType         roll);                      // rotation angle, in radians
 
     // Build a rotation matrix from an axis and an angle.
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_rotation(
         const Vector<T, 3>&     axis,                       // rotation axis, unit-length
         const ValueType         angle);                     // rotation angle, in radians
+
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_rotation(
         const Vector<T, 3>&     axis,                       // rotation axis, unit-length
         const ValueType         cos_angle,                  // cosine of the rotation angle
         const ValueType         sin_angle);                 // sine of the rotation angle
 
     // Build a rotation matrix from a unit quaternion.
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_rotation(
         const Quaternion<T>&    q);                         // unit quaternion
 
     // Build a look-at transformation matrix. The returned matrix is orthonormal,
     // and such that the Z- axis is pointing toward the target point.
+    APPLESEED_HOST_DEVICE_INLINE
     static MatrixType make_lookat(
         const Vector<T, 3>&     origin,                     // camera origin
         const Vector<T, 3>&     target,                     // target point
         const Vector<T, 3>&     up);                        // up vector, unit-length
 
     // Unchecked array subscripting.
+    APPLESEED_HOST_DEVICE_INLINE
     ValueType& operator[](const size_t i);
+
+    APPLESEED_HOST_DEVICE_INLINE
     const ValueType& operator[](const size_t i) const;
 
     // Unchecked Fortran-style subscripting (0-based).
+    APPLESEED_HOST_DEVICE_INLINE
     ValueType& operator()(const size_t row, const size_t col);
+
+    APPLESEED_HOST_DEVICE_INLINE
     const ValueType& operator()(const size_t row, const size_t col) const;
 
     // Extract the upper-left 3x3 matrix.
+    APPLESEED_HOST_DEVICE_INLINE
     Matrix<T, 3, 3> extract_matrix3() const;
 
     // Extract the translation from a transformation matrix.
+    APPLESEED_HOST_DEVICE_INLINE
     Vector<T, 3> extract_translation() const;
 
     // Decompose a matrix into scaling -> rotation -> translation.
+    APPLESEED_HOST_DEVICE_INLINE
     void decompose(
         Vector<T, 3>&           scaling,
         Quaternion<T>&          rotation,
@@ -483,6 +623,7 @@ class Matrix<T, 4, 4>
 
 // Return true if the matrix swaps the handedness.
 template <typename T>
+APPLESEED_HOST_DEVICE_INLINE
 bool swaps_handedness(const Matrix<T, 4, 4>& mat);
 
 
@@ -506,7 +647,8 @@ typedef Matrix<double, 4, 4> Matrix4d;
 //
 
 template <typename T, size_t M, size_t N>
-inline Matrix<T, M, N>::Matrix(const ValueType val)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N>::Matrix(const ValueType val)
 {
     for (size_t i = 0; i < Components; ++i)
         m_comp[i] = val;
@@ -514,14 +656,16 @@ inline Matrix<T, M, N>::Matrix(const ValueType val)
 
 template <typename T, size_t M, size_t N>
 template <typename U>
-inline Matrix<T, M, N>::Matrix(const Matrix<U, M, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N>::Matrix(const Matrix<U, M, N>& rhs)
 {
     for (size_t i = 0; i < Components; ++i)
         m_comp[i] = static_cast<ValueType>(rhs[i]);
 }
 
 template <typename T, size_t M, size_t N>
-inline Matrix<T, M, N> Matrix<T, M, N>::from_array(const ValueType* rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N> Matrix<T, M, N>::from_array(const ValueType* rhs)
 {
     assert(rhs);
 
@@ -534,21 +678,24 @@ inline Matrix<T, M, N> Matrix<T, M, N>::from_array(const ValueType* rhs)
 }
 
 template <typename T, size_t M, size_t N>
-inline T& Matrix<T, M, N>::operator[](const size_t i)
+APPLESEED_HOST_DEVICE_INLINE
+T& Matrix<T, M, N>::operator[](const size_t i)
 {
     assert(i < Components);
     return m_comp[i];
 }
 
 template <typename T, size_t M, size_t N>
-inline const T& Matrix<T, M, N>::operator[](const size_t i) const
+APPLESEED_HOST_DEVICE_INLINE
+const T& Matrix<T, M, N>::operator[](const size_t i) const
 {
     assert(i < Components);
     return m_comp[i];
 }
 
 template <typename T, size_t M, size_t N>
-inline T& Matrix<T, M, N>::operator()(const size_t row, const size_t col)
+APPLESEED_HOST_DEVICE_INLINE
+T& Matrix<T, M, N>::operator()(const size_t row, const size_t col)
 {
     assert(row < Rows);
     assert(col < Columns);
@@ -556,7 +703,8 @@ inline T& Matrix<T, M, N>::operator()(const size_t row, const size_t col)
 }
 
 template <typename T, size_t M, size_t N>
-inline const T& Matrix<T, M, N>::operator()(const size_t row, const size_t col) const
+APPLESEED_HOST_DEVICE_INLINE
+const T& Matrix<T, M, N>::operator()(const size_t row, const size_t col) const
 {
     assert(row < Rows);
     assert(col < Columns);
@@ -571,7 +719,8 @@ void PoisonImpl<Matrix<T, M, N>>::do_poison(Matrix<T, M, N>& m)
 }
 
 template <typename T, size_t M, size_t N>
-inline bool operator!=(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+bool operator!=(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
 {
     for (size_t i = 0; i < lhs.Components; ++i)
     {
@@ -583,13 +732,15 @@ inline bool operator!=(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
 }
 
 template <typename T, size_t M, size_t N>
-inline bool operator==(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+bool operator==(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
 {
     return !(lhs != rhs);
 }
 
 template <typename T, size_t M, size_t N>
-inline bool feq(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+bool feq(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
 {
     for (size_t i = 0; i < lhs.Components; ++i)
     {
@@ -601,7 +752,8 @@ inline bool feq(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
 }
 
 template <typename T, size_t M, size_t N>
-inline bool feq(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs, const T eps)
+APPLESEED_HOST_DEVICE_INLINE
+bool feq(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs, const T eps)
 {
     for (size_t i = 0; i < lhs.Components; ++i)
     {
@@ -613,7 +765,8 @@ inline bool feq(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs, const T 
 }
 
 template <typename T, size_t M, size_t N>
-inline bool fz(const Matrix<T, M, N>& m)
+APPLESEED_HOST_DEVICE_INLINE
+bool fz(const Matrix<T, M, N>& m)
 {
     for (size_t i = 0; i < m.Components; ++i)
     {
@@ -625,7 +778,8 @@ inline bool fz(const Matrix<T, M, N>& m)
 }
 
 template <typename T, size_t M, size_t N>
-inline bool fz(const Matrix<T, M, N>& m, const T eps)
+APPLESEED_HOST_DEVICE_INLINE
+bool fz(const Matrix<T, M, N>& m, const T eps)
 {
     for (size_t i = 0; i < m.Components; ++i)
     {
@@ -637,7 +791,8 @@ inline bool fz(const Matrix<T, M, N>& m, const T eps)
 }
 
 template <typename T, size_t M, size_t N>
-inline Matrix<T, M, N> operator+(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N> operator+(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
 {
     Matrix<T, M, N> mat;
 
@@ -648,7 +803,8 @@ inline Matrix<T, M, N> operator+(const Matrix<T, M, N>& lhs, const Matrix<T, M, 
 }
 
 template <typename T, size_t M, size_t N>
-inline Matrix<T, M, N> operator-(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N> operator-(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
 {
     Matrix<T, M, N> mat;
 
@@ -659,7 +815,8 @@ inline Matrix<T, M, N> operator-(const Matrix<T, M, N>& lhs, const Matrix<T, M, 
 }
 
 template <typename T, size_t M, size_t N>
-inline Matrix<T, M, N> operator-(const Matrix<T, M, N>& lhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N> operator-(const Matrix<T, M, N>& lhs)
 {
     Matrix<T, M, N> mat;
 
@@ -670,7 +827,8 @@ inline Matrix<T, M, N> operator-(const Matrix<T, M, N>& lhs)
 }
 
 template <typename T, size_t M, size_t N>
-inline Matrix<T, M, N> operator*(const Matrix<T, M, N>& lhs, const T rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N> operator*(const Matrix<T, M, N>& lhs, const T rhs)
 {
     Matrix<T, M, N> mat;
 
@@ -681,13 +839,15 @@ inline Matrix<T, M, N> operator*(const Matrix<T, M, N>& lhs, const T rhs)
 }
 
 template <typename T, size_t M, size_t N>
-inline Matrix<T, M, N> operator*(const T lhs, const Matrix<T, M, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N> operator*(const T lhs, const Matrix<T, M, N>& rhs)
 {
     return rhs * lhs;
 }
 
 template <typename T, size_t M, size_t N>
-inline Matrix<T, M, N> operator/(const Matrix<T, M, N>& lhs, const T rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N> operator/(const Matrix<T, M, N>& lhs, const T rhs)
 {
     Matrix<T, M, N> result;
 
@@ -698,13 +858,15 @@ inline Matrix<T, M, N> operator/(const Matrix<T, M, N>& lhs, const T rhs)
 }
 
 template <size_t M, size_t N>
-inline Matrix<float, M, N> operator/(const Matrix<float, M, N>& lhs, const float rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<float, M, N> operator/(const Matrix<float, M, N>& lhs, const float rhs)
 {
     return lhs * (1.0f / rhs);
 }
 
 template <size_t M, size_t N>
-inline Matrix<double, M, N> operator/(const Matrix<double, M, N>& lhs, const double rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<double, M, N> operator/(const Matrix<double, M, N>& lhs, const double rhs)
 {
     return lhs * (1.0 / rhs);
 }
@@ -716,7 +878,8 @@ inline Matrix<long double, M, N> operator/(const Matrix<long double, M, N>& lhs,
 }
 
 template <typename T, size_t M, size_t N>
-inline Matrix<T, M, N>& operator+=(Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N>& operator+=(Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
 {
     for (size_t i = 0; i < lhs.Components; ++i)
         lhs[i] += rhs[i];
@@ -725,7 +888,8 @@ inline Matrix<T, M, N>& operator+=(Matrix<T, M, N>& lhs, const Matrix<T, M, N>& 
 }
 
 template <typename T, size_t M, size_t N>
-inline Matrix<T, M, N>& operator-=(Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N>& operator-=(Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs)
 {
     for (size_t i = 0; i < lhs.Components; ++i)
         lhs[i] -= rhs[i];
@@ -734,7 +898,8 @@ inline Matrix<T, M, N>& operator-=(Matrix<T, M, N>& lhs, const Matrix<T, M, N>& 
 }
 
 template <typename T, size_t M, size_t N>
-inline Matrix<T, M, N>& operator*=(Matrix<T, M, N>& lhs, const T rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N>& operator*=(Matrix<T, M, N>& lhs, const T rhs)
 {
     for (size_t i = 0; i < lhs.Components; ++i)
         lhs[i] *= rhs;
@@ -743,7 +908,8 @@ inline Matrix<T, M, N>& operator*=(Matrix<T, M, N>& lhs, const T rhs)
 }
 
 template <typename T, size_t M, size_t N>
-inline Matrix<T, M, N>& operator/=(Matrix<T, M, N>& lhs, const T rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, N>& operator/=(Matrix<T, M, N>& lhs, const T rhs)
 {
     for (size_t i = 0; i < lhs.Components; ++i)
         lhs[i] /= rhs;
@@ -752,13 +918,15 @@ inline Matrix<T, M, N>& operator/=(Matrix<T, M, N>& lhs, const T rhs)
 }
 
 template <size_t M, size_t N>
-inline Matrix<float, M, N>& operator/=(Matrix<float, M, N>& lhs, const float rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<float, M, N>& operator/=(Matrix<float, M, N>& lhs, const float rhs)
 {
     return lhs *= 1.0f / rhs;
 }
 
 template <size_t M, size_t N>
-inline Matrix<double, M, N>& operator/=(Matrix<double, M, N>& lhs, const double rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<double, M, N>& operator/=(Matrix<double, M, N>& lhs, const double rhs)
 {
     return lhs *= 1.0 / rhs;
 }
@@ -770,7 +938,8 @@ inline Matrix<long double, M, N>& operator/=(Matrix<long double, M, N>& lhs, con
 }
 
 template <typename T, size_t M, size_t N, size_t K>
-inline Matrix<T, M, K> operator*(
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, M, K> operator*(
     const Matrix<T, M, N>&  lhs,
     const Matrix<T, N, K>&  rhs)
 {
@@ -796,7 +965,8 @@ inline Matrix<T, M, K> operator*(
 }
 
 template <typename T, size_t M, size_t N>
-inline Vector<T, M> operator*(
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, M> operator*(
     const Matrix<T, M, N>&  m,
     const Vector<T, N>&     v)
 {
@@ -814,7 +984,8 @@ inline Vector<T, M> operator*(
 }
 
 template <typename T, size_t M, size_t N>
-inline Vector<T, N> operator*(
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> operator*(
     const Vector<T, M>&     v,
     const Matrix<T, M, N>&  m)
 {
@@ -832,7 +1003,8 @@ inline Vector<T, N> operator*(
 }
 
 template <typename T, size_t M, size_t N>
-inline Matrix<T, N, M> transpose(const Matrix<T, M, N>& mat)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, N, M> transpose(const Matrix<T, M, N>& mat)
 {
     Matrix<T, N, M> res;
     T* p = &res(0, 0);
@@ -855,7 +1027,8 @@ template <typename T, size_t N>
 const Matrix<T, N, N> Matrix<T, N, N>::m_identity(Matrix<T, N, N>::make_identity());
 
 template <typename T, size_t N>
-inline Matrix<T, N, N>::Matrix(const ValueType val)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, N, N>::Matrix(const ValueType val)
 {
     for (size_t i = 0; i < Components; ++i)
         m_comp[i] = val;
@@ -863,14 +1036,16 @@ inline Matrix<T, N, N>::Matrix(const ValueType val)
 
 template <typename T, size_t N>
 template <typename U>
-inline Matrix<T, N, N>::Matrix(const Matrix<U, N, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, N, N>::Matrix(const Matrix<U, N, N>& rhs)
 {
     for (size_t i = 0; i < Components; ++i)
         m_comp[i] = static_cast<ValueType>(rhs[i]);
 }
 
 template <typename T, size_t N>
-inline Matrix<T, N, N> Matrix<T, N, N>::from_array(const ValueType* rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, N, N> Matrix<T, N, N>::from_array(const ValueType* rhs)
 {
     assert(rhs);
 
@@ -894,27 +1069,31 @@ Matrix<T, N, N> Matrix<T, N, N>::make_identity()
 }
 
 template <typename T, size_t N>
-inline const Matrix<T, N, N>& Matrix<T, N, N>::identity()
+APPLESEED_HOST_DEVICE_INLINE
+const Matrix<T, N, N>& Matrix<T, N, N>::identity()
 {
     return m_identity;
 }
 
 template <typename T, size_t N>
-inline T& Matrix<T, N, N>::operator[](const size_t i)
+APPLESEED_HOST_DEVICE_INLINE
+T& Matrix<T, N, N>::operator[](const size_t i)
 {
     assert(i < Components);
     return m_comp[i];
 }
 
 template <typename T, size_t N>
-inline const T& Matrix<T, N, N>::operator[](const size_t i) const
+APPLESEED_HOST_DEVICE_INLINE
+const T& Matrix<T, N, N>::operator[](const size_t i) const
 {
     assert(i < Components);
     return m_comp[i];
 }
 
 template <typename T, size_t N>
-inline T& Matrix<T, N, N>::operator()(const size_t row, const size_t col)
+APPLESEED_HOST_DEVICE_INLINE
+T& Matrix<T, N, N>::operator()(const size_t row, const size_t col)
 {
     assert(row < Rows);
     assert(col < Columns);
@@ -922,7 +1101,8 @@ inline T& Matrix<T, N, N>::operator()(const size_t row, const size_t col)
 }
 
 template <typename T, size_t N>
-inline const T& Matrix<T, N, N>::operator()(const size_t row, const size_t col) const
+APPLESEED_HOST_DEVICE_INLINE
+const T& Matrix<T, N, N>::operator()(const size_t row, const size_t col) const
 {
     assert(row < Rows);
     assert(col < Columns);
@@ -930,7 +1110,8 @@ inline const T& Matrix<T, N, N>::operator()(const size_t row, const size_t col) 
 }
 
 template <typename T, size_t N>
-inline T trace(const Matrix<T, N, N>& mat)
+APPLESEED_HOST_DEVICE_INLINE
+T trace(const Matrix<T, N, N>& mat)
 {
     T sum = T(0.0);
 
@@ -941,7 +1122,8 @@ inline T trace(const Matrix<T, N, N>& mat)
 }
 
 template <typename T, size_t N>
-inline T det(const Matrix<T, N, N>& mat)
+APPLESEED_HOST_DEVICE_INLINE
+T det(const Matrix<T, N, N>& mat)
 {
     throw ExceptionNotImplemented();
     return T(0.0);
@@ -1050,7 +1232,8 @@ template <typename T>
 const Matrix<T, 3, 3> Matrix<T, 3, 3>::m_identity(Matrix<T, 3, 3>::make_identity());
 
 template <typename T>
-inline Matrix<T, 3, 3>::Matrix(const ValueType val)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 3, 3>::Matrix(const ValueType val)
 {
     for (size_t i = 0; i < Components; ++i)
         m_comp[i] = val;
@@ -1058,7 +1241,8 @@ inline Matrix<T, 3, 3>::Matrix(const ValueType val)
 
 template <typename T>
 template <typename U>
-inline Matrix<T, 3, 3>::Matrix(const Matrix<U, 3, 3>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 3, 3>::Matrix(const Matrix<U, 3, 3>& rhs)
 {
     for (size_t i = 0; i < Components; ++i)
         m_comp[i] = static_cast<ValueType>(rhs[i]);
@@ -1096,7 +1280,8 @@ inline Matrix<T, 3, 3>::operator Imath::Matrix33<T>() const
 #endif
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::from_array(const ValueType* rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 3, 3> Matrix<T, 3, 3>::from_array(const ValueType* rhs)
 {
     assert(rhs);
 
@@ -1129,13 +1314,15 @@ Matrix<T, 3, 3> Matrix<T, 3, 3>::make_identity()
 }
 
 template <typename T>
-inline const Matrix<T, 3, 3>& Matrix<T, 3, 3>::identity()
+APPLESEED_HOST_DEVICE_INLINE
+const Matrix<T, 3, 3>& Matrix<T, 3, 3>::identity()
 {
     return m_identity;
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_scaling(const Vector<T, 3>& s)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 3, 3> Matrix<T, 3, 3>::make_scaling(const Vector<T, 3>& s)
 {
     MatrixType mat;
 
@@ -1155,25 +1342,29 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_scaling(const Vector<T, 3>& s)
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_x(const ValueType angle)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_x(const ValueType angle)
 {
     return make_rotation_x(std::cos(angle), std::sin(angle));
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_y(const ValueType angle)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_y(const ValueType angle)
 {
     return make_rotation_y(std::cos(angle), std::sin(angle));
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_z(const ValueType angle)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_z(const ValueType angle)
 {
     return make_rotation_z(std::cos(angle), std::sin(angle));
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_x(
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_x(
     const ValueType         cos_angle,
     const ValueType         sin_angle)
 {
@@ -1195,7 +1386,8 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_x(
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_y(
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_y(
     const ValueType         cos_angle,
     const ValueType         sin_angle)
 {
@@ -1217,7 +1409,8 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_y(
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_z(
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_z(
     const ValueType         cos_angle,
     const ValueType         sin_angle)
 {
@@ -1239,7 +1432,8 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_z(
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation(
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation(
     const ValueType         yaw,
     const ValueType         pitch,
     const ValueType         roll)
@@ -1269,7 +1463,8 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation(
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation(
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation(
     const Vector<T, 3>&     axis,
     const ValueType         angle)
 {
@@ -1277,7 +1472,8 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation(
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation(
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation(
     const Vector<T, 3>&     axis,
     const ValueType         cos_angle,
     const ValueType         sin_angle)
@@ -1304,7 +1500,8 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation(
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation(
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation(
     const Quaternion<T>&    q)
 {
     //
@@ -1350,21 +1547,24 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation(
 }
 
 template <typename T>
-inline T& Matrix<T, 3, 3>::operator[](const size_t i)
+APPLESEED_HOST_DEVICE_INLINE
+T& Matrix<T, 3, 3>::operator[](const size_t i)
 {
     assert(i < Components);
     return m_comp[i];
 }
 
 template <typename T>
-inline const T& Matrix<T, 3, 3>::operator[](const size_t i) const
+APPLESEED_HOST_DEVICE_INLINE
+const T& Matrix<T, 3, 3>::operator[](const size_t i) const
 {
     assert(i < Components);
     return m_comp[i];
 }
 
 template <typename T>
-inline T& Matrix<T, 3, 3>::operator()(const size_t row, const size_t col)
+APPLESEED_HOST_DEVICE_INLINE
+T& Matrix<T, 3, 3>::operator()(const size_t row, const size_t col)
 {
     assert(row < Rows);
     assert(col < Columns);
@@ -1372,7 +1572,8 @@ inline T& Matrix<T, 3, 3>::operator()(const size_t row, const size_t col)
 }
 
 template <typename T>
-inline const T& Matrix<T, 3, 3>::operator()(const size_t row, const size_t col) const
+APPLESEED_HOST_DEVICE_INLINE
+const T& Matrix<T, 3, 3>::operator()(const size_t row, const size_t col) const
 {
     assert(row < Rows);
     assert(col < Columns);
@@ -1380,7 +1581,8 @@ inline const T& Matrix<T, 3, 3>::operator()(const size_t row, const size_t col) 
 }
 
 template <typename T>
-inline Vector<T, 3> Matrix<T, 3, 3>::extract_scaling() const
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 3> Matrix<T, 3, 3>::extract_scaling() const
 {
     Vector<T, 3> scaling;
 
@@ -1392,7 +1594,8 @@ inline Vector<T, 3> Matrix<T, 3, 3>::extract_scaling() const
 }
 
 template <typename T>
-inline void Matrix<T, 3, 3>::extract_euler_angles(
+APPLESEED_HOST_DEVICE_INLINE
+void Matrix<T, 3, 3>::extract_euler_angles(
     ValueType&              yaw,
     ValueType&              pitch,
     ValueType&              roll) const
@@ -1414,7 +1617,8 @@ inline void Matrix<T, 3, 3>::extract_euler_angles(
 }
 
 template <typename T>
-inline Quaternion<T> Matrix<T, 3, 3>::extract_unit_quaternion() const
+APPLESEED_HOST_DEVICE_INLINE
+Quaternion<T> Matrix<T, 3, 3>::extract_unit_quaternion() const
 {
     //
     // Implementation from Wild Magic Source Code, David Eberly
@@ -1469,7 +1673,8 @@ inline Quaternion<T> Matrix<T, 3, 3>::extract_unit_quaternion() const
 }
 
 template <typename T>
-inline void Matrix<T, 3, 3>::decompose(
+APPLESEED_HOST_DEVICE_INLINE
+void Matrix<T, 3, 3>::decompose(
     Vector<T, 3>&           scaling,
     Quaternion<T>&          rotation) const
 {
@@ -1501,7 +1706,8 @@ inline void Matrix<T, 3, 3>::decompose(
 }
 
 template <typename T>
-inline T det(const Matrix<T, 3, 3>& mat)
+APPLESEED_HOST_DEVICE_INLINE
+T det(const Matrix<T, 3, 3>& mat)
 {
     return
         mat[0] * mat[4] * mat[8] +
@@ -1513,7 +1719,8 @@ inline T det(const Matrix<T, 3, 3>& mat)
 }
 
 template <typename T>
-inline Vector<T, 3> rotate(
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 3> rotate(
     const Vector<T, 3>&     v,
     const Vector<T, 3>&     axis,
     const T                 angle)
@@ -1522,7 +1729,8 @@ inline Vector<T, 3> rotate(
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> operator*(
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 3, 3> operator*(
     const Matrix<T, 3, 3>&  lhs,
     const Matrix<T, 3, 3>&  rhs)
 {
@@ -1544,7 +1752,8 @@ inline Matrix<T, 3, 3> operator*(
 }
 
 template <typename T>
-inline Vector<T, 3> operator*(
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 3> operator*(
     const Matrix<T, 3, 3>&  m,
     const Vector<T, 3>&     v)
 {
@@ -1558,7 +1767,8 @@ inline Vector<T, 3> operator*(
 }
 
 template <typename T>
-inline Vector<T, 3> operator*(
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 3> operator*(
     const Vector<T, 3>&     v,
     const Matrix<T, 3, 3>&  m)
 {
@@ -1580,7 +1790,8 @@ template <typename T>
 const Matrix<T, 4, 4> Matrix<T, 4, 4>::m_identity(Matrix<T, 4, 4>::make_identity());
 
 template <typename T>
-inline Matrix<T, 4, 4>::Matrix(const ValueType val)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 4, 4>::Matrix(const ValueType val)
 {
     for (size_t i = 0; i < Components; ++i)
         m_comp[i] = val;
@@ -1588,7 +1799,8 @@ inline Matrix<T, 4, 4>::Matrix(const ValueType val)
 
 template <typename T>
 template <typename U>
-inline Matrix<T, 4, 4>::Matrix(const Matrix<U, 4, 4>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 4, 4>::Matrix(const Matrix<U, 4, 4>& rhs)
 {
     for (size_t i = 0; i < Components; ++i)
         m_comp[i] = static_cast<ValueType>(rhs[i]);
@@ -1626,7 +1838,8 @@ inline Matrix<T, 4, 4>::operator Imath::Matrix44<T>() const
 #endif
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::from_array(const ValueType* rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 4, 4> Matrix<T, 4, 4>::from_array(const ValueType* rhs)
 {
     assert(rhs);
 
@@ -1667,13 +1880,15 @@ Matrix<T, 4, 4> Matrix<T, 4, 4>::make_identity()
 }
 
 template <typename T>
-inline const Matrix<T, 4, 4>& Matrix<T, 4, 4>::identity()
+APPLESEED_HOST_DEVICE_INLINE
+const Matrix<T, 4, 4>& Matrix<T, 4, 4>::identity()
 {
     return m_identity;
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_translation(const Vector<T, 3>& v)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 4, 4> Matrix<T, 4, 4>::make_translation(const Vector<T, 3>& v)
 {
     MatrixType mat;
 
@@ -1701,7 +1916,8 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_translation(const Vector<T, 3>& v)
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_scaling(const Vector<T, 3>& s)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 4, 4> Matrix<T, 4, 4>::make_scaling(const Vector<T, 3>& s)
 {
     MatrixType mat;
 
@@ -1729,25 +1945,29 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_scaling(const Vector<T, 3>& s)
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_x(const ValueType angle)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_x(const ValueType angle)
 {
     return make_rotation_x(std::cos(angle), std::sin(angle));
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_y(const ValueType angle)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_y(const ValueType angle)
 {
     return make_rotation_y(std::cos(angle), std::sin(angle));
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_z(const ValueType angle)
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_z(const ValueType angle)
 {
     return make_rotation_z(std::cos(angle), std::sin(angle));
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_x(
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_x(
     const ValueType         cos_angle,
     const ValueType         sin_angle)
 {
@@ -1777,7 +1997,8 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_x(
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_y(
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_y(
     const ValueType         cos_angle,
     const ValueType         sin_angle)
 {
@@ -1807,7 +2028,8 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_y(
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_z(
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_z(
     const ValueType         cos_angle,
     const ValueType         sin_angle)
 {
@@ -1837,7 +2059,8 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_z(
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation(
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation(
     const ValueType         yaw,
     const ValueType         pitch,
     const ValueType         roll)
@@ -1875,7 +2098,8 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation(
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation(
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation(
     const Vector<T, 3>&     axis,
     const ValueType         angle)
 {
@@ -1883,7 +2107,8 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation(
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation(
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation(
     const Vector<T, 3>&     axis,
     const ValueType         cos_angle,
     const ValueType         sin_angle)
@@ -1918,7 +2143,8 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation(
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation(
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation(
     const Quaternion<T>&    q)
 {
     //
@@ -1967,7 +2193,8 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation(
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_lookat(
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 4, 4> Matrix<T, 4, 4>::make_lookat(
     const Vector<T, 3>&     origin,
     const Vector<T, 3>&     target,
     const Vector<T, 3>&     up)
@@ -2012,21 +2239,24 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_lookat(
 }
 
 template <typename T>
-inline T& Matrix<T, 4, 4>::operator[](const size_t i)
+APPLESEED_HOST_DEVICE_INLINE
+T& Matrix<T, 4, 4>::operator[](const size_t i)
 {
     assert(i < Components);
     return m_comp[i];
 }
 
 template <typename T>
-inline const T& Matrix<T, 4, 4>::operator[](const size_t i) const
+APPLESEED_HOST_DEVICE_INLINE
+const T& Matrix<T, 4, 4>::operator[](const size_t i) const
 {
     assert(i < Components);
     return m_comp[i];
 }
 
 template <typename T>
-inline T& Matrix<T, 4, 4>::operator()(const size_t row, const size_t col)
+APPLESEED_HOST_DEVICE_INLINE
+T& Matrix<T, 4, 4>::operator()(const size_t row, const size_t col)
 {
     assert(row < Rows);
     assert(col < Columns);
@@ -2034,7 +2264,8 @@ inline T& Matrix<T, 4, 4>::operator()(const size_t row, const size_t col)
 }
 
 template <typename T>
-inline const T& Matrix<T, 4, 4>::operator()(const size_t row, const size_t col) const
+APPLESEED_HOST_DEVICE_INLINE
+const T& Matrix<T, 4, 4>::operator()(const size_t row, const size_t col) const
 {
     assert(row < Rows);
     assert(col < Columns);
@@ -2042,7 +2273,8 @@ inline const T& Matrix<T, 4, 4>::operator()(const size_t row, const size_t col) 
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 4, 4>::extract_matrix3() const
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 3, 3> Matrix<T, 4, 4>::extract_matrix3() const
 {
     Matrix<T, 3, 3> mat;
 
@@ -2062,13 +2294,15 @@ inline Matrix<T, 3, 3> Matrix<T, 4, 4>::extract_matrix3() const
 }
 
 template <typename T>
-inline Vector<T, 3> Matrix<T, 4, 4>::extract_translation() const
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 3> Matrix<T, 4, 4>::extract_translation() const
 {
     return Vector<T, 3>(m_comp[3], m_comp[7], m_comp[11]);
 }
 
 template <typename T>
-inline void Matrix<T, 4, 4>::decompose(
+APPLESEED_HOST_DEVICE_INLINE
+void Matrix<T, 4, 4>::decompose(
     Vector<T, 3>&           scaling,
     Quaternion<T>&          rotation,
     Vector<T, 3>&           translation) const
@@ -2079,7 +2313,8 @@ inline void Matrix<T, 4, 4>::decompose(
 }
 
 template <typename T>
-inline bool swaps_handedness(const Matrix<T, 4, 4>& mat)
+APPLESEED_HOST_DEVICE_INLINE
+bool swaps_handedness(const Matrix<T, 4, 4>& mat)
 {
     const T d =
         mat[0] * mat[5] * mat[10] +
@@ -2093,7 +2328,8 @@ inline bool swaps_handedness(const Matrix<T, 4, 4>& mat)
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> operator*(
+APPLESEED_HOST_DEVICE_INLINE
+Matrix<T, 4, 4> operator*(
     const Matrix<T, 4, 4>&  lhs,
     const Matrix<T, 4, 4>&  rhs)
 {
@@ -2217,7 +2453,8 @@ inline Matrix<double, 4, 4> operator*(
 #endif  // APPLESEED_USE_SSE
 
 template <typename T>
-inline Vector<T, 4> operator*(
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 4> operator*(
     const Matrix<T, 4, 4>&  m,
     const Vector<T, 4>&     v)
 {
@@ -2267,7 +2504,8 @@ inline Vector<double, 4> operator*(
 #endif  // APPLESEED_USE_SSE
 
 template <typename T>
-inline Vector<T, 4> operator*(
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 4> operator*(
     const Vector<T, 4>&     v,
     const Matrix<T, 4, 4>&  m)
 {

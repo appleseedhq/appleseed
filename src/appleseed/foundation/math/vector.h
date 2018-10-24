@@ -30,7 +30,9 @@
 #pragma once
 
 // appleseed.foundation headers.
+#include "foundation/math/cmath.h"
 #include "foundation/math/scalar.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/poison.h"
 
 // Imath headers.
@@ -43,7 +45,6 @@
 // Standard headers.
 #include <algorithm>
 #include <cassert>
-#include <cmath>
 #include <cstddef>
 
 namespace foundation
@@ -68,19 +69,26 @@ class Vector
 #if !defined(_MSC_VER) || _MSC_VER >= 1800
     Vector() = default;                         // leave all components uninitialized
 #else
+    APPLESEED_HOST_DEVICE
     Vector() {}                                 // leave all components uninitialized
 #endif
+    APPLESEED_HOST_DEVICE
     explicit Vector(const ValueType val);       // set all components to `val`
 
     // Construct a vector from another vector of a different type.
     template <typename U>
+    APPLESEED_HOST_DEVICE
     explicit Vector(const Vector<U, N>& rhs);
 
     // Construct a vector from an array of N scalars.
+    APPLESEED_HOST_DEVICE_INLINE
     static VectorType from_array(const ValueType* rhs);
 
     // Unchecked array subscripting.
+    APPLESEED_HOST_DEVICE
     ValueType& operator[](const size_t i);
+
+    APPLESEED_HOST_DEVICE
     const ValueType& operator[](const size_t i) const;
 
   private:
@@ -97,75 +105,158 @@ class PoisonImpl<Vector<T, N>>
 };
 
 // Exact inequality and equality tests.
-template <typename T, size_t N> bool operator!=(const Vector<T, N>& lhs, const Vector<T, N>& rhs);
-template <typename T, size_t N> bool operator==(const Vector<T, N>& lhs, const Vector<T, N>& rhs);
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+bool operator!=(const Vector<T, N>& lhs, const Vector<T, N>& rhs);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+bool operator==(const Vector<T, N>& lhs, const Vector<T, N>& rhs);
 
 // Approximate equality tests.
-template <typename T, size_t N> bool feq(const Vector<T, N>& lhs, const Vector<T, N>& rhs);
-template <typename T, size_t N> bool feq(const Vector<T, N>& lhs, const Vector<T, N>& rhs, const T eps);
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+bool feq(const Vector<T, N>& lhs, const Vector<T, N>& rhs);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+bool feq(const Vector<T, N>& lhs, const Vector<T, N>& rhs, const T eps);
 
 // Approximate zero tests.
-template <typename T, size_t N> bool fz(const Vector<T, N>& v);
-template <typename T, size_t N> bool fz(const Vector<T, N>& v, const T eps);
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+bool fz(const Vector<T, N>& v);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+bool fz(const Vector<T, N>& v, const T eps);
 
 // Vector arithmetic.
-template <typename T, size_t N> Vector<T, N>  operator+ (const Vector<T, N>& lhs, const Vector<T, N>& rhs);
-template <typename T, size_t N> Vector<T, N>  operator- (const Vector<T, N>& lhs, const Vector<T, N>& rhs);
-template <typename T, size_t N> Vector<T, N>  operator- (const Vector<T, N>& lhs);
-template <typename T, size_t N> Vector<T, N>  operator* (const Vector<T, N>& lhs, const T rhs);
-template <typename T, size_t N> Vector<T, N>  operator* (const T lhs, const Vector<T, N>& rhs);
-template <typename T, size_t N> Vector<T, N>  operator/ (const Vector<T, N>& lhs, const T rhs);
-template <typename T, size_t N> Vector<T, N>  operator* (const Vector<T, N>& lhs, const Vector<T, N>& rhs);
-template <typename T, size_t N> Vector<T, N>  operator/ (const Vector<T, N>& lhs, const Vector<T, N>& rhs);
-template <typename T, size_t N> Vector<T, N>& operator+=(Vector<T, N>& lhs, const Vector<T, N>& rhs);
-template <typename T, size_t N> Vector<T, N>& operator-=(Vector<T, N>& lhs, const Vector<T, N>& rhs);
-template <typename T, size_t N> Vector<T, N>& operator*=(Vector<T, N>& lhs, const T rhs);
-template <typename T, size_t N> Vector<T, N>& operator/=(Vector<T, N>& lhs, const T rhs);
-template <typename T, size_t N> Vector<T, N>& operator*=(Vector<T, N>& lhs, const Vector<T, N>& rhs);
-template <typename T, size_t N> Vector<T, N>& operator/=(Vector<T, N>& lhs, const Vector<T, N>& rhs);
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> operator+ (const Vector<T, N>& lhs, const Vector<T, N>& rhs);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> operator- (const Vector<T, N>& lhs, const Vector<T, N>& rhs);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> operator- (const Vector<T, N>& lhs);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> operator* (const Vector<T, N>& lhs, const T rhs);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> operator* (const T lhs, const Vector<T, N>& rhs);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> operator/ (const Vector<T, N>& lhs, const T rhs);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> operator* (const Vector<T, N>& lhs, const Vector<T, N>& rhs);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> operator/ (const Vector<T, N>& lhs, const Vector<T, N>& rhs);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N>& operator+=(Vector<T, N>& lhs, const Vector<T, N>& rhs);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N>& operator-=(Vector<T, N>& lhs, const Vector<T, N>& rhs);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N>& operator*=(Vector<T, N>& lhs, const T rhs);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N>& operator/=(Vector<T, N>& lhs, const T rhs);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N>& operator*=(Vector<T, N>& lhs, const Vector<T, N>& rhs);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N>& operator/=(Vector<T, N>& lhs, const Vector<T, N>& rhs);
 
 // Dot product.
-template <typename T, size_t N> T dot(const Vector<T, N>& lhs, const Vector<T, N>& rhs);
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+T dot(const Vector<T, N>& lhs, const Vector<T, N>& rhs);
 
 // Vector square norm, norm and normalization.
-template <typename T, size_t N> T square_norm(const Vector<T, N>& v);
-template <typename T, size_t N> T norm(const Vector<T, N>& v);
-template <typename T, size_t N> Vector<T, N> normalize(const Vector<T, N>& v);
-template <typename T, size_t N> Vector<T, N> safe_normalize(const Vector<T, N>& v, const Vector<T, N>& fallback);
-template <typename T, size_t N> Vector<T, N> safe_normalize(const Vector<T, N>& v);
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+T square_norm(const Vector<T, N>& v);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+T norm(const Vector<T, N>& v);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> normalize(const Vector<T, N>& v);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> safe_normalize(const Vector<T, N>& v, const Vector<T, N>& fallback);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> safe_normalize(const Vector<T, N>& v);
 
 // Bring the norm of a nearly-unit vector closer to 1 by performing a single Newton-Raphson step.
 template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
 Vector<T, N> improve_normalization(const Vector<T, N>& v);
 
 // Bring the norm of a nearly-unit vector closer to 1 by performing a set number of Newton-Raphson steps.
 template <size_t Steps, typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
 Vector<T, N> improve_normalization(const Vector<T, N>& v);
 
 // Return true if a vector is normalized (unit-length), false otherwise.
-template <typename T, size_t N> bool is_normalized(const Vector<T, N>& v);
-template <typename T, size_t N> bool is_normalized(const Vector<T, N>& v, const T eps);
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+bool is_normalized(const Vector<T, N>& v);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+bool is_normalized(const Vector<T, N>& v, const T eps);
 
 // Return n if dot(n, i) < 0, -n otherwise.
 template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
 Vector<T, N> faceforward(
     const Vector<T, N>& n,
     const Vector<T, N>& i);
 
 // Return v if it is in the same hemisphere as ref, -v otherwise.
 template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
 Vector<T, N> flip_to_same_hemisphere(
     const Vector<T, N>& v,
     const Vector<T, N>& ref);
 
 // Return v with the component along n zeroed.
 template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
 Vector<T, N> project(
     const Vector<T, N>& v,
     const Vector<T, N>& n);
 
 // Return the reflection vector given an incoming vector i and a unit-length normal vector n.
 template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
 Vector<T, N> reflect(
     const Vector<T, N>& i,
     const Vector<T, N>& n);
@@ -200,6 +291,7 @@ Vector<T, N> reflect(
 //
 
 template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
 bool refract(
     const Vector<T, N>& i,
     const Vector<T, N>& n,
@@ -208,29 +300,52 @@ bool refract(
 
 // Clamp the argument to [min, max].
 template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
 Vector<T, N> clamp(
     const Vector<T, N>& v,
     const T             min,
     const T             max);
 
 // Clamp the argument to [0,1].
-template <typename T, size_t N> Vector<T, N> saturate(const Vector<T, N>& v);
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> saturate(const Vector<T, N>& v);
 
 // Return the smallest or largest signed component of a vector.
-template <typename T, size_t N> T min_value(const Vector<T, N>& v);
-template <typename T, size_t N> T max_value(const Vector<T, N>& v);
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+T min_value(const Vector<T, N>& v);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+T max_value(const Vector<T, N>& v);
 
 // Return the index of the smallest or largest signed component of a vector.
-template <typename T, size_t N> size_t min_index(const Vector<T, N>& v);
-template <typename T, size_t N> size_t max_index(const Vector<T, N>& v);
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+size_t min_index(const Vector<T, N>& v);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+size_t max_index(const Vector<T, N>& v);
 
 // Return the index of the smallest or largest component of a vector, in absolute value.
-template <typename T, size_t N> size_t min_abs_index(const Vector<T, N>& v);
-template <typename T, size_t N> size_t max_abs_index(const Vector<T, N>& v);
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+size_t min_abs_index(const Vector<T, N>& v);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+size_t max_abs_index(const Vector<T, N>& v);
 
 // Component-wise min/max of two vectors.
-template <typename T, size_t N> Vector<T, N> component_wise_min(const Vector<T, N>& lhs, const Vector<T, N>& rhs);
-template <typename T, size_t N> Vector<T, N> component_wise_max(const Vector<T, N>& lhs, const Vector<T, N>& rhs);
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> component_wise_min(const Vector<T, N>& lhs, const Vector<T, N>& rhs);
+
+template <typename T, size_t N>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> component_wise_max(const Vector<T, N>& lhs, const Vector<T, N>& rhs);
 
 
 //
@@ -238,7 +353,7 @@ template <typename T, size_t N> Vector<T, N> component_wise_max(const Vector<T, 
 //
 
 template <typename T>
-class Vector<T, 2>
+class APPLESEED_DEVICE_ALIGN(8) Vector<T, 2>
 {
   public:
     // Types.
@@ -257,13 +372,17 @@ class Vector<T, 2>
 #else
     Vector() {}                                 // leave all components uninitialized
 #endif
+    APPLESEED_HOST_DEVICE_INLINE
     explicit Vector(const ValueType val);       // set all components to `val`
+
+    APPLESEED_HOST_DEVICE_INLINE
     Vector(                                     // set individual components
         const ValueType x,
         const ValueType y);
 
     // Construct a vector from another vector of a different type.
     template <typename U>
+    APPLESEED_HOST_DEVICE_INLINE
     explicit Vector(const Vector<U, 2>& rhs);
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
@@ -278,15 +397,21 @@ class Vector<T, 2>
 #endif
 
     // Construct a vector from an array of 2 scalars.
+    APPLESEED_HOST_DEVICE_INLINE
     static VectorType from_array(const ValueType* rhs);
 
     // Unchecked array subscripting.
+    APPLESEED_HOST_DEVICE_INLINE
     ValueType& operator[](const size_t i);
+
+    APPLESEED_HOST_DEVICE_INLINE
     const ValueType& operator[](const size_t i) const;
 };
 
 // Determinant of the 2D matrix whose first column is lhs and second column is rhs.
-template <typename T> T det(const Vector<T, 2>& lhs, const Vector<T, 2>& rhs);
+template <typename T>
+APPLESEED_HOST_DEVICE_INLINE
+T det(const Vector<T, 2>& lhs, const Vector<T, 2>& rhs);
 
 
 //
@@ -313,7 +438,10 @@ class Vector<T, 3>
 #else
     Vector() {}                                 // leave all components uninitialized
 #endif
+    APPLESEED_HOST_DEVICE_INLINE
     explicit Vector(const ValueType val);       // set all components to `val`
+
+    APPLESEED_HOST_DEVICE_INLINE
     Vector(                                     // set individual components
         const ValueType x,
         const ValueType y,
@@ -321,6 +449,7 @@ class Vector<T, 3>
 
     // Construct a vector from another vector of a different type.
     template <typename U>
+    APPLESEED_HOST_DEVICE_INLINE
     explicit Vector(const Vector<U, 3>& rhs);
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
@@ -335,12 +464,16 @@ class Vector<T, 3>
 #endif
 
     // Construct a vector from an array of 3 scalars.
+    APPLESEED_HOST_DEVICE_INLINE
     static VectorType from_array(const ValueType* rhs);
 
     // Build a unit vector from two angles.
+    APPLESEED_HOST_DEVICE_INLINE
     static VectorType make_unit_vector(
         const ValueType theta,                  // angle with Y basis vector, in radians
         const ValueType phi);                   // angle with X basis vector, in radians
+
+    APPLESEED_HOST_DEVICE_INLINE
     static VectorType make_unit_vector(
         const ValueType cos_theta,              // cosine of angle with Y basis vector
         const ValueType sin_theta,              // sine of angle with Y basis vector
@@ -348,12 +481,17 @@ class Vector<T, 3>
         const ValueType sin_phi);               // sine of angle with X basis vector
 
     // Unchecked array subscripting.
+    APPLESEED_HOST_DEVICE_INLINE
     ValueType& operator[](const size_t i);
+
+    APPLESEED_HOST_DEVICE_INLINE
     const ValueType& operator[](const size_t i) const;
 };
 
 // Cross product.
-template <typename T> Vector<T, 3> cross(const Vector<T, 3>& lhs, const Vector<T, 3>& rhs);
+template <typename T>
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 3> cross(const Vector<T, 3>& lhs, const Vector<T, 3>& rhs);
 
 
 //
@@ -361,7 +499,7 @@ template <typename T> Vector<T, 3> cross(const Vector<T, 3>& lhs, const Vector<T
 //
 
 template <typename T>
-class Vector<T, 4>
+class APPLESEED_DEVICE_ALIGN(16) Vector<T, 4>
 {
   public:
     // Types.
@@ -380,7 +518,10 @@ class Vector<T, 4>
 #else
     Vector() {}                                 // leave all components uninitialized
 #endif
+    APPLESEED_HOST_DEVICE_INLINE
     explicit Vector(const ValueType val);       // set all components to `val`
+
+    APPLESEED_HOST_DEVICE_INLINE
     Vector(                                     // set individual components
         const ValueType x,
         const ValueType y,
@@ -389,13 +530,18 @@ class Vector<T, 4>
 
     // Construct a vector from another vector of a different type.
     template <typename U>
+    APPLESEED_HOST_DEVICE_INLINE
     explicit Vector(const Vector<U, 4>& rhs);
 
     // Construct a vector from an array of 4 scalars.
+    APPLESEED_HOST_DEVICE_INLINE
     static VectorType from_array(const ValueType* rhs);
 
     // Unchecked array subscripting.
+    APPLESEED_HOST_DEVICE_INLINE
     ValueType& operator[](const size_t i);
+
+    APPLESEED_HOST_DEVICE_INLINE
     const ValueType& operator[](const size_t i) const;
 };
 
@@ -454,7 +600,8 @@ struct ImathVecEquivalent<T, 3>
 //
 
 template <typename T, size_t N>
-inline Vector<T, N>::Vector(const ValueType val)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N>::Vector(const ValueType val)
 {
     for (size_t i = 0; i < N; ++i)
         m_comp[i] = val;
@@ -462,14 +609,16 @@ inline Vector<T, N>::Vector(const ValueType val)
 
 template <typename T, size_t N>
 template <typename U>
-inline Vector<T, N>::Vector(const Vector<U, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N>::Vector(const Vector<U, N>& rhs)
 {
     for (size_t i = 0; i < N; ++i)
         m_comp[i] = static_cast<ValueType>(rhs[i]);
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> Vector<T, N>::from_array(const ValueType* rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> Vector<T, N>::from_array(const ValueType* rhs)
 {
     assert(rhs);
 
@@ -482,28 +631,31 @@ inline Vector<T, N> Vector<T, N>::from_array(const ValueType* rhs)
 }
 
 template <typename T, size_t N>
-inline T& Vector<T, N>::operator[](const size_t i)
+APPLESEED_HOST_DEVICE_INLINE
+T& Vector<T, N>::operator[](const size_t i)
 {
     assert(i < Dimension);
     return m_comp[i];
 }
 
 template <typename T, size_t N>
-inline const T& Vector<T, N>::operator[](const size_t i) const
+APPLESEED_HOST_DEVICE_INLINE
+const T& Vector<T, N>::operator[](const size_t i) const
 {
     assert(i < Dimension);
     return m_comp[i];
 }
 
 template <typename T, size_t N>
-void PoisonImpl<Vector<T, N>>::do_poison(Vector<T, N>& v)
+inline void PoisonImpl<Vector<T, N>>::do_poison(Vector<T, N>& v)
 {
     for (size_t i = 0; i < N; ++i)
         poison(v[i]);
 }
 
 template <typename T, size_t N>
-inline bool operator!=(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+bool operator!=(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 {
     for (size_t i = 0; i < N; ++i)
     {
@@ -515,13 +667,15 @@ inline bool operator!=(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 }
 
 template <typename T, size_t N>
-inline bool operator==(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+bool operator==(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 {
     return !(lhs != rhs);
 }
 
 template <typename T, size_t N>
-inline bool feq(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+bool feq(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 {
     for (size_t i = 0; i < N; ++i)
     {
@@ -533,7 +687,8 @@ inline bool feq(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 }
 
 template <typename T, size_t N>
-inline bool feq(const Vector<T, N>& lhs, const Vector<T, N>& rhs, const T eps)
+APPLESEED_HOST_DEVICE_INLINE
+bool feq(const Vector<T, N>& lhs, const Vector<T, N>& rhs, const T eps)
 {
     for (size_t i = 0; i < N; ++i)
     {
@@ -545,7 +700,8 @@ inline bool feq(const Vector<T, N>& lhs, const Vector<T, N>& rhs, const T eps)
 }
 
 template <typename T, size_t N>
-inline bool fz(const Vector<T, N>& v)
+APPLESEED_HOST_DEVICE_INLINE
+bool fz(const Vector<T, N>& v)
 {
     for (size_t i = 0; i < N; ++i)
     {
@@ -557,7 +713,8 @@ inline bool fz(const Vector<T, N>& v)
 }
 
 template <typename T, size_t N>
-inline bool fz(const Vector<T, N>& v, const T eps)
+APPLESEED_HOST_DEVICE_INLINE
+bool fz(const Vector<T, N>& v, const T eps)
 {
     for (size_t i = 0; i < N; ++i)
     {
@@ -569,7 +726,8 @@ inline bool fz(const Vector<T, N>& v, const T eps)
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> operator+(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> operator+(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 {
     Vector<T, N> result;
 
@@ -580,7 +738,8 @@ inline Vector<T, N> operator+(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> operator-(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> operator-(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 {
     Vector<T, N> result;
 
@@ -591,7 +750,8 @@ inline Vector<T, N> operator-(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> operator-(const Vector<T, N>& lhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> operator-(const Vector<T, N>& lhs)
 {
     Vector<T, N> result;
 
@@ -602,7 +762,8 @@ inline Vector<T, N> operator-(const Vector<T, N>& lhs)
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> operator*(const Vector<T, N>& lhs, const T rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> operator*(const Vector<T, N>& lhs, const T rhs)
 {
     Vector<T, N> result;
 
@@ -613,13 +774,15 @@ inline Vector<T, N> operator*(const Vector<T, N>& lhs, const T rhs)
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> operator*(const T lhs, const Vector<T, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> operator*(const T lhs, const Vector<T, N>& rhs)
 {
     return rhs * lhs;
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> operator/(const Vector<T, N>& lhs, const T rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> operator/(const Vector<T, N>& lhs, const T rhs)
 {
     Vector<T, N> result;
 
@@ -630,25 +793,28 @@ inline Vector<T, N> operator/(const Vector<T, N>& lhs, const T rhs)
 }
 
 template <size_t N>
-inline Vector<float, N> operator/(const Vector<float, N>& lhs, const float rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<float, N> operator/(const Vector<float, N>& lhs, const float rhs)
 {
     return lhs * (1.0f / rhs);
 }
 
 template <size_t N>
-inline Vector<double, N> operator/(const Vector<double, N>& lhs, const double rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<double, N> operator/(const Vector<double, N>& lhs, const double rhs)
 {
     return lhs * (1.0 / rhs);
 }
 
 template <size_t N>
-inline Vector<long double, N> operator/(const Vector<long double, N>& lhs, const long double rhs)
+Vector<long double, N> operator/(const Vector<long double, N>& lhs, const long double rhs)
 {
     return lhs * (1.0L / rhs);
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> operator*(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> operator*(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 {
     Vector<T, N> result;
 
@@ -659,7 +825,8 @@ inline Vector<T, N> operator*(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> operator/(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> operator/(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 {
     Vector<T, N> result;
 
@@ -670,7 +837,8 @@ inline Vector<T, N> operator/(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 }
 
 template <typename T, size_t N>
-inline Vector<T, N>& operator+=(Vector<T, N>& lhs, const Vector<T, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N>& operator+=(Vector<T, N>& lhs, const Vector<T, N>& rhs)
 {
     for (size_t i = 0; i < N; ++i)
         lhs[i] += rhs[i];
@@ -679,7 +847,8 @@ inline Vector<T, N>& operator+=(Vector<T, N>& lhs, const Vector<T, N>& rhs)
 }
 
 template <typename T, size_t N>
-inline Vector<T, N>& operator-=(Vector<T, N>& lhs, const Vector<T, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N>& operator-=(Vector<T, N>& lhs, const Vector<T, N>& rhs)
 {
     for (size_t i = 0; i < N; ++i)
         lhs[i] -= rhs[i];
@@ -688,7 +857,8 @@ inline Vector<T, N>& operator-=(Vector<T, N>& lhs, const Vector<T, N>& rhs)
 }
 
 template <typename T, size_t N>
-inline Vector<T, N>& operator*=(Vector<T, N>& lhs, const T rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N>& operator*=(Vector<T, N>& lhs, const T rhs)
 {
     for (size_t i = 0; i < N; ++i)
         lhs[i] *= rhs;
@@ -697,7 +867,8 @@ inline Vector<T, N>& operator*=(Vector<T, N>& lhs, const T rhs)
 }
 
 template <typename T, size_t N>
-inline Vector<T, N>& operator/=(Vector<T, N>& lhs, const T rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N>& operator/=(Vector<T, N>& lhs, const T rhs)
 {
     for (size_t i = 0; i < N; ++i)
         lhs[i] /= rhs;
@@ -706,25 +877,28 @@ inline Vector<T, N>& operator/=(Vector<T, N>& lhs, const T rhs)
 }
 
 template <size_t N>
-inline Vector<float, N>& operator/=(Vector<float, N>& lhs, const float rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<float, N>& operator/=(Vector<float, N>& lhs, const float rhs)
 {
     return lhs *= 1.0f / rhs;
 }
 
 template <size_t N>
-inline Vector<double, N>& operator/=(Vector<double, N>& lhs, const double rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<double, N>& operator/=(Vector<double, N>& lhs, const double rhs)
 {
     return lhs *= 1.0 / rhs;
 }
 
 template <size_t N>
-inline Vector<long double, N>& operator/=(Vector<long double, N>& lhs, const long double rhs)
+Vector<long double, N>& operator/=(Vector<long double, N>& lhs, const long double rhs)
 {
     return lhs *= 1.0L / rhs;
 }
 
 template <typename T, size_t N>
-inline Vector<T, N>& operator*=(Vector<T, N>& lhs, const Vector<T, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N>& operator*=(Vector<T, N>& lhs, const Vector<T, N>& rhs)
 {
     for (size_t i = 0; i < N; ++i)
         lhs[i] *= rhs[i];
@@ -733,7 +907,8 @@ inline Vector<T, N>& operator*=(Vector<T, N>& lhs, const Vector<T, N>& rhs)
 }
 
 template <typename T, size_t N>
-inline Vector<T, N>& operator/=(Vector<T, N>& lhs, const Vector<T, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N>& operator/=(Vector<T, N>& lhs, const Vector<T, N>& rhs)
 {
     for (size_t i = 0; i < N; ++i)
         lhs[i] /= rhs[i];
@@ -742,7 +917,8 @@ inline Vector<T, N>& operator/=(Vector<T, N>& lhs, const Vector<T, N>& rhs)
 }
 
 template <typename T, size_t N>
-inline T dot(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+T dot(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 {
     T result = T(0.0);
 
@@ -753,19 +929,22 @@ inline T dot(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 }
 
 template <typename T, size_t N>
-inline T square_norm(const Vector<T, N>& v)
+APPLESEED_HOST_DEVICE_INLINE
+T square_norm(const Vector<T, N>& v)
 {
     return dot(v, v);
 }
 
 template <typename T, size_t N>
-inline T norm(const Vector<T, N>& v)
+APPLESEED_HOST_DEVICE_INLINE
+T norm(const Vector<T, N>& v)
 {
-    return std::sqrt(square_norm(v));
+    return cmath<T>::sqrt(square_norm(v));
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> normalize(const Vector<T, N>& v)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> normalize(const Vector<T, N>& v)
 {
     const T n = norm(v);
     assert(n > T(0.0));
@@ -773,7 +952,8 @@ inline Vector<T, N> normalize(const Vector<T, N>& v)
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> safe_normalize(const Vector<T, N>& v, const Vector<T, N>& fallback)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> safe_normalize(const Vector<T, N>& v, const Vector<T, N>& fallback)
 {
     assert(is_normalized(fallback));
     const T n = norm(v);
@@ -781,7 +961,8 @@ inline Vector<T, N> safe_normalize(const Vector<T, N>& v, const Vector<T, N>& fa
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> safe_normalize(const Vector<T, N>& v)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> safe_normalize(const Vector<T, N>& v)
 {
     Vector<T, N> result = v;
 
@@ -797,13 +978,15 @@ inline Vector<T, N> safe_normalize(const Vector<T, N>& v)
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> improve_normalization(const Vector<T, N>& v)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> improve_normalization(const Vector<T, N>& v)
 {
     return improve_normalization<1, T, N>(v);
 }
 
 template <size_t Steps, typename T, size_t N>
-inline Vector<T, N> improve_normalization(const Vector<T, N>& v)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> improve_normalization(const Vector<T, N>& v)
 {
     Vector<T, N> result = v;
 
@@ -814,19 +997,22 @@ inline Vector<T, N> improve_normalization(const Vector<T, N>& v)
 }
 
 template <typename T, size_t N>
-inline bool is_normalized(const Vector<T, N>& v)
+APPLESEED_HOST_DEVICE_INLINE
+bool is_normalized(const Vector<T, N>& v)
 {
     return feq(square_norm(v), T(1.0), make_eps<T>(1.0e-4f, 1.0e-5));
 }
 
 template <typename T, size_t N>
-inline bool is_normalized(const Vector<T, N>& v, const T eps)
+APPLESEED_HOST_DEVICE_INLINE
+bool is_normalized(const Vector<T, N>& v, const T eps)
 {
     return feq(square_norm(v), T(1.0), eps);
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> faceforward(
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> faceforward(
     const Vector<T, N>& n,
     const Vector<T, N>& i)
 {
@@ -834,7 +1020,8 @@ inline Vector<T, N> faceforward(
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> flip_to_same_hemisphere(
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> flip_to_same_hemisphere(
     const Vector<T, N>& v,
     const Vector<T, N>& ref)
 {
@@ -842,7 +1029,8 @@ inline Vector<T, N> flip_to_same_hemisphere(
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> project(
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> project(
     const Vector<T, N>& v,
     const Vector<T, N>& n)
 {
@@ -850,7 +1038,8 @@ inline Vector<T, N> project(
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> reflect(
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> reflect(
     const Vector<T, N>& i,
     const Vector<T, N>& n)
 {
@@ -861,7 +1050,8 @@ inline Vector<T, N> reflect(
 }
 
 template <typename T, size_t N>
-inline bool refract(
+APPLESEED_HOST_DEVICE_INLINE
+bool refract(
     const Vector<T, N>& i,
     const Vector<T, N>& n,
     const T             eta,
@@ -887,7 +1077,7 @@ inline bool refract(
         return false;
     }
 
-    const T cos_theta_t = std::sqrt(cos_theta_t2);
+    const T cos_theta_t = cmath<T>::sqrt(cos_theta_t2);
 
     t = (eta * cos_theta_i - cos_theta_t) * n - eta * i;
     assert(is_normalized(t));
@@ -896,7 +1086,8 @@ inline bool refract(
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> clamp(
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> clamp(
     const Vector<T, N>& v,
     const T             min,
     const T             max)
@@ -910,7 +1101,8 @@ inline Vector<T, N> clamp(
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> saturate(const Vector<T, N>& v)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> saturate(const Vector<T, N>& v)
 {
     Vector<T, N> result;
 
@@ -921,7 +1113,8 @@ inline Vector<T, N> saturate(const Vector<T, N>& v)
 }
 
 template <typename T, size_t N>
-inline T min_value(const Vector<T, N>& v)
+APPLESEED_HOST_DEVICE_INLINE
+T min_value(const Vector<T, N>& v)
 {
     T value = v[0];
 
@@ -935,7 +1128,8 @@ inline T min_value(const Vector<T, N>& v)
 }
 
 template <typename T, size_t N>
-inline T max_value(const Vector<T, N>& v)
+APPLESEED_HOST_DEVICE_INLINE
+T max_value(const Vector<T, N>& v)
 {
     T value = v[0];
 
@@ -949,7 +1143,8 @@ inline T max_value(const Vector<T, N>& v)
 }
 
 template <typename T, size_t N>
-inline size_t min_index(const Vector<T, N>& v)
+APPLESEED_HOST_DEVICE_INLINE
+size_t min_index(const Vector<T, N>& v)
 {
     size_t index = 0;
     T value = v[0];
@@ -969,7 +1164,8 @@ inline size_t min_index(const Vector<T, N>& v)
 }
 
 template <typename T, size_t N>
-inline size_t max_index(const Vector<T, N>& v)
+APPLESEED_HOST_DEVICE_INLINE
+size_t max_index(const Vector<T, N>& v)
 {
     size_t index = 0;
     T value = v[0];
@@ -989,7 +1185,8 @@ inline size_t max_index(const Vector<T, N>& v)
 }
 
 template <typename T, size_t N>
-inline size_t min_abs_index(const Vector<T, N>& v)
+APPLESEED_HOST_DEVICE_INLINE
+size_t min_abs_index(const Vector<T, N>& v)
 {
     size_t index = 0;
     T value = std::abs(v[0]);
@@ -1009,7 +1206,8 @@ inline size_t min_abs_index(const Vector<T, N>& v)
 }
 
 template <typename T, size_t N>
-inline size_t max_abs_index(const Vector<T, N>& v)
+APPLESEED_HOST_DEVICE_INLINE
+size_t max_abs_index(const Vector<T, N>& v)
 {
     size_t index = 0;
     T value = std::abs(v[0]);
@@ -1029,7 +1227,8 @@ inline size_t max_abs_index(const Vector<T, N>& v)
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> component_wise_min(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> component_wise_min(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 {
     Vector<T, N> result;
 
@@ -1040,7 +1239,8 @@ inline Vector<T, N> component_wise_min(const Vector<T, N>& lhs, const Vector<T, 
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> component_wise_max(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, N> component_wise_max(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 {
     Vector<T, N> result;
 
@@ -1056,14 +1256,16 @@ inline Vector<T, N> component_wise_max(const Vector<T, N>& lhs, const Vector<T, 
 //
 
 template <typename T>
-inline Vector<T, 2>::Vector(const ValueType val)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 2>::Vector(const ValueType val)
   : x(val)
   , y(val)
 {
 }
 
 template <typename T>
-inline Vector<T, 2>::Vector(
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 2>::Vector(
     const ValueType x_,
     const ValueType y_)
   : x(x_)
@@ -1073,7 +1275,8 @@ inline Vector<T, 2>::Vector(
 
 template <typename T>
 template <typename U>
-inline Vector<T, 2>::Vector(const Vector<U, 2>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 2>::Vector(const Vector<U, 2>& rhs)
   : x(static_cast<ValueType>(rhs.x))
   , y(static_cast<ValueType>(rhs.y))
 {
@@ -1103,28 +1306,32 @@ inline Vector<T, 2>::operator const Imath::Vec2<T>&() const
 #endif
 
 template <typename T>
-inline Vector<T, 2> Vector<T, 2>::from_array(const ValueType* rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 2> Vector<T, 2>::from_array(const ValueType* rhs)
 {
     assert(rhs);
     return Vector(rhs[0], rhs[1]);
 }
 
 template <typename T>
-inline T& Vector<T, 2>::operator[](const size_t i)
+APPLESEED_HOST_DEVICE_INLINE
+T& Vector<T, 2>::operator[](const size_t i)
 {
     assert(i < Dimension);
     return (&x)[i];
 }
 
 template <typename T>
-inline const T& Vector<T, 2>::operator[](const size_t i) const
+APPLESEED_HOST_DEVICE_INLINE
+const T& Vector<T, 2>::operator[](const size_t i) const
 {
     assert(i < Dimension);
     return (&x)[i];
 }
 
 template <typename T>
-inline T det(const Vector<T, 2>& lhs, const Vector<T, 2>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+T det(const Vector<T, 2>& lhs, const Vector<T, 2>& rhs)
 {
     return lhs.x * rhs.y - lhs.y * rhs.x;
 }
@@ -1135,7 +1342,8 @@ inline T det(const Vector<T, 2>& lhs, const Vector<T, 2>& rhs)
 //
 
 template <typename T>
-inline Vector<T, 3>::Vector(const ValueType val)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 3>::Vector(const ValueType val)
   : x(val)
   , y(val)
   , z(val)
@@ -1143,7 +1351,8 @@ inline Vector<T, 3>::Vector(const ValueType val)
 }
 
 template <typename T>
-inline Vector<T, 3>::Vector(
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 3>::Vector(
     const ValueType x_,
     const ValueType y_,
     const ValueType z_)
@@ -1155,7 +1364,8 @@ inline Vector<T, 3>::Vector(
 
 template <typename T>
 template <typename U>
-inline Vector<T, 3>::Vector(const Vector<U, 3>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 3>::Vector(const Vector<U, 3>& rhs)
   : x(static_cast<ValueType>(rhs.x))
   , y(static_cast<ValueType>(rhs.y))
   , z(static_cast<ValueType>(rhs.z))
@@ -1187,28 +1397,31 @@ inline Vector<T, 3>::operator const Imath::Vec3<T>&() const
 #endif
 
 template <typename T>
-inline Vector<T, 3> Vector<T, 3>::from_array(const ValueType* rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 3> Vector<T, 3>::from_array(const ValueType* rhs)
 {
     assert(rhs);
     return Vector(rhs[0], rhs[1], rhs[2]);
 }
 
 template <typename T>
-inline Vector<T, 3> Vector<T, 3>::make_unit_vector(
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 3> Vector<T, 3>::make_unit_vector(
     const ValueType theta,
     const ValueType phi)
 {
-    const ValueType sin_theta = std::sin(theta);
+    const ValueType sin_theta = cmath<T>::sin(theta);
 
     return
         Vector<T, 3>(
-            std::cos(phi) * sin_theta,
-            std::cos(theta),
-            std::sin(phi) * sin_theta);
+            cmath<T>::cos(phi) * sin_theta,
+            cmath<T>::cos(theta),
+            cmath<T>::sin(phi) * sin_theta);
 }
 
 template <typename T>
-inline Vector<T, 3> Vector<T, 3>::make_unit_vector(
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 3> Vector<T, 3>::make_unit_vector(
     const ValueType cos_theta,
     const ValueType sin_theta,
     const ValueType cos_phi,
@@ -1222,21 +1435,24 @@ inline Vector<T, 3> Vector<T, 3>::make_unit_vector(
 }
 
 template <typename T>
-inline T& Vector<T, 3>::operator[](const size_t i)
+APPLESEED_HOST_DEVICE_INLINE
+T& Vector<T, 3>::operator[](const size_t i)
 {
     assert(i < Dimension);
     return (&x)[i];
 }
 
 template <typename T>
-inline const T& Vector<T, 3>::operator[](const size_t i) const
+APPLESEED_HOST_DEVICE_INLINE
+const T& Vector<T, 3>::operator[](const size_t i) const
 {
     assert(i < Dimension);
     return (&x)[i];
 }
 
 template <typename T>
-inline Vector<T, 3> cross(const Vector<T, 3>& lhs, const Vector<T, 3>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 3> cross(const Vector<T, 3>& lhs, const Vector<T, 3>& rhs)
 {
     Vector<T, 3> result;
     result.x = lhs.y * rhs.z - rhs.y * lhs.z;
@@ -1251,7 +1467,8 @@ inline Vector<T, 3> cross(const Vector<T, 3>& lhs, const Vector<T, 3>& rhs)
 //
 
 template <typename T>
-inline Vector<T, 4>::Vector(const ValueType val)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 4>::Vector(const ValueType val)
   : x(val)
   , y(val)
   , z(val)
@@ -1260,7 +1477,8 @@ inline Vector<T, 4>::Vector(const ValueType val)
 }
 
 template <typename T>
-inline Vector<T, 4>::Vector(
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 4>::Vector(
     const ValueType x_,
     const ValueType y_,
     const ValueType z_,
@@ -1274,7 +1492,8 @@ inline Vector<T, 4>::Vector(
 
 template <typename T>
 template <typename U>
-inline Vector<T, 4>::Vector(const Vector<U, 4>& rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 4>::Vector(const Vector<U, 4>& rhs)
   : x(static_cast<ValueType>(rhs.x))
   , y(static_cast<ValueType>(rhs.y))
   , z(static_cast<ValueType>(rhs.z))
@@ -1283,21 +1502,24 @@ inline Vector<T, 4>::Vector(const Vector<U, 4>& rhs)
 }
 
 template <typename T>
-inline Vector<T, 4> Vector<T, 4>::from_array(const ValueType* rhs)
+APPLESEED_HOST_DEVICE_INLINE
+Vector<T, 4> Vector<T, 4>::from_array(const ValueType* rhs)
 {
     assert(rhs);
     return Vector(rhs[0], rhs[1], rhs[2], rhs[3]);
 }
 
 template <typename T>
-inline T& Vector<T, 4>::operator[](const size_t i)
+APPLESEED_HOST_DEVICE_INLINE
+T& Vector<T, 4>::operator[](const size_t i)
 {
     assert(i < Dimension);
     return (&x)[i];
 }
 
 template <typename T>
-inline const T& Vector<T, 4>::operator[](const size_t i) const
+APPLESEED_HOST_DEVICE_INLINE
+const T& Vector<T, 4>::operator[](const size_t i) const
 {
     assert(i < Dimension);
     return (&x)[i];

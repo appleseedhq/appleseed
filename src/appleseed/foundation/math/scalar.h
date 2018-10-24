@@ -30,15 +30,16 @@
 #pragma once
 
 // appleseed.foundation headers.
+#include "foundation/math/cmath.h"
 #include "foundation/platform/arch.h"
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cassert>
-#include <cmath>
 #include <cstddef>
 #ifdef _MSC_VER
 #include <cstdlib>
@@ -102,6 +103,7 @@ T abs(const T x);
 
 // Return the square of the argument.
 template <typename T>
+APPLESEED_HOST_DEVICE_INLINE
 T square(const T x);
 
 // Return the cube of the argument.
@@ -160,10 +162,12 @@ T binomial(const T n, const T k);
 
 // Clamp the argument to [low, high].
 template <typename T>
+APPLESEED_HOST_DEVICE_INLINE
 T clamp(const T x, const T low, const T high);
 
 // Clamp the argument to [0, 1].
 template <typename T>
+APPLESEED_HOST_DEVICE_INLINE
 T saturate(const T x);
 
 // Wrap the argument back to [0, 1).
@@ -260,25 +264,51 @@ V fit(
 //
 
 // Default epsilon values for floating-point tests.
-template <typename T> T default_eps();                      // intentionally left unimplemented
-template <> inline float default_eps<float>()               { return 1.0e-6f; }
-template <> inline double default_eps<double>()             { return 1.0e-14; }
-template <> inline long double default_eps<long double>()   { return 1.0e-30L; }
+template <typename T>
+APPLESEED_HOST_DEVICE_INLINE T default_eps();  // intentionally left unimplemented
+
+template <>
+APPLESEED_HOST_DEVICE_INLINE float default_eps<float>() { return 1.0e-6f; }
+
+template <>
+APPLESEED_HOST_DEVICE_INLINE double default_eps<double>() { return 1.0e-14; }
+
+#ifndef APPLESEED_DEVICE_COMPILATION // CUDA does not have long doubles.
+template <> inline long double default_eps<long double>() { return 1.0e-30L; }
+#endif
 
 // Allow using custom epsilon values in template code.
-template <typename T> T make_eps(const float feps, const double deps);
-template <> inline float make_eps(const float feps, const double /*deps*/)  { return feps; }
-template <> inline double make_eps(const float /*feps*/, const double deps) { return deps; }
+template <typename T>
+APPLESEED_HOST_DEVICE_INLINE
+T make_eps(const float feps, const double deps);
+
+template <>
+APPLESEED_HOST_DEVICE_INLINE
+float make_eps(const float feps, const double /*deps*/)  { return feps; }
+
+template <>
+APPLESEED_HOST_DEVICE_INLINE
+double make_eps(const float /*feps*/, const double deps) { return deps; }
 
 // Approximate equality tests.
-template <typename T> bool feq(const T lhs, const T rhs);
-template <typename T> bool feq(const T lhs, const T rhs, const T eps);
+template <typename T>
+APPLESEED_HOST_DEVICE_INLINE
+bool feq(const T lhs, const T rhs);
+
+template <typename T>
+APPLESEED_HOST_DEVICE_INLINE
+bool feq(const T lhs, const T rhs, const T eps);
+
+APPLESEED_HOST_DEVICE_INLINE
 bool feq(const int lhs, const int rhs);
 
 // Approximate zero tests.
-template <typename T> bool fz(const T lhs);
-template <typename T> bool fz(const T lhs, const T eps);
-bool fz(const int lhs);
+template <typename T>
+APPLESEED_HOST_DEVICE_INLINE bool fz(const T lhs);
+template <typename T>
+APPLESEED_HOST_DEVICE_INLINE bool fz(const T lhs, const T eps);
+
+APPLESEED_HOST_DEVICE_INLINE bool fz(const int lhs);
 
 
 //
@@ -289,8 +319,10 @@ bool fz(const int lhs);
 template <typename T> T signed_min()        { return std::numeric_limits<T>::min(); }
 template <> inline float signed_min()       { return -std::numeric_limits<float>::max(); }
 template <> inline double signed_min()      { return -std::numeric_limits<double>::max(); }
-template <> inline long double signed_min() { return -std::numeric_limits<long double>::max(); }
 
+#ifndef APPLESEED_DEVICE_COMPILATION // CUDA does not have long doubles.
+template <> inline long double signed_min() { return -std::numeric_limits<long double>::max(); }
+#endif
 
 //
 // Conversion operations implementation.
@@ -308,11 +340,13 @@ inline double deg_to_rad(const double angle)
     return angle * (Pi<double>() / 180.0);
 }
 
+#ifndef APPLESEED_DEVICE_COMPILATION // CUDA does not have long doubles.
 template <>
 inline long double deg_to_rad(const long double angle)
 {
     return angle * (Pi<long double>() / 180.0);
 }
+#endif
 
 template <>
 inline float rad_to_deg(const float angle)
@@ -326,11 +360,13 @@ inline double rad_to_deg(const double angle)
     return angle * (180.0 / Pi<double>());
 }
 
+#ifndef APPLESEED_DEVICE_COMPILATION // CUDA does not have long doubles.
 template <>
 inline long double rad_to_deg(const long double angle)
 {
     return angle * (180.0 / Pi<long double>());
 }
+#endif
 
 
 //
@@ -344,7 +380,8 @@ inline T abs(const T x)
 }
 
 template <typename T>
-inline T square(const T x)
+APPLESEED_HOST_DEVICE_INLINE
+T square(const T x)
 {
     return x * x;
 }
@@ -525,13 +562,13 @@ inline unsigned long log2_int(const unsigned long x)
 template <typename T>
 inline T log(const T x, const T base)
 {
-    return std::log(x) / std::log(base);
+    return cmath<T>::log(x) / cmath<T>::log(base);
 }
 
 template <typename T>
 inline T next_power(const T x, const T base)
 {
-    return std::pow(base, fast_ceil(log(x, base)));
+    return cmath<T>::pow(base, fast_ceil(log(x, base)));
 }
 
 template <typename T>
@@ -574,7 +611,8 @@ inline T binomial(const T n, const T k)
 }
 
 template <typename T>
-inline T clamp(const T x, const T low, const T high)
+APPLESEED_HOST_DEVICE_INLINE
+T clamp(const T x, const T low, const T high)
 {
     assert(low <= high);
     return x < low ? low :
@@ -583,7 +621,8 @@ inline T clamp(const T x, const T low, const T high)
 }
 
 template <typename T>
-inline T saturate(const T x)
+APPLESEED_HOST_DEVICE_INLINE
+T saturate(const T x)
 {
     return clamp(x, T(0.0), T(1.0));
 }
@@ -591,14 +630,14 @@ inline T saturate(const T x)
 template <typename T>
 inline T wrap(const T x)
 {
-    const T y = std::fmod(x, T(1.0));
+    const T y = cmath<T>::fmod(x, T(1.0));
     return y < T(0.0) ? y + T(1.0) : y;
 }
 
 template <typename T>
 inline T normalize_angle(const T angle)
 {
-    const T a = std::fmod(angle, TwoPi<T>());
+    const T a = cmath<T>::fmod(angle, TwoPi<T>());
     return a < T(0.0) ? a + TwoPi<T>() : a;
 }
 
@@ -663,13 +702,13 @@ inline int64 truncate<int64>(const double x)
 template <typename T>
 inline T fast_floor(const T x)
 {
-    return std::floor(x);
+    return cmath<T>::floor(x);
 }
 
 template <typename T>
 inline T fast_ceil(const T x)
 {
-    return std::ceil(x);
+    return cmath<T>::ceil(x);
 }
 
 template <typename T, typename I>
@@ -732,14 +771,14 @@ inline T mod(const T a, const T n)
 template <>
 inline float mod(const float a, const float n)
 {
-    const float m = std::fmod(a, n);
+    const float m = cmath<float>::fmod(a, n);
     return m < 0.0f ? n + m : m;
 }
 
 template <>
 inline double mod(const double a, const double n)
 {
-    const double m = std::fmod(a, n);
+    const double m = cmath<double>::fmod(a, n);
     return m < 0.0 ? n + m : m;
 }
 
@@ -879,13 +918,15 @@ inline V fit(
 //
 
 template <typename T>
-inline bool feq(const T lhs, const T rhs)
+APPLESEED_HOST_DEVICE_INLINE
+bool feq(const T lhs, const T rhs)
 {
     return feq(lhs, rhs, default_eps<T>());
 }
 
 template <typename T>
-inline bool feq(const T lhs, const T rhs, const T eps)
+APPLESEED_HOST_DEVICE_INLINE
+bool feq(const T lhs, const T rhs, const T eps)
 {
     // Handle case where lhs is exactly +0.0 or -0.0.
     if (lhs == T(0.0))
@@ -913,24 +954,27 @@ inline bool feq(const T lhs, const T rhs, const T eps)
     return ratio >= T(1.0) - eps && ratio <= T(1.0) + eps;
 }
 
-inline bool feq(const int lhs, const int rhs)
+APPLESEED_HOST_DEVICE_INLINE
+bool feq(const int lhs, const int rhs)
 {
     return lhs == rhs;
 }
 
 template <typename T>
-inline bool fz(const T lhs)
+APPLESEED_HOST_DEVICE_INLINE
+bool fz(const T lhs)
 {
     return fz(lhs, default_eps<T>());
 }
 
 template <typename T>
-inline bool fz(const T lhs, const T eps)
+APPLESEED_HOST_DEVICE_INLINE
+bool fz(const T lhs, const T eps)
 {
     return std::abs(lhs) < eps;
 }
 
-inline bool fz(const int lhs)
+APPLESEED_HOST_DEVICE_INLINE bool fz(const int lhs)
 {
     return lhs == 0;
 }
