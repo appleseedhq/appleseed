@@ -129,6 +129,7 @@ option (WITH_PYTHON2_BINDINGS               "Build Python bindings for Python 2"
 option (WITH_PYTHON3_BINDINGS               "Build Python bindings for Python 3"                        OFF)
 option (WITH_DISNEY_MATERIAL                "Build Disney material"                                     OFF)
 option (WITH_EMBREE                         "Include support for Embree intersection backend"           OFF)
+option (WITH_GPU                            "Build GPU support"                                         OFF)
 option (WITH_DOXYGEN                        "Generate API reference with Doxygen"                       ON)
 option (INSTALL_HEADERS                     "Install header files"                                      ON)
 option (INSTALL_TESTS                       "Install unit tests and benchmarks"                         ON)
@@ -260,6 +261,14 @@ if (WITH_EMBREE)
     if (USE_FIND_PACKAGE_FOR_EMBREE)
         find_package (Embree REQUIRED)
     endif ()
+endif ()
+
+if (WITH_GPU)
+    set (APPLESEED_WITH_GPU ON)
+    add_definitions (-DAPPLESEED_WITH_GPU)
+
+    find_package (CUDA 9.0 REQUIRED)
+    find_package (OptiX REQUIRED)
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_EXR)
