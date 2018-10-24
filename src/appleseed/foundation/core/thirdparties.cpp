@@ -66,6 +66,11 @@
 #include <OSL/oslversion.h>
 #include "foundation/platform/_endoslheaders.h"
 
+// OptiX headers.
+#ifdef APPLESEED_WITH_GPU
+#include <optix.h>
+#endif
+
 // Xerces-C++ headers.
 #include <xercesc/util/XercesVersion.hpp>
 
@@ -100,6 +105,17 @@ LibraryVersionArray ThirdParties::get_versions()
 
 #ifdef APPLESEED_WITH_EMBREE
     versions.push_back(APIStringPair("Embree", RTC_VERSION_STRING));
+#endif
+
+#ifdef APPLESEED_WITH_GPU
+    unsigned int optix_version;
+    if (rtGetVersion(&optix_version) == RT_SUCCESS)
+    {
+        unsigned int major =  optix_version / 10000;
+        unsigned int minor = (optix_version % 10000) / 100;
+        unsigned int micro =  optix_version % 100;
+        versions.push_back(APIStringPair("OptiX", format("{0}.{1}.{2}", major, minor, micro)));
+    }
 #endif
 
     versions.push_back(APIStringPair("IlmBase", ILMBASE_VERSION_STRING));
