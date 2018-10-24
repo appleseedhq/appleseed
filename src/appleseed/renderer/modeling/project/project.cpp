@@ -32,6 +32,9 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#ifdef APPLESEED_WITH_GPU
+#include "renderer/kernel/intersection/optixtracecontext.h"
+#endif
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/lighting/lightpathrecorder.h"
 #include "renderer/modeling/display/display.h"
@@ -86,15 +89,19 @@ UniqueID Project::get_class_uid()
 
 struct Project::Impl
 {
-    size_t                      m_format_revision;
-    string                      m_path;
-    auto_release_ptr<Scene>     m_scene;
-    auto_release_ptr<Frame>     m_frame;
-    auto_release_ptr<Display>   m_display;
-    LightPathRecorder           m_light_path_recorder;
-    ConfigurationContainer      m_configurations;
-    SearchPaths                 m_search_paths;
-    unique_ptr<TraceContext>    m_trace_context;
+    size_t                          m_format_revision;
+    string                          m_path;
+    auto_release_ptr<Scene>         m_scene;
+    auto_release_ptr<Frame>         m_frame;
+    auto_release_ptr<Display>       m_display;
+    LightPathRecorder               m_light_path_recorder;
+    ConfigurationContainer          m_configurations;
+    SearchPaths                     m_search_paths;
+    unique_ptr<TraceContext>        m_trace_context;
+
+#ifdef APPLESEED_WITH_GPU
+    unique_ptr<OptixTraceContext>   m_optix_trace_context;
+#endif
 
     Impl()
       : m_format_revision(ProjectFormatRevision)
@@ -302,7 +309,37 @@ void Project::set_use_embree(const bool value)
     if (impl->m_trace_context.get() != nullptr)
         impl->m_trace_context->set_use_embree(value);
 }
+#endif
 
+#ifdef APPLESEED_WITH_GPU
+const OptixTraceContext& Project::get_optix_trace_context() const
+{
+    assert(impl->m_optix_trace_context);
+    return *impl->m_optix_trace_context;
+}
+
+void Project::update_optix_trace_context(const int device_number)
+{
+    assert(impl->m_scene.get());
+
+    // Check if the GPU render device has changed.
+    if (impl->m_optix_trace_context)
+    {
+        const int current_device_number =
+            impl->m_optix_trace_context->get_optix_context().get_device_number();
+
+        if (current_device_number != device_number)
+            impl->m_optix_trace_context.reset();
+    }
+
+    if (!impl->m_optix_trace_context)
+    {
+        impl->m_optix_trace_context.reset(
+            new OptixTraceContext(*impl->m_scene, device_number));
+    }
+    else
+        impl->m_optix_trace_context->update();
+}
 #endif
 
 void Project::add_base_configurations()

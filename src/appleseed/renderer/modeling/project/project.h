@@ -94,6 +94,9 @@ namespace renderer      { class LightPathRecorder; }
 namespace renderer      { class Material; }
 namespace renderer      { class Object; }
 namespace renderer      { class OnFrameBeginRecorder; }
+#ifdef APPLESEED_WITH_GPU
+namespace renderer      { class OptixTraceContext; }
+#endif
 namespace renderer      { class PostProcessingStage; }
 namespace renderer      { class Scene; }
 namespace renderer      { class SurfaceShader; }
@@ -197,6 +200,14 @@ class APPLESEED_DLLSYMBOL Project
 #ifdef APPLESEED_WITH_EMBREE
     // Set use Embree flag for trace context
     void set_use_embree(const bool value);
+#endif
+
+#ifdef APPLESEED_WITH_GPU
+    // Get the OptiX trace context.
+    const OptixTraceContext& get_optix_trace_context() const;
+
+    // Synchronize the OptiX trace context with the scene.
+    void update_optix_trace_context(const int device_number);
 #endif
 
   private:
