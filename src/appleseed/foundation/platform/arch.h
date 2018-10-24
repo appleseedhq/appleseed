@@ -58,7 +58,8 @@
         defined __LP64__        || \
         defined __ia64          || \
         defined __itanium__     || \
-        defined _M_IA64
+        defined _M_IA64         || \
+        defined APPLESEED_DEVICE_COMPILATION
         #define APPLESEED_ARCH64
     #else
         #define APPLESEED_ARCH32

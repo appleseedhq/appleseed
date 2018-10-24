@@ -80,6 +80,21 @@ namespace foundation
         #error Cannot determine machine architecture.
     #endif
 
+// CUDA device compilation.
+#elif defined APPLESEED_DEVICE_COMPILATION
+
+    typedef int8_t                      int8;
+    typedef uint8_t                     uint8;
+
+    typedef int16_t                     int16;
+    typedef uint16_t                    uint16;
+
+    typedef int32_t                     int32;
+    typedef uint32_t                    uint32;
+
+    typedef int64_t                     int64;
+    typedef uint64_t                    uint64;
+
 // Other platforms.
 #else
 
@@ -139,6 +154,12 @@ static_assert(
     #endif
 
     #define FMT_SIZE_T "%zu"
+
+#elif defined __CUDACC__
+
+    #define FMT_UINT64      "%lu"
+    #define FMT_UINT64_HEX  "%llx"
+    #define FMT_SIZE_T      "%zu"
 
 // Other compilers.
 #else
