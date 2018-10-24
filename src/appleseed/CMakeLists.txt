@@ -90,6 +90,10 @@ if (WITH_GPU)
         foundation/cuda/cudadevice.h
         foundation/cuda/exception.cpp
         foundation/cuda/exception.h
+        foundation/cuda/memory.cpp
+        foundation/cuda/memory.h
+        foundation/cuda/module.cpp
+        foundation/cuda/module.h
     )
 
     list (APPEND appleseed_sources
