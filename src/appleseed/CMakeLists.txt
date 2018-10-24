@@ -94,6 +94,8 @@ if (WITH_GPU)
         foundation/cuda/memory.h
         foundation/cuda/module.cpp
         foundation/cuda/module.h
+        foundation/cuda/ptxcache.cpp
+        foundation/cuda/ptxcache.h
     )
 
     list (APPEND appleseed_sources
