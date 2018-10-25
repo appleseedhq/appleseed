@@ -1024,10 +1024,18 @@ source_group ("renderer\\kernel\\denoising" FILES
 )
 
 set (renderer_kernel_device_sources
+    renderer/kernel/device/cpurenderdevice.cpp
+    renderer/kernel/device/cpurenderdevice.h
     renderer/kernel/device/irenderdevice.h
     renderer/kernel/device/renderdevicebase.cpp
     renderer/kernel/device/renderdevicebase.h
 )
+if (WITH_GPU)
+    list (APPEND renderer_kernel_device_sources
+        renderer/kernel/device/gpurenderdevice.cpp
+        renderer/kernel/device/gpurenderdevice.h
+    )
+endif()
 list (APPEND appleseed_sources
     ${renderer_kernel_device_sources}
 )
