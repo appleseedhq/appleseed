@@ -1116,6 +1116,12 @@ set (renderer_kernel_lighting_pt_sources
     renderer/kernel/lighting/pt/ptlightingengine.cpp
     renderer/kernel/lighting/pt/ptlightingengine.h
 )
+if (WITH_GPU)
+    list (APPEND renderer_kernel_lighting_pt_sources
+        renderer/kernel/lighting/pt/gpuptlightingengine.cpp
+        renderer/kernel/lighting/pt/gpuptlightingengine.h
+    )
+endif()
 list (APPEND appleseed_sources
     ${renderer_kernel_lighting_pt_sources}
 )
@@ -1178,6 +1184,11 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/volumelightingintegrator.cpp
     renderer/kernel/lighting/volumelightingintegrator.h
 )
+if (WITH_GPU)
+    list (APPEND renderer_kernel_lighting_sources
+        renderer/kernel/lighting/igpulightingengine.h
+    )
+endif()
 list (APPEND appleseed_sources
     ${renderer_kernel_lighting_sources}
 )
