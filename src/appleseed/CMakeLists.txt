@@ -2167,11 +2167,86 @@ set_source_files_properties (${appleseed_schema_files} PROPERTIES
 
 
 #--------------------------------------------------------------------------------------------------
+# CUDA compilation.
+#--------------------------------------------------------------------------------------------------
+
+if (WITH_GPU)
+
+    # Build lists of absolute paths to ptx header files.
+    foreach (cuda_header ${appleseed_cuda_headers})
+        list (APPEND abs_cuda_headers_sources ${PROJECT_SOURCE_DIR}/src/appleseed/${cuda_header})
+    endforeach ()
+
+    # Build the sandbox destination directory.
+    set (kernels_dir "${PROJECT_SOURCE_DIR}/sandbox/kernels")
+
+    #
+    # Compile PTX into the sandbox.
+    #
+
+    foreach (ptx_source ${appleseed_ptx_sources})
+        # Build the .ptx destination file name.
+        get_filename_component (ptx_source_we ${ptx_source} NAME_WE)
+        set (ptx_filename ${ptx_source_we}.ptx)
+
+        add_custom_command (
+            OUTPUT ${kernels_dir}/${ptx_filename}
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${kernels_dir}
+            COMMAND ${CUDA_NVCC_EXECUTABLE}
+                "-I${CUDA_INCLUDE_DIR} "
+                "-I${OPTIX_INCLUDE_DIR} "
+                "-I${PROJECT_SOURCE_DIR}/src/appleseed "
+                -m64 --std=c++11 -O3 --use_fast_math --expt-relaxed-constexpr
+                -ptx
+                -arch sm_30
+                ${PROJECT_SOURCE_DIR}/src/appleseed/${ptx_source}
+                -o ${kernels_dir}/${ptx_filename}
+            MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/src/appleseed/${ptx_source}
+            DEPENDS ${abs_cuda_headers_sources}
+        )
+
+        list (APPEND appleseed_ptx_files ${kernels_dir}/${ptx_filename})
+    endforeach ()
+
+    #
+    # Compile CUDA kernels into the sandbox.
+    #
+
+    foreach (cuda_source ${appleseed_cuda_sources})
+        # Build the .cu destination file name.
+        get_filename_component (cuda_source_we ${cuda_source} NAME_WE)
+        set (fatbin_filename ${cuda_source_we}.fatbin)
+
+        add_custom_command (
+            OUTPUT ${kernels_dir}/${fatbin_filename}
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${kernels_dir}
+            COMMAND ${CUDA_NVCC_EXECUTABLE}
+                "-I${CUDA_INCLUDE_DIR} "
+                "-I${PROJECT_SOURCE_DIR}/src/appleseed "
+                -m64 --std=c++11 -O3 --use_fast_math --expt-relaxed-constexpr
+                -fatbin
+                -gencode=arch=compute_30,code=sm_30
+                -gencode=arch=compute_50,code=sm_50
+                -gencode=arch=compute_60,code=sm_60
+                ${PROJECT_SOURCE_DIR}/src/appleseed/${cuda_source}
+                -o ${kernels_dir}/${fatbin_filename}
+            MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/src/appleseed/${cuda_source}
+            DEPENDS ${abs_cuda_headers_sources}
+        )
+
+        list (APPEND appleseed_fatbin_files ${kernels_dir}/${fatbin_filename})
+    endforeach ()
+endif ()
+
+
+#--------------------------------------------------------------------------------------------------
 # Target.
 #--------------------------------------------------------------------------------------------------
 
 add_library (appleseed SHARED
     ${appleseed_sources}
+    ${appleseed_ptx_files}
+    ${appleseed_fatbin_files}
 )
 
 if (USE_VISIBILITY_MAP)
@@ -2291,4 +2366,9 @@ else ()
     install (TARGETS appleseed
         DESTINATION lib
     )
+endif ()
+
+if (WITH_GPU)
+    install (FILES ${appleseed_ptx_files} DESTINATION kernels)
+    install (FILES ${appleseed_fatbin_files} DESTINATION kernels)
 endif ()
