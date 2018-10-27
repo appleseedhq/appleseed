@@ -277,10 +277,9 @@ shader as_blackbody
     if (in_specular_amount > 0.0 && in_ior > 1.0)
     {
         // Dielectric coating, so the Schlick approximation suffices.
-        vector In = normalize(I);
         normal Nn = normalize(in_bump_normal);
 
-        float costheta_o = dot(-In, Nn);
+        float costheta_o = dot(-I, Nn);
 
         float R0 = sqr((in_ior - 1.0) / (in_ior + 1.0));
         float Kr = R0 + (1.0 - R0) * pow(1.0 - costheta_o, 5.0);

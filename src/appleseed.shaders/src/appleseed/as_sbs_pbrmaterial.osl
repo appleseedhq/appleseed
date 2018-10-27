@@ -430,7 +430,7 @@ shader as_sbs_pbrmaterial
             float F0 = in_specularLevel * 0.08; // from MDL (dielectric)
             float F90 = 1.0;
 
-            float tmp = 1.0 - max(0.0, dot(normalize(-I), Nn));
+            float tmp = 1.0 - max(0.0, dot(-I, Nn));
             float F = (tmp > 0.0) ? F0 + (F90 - F0) * pow(tmp, 5.0) : 0.0;
 
             bsdf *= 1.0 - F;

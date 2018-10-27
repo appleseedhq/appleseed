@@ -863,7 +863,7 @@ shader as_toon
         {
             int status = getattribute("surface_shader:emission", emission_term);
 
-            float facing_ratio = dot(normalize(-I), normalize(in_bump_normal));
+            float facing_ratio = dot(-I, normalize(in_bump_normal));
             float attenuation = (in_incandescence_attenuation * 4.0) + 1.0;
 
             facing_ratio = pow(max(0.0, facing_ratio), attenuation);
@@ -967,8 +967,7 @@ shader as_toon
             float diffuse_Y = clamp(luminance(rim_term), 0.0, 1.0);
             float mixing = smoothstep(0.5, 0.9, diffuse_Y);
 
-            float facing = 1.0 - max(0.0, dot(normalize(in_bump_normal),
-                                              normalize(-I)));
+            float facing = 1.0 - max(0.0, dot(normalize(in_bump_normal), -I));
 
             float rim_factor = mixing *
                 pow(facing, max(2.0, sqrt(in_rim_softness) * 10));
@@ -1030,7 +1029,7 @@ shader as_toon
             if (in_facing_attenuation > 0.0)
             {
                 float cos_theta_o = max(0.0,
-                    dot(normalize(-I), normalize(in_bump_normal)));
+                    dot(-I, normalize(in_bump_normal)));
 
                 float tmp = 1.0 - in_facing_attenuation;
                 float F = tmp + (1.0 - tmp) * (1.0 - pow(cos_theta_o, 5));

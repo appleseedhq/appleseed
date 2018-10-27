@@ -215,7 +215,7 @@ shader as_maya_phong
         {
             transparency = mix(
                 transparency,
-                abs(dot(-normalize(I), normalize(in_normalCamera))),
+                abs(dot(-I, normalize(in_normalCamera))),
                 in_shadowAttenuation
                 );
         }

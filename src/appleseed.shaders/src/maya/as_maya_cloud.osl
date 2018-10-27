@@ -217,7 +217,7 @@ shader as_maya_cloud
         out_outColor = mix(in_color2, color_blend, 1.0 - weight);
         out_outAlpha = weight;
 
-        float cos_wo = dot(normalize(-I), normalize(in_normalCamera));
+        float cos_wo = dot(-I, normalize(in_normalCamera));
 
         float facing_ratio = (cos_wo >= EPS)
             ? sqrt(1.0 - max(EPS, sqr(cos_wo)))

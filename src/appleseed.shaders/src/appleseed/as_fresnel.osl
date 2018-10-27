@@ -172,7 +172,7 @@ shader as_fresnel
 
         if (exterior_medium_ior != 1.0)
         {
-            float costheta = dot(normalize(N), -normalize(I));
+            float costheta = dot(normalize(N), -I);
 
             Kr = dielectricDielectricFresnel(
                     exterior_medium_ior,
@@ -184,7 +184,7 @@ shader as_fresnel
             float Kt;
 
             fresnel(
-                normalize(I),
+                I,
                 normalize(N),
                 backfacing() ? in_ior : 1.0 / in_ior,
                 Kr,
@@ -208,7 +208,7 @@ shader as_fresnel
             k = color(in_complex_kappa);
         }
 
-        float costheta = dot(normalize(N), -normalize(I));
+        float costheta = dot(normalize(N), -I);
 
         for (int i = 0; i < 3; ++i)
         {
