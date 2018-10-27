@@ -547,6 +547,11 @@ if (WITH_DISNEY_MATERIAL)
         foundation/meta/tests/test_seexpr.cpp
     )
 endif ()
+if (WITH_GPU)
+    list (APPEND foundation_meta_tests_sources
+        foundation/meta/tests/test_cuda.cpp
+    )
+endif ()
 list (APPEND appleseed_sources
     ${foundation_meta_tests_sources}
 )
@@ -1011,6 +1016,37 @@ list (APPEND appleseed_sources
 source_group ("renderer\\kernel\\aov" FILES
     ${renderer_kernel_aov_sources}
 )
+
+if (WITH_GPU)
+    set (renderer_kernel_cuda_headers
+        renderer/kernel/cuda/kernel.cuh
+    )
+    set (renderer_kernel_cuda_fatbin_sources
+        renderer/kernel/cuda/fatbinkernel.cu
+    )
+    set (renderer_kernel_cuda_ptx_sources
+        renderer/kernel/cuda/ptxkernel.cu
+    )
+    list (APPEND appleseed_sources
+        ${renderer_kernel_cuda_headers}
+        ${renderer_kernel_cuda_fatbin_sources}
+        ${renderer_kernel_cuda_ptx_sources}
+    )
+    list (APPEND appleseed_cuda_headers
+        ${renderer_kernel_cuda_headers}
+    )
+    list (APPEND appleseed_cuda_sources
+        ${renderer_kernel_cuda_fatbin_sources}
+    )
+    list (APPEND appleseed_ptx_sources
+        ${renderer_kernel_cuda_ptx_sources}
+    )
+    source_group ("renderer\\kernel\\cuda" FILES
+        ${renderer_kernel_cuda_headers}
+        ${renderer_kernel_cuda_fatbin_sources}
+        ${renderer_kernel_cuda_ptx_sources}
+    )
+endif()
 
 set (renderer_kernel_denoising_sources
     renderer/kernel/denoising/denoiser.cpp

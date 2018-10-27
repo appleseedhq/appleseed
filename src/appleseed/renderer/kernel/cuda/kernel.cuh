@@ -1,0 +1,9 @@
+
+
+/*
+ *
+ *
+ *
+ */
+
+typedef float SomeFloatTypeTest2;
