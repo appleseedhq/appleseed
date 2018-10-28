@@ -51,7 +51,7 @@ TEST_SUITE(Renderer_Utility_DynamicSpectrum31f)
           : m_old_mode(DynamicSpectrum31f::set_mode(DynamicSpectrum31f::RGB))
         {
         }
-        
+
         ~RGBFixture()
         {
             DynamicSpectrum31f::set_mode(m_old_mode);
@@ -66,19 +66,11 @@ TEST_SUITE(Renderer_Utility_DynamicSpectrum31f)
           : m_old_mode(DynamicSpectrum31f::set_mode(DynamicSpectrum31f::Spectral))
         {
         }
-        
+
         ~SpectralFixture()
         {
             DynamicSpectrum31f::set_mode(m_old_mode);
         }
-    };
-
-    static const float SpectrumValues[31] =
-    {
-        42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f,
-        42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f,
-        42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f,
-        42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f
     };
 
     TEST_CASE_F(Lerp_Spectral, SpectralFixture)

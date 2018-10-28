@@ -508,7 +508,6 @@ namespace
     {
       public:
         explicit ParametersElementHandler(ParseContext& context)
-          : m_context(context)
         {
         }
 
@@ -532,8 +531,7 @@ namespace
         }
 
       private:
-        ParseContext&   m_context;
-        string          m_name;
+        string m_name;
     };
 
 
@@ -1675,7 +1673,6 @@ namespace
     {
       public:
         explicit ObjectInstanceElementHandler(ParseContext& context)
-          : m_context(context)
         {
         }
 
@@ -1746,7 +1743,6 @@ namespace
       private:
         typedef TransformSequenceElementHandler<ParametrizedElementHandler> Base;
 
-        ParseContext&                       m_context;
         auto_release_ptr<ObjectInstance>    m_object_instance;
         StringDictionary                    m_front_material_mappings;
         StringDictionary                    m_back_material_mappings;
@@ -1764,7 +1760,6 @@ namespace
     {
       public:
         explicit AssemblyInstanceElementHandler(ParseContext& context)
-          : m_context(context)
         {
         }
 
@@ -1799,7 +1794,6 @@ namespace
       private:
         typedef TransformSequenceElementHandler<ParametrizedElementHandler> Base;
 
-        ParseContext&                       m_context;
         auto_release_ptr<AssemblyInstance>  m_assembly_instance;
         string                              m_name;
         string                              m_assembly;
@@ -1815,7 +1809,6 @@ namespace
     {
       public:
         explicit ShaderElementHandler(ParseContext& context)
-          : m_context(context)
         {
         }
 
@@ -1848,10 +1841,9 @@ namespace
         }
 
       private:
-        ParseContext&   m_context;
-        string          m_type;
-        string          m_name;
-        string          m_layer;
+        string m_type;
+        string m_name;
+        string m_layer;
     };
 
 
@@ -1864,7 +1856,6 @@ namespace
     {
       public:
         explicit ShaderConnectionElementHandler(ParseContext& context)
-          : m_context(context)
         {
         }
 
@@ -1897,11 +1888,10 @@ namespace
         }
 
       private:
-        ParseContext&   m_context;
-        string          m_src_layer;
-        string          m_src_param;
-        string          m_dst_layer;
-        string          m_dst_param;
+        string m_src_layer;
+        string m_src_param;
+        string m_dst_layer;
+        string m_dst_param;
     };
 
 
@@ -1914,7 +1904,6 @@ namespace
     {
       public:
         explicit ShaderGroupElementHandler(ParseContext& context)
-          : m_context(context)
         {
         }
 
@@ -1962,7 +1951,6 @@ namespace
         }
 
       private:
-        ParseContext&                   m_context;
         string                          m_name;
         auto_release_ptr<ShaderGroup>   m_shader_group;
     };
@@ -2552,7 +2540,6 @@ namespace
     {
       public:
         explicit FrameElementHandler(ParseContext& context)
-          : m_context(context)
         {
         }
 
@@ -2630,7 +2617,6 @@ namespace
         }
 
       private:
-        ParseContext&                   m_context;
         auto_release_ptr<Frame>         m_frame;
         string                          m_name;
         AOVContainer                    m_aovs;
@@ -2647,8 +2633,7 @@ namespace
     {
       public:
         explicit OutputElementHandler(ParseContext& context)
-          : m_context(context)
-          , m_project(nullptr)
+          : m_project(nullptr)
         {
         }
 
@@ -2678,7 +2663,6 @@ namespace
         }
 
       private:
-        ParseContext&   m_context;
         Project*        m_project;
     };
 
@@ -2766,8 +2750,7 @@ namespace
     {
       public:
         explicit ConfigurationsElementHandler(ParseContext& context)
-          : m_context(context)
-          , m_project(nullptr)
+          : m_project(nullptr)
         {
         }
 
@@ -2819,7 +2802,6 @@ namespace
         }
 
       private:
-        ParseContext&   m_context;
         Project*        m_project;
     };
 
@@ -2833,7 +2815,6 @@ namespace
     {
       public:
         explicit SearchPathElementHandler(ParseContext& context)
-          : m_context(context)
         {
         }
 
@@ -2850,7 +2831,6 @@ namespace
         }
 
       private:
-        ParseContext&   m_context;
         string          m_path;
     };
 
@@ -2920,8 +2900,7 @@ namespace
     {
       public:
         explicit DisplayElementHandler(ParseContext& context)
-          : m_context(context)
-          , m_project(nullptr)
+          : m_project(nullptr)
         {
         }
 
@@ -2943,9 +2922,8 @@ namespace
         }
 
       private:
-        ParseContext&   m_context;
-        Project*        m_project;
-        string          m_name;
+        Project*    m_project;
+        string      m_name;
     };
 
 

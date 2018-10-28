@@ -222,7 +222,7 @@ TEST_SUITE(ImageTools)
             }
         }
 
-        return move(output);
+        return output;
     }
 
     unique_ptr<Image> apply(const Image& lhs, const Image& rhs, const ITwoPixelOp& op)
@@ -264,7 +264,7 @@ TEST_SUITE(ImageTools)
             }
         }
 
-        return move(output);
+        return output;
     }
 
 #if 0

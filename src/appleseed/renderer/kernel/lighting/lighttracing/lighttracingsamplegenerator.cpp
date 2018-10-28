@@ -171,7 +171,6 @@ namespace
           , m_tracer(
                 m_scene,
                 m_intersector,
-                m_texture_cache,
                 m_shadergroup_exec,
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations)

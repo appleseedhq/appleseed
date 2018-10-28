@@ -246,7 +246,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 OSLShadingSystemFactory::create(&m_renderer_services, m_texture_system.get()),
                 [](OSLShadingSystem* object) { object->release(); })
           , m_shading_group_exec(*m_shading_system, m_arena)
-          , m_tracer(FixtureParams::FixtureBaseClass::m_scene, m_intersector, m_texture_cache, m_shading_group_exec)
+          , m_tracer(FixtureParams::FixtureBaseClass::m_scene, m_intersector, m_shading_group_exec)
           , m_shading_context(
                 m_intersector,
                 m_tracer,

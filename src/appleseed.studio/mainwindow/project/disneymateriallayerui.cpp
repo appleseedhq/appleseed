@@ -434,7 +434,7 @@ unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_text_input_widgets(c
     unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return std::move(widget_proxy);
+    return widget_proxy;
 }
 
 unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_color_input_widgets(const Dictionary& metadata)
@@ -465,7 +465,7 @@ unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_color_input_widgets(
     unique_ptr<IInputWidgetProxy> widget_proxy(new ColorExpressionProxy(line_edit, picker_button));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return std::move(widget_proxy);
+    return widget_proxy;
 }
 
 unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_colormap_input_widgets(const Dictionary& metadata)
@@ -499,7 +499,7 @@ unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_colormap_input_widge
     unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return std::move(widget_proxy);
+    return widget_proxy;
 }
 
 QWidget* DisneyMaterialLayerUI::create_texture_button(const string& name)

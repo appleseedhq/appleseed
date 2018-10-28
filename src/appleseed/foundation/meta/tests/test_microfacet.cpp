@@ -182,8 +182,6 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     const size_t PositivityTestSampleCount = 256;
     const size_t IntegrationSampleCount = 8192;
-    const size_t FunctionPlotSampleCount = 256;
-    const size_t FunctionSamplingSampleCount = 64;
     const float IntegrationEps = 1.0e-3f;
     const size_t WeakWhiteFurnaceRuns = 128;
     const float WeakWhiteFurnaceAngleStep = 0.0125f;

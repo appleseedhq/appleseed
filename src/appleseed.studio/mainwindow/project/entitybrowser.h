@@ -63,7 +63,7 @@ class EntityBrowser<renderer::Project>
   : public EntityEditor::IEntityBrowser
 {
   public:
-    explicit EntityBrowser(const renderer::Project& scene);
+    explicit EntityBrowser(const renderer::Project& project);
 
     foundation::StringDictionary get_entities(const std::string& type) const override;
 

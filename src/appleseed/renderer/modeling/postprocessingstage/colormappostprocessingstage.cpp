@@ -317,7 +317,7 @@ namespace
         {
             if (min_luminance == max_luminance)
             {
-                for_each_pixel(frame, [this, min_luminance, max_luminance](Color4f& color)
+                for_each_pixel(frame, [this](Color4f& color)
                 {
                     color.rgb() = evaluate_palette(0.0f);
                 });
