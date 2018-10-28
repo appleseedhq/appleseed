@@ -143,10 +143,6 @@ if (is_x86)
         option (USE_AVX2                    "Use instruction sets up to and including AVX2"             OFF)
     endif ()
     option (USE_F16C                        "Use F16C instruction set"                                  OFF)
-elseif (TARGET_ARCH MATCHES "ARM")
-    option (USE_NEON                        "Use NEON instruction set"                                  OFF)
-elseif (TARGET_ARCH MATCHES "PPC")
-    option (USE_ALTIVEC                     "Use AltiVec instruction set"                               OFF)
 else ()
     # Unknown architecture: No SIMD.
 endif ()
@@ -421,20 +417,6 @@ if (is_x86)
         set (preprocessor_definitions_common
             ${preprocessor_definitions_common}
             APPLESEED_USE_F16C
-        )
-    endif ()
-elseif (TARGET_ARCH MATCHES "ARM")
-    if (USE_NEON)
-        set (preprocessor_definitions_common
-            ${preprocessor_definitions_common}
-            APPLESEED_USE_NEON
-        )
-    endif ()
-elseif (TARGET_ARCH MATCHES "PPC")
-    if (USE_ALTIVEC)
-        set (preprocessor_definitions_common
-            ${preprocessor_definitions_common}
-            APPLESEED_USE_ALTIVEC
         )
     endif ()
 endif ()

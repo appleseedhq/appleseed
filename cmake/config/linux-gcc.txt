@@ -132,21 +132,6 @@ if (is_x86)
             -ffp-contract=off                           # for now only explicit fmadd
         )
     endif ()
-elseif (TARGET_ARCH MATCHES "ARM")
-    if (USE_NEON)
-        set (c_compiler_flags_common
-            ${c_compiler_flags_common}
-            -mfpu=neon
-        )
-    endif ()
-elseif (TARGET_ARCH MATCHES "PPC")
-    if (USE_ALTIVEC)
-        set (c_compiler_flags_common
-            ${c_compiler_flags_common}
-            -maltivec
-            -mabi=altivec
-        )
-    endif ()
 endif ()
 set (exe_linker_flags_common
     -Werror                                             # Treat Warnings As Errors
