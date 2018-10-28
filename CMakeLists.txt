@@ -165,7 +165,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     include (cmake/config/mac-clang.txt)
 elseif (CMAKE_SYSTEM_NAME MATCHES "Linux|FreeBSD")
-    include (cmake/config/linux-gcc.txt)
+    include (cmake/config/linux-gcc-clang.txt)
 else ()
     message (FATAL_ERROR "Unsupported platform or compiler (CMAKE_SYSTEM_NAME is \"${CMAKE_SYSTEM_NAME}\"). "
                          "Edit ${CMAKE_CURRENT_LIST_FILE} to add support for it.")
