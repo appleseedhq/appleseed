@@ -127,7 +127,12 @@ option (USE_STATIC_OCIO                     "Use static OpenColorIO libraries"  
 option (USE_STATIC_OIIO                     "Use static OpenImageIO libraries"                          ON)
 option (USE_STATIC_OSL                      "Use static OpenShadingLanguage libraries"                  ON)
 
-option (WARNINGS_AS_ERRORS                  "Treat compiler warnings as errors"                         ON)
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND CMAKE_BUILD_TYPE MATCHES "Ship") 
+    option (WARNINGS_AS_ERRORS              "Treat compiler warnings as errors"                         OFF)
+else ()
+    option (WARNINGS_AS_ERRORS              "Treat compiler warnings as errors"                         ON)
+endif ()
+
 option (HIDE_SYMBOLS                        "When using gcc, hide symbols not on the public API"        ON)
 
 if (CMAKE_SYSTEM_NAME MATCHES "Linux|FreeBSD")
