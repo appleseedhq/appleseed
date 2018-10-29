@@ -319,7 +319,7 @@ source_group ("src\\appleseed" FILES
 add_custom_target (SANDBOX)
 
 # Copy the OSL compiler to the sandbox.
-if (USE_EXTERNAL_OSL)
+if (USE_SYSTEM_OSL)
     add_custom_command (
         TARGET SANDBOX
         COMMAND ${CMAKE_COMMAND} -E copy ${OSL_COMPILER} ${PROJECT_SOURCE_DIR}/sandbox/bin/
