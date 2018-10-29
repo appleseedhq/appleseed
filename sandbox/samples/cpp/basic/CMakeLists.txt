@@ -46,8 +46,8 @@ set (CMAKE_MODULE_PATH
 # Build options.
 #--------------------------------------------------------------------------------------------------
 
-option (USE_SYSTEM_OIIO   "Use external OpenImageIO library"          OFF)
-option (USE_SYSTEM_OSL    "Use external OpenShadingLanguage library"  OFF)
+option (USE_SYSTEM_OIIO     "Use external OpenImageIO library"          OFF)
+option (USE_SYSTEM_OSL      "Use external OpenShadingLanguage library"  OFF)
 
 option (USE_STATIC_BOOST    "Use static Boost libraries"                ON)
 option (USE_STATIC_OIIO     "Use static OpenImageIO libraries"          ON)
