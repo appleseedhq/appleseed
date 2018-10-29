@@ -13,6 +13,7 @@ echo "--------------------"
 
 echo "============= Updating the formulas"
 brew update
+brew install gcc || brew link --overwrite gcc
 brew upgrade
 
 echo "============= Installing deps"
