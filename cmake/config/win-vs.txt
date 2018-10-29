@@ -94,12 +94,6 @@ set (c_compiler_flags_common
     /MP                                     # Multi-processor Compilation
     /GF                                     # Enable String Pooling
 )
-if (WARNINGS_AS_ERRORS)
-    set (c_compiler_flags_common
-         ${c_compiler_flags_common}
-         /WX                                # Treat Warnings As Errors
-    )
-endif ()
 set (cxx_compiler_flags_common
     /wd4068                                 # Disable warning C4068: unknown pragma
     /wd4091                                 # Disable warning C4091: 'typedef' : ignored on left of X when no variable is declared
@@ -134,6 +128,12 @@ set (c_compiler_flags_debug
     ${c_compiler_flags_debug}
     /MDd                                    # set Runtime Library to Multi-threaded Debug DLL
 )
+if (WARNINGS_AS_ERRORS)
+    set (c_compiler_flags_debug
+         ${c_compiler_flags_debug}
+         /WX                                # Treat Warnings As Errors
+    )
+endif ()
 
 # Release configuration.
 set (c_compiler_flags_release
@@ -170,6 +170,12 @@ if (USE_AVX2)
         /arch:AVX2                          # Advanced Vector Extensions 2
     )
 endif ()
+if (WARNINGS_AS_ERRORS)
+    set (c_compiler_flags_release
+         ${c_compiler_flags_release}
+         /WX                                # Treat Warnings As Errors
+    )
+endif ()
 set (exe_linker_flags_release
     /DEBUG                                  # Generate Debug Info
     /OPT:REF                                # Eliminate Unreferenced Data
@@ -199,6 +205,12 @@ set (static_lib_linker_flags_ship
 set (c_compiler_flags_profile
     /GL                                     # Enable link-time code generation
 )
+if (WARNINGS_AS_ERRORS)
+    set (c_compiler_flags_profile
+         ${c_compiler_flags_profile}
+         /WX                                # Treat Warnings As Errors
+    )
+endif ()
 set (exe_linker_flags_profile
     /LTCG                                   # Use Link Time Code Generation
     /INCREMENTAL:NO                         # Disable Incremental Linking
