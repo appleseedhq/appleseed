@@ -97,16 +97,20 @@ namespace
       private:
         MasterRenderer* m_master_renderer;
 
-        // The starting point for the thread.
+        // The entry point for the thread.
         void run() override
         {
+            RENDERER_LOG_DEBUG("master renderer thread has started.");
+
             set_current_thread_name("master_renderer");
 
             const MasterRenderer::RenderingResult rendering_result =
                 m_master_renderer->render();
 
-            if (rendering_result.m_status == MasterRenderer::RenderingResult::Failed)
+            if (rendering_result.m_status != MasterRenderer::RenderingResult::Succeeded)
                 emit signal_rendering_failed();
+
+            RENDERER_LOG_DEBUG("master renderer thread is ending...");
         }
     };
 }
