@@ -31,6 +31,9 @@
 #include "cornellboxproject.h"
 
 // appleseed.renderer headers.
+#include "renderer/api/environment.h"
+#include "renderer/api/environmentedf.h"
+#include "renderer/api/environmentshader.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
@@ -1014,6 +1017,43 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         // Attach the camera to the scene.
         scene->cameras().insert(camera);
     }
+    
+    //
+    // Environment
+    //
+
+    // Color called "black_radiance" is created and inserted into the scene.
+    static const float black_radiance[] = { 0.0f, 0.0f, 0.0f };
+    scene->colors().insert(
+        ColorEntityFactory::create(
+            "black_radiance",
+            ParamArray()
+                .insert("color_space", "srgb")
+                .insert("multiplier", "0.5"),
+            ColorValueArray(3, black_radiance)));
+
+    // Environment EDF called "black_edf" is created and inserted it into the scene.
+    scene->environment_edfs().insert(
+        ConstantEnvironmentEDFFactory().create(
+            "black_edf",
+            ParamArray()
+                .insert("radiance", "black_radiance")));
+
+
+    // Environment Shader called "black_shader" is created and insert it into the scene.
+    scene->environment_shaders().insert(
+        EDFEnvironmentShaderFactory().create(
+            "black_shader",
+            ParamArray()
+                .insert("environment_edf", "black_edf")));
+
+    // Environment called "black" is created and inserted to the scene.
+    scene->set_environment(
+        EnvironmentFactory::create(
+            "black",
+            ParamArray()
+                .insert("environment_edf", "black_edf")
+                .insert("environment_shader", "black_shader")));    
 
     //
     // Frame.
