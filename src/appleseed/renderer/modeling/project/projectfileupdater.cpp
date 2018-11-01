@@ -864,10 +864,15 @@ namespace
                         // Extract mat1 from the assembly.
                         auto_release_ptr<Material> mat1_owner = assembly.materials().remove(mat1.m_material);
 
+                        // Extract mat1's BSDF from the assembly.
+                        auto_release_ptr<BSDF> bsdf_owner = assembly.bsdfs().remove(mat1.m_bsdf);
+
                         // Update mat1's BSDF.
                         // todo: make sure the BSDF is not used in another material.
-                        auto_release_ptr<BSDF> bsdf_owner = assembly.bsdfs().remove(mat1.m_bsdf);
                         update_bsdf(mat1);
+                        assert(assembly.bsdfs().get_by_name(bsdf_owner->get_name()) == nullptr);
+
+                        // Insert mat1's BSDF back into the assembly.
                         assembly.bsdfs().insert(bsdf_owner);
 
                         // Rename mat1.
@@ -897,11 +902,16 @@ namespace
 
                 if (!i->m_updated)
                 {
+                    // Extract the material's BSDF from the assembly.
+                    auto_release_ptr<BSDF> bsdf_owner = assembly.bsdfs().remove(i->m_bsdf);
+
                     // Update the material's BSDF.
                     // todo: make sure the BSDF is not used in another material.
-                    auto_release_ptr<BSDF> bsdf_owner = assembly.bsdfs().remove(i->m_bsdf);
                     update_bsdf(*i);
-                    assembly.bsdfs().insert(bsdf_owner);
+
+                    // Insert the material's BSDF back into the assembly.
+                    if (assembly.bsdfs().get_by_name(bsdf_owner->get_name()) == nullptr)
+                        assembly.bsdfs().insert(bsdf_owner);
 
                     i->m_updated = true;
                 }
