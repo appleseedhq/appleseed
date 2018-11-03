@@ -46,7 +46,7 @@ struct CurrentWave
 
 shader as_maya_water
 [[
-    string as_maya_node_name = "water"
+    string as_node_name = "water"
 ]]
 (
     int in_numberOfWaves = 8

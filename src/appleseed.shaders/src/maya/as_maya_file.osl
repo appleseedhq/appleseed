@@ -33,7 +33,7 @@
 
 shader as_maya_file
 [[
-    string as_maya_node_name = "file"
+    string as_node_name = "file"
 ]]
 (
     int in_filterType = 3

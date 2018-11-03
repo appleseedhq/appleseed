@@ -30,7 +30,7 @@
 
 shader as_maya_addDoubleLinear
 [[
-    string as_maya_node_name = "addDoubleLinear"
+    string as_node_name = "addDoubleLinear"
 ]]
 (
     float in_input1 = 0.0

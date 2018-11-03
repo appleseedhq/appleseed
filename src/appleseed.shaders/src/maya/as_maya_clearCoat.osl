@@ -30,7 +30,7 @@
 
 shader as_maya_clearCoat
 [[
-    string as_maya_node_name = "clearCoat"
+    string as_node_name = "clearCoat"
 ]]
 (
     float in_index = 1.8

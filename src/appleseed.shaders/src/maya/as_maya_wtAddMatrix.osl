@@ -30,7 +30,7 @@
 
 shader as_maya_wtAddMatrix
 [[
-    string as_maya_node_name = "wtAddMatrix"
+    string as_node_name = "wtAddMatrix"
 ]]
 (
     matrix in_matrixIn[] = {matrix(1)}

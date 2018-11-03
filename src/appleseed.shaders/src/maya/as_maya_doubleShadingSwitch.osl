@@ -30,7 +30,7 @@
 
 shader as_maya_doubleShadingSwitch
 [[
-    string as_maya_node_name = "doubleShadingSwitch"
+    string as_node_name = "doubleShadingSwitch"
 ]]
 (
     vector in_inDouble[] = {0}

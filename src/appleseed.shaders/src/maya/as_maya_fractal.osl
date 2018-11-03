@@ -34,7 +34,7 @@
 
 shader as_maya_fractal
 [[
-    string as_maya_node_name = "fractal"
+    string as_node_name = "fractal"
 ]]
 (
     float in_amplitude = 1.0

@@ -34,16 +34,18 @@
 
 shader as_texture
 [[
-    string as_maya_node_name = "asTexture",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/2d:swatch/AppleseedRenderSwatch:texture",
-    string as_blender_node_name = "asTexture",
-    string as_blender_category = "texture2d",
     string help = "Texture lookup node.",
     string icon = "asTexture.png",
-    int as_maya_type_id = 0x001279fa,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_texture.html#label-as-texture",
+
+    string as_node_name = "asTexture",
+    string as_category = "texture2d",
+
     string as_max_class_id = "1220608380 1037264235",
     string as_max_plugin_type = "texture",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_texture.html#label-as-texture"
+
+    int as_maya_type_id = 0x001279fa,
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/2d:swatch/AppleseedRenderSwatch:texture"
 ]]
 (
     string in_filename = ""
@@ -374,7 +376,7 @@ shader as_texture
         }
         else if (in_atlas_type == 3)
         {
-            // We assume the file name consists of whatever convention, but 
+            // We assume the file name consists of whatever convention, but
             // that the UDIM is the first occurrence of 4 digits separated
             // by a dot character, with the 1st one in [1-9] range and the
             // remaining 3 in [0-9] range.

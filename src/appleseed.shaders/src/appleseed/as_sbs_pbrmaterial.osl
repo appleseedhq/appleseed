@@ -30,16 +30,18 @@
 
 shader as_sbs_pbrmaterial
 [[
-    string as_maya_node_name = "asSbsPbrMaterial",
-    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string as_blender_node_name = "asSbsPbrMaterial",
-    string as_blender_category = "shader",
     string help = "Substance Painter PBR material.",
     string icon = "asSbsPbrMaterial.png",
-    int as_maya_type_id = 0x00127a04,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_sbs_pbrmaterial.html#label-as-sbs-pbrmaterial",
+
+    string as_node_name = "asSbsPbrMaterial",
+    string as_category = "shader",
+
     string as_max_class_id = "2003578504 779682628",
     string as_max_plugin_type = "material",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_sbs_pbrmaterial.html#label-as-sbs-pbrmaterial"
+
+    int as_maya_type_id = 0x00127a04,
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch"
 ]]
 (
     float in_ambientOcclusion = 1.0

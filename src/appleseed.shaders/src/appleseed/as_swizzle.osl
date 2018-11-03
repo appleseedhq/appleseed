@@ -28,16 +28,18 @@
 
 shader as_swizzle
 [[
-    string as_maya_node_name = "asSwizzle",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string as_blender_node_name = "asSwizzle",
-    string as_blender_category = "utility",
     string help = "RGBA or vector swizzle node.",
     string icon = "asSwizzle.png",
-    int as_maya_type_id = 0x001279f2,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_swizzle.html#label-as-swizzle",
+
+    string as_node_name = "asSwizzle",
+    string as_category = "utility",
+
     string as_max_class_id = "373182418 1670521488",
     string as_max_plugin_type = "texture",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_swizzle.html#label-as-swizzle"
+
+    int as_maya_type_id = 0x001279f2,
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility"
 ]]
 (
     color in_color = color(1)

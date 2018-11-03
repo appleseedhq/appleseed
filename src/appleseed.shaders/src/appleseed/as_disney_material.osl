@@ -30,16 +30,18 @@
 
 shader as_disney_material
 [[
-    string as_maya_node_name = "asDisneyMaterial",
-    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string as_blender_node_name = "asDisneyMaterial",
-    string as_blender_category = "shader",
     string help = "Disney material.",
     string icon = "asDisneyMaterial.png",
-    int as_maya_type_id = 0x001279c3,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_disney_material.html#label-as-disney-material",
+
+    string as_node_name = "asDisneyMaterial",
+    string as_category = "shader",
+
     string as_max_class_id = "151203281 494163155",
     string as_max_plugin_type = "material",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_disney_material.html#label-as-disney-material"
+
+    int as_maya_type_id = 0x001279c3,
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch"
 ]]
 (
     color in_color = color(0.5)
@@ -200,7 +202,7 @@ shader as_disney_material
         string page = "Matte Opacity",
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
-    ]], 
+    ]],
     int in_maximum_ray_depth = 4
     [[
         string as_maya_attribute_name = "maximumRayDepth",
@@ -231,7 +233,7 @@ shader as_disney_material
         string widget = "null",
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
-        
+
     ]],
 
     output closure color out_outColor = 0

@@ -32,16 +32,18 @@
 
 shader as_luminance
 [[
-    string as_maya_node_name = "asLuminance",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string as_blender_node_name = "asLuminance",
-    string as_blender_category = "color",
     string icon = "asLuminance.png",
     string help = "A node that outputs the (color space-aware) relative luminance of a color.",
-    int as_maya_type_id = 0x001279cd,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_luminance.html#label-as-luminance",
+
+    string as_node_name = "asLuminance",
+    string as_category = "color",
+
     string as_max_class_id = "1648771987 792674094",
     string as_max_plugin_type = "texture",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_luminance.html#label-as-luminance"
+
+    int as_maya_type_id = 0x001279cd,
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility"
 ]]
 (
     color in_color = color(0.5)

@@ -30,7 +30,7 @@
 
 shader as_maya_singleShadingSwitch
 [[
-    string as_maya_node_name = "singleShadingSwitch"
+    string as_node_name = "singleShadingSwitch"
 ]]
 (
     float in_inSingle[] = {0.0}

@@ -33,7 +33,7 @@
 
 shader as_maya_remapHsv
 [[
-    string as_maya_node_name = "remapHsv"
+    string as_node_name = "remapHsv"
 ]]
 (
     color in_color = color(0)

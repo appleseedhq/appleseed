@@ -28,16 +28,18 @@
 
 shader as_globals
 [[
-    string as_maya_node_name = "asGlobals",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string as_blender_node_name = "asGlobals",
-    string as_blender_category = "utility",
     string help = "OSL global variables.",
     string icon = "asGlobals.png",
-    int as_maya_type_id = 0x001279ef,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_globals.html#label-as-globals",
+
+    string as_node_name = "asGlobals",
+    string as_category = "utility",
+
     string as_max_class_id = "2058487770 898187197",
     string as_max_plugin_type = "texture",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_globals.html#label-as-globals"
+
+    int as_maya_type_id = 0x001279ef,
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility"
 ]]
 (
     point Pref = P

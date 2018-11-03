@@ -36,7 +36,7 @@
 
 shader as_maya_solidFractal
 [[
-    string as_maya_node_name = "solidFractal"
+    string as_node_name = "solidFractal"
 ]]
 (
     float in_threshold = 0.0

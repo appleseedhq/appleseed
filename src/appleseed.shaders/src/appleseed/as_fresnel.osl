@@ -32,16 +32,18 @@
 
 shader as_fresnel
 [[
-    string as_maya_node_name = "asFresnel",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string as_blender_node_name = "asFresnel",
-    string as_blender_category = "utility",
     string help = "A viewer Fresnel term.",
     string icon = "asFresnel.png",
-    int as_maya_type_id = 0x001279f1,
-    string as_max_class_id = "1608738100 1656300655", 
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_fresnel.html#label-as-fresnel",
+
+    string as_node_name = "asFresnel",
+    string as_category = "utility",
+
+    string as_max_class_id = "1608738100 1656300655",
     string as_max_plugin_type = "texture",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_fresnel.html#label-as-fresnel"
+
+    int as_maya_type_id = 0x001279f1,
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility"
 ]]
 (
     string in_fresnel_type = "Simple Dielectric"
@@ -114,7 +116,7 @@ shader as_fresnel
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0        
+        int gafferNoduleLayoutVisible = 0
     ]],
     vector in_complex_kappa = vector(3.95560, 2.5823, 2.3929)
     [[
@@ -186,8 +188,8 @@ shader as_fresnel
                 normalize(N),
                 backfacing() ? in_ior : 1.0 / in_ior,
                 Kr,
-                Kt);                
-        }       
+                Kt);
+        }
         out_alpha = clamp(Kr, 0.0, 1.0);
         out_color = color(out_alpha);
     }
@@ -205,7 +207,7 @@ shader as_fresnel
             n = color(in_complex_eta);
             k = color(in_complex_kappa);
         }
-        
+
         float costheta = dot(normalize(N), -normalize(I));
 
         for (int i = 0; i < 3; ++i)

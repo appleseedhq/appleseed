@@ -30,7 +30,7 @@
 
 shader as_maya_fourByFourMatrix
 [[
-    string as_maya_node_name = "fourByFourMatrix"
+    string as_node_name = "fourByFourMatrix"
 ]]
 (
     float in_in00 = 1.0

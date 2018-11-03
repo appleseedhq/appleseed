@@ -33,7 +33,7 @@
 
 shader as_maya_remapColor
 [[
-    string as_maya_node_name = "remapColor"
+    string as_node_name = "remapColor"
 ]]
 (
     color in_color = color(0)

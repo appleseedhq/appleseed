@@ -34,7 +34,7 @@
 
 shader as_maya_stucco
 [[
-    string as_maya_node_name = "stucco"
+    string as_node_name = "stucco"
 ]]
 (
     float in_shaker = 20.0

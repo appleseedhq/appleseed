@@ -31,7 +31,7 @@
 
 shader as_maya_place3dTexture
 [[
-    string as_maya_node_name = "place3dTexture"
+    string as_node_name = "place3dTexture"
 ]]
 (
     matrix inclusiveMatrixInverse = matrix(1)

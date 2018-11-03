@@ -30,16 +30,18 @@
 
 shader as_subsurface
 [[
-    string as_maya_node_name = "asSubsurface",
-    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string as_blender_node_name = "asSubsurface",
-    string as_blender_category = "shader",
     string help = "SubSurface Scattering material.",
     string icon = "asSubsurface.png",
-    int as_maya_type_id = 0x001279e4,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_subsurface.html#label-as-subsurface",
+
+    string as_node_name = "asSubsurface",
+    string as_category = "shader",
+
     string as_max_class_id = "492524175 1093340697",
     string as_max_plugin_type = "material",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_subsurface.html#label-as-subsurface"
+
+    int as_maya_type_id = 0x001279e4,
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch"
 ]]
 (
     int in_sss_profile = 0
@@ -354,7 +356,7 @@ shader as_subsurface
 
                     tangent = normalize(
                         vector_map[0] * Tn +
-                        vector_map[1] * Bn + 
+                        vector_map[1] * Bn +
                         vector_map[2] * Nn);
                 }
             }

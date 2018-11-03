@@ -30,16 +30,18 @@
 
 shader as_switch_surface
 [[
-    string as_maya_node_name = "asSwitchSurface",
-    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string as_blender_node_name = "asSwitchSurface",
-    string as_blender_category = "utility",
     string help = "Material variation utility shader.",
     string icon = "asSwitchSurface.png",
-    int as_maya_type_id = 0x001279fe,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_switch_surface.html#label-as-switch-surface",
+
+    string as_node_name = "asSwitchSurface",
+    string as_category = "utility",
+
     string as_max_class_id = "133437029 1618300620",
     string as_max_plugin_type = "material",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_switch_surface.html#label-as-switch-surface"
+
+    int as_maya_type_id = 0x001279fe,
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch"
 ]]
 (
     closure color in_color = 0

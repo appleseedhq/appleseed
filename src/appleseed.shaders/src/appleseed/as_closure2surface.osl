@@ -28,8 +28,8 @@
 
 surface as_closure2surface
 [[
-    string as_blender_node_name = "asClosure2Surface",
-    string as_blender_category = "surface"
+    string as_node_name = "asClosure2Surface",
+    string as_category = "surface"
 ]]
 (
     closure color in_input = 0

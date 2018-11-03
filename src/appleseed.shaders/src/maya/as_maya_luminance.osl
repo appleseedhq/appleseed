@@ -32,7 +32,7 @@
 
 shader as_maya_luminance
 [[
-    string as_maya_node_name = "luminance"
+    string as_node_name = "luminance"
 ]]
 (
     color in_value = color(0)

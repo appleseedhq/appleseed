@@ -32,16 +32,18 @@
 
 shader as_vary_color
 [[
-    string as_maya_node_name = "asVaryColor",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string as_blender_node_name = "asVaryColor",
-    string as_blender_category = "color",
     string help = "Color variation utility shader.",
     string icon = "asVaryColor.png",
-    int as_maya_type_id = 0x001279d3,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_vary_color.html#label-as-vary-color",
+
+    string as_node_name = "asVaryColor",
+    string as_category = "color",
+
     string as_max_class_id = "1398541016 1578641387",
     string as_max_plugin_type = "texture",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_vary_color.html#label-as-vary-color"
+
+    int as_maya_type_id = 0x001279d3,
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility"
 ]]
 (
     color in_color = color(0)

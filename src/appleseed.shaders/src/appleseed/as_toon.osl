@@ -42,16 +42,18 @@
 
 shader as_toon
 [[
-    string as_maya_node_name = "asToon",
-    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string as_blender_node_name = "asToon",
-    string as_blender_category = "shader",
     string help = "Non-Photo-Realistic (NPR) Toon material node",
     string icon = "asToon.png",
-    int as_maya_type_id = 0x00127a01,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_toon.html#label-as-toon",
+
+    string as_node_name = "asToon",
+    string as_category = "shader",
+
     string as_max_class_id = "163266005 1857516981",
     string as_max_plugin_type = "material",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_toon.html#label-as-toon"
+
+    int as_maya_type_id = 0x00127a01,
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch"
 ]]
 (
     //

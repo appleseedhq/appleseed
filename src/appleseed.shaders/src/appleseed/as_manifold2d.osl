@@ -30,16 +30,18 @@
 
 shader as_manifold2D
 [[
-    string as_maya_node_name = "asManifold2D",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string as_blender_node_name = "asManifold2D",
-    string as_blender_category = "utility",
     string icon = "asManifold2D.png",
     string help = "Node to place and transform UV coordinates.",
-    int as_maya_type_id = 0x00127a05,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_manifold2D.html#label-as-manifold2D",
+
+    string as_node_name = "asManifold2D",
+    string as_category = "utility",
+
     string as_max_class_id = "1185226119 622806922",
     string as_max_plugin_type = "texture",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_manifold2D.html#label-as-manifold2D"
+
+    int as_maya_type_id = 0x00127a05,
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility"
 ]]
 (
     float in_uv_coord[2] = {u, v}
@@ -218,7 +220,7 @@ shader as_manifold2D
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0,        
+        int gafferNoduleLayoutVisible = 0,
         string help = "Mirror the UV tile along the U direction."
     ]],
     int in_mirror_v = 0

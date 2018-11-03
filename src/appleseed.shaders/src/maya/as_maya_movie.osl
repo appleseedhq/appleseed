@@ -33,7 +33,7 @@
 
 shader as_maya_movie
 [[
-    string as_maya_node_name = "movie"
+    string as_node_name = "movie"
 ]]
 (
     string in_fileTextureName = ""
