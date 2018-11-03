@@ -2028,6 +2028,7 @@ set (renderer_utility_sources
     renderer/utility/seexpr.h
     renderer/utility/settingsparsing.cpp
     renderer/utility/settingsparsing.h
+    renderer/utility/spectrumclamp.h
     renderer/utility/stochasticcast.h
     renderer/utility/testutils.cpp
     renderer/utility/testutils.h

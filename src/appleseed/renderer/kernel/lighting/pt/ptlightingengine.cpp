@@ -50,6 +50,7 @@
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/utility/spectrumclamp.h"
 #include "renderer/utility/stochasticcast.h"
 
 // appleseed.foundation headers.
@@ -588,7 +589,7 @@ namespace
 
                 // Optionally clamp secondary rays contribution.
                 if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1)
-                    clamp_contribution(env_radiance);
+                    clamp_contribution(env_radiance, m_params.m_max_ray_intensity);
 
                 // Update path radiance.
                 m_path_radiance.add_emission(
@@ -619,7 +620,7 @@ namespace
 
                     // Optionally clamp secondary rays contribution.
                     if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1)
-                        clamp_contribution(emitted_radiance);
+                        clamp_contribution(emitted_radiance, m_params.m_max_ray_intensity);
 
                     // Update path radiance.
                     m_path_radiance.add_emission(
@@ -711,7 +712,7 @@ namespace
 
                 // Optionally clamp secondary rays contribution.
                 if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1)
-                    clamp_contribution(vertex_radiance);
+                    clamp_contribution(vertex_radiance, m_params.m_max_ray_intensity);
 
                 // Update path radiance.
                 m_path_radiance.add(
@@ -836,29 +837,6 @@ namespace
 
                 // Add image-based lighting contribution.
                 vertex_radiance += ibl_radiance;
-            }
-
-            void clamp_contribution(Spectrum& radiance) const
-            {
-                const float avg = average_value(radiance);
-
-                if (avg > m_params.m_max_ray_intensity)
-                    radiance *= m_params.m_max_ray_intensity / avg;
-            }
-
-            void clamp_contribution(DirectShadingComponents& radiance) const
-            {
-                // Clamp all components.
-                clamp_contribution(radiance.m_diffuse);
-                clamp_contribution(radiance.m_glossy);
-                clamp_contribution(radiance.m_volume);
-                clamp_contribution(radiance.m_emission);
-
-                // Rebuild the beauty component.
-                radiance.m_beauty  = radiance.m_diffuse;
-                radiance.m_beauty += radiance.m_glossy;
-                radiance.m_beauty += radiance.m_volume;
-                radiance.m_beauty += radiance.m_emission;
             }
         };
 
