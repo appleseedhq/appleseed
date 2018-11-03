@@ -30,7 +30,7 @@
 
 shader as_maya_samplerInfo
 [[
-    string as_maya_node_name = "samplerInfo"
+    string as_node_name = "samplerInfo"
 ]]
 (
     vector Tn = vector(0)

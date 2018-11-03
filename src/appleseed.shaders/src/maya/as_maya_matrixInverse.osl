@@ -28,7 +28,7 @@
 
 shader as_maya_matrixInverse
 [[
-    string as_maya_node_name = "matrixInverse"
+    string as_node_name = "matrixInverse"
 ]]
 (
     matrix in_inputMatrix = matrix(1)

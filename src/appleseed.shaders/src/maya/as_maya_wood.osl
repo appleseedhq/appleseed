@@ -39,7 +39,7 @@
 
 shader as_maya_wood
 [[
-    string as_maya_node_name = "wood"
+    string as_node_name = "wood"
 ]]
 (
     color in_fillerColor = color(0.824, 0.627, 0.471)

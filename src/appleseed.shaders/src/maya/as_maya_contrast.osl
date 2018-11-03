@@ -32,7 +32,7 @@
 
 shader as_maya_contrast
 [[
-    string as_maya_node_name = "contrast"
+    string as_node_name = "contrast"
 ]]
 (
     color in_value = color(0)

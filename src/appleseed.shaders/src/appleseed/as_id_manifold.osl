@@ -30,16 +30,18 @@
 
 shader as_id_manifold
 [[
-    string as_maya_node_name = "asIdManifold",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string as_blender_node_name = "asIdManifold",
-    string as_blender_category = "utility",
     string help = "ID manifold utility shader.",
     string icon = "asIdManifold.png",
-    int as_maya_type_id = 0x001279d9,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_id_manifold.html#label-as-id-manifold",
+
+    string as_node_name = "asIdManifold",
+    string as_category = "utility",
+
     string as_max_class_id = "1097742994 1256943621",
     string as_max_plugin_type = "texture",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_id_manifold.html#label-as-id-manifold"
+
+    int as_maya_type_id = 0x001279d9,
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility"
 ]]
 (
     int in_manifold_type = 0

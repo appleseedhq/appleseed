@@ -35,7 +35,7 @@
 
 shader as_maya_cloud
 [[
-    string as_maya_node_name = "cloud"
+    string as_node_name = "cloud"
 ]]
 (
     color in_color1 = color(0)

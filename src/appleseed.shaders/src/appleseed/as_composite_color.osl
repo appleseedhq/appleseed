@@ -30,16 +30,18 @@
 
 shader as_composite_color
 [[
-    string as_maya_node_name = "asCompositeColor",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string as_blender_node_name = "asCompositeColor",
-    string as_blender_category = "color",
     string help = "Porter-Duff Compositing operators node.",
     string icon = "asCompositeColor.png",
-    int as_maya_type_id = 0x001279fd,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_composite_color.html#label-as-composite-color",
+
+    string as_node_name = "asCompositeColor",
+    string as_category = "color",
+
     string as_max_class_id = "1878686041 1992629660",
     string as_max_plugin_type = "texture",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_composite_color.html#label-as-composite-color"
+
+    int as_maya_type_id = 0x001279fd,
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility"
 ]]
 (
     color in_color = color(0)

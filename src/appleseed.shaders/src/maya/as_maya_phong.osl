@@ -32,7 +32,7 @@
 
 shader as_maya_phong
 [[
-    string as_maya_node_name = "phong"
+    string as_node_name = "phong"
 ]]
 (
     color in_color = color(0.5)
@@ -267,7 +267,7 @@ shader as_maya_phong
         out_outColor += opacity * in_specularColor *
             phong(Nn, in_cosinePower * 10.0);
     }
-    
+
     if (in_matteOpacityMode == 1)
     {
         out_outMatteOpacity = holdout();

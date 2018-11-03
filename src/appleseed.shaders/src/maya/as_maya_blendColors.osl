@@ -30,7 +30,7 @@
 
 shader as_maya_blendColors
 [[
-    string as_maya_node_name = "blendColors"
+    string as_node_name = "blendColors"
 ]]
 (
     color in_color1 = color(1, 0, 0)

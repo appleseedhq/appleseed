@@ -28,16 +28,18 @@
 
 shader as_attributes
 [[
-    string as_maya_node_name = "asAttributes",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string as_blender_node_name = "asAttributes",
-    string as_blender_category = "utility",
     string help = "OSL and appleseed attributes.",
     string icon = "asAttributes.png",
-    int as_maya_type_id = 0x001279f8,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_attributes.html#label-as-attributes",
+
+    string as_node_name = "asAttributes",
+    string as_category = "utility",
+
     string as_max_class_id = "1006520102 421015477",
     string as_max_plugin_type = "texture",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_attributes.html#label-as-attributes"
+
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    int as_maya_type_id = 0x001279f8
 ]]
 (
     output int out_object_instance_id = 0

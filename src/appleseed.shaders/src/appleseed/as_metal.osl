@@ -30,16 +30,18 @@
 
 shader as_metal
 [[
-    string as_maya_node_name = "asMetal",
-    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string as_blender_node_name = "asMetal",
-    string as_blender_category = "shader",
     string icon = "asMetal.png",
     string help = "A metal material shader.",
-    int as_maya_type_id = 0x001279f9,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_metal.html#label-as-metal",
+
+    string as_node_name = "asMetal",
+    string as_category = "shader",
+
     string as_max_class_id = "121203873 1478432054",
     string as_max_plugin_type = "material",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_metal.html#label-as-metal"
+
+    int as_maya_type_id = 0x001279f9,
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch"
 ]]
 (
     color in_face_reflectance = color(0.96, 0.8, 0.05)
@@ -171,7 +173,7 @@ shader as_metal
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
-    ]],       
+    ]],
     int in_thinfilm_min = 380
     [[
         string as_maya_attribute_name = "thinFilmMin",

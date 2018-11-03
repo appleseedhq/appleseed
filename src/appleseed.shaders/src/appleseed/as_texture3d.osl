@@ -32,16 +32,18 @@
 
 shader as_texture3d
 [[
-    string as_maya_node_name = "asTexture3D",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/3d:swatch/AppleseedRenderSwatch:texture",
-    string as_blender_node_name = "asTexture3D",
-    string as_blender_category = "texture3d",
     string help = "A field3d format 3D texture lookup node.",
     string icon = "asTexture3D.png",
-    int as_maya_type_id = 0x001279ff,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_texture.html#label-as-texture3d",
+
+    string as_node_name = "asTexture3D",
+    string as_category = "texture3d",
+
     string as_max_class_id = "2105412220 306260647",
     string as_max_plugin_type = "texture",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_texture.html#label-as-texture3d"
+
+    int as_maya_type_id = 0x001279ff,
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/3d:swatch/AppleseedRenderSwatch:texture"
 ]]
 (
     string in_filename = ""

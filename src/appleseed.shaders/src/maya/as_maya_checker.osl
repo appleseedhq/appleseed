@@ -33,7 +33,7 @@
 
 shader as_maya_checker
 [[
-    string as_maya_node_name = "checker"
+    string as_node_name = "checker"
 ]]
 (
     color in_color1 = color(1)

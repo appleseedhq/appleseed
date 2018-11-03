@@ -30,7 +30,7 @@
 
 shader as_maya_tripleShadingSwitch
 [[
-    string as_maya_node_name = "tripleShadingSwitch"
+    string as_node_name = "tripleShadingSwitch"
 ]]
 (
     color in_inTriple[] = {0}

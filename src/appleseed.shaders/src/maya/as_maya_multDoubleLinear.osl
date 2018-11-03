@@ -30,7 +30,7 @@
 
 shader as_maya_multDoubleLinear
 [[
-    string as_maya_node_name = "multDoubleLinear"
+    string as_node_name = "multDoubleLinear"
 ]]
 (
     float in_input1 = 0.0

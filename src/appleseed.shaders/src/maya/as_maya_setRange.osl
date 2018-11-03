@@ -30,7 +30,7 @@
 
 shader as_maya_setRange
 [[
-    string as_maya_node_name = "setRange"
+    string as_node_name = "setRange"
 ]]
 (
     // Components = valueX|Y|Z, use vector, not color type (R|G|B)

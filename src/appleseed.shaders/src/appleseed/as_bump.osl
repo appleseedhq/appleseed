@@ -30,14 +30,15 @@
 
 shader as_bump
 [[
-    string as_maya_node_name = "asBump",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string as_blender_node_name = "asBump",
-    string as_blender_category = "utility",
     string help = "Bump and normal mapping node.",
     string icon = "asBump.png",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_bump.html#label-as-bump",
+
+    string as_node_name = "asBump",
+    string as_category = "utility",
+
     int as_maya_type_id = 0x00127a00,
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_bump.html#label-as-bump"
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility"
 ]]
 (
     string in_mode = "Bump"
@@ -60,7 +61,7 @@ shader as_bump
         string as_maya_attribute_name = "bumpValue",
         string as_maya_attribute_short_name = "bva",
         float min = 0.0,
-        float max = 1.0,        
+        float max = 1.0,
         string label = "Bump Value",
         string page = "Bump"
     ]],
@@ -136,7 +137,7 @@ shader as_bump
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0        
+        int gafferNoduleLayoutVisible = 0
     ]],
     int in_normal_map_flip_g = 0
     [[
@@ -163,7 +164,7 @@ shader as_bump
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
-    ]],                                                         
+    ]],
     point in_surface_point = P
     [[
         string as_maya_attribute_name = "surfacePoint",
@@ -213,7 +214,7 @@ shader as_bump
         }
 
         float bump_depth = abs(in_bump_depth);
-        
+
         float bump_offset = clamp(
             in_bump_value * in_bump_depth,
            -bump_depth,

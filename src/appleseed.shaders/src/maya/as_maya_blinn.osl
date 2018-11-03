@@ -33,7 +33,7 @@
 
 shader as_maya_blinn
 [[
-    string as_maya_node_name = "blinn"
+    string as_node_name = "blinn"
 ]]
 (
     color in_color = color(0.5)
@@ -270,7 +270,7 @@ shader as_maya_blinn
 
         out_outColor += opacity * in_specularColor * as_blinn(Nn, m, eta);
     }
-    
+
     if (in_matteOpacityMode == 1)
     {
         out_outMatteOpacity = holdout();
@@ -280,5 +280,5 @@ shader as_maya_blinn
     {
         out_outMatteOpacity = in_matteOpacity * holdout();
         out_outColor += out_outMatteOpacity;
-    }  
+    }
 }

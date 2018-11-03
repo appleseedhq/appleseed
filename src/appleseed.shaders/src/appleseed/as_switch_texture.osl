@@ -30,16 +30,18 @@
 
 shader as_switch_texture
 [[
-    string as_maya_node_name = "asSwitchTexture",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string as_blender_node_name = "asSwitchTexture",
-    string as_blender_category = "utility",
     string help = "Texture variation utility shader.",
     string icon = "asSwitchTexture.png",
-    int as_maya_type_id = 0x001279da,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_switch_texture.html#label-as-switch-texture",
+
+    string as_node_name = "asSwitchTexture",
+    string as_category = "utility",
+
     string as_max_class_id = "2082364340 1882157436",
     string as_max_plugin_type = "texture",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_switch_texture.html#label-as-switch-texture"
+
+    int as_maya_type_id = 0x001279da,
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility"
 ]]
 (
     color in_color = color(0.9, 0.2, 0.1)
@@ -184,7 +186,7 @@ shader as_switch_texture
     color textures[8] = {
             in_color, in_color1, in_color2, in_color3,
             in_color4, in_color5, in_color6, in_color7};
-                    
+
     int len = arraylength(textures) - 1, hash_id = 0;
 
     float grey_id = 0.0;

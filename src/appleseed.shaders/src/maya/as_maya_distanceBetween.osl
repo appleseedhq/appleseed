@@ -30,7 +30,7 @@
 
 shader as_maya_distanceBetween
 [[
-    string as_maya_node_name = "distanceBetween"
+    string as_node_name = "distanceBetween"
 ]]
 (
     point in_point1 = point(0)

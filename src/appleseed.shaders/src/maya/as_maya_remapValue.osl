@@ -33,7 +33,7 @@
 
 shader as_maya_remapValue
 [[
-    string as_maya_node_name = "remapValue"
+    string as_node_name = "remapValue"
 ]]
 (
     float in_inputValue = 0.0

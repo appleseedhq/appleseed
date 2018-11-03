@@ -33,7 +33,7 @@
 
 shader as_maya_stencil
 [[
-    string as_maya_node_name = "stencil"
+    string as_node_name = "stencil"
 ]]
 (
     color in_image = color(0)

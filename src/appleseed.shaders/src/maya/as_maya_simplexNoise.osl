@@ -31,7 +31,7 @@
 
 shader as_maya_simplexNoise
 [[
-    string as_maya_node_name = "simplexNoise",
+    string as_node_name = "simplexNoise",
 ]]
 (
     float in_scale = 1.0
@@ -265,7 +265,7 @@ shader as_maya_simplexNoise
         }
         return amplitude * f1;
     }
-        
+
     if (in_uvCoord[0] == OUTSIDE_UVFRAME || in_uvCoord[1] == OUTSIDE_UVFRAME)
     {
         out_outColor = color(0);
@@ -330,7 +330,7 @@ shader as_maya_simplexNoise
             st[0] += in_distortionRatio * in_distortionU;
             st[1] += in_distortionRatio * (in_distortionV + 0.2);
         }
-        
+
         out = simplexCellnoise(st, in_amplitude, in_frequency);
     }
     else

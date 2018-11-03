@@ -28,7 +28,7 @@
 
 surface as_maya_areaLight
 [[
-    string as_maya_node_name = "areaLight"
+    string as_node_name = "areaLight"
 ]]
 (
     color in_color = color(1)

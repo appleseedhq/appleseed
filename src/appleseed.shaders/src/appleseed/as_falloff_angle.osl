@@ -30,16 +30,18 @@
 
 shader as_falloff_angle
 [[
-    string as_maya_node_name = "asFalloffAngle",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string as_blender_node_name = "asFalloffAngle",
-    string as_blender_category = "utility",
     string help = "Creates a ramp from the angle between two input vectors.",
     string icon = "asFalloffAngle.png",
-    int as_maya_type_id = 0x001279f7,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_falloff_angle.html#label-as-falloff-angle",
+
+    string as_node_name = "asFalloffAngle",
+    string as_category = "utility",
+
     string as_max_class_id = "2015842098 354230760",
     string as_max_plugin_type = "texture",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_falloff_angle.html#label-as-falloff-angle"
+
+    int as_maya_type_id = 0x001279f7,
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility"
 ]]
 (
     vector in_vector_1 = vector(0,1,0)

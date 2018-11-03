@@ -31,16 +31,18 @@
 
 shader as_standard_surface
 [[
-    string as_maya_node_name = "asStandardSurface",
-    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string as_blender_node_name = "asStandardSurface",
-    string as_blender_category = "shader",
     string help = "appleseed's standard material shader.",
     string icon = "asStandardSurface.png",
-    int as_maya_type_id = 0x001279d4,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_standard_surface.html#label-as-standard-surface",
+
+    string as_node_name = "asStandardSurface",
+    string as_category = "shader",
+
     string as_max_class_id = "651059681 943276521",
     string as_max_plugin_type = "material",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_standard_surface.html#label-as-standard-surface"
+
+    int as_maya_type_id = 0x001279d4,
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch"
 ]]
 (
     float in_diffuse_weight = 1.0

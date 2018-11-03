@@ -34,7 +34,7 @@
 
 shader as_maya_mountain
 [[
-    string as_maya_node_name = "mountain"
+    string as_node_name = "mountain"
 ]]
 (
     color in_snowColor = color(1)

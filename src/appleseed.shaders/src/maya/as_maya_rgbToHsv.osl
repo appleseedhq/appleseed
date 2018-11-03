@@ -30,7 +30,7 @@
 
 shader as_maya_rgbToHsv
 [[
-    string as_maya_node_name = "rgbToHsv"
+    string as_node_name = "rgbToHsv"
 ]]
 (
     color in_inRgb = color(0)

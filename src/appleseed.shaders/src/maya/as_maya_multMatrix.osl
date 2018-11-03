@@ -28,7 +28,7 @@
 
 shader as_maya_multMatrix
 [[
-    string as_maya_node_name = "multMatrix"
+    string as_node_name = "multMatrix"
 ]]
 (
     matrix in_matrixIn[] = {0}

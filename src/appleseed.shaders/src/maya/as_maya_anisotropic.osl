@@ -33,7 +33,7 @@
 
 shader as_maya_anisotropic
 [[
-    string as_maya_node_name = "anisotropic"
+    string as_node_name = "anisotropic"
 ]]
 (
     color in_color = color(0.5)
@@ -325,7 +325,7 @@ shader as_maya_anisotropic
                 in_fresnelRefractiveIndex,
                 0);
     }
-    
+
     if (in_matteOpacityMode == 1)
     {
         out_outMatteOpacity = holdout();

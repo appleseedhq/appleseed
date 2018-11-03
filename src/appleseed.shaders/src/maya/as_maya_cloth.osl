@@ -33,7 +33,7 @@
 
 shader as_maya_cloth
 [[
-    string as_maya_node_name = "cloth"
+    string as_node_name = "cloth"
 ]]
 (
     color in_gapColor = color(0)

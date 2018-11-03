@@ -28,8 +28,8 @@
 
 shader as_blender_areaLight
 [[
-    string as_blender_node_name = "asAreaLight",
-    string as_blender_category = "shader"
+    string as_node_name = "asAreaLight",
+    string as_category = "shader"
 ]]
 (
     color in_color = color(1)
