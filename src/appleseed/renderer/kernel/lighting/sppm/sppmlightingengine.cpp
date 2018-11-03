@@ -47,6 +47,7 @@
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/utility/spectrumclamp.h"
 #include "renderer/utility/stochasticcast.h"
 
 // appleseed.foundation headers.
@@ -288,6 +289,10 @@ namespace
                     env_radiance,
                     env_prob);
 
+                // Optionally clamp secondary rays contribution.
+                if (m_params.m_path_tracing_has_max_ray_intensity && vertex.m_path_length > 1)
+                    clamp_contribution(env_radiance, m_params.m_path_tracing_max_ray_intensity);
+
                 // Update the path radiance.
                 env_radiance *= vertex.m_throughput;
                 m_path_radiance.add_emission(
@@ -321,6 +326,10 @@ namespace
                     vertex_radiance.m_emission += emitted;
                     vertex_radiance.m_beauty += emitted;
                 }
+
+                // Optionally clamp secondary rays contribution.
+                if (m_params.m_path_tracing_has_max_ray_intensity && vertex.m_path_length > 1)
+                    clamp_contribution(vertex_radiance, m_params.m_path_tracing_max_ray_intensity);
 
                 // Update the path radiance.
                 vertex_radiance *= vertex.m_throughput;
@@ -773,6 +782,16 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
             .insert("type", "int")
             .insert("default", "6")
             .insert("help", "Consider pruning low contribution paths starting with this bounce"));
+
+    metadata.dictionaries().insert(
+        "path_tracing_max_ray_intensity",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "1.0")
+            .insert("unlimited", "true")
+            .insert("min", "0.0")
+            .insert("label", "Max Ray Intensity")
+            .insert("help", "Clamp intensity of rays (after the first bounce) to this value to reduce fireflies"));
 
     metadata.dictionaries().insert(
         "light_photons_per_pass",

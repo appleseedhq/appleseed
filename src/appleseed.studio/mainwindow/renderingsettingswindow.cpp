@@ -1077,7 +1077,7 @@ namespace
 
         void create_pt_advanced_nee_max_ray_intensity_settings(QVBoxLayout* parent)
         {
-            QDoubleSpinBox* max_ray_intensity = create_double_input("advanced.max_ray_intensity", 0.0, 1.0e9, 3, 0.1);
+            QDoubleSpinBox* max_ray_intensity = create_double_input("advanced.max_ray_intensity", 0.0, 1.0e4, 1, 0.1);
             max_ray_intensity->setToolTip(m_params_metadata.get_path("pt.max_ray_intensity.help"));
 
             QCheckBox* unlimited_ray_intensity = create_checkbox("advanced.unlimited_ray_intensity", "Unlimited");
@@ -1134,6 +1134,7 @@ namespace
             create_components_settings(layout);
             create_photon_tracing_settings(layout);
             create_radiance_estimation_settings(layout);
+            create_advanced_settings(layout);
 
             create_direct_link("lighting_components.ibl",                        "sppm.enable_ibl");
             create_direct_link("lighting_components.caustics",                   "sppm.enable_caustics");
@@ -1161,6 +1162,9 @@ namespace
             if (photon_type == "mono")
                 set_widget("photon_type.mono", true);
             else set_widget("photon_type.poly", true);
+
+            set_widget("advanced.unlimited_ray_intensity", !config.get_parameters().exist_path("sppm.path_tracing_max_ray_intensity"));
+            set_widget("advanced.max_ray_intensity", get_config<double>(config, "sppm.path_tracing_max_ray_intensity", 1.0));
         }
 
         void save_config(Configuration& config) const override
@@ -1176,6 +1180,10 @@ namespace
 
             set_config(config, "sppm.photon_type",
                 get_widget<bool>("photon_type.mono") ? "mono" : "poly");
+
+            if (get_widget<bool>("advanced.unlimited_ray_intensity"))
+                config.get_parameters().remove_path("sppm.path_tracing_max_ray_intensity");
+            else set_config(config, "sppm.path_tracing_max_ray_intensity", get_widget<double>("advanced.max_ray_intensity"));
         }
 
       private:
@@ -1274,6 +1282,28 @@ namespace
             QDoubleSpinBox* alpha = create_double_input("radiance_estimation.alpha", 0.0, 1.0, 2, 0.1);
             alpha->setToolTip(m_params_metadata.get_path("sppm.alpha.help"));
             sublayout->addRow("Alpha:", alpha);
+        }
+
+        void create_advanced_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = new QGroupBox("Advanced");
+            parent->addWidget(groupbox);
+
+            QVBoxLayout* layout = create_vertical_layout();
+            groupbox->setLayout(layout);
+
+            create_advanced_max_ray_intensity_settings(layout);
+        }
+
+        void create_advanced_max_ray_intensity_settings(QVBoxLayout* parent)
+        {
+            QDoubleSpinBox* max_ray_intensity = create_double_input("advanced.max_ray_intensity", 0.0, 1.0e4, 1, 0.1);
+            max_ray_intensity->setToolTip(m_params_metadata.get_path("sppm.path_tracing_max_ray_intensity.help"));
+
+            QCheckBox* unlimited_ray_intensity = create_checkbox("advanced.unlimited_ray_intensity", "Unlimited");
+            connect(unlimited_ray_intensity, SIGNAL(toggled(bool)), max_ray_intensity, SLOT(setDisabled(bool)));
+
+            parent->addLayout(create_form_layout("Max Ray Intensity:", create_horizontal_group(max_ray_intensity, unlimited_ray_intensity)));
         }
     };
 
