@@ -224,6 +224,20 @@ namespace foundation
 
 
 //
+//  noexcept support.
+//
+
+// Visual C++ 2012 and earlier: ignore.
+#if defined _MSC_VER && _MSC_VER < 1800
+    #define APPLESEED_NOEXCEPT
+
+// Other compilers.
+#else
+    #define APPLESEED_NOEXCEPT noexcept
+#endif
+
+
+//
 // Utility macros converting their argument to a string literal:
 //   APPLESEED_TO_STRING_EVAL first expands the argument definition.
 //   APPLESEED_TO_STRING_NOEVAL does not expand the argument definition.
