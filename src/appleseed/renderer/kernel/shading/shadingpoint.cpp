@@ -1020,7 +1020,6 @@ void ShadingPoint::compute_per_vertex_color() const
     }
 }
 
-
 void ShadingPoint::initialize_osl_shader_globals(
     const ShaderGroup&          sg,
     const VisibilityFlags::Type ray_flags,
