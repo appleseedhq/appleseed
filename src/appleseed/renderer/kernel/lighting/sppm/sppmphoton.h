@@ -35,8 +35,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
-
-// Boost headers.
 #include "foundation/platform/thread.h"
 #include "foundation/platform/types.h"
 
