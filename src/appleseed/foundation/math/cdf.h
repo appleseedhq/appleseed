@@ -181,8 +181,11 @@ template <typename Item, typename Weight>
 inline void CDF<Item, Weight>::insert(const Item& item, const Weight weight)
 {
     assert(weight >= Weight(0.0));
-    m_items.push_back(std::make_pair(item, weight));
-    m_weight_sum += weight;
+    if (weight > Weight(0.0))
+    {
+        m_items.push_back(std::make_pair(item, weight));
+        m_weight_sum += weight;
+    }
 }
 
 template <typename Item, typename Weight>
