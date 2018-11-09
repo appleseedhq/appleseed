@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/aov/aovcomponents.h"
+#include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingray.h"
@@ -97,7 +98,8 @@ void ShadingEngine::shade_hit_point(
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point,
     AOVAccumulatorContainer&    aov_accumulators,
-    ShadingResult&              shading_result) const
+    ShadingResult&              shading_result,
+    Color4f&                    matte_color) const
 {
     // Compute the alpha channel of the main output.
     shading_result.m_main.a = shading_point.get_alpha()[0];
@@ -105,17 +107,43 @@ void ShadingEngine::shade_hit_point(
     // Retrieve the material of the intersected surface.
     const Material* material = shading_point.get_material();
 
-    // Apply OSL transparency if needed.
-    if (material &&
-        material->get_render_data().m_shader_group &&
-        material->get_render_data().m_shader_group->has_transparency())
+    if (material != nullptr && material->get_render_data().m_shader_group)
     {
-        Alpha alpha;
-        shading_context.execute_osl_transparency(
-            *material->get_render_data().m_shader_group,
-            shading_point,
-            alpha);
-        shading_result.m_main.a *= alpha[0];
+        const ShaderGroup* sg = material->get_render_data().m_shader_group;
+
+        if (sg->has_transparency() || sg->has_matte())
+        {
+            // This is similar to other functions but
+            // does not call process_xxx_tree().
+            // Folding the two cases together, we save one shading group exec.
+            shading_context.execute_osl_transparency_and_matte(
+                *material->get_render_data().m_shader_group,
+                shading_point);
+
+            if (sg->has_matte())
+            {
+                Color3f matte_rgb;
+                Alpha matte_alpha;
+                const bool any_matte_closure = process_matte_tree(
+                    shading_point.get_osl_shader_globals().Ci,
+                    matte_rgb,
+                    matte_alpha);
+
+                if (any_matte_closure)
+                {
+                    matte_color.rgb() = matte_rgb;
+                    matte_color.a = matte_alpha[0];
+                    return;
+                }
+            }
+
+            if (sg->has_transparency())
+            {
+                Alpha alpha;
+                process_transparency_tree(shading_point.get_osl_shader_globals().Ci, alpha);
+                shading_result.m_main.a *= alpha[0];
+            }
+        }
     }
 
     // Shade the sample if it isn't fully transparent.

@@ -50,6 +50,7 @@
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/modeling/shadergroup/shadergroup.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -215,6 +216,8 @@ namespace
                 shading_point_ptr = &shading_points[shading_point_index];
                 shading_point_index = 1 - shading_point_index;
 
+                Color4f matte_color;
+
                 if (iterations == 1)
                 {
                     // Shade the first intersection point along the ray.
@@ -224,7 +227,8 @@ namespace
                         m_shading_context,
                         *shading_point_ptr,
                         aov_accumulators,
-                        shading_result);
+                        shading_result,
+                        matte_color);
 
                     // Apply alpha premultiplication.
                     shading_result.apply_alpha_premult();
@@ -239,7 +243,8 @@ namespace
                         m_shading_context,
                         *shading_point_ptr,
                         aov_accumulators,
-                        local_result);
+                        local_result,
+                        matte_color);
 
                     // Apply alpha premultiplication.
                     local_result.apply_alpha_premult();
@@ -251,6 +256,17 @@ namespace
                 // Stop once we hit the environment.
                 if (!shading_point_ptr->hit_surface())
                     break;
+
+                // Check if matte shader is enabled and apply alpha and color if it is.
+                const Material* material = shading_point_ptr->get_material();
+                if (material != nullptr &&
+                    material->get_render_data().m_shader_group != nullptr &&
+                    material->get_render_data().m_shader_group->has_matte())
+                {
+                    shading_result.m_main.rgb() = matte_color.rgb();
+                    shading_result.m_main.a = matte_color.a;
+                    break;
+                }
 
                 // Stop once we hit full opacity.
                 if (shading_result.m_main.a > m_opacity_threshold)

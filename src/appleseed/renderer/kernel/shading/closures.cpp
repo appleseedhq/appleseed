@@ -1757,6 +1757,48 @@ namespace
             values->m_quality = static_cast<size_t>(clamp(p->quality, 1, 4));
         }
     };
+
+    struct MatteClosure
+    {
+        struct Params
+        {
+            OSL::Color3 matte_color;
+            float       matte_alpha;
+        };
+
+        static const char* name()
+        {
+            return "as_matte";
+        }
+
+        static ClosureID id()
+        {
+            return MatteID;
+        }
+
+        static void prepare_closure(
+            OSL::RendererServices*      render_services,
+            int                         id,
+            void*                       data)
+        {
+            // Initialize keyword parameter defaults.
+            Params* params = new (data) Params();
+            params->matte_color = OSL::Color3(0.0f);
+            params->matte_alpha = 0.0f;
+        }
+
+        static void register_closure(OSLShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_COLOR_PARAM(Params, matte_color),
+                CLOSURE_FLOAT_PARAM(Params, matte_alpha),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
+        }
+    };
 }
 
 
@@ -2397,14 +2439,57 @@ void process_transparency_tree(const OSL::ClosureColor* ci, Alpha& alpha)
     alpha.set(1.0f - transparency);
 }
 
-float process_holdout_tree(const OSL::ClosureColor* ci)
-{
-    return saturate(luminance(do_process_closure_id_tree(ci, HoldoutID)));
-}
-
 Color3f process_background_tree(const OSL::ClosureColor* ci)
 {
     return do_process_closure_id_tree(ci, BackgroundID);
+}
+
+bool process_matte_tree(
+    const OSL::ClosureColor*    closure,
+    foundation::Color3f&        matte_color,
+    Alpha&                      matte_alpha)
+{
+    if (closure)
+    {
+        switch (closure->id)
+        {
+          case OSL::ClosureColor::MUL:
+            {
+                const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
+                process_matte_tree(c->closure, matte_color, matte_alpha);
+                matte_color = Color3f(c->weight) * matte_color;
+                matte_alpha.set(saturate(luminance(Color3f((c->weight) * matte_alpha[0]))));
+            }
+            break;
+
+          case OSL::ClosureColor::ADD:
+            {
+                const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
+                foundation::Color3f color_a(0.0f), color_b(0.0f);
+                Alpha alpha_a(0.0f), alpha_b(0.0f);
+                process_matte_tree(c->closureA, color_a, alpha_a);
+                process_matte_tree(c->closureB, color_b, alpha_b);
+                matte_color = color_a + color_b;
+                matte_alpha.set(alpha_a[0] + alpha_b[0]);
+            }
+            break;
+
+          default:
+            {
+                const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
+
+                if (c->id == MatteID)
+                {
+                    const MatteClosure::Params* p = static_cast<const MatteClosure::Params*>(c->data());
+                    matte_alpha.set(p->matte_alpha);
+                    matte_color = p->matte_color;
+                    return true;
+                }
+            }
+            break;
+        }
+    }
+    return false;
 }
 
 namespace
@@ -2448,6 +2533,8 @@ void register_closures(OSLShadingSystem& shading_system)
 
     register_closure<NPRShadingClosure>(shading_system);
     register_closure<NPRContourClosure>(shading_system);
+
+    register_closure<MatteClosure>(shading_system);
 }
 
 }   // namespace renderer

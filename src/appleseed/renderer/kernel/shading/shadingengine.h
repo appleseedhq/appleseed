@@ -76,7 +76,8 @@ class ShadingEngine
         const ShadingContext&       shading_context,
         const ShadingPoint&         shading_point,
         AOVAccumulatorContainer&    aov_accumulators,
-        ShadingResult&              shading_result) const;
+        ShadingResult&              shading_result,
+        foundation::Color4f&        matte_color) const;
 
   private:
     foundation::auto_release_ptr<SurfaceShader> m_diagnostic_surface_shader;
@@ -89,7 +90,8 @@ class ShadingEngine
         const ShadingContext&       shading_context,
         const ShadingPoint&         shading_point,
         AOVAccumulatorContainer&    aov_accumulators,
-        ShadingResult&              shading_result) const;
+        ShadingResult&              shading_result,
+        foundation::Color4f&        matte_color) const;
 
     void shade_environment(
         SamplingContext&            sampling_context,
@@ -111,7 +113,8 @@ inline void ShadingEngine::shade(
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point,
     AOVAccumulatorContainer&    aov_accumulators,
-    ShadingResult&              shading_result) const
+    ShadingResult&              shading_result,
+    foundation::Color4f&        matte_color) const
 {
     if (shading_point.hit_surface())
     {
@@ -121,7 +124,8 @@ inline void ShadingEngine::shade(
             shading_context,
             shading_point,
             aov_accumulators,
-            shading_result);
+            shading_result,
+            matte_color);
     }
     else
     {

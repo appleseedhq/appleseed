@@ -281,6 +281,7 @@ set (src_appleseed_sources
      src/appleseed/as_id_manifold.osl
      src/appleseed/as_luminance.osl
      src/appleseed/as_manifold2d.osl
+     src/appleseed/as_matte.osl
      src/appleseed/as_metal.osl
      src/appleseed/as_noise2d.osl
      src/appleseed/as_noise3d.osl
