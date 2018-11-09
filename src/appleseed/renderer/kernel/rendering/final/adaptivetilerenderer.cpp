@@ -675,6 +675,7 @@ namespace
         {
             if (m_sample_aov_index != ~size_t(0))
                 m_sample_aov_tile = &frame.aovs().get_by_index(m_sample_aov_index)->get_image().tile(tile_x, tile_y);
+
             if (m_variation_aov_index != ~size_t(0))
                 m_variation_aov_tile = &frame.aovs().get_by_index(m_variation_aov_index)->get_image().tile(tile_x, tile_y);
         }
