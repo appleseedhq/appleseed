@@ -71,7 +71,7 @@ namespace renderer
 namespace
 {
     //
-    // Random-walk BSSRDF.
+    // Random-Walk BSSRDF.
     //
     // References:
     //

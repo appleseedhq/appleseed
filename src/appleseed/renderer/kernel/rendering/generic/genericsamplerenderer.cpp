@@ -83,7 +83,7 @@ namespace
 
     // If defined, the texture cache returns solid tiles whose color depends on whether
     // the requested tile could be found in the cache or not.
-    #undef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
+    #undef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCE
 
     class GenericSampleRenderer
       : public ISampleRenderer
@@ -169,7 +169,7 @@ namespace
             AOVAccumulatorContainer&    aov_accumulators,
             ShadingResult&              shading_result) override
         {
-#ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
+#ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCE
 
             const uint64 last_texture_cache_hit_count = m_texture_cache.get_hit_count();
             const uint64 last_texture_cache_miss_count = m_texture_cache.get_miss_count();
@@ -269,7 +269,7 @@ namespace
             // Inform the AOV accumulators that we are done rendering a sample.
             aov_accumulators.on_sample_end(pixel_context);
 
-#ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
+#ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCE
 
             const uint64 delta_hit_count = m_texture_cache.get_hit_count() - last_texture_cache_hit_count;
             const uint64 delta_miss_count = m_texture_cache.get_miss_count() - last_texture_cache_miss_count;

@@ -1119,7 +1119,7 @@ Statistics make_single_stage_cache_stats(const Cache& cache)
     stats.insert(
         std::unique_ptr<cache_impl::CacheStatisticsEntry>(
             new cache_impl::CacheStatisticsEntry(
-                "performances",
+                "performance",
                 cache.get_hit_count(),
                 cache.get_miss_count())));
 
