@@ -1357,7 +1357,43 @@ namespace
         {
             const Params* p = static_cast<const Params*>(osl_params);
 
-            if (p->profile == g_normalized_diffusion_profile_str)
+            if (p->profile == g_standard_dipole_profile_str)
+            {
+                DipoleBSSRDFInputValues* values =
+                    composite_closure.add_closure<DipoleBSSRDFInputValues>(
+                        SubsurfaceStandardDipoleID,
+                        shading_basis,
+                        weight,
+                        p->N,
+                        arena);
+
+                copy_parameters(p, values);
+            }
+            else if (p->profile == g_better_dipole_profile_str)
+            {
+                DipoleBSSRDFInputValues* values =
+                    composite_closure.add_closure<DipoleBSSRDFInputValues>(
+                        SubsurfaceBetterDipoleID,
+                        shading_basis,
+                        weight,
+                        p->N,
+                        arena);
+
+                copy_parameters(p, values);
+            }
+            else if (p->profile == g_directional_dipole_profile_str)
+            {
+                DipoleBSSRDFInputValues* values =
+                    composite_closure.add_closure<DipoleBSSRDFInputValues>(
+                        SubsurfaceDirectionalDipoleID,
+                        shading_basis,
+                        weight,
+                        p->N,
+                        arena);
+
+                copy_parameters(p, values);
+            }
+            else if (p->profile == g_normalized_diffusion_profile_str)
             {
                 NormalizedDiffusionBSSRDFInputValues* values =
                     composite_closure.add_closure<NormalizedDiffusionBSSRDFInputValues>(
@@ -1396,46 +1432,9 @@ namespace
             }
             else
             {
-                DipoleBSSRDFInputValues* values;
-
-                if (p->profile == g_better_dipole_profile_str)
-                {
-                    values =
-                        composite_closure.add_closure<DipoleBSSRDFInputValues>(
-                            SubsurfaceBetterDipoleID,
-                            shading_basis,
-                            weight,
-                            p->N,
-                            arena);
-                }
-                else if (p->profile == g_standard_dipole_profile_str)
-                {
-                    values =
-                        composite_closure.add_closure<DipoleBSSRDFInputValues>(
-                            SubsurfaceStandardDipoleID,
-                            shading_basis,
-                            weight,
-                            p->N,
-                            arena);
-                }
-                else if (p->profile == g_directional_dipole_profile_str)
-                {
-                    values =
-                        composite_closure.add_closure<DipoleBSSRDFInputValues>(
-                            SubsurfaceDirectionalDipoleID,
-                            shading_basis,
-                            weight,
-                            p->N,
-                            arena);
-                }
-                else
-                {
-                    string msg = "unknown subsurface profile: ";
-                    msg += p->profile.c_str();
-                    throw ExceptionOSLRuntimeError(msg.c_str());
-                }
-
-                copy_parameters(p, values);
+                string msg = "unknown subsurface profile: ";
+                msg += p->profile.c_str();
+                throw ExceptionOSLRuntimeError(msg.c_str());
             }
         }
 
