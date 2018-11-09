@@ -84,11 +84,9 @@ link_against_zlib (denoiser)
 
 target_link_libraries (denoiser
     bcd
-)
-
-target_link_libraries (denoiser
     "${APPLESEED_DENOISER_LINK_EXTRA_LIBRARIES}"
 )
+
 
 #--------------------------------------------------------------------------------------------------
 # Post-build commands.
