@@ -30,7 +30,7 @@
 // Interface header.
 #include "cornellboxproject.h"
 
-// appleseed.renderer headers
+// appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
