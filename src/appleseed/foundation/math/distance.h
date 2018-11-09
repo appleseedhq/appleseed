@@ -133,7 +133,7 @@ inline T square_distance(
 
     for (size_t i = 0; i < N; ++i)
     {
-        // todo: reimplement without branches, measure performances.
+        // todo: reimplement without branches, measure performance.
         if (p[i] < bbox.min[i])
             d += square(bbox.min[i] - p[i]);
         else if (p[i] > bbox.max[i])

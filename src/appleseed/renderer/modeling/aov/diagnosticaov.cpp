@@ -196,7 +196,7 @@ namespace
 
 
     //
-    // Invalid Sample AOV.
+    // Invalid Samples AOV.
     //
 
     const char* InvalidSamplesAOVModel = "invalid_samples_aov";
