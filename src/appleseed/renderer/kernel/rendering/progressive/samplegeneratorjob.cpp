@@ -62,7 +62,6 @@ SampleGeneratorJob::SampleGeneratorJob(
     const Spectrum::Mode        spectrum_mode,
     JobQueue&                   job_queue,
     const size_t                job_index,
-    const size_t                job_count,
     IAbortSwitch&               abort_switch)
   : m_buffer(buffer)
   , m_sample_generator(sample_generator)
@@ -70,7 +69,6 @@ SampleGeneratorJob::SampleGeneratorJob(
   , m_spectrum_mode(spectrum_mode)
   , m_job_queue(job_queue)
   , m_job_index(job_index)
-  , m_job_count(job_count)
   , m_abort_switch(abort_switch)
 {
 }

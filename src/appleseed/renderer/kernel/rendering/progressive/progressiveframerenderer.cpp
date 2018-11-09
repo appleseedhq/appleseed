@@ -141,7 +141,6 @@ namespace
                         m_params.m_spectrum_mode,
                         m_job_queue,
                         i,                              // job index
-                        m_params.m_thread_count,        // job count
                         m_abort_switch));
             }
 

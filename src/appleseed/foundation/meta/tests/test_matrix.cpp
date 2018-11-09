@@ -488,13 +488,6 @@ TEST_SUITE(Foundation_Math_Matrix33)
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
 
-    static const double ValuesImathFormat[3][3] =
-    {
-        { Values[0], Values[1], Values[2] },
-        { Values[3], Values[4], Values[5] },
-        { Values[6], Values[7], Values[8] }
-    };
-
     TEST_CASE(ImathMatrix33Roundtrip)
     {
         const auto source(Matrix3d::from_array(Values));
@@ -724,14 +717,6 @@ TEST_SUITE(Foundation_Math_Matrix44)
     }
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
-
-    static const double ValuesImathFormat[4][4] =
-    {
-        { Values[ 0], Values[ 1], Values[ 2], Values[ 3] },
-        { Values[ 4], Values[ 5], Values[ 6], Values[ 7] },
-        { Values[ 8], Values[ 9], Values[10], Values[11] },
-        { Values[12], Values[13], Values[14], Values[15] }
-    };
 
     TEST_CASE(ImathMatrix44Roundtrip)
     {

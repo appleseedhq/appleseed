@@ -77,7 +77,6 @@ namespace
             const size_t                    generator_count)
           : SampleGeneratorBase(generator_index, generator_count)
           , m_params(params)
-          , m_frame(frame)
           , m_canvas_width(frame.image().properties().m_canvas_width)
           , m_canvas_height(frame.image().properties().m_canvas_height)
           , m_window_origin_x(static_cast<int>(frame.get_crop_window().min.x))
@@ -130,7 +129,6 @@ namespace
         };
 
         const Parameters                    m_params;
-        const Frame&                        m_frame;
         const size_t                        m_canvas_width;
         const size_t                        m_canvas_height;
         const int                           m_window_origin_x;

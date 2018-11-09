@@ -34,7 +34,6 @@
 #include "renderer/kernel/shading/ambientocclusion.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
-#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
@@ -48,6 +47,7 @@
 
 // Forward declarations.
 namespace renderer  { class PixelContext; }
+namespace renderer  { class ShadingPoint; }
 
 using namespace foundation;
 using namespace std;

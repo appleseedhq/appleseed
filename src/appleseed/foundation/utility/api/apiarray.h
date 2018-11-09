@@ -34,9 +34,11 @@
 #include "main/dllsymbol.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstring>
+#include <iterator>
 #include <vector>
 
 namespace foundation
@@ -127,11 +129,8 @@ namespace foundation
     {                                                                   \
         assert(size > 0);                                               \
         assert(values);                                                 \
-        impl->resize(size);                                             \
-        std::memcpy(                                                    \
-            &impl->front(),                                             \
-            values,                                                     \
-            size * sizeof(value_type));                                 \
+        impl->reserve(size);                                            \
+        std::copy(values, values + size, std::back_inserter(*impl));    \
     }                                                                   \
                                                                         \
     ArrayName::~ArrayName()                                             \

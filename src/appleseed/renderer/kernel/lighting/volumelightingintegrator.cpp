@@ -34,7 +34,6 @@
 #include "renderer/kernel/lighting/directlightingintegrator.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
-#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/modeling/volume/volume.h"
@@ -385,7 +384,7 @@ void VolumeLightingIntegrator::compute_radiance_combined_sampling(
     if (m_distance_sample_count > 0)
     {
         const size_t light_count = m_light_sampler.get_non_physical_light_count();
-        
+
         // Add contributions from non-physical light sources that don't belong to the lightset.
         for (size_t light_idx = 0; light_idx < light_count; ++light_idx)
         {
@@ -463,7 +462,7 @@ void VolumeLightingIntegrator::compute_radiance_exponential_sampling(
     if (m_distance_sample_count > 0)
     {
         const size_t light_count = m_light_sampler.get_non_physical_light_count();
-        
+
         // Add contributions from non-physical light sources that don't belong to the lightset.
         for (size_t light_idx = 0; light_idx < light_count; ++light_idx)
         {

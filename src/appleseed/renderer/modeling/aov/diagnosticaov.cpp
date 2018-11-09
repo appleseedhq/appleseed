@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/pixelcontext.h"
-#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/frame/frame.h"
@@ -45,6 +44,7 @@
 #include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
+#include <memory>
 #include <string>
 
 using namespace foundation;

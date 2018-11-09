@@ -301,7 +301,7 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_text_input_widgets(const Dict
     unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return move(widget_proxy);
+    return widget_proxy;
 }
 
 unique_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
@@ -352,7 +352,7 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const D
 
     unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 
-    return move(widget_proxy);
+    return widget_proxy;
 }
 
 unique_ptr<IInputWidgetProxy> EntityEditor::create_integer_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
@@ -399,7 +399,7 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_integer_input_widgets(const D
     unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return move(widget_proxy);
+    return widget_proxy;
 }
 
 unique_ptr<IInputWidgetProxy> EntityEditor::create_boolean_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
@@ -416,7 +416,7 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_boolean_input_widgets(const D
     unique_ptr<IInputWidgetProxy> widget_proxy(new CheckBoxProxy(checkbox));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return move(widget_proxy);
+    return widget_proxy;
 }
 
 unique_ptr<IInputWidgetProxy> EntityEditor::create_enumeration_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
@@ -441,7 +441,7 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_enumeration_input_widgets(con
 
     unique_ptr<IInputWidgetProxy> widget_proxy(new ComboBoxProxy(combo_box));
 
-    return move(widget_proxy);
+    return widget_proxy;
 }
 
 unique_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
@@ -533,7 +533,7 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const 
     unique_ptr<IInputWidgetProxy> widget_proxy(new ColorMapInputProxy(input_widget));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return move(widget_proxy);
+    return widget_proxy;
 }
 
 unique_ptr<IInputWidgetProxy> EntityEditor::create_entity_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
@@ -554,7 +554,7 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_entity_input_widgets(const Di
     unique_ptr<IInputWidgetProxy> widget_proxy(new EntityInputProxy(input_widget));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return move(widget_proxy);
+    return widget_proxy;
 }
 
 unique_ptr<IInputWidgetProxy> EntityEditor::create_file_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
@@ -592,7 +592,7 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_file_input_widgets(const Dict
     unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return move(widget_proxy);
+    return widget_proxy;
 }
 
 void EntityEditor::slot_rebuild_form()

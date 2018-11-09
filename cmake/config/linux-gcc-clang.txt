@@ -29,22 +29,28 @@
 
 
 #--------------------------------------------------------------------------------------------------
-# gcc on Linux, generating 32-bit or 64-bit binaries.
+# gcc or clang on Linux, generating 32-bit or 64-bit binaries.
 #--------------------------------------------------------------------------------------------------
 
-set (platform "linux-gcc")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    set (platform "linux-gcc")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    set (platform "linux-clang")
+endif ()
 
 
 #--------------------------------------------------------------------------------------------------
 # Compiler version.
 #--------------------------------------------------------------------------------------------------
 
-if (CMAKE_COMPILER_IS_GNUCC)
-    execute_process (COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
-                     OUTPUT_VARIABLE GCC_VERSION
-                     OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process (COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
+    OUTPUT_VARIABLE COMPILER_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-    message (STATUS "Using gcc ${GCC_VERSION} as the compiler")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    message (STATUS "Using gcc ${COMPILER_VERSION} as the compiler")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    message (STATUS "Using clang ${COMPILER_VERSION} as the compiler")
 endif ()
 
 
@@ -130,21 +136,6 @@ if (is_x86)
             -mavx2                                      # enable AVX2 instruction set
             -mfma                                       # enable FMA instruction
             -ffp-contract=off                           # for now only explicit fmadd
-        )
-    endif ()
-elseif (TARGET_ARCH MATCHES "ARM")
-    if (USE_NEON)
-        set (c_compiler_flags_common
-            ${c_compiler_flags_common}
-            -mfpu=neon
-        )
-    endif ()
-elseif (TARGET_ARCH MATCHES "PPC")
-    if (USE_ALTIVEC)
-        set (c_compiler_flags_common
-            ${c_compiler_flags_common}
-            -maltivec
-            -mabi=altivec
         )
     endif ()
 endif ()

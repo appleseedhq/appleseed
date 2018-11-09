@@ -49,7 +49,6 @@ namespace renderer  { class Material;}
 namespace renderer  { class OSLShaderGroupExec; }
 namespace renderer  { class Scene; }
 namespace renderer  { class ShadingContext; }
-namespace renderer  { class TextureCache; }
 
 namespace renderer
 {
@@ -69,7 +68,6 @@ class Tracer
     Tracer(
         const Scene&                    scene,
         const Intersector&              intersector,
-        TextureCache&                   texture_cache,
         OSLShaderGroupExec&             shadergroup_exec,
         const float                     transparency_threshold = 0.001f,
         const size_t                    max_iterations = 1000,
@@ -167,7 +165,6 @@ class Tracer
 
   private:
     const Intersector&                  m_intersector;
-    TextureCache&                       m_texture_cache;
     OSLShaderGroupExec&                 m_shadergroup_exec;
     const bool                          m_assume_no_alpha_mapping;
     const bool                          m_assume_no_participating_media;

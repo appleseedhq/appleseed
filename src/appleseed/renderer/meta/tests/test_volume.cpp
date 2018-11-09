@@ -107,7 +107,6 @@ TEST_SUITE(Renderer_Modeling_Volume)
           , m_tracer(
               base.m_scene,
               m_intersector,
-              m_texture_cache,
               m_sg_exec)
           , m_shading_context(
               m_intersector,

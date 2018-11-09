@@ -253,7 +253,6 @@ namespace
           , m_tracer(
                 m_scene,
                 m_intersector,
-                m_texture_cache,
                 m_shadergroup_exec,
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations,
@@ -529,7 +528,6 @@ namespace
         EnvironmentPhotonTracingJob(
             const Scene&                scene,
             const LightTargetArray&     photon_targets,
-            const ForwardLightSampler&  light_sampler,
             const TraceContext&         trace_context,
             TextureStore&               texture_store,
             OIIOTextureSystem&          oiio_texture_system,
@@ -543,7 +541,6 @@ namespace
           : m_scene(scene)
           , m_photon_targets(photon_targets)
           , m_env_edf(*scene.get_environment()->get_environment_edf())
-          , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache)
           , m_oiio_texture_system(oiio_texture_system)
@@ -552,7 +549,6 @@ namespace
           , m_tracer(
                 m_scene,
                 m_intersector,
-                m_texture_cache,
                 m_shadergroup_exec,
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations,
@@ -609,7 +605,6 @@ namespace
         const Scene&                m_scene;
         const LightTargetArray&     m_photon_targets;
         const EnvironmentEDF&       m_env_edf;
-        const ForwardLightSampler&  m_light_sampler;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
         OIIOTextureSystem&          m_oiio_texture_system;
@@ -938,7 +933,6 @@ void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
             new EnvironmentPhotonTracingJob(
                 m_scene,
                 photon_targets,
-                m_light_sampler,
                 m_trace_context,
                 m_texture_store,
                 m_oiio_texture_system,
