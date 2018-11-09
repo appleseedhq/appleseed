@@ -31,9 +31,6 @@
 #include "cornellboxproject.h"
 
 // appleseed.renderer headers
-#include "renderer/modeling/environment/environment.h"
-#include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/environmentshader/edfenvironmentshader.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
@@ -42,6 +39,8 @@
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/edf/diffuseedf.h"
 #include "renderer/modeling/edf/edf.h"
+#include "renderer/modeling/environment/environment.h"
+#include "renderer/modeling/environmentshader/backgroundenvironmentshader.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/material/genericmaterial.h"
 #include "renderer/modeling/material/material.h"
@@ -1014,43 +1013,27 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                   Matrix4d::make_translation(Vector3d(0.278, 0.273, -0.800))
                 * Matrix4d::make_rotation_y(Pi<double>())));
 
-        // Attach the camera to the scene.
+        // Insert the camera into the scene.
         scene->cameras().insert(camera);
     }
-    
+
     //
-    // Environment
+    // Environment.
     //
 
-    // Color called "black_radiance" is created and inserted into the scene.
-    static const float black_radiance[] = { 0.0f, 0.0f, 0.0f };
-    scene->colors().insert(
-        ColorEntityFactory::create(
-            "black_radiance",
-            ParamArray()
-                .insert("color_space", "srgb"),
-            ColorValueArray(3, black_radiance)));
-
-     // Environment EDF called "black_environment_edf" is created and inserted it into the scene.
-    scene->environment_edfs().insert(
-        ConstantEnvironmentEDFFactory().create(
-            "black_environment_edf",
-            ParamArray()
-                .insert("radiance", "black_radiance")));
-
-    // Environment Shader called "black_environment_shader" is created and insert it into the scene
+    // Create an environment shader and insert it into the scene.
     scene->environment_shaders().insert(
-        EDFEnvironmentShaderFactory().create(
-            "black_environment_shader",
+        BackgroundEnvironmentShaderFactory().create(
+            "environment_shader",
             ParamArray()
-                .insert("environment_edf", "black_environment_edf")));
-    
-    // Environment called "environment" is created and inserted to the scene.
+                .insert("color", "0.0")));
+
+    // Create an environment and attach it to the scene.
     scene->set_environment(
         EnvironmentFactory::create(
             "environment",
             ParamArray()
-                .insert("environment_shader", "black_environment_shader")));    
+                .insert("environment_shader", "environment_shader")));    
 
     //
     // Frame.
