@@ -2126,9 +2126,6 @@ target_link_libraries (appleseed
     ${Boost_LIBRARIES}
     lz4
     ${CMAKE_DL_LIBS}
-)
-
-target_link_libraries (appleseed
     "${APPLESEED_LINK_EXTRA_LIBRARIES}"
 )
 
