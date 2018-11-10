@@ -195,8 +195,8 @@ namespace
         }
 
       private:
-        double                      m_radius;
-        double                      m_rcp_radius;
+        double  m_radius;
+        double  m_rcp_radius;
 
         double get_uncached_radius() const
         {

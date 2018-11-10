@@ -44,6 +44,7 @@
 #include "foundation/utility/foreach.h"
 
 // Standard headers.
+#include <cassert>
 #include <memory>
 
 using namespace foundation;

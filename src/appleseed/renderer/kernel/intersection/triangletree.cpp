@@ -1082,7 +1082,7 @@ namespace
     typedef set<FilterKey> FilterKeySet;
     typedef map<size_t, const FilterKey*> IndexToFilterKeyMap;
 
-    // Collect the set of object instances referenced by a set of regions.
+    // Collect the set of object instances contained in an assembly.
     void collect_object_instances(
         const Assembly&                     assembly,
         IndexSet&                           object_instances)

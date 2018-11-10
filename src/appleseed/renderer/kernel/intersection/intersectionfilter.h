@@ -41,7 +41,6 @@
 #include "foundation/utility/bitmask.h"
 
 // Standard headers.
-#include <cassert>
 #include <cstddef>
 #include <vector>
 

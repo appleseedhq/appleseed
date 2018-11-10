@@ -1880,6 +1880,41 @@ namespace
             }
         }
     };
+
+    //
+    // Update from revision 27 to revision 28.
+    //
+
+    class UpdateFromRevision_27
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_27(Project& project)
+          : Updater(project, 27)
+        {
+        }
+
+        void update() override
+        {
+            if (Scene* scene = m_project.get_scene())
+                update_assembly_inputs(scene->assemblies());
+        }
+
+      private:
+        static void update_assembly_inputs(AssemblyContainer& assemblies)
+        {
+            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            {
+                update_assembly_inputs(*i);
+                update_assembly_inputs(i->assemblies());
+            }
+        }
+
+        static void update_assembly_inputs(Assembly& assembly)
+        {
+            assembly.get_parameters().remove_path("flushable");
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(
@@ -1939,6 +1974,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(24);
       CASE_UPDATE_FROM_REVISION(25);
       CASE_UPDATE_FROM_REVISION(26);
+      CASE_UPDATE_FROM_REVISION(27);
 
       case ProjectFormatRevision:
         // Project is up-to-date.
