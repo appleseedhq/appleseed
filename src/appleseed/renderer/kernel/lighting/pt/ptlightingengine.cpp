@@ -668,6 +668,7 @@ namespace
                             vertex.m_shading_point->get_material()->get_render_data();
                         if (material_data.m_shader_group)
                         {
+                            // todo: don't split if there's only one closure.
                             m_sampling_context.split_in_place(2, 1);
                             m_shading_context.choose_bsdf_closure_shading_basis(
                                 *vertex.m_shading_point,
