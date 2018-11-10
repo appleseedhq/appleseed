@@ -32,7 +32,7 @@
 #include "appleseed/maya/as_maya_helpers.h"
 #include "appleseed/maya/as_maya_transform_helpers.h"
 
-shader as_noise2d
+shader as_noise2D
 [[
     string icon = "asNoise2D.png",
     string help = "Recursive 2D fractal noise.",
