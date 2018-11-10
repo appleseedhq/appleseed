@@ -1915,6 +1915,44 @@ namespace
             assembly.get_parameters().remove_path("flushable");
         }
     };
+
+    //
+    // Update from revision 28 to revision 29.
+    //
+
+    class UpdateFromRevision_28
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_28(Project& project)
+          : Updater(project, 28)
+        {
+        }
+
+        void update() override
+        {
+            if (m_project.get_frame())
+                update_frame(*m_project.get_frame());
+        }
+
+      private:
+        static void update_frame(Frame& frame)
+        {
+            for (PostProcessingStage& stage : frame.post_processing_stages())
+            {
+                if (strcmp(stage.get_model(), RenderStampPostProcessingStageFactory().get_model()) == 0)
+                {
+                    ParamArray& params = stage.get_parameters();
+                    if (params.strings().exist("format_string"))
+                    {
+                        string format_string = params.get<string>("format_string");
+                        format_string = replace(format_string, "{lib-variant}", "{lib-cpu-features}");
+                        params.set("format_string", format_string);
+                    }
+                }
+            }
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(
@@ -1975,6 +2013,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(25);
       CASE_UPDATE_FROM_REVISION(26);
       CASE_UPDATE_FROM_REVISION(27);
+      CASE_UPDATE_FROM_REVISION(28);
 
       case ProjectFormatRevision:
         // Project is up-to-date.

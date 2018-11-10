@@ -39,25 +39,6 @@ using namespace foundation;
 
 namespace
 {
-    // Assembles version information on all third party dependencies.
-    bpy::dict get_third_parties_versions()
-    {
-        bpy::dict output_dict;
-        const LibraryVersionArray info_array = ThirdParties::get_versions();
-        for (size_t index = 0; index < info_array.size(); index++)
-        {
-            const APIStringPair result = info_array[index];
-            output_dict[result.m_first.c_str()] = result.m_second.c_str();
-        }
-
-        return output_dict;
-    }
-
-    bpy::str get_synthetic_version_string()
-    {
-        return Appleseed::get_synthetic_version_string();
-    }
-
     bpy::str get_lib_name()
     {
         return Appleseed::get_lib_name();
@@ -66,11 +47,6 @@ namespace
     bpy::str get_lib_version()
     {
         return Appleseed::get_lib_version();
-    }
-
-    bpy::str get_lib_variant()
-    {
-        return Appleseed::get_lib_variant();
     }
 
     bpy::str get_lib_configuration()
@@ -87,16 +63,41 @@ namespace
     {
         return Appleseed::get_lib_compilation_time();
     }
+
+    bpy::str get_lib_cpu_features()
+    {
+        return Appleseed::get_lib_cpu_features();
+    }
+
+    bpy::str get_synthetic_version_string()
+    {
+        return Appleseed::get_synthetic_version_string();
+    }
+
+    // Assembles version information on all third party dependencies.
+    bpy::dict get_third_parties_versions()
+    {
+        bpy::dict output_dict;
+
+        const LibraryVersionArray version_array = ThirdParties::get_versions();
+        for (size_t i = 0; i < version_array.size(); ++i)
+        {
+            const APIStringPair version = version_array[i];
+            output_dict[version.m_first.c_str()] = version.m_second.c_str();
+        }
+
+        return output_dict;
+    }
 }
 
 void bind_appleseed()
 {
-    bpy::def("get_third_parties_versions", &get_third_parties_versions);
-    bpy::def("get_synthetic_version_string", &get_synthetic_version_string);
     bpy::def("get_lib_name", &get_lib_name);
     bpy::def("get_lib_version", &get_lib_version);
-    bpy::def("get_lib_variant", &get_lib_variant);
     bpy::def("get_lib_configuration", &get_lib_configuration);
     bpy::def("get_lib_compilation_date", &get_lib_compilation_date);
     bpy::def("get_lib_compilation_time", &get_lib_compilation_time);
+    bpy::def("get_lib_cpu_features", &get_lib_cpu_features);
+    bpy::def("get_synthetic_version_string", &get_synthetic_version_string);
+    bpy::def("get_third_parties_versions", &get_third_parties_versions);
 }

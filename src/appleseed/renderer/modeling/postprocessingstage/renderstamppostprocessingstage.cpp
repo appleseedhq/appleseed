@@ -118,7 +118,7 @@ namespace
             string text = m_format_string;
             text = replace(text, "{lib-name}", Appleseed::get_lib_name());
             text = replace(text, "{lib-version}", Appleseed::get_lib_version());
-            text = replace(text, "{lib-variant}", Appleseed::get_lib_variant());
+            text = replace(text, "{lib-cpu-features}", Appleseed::get_lib_cpu_features());
             text = replace(text, "{lib-config}", Appleseed::get_lib_configuration());
             text = replace(text, "{lib-build-date}", Appleseed::get_lib_compilation_date());
             text = replace(text, "{lib-build-time}", Appleseed::get_lib_compilation_time());

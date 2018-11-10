@@ -72,7 +72,9 @@ AboutWindow::AboutWindow(QWidget* parent)
         Qt::CustomizeWindowHint |
         Qt::WindowCloseButtonHint);
 
-    set_version_strings();
+    set_library_version();
+    set_library_features();
+    set_third_party_libraries_information();
 
     setFixedSize(width(), sizeHint().height());
 
@@ -90,19 +92,56 @@ AboutWindow::~AboutWindow()
     delete m_ui;
 }
 
-void AboutWindow::set_version_strings()
+void AboutWindow::set_library_version()
 {
-    m_ui->label_version_string->setText(
+    m_ui->label_version->setText(
         QString(
-            "<p><b>Version %1</b>, %4 Configuration</p>"
-            "<p>Compiled on %5 at %6 using %7 version %8</p>")
+            "<p>Using <b>%1 version %2</b>, %3 configuration</p>"
+            "<p>Compiled on %4 at %5 using %6 version %7</p>")
+            .arg(Appleseed::get_lib_name())
             .arg(Appleseed::get_lib_version())
             .arg(Appleseed::get_lib_configuration())
             .arg(Appleseed::get_lib_compilation_date())
             .arg(Appleseed::get_lib_compilation_time())
             .arg(Compiler::get_compiler_name())
             .arg(Compiler::get_compiler_version()));
+}
 
+namespace
+{
+    const char* to_enabled_disabled(const bool value)
+    {
+        return value ? "enabled" : "disabled";
+    }
+}
+
+void AboutWindow::set_library_features()
+{
+    const bool WithDisneyMaterial =
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
+        true;
+#else
+        false;
+#endif
+
+    const bool WithEmbree =
+#ifdef APPLESEED_WITH_EMBREE
+        true;
+#else
+        false;
+#endif
+
+    QString details;
+    details += "This build of appleseed has the following features:\n\n";
+    details += QString("  Instruction sets: %1\n").arg(Appleseed::get_lib_cpu_features());
+    details += QString("  Disney material: %1\n").arg(to_enabled_disabled(WithDisneyMaterial));
+    details += QString("  Embree: %1\n").arg(to_enabled_disabled(WithEmbree));
+    details += "\n";
+    m_ui->label_details->setText(m_ui->label_details->text() + details);
+}
+
+void AboutWindow::set_third_party_libraries_information()
+{
     LibraryVersionArray versions = ThirdParties::get_versions();
     versions.push_back(APIStringPair("Qt", QT_VERSION_STR));
 
@@ -119,17 +158,18 @@ void AboutWindow::set_version_strings()
         });
 
     QString details;
+    details += "This build of appleseed uses the following third party libraries:\n\n";
+
     for (size_t i = 0, e = versions_indices.size(); i < e; ++i)
     {
         const APIStringPair& version = versions[versions_indices[i]];
         details +=
-            QString("  %1 %2<br>")
+            QString("  %1 %2\n")
                 .arg(version.m_first.c_str())
                 .arg(version.m_second.c_str());
     }
 
-    m_ui->label_details->setText(
-        m_ui->label_details->text() + "<p>" + details + "</p>");
+    m_ui->label_details->setText(m_ui->label_details->text() + details);
 }
 
 }   // namespace studio
