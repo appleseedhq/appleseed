@@ -126,12 +126,20 @@ namespace
             if (m_lighting_samples > 1)
                 radiance /= static_cast<float>(m_lighting_samples);
 
+            // Run NPR surface shader if any.
             if (const Material* material = shading_point.get_material())
             {
                 if (const ShaderGroup* sg = material->get_render_data().m_shader_group)
                 {
                     if (sg->has_npr())
-                        NPRSurfaceShaderHelper::evaluate(sampling_context, shading_context, shading_point, components, radiance);
+                    {
+                        NPRSurfaceShaderHelper::evaluate(
+                            sampling_context,
+                            shading_context,
+                            shading_point,
+                            components,
+                            radiance);
+                    }
                 }
             }
 
