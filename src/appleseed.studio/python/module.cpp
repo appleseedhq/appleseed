@@ -36,11 +36,14 @@
 #include "foundation/platform/python.h"
 #include "foundation/utility/casts.h"
 
-// appleseed.shared headers
+// appleseed.shared headers.
 #include "application/application.h"
 
 // Qt headers.
 #include <QDockWidget>
+
+// Standard headers.
+#include <cstdint>
 
 namespace bpy = boost::python;
 using namespace appleseed::studio;
@@ -70,10 +73,10 @@ bool open_project(const char* project_path)
 bool save_project()
 {
     const Project* project = project_manager()->get_project();
-    if (project != nullptr && project->has_path())
-        return main_window()->save_project(project->get_path());
-    else
-        return false;
+    return
+        project != nullptr && project->has_path()
+            ? main_window()->save_project(project->get_path())
+            : false;
 }
 
 bool save_project_as(const char* project_path)
@@ -108,15 +111,14 @@ void set_project_dirty()
 
 bpy::long_ main_window_as_pylong()
 {
-    const uintptr_t ptr = binary_cast<uintptr_t>(main_window());
+    const auto ptr = binary_cast<std::uintptr_t>(main_window());
     return bpy::long_(ptr);
 }
 
 bpy::long_ create_dock_widget(const char* dock_name)
 {
-    QDockWidget* dock_widget = main_window()->create_dock_widget(dock_name);
-
-    const uintptr_t ptr = binary_cast<uintptr_t>(dock_widget);
+    const QDockWidget* dock_widget = main_window()->create_dock_widget(dock_name);
+    const auto ptr = binary_cast<std::uintptr_t>(dock_widget);
     return bpy::long_(ptr);
 }
 
@@ -129,8 +131,7 @@ BOOST_PYTHON_MODULE(_appleseedstudio)
     bpy::def("pack_project_as", pack_project_as, bpy::args("project_path"));
     bpy::def("close_project", close_project);
 
-    bpy::def("current_project", current_project,
-             bpy::return_value_policy<bpy::reference_existing_object>());
+    bpy::def("current_project", current_project, bpy::return_value_policy<bpy::reference_existing_object>());
     bpy::def("is_project_dirty", is_project_dirty);
     bpy::def("set_project_dirty", set_project_dirty);
 

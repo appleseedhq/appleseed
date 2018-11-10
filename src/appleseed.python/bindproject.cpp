@@ -43,6 +43,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <string>
 
 namespace bpy = boost::python;

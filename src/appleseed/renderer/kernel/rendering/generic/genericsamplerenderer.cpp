@@ -217,7 +217,7 @@ namespace
 
                 if (iterations == 1)
                 {
-                    // Shade the intersection point.
+                    // Shade the first intersection point along the ray.
                     m_shading_engine.shade(
                         sampling_context,
                         pixel_context,
@@ -231,7 +231,7 @@ namespace
                 }
                 else
                 {
-                    // Shade the intersection point.
+                    // Shade the next intersection point along the ray.
                     ShadingResult local_result(shading_result.m_aov_count);
                     m_shading_engine.shade(
                         sampling_context,
