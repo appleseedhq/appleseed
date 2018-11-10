@@ -53,10 +53,7 @@ class APPLESEED_DLLSYMBOL Appleseed
     // Return the version string of the library.
     static const char* get_lib_version();
 
-    // Return the variant of the library: "SSE2", "SSE4.2", "AVX", etc.
-    static const char* get_lib_variant();
-
-    // Return the configuration of the library: "Debug", "Release", etc.
+    // Return the configuration of the library, e.g. "Debug" or "Release".
     static const char* get_lib_configuration();
 
     // Return the compilation date of the library.
@@ -64,6 +61,9 @@ class APPLESEED_DLLSYMBOL Appleseed
 
     // Return the compilation time of the library.
     static const char* get_lib_compilation_time();
+
+    // Return a string listing the CPU instruction sets that are potentially taken advantage of, e.g. "SSE SSE2".
+    static const char* get_lib_cpu_features();
 
     // Return a synthetic version string.
     static const char* get_synthetic_version_string();

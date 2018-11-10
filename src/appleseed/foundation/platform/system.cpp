@@ -908,8 +908,12 @@ void System::print_information(Logger& logger)
     if (features.m_hw_fma3) isabuilder << "FMA3 ";
     if (features.m_hw_f16c) isabuilder << "F16C ";
 
-    string isa = isabuilder.str();
-    isa = isa.empty() ? "none" : trim_right(isa);
+    const string isa =
+        isabuilder.str().empty()
+            ? "base instruction set"
+            : trim_right(isabuilder.str());
+#else
+    const string isa = "base instruction set";
 #endif
 
     logger.write(
@@ -925,9 +929,7 @@ void System::print_information(Logger& logger)
         "  L1 data cache                 size %s, line size %s\n"
         "  L2 cache                      size %s, line size %s\n"
         "  L3 cache                      size %s, line size %s\n"
-#ifdef APPLESEED_X86
         "  instruction sets              %s\n"
-#endif
         "  physical memory               size %s\n"
         "  virtual memory                size %s\n"
         "  default wallclock timer       %s Hz\n"
@@ -945,9 +947,7 @@ void System::print_information(Logger& logger)
         pretty_size(get_l2_cache_line_size()).c_str(),
         pretty_size(get_l3_cache_size()).c_str(),
         pretty_size(get_l3_cache_line_size()).c_str(),
-#ifdef APPLESEED_X86
         isa.c_str(),
-#endif
         pretty_size(get_total_physical_memory_size()).c_str(),
         pretty_size(get_total_virtual_memory_size()).c_str(),
         pretty_uint(DefaultWallclockTimer().frequency()).c_str(),

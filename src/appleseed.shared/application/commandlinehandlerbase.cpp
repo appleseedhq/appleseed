@@ -47,6 +47,7 @@
 // Standard headers.
 #include <cstdlib>
 #include <cstddef>
+#include <cstring>
 #include <string>
 
 using namespace foundation;
@@ -238,6 +239,14 @@ const CommandLineParser& CommandLineHandlerBase::parser() const
     return impl->m_parser;
 }
 
+namespace
+{
+    const char* to_enabled_disabled(const bool value)
+    {
+        return value ? "enabled" : "disabled";
+    }
+}
+
 void CommandLineHandlerBase::print_version_information(SuperLogger& logger) const
 {
     LOG_INFO(
@@ -256,18 +265,46 @@ void CommandLineHandlerBase::print_version_information(SuperLogger& logger) cons
         Appleseed::get_lib_compilation_time(),
         Compiler::get_compiler_name(),
         Compiler::get_compiler_version());
+
+    const bool WithDisneyMaterial =
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
+        true;
+#else
+        false;
+#endif
+
+    const bool WithEmbree =
+#ifdef APPLESEED_WITH_EMBREE
+        true;
+#else
+        false;
+#endif
+
+    LOG_INFO(
+        logger,
+        "library features:\n"
+        "  instruction sets              %s\n"
+        "  Disney material               %s\n"
+        "  Embree                        %s",
+        Appleseed::get_lib_cpu_features(),
+        to_enabled_disabled(WithDisneyMaterial),
+        to_enabled_disabled(WithEmbree));
 }
 
 void CommandLineHandlerBase::print_libraries_information(SuperLogger& logger) const
 {
-    LOG_INFO(logger, "this version of appleseed uses the following third party libraries:");
+    LOG_INFO(logger, "third party libraries:");
 
     const LibraryVersionArray versions = ThirdParties::get_versions();
 
     for (size_t i = 0, e = versions.size(); i < e; ++i)
     {
         const APIStringPair& version = versions[i];
-        LOG_INFO(logger, "  %s %s", version.m_first.c_str(), version.m_second.c_str());
+        const char* lib_name = version.m_first.c_str();
+        const char* lib_version = version.m_second.c_str();
+        const size_t lib_name_length = strlen(lib_name);
+        const string spacing(30 - lib_name_length, ' ');
+        LOG_INFO(logger, "  %s%s%s", lib_name, spacing.c_str(), lib_version);
     }
 }
 

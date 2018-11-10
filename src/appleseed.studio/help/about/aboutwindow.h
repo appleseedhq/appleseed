@@ -59,7 +59,9 @@ class AboutWindow
     // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
     Ui::AboutWindow* m_ui;
 
-    void set_version_strings();
+    void set_library_version();
+    void set_library_features();
+    void set_third_party_libraries_information();
 };
 
 }       // namespace studio
