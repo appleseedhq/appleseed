@@ -39,6 +39,8 @@
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/edf/diffuseedf.h"
 #include "renderer/modeling/edf/edf.h"
+#include "renderer/modeling/environment/environment.h"
+#include "renderer/modeling/environmentshader/backgroundenvironmentshader.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/material/genericmaterial.h"
 #include "renderer/modeling/material/material.h"
@@ -1011,9 +1013,27 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                   Matrix4d::make_translation(Vector3d(0.278, 0.273, -0.800))
                 * Matrix4d::make_rotation_y(Pi<double>())));
 
-        // Attach the camera to the scene.
+        // Insert the camera into the scene.
         scene->cameras().insert(camera);
     }
+
+    //
+    // Environment.
+    //
+
+    // Create an environment shader and insert it into the scene.
+    scene->environment_shaders().insert(
+        BackgroundEnvironmentShaderFactory().create(
+            "environment_shader",
+            ParamArray()
+                .insert("color", "0.0")));
+
+    // Create an environment and attach it to the scene.
+    scene->set_environment(
+        EnvironmentFactory::create(
+            "environment",
+            ParamArray()
+                .insert("environment_shader", "environment_shader")));    
 
     //
     // Frame.
