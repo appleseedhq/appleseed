@@ -36,7 +36,7 @@ if (NOT PYTHON_MAJOR_VERSION STREQUAL "2")
     message (FATAL_ERROR "Python 2.x needed")
 endif ()
 
-find_package (Boost 1.55 COMPONENTS python)
+find_package (Boost 1.55 COMPONENTS python python3)
 
 if (WITH_PYTHON3_BINDINGS)
     find_package (Python3 REQUIRED)
@@ -203,7 +203,7 @@ link_against_platform (appleseed.python)
 
 target_link_libraries (appleseed.python
     appleseed
-    ${Boost_LIBRARIES}
+    ${Boost_PYTHON_LIBRARY}             # all Boost libraries but Boost.Python3
     ${PYTHON_LIBRARIES}
 )
 
@@ -212,7 +212,8 @@ if (WITH_PYTHON3_BINDINGS)
 
     target_link_libraries (appleseed.python3
         appleseed
-        ${PYTHON3_LIBRARIES}
+        ${Boost_PYTHON3_LIBRARY}        # all Boost libraries but Boost.Python
+        ${PYTHON3_LIBRARY}
     )
 
     if (CMAKE_SYSTEM_NAME STREQUAL "Linux")

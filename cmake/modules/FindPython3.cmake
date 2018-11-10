@@ -28,7 +28,7 @@
 
 
 #
-# Find Python3 and boost python3 headers and libraries.
+# Find Python3 headers and libraries.
 #
 # This module defines the following variables:
 #
@@ -41,19 +41,17 @@ include (FindPackageHandleStandardArgs)
 
 find_path (PYTHON3_INCLUDE_DIR NAMES Python.h)
 find_library (PYTHON3_LIBRARY NAMES python3)
-find_library (BOOST_PYTHON3_LIBRARY NAMES boost_python3)
 
 # Handle the QUIETLY and REQUIRED arguments and set PYTHON3_FOUND.
 find_package_handle_standard_args (PYTHON3 DEFAULT_MSG
     PYTHON3_INCLUDE_DIR
     PYTHON3_LIBRARY
-    BOOST_PYTHON3_LIBRARY
 )
 
 # Set the output variables.
 if (PYTHON3_FOUND)
     set (PYTHON3_INCLUDE_DIRS ${PYTHON3_INCLUDE_DIR})
-    set (PYTHON3_LIBRARIES ${PYTHON3_LIBRARY} ${BOOST_PYTHON3_LIBRARY})
+    set (PYTHON3_LIBRARIES ${PYTHON3_LIBRARY})
 else ()
     set (PYTHON3_INCLUDE_DIRS)
     set (PYTHON3_LIBRARIES)
@@ -62,5 +60,4 @@ endif ()
 mark_as_advanced (
     PYTHON3_INCLUDE_DIR
     PYTHON3_LIBRARY
-    BOOST_PYTHON3_LIBRARY
 )
