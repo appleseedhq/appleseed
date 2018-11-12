@@ -34,7 +34,6 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/intersection/assemblytree.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
-#include "renderer/kernel/intersection/regioninfo.h"
 #include "renderer/kernel/intersection/trianglekey.h"
 #include "renderer/kernel/intersection/triangletree.h"
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -65,14 +64,12 @@ TraceContext::TraceContext(const Scene& scene)
         "data structures size:\n"
         "  bvh::NodeType                 %s\n"
         "  GTriangleType                 %s\n"
-        "  RegionInfo                    %s\n"
         "  ShadingPoint                  %s\n"
         "  ShadingRay                    %s\n"
         "  ShadingResult                 %s\n"
         "  TriangleKey                   %s",
         pretty_size(sizeof(TriangleTree::NodeType)).c_str(),
         pretty_size(sizeof(GTriangleType)).c_str(),
-        pretty_size(sizeof(RegionInfo)).c_str(),
         pretty_size(sizeof(ShadingPoint)).c_str(),
         pretty_size(sizeof(ShadingRay)).c_str(),
         pretty_size(sizeof(ShadingResult)).c_str(),

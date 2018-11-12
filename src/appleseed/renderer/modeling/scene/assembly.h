@@ -120,9 +120,6 @@ class APPLESEED_DLLSYMBOL Assembly
     // Clear the assembly contents.
     void clear();
 
-    // Return true if this assembly is tagged as flushable.
-    bool is_flushable() const;
-
     // Compute the local space bounding box of the assembly, including all child assemblies,
     // over the shutter interval.
     GAABB3 compute_local_bbox() const;
@@ -185,9 +182,6 @@ class APPLESEED_DLLSYMBOL Assembly
 
     struct Impl;
     Impl* impl;
-
-    // Derogate to the private implementation rule, for performance reasons.
-    bool m_flushable;
 };
 
 
@@ -222,11 +216,6 @@ class APPLESEED_DLLSYMBOL AssemblyFactory
 //
 // Assembly class implementation.
 //
-
-inline bool Assembly::is_flushable() const
-{
-    return m_flushable;
-}
 
 inline bool Assembly::has_render_data() const
 {

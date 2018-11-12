@@ -59,14 +59,12 @@ class EmittingTriangleKey
   public:
     foundation::UniqueID            m_assembly_instance_uid;
     foundation::uint32              m_object_instance_index;
-    foundation::uint32              m_region_index;
     foundation::uint32              m_triangle_index;
 
     EmittingTriangleKey();
     EmittingTriangleKey(
         const foundation::UniqueID  assembly_instance_uid,
         const size_t                object_instance_index,
-        const size_t                region_index,
         const size_t                triangle_index);
 
     bool operator==(const EmittingTriangleKey& rhs) const;
@@ -132,11 +130,9 @@ inline EmittingTriangleKey::EmittingTriangleKey()
 inline EmittingTriangleKey::EmittingTriangleKey(
     const foundation::UniqueID              assembly_instance_uid,
     const size_t                            object_instance_index,
-    const size_t                            region_index,
     const size_t                            triangle_index)
   : m_assembly_instance_uid(static_cast<foundation::uint32>(assembly_instance_uid))
   , m_object_instance_index(static_cast<foundation::uint32>(object_instance_index))
-  , m_region_index(static_cast<foundation::uint32>(region_index))
   , m_triangle_index(static_cast<foundation::uint32>(triangle_index))
 {
 }
@@ -146,8 +142,7 @@ inline bool EmittingTriangleKey::operator==(const EmittingTriangleKey& rhs) cons
     return
         m_triangle_index == rhs.m_triangle_index &&
         m_object_instance_index == rhs.m_object_instance_index &&
-        m_assembly_instance_uid == rhs.m_assembly_instance_uid &&
-        m_region_index == rhs.m_region_index;
+        m_assembly_instance_uid == rhs.m_assembly_instance_uid;
 }
 
 
@@ -161,7 +156,6 @@ inline size_t EmittingTriangleKeyHasher::operator()(const EmittingTriangleKey& k
         foundation::mix_uint32(
             static_cast<foundation::uint32>(key.m_assembly_instance_uid),
             key.m_object_instance_index,
-            key.m_region_index,
             key.m_triangle_index);
 }
 

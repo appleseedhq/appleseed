@@ -162,7 +162,6 @@ float ForwardLightSampler::evaluate_pdf(const ShadingPoint& light_shading_point)
     const EmittingTriangleKey triangle_key(
         light_shading_point.get_assembly_instance().get_uid(),
         light_shading_point.get_object_instance_index(),
-        light_shading_point.get_region_index(),
         light_shading_point.get_primitive_index());
 
     const auto* triangle_ptr = m_emitting_triangle_hash_table.get(triangle_key);

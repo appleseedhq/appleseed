@@ -34,7 +34,6 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/intersection/probevisitorbase.h"
-#include "renderer/kernel/intersection/regioninfo.h"
 #include "renderer/kernel/intersection/trianglekey.h"
 #include "renderer/kernel/intersection/trianglevertexinfo.h"
 #include "renderer/modeling/scene/visibilityflags.h"
@@ -89,18 +88,16 @@ class TriangleTree
         const foundation::UniqueID              m_triangle_tree_uid;
         const GAABB3                            m_bbox;
         const Assembly&                         m_assembly;
-        const RegionInfoVector                  m_regions;
 
         // Constructor.
         Arguments(
             const Scene&                        scene,
             const foundation::UniqueID          triangle_tree_uid,
             const GAABB3&                       bbox,
-            const Assembly&                     assembly,
-            const RegionInfoVector&             regions);
+            const Assembly&                     assembly);
     };
 
-    // Constructor, builds the tree for a given set of regions.
+    // Constructor, builds the tree for a given assembly.
     explicit TriangleTree(const Arguments& arguments);
 
     // Destructor.

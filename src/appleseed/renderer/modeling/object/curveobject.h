@@ -34,13 +34,11 @@
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/modeling/object/iobjectfactory.h"
 #include "renderer/modeling/object/object.h"
-#include "renderer/modeling/object/regionkit.h"
 
 // appleseed.foundation headers.
 #include "foundation/curve/curvebasis.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/lazy.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -75,9 +73,6 @@ class APPLESEED_DLLSYMBOL CurveObject
 
     // Compute the local space bounding box of the object over the shutter interval.
     GAABB3 compute_local_bbox() const override;
-
-    // Return the region kit of the object.
-    foundation::Lazy<RegionKit>& get_region_kit() override;
 
     // Insert and access curve basis.
     void push_basis(const foundation::CurveBasis basis);

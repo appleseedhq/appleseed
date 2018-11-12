@@ -114,8 +114,6 @@ Assembly::Assembly(
   , m_has_render_data(false)
 {
     set_name(name);
-
-    m_flushable = m_params.get_optional<bool>("flushable", false);
 }
 
 Assembly::~Assembly()
@@ -347,16 +345,6 @@ Dictionary AssemblyFactory::get_model_metadata() const
 DictionaryArray AssemblyFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "flushable")
-            .insert("label", "Flushable")
-            .insert("type", "boolean")
-            .insert("use", "optional")
-            .insert("default", "false")
-            .insert("help", "Allow unloading this assembly from memory"));
-
     return metadata;
 }
 

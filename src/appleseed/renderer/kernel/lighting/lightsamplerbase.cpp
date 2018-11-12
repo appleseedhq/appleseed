@@ -33,7 +33,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/modeling/light/light.h"
-#include "renderer/modeling/object/iregion.h"
+#include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #include "renderer/utility/triangle.h"
@@ -90,7 +90,6 @@ void LightSamplerBase::build_emitting_triangle_hash_table()
         const EmittingTriangleKey emitting_triangle_key(
             emitting_triangle.m_assembly_instance->get_uid(),
             emitting_triangle.m_object_instance_index,
-            emitting_triangle.m_region_index,
             emitting_triangle.m_triangle_index);
 
         m_emitting_triangle_hash_table.insert(emitting_triangle_key, &emitting_triangle);
@@ -159,28 +158,19 @@ void LightSamplerBase::collect_emitting_triangles(
 
         // Retrieve the object.
         Object& object = object_instance->get_object();
-
-        // Retrieve the region kit of the object.
-        Access<RegionKit> region_kit(&object.get_region_kit());
+        const MeshObject& mesh = static_cast<const MeshObject&>(object);
 
         double object_area = 0.0;
-
-        // Loop over the regions of the object.
-        const size_t region_count = region_kit->size();
-        for (size_t region_index = 0; region_index < region_count; ++region_index)
         {
-            // Retrieve the region.
-            const IRegion* region = (*region_kit)[region_index];
-
-            // Retrieve the tessellation of the region.
-            Access<StaticTriangleTess> tess(&region->get_static_triangle_tess());
+            // Retrieve the tessellation of the mesh.
+            const StaticTriangleTess& tess = mesh.get_static_triangle_tess();
 
             // Loop over the triangles of the region.
-            const size_t triangle_count = tess->m_primitives.size();
+            const size_t triangle_count = tess.m_primitives.size();
             for (size_t triangle_index = 0; triangle_index < triangle_count; ++triangle_index)
             {
                 // Fetch the triangle.
-                const Triangle& triangle = tess->m_primitives[triangle_index];
+                const Triangle& triangle = tess.m_primitives[triangle_index];
 
                 // Skip triangles without a material.
                 if (triangle.m_pa == Triangle::None)
@@ -199,9 +189,9 @@ void LightSamplerBase::collect_emitting_triangles(
                     continue;
 
                 // Retrieve object instance space vertices of the triangle.
-                const GVector3& v0_os = tess->m_vertices[triangle.m_v0];
-                const GVector3& v1_os = tess->m_vertices[triangle.m_v1];
-                const GVector3& v2_os = tess->m_vertices[triangle.m_v2];
+                const GVector3& v0_os = tess.m_vertices[triangle.m_v0];
+                const GVector3& v1_os = tess.m_vertices[triangle.m_v1];
+                const GVector3& v2_os = tess.m_vertices[triangle.m_v2];
 
                 // Transform triangle vertices to assembly space.
                 const GVector3 v0_as = object_instance_transform.point_to_parent(v0_os);
@@ -239,9 +229,9 @@ void LightSamplerBase::collect_emitting_triangles(
                     triangle.m_n2 != Triangle::None)
                 {
                     // Retrieve object instance space vertex normals.
-                    const Vector3d n0_os = Vector3d(tess->m_vertex_normals[triangle.m_n0]);
-                    const Vector3d n1_os = Vector3d(tess->m_vertex_normals[triangle.m_n1]);
-                    const Vector3d n2_os = Vector3d(tess->m_vertex_normals[triangle.m_n2]);
+                    const Vector3d n0_os = Vector3d(tess.m_vertex_normals[triangle.m_n0]);
+                    const Vector3d n1_os = Vector3d(tess.m_vertex_normals[triangle.m_n1]);
+                    const Vector3d n2_os = Vector3d(tess.m_vertex_normals[triangle.m_n2]);
 
                     // Transform vertex normals to world space.
                     n0 = normalize(global_transform.normal_to_parent(n0_os));
@@ -280,7 +270,6 @@ void LightSamplerBase::collect_emitting_triangles(
                         EmittingTriangle emitting_triangle;
                         emitting_triangle.m_assembly_instance = &assembly_instance;
                         emitting_triangle.m_object_instance_index = object_instance_index;
-                        emitting_triangle.m_region_index = region_index;
                         emitting_triangle.m_triangle_index = triangle_index;
                         emitting_triangle.m_v0 = v0;
                         emitting_triangle.m_v1 = v1;

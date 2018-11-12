@@ -1000,9 +1000,6 @@ set (renderer_kernel_intersection_sources
     renderer/kernel/intersection/intersector.cpp
     renderer/kernel/intersection/intersector.h
     renderer/kernel/intersection/probevisitorbase.h
-    renderer/kernel/intersection/regioninfo.h
-    renderer/kernel/intersection/regiontree.cpp
-    renderer/kernel/intersection/regiontree.h
     renderer/kernel/intersection/tracecontext.cpp
     renderer/kernel/intersection/tracecontext.h
     renderer/kernel/intersection/treerepository.h
@@ -1817,7 +1814,6 @@ set (renderer_modeling_object_sources
     renderer/modeling/object/curveobjectwriter.h
     renderer/modeling/object/iobjectfactory.cpp
     renderer/modeling/object/iobjectfactory.h
-    renderer/modeling/object/iregion.h
     renderer/modeling/object/meshobject.cpp
     renderer/modeling/object/meshobject.h
     renderer/modeling/object/meshobjectoperations.cpp
@@ -1835,7 +1831,6 @@ set (renderer_modeling_object_sources
     renderer/modeling/object/objecttraits.h
     renderer/modeling/object/proceduralobject.cpp
     renderer/modeling/object/proceduralobject.h
-    renderer/modeling/object/regionkit.h
     renderer/modeling/object/triangle.h
 )
 list (APPEND appleseed_sources

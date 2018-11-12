@@ -32,8 +32,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rasterization/objectrasterizer.h"
-#include "renderer/kernel/tessellation/statictessellation.h"
-#include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/meshobjectprimitives.h"
 #include "renderer/modeling/object/meshobjectreader.h"
 #include "renderer/modeling/object/triangle.h"
@@ -62,48 +60,12 @@ namespace renderer
 namespace
 {
     const char* Model = "mesh_object";
-
-    // A region that simply wraps a static tessellation.
-    class MeshRegion
-      : public IRegion
-    {
-      public:
-        explicit MeshRegion(StaticTriangleTess* tess)
-          : m_tess(tess)
-          , m_lazy_tess(tess)
-        {
-        }
-
-        GAABB3 compute_local_bbox() const override
-        {
-            return m_tess->compute_local_bbox();
-        }
-
-        Lazy<StaticTriangleTess>& get_static_triangle_tess() const override
-        {
-            return m_lazy_tess;
-        }
-
-      private:
-        StaticTriangleTess*                 m_tess;
-        mutable Lazy<StaticTriangleTess>    m_lazy_tess;
-    };
 }
 
 struct MeshObject::Impl
 {
     StaticTriangleTess          m_tess;
-    MeshRegion                  m_region;
-    RegionKit                   m_region_kit;
-    mutable Lazy<RegionKit>     m_lazy_region_kit;
     vector<string>              m_material_slots;
-
-    Impl()
-      : m_region(&m_tess)
-      , m_lazy_region_kit(&m_region_kit)
-    {
-        m_region_kit.push_back(&m_region);
-    }
 };
 
 MeshObject::MeshObject(
@@ -140,9 +102,9 @@ GAABB3 MeshObject::compute_local_bbox() const
     return impl->m_tess.compute_local_bbox();
 }
 
-Lazy<RegionKit>& MeshObject::get_region_kit()
+const StaticTriangleTess& MeshObject::get_static_triangle_tess() const
 {
-    return impl->m_lazy_region_kit;
+    return impl->m_tess;
 }
 
 void MeshObject::rasterize(ObjectRasterizer& rasterizer) const

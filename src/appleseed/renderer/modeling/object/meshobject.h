@@ -32,14 +32,13 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/object/iobjectfactory.h"
 #include "renderer/modeling/object/object.h"
-#include "renderer/modeling/object/regionkit.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/lazy.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -83,8 +82,8 @@ class APPLESEED_DLLSYMBOL MeshObject
     // Compute the local space bounding box of the object over the shutter interval.
     GAABB3 compute_local_bbox() const override;
 
-    // Return the region kit of the object.
-    foundation::Lazy<RegionKit>& get_region_kit() override;
+    // Return the static triangle tessellation of the object.
+    const StaticTriangleTess& get_static_triangle_tess() const;
 
     // Send this object to an object rasterizer.
     void rasterize(ObjectRasterizer& drawer) const override;

@@ -215,7 +215,6 @@ namespace
         return
             lhs.get_primitive_type() == rhs.get_primitive_type() &&
             lhs.get_primitive_index() == rhs.get_primitive_index() &&
-            lhs.get_region_index() == rhs.get_region_index() &&
             lhs.get_object_instance_index() == rhs.get_object_instance_index() &&
             lhs.get_assembly_instance().get_uid() == rhs.get_assembly_instance().get_uid();
     }
@@ -251,8 +250,6 @@ bool Intersector::trace(
     ++m_shading_ray_count;
 
     // Initialize the shading point.
-    shading_point.m_region_kit_cache = &m_region_kit_cache;
-    shading_point.m_tess_cache = &m_tess_cache;
     shading_point.m_texture_cache = &m_texture_cache;
     shading_point.m_scene = &m_trace_context.get_scene();
     shading_point.m_ray = ray;
@@ -274,7 +271,6 @@ bool Intersector::trace(
     AssemblyLeafVisitor visitor(
         shading_point,
         assembly_tree,
-        m_region_tree_cache,
         m_triangle_tree_cache,
         m_curve_tree_cache,
 #ifdef APPLESEED_WITH_EMBREE
@@ -332,7 +328,6 @@ bool Intersector::trace_probe(
     AssemblyTreeProbeIntersector intersector;
     AssemblyLeafProbeVisitor visitor(
         assembly_tree,
-        m_region_tree_cache,
         m_triangle_tree_cache,
         m_curve_tree_cache,
 #ifdef APPLESEED_WITH_EMBREE
@@ -364,7 +359,6 @@ void Intersector::make_surface_shading_point(
     const AssemblyInstance*             assembly_instance,
     const Transformd&                   assembly_instance_transform,
     const size_t                        object_instance_index,
-    const size_t                        region_index,
     const size_t                        primitive_index,
     const TriangleSupportPlaneType&     triangle_support_plane) const
 {
@@ -375,8 +369,6 @@ void Intersector::make_surface_shading_point(
 #endif
 
     // Context.
-    shading_point.m_region_kit_cache = &m_region_kit_cache;
-    shading_point.m_tess_cache = &m_tess_cache;
     shading_point.m_texture_cache = &m_texture_cache;
     shading_point.m_scene = &m_trace_context.get_scene();
     shading_point.m_ray = shading_ray;
@@ -388,7 +380,6 @@ void Intersector::make_surface_shading_point(
     shading_point.m_assembly_instance_transform = assembly_instance_transform;
     shading_point.m_assembly_instance_transform_seq = &assembly_instance->transform_sequence();
     shading_point.m_object_instance_index = object_instance_index;
-    shading_point.m_region_index = region_index;
     shading_point.m_primitive_index = primitive_index;
     shading_point.m_triangle_support_plane = triangle_support_plane;
 
@@ -411,8 +402,6 @@ void Intersector::make_volume_shading_point(
     assert(volume_ray.get_current_medium() != nullptr);
 
     // Context.
-    shading_point.m_region_kit_cache = &m_region_kit_cache;
-    shading_point.m_tess_cache = &m_tess_cache;
     shading_point.m_texture_cache = &m_texture_cache;
     shading_point.m_scene = &m_trace_context.get_scene();
 
@@ -498,20 +487,8 @@ StatisticsVector Intersector::get_statistics() const
 #endif
 
     vec.insert(
-        "region tree access cache statistics",
-        make_dual_stage_cache_stats(m_region_tree_cache));
-
-    vec.insert(
         "triangle tree access cache statistics",
         make_dual_stage_cache_stats(m_triangle_tree_cache));
-
-    vec.insert(
-        "region kit access cache statistics",
-        make_dual_stage_cache_stats(m_region_kit_cache));
-
-    vec.insert(
-        "tessellation access cache statistics",
-        make_dual_stage_cache_stats(m_tess_cache));
 
     return vec;
 }
