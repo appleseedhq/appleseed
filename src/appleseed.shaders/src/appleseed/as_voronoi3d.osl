@@ -31,7 +31,7 @@
 #include "appleseed/maya/as_maya_helpers.h"
 #include "appleseed/maya/as_maya_transform_helpers.h"
 
-shader as_voronoi3D
+shader as_voronoi3d
 [[
     string icon = "asVoronoi3D.png",
     string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_voronoi3d.html#label-as-voronoi3d",
