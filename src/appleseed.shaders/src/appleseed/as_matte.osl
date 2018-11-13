@@ -28,16 +28,18 @@
 
 shader as_matte
 [[
-    string as_maya_node_name = "asMatte",
-    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedMatte",
-    string as_blender_node_name = "asMatte",
-    string as_blender_category = "shader",
     string help = "Matte Material",
-    string icon = "",
-    int as_maya_type_id = 0x001279ee,
+    string icon = "asMatte.png",
+    string URL = "",
+
+    string as_node_name = "asMatte",
+    string as_category = "shader",
+
     string as_max_class_id = "1941913893 1167117385",
     string as_max_plugin_type = "material",
-    string URL = ""
+
+    int as_maya_type_id = 0x001279ee,
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedMatte"
 ]]
 (
     closure color in_color = 0
