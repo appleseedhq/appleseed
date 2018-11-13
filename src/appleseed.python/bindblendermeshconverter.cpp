@@ -26,26 +26,14 @@
 // THE SOFTWARE.
 //
 
-// appleseed.python headers.
-#include "bindentitycontainers.h"
-
 // appleseed.renderer headers.
 #include "renderer/api/object.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/python.h"
-#include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/murmurhash.h"
-
-// Standard headers.
-#include <iostream>
-#include <cstddef>
-#include <string>
 
 namespace bpy = boost::python;
-using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 // Work around a regression in Visual Studio 2015 Update 3.
 #if defined(_MSC_VER) && _MSC_VER == 1900
@@ -54,13 +42,10 @@ namespace boost
 }
 #endif
 
-// Assign typedef
-typedef unsigned int u_int;
-
 // Blender data structures
 struct MeshFace
 {
-    u_int v[4];
+    unsigned int v[4];
     short mat_nr;
     char edcode, flag;
 };
