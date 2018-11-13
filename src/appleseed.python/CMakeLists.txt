@@ -109,12 +109,13 @@ set (sources
 list (APPEND appleseed.python_sources
     ${sources}
 )
-set (blender_progressive_tile_callback_sources
+set (blender_python_sources
     bindblenderprogressivetilecallback.cpp
+    bindblendermeshconverter.cpp
 )
 source_group ("" FILES
     ${sources}
-    ${blender_progressive_tile_callback_sources}
+    ${blender_python_sources}
 )
 
 
@@ -140,7 +141,7 @@ endif ()
 if (WITH_PYTHON3_BINDINGS)
     add_library (appleseed.python3 MODULE
         ${appleseed.python_sources}
-        ${blender_progressive_tile_callback_sources}
+        ${blender_python_sources}
     )
 
     target_link_libraries (appleseed.python3
