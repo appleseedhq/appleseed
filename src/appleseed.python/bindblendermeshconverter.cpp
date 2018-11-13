@@ -35,13 +35,6 @@
 namespace bpy = boost::python;
 using namespace renderer;
 
-// Work around a regression in Visual Studio 2015 Update 3.
-#if defined(_MSC_VER) && _MSC_VER == 1900
-namespace boost
-{
-}
-#endif
-
 // Blender data structures
 struct MeshFace
 {
@@ -68,11 +61,11 @@ struct MeshTexFace
 
 // The following function takes a series of pointers to Blender mesh data and modifies the appleseed MeshObject entity
 //      blender_object = the appleseed MeshObject created earlier in the export process
-//      vertices_length = the numbe rof vertices in the mesh
+//      vertices_length = the number of vertices in the mesh
 //      vertex_pointer = a string pointer to the first element of the vertex array
 //      Same template applies to mesh faces
 
-void convert_mesh(
+void convert_bl_mesh(
     MeshObject*                 blender_mesh,
     const size_t                vertices_length,
     const size_t                vertex_pointer,
@@ -109,10 +102,14 @@ void convert_mesh(
                 vert.co[0],
                 vert.co[1],
                 vert.co[2]));
+    }
 
-        // Push normals
-        if (export_normals == true)
+    // Push normals
+    if (export_normals == true)
+    {
+        for (size_t vertex_index = 0; vertex_index < vertices_length; ++vertex_index)
         {
+            MeshVert &vert = vertices[vertex_index];
             blender_mesh->push_vertex_normal(
                 GVector3(
                     vert.no[0],
@@ -133,47 +130,50 @@ void convert_mesh(
                 face.v[1],
                 face.v[2],
                 face.mat_nr));
+    }
 
-        if (export_normals == true || export_uvs == true)
+    // Tie vertex normals to mesh faces
+    if (export_normals == true)
+    {
+        for (size_t tri_index = 0; tri_index < triangle_length; ++tri_index)
         {
+            MeshFace &face = triangles[tri_index];
             Triangle& tri = blender_mesh->get_triangle(tri_index);
+            tri.m_n0 = face.v[0];
+            tri.m_n1 = face.v[1];
+            tri.m_n2 = face.v[2];
+        }
+    }
 
-            // Tie vertex normals to mesh faces
-            if (export_normals == true)
-            {
-                tri.m_n0 = face.v[0];
-                tri.m_n1 = face.v[1];
-                tri.m_n2 = face.v[2];
-            }
+    // Tie uv coordinates to mesh faces
+    if (export_uvs == true)
+    {
+        for (size_t tri_index = 0; tri_index < triangle_length; ++tri_index)
+        {
+            MeshTexFace &tex_face = uv_face[tri_index];
+            Triangle& tri = blender_mesh->get_triangle(tri_index);
+            blender_mesh->push_tex_coords(
+                GVector2(
+                    tex_face.uv[0][0],
+                    tex_face.uv[0][1]));
+            tri.m_a0 = uv_index++;
 
-            // Tie uv coordinates to mesh faces
-            if (export_uvs == true)
-            {
-                MeshTexFace &tex_face = uv_face[tri_index];
+            blender_mesh->push_tex_coords(
+                GVector2(
+                    tex_face.uv[1][0],
+                    tex_face.uv[1][1]));
+            tri.m_a1 = uv_index++;
 
-                blender_mesh->push_tex_coords(
-                    GVector2(
-                        tex_face.uv[0][0],
-                        tex_face.uv[0][1]));
-                tri.m_a0 = uv_index++;
-
-                blender_mesh->push_tex_coords(
-                    GVector2(
-                        tex_face.uv[1][0],
-                        tex_face.uv[1][1]));
-                tri.m_a1 = uv_index++;
-
-                blender_mesh->push_tex_coords(
-                    GVector2(
-                        tex_face.uv[2][0],
-                        tex_face.uv[2][1]));
-                tri.m_a2 = uv_index++;
-            }
+            blender_mesh->push_tex_coords(
+                GVector2(
+                    tex_face.uv[2][0],
+                    tex_face.uv[2][1]));
+            tri.m_a2 = uv_index++;
         }
     }
 }
 
-void convert_vertex_pose(
+void convert_bl_vertex_pose(
     MeshObject*                 blender_mesh,
     const size_t                pose,
     const size_t                vertices_length,
@@ -197,10 +197,13 @@ void convert_vertex_pose(
                 vert.co[0],
                 vert.co[1],
                 vert.co[2]));
-
-        // Push normals
-        if (export_normals == true)
+    }
+    // Push normals
+    if (export_normals == true)
+    {
+        for (size_t vertex_index = 0; vertex_index < vertices_length; ++vertex_index)
         {
+            MeshVert &vert = vertices[vertex_index];
             blender_mesh->set_vertex_normal_pose(
                 vertex_index,
                 pose,
@@ -214,6 +217,6 @@ void convert_vertex_pose(
 
 void bind_blender_mesh_converter()
 {
-    bpy::def("convert_mesh", &convert_mesh);
-    bpy::def("convert_vertex_pose", &convert_vertex_pose);
+    bpy::def("convert_bl_mesh", &convert_bl_mesh);
+    bpy::def("convert_bl_vertex_pose", &convert_bl_vertex_pose);
 }
