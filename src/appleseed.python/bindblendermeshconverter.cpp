@@ -83,11 +83,6 @@ void convert_bl_mesh(
     blender_mesh->reserve_vertices(vertices_length);
     blender_mesh->reserve_triangles(triangle_length);
 
-    if (export_normals == true)
-    {
-        blender_mesh->reserve_vertex_normals(vertices_length);
-    }
-
     if (export_uvs == true)
     {
         blender_mesh->reserve_tex_coords(vertices_length);
@@ -107,6 +102,7 @@ void convert_bl_mesh(
     // Push normals
     if (export_normals == true)
     {
+        blender_mesh->reserve_vertex_normals(vertices_length);
         for (size_t vertex_index = 0; vertex_index < vertices_length; ++vertex_index)
         {
             MeshVert &vert = vertices[vertex_index];
@@ -118,8 +114,6 @@ void convert_bl_mesh(
         }
     }
 
-    int uv_index = 0;
-
     // Push triangles
     for (size_t tri_index = 0; tri_index < triangle_length; ++tri_index)
     {
@@ -130,45 +124,88 @@ void convert_bl_mesh(
                 face.v[1],
                 face.v[2],
                 face.mat_nr));
+        if (face.v[3] != 0)
+        {
+            blender_mesh->push_triangle(
+                Triangle(
+                    face.v[2],
+                    face.v[3],
+                    face.v[0],
+                    face.mat_nr));
+        }
     }
+
+    size_t bl_face_index = 0;
 
     // Tie vertex normals to mesh faces
     if (export_normals == true)
     {
-        for (size_t tri_index = 0; tri_index < triangle_length; ++tri_index)
+        for (size_t tri_index = 0; tri_index < triangle_length; ++tri_index, ++bl_face_index)
         {
             MeshFace &face = triangles[tri_index];
-            Triangle& tri = blender_mesh->get_triangle(tri_index);
+            Triangle& tri = blender_mesh->get_triangle(bl_face_index);
             tri.m_n0 = face.v[0];
             tri.m_n1 = face.v[1];
             tri.m_n2 = face.v[2];
+
+            if (face.v[3] != 0)
+            {
+                Triangle& tri_b = blender_mesh->get_triangle(++bl_face_index);
+                tri_b.m_n0 = face.v[2];
+                tri_b.m_n1 = face.v[3];
+                tri_b.m_n2 = face.v[0];
+            }
         }
     }
 
     // Tie uv coordinates to mesh faces
     if (export_uvs == true)
     {
-        for (size_t tri_index = 0; tri_index < triangle_length; ++tri_index)
+        foundation::uint32 uv_vertex_index = 0;
+        blender_mesh->reserve_tex_coords(vertices_length);
+        for (size_t tri_index = 0, bl_uv_index = 0; tri_index < triangle_length; ++tri_index, ++bl_uv_index)
         {
             MeshTexFace &tex_face = uv_face[tri_index];
-            Triangle& tri = blender_mesh->get_triangle(tri_index);
+            Triangle& tri = blender_mesh->get_triangle(bl_uv_index);
             blender_mesh->push_tex_coords(
                 GVector2(
                     tex_face.uv[0][0],
                     tex_face.uv[0][1]));
-            tri.m_a0 = uv_index++;
+            tri.m_a0 = uv_vertex_index++;
 
             blender_mesh->push_tex_coords(
                 GVector2(
                     tex_face.uv[1][0],
                     tex_face.uv[1][1]));
-            tri.m_a1 = uv_index++;
+            tri.m_a1 = uv_vertex_index++;
 
             blender_mesh->push_tex_coords(
                 GVector2(
                     tex_face.uv[2][0],
                     tex_face.uv[2][1]));
-            tri.m_a2 = uv_index++;
+            tri.m_a2 = uv_vertex_index++;
+
+            if (tex_face.uv[3][0] != 0)
+            {
+                Triangle& tri_b = blender_mesh->get_triangle(++bl_uv_index);
+                blender_mesh->push_tex_coords(
+                    GVector2(
+                        tex_face.uv[2][0],
+                        tex_face.uv[2][1]));
+                tri_b.m_a0 = uv_vertex_index++;
+
+                blender_mesh->push_tex_coords(
+                    GVector2(
+                        tex_face.uv[3][0],
+                        tex_face.uv[3][1]));
+                tri_b.m_a1 = uv_vertex_index++;
+
+                blender_mesh->push_tex_coords(
+                    GVector2(
+                        tex_face.uv[0][0],
+                        tex_face.uv[0][1]));
+                tri_b.m_a2 = uv_vertex_index++;
+            }
         }
     }
 }
