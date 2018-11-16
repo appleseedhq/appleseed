@@ -43,7 +43,7 @@
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
-#include "renderer/modeling/aov/diagnosticaov.h"
+#include "renderer/modeling/aov/pixelsamplecountaov.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/utility/settingsparsing.h"
 
@@ -297,20 +297,18 @@ namespace
 
                 if (m_sample_aov_tile)
                 {
-                    value[0] = static_cast<float>(trackers[0].get_size());
+                    value[0] += static_cast<float>(trackers[0].get_size());
 
                     m_sample_aov_tile->set_pixel(pt.x, pt.y, value);
                 }
 
                 if (m_variation_aov_tile)
                 {
-                    value[0] =
-                        saturate(
-                            max(
-                                trackers[0].get_variation(),
-                                trackers[1].get_variation(),
-                                trackers[2].get_variation())
-                            / m_params.m_max_variation);
+                    value[0] +=
+                        max(
+                            trackers[0].get_variation(),
+                            trackers[1].get_variation(),
+                            trackers[2].get_variation());
 
                     m_variation_aov_tile->set_pixel(pt.x, pt.y, value);
                 }

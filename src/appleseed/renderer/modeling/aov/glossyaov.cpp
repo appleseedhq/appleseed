@@ -151,7 +151,7 @@ namespace
     // Glossy AOV.
     //
 
-    const char* GlossyModel = "glossy_aov";
+    const char* GlossyAOVModel = "glossy_aov";
 
     class GlossyAOV
       : public ColorAOV
@@ -169,9 +169,10 @@ namespace
 
         const char* get_model() const override
         {
-            return GlossyModel;
+            return GlossyAOVModel;
         }
 
+      protected:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
@@ -184,7 +185,7 @@ namespace
     // Direct Glossy AOV.
     //
 
-    const char* DirectGlossyModel = "direct_glossy_aov";
+    const char* DirectGlossyAOVModel = "direct_glossy_aov";
 
     class DirectGlossyAOV
       : public ColorAOV
@@ -202,9 +203,10 @@ namespace
 
         const char* get_model() const override
         {
-            return DirectGlossyModel;
+            return DirectGlossyAOVModel;
         }
 
+      protected:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
@@ -217,7 +219,7 @@ namespace
     // Indirect Glossy AOV.
     //
 
-    const char* IndirectGlossyModel = "indirect_glossy_aov";
+    const char* IndirectGlossyAOVModel = "indirect_glossy_aov";
 
     class IndirectGlossyAOV
       : public ColorAOV
@@ -235,9 +237,10 @@ namespace
 
         const char* get_model() const override
         {
-            return IndirectGlossyModel;
+            return IndirectGlossyAOVModel;
         }
 
+      protected:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
@@ -258,7 +261,7 @@ void GlossyAOVFactory::release()
 
 const char* GlossyAOVFactory::get_model() const
 {
-    return GlossyModel;
+    return GlossyAOVModel;
 }
 
 Dictionary GlossyAOVFactory::get_model_metadata() const
@@ -293,7 +296,7 @@ void DirectGlossyAOVFactory::release()
 
 const char* DirectGlossyAOVFactory::get_model() const
 {
-    return DirectGlossyModel;
+    return DirectGlossyAOVModel;
 }
 
 Dictionary DirectGlossyAOVFactory::get_model_metadata() const
@@ -328,7 +331,7 @@ void IndirectGlossyAOVFactory::release()
 
 const char* IndirectGlossyAOVFactory::get_model() const
 {
-    return IndirectGlossyModel;
+    return IndirectGlossyAOVModel;
 }
 
 Dictionary IndirectGlossyAOVFactory::get_model_metadata() const

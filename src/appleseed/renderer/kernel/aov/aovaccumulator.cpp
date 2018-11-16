@@ -114,11 +114,9 @@ void AOVAccumulator::write(
 // UnfilteredAOVAccumulator class implementation.
 //
 
-UnfilteredAOVAccumulator::UnfilteredAOVAccumulator(
-    Image& image,
-    Image& filter_image)
+UnfilteredAOVAccumulator::UnfilteredAOVAccumulator(Image& image)
   : m_image(image)
-  , m_filter_image(filter_image)
+  , m_tile(nullptr)
 {
 }
 
@@ -129,17 +127,26 @@ void UnfilteredAOVAccumulator::on_tile_begin(
     const size_t                max_spp)
 {
     // Fetch the destination tile.
-    const CanvasProperties& props = frame.image().properties();
     m_tile = &m_image.tile(tile_x, tile_y);
-    m_filter_tile = &m_filter_image.tile(tile_x, tile_y);
 
     // Fetch the tile bounds (inclusive).
-    m_tile_origin_x = static_cast<int>(tile_x * props.m_tile_width);
-    m_tile_origin_y = static_cast<int>(tile_y * props.m_tile_height);
-    m_tile_end_x = static_cast<int>(m_tile_origin_x + m_tile->get_width() - 1);
-    m_tile_end_y = static_cast<int>(m_tile_origin_y + m_tile->get_height() - 1);
+    const size_t tile_origin_x = tile_x * m_tile->get_width();
+    const size_t tile_origin_y = tile_y * m_tile->get_height();
+    m_tile_bbox.min.x = tile_origin_x;
+    m_tile_bbox.min.y = tile_origin_y;
+    m_tile_bbox.max.x = tile_origin_x + m_tile->get_width() - 1;
+    m_tile_bbox.max.y = tile_origin_y + m_tile->get_height() - 1;
+
+    assert(m_tile_bbox.is_valid());
 }
 
+void UnfilteredAOVAccumulator::on_tile_end(
+    const Frame&                frame,
+    const size_t                tile_x,
+    const size_t                tile_y)
+{
+    m_tile = nullptr;
+}
 
 //
 // AOVAccumulatorContainer class implementation.

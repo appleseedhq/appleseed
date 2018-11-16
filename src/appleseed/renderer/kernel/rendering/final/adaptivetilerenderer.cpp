@@ -43,7 +43,7 @@
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
-#include "renderer/modeling/aov/diagnosticaov.h"
+#include "renderer/modeling/aov/pixelsamplecountaov.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/utility/bbox.h"
 #include "renderer/utility/settingsparsing.h"
@@ -257,7 +257,9 @@ namespace
                         frame.aovs().get_by_index(m_sample_aov_index));
 
                 // The AOV takes care of normalizing values depending on sampling parameters.
-                sample_aov->set_normalization_range(m_params.m_min_samples, m_params.m_max_samples);
+                sample_aov->set_normalization_range(
+                    m_params.m_min_samples,
+                    m_params.m_max_samples * m_params.m_passes);
             }
         }
 

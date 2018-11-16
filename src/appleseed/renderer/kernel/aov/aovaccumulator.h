@@ -37,6 +37,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
+#include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/autoreleaseptr.h"
 
@@ -117,9 +118,7 @@ class UnfilteredAOVAccumulator
   : public AOVAccumulator
 {
   public:
-    UnfilteredAOVAccumulator(
-        foundation::Image& image,
-        foundation::Image& filter_image);
+    UnfilteredAOVAccumulator(foundation::Image& image);
 
     void on_tile_begin(
         const Frame&                frame,
@@ -127,24 +126,23 @@ class UnfilteredAOVAccumulator
         const size_t                tile_y,
         const size_t                max_spp) override;
 
+    void on_tile_end(
+        const Frame&                frame,
+        const size_t                tile_x,
+        const size_t                tile_y) override;
+
   protected:
     foundation::Image&  m_image;
     foundation::Tile*   m_tile;
 
-    foundation::Image&  m_filter_image;
     foundation::Tile*   m_filter_tile;
 
-    int                 m_tile_origin_x;
-    int                 m_tile_origin_y;
-    int                 m_tile_end_x;
-    int                 m_tile_end_y;
+    foundation::AABB2i  m_tile_bbox;
 
     foundation::Tile& get_tile() const;
     foundation::Tile& get_filter_tile() const;
 
     bool outside_tile(const foundation::Vector2i& pi) const;
-
-    static float square_distance_to_pixel_center(const foundation::Vector2d& ps);
 };
 
 
@@ -230,18 +228,7 @@ inline foundation::Tile& UnfilteredAOVAccumulator::get_filter_tile() const
 inline bool UnfilteredAOVAccumulator::outside_tile(
     const foundation::Vector2i&     pi) const
 {
-    return
-        pi.x < m_tile_origin_x ||
-        pi.y < m_tile_origin_y ||
-        pi.x > m_tile_end_x ||
-        pi.y > m_tile_end_y;
-}
-
-inline float UnfilteredAOVAccumulator::square_distance_to_pixel_center(
-    const foundation::Vector2d&     ps)
-{
-    return static_cast<float>(
-        foundation::square(ps.y - 0.5) + foundation::square(ps.y - 0.5));
+    return !m_tile_bbox.contains(pi);
 }
 
 }       // namespace renderer

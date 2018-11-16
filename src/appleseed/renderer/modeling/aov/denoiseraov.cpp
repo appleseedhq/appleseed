@@ -258,7 +258,7 @@ namespace
         }
     };
 
-    const char* DenoiserModel = "denoiser_aov";
+    const char* DenoiserAOVModel = "denoiser_aov";
 }
 
 
@@ -297,7 +297,7 @@ DenoiserAOV::~DenoiserAOV()
 
 const char* DenoiserAOV::get_model() const
 {
-    return DenoiserModel;
+    return DenoiserAOVModel;
 }
 
 size_t DenoiserAOV::get_channel_count() const
@@ -338,18 +338,6 @@ void DenoiserAOV::clear_image()
     impl->m_sum_accum.fill(0.0f);
     impl->m_covariance_accum.fill(0.0f);
     impl->m_histograms.fill(0.0f);
-}
-
-auto_release_ptr<AOVAccumulator> DenoiserAOV::create_accumulator() const
-{
-    return auto_release_ptr<AOVAccumulator>(
-        new DenoiserAOVAccumulator(
-            impl->m_num_bins,
-            impl->m_gamma,
-            impl->m_max_value,
-            impl->m_sum_accum,
-            impl->m_covariance_accum,
-            impl->m_histograms));
 }
 
 void DenoiserAOV::fill_empty_samples() const
@@ -482,6 +470,18 @@ bool DenoiserAOV::write_images(const char* file_path) const
     result = result && ImageIO::writeMultiChannelsEXR(covariances, cov_file_path.c_str());
 
     return result;
+}
+
+auto_release_ptr<AOVAccumulator> DenoiserAOV::create_accumulator() const
+{
+    return auto_release_ptr<AOVAccumulator>(
+        new DenoiserAOVAccumulator(
+            impl->m_num_bins,
+            impl->m_gamma,
+            impl->m_max_value,
+            impl->m_sum_accum,
+            impl->m_covariance_accum,
+            impl->m_histograms));
 }
 
 
