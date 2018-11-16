@@ -116,23 +116,25 @@ namespace
 
 struct MasterRenderer::Impl
 {
-    Project&                    m_project;
-    ParamArray                  m_params;
+    Project&                            m_project;
+    ParamArray                          m_params;
 
-    OIIOErrorHandler*           m_error_handler;
+    OIIOErrorHandler*                   m_error_handler;
 
-    OIIOTextureSystem*          m_texture_system;
+    OIIOTextureSystem*                  m_texture_system;
 
-    RendererServices*           m_renderer_services;
-    OSLShadingSystem*           m_shading_system;
+    RendererServices*                   m_renderer_services;
+    OSLShadingSystem*                   m_shading_system;
 
-    IRendererController*        m_renderer_controller;
-    ITileCallbackFactory*       m_tile_callback_factory;
+    IRendererController*                m_renderer_controller;
+    ITileCallbackFactory*               m_tile_callback_factory;
 
-    SerialRendererController*   m_serial_renderer_controller;
-    ITileCallbackFactory*       m_serial_tile_callback_factory;
+    SerialRendererController*           m_serial_renderer_controller;
+    ITileCallbackFactory*               m_serial_tile_callback_factory;
 
-    Display*                    m_display;
+    Display*                            m_display;
+
+    Stopwatch<DefaultWallclockTimer>    m_stopwatch;
 
     Impl(
         Project&          project,
@@ -278,13 +280,11 @@ struct MasterRenderer::Impl
 
         try
         {
-            Stopwatch<DefaultWallclockTimer> stopwatch;
-
             // Render.
-            stopwatch.start();
+            m_stopwatch.start();
             result.m_status = do_render();
-            stopwatch.measure();
-            result.m_render_time = stopwatch.get_seconds();
+            m_stopwatch.measure();
+            result.m_render_time = m_stopwatch.get_seconds();
 
             // Insert render time into the frame's render info.
             // Note that the frame entity may have replaced during rendering.
@@ -296,10 +296,10 @@ struct MasterRenderer::Impl
                 return result;
 
             // Post-process.
-            stopwatch.start();
+            m_stopwatch.start();
             postprocess(result);
-            stopwatch.measure();
-            result.m_post_processing_time = stopwatch.get_seconds();
+            m_stopwatch.measure();
+            result.m_post_processing_time = m_stopwatch.get_seconds();
             render_info.insert("post_processing_time", result.m_post_processing_time);
         }
         catch (const bad_alloc&)
@@ -554,7 +554,7 @@ struct MasterRenderer::Impl
     }
 
     // Wait until the the frame is completed or rendering is aborted.
-    IRendererController::Status wait_for_event(IFrameRenderer& frame_renderer) const
+    IRendererController::Status wait_for_event(IFrameRenderer& frame_renderer)
     {
         bool is_paused = false;
 
@@ -572,6 +572,7 @@ struct MasterRenderer::Impl
                 {
                     frame_renderer.resume_rendering();
                     m_renderer_controller->on_rendering_resume();
+                    m_stopwatch.resume();
                     is_paused = false;
                 }
                 break;
@@ -581,6 +582,7 @@ struct MasterRenderer::Impl
                 {
                     frame_renderer.pause_rendering();
                     m_renderer_controller->on_rendering_pause();
+                    m_stopwatch.pause();
                     is_paused = true;
                 }
                 break;
