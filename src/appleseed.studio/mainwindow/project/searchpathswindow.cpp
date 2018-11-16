@@ -101,7 +101,9 @@ SearchPathsWindow::SearchPathsWindow(
     connect(new QShortcut(QKeySequence(Qt::Key_Delete), this), SIGNAL(activated()), SLOT(slot_remove()));
     connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Up), this), SIGNAL(activated()), SLOT(slot_move_up()));
     connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Down), this), SIGNAL(activated()), SLOT(slot_move_down()));
-
+    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Return), this), SIGNAL(activated()), SLOT(accept()));
+    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Enter), this), SIGNAL(activated()), SLOT(accept()));
+    
     WindowBase::load_settings();
 
     // Project root path.
