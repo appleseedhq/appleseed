@@ -90,7 +90,7 @@ class APPLESEED_DLLSYMBOL AOV
     // Clear the AOV image to default values.
     virtual void clear_image() = 0;
 
-    // Apply any post processing needed to the AOV image.
+    // Apply any post-processing needed to the AOV image.
     virtual void post_process_image(const Frame& frame);
 
   protected:
@@ -125,16 +125,16 @@ class ColorAOV
     ColorAOV(const char* name, const ParamArray& params);
 
     // Return the number of channels of this AOV.
-    virtual size_t get_channel_count() const override;
+    size_t get_channel_count() const override;
 
     // Return the AOV channel names.
-    virtual const char** get_channel_names() const override;
+    const char** get_channel_names() const override;
 
     // Return true if this AOV contains color data.
-    virtual bool has_color_data() const override;
+    bool has_color_data() const override;
 
     // Clear the AOV image to default values.
-    virtual void clear_image() override;
+    void clear_image() override;
 };
 
 
@@ -153,19 +153,19 @@ class UnfilteredAOV
     ~UnfilteredAOV() override;
 
     // Return the number of channels of this AOV.
-    virtual size_t get_channel_count() const override;
+    size_t get_channel_count() const override;
 
     // Return the AOV channel names.
-    virtual const char** get_channel_names() const override;
+    const char** get_channel_names() const override;
 
     // Return true if this AOV contains color data.
-    virtual bool has_color_data() const override;
+    bool has_color_data() const override;
 
     // Clear the AOV image to default values.
-    virtual void clear_image() override;
+    void clear_image() override;
 
   protected:
-    virtual void create_image(
+    void create_image(
         const size_t    canvas_width,
         const size_t    canvas_height,
         const size_t    tile_width,

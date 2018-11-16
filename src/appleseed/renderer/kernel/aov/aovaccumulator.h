@@ -118,7 +118,7 @@ class UnfilteredAOVAccumulator
   : public AOVAccumulator
 {
   public:
-    UnfilteredAOVAccumulator(foundation::Image& image);
+    explicit UnfilteredAOVAccumulator(foundation::Image& image);
 
     void on_tile_begin(
         const Frame&                frame,
@@ -142,7 +142,7 @@ class UnfilteredAOVAccumulator
     foundation::Tile& get_tile() const;
     foundation::Tile& get_filter_tile() const;
 
-    bool outside_tile(const foundation::Vector2i& pi) const;
+    bool inside_tile(const foundation::Vector2i& pi) const;
 };
 
 
@@ -225,10 +225,9 @@ inline foundation::Tile& UnfilteredAOVAccumulator::get_filter_tile() const
     return *m_filter_tile;
 }
 
-inline bool UnfilteredAOVAccumulator::outside_tile(
-    const foundation::Vector2i&     pi) const
+inline bool UnfilteredAOVAccumulator::inside_tile(const foundation::Vector2i& pi) const
 {
-    return !m_tile_bbox.contains(pi);
+    return m_tile_bbox.contains(pi);
 }
 
 }       // namespace renderer

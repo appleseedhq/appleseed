@@ -94,7 +94,7 @@ namespace
             m_stopwatch.measure();
 
             // Only collect samples inside the tile.
-            if (!outside_tile(pixel_context.get_pixel_coords()))
+            if (inside_tile(pixel_context.get_pixel_coords()))
                 m_samples.push_back(m_stopwatch.get_seconds());
         }
 

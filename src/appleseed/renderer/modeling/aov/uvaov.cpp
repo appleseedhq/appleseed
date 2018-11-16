@@ -63,7 +63,7 @@ namespace
       : public UnfilteredAOVAccumulator
     {
       public:
-        UVAOVAccumulator(Image& image)
+        explicit UVAOVAccumulator(Image& image)
           : UnfilteredAOVAccumulator(image)
         {
         }
@@ -78,7 +78,7 @@ namespace
             const Vector2i& pi = pixel_context.get_pixel_coords();
 
             // Ignore samples outside the tile.
-            if (outside_tile(pi))
+            if (!inside_tile(pi))
                 return;
 
             float* p = reinterpret_cast<float*>(

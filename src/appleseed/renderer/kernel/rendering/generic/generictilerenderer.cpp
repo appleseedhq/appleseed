@@ -136,7 +136,7 @@ namespace
             const int tile_origin_y = static_cast<int>(frame_properties.m_tile_height * tile_y);
 
             // Compute the tile space bounding box of the pixels to render.
-            AABB2i tile_bbox = compute_tile_space_bbox(
+            const AABB2i tile_bbox = compute_tile_space_bbox(
                 tile,
                 tile_origin_x,
                 tile_origin_y,

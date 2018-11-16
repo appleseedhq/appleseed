@@ -33,8 +33,8 @@
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
-#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/kernel/aov/aovaccumulator.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -132,6 +132,7 @@ namespace
         }
     };
 }
+
 
 //
 // PixelVariationAOVFactory class implementation.

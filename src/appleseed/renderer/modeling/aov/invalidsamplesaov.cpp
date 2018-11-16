@@ -93,7 +93,7 @@ namespace
         {
             // Store a hint corresponding to the sample state in the tile.
             // Because of tile margins, pi can lay outside of the crop window.
-            if (!outside_tile(pi) && m_crop_window.contains(pi))
+            if (inside_tile(pi) && m_crop_window.contains(pi))
             {
                 const Vector2i pt(pi.x - m_tile_bbox.min.x, pi.y - m_tile_bbox.min.y);
 
@@ -112,7 +112,7 @@ namespace
             ShadingResult&              shading_result) override
         {
             // Detect invalid samples.
-            if (!outside_tile(pixel_context.get_pixel_coords()))
+            if (inside_tile(pixel_context.get_pixel_coords()))
             {
                 if (!shading_result.is_valid())
                     m_invalid_sample_count++;

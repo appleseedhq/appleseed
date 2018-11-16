@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/imagestack.h"
-#include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -178,8 +177,7 @@ void UnfilteredAOV::create_image(
             get_channel_count(),
             PixelFormatFloat);
 
-    // We need to clear the image because the default channel value
-    // might not be zero.
+    // We need to clear the image because the default channel value might not be zero.
     clear_image();
 }
 
