@@ -129,9 +129,9 @@ void UnfilteredAOVAccumulator::on_tile_begin(
     // Fetch the destination tile.
     m_tile = &m_image.tile(tile_x, tile_y);
 
+    // Fetch the tile bounds (inclusive).
     const CanvasProperties& props = frame.image().properties();
 
-    // Fetch the tile bounds (inclusive).
     const size_t tile_origin_x = tile_x * props.m_tile_width;
     const size_t tile_origin_y = tile_y * props.m_tile_height;
     m_tile_bbox.min.x = static_cast<int>(tile_origin_x);
