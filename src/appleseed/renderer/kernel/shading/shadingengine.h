@@ -70,28 +70,26 @@ class ShadingEngine
         foundation::IAbortSwitch*   abort_switch = nullptr);
 
     // Shade a given intersection point.
-    void shade(
+    bool shade(
         SamplingContext&            sampling_context,
         const PixelContext&         pixel_context,
         const ShadingContext&       shading_context,
         const ShadingPoint&         shading_point,
         AOVAccumulatorContainer&    aov_accumulators,
-        ShadingResult&              shading_result,
-        foundation::Color4f&        matte_color) const;
+        ShadingResult&              shading_result) const;
 
   private:
     foundation::auto_release_ptr<SurfaceShader> m_diagnostic_surface_shader;
 
     void create_diagnostic_surface_shader(const ParamArray& params);
 
-    void shade_hit_point(
+    bool shade_hit_point(
         SamplingContext&            sampling_context,
         const PixelContext&         pixel_context,
         const ShadingContext&       shading_context,
         const ShadingPoint&         shading_point,
         AOVAccumulatorContainer&    aov_accumulators,
-        ShadingResult&              shading_result,
-        foundation::Color4f&        matte_color) const;
+        ShadingResult&              shading_result) const;
 
     void shade_environment(
         SamplingContext&            sampling_context,
@@ -107,25 +105,23 @@ class ShadingEngine
 // ShadingEngine class implementation.
 //
 
-inline void ShadingEngine::shade(
+inline bool ShadingEngine::shade(
     SamplingContext&            sampling_context,
     const PixelContext&         pixel_context,
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point,
     AOVAccumulatorContainer&    aov_accumulators,
-    ShadingResult&              shading_result,
-    foundation::Color4f&        matte_color) const
+    ShadingResult&              shading_result) const
 {
     if (shading_point.hit_surface())
     {
-        shade_hit_point(
+        return shade_hit_point(
             sampling_context,
             pixel_context,
             shading_context,
             shading_point,
             aov_accumulators,
-            shading_result,
-            matte_color);
+            shading_result);
     }
     else
     {
@@ -136,6 +132,7 @@ inline void ShadingEngine::shade(
             shading_point,
             aov_accumulators,
             shading_result);
+        return false;
     }
 }
 

@@ -2456,9 +2456,10 @@ bool process_matte_tree(
           case OSL::ClosureColor::MUL:
             {
                 const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
-                process_matte_tree(c->closure, matte_color, matte_alpha);
+                bool is_matte = process_matte_tree(c->closure, matte_color, matte_alpha);
                 matte_color = Color3f(c->weight) * matte_color;
                 matte_alpha.set(saturate(luminance(Color3f((c->weight) * matte_alpha[0]))));
+                return is_matte;
             }
             break;
 
@@ -2467,10 +2468,11 @@ bool process_matte_tree(
                 const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
                 foundation::Color3f color_a(0.0f), color_b(0.0f);
                 Alpha alpha_a(0.0f), alpha_b(0.0f);
-                process_matte_tree(c->closureA, color_a, alpha_a);
-                process_matte_tree(c->closureB, color_b, alpha_b);
+                bool is_matte_a = process_matte_tree(c->closureA, color_a, alpha_a);
+                bool is_matte_b = process_matte_tree(c->closureB, color_b, alpha_b);
                 matte_color = color_a + color_b;
                 matte_alpha.set(alpha_a[0] + alpha_b[0]);
+                return is_matte_a || is_matte_b;
             }
             break;
 
@@ -2481,8 +2483,8 @@ bool process_matte_tree(
                 if (c->id == MatteID)
                 {
                     const MatteClosure::Params* p = static_cast<const MatteClosure::Params*>(c->data());
-                    matte_alpha.set(p->matte_alpha);
                     matte_color = p->matte_color;
+                    matte_alpha.set(p->matte_alpha);
                     return true;
                 }
             }

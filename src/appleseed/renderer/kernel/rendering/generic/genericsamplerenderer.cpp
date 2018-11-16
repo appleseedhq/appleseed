@@ -216,19 +216,19 @@ namespace
                 shading_point_ptr = &shading_points[shading_point_index];
                 shading_point_index = 1 - shading_point_index;
 
-                Color4f matte_color;
-
                 if (iterations == 1)
                 {
                     // Shade the first intersection point along the ray.
-                    m_shading_engine.shade(
+                    bool is_matte = m_shading_engine.shade(
                         sampling_context,
                         pixel_context,
                         m_shading_context,
                         *shading_point_ptr,
                         aov_accumulators,
-                        shading_result,
-                        matte_color);
+                        shading_result);
+
+                    if (is_matte)
+                        break;
 
                     // Apply alpha premultiplication.
                     shading_result.apply_alpha_premult();
@@ -237,36 +237,28 @@ namespace
                 {
                     // Shade the next intersection point along the ray.
                     ShadingResult local_result(shading_result.m_aov_count);
-                    m_shading_engine.shade(
+                    bool is_matte = m_shading_engine.shade(
                         sampling_context,
                         pixel_context,
                         m_shading_context,
                         *shading_point_ptr,
                         aov_accumulators,
-                        local_result,
-                        matte_color);
+                        local_result);
 
                     // Apply alpha premultiplication.
-                    local_result.apply_alpha_premult();
+                    if (!is_matte)
+                        local_result.apply_alpha_premult();
 
                     // Composite `shading_result` over `local_result`.
                     shading_result.composite_over(local_result);
+
+                    if (is_matte)
+                        break;
                 }
 
                 // Stop once we hit the environment.
                 if (!shading_point_ptr->hit_surface())
                     break;
-
-                // Check if matte shader is enabled and apply alpha and color if it is.
-                const Material* material = shading_point_ptr->get_material();
-                if (material != nullptr &&
-                    material->get_render_data().m_shader_group != nullptr &&
-                    material->get_render_data().m_shader_group->has_matte())
-                {
-                    shading_result.m_main.rgb() = matte_color.rgb();
-                    shading_result.m_main.a = matte_color.a;
-                    break;
-                }
 
                 // Stop once we hit full opacity.
                 if (shading_result.m_main.a > m_opacity_threshold)
