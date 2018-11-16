@@ -132,10 +132,10 @@ void UnfilteredAOVAccumulator::on_tile_begin(
     // Fetch the tile bounds (inclusive).
     const size_t tile_origin_x = tile_x * m_tile->get_width();
     const size_t tile_origin_y = tile_y * m_tile->get_height();
-    m_tile_bbox.min.x = tile_origin_x;
-    m_tile_bbox.min.y = tile_origin_y;
-    m_tile_bbox.max.x = tile_origin_x + m_tile->get_width() - 1;
-    m_tile_bbox.max.y = tile_origin_y + m_tile->get_height() - 1;
+    m_tile_bbox.min.x = static_cast<int>(tile_origin_x);
+    m_tile_bbox.min.y = static_cast<int>(tile_origin_y);
+    m_tile_bbox.max.x = static_cast<int>(tile_origin_x + m_tile->get_width() - 1);
+    m_tile_bbox.max.y = static_cast<int>(tile_origin_y + m_tile->get_height() - 1);
 
     assert(m_tile_bbox.is_valid());
 }
