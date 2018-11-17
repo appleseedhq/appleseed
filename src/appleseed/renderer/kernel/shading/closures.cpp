@@ -946,6 +946,7 @@ namespace
     {
         struct Params
         {
+            OSL::Color3 diffuse_reflectance;
             OSL::Vec3   N;
             float       roughness;
         };
@@ -969,6 +970,7 @@ namespace
         {
             const OSL::ClosureParam params[] =
             {
+                CLOSURE_COLOR_PARAM(Params, diffuse_reflectance),
                 CLOSURE_VECTOR_PARAM(Params, N),
                 CLOSURE_FLOAT_PARAM(Params, roughness),
                 CLOSURE_FINISH_PARAM(Params)
@@ -997,7 +999,7 @@ namespace
                     p->N,
                     arena);
 
-            values->m_reflectance.set(1.0f);
+            values->m_reflectance.set(Color3f(p->diffuse_reflectance), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = max(p->roughness, 0.0f);
         }

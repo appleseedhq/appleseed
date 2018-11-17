@@ -864,7 +864,7 @@ shader as_standard_surface
         if (max(diffuse_color) > 0.0)
         {
             out_outColor += transmittance * opacity *
-                diffuse_color * oren_nayar(Nn, in_diffuse_roughness);
+                oren_nayar(diffuse_color, Nn, in_diffuse_roughness);
         }
 
         color translucency_color = in_translucency_weight *

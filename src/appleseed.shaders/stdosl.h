@@ -550,7 +550,7 @@ string concat (string a, string b, string c, string d, string e, string f) {
 closure color emission() BUILTIN;
 closure color background() BUILTIN;
 closure color diffuse(normal N) BUILTIN;
-closure color oren_nayar (normal N, float sigma) BUILTIN;
+closure color oren_nayar (color albedo, normal N, float sigma) BUILTIN;
 closure color translucent(normal N) BUILTIN;
 closure color phong(normal N, float exponent) BUILTIN;
 //closure color ward(normal N, vector T,float ax, float ay) BUILTIN;

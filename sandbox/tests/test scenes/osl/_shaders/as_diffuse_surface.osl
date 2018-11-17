@@ -46,5 +46,5 @@ shader as_diffuse_surface
     output closure color BRDF = 0
 )
 {
-    BRDF = Reflectance * Color * oren_nayar(Normal, Roughness);
+    BRDF = Reflectance * oren_nayar(Color, Normal, Roughness);
 }
