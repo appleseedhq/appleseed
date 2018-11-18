@@ -946,13 +946,14 @@ namespace
     {
         struct Params
         {
+            OSL::Color3 reflectance;
             OSL::Vec3   N;
             float       roughness;
         };
 
         static const char* name()
         {
-            return "oren_nayar";
+            return "as_oren_nayar";
         }
 
         static ClosureID id()
@@ -969,6 +970,7 @@ namespace
         {
             const OSL::ClosureParam params[] =
             {
+                CLOSURE_COLOR_PARAM(Params, reflectance),
                 CLOSURE_VECTOR_PARAM(Params, N),
                 CLOSURE_FLOAT_PARAM(Params, roughness),
                 CLOSURE_FINISH_PARAM(Params)
@@ -997,9 +999,13 @@ namespace
                     p->N,
                     arena);
 
-            values->m_reflectance.set(1.0f);
+            const Color3f reflectance = Color3f(p->reflectance);
+            values->m_reflectance.set(reflectance, g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = max(p->roughness, 0.0f);
+
+            const float w = luminance(weight) * luminance(reflectance);
+            composite_closure.override_closure_scalar_weight(w);
         }
     };
 

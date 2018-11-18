@@ -50,6 +50,11 @@ float max(color C)  { return max(C[0], max(C[1], C[2])); }
 float min(vector V) { return min(V[0], min(V[1], V[2])); }
 float max(vector V) { return max(V[0], max(V[1], V[2])); }
 
+closure color as_oren_nayar(
+    color       reflectance,
+    normal      N,
+    float       sigma) BUILTIN;
+
 closure color as_sheen(normal N) BUILTIN;
 
 closure color as_glossy(
