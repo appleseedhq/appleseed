@@ -407,6 +407,7 @@ endif ()
 set (appleseedpython_sources
     ../appleseed.python/__init__.py
     ../appleseed.python/bindaov.cpp
+    ../appleseed.python/bindappleseedinfo.cpp
     ../appleseed.python/bindassembly.cpp
     ../appleseed.python/bindbasis.cpp
     ../appleseed.python/bindbbox.cpp
