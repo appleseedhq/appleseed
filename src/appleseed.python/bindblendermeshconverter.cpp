@@ -41,23 +41,23 @@ using namespace renderer;
 
 namespace
 {
-    // Blender data structures
+    // Blender data structures.
     // https://developer.blender.org/diffusion/B/browse/master/source/blender/makesdna/DNA_meshdata_types.h
-    struct MeshFace
+    struct MFace
     {
         unsigned int v[4];
         short mat_nr;
         char edcode, flag;
     };
 
-    struct MeshVert
+    struct MVert
     {
         float co[3];
         short no[3];
         char flag, bweight;
     };
 
-    struct MeshTexFace
+    struct MTFace
     {
         float uv[4][2];
         void *tpage;
@@ -84,9 +84,9 @@ void convert_bl_mesh(
     const bool                      export_uvs)
 {
     // Convert uintptr_t numbers to actual pointers.
-    const MeshVert* bl_vertices = reinterpret_cast<MeshVert*>(bl_vert_ptr);
-    const MeshFace* bl_faces = reinterpret_cast<MeshFace*>(bl_faces_ptr);
-    const MeshTexFace* bl_uv_faces = reinterpret_cast<MeshTexFace*>(bl_uv_ptr);
+    const MVert* bl_vertices = reinterpret_cast<MVert*>(bl_vert_ptr);
+    const MFace* bl_faces = reinterpret_cast<MFace*>(bl_faces_ptr);
+    const MTFace* bl_uv_faces = reinterpret_cast<MTFace*>(bl_uv_ptr);
 
     blender_mesh->reserve_vertices(bl_vert_count);
     blender_mesh->reserve_triangles(bl_faces_count);
@@ -94,7 +94,7 @@ void convert_bl_mesh(
     // Push vertices.
     for (size_t vertex_index = 0; vertex_index < bl_vert_count; ++vertex_index)
     {
-        const MeshVert& vert = bl_vertices[vertex_index];
+        const MVert& vert = bl_vertices[vertex_index];
         blender_mesh->push_vertex(
             GVector3(
                 vert.co[0],
@@ -108,7 +108,7 @@ void convert_bl_mesh(
         blender_mesh->reserve_vertex_normals(bl_vert_count);
         for (size_t vertex_index = 0; vertex_index < bl_vert_count; ++vertex_index)
         {
-            const MeshVert &vert = bl_vertices[vertex_index];
+            const MVert& vert = bl_vertices[vertex_index];
             blender_mesh->push_vertex_normal(
                 GVector3(
                     vert.no[0],
@@ -117,10 +117,10 @@ void convert_bl_mesh(
         }
     }
 
-    // Push triangles
-    for (size_t tri_index = 0; tri_index < bl_faces_count; ++tri_index)
+    // Push triangles.
+    for (size_t face_index = 0; face_index < bl_faces_count; ++face_index)
     {
-        const MeshFace& face = bl_faces[tri_index];
+        const MFace& face = bl_faces[face_index];
         blender_mesh->push_triangle(
             Triangle(
                 face.v[0],
@@ -129,12 +129,12 @@ void convert_bl_mesh(
                 face.mat_nr));
     }
 
-    // Tie vertex normals to mesh faces
+    // Tie vertex normals to mesh faces.
     if (export_normals)
     {
         for (size_t face_index = 0; face_index < bl_faces_count; ++face_index)
         {
-            const MeshFace& face = bl_faces[face_index];
+            const MFace& face = bl_faces[face_index];
             Triangle& tri = blender_mesh->get_triangle(face_index);
             tri.m_n0 = face.v[0];
             tri.m_n1 = face.v[1];
@@ -142,14 +142,14 @@ void convert_bl_mesh(
         }
     }
 
-    // Tie uv coordinates to mesh faces
+    // Tie uv coordinates to mesh faces.
     if (export_uvs)
     {
         uint32 uv_vertex_index = 0;
         blender_mesh->reserve_tex_coords(bl_vert_count);
         for (size_t face_index = 0; face_index < bl_faces_count; ++face_index)
         {
-            const MeshTexFace& tex_face = bl_uv_faces[face_index];
+            const MTFace& tex_face = bl_uv_faces[face_index];
             Triangle& tri = blender_mesh->get_triangle(face_index);
             blender_mesh->push_tex_coords(
                 GVector2(
@@ -180,12 +180,12 @@ void convert_bl_vertex_pose(
     const bool                      export_normals)
 {
     // Convert uintptr_t numbers to actual pointers.
-    const MeshVert* bl_vertices = reinterpret_cast<MeshVert*>(bl_vert_ptr);
+    const MVert* bl_vertices = reinterpret_cast<MVert*>(bl_vert_ptr);
 
     // Push vertices.
     for (size_t vertex_index = 0; vertex_index < bl_vert_count; ++vertex_index)
     {
-        const MeshVert& vert = bl_vertices[vertex_index];
+        const MVert& vert = bl_vertices[vertex_index];
         blender_mesh->set_vertex_pose(
             vertex_index,
             pose,
@@ -194,12 +194,13 @@ void convert_bl_vertex_pose(
                 vert.co[1],
                 vert.co[2]));
     }
+
     // Push normals.
     if (export_normals)
     {
         for (size_t vertex_index = 0; vertex_index < bl_vert_count; ++vertex_index)
         {
-            const MeshVert& vert = bl_vertices[vertex_index];
+            const MVert& vert = bl_vertices[vertex_index];
             blender_mesh->set_vertex_normal_pose(
                 vertex_index,
                 pose,
