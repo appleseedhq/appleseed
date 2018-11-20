@@ -32,7 +32,11 @@
 // appleseed.foundation headers.
 #include "foundation/platform/python.h"
 
+// Standard headers.
+#include <cstdint>
+
 namespace bpy = boost::python;
+using namespace foundation;
 using namespace renderer;
 
 namespace
@@ -60,20 +64,20 @@ namespace
         char flag, transp;
         short mode, tile, unwrap;
     };
-}  // namespace
+}
 
 
 // The following function takes a series of pointers to Blender mesh data and modifies the appleseed MeshObject entity
 //      blender_object = the appleseed MeshObject created earlier in the export process
-//      vertices_size = the number of vertices in the mesh
-//      vertex_pointer = a string pointer to the first element of the vertex array
+//      bl_vert_count = the number of vertices in the mesh
+//      bl_vert_ptr = a string pointer to the first element of the vertex array
 //      Same template applies to mesh faces
 
 void convert_bl_mesh(
     MeshObject*                     blender_mesh,
-    const size_t                    bl_vert_size,
+    const size_t                    bl_vert_count,
     const uintptr_t                 bl_vert_ptr,
-    const size_t                    bl_faces_size,
+    const size_t                    bl_faces_count,
     const uintptr_t                 bl_faces_ptr,
     const uintptr_t                 bl_uv_ptr,
     const bool                      export_normals,
@@ -84,11 +88,11 @@ void convert_bl_mesh(
     const MeshFace* bl_faces = reinterpret_cast<MeshFace*>(bl_faces_ptr);
     const MeshTexFace* bl_uv_faces = reinterpret_cast<MeshTexFace*>(bl_uv_ptr);
 
-    blender_mesh->reserve_vertices(bl_vert_size);
-    blender_mesh->reserve_triangles(bl_faces_size);
+    blender_mesh->reserve_vertices(bl_vert_count);
+    blender_mesh->reserve_triangles(bl_faces_count);
 
     // Push vertices.
-    for (size_t vertex_index = 0; vertex_index < bl_vert_size; ++vertex_index)
+    for (size_t vertex_index = 0; vertex_index < bl_vert_count; ++vertex_index)
     {
         const MeshVert& vert = bl_vertices[vertex_index];
         blender_mesh->push_vertex(
@@ -101,8 +105,8 @@ void convert_bl_mesh(
     // Push normals.
     if (export_normals)
     {
-        blender_mesh->reserve_vertex_normals(bl_vert_size);
-        for (size_t vertex_index = 0; vertex_index < bl_vert_size; ++vertex_index)
+        blender_mesh->reserve_vertex_normals(bl_vert_count);
+        for (size_t vertex_index = 0; vertex_index < bl_vert_count; ++vertex_index)
         {
             const MeshVert &vert = bl_vertices[vertex_index];
             blender_mesh->push_vertex_normal(
@@ -114,58 +118,39 @@ void convert_bl_mesh(
     }
 
     // Push triangles
-    for (size_t tri_index = 0; tri_index < bl_faces_size; ++tri_index)
+    for (size_t tri_index = 0; tri_index < bl_faces_count; ++tri_index)
     {
-        const MeshFace &face = bl_faces[tri_index];
+        const MeshFace& face = bl_faces[tri_index];
         blender_mesh->push_triangle(
             Triangle(
                 face.v[0],
                 face.v[1],
                 face.v[2],
                 face.mat_nr));
-        if (face.v[3] != 0)
-        {
-            blender_mesh->push_triangle(
-                Triangle(
-                    face.v[2],
-                    face.v[3],
-                    face.v[0],
-                    face.mat_nr));
-        }
     }
 
-    
     // Tie vertex normals to mesh faces
     if (export_normals)
     {
-        size_t bl_face_index = 0;
-        for (size_t tri_index = 0; tri_index < bl_faces_size; ++tri_index, ++bl_face_index)
+        for (size_t face_index = 0; face_index < bl_faces_count; ++face_index)
         {
-            const MeshFace& face = bl_faces[tri_index];
-            Triangle& tri = blender_mesh->get_triangle(bl_face_index);
+            const MeshFace& face = bl_faces[face_index];
+            Triangle& tri = blender_mesh->get_triangle(face_index);
             tri.m_n0 = face.v[0];
             tri.m_n1 = face.v[1];
             tri.m_n2 = face.v[2];
-
-            if (face.v[3] != 0)
-            {
-                Triangle& tri_b = blender_mesh->get_triangle(++bl_face_index);
-                tri_b.m_n0 = face.v[2];
-                tri_b.m_n1 = face.v[3];
-                tri_b.m_n2 = face.v[0];
-            }
         }
     }
 
     // Tie uv coordinates to mesh faces
     if (export_uvs)
     {
-        foundation::uint32 uv_vertex_index = 0;
-        blender_mesh->reserve_tex_coords(bl_vert_size);
-        for (size_t face_index = 0, bl_uv_index = 0; face_index < bl_faces_size; ++face_index, ++bl_uv_index)
+        uint32 uv_vertex_index = 0;
+        blender_mesh->reserve_tex_coords(bl_vert_count);
+        for (size_t face_index = 0; face_index < bl_faces_count; ++face_index)
         {
             const MeshTexFace& tex_face = bl_uv_faces[face_index];
-            Triangle& tri = blender_mesh->get_triangle(bl_uv_index);
+            Triangle& tri = blender_mesh->get_triangle(face_index);
             blender_mesh->push_tex_coords(
                 GVector2(
                     tex_face.uv[0][0],
@@ -183,28 +168,6 @@ void convert_bl_mesh(
                     tex_face.uv[2][0],
                     tex_face.uv[2][1]));
             tri.m_a2 = uv_vertex_index++;
-
-            if (tex_face.uv[3][0] != 0)
-            {
-                Triangle& tri_b = blender_mesh->get_triangle(++bl_uv_index);
-                blender_mesh->push_tex_coords(
-                    GVector2(
-                        tex_face.uv[2][0],
-                        tex_face.uv[2][1]));
-                tri_b.m_a0 = uv_vertex_index++;
-
-                blender_mesh->push_tex_coords(
-                    GVector2(
-                        tex_face.uv[3][0],
-                        tex_face.uv[3][1]));
-                tri_b.m_a1 = uv_vertex_index++;
-
-                blender_mesh->push_tex_coords(
-                    GVector2(
-                        tex_face.uv[0][0],
-                        tex_face.uv[0][1]));
-                tri_b.m_a2 = uv_vertex_index++;
-            }
         }
     }
 }
@@ -212,18 +175,15 @@ void convert_bl_mesh(
 void convert_bl_vertex_pose(
     MeshObject*                     blender_mesh,
     const size_t                    pose,
-    const size_t                    bl_vert_size,
+    const size_t                    bl_vert_count,
     const uintptr_t                 bl_vert_ptr,
-    const size_t                    bl_faces_size,
-    const uintptr_t                 bl_faces_ptr,
     const bool                      export_normals)
 {
     // Convert uintptr_t numbers to actual pointers.
     const MeshVert* bl_vertices = reinterpret_cast<MeshVert*>(bl_vert_ptr);
-    const MeshFace* bl_faces = reinterpret_cast<MeshFace*>(bl_faces_ptr);
 
     // Push vertices.
-    for (size_t vertex_index = 0; vertex_index < bl_vert_size; ++vertex_index)
+    for (size_t vertex_index = 0; vertex_index < bl_vert_count; ++vertex_index)
     {
         const MeshVert& vert = bl_vertices[vertex_index];
         blender_mesh->set_vertex_pose(
@@ -237,7 +197,7 @@ void convert_bl_vertex_pose(
     // Push normals.
     if (export_normals)
     {
-        for (size_t vertex_index = 0; vertex_index < bl_vert_size; ++vertex_index)
+        for (size_t vertex_index = 0; vertex_index < bl_vert_count; ++vertex_index)
         {
             const MeshVert& vert = bl_vertices[vertex_index];
             blender_mesh->set_vertex_normal_pose(
