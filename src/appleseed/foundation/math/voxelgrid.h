@@ -49,8 +49,7 @@ namespace foundation
 //
 
 template <typename ValueType, typename CoordType>
-class VoxelGrid3
-  : public NonCopyable
+class VoxelGrid3 : public NonCopyable
 {
   public:
     // Types.
@@ -58,10 +57,10 @@ class VoxelGrid3
 
     // Constructor.
     VoxelGrid3(
-        const size_t        nx,
-        const size_t        ny,
-        const size_t        nz,
-        const size_t        channel_count);
+        const size_t nx,
+        const size_t ny,
+        const size_t nz,
+        const size_t channel_count);
 
     // Get the grid properties.
     size_t get_xres() const;
@@ -70,47 +69,35 @@ class VoxelGrid3
     size_t get_channel_count() const;
 
     // Direct access to a given voxel.
-    ValueType* voxel(
-        const size_t        x,
-        const size_t        y,
-        const size_t        z);
-    const ValueType* voxel(
-        const size_t        x,
-        const size_t        y,
-        const size_t        z) const;
+    ValueType*       voxel(const size_t x, const size_t y, const size_t z);
+    const ValueType* voxel(const size_t x, const size_t y, const size_t z) const;
 
     // Perform an unfiltered lookup of the voxel grid.
     // 'point' must be expressed in the unit cube [0,1]^3.
-    void nearest_lookup(
-        const PointType&    point,
-        ValueType*          values) const;
+    void nearest_lookup(const PointType& point, ValueType* values) const;
 
     // Perform a trilinearly interpolated lookup of the voxel grid.
     // 'point' must be expressed in the unit cube [0,1]^3.
-    void linear_lookup(
-        const PointType&    point,
-        ValueType*          values) const;
+    void linear_lookup(const PointType& point, ValueType* values) const;
 
     // Perform a triquadratically interpolated lookup of the voxel grid.
     // 'point' must be expressed in the unit cube [0,1]^3.
-    void quadratic_lookup(
-        const PointType&    point,
-        ValueType*          values) const;
+    void quadratic_lookup(const PointType& point, ValueType* values) const;
 
   private:
-    const size_t            m_nx;
-    const size_t            m_ny;
-    const size_t            m_nz;
-    const CoordType         m_scalar_nx;
-    const CoordType         m_scalar_ny;
-    const CoordType         m_scalar_nz;
-    const CoordType         m_max_x;
-    const CoordType         m_max_y;
-    const CoordType         m_max_z;
-    const size_t            m_channel_count;
-    const size_t            m_row_size;
-    const size_t            m_slice_size;
-    std::vector<ValueType>  m_values;
+    const size_t           m_nx;
+    const size_t           m_ny;
+    const size_t           m_nz;
+    const CoordType        m_scalar_nx;
+    const CoordType        m_scalar_ny;
+    const CoordType        m_scalar_nz;
+    const CoordType        m_max_x;
+    const CoordType        m_max_y;
+    const CoordType        m_max_z;
+    const size_t           m_channel_count;
+    const size_t           m_row_size;
+    const size_t           m_slice_size;
+    std::vector<ValueType> m_values;
 };
 
 
@@ -120,10 +107,10 @@ class VoxelGrid3
 
 template <typename ValueType, typename CoordType>
 VoxelGrid3<ValueType, CoordType>::VoxelGrid3(
-    const size_t            nx,
-    const size_t            ny,
-    const size_t            nz,
-    const size_t            channel_count)
+    const size_t nx,
+    const size_t ny,
+    const size_t nz,
+    const size_t channel_count)
   : m_nx(nx)
   , m_ny(ny)
   , m_nz(nz)
@@ -134,8 +121,8 @@ VoxelGrid3<ValueType, CoordType>::VoxelGrid3(
   , m_max_y(static_cast<CoordType>(ny - 1))
   , m_max_z(static_cast<CoordType>(nz - 1))
   , m_channel_count(channel_count)
-  , m_row_size(channel_count * nx)          // number of values in one row of voxels
-  , m_slice_size(channel_count * nx * ny)   // number of values in one slice of voxels
+  , m_row_size(channel_count * nx)         // number of values in one row of voxels
+  , m_slice_size(channel_count * nx * ny)  // number of values in one slice of voxels
   , m_values(nx * ny * nz * channel_count, ValueType(0.0))
 {
     assert(m_nx > 0);
@@ -170,9 +157,9 @@ APPLESEED_FORCE_INLINE size_t VoxelGrid3<ValueType, CoordType>::get_channel_coun
 
 template <typename ValueType, typename CoordType>
 APPLESEED_FORCE_INLINE ValueType* VoxelGrid3<ValueType, CoordType>::voxel(
-    const size_t            x,
-    const size_t            y,
-    const size_t            z)
+    const size_t x,
+    const size_t y,
+    const size_t z)
 {
     assert(x < m_nx);
     assert(y < m_ny);
@@ -182,9 +169,9 @@ APPLESEED_FORCE_INLINE ValueType* VoxelGrid3<ValueType, CoordType>::voxel(
 
 template <typename ValueType, typename CoordType>
 APPLESEED_FORCE_INLINE const ValueType* VoxelGrid3<ValueType, CoordType>::voxel(
-    const size_t            x,
-    const size_t            y,
-    const size_t            z) const
+    const size_t x,
+    const size_t y,
+    const size_t z) const
 {
     assert(x < m_nx);
     assert(y < m_ny);
@@ -194,16 +181,16 @@ APPLESEED_FORCE_INLINE const ValueType* VoxelGrid3<ValueType, CoordType>::voxel(
 
 template <typename ValueType, typename CoordType>
 void VoxelGrid3<ValueType, CoordType>::nearest_lookup(
-    const PointType&                point,
-    ValueType* APPLESEED_RESTRICT   values) const
+    const PointType& point,
+    ValueType* APPLESEED_RESTRICT values) const
 {
     // Compute the coordinates of the voxel containing the lookup point.
     const CoordType x = clamp(point.x * m_scalar_nx, CoordType(0.0), m_max_x);
     const CoordType y = clamp(point.y * m_scalar_ny, CoordType(0.0), m_max_y);
     const CoordType z = clamp(point.z * m_scalar_nz, CoordType(0.0), m_max_z);
-    const size_t ix = truncate<size_t>(x);
-    const size_t iy = truncate<size_t>(y);
-    const size_t iz = truncate<size_t>(z);
+    const size_t    ix = truncate<size_t>(x);
+    const size_t    iy = truncate<size_t>(y);
+    const size_t    iz = truncate<size_t>(z);
 
     // Return the values of that voxel.
     const ValueType* APPLESEED_RESTRICT source = voxel(ix, iy, iz);
@@ -213,16 +200,16 @@ void VoxelGrid3<ValueType, CoordType>::nearest_lookup(
 
 template <typename ValueType, typename CoordType>
 void VoxelGrid3<ValueType, CoordType>::linear_lookup(
-    const PointType&                point,
-    ValueType* APPLESEED_RESTRICT   values) const
+    const PointType& point,
+    ValueType* APPLESEED_RESTRICT values) const
 {
     // Compute the coordinates of the voxel containing the lookup point.
     const CoordType x = saturate(point.x) * m_max_x;
     const CoordType y = saturate(point.y) * m_max_y;
     const CoordType z = saturate(point.z) * m_max_z;
-    const size_t ix = truncate<size_t>(x);
-    const size_t iy = truncate<size_t>(y);
-    const size_t iz = truncate<size_t>(z);
+    const size_t    ix = truncate<size_t>(x);
+    const size_t    iy = truncate<size_t>(y);
+    const size_t    iz = truncate<size_t>(z);
 
     // Compute interpolation weights.
     const ValueType x1 = static_cast<ValueType>(x - ix);
@@ -245,9 +232,9 @@ void VoxelGrid3<ValueType, CoordType>::linear_lookup(
     const ValueType w111 = x1 * y1z1;
 
     // Compute source pointers.
-    const size_t dx = ix == m_nx - 1 ? 0 : m_channel_count;
-    const size_t dy = iy == m_ny - 1 ? 0 : m_row_size;
-    const size_t dz = iz == m_nz - 1 ? 0 : m_slice_size;
+    const size_t     dx = ix == m_nx - 1 ? 0 : m_channel_count;
+    const size_t     dy = iy == m_ny - 1 ? 0 : m_row_size;
+    const size_t     dz = iz == m_nz - 1 ? 0 : m_slice_size;
     const ValueType* APPLESEED_RESTRICT src = voxel(ix, iy, iz);
     const ValueType* APPLESEED_RESTRICT src000 = src;
     const ValueType* APPLESEED_RESTRICT src100 = src + dx;
@@ -261,22 +248,16 @@ void VoxelGrid3<ValueType, CoordType>::linear_lookup(
     // Blend.
     for (size_t i = 0; i < m_channel_count; ++i)
     {
-       *values++ =
-           *src000++ * w000 +
-           *src100++ * w100 +
-           *src010++ * w010 +
-           *src110++ * w110 +
-           *src001++ * w001 +
-           *src101++ * w101 +
-           *src011++ * w011 +
-           *src111++ * w111;
+        *values++ = *src000++ * w000 + *src100++ * w100 + *src010++ * w010 +
+                    *src110++ * w110 + *src001++ * w001 + *src101++ * w101 +
+                    *src011++ * w011 + *src111++ * w111;
     }
 }
 
 template <typename ValueType, typename CoordType>
 void VoxelGrid3<ValueType, CoordType>::quadratic_lookup(
-    const PointType&                point,
-    ValueType* APPLESEED_RESTRICT   values) const
+    const PointType& point,
+    ValueType* APPLESEED_RESTRICT values) const
 {
     //
     // The quadratic interpolation polynomial used here is defined as follow:
@@ -316,9 +297,9 @@ void VoxelGrid3<ValueType, CoordType>::quadratic_lookup(
     const CoordType x = saturate(point.x) * m_max_x;
     const CoordType y = saturate(point.y) * m_max_y;
     const CoordType z = saturate(point.z) * m_max_z;
-    const size_t ix = truncate<size_t>(x + CoordType(0.5));
-    const size_t iy = truncate<size_t>(y + CoordType(0.5));
-    const size_t iz = truncate<size_t>(z + CoordType(0.5));
+    const size_t    ix = truncate<size_t>(x + CoordType(0.5));
+    const size_t    iy = truncate<size_t>(y + CoordType(0.5));
+    const size_t    iz = truncate<size_t>(z + CoordType(0.5));
 
     // Compute interpolation weights.
     const ValueType tx = static_cast<ValueType>(x - ix) + ValueType(0.5);
@@ -338,12 +319,12 @@ void VoxelGrid3<ValueType, CoordType>::quadratic_lookup(
     const ValueType wz0 = wz2 - tz + ValueType(0.5);
 
     // Compute source pointers.
-    const size_t dxn = ix == 0 ? 0 : m_channel_count;
-    const size_t dyn = iy == 0 ? 0 : m_row_size;
-    const size_t dzn = iz == 0 ? 0 : m_slice_size;
-    const size_t dxp = ix == m_nx - 1 ? 0 : m_channel_count;
-    const size_t dyp = iy == m_ny - 1 ? 0 : m_row_size;
-    const size_t dzp = iz == m_nz - 1 ? 0 : m_slice_size;
+    const size_t     dxn = ix == 0 ? 0 : m_channel_count;
+    const size_t     dyn = iy == 0 ? 0 : m_row_size;
+    const size_t     dzn = iz == 0 ? 0 : m_slice_size;
+    const size_t     dxp = ix == m_nx - 1 ? 0 : m_channel_count;
+    const size_t     dyp = iy == m_ny - 1 ? 0 : m_row_size;
+    const size_t     dzp = iz == m_nz - 1 ? 0 : m_slice_size;
     const ValueType* APPLESEED_RESTRICT src = voxel(ix, iy, iz);
     const ValueType* APPLESEED_RESTRICT src111 = src;
     const ValueType* APPLESEED_RESTRICT src011 = src111 - dxn;
@@ -396,6 +377,6 @@ void VoxelGrid3<ValueType, CoordType>::quadratic_lookup(
     }
 }
 
-}       // namespace foundation
+}  // namespace foundation
 
 #endif  // !APPLESEED_FOUNDATION_MATH_VOXELGRID_H

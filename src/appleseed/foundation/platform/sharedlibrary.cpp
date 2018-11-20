@@ -80,15 +80,15 @@ ExceptionSharedLibCannotGetSymbol::ExceptionSharedLibCannotGetSymbol(
 
 namespace
 {
-    string get_last_error_message()
-    {
+string get_last_error_message()
+{
 #ifdef _WIN32
-        return get_windows_last_error_message();
+    return get_windows_last_error_message();
 #else
-        return dlerror();
+    return dlerror();
 #endif
-    }
 }
+}  // namespace
 
 const char* SharedLibrary::get_default_file_extension()
 {
@@ -109,9 +109,7 @@ SharedLibrary::SharedLibrary(const char* path)
 
     if (m_handle == nullptr)
     {
-        throw ExceptionCannotLoadSharedLib(
-            path,
-            get_last_error_message().c_str());
+        throw ExceptionCannotLoadSharedLib(path, get_last_error_message().c_str());
     }
 }
 
@@ -134,12 +132,10 @@ void* SharedLibrary::get_symbol(const char* name, const bool no_throw) const
 
     if (symbol == nullptr && !no_throw)
     {
-        throw ExceptionSharedLibCannotGetSymbol(
-            name,
-            get_last_error_message().c_str());
+        throw ExceptionSharedLibCannotGetSymbol(name, get_last_error_message().c_str());
     }
 
     return symbol;
 }
 
-}   // namespace foundation
+}  // namespace foundation

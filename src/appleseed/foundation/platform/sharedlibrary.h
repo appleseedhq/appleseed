@@ -43,14 +43,11 @@ namespace foundation
 // Exception thrown when a shared library cannot be loaded.
 //
 
-class ExceptionCannotLoadSharedLib
-  : public Exception
+class ExceptionCannotLoadSharedLib : public Exception
 {
   public:
     // Constructor.
-    ExceptionCannotLoadSharedLib(
-        const char* path,
-        const char* error_msg);
+    ExceptionCannotLoadSharedLib(const char* path, const char* error_msg);
 };
 
 
@@ -58,14 +55,11 @@ class ExceptionCannotLoadSharedLib
 // Exception thrown when a shared library symbol is not found.
 //
 
-class ExceptionSharedLibCannotGetSymbol
-  : public Exception
+class ExceptionSharedLibCannotGetSymbol : public Exception
 {
   public:
     // Constructor.
-    ExceptionSharedLibCannotGetSymbol(
-        const char* symbol_name,
-        const char* error_msg);
+    ExceptionSharedLibCannotGetSymbol(const char* symbol_name, const char* error_msg);
 };
 
 
@@ -73,8 +67,7 @@ class ExceptionSharedLibCannotGetSymbol
 // SharedLibrary class.
 //
 
-class SharedLibrary
-  : public NonCopyable
+class SharedLibrary : public NonCopyable
 {
   public:
     // Return the OS' default file extension for shared libraries.
@@ -93,10 +86,10 @@ class SharedLibrary
 #ifdef _WIN32
     HMODULE m_handle;
 #else
-    void*   m_handle;
+    void* m_handle;
 #endif
 };
 
-}       // namespace foundation
+}  // namespace foundation
 
 #endif  // !APPLESEED_FOUNDATION_PLATFORM_SHAREDLIBRARY_H

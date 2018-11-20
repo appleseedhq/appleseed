@@ -47,14 +47,14 @@ namespace foundation
 //
 
 void Drawing::draw_filled_rect(
-    Image&              image,
-    const Vector2i&     from,
-    const Vector2i&     to,
-    const Color4f&      color)
+    Image&          image,
+    const Vector2i& from,
+    const Vector2i& to,
+    const Color4f&  color)
 {
     const CanvasProperties& props = image.properties();
-    const int w = static_cast<int>(props.m_canvas_width);
-    const int h = static_cast<int>(props.m_canvas_height);
+    const int               w = static_cast<int>(props.m_canvas_width);
+    const int               h = static_cast<int>(props.m_canvas_height);
 
     const size_t x0 = static_cast<size_t>(max(from.x, 0));
     const size_t y0 = static_cast<size_t>(max(from.y, 0));
@@ -71,28 +71,19 @@ void Drawing::draw_filled_rect(
             image.get_pixel(x, y, background_premult);
 
             image.set_pixel(
-                x, y,
-                color_premult + background_premult * (1.0f - color_premult.a));
+                x, y, color_premult + background_premult * (1.0f - color_premult.a));
         }
     }
 }
 
-void Drawing::draw_dot(
-    Image&              image,
-    const Vector2d&     position,
-    const Color4f&      color)
+void Drawing::draw_dot(Image& image, const Vector2d& position, const Color4f& color)
 {
-    static const uint8 DotAlphaMask[16] =
-    {
-         24, 171, 178,  48,
-        159, 255, 255, 207,
-        183, 255, 255, 231,
-         64, 227, 241, 112
-    };
+    static const uint8 DotAlphaMask[16] = { 24,  171, 178, 48,  159, 255, 255, 207,
+                                            183, 255, 255, 231, 64,  227, 241, 112 };
 
     const CanvasProperties& props = image.properties();
-    const int w = static_cast<int>(props.m_canvas_width);
-    const int h = static_cast<int>(props.m_canvas_height);
+    const int               w = static_cast<int>(props.m_canvas_width);
+    const int               h = static_cast<int>(props.m_canvas_height);
 
     const int cx = static_cast<int>(position.x * props.m_canvas_width);
     const int cy = static_cast<int>(position.y * props.m_canvas_height);
@@ -114,9 +105,7 @@ void Drawing::draw_dot(
 
                 Color4f background_premult;
                 image.get_pixel(
-                    static_cast<size_t>(ix),
-                    static_cast<size_t>(iy),
-                    background_premult);
+                    static_cast<size_t>(ix), static_cast<size_t>(iy), background_premult);
 
                 image.set_pixel(
                     static_cast<size_t>(ix),
@@ -128,17 +117,17 @@ void Drawing::draw_dot(
 }
 
 void Drawing::blit_bitmap(
-    Image&              image,
-    const Vector2i&     position,
-    const void*         bitmap,
-    const size_t        bitmap_width,
-    const size_t        bitmap_height,
-    const PixelFormat   bitmap_pixel_format,
-    const Color4f&      tint)
+    Image&            image,
+    const Vector2i&   position,
+    const void*       bitmap,
+    const size_t      bitmap_width,
+    const size_t      bitmap_height,
+    const PixelFormat bitmap_pixel_format,
+    const Color4f&    tint)
 {
     const CanvasProperties& props = image.properties();
-    const int image_width = static_cast<int>(props.m_canvas_width);
-    const int image_height = static_cast<int>(props.m_canvas_height);
+    const int               image_width = static_cast<int>(props.m_canvas_width);
+    const int               image_height = static_cast<int>(props.m_canvas_height);
 
     const size_t pixel_size = 4 * Pixel::size(bitmap_pixel_format);
 
@@ -151,7 +140,8 @@ void Drawing::blit_bitmap(
 
             if (ix >= 0 && iy >= 0 && ix < image_width && iy < image_height)
             {
-                const uint8* pixel = static_cast<const uint8*>(bitmap) + (y * bitmap_width + x) * pixel_size;
+                const uint8* pixel = static_cast<const uint8*>(bitmap) +
+                                     (y * bitmap_width + x) * pixel_size;
 
                 Color4f color_premult(0.0f);
                 Pixel::convert_from_format<float>(
@@ -166,9 +156,7 @@ void Drawing::blit_bitmap(
 
                 Color4f background_premult;
                 image.get_pixel(
-                    static_cast<size_t>(ix),
-                    static_cast<size_t>(iy),
-                    background_premult);
+                    static_cast<size_t>(ix), static_cast<size_t>(iy), background_premult);
 
                 image.set_pixel(
                     static_cast<size_t>(ix),
@@ -179,4 +167,4 @@ void Drawing::blit_bitmap(
     }
 }
 
-}   // namespace foundation
+}  // namespace foundation

@@ -45,10 +45,12 @@
 #include <vector>
 
 // Forward declarations.
+// clang-format off
 namespace foundation    { class Dictionary; }
 namespace renderer      { class LightSample; }
 namespace renderer      { class Scene; }
 namespace renderer      { class ShadingPoint; }
+// clang-format on
 
 namespace renderer
 {
@@ -58,14 +60,11 @@ namespace renderer
 // such as unidirectional path tracing.
 //
 
-class BackwardLightSampler
-  : public LightSamplerBase
+class BackwardLightSampler : public LightSamplerBase
 {
   public:
     // Constructor.
-    BackwardLightSampler(
-        const Scene&                        scene,
-        const ParamArray&                   params = ParamArray());
+    BackwardLightSampler(const Scene& scene, const ParamArray& params = ParamArray());
 
     // Return true if the scene contains at least one non-physical light or emitting triangle.
     bool has_lights() const;
@@ -78,32 +77,32 @@ class BackwardLightSampler
 
     // Sample the light set.
     void sample_lightset(
-        const ShadingRay::Time&             time,
-        const foundation::Vector3f&         s,
-        const ShadingPoint&                 shading_point,
-        LightSample&                        light_sample) const;
+        const ShadingRay::Time&     time,
+        const foundation::Vector3f& s,
+        const ShadingPoint&         shading_point,
+        LightSample&                light_sample) const;
 
     // Compute the probability density in area measure of a given light sample.
     // Shading points are located on the light (emitting triangle) hit by the
     // path tracer, and the surface actually being illuminated, respectively.
     float evaluate_pdf(
-        const ShadingPoint&                 light_shading_point,
-        const ShadingPoint&                 surface_shading_point) const;
+        const ShadingPoint& light_shading_point,
+        const ShadingPoint& surface_shading_point) const;
 
     // Return the metadata of the light sampler parameters.
     static foundation::Dictionary get_params_metadata();
 
   private:
-    bool                                    m_use_light_tree;
+    bool m_use_light_tree;
 
-    NonPhysicalLightVector                  m_light_tree_lights;
-    std::unique_ptr<LightTree>              m_light_tree;
+    NonPhysicalLightVector     m_light_tree_lights;
+    std::unique_ptr<LightTree> m_light_tree;
 
     void sample_light_tree(
-        const ShadingRay::Time&             time,
-        const foundation::Vector3f&         s,
-        const ShadingPoint&                 shading_point,
-        LightSample&                        light_sample) const;
+        const ShadingRay::Time&     time,
+        const foundation::Vector3f& s,
+        const ShadingPoint&         shading_point,
+        LightSample&                light_sample) const;
 };
 
 
@@ -113,10 +112,8 @@ class BackwardLightSampler
 
 inline bool BackwardLightSampler::has_lights() const
 {
-    return
-        m_non_physical_lights_cdf.valid() ||
-        !m_emitting_triangles.empty() ||
-        !m_light_tree_lights.empty();
+    return m_non_physical_lights_cdf.valid() || !m_emitting_triangles.empty() ||
+           !m_light_tree_lights.empty();
 }
 
 inline bool BackwardLightSampler::has_hittable_lights() const
@@ -129,6 +126,6 @@ inline bool BackwardLightSampler::has_lightset() const
     return !m_emitting_triangles.empty() || !m_light_tree_lights.empty();
 }
 
-}       // namespace renderer
+}  // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_BACKWARDLIGHTSAMPLER_H

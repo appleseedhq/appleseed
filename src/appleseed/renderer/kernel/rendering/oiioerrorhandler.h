@@ -47,8 +47,7 @@ namespace renderer
 // An OpenImageIO-to-appleseed error handler adapter.
 //
 
-class OIIOErrorHandler
-  : public OIIO::ErrorHandler
+class OIIOErrorHandler : public OIIO::ErrorHandler
 {
   public:
     OIIOErrorHandler();
@@ -59,6 +58,6 @@ class OIIOErrorHandler
     static const int ErrorCodeMask = 0xffff0000;
 };
 
-}       // namespace renderer
+}  // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_OIIOERRORHANDLER_H

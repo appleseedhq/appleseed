@@ -40,10 +40,12 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+// clang-format off
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class Material; }
 namespace renderer      { class ParamArray; }
+// clang-format on
 
 namespace renderer
 {
@@ -52,8 +54,7 @@ namespace renderer
 // OSL material factory.
 //
 
-class APPLESEED_DLLSYMBOL OSLMaterialFactory
-  : public IMaterialFactory
+class APPLESEED_DLLSYMBOL OSLMaterialFactory : public IMaterialFactory
 {
   public:
     // Delete this instance.
@@ -70,10 +71,10 @@ class APPLESEED_DLLSYMBOL OSLMaterialFactory
 
     // Create a new material instance.
     foundation::auto_release_ptr<Material> create(
-        const char*         name,
-        const ParamArray&   params) const override;
+        const char*       name,
+        const ParamArray& params) const override;
 };
 
-}       // namespace renderer
+}  // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_OSLMATERIAL_H
