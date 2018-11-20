@@ -63,8 +63,8 @@ namespace
       : public UnfilteredAOVAccumulator
     {
       public:
-        UVAOVAccumulator(Image& image, Image& filter_image)
-          : UnfilteredAOVAccumulator(image, filter_image)
+        explicit UVAOVAccumulator(Image& image)
+          : UnfilteredAOVAccumulator(image)
         {
         }
 
@@ -78,36 +78,24 @@ namespace
             const Vector2i& pi = pixel_context.get_pixel_coords();
 
             // Ignore samples outside the tile.
-            if (outside_tile(pi))
+            if (!inside_tile(pi))
                 return;
 
             float* p = reinterpret_cast<float*>(
-                get_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
+                get_tile().pixel(pi.x - m_tile_bbox.min.x, pi.y - m_tile_bbox.min.y));
 
-            float* f = reinterpret_cast<float*>(
-                get_filter_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
-
-            const float min_sample_square_distance = *f;
-            const float sample_square_distance =
-                square_distance_to_pixel_center(pixel_context.get_sample_position());
-
-            if (sample_square_distance < min_sample_square_distance)
+            if (shading_point.hit_surface())
             {
-                if (shading_point.hit_surface())
-                {
-                    const Vector2f& uv = shading_point.get_uv(0);
-                    p[0] = uv[0];
-                    p[1] = uv[1];
-                    p[2] = 0.0f;
-                    *f = sample_square_distance;
-                }
-                else
-                {
-                    p[0] = 0.0f;
-                    p[1] = 0.0f;
-                    p[2] = 0.0f;
-                    *f = sample_square_distance;
-                }
+                const Vector2f& uv = shading_point.get_uv(0);
+                p[0] = uv[0];
+                p[1] = uv[1];
+                p[2] = 0.0f;
+            }
+            else
+            {
+                p[0] = 0.0f;
+                p[1] = 0.0f;
+                p[2] = 0.0f;
             }
         }
     };
@@ -117,7 +105,7 @@ namespace
     // UV AOV.
     //
 
-    const char* Model = "uv_aov";
+    const char* UVAOVModel = "uv_aov";
 
     class UVAOV
       : public UnfilteredAOV
@@ -135,30 +123,14 @@ namespace
 
         const char* get_model() const override
         {
-            return Model;
+            return UVAOVModel;
         }
 
-        size_t get_channel_count() const override
-        {
-            return 3;
-        }
-
-        const char** get_channel_names() const override
-        {
-            static const char* ChannelNames[] = {"R", "G", "B"};
-            return ChannelNames;
-        }
-
-        void clear_image() override
-        {
-            m_image->clear(Color3f(0.0f, 0.0f, 0.0f));
-            m_filter_image->clear(Color<float, 1>(numeric_limits<float>::max()));
-        }
-
+      protected:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
-                new UVAOVAccumulator(get_image(), *m_filter_image));
+                new UVAOVAccumulator(get_image()));
         }
     };
 }
@@ -175,14 +147,14 @@ void UVAOVFactory::release()
 
 const char* UVAOVFactory::get_model() const
 {
-    return Model;
+    return UVAOVModel;
 }
 
 Dictionary UVAOVFactory::get_model_metadata() const
 {
     return
         Dictionary()
-            .insert("name", Model)
+            .insert("name", get_model())
             .insert("label", "UV");
 }
 

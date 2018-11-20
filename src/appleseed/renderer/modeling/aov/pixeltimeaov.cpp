@@ -65,11 +65,11 @@ namespace
     //
 
     class PixelTimeAOVAccumulator
-      : public AOVAccumulator
+      : public UnfilteredAOVAccumulator
     {
       public:
         explicit PixelTimeAOVAccumulator(Image& image)
-          : m_image(image)
+          : UnfilteredAOVAccumulator(image)
         {
         }
 
@@ -79,16 +79,7 @@ namespace
             const size_t                tile_y,
             const size_t                max_spp) override
         {
-            // Fetch the destination tile.
-            const CanvasProperties& props = frame.image().properties();
-            m_tile = &m_image.tile(tile_x, tile_y);
-
-            // Fetch the tile bounds (inclusive).
-            m_tile_origin_x = static_cast<int>(tile_x * props.m_tile_width);
-            m_tile_origin_y = static_cast<int>(tile_y * props.m_tile_height);
-            m_tile_end_x = static_cast<int>(m_tile_origin_x + m_tile->get_width());
-            m_tile_end_y = static_cast<int>(m_tile_origin_y + m_tile->get_height());
-
+            UnfilteredAOVAccumulator::on_tile_begin(frame, tile_x, tile_y, max_spp);
             m_samples.reserve(max_spp);
         }
 
@@ -103,7 +94,7 @@ namespace
             m_stopwatch.measure();
 
             // Only collect samples inside the tile.
-            if (!outside_tile(pixel_context.get_pixel_coords()))
+            if (inside_tile(pixel_context.get_pixel_coords()))
                 m_samples.push_back(m_stopwatch.get_seconds());
         }
 
@@ -128,31 +119,14 @@ namespace
             const double median = m_samples[mid];
 
             float* p = reinterpret_cast<float*>(
-                m_tile->pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
+                m_tile->pixel(pi.x - m_tile_bbox.min.x, pi.y - m_tile_bbox.min.y));
 
             *p += static_cast<float>(median) * m_samples.size();
         }
 
       private:
-        Image&                              m_image;
-        foundation::Tile*                   m_tile;
-
-        int                                 m_tile_origin_x;
-        int                                 m_tile_origin_y;
-        int                                 m_tile_end_x;
-        int                                 m_tile_end_y;
-
         Stopwatch<DefaultProcessorTimer>    m_stopwatch;
         std::vector<double>                 m_samples;
-
-        bool outside_tile(const Vector2i& pi) const
-        {
-            return
-                pi.x < m_tile_origin_x ||
-                pi.y < m_tile_origin_y ||
-                pi.x >= m_tile_end_x ||
-                pi.y >= m_tile_end_y;
-        }
     };
 
 
@@ -163,11 +137,11 @@ namespace
     const char* PixelTimeAOVModel = "pixel_time_aov";
 
     class PixelTimeAOV
-      : public AOV
+      : public UnfilteredAOV
     {
       public:
         explicit PixelTimeAOV(const ParamArray& params)
-          : AOV("pixel_time", params)
+          : UnfilteredAOV("pixel_time", params)
         {
         }
 
@@ -192,35 +166,15 @@ namespace
             return ChannelNames;
         }
 
-        bool has_color_data() const override
-        {
-            return false;
-        }
-
-        void create_image(
-            const size_t canvas_width,
-            const size_t canvas_height,
-            const size_t tile_width,
-            const size_t tile_height,
-            ImageStack&  aov_images) override
-        {
-            m_image =
-                new Image(
-                    canvas_width,
-                    canvas_height,
-                    tile_width,
-                    tile_height,
-                    get_channel_count(),
-                    PixelFormatFloat);
-        }
-
         void clear_image() override
         {
             m_image->clear(Color<float, 1>(0.0f));
         }
 
-        void post_process_image(const AABB2u& crop_window) override
+        void post_process_image(const Frame& frame) override
         {
+            const AABB2u& crop_window = frame.get_crop_window();
+
             // Find the maximum value.
             float max_time = 0.0f;
 
@@ -254,6 +208,7 @@ namespace
             }
         }
 
+      protected:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(new PixelTimeAOVAccumulator(get_image()));

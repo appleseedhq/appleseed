@@ -43,7 +43,7 @@
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
-#include "renderer/modeling/aov/diagnosticaov.h"
+#include "renderer/modeling/aov/pixelsamplecountaov.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/utility/settingsparsing.h"
 
@@ -297,20 +297,19 @@ namespace
 
                 if (m_sample_aov_tile)
                 {
-                    value[0] = static_cast<float>(trackers[0].get_size());
+                    value[0] += static_cast<float>(trackers[0].get_size());
 
                     m_sample_aov_tile->set_pixel(pt.x, pt.y, value);
                 }
 
                 if (m_variation_aov_tile)
                 {
-                    value[0] =
-                        saturate(
-                            max(
-                                trackers[0].get_variation(),
-                                trackers[1].get_variation(),
-                                trackers[2].get_variation())
-                            / m_params.m_max_variation);
+                    value[0] +=
+                        max(
+                            trackers[0].get_variation(),
+                            trackers[1].get_variation(),
+                            trackers[2].get_variation())
+                        / (m_params.m_max_variation * static_cast<float>(m_params.m_passes));
 
                     m_variation_aov_tile->set_pixel(pt.x, pt.y, value);
                 }
@@ -336,12 +335,14 @@ namespace
             const size_t                    m_min_samples;
             const size_t                    m_max_samples;
             const float                     m_max_variation;
+            const size_t                    m_passes;
 
             explicit Parameters(const ParamArray& params)
               : m_sampling_mode(get_sampling_context_mode(params))
               , m_min_samples(params.get_required<size_t>("min_samples", 16))
               , m_max_samples(params.get_required<size_t>("max_samples", 256))
               , m_max_variation(pow(10.0f, -params.get_optional<float>("quality", 2.0f)))
+              , m_passes(params.get_optional<size_t>("passes", 1))
             {
             }
         };

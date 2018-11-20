@@ -43,8 +43,9 @@
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
-#include "renderer/modeling/aov/diagnosticaov.h"
+#include "renderer/modeling/aov/pixelsamplecountaov.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/utility/bbox.h"
 #include "renderer/utility/settingsparsing.h"
 
 // appleseed.foundation headers.
@@ -256,7 +257,9 @@ namespace
                         frame.aovs().get_by_index(m_sample_aov_index));
 
                 // The AOV takes care of normalizing values depending on sampling parameters.
-                sample_aov->set_normalization_range(m_params.m_min_samples, m_params.m_max_samples);
+                sample_aov->set_normalization_range(
+                    m_params.m_min_samples,
+                    m_params.m_max_samples * m_params.m_passes);
             }
         }
 
@@ -303,21 +306,15 @@ namespace
             const int tile_origin_x = static_cast<int>(frame_properties.m_tile_width * tile_x);
             const int tile_origin_y = static_cast<int>(frame_properties.m_tile_height * tile_y);
 
-            // Compute the image space bounding box of the pixels to render.
-            AABB2i tile_bbox;
-            tile_bbox.min.x = tile_origin_x;
-            tile_bbox.min.y = tile_origin_y;
-            tile_bbox.max.x = tile_origin_x + static_cast<int>(tile.get_width()) - 1;
-            tile_bbox.max.y = tile_origin_y + static_cast<int>(tile.get_height()) - 1;
-            tile_bbox = AABB2i::intersect(tile_bbox, AABB2i(frame.get_crop_window()));
+            // Compute the tile space bounding box of the pixels to render.
+            const AABB2i tile_bbox = compute_tile_space_bbox(
+                tile,
+                tile_origin_x,
+                tile_origin_y,
+                frame.get_crop_window());
+
             if (!tile_bbox.is_valid())
                 return;
-
-            // Transform the bounding box to local (tile) space.
-            tile_bbox.min.x -= tile_origin_x;
-            tile_bbox.min.y -= tile_origin_y;
-            tile_bbox.max.x -= tile_origin_x;
-            tile_bbox.max.y -= tile_origin_y;
 
             // Pad the bounding box with tile margins.
             AABB2i padded_tile_bbox;

@@ -75,8 +75,6 @@ class DenoiserAOV
 
     void clear_image() override;
 
-    foundation::auto_release_ptr<AOVAccumulator> create_accumulator() const override;
-
     void fill_empty_samples() const;
 
     const bcd::Deepimf& histograms_image() const;
@@ -86,6 +84,9 @@ class DenoiserAOV
     void compute_covariances_image(bcd::Deepimf& covariances) const;
 
     bool write_images(const char* file_path) const;
+
+  protected:
+    foundation::auto_release_ptr<AOVAccumulator> create_accumulator() const override;
 
   private:
     friend class DenoiserAOVFactory;

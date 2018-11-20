@@ -56,6 +56,13 @@ BBox compute_union(const Iterator begin, const Iterator end);
 template <typename BBox, typename Iterator>
 BBox interpolate(const Iterator begin, const Iterator end, const double time);
 
+template <typename BBox, typename Tile, typename Int>
+BBox compute_tile_space_bbox(
+    const Tile&     tile,
+    const Int       tile_origin_x,
+    const Int       tile_origin_y,
+    const BBox&     crop_window);
+
 
 //
 // Implementation.
@@ -114,6 +121,27 @@ BBox interpolate(const Iterator begin, const Iterator end, const double time)
     const ValueType k = static_cast<ValueType>(time * motion_segment_count - prev_index);
 
     return foundation::lerp(first[prev_index], first[prev_index + 1], k);
+}
+
+template <typename BBox, typename Tile, typename Int>
+BBox compute_tile_space_bbox(
+    const Tile&     tile,
+    const Int       tile_origin_x,
+    const Int       tile_origin_y,
+    const BBox&     crop_window)
+{
+    BBox tile_bbox;
+    tile_bbox.min.x = tile_origin_x;
+    tile_bbox.min.y = tile_origin_y;
+    tile_bbox.max.x = tile_origin_x + static_cast<Int>(tile.get_width()) - 1;
+    tile_bbox.max.y = tile_origin_y + static_cast<Int>(tile.get_height()) - 1;
+    tile_bbox = BBox::intersect(tile_bbox, crop_window);
+    // Transform the bounding box to local (tile) space.
+    tile_bbox.min.x -= tile_origin_x;
+    tile_bbox.min.y -= tile_origin_y;
+    tile_bbox.max.x -= tile_origin_x;
+    tile_bbox.max.y -= tile_origin_y;
+    return tile_bbox;
 }
 
 }       // namespace renderer

@@ -152,7 +152,7 @@ namespace
     // Diffuse AOV.
     //
 
-    const char* DiffuseModel = "diffuse_aov";
+    const char* DiffuseAOVModel = "diffuse_aov";
 
     class DiffuseAOV
       : public ColorAOV
@@ -170,9 +170,10 @@ namespace
 
         const char* get_model() const override
         {
-            return DiffuseModel;
+            return DiffuseAOVModel;
         }
 
+      protected:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
@@ -185,7 +186,7 @@ namespace
     // DirectDiffuse AOV.
     //
 
-    const char* DirectDiffuseModel = "direct_diffuse_aov";
+    const char* DirectDiffuseAOVModel = "direct_diffuse_aov";
 
     class DirectDiffuseAOV
       : public ColorAOV
@@ -203,9 +204,10 @@ namespace
 
         const char* get_model() const override
         {
-            return DirectDiffuseModel;
+            return DirectDiffuseAOVModel;
         }
 
+      protected:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
@@ -218,7 +220,7 @@ namespace
     // IndirectDiffuse AOV.
     //
 
-    const char* IndirectDiffuseModel = "indirect_diffuse_aov";
+    const char* IndirectDiffuseAOVModel = "indirect_diffuse_aov";
 
     class IndirectDiffuseAOV
       : public ColorAOV
@@ -236,9 +238,10 @@ namespace
 
         const char* get_model() const override
         {
-            return IndirectDiffuseModel;
+            return IndirectDiffuseAOVModel;
         }
 
+      protected:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
@@ -259,7 +262,7 @@ void DiffuseAOVFactory::release()
 
 const char* DiffuseAOVFactory::get_model() const
 {
-    return DiffuseModel;
+    return DiffuseAOVModel;
 }
 
 Dictionary DiffuseAOVFactory::get_model_metadata() const
@@ -294,7 +297,7 @@ void DirectDiffuseAOVFactory::release()
 
 const char* DirectDiffuseAOVFactory::get_model() const
 {
-    return DirectDiffuseModel;
+    return DirectDiffuseAOVModel;
 }
 
 Dictionary DirectDiffuseAOVFactory::get_model_metadata() const
@@ -329,7 +332,7 @@ void IndirectDiffuseAOVFactory::release()
 
 const char* IndirectDiffuseAOVFactory::get_model() const
 {
-    return IndirectDiffuseModel;
+    return IndirectDiffuseAOVModel;
 }
 
 Dictionary IndirectDiffuseAOVFactory::get_model_metadata() const

@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_AOV_DIAGNOSTICAOV_H
-#define APPLESEED_RENDERER_MODELING_AOV_DIAGNOSTICAOV_H
+#ifndef APPLESEED_RENDERER_MODELING_AOV_PIXELSAMPLECOUNTAOV_H
+#define APPLESEED_RENDERER_MODELING_AOV_PIXELSAMPLECOUNTAOV_H
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
@@ -47,88 +47,34 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
-namespace renderer      { class ImageStack; }
+namespace renderer      { class Frame; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
 
 //
-// Diagnostic AOV.
-//
-
-class DiagnosticAOV
-  : public AOV
-{
-  public:
-    DiagnosticAOV(const char* name, const ParamArray& params);
-
-    void release() override;
-
-    size_t get_channel_count() const override;
-
-    const char** get_channel_names() const override;
-
-    bool has_color_data() const override;
-
-    void create_image(
-        const size_t canvas_width,
-        const size_t canvas_height,
-        const size_t tile_width,
-        const size_t tile_height,
-        ImageStack&  aov_images) override;
-
-    void clear_image() override;
-
-    foundation::auto_release_ptr<AOVAccumulator> create_accumulator() const override;
-};
-
-
-//
 // Pixel Sample Count AOV.
 //
 
 class PixelSampleCountAOV
-  : public DiagnosticAOV
+  : public UnfilteredAOV
 {
   public:
     explicit PixelSampleCountAOV(const ParamArray& params);
 
     const char* get_model() const override;
 
-    void post_process_image(const foundation::AABB2u& crop_window) override;
+    void post_process_image(const Frame& frame) override;
 
     void set_normalization_range(const size_t min_spp, const size_t max_spp);
+
+  protected:
+    foundation::auto_release_ptr<AOVAccumulator> create_accumulator() const override;
 
   private:
     size_t m_min_spp;
     size_t m_max_spp;
-};
-
-
-//
-// A factory for invalid sample AOVs.
-//
-
-class APPLESEED_DLLSYMBOL InvalidSamplesAOVFactory
-  : public IAOVFactory
-{
-  public:
-    // Delete this instance.
-    void release() override;
-
-    // Return a string identifying this AOV model.
-    const char* get_model() const override;
-
-    // Return metadata for this AOV model.
-    foundation::Dictionary get_model_metadata() const override;
-
-    // Return metadata for the inputs of this AOV model.
-    foundation::DictionaryArray get_input_metadata() const override;
-
-    // Create a new AOV instance.
-    foundation::auto_release_ptr<AOV> create(
-        const ParamArray&   params) const override;
 };
 
 
@@ -153,36 +99,9 @@ class APPLESEED_DLLSYMBOL PixelSampleCountAOVFactory
     foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new AOV instance.
-    foundation::auto_release_ptr<AOV> create(
-        const ParamArray&   params) const override;
-};
-
-
-//
-// A factory for pixel variation AOVs.
-//
-
-class APPLESEED_DLLSYMBOL PixelVariationAOVFactory
-  : public IAOVFactory
-{
-  public:
-    // Delete this instance.
-    void release() override;
-
-    // Return a string identifying this AOV model.
-    const char* get_model() const override;
-
-    // Return metadata for this AOV model.
-    foundation::Dictionary get_model_metadata() const override;
-
-    // Return metadata for the inputs of this AOV model.
-    foundation::DictionaryArray get_input_metadata() const override;
-
-    // Create a new AOV instance.
-    foundation::auto_release_ptr<AOV> create(
-        const ParamArray&   params) const override;
+    foundation::auto_release_ptr<AOV> create(const ParamArray& params) const override;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_AOV_DIAGNOSTICAOV_H
+#endif  // !APPLESEED_RENDERER_MODELING_AOV_PIXELSAMPLECOUNTAOV_H

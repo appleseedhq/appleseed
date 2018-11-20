@@ -87,7 +87,7 @@ namespace
     // NPRShading AOV.
     //
 
-    const char* NPRShadingModel = "npr_shading_aov";
+    const char* NPRShadingAOVModel = "npr_shading_aov";
 
     class NPRShadingAOV
       : public ColorAOV
@@ -105,20 +105,10 @@ namespace
 
         const char* get_model() const override
         {
-            return NPRShadingModel;
+            return NPRShadingAOVModel;
         }
 
-        size_t get_channel_count() const override
-        {
-            return 4;
-        }
-
-        const char** get_channel_names() const override
-        {
-            static const char* ChannelNames[] = {"R", "G", "B", "A"};
-            return ChannelNames;
-        }
-
+      protected:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
@@ -160,7 +150,7 @@ namespace
     // NPRContour AOV.
     //
 
-    const char* NPRContourModel = "npr_contour_aov";
+    const char* NPRContourAOVModel = "npr_contour_aov";
 
     class NPRContourAOV
       : public ColorAOV
@@ -178,20 +168,10 @@ namespace
 
         const char* get_model() const override
         {
-            return NPRContourModel;
+            return NPRContourAOVModel;
         }
 
-        size_t get_channel_count() const override
-        {
-            return 4;
-        }
-
-        const char** get_channel_names() const override
-        {
-            static const char* ChannelNames[] = {"R", "G", "B", "A"};
-            return ChannelNames;
-        }
-
+      protected:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
@@ -212,7 +192,7 @@ void NPRShadingAOVFactory::release()
 
 const char* NPRShadingAOVFactory::get_model() const
 {
-    return NPRShadingModel;
+    return NPRShadingAOVModel;
 }
 
 Dictionary NPRShadingAOVFactory::get_model_metadata() const
@@ -248,7 +228,7 @@ void NPRContourAOVFactory::release()
 
 const char* NPRContourAOVFactory::get_model() const
 {
-    return NPRContourModel;
+    return NPRContourAOVModel;
 }
 
 Dictionary NPRContourAOVFactory::get_model_metadata() const

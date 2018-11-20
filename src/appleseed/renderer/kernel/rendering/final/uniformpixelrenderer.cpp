@@ -42,7 +42,7 @@
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
-#include "renderer/modeling/aov/diagnosticaov.h"
+#include "renderer/modeling/aov/pixelsamplecountaov.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/utility/settingsparsing.h"
 

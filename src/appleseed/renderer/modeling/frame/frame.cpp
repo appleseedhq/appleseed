@@ -359,10 +359,10 @@ bool Frame::on_frame_begin(
 void Frame::post_process_aov_images() const
 {
     for (size_t i = 0, e = aovs().size(); i < e; ++i)
-        aovs().get_by_index(i)->post_process_image(get_crop_window());
+        aovs().get_by_index(i)->post_process_image(*this);
 
     for (size_t i = 0, e = internal_aovs().size(); i < e; ++i)
-        internal_aovs().get_by_index(i)->post_process_image(get_crop_window());
+        internal_aovs().get_by_index(i)->post_process_image(*this);
 }
 
 ParamArray& Frame::render_info()

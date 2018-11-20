@@ -88,10 +88,10 @@ class APPLESEED_DLLSYMBOL AOV
     foundation::Image& get_image() const;
 
     // Clear the AOV image to default values.
-    virtual void clear_image();
+    virtual void clear_image() = 0;
 
-    // Apply any post processing needed to the AOV image.
-    virtual void post_process_image(const foundation::AABB2u& crop_window);
+    // Apply any post-processing needed to the AOV image.
+    virtual void post_process_image(const Frame& frame);
 
   protected:
     friend class AOVAccumulatorContainer;
@@ -132,6 +132,9 @@ class ColorAOV
 
     // Return true if this AOV contains color data.
     bool has_color_data() const override;
+
+    // Clear the AOV image to default values.
+    void clear_image() override;
 };
 
 
@@ -149,12 +152,19 @@ class UnfilteredAOV
     // Destructor.
     ~UnfilteredAOV() override;
 
+    // Return the number of channels of this AOV.
+    size_t get_channel_count() const override;
+
+    // Return the AOV channel names.
+    const char** get_channel_names() const override;
+
     // Return true if this AOV contains color data.
     bool has_color_data() const override;
 
-  protected:
-    foundation::Image*  m_filter_image;
+    // Clear the AOV image to default values.
+    void clear_image() override;
 
+  protected:
     void create_image(
         const size_t    canvas_width,
         const size_t    canvas_height,

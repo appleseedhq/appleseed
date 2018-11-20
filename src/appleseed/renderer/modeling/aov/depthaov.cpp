@@ -67,8 +67,8 @@ namespace
       : public UnfilteredAOVAccumulator
     {
       public:
-        DepthAOVAccumulator(Image& image, Image& filter_image)
-          : UnfilteredAOVAccumulator(image, filter_image)
+        explicit DepthAOVAccumulator(Image& image)
+          : UnfilteredAOVAccumulator(image)
         {
         }
 
@@ -82,28 +82,17 @@ namespace
             const Vector2i& pi = pixel_context.get_pixel_coords();
 
             // Ignore samples outside the tile.
-            if (outside_tile(pi))
+            if (!inside_tile(pi))
                 return;
 
             float* p = reinterpret_cast<float*>(
-                get_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
+                get_tile().pixel(pi.x - m_tile_bbox.min.x, pi.y - m_tile_bbox.min.y));
 
-            float* f = reinterpret_cast<float*>(
-                get_filter_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
+            const float depth = shading_point.hit_surface()
+                ? static_cast<float>(shading_point.get_distance())
+                : numeric_limits<float>::max();
 
-            const float min_sample_square_distance = *f;
-            const float sample_square_distance =
-                square_distance_to_pixel_center(pixel_context.get_sample_position());
-
-            if (sample_square_distance < min_sample_square_distance)
-            {
-                const float depth = shading_point.hit_surface()
-                    ? static_cast<float>(shading_point.get_distance())
-                    : numeric_limits<float>::max();
-
-                *p = depth;
-                *f = sample_square_distance;
-            }
+            *p = depth;
         }
     };
 
@@ -112,7 +101,7 @@ namespace
     // Depth AOV.
     //
 
-    const char* Model = "depth_aov";
+    const char* DepthAOVModel = "depth_aov";
 
     class DepthAOV
       : public UnfilteredAOV
@@ -130,7 +119,7 @@ namespace
 
         const char* get_model() const override
         {
-            return Model;
+            return DepthAOVModel;
         }
 
         size_t get_channel_count() const override
@@ -147,13 +136,13 @@ namespace
         void clear_image() override
         {
             m_image->clear(Color<float, 1>(numeric_limits<float>::max()));
-            m_filter_image->clear(Color<float, 1>(numeric_limits<float>::max()));
         }
 
+      protected:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
-                new DepthAOVAccumulator(get_image(), *m_filter_image));
+                new DepthAOVAccumulator(get_image()));
         }
     };
 }
@@ -170,14 +159,14 @@ void DepthAOVFactory::release()
 
 const char* DepthAOVFactory::get_model() const
 {
-    return Model;
+    return DepthAOVModel;
 }
 
 Dictionary DepthAOVFactory::get_model_metadata() const
 {
     return
         Dictionary()
-            .insert("name", Model)
+            .insert("name", get_model())
             .insert("label", "Depth")
             .insert("default_model", "true");
 }
