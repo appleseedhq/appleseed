@@ -31,19 +31,22 @@
 #include "foundation/core/thirdparties.h"
 #include "foundation/platform/python.h"
 
+// Standard headers.
+#include <cstddef>
+
 namespace bpy = boost::python;
 using namespace foundation;
 
 namespace
 {
-    // Assembles version information on all third party dependencies
-    bpy::dict get_deps_lib_versions()
+    // Assembles version information on all third party dependencies.
+    bpy::dict get_third_parties_versions()
     {
         bpy::dict output_dict;
-        const LibraryVersionArray& info_array = ThirdParties::get_versions();
+        const LibraryVersionArray info_array = ThirdParties::get_versions();
         for (size_t index = 0; index < info_array.size(); index++)
         {
-            const APIStringPair& result = info_array[index];
+            const APIStringPair result = info_array[index];
             output_dict[result.m_first.c_str()] = result.m_second.c_str();
         }
 
@@ -86,9 +89,9 @@ namespace
     }
 }
 
-void bind_appleseed_info()
+void bind_appleseed()
 {
-    bpy::def("get_deps_lib_versions", &get_deps_lib_versions);
+    bpy::def("get_third_parties_versions", &get_third_parties_versions);
     bpy::def("get_synthetic_version_string", &get_synthetic_version_string);
     bpy::def("get_lib_name", &get_lib_name);
     bpy::def("get_lib_version", &get_lib_version);

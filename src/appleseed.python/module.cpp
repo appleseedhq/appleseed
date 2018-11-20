@@ -35,7 +35,7 @@
 
 // Forward declarations.
 void bind_aov();
-void bind_appleseed_info();
+void bind_appleseed();
 void bind_assembly();
 void bind_basis();
 void bind_bbox();
@@ -87,7 +87,7 @@ extern "C" void bind_appleseed_python_classes()
     boost::python::scope().attr("APPLESEED_VERSION_MATURITY") = APPLESEED_VERSION_MATURITY;
     boost::python::scope().attr("APPLESEED_VERSION_STRING") = APPLESEED_VERSION_STRING;
 
-    bind_appleseed_info();
+    bind_appleseed();
 
     bind_utility();
     bind_murmurhash();
