@@ -78,7 +78,7 @@ namespace
            const Frame&                frame,
            const size_t                tile_x,
            const size_t                tile_y,
-           const size_t                max_spp)
+           const size_t                max_spp) override
        {
            UnfilteredAOVAccumulator::on_tile_begin(frame, tile_x, tile_y, max_spp);
            m_crop_window = frame.get_crop_window();
