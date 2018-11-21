@@ -59,6 +59,7 @@ source_group ("test" FILES
 set (sources
     __init__.py
     bindaov.cpp
+    bindappleseed.cpp
     bindassembly.cpp
     bindbasis.cpp
     bindbbox.cpp
