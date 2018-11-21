@@ -19,7 +19,7 @@ appleseed is available as a portable C++ library with C++ and Python APIs, as a 
 * Home: [appleseedhq.net](https://appleseedhq.net/)
 * Twitter: [twitter.com/appleseedhq](https://twitter.com/appleseedhq)
 * Vimeo: [vimeo.com/appleseedhq](https://vimeo.com/appleseedhq)
-* Discord: [discord.gg/Vcu5A7h](https://discord.gg/dNCE5J8)
+* Discord: [discord.gg/dNCE5J8](https://discord.gg/dNCE5J8)
 * Forum: [forum.appleseedhq.net](https://forum.appleseedhq.net/)
 
 ## Contributing
