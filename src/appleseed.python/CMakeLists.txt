@@ -111,8 +111,8 @@ list (APPEND appleseed.python_sources
     ${sources}
 )
 set (blender_python_sources
-    bindblenderprogressivetilecallback.cpp
     bindblendermeshconverter.cpp
+    bindblenderprogressivetilecallback.cpp
 )
 source_group ("" FILES
     ${sources}
