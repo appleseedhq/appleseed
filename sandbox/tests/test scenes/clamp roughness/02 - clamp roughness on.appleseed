@@ -70,7 +70,7 @@
                     <parameter name="in_specular_tint" value="float 0" />
                     <parameter name="in_subsurface_amount" value="float 0" />
                 </shader>
-                <shader type="shader" name="as_max_closure2Surface" layer="Material #29_mat_closure_2_surface_name">
+                <shader type="shader" name="as_max_closure2surface" layer="Material #29_mat_closure_2_surface_name">
                 </shader>
                 <connect_shaders src_layer="Material #29_mat" src_param="out_outColor" dst_layer="Material #29_mat_closure_2_surface_name" dst_param="in_input" />
             </shader_group>
@@ -97,7 +97,7 @@
                     <parameter name="in_specular_tint" value="float 0" />
                     <parameter name="in_subsurface_amount" value="float 0" />
                 </shader>
-                <shader type="shader" name="as_max_closure2Surface" layer="Material #30_mat_closure_2_surface_name">
+                <shader type="shader" name="as_max_closure2surface" layer="Material #30_mat_closure_2_surface_name">
                 </shader>
                 <connect_shaders src_layer="Material #30_mat" src_param="out_outColor" dst_layer="Material #30_mat_closure_2_surface_name" dst_param="in_input" />
             </shader_group>
@@ -124,7 +124,7 @@
                     <parameter name="in_specular_tint" value="float 0" />
                     <parameter name="in_subsurface_amount" value="float 0" />
                 </shader>
-                <shader type="shader" name="as_max_closure2Surface" layer="Shiny_mat_closure_2_surface_name">
+                <shader type="shader" name="as_max_closure2surface" layer="Shiny_mat_closure_2_surface_name">
                 </shader>
                 <connect_shaders src_layer="Shiny_mat" src_param="out_outColor" dst_layer="Shiny_mat_closure_2_surface_name" dst_param="in_input" />
             </shader_group>
