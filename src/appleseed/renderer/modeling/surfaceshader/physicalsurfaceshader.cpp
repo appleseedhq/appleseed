@@ -113,18 +113,37 @@ namespace
             // Compute lighting.
             AOVComponents components;
             ShadingComponents radiance;
-            for (size_t i = 0, e = m_lighting_samples; i < e; ++i)
-            {
-                shading_context.get_lighting_engine()->compute_lighting(
-                    sampling_context,
-                    pixel_context,
-                    shading_context,
-                    shading_point,
-                    radiance,
-                    components);
-            }
+
+            // OSL shaders can modify the shading basis
+            // in the shading point when using bump, normal maps or anisotropy.
+            // When using more than 1 lighting sample, we need to save and restore
+            // the basis for each sample.
+
+            const Basis3d basis = shading_point.get_shading_basis();
+            shading_context.get_lighting_engine()->compute_lighting(
+                sampling_context,
+                pixel_context,
+                shading_context,
+                shading_point,
+                radiance,
+                components);
+
             if (m_lighting_samples > 1)
+            {
+                for (size_t i = 1, e = m_lighting_samples; i < e; ++i)
+                {
+                    shading_point.set_shading_basis(basis);
+                    shading_context.get_lighting_engine()->compute_lighting(
+                        sampling_context,
+                        pixel_context,
+                        shading_context,
+                        shading_point,
+                        radiance,
+                        components);
+                }
+
                 radiance /= static_cast<float>(m_lighting_samples);
+            }
 
             // Run NPR surface shader if any.
             if (const Material* material = shading_point.get_material())
