@@ -134,7 +134,7 @@ void compute_ibl_material_sampling(
         if (shading_point.hit_surface())
             continue;
 
-        if (max_value(transmission) == 0.0f)
+        if (is_zero(transmission))
             continue;
 
         // Evaluate the environment's EDF.
@@ -215,7 +215,7 @@ void compute_ibl_environment_sampling(
         if (shading_point.hit_surface())
             continue;
         
-        if (max_value(transmission) == 0.0f)
+        if (is_zero(transmission))
             continue;
 
         // Evaluate the BSDF.

@@ -362,7 +362,7 @@ namespace
                     radiance);
 
                 // Ignore occluded vertices.
-                if (max_value(radiance) == 0.0f)
+                if (is_zero(radiance))
                     return;
 
                 // Adjust cos(alpha) to account for the fact that the camera outgoing direction was not unit-length.
@@ -405,7 +405,7 @@ namespace
                     radiance);
 
                 // Ignore occluded vertices.
-                if (max_value(radiance) == 0.0f)
+                if (is_zero(radiance))
                     return;
 
                 // Store the contribution of this vertex.
@@ -456,7 +456,7 @@ namespace
                     transmission);
 
                 // Ignore occluded vertices.
-                if (max_value(transmission) == 0.0f)
+                if (is_zero(transmission))
                     return;
 
                 // Normalize the camera outgoing direction.
