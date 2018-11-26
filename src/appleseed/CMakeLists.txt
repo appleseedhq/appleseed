@@ -1351,6 +1351,7 @@ source_group ("renderer\\kernel\\volume" FILES
 )
 
 set (renderer_meta_benchmarks_sources
+    renderer/meta/benchmarks/benchmark_dynamicspectrum.cpp
     renderer/meta/benchmarks/benchmark_frame.cpp
     renderer/meta/benchmarks/benchmark_localsampleaccumulationbuffer.cpp
     renderer/meta/benchmarks/benchmark_transformsequence.cpp
