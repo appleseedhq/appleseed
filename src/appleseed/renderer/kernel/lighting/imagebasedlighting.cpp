@@ -130,14 +130,12 @@ void compute_ibl_material_sampling(
             shading_context,
             incoming.get_value(),
             transmission);
-
         if (shading_point.hit_surface())
             continue;
-
         if (is_zero(transmission))
             continue;
 
-        // Evaluate the environment's EDF.
+        // Evaluate the environment EDF.
         Spectrum env_value(Spectrum::Illuminance);
         float env_prob;
         environment_edf.evaluate(
@@ -211,10 +209,8 @@ void compute_ibl_environment_sampling(
             shading_context,
             incoming,
             transmission);
-
         if (shading_point.hit_surface())
             continue;
-        
         if (is_zero(transmission))
             continue;
 
