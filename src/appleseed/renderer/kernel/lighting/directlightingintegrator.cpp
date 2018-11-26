@@ -408,7 +408,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         transmission);
 
     // Discard occluded samples.
-    if (max_value(transmission) == 0.0f)
+    if (is_zero(transmission))
         return;
 
     // Evaluate the BSDF (or volume).
@@ -512,7 +512,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
         transmission);
 
     // Discard occluded samples.
-    if (max_value(transmission) == 0.0f)
+    if (is_zero(transmission))
         return;
 
     // Evaluate the BSDF (or volume).
