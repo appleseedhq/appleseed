@@ -126,10 +126,10 @@ namespace
         }
 
         bool on_frame_begin(
-            const Project&              project,
-            const BaseGroup*            parent,
-            OnFrameBeginRecorder&       recorder,
-            IAbortSwitch*               abort_switch) override
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) override
         {
             if (!BSSRDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
@@ -153,8 +153,8 @@ namespace
         }
 
         void on_frame_end(
-            const Project&              project,
-            const BaseGroup*            parent) override
+            const Project&          project,
+            const BaseGroup*        parent) override
         {
             BSSRDF::on_frame_end(project, parent);
 
@@ -200,73 +200,6 @@ namespace
             precomputed.m_eta = compute_eta(shading_point, values->m_ior);
         }
 
-        static GlassBSDFInputValues* create_glass_inputs(
-            Arena&                              arena,
-            const RandomwalkBSSRDFInputValues*  bssrdf_values)
-        {
-            auto glass_values = arena.allocate_noinit<GlassBSDFInputValues>();
-
-            glass_values->m_refraction_tint.set(1.0f);
-            glass_values->m_anisotropy = 0.0f;
-            glass_values->m_surface_transmittance.set(1.0f);
-            glass_values->m_surface_transmittance_multiplier = 1.0f;
-            glass_values->m_ior = bssrdf_values->m_ior;
-            glass_values->m_roughness = bssrdf_values->m_surface_roughness;
-            glass_values->m_energy_compensation = 1.0f;
-
-            return glass_values;
-        }
-
-        static float albedo_from_reflectance_anisotropic(const float r, const float g)
-        {
-            const float s = 4.09712f + 4.20863f * r - sqrt(9.59271f + r * (41.6808f + 17.7126f * r));
-            const float s2 = s * s;
-            return (1.0f - s2) / (1.0f - g * s2);
-        }
-
-        static Vector3f sample_direction_given_cosine(
-            const Vector3f& normal,
-            const float cosine,
-            const float s)
-        {
-            const float sine = std::sqrt(saturate(1.0f - cosine * cosine));
-            const Vector2f tangent = sample_circle_uniform(s);
-            Basis3f basis(normal);
-            return
-                basis.get_tangent_u() * tangent.x * sine +
-                basis.get_tangent_v() * tangent.y * sine +
-                basis.get_normal()    * cosine;
-        }
-
-        static bool test_rr(
-            SamplingContext&    sampling_context,
-            BSSRDFSample&       bssrdf_sample)
-        {
-            // Generate a uniform sample in [0,1).
-            sampling_context.split_in_place(1, 1);
-            const float s = sampling_context.next2<float>();
-
-            // Compute the probability of extending this path.
-            const float scattering_prob =
-                std::min(max_value(bssrdf_sample.m_value), 0.99f);
-
-            // Russian Roulette.
-            if (!pass_rr(scattering_prob, s))
-                return false;
-
-            // Adjust throughput to account for terminated paths.
-            assert(scattering_prob > 0.0f);
-            bssrdf_sample.m_value /= scattering_prob;
-
-            return true;
-        }
-
-        // Compute the probability to pick classical sampling instead of biased (Dwivedi) sampling.
-        static float compute_classical_sampling_probability(const float anisotropy)
-        {
-            return max(0.1f, pow(abs(anisotropy), 3.0f));
-        }
-
         bool sample(
             const ShadingContext&   shading_context,
             SamplingContext&        sampling_context,
@@ -306,24 +239,22 @@ namespace
             {
                 bool volume_scattering_occurred;
                 if (!trace_zero_scattering_path_glass(
-                    shading_context,
-                    sampling_context,
-                    extinction,
-                    create_glass_inputs(shading_context.get_arena(), values),
-                    outgoing_point,
-                    outgoing_dir,
-                    bssrdf_sample,
-                    bsdf_sample,
-                    volume_scattering_occurred,
-                    scattering_point,
-                    slab_normal,
-                    direction))
-                {
+                        shading_context,
+                        sampling_context,
+                        extinction,
+                        create_glass_inputs(shading_context.get_arena(), values),
+                        outgoing_point,
+                        outgoing_dir,
+                        bssrdf_sample,
+                        bsdf_sample,
+                        volume_scattering_occurred,
+                        scattering_point,
+                        slab_normal,
+                        direction))
                     return false;
-                }
 
                 if (!volume_scattering_occurred)
-                    return true;    // BSDF is already sampled here, so we just leave the method.
+                    return true;    // BSDF is already sampled here, so we just leave the method
             }
             else
             {
@@ -339,20 +270,18 @@ namespace
 
                 bool volume_scattering_occurred;
                 if (!trace_zero_scattering_path_diffuse(
-                    shading_context,
-                    sampling_context,
-                    extinction,
-                    outgoing_point,
-                    outgoing_dir,
-                    bssrdf_sample,
-                    bsdf_sample,
-                    volume_scattering_occurred,
-                    scattering_point,
-                    slab_normal,
-                    direction))
-                {
+                        shading_context,
+                        sampling_context,
+                        extinction,
+                        outgoing_point,
+                        outgoing_dir,
+                        bssrdf_sample,
+                        bsdf_sample,
+                        volume_scattering_occurred,
+                        scattering_point,
+                        slab_normal,
+                        direction))
                     return false;
-                }
 
                 bssrdf_sample.m_value *= fo;
 
@@ -493,6 +422,108 @@ namespace
             return true;
         }
 
+        void evaluate(
+            const void*             data,
+            const ShadingPoint&     outgoing_point,
+            const Vector3f&         outgoing_dir,
+            const ShadingPoint&     incoming_point,
+            const Vector3f&         incoming_dir,
+            const int               modes,
+            Spectrum&               value) const override
+        {
+            // Deterministic approach is not possible here.
+            value.set(0.0f);
+        }
+
+      private:
+        auto_release_ptr<BSDF>      m_lambertian_brdf;
+        LambertianBRDFInputValues   m_lambertian_brdf_data;
+        bool                        m_use_glass_bsdf;
+        auto_release_ptr<BSDF>      m_glass_bsdf;
+
+        static auto_release_ptr<BSDF> create_glass_bsdf(
+            const char*             bssrdf_name,
+            const char*             mdf_name)
+        {
+            const string glass_bsdf_name = string(bssrdf_name) + "_glass_bsdf_" + mdf_name;
+
+            auto_release_ptr<BSDF> bsdf =
+                GlassBSDFFactory().create(
+                    glass_bsdf_name.c_str(),
+                    ParamArray()
+                        .insert("mdf", mdf_name)
+                        .insert("volume_parameterization", "transmittance"));
+
+            return bsdf;
+        }
+
+        static GlassBSDFInputValues* create_glass_inputs(
+            Arena&                              arena,
+            const RandomwalkBSSRDFInputValues*  bssrdf_values)
+        {
+            auto glass_values = arena.allocate_noinit<GlassBSDFInputValues>();
+
+            glass_values->m_refraction_tint.set(1.0f);
+            glass_values->m_anisotropy = 0.0f;
+            glass_values->m_surface_transmittance.set(1.0f);
+            glass_values->m_surface_transmittance_multiplier = 1.0f;
+            glass_values->m_ior = bssrdf_values->m_ior;
+            glass_values->m_roughness = bssrdf_values->m_surface_roughness;
+            glass_values->m_energy_compensation = 1.0f;
+
+            return glass_values;
+        }
+
+        static float albedo_from_reflectance_anisotropic(const float r, const float g)
+        {
+            const float s = 4.09712f + 4.20863f * r - sqrt(9.59271f + r * (41.6808f + 17.7126f * r));
+            const float s2 = s * s;
+            return (1.0f - s2) / (1.0f - g * s2);
+        }
+
+        static Vector3f sample_direction_given_cosine(
+            const Vector3f& normal,
+            const float cosine,
+            const float s)
+        {
+            const float sine = std::sqrt(saturate(1.0f - cosine * cosine));
+            const Vector2f tangent = sample_circle_uniform(s);
+            Basis3f basis(normal);
+            return
+                basis.get_tangent_u() * tangent.x * sine +
+                basis.get_tangent_v() * tangent.y * sine +
+                basis.get_normal()    * cosine;
+        }
+
+        static bool test_rr(
+            SamplingContext&        sampling_context,
+            BSSRDFSample&           bssrdf_sample)
+        {
+            // Generate a uniform sample in [0,1).
+            sampling_context.split_in_place(1, 1);
+            const float s = sampling_context.next2<float>();
+
+            // Compute the probability of extending this path.
+            const float scattering_prob =
+                std::min(max_value(bssrdf_sample.m_value), 0.99f);
+
+            // Russian Roulette.
+            if (!pass_rr(scattering_prob, s))
+                return false;
+
+            // Adjust throughput to account for terminated paths.
+            assert(scattering_prob > 0.0f);
+            bssrdf_sample.m_value /= scattering_prob;
+
+            return true;
+        }
+
+        // Compute the probability to pick classical sampling instead of biased (Dwivedi) sampling.
+        static float compute_classical_sampling_probability(const float anisotropy)
+        {
+            return max(0.1f, pow(abs(anisotropy), 3.0f));
+        }
+
         bool trace_zero_scattering_path_glass(
             const ShadingContext&   shading_context,
             SamplingContext&        sampling_context,
@@ -545,7 +576,7 @@ namespace
                 if (bsdf_sample.m_mode == ScatteringMode::None)
                     return false;
 
-                assert(n_iteration != 1 || crossing_interface);  // no reflection should happen at the entry point.
+                assert(n_iteration != 1 || crossing_interface);  // no reflection should happen at the entry point
                 if (n_iteration != 1 && crossing_interface)
                 {
                     if (!ScatteringMode::has_glossy(bssrdf_sample.m_modes))
@@ -682,11 +713,11 @@ namespace
         }
 
         static void compute_transmission(
-            const float         distance,
-            const Spectrum&     extinction,
-            const Spectrum&     channel_pdf,
-            const bool          transmitted,
-            Spectrum&           transmission)
+            const float             distance,
+            const Spectrum&         extinction,
+            const Spectrum&         channel_pdf,
+            const bool              transmitted,
+            Spectrum&               transmission)
         {
             float mis_base = 0.0f;
 
@@ -706,12 +737,13 @@ namespace
         }
 
         static void compute_transmission(
-            const float         distance,
-            const Spectrum&     extinction,
-            const bool          transmitted,
-            Spectrum&           transmission)
+            const float             distance,
+            const Spectrum&         extinction,
+            const bool              transmitted,
+            Spectrum&               transmission)
         {
             float mis_base = 0.0f;
+
             for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
             {
                 const float x = -distance * extinction[i];
@@ -723,18 +755,18 @@ namespace
                 // One-sample estimator (Veach: 9.2.4 eq. 9.15).
                 mis_base += transmission[i];
             }
+
             transmission *= Spectrum::size() / mis_base;
         }
 
         float compute_total_refraction_intensity(
-            const void* data,
-            const float cos_in) const
+            const void*             data,
+            const float             cos_in) const
         {
             const RandomwalkBSSRDFInputValues* values =
                 static_cast<const RandomwalkBSSRDFInputValues*>(data);
 
             float fi;
-
             if (values->m_fresnel_weight == 0.0f)
                 fi = 1.0f;
             else
@@ -749,41 +781,6 @@ namespace
 
             return fi / c;
         }
-
-        void evaluate(
-            const void*             data,
-            const ShadingPoint&     outgoing_point,
-            const Vector3f&         outgoing_dir,
-            const ShadingPoint&     incoming_point,
-            const Vector3f&         incoming_dir,
-            const int               modes,
-            Spectrum&               value) const override
-        {
-            // Deterministic approach is not possible here.
-            value.set(0.0f);
-        }
-
-        static auto_release_ptr<BSDF> create_glass_bsdf(
-            const char*             bssrdf_name,
-            const char*             mdf_name)
-        {
-            const string glass_bsdf_name = string(bssrdf_name) + "_glass_bsdf_" + mdf_name;
-
-            auto_release_ptr<BSDF> bsdf =
-                GlassBSDFFactory().create(
-                    glass_bsdf_name.c_str(),
-                    ParamArray()
-                        .insert("mdf", mdf_name)
-                        .insert("volume_parameterization", "transmittance"));
-
-            return bsdf;
-        }
-
-        auto_release_ptr<BSDF>          m_lambertian_brdf;
-        LambertianBRDFInputValues       m_lambertian_brdf_data;
-        bool                            m_use_glass_bsdf;
-
-        auto_release_ptr<BSDF>          m_glass_bsdf;
     };
 }
 
