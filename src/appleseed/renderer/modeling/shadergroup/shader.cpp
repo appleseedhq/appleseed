@@ -272,7 +272,7 @@ bool Shader::add(OSLShadingSystem& shading_system)
 
     if (!shading_system.Shader("surface", get_shader(), get_layer()))
     {
-        RENDERER_LOG_ERROR("error adding shader %s, %s.", get_shader(), get_layer());
+        RENDERER_LOG_ERROR("error adding shader \"%s\" for layer \"%s\".", get_shader(), get_layer());
         return false;
     }
 
