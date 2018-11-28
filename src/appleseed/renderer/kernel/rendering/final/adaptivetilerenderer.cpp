@@ -529,20 +529,21 @@ namespace
                         // Retrieve the coordinates of the pixel in the padded tile.
                         const Vector2u pt(x, y);
 
-                        Color3f value(0.0f);
 
                         if (m_sample_aov_tile != nullptr)
                         {
-                            m_sample_aov_tile->get_pixel(pt.x, pt.y, value);
-                            value[0] += static_cast<float>(pb.m_spp);
-                            m_sample_aov_tile->set_pixel(pt.x, pt.y, value);
+                            Color3f samples;
+                            m_sample_aov_tile->get_pixel(pt.x, pt.y, samples);
+                            samples[0] += static_cast<float>(pb.m_spp);
+                            m_sample_aov_tile->set_pixel(pt.x, pt.y, samples);
                         }
 
                         if (m_variation_aov_tile != nullptr)
                         {
-                            m_sample_aov_tile->get_pixel(pt.x, pt.y, value);
-                            value[0] += static_cast<float>(pb.m_block_error);
-                            m_variation_aov_tile->set_pixel(pt.x, pt.y, value);
+                            Color3f variation;
+                            m_variation_aov_tile->get_pixel(pt.x, pt.y, variation);
+                            variation[0] += static_cast<float>(pb.m_block_error);
+                            m_variation_aov_tile->set_pixel(pt.x, pt.y, variation);
                         }
                     }
                 }
