@@ -126,12 +126,7 @@ void compute_ibl_material_sampling(
 
         // Discard occluded samples.
         Spectrum transmission;
-        const ShadingPoint& shading_point = material_sampler.trace(
-            shading_context,
-            incoming.get_value(),
-            transmission);
-        if (shading_point.hit_surface())
-            continue;
+        material_sampler.trace_simple(shading_context, incoming.get_value(), transmission);
         if (is_zero(transmission))
             continue;
 
@@ -180,9 +175,9 @@ void compute_ibl_environment_sampling(
 
     radiance.set(0.0f);
 
-    // todo: if we had a way to know that a BSDF is purely specular, we could
-    // immediately return black here since there will be no contribution from
-    // such a BSDF.
+    // Check if PDF of the sampler is Dirac delta and therefore cannot contribute to the light sampling.
+    if (!material_sampler.contributes_to_light_sampling())
+        return;
 
     sampling_context.split_in_place(2, env_sample_count);
 
@@ -205,22 +200,18 @@ void compute_ibl_environment_sampling(
 
         // Discard occluded samples.
         Spectrum transmission;
-        const ShadingPoint& shading_point = material_sampler.trace(
-            shading_context,
-            incoming,
-            transmission);
-        if (shading_point.hit_surface())
-            continue;
+        material_sampler.trace_simple(shading_context, incoming, transmission);
         if (is_zero(transmission))
             continue;
 
         // Evaluate the BSDF.
         DirectShadingComponents material_value;
-        const float material_prob = material_sampler.evaluate(
-            env_sampling_modes,
-            Vector3f(outgoing.get_value()),
-            incoming,
-            material_value);
+        const float material_prob =
+            material_sampler.evaluate(
+                env_sampling_modes,
+                Vector3f(outgoing.get_value()),
+                incoming,
+                material_value);
         if (material_prob == 0.0f)
             continue;
 

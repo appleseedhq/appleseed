@@ -56,13 +56,20 @@ namespace renderer
 class IMaterialSampler
 {
   public:
+    virtual ~IMaterialSampler() {}
+
     virtual const foundation::Vector3d& get_point() const = 0;
 
     virtual const ShadingPoint& get_shading_point() const = 0;
 
     virtual bool contributes_to_light_sampling() const = 0;
 
-    virtual const ShadingPoint& trace(
+    virtual const ShadingPoint& trace_full(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3f&     direction,
+        Spectrum&                       transmission) const = 0;
+
+    virtual void trace_simple(
         const ShadingContext&           shading_context,
         const foundation::Vector3f&     direction,
         Spectrum&                       transmission) const = 0;
@@ -102,7 +109,12 @@ class BSDFSampler
 
     bool contributes_to_light_sampling() const override;
 
-    const ShadingPoint& trace(
+    const ShadingPoint& trace_full(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3f&     direction,
+        Spectrum&                       transmission) const override;
+
+    void trace_simple(
         const ShadingContext&           shading_context,
         const foundation::Vector3f&     direction,
         Spectrum&                       transmission) const override;
@@ -151,7 +163,12 @@ class VolumeSampler
 
     bool contributes_to_light_sampling() const override;
 
-    const ShadingPoint& trace(
+    const ShadingPoint& trace_full(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3f&     direction,
+        Spectrum&                       transmission) const override;
+
+    void trace_simple(
         const ShadingContext&           shading_context,
         const foundation::Vector3f&     direction,
         Spectrum&                       transmission) const override;
@@ -175,12 +192,12 @@ class VolumeSampler
         DirectShadingComponents&        value) const override;
 
   private:
-    const ShadingRay&               m_volume_ray;
-    const Volume&                   m_volume;
-    const void*                     m_volume_data;
-    const float                     m_distance;
-    const ShadingPoint&             m_shading_point;
-    const foundation::Vector3d      m_point;
+    const ShadingRay&                   m_volume_ray;
+    const Volume&                       m_volume;
+    const void*                         m_volume_data;
+    const float                         m_distance;
+    const ShadingPoint&                 m_shading_point;
+    const foundation::Vector3d          m_point;
 };
 
 }       // namespace renderer
