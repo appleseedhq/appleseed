@@ -162,7 +162,7 @@ namespace
                     rng,
                     m_params.m_sampling_mode,
                     2,                          // number of dimensions
-                    0,                          // number of samples -- unknown
+                    m_sample_count,             // number of samples
                     instance);                  // initial instance number
 
                 for (size_t i = 0; i < m_sample_count; ++i)
@@ -181,7 +181,7 @@ namespace
 
                     // Render the sample.
                     ShadingResult shading_result(aov_count);
-                    SamplingContext child_sampling_context(sampling_context);
+                    SamplingContext child_sampling_context = sampling_context.split(2, 0);
                     m_sample_renderer->render_sample(
                         child_sampling_context,
                         pixel_context,
