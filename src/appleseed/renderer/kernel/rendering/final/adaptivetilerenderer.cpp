@@ -498,9 +498,11 @@ namespace
                 }
             }
 
+            //
             // Rendering finished, fill diagnostic AOVs and update statistics.
-            size_t tile_converged_pixel = 0;
+            //
 
+            size_t tile_converged_pixel = 0;
             float average_noise_level = 0.0f;
 
             for (size_t i = 0, n = finished_blocks.size(); i < n; ++i)
@@ -548,18 +550,22 @@ namespace
 
             m_total_pixel += pixel_count;
             m_total_pixel_converged += tile_converged_pixel;
+            average_noise_level /= static_cast<float>(pixel_count);
 
             // Warn the user if adaptive sampling wasn't efficient on this tile.
             if (static_cast<float>(tile_converged_pixel) < BlockConvergenceWarningThreshold * pixel_count)
             {
-                RENDERER_LOG_WARNING("%s of this tile's pixels have converged, average samples/pixel is %s.",
+                RENDERER_LOG_WARNING(
+                    "tile (" FMT_SIZE_T ", " FMT_SIZE_T "): only %s of the pixels have converged; average samples/pixel is %s.",
+                    tile_x,
+                    tile_y,
                     pretty_percent(tile_converged_pixel, pixel_count, 1).c_str(),
                     pretty_scalar(m_spp.get_mean(), 1).c_str());
             }
 
             // Inform the user about the tile average noise level.
-            average_noise_level /= static_cast<float>(pixel_count);
-            RENDERER_LOG_INFO("tile (" FMT_SIZE_T ", " FMT_SIZE_T ") average noise level: %f.",
+            RENDERER_LOG_DEBUG(
+                "tile (" FMT_SIZE_T ", " FMT_SIZE_T "): average noise level is %f.",
                 tile_x,
                 tile_y,
                 average_noise_level);
@@ -570,7 +576,7 @@ namespace
             // Release the framebuffer.
             m_framebuffer_factory->destroy(framebuffer);
 
-            // Inform the AOV accumulators that we are done rendering a tile.
+            // Inform the AOV accumulators that we are done rendering the tile.
             m_aov_accumulators.on_tile_end(frame, tile_x, tile_y);
 
             // Inform the pixel renderer that we are done rendering the tile.
