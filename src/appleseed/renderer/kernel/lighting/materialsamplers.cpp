@@ -78,6 +78,63 @@ bool BSDFSampler::contributes_to_light_sampling() const
     return !m_bsdf.is_purely_specular();
 }
 
+const ShadingPoint& BSDFSampler::trace_full(
+    const ShadingContext&       shading_context,
+    const Vector3f&             direction,
+    Spectrum&                   transmission) const
+{
+    ShadingRay ray(
+        m_shading_point.get_point(),
+        Vector3d(direction),
+        m_shading_point.get_ray().m_time,
+        VisibilityFlags::ShadowRay,
+        m_shading_point.get_ray().m_depth + 1);
+    ray.copy_media_from(m_shading_point.get_ray());
+
+    const ShadingPoint& shading_point =
+        shading_context.get_tracer().trace_full(
+            shading_context,
+            m_shading_point,
+            ray,
+            transmission);
+
+    return shading_point;
+}
+
+void BSDFSampler::trace_simple(
+    const ShadingContext&       shading_context,
+    const Vector3f&             direction,
+    Spectrum&                   transmission) const
+{
+    ShadingRay ray(
+        m_shading_point.get_point(),
+        Vector3d(direction),
+        m_shading_point.get_ray().m_time,
+        VisibilityFlags::ShadowRay,
+        m_shading_point.get_ray().m_depth + 1);
+    ray.copy_media_from(m_shading_point.get_ray());
+
+    shading_context.get_tracer().trace_simple(
+        shading_context,
+        m_shading_point,
+        ray,
+        transmission);
+}
+
+void BSDFSampler::trace_between(
+    const ShadingContext&       shading_context,
+    const Vector3d&             target_position,
+    Spectrum&                   transmission) const
+{
+    shading_context.get_tracer().trace_between_simple(
+        shading_context,
+        m_shading_point,
+        target_position,
+        m_shading_point.get_ray(),
+        VisibilityFlags::ShadowRay,
+        transmission);
+}
+
 bool BSDFSampler::sample(
     SamplingContext&            sampling_context,
     const Dual3d&               outgoing,
@@ -123,43 +180,6 @@ float BSDFSampler::evaluate(
             value);
 }
 
-const ShadingPoint& BSDFSampler::trace(
-    const ShadingContext&       shading_context,
-    const Vector3f&             direction,
-    Spectrum&                   transmission) const
-{
-    ShadingRay ray(
-        m_shading_point.get_point(),
-        Vector3d(direction),
-        m_shading_point.get_ray().m_time,
-        VisibilityFlags::ShadowRay,
-        m_shading_point.get_ray().m_depth + 1);
-    ray.copy_media_from(m_shading_point.get_ray());
-
-    const ShadingPoint& shading_point =
-        shading_context.get_tracer().trace_full(
-            shading_context,
-            m_shading_point,
-            ray,
-            transmission);
-
-    return shading_point;
-}
-
-void BSDFSampler::trace_between(
-    const ShadingContext&       shading_context,
-    const Vector3d&             target_position,
-    Spectrum&                   transmission) const
-{
-    shading_context.get_tracer().trace_between_simple(
-        shading_context,
-        m_shading_point,
-        target_position,
-        m_shading_point.get_ray(),
-        VisibilityFlags::ShadowRay,
-        transmission);
-}
-
 
 //
 // VolumeSampler class implementation.
@@ -193,6 +213,61 @@ const ShadingPoint& VolumeSampler::get_shading_point() const
 bool VolumeSampler::contributes_to_light_sampling() const
 {
     return true;
+}
+
+const ShadingPoint& VolumeSampler::trace_full(
+    const ShadingContext&       shading_context,
+    const Vector3f&             direction,
+    Spectrum&                   transmission) const
+{
+    ShadingRay ray(
+        m_point,
+        Vector3d(direction),
+        m_volume_ray.m_time,
+        VisibilityFlags::ShadowRay,
+        m_volume_ray.m_depth + 1);
+    ray.copy_media_from(m_volume_ray);
+
+    const ShadingPoint& shading_point =
+        shading_context.get_tracer().trace_full(
+            shading_context,
+            ray,
+            transmission);
+
+    return shading_point;
+}
+
+void VolumeSampler::trace_simple(
+    const ShadingContext&       shading_context,
+    const Vector3f&             direction,
+    Spectrum&                   transmission) const
+{
+    ShadingRay ray(
+        m_point,
+        Vector3d(direction),
+        m_volume_ray.m_time,
+        VisibilityFlags::ShadowRay,
+        m_volume_ray.m_depth + 1);
+    ray.copy_media_from(m_volume_ray);
+
+    shading_context.get_tracer().trace_simple(
+        shading_context,
+        ray,
+        transmission);
+}
+
+void VolumeSampler::trace_between(
+    const ShadingContext&       shading_context,
+    const Vector3d&             target_position,
+    Spectrum&                   transmission) const
+{
+    shading_context.get_tracer().trace_between_simple(
+        shading_context,
+        m_point,
+        target_position,
+        m_volume_ray,
+        VisibilityFlags::ShadowRay,
+        transmission);
 }
 
 bool VolumeSampler::sample(
@@ -241,42 +316,6 @@ float VolumeSampler::evaluate(
     value.m_beauty = value.m_volume;
 
     return pdf;
-}
-
-const ShadingPoint& VolumeSampler::trace(
-    const ShadingContext&       shading_context,
-    const Vector3f&             direction,
-    Spectrum&                   transmission) const
-{
-    ShadingRay ray(
-        m_point,
-        Vector3d(direction),
-        m_volume_ray.m_time,
-        VisibilityFlags::ShadowRay,
-        m_volume_ray.m_depth + 1);
-    ray.copy_media_from(m_volume_ray);
-
-    const ShadingPoint& shading_point =
-        shading_context.get_tracer().trace_full(
-            shading_context,
-            ray,
-            transmission);
-
-    return shading_point;
-}
-
-void VolumeSampler::trace_between(
-    const ShadingContext&       shading_context,
-    const Vector3d&             target_position,
-    Spectrum&                   transmission) const
-{
-    shading_context.get_tracer().trace_between_simple(
-        shading_context,
-        m_point,
-        target_position,
-        m_volume_ray,
-        VisibilityFlags::ShadowRay,
-        transmission);
 }
 
 }   // namespace renderer
