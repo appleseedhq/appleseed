@@ -505,6 +505,15 @@ namespace
             size_t tile_converged_pixel = 0;
             float average_noise_level = 0.0f;
 
+            for (size_t i = 0, n = rendering_blocks.size(); i < n; ++i)
+            {
+                const PixelBlock& pb = rendering_blocks[i];
+                const AABB2u pb_image_aabb = AABB2i::intersect(framebuffer->get_crop_window(), pb.m_surface);
+                const size_t pb_pixel_count = static_cast<size_t>(pb_image_aabb.volume());
+
+                average_noise_level += pb.m_block_error * pb_pixel_count;
+            }
+
             for (size_t i = 0, n = finished_blocks.size(); i < n; ++i)
             {
                 const PixelBlock& pb = finished_blocks[i];
