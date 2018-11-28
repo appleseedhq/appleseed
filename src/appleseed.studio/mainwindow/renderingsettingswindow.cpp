@@ -258,10 +258,10 @@ class RenderSettingsPanel
         QDoubleSpinBox* spinbox = new QDoubleSpinBox();
         m_widget_proxies[widget_key] = new DoubleSpinBoxProxy(spinbox);
 
-        spinbox->setMaximumWidth(60);
         spinbox->setRange(min, max);
         spinbox->setDecimals(decimals);
         spinbox->setSingleStep(step);
+        set_widget_width_for_value(spinbox, max, SpinBoxMargin, SpinBoxMinWidth);
 
         new MouseWheelFocusEventFilter(spinbox);
 
