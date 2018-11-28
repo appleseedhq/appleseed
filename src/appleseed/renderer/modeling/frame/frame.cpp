@@ -1121,7 +1121,7 @@ DictionaryArray FrameFactory::get_input_metadata()
     metadata.push_back(
         Dictionary()
             .insert("name", "mark_invalid_pixels")
-            .insert("label", "Mark Invalid pixels")
+            .insert("label", "Mark Invalid Pixels")
             .insert("type", "boolean")
             .insert("use", "optional")
             .insert("default", "false")
