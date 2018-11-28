@@ -267,7 +267,7 @@ namespace
         if (g_cl.m_passes.is_set())
         {
             params.insert_path(
-                "generic_frame_renderer.passes",
+                "passes",
                 g_cl.m_passes.values()[0]);
         }
 
@@ -296,7 +296,7 @@ namespace
         }
     }
 
-    void apply_frame_command_line_options(Project& project)
+    bool apply_frame_command_line_options(Project& project)
     {
         const Frame* frame = project.get_frame();
         assert(frame != nullptr);
@@ -327,6 +327,53 @@ namespace
             params.insert("noise_seed", noise_seed);
         }
 
+        if (g_cl.m_output.is_set())
+        {
+            const char* file_path = g_cl.m_output.value().c_str();
+            params.insert("output_path", file_path);
+        }
+
+        if (g_cl.m_checkpoint_create.is_set())
+        {
+            params.insert("checkpoint_create", "on");
+
+            if (g_cl.m_checkpoint_create.values().empty() && !g_cl.m_output.is_set())
+            {
+                LOG_ERROR(g_logger, "ouput path must be specified if no path is given for --checkpoint-create");
+                return false;
+            }
+
+            params.insert(
+                "checkpoint_create_path",
+                !g_cl.m_checkpoint_create.values().empty()
+                    ? g_cl.m_checkpoint_create.value().c_str()
+                    : "");
+        }
+
+        if (g_cl.m_checkpoint_resume.is_set())
+        {
+            params.insert("checkpoint_resume", "on");
+
+            if (g_cl.m_checkpoint_resume.values().empty() && !g_cl.m_output.is_set())
+            {
+                LOG_ERROR(g_logger, "ouput path must be specified if no path is given for --checkpoint-resume");
+                return false;
+            }
+
+            params.insert(
+                "checkpoint_resume_path",
+                !g_cl.m_checkpoint_resume.values().empty()
+                    ? g_cl.m_checkpoint_resume.value().c_str()
+                    : "");
+        }
+
+        if (g_cl.m_passes.is_set())
+        {
+            params.insert_path(
+                "passes",
+                g_cl.m_passes.values()[0]);
+        }
+
         auto_release_ptr<Frame> new_frame(
             FrameFactory::create(
                 frame->get_name(),
@@ -334,6 +381,8 @@ namespace
                 frame->aovs()));
 
         project.set_frame(new_frame);
+
+        return true;
     }
 
     void apply_visibility_command_line_options_recursive(
@@ -374,15 +423,17 @@ namespace
         }
     }
 
-    void apply_command_line_options(Project& project, ParamArray& params)
+    bool apply_command_line_options(Project& project, ParamArray& params)
     {
         // Apply command line options that alter renderer settings.
         apply_rendering_settings_command_line_options(params);
         apply_custom_parameter_command_line_options(params);
 
         // Apply command line options that alter the project.
-        apply_frame_command_line_options(project);
+        if (!apply_frame_command_line_options(project)) return false;
         apply_visibility_command_line_options(project);
+
+        return true;
     }
 
 #if defined __APPLE__ || defined _WIN32
@@ -450,9 +501,7 @@ namespace
         params.merge(configuration->get_parameters());
 
         // Apply the command line options.
-        apply_command_line_options(project, params);
-
-        return true;
+        return apply_command_line_options(project, params);
     }
 
     bool is_progressive_render(const ParamArray& params)
@@ -714,3 +763,4 @@ int main(int argc, char* argv[])
 
     return success ? 0 : 1;
 }
+

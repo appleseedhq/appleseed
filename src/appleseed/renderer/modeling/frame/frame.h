@@ -62,6 +62,7 @@ namespace foundation    { class Tile; }
 namespace renderer      { class BaseGroup; }
 namespace renderer      { class DenoiserAOV; }
 namespace renderer      { class ImageStack; }
+namespace renderer      { class PermanentShadingResultFrameBufferFactory; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
@@ -110,6 +111,10 @@ class APPLESEED_DLLSYMBOL Frame
     // Return the reconstruction filter used by the main image and the AOV images.
     const foundation::Filter2f& get_filter() const;
 
+    // Return the number of the first pass to be rendered.
+    // 0 by default but can be different if a checkpoint was loaded.
+    size_t get_initial_pass() const;
+
     // Set/get the crop window. The crop window is inclusive on all sides.
     void reset_crop_window();
     bool has_crop_window() const;
@@ -126,27 +131,27 @@ class APPLESEED_DLLSYMBOL Frame
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     bool on_frame_begin(
-        const Project&              project,
-        const BaseGroup*            parent,
-        OnFrameBeginRecorder&       recorder,
-        foundation::IAbortSwitch*   abort_switch = nullptr) override;
+        const Project&                                  project,
+        const BaseGroup*                                parent,
+        OnFrameBeginRecorder&                           recorder,
+        foundation::IAbortSwitch*                       abort_switch = nullptr) override;
 
     // Return the normalized device coordinates of a given sample.
     foundation::Vector2d get_sample_position(
-        const double                sample_x,               // x coordinate of the sample in the image, in [0,width)
-        const double                sample_y) const;        // y coordinate of the sample in the image, in [0,height)
+        const double                                    sample_x,           // x coordinate of the sample in the image, in [0,width)
+        const double                                    sample_y) const;    // y coordinate of the sample in the image, in [0,height)
     foundation::Vector2d get_sample_position(
-        const size_t                pixel_x,                // x coordinate of the pixel in the image
-        const size_t                pixel_y,                // y coordinate of the pixel in the image
-        const double                sample_x,               // x coordinate of the sample in the pixel, in [0,1)
-        const double                sample_y) const;        // y coordinate of the sample in the pixel, in [0,1)
+        const size_t                                    pixel_x,            // x coordinate of the pixel in the image
+        const size_t                                    pixel_y,            // y coordinate of the pixel in the image
+        const double                                    sample_x,           // x coordinate of the sample in the pixel, in [0,1)
+        const double                                    sample_y) const;    // y coordinate of the sample in the pixel, in [0,1)
     foundation::Vector2d get_sample_position(
-        const size_t                tile_x,                 // x coordinate of the tile in the image
-        const size_t                tile_y,                 // y coordinate of the tile in the image
-        const size_t                pixel_x,                // x coordinate of the pixel in the tile
-        const size_t                pixel_y,                // y coordinate of the pixel in the tile
-        const double                sample_x,               // x coordinate of the sample in the pixel, in [0,1)
-        const double                sample_y) const;        // y coordinate of the sample in the pixel, in [0,1)
+        const size_t                                    tile_x,             // x coordinate of the tile in the image
+        const size_t                                    tile_y,             // y coordinate of the tile in the image
+        const size_t                                    pixel_x,            // x coordinate of the pixel in the tile
+        const size_t                                    pixel_y,            // y coordinate of the pixel in the tile
+        const double                                    sample_x,           // x coordinate of the sample in the pixel, in [0,1)
+        const double                                    sample_y) const;    // y coordinate of the sample in the pixel, in [0,1)
 
     // Do any post-process needed by AOV images.
     void post_process_aov_images() const;
@@ -168,8 +173,19 @@ class APPLESEED_DLLSYMBOL Frame
 
     // Run the denoiser on the frame.
     void denoise(
-        const size_t                thread_count,
-        foundation::IAbortSwitch*   abort_switch) const;
+        const size_t                                thread_count,
+        foundation::IAbortSwitch*                   abort_switch) const;
+
+    // Open the checkpoint if checkpoint is enabled and the file located
+    // at checkpoint_path exists and is valid.
+    // Returns true if successful or if checkpoint is disabled, false otherwise.
+    bool load_checkpoint(
+        PermanentShadingResultFrameBufferFactory*   buffer_factory);
+
+    // Create a checkpoint file for the resuming the render at the current pass.
+    void save_checkpoint(
+        PermanentShadingResultFrameBufferFactory*   buffer_factory,
+        const size_t                                pass) const;
 
     // Write the main image to disk.
     // Return true if successful, false otherwise.
@@ -192,8 +208,8 @@ class APPLESEED_DLLSYMBOL Frame
     // be freed using foundation::free_string().
     // Return true if successful, false otherwise.
     bool archive(
-        const char*                 directory,
-        char**                      output_path = nullptr) const;
+        const char*                                 directory,
+        char**                                      output_path = nullptr) const;
 
   private:
     friend class AOVAccumulatorContainer;
@@ -206,9 +222,9 @@ class APPLESEED_DLLSYMBOL Frame
 
     // Constructor.
     Frame(
-        const char*                 name,
-        const ParamArray&           params,
-        const AOVContainer&         aovs);
+        const char*                                 name,
+        const ParamArray&                           params,
+        const AOVContainer&                         aovs);
 
     // Destructor.
     ~Frame() override;

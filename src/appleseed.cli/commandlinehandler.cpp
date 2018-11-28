@@ -151,6 +151,22 @@ CommandLineHandler::CommandLineHandler()
 #endif
 
     parser().add_option_handler(
+        &m_checkpoint_create
+            .add_name("--checkpoint-create")
+            .set_description("write a rendering checkpoint after each pass")
+            .set_syntax("filename")
+            .set_min_value_count(0)
+            .set_max_value_count(1));
+
+    parser().add_option_handler(
+        &m_checkpoint_resume
+            .add_name("--checkpoint-resume")
+            .set_description("resume rendering from a checkpoint")
+            .set_syntax("filename")
+            .set_min_value_count(0)
+            .set_max_value_count(1));
+
+    parser().add_option_handler(
         &m_send_to_stdout
             .add_name("--to-stdout")
             .set_description("send render to standard output"));

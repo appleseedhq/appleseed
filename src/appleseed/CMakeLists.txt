@@ -2043,6 +2043,8 @@ set (renderer_utility_sources
     renderer/utility/autodeskmax.h
     renderer/utility/bbox.h
     renderer/utility/dynamicspectrum.h
+    renderer/utility/filesystem.cpp
+    renderer/utility/filesystem.h
     renderer/utility/iostreamop.h
     renderer/utility/messagecontext.cpp
     renderer/utility/messagecontext.h

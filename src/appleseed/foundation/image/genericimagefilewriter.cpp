@@ -144,6 +144,7 @@ void GenericImageFileWriter::set_image_channels(
     OIIO::ImageSpec& spec = impl->m_spec.back();
 
     spec.nchannels = static_cast<int>(channel_count);
+    spec.channelnames.clear();
 
     for (size_t i = 0; i < channel_count; i++)
     {
@@ -192,8 +193,12 @@ void GenericImageFileWriter::set_image_spec()
     }
 
     // Channel names.
-    const char* channel_names[] = { "R", "G", "B", "A" };
-    set_image_channels(props.m_channel_count, channel_names);
+    // Needs to be manually set if the number of channels is higher than 4.
+    if (props.m_channel_count <= 4)
+    {
+        const char* channel_names[] = { "R", "G", "B", "A" };
+        set_image_channels(props.m_channel_count, channel_names);
+    }
 
     // Format of the pixel data.
     const boost::filesystem::path filepath(impl->m_filename);
@@ -327,6 +332,9 @@ void GenericImageFileWriter::write_tiles(const size_t image_index)
     assert(image_index < impl->m_spec.size());
     const OIIO::ImageSpec& spec = impl->m_spec[image_index];
 
+    assert(spec.nchannels == spec.channelnames.size());
+    assert(spec.nchannels == props.m_channel_count);
+
     // Compute the tiles' xstride offset in bytes.
     size_t xstride = props.m_pixel_size;
 
@@ -343,7 +351,7 @@ void GenericImageFileWriter::write_tiles(const size_t image_index)
             assert(tile_offset_y <= props.m_canvas_height);
 
             // Compute the tile's ystride offset in bytes.
-            const size_t ystride = xstride * std::min(static_cast<size_t>(spec.width + spec.x - tile_offset_x), 
+            const size_t ystride = xstride * std::min(static_cast<size_t>(spec.width + spec.x - tile_offset_x),
                                                       static_cast<size_t>(spec.tile_width));
 
             // Retrieve the (tile_x, tile_y) tile.
@@ -417,9 +425,9 @@ void GenericImageFileWriter::write_scanlines(const size_t image_index)
 
         // Write scanline into the file.
         if (!impl->m_writer->write_scanlines(
-                static_cast<int>(y_begin), 
-                static_cast<int>(y_end), 
-                0, 
+                static_cast<int>(y_begin),
+                static_cast<int>(y_end),
+                0,
                 convert_pixel_format(props.m_pixel_format),
                 buffer_ptr))
         {
@@ -465,7 +473,7 @@ void GenericImageFileWriter::write_multi_images()
         const std::string msg = impl->m_writer->geterror();
         throw ExceptionIOError(msg.c_str());
     }
-    
+
     for (size_t i = 0, e = get_image_count(); i < e; ++i)
     {
         if (i > 0)
@@ -480,7 +488,7 @@ void GenericImageFileWriter::write_multi_images()
 
         write(i);
     }
-    
+
     close_file();
 }
 

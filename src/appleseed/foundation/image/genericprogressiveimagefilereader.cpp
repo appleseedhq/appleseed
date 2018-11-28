@@ -85,9 +85,11 @@ struct GenericProgressiveImageFileReader::Impl
             throw ExceptionIOError(OIIO::geterror().c_str());
 
         m_supports_random_access = m_input->supports("random_access") != 0;
+        read_spec(m_input->spec());
+    }
 
-        const OIIO::ImageSpec& spec = m_input->spec();
-
+    void read_spec(const OIIO::ImageSpec& spec)
+    {
         m_is_tiled = spec.tile_width > 0 && spec.tile_height > 0 && spec.tile_depth > 0;
 
         size_t tile_width, tile_height;
@@ -240,6 +242,20 @@ void GenericProgressiveImageFileReader::read_image_attributes(
     }
 }
 
+bool GenericProgressiveImageFileReader::choose_subimage(const size_t subimage) const
+{
+    OIIO::ImageSpec spec;
+    const bool success = impl->m_input->seek_subimage(
+        static_cast<int>(subimage),
+        0,
+        spec);
+
+    if (success)
+        impl->read_spec(spec);
+
+    return success;
+}
+
 Tile* GenericProgressiveImageFileReader::read_tile(
     const size_t        tile_x,
     const size_t        tile_y)
@@ -328,6 +344,102 @@ Tile* GenericProgressiveImageFileReader::read_tile(
             throw ExceptionIOError(impl->m_input->geterror().c_str());
 
         return tile.release();
+    }
+}
+
+void GenericProgressiveImageFileReader::read_tile(
+    const size_t        tile_x,
+    const size_t        tile_y,
+    Tile*               output_tile)
+{
+    assert(is_open());
+    assert(output_tile);
+    assert(output_tile->get_channel_count() == impl->m_props.m_channel_count);
+    assert(output_tile->get_pixel_format() == impl->m_props.m_pixel_format);
+
+    if (impl->m_is_tiled)
+    {
+        //
+        // Tiled image.
+        //
+        // In appleseed, for images whose width or height are not multiples
+        // of the tile's width or height, border tiles are actually smaller.
+        // In OpenImageIO, border tiles have the same size as other tiles,
+        // and the image's pixel data window defines which pixels of those
+        // tiles actually belong to the image.
+        //
+        // Since in appleseed we don't propagate pixel data windows through
+        // the whole image pipeline, we make sure here to return tiles of
+        // the correct dimensions, at some expenses.
+        //
+
+        const size_t origin_x = tile_x * impl->m_props.m_tile_width;
+        const size_t origin_y = tile_y * impl->m_props.m_tile_height;
+        const size_t tile_width = min(impl->m_props.m_tile_width, impl->m_props.m_canvas_width - origin_x);
+        const size_t tile_height = min(impl->m_props.m_tile_height, impl->m_props.m_canvas_height - origin_y);
+
+        // The tile fits perfectly into the canvas.
+        if (tile_width == impl->m_props.m_tile_width && tile_height == impl->m_props.m_tile_height)
+        {
+            assert(output_tile->get_width() == impl->m_props.m_tile_width);
+            assert(output_tile->get_height() == impl->m_props.m_tile_height);
+
+            if (!impl->m_input->read_tile(
+                    static_cast<int>(origin_x),
+                    static_cast<int>(origin_y),
+                    0, // z
+                    impl->m_input->spec().format,
+                    output_tile->get_storage()))
+                throw ExceptionIOError(impl->m_input->geterror().c_str());
+        }
+        else
+        {
+            assert(output_tile->get_width() == tile_width);
+            assert(output_tile->get_height() == tile_height);
+
+            unique_ptr<Tile> source_tile(
+                new Tile(
+                    impl->m_props.m_tile_width,
+                    impl->m_props.m_tile_height,
+                    impl->m_props.m_channel_count,
+                    impl->m_props.m_pixel_format));
+
+            if (!impl->m_input->read_tile(
+                    static_cast<int>(origin_x),
+                    static_cast<int>(origin_y),
+                    0, // z
+                    impl->m_input->spec().format,
+                    source_tile->get_storage()))
+                throw ExceptionIOError(impl->m_input->geterror().c_str());
+
+            for (size_t y = 0; y < tile_height; ++y)
+            {
+                memcpy(
+                    output_tile->pixel(0, y),
+                    source_tile->pixel(0, y),
+                    tile_width * impl->m_props.m_pixel_size);
+            }
+        }
+    }
+    else
+    {
+        //
+        // Scanline image.
+        //
+
+        assert(output_tile->get_width() == impl->m_props.m_canvas_width);
+        assert(output_tile->get_height() == impl->m_props.m_canvas_height);
+
+        if (!impl->m_supports_random_access)
+        {
+            close();
+            impl->open();
+        }
+
+        if (!impl->m_input->read_image(
+                impl->m_input->spec().format,
+                output_tile->get_storage()))
+            throw ExceptionIOError(impl->m_input->geterror().c_str());
     }
 }
 

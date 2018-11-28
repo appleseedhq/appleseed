@@ -76,6 +76,8 @@ class CommandLineHandler
 #if defined __APPLE__ || defined _WIN32
     foundation::FlagOptionHandler                       m_display_output;
 #endif
+    foundation::ValueOptionHandler<std::string>         m_checkpoint_create;
+    foundation::ValueOptionHandler<std::string>         m_checkpoint_resume;
     foundation::FlagOptionHandler                       m_send_to_stdout;
     foundation::FlagOptionHandler                       m_disable_autosave;
     foundation::ValueOptionHandler<std::string>         m_save_light_paths;
