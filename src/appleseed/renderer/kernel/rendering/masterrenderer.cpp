@@ -505,8 +505,8 @@ struct MasterRenderer::Impl
             }
 
             // Print settings of key entities.
-            m_project.get_scene()->get_active_camera()->print_settings();
             m_project.get_frame()->print_settings();
+            m_project.get_scene()->get_active_camera()->print_settings();
 
             IFrameRenderer& frame_renderer = components.get_frame_renderer();
             assert(!frame_renderer.is_rendering());

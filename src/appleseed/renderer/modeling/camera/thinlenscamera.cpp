@@ -198,7 +198,7 @@ namespace
         void print_settings() const override
         {
             RENDERER_LOG_INFO(
-                "camera \"%s\" settings:\n"
+                "camera \"%s\" (#" FMT_UNIQUE_ID ") parameters:\n"
                 "  model                         %s\n"
                 "  film width                    %f\n"
                 "  film height                   %f\n"
@@ -216,6 +216,7 @@ namespace
                 "  shutter close begin time      %f\n"
                 "  shutter close end time        %f",
                 get_path().c_str(),
+                get_uid(),
                 Model,
                 m_film_dimensions[0],
                 m_film_dimensions[1],

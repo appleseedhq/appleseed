@@ -86,7 +86,7 @@ class APPLESEED_DLLSYMBOL Frame
     // Delete this instance.
     void release() override;
 
-    // Print this component's settings to the renderer's global logger.
+    // Print this entity's parameters to the renderer's global logger.
     void print_settings();
 
     // Access the AOVs.
