@@ -77,26 +77,46 @@ bool EnvironmentEDF::on_frame_begin(
     bool warned = false;
     for (size_t i = 0, e = m_transform_sequence.size(); i < e; ++i)
     {
+        // Retrieve transform.
         float time;
         Transformd transform;
         m_transform_sequence.get_transform(i, time, transform);
 
+        // Decompose transform.
         Vector3d scaling, translation;
         Quaterniond rotation;
         transform.get_local_to_parent().decompose(scaling, rotation, translation);
 
-        if ((!feq(scaling, Vector3d(1.0)) || !fz(translation)) && !warned)
+        // Check transform validity.
+        const bool is_valid_scaling =
+            (feq(scaling[0], +1.0) || feq(scaling[0], -1.0)) &&
+            (feq(scaling[1], +1.0) || feq(scaling[1], -1.0)) &&
+            (feq(scaling[2], +1.0) || feq(scaling[2], -1.0));
+        const bool is_valid_translation = fz(translation);
+        const bool is_valid_rotation = is_normalized(rotation);
+        const bool is_valid_transform = is_valid_scaling && is_valid_translation && is_valid_rotation;
+
+        // Warn once about invalid transforms.
+        if (!is_valid_transform && !warned)
         {
             RENDERER_LOG_WARNING(
-                "transforms of environment edf \"%s\" must be pure rotations but have scaling and/or translation components; these will be ignored.",
+                "transforms of environment edf \"%s\" must be pure rotations and flips but have scaling and/or translation components; these will be ignored.",
                 get_path().c_str());
             warned = true;
         }
 
-        m_transform_sequence.set_transform(
-            time,
+        // Rebuild transform.
+        scaling[0] = scaling[0] < 0.0 ? -1.0 : +1.0;
+        scaling[1] = scaling[1] < 0.0 ? -1.0 : +1.0;
+        scaling[2] = scaling[2] < 0.0 ? -1.0 : +1.0;
+        rotation = normalize(rotation);
+        transform =
             Transformd::from_local_to_parent(
-                Matrix4d::make_rotation(rotation)));
+                Matrix4d::make_rotation(rotation) *
+                Matrix4d::make_scaling(scaling));
+
+        // Store transform.
+        m_transform_sequence.set_transform(time, transform);
     }
 
     return true;
