@@ -94,6 +94,13 @@ CommandLineHandler::CommandLineHandler()
             .set_exact_value_count(4));
 
     parser().add_option_handler(
+        &m_noise_seed
+            .add_name("--noise-seed")
+            .set_description("set the noise seed")
+            .set_syntax("seed")
+            .set_exact_value_count(1));
+
+    parser().add_option_handler(
         &m_samples
             .add_name("--samples")
             .add_name("-s")

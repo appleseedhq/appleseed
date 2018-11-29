@@ -41,7 +41,7 @@
 #include "foundation/math/aabb.h"
 #include "foundation/math/filter.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
@@ -115,6 +115,9 @@ class APPLESEED_DLLSYMBOL Frame
     bool has_crop_window() const;
     void set_crop_window(const foundation::AABB2u& crop_window);
     const foundation::AABB2u& get_crop_window() const;
+
+    // Get the noise seed.
+    foundation::uint32 get_noise_seed() const;
 
     // Expose asset file paths referenced by this entity to the outside.
     void collect_asset_paths(foundation::StringArray& paths) const override;
