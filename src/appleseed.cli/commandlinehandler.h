@@ -34,6 +34,7 @@
 #include "application/commandlinehandlerbase.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/types.h"
 #include "foundation/utility/commandlineparser.h"
 
 // Standard headers.
@@ -54,38 +55,39 @@ class CommandLineHandler
 {
   public:
     // Input file.
-    foundation::ValueOptionHandler<std::string>     m_filename;
+    foundation::ValueOptionHandler<std::string>         m_filename;
 
     // General options.
-    foundation::ValueOptionHandler<std::string>     m_configuration;
-    foundation::ValueOptionHandler<std::string>     m_params;
+    foundation::ValueOptionHandler<std::string>         m_configuration;
+    foundation::ValueOptionHandler<std::string>         m_params;
 
     // Aliases for rendering options.
-    foundation::ValueOptionHandler<std::string>     m_threads;  // std::string because we need to handle 'auto'
-    foundation::ValueOptionHandler<int>             m_resolution;
-    foundation::ValueOptionHandler<int>             m_window;
-    foundation::ValueOptionHandler<int>             m_samples;
-    foundation::ValueOptionHandler<int>             m_passes;
-    foundation::ValueOptionHandler<std::string>     m_override_shading;
-    foundation::ValueOptionHandler<std::string>     m_show_object_instances;
-    foundation::ValueOptionHandler<std::string>     m_hide_object_instances;
+    foundation::ValueOptionHandler<std::string>         m_threads;  // std::string because we need to handle 'auto'
+    foundation::ValueOptionHandler<int>                 m_resolution;
+    foundation::ValueOptionHandler<int>                 m_window;
+    foundation::ValueOptionHandler<foundation::uint32>  m_noise_seed;
+    foundation::ValueOptionHandler<int>                 m_samples;
+    foundation::ValueOptionHandler<int>                 m_passes;
+    foundation::ValueOptionHandler<std::string>         m_override_shading;
+    foundation::ValueOptionHandler<std::string>         m_show_object_instances;
+    foundation::ValueOptionHandler<std::string>         m_hide_object_instances;
 
     // Output options.
-    foundation::ValueOptionHandler<std::string>     m_output;
+    foundation::ValueOptionHandler<std::string>         m_output;
 #if defined __APPLE__ || defined _WIN32
-    foundation::FlagOptionHandler                   m_display_output;
+    foundation::FlagOptionHandler                       m_display_output;
 #endif
-    foundation::FlagOptionHandler                   m_send_to_stdout;
-    foundation::FlagOptionHandler                   m_send_to_mplay;
-    foundation::ValueOptionHandler<int>             m_send_to_hrmanpipe;
-    foundation::FlagOptionHandler                   m_disable_autosave;
-    foundation::ValueOptionHandler<std::string>     m_save_light_paths;
+    foundation::FlagOptionHandler                       m_send_to_stdout;
+    foundation::FlagOptionHandler                       m_send_to_mplay;
+    foundation::ValueOptionHandler<int>                 m_send_to_hrmanpipe;
+    foundation::FlagOptionHandler                       m_disable_autosave;
+    foundation::ValueOptionHandler<std::string>         m_save_light_paths;
 
     // Developer-oriented options.
-    foundation::ValueOptionHandler<std::string>     m_run_unit_tests;
-    foundation::ValueOptionHandler<std::string>     m_run_unit_benchmarks;
-    foundation::FlagOptionHandler                   m_verbose_unit_tests;
-    foundation::FlagOptionHandler                   m_benchmark_mode;
+    foundation::ValueOptionHandler<std::string>         m_run_unit_tests;
+    foundation::ValueOptionHandler<std::string>         m_run_unit_benchmarks;
+    foundation::FlagOptionHandler                       m_verbose_unit_tests;
+    foundation::FlagOptionHandler                       m_benchmark_mode;
 
     // Constructor.
     CommandLineHandler();

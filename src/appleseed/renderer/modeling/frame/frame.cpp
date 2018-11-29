@@ -100,9 +100,8 @@ struct Frame::Impl
     size_t                          m_tile_height;
     string                          m_filter_name;
     float                           m_filter_radius;
-    unique_ptr<Filter2f>            m_filter;
     AABB2u                          m_crop_window;
-    ParamArray                      m_render_info;
+    uint32                          m_noise_seed;
     DenoisingMode                   m_denoising_mode;
 
     // Child entities.
@@ -114,6 +113,10 @@ struct Frame::Impl
     unique_ptr<Image>               m_image;
     unique_ptr<ImageStack>          m_aov_images;
     DenoiserAOV*                    m_denoiser_aov;
+
+    // Internal state.
+    unique_ptr<Filter2f>            m_filter;
+    ParamArray                      m_render_info;
 };
 
 Frame::Frame(
@@ -188,8 +191,7 @@ Frame::Frame(
 
         impl->m_internal_aovs.insert(auto_release_ptr<AOV>(aov));
     }
-    else
-        impl->m_denoiser_aov = nullptr;
+    else impl->m_denoiser_aov = nullptr;
 }
 
 Frame::~Frame()
@@ -214,6 +216,7 @@ void Frame::print_settings()
         "  filter                        %s\n"
         "  filter size                   %f\n"
         "  crop window                   (%s, %s)-(%s, %s)\n"
+        "  noise seed                    %s\n"
         "  denoising mode                %s",
         get_path().c_str(),
         camera_name != nullptr ? camera_name : "none",
@@ -227,6 +230,7 @@ void Frame::print_settings()
         pretty_uint(impl->m_crop_window.min[1]).c_str(),
         pretty_uint(impl->m_crop_window.max[0]).c_str(),
         pretty_uint(impl->m_crop_window.max[1]).c_str(),
+        pretty_uint(impl->m_noise_seed).c_str(),
         impl->m_denoising_mode == DenoisingMode::Off ? "off" :
         impl->m_denoising_mode == DenoisingMode::WriteOutputs ? "write outputs" : "denoise");
 }
@@ -309,6 +313,11 @@ void Frame::set_crop_window(const AABB2u& crop_window)
 const AABB2u& Frame::get_crop_window() const
 {
     return impl->m_crop_window;
+}
+
+uint32 Frame::get_noise_seed() const
+{
+    return impl->m_noise_seed;
 }
 
 void Frame::collect_asset_paths(StringArray& paths) const
@@ -919,6 +928,9 @@ void Frame::extract_parameters()
         Vector2u(impl->m_frame_width - 1, impl->m_frame_height - 1));
     impl->m_crop_window = m_params.get_optional<AABB2u>("crop_window", default_crop_window);
 
+    // Retrieve noise seed.
+    impl->m_noise_seed = m_params.get_optional<uint32>("noise_seed", 0);
+
     // Retrieve denoiser parameters.
     {
         const string denoise_mode = m_params.get_optional<string>("denoiser", "off");
@@ -1013,6 +1025,14 @@ DictionaryArray FrameFactory::get_input_metadata()
                     .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.5"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "noise_seed")
+            .insert("label", "Noise Seed")
+            .insert("type", "text")
+            .insert("use", "optional")
+            .insert("default", "0"));
 
     metadata.push_back(
         Dictionary()

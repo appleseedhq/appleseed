@@ -345,7 +345,7 @@ namespace
                         tile_callback->on_tiled_frame_begin(&m_frame);
 
                     // Create tile jobs.
-                    const uint32 pass_hash = hash_uint32(static_cast<uint32>(pass));
+                    const uint32 pass_hash = mix_uint32(m_frame.get_noise_seed(), static_cast<uint32>(pass));
                     TileJobFactory::TileJobVector tile_jobs;
                     m_tile_job_factory.create(
                         m_frame,
