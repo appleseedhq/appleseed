@@ -80,7 +80,7 @@ class APPLESEED_DLLSYMBOL Camera
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
-    // Print this component's settings to the renderer's global logger.
+    // Print this entity's parameters to the renderer's global logger.
     virtual void print_settings() const = 0;
 
     // Access the transform sequence of the camera.

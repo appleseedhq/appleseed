@@ -209,8 +209,8 @@ void Frame::print_settings()
     const char* camera_name = get_active_camera_name();
 
     RENDERER_LOG_INFO(
-        "frame \"%s\" settings:\n"
-        "  camera                        \"%s\"\n"
+        "frame \"%s\" (#" FMT_UNIQUE_ID ") parameters:\n"
+        "  camera name                   \"%s\"\n"
         "  resolution                    %s x %s\n"
         "  tile size                     %s x %s\n"
         "  filter                        %s\n"
@@ -219,6 +219,7 @@ void Frame::print_settings()
         "  noise seed                    %s\n"
         "  denoising mode                %s",
         get_path().c_str(),
+        get_uid(),
         camera_name != nullptr ? camera_name : "none",
         pretty_uint(impl->m_frame_width).c_str(),
         pretty_uint(impl->m_frame_height).c_str(),
