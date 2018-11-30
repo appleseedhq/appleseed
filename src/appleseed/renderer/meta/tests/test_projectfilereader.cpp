@@ -55,7 +55,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
         auto_release_ptr<Project> project =
             reader.read(
                 "unit tests/inputs/test_projectfilereader_configurationblocks.appleseed",
-                "../../../schemas/project.xsd");    // path relative to input file
+                "../../../schemas/project.xsd",             // path relative to input file
+                ProjectFileReader::OmitProjectFileUpdate);  // don't update the project as this causes the output to differ from the input
 
         ASSERT_NEQ(0, project.get());
 
