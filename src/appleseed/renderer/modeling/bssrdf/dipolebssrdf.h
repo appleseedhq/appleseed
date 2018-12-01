@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_DIPOLEBSSRDF_H
-#define APPLESEED_RENDERER_MODELING_BSSRDF_DIPOLEBSSRDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -235,6 +234,4 @@ void DipoleBSSRDF::do_prepare_inputs(
         dipole_max_radius(foundation::min_value(values->m_precomputed.m_sigma_tr));
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_DIPOLEBSSRDF_H
+}   // namespace renderer

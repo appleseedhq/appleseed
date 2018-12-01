@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_REGULARSPECTRUM_H
-#define APPLESEED_FOUNDATION_IMAGE_REGULARSPECTRUM_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/fp.h"
@@ -905,6 +904,4 @@ inline bool is_finite(const RegularSpectrum<T, N>& s)
     return true;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_REGULARSPECTRUM_H
+}   // namespace foundation

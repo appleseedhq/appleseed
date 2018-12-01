@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_SAMPLING_MAPPINGS_H
-#define APPLESEED_FOUNDATION_MATH_SAMPLING_MAPPINGS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
@@ -631,6 +630,4 @@ T rcp_distribution_pdf(
     return rcp(x * (std::log(d)));
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_SAMPLING_MAPPINGS_H
+}   // namespace foundation

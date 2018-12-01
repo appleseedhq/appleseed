@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_SEPARABLEBSSRDF_H
-#define APPLESEED_RENDERER_MODELING_BSSRDF_SEPARABLEBSSRDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -128,6 +127,4 @@ class APPLESEED_DLLSYMBOL SeparableBSSRDF
         Spectrum&                   value) const;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_SEPARABLEBSSRDF_H
+}   // namespace renderer

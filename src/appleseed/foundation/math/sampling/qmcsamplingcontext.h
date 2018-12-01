@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_SAMPLING_QMCSAMPLINGCONTEXT_H
-#define APPLESEED_FOUNDATION_MATH_SAMPLING_QMCSAMPLINGCONTEXT_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/permutation.h"
@@ -381,6 +380,4 @@ inline Vector<T, N> QMCSamplingContext<RNG>::next2(Tag<Vector<T, N>>)
     return v;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_SAMPLING_QMCSAMPLINGCONTEXT_H
+}   // namespace foundation

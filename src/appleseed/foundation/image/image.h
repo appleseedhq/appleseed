@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_IMAGE_H
-#define APPLESEED_FOUNDATION_IMAGE_IMAGE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
@@ -124,6 +123,4 @@ inline const CanvasProperties& Image::properties() const
     return m_props;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_IMAGE_H
+}   // namespace foundation

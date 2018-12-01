@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYCREATORBASE_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYCREATORBASE_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/exceptioninvalidentityname.h"
@@ -95,7 +94,5 @@ void EntityCreatorBase::catch_entity_creation_errors(
     }
 }
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYCREATORBASE_H
+}   // namespace studio
+}   // namespace appleseed

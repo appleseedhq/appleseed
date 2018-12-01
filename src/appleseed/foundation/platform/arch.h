@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_ARCH_H
-#define APPLESEED_FOUNDATION_PLATFORM_ARCH_H
+#pragma once
 
 //
 // Make sure APPLESEED_ARCH32 and APPLESEED_ARCH64 are not both defined at the same time.
@@ -65,5 +64,3 @@
         #define APPLESEED_ARCH32
     #endif
 #endif
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_ARCH_H

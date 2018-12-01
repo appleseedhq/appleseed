@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_TEST_ITESTLISTENER_H
-#define APPLESEED_FOUNDATION_UTILITY_TEST_ITESTLISTENER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
@@ -88,6 +87,4 @@ class APPLESEED_DLLSYMBOL ITestListener
         const char*             message) = 0;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_TEST_ITESTLISTENER_H
+}   // namespace foundation

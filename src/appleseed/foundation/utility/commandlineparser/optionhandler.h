@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_OPTIONHANDLER_H
-#define APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_OPTIONHANDLER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -172,6 +171,4 @@ inline bool OptionHandler::match_name(const std::string& arg) const
     return false;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_OPTIONHANDLER_H
+}   // namespace foundation

@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CURVE_ICURVEBUILDER_H
-#define APPLESEED_FOUNDATION_CURVE_ICURVEBUILDER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -80,6 +79,4 @@ class APPLESEED_DLLSYMBOL ICurveBuilder
     virtual void end_curve_object() = 0;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CURVE_ICURVEBUILDER_H
+}   // namespace foundation

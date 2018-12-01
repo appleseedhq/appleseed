@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_COUNTOF_H
-#define APPLESEED_FOUNDATION_UTILITY_COUNTOF_H
+#pragma once
 
 // Standard headers.
 #include <cstddef>
@@ -58,6 +57,4 @@ char (&count_of_helper(T (&array)[N]))[N];
 // with the sizeof() operator.
 #define countof COUNT_OF
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_COUNTOF_H
+}   // namespace foundation

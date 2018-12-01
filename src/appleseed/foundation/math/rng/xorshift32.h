@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_RNG_XORSHIFT32_H
-#define APPLESEED_FOUNDATION_MATH_RNG_XORSHIFT32_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -90,6 +89,4 @@ inline uint32 Xorshift32::rand_uint32()
     return m_s;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_RNG_XORSHIFT32_H
+}   // namespace foundation

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BSP_BSP_INTERSECTOR_H
-#define APPLESEED_FOUNDATION_MATH_BSP_BSP_INTERSECTOR_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -221,7 +220,5 @@ void Intersector<T, Tree, Visitor, Ray, S>::intersect(
 
 #undef FOUNDATION_BSP_TRAVERSAL_STATS
 
-}       // namespace bsp
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_BSP_BSP_INTERSECTOR_H
+}   // namespace bsp
+}   // namespace foundation

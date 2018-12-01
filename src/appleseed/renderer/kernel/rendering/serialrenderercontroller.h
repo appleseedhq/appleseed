@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_SERIALRENDERERCONTROLLER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_SERIALRENDERERCONTROLLER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/irenderercontroller.h"
@@ -120,6 +119,4 @@ class SerialRendererController
     void exec_callback(const PendingTileCallback& cb);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_SERIALRENDERERCONTROLLER_H
+}   // namespace renderer

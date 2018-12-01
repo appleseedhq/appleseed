@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_SCALAR_H
-#define APPLESEED_FOUNDATION_MATH_SCALAR_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/arch.h"
@@ -936,6 +935,4 @@ inline bool fz(const int lhs)
     return lhs == 0;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_SCALAR_H
+}   // namespace foundation

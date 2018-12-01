@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_DRAWING_H
-#define APPLESEED_FOUNDATION_IMAGE_DRAWING_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -86,6 +85,4 @@ class Drawing
         const Color4f&      tint);                  // RGBA, linear space, straight alpha
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_DRAWING_H
+}   // namespace foundation

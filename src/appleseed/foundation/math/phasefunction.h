@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_PHASEFUNCTION_H
-#define APPLESEED_FOUNDATION_MATH_PHASEFUNCTION_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -77,6 +76,4 @@ class IsotropicPhaseFunction final
     float sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const override;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_PHASEFUNCTION_H
+}   // namespace foundation

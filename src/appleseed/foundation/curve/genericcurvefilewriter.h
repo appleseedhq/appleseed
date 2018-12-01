@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEWRITER_H
-#define APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEWRITER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/curve/icurvefilewriter.h"
@@ -63,6 +62,4 @@ class APPLESEED_DLLSYMBOL GenericCurveFileWriter
     ICurveFileWriter* m_writer;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEWRITER_H
+}   // namespace foundation

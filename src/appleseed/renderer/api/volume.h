@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_VOLUME_H
-#define APPLESEED_RENDERER_API_VOLUME_H
+#pragma once
 
 // API headers.
 #include "renderer/modeling/volume/genericvolume.h"
@@ -35,5 +34,3 @@
 #include "renderer/modeling/volume/volume.h"
 #include "renderer/modeling/volume/volumefactoryregistrar.h"
 #include "renderer/modeling/volume/volumetraits.h"
-
-#endif  // !APPLESEED_RENDERER_API_VOLUME_H

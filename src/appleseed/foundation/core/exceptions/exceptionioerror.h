@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONIOERROR_H
-#define APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONIOERROR_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/stringexception.h"
@@ -70,6 +69,4 @@ inline ExceptionIOError::ExceptionIOError(const char* what, const char* s)
 {
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONIOERROR_H
+}   // namespace foundation

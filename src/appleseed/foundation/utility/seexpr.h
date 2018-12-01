@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_SEEXPR_H
-#define APPLESEED_FOUNDATION_UTILITY_SEEXPR_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -68,6 +67,4 @@ class SeExprFilePathExtractor
     const boost::regex m_regex;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_SEEXPR_H
+}   // namespace foundation

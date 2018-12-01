@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_MATERIALSAMPLERS_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_MATERIALSAMPLERS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -200,6 +199,4 @@ class VolumeSampler
     const foundation::Vector3d          m_point;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_MATERIALSAMPLERS_H
+}   // namespace renderer

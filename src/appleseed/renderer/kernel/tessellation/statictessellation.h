@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_TESSELLATION_STATICTESSELLATION_H
-#define APPLESEED_RENDERER_KERNEL_TESSELLATION_STATICTESSELLATION_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -498,6 +497,4 @@ void StaticTessellation<Primitive>::create_tangents_attribute()
             3);
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_TESSELLATION_STATICTESSELLATION_H
+}   // namespace renderer

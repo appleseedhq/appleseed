@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_PYTHON_PYTHONINTERPRETER_H
-#define APPLESEED_STUDIO_PYTHON_PYTHONINTERPRETER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -68,7 +67,5 @@ class PythonInterpreter
     boost::python::object   m_main_namespace;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_PYTHON_PYTHONINTERPRETER_H
+}   // namespace studio
+}   // namespace appleseed

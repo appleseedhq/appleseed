@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_MATERIAL_OSLMATERIAL_H
-#define APPLESEED_RENDERER_MODELING_MATERIAL_OSLMATERIAL_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/material/imaterialfactory.h"
@@ -74,6 +73,4 @@ class APPLESEED_DLLSYMBOL OSLMaterialFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_OSLMATERIAL_H
+}   // namespace renderer

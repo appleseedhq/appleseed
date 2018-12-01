@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_POSTPROCESSINGSTAGECONTAINER_H
-#define APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_POSTPROCESSINGSTAGECONTAINER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entityvector.h"
@@ -44,6 +43,4 @@ namespace renderer
 
 typedef TypedEntityVector<PostProcessingStage> PostProcessingStageContainer;
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_POSTPROCESSINGSTAGECONTAINER_H
+}   // namespace renderer

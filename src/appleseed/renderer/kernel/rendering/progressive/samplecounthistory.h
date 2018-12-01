@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLECOUNTHISTORY_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLECOUNTHISTORY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -94,6 +93,4 @@ class SampleCountHistory
     size_t  m_index;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLECOUNTHISTORY_H
+}   // namespace renderer

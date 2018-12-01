@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_BSDF_H
-#define APPLESEED_RENDERER_API_BSDF_H
+#pragma once
 
 // API headers.
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
@@ -53,5 +52,3 @@
 #include "renderer/modeling/bsdf/sheenbrdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
-
-#endif  // !APPLESEED_RENDERER_API_BSDF_H

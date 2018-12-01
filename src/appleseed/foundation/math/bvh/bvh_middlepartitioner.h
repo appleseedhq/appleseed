@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BVH_BVH_MIDDLEPARTITIONER_H
-#define APPLESEED_FOUNDATION_MATH_BVH_BVH_MIDDLEPARTITIONER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/bvh/bvh_partitionerbase.h"
@@ -116,7 +115,5 @@ inline size_t MiddlePartitioner<AABBVector>::partition(
     return pivot;
 }
 
-}       // namespace bvh
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_BVH_BVH_MIDDLEPARTITIONER_H
+}   // namespace bvh
+}   // namespace foundation

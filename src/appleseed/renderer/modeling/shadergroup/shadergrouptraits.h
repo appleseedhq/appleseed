@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERGROUPTRAITS_H
-#define APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERGROUPTRAITS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/shadergroup/shadergroup.h"
@@ -81,6 +80,4 @@ struct EntityTraits<ShaderGroup>
     }
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERGROUPTRAITS_H
+}   // namespace renderer

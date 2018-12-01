@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_SAMPLEACCUMULATIONBUFFER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_SAMPLEACCUMULATIONBUFFER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -84,6 +83,4 @@ inline foundation::uint64 SampleAccumulationBuffer::get_sample_count() const
     return m_sample_count;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_SAMPLEACCUMULATIONBUFFER_H
+}   // namespace renderer

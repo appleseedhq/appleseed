@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_COMPILER_H
-#define APPLESEED_FOUNDATION_PLATFORM_COMPILER_H
+#pragma once
 
 //
 // Quick reminder about Visual Studio versions:
@@ -322,6 +321,4 @@ class APPLESEED_DLLSYMBOL Compiler
     static const char* get_compiler_version();
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_COMPILER_H
+}   // namespace foundation

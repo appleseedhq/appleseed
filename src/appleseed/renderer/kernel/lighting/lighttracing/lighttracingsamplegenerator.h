@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTRACING_LIGHTTRACINGSAMPLEGENERATOR_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTRACING_LIGHTTRACINGSAMPLEGENERATOR_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/isamplegenerator.h"
@@ -90,6 +89,4 @@ class LightTracingSampleGeneratorFactory
     const ParamArray                m_params;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTRACING_LIGHTTRACINGSAMPLEGENERATOR_H
+}   // namespace renderer

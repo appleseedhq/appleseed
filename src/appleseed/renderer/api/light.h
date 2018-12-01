@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_LIGHT_H
-#define APPLESEED_RENDERER_API_LIGHT_H
+#pragma once
 
 // API headers.
 #include "renderer/modeling/light/directionallight.h"
@@ -41,5 +40,3 @@
 #include "renderer/modeling/light/pointlight.h"
 #include "renderer/modeling/light/spotlight.h"
 #include "renderer/modeling/light/sunlight.h"
-
-#endif  // !APPLESEED_RENDERER_API_LIGHT_H

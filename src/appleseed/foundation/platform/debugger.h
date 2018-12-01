@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_DEBUGGER_H
-#define APPLESEED_FOUNDATION_PLATFORM_DEBUGGER_H
+#pragma once
 
 // appleseed.foundation headers.
 #ifdef _MSC_VER
@@ -71,6 +70,4 @@ APPLESEED_DLLSYMBOL bool is_debugger_attached();
 
 #endif
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_DEBUGGER_H
+}   // namespace foundation

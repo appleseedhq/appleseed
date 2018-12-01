@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_INTERSECTOR_H
-#define APPLESEED_RENDERER_KERNEL_INTERSECTION_INTERSECTOR_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/curvetree.h"
@@ -150,6 +149,4 @@ class Intersector
 #endif
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_INTERSECTOR_H
+}   // namespace renderer

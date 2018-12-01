@@ -33,8 +33,7 @@
  *
  * **********************************************************************/
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_WIN32STACKWALKER_H
-#define APPLESEED_FOUNDATION_PLATFORM_WIN32STACKWALKER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/windows.h"
@@ -213,5 +212,3 @@ protected:
     RtlCaptureContext(&c); \
 } while(0);
 #endif
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_WIN32STACKWALKER_H

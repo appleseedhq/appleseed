@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CORE_CONCEPTS_IUNKNOWN_H
-#define APPLESEED_FOUNDATION_CORE_CONCEPTS_IUNKNOWN_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -72,6 +71,4 @@ class APPLESEED_DLLSYMBOL IUnknown
     virtual ~IUnknown() {}
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CORE_CONCEPTS_IUNKNOWN_H
+}   // namespace foundation

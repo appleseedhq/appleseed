@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_TEST_HELPERS_H
-#define APPLESEED_FOUNDATION_UTILITY_TEST_HELPERS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/test/itestcase.h"
@@ -195,6 +194,4 @@ namespace foundation
 #define GRANT_ACCESS_TO_TEST_CASE(SuiteName, CaseName)                                      \
     friend struct TestSuite##SuiteName::TestCase##CaseName
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_TEST_HELPERS_H
+}   // namespace foundation

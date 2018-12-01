@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_PIXELCONTEXT_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_PIXELCONTEXT_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -83,6 +82,4 @@ inline const foundation::Vector2d& PixelContext::get_sample_position() const
     return m_sample_position;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_PIXELCONTEXT_H
+}   // namespace renderer

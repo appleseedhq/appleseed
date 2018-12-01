@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPASSCALLBACK_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPASSCALLBACK_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/sppm/sppmparameters.h"
@@ -141,6 +140,4 @@ inline float SPPMPassCallback::get_lookup_radius() const
     return m_lookup_radius;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPASSCALLBACK_H
+}   // namespace renderer

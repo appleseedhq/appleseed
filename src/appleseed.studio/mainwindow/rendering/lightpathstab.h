@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_LIGHTPATHSTAB_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_LIGHTPATHSTAB_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/cameracontroller.h"
@@ -112,7 +111,5 @@ class LightPathsTab
 
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_LIGHTPATHSTAB_H
+}   // namespace studio
+}   // namespace appleseed

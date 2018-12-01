@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/ilightingengine.h"
@@ -77,6 +76,4 @@ class SPPMLightingEngineFactory
     const BackwardLightSampler&     m_backward_light_sampler;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
+}   // namespace renderer

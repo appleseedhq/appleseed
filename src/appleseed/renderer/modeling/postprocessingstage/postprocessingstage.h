@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_POSTPROCESSINGSTAGE_H
-#define APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_POSTPROCESSINGSTAGE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/connectableentity.h"
@@ -125,6 +124,4 @@ void PostProcessingStage::for_each_pixel(const Frame& frame, const Func& func)
     }
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_POSTPROCESSINGSTAGE_H
+}   // namespace renderer

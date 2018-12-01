@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_AABB_H
-#define APPLESEED_FOUNDATION_MATH_AABB_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/minmax.h"
@@ -757,6 +756,4 @@ inline bool feq(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs, const T ep
 }
 
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_AABB_H
+}   // namespace foundation

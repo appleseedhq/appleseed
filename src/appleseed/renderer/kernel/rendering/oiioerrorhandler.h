@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_OIIOERRORHANDLER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_OIIOERRORHANDLER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -59,6 +58,4 @@ class OIIOErrorHandler
     static const int ErrorCodeMask = 0xffff0000;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_OIIOERRORHANDLER_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_TREEOPTIMIZER_H
-#define APPLESEED_FOUNDATION_MATH_TREEOPTIMIZER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/memory.h"
@@ -134,6 +133,4 @@ void TreeOptimizer<NodeVector>::optimize_subtree(
     }
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_TREEOPTIMIZER_H
+}   // namespace foundation

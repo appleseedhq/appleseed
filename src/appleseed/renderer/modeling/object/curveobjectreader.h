@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
-#define APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/object/curveobject.h"
@@ -59,6 +58,4 @@ class APPLESEED_DLLSYMBOL CurveObjectReader
         const ParamArray&               params);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTREADER_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_TEST_ITESTCASE_H
-#define APPLESEED_FOUNDATION_UTILITY_TEST_ITESTCASE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -63,6 +62,4 @@ class APPLESEED_DLLSYMBOL ITestCase
         TestResult&     case_result) = 0;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_TEST_ITESTCASE_H
+}   // namespace foundation

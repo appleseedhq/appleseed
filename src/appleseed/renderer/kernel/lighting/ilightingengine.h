@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_ILIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_ILIGHTINGENGINE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -90,6 +89,4 @@ class ILightingEngineFactory
         const bool                add_lighting_samples);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_ILIGHTINGENGINE_H
+}   // namespace renderer

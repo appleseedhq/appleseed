@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef AS_NOISE_HELPERS_H
-#define AS_NOISE_HELPERS_H
+#pragma once
 
 #define NOISE_CUBE_SIDE     32.0
 #define NOISE_CUBE_SHIFT    5
@@ -132,5 +131,3 @@ string get_noise_type(int type)
     }
     return noise_type;
 }
-
-#endif // !AS_NOISE_HELPERS_H

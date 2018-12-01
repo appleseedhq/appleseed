@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_SHARED_APPLICATION_COMMANDLINEHANDLERBASE_H
-#define APPLESEED_SHARED_APPLICATION_COMMANDLINEHANDLERBASE_H
+#pragma once
 
 // appleseed.shared headers.
 #include "dllsymbol.h"
@@ -97,7 +96,5 @@ class SHAREDDLL CommandLineHandlerBase
     void print_libraries_information(SuperLogger& logger) const;
 };
 
-}       // namespace shared
-}       // namespace appleseed
-
-#endif  // !APPLESEED_SHARED_APPLICATION_COMMANDLINEHANDLERBASE_H
+}   // namespace shared
+}   // namespace appleseed

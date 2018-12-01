@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MESH_OBJMESHFILEREADER_H
-#define APPLESEED_FOUNDATION_MESH_OBJMESHFILEREADER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -101,6 +100,4 @@ class OBJMeshFileReader
     const int               m_options;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MESH_OBJMESHFILEREADER_H
+}   // namespace foundation

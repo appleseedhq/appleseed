@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_DEBUG_BENCHMARKS_BENCHMARKWINDOW_H
-#define APPLESEED_STUDIO_DEBUG_BENCHMARKS_BENCHMARKWINDOW_H
+#pragma once
 
 // appleseed.studio headers.
 #include "debug/benchmarks/benchmarkrunnerthread.h"
@@ -94,7 +93,5 @@ class BenchmarkWindow
     void slot_on_equidistant_checkbox_state_changed(int state);
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_DEBUG_BENCHMARKS_BENCHMARKWINDOW_H
+}   // namespace studio
+}   // namespace appleseed

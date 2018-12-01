@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTURECOLLECTIONITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTURECOLLECTIONITEM_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/basegroupitem.h"
@@ -75,7 +74,5 @@ class TextureCollectionItem
     ItemBase* create_item(renderer::Texture* texture) override;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTURECOLLECTIONITEM_H
+}   // namespace studio
+}   // namespace appleseed

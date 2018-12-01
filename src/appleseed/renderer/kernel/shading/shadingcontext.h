@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGCONTEXT_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGCONTEXT_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/oslshadergroupexec.h"
@@ -195,6 +194,4 @@ inline size_t ShadingContext::get_max_iterations() const
     return m_max_iterations;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGCONTEXT_H
+}   // namespace renderer

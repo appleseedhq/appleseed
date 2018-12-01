@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_TRANSFORMSEQUENCE_H
-#define APPLESEED_RENDERER_UTILITY_TRANSFORMSEQUENCE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
@@ -234,6 +233,4 @@ foundation::AABB<T, 3> TransformSequence::to_parent(const foundation::AABB<T, 3>
     return result;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_UTILITY_TRANSFORMSEQUENCE_H
+}   // namespace renderer

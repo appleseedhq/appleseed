@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CORE_CONCEPTS_NONCOPYABLE_H
-#define APPLESEED_FOUNDATION_CORE_CONCEPTS_NONCOPYABLE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/typetraits.h"
@@ -71,6 +70,4 @@ struct IsCopyable
 {
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CORE_CONCEPTS_NONCOPYABLE_H
+}   // namespace foundation

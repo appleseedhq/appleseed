@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_TEST_ASSERTIONS_H
-#define APPLESEED_FOUNDATION_UTILITY_TEST_ASSERTIONS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
@@ -592,6 +591,4 @@ namespace foundation
 #define ASSERT_EXCEPTION(exception, expr)                                               \
     FOUNDATION_EXPECT_EXCEPTION_IMPL(exception, expr, true)
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_TEST_ASSERTIONS_H
+}   // namespace foundation

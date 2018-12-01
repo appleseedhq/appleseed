@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_MISCELLANEOUS_H
-#define APPLESEED_STUDIO_UTILITY_MISCELLANEOUS_H
+#pragma once
 
 // Qt headers.
 #include <QFileDialog>
@@ -156,7 +155,5 @@ QList<ToType> qlist_static_cast(const QList<FromType>& list)
     return result;
 }
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_UTILITY_MISCELLANEOUS_H
+}   // namespace studio
+}   // namespace appleseed

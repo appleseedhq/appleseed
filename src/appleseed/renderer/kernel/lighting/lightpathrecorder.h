@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTPATHRECORDER_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTPATHRECORDER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -160,6 +159,4 @@ inline bool LightPath::operator!=(const LightPath& rhs) const
     return !(*this == rhs);
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTPATHRECORDER_H
+}   // namespace renderer

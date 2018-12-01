@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTCOLLECTIONITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTCOLLECTIONITEM_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitembase.h"
@@ -84,7 +83,5 @@ class ObjectCollectionItem
     void insert_objects(const std::string& path) const;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTCOLLECTIONITEM_H
+}   // namespace studio
+}   // namespace appleseed

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTONMAP_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTONMAP_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/knn.h"
@@ -47,6 +46,4 @@ class SPPMPhotonMap
     explicit SPPMPhotonMap(SPPMPhotonVector& photons);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTONMAP_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKLISTENERBASE_H
-#define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKLISTENERBASE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/benchmark/ibenchmarklistener.h"
@@ -102,6 +101,4 @@ class APPLESEED_DLLSYMBOL BenchmarkListenerBase
     }
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKLISTENERBASE_H
+}   // namespace foundation

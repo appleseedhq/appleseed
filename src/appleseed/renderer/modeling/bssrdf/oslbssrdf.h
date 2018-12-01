@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_OSLBSSRDF_H
-#define APPLESEED_RENDERER_MODELING_BSSRDF_OSLBSSRDF_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
@@ -49,6 +48,4 @@ class OSLBSSRDFFactory
     foundation::auto_release_ptr<BSSRDF> create() const;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_OSLBSSRDF_H
+}   // namespace renderer

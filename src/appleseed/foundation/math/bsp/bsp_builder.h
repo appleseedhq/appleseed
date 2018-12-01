@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BSP_BSP_BUILDER_H
-#define APPLESEED_FOUNDATION_MATH_BSP_BSP_BUILDER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -569,7 +568,5 @@ void Builder<Tree, LeafFactory, LeafSplitter, Timer>::subdivide(
     delete right_leaf;
 }
 
-}       // namespace bsp
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_BSP_BSP_BUILDER_H
+}   // namespace bsp
+}   // namespace foundation

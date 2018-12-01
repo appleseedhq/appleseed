@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_INPUT_INPUTPARAMS_H
-#define APPLESEED_RENDERER_MODELING_INPUT_INPUTPARAMS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -45,6 +44,4 @@ class InputParams
     foundation::Vector2d m_uv;      // UV coordinates
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_INPUT_INPUTPARAMS_H
+}   // namespace renderer

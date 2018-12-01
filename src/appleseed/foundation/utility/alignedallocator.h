@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_ALIGNEDALLOCATOR_H
-#define APPLESEED_FOUNDATION_UTILITY_ALIGNEDALLOCATOR_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/memory.h"
@@ -189,6 +188,4 @@ class AlignedAllocator<void>
     const size_t m_alignment;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_ALIGNEDALLOCATOR_H
+}   // namespace foundation

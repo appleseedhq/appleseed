@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_AOV_PIXELSAMPLECOUNTAOV_H
-#define APPLESEED_RENDERER_MODELING_AOV_PIXELSAMPLECOUNTAOV_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
@@ -102,6 +101,4 @@ class APPLESEED_DLLSYMBOL PixelSampleCountAOVFactory
     foundation::auto_release_ptr<AOV> create(const ParamArray& params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_AOV_PIXELSAMPLECOUNTAOV_H
+}   // namespace renderer

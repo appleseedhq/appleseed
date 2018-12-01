@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEITEMHANDLER_H
-#define APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEITEMHANDLER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -79,6 +78,4 @@ class TriangleItemHandler
         const double                            x);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEITEMHANDLER_H
+}   // namespace renderer

@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_SETTINGSWINDOW_H
-#define APPLESEED_STUDIO_MAINWINDOW_SETTINGSWINDOW_H
+#pragma once
 
 // appleseed.studio headers.
 #include "utility/windowbase.h"
@@ -80,7 +79,5 @@ class SettingsWindow
     void slot_restore_configuration_and_close();
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_SETTINGSWINDOW_H
+}   // namespace studio
+}   // namespace appleseed

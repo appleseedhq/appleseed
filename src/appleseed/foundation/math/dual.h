@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_DUAL_H
-#define APPLESEED_FOUNDATION_MATH_DUAL_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -162,6 +161,4 @@ inline void Dual<T>::set_derivatives(const T& dx, const T& dy)
     m_has_derivatives = true;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_DUAL_H
+}   // namespace foundation

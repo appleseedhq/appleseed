@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_MAINWINDOW_H
-#define APPLESEED_STUDIO_MAINWINDOW_MAINWINDOW_H
+#pragma once
 
 // appleseed.studio headers.
 #include "debug/benchmarks/benchmarkwindow.h"
@@ -311,7 +310,5 @@ class MainWindow
     void slot_show_about_window();
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_MAINWINDOW_H
+}   // namespace studio
+}   // namespace appleseed

@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_NPR_NPRCLOSURES_H
-#define APPLESEED_RENDERER_KERNEL_NPR_NPRCLOSURES_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -76,6 +75,4 @@ APPLESEED_DECLARE_INPUT_VALUES(NPRContourInputValues)
     size_t              m_quality;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_NPR_NPRCLOSURES_H
+}   // namespace renderer

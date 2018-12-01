@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_SSS_H
-#define APPLESEED_RENDERER_MODELING_BSSRDF_SSS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -376,6 +375,4 @@ inline float evaluate_cosine_dwivedi(const float mu, const float cosine)
     return foundation::rcp_distribution_pdf(mu - cosine, mu - 1.0f, mu + 1.0f);
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_SSS_H
+}   // namespace renderer

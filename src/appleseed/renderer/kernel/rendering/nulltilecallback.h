@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_NULLTILECALLBACK_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_NULLTILECALLBACK_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/itilecallback.h"
@@ -63,6 +62,4 @@ class APPLESEED_DLLSYMBOL NullTileCallbackFactory
     ITileCallback* create() override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_NULLTILECALLBACK_H
+}   // namespace renderer

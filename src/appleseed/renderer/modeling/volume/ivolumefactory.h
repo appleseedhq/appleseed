@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_VOLUME_IVOLUMEFACTORY_H
-#define APPLESEED_RENDERER_MODELING_VOLUME_IVOLUMEFACTORY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
@@ -68,6 +67,4 @@ class APPLESEED_DLLSYMBOL IVolumeFactory
         const ParamArray&   params) const = 0;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_VOLUME_IVOLUMEFACTORY_H
+}   // namespace renderer

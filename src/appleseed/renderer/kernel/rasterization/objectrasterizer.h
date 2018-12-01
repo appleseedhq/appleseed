@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RASTERIZATION_OBJECTRASTERIZER_H
-#define APPLESEED_RENDERER_KERNEL_RASTERIZATION_OBJECTRASTERIZER_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -56,6 +55,4 @@ class APPLESEED_DLLSYMBOL ObjectRasterizer
     virtual void rasterize(const Triangle& triangle) = 0;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RASTERIZATION_OBJECTRASTERIZER_H
+}   // namespace renderer

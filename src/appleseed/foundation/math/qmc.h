@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_QMC_H
-#define APPLESEED_FOUNDATION_MATH_QMC_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -2598,6 +2597,4 @@ inline Vector<T, Dim> hammersley_zaremba_sequence(
     return p;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_QMC_H
+}   // namespace foundation

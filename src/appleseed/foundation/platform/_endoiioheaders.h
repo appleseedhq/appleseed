@@ -35,4 +35,3 @@
     #undef copysign
 
 #endif
-

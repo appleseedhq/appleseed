@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_TILE_H
-#define APPLESEED_FOUNDATION_IMAGE_TILE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -461,6 +460,4 @@ inline void Tile::clear(const Color& color)
     }
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_TILE_H
+}   // namespace foundation

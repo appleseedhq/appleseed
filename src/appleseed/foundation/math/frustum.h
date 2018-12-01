@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_FRUSTUM_H
-#define APPLESEED_FOUNDATION_MATH_FRUSTUM_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -101,6 +100,4 @@ inline const Vector<T, 4>& Frustum<T, N>::get_plane(const size_t index) const
     return m_planes[index];
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_FRUSTUM_H
+}   // namespace foundation

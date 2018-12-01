@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_RENDERING_H
-#define APPLESEED_RENDERER_API_RENDERING_H
+#pragma once
 
 // API headers.
 #include "renderer/kernel/rendering/debug/blanktilerenderer.h"
@@ -47,5 +46,3 @@
 #include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
 #include "renderer/kernel/rendering/tilecallbackbase.h"
 #include "renderer/kernel/rendering/timedrenderercontroller.h"
-
-#endif  // !APPLESEED_RENDERER_API_RENDERING_H

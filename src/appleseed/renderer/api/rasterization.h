@@ -26,11 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_RASTERIZATION_H
-#define APPLESEED_RENDERER_API_RASTERIZATION_H
+#pragma once
 
 // API headers.
 #include "renderer/kernel/rasterization/objectrasterizer.h"
 #include "renderer/kernel/rasterization/rasterizationcamera.h"
-
-#endif  // !APPLESEED_RENDERER_API_RASTERIZATION_H

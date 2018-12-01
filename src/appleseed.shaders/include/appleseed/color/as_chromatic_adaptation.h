@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef AS_CHROMATIC_ADAPTATION_H
-#define AS_CHROMATIC_ADAPTATION_H
+#pragma once
 
 #include "appleseed/color/as_colorimetry.h"
 
@@ -208,5 +207,3 @@ void chromatic_adaptation_vonKries(
         chromatic_adaptation_matrix[2][1],
         chromatic_adaptation_matrix[2][2]);
 }
-
-#endif // !AS_CHROMATIC_ADAPTATION_H

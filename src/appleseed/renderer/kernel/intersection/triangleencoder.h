@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEENCODER_H
-#define APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEENCODER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -62,6 +61,4 @@ class TriangleEncoder
         foundation::MemoryWriter&               writer);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEENCODER_H
+}   // namespace renderer

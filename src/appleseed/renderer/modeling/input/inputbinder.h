@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_INPUT_INPUTBINDER_H
-#define APPLESEED_RENDERER_MODELING_INPUT_INPUTBINDER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
@@ -223,6 +222,4 @@ EntityType* InputBinder::static_find_entity(
     return nullptr;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_INPUT_INPUTBINDER_H
+}   // namespace renderer

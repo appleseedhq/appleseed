@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_DEBUG_DEBUGTILERENDERER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_DEBUG_DEBUGTILERENDERER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/itilerenderer.h"
@@ -62,6 +61,4 @@ class DebugTileRendererFactory
     ITileRenderer* create(const size_t thread_index) override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_DEBUG_DEBUGTILERENDERER_H
+}   // namespace renderer

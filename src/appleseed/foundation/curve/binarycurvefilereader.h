@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CURVE_BINARYCURVEFILEREADER_H
-#define APPLESEED_FOUNDATION_CURVE_BINARYCURVEFILEREADER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/curve/icurvefilereader.h"
@@ -65,6 +64,4 @@ class BinaryCurveFileReader
     void read_curve(ReaderAdapter& reader, ICurveBuilder& builder);
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CURVE_BINARYCURVEFILEREADER_H
+}   // namespace foundation

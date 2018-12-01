@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENTITY_ENTITY_H
-#define APPLESEED_RENDERER_MODELING_ENTITY_ENTITY_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/utility/paramarray.h"
@@ -310,6 +309,4 @@ bool invoke_on_frame_begin(
     return true;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_ENTITY_ENTITY_H
+}   // namespace renderer

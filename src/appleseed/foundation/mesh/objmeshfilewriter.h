@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MESH_OBJMESHFILEWRITER_H
-#define APPLESEED_FOUNDATION_MESH_OBJMESHFILEWRITER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -89,6 +88,4 @@ class OBJMeshFileWriter
     void write_vector(const char* prefix, const Vector3d& v) const;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MESH_OBJMESHFILEWRITER_H
+}   // namespace foundation

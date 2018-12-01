@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_XMLELEMENT_H
-#define APPLESEED_FOUNDATION_UTILITY_XMLELEMENT_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -246,6 +245,4 @@ inline void write_dictionary(
     }
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_XMLELEMENT_H
+}   // namespace foundation

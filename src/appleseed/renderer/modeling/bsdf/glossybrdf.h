@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_GLOSSYBRDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_GLOSSYBRDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -101,6 +100,4 @@ class APPLESEED_DLLSYMBOL GlossyBRDFFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_GLOSSYBRDF_H
+}   // namespace renderer

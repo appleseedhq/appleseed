@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENTITY_ENTITYFACTORYREGISTRAR_H
-#define APPLESEED_RENDERER_MODELING_ENTITY_ENTITYFACTORYREGISTRAR_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entitytraits.h"
@@ -81,6 +80,4 @@ class APPLESEED_DLLSYMBOL EntityFactoryRegistrar
     void store_plugin(renderer::Plugin* plugin);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_ENTITY_ENTITYFACTORYREGISTRAR_H
+}   // namespace renderer

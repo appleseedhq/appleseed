@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SCENE_OBJECTINSTANCETRAITS_H
-#define APPLESEED_RENDERER_MODELING_SCENE_OBJECTINSTANCETRAITS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entitytraits.h"
@@ -81,6 +80,4 @@ struct EntityTraits<ObjectInstance>
     }
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SCENE_OBJECTINSTANCETRAITS_H
+}   // namespace renderer

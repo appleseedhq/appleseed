@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_MATERIAL_MATERIALTRAITS_H
-#define APPLESEED_RENDERER_MODELING_MATERIAL_MATERIALTRAITS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entitytraits.h"
@@ -84,6 +83,4 @@ struct EntityTraits<Material>
     }
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_MATERIALTRAITS_H
+}   // namespace renderer

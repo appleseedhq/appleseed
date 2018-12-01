@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_JOB_JOBQUEUE_H
-#define APPLESEED_FOUNDATION_UTILITY_JOB_JOBQUEUE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -150,6 +149,4 @@ class APPLESEED_DLLSYMBOL JobQueue
     void signal_event();
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_JOB_JOBQUEUE_H
+}   // namespace foundation

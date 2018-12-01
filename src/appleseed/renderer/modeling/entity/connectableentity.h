@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENTITY_CONNECTABLEENTITY_H
-#define APPLESEED_RENDERER_MODELING_ENTITY_CONNECTABLEENTITY_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
@@ -117,6 +116,4 @@ inline const InputArray& ConnectableEntity::get_inputs() const
     return m_inputs;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_ENTITY_CONNECTABLEENTITY_H
+}   // namespace renderer

@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef AS_MAYA_HELPERS_H
-#define AS_MAYA_HELPERS_H
+#pragma once
 
 #include "appleseed/color/as_colorimetry.h"
 #include "appleseed/color/as_color_helpers.h"
@@ -300,5 +299,3 @@ color maya_gamma(
         gamma_CCTF(in_value[1], in_gamma[1]),
         gamma_CCTF(in_value[2], in_gamma[2]));
 }
-
-#endif // !AS_MAYA_HELPERS_H

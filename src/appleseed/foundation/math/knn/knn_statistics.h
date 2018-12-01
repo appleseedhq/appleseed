@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_KNN_KNN_STATISTICS_H
-#define APPLESEED_FOUNDATION_MATH_KNN_KNN_STATISTICS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -137,7 +136,5 @@ void TreeStatistics<Tree>::collect_stats_recurse(
     }
 }
 
-}       // namespace knn
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_KNN_KNN_STATISTICS_H
+}   // namespace knn
+}   // namespace foundation

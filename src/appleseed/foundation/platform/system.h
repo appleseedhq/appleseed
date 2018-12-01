@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_SYSTEM_H
-#define APPLESEED_FOUNDATION_PLATFORM_SYSTEM_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -175,6 +174,4 @@ class APPLESEED_DLLSYMBOL System
     static uint64 get_peak_process_virtual_memory_size();
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_SYSTEM_H
+}   // namespace foundation

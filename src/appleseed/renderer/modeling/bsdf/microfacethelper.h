@@ -28,8 +28,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_MICROFACETHELPER_H
-#define APPLESEED_RENDERER_MODELING_BSDF_MICROFACETHELPER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -365,6 +364,4 @@ void microfacet_energy_compensation_term(
 // Used in Renderer_Modeling_BSDF_EnergyCompensation unit test.
 void write_microfacet_directional_albedo_tables(const char* directory);
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_MICROFACETHELPER_H
+}   // namespace renderer

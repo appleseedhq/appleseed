@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_LIGHT_DIRECTIONALLIGHT_H
-#define APPLESEED_RENDERER_MODELING_LIGHT_DIRECTIONALLIGHT_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/light/ilightfactory.h"
@@ -75,6 +74,4 @@ class APPLESEED_DLLSYMBOL DirectionalLightFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_LIGHT_DIRECTIONALLIGHT_H
+}   // namespace renderer

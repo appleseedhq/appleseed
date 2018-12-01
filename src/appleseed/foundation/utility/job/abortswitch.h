@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_JOB_ABORTSWITCH_H
-#define APPLESEED_FOUNDATION_UTILITY_JOB_ABORTSWITCH_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -82,6 +81,4 @@ inline bool AbortSwitch::is_aborted()
     return m_abort_flag.is_set();
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_JOB_ABORTSWITCH_H
+}   // namespace foundation

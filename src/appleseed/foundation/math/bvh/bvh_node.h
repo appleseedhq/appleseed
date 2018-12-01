@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BVH_BVH_NODE_H
-#define APPLESEED_FOUNDATION_MATH_BVH_BVH_NODE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -307,7 +306,5 @@ inline size_t Node<AABB>::get_item_count() const
     return static_cast<size_t>(m_item_count);
 }
 
-}       // namespace bvh
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_BVH_BVH_NODE_H
+}   // namespace bvh
+}   // namespace foundation

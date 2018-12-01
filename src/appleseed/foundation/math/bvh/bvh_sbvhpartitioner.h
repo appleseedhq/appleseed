@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BVH_BVH_SBVHPARTITIONER_H
-#define APPLESEED_FOUNDATION_MATH_BVH_BVH_SBVHPARTITIONER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -805,7 +804,5 @@ inline size_t SBVHPartitioner<ItemHandler, AABBVector>::get_object_split_count()
     return m_object_split_count;
 }
 
-}       // namespace bvh
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_BVH_BVH_SBVHPARTITIONER_H
+}   // namespace bvh
+}   // namespace foundation

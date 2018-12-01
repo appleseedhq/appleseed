@@ -27,13 +27,10 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_VOXEL_H
-#define APPLESEED_FOUNDATION_MATH_VOXEL_H
+#pragma once
 
 // Interface headers.
 #include "foundation/math/voxel/voxel_builder.h"
 #include "foundation/math/voxel/voxel_intersector.h"
 #include "foundation/math/voxel/voxel_statistics.h"
 #include "foundation/math/voxel/voxel_tree.h"
-
-#endif  // !APPLESEED_FOUNDATION_MATH_VOXEL_H

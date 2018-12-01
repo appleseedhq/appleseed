@@ -27,13 +27,10 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_JOB_H
-#define APPLESEED_FOUNDATION_UTILITY_JOB_H
+#pragma once
 
 // Interface headers.
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/job/ijob.h"
 #include "foundation/utility/job/jobmanager.h"
 #include "foundation/utility/job/jobqueue.h"
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_JOB_H

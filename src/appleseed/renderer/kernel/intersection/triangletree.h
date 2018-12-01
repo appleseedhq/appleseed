@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLETREE_H
-#define APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLETREE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -334,6 +333,4 @@ inline TriangleLeafProbeVisitor::TriangleLeafProbeVisitor(
 {
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLETREE_H
+}   // namespace renderer

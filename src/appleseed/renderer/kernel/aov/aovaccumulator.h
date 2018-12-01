@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_AOV_AOVACCUMULATOR_H
-#define APPLESEED_RENDERER_KERNEL_AOV_AOVACCUMULATOR_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -230,6 +229,4 @@ inline bool UnfilteredAOVAccumulator::inside_tile(const foundation::Vector2i& pi
     return m_tile_bbox.contains(pi);
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_AOV_AOVACCUMULATOR_H
+}   // namespace renderer

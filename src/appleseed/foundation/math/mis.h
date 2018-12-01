@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_MIS_H
-#define APPLESEED_FOUNDATION_MATH_MIS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/minmax.h"
@@ -245,6 +244,4 @@ inline T mis(const MISHeuristic heuristic, const T q1, const T q2)
     return T(-1.0);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_MIS_H
+}   // namespace foundation

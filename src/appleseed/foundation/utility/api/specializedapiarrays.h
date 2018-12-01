@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_API_SPECIALIZEDAPIARRAYS_H
-#define APPLESEED_FOUNDATION_UTILITY_API_SPECIALIZEDAPIARRAYS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/api/apiarray.h"
@@ -108,6 +107,4 @@ class APPLESEED_DLLSYMBOL StringArray
     Impl* impl;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_API_SPECIALIZEDAPIARRAYS_H
+}   // namespace foundation

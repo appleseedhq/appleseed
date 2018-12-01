@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELCOLLECTIONITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELCOLLECTIONITEM_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitem.h"
@@ -151,7 +150,5 @@ void MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::slot_create()
         SLOT(slot_create_canceled(foundation::Dictionary)));
 }
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELCOLLECTIONITEM_H
+}   // namespace studio
+}   // namespace appleseed

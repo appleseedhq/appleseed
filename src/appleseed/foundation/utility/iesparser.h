@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_IESPARSER_H
-#define APPLESEED_FOUNDATION_UTILITY_IESPARSER_H
+#pragma once
 
 // Boost headers.
 #include "boost/algorithm/string.hpp"
@@ -458,6 +457,4 @@ class IESParser
     std::string                     m_line;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_IESPARSER_H
+}   // namespace foundation

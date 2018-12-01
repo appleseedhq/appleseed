@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_EDF_H
-#define APPLESEED_RENDERER_API_EDF_H
+#pragma once
 
 // API headers.
 #include "renderer/modeling/edf/coneedf.h"
@@ -37,5 +36,3 @@
 #include "renderer/modeling/edf/edffactoryregistrar.h"
 #include "renderer/modeling/edf/edftraits.h"
 #include "renderer/modeling/edf/iedffactory.h"
-
-#endif  // !APPLESEED_RENDERER_API_EDF_H

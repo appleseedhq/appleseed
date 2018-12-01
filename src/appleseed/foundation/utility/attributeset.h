@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_ATTRIBUTESET_H
-#define APPLESEED_FOUNDATION_UTILITY_ATTRIBUTESET_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -212,6 +211,4 @@ inline void AttributeSet::get_attribute(
     *value = typed_storage[index];
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_ATTRIBUTESET_H
+}   // namespace foundation

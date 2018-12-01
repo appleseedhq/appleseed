@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_EXCEPTIONUNSUPPORTEDIMAGEFORMAT_H
-#define APPLESEED_FOUNDATION_IMAGE_EXCEPTIONUNSUPPORTEDIMAGEFORMAT_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -58,6 +57,4 @@ inline ExceptionUnsupportedImageFormat::ExceptionUnsupportedImageFormat()
 {
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_EXCEPTIONUNSUPPORTEDIMAGEFORMAT_H
+}   // namespace foundation

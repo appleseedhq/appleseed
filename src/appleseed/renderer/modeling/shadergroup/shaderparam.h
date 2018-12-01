@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERPARAM_H
-#define APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERPARAM_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
@@ -191,6 +190,4 @@ class APPLESEED_DLLSYMBOL ShaderParam
     bool add(OSLShadingSystem& shading_system);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERPARAM_H
+}   // namespace renderer

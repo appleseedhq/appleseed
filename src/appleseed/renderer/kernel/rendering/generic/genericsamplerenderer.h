@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICSAMPLERENDERER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICSAMPLERENDERER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/isamplerenderer.h"
@@ -89,6 +88,4 @@ class GenericSampleRendererFactory
     const ParamArray            m_params;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICSAMPLERENDERER_H
+}   // namespace renderer

@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_PLUGIN_H
-#define APPLESEED_RENDERER_UTILITY_PLUGIN_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -92,6 +91,4 @@ class PluginCache
     static foundation::auto_release_ptr<Plugin> load(const char* path);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_UTILITY_PLUGIN_H
+}   // namespace renderer

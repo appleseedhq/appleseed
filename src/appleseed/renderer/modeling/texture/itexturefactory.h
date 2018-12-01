@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_TEXTURE_ITEXTUREFACTORY_H
-#define APPLESEED_RENDERER_MODELING_TEXTURE_ITEXTUREFACTORY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
@@ -71,6 +70,4 @@ class APPLESEED_DLLSYMBOL ITextureFactory
         const foundation::SearchPaths&  search_paths) const = 0;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_TEXTURE_ITEXTUREFACTORY_H
+}   // namespace renderer

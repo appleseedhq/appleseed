@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_JOB_WORKERTHREAD_H
-#define APPLESEED_FOUNDATION_UTILITY_JOB_WORKERTHREAD_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -121,6 +120,4 @@ class WorkerThread
     bool execute_job(IJob& job);
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_JOB_WORKERTHREAD_H
+}   // namespace foundation

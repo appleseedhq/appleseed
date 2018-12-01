@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SCENE_BASEGROUP_H
-#define APPLESEED_RENDERER_MODELING_SCENE_BASEGROUP_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/scene/containers.h"
@@ -116,6 +115,4 @@ class APPLESEED_DLLSYMBOL BaseGroup
     Impl* impl;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SCENE_BASEGROUP_H
+}   // namespace renderer

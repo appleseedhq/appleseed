@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYBROWSERWINDOW_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYBROWSERWINDOW_H
+#pragma once
 
 // appleseed.studio headers.
 #include "utility/windowbase.h"
@@ -96,7 +95,5 @@ class EntityBrowserWindow
     void slot_filter_text_changed(const QString& pattern);
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYBROWSERWINDOW_H
+}   // namespace studio
+}   // namespace appleseed

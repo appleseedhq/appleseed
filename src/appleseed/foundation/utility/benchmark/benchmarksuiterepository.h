@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKSUITEREPOSITORY_H
-#define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKSUITEREPOSITORY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/singleton.h"
@@ -76,6 +75,4 @@ class APPLESEED_DLLSYMBOL BenchmarkSuiteRepository
     ~BenchmarkSuiteRepository() override;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKSUITEREPOSITORY_H
+}   // namespace foundation

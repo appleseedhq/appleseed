@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CORE_CONCEPTS_SINGLETON_H
-#define APPLESEED_FOUNDATION_CORE_CONCEPTS_SINGLETON_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -66,6 +65,4 @@ class APPLESEED_DLLSYMBOL Singleton
     virtual ~Singleton() {}
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CORE_CONCEPTS_SINGLETON_H
+}   // namespace foundation

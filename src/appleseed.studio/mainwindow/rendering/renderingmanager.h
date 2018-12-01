@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERINGMANAGER_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERINGMANAGER_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/qtrenderercontroller.h"
@@ -204,7 +203,5 @@ class RenderingManager
     void slot_master_renderer_thread_finished();
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERINGMANAGER_H
+}   // namespace studio
+}   // namespace appleseed

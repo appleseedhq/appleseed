@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_MATRIX_H
-#define APPLESEED_FOUNDATION_MATH_MATRIX_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -2282,6 +2281,4 @@ inline Vector<T, 4> operator*(
     return res;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_MATRIX_H
+}   // namespace foundation

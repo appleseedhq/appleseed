@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_ICANVAS_H
-#define APPLESEED_FOUNDATION_IMAGE_ICANVAS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -261,6 +260,4 @@ inline void ICanvas::clear(const Color<T, N>& color)
     }
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_ICANVAS_H
+}   // namespace foundation

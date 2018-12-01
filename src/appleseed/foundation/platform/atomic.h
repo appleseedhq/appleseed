@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_ATOMIC_H
-#define APPLESEED_FOUNDATION_PLATFORM_ATOMIC_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -138,6 +137,4 @@ APPLESEED_FORCE_INLINE void atomic_add(
     }
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_ATOMIC_H
+}   // namespace foundation

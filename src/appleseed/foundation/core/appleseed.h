@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CORE_APPLESEED_H
-#define APPLESEED_FOUNDATION_CORE_APPLESEED_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -69,6 +68,4 @@ class APPLESEED_DLLSYMBOL Appleseed
     static const char* get_synthetic_version_string();
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CORE_APPLESEED_H
+}   // namespace foundation

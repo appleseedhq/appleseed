@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_DIRECTLIGHTINGINTEGRATOR_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_DIRECTLIGHTINGINTEGRATOR_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -141,6 +140,4 @@ class DirectLightingIntegrator
         LightPathStream*                light_path_stream) const;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_DIRECTLIGHTINGINTEGRATOR_H
+}   // namespace renderer

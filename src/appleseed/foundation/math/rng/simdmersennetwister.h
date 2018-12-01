@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_RNG_SIMDMERSENNETWISTER_H
-#define APPLESEED_FOUNDATION_MATH_RNG_SIMDMERSENNETWISTER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/sse.h"
@@ -106,6 +105,4 @@ inline uint32 SimdMersenneTwister::rand_uint32()
     return psfmt32[mti++];
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_RNG_MERSENNETWISTER_H
+}   // namespace foundation

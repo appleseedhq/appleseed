@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_RNG_MERSENNETWISTER_H
-#define APPLESEED_FOUNDATION_MATH_RNG_MERSENNETWISTER_H
+#pragma once
 
 // appleseed.foundation headers.
 #ifdef APPLESEED_USE_SSE
@@ -49,6 +48,4 @@ typedef SimdMersenneTwister MersenneTwister;
 typedef SerialMersenneTwister MersenneTwister;
 #endif
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_RNG_MERSENNETWISTER_H
+}   // namespace foundation

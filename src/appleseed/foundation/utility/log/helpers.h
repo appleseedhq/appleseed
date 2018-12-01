@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_LOG_HELPERS_H
-#define APPLESEED_FOUNDATION_UTILITY_LOG_HELPERS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/log/logger.h"
@@ -120,6 +119,4 @@ namespace foundation
             __VA_ARGS__);                               \
     } while (0)
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_LOG_HELPERS_H
+}   // namespace foundation

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_LAZY_H
-#define APPLESEED_FOUNDATION_UTILITY_LAZY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -669,6 +668,4 @@ inline bool AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::ObjectSwapper::is
     return element_count == Lines * Ways;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_LAZY_H
+}   // namespace foundation

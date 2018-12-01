@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SCENE_SCENE_H
-#define APPLESEED_RENDERER_MODELING_SCENE_SCENE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -204,6 +203,4 @@ inline const Scene::RenderData& Scene::get_render_data() const
     return m_render_data;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SCENE_SCENE_H
+}   // namespace renderer

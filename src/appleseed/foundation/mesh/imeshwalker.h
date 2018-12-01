@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MESH_IMESHWALKER_H
-#define APPLESEED_FOUNDATION_MESH_IMESHWALKER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -91,6 +90,4 @@ class APPLESEED_DLLSYMBOL IMeshWalker
     virtual size_t get_face_material(const size_t face_index) const = 0;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MESH_IMESHWALKER_H
+}   // namespace foundation

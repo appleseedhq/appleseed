@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_DATETIME_H
-#define APPLESEED_FOUNDATION_PLATFORM_DATETIME_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -108,6 +107,4 @@ inline std::string to_string(const boost::gregorian::date& date)
     return sstr.str();
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_DATETIME_H
+}   // namespace foundation

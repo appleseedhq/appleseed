@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_FASTAMBIENTOCCLUSION_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_FASTAMBIENTOCCLUSION_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -153,6 +152,4 @@ inline GScalar AOVoxelTree::get_max_diag_length() const
     return m_tree.get_max_diag_length();
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_FASTAMBIENTOCCLUSION_H
+}   // namespace renderer

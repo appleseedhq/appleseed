@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef AS_COLOR_HELPERS_H
-#define AS_COLOR_HELPERS_H
+#pragma once
 
 #include "appleseed/color/as_chromatic_adaptation.h"
 #include "appleseed/color/as_colorimetry.h"
@@ -432,5 +431,3 @@ color apply_color_management(
     }
     return scene_linear_cms;
 }
-
-#endif // !AS_COLOR_HELPERS_H

@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_PIXELCOLORTRACKER_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_PIXELCOLORTRACKER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -81,7 +80,5 @@ class PixelColorTracker
     void set_rgba_labels(const QPoint& point) const;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_PIXELCOLORTRACKER_H
+}   // namespace studio
+}   // namespace appleseed

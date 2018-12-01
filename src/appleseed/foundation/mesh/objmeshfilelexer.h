@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MESH_OBJMESHFILELEXER_H
-#define APPLESEED_FOUNDATION_MESH_OBJMESHFILELEXER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/mesh/objmeshfilereader.h"
@@ -328,6 +327,4 @@ class OBJMeshFileLexer
     }
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MESH_OBJMESHFILELEXER_H
+}   // namespace foundation

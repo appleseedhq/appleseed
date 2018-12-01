@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_SEEXPR_H
-#define APPLESEED_RENDERER_UTILITY_SEEXPR_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
@@ -264,6 +263,4 @@ class SeAppleseedExpr
     mutable boost::ptr_vector<SeExprFunc>           m_functions;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_UTILITY_SEEXPR_H
+}   // namespace renderer

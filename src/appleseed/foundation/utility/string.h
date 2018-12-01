@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_STRING_H
-#define APPLESEED_FOUNDATION_UTILITY_STRING_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -1182,6 +1181,4 @@ inline std::string pretty_size(
     }
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_STRING_H
+}   // namespace foundation

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BVH_BVH_TREE_H
-#define APPLESEED_FOUNDATION_MATH_BVH_BVH_TREE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -109,7 +108,5 @@ size_t Tree<NodeVector>::get_memory_size() const
         + m_nodes.capacity() * sizeof(NodeType);
 }
 
-}       // namespace bvh
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_BVH_BVH_TREE_H
+}   // namespace bvh
+}   // namespace foundation

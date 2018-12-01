@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTINSTANCEITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTINSTANCEITEM_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityactions.h"
@@ -126,7 +125,5 @@ class ObjectInstanceItem
         const int                       sides);
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTINSTANCEITEM_H
+}   // namespace studio
+}   // namespace appleseed

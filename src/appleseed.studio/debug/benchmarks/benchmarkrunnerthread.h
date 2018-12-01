@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_DEBUG_BENCHMARKS_BENCHMARKRUNNERTHREAD_H
-#define APPLESEED_STUDIO_DEBUG_BENCHMARKS_BENCHMARKRUNNERTHREAD_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -54,7 +53,5 @@ class BenchmarkRunnerThread
     void run() override;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_DEBUG_BENCHMARKS_BENCHMARKRUNNERTHREAD_H
+}   // namespace studio
+}   // namespace appleseed

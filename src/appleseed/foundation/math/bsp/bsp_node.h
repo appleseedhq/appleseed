@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BSP_BSP_NODE_H
-#define APPLESEED_FOUNDATION_MATH_BSP_BSP_NODE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -200,7 +199,5 @@ inline size_t Node<T>::get_leaf_size() const
     return static_cast<size_t>(binary_cast<UInt>(m_abscissa));
 }
 
-}       // namespace bsp
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_BSP_BSP_NODE_H
+}   // namespace bsp
+}   // namespace foundation

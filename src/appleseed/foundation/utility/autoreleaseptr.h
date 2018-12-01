@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_AUTORELEASEPTR_H
-#define APPLESEED_FOUNDATION_UTILITY_AUTORELEASEPTR_H
+#pragma once
 
 // Standard headers.
 #include <cassert>
@@ -183,6 +182,4 @@ class auto_release_ptr
     T* m_ptr;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_AUTORELEASEPTR_H
+}   // namespace foundation

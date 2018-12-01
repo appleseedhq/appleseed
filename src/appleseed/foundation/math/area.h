@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_AREA_H
-#define APPLESEED_FOUNDATION_MATH_AREA_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -66,6 +65,4 @@ inline T square_area(
     return T(0.25) * square_norm(cross(e0, e1));
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_AREA_H
+}   // namespace foundation

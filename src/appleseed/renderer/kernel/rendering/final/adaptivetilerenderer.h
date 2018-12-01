@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_ADAPTIVETILERENDERER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_ADAPTIVETILERENDERER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/itilerenderer.h"
@@ -76,6 +75,4 @@ class AdaptiveTileRendererFactory
     const ParamArray                        m_params;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_ADAPTIVETILERENDERER_H
+}   // namespace renderer

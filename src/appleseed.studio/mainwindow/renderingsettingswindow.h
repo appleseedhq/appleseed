@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERINGSETTINGSWINDOW_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERINGSETTINGSWINDOW_H
+#pragma once
 
 // appleseed.studio headers.
 #include "utility/windowbase.h"
@@ -106,7 +105,5 @@ class RenderingSettingsWindow
     void slot_restore_configuration_and_close();
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERINGSETTINGSWINDOW_H
+}   // namespace studio
+}   // namespace appleseed

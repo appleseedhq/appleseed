@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECTBUILTIN_DEFAULTPROJECT_H
-#define APPLESEED_RENDERER_MODELING_PROJECTBUILTIN_DEFAULTPROJECT_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
@@ -53,6 +52,4 @@ class APPLESEED_DLLSYMBOL DefaultProjectFactory
     static foundation::auto_release_ptr<Project> create();
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECTBUILTIN_DEFAULTPROJECT_H
+}   // namespace renderer

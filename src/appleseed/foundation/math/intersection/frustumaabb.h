@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_INTERSECTION_FRUSTUMAABB_H
-#define APPLESEED_FOUNDATION_MATH_INTERSECTION_FRUSTUMAABB_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
@@ -85,6 +84,4 @@ bool intersect(
     return true;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_INTERSECTION_FRUSTUMAABB_H
+}   // namespace foundation

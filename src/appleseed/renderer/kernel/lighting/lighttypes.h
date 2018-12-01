@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTYPES_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTYPES_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/intersectionsettings.h"
@@ -86,6 +85,4 @@ class EmittingTriangle
     const Material*             m_material;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTYPES_H
+}   // namespace renderer

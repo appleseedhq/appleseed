@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_POOLALLOCATOR_H
-#define APPLESEED_FOUNDATION_UTILITY_POOLALLOCATOR_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/singleton.h"
@@ -313,6 +312,4 @@ inline bool operator!=(
     return !operator==(lhs, rhs);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_POOLALLOCATOR_H
+}   // namespace foundation

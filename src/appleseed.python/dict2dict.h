@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PYTHON_DICT2DICT_H
-#define APPLESEED_PYTHON_DICT2DICT_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/python.h"
@@ -53,5 +52,3 @@ boost::python::dict dictionary_array_to_bpy_dict(
 
 boost::python::list dictionary_array_to_bpy_list(
     const foundation::DictionaryArray&  array);
-
-#endif  // !APPLESEED_PYTHON_DICT2DICT_H

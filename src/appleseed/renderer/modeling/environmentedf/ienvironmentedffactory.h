@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_IENVIRONMENTEDFFACTORY_H
-#define APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_IENVIRONMENTEDFFACTORY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
@@ -73,6 +72,4 @@ class APPLESEED_DLLSYMBOL IEnvironmentEDFFactory
     static void add_common_sky_input_metadata(foundation::DictionaryArray& metadata);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_IENVIRONMENTEDFFACTORY_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_MINMAX_H
-#define APPLESEED_FOUNDATION_MATH_MINMAX_H
+#pragma once
 
 // Standard headers.
 #include <algorithm>
@@ -153,6 +152,4 @@ inline T ssemax(const T a, const T b)
     return a > b ? a : b;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_MINMAX_H
+}   // namespace foundation

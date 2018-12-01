@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef AS_MAYA_RECURRENCE_TABLES_H
-#define AS_MAYA_RECURRENCE_TABLES_H
+#pragma once
 
 //
 // Set of 4096 elements pseudo-RNG table used in Maya's crater, stucco nodes,
@@ -868,5 +867,3 @@
     -0.614840,  0.553691,  0.148342, -0.136145,  0.169083,      \
     -0.112316, -0.461721,  0.107685,  0.106657, -0.058062,      \
     -0.767325, -0.381632,  0.424524,  0.718499,  0.729802
-
-#endif // !AS_MAYA_RECURRENCE_TABLES_H

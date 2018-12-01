@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_COLORMAPDATA_H
-#define APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_COLORMAPDATA_H
+#pragma once
 
 namespace renderer
 {
@@ -61,6 +60,4 @@ extern const float ViridisColorMap[3 * 256];
 
 extern const float JetColorMap[3 * 9];
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_COLORMAPDATA_H
+}   // namespace renderer

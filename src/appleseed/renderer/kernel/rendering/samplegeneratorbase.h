@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_SAMPLEGENERATORBASE_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_SAMPLEGENERATORBASE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/isamplegenerator.h"
@@ -89,6 +88,4 @@ class SampleGeneratorBase
     foundation::uint64              m_invalid_sample_count;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_SAMPLEGENERATORBASE_H
+}   // namespace renderer

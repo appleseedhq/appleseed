@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERQUERY_H
-#define APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERQUERY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -115,6 +114,4 @@ class APPLESEED_DLLSYMBOL ShaderQueryFactory
         const foundation::SearchPaths& search_paths);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERQUERY_H
+}   // namespace renderer

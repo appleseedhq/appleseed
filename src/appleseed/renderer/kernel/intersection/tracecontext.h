@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_TRACECONTEXT_H
-#define APPLESEED_RENDERER_KERNEL_INTERSECTION_TRACECONTEXT_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -93,6 +92,4 @@ inline const AssemblyTree& TraceContext::get_assembly_tree() const
     return *m_assembly_tree;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_TRACECONTEXT_H
+}   // namespace renderer

@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_API_APISTRING_H
-#define APPLESEED_FOUNDATION_UTILITY_API_APISTRING_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/string.h"
@@ -93,6 +92,4 @@ inline std::string to_string(const APIString& value)
     return std::string(value.c_str());
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_API_APISTRING_H
+}   // namespace foundation

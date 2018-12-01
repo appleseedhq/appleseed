@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_MURMURHASH_H
-#define APPLESEED_FOUNDATION_UTILITY_MURMURHASH_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -123,6 +122,4 @@ inline std::string MurmurHash::to_string() const
     return s.str();
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_MURMURHASH_H
+}   // namespace foundation

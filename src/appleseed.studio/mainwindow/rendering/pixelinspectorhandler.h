@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_PIXELINSPECTORHANDLER_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_PIXELINSPECTORHANDLER_H
+#pragma once
 
 // Qt headers.
 #include <QObject>
@@ -69,7 +68,5 @@ class PixelInspectorHandler
     void show_tooltip();
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_PIXELINSPECTORHANDLER_H
+}   // namespace studio
+}   // namespace appleseed

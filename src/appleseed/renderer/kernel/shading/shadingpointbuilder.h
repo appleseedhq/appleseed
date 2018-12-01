@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGPOINTBUILDER_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGPOINTBUILDER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -71,6 +70,4 @@ class ShadingPointBuilder
     ShadingPoint& m_shading_point;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGPOINTBUILDER_H
+}   // namespace renderer

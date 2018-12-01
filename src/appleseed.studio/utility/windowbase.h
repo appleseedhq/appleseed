@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_WINDOWBASE_H
-#define APPLESEED_STUDIO_UTILITY_WINDOWBASE_H
+#pragma once
 
 // Qt headers.
 #include <QObject>
@@ -59,7 +58,5 @@ class WindowBase
     const QString m_geometry_settings_key;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_UTILITY_WINDOWBASE_H
+}   // namespace studio
+}   // namespace appleseed

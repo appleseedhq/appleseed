@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_MATERIAL_IBASISMODIFIER_H
-#define APPLESEED_RENDERER_MODELING_MATERIAL_IBASISMODIFIER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -53,6 +52,4 @@ class IBasisModifier
         const ShadingPoint&         shading_point) const = 0;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_IBASISMODIFIER_H
+}   // namespace renderer

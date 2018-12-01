@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREITEM_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityactions.h"
@@ -86,7 +85,5 @@ class TextureItem
     void do_delete();
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREITEM_H
+}   // namespace studio
+}   // namespace appleseed

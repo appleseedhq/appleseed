@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_CLOSURES_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_CLOSURES_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -420,6 +419,4 @@ inline float CompositeEmissionClosure::get_closure_pdf(const size_t index) const
     return m_pdfs[index];
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_CLOSURES_H
+}   // namespace renderer

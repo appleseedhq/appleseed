@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CORE_THIRDPARTIES_H
-#define APPLESEED_FOUNDATION_CORE_THIRDPARTIES_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -49,6 +48,4 @@ class APPLESEED_DLLSYMBOL ThirdParties
     static LibraryVersionArray get_versions();
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CORE_THIRDPARTIES_H
+}   // namespace foundation

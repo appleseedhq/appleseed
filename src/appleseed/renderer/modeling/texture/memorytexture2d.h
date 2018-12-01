@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_TEXTURE_MEMORYTEXTURE2D_H
-#define APPLESEED_RENDERER_MODELING_TEXTURE_MEMORYTEXTURE2D_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/texture/itexturefactory.h"
@@ -84,6 +83,4 @@ class APPLESEED_DLLSYMBOL MemoryTexture2dFactory
         foundation::auto_release_ptr<foundation::Image> image) const;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_TEXTURE_MEMORYTEXTURE2D_H
+}   // namespace renderer

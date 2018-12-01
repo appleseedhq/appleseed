@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_UTILITY_H
-#define APPLESEED_RENDERER_API_UTILITY_H
+#pragma once
 
 // API headers.
 #include "renderer/utility/bbox.h"
@@ -41,5 +40,3 @@
 #include "renderer/utility/testutils.h"
 #include "renderer/utility/transformsequence.h"
 #include "renderer/utility/triangle.h"
-
-#endif  // !APPLESEED_RENDERER_API_UTILITY_H

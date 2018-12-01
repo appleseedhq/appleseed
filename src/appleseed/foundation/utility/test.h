@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_TEST_H
-#define APPLESEED_FOUNDATION_UTILITY_TEST_H
+#pragma once
 
 // Interface headers.
 #include "foundation/utility/test/assertions.h"
@@ -42,5 +41,3 @@
 #include "foundation/utility/test/testresult.h"
 #include "foundation/utility/test/testsuite.h"
 #include "foundation/utility/test/testsuiterepository.h"
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_TEST_H

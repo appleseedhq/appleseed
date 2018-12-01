@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_SSE_H
-#define APPLESEED_FOUNDATION_PLATFORM_SSE_H
+#pragma once
 
 #ifndef APPLESEED_USE_SSE
     #error SSE support not enabled.
@@ -69,6 +68,4 @@ struct M128Fields
     };
 };
 
-}
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_SSE_H
+}   // namespace foundation

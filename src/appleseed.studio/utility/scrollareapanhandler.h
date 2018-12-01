@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_SCROLLAREAPANHANDLER_H
-#define APPLESEED_STUDIO_UTILITY_SCROLLAREAPANHANDLER_H
+#pragma once
 
 // Qt headers.
 #include <QObject>
@@ -76,7 +75,5 @@ class ScrollAreaPanHandler
     bool handle_mouse_move_event(QMouseEvent* event);
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_UTILITY_SCROLLAREAPANHANDLER_H
+}   // namespace studio
+}   // namespace appleseed

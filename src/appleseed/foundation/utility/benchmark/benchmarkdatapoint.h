@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKDATAPOINT_H
-#define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKDATAPOINT_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/datetime.h"
@@ -127,6 +126,4 @@ inline bool BenchmarkDataPoint::operator<(const BenchmarkDataPoint& rhs) const
     return m_date_microseconds < rhs.m_date_microseconds;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKDATAPOINT_H
+}   // namespace foundation

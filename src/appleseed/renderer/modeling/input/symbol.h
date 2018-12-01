@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_INPUT_SYMBOL_H
-#define APPLESEED_RENDERER_MODELING_INPUT_SYMBOL_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/stringexception.h"
@@ -154,6 +153,4 @@ inline SymbolTable::SymbolID SymbolTable::lookup(const std::string& name) const
     return i == m_symbols.end() ? SymbolNotFound : i->second;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_INPUT_SYMBOL_H
+}   // namespace renderer

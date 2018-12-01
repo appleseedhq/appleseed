@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONCONSOLEWIDGET_H
-#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONCONSOLEWIDGET_H
+#pragma once
 
 // appleseed.studio headers.
 #include "python/pythoninterpreter.h"
@@ -100,7 +99,5 @@ class PythonConsoleWidget
     void execute(const QString& script);
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONCONSOLEWIDGET_H
+}   // namespace studio
+}   // namespace appleseed

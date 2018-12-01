@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_LOG_LOGMESSAGE_H
-#define APPLESEED_FOUNDATION_UTILITY_LOG_LOGMESSAGE_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -76,6 +75,4 @@ class APPLESEED_DLLSYMBOL LogMessage
     static const char* get_padded_category_name(const Category c);
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_LOG_LOGMESSAGE_H
+}   // namespace foundation

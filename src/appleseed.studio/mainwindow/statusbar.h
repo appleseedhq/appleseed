@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_STATUSBAR_H
-#define APPLESEED_STUDIO_MAINWINDOW_STATUSBAR_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/renderingtimer.h"
@@ -69,7 +68,5 @@ class StatusBar
     void timerEvent(QTimerEvent* event) override;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_STATUSBAR_H
+}   // namespace studio
+}   // namespace appleseed

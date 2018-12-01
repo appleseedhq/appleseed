@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_LOG_H
-#define APPLESEED_FOUNDATION_UTILITY_LOG_H
+#pragma once
 
 // Interface headers.
 #include "foundation/utility/log/consolelogtarget.h"
@@ -41,5 +40,3 @@
 #include "foundation/utility/log/logmessage.h"
 #include "foundation/utility/log/openfilelogtarget.h"
 #include "foundation/utility/log/stringlogtarget.h"
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_LOG_H

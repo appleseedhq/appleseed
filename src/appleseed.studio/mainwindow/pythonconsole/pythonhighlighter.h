@@ -23,8 +23,7 @@ IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIA
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONHIGHLIGHTER_H
-#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONHIGHLIGHTER_H
+#pragma once
 
 #include <QSyntaxHighlighter>
 
@@ -82,7 +81,5 @@ class PythonSyntaxHighlighter
     QRegExp triDoubleQuote;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONHIGHLIGHTER_H
+}   // namespace studio
+}   // namespace appleseed

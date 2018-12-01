@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_PROJECTPOINTS_H
-#define APPLESEED_RENDERER_UTILITY_PROJECTPOINTS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -80,6 +79,4 @@ class APPLESEED_DLLSYMBOL ProjectPoints
     Impl* impl;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_UTILITY_PROJECTPOINTS_H
+}   // namespace renderer

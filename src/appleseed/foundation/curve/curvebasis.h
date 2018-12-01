@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CURVE_CURVEBASIS_H
-#define APPLESEED_FOUNDATION_CURVE_CURVEBASIS_H
+#pragma once
 
 namespace foundation
 {
@@ -51,6 +50,4 @@ extern const float BSplineBasisArray[16];
 // Catmull-Rom basis matrix array.
 extern const float CatmullRomBasisArray[16];
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CURVE_CURVEBASIS_H
+}   // namespace foundation

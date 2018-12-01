@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_AMBIENTOCCLUSION_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_AMBIENTOCCLUSION_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -113,6 +112,4 @@ double compute_ambient_occlusion(
     return occlusion;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_AMBIENTOCCLUSION_H
+}   // namespace renderer

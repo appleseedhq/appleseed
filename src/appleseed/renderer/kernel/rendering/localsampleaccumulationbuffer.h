@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_LOCALSAMPLEACCUMULATIONBUFFER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_LOCALSAMPLEACCUMULATIONBUFFER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
@@ -103,6 +102,4 @@ class LocalSampleAccumulationBuffer
     boost::atomic<foundation::uint32>       m_active_level;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_LOCALSAMPLEACCUMULATIONBUFFER_H
+}   // namespace renderer

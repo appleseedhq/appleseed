@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_BACKWARDLIGHTSAMPLER_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_BACKWARDLIGHTSAMPLER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/lightsamplerbase.h"
@@ -129,6 +128,4 @@ inline bool BackwardLightSampler::has_lightset() const
     return !m_emitting_triangles.empty() || !m_light_tree_lights.empty();
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_BACKWARDLIGHTSAMPLER_H
+}   // namespace renderer

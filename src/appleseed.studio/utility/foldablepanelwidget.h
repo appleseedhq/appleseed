@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_FOLDABLEPANELWIDGET_H
-#define APPLESEED_STUDIO_UTILITY_FOLDABLEPANELWIDGET_H
+#pragma once
 
 // Qt headers.
 #include <QObject>
@@ -65,7 +64,5 @@ class FoldablePanelWidget
     void slot_fold_unfold();
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_UTILITY_FOLDABLEPANELWIDGET_H
+}   // namespace studio
+}   // namespace appleseed

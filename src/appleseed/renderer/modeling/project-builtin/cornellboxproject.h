@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECTBUILTIN_CORNELLBOXPROJECT_H
-#define APPLESEED_RENDERER_MODELING_PROJECTBUILTIN_CORNELLBOXPROJECT_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
@@ -53,6 +52,4 @@ class APPLESEED_DLLSYMBOL CornellBoxProjectFactory
     static foundation::auto_release_ptr<Project> create();
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECTBUILTIN_CORNELLBOXPROJECT_H
+}   // namespace renderer

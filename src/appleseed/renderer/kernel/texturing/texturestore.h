@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_TEXTURING_TEXTURESTORE_H
-#define APPLESEED_RENDERER_KERNEL_TEXTURING_TEXTURESTORE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/scene/containers.h"
@@ -314,6 +313,4 @@ inline size_t TextureStore::TileSwapper::get_peak_memory_size() const
     return m_peak_memory_size;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_TEXTURING_TEXTURESTORE_H
+}   // namespace renderer

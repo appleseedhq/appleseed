@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_MICROFACET_H
-#define APPLESEED_FOUNDATION_MATH_MICROFACET_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -469,6 +468,4 @@ class StdMDF
     float S2(const float cot_theta, const float gamma) const;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_MICROFACET_H
+}   // namespace foundation

@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_VOLUMELIGHTINGINTEGRATOR_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_VOLUMELIGHTINGINTEGRATOR_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -51,106 +50,107 @@ namespace renderer  { class ShadingRay; }
 namespace renderer
 {
 
-    //
-    // The volume lighting integrator allows to integrate in-scattered direct lighting
-    // along a ray in participating medium.
-    //
-    // Combines exponential importance sampling (based on Beer's law) and
-    // equiangular sampling (based on proximity to light sources).
-    // For more information:
-    //   Importance Sampling Techniques for Path Tracing in Participating Media
-    //   Christopher Kulla, Marcos Fajardo
-    //   Journal Computer Graphics Forum Vol. 31 Issue 4, pp. 1519-1528, June 2012.
-    //   https://www.solidangle.com/research/egsr2012_volume.pdf
-    //
+//
+// The volume lighting integrator allows to integrate in-scattered direct lighting
+// along a ray in participating medium.
+//
+// Combines exponential importance sampling (based on Beer's law) and
+// equiangular sampling (based on proximity to light sources).
+//
+// For more information:
+//
+//   Importance Sampling Techniques for Path Tracing in Participating Media
+//   Christopher Kulla, Marcos Fajardo
+//   Journal Computer Graphics Forum Vol. 31 Issue 4, pp. 1519-1528, June 2012.
+//   https://www.solidangle.com/research/egsr2012_volume.pdf
+//
 
-    class VolumeLightingIntegrator
-    {
-      public:
-        // Constructor.
-        VolumeLightingIntegrator(
-            const ShadingContext&           shading_context,
-            const BackwardLightSampler&     light_sampler,
-            const Volume&                   volume,
-            const ShadingRay&               volume_ray,
-            const void*                     volume_data,
-            const ShadingPoint&             shading_point,
-            const int                       scattering_modes,
-            const size_t                    distance_sample_count,
-            const size_t                    light_sample_count,
-            const float                     low_light_threshold,
-            const bool                      indirect);
+class VolumeLightingIntegrator
+{
+  public:
+    // Constructor.
+    VolumeLightingIntegrator(
+        const ShadingContext&           shading_context,
+        const BackwardLightSampler&     light_sampler,
+        const Volume&                   volume,
+        const ShadingRay&               volume_ray,
+        const void*                     volume_data,
+        const ShadingPoint&             shading_point,
+        const int                       scattering_modes,
+        const size_t                    distance_sample_count,
+        const size_t                    light_sample_count,
+        const float                     low_light_threshold,
+        const bool                      indirect);
 
-        // Integrate in-scattered radiance over the given ray
-        // using both equiangular and exponential sampling.
-        void compute_radiance_combined_sampling(
-            SamplingContext&                sampling_context,
-            const foundation::MISHeuristic  mis_heuristic,
-            DirectShadingComponents&        radiance) const;
+    // Integrate in-scattered radiance over the given ray
+    // using both equiangular and exponential sampling.
+    void compute_radiance_combined_sampling(
+        SamplingContext&                sampling_context,
+        const foundation::MISHeuristic  mis_heuristic,
+        DirectShadingComponents&        radiance) const;
 
-        // Integrate in-scattered radiance over the given ray
-        // using only exponential sampling.
-        void compute_radiance_exponential_sampling(
-            SamplingContext&                sampling_context,
-            const foundation::MISHeuristic  mis_heuristic,
-            DirectShadingComponents&        radiance) const;
+    // Integrate in-scattered radiance over the given ray
+    // using only exponential sampling.
+    void compute_radiance_exponential_sampling(
+        SamplingContext&                sampling_context,
+        const foundation::MISHeuristic  mis_heuristic,
+        DirectShadingComponents&        radiance) const;
 
-      private:
-        const ShadingContext&               m_shading_context;
-        const BackwardLightSampler&         m_light_sampler;
-        const ShadingRay::Time&             m_time;
-        const Volume&                       m_volume;
-        const ShadingRay&                   m_volume_ray;
-        const void*                         m_volume_data;
-        const ShadingPoint&                 m_shading_point;
-        const int                           m_scattering_modes;
-        const size_t                        m_distance_sample_count;
-        const float                         m_rcp_distance_sample_count;
-        const size_t                        m_light_sample_count;
-        const float                         m_low_light_threshold;
-        const bool                          m_indirect;
+  private:
+    const ShadingContext&               m_shading_context;
+    const BackwardLightSampler&         m_light_sampler;
+    const ShadingRay::Time&             m_time;
+    const Volume&                       m_volume;
+    const ShadingRay&                   m_volume_ray;
+    const void*                         m_volume_data;
+    const ShadingPoint&                 m_shading_point;
+    const int                           m_scattering_modes;
+    const size_t                        m_distance_sample_count;
+    const float                         m_rcp_distance_sample_count;
+    const size_t                        m_light_sample_count;
+    const float                         m_low_light_threshold;
+    const bool                          m_indirect;
 
-        // Sample distance and integrate in-scattered lighting at this distance.
-        void add_single_distance_sample_contribution(
-            const LightSample*              light_sample,
-            const Spectrum&                 extinction_coef,
-            SamplingContext&                sampling_context,
-            const foundation::MISHeuristic  mis_heuristic,
-            DirectShadingComponents&        radiance,
-            const bool                      sample_phase_function) const;
+    // Sample distance and integrate in-scattered lighting at this distance.
+    void add_single_distance_sample_contribution(
+        const LightSample*              light_sample,
+        const Spectrum&                 extinction_coef,
+        SamplingContext&                sampling_context,
+        const foundation::MISHeuristic  mis_heuristic,
+        DirectShadingComponents&        radiance,
+        const bool                      sample_phase_function) const;
 
-        // Sample distance and integrate in-scattered lighting at this distance.
-        // This is the optimized version that uses only exponential sampling.
-        void add_single_distance_sample_contribution_exponential_only(
-            const LightSample*              light_sample,
-            const Spectrum&                 extinction_coef,
-            SamplingContext&                sampling_context,
-            const foundation::MISHeuristic  mis_heuristic,
-            DirectShadingComponents&        radiance,
-            const bool                      sample_phasefunction) const;
+    // Sample distance and integrate in-scattered lighting at this distance.
+    // This is the optimized version that uses only exponential sampling.
+    void add_single_distance_sample_contribution_exponential_only(
+        const LightSample*              light_sample,
+        const Spectrum&                 extinction_coef,
+        SamplingContext&                sampling_context,
+        const foundation::MISHeuristic  mis_heuristic,
+        DirectShadingComponents&        radiance,
+        const bool                      sample_phasefunction) const;
 
-        float draw_exponential_sample(
-            SamplingContext&                sampling_context,
-            const ShadingRay&               volume_ray,
-            const float                     extinction) const;
+    float draw_exponential_sample(
+        SamplingContext&                sampling_context,
+        const ShadingRay&               volume_ray,
+        const float                     extinction) const;
 
-        float evaluate_exponential_sample(
-            const float                     distance,
-            const ShadingRay&               volume_ray,
-            const float                     extinction) const;
+    float evaluate_exponential_sample(
+        const float                     distance,
+        const ShadingRay&               volume_ray,
+        const float                     extinction) const;
 
-        // Add single light sample contribution for the specified distance sample.
-        // You can pass light sample that is used as a center for equiangular sampling.
-        // Note that the same light sample is used for shading only if it is non-physical light,
-        // otherwise (if nullptr or area light sample) the lights are sampled again.
-        void take_single_direction_sample(
-            const bool                      sample_phasefunction,
-            SamplingContext&                sampling_context,
-            const LightSample*              light_sample,
-            const float                     distance_sample,
-            const foundation::MISHeuristic  mis_heuristic,
-            DirectShadingComponents&        radiance) const;
-    };
-}
+    // Add single light sample contribution for the specified distance sample.
+    // You can pass light sample that is used as a center for equiangular sampling.
+    // Note that the same light sample is used for shading only if it is non-physical light,
+    // otherwise (if nullptr or area light sample) the lights are sampled again.
+    void take_single_direction_sample(
+        const bool                      sample_phasefunction,
+        SamplingContext&                sampling_context,
+        const LightSample*              light_sample,
+        const float                     distance_sample,
+        const foundation::MISHeuristic  mis_heuristic,
+        DirectShadingComponents&        radiance) const;
+};
 
-#endif // APPLESEED_RENDERER_KERNEL_LIGHTING_VOLUMELIGHTINGINTEGRATOR_H
+}   // namespace renderer

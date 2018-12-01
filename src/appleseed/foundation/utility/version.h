@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_VERSION_H
-#define APPLESEED_FOUNDATION_UTILITY_VERSION_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -102,6 +101,4 @@ inline void Versionable::bump_version_id()
     ++m_version_id;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_VERSION_H
+}   // namespace foundation

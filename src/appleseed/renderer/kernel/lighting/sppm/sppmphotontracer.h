@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTONTRACER_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTONTRACER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/sppm/sppmparameters.h"
@@ -103,6 +102,4 @@ class SPPMPhotonTracer
         foundation::IAbortSwitch&   abort_switch);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTONTRACER_H
+}   // namespace renderer

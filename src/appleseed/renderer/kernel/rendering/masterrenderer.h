@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_MASTERRENDERER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_MASTERRENDERER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -94,6 +93,4 @@ class APPLESEED_DLLSYMBOL MasterRenderer
     Impl* impl;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_MASTERRENDERER_H
+}   // namespace renderer

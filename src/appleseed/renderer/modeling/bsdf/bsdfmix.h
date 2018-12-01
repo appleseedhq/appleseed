@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_BSDFMIX_H
-#define APPLESEED_RENDERER_MODELING_BSDF_BSDFMIX_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/ibsdffactory.h"
@@ -75,6 +74,4 @@ class APPLESEED_DLLSYMBOL BSDFMixFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_BSDFMIX_H
+}   // namespace renderer

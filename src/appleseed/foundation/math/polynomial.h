@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_POLYNOMIAL_H
-#define APPLESEED_FOUNDATION_MATH_POLYNOMIAL_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -96,6 +95,4 @@ T evaluate_polynomial_derivative(
     return value;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_POLYNOMIAL_H
+}   // namespace foundation

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_DEBUG_TESTS_TESTOUTPUTWIDGETDECORATOR_H
-#define APPLESEED_STUDIO_DEBUG_TESTS_TESTOUTPUTWIDGETDECORATOR_H
+#pragma once
 
 // Qt headers.
 #include <QObject>
@@ -61,7 +60,5 @@ class TestOutputWidgetDecorator
     bool            m_show_passed;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_DEBUG_TESTS_TESTOUTPUTWIDGETDECORATOR_H
+}   // namespace studio
+}   // namespace appleseed

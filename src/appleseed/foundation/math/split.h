@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_SPLIT_H
-#define APPLESEED_FOUNDATION_MATH_SPLIT_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
@@ -117,6 +116,4 @@ inline void split_bbox(
     right.min[split.m_dimension] = split.m_abscissa;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_SPLIT_H
+}   // namespace foundation

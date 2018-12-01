@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTEXPLORER_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTEXPLORER_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditorcontext.h"
@@ -105,7 +104,5 @@ class ProjectExplorer
     void slot_delete_items();
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTEXPLORER_H
+}   // namespace studio
+}   // namespace appleseed

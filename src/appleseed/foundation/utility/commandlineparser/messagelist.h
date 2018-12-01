@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_MESSAGELIST_H
-#define APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_MESSAGELIST_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -69,6 +68,4 @@ class APPLESEED_DLLSYMBOL MessageList
     Impl* impl;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_MESSAGELIST_H
+}   // namespace foundation

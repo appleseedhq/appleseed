@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_TLS_H
-#define APPLESEED_FOUNDATION_UTILITY_TLS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/system.h"
@@ -119,6 +118,4 @@ inline const T& TLS<T>::operator[](const size_t thread_index) const
     return m_elements[thread_index * m_stride];
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_TLS_H
+}   // namespace foundation

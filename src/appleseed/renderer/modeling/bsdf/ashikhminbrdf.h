@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_ASHIKHMINBRDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_ASHIKHMINBRDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -93,6 +92,4 @@ class APPLESEED_DLLSYMBOL AshikhminBRDFFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_ASHIKHMINBRDF_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_IOSTREAMOP_H
-#define APPLESEED_FOUNDATION_UTILITY_IOSTREAMOP_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -359,6 +358,4 @@ std::ostream& operator<<(std::ostream& s, const Transform<T>& transform)
     return s << transform.get_local_to_parent();
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_IOSTREAMOP_H
+}   // namespace foundation

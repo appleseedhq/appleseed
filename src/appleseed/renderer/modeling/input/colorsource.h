@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_INPUT_COLORSOURCE_H
-#define APPLESEED_RENDERER_MODELING_INPUT_COLORSOURCE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -142,6 +141,4 @@ inline void ColorSource::evaluate_uniform(
     alpha = m_alpha;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_INPUT_COLORSOURCE_H
+}   // namespace renderer

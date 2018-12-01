@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTSAMPLE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTSAMPLE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/lighttree.h"
@@ -170,6 +169,4 @@ inline LightSample::LightSample()
 {
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTSAMPLE_H
+}   // namespace renderer

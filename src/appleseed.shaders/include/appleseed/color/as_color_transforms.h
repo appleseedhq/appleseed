@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef AS_COLOR_TRANSFORMS_H
-#define AS_COLOR_TRANSFORMS_H
+#pragma once
 
 #include "appleseed/color/as_chromatic_adaptation.h"
 #include "appleseed/color/as_colorimetry.h"
@@ -1485,5 +1484,3 @@ float deltaE_CIEDE2000(
         sampleval_color_space,
         "D65");
 }
-
-#endif // !AS_COLOR_TRANSFORMS_H

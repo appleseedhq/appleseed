@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_CONSOLE_H
-#define APPLESEED_FOUNDATION_PLATFORM_CONSOLE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/singleton.h"
@@ -107,6 +106,4 @@ class APPLESEED_DLLSYMBOL Console
 
 APPLESEED_DLLSYMBOL Console& console();
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_CONSOLE_H
+}   // namespace foundation

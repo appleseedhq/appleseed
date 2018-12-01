@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENT_ENVIRONMENTTRAITS_H
-#define APPLESEED_RENDERER_MODELING_ENVIRONMENT_ENVIRONMENTTRAITS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entitytraits.h"
@@ -75,6 +74,4 @@ struct EntityTraits<Environment>
     }
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENT_ENVIRONMENTTRAITS_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MESH_BINARYMESHFILEREADER_H
-#define APPLESEED_FOUNDATION_MESH_BINARYMESHFILEREADER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/mesh/imeshfilereader.h"
@@ -80,6 +79,4 @@ class BinaryMeshFileReader
     void read_face(ReaderAdapter& reader, IMeshBuilder& builder);
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MESH_BINARYMESHFILEREADER_H
+}   // namespace foundation

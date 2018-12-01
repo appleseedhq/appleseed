@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_SPECULARBTDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_SPECULARBTDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -101,6 +100,4 @@ class APPLESEED_DLLSYMBOL SpecularBTDFFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_SPECULARBTDF_H
+}   // namespace renderer

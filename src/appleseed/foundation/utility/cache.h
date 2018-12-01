@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_CACHE_H
-#define APPLESEED_FOUNDATION_UTILITY_CACHE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -1155,6 +1154,4 @@ Statistics make_dual_stage_cache_stats(const Cache& cache)
     return stats;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_CACHE_H
+}   // namespace foundation

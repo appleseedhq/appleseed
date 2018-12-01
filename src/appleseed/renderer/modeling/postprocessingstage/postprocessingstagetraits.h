@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_POSTPROCESSINGSTAGETRAITS_H
-#define APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_POSTPROCESSINGSTAGETRAITS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entitytraits.h"
@@ -83,6 +82,4 @@ struct EntityTraits<PostProcessingStage>
     }
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_POSTPROCESSINGSTAGETRAITS_H
+}   // namespace renderer

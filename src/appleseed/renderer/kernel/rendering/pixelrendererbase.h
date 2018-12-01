@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_PIXELRENDERERBASE_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_PIXELRENDERERBASE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/ipixelrenderer.h"
@@ -97,6 +96,4 @@ class PixelRendererBase
     size_t m_invalid_sample_count;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_PIXELRENDERERBASE_H
+}   // namespace renderer

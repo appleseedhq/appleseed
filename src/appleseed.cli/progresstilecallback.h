@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_CLI_PROGRESSTILECALLBACK_H
-#define APPLESEED_CLI_PROGRESSTILECALLBACK_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
@@ -56,7 +55,5 @@ class ProgressTileCallbackFactory
     std::unique_ptr<renderer::ITileCallback> m_callback;
 };
 
-}       // namespace cli
-}       // namespace appleseed
-
-#endif  // !APPLESEED_CLI_PROGRESSTILECALLBACK_H
+}   // namespace cli
+}   // namespace appleseed

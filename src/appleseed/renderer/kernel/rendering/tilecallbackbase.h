@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_TILECALLBACKBASE_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_TILECALLBACKBASE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/itilecallback.h"
@@ -80,6 +79,4 @@ class TileCallbackBase
     }
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_TILECALLBACKBASE_H
+}   // namespace renderer

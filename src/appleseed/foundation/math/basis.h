@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BASIS_H
-#define APPLESEED_FOUNDATION_MATH_BASIS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
@@ -324,6 +323,4 @@ void Basis3<T>::checks()
 
 #endif
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_BASIS_H
+}   // namespace foundation

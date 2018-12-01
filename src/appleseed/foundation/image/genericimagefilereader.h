@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_GENERICIMAGEFILEREADER_H
-#define APPLESEED_FOUNDATION_IMAGE_GENERICIMAGEFILEREADER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/iimagefilereader.h"
@@ -57,6 +56,4 @@ class APPLESEED_DLLSYMBOL GenericImageFileReader
         ImageAttributes*    image_attributes = nullptr) override;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_GENERICIMAGEFILEREADER_H
+}   // namespace foundation

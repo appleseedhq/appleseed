@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_PIXELSAMPLER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_PIXELSAMPLER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -139,6 +138,4 @@ APPLESEED_FORCE_INLINE void PixelSampler::sample(
     }
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_PIXELSAMPLER_H
+}   // namespace renderer

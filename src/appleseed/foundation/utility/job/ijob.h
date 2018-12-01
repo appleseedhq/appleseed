@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_JOB_IJOB_H
-#define APPLESEED_FOUNDATION_UTILITY_JOB_IJOB_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -57,6 +56,4 @@ class APPLESEED_DLLSYMBOL IJob
     virtual void execute(const size_t thread_index) = 0;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_JOB_IJOB_H
+}   // namespace foundation

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEREADER_H
-#define APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEREADER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
@@ -121,6 +120,4 @@ class APPLESEED_DLLSYMBOL ProjectFileReader
         const double                    loading_time) const;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEREADER_H
+}   // namespace renderer

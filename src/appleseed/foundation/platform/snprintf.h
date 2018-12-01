@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_SNPRINTF_H
-#define APPLESEED_FOUNDATION_PLATFORM_SNPRINTF_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -56,6 +55,4 @@ int portable_vsnprintf(
     const char*             fmt,
     va_list                 ap);
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_SNPRINTF_H
+}   // namespace foundation

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_IMAGEATTRIBUTES_H
-#define APPLESEED_FOUNDATION_IMAGE_IMAGEATTRIBUTES_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
@@ -73,6 +72,4 @@ class APPLESEED_DLLSYMBOL ImageAttributes
     static ImageAttributes create_default_attributes();
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_IMAGEATTRIBUTES_H
+}   // namespace foundation

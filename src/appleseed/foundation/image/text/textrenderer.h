@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_TEXT_TEXTRENDERER_H
-#define APPLESEED_FOUNDATION_IMAGE_TEXT_TEXTRENDERER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -125,6 +124,4 @@ class TextRenderer
         const char*             string);
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_TEXT_TEXTRENDERER_H
+}   // namespace foundation

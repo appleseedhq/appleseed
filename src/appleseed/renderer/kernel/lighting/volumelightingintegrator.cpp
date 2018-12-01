@@ -141,6 +141,7 @@ namespace
     };
 }
 
+
 //
 // VolumeLightingIntegrator class implementation.
 //
@@ -217,6 +218,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
     //
     // Exponential sampling.
     //
+
     if (extinction_coef[channel] > 0.0f)
     {
         const float exponential_sample = draw_exponential_sample(
@@ -275,6 +277,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
     //
     // Equiangular sampling.
     //
+
     {
         const float equiangular_sample =
             equiangular_distance_sampler.sample();

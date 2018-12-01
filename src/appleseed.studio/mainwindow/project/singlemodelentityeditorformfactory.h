@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELENTITYEDITORFORMFACTORY_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELENTITYEDITORFORMFACTORY_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditorformfactorybase.h"
@@ -61,7 +60,5 @@ class SingleModelEntityEditorFormFactory
     const foundation::DictionaryArray       m_entity_widgets;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELENTITYEDITORFORMFACTORY_H
+}   // namespace studio
+}   // namespace appleseed

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_MOUSECOORDINATESTRACKER_H
-#define APPLESEED_STUDIO_UTILITY_MOUSECOORDINATESTRACKER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -72,7 +71,5 @@ class MouseCoordinatesTracker
 
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_UTILITY_MOUSECOORDINATESTRACKER_H
+}   // namespace studio
+}   // namespace appleseed

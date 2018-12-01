@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_DEBUG_TESTS_TESTWINDOW_H
-#define APPLESEED_STUDIO_DEBUG_TESTS_TESTWINDOW_H
+#pragma once
 
 // appleseed.studio headers.
 #include "debug/tests/autodeletetestsuiterepository.h"
@@ -104,7 +103,5 @@ class TestWindow
     void slot_filter_output_treeview() const;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_DEBUG_TESTS_TESTWINDOW_H
+}   // namespace studio
+}   // namespace appleseed

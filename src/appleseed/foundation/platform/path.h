@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_PATH_H
-#define APPLESEED_FOUNDATION_PLATFORM_PATH_H
+#pragma once
 
 // appleseed.foundation headers.
 #ifdef _WIN32
@@ -177,6 +176,4 @@ inline boost::filesystem::path find_next_available_path(const boost::filesystem:
     return boost::filesystem::path(get_numbered_string(pattern, 1));
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_PATH_H
+}   // namespace foundation

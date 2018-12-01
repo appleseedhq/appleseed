@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_RAY_H
-#define APPLESEED_FOUNDATION_MATH_RAY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -362,6 +361,4 @@ inline RayInfo<double, 3>::RayInfo(const RayInfo<U, 3>& rhs)
 
 #endif  // APPLESEED_USE_SSE
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_RAY_H
+}   // namespace foundation

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_FILTEREDTILE_H
-#define APPLESEED_FOUNDATION_IMAGE_FILTEREDTILE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/tile.h"
@@ -211,6 +210,4 @@ inline void FilteredTile::get_pixel(
     get_pixel(x, y, &color[0]);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_FILTEREDTILE_H
+}   // namespace foundation

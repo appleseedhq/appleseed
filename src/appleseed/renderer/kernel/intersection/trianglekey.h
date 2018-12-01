@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEKEY_H
-#define APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEKEY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -102,6 +101,4 @@ inline size_t TriangleKey::get_triangle_pa() const
     return static_cast<size_t>(m_triangle_pa);
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEKEY_H
+}   // namespace renderer

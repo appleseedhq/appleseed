@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SURFACESHADER_NPRSURFACESHADERHELPER_H
-#define APPLESEED_RENDERER_MODELING_SURFACESHADER_NPRSURFACESHADERHELPER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -86,6 +85,4 @@ class NPRSurfaceShaderHelper
         const ShadingPoint&         other_shading_point);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SURFACESHADER_NPRSURFACESHADERHELPER_H
+}   // namespace renderer

@@ -25,8 +25,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef AS_TRANSFORM_HELPERS_H
-#define AS_TRANSFORM_HELPERS_H
+#pragma once
 
 void compute_id_manifold(
     int manifold_type,
@@ -123,5 +122,3 @@ void rotate2d(
     rx = x * c - s * y;
     ry = x * s + c * y;
 }
-
-#endif // !AS_TRANSFORM_HELPERS_H

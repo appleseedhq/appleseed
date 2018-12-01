@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONUNSUPPORTEDFILEFORMAT_H
-#define APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONUNSUPPORTEDFILEFORMAT_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/stringexception.h"
@@ -58,6 +57,4 @@ inline ExceptionUnsupportedFileFormat::ExceptionUnsupportedFileFormat(const char
 {
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONUNSUPPORTEDFILEFORMAT_H
+}   // namespace foundation

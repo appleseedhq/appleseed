@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_DEBUG_TESTS_TESTOUTPUTITEM_H
-#define APPLESEED_STUDIO_DEBUG_TESTS_TESTOUTPUTITEM_H
+#pragma once
 
 // Qt headers.
 #include <QTreeWidgetItem>
@@ -62,7 +61,5 @@ class TestOutputItem
         const double    time);
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_DEBUG_TESTS_TESTOUTPUTITEM_H
+}   // namespace studio
+}   // namespace appleseed

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_OTHERWISE_H
-#define APPLESEED_FOUNDATION_UTILITY_OTHERWISE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -86,6 +85,4 @@ class SwitchException
     default:                                                    \
       throw foundation::SwitchException()
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_OTHERWISE_H
+}   // namespace foundation

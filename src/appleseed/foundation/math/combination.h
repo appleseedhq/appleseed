@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_COMBINATION_H
-#define APPLESEED_FOUNDATION_MATH_COMBINATION_H
+#pragma once
 
 // Standard headers.
 #include <algorithm>
@@ -436,6 +435,4 @@ prev_combination_counts(BidirectionalIterator first,
     return true;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_COMBINATION_H
+}   // namespace foundation

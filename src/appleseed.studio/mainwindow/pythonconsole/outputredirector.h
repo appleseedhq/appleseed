@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_OUTPUTREDIRECTOR_H
-#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_OUTPUTREDIRECTOR_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/python.h"
@@ -49,7 +48,5 @@ class OutputRedirector
     QPlainTextEdit* output;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_OUTPUTREDIRECTOR_H
+}   // namespace studio
+}   // namespace appleseed

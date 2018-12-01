@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_CAMERA_CAMERATRAITS_H
-#define APPLESEED_RENDERER_MODELING_CAMERA_CAMERATRAITS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/camera/camera.h"
@@ -84,6 +83,4 @@ struct EntityTraits<Camera>
     }
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_CAMERA_CAMERATRAITS_H
+}   // namespace renderer

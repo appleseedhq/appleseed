@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_FILTER_H
-#define APPLESEED_FOUNDATION_MATH_FILTER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/fastmath.h"
@@ -568,6 +567,4 @@ typename Filter::ValueType compute_normalization_factor(
     return result;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_FILTER_H
+}   // namespace foundation

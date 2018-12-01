@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_CAMERA_PERSPECTIVECAMERA_H
-#define APPLESEED_RENDERER_MODELING_CAMERA_PERSPECTIVECAMERA_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/camera/camera.h"
@@ -105,6 +104,4 @@ class PerspectiveCamera
     foundation::Vector2d camera_to_ndc(const foundation::Vector3d& point) const;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_CAMERA_PERSPECTIVECAMERA_H
+}   // namespace renderer

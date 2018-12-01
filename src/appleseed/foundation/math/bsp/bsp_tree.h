@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BSP_BSP_TREE_H
-#define APPLESEED_FOUNDATION_MATH_BSP_BSP_TREE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -178,7 +177,5 @@ size_t Tree<T, N, Leaf>::get_memory_size() const
     return mem_size;
 }
 
-}       // namespace bsp
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_BSP_BSP_TREE_H
+}   // namespace bsp
+}   // namespace foundation

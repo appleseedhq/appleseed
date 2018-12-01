@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CURVE_ICURVEFILEREADER_H
-#define APPLESEED_FOUNDATION_CURVE_ICURVEFILEREADER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -56,6 +55,4 @@ class APPLESEED_DLLSYMBOL ICurveFileReader
     virtual void read(ICurveBuilder& builder) = 0;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CURVE_ICURVEFILEREADER_H
+}   // namespace foundation

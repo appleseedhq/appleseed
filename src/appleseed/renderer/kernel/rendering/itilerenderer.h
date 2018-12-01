@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_ITILERENDERER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_ITILERENDERER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
@@ -80,6 +79,4 @@ class ITileRendererFactory
     virtual ITileRenderer* create(const size_t thread_index) = 0;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_ITILERENDERER_H
+}   // namespace renderer

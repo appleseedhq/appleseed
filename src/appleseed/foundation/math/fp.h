@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_FP_H
-#define APPLESEED_FOUNDATION_MATH_FP_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -611,6 +610,4 @@ inline T shift(const T x, const typename TypeConv<T>::Int n)
     return binary_cast<T>(ix);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_FP_H
+}   // namespace foundation

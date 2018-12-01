@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_JOB_JOBMANAGER_H
-#define APPLESEED_FOUNDATION_UTILITY_JOB_JOBMANAGER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -93,6 +92,4 @@ class APPLESEED_DLLSYMBOL JobManager
     Impl* impl;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_JOB_JOBMANAGER_H
+}   // namespace foundation

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_INPUT_SCALARSOURCE_H
-#define APPLESEED_RENDERER_MODELING_INPUT_SCALARSOURCE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -144,6 +143,4 @@ inline void ScalarSource::evaluate_uniform(
     alpha.set(1.0f);
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_INPUT_SCALARSOURCE_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_TIMEDRENDERERCONTROLLER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_TIMEDRENDERERCONTROLLER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/defaultrenderercontroller.h"
@@ -67,6 +66,4 @@ class APPLESEED_DLLSYMBOL TimedRendererController
     Impl* impl;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_TIMEDRENDERERCONTROLLER_H
+}   // namespace renderer

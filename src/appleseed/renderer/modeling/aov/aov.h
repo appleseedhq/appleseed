@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_AOV_AOV_H
-#define APPLESEED_RENDERER_MODELING_AOV_AOV_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
@@ -173,6 +172,4 @@ class UnfilteredAOV
         ImageStack&     aov_images) override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_AOV_AOV_H
+}   // namespace renderer

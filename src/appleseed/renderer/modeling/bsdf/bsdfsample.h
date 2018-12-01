@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_BSDFSAMPLE_H
-#define APPLESEED_RENDERER_MODELING_BSDF_BSDFSAMPLE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -102,6 +101,4 @@ inline BSDFSample::BSDFSample(
 {
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_BSDFSAMPLE_H
+}   // namespace renderer

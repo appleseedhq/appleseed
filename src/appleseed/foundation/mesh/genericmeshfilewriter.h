@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MESH_GENERICMESHFILEWRITER_H
-#define APPLESEED_FOUNDATION_MESH_GENERICMESHFILEWRITER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/mesh/imeshfilewriter.h"
@@ -64,6 +63,4 @@ class APPLESEED_DLLSYMBOL GenericMeshFileWriter
     IMeshFileWriter* m_writer;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MESH_GENERICMESHFILEWRITER_H
+}   // namespace foundation
