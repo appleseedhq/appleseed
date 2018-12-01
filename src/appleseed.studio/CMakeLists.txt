@@ -437,7 +437,9 @@ set (appleseedpython_sources
     ../appleseed.python/bindquaternion.cpp
     ../appleseed.python/bindrenderercontroller.cpp
     ../appleseed.python/bindscene.cpp
+    ../appleseed.python/bindshadercompiler.cpp
     ../appleseed.python/bindshadergroup.cpp
+    ../appleseed.python/bindshaderquery.cpp
     ../appleseed.python/bindsurfaceshader.cpp
     ../appleseed.python/bindtexture.cpp
     ../appleseed.python/bindtilecallback.cpp

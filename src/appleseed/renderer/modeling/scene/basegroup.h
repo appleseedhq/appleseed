@@ -44,6 +44,7 @@ namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class OnRenderBeginRecorder; }
 namespace renderer      { class OSLShadingSystem; }
 namespace renderer      { class Project; }
+namespace renderer      { class ShaderCompiler; }
 
 namespace renderer
 {
@@ -79,6 +80,7 @@ class APPLESEED_DLLSYMBOL BaseGroup
     // Create OSL shader groups and optimize them.
     bool create_optimized_osl_shader_groups(
         OSLShadingSystem&           shading_system,
+        const ShaderCompiler*       shader_compiler,
         foundation::IAbortSwitch*   abort_switch = nullptr);
 
     // Release internal OSL shader groups.

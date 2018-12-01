@@ -106,7 +106,7 @@ void ShaderCompiler::add_option(const char* option)
 
 bool ShaderCompiler::compile_buffer(
     const char* source_code,
-    APIString&  result)
+    APIString&  result) const
 {
     string buffer;
     const bool ok = impl->m_compiler->compile_buffer(

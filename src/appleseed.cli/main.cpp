@@ -54,6 +54,7 @@
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/filter.h"
 #include "foundation/utility/log.h"
+#include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
@@ -490,11 +491,15 @@ namespace
             }
         }
 
+        SearchPaths resource_search_paths;
+        Application::initialize_resource_search_paths(resource_search_paths);
+
         // Create the master renderer.
         DefaultRendererController renderer_controller;
         MasterRenderer renderer(
             project.ref(),
             params,
+            resource_search_paths,
             &renderer_controller,
             tile_callback_factory.get());
 
@@ -605,11 +610,15 @@ namespace
         if (!configure_project(project.ref(), params))
             return false;
 
+        SearchPaths resource_search_paths;
+        Application::initialize_resource_search_paths(resource_search_paths);
+
         // Create the master renderer.
         DefaultRendererController renderer_controller;
         MasterRenderer renderer(
             project.ref(),
             params,
+            resource_search_paths,
             &renderer_controller);
 
         double total_time_seconds, render_time_seconds;

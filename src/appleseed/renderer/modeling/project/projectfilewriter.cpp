@@ -846,6 +846,15 @@ namespace
             element.write(XMLElement::HasNoContent);
         }
 
+        // Write an <osl_code> element.
+        void write_osl_code(const char* code)
+        {
+            XMLElement element("osl_code", m_file, m_indenter);
+            element.write(XMLElement::HasChildElements);
+
+            fprintf(m_file, "%s\n", code);
+        }
+
         // Write a <shader> element.
         void write(const Shader& shader)
         {
@@ -857,6 +866,9 @@ namespace
 
             for (const_each<ShaderParamContainer> i = shader.shader_params(); i; ++i)
                 write(*i);
+
+            if (shader.get_source_code())
+                write_osl_code(shader.get_source_code());
         }
 
         // Write a <connect_shaders> element.

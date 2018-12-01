@@ -105,12 +105,12 @@ RendererComponents::RendererComponents(
   , m_scene(*project.get_scene())
   , m_frame(*project.get_frame())
   , m_trace_context(project.get_trace_context())
+  , m_forward_light_sampler(nullptr)
+  , m_backward_light_sampler(nullptr)
   , m_shading_engine(get_child_and_inherit_globals(params, "shading_engine"))
   , m_texture_store(texture_store)
   , m_texture_system(texture_system)
   , m_shading_system(shading_system)
-  , m_forward_light_sampler(nullptr)
-  , m_backward_light_sampler(nullptr)
 {
 }
 

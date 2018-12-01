@@ -42,6 +42,7 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class Logger; }
+namespace foundation    { class SearchPaths; }
 
 namespace appleseed {
 namespace shared {
@@ -94,6 +95,10 @@ class SHAREDDLL Application
         const foundation::Dictionary&           settings,
         foundation::Logger&                     logger,
         const foundation::LogMessage::Category  category = foundation::LogMessage::Debug);
+
+    // Initialize resource search paths (currently path to OSL headers).
+    static void initialize_resource_search_paths(
+        foundation::SearchPaths&                search_paths);
 
     // Change the current directory to the root path of the application's tests.
     // Returns the path to the current directory.

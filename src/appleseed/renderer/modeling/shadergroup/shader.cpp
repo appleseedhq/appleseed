@@ -33,6 +33,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/modeling/shadergroup/shaderparamparser.h"
+#include "renderer/modeling/shadergroup/shadercompiler.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -62,6 +63,13 @@ namespace
 
 struct Shader::Impl
 {
+    string                  m_type;
+    string                  m_shader;
+    ShaderParamContainer    m_params;
+
+    string                  m_source_code;
+    string                  m_byte_code;
+
     Impl(
         const char*         type,
         const char*         shader,
@@ -214,10 +222,6 @@ struct Shader::Impl
             }
         }
     }
-
-    string                  m_type;
-    string                  m_shader;
-    ShaderParamContainer    m_params;
 };
 
 Shader::Shader(
@@ -230,6 +234,21 @@ Shader::Shader(
 {
     // We use the layer name as the entity name, as it's unique.
     set_name(layer);
+}
+
+Shader::Shader(
+    const char*          type,
+    const char*          shader,
+    const char*          layer,
+    const char*          source,
+    const ParamArray&    params)
+  : Entity(g_class_uid, params)
+  , impl(new Impl(type, shader, layer, params))
+{
+    // We use the layer name as the entity name, as it's unique.
+    set_name(layer);
+
+    impl->m_source_code = source;
 }
 
 Shader::~Shader()
@@ -257,17 +276,58 @@ const char* Shader::get_layer() const
     return get_name();
 }
 
+const char* Shader::get_source_code() const
+{
+    return impl->m_source_code.empty() ? nullptr : impl->m_source_code.c_str();
+}
+
 const ShaderParamContainer& Shader::shader_params() const
 {
     return impl->m_params;
 }
 
+bool Shader::compile_shader(const ShaderCompiler* compiler)
+{
+    // Skip already compiled shaders.
+    if (!impl->m_byte_code.empty())
+        return true;
+
+    if (!impl->m_source_code.empty())
+    {
+        if (!compiler)
+        {
+            RENDERER_LOG_ERROR(
+                "OSL source shader found but shader compiler is not available.");
+            return false;
+        }
+
+        APIString buffer;
+        const bool success = compiler->compile_buffer(impl->m_source_code.c_str(), buffer);
+
+        if (success)
+            impl->m_byte_code = buffer.c_str();
+
+        return success;
+    }
+
+    return true;
+}
+
 bool Shader::add(OSLShadingSystem& shading_system)
 {
-    for (each<ShaderParamContainer> i = impl->m_params; i; ++i)
+    for (ShaderParam& param : impl->m_params)
     {
-        if (!i->add(shading_system))
+        if (!param.add(shading_system))
             return false;
+    }
+
+    if (!impl->m_byte_code.empty())
+    {
+        if (!shading_system.LoadMemoryCompiledShader(impl->m_shader, impl->m_byte_code))
+        {
+            RENDERER_LOG_ERROR("error loading memory compiled shader %s, %s.", get_shader(), get_layer());
+            return false;
+        }
     }
 
     if (!shading_system.Shader("surface", get_shader(), get_layer()))

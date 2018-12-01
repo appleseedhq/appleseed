@@ -401,6 +401,7 @@ namespace
         ElementMatrix,
         ElementObject,
         ElementObjectInstance,
+        ElementOSLCode,
         ElementOutput,
         ElementParameter,
         ElementParameters,
@@ -1802,6 +1803,35 @@ namespace
 
 
     //
+    // <osl_code> element handler.
+    //
+
+    class OSLCodeElementHandler
+      : public ElementHandlerBaseType
+    {
+      public:
+        explicit OSLCodeElementHandler(ParseContext& context)
+        {
+        }
+
+        void characters(
+            const XMLCh* const  chars,
+            const XMLSize_t     length) override
+        {
+            m_code = trim_both(transcode(chars));
+        }
+
+        const string& get_code() const
+        {
+            return m_code;
+        }
+
+      private:
+        string  m_code;
+    };
+
+
+    //
     // <shader> element handler.
     //
 
@@ -1821,30 +1851,56 @@ namespace
             m_layer = get_value(attrs, "layer");
         }
 
-        const string& type() const
+        void end_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler) override
+        {
+            switch (element)
+            {
+              case ElementOSLCode:
+                {
+                    OSLCodeElementHandler* code_handler =
+                        static_cast<OSLCodeElementHandler*>(handler);
+                    m_code = code_handler->get_code();
+                }
+                break;
+
+              default:
+                ParametrizedElementHandler::end_child_element(element, handler);
+                break;
+            }
+        }
+
+        const string& get_type() const
         {
             return m_type;
         }
 
-        const string& name() const
+        const string& get_name() const
         {
             return m_name;
         }
 
-        const string& layer() const
+        const string& get_layer() const
         {
             return m_layer;
         }
 
-        const ParamArray& params() const
+        const string& get_code() const
+        {
+            return m_code;
+        }
+
+        const ParamArray& get_params() const
         {
             return m_params;
         }
 
       private:
-        string m_type;
-        string m_name;
-        string m_layer;
+        string  m_type;
+        string  m_name;
+        string  m_layer;
+        string  m_code;
     };
 
 
@@ -1924,11 +1980,24 @@ namespace
                 {
                     ShaderElementHandler* shader_handler =
                         static_cast<ShaderElementHandler*>(handler);
-                    m_shader_group->add_shader(
-                        shader_handler->type().c_str(),
-                        shader_handler->name().c_str(),
-                        shader_handler->layer().c_str(),
-                        shader_handler->params());
+
+                    if (shader_handler->get_code().empty())
+                    {
+                        m_shader_group->add_shader(
+                            shader_handler->get_type().c_str(),
+                            shader_handler->get_name().c_str(),
+                            shader_handler->get_layer().c_str(),
+                            shader_handler->get_params());
+                    }
+                    else
+                    {
+                        m_shader_group->add_source_shader(
+                            shader_handler->get_type().c_str(),
+                            shader_handler->get_name().c_str(),
+                            shader_handler->get_layer().c_str(),
+                            shader_handler->get_code().c_str(),
+                            shader_handler->get_params());
+                    }
                 }
                 break;
 
@@ -3078,6 +3147,7 @@ namespace
             register_factory_helper<ObjectElementHandler>("object", ElementObject);
             register_factory_helper<ObjectInstanceElementHandler>("object_instance", ElementObjectInstance);
             register_factory_helper<OutputElementHandler>("output", ElementOutput);
+            register_factory_helper<OSLCodeElementHandler>("osl_code", ElementOSLCode);
             register_factory_helper<ParameterElementHandler>("parameter", ElementParameter);
             register_factory_helper<ParametersElementHandler>("parameters", ElementParameters);
             register_factory_helper<PostProcessingStageElementHandler>("post_processing_stage", ElementPostProcessingStage);

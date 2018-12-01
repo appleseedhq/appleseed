@@ -120,6 +120,8 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
   , m_project(nullptr)
   , m_render_tab(nullptr)
 {
+    Application::initialize_resource_search_paths(m_resource_search_paths);
+
     //
     // The connections below are using the Qt::BlockingQueuedConnection connection type.
     //
@@ -204,6 +206,7 @@ void RenderingManager::start_rendering(
         new MasterRenderer(
             *m_project,
             m_params,
+            m_resource_search_paths,
             &m_renderer_controller,
             m_tile_callback_factory.get()));
 

@@ -40,7 +40,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/uid.h"
 
@@ -128,10 +127,10 @@ void ShaderGroup::clear()
 }
 
 void ShaderGroup::add_shader(
-    const char*         type,
-    const char*         name,
-    const char*         layer,
-    const ParamArray&   params)
+    const char*             type,
+    const char*             name,
+    const char*             layer,
+    const ParamArray&       params)
 {
     auto_release_ptr<Shader> shader(
         new Shader(
@@ -145,11 +144,31 @@ void ShaderGroup::add_shader(
     RENDERER_LOG_DEBUG("created shader %s, layer = %s.", name, layer);
 }
 
+void ShaderGroup::add_source_shader(
+    const char*             type,
+    const char*             name,
+    const char*             layer,
+    const char*             source,
+    const ParamArray&       params)
+{
+    auto_release_ptr<Shader> shader(
+        new Shader(
+            type,
+            name,
+            layer,
+            source,
+            params));
+
+    impl->m_shaders.insert(shader);
+
+    RENDERER_LOG_DEBUG("created source shader %s, layer = %s.", name, layer);
+}
+
 void ShaderGroup::add_connection(
-    const char*         src_layer,
-    const char*         src_param,
-    const char*         dst_layer,
-    const char*         dst_param)
+    const char*             src_layer,
+    const char*             src_param,
+    const char*             dst_layer,
+    const char*             dst_param)
 {
     auto_release_ptr<ShaderConnection> connection(
         new ShaderConnection(
@@ -169,13 +188,17 @@ void ShaderGroup::add_connection(
 }
 
 bool ShaderGroup::create_optimized_osl_shader_group(
-    OSLShadingSystem&   shading_system,
-    IAbortSwitch*       abort_switch)
+    OSLShadingSystem&       shading_system,
+    const ShaderCompiler*   shader_compiler,
+    IAbortSwitch*           abort_switch)
 {
     if (is_valid())
         return true;
 
     RENDERER_LOG_DEBUG("setting up shader group \"%s\"...", get_path().c_str());
+
+    if (!compile_source_shaders(shader_compiler))
+        return false;
 
     try
     {
@@ -187,7 +210,7 @@ bool ShaderGroup::create_optimized_osl_shader_group(
             return false;
         }
 
-        for (each<ShaderContainer> i = impl->m_shaders; i; ++i)
+        for (Shader& shader : impl->m_shaders)
         {
             if (is_aborted(abort_switch))
             {
@@ -195,11 +218,11 @@ bool ShaderGroup::create_optimized_osl_shader_group(
                 return true;
             }
 
-            if (!i->add(shading_system))
+            if (!shader.add(shading_system))
                 return false;
         }
 
-        for (each<ShaderConnectionContainer> i = impl->m_connections; i; ++i)
+        for (ShaderConnection& connection : impl->m_connections)
         {
             if (is_aborted(abort_switch))
             {
@@ -207,7 +230,7 @@ bool ShaderGroup::create_optimized_osl_shader_group(
                 return true;
             }
 
-            if (!i->add(shading_system))
+            if (!connection.add(shading_system))
                 return false;
         }
 
@@ -271,6 +294,19 @@ float ShaderGroup::get_surface_area(
 void* ShaderGroup::osl_shader_group() const
 {
     return impl->m_shader_group_ref.get();
+}
+
+bool ShaderGroup::compile_source_shaders(const ShaderCompiler* compiler)
+{
+    for (Shader& shader : impl->m_shaders)
+    {
+        const bool success = shader.compile_shader(compiler);
+
+        if (!success)
+            return false;
+    }
+
+    return true;
 }
 
 void ShaderGroup::get_shadergroup_closures_info(OSLShadingSystem& shading_system)
