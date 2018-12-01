@@ -30,6 +30,7 @@
 #include "apistring.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <cstring>
 
@@ -42,7 +43,7 @@ namespace foundation
 // APIString class implementation.
 //
 
-APIString::APIString()
+APIString::APIString() APPLESEED_NOEXCEPT
   : m_s(nullptr)
 {
 }
@@ -57,6 +58,12 @@ APIString::APIString(const APIString& rhs)
 {
 }
 
+APIString::APIString(APIString&& rhs) APPLESEED_NOEXCEPT
+  : m_s(rhs.m_s)
+{
+    rhs.m_s = nullptr;
+}
+
 APIString::~APIString()
 {
     free_string(m_s);
@@ -69,7 +76,13 @@ APIString& APIString::operator=(const APIString& rhs)
     return *this;
 }
 
-bool APIString::operator==(const APIString& rhs) const
+APIString& APIString::operator=(APIString&& rhs) APPLESEED_NOEXCEPT
+{
+    swap(m_s, rhs.m_s);
+    return *this;
+}
+
+bool APIString::operator==(const APIString& rhs) const APPLESEED_NOEXCEPT
 {
     if (m_s == nullptr && rhs.m_s == nullptr)
         return true;
@@ -80,17 +93,17 @@ bool APIString::operator==(const APIString& rhs) const
     return strcmp(m_s, rhs.m_s) == 0;
 }
 
-bool APIString::operator!=(const APIString& rhs) const
+bool APIString::operator!=(const APIString& rhs) const APPLESEED_NOEXCEPT
 {
     return !(*this == rhs);
 }
 
-bool APIString::empty() const
+bool APIString::empty() const APPLESEED_NOEXCEPT
 {
     return m_s != nullptr ? m_s[0] == '\0' : true;
 }
 
-const char* APIString::c_str() const
+const char* APIString::c_str() const APPLESEED_NOEXCEPT
 {
     return m_s != nullptr ? m_s : "";
 }

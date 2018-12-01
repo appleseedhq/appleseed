@@ -36,11 +36,12 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer  { class IRendererController; }
-namespace renderer  { class ITileCallback; }
-namespace renderer  { class ITileCallbackFactory; }
-namespace renderer  { class ParamArray; }
-namespace renderer  { class Project; }
+namespace foundation { class SearchPaths; }
+namespace renderer   { class IRendererController; }
+namespace renderer   { class ITileCallback; }
+namespace renderer   { class ITileCallbackFactory; }
+namespace renderer   { class ParamArray; }
+namespace renderer   { class Project; }
 
 namespace renderer
 {
@@ -55,17 +56,19 @@ class APPLESEED_DLLSYMBOL MasterRenderer
   public:
     // Constructor.
     MasterRenderer(
-        Project&                project,
-        const ParamArray&       params,
-        IRendererController*    renderer_controller,
-        ITileCallbackFactory*   tile_callback_factory = nullptr);
+        Project&                        project,
+        const ParamArray&               params,
+        const foundation::SearchPaths&  resource_search_paths,
+        IRendererController*            renderer_controller,
+        ITileCallbackFactory*           tile_callback_factory = nullptr);
 
     // Constructor for serial tile callbacks.
     MasterRenderer(
-        Project&                project,
-        const ParamArray&       params,
-        IRendererController*    renderer_controller,
-        ITileCallback*          tile_callback);
+        Project&                        project,
+        const ParamArray&               params,
+        const foundation::SearchPaths&  resource_search_paths,
+        IRendererController*            renderer_controller,
+        ITileCallback*                  tile_callback);
 
     // Destructor.
     ~MasterRenderer();

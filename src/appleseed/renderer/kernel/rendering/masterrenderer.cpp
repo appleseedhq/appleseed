@@ -51,6 +51,7 @@
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/modeling/shadergroup/shadercompiler.h"
 #include "renderer/utility/settingsparsing.h"
 
 // appleseed.foundation headers.
@@ -119,6 +120,7 @@ struct MasterRenderer::Impl
 {
     Project&                            m_project;
     ParamArray                          m_params;
+    const SearchPaths&                  m_resource_search_paths;
 
     OIIOErrorHandler*                   m_error_handler;
 
@@ -126,6 +128,7 @@ struct MasterRenderer::Impl
 
     RendererServices*                   m_renderer_services;
     OSLShadingSystem*                   m_shading_system;
+    auto_release_ptr<ShaderCompiler>    m_osl_compiler;
 
     IRendererController*                m_renderer_controller;
     ITileCallbackFactory*               m_tile_callback_factory;
@@ -138,10 +141,12 @@ struct MasterRenderer::Impl
     Stopwatch<DefaultWallclockTimer>    m_stopwatch;
 
     Impl(
-        Project&          project,
-        const ParamArray& params)
+        Project&            project,
+        const ParamArray&   params,
+        const SearchPaths&  resource_search_paths)
       : m_project(project)
       , m_params(params)
+      , m_resource_search_paths(resource_search_paths)
       , m_serial_renderer_controller(nullptr)
       , m_serial_tile_callback_factory(nullptr)
       , m_display(nullptr)
@@ -259,10 +264,21 @@ struct MasterRenderer::Impl
             m_shading_system->attribute("searchpath:shader", project_search_paths);
         }
 
+        // Initialize the shader compiler, if the OSL headers are found.
+        if (m_resource_search_paths.exist("stdosl.h"))
+        {
+            const APIString stdosl_path = m_resource_search_paths.qualify("stdosl.h");
+            RENDERER_LOG_INFO("found OSL headers in %s", stdosl_path.c_str());
+            m_osl_compiler = ShaderCompilerFactory::create(stdosl_path.c_str());
+        }
+        else
+            RENDERER_LOG_INFO("OSL headers not found.");
+
         // Re-optimize shader groups that need updating.
         return
             m_project.get_scene()->create_optimized_osl_shader_groups(
                 *m_shading_system,
+                m_osl_compiler.get(),
                 &abort_switch);
     }
 
@@ -683,9 +699,10 @@ struct MasterRenderer::Impl
 MasterRenderer::MasterRenderer(
     Project&                project,
     const ParamArray&       params,
+    const SearchPaths&      resource_search_paths,
     IRendererController*    renderer_controller,
     ITileCallbackFactory*   tile_callback_factory)
-  : impl(new Impl(project, params))
+  : impl(new Impl(project, params, resource_search_paths))
 {
     impl->m_renderer_controller = renderer_controller;
     impl->m_tile_callback_factory = tile_callback_factory;
@@ -706,9 +723,10 @@ MasterRenderer::MasterRenderer(
 MasterRenderer::MasterRenderer(
     Project&                project,
     const ParamArray&       params,
+    const SearchPaths&      resource_search_paths,
     IRendererController*    renderer_controller,
     ITileCallback*          tile_callback)
-  : impl(new Impl(project, params))
+  : impl(new Impl(project, params, resource_search_paths))
 {
     impl->m_renderer_controller =
     impl->m_serial_renderer_controller =

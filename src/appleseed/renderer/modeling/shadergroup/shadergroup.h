@@ -46,8 +46,9 @@ namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class AssemblyInstance; }
 namespace renderer      { class OSLShadingSystem; }
-namespace renderer      { class ParamArray; }
 namespace renderer      { class ObjectInstance; }
+namespace renderer      { class ParamArray; }
+namespace renderer      { class ShaderCompiler; }
 
 namespace renderer
 {
@@ -76,6 +77,14 @@ class APPLESEED_DLLSYMBOL ShaderGroup
         const char*                 layer,
         const ParamArray&           params);
 
+    // Add a new shader to the group.
+    void add_source_shader(
+        const char*                 type,
+        const char*                 name,
+        const char*                 layer,
+        const char*                 source,
+        const ParamArray&           params);
+
     // Add a connection between two parameters of two shaders.
     void add_connection(
         const char*                 src_layer,
@@ -86,6 +95,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Create internal OSL shader group.
     bool create_optimized_osl_shader_group(
         OSLShadingSystem&           shading_system,
+        const ShaderCompiler*       shader_compiler,
         foundation::IAbortSwitch*   abort_switch = nullptr);
 
     // Release internal OSL shader group.
@@ -170,6 +180,8 @@ class APPLESEED_DLLSYMBOL ShaderGroup
 
     // Destructor.
     ~ShaderGroup() override;
+
+    bool compile_source_shaders(const ShaderCompiler* compiler);
 
     void get_shadergroup_closures_info(OSLShadingSystem& shading_system);
     void report_has_closure(const char* closure_name, const Flags flag) const;

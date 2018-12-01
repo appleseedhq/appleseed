@@ -58,7 +58,7 @@ class APPLESEED_DLLSYMBOL ShaderCompiler
 
     bool compile_buffer(
         const char*             source_code,
-        foundation::APIString&  result);
+        foundation::APIString&  result) const;
 
   private:
     friend class ShaderCompilerFactory;

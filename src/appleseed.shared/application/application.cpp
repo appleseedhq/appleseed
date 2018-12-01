@@ -35,6 +35,7 @@
 #include "foundation/platform/system.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/log.h"
+#include "foundation/utility/searchpaths.h"
 #include "foundation/utility/settings.h"
 #include "foundation/utility/string.h"
 
@@ -331,6 +332,16 @@ bool Application::save_settings(
 
     LOG(logger, LogMessage::Error, "failed to save settings to %s.", settings_file_path.c_str());
     return false;
+}
+
+void Application::initialize_resource_search_paths(SearchPaths& search_paths)
+{
+    search_paths.clear_explicit_paths();
+
+    const bf::path root_path = Application::get_root_path();
+
+    search_paths.push_back_explicit_path(
+        (root_path / "shaders").string().c_str()); // OSL headers.
 }
 
 }   // namespace shared

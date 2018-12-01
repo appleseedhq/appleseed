@@ -89,7 +89,9 @@ set (sources
     bindquaternion.cpp
     bindrenderercontroller.cpp
     bindscene.cpp
+    bindshadercompiler.cpp
     bindshadergroup.cpp
+    bindshaderquery.cpp
     bindsurfaceshader.cpp
     bindtexture.cpp
     bindtilecallback.cpp

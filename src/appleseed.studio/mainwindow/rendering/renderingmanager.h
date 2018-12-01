@@ -44,6 +44,7 @@
 #include "foundation/platform/thread.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/job/abortswitch.h"
+#include "foundation/utility/searchpaths.h"
 
 // Qt headers.
 #include <QObject>
@@ -165,6 +166,7 @@ class RenderingManager
 
     renderer::Project*                          m_project;
     renderer::ParamArray                        m_params;
+    foundation::SearchPaths                     m_resource_search_paths;
     RenderingMode                               m_rendering_mode;
     RenderTab*                                  m_render_tab;
 
