@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_TEXTURE_DISKTEXTURE2D_H
-#define APPLESEED_RENDERER_MODELING_TEXTURE_DISKTEXTURE2D_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/texture/itexturefactory.h"
@@ -77,6 +76,4 @@ class APPLESEED_DLLSYMBOL DiskTexture2dFactory
         const foundation::SearchPaths&  search_paths) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_TEXTURE_DISKTEXTURE2D_H
+}   // namespace renderer

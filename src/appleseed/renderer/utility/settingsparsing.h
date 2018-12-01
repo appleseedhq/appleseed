@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_SETTINGSPARSING_H
-#define APPLESEED_RENDERER_UTILITY_SETTINGSPARSING_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -56,6 +55,4 @@ std::string get_sampling_context_mode_name(const SamplingContext::Mode mode);
 // Rendering threads.
 APPLESEED_DLLSYMBOL size_t get_rendering_thread_count(const ParamArray& params);
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_UTILITY_SETTINGSPARSING_H
+}   // namespace renderer

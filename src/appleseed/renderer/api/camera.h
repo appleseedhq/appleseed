@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_CAMERA_H
-#define APPLESEED_RENDERER_API_CAMERA_H
+#pragma once
 
 // API headers.
 #include "renderer/modeling/camera/camera.h"
@@ -39,5 +38,3 @@
 #include "renderer/modeling/camera/pinholecamera.h"
 #include "renderer/modeling/camera/sphericalcamera.h"
 #include "renderer/modeling/camera/thinlenscamera.h"
-
-#endif  // !APPLESEED_RENDERER_API_CAMERA_H

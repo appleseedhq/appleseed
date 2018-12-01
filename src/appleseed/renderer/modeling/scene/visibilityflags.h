@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SCENE_VISIBILITYFLAGS_H
-#define APPLESEED_RENDERER_MODELING_SCENE_VISIBILITYFLAGS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -79,6 +78,4 @@ class APPLESEED_DLLSYMBOL VisibilityFlags
     static ParamArray to_dictionary(const Type flags);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SCENE_VISIBILITYFLAGS_H
+}   // namespace renderer

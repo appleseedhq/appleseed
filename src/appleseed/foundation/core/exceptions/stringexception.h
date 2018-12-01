@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CORE_EXCEPTIONS_STRINGEXCEPTION_H
-#define APPLESEED_FOUNDATION_CORE_EXCEPTIONS_STRINGEXCEPTION_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -94,6 +93,4 @@ inline void StringException::set_string(const char* s)
     copy_string(m_string, s, sizeof(m_string));
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CORE_EXCEPTIONS_STRINGEXCEPTION_H
+}   // namespace foundation

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_PERMANENTSHADINGRESULTFRAMEBUFFERFACTORY_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_PERMANENTSHADINGRESULTFRAMEBUFFERFACTORY_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/ishadingresultframebufferfactory.h"
@@ -75,6 +74,4 @@ class PermanentShadingResultFrameBufferFactory
     std::vector<ShadingResultFrameBuffer*> m_framebuffers;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_PERMANENTSHADINGRESULTFRAMEBUFFERFACTORY_H
+}   // namespace renderer

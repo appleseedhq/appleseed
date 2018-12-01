@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADER_H
-#define APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -80,6 +79,4 @@ class APPLESEED_DLLSYMBOL SurfaceShader
         ShadingResult&              shading_result) const = 0;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADER_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLLECTIONITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLLECTIONITEM_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitembase.h"
@@ -171,7 +170,5 @@ void CollectionItem<Entity, ParentEntity, ParentItem>::create(const foundation::
     m_parent_item->add_item(entity);
 }
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLLECTIONITEM_H
+}   // namespace studio
+}   // namespace appleseed

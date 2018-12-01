@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_ENVIRONMENTEDF_H
-#define APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_ENVIRONMENTEDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -132,6 +131,4 @@ inline const TransformSequence& EnvironmentEDF::transform_sequence() const
     return m_transform_sequence;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_ENVIRONMENTEDF_H
+}   // namespace renderer

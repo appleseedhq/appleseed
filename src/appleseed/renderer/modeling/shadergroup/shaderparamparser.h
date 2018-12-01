@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERPARAMPARSER_H
-#define APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERPARAMPARSER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/shadergroup/shaderparam.h"
@@ -180,6 +179,4 @@ void ShaderParamParser::parse_n_values(size_t n, T* values)
         values[i] = parse_one_value<T>((i == n - 1) ? true : false);
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERPARAMPARSER_H
+}   // namespace renderer

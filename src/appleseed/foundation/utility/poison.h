@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_POISON_H
-#define APPLESEED_FOUNDATION_UTILITY_POISON_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/fp.h"
@@ -123,6 +122,4 @@ class PoisonImpl<double>
     }
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_POISON_H
+}   // namespace foundation

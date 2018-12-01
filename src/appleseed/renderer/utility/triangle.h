@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_TRIANGLE_H
-#define APPLESEED_RENDERER_UTILITY_TRIANGLE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -64,6 +63,4 @@ VectorType compute_triangle_normal(
     return foundation::cross(v1 - v0, v2 - v0);
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_UTILITY_TRIANGLE_H
+}   // namespace renderer

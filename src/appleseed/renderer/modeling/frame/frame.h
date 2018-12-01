@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_FRAME_FRAME_H
-#define APPLESEED_RENDERER_MODELING_FRAME_FRAME_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/aov/aovcontainer.h"
@@ -288,6 +287,4 @@ inline foundation::Vector2d Frame::get_sample_position(
             sample_y);
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_FRAME_FRAME_H
+}   // namespace renderer

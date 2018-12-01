@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_INTERSECTION_RAYAABB_H
-#define APPLESEED_FOUNDATION_MATH_INTERSECTION_RAYAABB_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
@@ -388,6 +387,4 @@ inline bool clip<double>(
 
 #endif  // APPLESEED_USE_SSE
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_INTERSECTION_RAYAABB_H
+}   // namespace foundation

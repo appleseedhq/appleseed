@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SCENE_ASSEMBLYINSTANCE_H
-#define APPLESEED_RENDERER_MODELING_SCENE_ASSEMBLYINSTANCE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -166,6 +165,4 @@ inline Assembly& AssemblyInstance::get_assembly() const
     return *m_assembly;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SCENE_ASSEMBLYINSTANCE_H
+}   // namespace renderer

@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_SPECTRUMCLAMP_H
-#define APPLESEED_RENDERER_UTILITY_SPECTRUMCLAMP_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -63,6 +62,4 @@ inline void clamp_contribution(DirectShadingComponents& radiance, const float hi
     radiance.m_beauty += radiance.m_emission;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_UTILITY_SPECTRUMCLAMP_H
+}   // namespace renderer

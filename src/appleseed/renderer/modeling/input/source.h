@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_INPUT_SOURCE_H
-#define APPLESEED_RENDERER_MODELING_INPUT_SOURCE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -237,6 +236,4 @@ inline void Source::evaluate_uniform(
     evaluate_uniform(alpha);
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_INPUT_SOURCE_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_ALIGNEDVECTOR_H
-#define APPLESEED_FOUNDATION_UTILITY_ALIGNEDVECTOR_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/alignedallocator.h"
@@ -143,6 +142,4 @@ class AlignedVector
 
 #undef ALIGNED_VECTOR_BASE
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_ALIGNEDVECTOR_H
+}   // namespace foundation

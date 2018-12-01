@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_RNG_SERIALMERSENNETWISTER_H
-#define APPLESEED_FOUNDATION_MATH_RNG_SERIALMERSENNETWISTER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -91,6 +90,4 @@ inline uint32 SerialMersenneTwister::rand_uint32()
     return y;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_RNG_SERIALMERSENNETWISTER_H
+}   // namespace foundation

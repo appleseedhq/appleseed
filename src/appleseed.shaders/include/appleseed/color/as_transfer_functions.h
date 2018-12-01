@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef AS_TRANSFER_FUNCTIONS_H
-#define AS_TRANSFER_FUNCTIONS_H
+#pragma once
 
 #include "appleseed/color/as_colorimetry.h"
 
@@ -396,5 +395,3 @@ color DCIP3_OETF(color XYZ)
 {
     return gamma_CCTF(XYZ, DCIP3_GAMMA);
 }
-
-#endif // !AS_TRANSFER_FUNCTIONS_H

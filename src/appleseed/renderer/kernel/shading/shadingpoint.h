@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGPOINT_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGPOINT_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -962,7 +961,7 @@ inline void ShadingPoint::fetch_materials() const
     }
 }
 
-}       // namespace renderer
+}   // namespace renderer
 
 namespace foundation
 {
@@ -973,5 +972,3 @@ namespace foundation
         static void do_poison(renderer::ShadingPoint& point);
     };
 }
-
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGPOINT_H

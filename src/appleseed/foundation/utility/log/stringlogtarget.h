@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_LOG_STRINGLOGTARGET_H
-#define APPLESEED_FOUNDATION_UTILITY_LOG_STRINGLOGTARGET_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -80,6 +79,4 @@ class APPLESEED_DLLSYMBOL StringLogTarget
 // Create an instance of a log target that outputs to a string.
 APPLESEED_DLLSYMBOL StringLogTarget* create_string_log_target();
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_LOG_STRINGLOGTARGET_H
+}   // namespace foundation

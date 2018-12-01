@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_SHARED_APPLICATION_APPLICATION_H
-#define APPLESEED_SHARED_APPLICATION_APPLICATION_H
+#pragma once
 
 // appleseed.shared headers.
 #include "dllsymbol.h"
@@ -110,7 +109,5 @@ inline boost::filesystem::path Application::change_current_directory_to_tests_ro
     return old_current_path;
 }
 
-}       // namespace shared
-}       // namespace appleseed
-
-#endif  // !APPLESEED_SHARED_APPLICATION_APPLICATION_H
+}   // namespace shared
+}   // namespace appleseed

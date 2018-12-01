@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGCOMPONENTS_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGCOMPONENTS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -73,6 +72,4 @@ class ShadingComponents
 ShadingComponents& operator*=(ShadingComponents& lhs, const float rhs);
 ShadingComponents& operator/=(ShadingComponents& lhs, const float rhs);
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGCOMPONENTS_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_DEFAULTRENDERERCONTROLLER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_DEFAULTRENDERERCONTROLLER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/irenderercontroller.h"
@@ -78,6 +77,4 @@ class APPLESEED_DLLSYMBOL DefaultRendererController
     Status get_status() const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_DEFAULTRENDERERCONTROLLER_H
+}   // namespace renderer

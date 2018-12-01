@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MESH_IMESHFILEWRITER_H
-#define APPLESEED_FOUNDATION_MESH_IMESHFILEWRITER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -57,6 +56,4 @@ class APPLESEED_DLLSYMBOL IMeshFileWriter
     virtual void write(const IMeshWalker& walker) = 0;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MESH_IMESHFILEWRITER_H
+}   // namespace foundation

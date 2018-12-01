@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_STATISTICS_H
-#define APPLESEED_FOUNDATION_UTILITY_STATISTICS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/stringexception.h"
@@ -535,6 +534,4 @@ std::string Statistics::PopulationEntry<T>::to_string() const
     return sstr.str();
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_STATISTICS_H
+}   // namespace foundation

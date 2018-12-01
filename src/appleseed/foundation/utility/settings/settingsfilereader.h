@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_SETTINGS_SETTINGSFILEREADER_H
-#define APPLESEED_FOUNDATION_UTILITY_SETTINGS_SETTINGSFILEREADER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -65,6 +64,4 @@ class APPLESEED_DLLSYMBOL SettingsFileReader
     Logger& m_logger;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_SETTINGS_SETTINGSFILEREADER_H
+}   // namespace foundation

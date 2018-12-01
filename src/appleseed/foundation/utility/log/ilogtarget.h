@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_LOG_ILOGTARGET_H
-#define APPLESEED_FOUNDATION_UTILITY_LOG_ILOGTARGET_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
@@ -60,6 +59,4 @@ class APPLESEED_DLLSYMBOL ILogTarget
         const char*                 message) = 0;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_LOG_ILOGTARGET_H
+}   // namespace foundation

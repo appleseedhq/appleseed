@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_CANVASPROPERTIES_H
-#define APPLESEED_FOUNDATION_IMAGE_CANVASPROPERTIES_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/pixel.h"
@@ -143,6 +142,4 @@ inline size_t CanvasProperties::get_tile_height(const size_t tile_y) const
             m_tile_height);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_CANVASPROPERTIES_H
+}   // namespace foundation

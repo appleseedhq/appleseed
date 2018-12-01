@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_SERIALTILECALLBACK_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_SERIALTILECALLBACK_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/itilecallback.h"
@@ -60,6 +59,4 @@ class SerialTileCallbackFactory
     SerialRendererController* m_controller;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_SERIALTILECALLBACK_H
+}   // namespace renderer

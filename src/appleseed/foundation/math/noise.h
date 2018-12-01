@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_NOISE_H
-#define APPLESEED_FOUNDATION_MATH_NOISE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionnotimplemented.h"
@@ -312,6 +311,4 @@ inline T turbulence(
         gain);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_NOISE_H
+}   // namespace foundation

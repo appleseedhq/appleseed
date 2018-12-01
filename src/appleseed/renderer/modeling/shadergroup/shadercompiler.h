@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERCOMPILER_H
-#define APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERCOMPILER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -83,6 +82,4 @@ class APPLESEED_DLLSYMBOL ShaderCompilerFactory
         const char* stdosl_path);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERCOMPILER_H
+}   // namespace renderer

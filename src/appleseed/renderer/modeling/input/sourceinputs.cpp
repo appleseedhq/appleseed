@@ -35,10 +35,10 @@ namespace renderer
 SourceInputs::SourceInputs(const foundation::Vector2f& uv)
     : m_uv_x(uv.x)
     , m_uv_y(uv.y)
-    , m_point_x(0)
-    , m_point_y(0)
-    , m_point_z(0)
+    , m_point_x(0.0)
+    , m_point_y(0.0)
+    , m_point_z(0.0)
 {
 }
 
-}
+}   // namespace renderer

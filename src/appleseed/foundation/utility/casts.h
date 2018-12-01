@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_CASTS_H
-#define APPLESEED_FOUNDATION_UTILITY_CASTS_H
+#pragma once
 
 namespace foundation
 {
@@ -92,6 +91,4 @@ inline Target binary_cast(Source s)
 
 #endif
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_CASTS_H
+}   // namespace foundation

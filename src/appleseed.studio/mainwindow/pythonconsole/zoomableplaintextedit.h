@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_ZOOMABLEPLAINTEXTEDIT_H
-#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_ZOOMABLEPLAINTEXTEDIT_H
+#pragma once
 
 // Qt headers.
 #include <QObject>
@@ -59,7 +58,5 @@ class ZoomablePlainTextEdit
     void change_font_size(const int delta);
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_ZOOMABLEPLAINTEXTEDIT_H
+}   // namespace studio
+}   // namespace appleseed

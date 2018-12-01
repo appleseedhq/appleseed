@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef AS_MATERIAL_HELPERS_H
-#define AS_MATERIAL_HELPERS_H
+#pragma once
 
 #include "appleseed/math/as_math_helpers.h"
 
@@ -177,5 +176,3 @@ float dielectricConductorFresnel(
 
     return 0.5 * (Rp + Rs);
 }
-
-#endif // !AS_MATERIAL_HELPERS_H

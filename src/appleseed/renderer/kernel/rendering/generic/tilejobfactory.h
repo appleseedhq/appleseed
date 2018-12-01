@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_TILEJOBFACTORY_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_TILEJOBFACTORY_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -88,6 +87,4 @@ class TileJobFactory
         std::vector<size_t>&                tiles);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_TILEJOBFACTORY_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_IMAGEBASEDLIGHTING_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_IMAGEBASEDLIGHTING_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -90,6 +89,4 @@ void compute_ibl_environment_sampling(
     const size_t                    env_sample_count,       // number of samples in environment sampling
     DirectShadingComponents&        radiance);
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_IMAGEBASEDLIGHTING_H
+}   // namespace renderer

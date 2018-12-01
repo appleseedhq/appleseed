@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICFRAMERENDERER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICFRAMERENDERER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/iframerenderer.h"
@@ -88,6 +87,4 @@ class GenericFrameRendererFactory
     const ParamArray            m_params;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICFRAMERENDERER_H
+}   // namespace renderer

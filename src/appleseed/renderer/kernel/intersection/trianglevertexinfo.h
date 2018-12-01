@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEVERTEXINFO_H
-#define APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEVERTEXINFO_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -63,6 +62,4 @@ class TriangleVertexInfo
     }
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEVERTEXINFO_H
+}   // namespace renderer

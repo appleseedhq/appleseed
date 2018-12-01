@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_VOLUME_OCCUPANCYGRID_H
-#define APPLESEED_RENDERER_KERNEL_VOLUME_OCCUPANCYGRID_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/volume/volume.h"
@@ -78,6 +77,4 @@ inline bool OccupancyGrid::has_fluid(const foundation::Vector3d& point) const
     return result == 1;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_VOLUME_OCCUPANCYGRID_H
+}   // namespace renderer

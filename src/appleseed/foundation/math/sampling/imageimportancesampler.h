@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_SAMPLING_IMAGEIMPORTANCESAMPLER_H
-#define APPLESEED_FOUNDATION_MATH_SAMPLING_IMAGEIMPORTANCESAMPLER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -311,6 +310,4 @@ inline void ImageSampler::sample(const size_t x, const size_t y, Payload& payloa
     importance = luminance(Color3f::from_array(color));
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_SAMPLING_IMAGEIMPORTANCESAMPLER_H
+}   // namespace foundation

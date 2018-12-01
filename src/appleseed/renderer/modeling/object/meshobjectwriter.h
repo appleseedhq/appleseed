@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTWRITER_H
-#define APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTWRITER_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -54,6 +53,4 @@ class APPLESEED_DLLSYMBOL MeshObjectWriter
         const char*         filename);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTWRITER_H
+}   // namespace renderer

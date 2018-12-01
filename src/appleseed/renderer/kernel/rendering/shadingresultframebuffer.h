@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_SHADINGRESULTFRAMEBUFFER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_SHADINGRESULTFRAMEBUFFER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/filteredtile.h"
@@ -86,6 +85,4 @@ class ShadingResultFrameBuffer
     std::vector<float>                  m_scratch;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_SHADINGRESULTFRAMEBUFFER_H
+}   // namespace renderer

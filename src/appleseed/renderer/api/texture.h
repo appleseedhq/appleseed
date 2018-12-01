@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_TEXTURE_H
-#define APPLESEED_RENDERER_API_TEXTURE_H
+#pragma once
 
 // API headers.
 #include "renderer/modeling/texture/disktexture2d.h"
@@ -37,5 +36,3 @@
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/modeling/texture/texturefactoryregistrar.h"
 #include "renderer/modeling/texture/texturetraits.h"
-
-#endif  // !APPLESEED_RENDERER_API_TEXTURE_H

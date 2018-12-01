@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_QTRENDERERCONTROLLER_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_QTRENDERERCONTROLLER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
@@ -92,7 +91,5 @@ class QtRendererController
     boost::atomic<Status> m_status;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_QTRENDERERCONTROLLER_H
+}   // namespace studio
+}   // namespace appleseed

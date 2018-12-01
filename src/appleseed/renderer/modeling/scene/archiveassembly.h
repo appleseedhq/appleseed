@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SCENE_ARCHIVEASSEMBLY_H
-#define APPLESEED_RENDERER_MODELING_SCENE_ARCHIVEASSEMBLY_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/scene/basegroup.h"
@@ -116,6 +115,4 @@ class APPLESEED_DLLSYMBOL ArchiveAssemblyFactory
         const ParamArray&   params = ParamArray()) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SCENE_ARCHIVEASSEMBLY_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_PERMUTATION_H
-#define APPLESEED_FOUNDATION_MATH_PERMUTATION_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/rng/distribution.h"
@@ -298,6 +297,4 @@ inline void large_item_reorder(
     }
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_PERMUTATION_H
+}   // namespace foundation

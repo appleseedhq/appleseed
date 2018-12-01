@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BVH_BVH_SAHPARTITIONER_H
-#define APPLESEED_FOUNDATION_MATH_BVH_BVH_SAHPARTITIONER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/bvh/bvh_partitionerbase.h"
@@ -170,7 +169,5 @@ size_t SAHPartitioner<AABBVector>::partition(
     return pivot;
 }
 
-}       // namespace bvh
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_BVH_BVH_SAHPARTITIONER_H
+}   // namespace bvh
+}   // namespace foundation

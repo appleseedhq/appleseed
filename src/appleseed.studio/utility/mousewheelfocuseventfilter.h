@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_MOUSEWHEELFOCUSEVENTFILTER_H
-#define APPLESEED_STUDIO_UTILITY_MOUSEWHEELFOCUSEVENTFILTER_H
+#pragma once
 
 // Qt headers.
 #include <QObject>
@@ -65,7 +64,5 @@ class MouseWheelFocusEventFilter
     const Qt::FocusPolicy m_old_focus_policy;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_UTILITY_MOUSEWHEELFOCUSEVENTFILTER_H
+}   // namespace studio
+}   // namespace appleseed

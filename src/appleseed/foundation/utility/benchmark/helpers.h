@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_HELPERS_H
-#define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_HELPERS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/benchmark/benchmarksuite.h"
@@ -183,6 +182,4 @@ namespace foundation
 #define GRANT_ACCESS_TO_BENCHMARK_CASE(SuiteName, CaseName)                                 \
     friend struct BenchmarkSuite##SuiteName::BenchmarkCase##CaseName
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_BENCHMARK_HELPERS_H
+}   // namespace foundation

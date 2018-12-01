@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_COMMANDLINEPARSER_H
-#define APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_COMMANDLINEPARSER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -372,6 +371,4 @@ inline void CommandLineParser::process_options(ParseResults& results)
     }
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_COMMANDLINEPARSER_H
+}   // namespace foundation

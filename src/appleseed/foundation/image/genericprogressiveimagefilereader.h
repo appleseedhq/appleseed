@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_GENERICPROGRESSIVEIMAGEFILEREADER_H
-#define APPLESEED_FOUNDATION_IMAGE_GENERICPROGRESSIVEIMAGEFILEREADER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/iprogressiveimagefilereader.h"
@@ -90,6 +89,4 @@ class APPLESEED_DLLSYMBOL GenericProgressiveImageFileReader
     Impl* impl;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_GENERICPROGRESSIVEIMAGEFILEREADER_H
+}   // namespace foundation

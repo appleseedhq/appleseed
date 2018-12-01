@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_THREAD_H
-#define APPLESEED_FOUNDATION_PLATFORM_THREAD_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -453,6 +452,4 @@ inline bool ThreadFlag::is_set() const
     return !is_clear();
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_THREAD_H
+}   // namespace foundation

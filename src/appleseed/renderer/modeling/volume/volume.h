@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_VOLUME_VOLUME_H
-#define APPLESEED_RENDERER_MODELING_VOLUME_VOLUME_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -155,6 +154,4 @@ class APPLESEED_DLLSYMBOL Volume
         const ShadingRay&           volume_ray) const = 0;      // ray used for marching inside the volume
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_VOLUME_VOLUME_H
+}   // namespace renderer

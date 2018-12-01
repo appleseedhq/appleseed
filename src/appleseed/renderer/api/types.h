@@ -26,10 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_TYPES_H
-#define APPLESEED_RENDERER_API_TYPES_H
+#pragma once
 
 // API headers.
 #include "renderer/global/globaltypes.h"
-
-#endif  // !APPLESEED_RENDERER_API_TYPES_H

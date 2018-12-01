@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_TYPETRAITS_H
-#define APPLESEED_FOUNDATION_UTILITY_TYPETRAITS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -153,6 +152,4 @@ struct IsNotBase
 {
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_TYPETRAITS_H
+}   // namespace foundation

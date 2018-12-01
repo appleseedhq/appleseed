@@ -26,10 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_LIGHTING_H
-#define APPLESEED_RENDERER_API_LIGHTING_H
+#pragma once
 
 // API headers.
 #include "renderer/kernel/lighting/lightpathrecorder.h"
-
-#endif  // !APPLESEED_RENDERER_API_LIGHTING_H

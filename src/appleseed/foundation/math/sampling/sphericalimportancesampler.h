@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_SAMPLING_SPHERICALIMPORTANCESAMPLER_H
-#define APPLESEED_FOUNDATION_MATH_SAMPLING_SPHERICALIMPORTANCESAMPLER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -304,6 +303,4 @@ void SphericalImportanceSampler<T>::build_cdf()
     m_cdf.prepare();
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_SAMPLING_SPHERICALIMPORTANCESAMPLER_H
+}   // namespace foundation

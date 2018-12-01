@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_SHAREDLIBRARY_H
-#define APPLESEED_FOUNDATION_PLATFORM_SHAREDLIBRARY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -97,6 +96,4 @@ class SharedLibrary
 #endif
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_SHAREDLIBRARY_H
+}   // namespace foundation

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_TEST_LOGGERTESTLISTENER_H
-#define APPLESEED_FOUNDATION_UTILITY_TEST_LOGGERTESTLISTENER_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -49,6 +48,4 @@ APPLESEED_DLLSYMBOL ITestListener* create_logger_test_listener(
     Logger&     logger,
     const bool  verbose = false);
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_TEST_LOGGERTESTLISTENER_H
+}   // namespace foundation

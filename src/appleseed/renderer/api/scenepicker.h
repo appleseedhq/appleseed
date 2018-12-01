@@ -26,10 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_SCENEPICKER_H
-#define APPLESEED_RENDERER_API_SCENEPICKER_H
+#pragma once
 
 // API headers.
 #include "renderer/kernel/rendering/scenepicker.h"
-
-#endif  // !APPLESEED_RENDERER_API_SCENEPICKER_H

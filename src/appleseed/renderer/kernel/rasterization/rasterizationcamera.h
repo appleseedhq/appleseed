@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RASTERIZATION_RASTERIZATIONCAMERA_H
-#define APPLESEED_RENDERER_KERNEL_RASTERIZATION_RASTERIZATIONCAMERA_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -44,6 +43,4 @@ class APPLESEED_DLLSYMBOL RasterizationCamera
     double  m_shift_y;          // vertical camera shift
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RASTERIZATION_RASTERIZATIONCAMERA_H
+}   // namespace renderer

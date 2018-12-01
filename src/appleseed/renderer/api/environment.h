@@ -27,11 +27,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_ENVIRONMENT_H
-#define APPLESEED_RENDERER_API_ENVIRONMENT_H
+#pragma once
 
 // API headers.
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environment/environmenttraits.h"
-
-#endif  // !APPLESEED_RENDERER_API_ENVIRONMENT_H

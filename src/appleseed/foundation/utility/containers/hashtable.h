@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_CONTAINERS_HASHTABLE_H
-#define APPLESEED_FOUNDATION_UTILITY_CONTAINERS_HASHTABLE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
@@ -138,6 +137,4 @@ inline const ValueType* HashTable<KeyType, KeyHasherType, ValueType>::get(const 
     return nullptr;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_CONTAINERS_HASHTABLE_H
+}   // namespace foundation

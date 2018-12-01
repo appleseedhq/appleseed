@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_PATHTRACER_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_PATHTRACER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
@@ -968,6 +967,4 @@ inline const ShadingPoint& PathTracer<PathVisitor, VolumeVisitor, Adjoint>::get_
     return reinterpret_cast<const ShadingPoint*>(m_shading_point_arena.get_storage())[i];
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_PATHTRACER_H
+}   // namespace renderer

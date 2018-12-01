@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_NULLBSDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_NULLBSDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -107,6 +106,4 @@ class NullBSDF
     }
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_NULLBSDF_H
+}   // namespace renderer

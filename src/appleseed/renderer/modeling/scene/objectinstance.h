@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SCENE_OBJECTINSTANCE_H
-#define APPLESEED_RENDERER_MODELING_SCENE_OBJECTINSTANCE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -303,6 +302,4 @@ inline const MaterialArray& ObjectInstance::get_back_materials() const
     return m_back_materials;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SCENE_OBJECTINSTANCE_H
+}   // namespace renderer

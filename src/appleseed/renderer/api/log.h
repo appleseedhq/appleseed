@@ -27,10 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_LOG_H
-#define APPLESEED_RENDERER_API_LOG_H
+#pragma once
 
 // API headers.
 #include "renderer/global/globallogger.h"
-
-#endif  // !APPLESEED_RENDERER_API_LOG_H

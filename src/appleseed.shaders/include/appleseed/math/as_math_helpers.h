@@ -25,8 +25,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef AS_MATH_HELPERS_H
-#define AS_MATH_HELPERS_H
+#pragma once
 
 #ifndef EPS
 #define EPS 1.0e-6
@@ -130,5 +129,3 @@ float fract(float x)
 {
     return x - floor(x);
 }
-
-#endif // !AS_MATH_HELPERS_H

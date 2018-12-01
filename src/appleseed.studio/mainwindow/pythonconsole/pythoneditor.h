@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONEDITOR_H
-#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONEDITOR_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/pythonconsole/zoomableplaintextedit.h"
@@ -74,7 +73,5 @@ class PythonEditor
     void insert_spaces(const size_t count);
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONEDITOR_H
+}   // namespace studio
+}   // namespace appleseed

@@ -28,8 +28,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_GENERICIMAGEFILEWRITER_H
-#define APPLESEED_FOUNDATION_IMAGE_GENERICIMAGEFILEWRITER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/iimagefilewriter.h"
@@ -97,6 +96,4 @@ class APPLESEED_DLLSYMBOL GenericImageFileWriter
     const char*         m_filename;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_GENERICIMAGEFILEWRITER_H
+}   // namespace foundation

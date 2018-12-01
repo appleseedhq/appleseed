@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_ENERGYCOMPENSATION_H
-#define APPLESEED_RENDERER_MODELING_BSDF_ENERGYCOMPENSATION_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -137,6 +136,4 @@ float average_albedo(
     const size_t    table_size,
     const float*    directional_albedo);
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_ENERGYCOMPENSATION_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PYTHON_UNALIGNEDMATRIX44_H
-#define APPLESEED_PYTHON_UNALIGNEDMATRIX44_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
@@ -287,6 +286,4 @@ std::ostream& operator<<(std::ostream& s, const UnalignedMatrix44<T>& matrix)
     return s << matrix.as_foundation_matrix();
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_PYTHON_UNALIGNEDMATRIX44_H
+}   // namespace foundation

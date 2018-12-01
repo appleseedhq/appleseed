@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_TYPES_H
-#define APPLESEED_FOUNDATION_PLATFORM_TYPES_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/arch.h"
@@ -148,6 +147,4 @@ static_assert(
 
 #endif
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_TYPES_H
+}   // namespace foundation

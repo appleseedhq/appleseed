@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_MESSAGECONTEXT_H
-#define APPLESEED_RENDERER_UTILITY_MESSAGECONTEXT_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -125,6 +124,4 @@ inline void MessageContext::set_message(const std::string& message)
     set_message(message.c_str());
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_UTILITY_MESSAGECONTEXT_H
+}   // namespace renderer

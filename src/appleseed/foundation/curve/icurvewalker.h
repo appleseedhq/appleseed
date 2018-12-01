@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CURVE_ICURVEWALKER_H
-#define APPLESEED_FOUNDATION_CURVE_ICURVEWALKER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -77,6 +76,4 @@ class APPLESEED_DLLSYMBOL ICurveWalker
     virtual Color3f get_vertex_color(const size_t i) const = 0;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CURVE_ICURVEWALKER_H
+}   // namespace foundation

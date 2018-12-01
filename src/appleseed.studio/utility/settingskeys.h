@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_SETTINGSKEYS_H
-#define APPLESEED_STUDIO_UTILITY_SETTINGSKEYS_H
+#pragma once
 
 // Defines are sometimes more convenient than C++ constants...
 
@@ -52,5 +51,3 @@
 
 #define SETTINGS_RENDER_REGION_TRIGGERS_RENDERING   "ui.render_region.triggers_rendering"
 #define SETTINGS_WATCH_FILE_CHANGES                 "ui.watch_file_changes"
-
-#endif  // !APPLESEED_STUDIO_UTILITY_SETTINGSKEYS_H

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_BITMASK_H
-#define APPLESEED_FOUNDATION_UTILITY_BITMASK_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -188,6 +187,4 @@ inline size_t BitMask2::get_memory_size() const
     return sizeof(*this) + m_size;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_BITMASK_H
+}   // namespace foundation

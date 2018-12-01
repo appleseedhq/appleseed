@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITORCONTEXT_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITORCONTEXT_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -88,7 +87,5 @@ inline EntityEditorContext::EntityEditorContext(
 {
 }
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITORCONTEXT_H
+}   // namespace studio
+}   // namespace appleseed

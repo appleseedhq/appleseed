@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECT_H
-#define APPLESEED_RENDERER_MODELING_PROJECT_PROJECT_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/aov/aovfactoryregistrar.h"
@@ -340,6 +339,4 @@ inline const EntityTraits<Volume>::FactoryRegistrarType& Project::get_factory_re
     return m_volume_factory_registrar;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_PROJECT_H
+}   // namespace renderer

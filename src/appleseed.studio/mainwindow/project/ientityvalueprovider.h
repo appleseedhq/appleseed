@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_IENTITYVALUEPROVIDER_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_IENTITYVALUEPROVIDER_H
+#pragma once
 
 // Forward declarations.
 namespace foundation { class Dictionary; }
@@ -41,7 +40,5 @@ class IEntityValueProvider
     virtual foundation::Dictionary get_values() const = 0;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_IENTITYVALUEPROVIDER_H
+}   // namespace studio
+}   // namespace appleseed

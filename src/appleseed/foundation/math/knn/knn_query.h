@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_KNN_KNN_QUERY_H
-#define APPLESEED_FOUNDATION_MATH_KNN_KNN_QUERY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -489,7 +488,5 @@ inline void Query<T, N>::run(
 
 #endif
 
-}       // namespace knn
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_KNN_KNN_QUERY_H
+}   // namespace knn
+}   // namespace foundation

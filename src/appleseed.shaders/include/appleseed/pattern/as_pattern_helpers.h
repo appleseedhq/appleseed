@@ -38,8 +38,7 @@
  *
  ************************************************************************/
 
-#ifndef AS_PATTERN_HELPERS_H
-#define AS_PATTERN_HELPERS_H
+#pragma once
 
 #include "appleseed/math/as_math_helpers.h"
 
@@ -181,5 +180,3 @@ float smootheststep(float edge0, float edge1, float x)
     return tmp * tmp * tmp * tmp *
             (tmp * (tmp * (-20.0 * tmp + 70.0) - 84.0) + 35.0);
 }
-
-#endif // !AS_PATTERN_HELPERS_H

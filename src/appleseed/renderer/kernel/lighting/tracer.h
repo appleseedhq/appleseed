@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_TRACER_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_TRACER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -543,6 +542,4 @@ inline const ShadingPoint& Tracer::trace_between_full(
             nullptr);
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_TRACER_H
+}   // namespace renderer

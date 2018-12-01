@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECT_EVENTCOUNTERS_H
-#define APPLESEED_RENDERER_MODELING_PROJECT_EVENTCOUNTERS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -122,6 +121,4 @@ inline bool EventCounters::has_errors() const
     return m_error_count > 0;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_EVENTCOUNTERS_H
+}   // namespace renderer

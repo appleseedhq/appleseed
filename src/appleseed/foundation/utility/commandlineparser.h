@@ -31,8 +31,7 @@
 // The design of this component was inspired by Chris Sells (http://www.sellsbrothers.com/tools/).
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_H
-#define APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_H
+#pragma once
 
 // Interface headers.
 #include "foundation/utility/commandlineparser/commandlineparser.h"
@@ -40,5 +39,3 @@
 #include "foundation/utility/commandlineparser/messagelist.h"
 #include "foundation/utility/commandlineparser/parseresults.h"
 #include "foundation/utility/commandlineparser/valueoptionhandler.h"
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_H

@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEREADER_H
-#define APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEREADER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/curve/icurvefilereader.h"
@@ -66,6 +65,4 @@ class APPLESEED_DLLSYMBOL GenericCurveFileReader
     Impl* impl;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEREADER_H
+}   // namespace foundation

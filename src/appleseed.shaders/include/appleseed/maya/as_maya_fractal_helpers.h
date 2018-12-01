@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef AS_MAYA_FRACTAL_HELPERS_H
-#define AS_MAYA_FRACTAL_HELPERS_H
+#pragma once
 
 #include "appleseed/fractal/as_noise_helpers.h"
 #include "appleseed/math/as_math_complex.h"
@@ -924,5 +923,3 @@ float mandelbrot_exterior_coloring(
 
     return mapping + binary_decomposition;
 }
-
-#endif // !AS_MAYA_FRACTAL_HELPERS_H

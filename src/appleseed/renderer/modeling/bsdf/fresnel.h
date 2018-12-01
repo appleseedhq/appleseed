@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_FRESNEL_H
-#define APPLESEED_RENDERER_MODELING_BSDF_FRESNEL_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -173,6 +172,4 @@ class FresnelConductorFun
     const float     m_reflectance_multiplier;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_FRESNEL_H
+}   // namespace renderer

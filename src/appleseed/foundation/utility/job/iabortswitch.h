@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_JOB_IABORTSWITCH_H
-#define APPLESEED_FOUNDATION_UTILITY_JOB_IABORTSWITCH_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -63,6 +62,4 @@ inline bool is_aborted(IAbortSwitch* abort_switch)
     return abort_switch && abort_switch->is_aborted();
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_JOB_IABORTSWITCH_H
+}   // namespace foundation

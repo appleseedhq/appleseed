@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_SPECULARHELPER_H
-#define APPLESEED_RENDERER_MODELING_BSDF_SPECULARHELPER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -79,6 +78,4 @@ class SpecularBRDFHelper
     }
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_SPECULARHELPER_H
+}   // namespace renderer

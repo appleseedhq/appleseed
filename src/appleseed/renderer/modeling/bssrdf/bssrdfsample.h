@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_BSSRDFSAMPLE_H
-#define APPLESEED_RENDERER_MODELING_BSSRDF_BSSRDFSAMPLE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -57,6 +56,4 @@ class BSSRDFSample
     const void*     m_brdf_data;        // input values for the BRDF
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_BSSRDFSAMPLE_H
+}   // namespace renderer

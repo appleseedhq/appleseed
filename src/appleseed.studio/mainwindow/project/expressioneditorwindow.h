@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_EXPRESSIONEDITORWINDOW_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_EXPRESSIONEDITORWINDOW_H
+#pragma once
 
 // appleseed.studio headers.
 #include "utility/windowbase.h"
@@ -102,7 +101,5 @@ class ExpressionEditorWindow
     bool                            m_show_examples;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_EXPRESSIONEDITORWINDOW_H
+}   // namespace studio
+}   // namespace appleseed

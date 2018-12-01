@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_SCENE_H
-#define APPLESEED_RENDERER_API_SCENE_H
+#pragma once
 
 // API headers.
 #include "renderer/modeling/scene/archiveassembly.h"
@@ -45,5 +44,3 @@
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/scene/textureinstancetraits.h"
 #include "renderer/modeling/scene/visibilityflags.h"
-
-#endif  // !APPLESEED_RENDERER_API_SCENE_H

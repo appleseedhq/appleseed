@@ -25,8 +25,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef AS_TEXTURE_HELPERS_H
-#define AS_TEXTURE_HELPERS_H
+#pragma once
 
 #include "appleseed/transform/as_transform_helpers.h"
 
@@ -152,5 +151,3 @@ color get_projection_color(
         "missingalpha", 0.0,
         "alpha", alpha);
 }
-
-#endif // !AS_TEXTURE_HELPERS_H

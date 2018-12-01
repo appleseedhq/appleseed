@@ -28,8 +28,7 @@
 
 // Ref: $MAYA_LOCATION/docs/Nodes/layerTexture.html
 
-#ifndef AS_MAYA_LAYER_HELPERS_H
-#define AS_MAYA_LAYER_HELPERS_H
+#pragma once
 
 #include "appleseed/math/as_math_helpers.h"
 #include "appleseed/maya/as_maya_helpers.h"
@@ -157,5 +156,3 @@ color maya_blend_texture_layers(
     }
     return output_color;
 }
-
-#endif // !AS_MAYA_LAYER_HELPERS_H

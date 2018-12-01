@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_VARIATIONTRACKER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_VARIATIONTRACKER_H
+#pragma once
 
 // Standard headers.
 #include <algorithm>
@@ -90,6 +89,4 @@ class VariationTracker
     float   m_max;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_VARIATIONTRACKER_H
+}   // namespace renderer

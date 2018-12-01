@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_SAH_H
-#define APPLESEED_FOUNDATION_MATH_SAH_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -564,6 +563,4 @@ void ApproxSAHFunction<T, BinCount>::visit(
     }
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_SAH_H
+}   // namespace foundation

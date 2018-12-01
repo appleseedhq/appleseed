@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_LIGHTPATHSWIDGET_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_LIGHTPATHSWIDGET_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/renderclipboardhandler.h"
@@ -119,7 +118,5 @@ class LightPathsWidget
     void dump_selected_light_path() const;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_LIGHTPATHSWIDGET_H
+}   // namespace studio
+}   // namespace appleseed

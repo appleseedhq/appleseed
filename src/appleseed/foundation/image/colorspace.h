@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_COLORSPACE_H
-#define APPLESEED_FOUNDATION_IMAGE_COLORSPACE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -1166,6 +1165,4 @@ void spectrum_to_spectrum(
         delete[] working_storage;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_COLORSPACE_H
+}   // namespace foundation

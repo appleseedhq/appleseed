@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONOUTPUT_H
-#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONOUTPUT_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/pythonconsole/zoomableplaintextedit.h"
@@ -52,5 +51,3 @@ class PythonOutput
 
 }   // namespace studio
 }   // namespace appleseed
-
-#endif // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONOUTPUT_H

@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_RANDOMWALKBSSRDF_H
-#define APPLESEED_RENDERER_MODELING_BSSRDF_RANDOMWALKBSSRDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -105,6 +104,4 @@ class APPLESEED_DLLSYMBOL RandomwalkBSSRDFFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_RANDOMWALKBSSRDF_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_TESTUTILS_H
-#define APPLESEED_RENDERER_UTILITY_TESTUTILS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -178,6 +177,4 @@ class BoundingBoxObject
     GAABB3                          m_bbox;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_UTILITY_TESTUTILS_H
+}   // namespace renderer

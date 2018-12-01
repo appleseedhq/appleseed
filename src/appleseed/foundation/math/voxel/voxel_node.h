@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_VOXEL_VOXEL_NODE_H
-#define APPLESEED_FOUNDATION_MATH_VOXEL_VOXEL_NODE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -201,7 +200,5 @@ inline T Node<T>::get_split_abs() const
     return m_abscissa;
 }
 
-}       // namespace voxel
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_VOXEL_VOXEL_NODE_H
+}   // namespace voxel
+}   // namespace foundation

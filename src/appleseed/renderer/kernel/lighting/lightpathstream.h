@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTPATHSTREAM_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTPATHSTREAM_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -163,6 +162,4 @@ class LightPathStream
     const HitReflectorData& get_reflector_data(const size_t event_index) const;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTPATHSTREAM_H
+}   // namespace renderer

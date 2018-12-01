@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_LIGHT_MAXSPOTLIGHT_H
-#define APPLESEED_RENDERER_MODELING_LIGHT_MAXSPOTLIGHT_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/light/ilightfactory.h"
@@ -74,6 +73,4 @@ class APPLESEED_DLLSYMBOL MaxSpotLightFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_LIGHT_MAXSPOTLIGHT_H
+}   // namespace renderer

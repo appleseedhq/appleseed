@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_LAMBERTIANBRDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_LAMBERTIANBRDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -88,6 +87,4 @@ class APPLESEED_DLLSYMBOL LambertianBRDFFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_LAMBERTIANBRDF_H
+}   // namespace renderer

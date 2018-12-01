@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_BSDFFACTORYREGISTRAR_H
-#define APPLESEED_RENDERER_MODELING_BSDF_BSDFFACTORYREGISTRAR_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entityfactoryregistrar.h"
@@ -89,6 +88,4 @@ class APPLESEED_DLLSYMBOL BSDFFactoryRegistrar
     void register_factory(foundation::auto_release_ptr<FactoryType> factory);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_BSDFFACTORYREGISTRAR_H
+}   // namespace renderer

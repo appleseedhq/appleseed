@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_LATLONGMAPENVIRONMENTEDF_H
-#define APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_LATLONGMAPENVIRONMENTEDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/environmentedf/ienvironmentedffactory.h"
@@ -75,6 +74,4 @@ class APPLESEED_DLLSYMBOL LatLongMapEnvironmentEDFFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_LATLONGMAPENVIRONMENTEDF_H
+}   // namespace renderer

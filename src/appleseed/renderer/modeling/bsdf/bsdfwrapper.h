@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_BSDFWRAPPER_H
-#define APPLESEED_RENDERER_MODELING_BSDF_BSDFWRAPPER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -252,6 +251,4 @@ bool BSDFWrapper<BSDFImpl, Cull>::is_culled(
     return BSDFImpl::get_type() == BSDF::Reflective ? cos_n < 0.0f : cos_n > 0.0f;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_BSDFWRAPPER_H
+}   // namespace renderer

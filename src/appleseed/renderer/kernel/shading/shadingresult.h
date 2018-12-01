@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRESULT_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRESULT_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovsettings.h"
@@ -119,6 +118,4 @@ inline void ShadingResult::set_main_to_opaque_pink()
     m_main = foundation::Color4f(1.0f, 0.0f, 1.0f, 1.0f);
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRESULT_H
+}   // namespace renderer

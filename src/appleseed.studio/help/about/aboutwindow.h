@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_HELP_ABOUT_ABOUTWINDOW_H
-#define APPLESEED_STUDIO_HELP_ABOUT_ABOUTWINDOW_H
+#pragma once
 
 // appleseed.studio headers.
 #include "utility/windowbase.h"
@@ -64,7 +63,5 @@ class AboutWindow
     void set_third_party_libraries_information();
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_HELP_ABOUT_ABOUTWINDOW_H
+}   // namespace studio
+}   // namespace appleseed

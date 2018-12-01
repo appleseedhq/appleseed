@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_SEARCHPATHS_H
-#define APPLESEED_FOUNDATION_UTILITY_SEARCHPATHS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/api/apistring.h"
@@ -215,6 +214,4 @@ inline APIString SearchPaths::to_string_reversed(const char separator) const
     return do_to_string(separator, true);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_SEARCHPATHS_H
+}   // namespace foundation

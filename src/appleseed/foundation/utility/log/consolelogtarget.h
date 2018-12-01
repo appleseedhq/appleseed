@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_LOG_CONSOLELOGTARGET_H
-#define APPLESEED_FOUNDATION_UTILITY_LOG_CONSOLELOGTARGET_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -48,6 +47,4 @@ namespace foundation
 
 APPLESEED_DLLSYMBOL ILogTarget* create_console_log_target(std::FILE* file);
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_LOG_CONSOLELOGTARGET_H
+}   // namespace foundation

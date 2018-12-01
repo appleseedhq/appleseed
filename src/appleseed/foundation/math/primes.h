@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_PRIMES_H
-#define APPLESEED_FOUNDATION_MATH_PRIMES_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -46,6 +45,4 @@ namespace foundation
 const size_t PrimeTableSize = 1000;
 APPLESEED_DLLSYMBOL extern const size_t Primes[PrimeTableSize];
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_PRIMES_H
+}   // namespace foundation

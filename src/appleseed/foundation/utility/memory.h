@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_MEMORY_H
-#define APPLESEED_FOUNDATION_UTILITY_MEMORY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
@@ -295,6 +294,4 @@ inline size_t MemoryWriter::offset() const
     return m_ptr - m_base;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_MEMORY_H
+}   // namespace foundation

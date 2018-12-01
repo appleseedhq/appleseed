@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYITEMBASE_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYITEMBASE_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditorcontext.h"
@@ -128,7 +127,5 @@ void EntityItemBase<Entity>::update()
     set_title(QString::fromAscii(m_entity->get_name()));
 }
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYITEMBASE_H
+}   // namespace studio
+}   // namespace appleseed

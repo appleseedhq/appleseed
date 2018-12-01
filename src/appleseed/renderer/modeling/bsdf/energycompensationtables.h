@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_ENERGYCOMPENSATIONTABLES_H
-#define APPLESEED_RENDERER_MODELING_BSDF_ENERGYCOMPENSATIONTABLES_H
+#pragma once
 
 namespace renderer
 {
@@ -40,6 +39,4 @@ extern const float g_glass_beckmann_rcp_eta_albedo_table[4352];
 extern const float g_glass_ggx_albedo_table[4352];
 extern const float g_glass_ggx_rcp_eta_albedo_table[4352];
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_ENERGYCOMPENSATIONTABLES_H
+}   // namespace renderer

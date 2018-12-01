@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_OBJECT_OBJECT_H
-#define APPLESEED_RENDERER_MODELING_OBJECT_OBJECT_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -123,6 +122,4 @@ inline const Source* Object::get_alpha_map() const
     return m_alpha_map;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_OBJECT_H
+}   // namespace renderer

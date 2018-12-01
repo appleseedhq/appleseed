@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditor.h"
@@ -79,7 +78,5 @@ class AttributeEditor
     std::unique_ptr<EntityEditor> m_entity_editor;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H
+}   // namespace studio
+}   // namespace appleseed

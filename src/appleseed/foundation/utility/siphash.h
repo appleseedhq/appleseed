@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_SIPHASH_H
-#define APPLESEED_FOUNDATION_UTILITY_SIPHASH_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -94,6 +93,4 @@ inline uint64 siphash24(const uint64 a, const uint64 b)
     return siphash24(&pair, sizeof(pair));
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_SIPHASH_H
+}   // namespace foundation

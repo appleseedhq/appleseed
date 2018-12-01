@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_INTERSECTIONSETTINGS_H
-#define APPLESEED_RENDERER_KERNEL_INTERSECTION_INTERSECTIONSETTINGS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -150,6 +149,4 @@ const size_t EmbreeSceneAccessCacheWays = 2;
 // be used when the triangle model is set to Moller-Trumbore (MT).
 #define RENDERER_ADAPTIVE_OFFSET
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_INTERSECTIONSETTINGS_H
+}   // namespace renderer

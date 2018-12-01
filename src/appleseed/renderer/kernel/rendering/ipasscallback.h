@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_IPASSCALLBACK_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_IPASSCALLBACK_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
@@ -67,6 +66,4 @@ class APPLESEED_DLLSYMBOL IPassCallback
         foundation::IAbortSwitch&   abort_switch) = 0;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_IPASSCALLBACK_H
+}   // namespace renderer

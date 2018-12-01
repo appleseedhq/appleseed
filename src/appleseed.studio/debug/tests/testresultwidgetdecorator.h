@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_DEBUG_TESTS_TESTRESULTWIDGETDECORATOR_H
-#define APPLESEED_STUDIO_DEBUG_TESTS_TESTRESULTWIDGETDECORATOR_H
+#pragma once
 
 // Qt headers.
 #include <QObject>
@@ -57,7 +56,5 @@ class TestResultWidgetDecorator
     QLabel* m_widget;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_DEBUG_TESTS_TESTRESULTWIDGETDECORATOR_H
+}   // namespace studio
+}   // namespace appleseed

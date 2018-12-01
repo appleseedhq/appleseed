@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_TIMINGRESULT_H
-#define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_TIMINGRESULT_H
+#pragma once
 
 // Standard headers.
 #include <cstddef>
@@ -49,6 +48,4 @@ class TimingResult
     double  m_ticks;                // average running time, in timer ticks
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_BENCHMARK_TIMINGRESULT_H
+}   // namespace foundation

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_SHARED_APPLICATION_SUPERLOGGER_H
-#define APPLESEED_SHARED_APPLICATION_SUPERLOGGER_H
+#pragma once
 
 // appleseed.shared headers.
 #include "dllsymbol.h"
@@ -71,7 +70,5 @@ class SHAREDDLL SuperLogger
     foundation::ILogTarget* m_log_target;
 };
 
-}       // namespace shared
-}       // namespace appleseed
-
-#endif  // !APPLESEED_SHARED_APPLICATION_SUPERLOGGER_H
+}   // namespace shared
+}   // namespace appleseed

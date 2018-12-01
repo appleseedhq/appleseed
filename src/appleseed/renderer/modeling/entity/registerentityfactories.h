@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENTITY_REGISTERENTITYFACTORIES_H
-#define APPLESEED_RENDERER_MODELING_ENTITY_REGISTERENTITYFACTORIES_H
+#pragma once
 
 // Interface header.
 #include "entityfactoryregistrar.h"
@@ -129,6 +128,4 @@ void EntityFactoryRegistrar::register_factories_from_plugins(
     }
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_ENTITY_REGISTERENTITYFACTORIES_H
+}   // namespace renderer

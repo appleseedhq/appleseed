@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_CURVETREE_H
-#define APPLESEED_RENDERER_KERNEL_INTERSECTION_CURVETREE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -378,6 +377,4 @@ inline bool CurveLeafProbeVisitor::visit(
     return true;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_CURVETREE_H
+}   // namespace renderer

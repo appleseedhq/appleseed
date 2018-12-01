@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_LOG_LOGFORMATTER_H
-#define APPLESEED_FOUNDATION_UTILITY_LOG_LOGFORMATTER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -62,6 +61,4 @@ class APPLESEED_DLLSYMBOL SaveLogFormatterConfig
     Impl* impl;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_LOG_LOGFORMATTER_H
+}   // namespace foundation

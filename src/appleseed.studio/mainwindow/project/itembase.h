@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMBASE_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMBASE_H
+#pragma once
 
 // appleseed.studio headers.
 #include "utility/miscellaneous.h"
@@ -123,10 +122,8 @@ QList<Item*> ItemBase::get_action_items()
     return make_qlist(static_cast<Item*>(this));
 }
 
-}       // namespace studio
-}       // namespace appleseed
+}   // namespace studio
+}   // namespace appleseed
 
 Q_DECLARE_METATYPE(QList<appleseed::studio::ItemBase*>);
 Q_DECLARE_METATYPE(QList<const appleseed::studio::ItemBase*>);
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMBASE_H

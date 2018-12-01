@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_RNG_DISTRIBUTION_H
-#define APPLESEED_FOUNDATION_MATH_RNG_DISTRIBUTION_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
@@ -351,6 +350,4 @@ inline VectorType rand_vector3(RNG& rng)
     return v;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_RNG_DISTRIBUTION_H
+}   // namespace foundation

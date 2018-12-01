@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTREADER_H
-#define APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTREADER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/api/apiarray.h"
@@ -68,6 +67,4 @@ class APPLESEED_DLLSYMBOL MeshObjectReader
         MeshObjectArray&                objects);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTREADER_H
+}   // namespace renderer

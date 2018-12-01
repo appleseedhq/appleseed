@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTION_H
-#define APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTION_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -109,6 +108,4 @@ inline void Exception::set_what(const char* what)
     copy_string(m_what, what, sizeof(m_what));
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTION_H
+}   // namespace foundation

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_VOLUME_VOLUME_H
-#define APPLESEED_RENDERER_KERNEL_VOLUME_VOLUME_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/voxelgrid.h"
@@ -83,6 +82,4 @@ void write_voxel_grid(
     const char*         filename,
     const VoxelGrid&    grid);
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_VOLUME_VOLUME_H
+}   // namespace renderer

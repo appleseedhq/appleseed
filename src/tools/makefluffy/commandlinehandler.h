@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_MAKEFLUFFY_COMMANDLINEHANDLER_H
-#define APPLESEED_MAKEFLUFFY_COMMANDLINEHANDLER_H
+#pragma once
 
 // appleseed.shared headers.
 #include "application/commandlinehandlerbase.h"
@@ -74,7 +73,5 @@ class CommandLineHandler
         shared::SuperLogger&    logger) const override;
 };
 
-}       // namespace makefluffy
-}       // namespace appleseed
-
-#endif  // !APPLESEED_MAKEFLUFFY_COMMANDLINEHANDLER_H
+}   // namespace makefluffy
+}   // namespace appleseed

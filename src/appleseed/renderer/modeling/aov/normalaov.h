@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_AOV_NORMALAOV_H
-#define APPLESEED_RENDERER_MODELING_AOV_NORMALAOV_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/aov/iaovfactory.h"
@@ -72,6 +71,4 @@ class APPLESEED_DLLSYMBOL NormalAOVFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_AOV_NORMALAOV_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_COLOR_H
-#define APPLESEED_FOUNDATION_IMAGE_COLOR_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/fp.h"
@@ -1184,6 +1183,4 @@ Color<T, 3> integer_to_color3(const Int i)
         static_cast<T>(z) * (1.0f / 4294967295.0f));
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_COLOR_H
+}   // namespace foundation

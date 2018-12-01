@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef AS_COLOR_BLEND_MODES_H
-#define AS_COLOR_BLEND_MODES_H
+#pragma once
 
 #define NCOMPS  3
 
@@ -544,5 +543,3 @@ color composite_color_rgba(
     }
     return rgb;
 }
-
-#endif // !AS_COLOR_BLEND_MODES_H

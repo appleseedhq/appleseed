@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECT_CONFIGURATION_H
-#define APPLESEED_RENDERER_MODELING_PROJECT_CONFIGURATION_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
@@ -123,6 +122,4 @@ class APPLESEED_DLLSYMBOL BaseConfigurationFactory
     static bool is_base_configuration(const char* name);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_CONFIGURATION_H
+}   // namespace renderer

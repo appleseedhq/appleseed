@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_MATERIAL_GENERICMATERIAL_H
-#define APPLESEED_RENDERER_MODELING_MATERIAL_GENERICMATERIAL_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/material/imaterialfactory.h"
@@ -75,6 +74,4 @@ class APPLESEED_DLLSYMBOL GenericMaterialFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_GENERICMATERIAL_H
+}   // namespace renderer

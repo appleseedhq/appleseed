@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_SPLINE_H
-#define APPLESEED_FOUNDATION_MATH_SPLINE_H
+#pragma once
 
 // Standard headers.
 #include <algorithm>
@@ -211,6 +210,4 @@ void cubic_hermite_spline(
     }
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_SPLINE_H
+}   // namespace foundation

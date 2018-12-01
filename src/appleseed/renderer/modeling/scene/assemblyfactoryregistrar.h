@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SCENE_ASSEMBLYFACTORYREGISTRAR_H
-#define APPLESEED_RENDERER_MODELING_SCENE_ASSEMBLYFACTORYREGISTRAR_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entityfactoryregistrar.h"
@@ -88,6 +87,4 @@ class APPLESEED_DLLSYMBOL AssemblyFactoryRegistrar
     void register_factory(foundation::auto_release_ptr<FactoryType> factory);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SCENE_ASSEMBLYFACTORYREGISTRAR_H
+}   // namespace renderer

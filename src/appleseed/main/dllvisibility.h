@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_MAIN_DLLVISIBILITY_H
-#define APPLESEED_MAIN_DLLVISIBILITY_H
+#pragma once
 
 #ifdef __GNUC__
     #define APPLESEED_DLL_EXPORT __attribute__((visibility("default")))
@@ -42,5 +41,3 @@
         #define APPLESEED_DLL_IMPORT
     #endif
 #endif
-
-#endif  // !APPLESEED_MAIN_DLLVISIBILITY_H

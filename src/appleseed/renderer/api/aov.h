@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_AOV_H
-#define APPLESEED_RENDERER_API_AOV_H
+#pragma once
 
 // API headers.
 #include "renderer/kernel/aov/imagestack.h"
@@ -48,5 +47,3 @@
 #include "renderer/modeling/aov/pixelvariationaov.h"
 #include "renderer/modeling/aov/positionaov.h"
 #include "renderer/modeling/aov/uvaov.h"
-
-#endif  // !APPLESEED_RENDERER_API_AOV_H

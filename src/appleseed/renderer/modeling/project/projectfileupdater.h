@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEUPDATER_H
-#define APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEUPDATER_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -65,6 +64,4 @@ class APPLESEED_DLLSYMBOL ProjectFileUpdater
 
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEUPDATER_H
+}   // namespace renderer

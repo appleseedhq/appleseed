@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_DUMPMETADATA_COMMANDLINEHANDLER_H
-#define APPLESEED_DUMPMETADATA_COMMANDLINEHANDLER_H
+#pragma once
 
 // appleseed.shared headers.
 #include "application/commandlinehandlerbase.h"
@@ -64,7 +63,5 @@ class CommandLineHandler
         shared::SuperLogger&    logger) const override;
 };
 
-}       // namespace dumpmetadata
-}       // namespace appleseed
-
-#endif  // !APPLESEED_DUMPMETADATA_COMMANDLINEHANDLER_H
+}   // namespace dumpmetadata
+}   // namespace appleseed

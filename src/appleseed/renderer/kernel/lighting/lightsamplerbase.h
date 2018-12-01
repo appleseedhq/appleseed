@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTSAMPLERBASE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTSAMPLERBASE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/lightsample.h"
@@ -162,7 +161,4 @@ inline size_t LightSamplerBase::get_non_physical_light_count() const
     return m_non_physical_light_count;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTSAMPLERBASE_H
-
+}   // namespace renderer

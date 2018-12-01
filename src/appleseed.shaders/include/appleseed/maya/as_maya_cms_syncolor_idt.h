@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef AS_MAYA_CMS_SYNCOLOR_IDT_H
-#define AS_MAYA_CMS_SYNCOLOR_IDT_H
+#pragma once
 
 #include "appleseed/color/as_colorimetry.h"
 #include "appleseed/color/as_transfer_functions.h"
@@ -537,5 +536,3 @@ color transform_colorspace_to_workingspace(
     }
     return C;
 }
-
-#endif // !AS_MAYA_CMS_SYNCOLOR_IDT_H

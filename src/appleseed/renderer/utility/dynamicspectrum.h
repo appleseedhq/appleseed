@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_DYNAMICSPECTRUM_H
-#define APPLESEED_RENDERER_UTILITY_DYNAMICSPECTRUM_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -1329,6 +1328,4 @@ class PoisonImpl<renderer::DynamicSpectrum<T, N>>
     }
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_RENDERER_UTILITY_DYNAMICSPECTRUM_H
+}   // namespace foundation

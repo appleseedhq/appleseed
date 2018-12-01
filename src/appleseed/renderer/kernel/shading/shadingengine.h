@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGENGINE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -136,6 +135,4 @@ inline void ShadingEngine::shade(
     }
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGENGINE_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTMANAGER_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTMANAGER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
@@ -141,7 +140,5 @@ class ProjectManager
         const renderer::ProjectFileWriter::Options  options);
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTMANAGER_H
+}   // namespace studio
+}   // namespace appleseed

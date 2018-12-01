@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_DEBUG_DEBUGSAMPLERENDERER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_DEBUG_DEBUGSAMPLERENDERER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/isamplerenderer.h"
@@ -57,6 +56,4 @@ class DebugSampleRendererFactory
     ISampleRenderer* create(const size_t thread_index) override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_DEBUG_DEBUGSAMPLERENDERER_H
+}   // namespace renderer

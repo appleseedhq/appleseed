@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_BUFFEREDFILE_H
-#define APPLESEED_FOUNDATION_UTILITY_BUFFEREDFILE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -574,6 +573,4 @@ inline size_t PassthroughReaderAdapter::read(
     return m_file.read(outbuf, size);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_BUFFEREDFILE_H
+}   // namespace foundation

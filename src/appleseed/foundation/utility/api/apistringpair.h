@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_API_APISTRINGPAIR_H
-#define APPLESEED_FOUNDATION_UTILITY_API_APISTRINGPAIR_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/api/apistring.h"
@@ -58,6 +57,4 @@ class APPLESEED_DLLSYMBOL APIStringPair
     bool operator!=(const APIStringPair& rhs) const;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_API_APISTRINGPAIR_H
+}   // namespace foundation

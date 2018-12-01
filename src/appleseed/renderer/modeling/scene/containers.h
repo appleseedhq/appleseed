@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SCENE_CONTAINERS_H
-#define APPLESEED_RENDERER_MODELING_SCENE_CONTAINERS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
@@ -259,6 +258,4 @@ inline std::string make_unique_name(
     return prefix + foundation::to_string(max_number + 1);
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SCENE_CONTAINERS_H
+}   // namespace renderer

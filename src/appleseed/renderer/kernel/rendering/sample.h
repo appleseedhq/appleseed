@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_SAMPLE_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_SAMPLE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -44,6 +43,4 @@ class Sample
     foundation::Color4f     m_color;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_SAMPLE_H
+}   // namespace renderer

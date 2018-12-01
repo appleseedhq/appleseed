@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_ASSEMBLYTREE_H
-#define APPLESEED_RENDERER_KERNEL_INTERSECTION_ASSEMBLYTREE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/curvetree.h"
@@ -360,6 +359,4 @@ inline AssemblyLeafProbeVisitor::AssemblyLeafProbeVisitor(
 {
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_ASSEMBLYTREE_H
+}   // namespace renderer

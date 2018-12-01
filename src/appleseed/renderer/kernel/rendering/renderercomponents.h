@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_RENDERERCOMPONENTS_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_RENDERERCOMPONENTS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/ilightingengine.h"
@@ -134,6 +133,4 @@ inline IFrameRenderer& RendererComponents::get_frame_renderer()
     return *m_frame_renderer.get();
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_RENDERERCOMPONENTS_H
+}   // namespace renderer

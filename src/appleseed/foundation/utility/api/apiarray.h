@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_API_APIARRAY_H
-#define APPLESEED_FOUNDATION_UTILITY_API_APIARRAY_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -220,6 +219,4 @@ U array_vector(const V& v)
     return u;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_API_APIARRAY_H
+}   // namespace foundation

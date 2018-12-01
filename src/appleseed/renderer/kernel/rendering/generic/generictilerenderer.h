@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICTILERENDERER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICTILERENDERER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/itilerenderer.h"
@@ -77,6 +76,4 @@ class GenericTileRendererFactory
     const ParamArray                        m_params;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICTILERENDERER_H
+}   // namespace renderer

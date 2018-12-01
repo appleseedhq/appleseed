@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SPECTRUM_WAVELENGTHS_H
-#define APPLESEED_RENDERER_MODELING_SPECTRUM_WAVELENGTHS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/regularspectrum.h"
@@ -72,6 +71,4 @@ APPLESEED_DLLSYMBOL void spectral_values_to_spectrum(
     const float                         input_spectrum[],
     foundation::RegularSpectrum31f&     output_spectrum);
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SPECTRUM_WAVELENGTHS_H
+}   // namespace renderer

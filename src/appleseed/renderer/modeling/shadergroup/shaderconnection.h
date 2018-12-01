@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERCONNECTION_H
-#define APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERCONNECTION_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
@@ -88,6 +87,4 @@ class APPLESEED_DLLSYMBOL ShaderConnection
     bool add(OSLShadingSystem& shading_system);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERCONNECTION_H
+}   // namespace renderer

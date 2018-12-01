@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_ANALYSIS_H
-#define APPLESEED_FOUNDATION_IMAGE_ANALYSIS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -68,6 +67,4 @@ struct ExceptionIncompatibleImages
 // Throws a foundation::ExceptionIncompatibleImages exception if the images are not compatible.
 APPLESEED_DLLSYMBOL double compute_rms_deviation(const Image& image1, const Image& image2);
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_ANALYSIS_H
+}   // namespace foundation

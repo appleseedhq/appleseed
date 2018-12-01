@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_AOV_IMAGESTACK_H
-#define APPLESEED_RENDERER_KERNEL_AOV_IMAGESTACK_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -91,6 +90,4 @@ class APPLESEED_DLLSYMBOL ImageStack
     Impl* impl;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_AOV_IMAGESTACK_H
+}   // namespace renderer

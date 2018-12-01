@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_IOSTREAMOP_H
-#define APPLESEED_RENDERER_UTILITY_IOSTREAMOP_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/utility/dynamicspectrum.h"
@@ -61,6 +60,4 @@ std::ostream& operator<<(std::ostream& s, const DynamicSpectrum<T, N>& spectrum)
     return foundation::impl::write_sequence(s, spectrum, spectrum.size());
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_UTILITY_IOSTREAMOP_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_TESTUTILS_H
-#define APPLESEED_FOUNDATION_UTILITY_TESTUTILS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -77,6 +76,4 @@ void write_point_cloud_image(
     const std::string&              image_path,
     const std::vector<Vector2d>&    points);
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_TESTUTILS_H
+}   // namespace foundation

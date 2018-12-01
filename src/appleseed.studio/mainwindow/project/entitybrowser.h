@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYBROWSER_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYBROWSER_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditor.h"
@@ -143,7 +142,5 @@ class EntityBrowser<renderer::Frame>
     const renderer::Frame& m_frame;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYBROWSER_H
+}   // namespace studio
+}   // namespace appleseed

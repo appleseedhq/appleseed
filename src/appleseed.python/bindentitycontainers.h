@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PYTHON_BINDENTITYCONTAINERS_H
-#define APPLESEED_PYTHON_BINDENTITYCONTAINERS_H
+#pragma once
 
 // appleseed.python headers.
 #include "dict2dict.h"
@@ -193,5 +192,3 @@ void bind_typed_entity_map(const char* name)
         .def("keys", &detail::typed_entity_map_get_keys<T>)
         .def("values", &detail::typed_entity_map_get_values<T>);
 }
-
-#endif  // !APPLESEED_PYTHON_BINDENTITYCONTAINERS_H

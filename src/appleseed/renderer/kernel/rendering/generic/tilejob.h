@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_TILEJOB_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_TILEJOB_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -84,6 +83,4 @@ class TileJob
     foundation::IAbortSwitch&       m_abort_switch;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_TILEJOB_H
+}   // namespace renderer

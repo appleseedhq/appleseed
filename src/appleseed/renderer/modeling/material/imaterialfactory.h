@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_MATERIAL_IMATERIALFACTORY_H
-#define APPLESEED_RENDERER_MODELING_MATERIAL_IMATERIALFACTORY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
@@ -75,6 +74,4 @@ class APPLESEED_DLLSYMBOL IMaterialFactory
     static void add_displacement_metadata(foundation::DictionaryArray& metadata);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_IMATERIALFACTORY_H
+}   // namespace renderer

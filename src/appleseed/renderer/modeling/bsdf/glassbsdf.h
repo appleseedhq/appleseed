@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_GLASSBSDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_GLASSBSDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -115,6 +114,4 @@ class APPLESEED_DLLSYMBOL GlassBSDFFactory
 // Used in Renderer_Modeling_BSDF_EnergyCompensation unit test.
 void write_glass_directional_albedo_tables(const char* directory);
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_GLASSBSDF_H
+}   // namespace renderer

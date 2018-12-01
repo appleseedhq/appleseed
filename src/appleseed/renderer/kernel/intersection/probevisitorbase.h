@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_PROBEVISITORBASE_H
-#define APPLESEED_RENDERER_KERNEL_INTERSECTION_PROBEVISITORBASE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -69,6 +68,4 @@ inline bool ProbeVisitorBase::hit() const
     return m_hit;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_PROBEVISITORBASE_H
+}   // namespace renderer

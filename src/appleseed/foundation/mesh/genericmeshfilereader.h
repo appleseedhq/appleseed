@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MESH_GENERICMESHFILEREADER_H
-#define APPLESEED_FOUNDATION_MESH_GENERICMESHFILEREADER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/mesh/imeshfilereader.h"
@@ -68,6 +67,4 @@ class APPLESEED_DLLSYMBOL GenericMeshFileReader
     Impl* impl;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MESH_GENERICMESHFILEREADER_H
+}   // namespace foundation

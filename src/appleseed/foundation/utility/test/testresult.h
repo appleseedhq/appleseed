@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_TEST_TESTRESULT_H
-#define APPLESEED_FOUNDATION_UTILITY_TEST_TESTRESULT_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -79,6 +78,4 @@ class APPLESEED_DLLSYMBOL TestResult
     size_t  m_assertion_failure_count;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_TEST_TESTRESULT_H
+}   // namespace foundation

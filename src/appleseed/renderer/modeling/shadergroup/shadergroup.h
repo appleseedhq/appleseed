@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERGROUP_H
-#define APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERGROUP_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/connectableentity.h"
@@ -252,6 +251,4 @@ inline bool ShaderGroup::uses_dPdtime() const
     return (m_flags & UsesdPdTime) != 0;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERGROUP_H
+}   // namespace renderer

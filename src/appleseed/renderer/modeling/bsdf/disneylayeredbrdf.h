@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_DISNEYLAYEREDBRDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_DISNEYLAYEREDBRDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -118,6 +117,4 @@ class DisneyLayeredBRDF
     explicit DisneyLayeredBRDF(const DisneyMaterial* parent);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_DISNEYLAYEREDBRDF_H
+}   // namespace renderer

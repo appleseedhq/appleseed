@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTBUILDER_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTBUILDER_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
@@ -381,7 +380,5 @@ inline foundation::auto_release_ptr<renderer::ShaderGroup> ProjectBuilder::creat
     return renderer::ShaderGroupFactory::create(name.c_str(), clean_values);
 }
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTBUILDER_H
+}   // namespace studio
+}   // namespace appleseed

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_STOCHASTICCAST_H
-#define APPLESEED_RENDERER_UTILITY_STOCHASTICCAST_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -66,6 +65,4 @@ inline Int stochastic_cast(SamplingContext& sampling_context, const Float n)
     return i;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_UTILITY_STOCHASTICCAST_H
+}   // namespace renderer

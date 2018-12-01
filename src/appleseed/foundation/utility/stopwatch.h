@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_STOPWATCH_H
-#define APPLESEED_FOUNDATION_UTILITY_STOPWATCH_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -229,6 +228,4 @@ uint64 Stopwatch<Timer>::measure_overhead(const size_t measures)
     return measured_overhead;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_STOPWATCH_H
+}   // namespace foundation

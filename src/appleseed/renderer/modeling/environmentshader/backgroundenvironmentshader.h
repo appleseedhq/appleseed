@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_BACKGROUNDENVIRONMENTSHADER_H
-#define APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_BACKGROUNDENVIRONMENTSHADER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/environmentshader/ienvironmentshaderfactory.h"
@@ -75,6 +74,4 @@ class APPLESEED_DLLSYMBOL BackgroundEnvironmentShaderFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_BACKGROUNDENVIRONMENTSHADER_H
+}   // namespace renderer

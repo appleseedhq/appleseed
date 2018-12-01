@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_ISAMPLEGENERATOR_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_ISAMPLEGENERATOR_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
@@ -86,6 +85,4 @@ class ISampleGeneratorFactory
     virtual SampleAccumulationBuffer* create_sample_accumulation_buffer() = 0;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_ISAMPLEGENERATOR_H
+}   // namespace renderer

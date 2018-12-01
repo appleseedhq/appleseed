@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_INTERSECTION_RAYPLANE_H
-#define APPLESEED_FOUNDATION_MATH_INTERSECTION_RAYPLANE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/ray.h"
@@ -86,6 +85,4 @@ inline bool intersect(
     return true;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_INTERSECTION_RAYPLANE_H
+}   // namespace foundation

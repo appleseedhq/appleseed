@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_DEFAULTTIMERS_H
-#define APPLESEED_FOUNDATION_PLATFORM_DEFAULTTIMERS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -85,6 +84,4 @@ class APPLESEED_DLLSYMBOL DefaultWallclockTimer
     uint64 read_end() { return read(); }
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_DEFAULTTIMERS_H
+}   // namespace foundation

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BVH_BVH_INTERSECTOR_H
-#define APPLESEED_FOUNDATION_MATH_BVH_BVH_INTERSECTOR_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -892,7 +891,5 @@ void Intersector<Tree, Visitor, Ray3d, StackSize, 3>::intersect_motion(
 
 #endif  // APPLESEED_USE_SSE
 
-}       // namespace bvh
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_BVH_BVH_INTERSECTOR_H
+}   // namespace bvh
+}   // namespace foundation

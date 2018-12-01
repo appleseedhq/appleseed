@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_SCENEITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_SCENEITEM_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/basegroupitem.h"
@@ -79,7 +78,5 @@ class SceneItem
     EnvironmentShaderCollectionItem*    m_environment_shader_collection_item;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_SCENEITEM_H
+}   // namespace studio
+}   // namespace appleseed

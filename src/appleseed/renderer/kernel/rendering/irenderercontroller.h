@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_IRENDERERCONTROLLER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_IRENDERERCONTROLLER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -99,6 +98,4 @@ class APPLESEED_DLLSYMBOL IRendererController
     virtual Status get_status() const = 0;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_IRENDERERCONTROLLER_H
+}   // namespace renderer

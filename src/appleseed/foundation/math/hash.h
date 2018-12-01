@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_HASH_H
-#define APPLESEED_FOUNDATION_MATH_HASH_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -226,6 +225,4 @@ inline float hash_uint32_pixar(
     return result * (1.0f / 4294967808.0f);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_HASH_H
+}   // namespace foundation

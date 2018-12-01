@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PYTHON_METADATA_H
-#define APPLESEED_PYTHON_METADATA_H
+#pragma once
 
 // appleseed.python headers.
 #include "dict2dict.h"
@@ -73,5 +72,3 @@ namespace detail
         return input_metadata;
     }
 }
-
-#endif  // !APPLESEED_PYTHON_METADATA_H

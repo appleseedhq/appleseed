@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_ITERATORS_H
-#define APPLESEED_FOUNDATION_UTILITY_ITERATORS_H
+#pragma once
 
 namespace foundation
 {
@@ -47,6 +46,4 @@ inline Iterator pred(Iterator i)
     return --i;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_ITERATORS_H
+}   // namespace foundation

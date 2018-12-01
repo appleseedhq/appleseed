@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_IPROGRESSIVEIMAGEFILEREADER_H
-#define APPLESEED_FOUNDATION_IMAGE_IPROGRESSIVEIMAGEFILEREADER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -82,6 +81,4 @@ class APPLESEED_DLLSYMBOL IProgressiveImageFileReader
         const size_t        tile_y) = 0;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_IPROGRESSIVEIMAGEFILEREADER_H
+}   // namespace foundation

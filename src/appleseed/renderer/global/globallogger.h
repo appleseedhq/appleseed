@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_GLOBAL_GLOBALLOGGER_H
-#define APPLESEED_RENDERER_GLOBAL_GLOBALLOGGER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/log.h"
@@ -104,6 +103,4 @@ APPLESEED_DLLSYMBOL foundation::Logger& global_logger();
             __VA_ARGS__);                               \
     } while (0)
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_GLOBAL_GLOBALLOGGER_H
+}   // namespace renderer

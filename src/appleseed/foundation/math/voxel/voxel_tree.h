@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_VOXEL_VOXEL_TREE_H
-#define APPLESEED_FOUNDATION_MATH_VOXEL_VOXEL_TREE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -321,7 +320,5 @@ bool Tree<T, N>::dump_recurse(
     }
 }
 
-}       // namespace voxel
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_VOXEL_VOXEL_TREE_H
+}   // namespace voxel
+}   // namespace foundation

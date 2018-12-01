@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_TEST_TESTSUITEREPOSITORY_H
-#define APPLESEED_FOUNDATION_UTILITY_TEST_TESTSUITEREPOSITORY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/singleton.h"
@@ -90,6 +89,4 @@ class APPLESEED_DLLSYMBOL TestSuiteRepository
     Impl* impl;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_TEST_TESTSUITEREPOSITORY_H
+}   // namespace foundation

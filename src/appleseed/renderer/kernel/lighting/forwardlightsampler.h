@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_FORWARDLIGHTSAMPLER_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_FORWARDLIGHTSAMPLER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/lightsamplerbase.h"
@@ -93,6 +92,4 @@ inline bool ForwardLightSampler::has_lights() const
     return m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid();
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_FORWARDLIGHTSAMPLER_H
+}   // namespace renderer

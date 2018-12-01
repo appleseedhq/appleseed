@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_MINIMIZEBUTTON_H
-#define APPLESEED_STUDIO_MAINWINDOW_MINIMIZEBUTTON_H
+#pragma once
 
 // Qt headers.
 #include <QPushButton>
@@ -62,7 +61,5 @@ class MinimizeButton
     void slot_minimize();
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_MINIMIZEBUTTON_H
+}   // namespace studio
+}   // namespace appleseed

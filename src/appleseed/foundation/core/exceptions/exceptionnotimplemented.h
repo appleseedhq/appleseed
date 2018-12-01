@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONNOTIMPLEMENTED_H
-#define APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONNOTIMPLEMENTED_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -62,6 +61,4 @@ inline ExceptionNotImplemented::ExceptionNotImplemented()
     assert(!"Reached non-implemented code path.");
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONNOTIMPLEMENTED_H
+}   // namespace foundation

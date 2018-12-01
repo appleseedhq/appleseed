@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELENTITYITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELENTITYITEM_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/attributeeditor.h"
@@ -148,7 +147,5 @@ void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attr
     }
 }
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELENTITYITEM_H
+}   // namespace studio
+}   // namespace appleseed

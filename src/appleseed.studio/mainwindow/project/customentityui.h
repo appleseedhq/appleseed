@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_CUSTOMENTITYUI_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_CUSTOMENTITYUI_H
+#pragma once
 
 // Qt headers.
 #include <QObject>
@@ -55,7 +54,5 @@ class CustomEntityUI
     void signal_apply();
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_CUSTOMENTITYUI_H
+}   // namespace studio
+}   // namespace appleseed

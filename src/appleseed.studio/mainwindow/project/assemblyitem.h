@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYITEM_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/basegroupitem.h"
@@ -137,7 +136,5 @@ class AssemblyItem
     CollectionItem<Entity, renderer::Assembly, AssemblyItem>* add_multi_model_collection_item(EntityContainer& entities);
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYITEM_H
+}   // namespace studio
+}   // namespace appleseed

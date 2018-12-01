@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_LIGHT_LIGHTTARGET_H
-#define APPLESEED_RENDERER_MODELING_LIGHT_LIGHTTARGET_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
@@ -106,6 +105,4 @@ inline double LightTarget::get_radius() const
     return m_radius;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_LIGHT_LIGHTTARGET_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_INTERSECTION_RAYTRIANGLESSK_H
-#define APPLESEED_FOUNDATION_MATH_INTERSECTION_RAYTRIANGLESSK_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/ray.h"
@@ -474,6 +473,4 @@ void PoisonImpl<TriangleSSKSupportPlane<T>>::do_poison(TriangleSSKSupportPlane<T
     poison(plane.m_ci);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_INTERSECTION_RAYTRIANGLESSK_H
+}   // namespace foundation

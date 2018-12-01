@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTREE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTREE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/lighttree_node.h"
@@ -148,6 +147,4 @@ class LightTree
         const bool                                  separate_by_levels = false) const;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTREE_H
+}   // namespace renderer

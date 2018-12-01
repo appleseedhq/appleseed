@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_INTERSECTION_AABBTRIANGLE_H
-#define APPLESEED_FOUNDATION_MATH_INTERSECTION_AABBTRIANGLE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
@@ -374,6 +373,4 @@ bool intersect(
     return aabbtriangle_impl::check_segment_triangle(pmin, pmax, v0, e0, e1);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_INTERSECTION_AABBTRIANGLE_H
+}   // namespace foundation

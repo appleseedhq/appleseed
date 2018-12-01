@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_CAMERACONTROLLER_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_CAMERACONTROLLER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
@@ -121,7 +120,5 @@ class CameraController
     void frame_selected_object();
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_CAMERACONTROLLER_H
+}   // namespace studio
+}   // namespace appleseed

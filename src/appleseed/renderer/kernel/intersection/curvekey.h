@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_CURVEKEY_H
-#define APPLESEED_RENDERER_KERNEL_INTERSECTION_CURVEKEY_H
+#pragma once
 
 // appleseed.foundation.headers.
 #include "foundation/platform/types.h"
@@ -131,6 +130,4 @@ inline size_t CurveKey::get_curve_degree() const
     return static_cast<size_t>(m_curve_degree);
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_CURVEKEY_H
+}   // namespace renderer

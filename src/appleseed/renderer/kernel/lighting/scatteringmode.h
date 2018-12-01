@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SCATTERINGMODE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_SCATTERINGMODE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/scene/visibilityflags.h"
@@ -141,6 +140,4 @@ inline VisibilityFlags::Type ScatteringMode::get_vis_flags(const Mode mode)
     }
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SCATTERINGMODE_H
+}   // namespace renderer

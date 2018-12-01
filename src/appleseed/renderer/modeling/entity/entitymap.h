@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENTITY_ENTITYMAP_H
-#define APPLESEED_RENDERER_MODELING_ENTITY_ENTITYMAP_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
@@ -399,6 +398,4 @@ inline typename TypedEntityMap<T>::const_iterator TypedEntityMap<T>::end() const
     return EntityMap::end();
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_ENTITY_ENTITYMAP_H
+}   // namespace renderer

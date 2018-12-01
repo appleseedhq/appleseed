@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_CC_H
-#define APPLESEED_FOUNDATION_UTILITY_CC_H
+#pragma once
 
 namespace foundation
 {
@@ -36,6 +35,4 @@ namespace foundation
 // Define a 32-bit character constant in a portable manner.
 #define CC32(a, b, c, d) (((a) << 24) | ((b) << 16) | ((c) << 8) | (d))
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_CC_H
+}   // namespace foundation

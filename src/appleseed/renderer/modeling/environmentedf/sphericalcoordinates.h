@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_SPHERICALCOORDINATES_H
-#define APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_SPHERICALCOORDINATES_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
@@ -151,6 +150,4 @@ inline void unit_square_to_angles(
     phi = Pi<T>() * (T(2.0) * u - T(1.0));
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_SPHERICALCOORDINATES_H
+}   // namespace renderer

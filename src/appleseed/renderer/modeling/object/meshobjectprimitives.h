@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTPRIMITIVES_H
-#define APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTPRIMITIVES_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
@@ -46,6 +45,4 @@ APPLESEED_DLLSYMBOL foundation::auto_release_ptr<MeshObject> create_primitive_me
     const char*         name,
     const ParamArray&   params);
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTPRIMITIVES_H
+}   // namespace renderer

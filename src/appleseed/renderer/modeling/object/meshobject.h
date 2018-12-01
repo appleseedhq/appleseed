@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECT_H
-#define APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECT_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -227,6 +226,4 @@ class APPLESEED_DLLSYMBOL MeshObjectFactory
         ObjectArray&                    objects) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECT_H
+}   // namespace renderer

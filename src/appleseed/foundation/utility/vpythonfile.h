@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_VPYTHONFILE_H
-#define APPLESEED_FOUNDATION_UTILITY_VPYTHONFILE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -114,6 +113,4 @@ class VPythonFile
     std::FILE* m_file;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_VPYTHONFILE_H
+}   // namespace foundation

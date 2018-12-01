@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERWIDGET_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERWIDGET_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/renderclipboardhandler.h"
@@ -157,7 +156,5 @@ inline QImage& RenderWidget::image()
     return m_image;
 }
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERWIDGET_H
+}   // namespace studio
+}   // namespace appleseed

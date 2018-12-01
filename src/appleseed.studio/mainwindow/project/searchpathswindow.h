@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_SEARCHPATHSWINDOW_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_SEARCHPATHSWINDOW_H
+#pragma once
 
 // appleseed.studio headers.
 #include "utility/windowbase.h"
@@ -87,7 +86,5 @@ class SearchPathsWindow
 
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_SEARCHPATHSWINDOW_H
+}   // namespace studio
+}   // namespace appleseed

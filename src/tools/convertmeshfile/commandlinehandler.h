@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_CONVERTMESHFILE_COMMANDLINEHANDLER_H
-#define APPLESEED_CONVERTMESHFILE_COMMANDLINEHANDLER_H
+#pragma once
 
 // appleseed.shared headers.
 #include "application/commandlinehandlerbase.h"
@@ -66,7 +65,5 @@ class CommandLineHandler
         shared::SuperLogger&    logger) const override;
 };
 
-}       // namespace convertmeshfile
-}       // namespace appleseed
-
-#endif  // !APPLESEED_CONVERTMESHFILE_COMMANDLINEHANDLER_H
+}   // namespace convertmeshfile
+}   // namespace appleseed

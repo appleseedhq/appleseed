@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_BBOX_H
-#define APPLESEED_RENDERER_UTILITY_BBOX_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
@@ -144,6 +143,4 @@ BBox compute_tile_space_bbox(
     return tile_bbox;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_UTILITY_BBOX_H
+}   // namespace renderer

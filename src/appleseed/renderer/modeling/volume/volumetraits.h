@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_VOLUME_VOLUMETRAITS_H
-#define APPLESEED_RENDERER_MODELING_VOLUME_VOLUMETRAITS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entitytraits.h"
@@ -83,6 +82,4 @@ struct EntityTraits<Volume>
     }
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_VOLUME_VOLUMETRAITS_H
+}   // namespace renderer

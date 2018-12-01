@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_VECTOR_H
-#define APPLESEED_FOUNDATION_MATH_VECTOR_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
@@ -1304,6 +1303,4 @@ inline const T& Vector<T, 4>::operator[](const size_t i) const
     return (&x)[i];
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_VECTOR_H
+}   // namespace foundation

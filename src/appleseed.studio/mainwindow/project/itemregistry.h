@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMREGISTRY_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMREGISTRY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
@@ -97,7 +96,5 @@ inline ItemType* ItemRegistry::get_item(const renderer::Entity& entity) const
     return static_cast<ItemType*>(get_item(entity));
 }
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMREGISTRY_H
+}   // namespace studio
+}   // namespace appleseed

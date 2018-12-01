@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_ORDERING_H
-#define APPLESEED_FOUNDATION_MATH_ORDERING_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/permutation.h"
@@ -88,6 +87,4 @@ void random_ordering(
     random_permutation(size, &ordering[0], rng);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_ORDERING_H
+}   // namespace foundation

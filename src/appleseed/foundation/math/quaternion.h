@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_QUATERNION_H
-#define APPLESEED_FOUNDATION_MATH_QUATERNION_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
@@ -519,6 +518,4 @@ inline Vector<T, 3> rotate(const Quaternion<T>& q, const Vector<T, 3>& v)
     return dot(q.v, v) * q.v + q.s * w + cross(w, -q.v);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_QUATERNION_H
+}   // namespace foundation

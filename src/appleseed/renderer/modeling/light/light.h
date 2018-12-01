@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_LIGHT_LIGHT_H
-#define APPLESEED_RENDERER_MODELING_LIGHT_LIGHT_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -155,6 +154,4 @@ inline int Light::get_flags() const
     return m_flags;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_LIGHT_LIGHT_H
+}   // namespace renderer

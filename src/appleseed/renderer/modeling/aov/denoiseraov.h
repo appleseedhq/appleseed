@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_AOV_DENOISERAOV_H
-#define APPLESEED_RENDERER_MODELING_AOV_DENOISERAOV_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/aov/aov.h"
@@ -112,6 +111,4 @@ class DenoiserAOVFactory
         const size_t num_bins = 20);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_AOV_DENOISERAOV_H
+}   // namespace renderer

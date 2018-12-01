@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRAY_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRAY_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/scene/objectinstance.h"
@@ -279,6 +278,4 @@ namespace foundation
             // they are properly initialized by the default constructor.
         }
     };
-}       // namespace foundation
-
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRAY_H
+}   // namespace foundation

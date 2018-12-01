@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_MAIN_ALLOCATOR_H
-#define APPLESEED_MAIN_ALLOCATOR_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -40,5 +39,3 @@ APPLESEED_DLLSYMBOL void log_allocation_failure(const size_t size);
 APPLESEED_DLLSYMBOL void log_deallocation(const void* ptr);
 APPLESEED_DLLSYMBOL void start_memory_tracking();
 APPLESEED_DLLSYMBOL void stop_memory_tracking();
-
-#endif  // !APPLESEED_MAIN_ALLOCATOR_H

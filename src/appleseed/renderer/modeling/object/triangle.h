@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_OBJECT_TRIANGLE_H
-#define APPLESEED_RENDERER_MODELING_OBJECT_TRIANGLE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -189,6 +188,4 @@ inline bool Triangle::has_vertex_attributes() const
     return m_a0 != None && m_a1 != None && m_a2 != None;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_TRIANGLE_H
+}   // namespace renderer

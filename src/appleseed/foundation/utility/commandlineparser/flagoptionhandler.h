@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_FLAGOPTIONHANDLER_H
-#define APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_FLAGOPTIONHANDLER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -105,6 +104,4 @@ inline void FlagOptionHandler::print(std::string& s) const
     s += m_names.front();
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_FLAGOPTIONHANDLER_H
+}   // namespace foundation

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_BSDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_BSDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -253,6 +252,4 @@ inline foundation::Vector3f BSDF::force_above_surface(
             : direction;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_BSDF_H
+}   // namespace renderer

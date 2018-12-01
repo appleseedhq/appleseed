@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SCENE_TEXTUREINSTANCETRAITS_H
-#define APPLESEED_RENDERER_MODELING_SCENE_TEXTUREINSTANCETRAITS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entitytraits.h"
@@ -81,6 +80,4 @@ struct EntityTraits<TextureInstance>
     }
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SCENE_TEXTUREINSTANCETRAITS_H
+}   // namespace renderer

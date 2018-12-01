@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_WINDOWS_H
-#define APPLESEED_FOUNDATION_PLATFORM_WINDOWS_H
+#pragma once
 
 #ifndef _WIN32
     #error Unsupported platform.
@@ -56,6 +55,4 @@ namespace foundation
 // Return the error message associated with the error code returned by GetLastError().
 std::string get_windows_last_error_message();
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_WINDOWS_H
+}   // namespace foundation

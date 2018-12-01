@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECT_ASSETHANDLER_H
-#define APPLESEED_RENDERER_MODELING_PROJECT_ASSETHANDLER_H
+#pragma once
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
@@ -73,6 +72,4 @@ class AssetHandler
     bool copy_relative_asset(std::string& asset_path) const;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_ASSETHANDLER_H
+}   // namespace renderer

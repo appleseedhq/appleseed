@@ -26,10 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_DISPLAY_H
-#define APPLESEED_RENDERER_API_DISPLAY_H
+#pragma once
 
 // API headers.
 #include "renderer/modeling/display/display.h"
-
-#endif  // !APPLESEED_RENDERER_API_DISPLAY_H

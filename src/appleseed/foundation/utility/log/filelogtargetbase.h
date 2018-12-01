@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_LOG_FILELOGTARGETBASE_H
-#define APPLESEED_FOUNDATION_UTILITY_LOG_FILELOGTARGETBASE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/log/ilogtarget.h"
@@ -59,6 +58,4 @@ class APPLESEED_DLLSYMBOL FileLogTargetBase
         const char*                 message) const;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_LOG_FILELOGTARGETBASE_H
+}   // namespace foundation

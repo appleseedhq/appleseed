@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MESH_MESHBUILDERBASE_H
-#define APPLESEED_FOUNDATION_MESH_MESHBUILDERBASE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -105,6 +104,4 @@ class APPLESEED_DLLSYMBOL MeshBuilderBase
     }
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MESH_MESHBUILDERBASE_H
+}   // namespace foundation

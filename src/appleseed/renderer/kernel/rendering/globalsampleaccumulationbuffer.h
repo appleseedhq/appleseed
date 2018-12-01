@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_GLOBALSAMPLEACCUMULATIONBUFFER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_GLOBALSAMPLEACCUMULATIONBUFFER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
@@ -93,6 +92,4 @@ class GlobalSampleAccumulationBuffer
         const float                 scale) const;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_GLOBALSAMPLEACCUMULATIONBUFFER_H
+}   // namespace renderer

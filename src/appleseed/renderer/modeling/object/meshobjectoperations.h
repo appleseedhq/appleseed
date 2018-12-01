@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTOPERATIONS_H
-#define APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTOPERATIONS_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -51,6 +50,4 @@ APPLESEED_DLLSYMBOL void compute_smooth_vertex_tangents(MeshObject& object);
 // Compute a hash for a mesh object.
 APPLESEED_DLLSYMBOL void compute_signature(foundation::MurmurHash& hash, const MeshObject& object);
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTOPERATIONS_H
+}   // namespace renderer

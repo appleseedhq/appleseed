@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_GNUPLOTFILE_H
-#define APPLESEED_FOUNDATION_UTILITY_GNUPLOTFILE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -95,6 +94,4 @@ class GnuplotFile
     std::vector<Plot>   m_plots;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_GNUPLOTFILE_H
+}   // namespace foundation
