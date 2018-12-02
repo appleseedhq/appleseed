@@ -33,9 +33,6 @@
 #include "renderer/kernel/rendering/ipixelrenderer.h"
 #include "renderer/utility/paramarray.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
 // Standard headers.
 #include <cstddef>
 

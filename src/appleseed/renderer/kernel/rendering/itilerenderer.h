@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
+#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
@@ -59,7 +60,7 @@ class ITileRenderer
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y,
-        const size_t                pass_hash,
+        const foundation::uint32    pass_hash,
         foundation::IAbortSwitch&   abort_switch) = 0;
 
     // Retrieve performance statistics.

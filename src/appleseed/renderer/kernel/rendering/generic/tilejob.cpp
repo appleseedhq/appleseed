@@ -60,7 +60,7 @@ TileJob::TileJob(
     const Frame&                frame,
     const size_t                tile_x,
     const size_t                tile_y,
-    const size_t                pass_hash,
+    const uint32                pass_hash,
     const Spectrum::Mode        spectrum_mode,
     IAbortSwitch&               abort_switch)
   : m_tile_renderers(tile_renderers)

@@ -33,6 +33,7 @@
 #include "renderer/global/globaltypes.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/types.h"
 #include "foundation/utility/job.h"
 
 // Standard headers.
@@ -65,7 +66,7 @@ class TileJob
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y,
-        const size_t                pass_hash,
+        const foundation::uint32    pass_hash,
         const Spectrum::Mode        spectrum_mode,
         foundation::IAbortSwitch&   abort_switch);
 
@@ -78,7 +79,7 @@ class TileJob
     const Frame&                    m_frame;
     const size_t                    m_tile_x;
     const size_t                    m_tile_y;
-    const size_t                    m_pass_hash;
+    const foundation::uint32        m_pass_hash;
     const Spectrum::Mode            m_spectrum_mode;
     foundation::IAbortSwitch&       m_abort_switch;
 };

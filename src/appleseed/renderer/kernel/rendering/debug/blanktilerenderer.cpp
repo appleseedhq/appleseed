@@ -38,6 +38,7 @@
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/statistics.h"
 
 // Standard headers.
@@ -75,7 +76,7 @@ namespace
             const Frame&    frame,
             const size_t    tile_x,
             const size_t    tile_y,
-            const size_t    pass_hash,
+            const uint32    pass_hash,
             IAbortSwitch&   abort_switch) override
         {
             Image& image = frame.image();
