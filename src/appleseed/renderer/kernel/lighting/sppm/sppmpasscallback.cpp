@@ -35,6 +35,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/texturing/oiiotexturesystem.h"
+#include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
@@ -107,10 +108,11 @@ void SPPMPassCallback::on_pass_begin(
     m_stopwatch.start();
 
     // Create a new set of photons.
+    const uint32 pass_hash = mix_uint32(frame.get_noise_seed(), m_pass_number);
     m_photons.clear_keep_memory();
     m_photon_tracer.trace_photons(
         m_photons,
-        hash_uint32(m_pass_number),
+        pass_hash,
         job_queue,
         abort_switch);
 

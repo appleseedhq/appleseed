@@ -83,15 +83,15 @@ class SPPMPassCallback
 
     // This method is called at the beginning of a pass.
     void on_pass_begin(
-        const Frame&                frame,
-        foundation::JobQueue&       job_queue,
-        foundation::IAbortSwitch&   abort_switch) override;
+        const Frame&                    frame,
+        foundation::JobQueue&           job_queue,
+        foundation::IAbortSwitch&       abort_switch) override;
 
     // This method is called at the end of a pass.
     void on_pass_end(
-        const Frame&                frame,
-        foundation::JobQueue&       job_queue,
-        foundation::IAbortSwitch&   abort_switch) override;
+        const Frame&                    frame,
+        foundation::JobQueue&           job_queue,
+        foundation::IAbortSwitch&       abort_switch) override;
 
     // Return the i'th photon.
     const SPPMMonoPhoton& get_mono_photon(const size_t i) const;
