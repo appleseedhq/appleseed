@@ -1216,6 +1216,10 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
 {
     assert(m_project_manager.is_project_open());
 
+    // Don't start a new render until the previous has completely ended.
+    if (m_rendering_manager.is_rendering())
+        return;
+
     m_false_colors_window.reset();
 
     // Enable/disable menus and widgets appropriately.
