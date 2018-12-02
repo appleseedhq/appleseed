@@ -75,6 +75,12 @@ std::ostream& operator<<(std::ostream& s, const std::vector<const char*, Allocat
 namespace foundation
 {
 
+// foundation::AABB.
+template <typename T, size_t N>
+std::ostream& operator<<(std::ostream& s, const AABBBase<T, N>& aabb);
+template <typename T, size_t N>
+std::istream& operator>>(std::istream& s, AABBBase<T, N>& aabb);
+
 // foundation::APIString.
 std::ostream& operator<<(std::ostream& s, const APIString& string);
 
@@ -84,17 +90,11 @@ std::istream& operator>>(std::istream& s, FloatArray& array);
 std::ostream& operator<<(std::ostream& s, const DoubleArray& array);
 std::istream& operator>>(std::istream& s, DoubleArray& array);
 
-// foundation::Vector.
+// foundation::Color.
 template <typename T, size_t N>
-std::ostream& operator<<(std::ostream& s, const Vector<T, N>& vector);
+std::ostream& operator<<(std::ostream& s, const Color<T, N>& color);
 template <typename T, size_t N>
-std::istream& operator>>(std::istream& s, Vector<T, N>& vector);
-
-// foundation::AABB.
-template <typename T, size_t N>
-std::ostream& operator<<(std::ostream& s, const AABBBase<T, N>& aabb);
-template <typename T, size_t N>
-std::istream& operator>>(std::istream& s, AABBBase<T, N>& aabb);
+std::istream& operator>>(std::istream& s, Color<T, N>& color);
 
 // foundation::Matrix.
 template <typename T, size_t M, size_t N>
@@ -108,11 +108,11 @@ std::ostream& operator<<(std::ostream& s, const Quaternion<T>& quat);
 template <typename T>
 std::istream& operator>>(std::istream& s, Quaternion<T>& quat);
 
-// foundation::Color.
+// foundation::Ray.
 template <typename T, size_t N>
-std::ostream& operator<<(std::ostream& s, const Color<T, N>& color);
+std::ostream& operator<<(std::ostream& s, const Ray<T, N>& ray);
 template <typename T, size_t N>
-std::istream& operator>>(std::istream& s, Color<T, N>& color);
+std::istream& operator>>(std::istream& s, Ray<T, N>& ray);
 
 // foundation::RegularSpectrum.
 template <typename T, size_t N>
@@ -120,28 +120,28 @@ std::ostream& operator<<(std::ostream& s, const RegularSpectrum<T, N>& spectrum)
 template <typename T, size_t N>
 std::istream& operator>>(std::istream& s, RegularSpectrum<T, N>& spectrum);
 
-// foundation::Ray.
-template <typename T, size_t N>
-std::ostream& operator<<(std::ostream& s, const Ray<T, N>& ray);
-template <typename T, size_t N>
-std::istream& operator>>(std::istream& s, Ray<T, N>& ray);
-
 // foundation::Transform.
 template <typename T>
 std::ostream& operator<<(std::ostream& s, const Transform<T>& transform);
+
+// foundation::Vector.
+template <typename T, size_t N>
+std::ostream& operator<<(std::ostream& s, const Vector<T, N>& vector);
+template <typename T, size_t N>
+std::istream& operator>>(std::istream& s, Vector<T, N>& vector);
 
 }   // namespace foundation
 
 
 //
-// iostream operators implementation.
+// Helper functions.
 //
 
 namespace foundation
 {
-
 namespace impl
 {
+
     template <typename Sequence>
     std::ostream& write_sequence(std::ostream& s, const Sequence& sequence, const size_t n)
     {
@@ -176,9 +176,14 @@ namespace impl
 
         return s;
     }
-}
 
+}   // namespace impl
 }   // namespace foundation
+
+
+//
+// std::vector.
+//
 
 namespace std
 {
@@ -209,7 +214,32 @@ std::ostream& operator<<(std::ostream& s, const std::vector<const char*, Allocat
 
 }   // namespace std
 
-namespace foundation {
+
+namespace foundation
+{
+
+//
+// foundation::AABB.
+//
+
+template <typename T, size_t N>
+std::ostream& operator<<(std::ostream& s, const AABBBase<T, N>& aabb)
+{
+    return s << aabb.min << ' ' << aabb.max;
+}
+
+template <typename T, size_t N>
+std::istream& operator>>(std::istream& s, AABBBase<T, N>& aabb)
+{
+    s >> aabb.min;
+    s >> aabb.max;
+    return s;
+}
+
+
+//
+// foundation::APIString.
+//
 
 inline std::ostream& operator<<(std::ostream& s, const APIString& string)
 {
@@ -226,13 +256,18 @@ namespace impl
         while (s >> token)
             array.push_back(from_string<typename ArrayType::value_type>(token));
 
-        // Clear the fail bit, reaching eof is not an error.
+        // Clear the fail bit, reaching the end of the file is not an error.
         if (s.eof())
             s.clear(s.rdstate() & ~std::ios::failbit);
 
         return s;
     }
 }
+
+
+//
+// foundation::Array.
+//
 
 inline std::ostream& operator<<(std::ostream& s, const FloatArray& array)
 {
@@ -254,31 +289,27 @@ inline std::istream& operator>>(std::istream& s, DoubleArray& array)
     return impl::read_array(s, array);
 }
 
+
+//
+// foundation::Color.
+//
+
 template <typename T, size_t N>
-std::ostream& operator<<(std::ostream& s, const Vector<T, N>& vector)
+std::ostream& operator<<(std::ostream& s, const Color<T, N>& color)
 {
-    return impl::write_sequence(s, vector, N);
+    return impl::write_sequence(s, color, N);
 }
 
 template <typename T, size_t N>
-std::istream& operator>>(std::istream& s, Vector<T, N>& vector)
+std::istream& operator>>(std::istream& s, Color<T, N>& color)
 {
-    return impl::read_sequence(s, vector, N);
+    return impl::read_sequence(s, color, N);
 }
 
-template <typename T, size_t N>
-std::ostream& operator<<(std::ostream& s, const AABBBase<T, N>& aabb)
-{
-    return s << aabb.min << ' ' << aabb.max;
-}
 
-template <typename T, size_t N>
-std::istream& operator>>(std::istream& s, AABBBase<T, N>& aabb)
-{
-    s >> aabb.min;
-    s >> aabb.max;
-    return s;
-}
+//
+// foundation::Matrix.
+//
 
 template <typename T, size_t M, size_t N>
 std::ostream& operator<<(std::ostream& s, const Matrix<T, M, N>& matrix)
@@ -291,6 +322,11 @@ std::istream& operator>>(std::istream& s, Matrix<T, M, N>& matrix)
 {
     return impl::read_sequence(s, matrix, M * N);
 }
+
+
+//
+// foundation::Quaternion.
+//
 
 template <typename T>
 std::ostream& operator<<(std::ostream& s, const Quaternion<T>& quat)
@@ -308,29 +344,10 @@ std::istream& operator>>(std::istream& s, Quaternion<T>& quat)
     return s;
 }
 
-template <typename T, size_t N>
-std::ostream& operator<<(std::ostream& s, const Color<T, N>& color)
-{
-    return impl::write_sequence(s, color, N);
-}
 
-template <typename T, size_t N>
-std::istream& operator>>(std::istream& s, Color<T, N>& color)
-{
-    return impl::read_sequence(s, color, N);
-}
-
-template <typename T, size_t N>
-std::ostream& operator<<(std::ostream& s, const RegularSpectrum<T, N>& spectrum)
-{
-    return impl::write_sequence(s, spectrum, N);
-}
-
-template <typename T, size_t N>
-std::istream& operator>>(std::istream& s, RegularSpectrum<T, N>& spectrum)
-{
-    return impl::read_sequence(s, spectrum, N);
-}
+//
+// foundation::Ray.
+//
 
 template <typename T, size_t N>
 std::ostream& operator<<(std::ostream& s, const Ray<T, N>& ray)
@@ -352,10 +369,49 @@ std::istream& operator>>(std::istream& s, Ray<T, N>& ray)
     return s;
 }
 
+
+//
+// foundation::RegularSpectrum.
+//
+
+template <typename T, size_t N>
+std::ostream& operator<<(std::ostream& s, const RegularSpectrum<T, N>& spectrum)
+{
+    return impl::write_sequence(s, spectrum, N);
+}
+
+template <typename T, size_t N>
+std::istream& operator>>(std::istream& s, RegularSpectrum<T, N>& spectrum)
+{
+    return impl::read_sequence(s, spectrum, N);
+}
+
+
+//
+// foundation::Transform.
+//
+
 template <typename T>
 std::ostream& operator<<(std::ostream& s, const Transform<T>& transform)
 {
     return s << transform.get_local_to_parent();
+}
+
+
+//
+// foundation::Vector.
+//
+
+template <typename T, size_t N>
+std::ostream& operator<<(std::ostream& s, const Vector<T, N>& vector)
+{
+    return impl::write_sequence(s, vector, N);
+}
+
+template <typename T, size_t N>
+std::istream& operator>>(std::istream& s, Vector<T, N>& vector)
+{
+    return impl::read_sequence(s, vector, N);
 }
 
 }   // namespace foundation
