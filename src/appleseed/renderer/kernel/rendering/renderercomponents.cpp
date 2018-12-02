@@ -509,6 +509,12 @@ bool RendererComponents::create_frame_renderer_factory()
             return false;
         }
 
+        if (dynamic_cast<SPPMLightingEngineFactory*>(m_lighting_engine_factory.get()) != nullptr)
+        {
+            RENDERER_LOG_ERROR("cannot use the progressive frame renderer together with the sppm lighting engine.");
+            return false;
+        }
+
         m_frame_renderer.reset(
             ProgressiveFrameRendererFactory::create(
                 m_project,
