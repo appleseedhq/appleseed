@@ -43,6 +43,7 @@
 
 // Unit test case declarations.
 DECLARE_TEST_CASE(Foundation_Math_Sampling_QMCSamplingContext, InitialStateIsCorrect);
+DECLARE_TEST_CASE(Foundation_Math_Sampling_QMCSamplingContext, TestCopyConstructor);
 DECLARE_TEST_CASE(Foundation_Math_Sampling_QMCSamplingContext, TestAssignmentOperator);
 DECLARE_TEST_CASE(Foundation_Math_Sampling_QMCSamplingContext, TestSplitting);
 DECLARE_TEST_CASE(Foundation_Math_Sampling_QMCSamplingContext, TestDoubleSplitting);
@@ -73,17 +74,18 @@ class QMCSamplingContext
 
     // This sampler can operate in two modes:
     //   1. In QMC mode, it uses possibly patent-encumbered techniques.
-    //   2. In RNG mode, it works like RNGSamplingContext and sticks to random sampling.
+    //   2. In RNG mode, it works like `RNGSamplingContext` and sticks to random sampling.
     enum Mode { QMCMode, RNGMode };
 
-    // Construct a sampling context of dimension 0. It cannot be used
-    // directly; only child contexts obtained by splitting can.
+    // Construct a sampling context of dimension 0.
+    // The resulting sampling context cannot be used directly;
+    // only child contexts obtained by splitting can.
     QMCSamplingContext(
         RNG&            rng,
         const Mode      mode);
 
     // Construct a sampling context for a given number of dimensions
-    // and samples. Set sample_count to 0 if the required number of
+    // and samples. Set `sample_count` to 0 if the required number of
     // samples is unknown or infinite.
     QMCSamplingContext(
         RNG&            rng,
@@ -93,6 +95,7 @@ class QMCSamplingContext
         const size_t    instance = 0);
 
     // Assignment operator.
+    // Both sampling contexts must use the same RNG.
     QMCSamplingContext& operator=(const QMCSamplingContext& rhs);
 
     // Trajectory splitting: return a child sampling context for
@@ -110,7 +113,7 @@ class QMCSamplingContext
     void set_instance(const size_t instance);
 
     // Return the next sample in [0,1)^N.
-    // Works for scalars and foundation::Vector<>.
+    // Works for scalars and `foundation::Vector<>`.
     template <typename T> T next2();
 
     // Return the total dimension of this sampler.
@@ -121,6 +124,7 @@ class QMCSamplingContext
 
   private:
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Sampling_QMCSamplingContext, InitialStateIsCorrect);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Sampling_QMCSamplingContext, TestCopyConstructor);
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Sampling_QMCSamplingContext, TestAssignmentOperator);
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Sampling_QMCSamplingContext, TestSplitting);
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Sampling_QMCSamplingContext, TestDoubleSplitting);
@@ -224,6 +228,8 @@ template <typename RNG> inline
 QMCSamplingContext<RNG>&
 QMCSamplingContext<RNG>::operator=(const QMCSamplingContext& rhs)
 {
+    assert(&m_rng == &rhs.m_rng);
+
     m_mode = rhs.m_mode;
     m_base_dimension = rhs.m_base_dimension;
     m_base_instance = rhs.m_base_instance;

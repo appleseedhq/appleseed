@@ -61,11 +61,28 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
         RNG rng;
         SamplingContext context(rng, SamplingContext::QMCMode, 2, 64, 7);
 
+        EXPECT_EQ(&rng, &context.m_rng);
         EXPECT_EQ(0, context.m_base_dimension);
         EXPECT_EQ(0, context.m_base_instance);
         EXPECT_EQ(2, context.m_dimension);
         EXPECT_EQ(7, context.m_instance);
         EXPECT_EQ(SamplingContext::VectorType(0.0), context.m_offset);
+    }
+
+    TEST_CASE(TestCopyConstructor)
+    {
+        RNG rng;
+        SamplingContext original_parent(rng, SamplingContext::QMCMode, 2, 64, 7);
+        SamplingContext original = original_parent.split(3, 16);
+        original.set_instance(6);
+
+        const SamplingContext copy(original);
+
+        EXPECT_EQ(&rng, &copy.m_rng);
+        EXPECT_EQ(2, copy.m_base_dimension);
+        EXPECT_EQ(7, copy.m_base_instance);
+        EXPECT_EQ(3, copy.m_dimension);
+        EXPECT_EQ(6, copy.m_instance);
     }
 
     TEST_CASE(TestAssignmentOperator)
@@ -76,8 +93,10 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
         original.set_instance(6);
 
         SamplingContext copy(rng, SamplingContext::QMCMode, 4, 16, 9);
+
         copy = original;
 
+        EXPECT_EQ(&rng, &copy.m_rng);
         EXPECT_EQ(2, copy.m_base_dimension);
         EXPECT_EQ(7, copy.m_base_instance);
         EXPECT_EQ(3, copy.m_dimension);
@@ -88,8 +107,10 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
     {
         RNG rng;
         SamplingContext context(rng, SamplingContext::QMCMode, 2, 64, 7);
+
         SamplingContext child_context = context.split(3, 16);
 
+        EXPECT_EQ(&rng, &child_context.m_rng);
         EXPECT_EQ(2, child_context.m_base_dimension);
         EXPECT_EQ(7, child_context.m_base_instance);
         EXPECT_EQ(3, child_context.m_dimension);
@@ -100,9 +121,11 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
     {
         RNG rng;
         SamplingContext context(rng, SamplingContext::QMCMode, 2, 64, 7);
+
         SamplingContext child_context = context.split(3, 16);
         SamplingContext child_child_context = child_context.split(4, 8);
 
+        EXPECT_EQ(&rng, &child_child_context.m_rng);
         EXPECT_EQ(5, child_child_context.m_base_dimension);
         EXPECT_EQ(7, child_child_context.m_base_instance);
         EXPECT_EQ(4, child_child_context.m_dimension);
@@ -147,19 +170,15 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulat
         for (size_t i = 0; i < pixel_sample_count; ++i)
         {
             const Vector2d s = sampling_context.next2<Vector2d>();
-
             pixel_samples.push_back(s);
-
             shade(sampling_context, light_sample_count, light_samples);
         }
 
-        const string title =
-            string("unit tests/outputs/test_sampling_") +
-            "P" + to_string(pixel_sample_count) + "_" +
-            "L" + to_string(light_sample_count);
+        const string filepath_prefix =
+            format("unit tests/outputs/test_sampling_P{0}_L{1}", pixel_sample_count, light_sample_count);
 
-        write_point_cloud_image(title + "_pixel_samples.png", pixel_samples);
-        write_point_cloud_image(title + "_light_samples.png", light_samples);
+        write_point_cloud_image(filepath_prefix + "_pixel_samples.png", pixel_samples);
+        write_point_cloud_image(filepath_prefix + "_light_samples.png", light_samples);
     }
 
     TEST_CASE(TestWith1PixelSampleAnd256LightSamples)
