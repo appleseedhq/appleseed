@@ -32,9 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/itilerenderer.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
 // Standard headers.
 #include <cstddef>
 

@@ -33,6 +33,7 @@
 #include "foundation/core/concepts/iunknown.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
@@ -81,7 +82,7 @@ class IPixelRenderer
         foundation::Tile&           tile,
         TileStack&                  aov_tiles,
         const foundation::AABB2i&   tile_bbox,
-        const size_t                pass_hash,
+        const foundation::uint32    pass_hash,
         const foundation::Vector2i& pi,               // image-space pixel coordinates
         const foundation::Vector2i& pt,               // tile-space pixel coordinates
         AOVAccumulatorContainer&    aov_accumulators,

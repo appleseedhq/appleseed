@@ -70,7 +70,6 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/timers.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/arena.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job.h"
@@ -240,7 +239,7 @@ namespace
             SPPMPhotonVector&               global_photons,
             const size_t                    photon_begin,
             const size_t                    photon_end,
-            const size_t                    pass_hash,
+            const uint32                    pass_hash,
             IAbortSwitch&                   abort_switch)
           : m_scene(scene)
           , m_photon_targets(photon_targets)
@@ -320,7 +319,7 @@ namespace
         SPPMPhotonVector&           m_global_photons;
         const size_t                m_photon_begin;
         const size_t                m_photon_end;
-        const size_t                m_pass_hash;
+        const uint32                m_pass_hash;
         IAbortSwitch&               m_abort_switch;
         SPPMPhotonVector            m_local_photons;
         float                       m_shutter_open_begin_time;
@@ -535,7 +534,7 @@ namespace
             SPPMPhotonVector&           global_photons,
             const size_t                photon_begin,
             const size_t                photon_end,
-            const size_t                pass_hash,
+            const uint32                pass_hash,
             IAbortSwitch&               abort_switch)
           : m_scene(scene)
           , m_photon_targets(photon_targets)
@@ -620,7 +619,7 @@ namespace
         SPPMPhotonVector&           m_global_photons;
         const size_t                m_photon_begin;
         const size_t                m_photon_end;
-        const size_t                m_pass_hash;
+        const uint32                m_pass_hash;
         IAbortSwitch&               m_abort_switch;
         SPPMPhotonVector            m_local_photons;
         float                       m_shutter_open_begin_time;
@@ -809,7 +808,7 @@ namespace
 
 void SPPMPhotonTracer::trace_photons(
     SPPMPhotonVector&       photons,
-    const size_t            pass_hash,
+    const uint32            pass_hash,
     JobQueue&               job_queue,
     IAbortSwitch&           abort_switch)
 {
@@ -876,7 +875,7 @@ void SPPMPhotonTracer::trace_photons(
 void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
     const LightTargetArray& photon_targets,
     SPPMPhotonVector&       photons,
-    const size_t            pass_hash,
+    const uint32            pass_hash,
     JobQueue&               job_queue,
     size_t&                 job_count,
     size_t&                 emitted_photon_count,
@@ -916,7 +915,7 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
 void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
     const LightTargetArray& photon_targets,
     SPPMPhotonVector&       photons,
-    const size_t            pass_hash,
+    const uint32            pass_hash,
     JobQueue&               job_queue,
     size_t&                 job_count,
     size_t&                 emitted_photon_count,

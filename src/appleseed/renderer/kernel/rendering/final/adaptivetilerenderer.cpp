@@ -291,7 +291,7 @@ namespace
             const Frame&                        frame,
             const size_t                        tile_x,
             const size_t                        tile_y,
-            const size_t                        pass_hash,
+            const uint32                        pass_hash,
             IAbortSwitch&                       abort_switch) override
         {
             // Retrieve frame properties.
@@ -794,7 +794,7 @@ namespace
             const Frame&                        frame,
             const size_t                        frame_width,
             const size_t                        frame_height,
-            const size_t                        pass_hash,
+            const uint32                        pass_hash,
             const size_t                        aov_count)
         {
             // Loop over the block's pixels.
@@ -852,7 +852,7 @@ namespace
             const Vector2i&                     pt,
             ShadingResultFrameBuffer*           framebuffer,
             ShadingResultFrameBuffer*           second_framebuffer,
-            const size_t                        pass_hash,
+            const uint32                        pass_hash,
             const size_t                        instance,
             const size_t                        batch_size,
             const size_t                        aov_count)

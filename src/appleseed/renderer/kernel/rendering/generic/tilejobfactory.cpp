@@ -57,7 +57,7 @@ void TileJobFactory::create(
     const TileOrdering                  tile_ordering,
     const TileJob::TileRendererVector&  tile_renderers,
     const TileJob::TileCallbackVector&  tile_callbacks,
-    const size_t                        pass_hash,
+    const uint32                        pass_hash,
     const Spectrum::Mode                spectrum_mode,
     TileJobVector&                      tile_jobs,
     IAbortSwitch&                       abort_switch)
