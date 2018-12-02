@@ -492,13 +492,13 @@ void Camera::initialize_ray(
     ray.m_flags = VisibilityFlags::CameraRay;
     ray.m_depth = 0;
 
-    float sample_time = 0.0f;
-
+    float sample_time;
     if (m_motion_blur_enabled)
     {
         sampling_context.split_in_place(1, 1);
         sample_time = map_to_shutter_curve(sampling_context.next2<float>());
     }
+    else sample_time = 0.0f;
 
     ray.m_time =
         ShadingRay::Time::create_with_normalized_time(
