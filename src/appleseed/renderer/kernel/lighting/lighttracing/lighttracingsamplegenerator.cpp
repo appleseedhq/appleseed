@@ -69,6 +69,7 @@
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/math/basis.h"
+#include "foundation/math/hash.h"
 #include "foundation/math/population.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
@@ -553,12 +554,11 @@ namespace
             m_arena.clear();
 
             // Create a sampling context.
+            const size_t instance = mix_uint32(m_frame.get_noise_seed(), static_cast<uint32>(sequence_index));
             SamplingContext sampling_context(
                 m_rng,
                 m_params.m_sampling_mode,
-                0,
-                sequence_index,
-                sequence_index);
+                instance);
 
             size_t stored_sample_count = 0;
 
