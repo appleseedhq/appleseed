@@ -82,7 +82,8 @@ class QMCSamplingContext
     // only child contexts obtained by splitting can.
     QMCSamplingContext(
         RNG&            rng,
-        const Mode      mode);
+        const Mode      mode,
+        const size_t    base_instance = 0);
 
     // Construct a sampling context for a given number of dimensions
     // and samples. Set `sample_count` to 0 if the required number of
@@ -171,11 +172,12 @@ class QMCSamplingContext
 template <typename RNG>
 inline QMCSamplingContext<RNG>::QMCSamplingContext(
     RNG&                rng,
-    const Mode          mode)
+    const Mode          mode,
+    const size_t        base_instance)
   : m_rng(rng)
   , m_mode(mode)
   , m_base_dimension(0)
-  , m_base_instance(0)
+  , m_base_instance(base_instance)
   , m_dimension(0)
   , m_sample_count(0)
   , m_instance(0)
