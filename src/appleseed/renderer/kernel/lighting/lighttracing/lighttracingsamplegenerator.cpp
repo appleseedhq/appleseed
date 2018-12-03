@@ -552,6 +552,7 @@ namespace
         {
             m_arena.clear();
 
+            // Create a sampling context.
             SamplingContext sampling_context(
                 m_rng,
                 m_params.m_sampling_mode,
@@ -561,14 +562,15 @@ namespace
 
             size_t stored_sample_count = 0;
 
+            // Trace one path from one of the lights.
             if (m_light_sampler.has_lights())
                 stored_sample_count += generate_light_sample(sampling_context, samples);
 
+            // Trace one path from the environment.
             if (m_params.m_enable_ibl)
             {
                 const EnvironmentEDF* env_edf = m_scene.get_environment()->get_environment_edf();
-
-                if (env_edf)
+                if (env_edf != nullptr)
                 {
                     stored_sample_count +=
                         generate_environment_sample(sampling_context, env_edf, samples);
