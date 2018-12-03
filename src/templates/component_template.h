@@ -26,12 +26,9 @@
 // THE SOFTWARE.
 //
 
-#ifndef PROJECT_LIBRARY_CATEGORY_MODULE_COMPONENT_H
-#define PROJECT_LIBRARY_CATEGORY_MODULE_COMPONENT_H
+#pragma once
 
 namespace library
 {
 
-}       // namespace library
-
-#endif  // !PROJECT_LIBRARY_CATEGORY_MODULE_COMPONENT_H
+}   // namespace library
