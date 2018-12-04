@@ -49,7 +49,7 @@ class Dual
     typedef T ValueType;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     Dual() = default;                         // leave all components uninitialized
 #else
     Dual() {}                                 // leave all components uninitialized

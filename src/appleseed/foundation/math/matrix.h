@@ -83,7 +83,7 @@ class Matrix
     static const size_t Components = M * N;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     Matrix() = default;                                     // leave all components uninitialized
 #else
     Matrix() {}                                             // leave all components uninitialized
@@ -182,7 +182,7 @@ class Matrix<T, N, N>
     static const size_t Components = N * N;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     Matrix() = default;                                     // leave all components uninitialized
 #else
     Matrix() {}                                             // leave all components uninitialized
@@ -254,7 +254,7 @@ class Matrix<T, 3, 3>
     static const size_t Components = 3 * 3;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     Matrix() = default;                                     // leave all components uninitialized
 #else
     Matrix() {}                                             // leave all components uninitialized
@@ -379,7 +379,7 @@ class Matrix<T, 4, 4>
     static const size_t Components = 4 * 4;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     Matrix() = default;                                     // leave all components uninitialized
 #else
     Matrix() {}                                             // leave all components uninitialized
