@@ -292,6 +292,7 @@ set (src_appleseed_sources
      src/appleseed/as_sbs_pbrmaterial.osl
      src/appleseed/as_space_transform.osl
      src/appleseed/as_standard_surface.osl
+     src/appleseed/as_standard_surface_next.osl
      src/appleseed/as_subsurface.osl
      src/appleseed/as_switch_surface.osl
      src/appleseed/as_switch_texture.osl
