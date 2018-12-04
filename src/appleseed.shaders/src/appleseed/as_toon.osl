@@ -272,13 +272,13 @@ shader as_toon
         string page = "Diffuse.Toon" ,
         string help = "Softness of tonal range transition, higher values produce softner results, lower values produce sharper transitions"
     ]],
-    int in_diffuse_ray_depth = 2
+    int in_diffuse_ray_depth = 100
     [[
         string as_maya_attribute_name = "diffuseRayDepth",
         string as_maya_attribute_short_name = "drd",
         int min = 0,
-        int max = 16,
-        int softmax = 8,
+        int max = 100,
+        int softmax = 16,
         string widget = "slider",
         int slidermin = 0,
         int slidermax = 8,
@@ -460,13 +460,13 @@ shader as_toon
         string page = "Specular.Toon",
         string help = "Attenuate facing incidence reflection, similar to Fresnel, retaining reflection intensity at the grazing angles."
     ]],
-    int in_specular_ray_depth = 2
+    int in_specular_ray_depth = 100
     [[
         string as_maya_attribute_name = "specularRayDepth",
         string as_maya_attribute_short_name = "srd",
         int min = 0,
-        int max = 16,
-        int softmax = 8,
+        int max = 100,
+        int softmax = 16,
         string widget = "slider",
         int slidermin = 0,
         int slidermax = 8,

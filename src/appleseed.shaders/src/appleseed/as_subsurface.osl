@@ -49,7 +49,7 @@ shader as_subsurface
         string as_maya_attribute_name = "sssProfile",
         string as_maya_attribute_short_name = "ssp",
         string widget = "mapper",
-        string options = "Better Dipole:0|Directional Dipole:1|Gaussian:2|Normalized Diffusion:3|Standard Dipole:4|Random Walk:5",
+        string options = "Better Dipole:0|Directional Dipole:1|Gaussian:2|Normalized Diffusion:3|Standard Dipole:4|Diffuse Random Walk:5",
         string label = "Subsurface Profile",
         string page = "Subsurface",
         int as_maya_attribute_connectable = 0,
@@ -92,15 +92,16 @@ shader as_subsurface
         string label = "Depth Scale",
         string page = "Subsurface"
     ]],
-    int in_sss_maximum_ray_depth = 2
+    int in_sss_maximum_ray_depth = 8
     [[
         string as_maya_attribute_name = "sssMaximumRayDepth",
         string as_maya_attribute_short_name = "ssd",
         int min = 1,
-        int max = 16,
-        int softmax = 8,
+        int max = 100,
+        int softmax = 16,
         string label = "Subsurface Ray Depth",
         string page = "Subsurface.Advanced",
+        string help = "Maximum number of bounces allowed",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -260,13 +261,15 @@ shader as_subsurface
     [[
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
-        string widget = "null"
+        string widget = "null",
+        string label = "Output Color"
     ]],
     output closure color out_outMatteOpacity = 0
     [[
         string as_maya_attribute_name = "outMatteOpacity",
         string as_maya_attribute_short_name = "om",
         string widget = "null",
+        string label = "Output Matte",
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
@@ -285,6 +288,18 @@ shader as_subsurface
 
         out_outColor += out_outMatteOpacity;
     }
+
+    int ray_depth;
+    int status = getattribute("path:ray_depth", ray_depth);
+
+    if (!status || ray_depth > in_sss_maximum_ray_depth)
+    {
+        return;
+    }
+
+    normal Nn = normalize(in_bump_normal);
+
+    color albedo = clamp(in_sss_amount * in_color, 0.01, 0.99);
 
     string sss_profile;
 
@@ -310,36 +325,16 @@ shader as_subsurface
     }
     else
     {
-        sss_profile = "randomwalk";
+        sss_profile = "randomwalk"; // diffuse random walk
     }
 
-    normal Nn = normalize(in_bump_normal);
-
-    if (in_sss_amount * max(in_color) > 0.0)
-    {
-        color albedo = clamp(in_sss_amount * in_color, 0.01, 0.99);
-
-        if (sss_profile == "randomwalk")
-        {
-            out_outColor += as_subsurface(
-                sss_profile,
-                Nn,
-                albedo,
-                in_sss_mfp_scale * in_sss_mfp,
-                in_ior,
-                "fresnel_weight", in_fresnel_weight);
-        }
-        else
-        {
-            out_outColor += as_subsurface(
-                sss_profile,
-                Nn,
-                albedo,
-                in_sss_mfp_scale * in_sss_mfp,
-                in_ior,
-                "fresnel_weight", in_fresnel_weight);
-        }
-    }
+    out_outColor += as_subsurface(
+        sss_profile,
+        Nn,
+        albedo,
+        in_sss_mfp_scale * in_sss_mfp,
+        in_ior,
+        "fresnel_weight", in_fresnel_weight);
 
     if (in_specular_weight > 0.0)
     {
@@ -381,7 +376,7 @@ shader as_subsurface
             vector(0),  // tangent
             in_specular_roughness,
             0.0,        // specular spread for Student's t-MDF
-            0.0,        // anisotropy amount
+            in_anisotropy_amount,
             in_ior,
             "energy_compensation", 1.0);
     }
