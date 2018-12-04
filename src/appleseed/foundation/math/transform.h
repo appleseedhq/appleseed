@@ -64,7 +64,7 @@ class Transform
     typedef Transform<T> TransformType;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     Transform() = default;                      // leave the transformation uninitialized
 #else
     Transform() {}                              // leave the transformation uninitialized
@@ -178,7 +178,7 @@ class TransformInterpolator
     typedef Transform<T> TransformType;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     TransformInterpolator() = default;          // leave the interpolator uninitialized
 #else
     TransformInterpolator() {}                  // leave the interpolator uninitialized

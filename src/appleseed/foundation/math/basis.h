@@ -56,7 +56,7 @@ class Basis3
     typedef Basis3<T> BasisType;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     Basis3() = default;                             // leave all components uninitialized
 #else
     Basis3() {}                                     // leave all components uninitialized
@@ -186,7 +186,7 @@ inline void Basis3<T>::build(const VectorType& normal)
 
     m_n = normal;
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     const T sign = std::copysign(T(1.0), m_n[2]);
 #else
     const T sign = m_n[2] < T(0.0) ? T(-1.0) : T(1.0);

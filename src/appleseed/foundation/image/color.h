@@ -66,7 +66,7 @@ class Color
     static const size_t Components = N;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     Color() = default;                          // leave all components uninitialized
 #else
     Color() {}                                  // leave all components uninitialized
@@ -194,7 +194,7 @@ class Color<T, 3>
     ValueType r, g, b;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     Color() = default;                          // leave all components uninitialized
 #else
     Color() {}                                  // leave all components uninitialized
@@ -259,7 +259,7 @@ class Color<T, 4>
     ValueType r, g, b, a;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     Color() = default;                          // leave all components uninitialized
 #else
     Color() {}                                  // leave all components uninitialized

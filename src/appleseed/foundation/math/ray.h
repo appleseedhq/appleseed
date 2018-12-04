@@ -71,7 +71,7 @@ class Ray
     ValueType   m_tmax;                     // end of the ray interval (exclusive)
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     Ray() = default;                        // leave all fields uninitialized
 #else
     Ray() {}                                // leave all fields uninitialized
@@ -89,7 +89,7 @@ class Ray
     // Return true if the ray has finite length.
     bool is_finite() const;
 
-    // Get length of the ray interval, assuming that m_tmax is finite. 
+    // Get length of the ray interval, assuming that m_tmax is finite.
     ValueType get_length() const;
 
     // Return the point of the ray at abscissa t, t >= 0.
@@ -151,7 +151,7 @@ class RayInfo
     Vector<uint32, N> m_sgn_dir;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     RayInfo() = default;                    // leave all fields uninitialized
 #else
     RayInfo() {}                            // leave all fields uninitialized
@@ -187,7 +187,7 @@ class RayInfo<double, 3>
     APPLESEED_SIMD4_ALIGN Vector<uint32, 4> m_sgn_dir;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     RayInfo() = default;                    // leave all fields uninitialized
 #else
     RayInfo() {}                            // leave all fields uninitialized

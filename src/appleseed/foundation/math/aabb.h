@@ -72,7 +72,7 @@ class AABBBase
     VectorType min, max;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     AABBBase() = default;               // leave all components uninitialized
 #else
     AABBBase() {}                       // leave all components uninitialized
@@ -172,7 +172,7 @@ class AABB
     typedef AABB<T, N> AABBType;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     AABB() = default;                   // leave all components uninitialized
 #else
     AABB() {}                           // leave all components uninitialized

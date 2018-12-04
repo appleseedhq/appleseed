@@ -66,7 +66,7 @@ class Quaternion
     VectorType  v;                                          // vector part
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     Quaternion() = default;                                 // leave all components uninitialized
 #else
     Quaternion() {}                                         // leave all components uninitialized

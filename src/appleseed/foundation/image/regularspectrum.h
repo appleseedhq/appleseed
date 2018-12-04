@@ -65,7 +65,7 @@ class RegularSpectrum
 #ifdef APPLESEED_USE_SSE
     RegularSpectrum();
 #else
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     RegularSpectrum() = default;                            // leave all components uninitialized
 #else
     RegularSpectrum() {}                                    // leave all components uninitialized

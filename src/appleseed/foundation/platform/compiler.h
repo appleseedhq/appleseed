@@ -44,6 +44,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/platform/compilerfeatures.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -219,20 +220,6 @@ namespace foundation
 // Other compilers: ignore.
 #else
     #define APPLESEED_UNUSED
-#endif
-
-
-//
-//  noexcept support.
-//
-
-// Visual C++ 2012 and earlier: ignore.
-#if defined _MSC_VER && _MSC_VER < 1800
-    #define APPLESEED_NOEXCEPT
-
-// Other compilers.
-#else
-    #define APPLESEED_NOEXCEPT noexcept
 #endif
 
 
