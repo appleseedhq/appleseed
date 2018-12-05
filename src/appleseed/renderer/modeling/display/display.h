@@ -32,7 +32,6 @@
 #include "renderer/modeling/entity/entity.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
@@ -48,7 +47,7 @@ namespace renderer
 {
 
 //
-// Plugin tile callback.
+// Tile callback plugin.
 //
 
 class APPLESEED_DLLSYMBOL Display

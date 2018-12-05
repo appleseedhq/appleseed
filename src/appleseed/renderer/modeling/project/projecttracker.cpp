@@ -50,6 +50,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/uid.h"
 

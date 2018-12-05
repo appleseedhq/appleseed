@@ -30,24 +30,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/core/exceptions/exception.h"
-#include "foundation/utility/autoreleaseptr.h"
 
 namespace renderer
 {
-
-//
-// Exception thrown when plugin initialization function fails.
-//
-
-class ExceptionPluginInitializationFailed
-  : public foundation::Exception
-{
-  public:
-    // Constructor.
-    ExceptionPluginInitializationFailed();
-};
-
 
 //
 // A renderer plugin.
@@ -60,35 +45,21 @@ class Plugin
     typedef bool (*InitPluginFnType)();
     typedef void (*UnInitPluginFnType)();
 
-    // Delete this instance.
-    void release();
+    // Constructor.
+    explicit Plugin(const char* filepath);
+
+    // Destructor.
+    ~Plugin();
+
+    // Return the path to this plugin's shared library.
+    const char* get_filepath() const;
 
     // Get a symbol from the plugin.
     void* get_symbol(const char* name, const bool no_throw = true) const;
 
   private:
-    friend class PluginCache;
-
     struct Impl;
     Impl* impl;
-
-    // Constructor.
-    explicit Plugin(Impl* impl);
-
-    // Destructor.
-    ~Plugin();
-};
-
-
-//
-// An application-wide plugin cache.
-//
-
-class PluginCache
-{
-  public:
-    // Retrieve a plugin by its path. Thread-safe.
-    static foundation::auto_release_ptr<Plugin> load(const char* path);
 };
 
 }   // namespace renderer

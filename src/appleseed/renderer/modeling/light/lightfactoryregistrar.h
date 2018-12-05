@@ -29,19 +29,17 @@
 
 #pragma once
 
-// appleseed.renderer headers.
-#include "renderer/modeling/entity/entityfactoryregistrar.h"
-
 // appleseed.foundation headers.
 #include "foundation/utility/api/apiarray.h"
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/searchpaths.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer      { class ILightFactory; }
+namespace renderer  { class ILightFactory; }
+namespace renderer  { class Light; }
+namespace renderer  { class Plugin; }
 
 namespace renderer
 {
@@ -58,9 +56,9 @@ APPLESEED_DECLARE_APIARRAY(LightFactoryArray, ILightFactory*);
 //
 
 class APPLESEED_DLLSYMBOL LightFactoryRegistrar
-  : public EntityFactoryRegistrar
 {
   public:
+    typedef Light EntityType;
     typedef ILightFactory FactoryType;
     typedef LightFactoryArray FactoryArrayType;
 
@@ -71,8 +69,8 @@ class APPLESEED_DLLSYMBOL LightFactoryRegistrar
     // Destructor.
     ~LightFactoryRegistrar();
 
-    // Reinitialize the registrar; load plugins found in provided search paths.
-    void reinitialize(const foundation::SearchPaths& search_paths);
+    // Register a factory defined in a plugin.
+    void register_factory_plugin(Plugin* plugin, void* plugin_entry_point);
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;
@@ -83,9 +81,6 @@ class APPLESEED_DLLSYMBOL LightFactoryRegistrar
   private:
     struct Impl;
     Impl* impl;
-
-    // Register a factory.
-    void register_factory(foundation::auto_release_ptr<FactoryType> factory);
 };
 
 }   // namespace renderer

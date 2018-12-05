@@ -32,10 +32,24 @@
 #include "dict2dict.h"
 
 // appleseed.renderer headers.
+#include "renderer/api/aov.h"
+#include "renderer/api/bsdf.h"
+#include "renderer/api/bssrdf.h"
+#include "renderer/api/camera.h"
 #include "renderer/api/display.h"
+#include "renderer/api/edf.h"
+#include "renderer/api/environmentedf.h"
+#include "renderer/api/environmentshader.h"
 #include "renderer/api/frame.h"
+#include "renderer/api/light.h"
+#include "renderer/api/material.h"
+#include "renderer/api/object.h"
+#include "renderer/api/postprocessing.h"
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
+#include "renderer/api/surfaceshader.h"
+#include "renderer/api/texture.h"
+#include "renderer/api/volume.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/python.h"
@@ -315,10 +329,10 @@ void bind_project()
         .def("get_light_factory_registrar", &Project::get_factory_registrar<Light>, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("get_material_factory_registrar", &Project::get_factory_registrar<Material>, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("get_object_factory_registrar", &Project::get_factory_registrar<Object>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_post_processing_stage_factory_registrar", &Project::get_factory_registrar<PostProcessingStage>, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("get_surface_shader_factory_registrar", &Project::get_factory_registrar<SurfaceShader>, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("get_texture_factory_registrar", &Project::get_factory_registrar<Texture>, bpy::return_value_policy<bpy::reference_existing_object>())
-
-        .def("reinitialize_factory_registrars", &Project::reinitialize_factory_registrars)
+        .def("get_volume_factory_registrar", &Project::get_factory_registrar<Volume>, bpy::return_value_policy<bpy::reference_existing_object>())
 
         .def("has_path", &Project::has_path)
         .def("set_path", &Project::set_path)

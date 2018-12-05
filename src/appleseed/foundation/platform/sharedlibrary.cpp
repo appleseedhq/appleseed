@@ -52,7 +52,7 @@ ExceptionCannotLoadSharedLib::ExceptionCannotLoadSharedLib(
 {
     string err("Cannot load shared library ");
     err += path;
-    err += ". Error = ";
+    err += ": ";
     err += error_msg;
     set_what(err.c_str());
 }
@@ -68,7 +68,7 @@ ExceptionSharedLibCannotGetSymbol::ExceptionSharedLibCannotGetSymbol(
 {
     string err("Cannot get symbol ");
     err += symbol_name;
-    err += ". Error = ";
+    err += ": ";
     err += error_msg;
     set_what(err.c_str());
 }

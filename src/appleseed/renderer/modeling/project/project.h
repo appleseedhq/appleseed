@@ -30,42 +30,26 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/modeling/aov/aovfactoryregistrar.h"
 #include "renderer/modeling/aov/aovtraits.h"
-#include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/bsdftraits.h"
-#include "renderer/modeling/bssrdf/bssrdffactoryregistrar.h"
 #include "renderer/modeling/bssrdf/bssrdftraits.h"
-#include "renderer/modeling/camera/camerafactoryregistrar.h"
 #include "renderer/modeling/camera/cameratraits.h"
-#include "renderer/modeling/edf/edffactoryregistrar.h"
 #include "renderer/modeling/edf/edftraits.h"
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/entity/entitytraits.h"
-#include "renderer/modeling/environmentedf/environmentedffactoryregistrar.h"
 #include "renderer/modeling/environmentedf/environmentedftraits.h"
-#include "renderer/modeling/environmentshader/environmentshaderfactoryregistrar.h"
 #include "renderer/modeling/environmentshader/environmentshadertraits.h"
-#include "renderer/modeling/light/lightfactoryregistrar.h"
 #include "renderer/modeling/light/lighttraits.h"
-#include "renderer/modeling/material/materialfactoryregistrar.h"
 #include "renderer/modeling/material/materialtraits.h"
-#include "renderer/modeling/object/objectfactoryregistrar.h"
 #include "renderer/modeling/object/objecttraits.h"
-#include "renderer/modeling/postprocessingstage/postprocessingstagefactoryregistrar.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstagetraits.h"
 #include "renderer/modeling/project/configurationcontainer.h"
-#include "renderer/modeling/scene/assemblyfactoryregistrar.h"
 #include "renderer/modeling/scene/assemblytraits.h"
-#include "renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.h"
 #include "renderer/modeling/surfaceshader/surfaceshadertraits.h"
-#include "renderer/modeling/texture/texturefactoryregistrar.h"
 #include "renderer/modeling/texture/texturetraits.h"
-#include "renderer/modeling/volume/volumefactoryregistrar.h"
 #include "renderer/modeling/volume/volumetraits.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
@@ -79,6 +63,7 @@
 namespace foundation    { class SearchPaths; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
+namespace renderer      { class AOV; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class BaseGroup; }
 namespace renderer      { class BSDF; }
@@ -94,6 +79,7 @@ namespace renderer      { class LightPathRecorder; }
 namespace renderer      { class Material; }
 namespace renderer      { class Object; }
 namespace renderer      { class OnFrameBeginRecorder; }
+namespace renderer      { class PluginStore; }
 namespace renderer      { class PostProcessingStage; }
 namespace renderer      { class Scene; }
 namespace renderer      { class SurfaceShader; }
@@ -157,6 +143,9 @@ class APPLESEED_DLLSYMBOL Project
     // Return nullptr if the project does not contain a display.
     Display* get_display() const;
 
+    // Access the plugin store.
+    PluginStore& get_plugin_store() const;
+
     // Access the light path recorder.
     LightPathRecorder& get_light_path_recorder() const;
 
@@ -169,9 +158,6 @@ class APPLESEED_DLLSYMBOL Project
     // Return the factory registrar for a given entity type (e.g. `renderer::BSDF`).
     template <typename Entity>
     const typename EntityTraits<Entity>::FactoryRegistrarType& get_factory_registrar() const;
-
-    // Reinitialize all factory registrars; load plugins found in project's search paths.
-    void reinitialize_factory_registrars();
 
     // Expose asset file paths referenced by this entity to the outside.
     void collect_asset_paths(foundation::StringArray& paths) const override;
@@ -202,25 +188,8 @@ class APPLESEED_DLLSYMBOL Project
   private:
     friend class ProjectFactory;
 
-    // Must be declared first.
     struct Impl;
     Impl* impl;
-
-    AOVFactoryRegistrar                 m_aov_factory_registrar;
-    AssemblyFactoryRegistrar            m_assembly_factory_registrar;
-    BSDFFactoryRegistrar                m_bsdf_factory_registrar;
-    BSSRDFFactoryRegistrar              m_bssrdf_factory_registrar;
-    CameraFactoryRegistrar              m_camera_factory_registrar;
-    EDFFactoryRegistrar                 m_edf_factory_registrar;
-    EnvironmentEDFFactoryRegistrar      m_environment_edf_factory_registrar;
-    EnvironmentShaderFactoryRegistrar   m_environment_shader_factory_registrar;
-    LightFactoryRegistrar               m_light_factory_registrar;
-    MaterialFactoryRegistrar            m_material_factory_registrar;
-    ObjectFactoryRegistrar              m_object_factory_registrar;
-    PostProcessingStageFactoryRegistrar m_post_processing_stage_factory_registrar;
-    SurfaceShaderFactoryRegistrar       m_surface_shader_factory_registrar;
-    TextureFactoryRegistrar             m_texture_factory_registrar;
-    VolumeFactoryRegistrar              m_volume_factory_registrar;
 
     // Constructor.
     explicit Project(const char* name);
@@ -230,7 +199,24 @@ class APPLESEED_DLLSYMBOL Project
 
     void add_base_configurations();
     void add_default_configuration(const char* name, const char* base_name);
+    void register_plugin_handlers();
 };
+
+template <> APPLESEED_DLLSYMBOL const EntityTraits<AOV>::FactoryRegistrarType& Project::get_factory_registrar<AOV>() const;
+template <> APPLESEED_DLLSYMBOL const EntityTraits<Assembly>::FactoryRegistrarType& Project::get_factory_registrar<Assembly>() const;
+template <> APPLESEED_DLLSYMBOL const EntityTraits<BSDF>::FactoryRegistrarType& Project::get_factory_registrar<BSDF>() const;
+template <> APPLESEED_DLLSYMBOL const EntityTraits<BSSRDF>::FactoryRegistrarType& Project::get_factory_registrar<BSSRDF>() const;
+template <> APPLESEED_DLLSYMBOL const EntityTraits<Camera>::FactoryRegistrarType& Project::get_factory_registrar<Camera>() const;
+template <> APPLESEED_DLLSYMBOL const EntityTraits<EDF>::FactoryRegistrarType& Project::get_factory_registrar<EDF>() const;
+template <> APPLESEED_DLLSYMBOL const EntityTraits<EnvironmentEDF>::FactoryRegistrarType& Project::get_factory_registrar<EnvironmentEDF>() const;
+template <> APPLESEED_DLLSYMBOL const EntityTraits<EnvironmentShader>::FactoryRegistrarType& Project::get_factory_registrar<EnvironmentShader>() const;
+template <> APPLESEED_DLLSYMBOL const EntityTraits<Light>::FactoryRegistrarType& Project::get_factory_registrar<Light>() const;
+template <> APPLESEED_DLLSYMBOL const EntityTraits<Material>::FactoryRegistrarType& Project::get_factory_registrar<Material>() const;
+template <> APPLESEED_DLLSYMBOL const EntityTraits<Object>::FactoryRegistrarType& Project::get_factory_registrar<Object>() const;
+template <> APPLESEED_DLLSYMBOL const EntityTraits<PostProcessingStage>::FactoryRegistrarType& Project::get_factory_registrar<PostProcessingStage>() const;
+template <> APPLESEED_DLLSYMBOL const EntityTraits<SurfaceShader>::FactoryRegistrarType& Project::get_factory_registrar<SurfaceShader>() const;
+template <> APPLESEED_DLLSYMBOL const EntityTraits<Texture>::FactoryRegistrarType& Project::get_factory_registrar<Texture>() const;
+template <> APPLESEED_DLLSYMBOL const EntityTraits<Volume>::FactoryRegistrarType& Project::get_factory_registrar<Volume>() const;
 
 
 //
@@ -243,100 +229,5 @@ class APPLESEED_DLLSYMBOL ProjectFactory
     // Create a new project.
     static foundation::auto_release_ptr<Project> create(const char* name);
 };
-
-
-//
-// Project class implementation.
-//
-
-template <>
-inline const EntityTraits<AOV>::FactoryRegistrarType& Project::get_factory_registrar<AOV>() const
-{
-    return m_aov_factory_registrar;
-}
-
-template <>
-inline const EntityTraits<Assembly>::FactoryRegistrarType& Project::get_factory_registrar<Assembly>() const
-{
-    return m_assembly_factory_registrar;
-}
-
-template <>
-inline const EntityTraits<BSDF>::FactoryRegistrarType& Project::get_factory_registrar<BSDF>() const
-{
-    return m_bsdf_factory_registrar;
-}
-
-template <>
-inline const EntityTraits<BSSRDF>::FactoryRegistrarType& Project::get_factory_registrar<BSSRDF>() const
-{
-    return m_bssrdf_factory_registrar;
-}
-
-template <>
-inline const EntityTraits<Camera>::FactoryRegistrarType& Project::get_factory_registrar<Camera>() const
-{
-    return m_camera_factory_registrar;
-}
-
-template <>
-inline const EntityTraits<EDF>::FactoryRegistrarType& Project::get_factory_registrar<EDF>() const
-{
-    return m_edf_factory_registrar;
-}
-
-template <>
-inline const EntityTraits<EnvironmentEDF>::FactoryRegistrarType& Project::get_factory_registrar<EnvironmentEDF>() const
-{
-    return m_environment_edf_factory_registrar;
-}
-
-template <>
-inline const EntityTraits<EnvironmentShader>::FactoryRegistrarType& Project::get_factory_registrar<EnvironmentShader>() const
-{
-    return m_environment_shader_factory_registrar;
-}
-
-template <>
-inline const EntityTraits<Light>::FactoryRegistrarType& Project::get_factory_registrar<Light>() const
-{
-    return m_light_factory_registrar;
-}
-
-template <>
-inline const EntityTraits<Material>::FactoryRegistrarType& Project::get_factory_registrar<Material>() const
-{
-    return m_material_factory_registrar;
-}
-
-template <>
-inline const EntityTraits<Object>::FactoryRegistrarType& Project::get_factory_registrar<Object>() const
-{
-    return m_object_factory_registrar;
-}
-
-template <>
-inline const EntityTraits<PostProcessingStage>::FactoryRegistrarType& Project::get_factory_registrar<PostProcessingStage>() const
-{
-    return m_post_processing_stage_factory_registrar;
-}
-
-template <>
-inline const EntityTraits<SurfaceShader>::FactoryRegistrarType& Project::get_factory_registrar<SurfaceShader>() const
-{
-    return m_surface_shader_factory_registrar;
-}
-
-template <>
-inline const EntityTraits<Texture>::FactoryRegistrarType& Project::get_factory_registrar<Texture>() const
-{
-    return m_texture_factory_registrar;
-}
-
-template <>
-inline const EntityTraits<Volume>::FactoryRegistrarType& Project::get_factory_registrar<Volume>() const
-{
-    return m_volume_factory_registrar;
-}
 
 }   // namespace renderer

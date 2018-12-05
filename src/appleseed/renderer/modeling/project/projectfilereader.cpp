@@ -97,6 +97,7 @@
 #include "renderer/modeling/volume/volume.h"
 #include "renderer/modeling/volume/volumefactoryregistrar.h"
 #include "renderer/utility/paramarray.h"
+#include "renderer/utility/pluginstore.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -2856,7 +2857,8 @@ namespace
 
         void end_element() override
         {
-            m_project->reinitialize_factory_registrars();
+            // Once all search paths are set, discover and load plugins.
+            m_project->get_plugin_store().load_all_plugins_from_paths(m_project->search_paths());
         }
 
         void end_child_element(
