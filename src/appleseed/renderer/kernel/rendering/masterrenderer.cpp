@@ -62,6 +62,7 @@
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/otherwise.h"
+#include "foundation/utility/searchpaths.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/stopwatch.h"
 

@@ -34,35 +34,38 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/lighting/lightpathrecorder.h"
+#include "renderer/modeling/aov/aovfactoryregistrar.h"
+#include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
+#include "renderer/modeling/bssrdf/bssrdffactoryregistrar.h"
+#include "renderer/modeling/camera/camerafactoryregistrar.h"
 #include "renderer/modeling/display/display.h"
-#include "renderer/modeling/edf/edf.h"
-#include "renderer/modeling/environment/environment.h"
-#include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/environmentshader/environmentshader.h"
+#include "renderer/modeling/edf/edffactoryregistrar.h"
+#include "renderer/modeling/environmentedf/environmentedffactoryregistrar.h"
+#include "renderer/modeling/environmentshader/environmentshaderfactoryregistrar.h"
 #include "renderer/modeling/frame/frame.h"
-#include "renderer/modeling/light/light.h"
-#include "renderer/modeling/material/material.h"
-#include "renderer/modeling/object/object.h"
+#include "renderer/modeling/light/lightfactoryregistrar.h"
+#include "renderer/modeling/material/materialfactoryregistrar.h"
+#include "renderer/modeling/object/objectfactoryregistrar.h"
+#include "renderer/modeling/postprocessingstage/postprocessingstagefactoryregistrar.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/project/projectformatrevision.h"
-#include "renderer/modeling/scene/assembly.h"
-#include "renderer/modeling/scene/assemblyinstance.h"
-#include "renderer/modeling/scene/basegroup.h"
+#include "renderer/modeling/scene/assemblyfactoryregistrar.h"
 #include "renderer/modeling/scene/containers.h"
-#include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
-#include "renderer/modeling/surfaceshader/surfaceshader.h"
+#include "renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.h"
+#include "renderer/modeling/texture/texturefactoryregistrar.h"
+#include "renderer/modeling/volume/volumefactoryregistrar.h"
+#include "renderer/utility/pluginstore.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cassert>
 #include <memory>
+#include <string>
 
 using namespace foundation;
 using namespace std;
@@ -86,15 +89,43 @@ UniqueID Project::get_class_uid()
 
 struct Project::Impl
 {
-    size_t                      m_format_revision;
-    string                      m_path;
-    auto_release_ptr<Scene>     m_scene;
-    auto_release_ptr<Frame>     m_frame;
-    auto_release_ptr<Display>   m_display;
-    LightPathRecorder           m_light_path_recorder;
-    ConfigurationContainer      m_configurations;
-    SearchPaths                 m_search_paths;
-    unique_ptr<TraceContext>    m_trace_context;
+    // The plugin store must live at least as long as the factory registrars
+    // and the scene entities since some factory registrars and some entities
+    // may be defined by plugins. It thus must be constructed first in order
+    // to be destroyed last.
+    PluginStore                         m_plugin_store;
+
+    // Entity factory registrars.
+    AOVFactoryRegistrar                 m_aov_factory_registrar;
+    AssemblyFactoryRegistrar            m_assembly_factory_registrar;
+    BSDFFactoryRegistrar                m_bsdf_factory_registrar;
+    BSSRDFFactoryRegistrar              m_bssrdf_factory_registrar;
+    CameraFactoryRegistrar              m_camera_factory_registrar;
+    EDFFactoryRegistrar                 m_edf_factory_registrar;
+    EnvironmentEDFFactoryRegistrar      m_environment_edf_factory_registrar;
+    EnvironmentShaderFactoryRegistrar   m_environment_shader_factory_registrar;
+    LightFactoryRegistrar               m_light_factory_registrar;
+    MaterialFactoryRegistrar            m_material_factory_registrar;
+    ObjectFactoryRegistrar              m_object_factory_registrar;
+    PostProcessingStageFactoryRegistrar m_post_processing_stage_factory_registrar;
+    SurfaceShaderFactoryRegistrar       m_surface_shader_factory_registrar;
+    TextureFactoryRegistrar             m_texture_factory_registrar;
+    VolumeFactoryRegistrar              m_volume_factory_registrar;
+
+    // Project metadata.
+    size_t                              m_format_revision;
+    string                              m_path;
+    SearchPaths                         m_search_paths;
+
+    // Scene description.
+    auto_release_ptr<Scene>             m_scene;
+    auto_release_ptr<Frame>             m_frame;
+    auto_release_ptr<Display>           m_display;
+    ConfigurationContainer              m_configurations;
+
+    // Project-specific components.
+    LightPathRecorder                   m_light_path_recorder;
+    unique_ptr<TraceContext>            m_trace_context;
 
     Impl()
       : m_format_revision(ProjectFormatRevision)
@@ -109,7 +140,7 @@ Project::Project(const char* name)
 {
     set_name(name);
     add_base_configurations();
-    reinitialize_factory_registrars();
+    register_plugin_handlers();
 }
 
 Project::~Project()
@@ -197,6 +228,11 @@ Display* Project::get_display() const
     return impl->m_display.get();
 }
 
+PluginStore& Project::get_plugin_store() const
+{
+    return impl->m_plugin_store;
+}
+
 LightPathRecorder& Project::get_light_path_recorder() const
 {
     return impl->m_light_path_recorder;
@@ -213,22 +249,94 @@ void Project::add_default_configurations()
     add_default_configuration("interactive", "base_interactive");
 }
 
-void Project::reinitialize_factory_registrars()
+template <>
+const EntityTraits<AOV>::FactoryRegistrarType& Project::get_factory_registrar<AOV>() const
 {
-    m_aov_factory_registrar.reinitialize(impl->m_search_paths);
-    m_assembly_factory_registrar.reinitialize(impl->m_search_paths);
-    m_bsdf_factory_registrar.reinitialize(impl->m_search_paths);
-    m_bssrdf_factory_registrar.reinitialize(impl->m_search_paths);
-    m_camera_factory_registrar.reinitialize(impl->m_search_paths);
-    m_edf_factory_registrar.reinitialize(impl->m_search_paths);
-    m_environment_edf_factory_registrar.reinitialize(impl->m_search_paths);
-    m_environment_shader_factory_registrar.reinitialize(impl->m_search_paths);
-    m_light_factory_registrar.reinitialize(impl->m_search_paths);
-    m_material_factory_registrar.reinitialize(impl->m_search_paths);
-    m_object_factory_registrar.reinitialize(impl->m_search_paths);
-    m_surface_shader_factory_registrar.reinitialize(impl->m_search_paths);
-    m_texture_factory_registrar.reinitialize(impl->m_search_paths);
-    m_volume_factory_registrar.reinitialize(impl->m_search_paths);
+    return impl->m_aov_factory_registrar;
+}
+
+template <>
+const EntityTraits<Assembly>::FactoryRegistrarType& Project::get_factory_registrar<Assembly>() const
+{
+    return impl->m_assembly_factory_registrar;
+}
+
+template <>
+const EntityTraits<BSDF>::FactoryRegistrarType& Project::get_factory_registrar<BSDF>() const
+{
+    return impl->m_bsdf_factory_registrar;
+}
+
+template <>
+const EntityTraits<BSSRDF>::FactoryRegistrarType& Project::get_factory_registrar<BSSRDF>() const
+{
+    return impl->m_bssrdf_factory_registrar;
+}
+
+template <>
+const EntityTraits<Camera>::FactoryRegistrarType& Project::get_factory_registrar<Camera>() const
+{
+    return impl->m_camera_factory_registrar;
+}
+
+template <>
+const EntityTraits<EDF>::FactoryRegistrarType& Project::get_factory_registrar<EDF>() const
+{
+    return impl->m_edf_factory_registrar;
+}
+
+template <>
+const EntityTraits<EnvironmentEDF>::FactoryRegistrarType& Project::get_factory_registrar<EnvironmentEDF>() const
+{
+    return impl->m_environment_edf_factory_registrar;
+}
+
+template <>
+const EntityTraits<EnvironmentShader>::FactoryRegistrarType& Project::get_factory_registrar<EnvironmentShader>() const
+{
+    return impl->m_environment_shader_factory_registrar;
+}
+
+template <>
+const EntityTraits<Light>::FactoryRegistrarType& Project::get_factory_registrar<Light>() const
+{
+    return impl->m_light_factory_registrar;
+}
+
+template <>
+const EntityTraits<Material>::FactoryRegistrarType& Project::get_factory_registrar<Material>() const
+{
+    return impl->m_material_factory_registrar;
+}
+
+template <>
+const EntityTraits<Object>::FactoryRegistrarType& Project::get_factory_registrar<Object>() const
+{
+    return impl->m_object_factory_registrar;
+}
+
+template <>
+const EntityTraits<PostProcessingStage>::FactoryRegistrarType& Project::get_factory_registrar<PostProcessingStage>() const
+{
+    return impl->m_post_processing_stage_factory_registrar;
+}
+
+template <>
+const EntityTraits<SurfaceShader>::FactoryRegistrarType& Project::get_factory_registrar<SurfaceShader>() const
+{
+    return impl->m_surface_shader_factory_registrar;
+}
+
+template <>
+const EntityTraits<Texture>::FactoryRegistrarType& Project::get_factory_registrar<Texture>() const
+{
+    return impl->m_texture_factory_registrar;
+}
+
+template <>
+const EntityTraits<Volume>::FactoryRegistrarType& Project::get_factory_registrar<Volume>() const
+{
+    return impl->m_volume_factory_registrar;
 }
 
 void Project::collect_asset_paths(StringArray& paths) const
@@ -320,6 +428,43 @@ void Project::add_default_configuration(const char* name, const char* base_name)
     configuration->set_base(base_configuration);
 
     impl->m_configurations.insert(configuration);
+}
+
+namespace
+{
+    template <typename EntityFactoryRegistrarType>
+    void register_plugin_handler(PluginStore& plugin_store, EntityFactoryRegistrarType& registrar)
+    {
+        typedef typename EntityFactoryRegistrarType::EntityType EntityType;
+
+        const string entry_point_name =
+            format("appleseed_create_{0}_factory", EntityTraits<EntityType>::get_entity_type_name());
+
+        plugin_store.register_plugin_handler(
+            entry_point_name.c_str(),
+            [&registrar](Plugin* plugin, void* plugin_entry_point)
+            {
+                registrar.register_factory_plugin(plugin, plugin_entry_point);
+            });
+    }
+}
+
+void Project::register_plugin_handlers()
+{
+    register_plugin_handler(impl->m_plugin_store, impl->m_aov_factory_registrar);
+    register_plugin_handler(impl->m_plugin_store, impl->m_assembly_factory_registrar);
+    register_plugin_handler(impl->m_plugin_store, impl->m_bsdf_factory_registrar);
+    register_plugin_handler(impl->m_plugin_store, impl->m_bssrdf_factory_registrar);
+    register_plugin_handler(impl->m_plugin_store, impl->m_camera_factory_registrar);
+    register_plugin_handler(impl->m_plugin_store, impl->m_edf_factory_registrar);
+    register_plugin_handler(impl->m_plugin_store, impl->m_environment_edf_factory_registrar);
+    register_plugin_handler(impl->m_plugin_store, impl->m_environment_shader_factory_registrar);
+    register_plugin_handler(impl->m_plugin_store, impl->m_light_factory_registrar);
+    register_plugin_handler(impl->m_plugin_store, impl->m_material_factory_registrar);
+    register_plugin_handler(impl->m_plugin_store, impl->m_object_factory_registrar);
+    register_plugin_handler(impl->m_plugin_store, impl->m_surface_shader_factory_registrar);
+    register_plugin_handler(impl->m_plugin_store, impl->m_texture_factory_registrar);
+    register_plugin_handler(impl->m_plugin_store, impl->m_volume_factory_registrar);
 }
 
 

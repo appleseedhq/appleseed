@@ -31,7 +31,7 @@
 #include "environmentedffactoryregistrar.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/entity/registerentityfactories.h"
+#include "renderer/modeling/entity/entityfactoryregistrar.h"
 #include "renderer/modeling/environmentedf/constantenvironmentedf.h"
 #include "renderer/modeling/environmentedf/constanthemisphereenvironmentedf.h"
 #include "renderer/modeling/environmentedf/environmentedftraits.h"
@@ -43,16 +43,9 @@
 #include "renderer/modeling/environmentedf/preethamenvironmentedf.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
-#include "foundation/utility/registrar.h"
-
-// Standard headers.
-#include <cassert>
-#include <string>
-#include <utility>
+#include "foundation/utility/autoreleaseptr.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -60,14 +53,26 @@ namespace renderer
 APPLESEED_DEFINE_APIARRAY(EnvironmentEDFFactoryArray);
 
 struct EnvironmentEDFFactoryRegistrar::Impl
+  : public EntityFactoryRegistrarImpl<
+        EnvironmentEDFFactoryRegistrar::EntityType,
+        EnvironmentEDFFactoryRegistrar::FactoryType,
+        EnvironmentEDFFactoryRegistrar::FactoryArrayType
+    >
 {
-    Registrar<IEnvironmentEDFFactory> m_registrar;
 };
 
 EnvironmentEDFFactoryRegistrar::EnvironmentEDFFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
-    reinitialize(search_paths);
+    // Register built-in factories.
+    impl->register_factory(auto_release_ptr<FactoryType>(new ConstantEnvironmentEDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new ConstantHemisphereEnvironmentEDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new GradientEnvironmentEDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new HosekEnvironmentEDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new LatLongMapEnvironmentEDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new MirrorBallMapEnvironmentEDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new OSLEnvironmentEDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new PreethamEnvironmentEDFFactory()));
 }
 
 EnvironmentEDFFactoryRegistrar::~EnvironmentEDFFactoryRegistrar()
@@ -75,53 +80,19 @@ EnvironmentEDFFactoryRegistrar::~EnvironmentEDFFactoryRegistrar()
     delete impl;
 }
 
-void EnvironmentEDFFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
+void EnvironmentEDFFactoryRegistrar::register_factory_plugin(Plugin* plugin, void* plugin_entry_point)
 {
-    // The registrar must be cleared before the plugins are unloaded.
-    impl->m_registrar.clear();
-    unload_all_plugins();
-
-    // Register built-in factories.
-    register_factory(auto_release_ptr<FactoryType>(new ConstantEnvironmentEDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new ConstantHemisphereEnvironmentEDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new GradientEnvironmentEDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new HosekEnvironmentEDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new LatLongMapEnvironmentEDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new MirrorBallMapEnvironmentEDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new OSLEnvironmentEDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new PreethamEnvironmentEDFFactory()));
-
-    // Register factories defined in plugins.
-    register_factories_from_plugins<EnvironmentEDF>(
-        search_paths,
-        [this](void* plugin_entry_point)
-        {
-            auto create_fn = reinterpret_cast<IEnvironmentEDFFactory* (*)()>(plugin_entry_point);
-            register_factory(foundation::auto_release_ptr<IEnvironmentEDFFactory>(create_fn()));
-        });
+    impl->register_factory_plugin(plugin, plugin_entry_point);
 }
 
 EnvironmentEDFFactoryArray EnvironmentEDFFactoryRegistrar::get_factories() const
 {
-    FactoryArrayType factories;
-
-    for (const_each<Registrar<FactoryType>::Items> i = impl->m_registrar.items(); i; ++i)
-        factories.push_back(i->second);
-
-    return factories;
+    return impl->get_factories();
 }
 
-const EnvironmentEDFFactoryRegistrar::FactoryType*
-EnvironmentEDFFactoryRegistrar::lookup(const char* name) const
+const EnvironmentEDFFactoryRegistrar::FactoryType* EnvironmentEDFFactoryRegistrar::lookup(const char* name) const
 {
-    assert(name);
-    return impl->m_registrar.lookup(name);
-}
-
-void EnvironmentEDFFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
-{
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, move(factory));
+    return impl->lookup(name);
 }
 
 }   // namespace renderer

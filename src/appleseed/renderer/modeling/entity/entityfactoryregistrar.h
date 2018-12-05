@@ -28,56 +28,82 @@
 
 #pragma once
 
-// appleseed.renderer headers.
-#include "renderer/modeling/entity/entitytraits.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/autoreleaseptr.h"
-
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+#include "foundation/utility/registrar.h"
 
 // Standard headers.
-#include <cstddef>
-#include <functional>
+#include <cassert>
+#include <string>
+#include <utility>
 
 // Forward declarations.
-namespace foundation    { class SearchPaths; }
-namespace renderer      { class Plugin; }
+namespace renderer  { class Plugin; }
 
 namespace renderer
 {
 
 //
-// Base class for factory registrars.
+// Base class for factory registrar implementations.
 //
 
-class APPLESEED_DLLSYMBOL EntityFactoryRegistrar
+template <typename EntityType, typename FactoryType, typename FactoryArrayType>
+class EntityFactoryRegistrarImpl
   : public foundation::NonCopyable
 {
-  protected:
-    // Constructor.
-    EntityFactoryRegistrar();
+  public:
+    // Register a factory.
+    void register_factory(foundation::auto_release_ptr<FactoryType> factory);
 
-    // Destructor.
-    virtual ~EntityFactoryRegistrar();
+    // Register a factory defined in a plugin.
+    void register_factory_plugin(Plugin* plugin, void* plugin_entry_point);
 
-    // Register factories from plugins found in search paths.
-    template <typename Entity>
-    void register_factories_from_plugins(
-        const foundation::SearchPaths&      search_paths,
-        const std::function<void (void*)>&  register_factory);
+    // Retrieve registered factories.
+    FactoryArrayType get_factories() const;
 
-    // Unload all plugins loaded by `register_factories_from_plugins()`.
-    void unload_all_plugins();
+    // Lookup a factory by name.
+    const FactoryType* lookup(const char* name) const;
 
   private:
-    struct Impl;
-    Impl* impl;
-
-    // Store a plugin in order to keep it alive while the registrar exists.
-    void store_plugin(renderer::Plugin* plugin);
+    foundation::Registrar<FactoryType> m_registrar;
 };
+
+
+//
+// EntityFactoryRegistrar class implementation.
+//
+
+template <typename EntityType, typename FactoryType, typename FactoryArrayType>
+void EntityFactoryRegistrarImpl<EntityType, FactoryType, FactoryArrayType>::register_factory(foundation::auto_release_ptr<FactoryType> factory)
+{
+    const std::string model = factory->get_model();
+    m_registrar.insert(model, std::move(factory));
+}
+
+template <typename EntityType, typename FactoryType, typename FactoryArrayType>
+void EntityFactoryRegistrarImpl<EntityType, FactoryType, FactoryArrayType>::register_factory_plugin(Plugin* plugin, void* plugin_entry_point)
+{
+    const auto create_factory = reinterpret_cast<FactoryType* (*)()>(plugin_entry_point);
+    register_factory(foundation::auto_release_ptr<FactoryType>(create_factory()));
+}
+
+template <typename EntityType, typename FactoryType, typename FactoryArrayType>
+FactoryArrayType EntityFactoryRegistrarImpl<EntityType, FactoryType, FactoryArrayType>::get_factories() const
+{
+    FactoryArrayType factories;
+
+    for (const auto& item : m_registrar.items())
+        factories.push_back(item.second);
+
+    return factories;
+}
+
+template <typename EntityType, typename FactoryType, typename FactoryArrayType>
+const FactoryType* EntityFactoryRegistrarImpl<EntityType, FactoryType, FactoryArrayType>::lookup(const char* name) const
+{
+    assert(name);
+    return m_registrar.lookup(name);
+}
 
 }   // namespace renderer

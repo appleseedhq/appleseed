@@ -1631,7 +1631,6 @@ set (renderer_modeling_entity_sources
     renderer/modeling/entity/connectableentity.h
     renderer/modeling/entity/entity.cpp
     renderer/modeling/entity/entity.h
-    renderer/modeling/entity/entityfactoryregistrar.cpp
     renderer/modeling/entity/entityfactoryregistrar.h
     renderer/modeling/entity/entitymap.cpp
     renderer/modeling/entity/entitymap.h
@@ -1642,7 +1641,6 @@ set (renderer_modeling_entity_sources
     renderer/modeling/entity/onframebeginrecorder.h
     renderer/modeling/entity/onrenderbeginrecorder.cpp
     renderer/modeling/entity/onrenderbeginrecorder.h
-    renderer/modeling/entity/registerentityfactories.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_entity_sources}
@@ -2023,6 +2021,8 @@ set (renderer_utility_sources
     renderer/utility/paramarray.h
     renderer/utility/plugin.cpp
     renderer/utility/plugin.h
+    renderer/utility/pluginstore.cpp
+    renderer/utility/pluginstore.h
     renderer/utility/projectpoints.cpp
     renderer/utility/projectpoints.h
     renderer/utility/seexpr.h

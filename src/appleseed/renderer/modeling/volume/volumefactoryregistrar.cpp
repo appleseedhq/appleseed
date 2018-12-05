@@ -30,21 +30,14 @@
 #include "volumefactoryregistrar.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/entity/registerentityfactories.h"
+#include "renderer/modeling/entity/entityfactoryregistrar.h"
 #include "renderer/modeling/volume/genericvolume.h"
 #include "renderer/modeling/volume/volumetraits.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
-#include "foundation/utility/registrar.h"
-
-// Standard headers.
-#include <cassert>
-#include <string>
-#include <utility>
+#include "foundation/utility/autoreleaseptr.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -52,14 +45,19 @@ namespace renderer
 APPLESEED_DEFINE_APIARRAY(VolumeFactoryArray);
 
 struct VolumeFactoryRegistrar::Impl
+  : public EntityFactoryRegistrarImpl<
+        VolumeFactoryRegistrar::EntityType,
+        VolumeFactoryRegistrar::FactoryType,
+        VolumeFactoryRegistrar::FactoryArrayType
+    >
 {
-    Registrar<IVolumeFactory> m_registrar;
 };
 
 VolumeFactoryRegistrar::VolumeFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
-    reinitialize(search_paths);
+    // Register built-in factories.
+    impl->register_factory(auto_release_ptr<FactoryType>(new GenericVolumeFactory()));
 }
 
 VolumeFactoryRegistrar::~VolumeFactoryRegistrar()
@@ -67,45 +65,19 @@ VolumeFactoryRegistrar::~VolumeFactoryRegistrar()
     delete impl;
 }
 
-void VolumeFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
+void VolumeFactoryRegistrar::register_factory_plugin(Plugin* plugin, void* plugin_entry_point)
 {
-    // The registrar must be cleared before the plugins are unloaded.
-    impl->m_registrar.clear();
-    unload_all_plugins();
-
-    // Register built-in factories.
-    register_factory(auto_release_ptr<FactoryType>(new GenericVolumeFactory()));
-
-    // Register factories defined in plugins.
-    register_factories_from_plugins<Volume>(
-        search_paths,
-        [this](void* plugin_entry_point)
-        {
-            auto create_fn = reinterpret_cast<IVolumeFactory* (*)()>(plugin_entry_point);
-            register_factory(foundation::auto_release_ptr<IVolumeFactory>(create_fn()));
-        });
+    impl->register_factory_plugin(plugin, plugin_entry_point);
 }
 
 VolumeFactoryArray VolumeFactoryRegistrar::get_factories() const
 {
-    FactoryArrayType factories;
-
-    for (const_each<Registrar<FactoryType>::Items> i = impl->m_registrar.items(); i; ++i)
-        factories.push_back(i->second);
-
-    return factories;
+    return impl->get_factories();
 }
 
 const VolumeFactoryRegistrar::FactoryType* VolumeFactoryRegistrar::lookup(const char* name) const
 {
-    assert(name);
-    return impl->m_registrar.lookup(name);
-}
-
-void VolumeFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
-{
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, move(factory));
+    return impl->lookup(name);
 }
 
 }   // namespace renderer

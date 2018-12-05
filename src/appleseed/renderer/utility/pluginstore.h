@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2018 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,53 +29,54 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/utility/api/apiarray.h"
-#include "foundation/utility/searchpaths.h"
+#include "foundation/core/concepts/noncopyable.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+// Standard headers.
+#include <functional>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
-namespace renderer  { class IAssemblyFactory; }
-namespace renderer  { class Plugin; }
+namespace foundation    { class SearchPaths; }
+namespace renderer      { class Plugin; }
 
 namespace renderer
 {
 
 //
-// An array of assembly factories.
+// All methods of this class are thread-safe.
 //
 
-APPLESEED_DECLARE_APIARRAY(AssemblyFactoryArray, IAssemblyFactory*);
-
-
-//
-// Assembly factory registrar.
-//
-
-class APPLESEED_DLLSYMBOL AssemblyFactoryRegistrar
+class PluginStore
+  : public foundation::NonCopyable
 {
   public:
-    typedef Assembly EntityType;
-    typedef IAssemblyFactory FactoryType;
-    typedef AssemblyFactoryArray FactoryArrayType;
+    typedef std::function<void (Plugin*, void*)> PluginHandlerType;
 
     // Constructor.
-    explicit AssemblyFactoryRegistrar(
-        const foundation::SearchPaths& search_paths = foundation::SearchPaths());
+    PluginStore();
 
     // Destructor.
-    ~AssemblyFactoryRegistrar();
+    ~PluginStore();
 
-    // Register a factory defined in a plugin.
-    void register_factory_plugin(Plugin* plugin, void* plugin_entry_point);
+    // Register a plugin handler for a given entry point name.
+    // The plugin handler will be invoked whenever a plugin that defines this entry point is loaded.
+    void register_plugin_handler(
+        const char*                 entry_point_name,
+        const PluginHandlerType&    plugin_handler);
 
-    // Retrieve the registered factories.
-    FactoryArrayType get_factories() const;
+    // Unload all plugins.
+    void unload_all_plugins();
 
-    // Lookup a factory by name.
-    const FactoryType* lookup(const char* name) const;
+    // Load a plugin if it isn't already loaded.
+    Plugin* load_plugin(const char* filepath);
+
+    // Unload a plugin. The plugin must have been previously loaded.
+    void unload_plugin(Plugin* plugin);
+
+    // Load all plugins present inside a given directory.
+    void load_all_plugins_from_path(const char* path);
+
+    // Load all plugins present inside a collection of search paths.
+    void load_all_plugins_from_paths(const foundation::SearchPaths& search_paths);
 
   private:
     struct Impl;
