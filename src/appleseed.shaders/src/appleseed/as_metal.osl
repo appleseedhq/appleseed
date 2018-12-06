@@ -97,7 +97,8 @@ shader as_metal
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
-        int as_blender_input_socket = 0,
+        // Enable at a later stage since presently it breaks backwards compat.
+        // int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
     float in_anisotropy_amount = 0.0
