@@ -185,6 +185,12 @@ class APPLESEED_DLLSYMBOL Frame
         IShadingResultFrameBufferFactory*           buffer_factory,
         const size_t                                pass) const;
 
+    enum class CryptomatteMode
+    {
+        Off,
+        WriteOutputs,
+    };
+
     // Write the main image to disk.
     // Return true if successful, false otherwise.
     bool write_main_image(const char* file_path) const;

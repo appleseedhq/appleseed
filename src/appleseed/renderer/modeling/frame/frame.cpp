@@ -39,6 +39,7 @@
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/aov/aovfactoryregistrar.h"
+#include "renderer/modeling/aov/cryptomatte.h"
 #include "renderer/modeling/aov/denoiseraov.h"
 #include "renderer/modeling/aov/iaovfactory.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
@@ -119,6 +120,7 @@ struct Frame::Impl
     string                          m_checkpoint_create_path;
     bool                            m_checkpoint_resume;
     string                          m_checkpoint_resume_path;
+    CryptomatteMode                 m_cryptomatte_mode;
 
     // When resuming a render, first pass index should be
     // the number of the resumed render's pass + 1.
@@ -135,7 +137,7 @@ struct Frame::Impl
     // Images.
     unique_ptr<Image>               m_image;
     unique_ptr<ImageStack>          m_aov_images;
-
+    CryptomatteAOV*                 m_cryptomatte_aov;
     // Internal state.
     unique_ptr<Filter2f>            m_filter;
     ParamArray                      m_render_info;
@@ -228,6 +230,22 @@ Frame::Frame(
 
     impl->m_initial_pass = 0;
     impl->m_pass_count = params.get_optional<size_t>("passes", 1);
+
+    if (impl->m_cryptomatte_mode != CryptomatteMode::Off)
+    {
+        auto_release_ptr<CryptomatteAOV> aov = CryptomatteAOVFactory::create(m_params);
+        impl->m_cryptomatte_aov = aov.get();
+
+        aov->create_image(
+            impl->m_frame_width,
+            impl->m_frame_height,
+            impl->m_tile_width,
+            impl->m_tile_height,
+            aov_images());
+
+        impl->m_internal_aovs.insert(auto_release_ptr<AOV>(aov));
+    }
+    else impl->m_cryptomatte_aov = nullptr;
 }
 
 Frame::~Frame()
@@ -1145,6 +1163,15 @@ bool Frame::write_main_image(const char* file_path) const
             return false;
     }
 
+    // Write cryptomatte aov image if enabled.
+    if (impl->m_cryptomatte_mode == CryptomatteMode::WriteOutputs)
+    {
+        bf::path boost_file_path(file_path);
+        boost_file_path.replace_extension(".exr");
+        if (!impl->m_cryptomatte_aov->write_images(boost_file_path.string().c_str()))
+            return false;
+    }
+
     return true;
 }
 
@@ -1415,6 +1442,25 @@ void Frame::extract_parameters()
                 "denoiser",
                 "off");
             impl->m_denoising_mode = DenoisingMode::Off;
+        }
+    }
+
+    // Retrieve cryptomatte parameters.
+    {
+        const string cryptomatte_mode = m_params.get_optional<string>("cryptomatte", "off");
+        
+        if (cryptomatte_mode == "off")
+            impl->m_cryptomatte_mode = CryptomatteMode::Off;
+        else if (cryptomatte_mode == "write_outputs")
+            impl->m_cryptomatte_mode = CryptomatteMode::WriteOutputs;
+        else
+        {
+            RENDERER_LOG_ERROR(
+                "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
+                cryptomatte_mode.c_str(),
+                "denoiser",
+                "off");
+            impl->m_cryptomatte_mode = CryptomatteMode::Off;
         }
     }
 
@@ -1702,6 +1748,53 @@ DictionaryArray FrameFactory::get_input_metadata()
             .insert("visible_if",
                 Dictionary()
                     .insert("denoiser", "on")));
+
+    metadata.push_back(
+        Dictionary()
+        .insert("name", "cryptomatte")
+        .insert("label", "Cryptomatte")
+        .insert("type", "enumeration")
+        .insert("items",
+            Dictionary()
+            .insert("Off", "off")
+            .insert("Write Outputs", "write_outputs"))
+        .insert("use", "required")
+        .insert("default", "off")
+        .insert("on_change", "rebuild_form"));
+
+    metadata.push_back(
+        Dictionary()
+        .insert("name", "cryptomatte_type")
+        .insert("label", "Layer Type")
+        .insert("type", "enumeration")
+        .insert("items",
+            Dictionary()
+            .insert("Object Names", "object_names")
+            .insert("Material Names", "material_names"))
+        .insert("use", "optional")
+        .insert("default", "object_names")
+        .insert("visible_if",
+            Dictionary()
+            .insert("cryptomatte", "write_outputs")));
+
+    metadata.push_back(
+        Dictionary()
+        .insert("name", "cryptomatte_num_layers")
+        .insert("label", "Number of Layers")
+        .insert("type", "integer")
+        .insert("min",
+            Dictionary()
+            .insert("value", "1")
+            .insert("type", "hard"))
+        .insert("max",
+            Dictionary()
+            .insert("value", "10")
+            .insert("type", "hard"))
+        .insert("use", "optional")
+        .insert("default", "6")
+        .insert("visible_if",
+            Dictionary()
+            .insert("cryptomatte", "write_outputs")));
 
     return metadata;
 }

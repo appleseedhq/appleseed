@@ -1441,6 +1441,8 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/aovfactoryregistrar.cpp
     renderer/modeling/aov/aovfactoryregistrar.h
     renderer/modeling/aov/aovtraits.h
+    renderer/modeling/aov/cryptomatte.cpp
+    renderer/modeling/aov/cryptomatte.h
     renderer/modeling/aov/denoiseraov.cpp
     renderer/modeling/aov/denoiseraov.h
     renderer/modeling/aov/depthaov.cpp
@@ -2162,6 +2164,7 @@ endif ()
 target_link_libraries (appleseed
     bcd
     ${Boost_LIBRARIES}
+    murmurhash3
     ${CMAKE_DL_LIBS}
     "${APPLESEED_LINK_EXTRA_LIBRARIES}"
 )
