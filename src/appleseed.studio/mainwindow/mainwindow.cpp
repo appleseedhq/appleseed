@@ -1226,7 +1226,7 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
     set_file_widgets_enabled(false, rendering_mode);
     set_project_explorer_enabled(rendering_mode == InteractiveRendering);
     set_rendering_widgets_enabled(true, rendering_mode);
-    set_diagnostics_widgets_enabled(true, rendering_mode);
+    set_diagnostics_widgets_enabled(rendering_mode == InteractiveRendering, rendering_mode);
     m_ui->attribute_editor_scrollarea_contents->setEnabled(rendering_mode == InteractiveRendering);
 
     // Remove light paths tab.
