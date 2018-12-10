@@ -293,12 +293,17 @@ namespace
                 float sun_theta, sun_phi;
                 sun_theta_src->evaluate_uniform(sun_theta);
                 sun_phi_src->evaluate_uniform(sun_phi);
+
+                Transformd scratch;
+                const Transformd& env_edf_transform = env_edf->transform_sequence().evaluate(0.0f, scratch);
+
                 set_transform(
                     Transformd::from_local_to_parent(
                         Matrix4d::make_rotation(
                             Quaterniond::make_rotation(
-                                Vector3d(0.0, 0.0, -1.0),
-                                -Vector3d::make_unit_vector(deg_to_rad(sun_theta), deg_to_rad(sun_phi))))));
+                                Vector3d(0.0, 0.0, -1.0),   // default emission direction of this light
+                                -Vector3d::make_unit_vector(deg_to_rad(sun_theta), deg_to_rad(sun_phi))))) *
+                    env_edf_transform);
             }
 
             // Use the Sun turbidity from the EDF if it has one.
