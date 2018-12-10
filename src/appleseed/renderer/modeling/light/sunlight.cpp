@@ -125,16 +125,26 @@ namespace
             // Evaluate uniform inputs.
             m_inputs.evaluate_uniforms(&m_values);
 
+            // Warn if distance input is not uniform.
             Source* distance_src = get_inputs().source("distance");
             assert(distance_src != nullptr);
-            if (distance_src->is_uniform())
-                distance_src->evaluate_uniform(m_values.m_distance);
-            else
+            if (!distance_src->is_uniform())
             {
                 RENDERER_LOG_WARNING(
                     "distance between sun and scene \"%s\" is not uniform, using default value of 149.6 million km.",
                     get_path().c_str());
                 m_values.m_distance = 149.6f;
+            }
+
+            // Warn if size multiplier input is not uniform.
+            const Source* size_multiplier_src = get_inputs().source("size_multiplier");
+            assert(size_multiplier_src != nullptr);
+            if (!size_multiplier_src->is_uniform())
+            {
+                RENDERER_LOG_WARNING(
+                    "size multiplier of the sun light \"%s\" is not uniform.",
+                    get_path().c_str());
+                m_values.m_size_multiplier = 1.0f;
             }
 
             // Compute the Sun's solid angle.
@@ -148,17 +158,6 @@ namespace
 
             // Apply turbidity bias.
             m_values.m_turbidity += BaseTurbidity;
-
-            const Source* size_multiplier_src = get_inputs().source("size_multiplier");
-            assert(size_multiplier_src != nullptr);
-            if (size_multiplier_src->is_uniform())
-                size_multiplier_src->evaluate_uniform(m_values.m_size_multiplier);
-            else
-            {
-                RENDERER_LOG_WARNING(
-                    "size multiplier of the sun light \"%s\" is not uniform.",
-                    get_path().c_str());
-            }
 
             const Scene::RenderData& scene_data = project.get_scene()->get_render_data();
             m_scene_center = Vector3d(scene_data.m_center);
@@ -337,7 +336,13 @@ namespace
             // Compute the relative optical mass.
             const float cos_theta = -static_cast<float>(outgoing.y);
             const float theta = acos(cos_theta);
-            const float m = 1.0f / (cos_theta + 0.15f * pow(93.885f - rad_to_deg(theta), -1.253f));
+            const float theta_delta = 93.885f - rad_to_deg(theta);
+            if (theta_delta < 0.0f)
+            {
+                radiance.set(0.0f);
+                return;
+            }
+            const float m = 1.0f / (cos_theta + 0.15f * pow(theta_delta, -1.253f));
 
             // Compute transmittance due to Rayleigh scattering.
             RegularSpectrum31f tau_r;
