@@ -85,7 +85,7 @@ namespace
             set_image_spec();
         }
 
-        MultiChannelExrFileWriter::~MultiChannelExrFileWriter()
+        ~MultiChannelExrFileWriter()
         {
             // Destroy the ImageOutput stucture.
             if (m_writer != nullptr)
@@ -522,14 +522,18 @@ struct CryptomatteAOV::Impl
     CryptomatteAOV::CryptomatteType     m_layer_type;
 };
 
-CryptomatteAOV::CryptomatteAOV(
-    int num_layers,
-    CryptomatteType layer_type)
-  : AOV("cryptomatte", ParamArray())
+CryptomatteAOV::CryptomatteAOV(const ParamArray& params)
+  : AOV("cryptomatte", params)
   , impl(new Impl())
 {
-    impl->m_num_layers = num_layers;
-    impl->m_layer_type = layer_type;
+    const string cryptomatte_type = params.get_optional<string>("cryptomatte_type", "object_names");
+    
+    if (cryptomatte_type == "object_names")
+        impl->m_layer_type = CryptomatteAOV::CryptomatteType::ObjectNames;
+    else if (cryptomatte_type == "material_names")
+        impl->m_layer_type = CryptomatteAOV::CryptomatteType::MaterialNames;
+
+    impl->m_num_layers = params.get_optional<int>("cryptomatte_num_layers", 6);
 }
 
 CryptomatteAOV::~CryptomatteAOV()
@@ -584,14 +588,11 @@ void CryptomatteAOV::create_image(
 void CryptomatteAOV::clear_image()
 {
     const int num_channels = (impl->m_num_layers * 2) + 3;
+    vector<float> pixel_values(num_channels, 0.0f);
     for (size_t ry = 0, e = impl->m_image->properties().m_canvas_height; ry < e; ++ry)
     {
         for (size_t rx = 0, e = impl->m_image->properties().m_canvas_width; rx < e; ++rx)
         {
-                vector<float> pixel_values;
-                for (size_t i = 0; i < num_channels; ++i)
-                    pixel_values.push_back(0.0f);
-
                 impl->m_image->set_pixel(rx, ry, pixel_values.data());
         }
     }
@@ -718,19 +719,34 @@ bool CryptomatteAOV::write_images(const char* file_path) const
 // CryptomatteAOVFactory class implementation.
 //
 
-auto_release_ptr<CryptomatteAOV> CryptomatteAOVFactory::create(
-    const ParamArray&           params)
+void CryptomatteAOVFactory::release()
 {
-    const string cryptomatte_type = params.get_optional<string>("cryptomatte_type", "off");
-    CryptomatteAOV::CryptomatteType layer_type;
-    if (cryptomatte_type == "object_names")
-        layer_type = CryptomatteAOV::CryptomatteType::ObjectNames;
-    else if (cryptomatte_type == "material_names")
-        layer_type = CryptomatteAOV::CryptomatteType::MaterialNames;
+    delete this;
+}
 
-    return auto_release_ptr<CryptomatteAOV>(new CryptomatteAOV(
-        params.get_optional<int>("cryptomatte_num_layers", 6),
-        layer_type));
+const char* CryptomatteAOVFactory::get_model() const
+{
+    return CryptomatteAOVModel;
+}
+
+Dictionary CryptomatteAOVFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+        .insert("name", get_model())
+        .insert("label", "Cryptomatte");
+}
+
+DictionaryArray CryptomatteAOVFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
+    return metadata;
+}
+
+auto_release_ptr<AOV> CryptomatteAOVFactory::create(
+    const ParamArray&           params) const
+{
+    return auto_release_ptr<AOV>(new CryptomatteAOV(params));
 }
 
 }   // namespace renderer

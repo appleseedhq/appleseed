@@ -63,9 +63,7 @@ class CryptomatteAOV
         MaterialNames,
     };
 
-    CryptomatteAOV(
-        int             num_layers,
-        CryptomatteType layer_type);
+    CryptomatteAOV(const ParamArray& params);
 
     ~CryptomatteAOV() override;
 
@@ -102,13 +100,24 @@ class CryptomatteAOV
 // A factory for cryptomatte AOVs.
 //
 
-
-class CryptomatteAOVFactory
+class APPLESEED_DLLSYMBOL CryptomatteAOVFactory
+    : public IAOVFactory
 {
   public:
+      // Delete this instance.
+      void release() override;
+
+      // Return a string identifying this AOV model.
+      const char* get_model() const override;
+
+      // Return metadata for this AOV model.
+      foundation::Dictionary get_model_metadata() const override;
+
+      // Return metadata for the inputs of this AOV model.
+      foundation::DictionaryArray get_input_metadata() const override;
+
     // Create a new AOV instance.
-    static foundation::auto_release_ptr<CryptomatteAOV> create(
-        const ParamArray&           params);
+      foundation::auto_release_ptr<AOV> create(const ParamArray&           params) const override;
 };
 
 }       // namespace renderer
