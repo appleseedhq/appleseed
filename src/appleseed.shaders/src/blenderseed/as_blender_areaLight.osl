@@ -34,25 +34,30 @@ shader as_blender_areaLight
 (
     color in_color = color(1)
     [[
-        string label = "Color"
+        string label = "Color",
+        string page = "Emission",
     ]],
     float in_intensity = 1.0
     [[
-        string label = "intensity"
+        string label = "intensity",
+        string page = "Emission",
     ]],
     float in_intensity_scale = 1.0
     [[
-        string label = "Intensity Scale"
+        string label = "Intensity Scale",
+        string page = "Emission",
     ]],
     float in_exposure = 0.0
     [[
-        string label = "Exposure"
+        string label = "Exposure",
+        string page = "Emission",
     ]],
     int in_normalize = 0
     [[
         string label = "Normalize",
         string widget = "checkBox",
-        int as_blender_input_socket = 0
+        int as_blender_input_socket = 0,
+        string page = "Emission",
     ]],
     output closure color out_output = 0
     [[
