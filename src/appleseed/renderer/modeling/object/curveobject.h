@@ -81,6 +81,18 @@ class APPLESEED_DLLSYMBOL CurveObject
     void push_curve_count(const size_t count);
     size_t get_curve_count() const;
 
+    // Insert and access vertices.
+    void push_vertices(const std::vector<GVector3> vertices);
+    std::vector<GVector3> get_vertices() const;
+
+    // Insert and access curve indices.
+    void push_vertex_counts(const std::vector<size_t> vertex_counts);
+    std::vector<size_t> get_vertex_counts() const;
+
+    // Insert and access curve widths.
+    void push_widths(const std::vector<GScalar> widths);
+    std::vector<GScalar> get_widths() const;
+
     // Insert and access curves.
     void reserve_curves1(const size_t count);
     void reserve_curves3(const size_t count);

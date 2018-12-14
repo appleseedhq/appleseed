@@ -65,6 +65,9 @@ struct CurveObject::Impl
     vector<Curve1Type>  m_curves1;
     vector<Curve3Type>  m_curves3;
     vector<string>      m_material_slots;
+    vector<GVector3>    m_vertices;
+    vector<GScalar>     m_widths;
+    vector<size_t>      m_vertex_counts;
 
     Impl()
     {
@@ -164,6 +167,45 @@ size_t CurveObject::push_curve1(const Curve1Type& curve)
     const size_t index = impl->m_curves1.size();
     impl->m_curves1.push_back(curve);
     return index;
+}
+
+void CurveObject::push_vertices(const vector<GVector3> vertices)
+{
+    for (size_t vertex = 0; vertex < vertices.size(); ++vertex)
+    {
+        impl->m_vertices.push_back(vertices[vertex]);
+    }
+}
+
+vector<GVector3> CurveObject::get_vertices() const
+{
+    return impl->m_vertices;
+}
+
+void CurveObject::push_widths(const vector<GScalar> widths)
+{
+    for (size_t width = 0; width < widths.size(); ++width)
+    {
+        impl->m_widths.push_back(widths[width]);
+    }
+}
+
+vector<GScalar> CurveObject::get_widths() const
+{
+    return impl->m_widths;
+}
+
+void CurveObject::push_vertex_counts(const vector<size_t> vertex_counts)
+{
+    for (size_t curve = 0; curve < vertex_counts.size(); ++curve)
+    {
+        impl->m_vertex_counts.push_back(vertex_counts[curve]);
+    }
+}
+
+vector<size_t> CurveObject::get_vertex_counts() const
+{
+    return impl->m_vertex_counts;
 }
 
 size_t CurveObject::push_curve3(const Curve3Type& curve)
