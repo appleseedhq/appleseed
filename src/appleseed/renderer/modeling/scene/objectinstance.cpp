@@ -258,7 +258,7 @@ Object* ObjectInstance::find_object() const
 
 GAABB3 ObjectInstance::compute_parent_bbox() const
 {
-    // In many places, we need the parent-space bounding box of an object instance
+    // In many places, we need the parent space bounding box of an object instance
     // before input binding is performed, i.e. before the instantiated object is
     // bound to the instance. Therefore we manually look the object up through the
     // assembly hierarchy instead of simply using m_object.
@@ -266,7 +266,7 @@ GAABB3 ObjectInstance::compute_parent_bbox() const
     const Object* object = find_object();
 
     return
-        object
+        object != nullptr
             ? impl->m_transform.to_parent(object->compute_local_bbox())
             : GAABB3::invalid();
 }
