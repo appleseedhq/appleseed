@@ -140,6 +140,8 @@ inline bool Node<AABB>::is_leaf() const
 template <typename AABB>
 inline void Node<AABB>::set_left_bbox(const AABBType& bbox)
 {
+    assert(is_interior());
+
     for (size_t i = 0; i < Dimension; ++i)
     {
         m_bbox_data[i * 4 + 0] = bbox.min[i];
@@ -150,6 +152,8 @@ inline void Node<AABB>::set_left_bbox(const AABBType& bbox)
 template <typename AABB>
 inline void Node<AABB>::set_right_bbox(const AABBType& bbox)
 {
+    assert(is_interior());
+
     for (size_t i = 0; i < Dimension; ++i)
     {
         m_bbox_data[i * 4 + 1] = bbox.min[i];
@@ -160,6 +164,8 @@ inline void Node<AABB>::set_right_bbox(const AABBType& bbox)
 template <typename AABB>
 inline AABB Node<AABB>::get_left_bbox() const
 {
+    assert(is_interior());
+
     AABBType bbox;
 
     for (size_t i = 0; i < Dimension; ++i)
@@ -174,6 +180,8 @@ inline AABB Node<AABB>::get_left_bbox() const
 template <typename AABB>
 inline AABB Node<AABB>::get_right_bbox() const
 {
+    assert(is_interior());
+
     AABBType bbox;
 
     for (size_t i = 0; i < Dimension; ++i)
@@ -188,6 +196,7 @@ inline AABB Node<AABB>::get_right_bbox() const
 template <typename AABB>
 inline void Node<AABB>::set_left_bbox_index(const size_t index)
 {
+    assert(is_interior());
     assert(index <= 0xFFFFFFFFUL);
     m_left_bbox_index = static_cast<uint32>(index);
 }
@@ -195,6 +204,7 @@ inline void Node<AABB>::set_left_bbox_index(const size_t index)
 template <typename AABB>
 inline void Node<AABB>::set_left_bbox_count(const size_t count)
 {
+    assert(is_interior());
     assert(count <= 0xFFFFFFFFUL);
     m_left_bbox_count = static_cast<uint32>(count);
 }
@@ -202,6 +212,7 @@ inline void Node<AABB>::set_left_bbox_count(const size_t count)
 template <typename AABB>
 inline void Node<AABB>::set_right_bbox_index(const size_t index)
 {
+    assert(is_interior());
     assert(index <= 0xFFFFFFFFUL);
     m_right_bbox_index = static_cast<uint32>(index);
 }
@@ -209,6 +220,7 @@ inline void Node<AABB>::set_right_bbox_index(const size_t index)
 template <typename AABB>
 inline void Node<AABB>::set_right_bbox_count(const size_t count)
 {
+    assert(is_interior());
     assert(count <= 0xFFFFFFFFUL);
     m_right_bbox_count = static_cast<uint32>(count);
 }
@@ -216,24 +228,28 @@ inline void Node<AABB>::set_right_bbox_count(const size_t count)
 template <typename AABB>
 inline size_t Node<AABB>::get_left_bbox_index() const
 {
+    assert(is_interior());
     return static_cast<uint32>(m_left_bbox_index);
 }
 
 template <typename AABB>
 inline size_t Node<AABB>::get_left_bbox_count() const
 {
+    assert(is_interior());
     return static_cast<uint32>(m_left_bbox_count);
 }
 
 template <typename AABB>
 inline size_t Node<AABB>::get_right_bbox_index() const
 {
+    assert(is_interior());
     return static_cast<uint32>(m_right_bbox_index);
 }
 
 template <typename AABB>
 inline size_t Node<AABB>::get_right_bbox_count() const
 {
+    assert(is_interior());
     return static_cast<uint32>(m_right_bbox_count);
 }
 
@@ -246,6 +262,7 @@ template <typename AABB>
 template <typename U>
 inline void Node<AABB>::set_user_data(const U& data)
 {
+    assert(is_leaf());
     get_user_data<U>() = data;
 }
 
@@ -254,6 +271,7 @@ template <typename U>
 inline const U& Node<AABB>::get_user_data() const
 {
     static_assert(sizeof(U) <= MAX_USER_DATA_SIZE, "Not enough space in BVH node for user data");
+    assert(is_leaf());
     return *reinterpret_cast<const U*>(m_bbox_data);
 }
 
@@ -262,6 +280,7 @@ template <typename U>
 inline U& Node<AABB>::get_user_data()
 {
     static_assert(sizeof(U) <= MAX_USER_DATA_SIZE, "Not enough space in BVH node for user data");
+    assert(is_leaf());
     return *reinterpret_cast<U*>(m_bbox_data);
 }
 
@@ -270,6 +289,7 @@ inline U& Node<AABB>::get_user_data()
 template <typename AABB>
 inline void Node<AABB>::set_child_node_index(const size_t index)
 {
+    assert(is_interior());
     assert(index <= 0xFFFFFFFFUL);
     m_index = static_cast<uint32>(index);
 }
@@ -277,12 +297,14 @@ inline void Node<AABB>::set_child_node_index(const size_t index)
 template <typename AABB>
 inline size_t Node<AABB>::get_child_node_index() const
 {
+    assert(is_interior());
     return static_cast<size_t>(m_index);
 }
 
 template <typename AABB>
 inline void Node<AABB>::set_item_index(const size_t index)
 {
+    assert(is_leaf());
     assert(index <= 0xFFFFFFFFUL);
     m_index = static_cast<uint32>(index);
 }
@@ -290,12 +312,14 @@ inline void Node<AABB>::set_item_index(const size_t index)
 template <typename AABB>
 inline size_t Node<AABB>::get_item_index() const
 {
+    assert(is_leaf());
     return static_cast<size_t>(m_index);
 }
 
 template <typename AABB>
 inline void Node<AABB>::set_item_count(const size_t count)
 {
+    assert(is_leaf());
     assert(count < 0xFFFFFFFFUL);
     m_item_count = static_cast<uint32>(count);
 }
@@ -303,6 +327,7 @@ inline void Node<AABB>::set_item_count(const size_t count)
 template <typename AABB>
 inline size_t Node<AABB>::get_item_count() const
 {
+    assert(is_leaf());
     return static_cast<size_t>(m_item_count);
 }
 

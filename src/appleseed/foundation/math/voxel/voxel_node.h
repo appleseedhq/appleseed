@@ -163,6 +163,7 @@ inline bool Node<T>::is_solid() const
 template <typename T>
 inline void Node<T>::set_child_node_index(const size_t index)
 {
+    assert(is_interior());
     assert(index < (1UL << 29));
     m_info &= 0x80000003UL;
     m_info |= static_cast<uint32>(index) << 2;
@@ -171,12 +172,14 @@ inline void Node<T>::set_child_node_index(const size_t index)
 template <typename T>
 inline size_t Node<T>::get_child_node_index() const
 {
+    assert(is_interior());
     return static_cast<size_t>((m_info & 0x7FFFFFFCUL) >> 2);
 }
 
 template <typename T>
 inline void Node<T>::set_split_dim(const size_t dim)
 {
+    assert(is_interior());
     assert(dim < 4);
     m_info &= 0xFFFFFFFCUL;
     m_info |= static_cast<uint32>(dim);
@@ -185,18 +188,21 @@ inline void Node<T>::set_split_dim(const size_t dim)
 template <typename T>
 inline size_t Node<T>::get_split_dim() const
 {
+    assert(is_interior());
     return static_cast<size_t>(m_info & 0x00000003UL);
 }
 
 template <typename T>
 inline void Node<T>::set_split_abs(const ValueType abscissa)
 {
+    assert(is_interior());
     m_abscissa = abscissa;
 }
 
 template <typename T>
 inline T Node<T>::get_split_abs() const
 {
+    assert(is_interior());
     return m_abscissa;
 }
 

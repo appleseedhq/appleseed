@@ -67,6 +67,10 @@ TEST_SUITE(Foundation_Math_BSP_Node)
         node.set_leaf_index(LeafIndex);
         EXPECT_TRUE(node.is_leaf());
         EXPECT_EQ(LeafIndex, node.get_leaf_index());
+
+        node.set_leaf_size(33);
+        EXPECT_TRUE(node.is_leaf());
+        EXPECT_EQ(LeafIndex, node.get_leaf_index());
     }
 
     TEST_CASE(TestInteriorNode)
@@ -95,12 +99,6 @@ TEST_SUITE(Foundation_Math_BSP_Node)
         EXPECT_EQ(ChildIndex, node.get_child_node_index());
         EXPECT_EQ(1, node.get_split_dim());
         EXPECT_EQ(66.0, node.get_split_abs());
-
-        node.set_leaf_size(33);
-        EXPECT_TRUE(node.is_interior());
-        EXPECT_EQ(ChildIndex, node.get_child_node_index());
-        EXPECT_EQ(1, node.get_split_dim());
-        EXPECT_EQ(33, node.get_leaf_size());
     }
 }
 
