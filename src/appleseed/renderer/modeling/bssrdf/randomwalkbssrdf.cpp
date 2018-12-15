@@ -482,13 +482,14 @@ namespace
         }
 
         static Vector3f sample_direction_given_cosine(
-            const Vector3f& normal,
-            const float cosine,
-            const float s)
+            const Vector3f&         normal,
+            const float             cosine,
+            const float             s)
         {
-            const float sine = std::sqrt(saturate(1.0f - cosine * cosine));
+            assert(abs(cosine) <= 1.0f);
+            const Basis3f basis(normal);
             const Vector2f tangent = sample_circle_uniform(s);
-            Basis3f basis(normal);
+            const float sine = sqrt(saturate(1.0f - cosine * cosine));
             return
                 basis.get_tangent_u() * tangent.x * sine +
                 basis.get_tangent_v() * tangent.y * sine +
@@ -538,9 +539,6 @@ namespace
             Vector3f&               slab_normal,
             Vector3f&               direction) const
         {
-            // Initialize the number of iterations.
-            size_t n_iteration = 0;
-
             const ShadingPoint* shading_point_ptr = &outgoing_point;
             size_t next_point_idx = 0;
             ShadingPoint shading_points[2];
@@ -557,6 +555,7 @@ namespace
             volume_scattering_occurred = false;
             direction = -outgoing_dir;
             const size_t MaxIterationsCount = 32;
+            size_t n_iteration = 0;
             while (!volume_scattering_occurred)
             {
                 if (++n_iteration > MaxIterationsCount)
@@ -581,6 +580,7 @@ namespace
                 {
                     if (!ScatteringMode::has_glossy(bssrdf_sample.m_modes))
                         return false;
+
                     // The ray was refracted with zero scattering.
                     glass_inputs->m_reflection_tint.set(0.0f);
                     m_glass_bsdf->prepare_inputs(shading_context.get_arena(), *shading_point_ptr, glass_inputs);
@@ -589,6 +589,7 @@ namespace
                     bssrdf_sample.m_incoming_point = *shading_point_ptr;
                     return true;
                 }
+
                 bssrdf_sample.m_value *= bsdf_sample.m_value.m_glossy;
                 bssrdf_sample.m_value /= bsdf_sample.m_probability;
                 glass_inputs->m_reflection_tint.set(1.0f);
@@ -628,6 +629,7 @@ namespace
                         ? Vector3f(shading_point_ptr->get_geometric_normal())
                         : Vector3f(-shading_points[next_point_idx].get_geometric_normal());
                 }
+
                 Spectrum transmission;
                 compute_transmission(
                     static_cast<float>(volume_scattering_occurred ? distance : ray_length),

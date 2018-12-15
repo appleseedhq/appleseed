@@ -209,7 +209,7 @@ float normalized_diffusion_max_radius(
 // Reference:
 //
 //   Johannes Meng, Johannes Hanika, Carsten Dachsbacher
-//   Improving the Dwivedi Sampling Scheme,
+//   Improving the Dwivedi Sampling Scheme
 //   Journal Computer Graphics Forum Vol. 35 Issue 4, pp. 37-44, July 2016.
 //   [1] Article:                   https://jo.dreggn.org/home/2016_dwivedi.pdf
 //   [2] Supplemental material:     https://jo.dreggn.org/home/2016_dwivedi_additional.pdf
@@ -337,7 +337,8 @@ inline float compute_rcp_diffusion_length_low_albedo(const float albedo)
     const float a = foundation::rcp(albedo);
     const float b = std::exp(-2.0f * a);
 
-    const float x[4] = {
+    const float x[4] =
+    {
         1.0f,
         a * 4.0f - 1.0f,
         a * (a * 24.0f - 12.0f) + 1.0f,
@@ -352,7 +353,8 @@ inline float compute_rcp_diffusion_length_high_albedo(const float albedo)
     const float a = 1.0f - albedo;
     const float b = std::sqrt(3.0f * a);
 
-    const float x[5] = {
+    const float x[5] =
+    {
         +1.0000000000f,
         -0.4000000000f,
         -0.0685714286f,
