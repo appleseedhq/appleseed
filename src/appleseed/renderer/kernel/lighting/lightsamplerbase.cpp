@@ -219,7 +219,8 @@ void LightSamplerBase::collect_emitting_triangles(
                 geometric_normal *= rcp_geometric_normal_norm;
                 assert(is_normalized(geometric_normal));
 
-                if (object_instance->flip_normals())
+                // Flip the geometric normal if the object instance requests so.
+                if (object_instance->must_flip_normals())
                     geometric_normal = -geometric_normal;
 
                 Vector3d n0, n1, n2;
@@ -238,7 +239,8 @@ void LightSamplerBase::collect_emitting_triangles(
                     n1 = normalize(global_transform.normal_to_parent(n1_os));
                     n2 = normalize(global_transform.normal_to_parent(n2_os));
 
-                    if (object_instance->flip_normals())
+                    // Flip normals if the object instance requests so.
+                    if (object_instance->must_flip_normals())
                     {
                         n0 = -n0;
                         n1 = -n1;

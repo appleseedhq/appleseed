@@ -103,7 +103,7 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     bool transform_swaps_handedness() const;
 
     // Return true if the normals of this instance must be flipped.
-    bool flip_normals() const;
+    bool must_flip_normals() const;
 
     // Return or set visibility flags of this instance.
     foundation::uint32 get_vis_flags() const;
@@ -256,7 +256,7 @@ inline bool ObjectInstance::transform_swaps_handedness() const
     return m_transform_swaps_handedness;
 }
 
-inline bool ObjectInstance::flip_normals() const
+inline bool ObjectInstance::must_flip_normals() const
 {
     return m_flip_normals;
 }
