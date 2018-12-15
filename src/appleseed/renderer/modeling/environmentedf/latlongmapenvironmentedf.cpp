@@ -50,7 +50,6 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
-#include "foundation/math/fp.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/sampling/imageimportancesampler.h"
 #include "foundation/math/scalar.h"
@@ -479,9 +478,13 @@ namespace
             const size_t x = truncate<size_t>(m_importance_map_width * u);
             const size_t y = truncate<size_t>(m_importance_map_height * v);
             const float prob_xy = m_importance_sampler->get_pdf(x, y);
+            assert(prob_xy >= 0.0f);
 
             // Compute the probability density of the emission direction.
-            return prob_xy * m_probability_scale / sin(theta);
+            const float pdf = prob_xy > 0.0f ? prob_xy * m_probability_scale / sin(theta) : 0.0f;
+            assert(pdf >= 0.0f);
+
+            return pdf;
         }
     };
 }
