@@ -243,9 +243,13 @@ namespace
             float prob_xy;
             m_importance_sampler->sample(s, x, y, payload, prob_xy);
 
-            // Compute the coordinates in [0,1]^2 of the sample.
-            const float u = (x + 0.5f) * m_rcp_importance_map_width;
-            const float v = (y + 0.5f) * m_rcp_importance_map_height;
+            // Compute the coordinates in [0,1)^2 of the sample.
+            const float jitter_x = frac(s[0] * m_importance_map_width);
+            const float jitter_y = frac(s[1] * m_importance_map_height);
+            const float u = (x + jitter_x) * m_rcp_importance_map_width;
+            const float v = (y + jitter_y) * m_rcp_importance_map_height;
+            assert(u >= 0.0f && u < 1.0f);
+            assert(v >= 0.0f && v < 1.0f);
 
             // Compute the spherical coordinates of the sample.
             float theta, phi;
