@@ -178,6 +178,11 @@ T normalize_angle(const T angle);
 template <typename Int, typename T>
 Int truncate(const T x);
 
+// Round x to the nearest integer with Round Half Away from Zero tie breaking rule.
+// Reference: http://en.wikipedia.org/wiki/Rounding#Round_half_away_from_zero.
+template <typename Int, typename T>
+Int round(const T x);
+
 // Semantically identical to std::floor().
 template <typename T>
 T fast_floor(const T x);
@@ -186,14 +191,17 @@ T fast_floor(const T x);
 template <typename T>
 T fast_ceil(const T x);
 
+// Return the fractional part of x, defined as x - std::floor(x).
+// The returned value is always in [0, 1) even when x is negative.
+// Passing negative values to this function may give surprising results,
+// e.g. frac(-4.2) will return 0.8. You may want to use frac(std::abs(x))
+// which for x = -4.2 will return 0.2.
+template <typename T>
+T frac(const T x);
+
 // Return the integer and fractional parts of x.
 template <typename T, typename I>
 T floor_frac(const T x, I& int_part);
-
-// Round x to the nearest integer with Round Half Away from Zero tie breaking rule.
-// Reference: http://en.wikipedia.org/wiki/Rounding#Round_half_away_from_zero.
-template <typename Int, typename T>
-Int round(const T x);
 
 // Compute a % n or fmod(a, n) and always return a non-negative value.
 template <typename T>
@@ -660,6 +668,12 @@ inline int64 truncate<int64>(const double x)
 
 #endif
 
+template <typename Int, typename T>
+inline Int round(const T x)
+{
+    return truncate<Int>(x < T(0.0) ? x - T(0.5) : x + T(0.5));
+}
+
 template <typename T>
 inline T fast_floor(const T x)
 {
@@ -670,14 +684,6 @@ template <typename T>
 inline T fast_ceil(const T x)
 {
     return std::ceil(x);
-}
-
-template <typename T, typename I>
-inline T floor_frac(const T x, I& int_part)
-{
-    const T f = fast_floor(x);
-    int_part = static_cast<I>(f);
-    return x - f;
 }
 
 #ifdef APPLESEED_USE_SSE42
@@ -716,10 +722,26 @@ inline double fast_ceil(const double x)
 
 #endif
 
-template <typename Int, typename T>
-inline Int round(const T x)
+template <typename T>
+inline T frac(const T x)
 {
-    return truncate<Int>(x < T(0.0) ? x - T(0.5) : x + T(0.5));
+    const T f = x - fast_floor(x);
+    assert(f >= T(0.0));
+    assert(f < T(1.0));
+    return f;
+}
+
+template <typename T, typename I>
+inline T floor_frac(const T x, I& int_part)
+{
+    const T f = fast_floor(x);
+    int_part = static_cast<I>(f);
+
+    const T frac_part = x - f;
+    assert(frac_part >= T(0.0));
+    assert(frac_part < T(1.0));
+
+    return frac_part;
 }
 
 template <typename T>
