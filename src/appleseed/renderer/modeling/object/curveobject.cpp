@@ -68,6 +68,7 @@ struct CurveObject::Impl
     vector<GVector3>    m_vertices;
     vector<GScalar>     m_widths;
     vector<size_t>      m_vertex_counts;
+    size_t              m_total_vertex_count;
 
     Impl()
     {
@@ -177,9 +178,9 @@ void CurveObject::push_vertices(const vector<GVector3> vertices)
     }
 }
 
-vector<GVector3> CurveObject::get_vertices() const
+GVector3 CurveObject::get_vertex(size_t vertex) const
 {
-    return impl->m_vertices;
+    return impl->m_vertices[vertex];
 }
 
 void CurveObject::push_widths(const vector<GScalar> widths)
@@ -190,9 +191,9 @@ void CurveObject::push_widths(const vector<GScalar> widths)
     }
 }
 
-vector<GScalar> CurveObject::get_widths() const
+GScalar CurveObject::get_width(size_t vertex) const
 {
-    return impl->m_widths;
+    return impl->m_widths[vertex];
 }
 
 void CurveObject::push_vertex_counts(const vector<size_t> vertex_counts)
@@ -206,6 +207,16 @@ void CurveObject::push_vertex_counts(const vector<size_t> vertex_counts)
 vector<size_t> CurveObject::get_vertex_counts() const
 {
     return impl->m_vertex_counts;
+}
+
+void CurveObject::push_total_vertex_count(size_t total_vertex_count)
+{
+    impl->m_total_vertex_count = total_vertex_count;
+}
+
+size_t CurveObject::get_total_vertex_count() const
+{
+    return impl->m_total_vertex_count;
 }
 
 size_t CurveObject::push_curve3(const Curve3Type& curve)

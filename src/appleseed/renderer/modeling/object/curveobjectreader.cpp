@@ -160,12 +160,14 @@ namespace
 
             m_object->push_vertices(m_vertices);
             m_object->push_widths(m_widths);
+            m_vertex_counts.push_back(m_vertices.size());
             m_total_vertex_count += m_vertices.size();
         }
 
         void end_curve_object() override
         {
             m_object->push_vertex_counts(m_vertex_counts);
+            m_object->push_total_vertex_count(m_total_vertex_count);
         }
 
         void push_vertex(const Vector3f& v) override

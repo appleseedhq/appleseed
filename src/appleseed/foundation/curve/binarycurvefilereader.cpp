@@ -149,7 +149,6 @@ void BinaryCurveFileReader::read_curve(ReaderAdapter &reader, ICurveBuilder &bui
 {
     uint32 vertex_count;
     checked_read(reader, vertex_count);
-    builder.push_vertex_count(vertex_count);
 
     for (uint32 i = 0; i < vertex_count; ++i)
     {

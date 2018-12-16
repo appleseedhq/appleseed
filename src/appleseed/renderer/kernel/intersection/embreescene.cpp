@@ -64,7 +64,7 @@ class EmbreeGeometryData
 {
   public:
     // Vertex data.
-    GVector3*               m_vertices;
+    GScalar*                m_vertices;
     unsigned int            m_vertices_count;
     unsigned int            m_vertices_stride;
 
@@ -123,13 +123,15 @@ namespace
         geometry_data.m_vertices_stride = sizeof(GVector3);
 
         // Allocate memory for the vertices. Keep one extra vertex for padding.
-        geometry_data.m_vertices = new GVector3[vertices_count * motion_steps_count + 1];
+        geometry_data.m_vertices = new GScalar[3 * (vertices_count * motion_steps_count + 1)];
 
         // Retrieve assembly space vertices.
         for (size_t i = 0; i < vertices_count; ++i)
         {
             const GVector3& vertex_os = tess.m_vertices[i];
-            geometry_data.m_vertices[i] = transform.point_to_parent(vertex_os);
+            geometry_data.m_vertices[3 * i] = transform.point_to_parent(vertex_os)[0];
+            geometry_data.m_vertices[3 * i + 1] = transform.point_to_parent(vertex_os)[1];
+            geometry_data.m_vertices[3 * i + 2] = transform.point_to_parent(vertex_os)[2];
         }
 
         for (size_t m = 1; m < motion_steps_count; ++m)
@@ -137,7 +139,9 @@ namespace
             for (size_t i = 0; i < vertices_count; ++i)
             {
                 const GVector3& vertex_os = tess.get_vertex_pose(i, m - 1);
-                geometry_data.m_vertices[vertices_count * m + i] = transform.point_to_parent(vertex_os);
+                geometry_data.m_vertices[3 * vertices_count * m + 3 * i] = transform.point_to_parent(vertex_os)[0];
+                geometry_data.m_vertices[3 * vertices_count * m + 3 * i + 1] = transform.point_to_parent(vertex_os)[1];
+                geometry_data.m_vertices[3 * vertices_count * m + 3 * i + 2] = transform.point_to_parent(vertex_os)[2];
             }
         }
 
@@ -162,17 +166,68 @@ namespace
         const ObjectInstance&   object_instance,
         EmbreeGeometryData&     geometry_data)
     {
-        //const Transformd& transform = object_instance.get_transform();
-
         switch(geometry_data.m_geometry_type)
         {
         case RTC_GEOMETRY_TYPE_FLAT_BEZIER_CURVE:
+        {
             //
             // [Note: Girish] Retrieve data from CurveObject here and push it to geometry_data.
             //
 
-            break;
+            // Retrieve object space -> assembly space transform for the object instance.
+            const Transformd &transform = object_instance.get_transform();
 
+            // Retrieve the object.
+            Object &object = object_instance.get_object();
+
+            const CurveObject &curves = static_cast<const CurveObject &>(object);
+
+            const unsigned int vertices_count = static_cast<unsigned int>(curves.get_total_vertex_count());
+            geometry_data.m_vertices_count = vertices_count;
+            geometry_data.m_vertices_stride = 4 * sizeof(GScalar);
+
+
+            // Allocate memory for the vertices. Keep one extra vertex for padding.
+            geometry_data.m_vertices = new GScalar[4 * (vertices_count + 1)];
+
+            // Retrieve assembly space vertices.
+            for (size_t i = 0; i < vertices_count; ++i)
+            {
+                const GVector3& vertex_os = curves.get_vertex(i);
+                const GScalar radius = curves.get_width(i) / 2.f;
+                const GVector3& transformed_vertex = transform.point_to_parent(vertex_os);
+                geometry_data.m_vertices[4 * i] = transformed_vertex[0];
+                geometry_data.m_vertices[4 * i + 1] = transformed_vertex[1];
+                geometry_data.m_vertices[4 * i + 2] = transformed_vertex[2];
+                geometry_data.m_vertices[4 * i + 3] = radius;
+            }
+
+            //
+            // Retrieve per primitive data.
+            //
+            size_t primitives_count = 0;
+
+            uint32 vertex_id = 0;
+            std::vector<uint32> primitives;
+            std::vector<size_t> vertex_counts = curves.get_vertex_counts();
+
+            for (size_t i = 0; i < vertex_counts.size(); i++)
+            {
+                for (uint32 j = 0; j < vertex_counts[i] - 3; j = j + 3)
+                {
+                    primitives.push_back(vertex_id + j);
+                    primitives_count++;
+                }
+                vertex_id += vertex_counts[i];
+            }
+
+            geometry_data.m_primitives = new uint32[primitives_count];
+            geometry_data.m_primitives_stride = sizeof(uint32);
+            geometry_data.m_primitives_count = primitives_count;
+            std::copy(primitives.begin(), primitives.end(), geometry_data.m_primitives);
+
+            break;
+        }
         default:
             assert(!"Unsupported geometry type.");
             break;
@@ -377,7 +432,7 @@ EmbreeScene::EmbreeScene(const EmbreeScene::Arguments& arguments)
                 geometry_handle,                                // geometry
                 RTC_BUFFER_TYPE_INDEX,                          // buffer type
                 0,                                              // slot
-                RTC_FORMAT_UINT4,                               // format
+                RTC_FORMAT_UINT,                                // format
                 geometry_data->m_primitives,                    // buffer
                 0,                                              // byte offset
                 geometry_data->m_primitives_stride,             // byte stride
@@ -434,52 +489,75 @@ void EmbreeScene::intersect(ShadingPoint& shading_point) const
         shading_point.m_object_instance_index = geometry_data->m_object_instance_idx;
         // TODO: remove regions
         shading_point.m_primitive_index = rayhit.hit.primID;
-        shading_point.m_primitive_type = ShadingPoint::PrimitiveTriangle;
         shading_point.m_ray.m_tmax = rayhit.ray.tfar;
 
-        const uint32 v0_idx = geometry_data->m_primitives[rayhit.hit.primID * 3];
-        const uint32 v1_idx = geometry_data->m_primitives[rayhit.hit.primID * 3 + 1];
-        const uint32 v2_idx = geometry_data->m_primitives[rayhit.hit.primID * 3 + 2];
-
-        if (geometry_data->m_motion_steps_count > 1)
+        switch(geometry_data->m_geometry_type)
         {
-            const uint32 last_motion_step_idx = geometry_data->m_motion_steps_count - 1;
+        case RTC_GEOMETRY_TYPE_TRIANGLE:
+        {
+            shading_point.m_primitive_type = ShadingPoint::PrimitiveTriangle;
 
-            const uint32 motion_step_begin_idx = static_cast<uint32>(rayhit.ray.time * last_motion_step_idx);
-            const uint32 motion_step_end_idx = motion_step_begin_idx + 1;
+            const uint32 v0_idx = geometry_data->m_primitives[rayhit.hit.primID * 3];
+            const uint32 v1_idx = geometry_data->m_primitives[rayhit.hit.primID * 3 + 1];
+            const uint32 v2_idx = geometry_data->m_primitives[rayhit.hit.primID * 3 + 2];
 
-            const uint32 motion_step_begin_offset = motion_step_begin_idx * geometry_data->m_vertices_count;
-            const uint32 motion_step_end_offset = motion_step_end_idx * geometry_data->m_vertices_count;
+            GVector3 v0 = GVector3(
+                geometry_data->m_vertices[3 * v0_idx], geometry_data->m_vertices[3 * v0_idx + 1],
+                geometry_data->m_vertices[3 * v0_idx + 2]);
+            GVector3 v1 = GVector3(
+                geometry_data->m_vertices[3 * v1_idx], geometry_data->m_vertices[3 * v1_idx + 1],
+                geometry_data->m_vertices[3 * v1_idx + 2]);
+            GVector3 v2 = GVector3(
+                geometry_data->m_vertices[3 * v2_idx], geometry_data->m_vertices[3 * v2_idx + 1],
+                geometry_data->m_vertices[3 * v2_idx + 2]);
 
-            const float motion_step_begin_time = static_cast<float>(motion_step_begin_idx) / last_motion_step_idx;
+            if (geometry_data->m_motion_steps_count > 1)
+            {
+                const uint32 last_motion_step_idx = geometry_data->m_motion_steps_count - 1;
 
-            // Linear interpolation coefficients.
-            const float p = (rayhit.ray.time - motion_step_begin_time) * last_motion_step_idx;
-            const float q = 1.0f - p;
+                const uint32 motion_step_begin_idx = static_cast<uint32>(rayhit.ray.time * last_motion_step_idx);
+                const uint32 motion_step_end_idx = motion_step_begin_idx + 1;
 
-            assert(p > 0.0f && p <= 1.0f);
+                const uint32 motion_step_begin_offset = motion_step_begin_idx * geometry_data->m_vertices_count;
+                const uint32 motion_step_end_offset = motion_step_end_idx * geometry_data->m_vertices_count;
 
-            const TriangleType triangle(
-                Vector3d(
-                    geometry_data->m_vertices[motion_step_begin_offset + v0_idx] * q
-                    + geometry_data->m_vertices[motion_step_end_offset + v0_idx] * p),
-                Vector3d(
-                    geometry_data->m_vertices[motion_step_begin_offset + v1_idx] * q
-                    + geometry_data->m_vertices[motion_step_end_offset + v1_idx] * p),
-                Vector3d(
-                    geometry_data->m_vertices[motion_step_begin_offset + v2_idx] * q
-                    + geometry_data->m_vertices[motion_step_end_offset + v2_idx] * p));
+                const float motion_step_begin_time = static_cast<float>(motion_step_begin_idx) / last_motion_step_idx;
 
-            shading_point.m_triangle_support_plane.initialize(triangle);
+                // Linear interpolation coefficients.
+                const float p = (rayhit.ray.time - motion_step_begin_time) * last_motion_step_idx;
+                const float q = 1.0f - p;
+
+                assert(p > 0.0f && p <= 1.0f);
+
+                const TriangleType triangle(
+                    Vector3d(
+                        geometry_data->m_vertices[motion_step_begin_offset + v0_idx] * q
+                        + geometry_data->m_vertices[motion_step_end_offset + v0_idx] * p),
+                    Vector3d(
+                        geometry_data->m_vertices[motion_step_begin_offset + v1_idx] * q
+                        + geometry_data->m_vertices[motion_step_end_offset + v1_idx] * p),
+                    Vector3d(
+                        geometry_data->m_vertices[motion_step_begin_offset + v2_idx] * q
+                        + geometry_data->m_vertices[motion_step_end_offset + v2_idx] * p));
+
+                shading_point.m_triangle_support_plane.initialize(triangle);
+            }
+            else
+            {
+                const TriangleType triangle(
+                    (Vector3d(v0)),
+                    (Vector3d(v1)),
+                    (Vector3d(v2)));
+
+                shading_point.m_triangle_support_plane.initialize(triangle);
+            }
+            break;
         }
-        else
+        case RTC_GEOMETRY_TYPE_FLAT_BEZIER_CURVE:
         {
-            const TriangleType triangle(
-                Vector3d(geometry_data->m_vertices[v0_idx]),
-                Vector3d(geometry_data->m_vertices[v1_idx]),
-                Vector3d(geometry_data->m_vertices[v2_idx]));
-
-            shading_point.m_triangle_support_plane.initialize(triangle);
+            shading_point.m_primitive_type = ShadingPoint::PrimitiveCurve3;
+            break;
+        }
         }
     }
 }
