@@ -219,7 +219,6 @@
             <parameter name="lighting_engine" value="pt" />
             <parameter name="passes" value="1" />
             <parameter name="pixel_renderer" value="uniform" />
-            <parameter name="rendering_threads" value="auto" />
             <parameter name="shading_result_framebuffer" value="ephemeral" />
             <parameter name="spectrum_mode" value="rgb" />
             <parameter name="tile_renderer" value="generic" />
@@ -293,7 +292,6 @@
             <parameter name="lighting_engine" value="pt" />
             <parameter name="passes" value="1" />
             <parameter name="pixel_renderer" value="uniform" />
-            <parameter name="rendering_threads" value="auto" />
             <parameter name="shading_result_framebuffer" value="ephemeral" />
             <parameter name="tile_renderer" value="generic" />
             <parameter name="use_embree" value="false" />

@@ -219,7 +219,6 @@
             <parameter name="lighting_engine" value="sppm" />
             <parameter name="passes" value="1" />
             <parameter name="pixel_renderer" value="uniform" />
-            <parameter name="rendering_threads" value="auto" />
             <parameter name="shading_result_framebuffer" value="ephemeral" />
             <parameter name="spectrum_mode" value="rgb" />
             <parameter name="tile_renderer" value="generic" />
@@ -267,7 +266,7 @@
             <parameters name="sppm">
                 <parameter name="alpha" value="0.700000" />
                 <parameter name="dl_mode" value="rt" />
-                <parameter name="enable_caustics" value="true" />
+                <parameter name="enable_caustics" value="false" />
                 <parameter name="enable_ibl" value="true" />
                 <parameter name="env_photons_per_pass" value="1000000" />
                 <parameter name="initial_radius" value="0.100000" />
@@ -293,7 +292,6 @@
             <parameter name="lighting_engine" value="pt" />
             <parameter name="passes" value="1" />
             <parameter name="pixel_renderer" value="uniform" />
-            <parameter name="rendering_threads" value="auto" />
             <parameter name="shading_result_framebuffer" value="ephemeral" />
             <parameter name="tile_renderer" value="generic" />
             <parameter name="use_embree" value="false" />
