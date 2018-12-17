@@ -290,7 +290,7 @@ namespace
                     env_prob);
 
                 // Optionally clamp secondary rays contribution.
-                if (m_params.m_path_tracing_has_max_ray_intensity && vertex.m_path_length > 1)
+                if (m_params.m_path_tracing_has_max_ray_intensity && vertex.m_path_length > 1 && vertex.m_prev_mode != ScatteringMode::Specular)
                     clamp_contribution(env_radiance, m_params.m_path_tracing_max_ray_intensity);
 
                 // Update the path radiance.
@@ -328,7 +328,7 @@ namespace
                 }
 
                 // Optionally clamp secondary rays contribution.
-                if (m_params.m_path_tracing_has_max_ray_intensity && vertex.m_path_length > 1)
+                if (m_params.m_path_tracing_has_max_ray_intensity && vertex.m_path_length > 1 && vertex.m_prev_mode != ScatteringMode::Specular)
                     clamp_contribution(vertex_radiance, m_params.m_path_tracing_max_ray_intensity);
 
                 // Update the path radiance.
