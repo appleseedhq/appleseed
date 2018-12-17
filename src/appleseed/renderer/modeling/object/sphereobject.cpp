@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) Mayank Dhiman, The appleseedhq Organization
+// Copyright (c) 2018 Mayank Dhiman, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,38 +26,20 @@
 // THE SOFTWARE.
 //
 
-// Interface header
+// Interface header.
 #include "sphereobject.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/object/curveobject.h"
-#include "renderer/modeling/object/meshobject.h"
-#include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/proceduralobject.h"
-#include "renderer/modeling/project/project.h"
-#include "renderer/modeling/scene/scene.h"
 
 // todo: fix.
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/ray.h"
-#include "foundation/math/scalar.h"
-#include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/job/iabortswitch.h"
-#include "foundation/utility/searchpaths.h"
-#include "foundation/utility/string.h"
 
-// appleseed.main headers.
-#include "main/dllvisibility.h"
-
-// Standard headers.
-#include <algorithm>
-#include <cmath>
-
+// Forward Declarations.
 namespace asf = foundation;
 namespace asr = renderer;
 
@@ -69,17 +51,24 @@ namespace
 
     const char* Model = "sphere_object";
 
-    void SphereObject :: release()
+    SphereObject::SphereObject(
+        const char*                 name,
+        const asr::ParamArray&      params)
+        : asr::ProceduralObject(name, params)
+    {
+    }
+
+    void SphereObject::release()
     {
         delete this;
     }
 
-    const char* SphereObject :: get_model() const
+    const char* SphereObject::get_model() const
     {
         return Model;
     }
 
-    bool SphereObject :: on_frame_begin(
+    bool SphereObject::on_frame_begin(
         const asr::Project&         project,
         const asr::BaseGroup*       parent,
         asr::OnFrameBeginRecorder&  recorder,
@@ -94,23 +83,23 @@ namespace
         return true;
     }
 
-    asr::GAABB3 SphereObject :: compute_local_bbox() const
+    asr::GAABB3 SphereObject::compute_local_bbox() const
     {
         const auto r = static_cast<asr::GScalar>(get_uncached_radius());
         return asr::GAABB3(asr::GVector3(-r), asr::GVector3(r));
     }
 
-    size_t SphereObject :: get_material_slot_count() const 
+    size_t SphereObject::get_material_slot_count() const 
     {
         return 1;
     }
 
-    const char* SphereObject :: get_material_slot(const size_t index) const
+    const char* SphereObject::get_material_slot(const size_t index) const
     {
         return "default";
     }
 
-    void SphereObject :: intersect(
+    void SphereObject::intersect(
     const asr::ShadingRay&  ray,
     IntersectionResult&     result) const 
     {
@@ -152,7 +141,7 @@ namespace
         result.m_material_slot = 0;
     }
 
-    bool SphereObject :: intersect(
+    bool SphereObject::intersect(
         const asr::ShadingRay&  ray) const
     {
         const double Epsilon = 1.0e-6;
@@ -176,7 +165,7 @@ namespace
         return false;
     }
 
-    double SphereObject :: get_uncached_radius() const
+    double SphereObject::get_uncached_radius() const
     {
         return m_params.get_optional<double>("radius");
     }
@@ -185,17 +174,17 @@ namespace
     //  Class SphereObjectFactory Implementation
     //    
 
-    void SphereObjectFactory :: release()
+    void SphereObjectFactory::release()
     {
         delete this;
     }
 
-    const char* SphereObjectFactory :: get_model() const
+    const char* SphereObjectFactory::get_model() const
     {
         return Model;
     }
 
-    asf::Dictionary SphereObjectFactory :: get_model_metadata() const
+    asf::Dictionary SphereObjectFactory::get_model_metadata() const
     {
         return
             asf::Dictionary()
@@ -203,7 +192,7 @@ namespace
                 .insert("label", "Sphere Object");
     }
 
-    asf::DictionaryArray SphereObjectFactory :: get_input_metadata() const
+    asf::DictionaryArray SphereObjectFactory::get_input_metadata() const
     {
         asf::DictionaryArray metadata;
 
@@ -226,14 +215,14 @@ namespace
         return metadata;
     }
 
-    asf::auto_release_ptr<asr::Object> SphereObjectFactory :: create(
+    asf::auto_release_ptr<asr::Object> SphereObjectFactory::create(
         const char*                 name,
         const asr::ParamArray&      params) const 
     {
         return asf::auto_release_ptr<asr::Object>(new SphereObject(name, params));
     }
 
-    bool SphereObjectFactory :: create(
+    bool SphereObjectFactory::create(
         const char*                 name,
         const asr::ParamArray&      params,
         const asf::SearchPaths&     search_paths,
@@ -243,4 +232,4 @@ namespace
         objects.push_back(create(name, params).release());
         return true;
     }
-}
+}  // namespace

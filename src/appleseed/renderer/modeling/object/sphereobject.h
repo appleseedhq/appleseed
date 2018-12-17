@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) Mayank Dhiman, The appleseedhq Organization
+// Copyright (c) 2018 Mayank Dhiman, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,16 +26,13 @@
 // THE SOFTWARE.
 //
 
-// appleseed.main headers.
-#include "main/dllvisibility.h"
+// appleseed.renderer headers.
+#include "renderer/modeling/object/proceduralobject.h"
 
-// Standard headers.
-#include <algorithm>
-#include <cmath>
-
-// Forward Declarations
+// Forward Declarations.
 namespace asf = foundation;
 namespace asr = renderer;
+
 namespace
 {
     //
@@ -44,30 +41,20 @@ namespace
     // The sphere is assumed to be centered at the origin.
     //
 
-    const char* Model = "sphere_object";
-
-    class SphereObject
+    class APPLESEED_DLLSYMBOL SphereObject
       : public asr::ProceduralObject
     {
       public:
-
         // Constructor.
         SphereObject(
-            const char*                 name,
-            const asr::ParamArray&      params)
-            : asr::ProceduralObject(name, params)
-        {
-        }
-
+        const char*                 name,
+        const asr::ParamArray&      params);
 
         // Delete this instance.
         void release() override;
 
         // Return a string identifying this object model.
         const char* get_model() const override;
-
-        double m_radius;
-        double m_rcp_radius;
 
         // This method is called once before rendering each frame.
         // Returns true on success, false otherwise.
@@ -94,6 +81,10 @@ namespace
         // Compute the intersection between a ray expressed in object space and
         // the surface of this object and simply return whether there was a hit.
         bool intersect(const asr::ShadingRay&  ray) const override;
+
+      private:
+        double m_radius;
+        double m_rcp_radius;
 
         double get_uncached_radius() const;
     };
@@ -131,5 +122,4 @@ namespace
             const bool                  omit_loading_assets,
             asr::ObjectArray&           objects) const override;
     };
-}
-
+}  // namespace
