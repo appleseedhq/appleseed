@@ -268,6 +268,7 @@ set (src_appleseed_sources
      src/appleseed/as_blend_color.osl
      src/appleseed/as_blend_shader.osl
      src/appleseed/as_bump.osl
+     src/appleseed/as_cdl.osl
      src/appleseed/as_closure2surface.osl
      src/appleseed/as_color_transform.osl
      src/appleseed/as_composite_color.osl
