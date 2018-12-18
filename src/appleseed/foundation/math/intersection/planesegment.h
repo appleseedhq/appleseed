@@ -38,7 +38,7 @@ namespace foundation
 {
 
 //
-// 3D ray-segment intersection.
+// 3D ray-segment intersection functions.
 //
 
 // Clip a line segment against the negative half space of a plane.

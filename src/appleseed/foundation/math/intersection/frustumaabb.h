@@ -40,7 +40,7 @@ namespace foundation
 {
 
 //
-// Frustum-AABB intersection.
+// 3D frustum-AABB intersection function.
 //
 
 // Check if a frustum and a bounding box intersect.

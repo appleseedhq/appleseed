@@ -50,7 +50,7 @@
 using namespace foundation;
 using namespace std;
 
-namespace bfs = boost::filesystem;
+namespace bf = boost::filesystem;
 
 namespace renderer
 {
@@ -129,7 +129,7 @@ namespace
                 return 1.0f;
 
             // Build the outgoing vector.
-            const float sin_theta = std::sqrt(1.0f - square(cos_theta));
+            const float sin_theta = sqrt(1.0f - square(cos_theta));
             const Vector3f wo(sin_theta, cos_theta, 0.0f);
 
             float R = 0.0f;
@@ -146,10 +146,10 @@ namespace
                 const float value = MicrofacetBRDFHelper<false>::sample(mdf, s, alpha, wo, wi, probability);
 
                 // Skip samples with very low probability.
-                if (probability < 1e-6f)
+                if (probability < 1.0e-6f)
                     continue;
 
-                R += value * std::abs(wi.y) / probability;
+                R += value * abs(wi.y) / probability;
             }
 
             return min(R / static_cast<float>(sample_count), 1.0f);
@@ -258,7 +258,7 @@ void microfacet_energy_compensation_term(
 void write_microfacet_directional_albedo_tables(
     const char*         directory)
 {
-    const bfs::path dir(directory);
+    const bf::path dir(directory);
 
     const GGXMDF ggx;
     const MDFAlbedoTable ggx_table(ggx);

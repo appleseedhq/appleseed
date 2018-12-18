@@ -165,7 +165,7 @@ class MicrofacetBRDFHelper
             mdf.pdf(wo, m, alpha_x, alpha_y, gamma) / (4.0f * cos_oh);
 
         // Skip samples with very low probability.
-        if (sample.m_probability > 1e-6f)
+        if (sample.m_probability > 1.0e-6f)
         {
             sample.m_mode = ScatteringMode::Glossy;
             sample.m_incoming = foundation::Dual<foundation::Vector3f>(incoming);

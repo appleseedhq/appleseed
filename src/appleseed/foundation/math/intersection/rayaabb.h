@@ -50,7 +50,7 @@ namespace foundation
 
 
 //
-// 3D ray-AABB intersection and clipping.
+// 3D ray-AABB intersection and clipping functions.
 //
 
 // Test the intersection between a ray and a bounding box.

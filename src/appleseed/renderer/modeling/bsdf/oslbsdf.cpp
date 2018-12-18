@@ -213,10 +213,8 @@ namespace
 
             if (sample.m_mode == ScatteringMode::None ||
                 sample.m_mode == ScatteringMode::Specular ||
-                sample.m_probability < 1e-6f)
-            {
+                sample.m_probability < 1.0e-6f)
                 return;
-            }
 
             sample.m_probability *= pdfs[closure_index];
             pdfs[closure_index] = 0.0f;
