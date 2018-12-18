@@ -43,7 +43,7 @@ namespace foundation
 {
 
 //
-// 3D AABB-triangle intersection test.
+// 3D AABB-triangle intersection function.
 //
 
 // Return true if a given bounding box and a given triangle intersect.
@@ -56,7 +56,7 @@ bool intersect(
 
 
 //
-// 3D AABB-triangle intersection test implementation.
+// 3D AABB-triangle intersection function implementation.
 //
 
 namespace aabbtriangle_impl

@@ -40,7 +40,7 @@ namespace foundation
 {
 
 //
-// Frustum-segment intersection.
+// 3D frustum-segment clipping function.
 //
 
 // Clip a line segment against the frustum.
