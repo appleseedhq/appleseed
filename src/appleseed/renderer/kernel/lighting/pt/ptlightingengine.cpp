@@ -162,7 +162,7 @@ namespace
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             ShadingComponents&      radiance,               // output radiance, in W.sr^-1.m^-2
-            AOVComponents&          components) override      
+            AOVComponents&          components) override
         {
             if (m_light_path_stream)
             {
@@ -201,7 +201,7 @@ namespace
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             ShadingComponents&      radiance,               // output radiance, in W.sr^-1.m^-2
-            AOVComponents&          components)               
+            AOVComponents&          components)
         {
             PathVisitor path_visitor(
                 m_params,
@@ -588,7 +588,7 @@ namespace
                 env_radiance *= vertex.m_throughput;
 
                 // Optionally clamp secondary rays contribution.
-                if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1)
+                if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1 && vertex.m_prev_mode != ScatteringMode::Specular)
                     clamp_contribution(env_radiance, m_params.m_max_ray_intensity);
 
                 // Update path radiance.
@@ -619,7 +619,7 @@ namespace
                     emitted_radiance *= vertex.m_throughput;
 
                     // Optionally clamp secondary rays contribution.
-                    if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1)
+                    if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1 && vertex.m_prev_mode != ScatteringMode::Specular)
                         clamp_contribution(emitted_radiance, m_params.m_max_ray_intensity);
 
                     // Update path radiance.
@@ -712,7 +712,7 @@ namespace
                 vertex_radiance *= vertex.m_throughput;
 
                 // Optionally clamp secondary rays contribution.
-                if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1)
+                if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1 && vertex.m_prev_mode != ScatteringMode::Specular)
                     clamp_contribution(vertex_radiance, m_params.m_max_ray_intensity);
 
                 // Update path radiance.
