@@ -263,6 +263,7 @@ source_group ("src\\maya" FILES
 
 set (src_appleseed_sources
      src/appleseed/as_anisotropy_vector_field.osl
+     src/appleseed/as_asc_cdl.osl
      src/appleseed/as_attributes.osl
      src/appleseed/as_blackbody.osl
      src/appleseed/as_blend_color.osl

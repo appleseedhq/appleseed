@@ -1,0 +1,146 @@
+
+//
+// This source file is part of appleseed.
+// Visit https://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2018 Herbert Crepaz, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// American Society of Cinematographers Color Decision List implementation
+
+#include "appleseed/color/as_color_helpers.h"
+
+shader as_asc_cdl
+[[
+    string help = "Slope/Offset/Power Color Decision List utility shader according to the American Society of Cinematographers",
+    string icon = "asAscCdl.png",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_asc_cdl.html#label-as-asc-cdl",
+    
+    string as_node_name = "asAscCdl",
+    string as_category = "color",
+    
+    string as_max_class_id = "1669361528 687027596", 
+    string as_max_plugin_type = "texture",
+    
+    int as_maya_type_id = 0x00127a07,
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility"
+]]
+(
+    color in_color = color(0)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Input Color",
+        string page = "Color",
+        string help = "Input color.",
+        int divider = 1
+    ]],
+    string in_colorspace = "sRGB/Rec.709"
+    [[
+        string as_maya_attribute_name = "colorspace",
+        string as_maya_attribute_short_name = "csp",
+        string widget = "popup",
+        string options = "Rec.601|sRGB/Rec.709|AdobeRGB|Rec.2020|ACES|ACEScg|DCI-P3",
+        string label = "Color Space",
+        string page = "Color",
+        string help = "Color space of the input color."
+    ]],
+    float in_slope = 1.0
+    [[
+        string as_maya_attribute_name = "slope",
+        string as_maya_attribute_short_name = "slo",
+        float min = 0.0,
+        float max = 10000.0,
+        float softmin = 0.0,
+        float softmax = 10.0,
+        string label = "Slope",
+        string page = "Correction",
+        string help = "Slope (adjusts the highlights).",
+    ]],
+    float in_offset = 0.0
+    [[
+        string as_maya_attribute_name = "offset",
+        string as_maya_attribute_short_name = "ofs",
+        float min = -1.0,
+        float max = 1.0,
+        string label = "Offset",
+        string page = "Correction",
+        string help = "Constant offset (adjusts the overall brightness).",
+    ]],
+    float in_power = 1.0
+    [[
+        string as_maya_attribute_name = "power",
+        string as_maya_attribute_short_name = "pow",
+        float min = 0.0,
+        float max = 10000.0,
+        float softmin = 0.0,
+        float softmax = 5.0,
+        string label = "Power",
+        string page = "Correction",
+        string help = "Overall exponent (adjusts the midtones).",
+    ]],
+    float in_saturation = 1.0
+    [[
+        string as_maya_attribute_name = "saturation",
+        string as_maya_attribute_short_name = "sat",
+        float min = 0.0,
+        float max = 10000.0,
+        float softmin = 0.0,
+        float softmax = 5.0,
+        string label = "Saturation",
+        string page = "Output",
+        string help = "Overall saturation applied after input color transformations.",
+    ]],
+    int as_clamp_output = 1
+    [[
+        string as_maya_attribute_name = "clamp output",
+        string as_maya_attribute_short_name = "clo",
+        int min = 0,
+        int max = 1,
+        string widget = "checkBox",
+        string label = "Clamp Output",
+        string page = "Output",
+        string help = "Clamps output values to the range [0,1].",
+    ]],
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null",
+        string label = "Color"
+    ]]
+)
+{
+    color shifted_color = in_color * in_slope + in_offset;
+    color transformed_color = pow(shifted_color, in_power);
+    float luma = as_luminance(transformed_color, in_colorspace);
+    color unclamped = mix(luma, transformed_color, in_saturation);
+    if (as_clamp_output == 1)
+    {   
+        out_outColor = clamp(unclamped, 0, 1);
+    }
+    else
+    {   
+        out_outColor = unclamped; 
+    }
+}
