@@ -477,6 +477,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_intersection_frustumsegment.cpp
     foundation/meta/tests/test_intersection_planesegment.cpp
     foundation/meta/tests/test_intersection_rayaabb.cpp
+    foundation/meta/tests/test_intersection_raysphere.cpp
     foundation/meta/tests/test_intersection_raytriangle.cpp
     foundation/meta/tests/test_iostreamop.cpp
     foundation/meta/tests/test_job.cpp
