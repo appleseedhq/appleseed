@@ -31,37 +31,271 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/ray.h"
+#include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
 
 // Standard headers.
 #include <cassert>
+#include <cmath>
 #include <cstddef>
 
 namespace foundation
 {
 
-/*
-        // compute the intersection between a ray and the sphere
-        double intersect_sphere(const Ray3d& r)
+//
+// 3D ray-sphere intersection functions.
+//
+// Each function comes in two variants:
+//   - One for ray directions of arbitrary lengths
+//   - One for unit-length ray directions
+//
+
+// Test the intersection between a ray segment and the surface of a sphere.
+template <typename T>
+bool intersect_sphere(
+    const Ray<T, 3>&        ray,
+    const Vector<T, 3>&     center,
+    const T                 radius);
+template <typename T>
+bool intersect_sphere_unit_direction(
+    const Ray<T, 3>&        ray,
+    const Vector<T, 3>&     center,
+    const T                 radius);
+
+// Test the intersection between a ray segment and the surface of a sphere.
+// If the ray segment and the sphere intersect, the distance to the closest
+// intersection is returned in `tmin`. Otherwise `tmin` is left unchanged.
+template <typename T>
+bool intersect_sphere(
+    const Ray<T, 3>&        ray,
+    const Vector<T, 3>&     center,
+    const T                 radius,
+    T&                      tmin);
+template <typename T>
+bool intersect_sphere_unit_direction(
+    const Ray<T, 3>&        ray,
+    const Vector<T, 3>&     center,
+    const T                 radius,
+    T&                      tmin);
+
+// Test the intersection between a ray segment and the surface of a sphere.
+// Return the number (0, 1 or 2) of intersections between the ray segment
+// and the sphere. The distances to the intersection points are stored in
+// `t_out` and are ordered by ascending distance (the closest intersection
+// is the first value in `t_out`).
+template <typename T>
+size_t intersect_sphere(
+    const Ray<T, 3>&        ray,
+    const Vector<T, 3>&     center,
+    const T                 radius,
+    T                       t_out[2]);
+template <typename T>
+size_t intersect_sphere_unit_direction(
+    const Ray<T, 3>&        ray,
+    const Vector<T, 3>&     center,
+    const T                 radius,
+    T                       t_out[2]);
+
+
+//
+// 3D ray-sphere intersection functions implementation.
+//
+
+template <typename T>
+inline bool intersect_sphere(
+    const Ray<T, 3>&        ray,
+    const Vector<T, 3>&     center,
+    const T                 radius)
+{
+    const T a = dot(ray.m_dir, ray.m_dir);
+    assert(a > T(0.0));
+
+    const Vector<T, 3> v = center - ray.m_org;
+    const T b = dot(ray.m_dir, v);
+
+    const T d = square(b) - a * (dot(v, v) - square(radius));
+    if (d >= T(0.0))
+    {
+        const T sqrt_d = std::sqrt(d);
+        T t;
+
+        t = (b - sqrt_d) / a;
+        if (t >= ray.m_tmin && t < ray.m_tmax)
+            return true;
+
+        t = (b + sqrt_d) / a;
+        if (t >= ray.m_tmin && t < ray.m_tmax)
+            return true;
+    }
+
+    return false;
+}
+
+template <typename T>
+inline bool intersect_sphere_unit_direction(
+    const Ray<T, 3>&        ray,
+    const Vector<T, 3>&     center,
+    const T                 radius)
+{
+    assert(is_normalized(ray.m_dir));
+
+    const Vector<T, 3> v = center - ray.m_org;
+    const T b = dot(ray.m_dir, v);
+
+    const T d = square(b) - (dot(v, v) - square(radius));
+    if (d >= T(0.0))
+    {
+        const T sqrt_d = std::sqrt(d);
+        T t;
+
+        t = b - sqrt_d;
+        if (t >= ray.m_tmin && t < ray.m_tmax)
+            return true;
+
+        t = b + sqrt_d;
+        if (t >= ray.m_tmin && t < ray.m_tmax)
+            return true;
+    }
+
+    return false;
+}
+
+template <typename T>
+inline bool intersect_sphere(
+    const Ray<T, 3>&        ray,
+    const Vector<T, 3>&     center,
+    const T                 radius,
+    T&                      tmin)
+{
+    const T a = dot(ray.m_dir, ray.m_dir);
+    assert(a > T(0.0));
+
+    const Vector<T, 3> v = center - ray.m_org;
+    const T b = dot(ray.m_dir, v);
+
+    const T d = square(b) - a * (dot(v, v) - square(radius));
+    if (d >= T(0.0))
+    {
+        const T sqrt_d = std::sqrt(d);
+        T t;
+
+        t = (b - sqrt_d) / a;
+        if (t >= ray.m_tmin && t < ray.m_tmax)
         {
-            const Vector3d v = m_sphere_center - r.m_org;
-            const double   a = dot(v, r.m_dir);
-            const double   b = a * a - dot(v, v) + double(1.0);
-
-            if (b < 0.0)
-                return m_huge;        // no intersection
-
-            const double c  = sqrt(b);
-            double t = a - c;
-
-            if (t < 0.0)
-            {
-                t = a + c;
-                if (t < 0.0)
-                    return m_huge;    // no intersection
-            }
-
-            return t;
+            tmin = t;
+            return true;
         }
-*/
+
+        t = (b + sqrt_d) / a;
+        if (t >= ray.m_tmin && t < ray.m_tmax)
+        {
+            tmin = t;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+template <typename T>
+inline bool intersect_sphere_unit_direction(
+    const Ray<T, 3>&        ray,
+    const Vector<T, 3>&     center,
+    const T                 radius,
+    T&                      tmin)
+{
+    assert(is_normalized(ray.m_dir));
+
+    const Vector<T, 3> v = center - ray.m_org;
+    const T b = dot(ray.m_dir, v);
+
+    const T d = square(b) - (dot(v, v) - square(radius));
+    if (d >= T(0.0))
+    {
+        const T sqrt_d = std::sqrt(d);
+        T t;
+
+        t = b - sqrt_d;
+        if (t >= ray.m_tmin && t < ray.m_tmax)
+        {
+            tmin = t;
+            return true;
+        }
+
+        t = b + sqrt_d;
+        if (t >= ray.m_tmin && t < ray.m_tmax)
+        {
+            tmin = t;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+template <typename T>
+inline size_t intersect_sphere(
+    const Ray<T, 3>&        ray,
+    const Vector<T, 3>&     center,
+    const T                 radius,
+    T                       t_out[2])
+{
+    size_t hit_count = 0;
+
+    const T a = dot(ray.m_dir, ray.m_dir);
+    assert(a > T(0.0));
+
+    const Vector<T, 3> v = center - ray.m_org;
+    const T b = dot(ray.m_dir, v);
+
+    const T d = square(b) - a * (dot(v, v) - square(radius));
+    if (d >= T(0.0))
+    {
+        const T sqrt_d = std::sqrt(d);
+        T t;
+
+        t = (b - sqrt_d) / a;
+        if (t >= ray.m_tmin && t < ray.m_tmax)
+            t_out[hit_count++] = t;
+
+        t = (b + sqrt_d) / a;
+        if (t >= ray.m_tmin && t < ray.m_tmax)
+            t_out[hit_count++] = t;
+    }
+
+    return hit_count;
+}
+
+template <typename T>
+inline size_t intersect_sphere_unit_direction(
+    const Ray<T, 3>&        ray,
+    const Vector<T, 3>&     center,
+    const T                 radius,
+    T                       t_out[2])
+{
+    assert(is_normalized(ray.m_dir));
+
+    size_t hit_count = 0;
+
+    const Vector<T, 3> v = center - ray.m_org;
+    const T b = dot(ray.m_dir, v);
+
+    const T d = square(b) - (dot(v, v) - square(radius));
+    if (d >= T(0.0))
+    {
+        const T sqrt_d = std::sqrt(d);
+        T t;
+
+        t = b - sqrt_d;
+        if (t >= ray.m_tmin && t < ray.m_tmax)
+            t_out[hit_count++] = t;
+
+        t = b + sqrt_d;
+        if (t >= ray.m_tmin && t < ray.m_tmax)
+            t_out[hit_count++] = t;
+    }
+
+    return hit_count;
+}
 
 }   // namespace foundation
