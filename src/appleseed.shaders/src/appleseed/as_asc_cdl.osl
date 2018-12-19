@@ -28,6 +28,8 @@
 
 // American Society of Cinematographers Color Decision List implementation
 
+#include "appleseed/color/as_color_helpers.h"
+
 shader as_asc_cdl
 [[
     string help = "Slope/Offset/Power Color Decision List utility shader according to the American Society of Cinematographers",
@@ -52,6 +54,16 @@ shader as_asc_cdl
         string page = "Color",
         string help = "Input color.",
         int divider = 1
+    ]],
+    string in_colorspace = "sRGB/Rec.709"
+    [[
+        string as_maya_attribute_name = "colorspace",
+        string as_maya_attribute_short_name = "csp",
+        string widget = "popup",
+        string options = "Rec.601|sRGB/Rec.709|AdobeRGB|Rec.2020|ACES|ACEScg|DCI-P3",
+        string label = "Color Space",
+        string page = "Color",
+        string help = "Color space of the input color."
     ]],
     float in_slope = 1.0
     [[
@@ -103,6 +115,8 @@ shader as_asc_cdl
     [[
         string as_maya_attribute_name = "clamp output",
         string as_maya_attribute_short_name = "clo",
+        int min = 0,
+        int max = 1,
         string widget = "checkBox",
         string label = "Clamp Output",
         string page = "Output",
@@ -119,8 +133,8 @@ shader as_asc_cdl
 {
     color shifted_color = in_color * in_slope + in_offset;
     color transformed_color = pow(shifted_color, in_power);
-    float luma = 0.2126 * transformed_color[0] + 0.7152 * transformed_color[1] + 0.0722 * transformed_color[2];
-    color unclamped = luma + in_saturation * (transformed_color - luma);
+    float luma = as_luminance(transformed_color, in_colorspace);
+    color unclamped = mix(luma, transformed_color, in_saturation);
     if (as_clamp_output == 1)
     {   
         out_outColor = clamp(unclamped, 0, 1);
