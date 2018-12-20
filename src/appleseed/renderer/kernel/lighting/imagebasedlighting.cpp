@@ -204,14 +204,14 @@ void compute_ibl_environment_sampling(
 
         // Discard occluded samples.
         Spectrum transmission;
-        if(environment_edf.get_cast_shadows())
+        if (environment_edf.get_cast_shadows())
         {
             const ShadingPoint& shading_point = material_sampler.trace(
                 shading_context,
                 incoming,
                 transmission);
 
-            if (shading_point.hit_surface()){}
+            if (shading_point.hit_surface())
                 continue;
 
             if (is_zero(transmission))

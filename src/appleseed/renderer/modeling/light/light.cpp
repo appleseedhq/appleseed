@@ -113,10 +113,7 @@ bool Light::on_frame_begin(
     else
         m_flags &= ~CastIndirectLight;
 
-    if (m_params.get_optional<bool>("cast_shadows", true))
-        m_cast_shadows = true;
-    else
-        m_cast_shadows = false;
+    m_cast_shadows = m_params.get_optional<bool>("cast_shadows", true);
 
     if (get_uncached_importance_multiplier() <= 0.0)
     {
@@ -148,11 +145,6 @@ void Light::sample(
             outgoing,
             value,
             probability);
-}
-
-bool Light::get_cast_shadows() const
-{
-    return m_cast_shadows;
 }
 
 }   // namespace renderer

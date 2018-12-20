@@ -119,17 +119,9 @@ bool EnvironmentEDF::on_frame_begin(
         m_transform_sequence.set_transform(time, transform);
     }
 
-    if (m_params.get_optional<bool>("env_cast_shadows", true))
-        m_env_cast_shadows = true;
-    else
-        m_env_cast_shadows = false;
+    m_cast_shadows = m_params.get_optional<bool>("cast_shadows", true);
 
     return true;
-}
-
-bool EnvironmentEDF::get_cast_shadows() const
-{
-    return m_env_cast_shadows;
 }
 
 }   // namespace renderer

@@ -272,14 +272,7 @@ DictionaryArray MirrorBallMapEnvironmentEDFFactory::get_input_metadata() const
             .insert("default", "0.0")
             .insert("help", "Environment exposure"));
 
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "env_cast_shadows")
-            .insert("label", "Cast Shadows")
-            .insert("type", "boolean")
-            .insert("use", "optional")
-            .insert("default", "true")
-            .insert("help", "If enabled, the environment casts shadows"));
+    add_common_input_metadata(metadata);
 
     return metadata;
 }

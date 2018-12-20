@@ -242,14 +242,7 @@ DictionaryArray ConstantHemisphereEnvironmentEDFFactory::get_input_metadata() co
             .insert("default", "0.3")
             .insert("help", "Lower hemisphere radiance"));
 
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "env_cast_shadows")
-            .insert("label", "Cast Shadows")
-            .insert("type", "boolean")
-            .insert("use", "optional")
-            .insert("default", "true")
-            .insert("help", "If enabled, the environment casts shadows"));
+    add_common_input_metadata(metadata);
 
     return metadata;
 }

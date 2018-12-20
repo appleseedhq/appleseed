@@ -70,6 +70,9 @@ class APPLESEED_DLLSYMBOL IEnvironmentEDFFactory
   protected:
     // Add the input metadata common to all sky dome environment models.
     static void add_common_sky_input_metadata(foundation::DictionaryArray& metadata);
+
+    //Add the input metadata common to all environment models
+    static void add_common_input_metadata(foundation::DictionaryArray& metadata);
 };
 
 }   // namespace renderer

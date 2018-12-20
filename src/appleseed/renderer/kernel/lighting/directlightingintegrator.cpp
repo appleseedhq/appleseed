@@ -513,7 +513,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
 
     // Compute the transmission factor between the light sample and the shading point.
     Spectrum transmission;
-    if(light->get_cast_shadows())
+    if (light->get_cast_shadows())
     {
         m_material_sampler.trace_between(
             m_shading_context,
