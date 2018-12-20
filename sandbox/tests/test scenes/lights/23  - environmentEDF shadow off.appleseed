@@ -40,7 +40,7 @@
             </alpha>
         </color>
         <environment_edf name="environment_edf" model="gradient_environment_edf">
-            <parameter name="env_cast_shadows" value="false" />
+            <parameter name="cast_shadows" value="false" />
             <parameter name="horizon_radiance" value="0.6" />
             <parameter name="zenith_radiance" value="0.0" />
         </environment_edf>
