@@ -1,0 +1,159 @@
+
+//
+// This source file is part of appleseed.
+// Visit https://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2018 Herbert Crepaz, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Color utility shader which allows to invert one or more components of the input color.
+// Modeled after Pixar's RenderMan PxrInvert shader.
+
+shader as_inv_color
+[[  
+    string help = "Inverts one or more individual color channels of the the input color in the respective color model. The output is a RGB color.",
+    string icon = "asInvColor.png",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_inv_color.html#label-as-inv-color",
+    
+    string as_node_name = "asInvertColor",
+    string as_category = "color",
+    
+    string as_max_class_id = "1105087319 977155459", 
+    string as_max_plugin_type = "texture",
+    
+    int as_maya_type_id = 0x00127a08,
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility"
+]]
+(
+    color in_color = color(0, 0, 0)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Input Color",
+        string page = "Color",
+        string help = "Input color.",
+        int divider = 1
+    ]],
+    string in_color_model = "rgb"
+    [[
+        string as_maya_attribute_name = "colormodel",
+        string as_maya_attribute_short_name = "clm",
+        string widget = "popup",
+        string options = "rgb|hsv|hsl|XYZ|xyY",
+        string label = "Color Model",
+        string page = "Color",
+        string help = "The input color uses this color space."
+    ]],
+    int as_invert_channel_0 = 0
+    [[
+        string as_maya_attribute_name = "invert channel 0",
+        string as_maya_attribute_short_name = "inv0",
+        int min = 0,
+        int max = 1,
+        string widget = "checkBox",
+        string label = "Invert Channel 0",
+        string page = "Output",
+        string help = "Inverts the input color channel 0.",
+    ]],
+    int as_invert_channel_1 = 0
+    [[
+        string as_maya_attribute_name = "invert channel 1",
+        string as_maya_attribute_short_name = "inv1",
+        int min = 0,
+        int max = 1,
+        string widget = "checkBox",
+        string label = "Invert Channel 1",
+        string page = "Output",
+        string help = "Inverts the input color channel 1.",
+    ]],
+    int as_invert_channel_2 = 0
+    [[
+        string as_maya_attribute_name = "invert channel 2",
+        string as_maya_attribute_short_name = "inv2",
+        int min = 0,
+        int max = 1,
+        string widget = "checkBox",
+        string label = "Invert Channel 2",
+        string page = "Output",
+        string help = "Inverts the input color channel 2.",
+    ]],
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null",
+        string label = "Color"
+    ]]
+)
+{
+    color in_color_trans = transformc(in_color_model, in_color);
+    color out_color_trans = color(0);
+    
+    if (as_invert_channel_0 == 1 && as_invert_channel_1 == 0 && as_invert_channel_2 == 0)
+    {
+        out_color_trans[0] = 1 - in_color_trans[0];
+        out_color_trans[1] = in_color_trans[1];
+        out_color_trans[2] = in_color_trans[2];
+    }
+    else if (as_invert_channel_0 == 0 && as_invert_channel_1 == 1 && as_invert_channel_2 == 0)
+    {
+        out_color_trans[0] = in_color_trans[0];
+        out_color_trans[1] = 1 - in_color_trans[1];
+        out_color_trans[2] = in_color_trans[2];
+    }
+    else if (as_invert_channel_0 == 0 && as_invert_channel_1 == 0 && as_invert_channel_2 == 1)
+    {
+        out_color_trans[0] = in_color_trans[0];
+        out_color_trans[1] = in_color_trans[1];
+        out_color_trans[2] = 1 - in_color_trans[2];
+    }
+    else if (as_invert_channel_0 == 1 && as_invert_channel_1 == 1 && as_invert_channel_2 == 0)
+    {
+        out_color_trans[0] = 1 - in_color_trans[0];
+        out_color_trans[1] = 1 - in_color_trans[1];
+        out_color_trans[2] = in_color_trans[2];
+    }
+    else if (as_invert_channel_0 == 1 && as_invert_channel_1 == 0 && as_invert_channel_2 == 1)
+    {
+        out_color_trans[0] = 1 - in_color_trans[0];
+        out_color_trans[1] = in_color_trans[1];
+        out_color_trans[2] = 1 - in_color_trans[2];
+    }
+    else if (as_invert_channel_0 == 0 && as_invert_channel_1 == 1 && as_invert_channel_2 == 1)
+    {
+        out_color_trans[0] = in_color_trans[0];
+        out_color_trans[1] = 1 - in_color_trans[1];
+        out_color_trans[2] = 1 - in_color_trans[2];
+    }
+    else if (as_invert_channel_0 == 1 && as_invert_channel_1 == 1 && as_invert_channel_2 == 1)
+    {
+        out_color_trans[0] = 1 - in_color_trans[0];
+        out_color_trans[1] = 1 - in_color_trans[1];
+        out_color_trans[2] = 1 - in_color_trans[2];
+    }
+    else
+    {
+        out_color_trans = in_color_trans;
+    }
+    out_outColor = transformc(in_color_model, "rgb", out_color_trans);
+}
