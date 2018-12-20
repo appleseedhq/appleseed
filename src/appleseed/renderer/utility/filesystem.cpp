@@ -61,4 +61,3 @@ void create_parent_directories(const char* file_path)
 }
 
 }       // namespace renderer
-

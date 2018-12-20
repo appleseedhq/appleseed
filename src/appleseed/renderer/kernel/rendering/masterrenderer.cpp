@@ -466,11 +466,9 @@ struct MasterRenderer::Impl
 
         // Load the checkpoint if any.
         Frame& frame = *m_project.get_frame();
-
         PermanentShadingResultFrameBufferFactory* buffer_factory =
             static_cast<PermanentShadingResultFrameBufferFactory*>(
                 &(components.get_shading_result_framebuffer_factory()));
-
         if (!frame.load_checkpoint(buffer_factory))
             return IRendererController::AbortRendering;
 

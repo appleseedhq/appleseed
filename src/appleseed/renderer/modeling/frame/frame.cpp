@@ -577,7 +577,6 @@ namespace
                 frame_tile.get_height(),
                 m_frame.get_crop_window());
         }
-
     };
 
     void get_denoiser_checkpoint_paths(
@@ -634,7 +633,7 @@ namespace
             return false;
         }
 
-        // Check that weight layer has correct amount of channel
+        // Check that weight layer has correct amount of channel.
         const size_t expect_channel_count = (1 + frame.aov_images().size()) * 4 + 1;
         if (get<1>(checkpoint_props[1]).m_channel_count != expect_channel_count)
         {
@@ -654,7 +653,7 @@ namespace
             return false;
         }
 
-        // Check if aovs are here.
+        // Check if AOVs are here.
         if (checkpoint_props.size() < frame.aovs().size() + 2)
         {
             RENDERER_LOG_ERROR("incorrect checkpoint: some aovs are missing.");
@@ -697,8 +696,10 @@ namespace
 
         // Load histograms.
         bool result = ImageIO::loadMultiChannelsEXR(histograms_image, hist_file_path.c_str());
+
         // Load covariance accumulator.
         result = result && ImageIO::loadMultiChannelsEXR(covariance_image, cov_file_path.c_str());
+
         // Load sum accumulator.
         result = result && ImageIO::loadMultiChannelsEXR(sum_image, sum_file_path.c_str());
 
@@ -722,8 +723,10 @@ namespace
 
         // Add histograms layer.
         bool result = ImageIO::writeMultiChannelsEXR(histograms_image, hist_file_path.c_str());
+
         // Add covariances layer.
         result = result && ImageIO::writeMultiChannelsEXR(covariance_image, cov_file_path.c_str());
+
         // Add sum layer.
         result = result && ImageIO::writeMultiChannelsEXR(sum_image, sum_file_path.c_str());
 
@@ -743,7 +746,7 @@ bool Frame::load_checkpoint(PermanentShadingResultFrameBufferFactory* buffer_fac
     // Check if the file exists.
     if (!bf::exists(bf_path))
     {
-        RENDERER_LOG_WARNING("no checkpoint found, starting a new render");
+        RENDERER_LOG_WARNING("no checkpoint found, starting a new render.");
         return true;
     }
 
@@ -753,7 +756,6 @@ bool Frame::load_checkpoint(PermanentShadingResultFrameBufferFactory* buffer_fac
 
     // First, read layers name and properties.
     CheckpointProperties checkpoint_props;
-
     size_t layer_index = 0;
     while (reader.choose_subimage(layer_index))
     {
@@ -768,11 +770,10 @@ bool Frame::load_checkpoint(PermanentShadingResultFrameBufferFactory* buffer_fac
                 ? layer_attributes.get<string>("name")
                 : "undefined";
 
-        checkpoint_props.push_back(
-            make_tuple(
-                layer_name,
-                layer_canvas_props,
-                layer_attributes));
+        checkpoint_props.emplace_back(
+            layer_name,
+            layer_canvas_props,
+            layer_attributes);
 
         ++layer_index;
     }
@@ -780,7 +781,6 @@ bool Frame::load_checkpoint(PermanentShadingResultFrameBufferFactory* buffer_fac
     // Check checkpoint's compatibility.
     if (!is_checkpoint_compatible(impl->m_checkpoint_resume_path, *this, checkpoint_props))
     {
-        reader.close();
         return false;
     }
 
@@ -789,8 +789,7 @@ bool Frame::load_checkpoint(PermanentShadingResultFrameBufferFactory* buffer_fac
     // Check if passes have already been rendered.
     if (impl->m_pass_count <= start_pass)
     {
-        RENDERER_LOG_WARNING("passes have previously been rendered and saved into the checkpoint");
-        reader.close();
+        RENDERER_LOG_WARNING("the requested passes have already been rendered and saved into the checkpoint.");
         return false;
     }
 
@@ -812,7 +811,7 @@ bool Frame::load_checkpoint(PermanentShadingResultFrameBufferFactory* buffer_fac
             // No need to read beauty and filtered AOVs because they
             // are in the shading buffer.
 
-            // Read Unfiltered AOV layers.
+            // Read unfiltered AOV layers.
             vector<unique_ptr<Tile>> aov_tiles;
             vector<const float*> aov_ptrs;
             for (size_t i = 0; i < aovs().size(); ++i)
@@ -846,8 +845,6 @@ bool Frame::load_checkpoint(PermanentShadingResultFrameBufferFactory* buffer_fac
         }
     }
 
-    reader.close();
-
     // Load internal AOVs (from external files).
     for (size_t i = 0, e = internal_aovs().size(); i < e; ++i)
     {
@@ -855,7 +852,7 @@ bool Frame::load_checkpoint(PermanentShadingResultFrameBufferFactory* buffer_fac
 
         DenoiserAOV* denoiser_aov = dynamic_cast<DenoiserAOV*>(aov);
 
-        // Save denoiser checkpoint.
+        // Load denoiser checkpoint.
         if (denoiser_aov != nullptr)
         {
             if (!load_denoiser_checkpoint(impl->m_checkpoint_resume_path, denoiser_aov))
@@ -863,7 +860,8 @@ bool Frame::load_checkpoint(PermanentShadingResultFrameBufferFactory* buffer_fac
         }
     }
 
-    RENDERER_LOG_INFO("opened checkpoint resuming at pass %s",
+    RENDERER_LOG_INFO("read checkpoint file %s, resuming rendering at pass %s.",
+        impl->m_checkpoint_resume_path.c_str(),
         pretty_uint(start_pass).c_str());
 
     impl->m_initial_pass = start_pass;
@@ -938,12 +936,12 @@ void Frame::save_checkpoint(
 
         // Save denoiser checkpoint.
         if (denoiser_aov != nullptr)
-        {
             save_denoiser_checkpoint(impl->m_checkpoint_create_path, denoiser_aov);
-        }
     }
 
-    RENDERER_LOG_INFO("wrote checkpoint for pass %s.", pretty_uint(pass + 1).c_str());
+    RENDERER_LOG_INFO("wrote checkpoint file %s for pass %s.",
+        impl->m_checkpoint_create_path.c_str(),
+        pretty_uint(pass + 1).c_str());
 }
 
 namespace

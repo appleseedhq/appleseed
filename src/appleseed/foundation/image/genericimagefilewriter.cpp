@@ -331,7 +331,6 @@ void GenericImageFileWriter::write_tiles(const size_t image_index)
     // Retrieve image spec.
     assert(image_index < impl->m_spec.size());
     const OIIO::ImageSpec& spec = impl->m_spec[image_index];
-
     assert(spec.nchannels == spec.channelnames.size());
     assert(spec.nchannels == props.m_channel_count);
 

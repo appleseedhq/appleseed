@@ -335,44 +335,40 @@ namespace
 
         if (g_cl.m_checkpoint_create.is_set())
         {
-            params.insert("checkpoint_create", "on");
+            params.insert("checkpoint_create", true);
 
             if (g_cl.m_checkpoint_create.values().empty() && !g_cl.m_output.is_set())
             {
-                LOG_ERROR(g_logger, "ouput path must be specified if no path is given for --checkpoint-create");
+                LOG_ERROR(g_logger, "output path must be specified if no path is given for --checkpoint-create");
                 return false;
             }
 
             params.insert(
                 "checkpoint_create_path",
                 !g_cl.m_checkpoint_create.values().empty()
-                    ? g_cl.m_checkpoint_create.value().c_str()
+                    ? g_cl.m_checkpoint_create.value()
                     : "");
         }
 
         if (g_cl.m_checkpoint_resume.is_set())
         {
-            params.insert("checkpoint_resume", "on");
+            params.insert("checkpoint_resume", true);
 
             if (g_cl.m_checkpoint_resume.values().empty() && !g_cl.m_output.is_set())
             {
-                LOG_ERROR(g_logger, "ouput path must be specified if no path is given for --checkpoint-resume");
+                LOG_ERROR(g_logger, "output path must be specified if no path is given for --checkpoint-resume");
                 return false;
             }
 
             params.insert(
                 "checkpoint_resume_path",
                 !g_cl.m_checkpoint_resume.values().empty()
-                    ? g_cl.m_checkpoint_resume.value().c_str()
+                    ? g_cl.m_checkpoint_resume.value()
                     : "");
         }
 
         if (g_cl.m_passes.is_set())
-        {
-            params.insert_path(
-                "passes",
-                g_cl.m_passes.values()[0]);
-        }
+            params.insert_path("passes", g_cl.m_passes.values()[0]);
 
         auto_release_ptr<Frame> new_frame(
             FrameFactory::create(
@@ -430,7 +426,8 @@ namespace
         apply_custom_parameter_command_line_options(params);
 
         // Apply command line options that alter the project.
-        if (!apply_frame_command_line_options(project)) return false;
+        if (!apply_frame_command_line_options(project))
+            return false;
         apply_visibility_command_line_options(project);
 
         return true;
@@ -763,4 +760,3 @@ int main(int argc, char* argv[])
 
     return success ? 0 : 1;
 }
-

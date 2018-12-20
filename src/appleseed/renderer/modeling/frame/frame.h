@@ -62,9 +62,9 @@ namespace foundation    { class Tile; }
 namespace renderer      { class BaseGroup; }
 namespace renderer      { class DenoiserAOV; }
 namespace renderer      { class ImageStack; }
-namespace renderer      { class PermanentShadingResultFrameBufferFactory; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class PermanentShadingResultFrameBufferFactory; }
 namespace renderer      { class Project; }
 
 namespace renderer

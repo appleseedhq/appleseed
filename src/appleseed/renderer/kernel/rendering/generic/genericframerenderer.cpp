@@ -38,9 +38,9 @@
 #include "renderer/kernel/rendering/iframerenderer.h"
 #include "renderer/kernel/rendering/ipasscallback.h"
 #include "renderer/kernel/rendering/ishadingresultframebufferfactory.h"
-#include "renderer/kernel/rendering/permanentshadingresultframebufferfactory.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/itilerenderer.h"
+#include "renderer/kernel/rendering/permanentshadingresultframebufferfactory.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/utility/settingsparsing.h"
 
@@ -73,7 +73,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Generic frame renderer.
     //
