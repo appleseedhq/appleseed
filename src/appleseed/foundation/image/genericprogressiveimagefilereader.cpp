@@ -262,89 +262,25 @@ Tile* GenericProgressiveImageFileReader::read_tile(
 {
     assert(is_open());
 
-    if (impl->m_is_tiled)
-    {
-        //
-        // Tiled image.
-        //
-        // In appleseed, for images whose width or height are not multiples
-        // of the tile's width or height, border tiles are actually smaller.
-        // In OpenImageIO, border tiles have the same size as other tiles,
-        // and the image's pixel data window defines which pixels of those
-        // tiles actually belong to the image.
-        //
-        // Since in appleseed we don't propagate pixel data windows through
-        // the whole image pipeline, we make sure here to return tiles of
-        // the correct dimensions, at some expenses.
-        //
+    // Compute tile's dimensions.
+    const size_t tile_width = impl->m_is_tiled
+        ? min(impl->m_props.m_tile_width, impl->m_props.m_canvas_width - (tile_x * impl->m_props.m_tile_width))
+        : impl->m_props.m_canvas_width;
+    const size_t tile_height = impl->m_is_tiled
+        ? min(impl->m_props.m_tile_height, impl->m_props.m_canvas_height - (tile_y * impl->m_props.m_tile_height))
+        : impl->m_props.m_canvas_height;
 
-        unique_ptr<Tile> source_tile(
-            new Tile(
-                impl->m_props.m_tile_width,
-                impl->m_props.m_tile_height,
-                impl->m_props.m_channel_count,
-                impl->m_props.m_pixel_format));
+    // Create the tile.
+    Tile* output_tile = new Tile(
+        tile_width,
+        tile_height,
+        impl->m_props.m_channel_count,
+        impl->m_props.m_pixel_format);
 
-        const size_t origin_x = tile_x * impl->m_props.m_tile_width;
-        const size_t origin_y = tile_y * impl->m_props.m_tile_height;
+    // Read the tile from the file.
+    read_tile(tile_x, tile_y, output_tile);
 
-        if (!impl->m_input->read_tile(
-                static_cast<int>(origin_x),
-                static_cast<int>(origin_y),
-                0, // z
-                impl->m_input->spec().format,
-                source_tile->get_storage()))
-            throw ExceptionIOError(impl->m_input->geterror().c_str());
-
-        const size_t tile_width = min(impl->m_props.m_tile_width, impl->m_props.m_canvas_width - origin_x);
-        const size_t tile_height = min(impl->m_props.m_tile_height, impl->m_props.m_canvas_height - origin_y);
-
-        if (tile_width == impl->m_props.m_tile_width && tile_height == impl->m_props.m_tile_height)
-            return source_tile.release();
-
-        unique_ptr<Tile> shrunk_tile(
-            new Tile(
-                tile_width,
-                tile_height,
-                impl->m_props.m_channel_count,
-                impl->m_props.m_pixel_format));
-
-        for (size_t y = 0; y < tile_height; ++y)
-        {
-            memcpy(
-                shrunk_tile->pixel(0, y),
-                source_tile->pixel(0, y),
-                tile_width * impl->m_props.m_pixel_size);
-        }
-
-        return shrunk_tile.release();
-    }
-    else
-    {
-        //
-        // Scanline image.
-        //
-
-        unique_ptr<Tile> tile(
-            new Tile(
-                impl->m_props.m_canvas_width,
-                impl->m_props.m_canvas_height,
-                impl->m_props.m_channel_count,
-                impl->m_props.m_pixel_format));
-
-        if (!impl->m_supports_random_access)
-        {
-            close();
-            impl->open();
-        }
-
-        if (!impl->m_input->read_image(
-                impl->m_input->spec().format,
-                tile->get_storage()))
-            throw ExceptionIOError(impl->m_input->geterror().c_str());
-
-        return tile.release();
-    }
+    return output_tile;
 }
 
 void GenericProgressiveImageFileReader::read_tile(
