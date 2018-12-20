@@ -339,7 +339,10 @@ namespace
 
             if (g_cl.m_checkpoint_create.values().empty() && !g_cl.m_output.is_set())
             {
-                LOG_ERROR(g_logger, "output path must be specified if no path is given for --checkpoint-create");
+                LOG_ERROR(
+                    g_logger,
+                    "output path must be specified if no path is given for %s",
+                    g_cl.m_checkpoint_create.get_name().c_str());
                 return false;
             }
 
@@ -356,7 +359,10 @@ namespace
 
             if (g_cl.m_checkpoint_resume.values().empty() && !g_cl.m_output.is_set())
             {
-                LOG_ERROR(g_logger, "output path must be specified if no path is given for --checkpoint-resume");
+                LOG_ERROR(
+                    g_logger,
+                    "output path must be specified if no path is given for %s",
+                    g_cl.m_checkpoint_resume.get_name().c_str());
                 return false;
             }
 

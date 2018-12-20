@@ -34,6 +34,7 @@
 #include "foundation/utility/foreach.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 #include <string>
 #include <vector>
@@ -73,6 +74,9 @@ class OptionHandler
 
     // Add a name for this option.
     OptionHandler& add_name(const std::string& name);
+
+    // Return the first name of the option.
+    const std::string& get_name() const;
 
     // Set a description of this option.
     OptionHandler& set_description(const std::string& description);
@@ -130,6 +134,12 @@ inline OptionHandler& OptionHandler::add_name(const std::string& name)
 {
     m_names.push_back(name);
     return *this;
+}
+
+inline const std::string& OptionHandler::get_name() const
+{
+    assert(!m_names.empty());
+    return m_names[0];
 }
 
 inline OptionHandler& OptionHandler::set_description(const std::string& description)
