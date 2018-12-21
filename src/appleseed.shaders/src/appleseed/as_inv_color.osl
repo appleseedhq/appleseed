@@ -107,53 +107,16 @@ shader as_inv_color
 )
 {
     color in_color_trans = transformc(in_color_model, in_color);
-    color out_color_trans = color(0);
-    
-    if (as_invert_channel_0 == 1 && as_invert_channel_1 == 0 && as_invert_channel_2 == 0)
-    {
+    color out_color_trans = in_color_trans;
+
+    if (as_invert_channel_0 == 1)
         out_color_trans[0] = 1 - in_color_trans[0];
-        out_color_trans[1] = in_color_trans[1];
-        out_color_trans[2] = in_color_trans[2];
-    }
-    else if (as_invert_channel_0 == 0 && as_invert_channel_1 == 1 && as_invert_channel_2 == 0)
-    {
-        out_color_trans[0] = in_color_trans[0];
+
+    if (as_invert_channel_1 == 1)
         out_color_trans[1] = 1 - in_color_trans[1];
-        out_color_trans[2] = in_color_trans[2];
-    }
-    else if (as_invert_channel_0 == 0 && as_invert_channel_1 == 0 && as_invert_channel_2 == 1)
-    {
-        out_color_trans[0] = in_color_trans[0];
-        out_color_trans[1] = in_color_trans[1];
+
+    if (as_invert_channel_2 == 1)
         out_color_trans[2] = 1 - in_color_trans[2];
-    }
-    else if (as_invert_channel_0 == 1 && as_invert_channel_1 == 1 && as_invert_channel_2 == 0)
-    {
-        out_color_trans[0] = 1 - in_color_trans[0];
-        out_color_trans[1] = 1 - in_color_trans[1];
-        out_color_trans[2] = in_color_trans[2];
-    }
-    else if (as_invert_channel_0 == 1 && as_invert_channel_1 == 0 && as_invert_channel_2 == 1)
-    {
-        out_color_trans[0] = 1 - in_color_trans[0];
-        out_color_trans[1] = in_color_trans[1];
-        out_color_trans[2] = 1 - in_color_trans[2];
-    }
-    else if (as_invert_channel_0 == 0 && as_invert_channel_1 == 1 && as_invert_channel_2 == 1)
-    {
-        out_color_trans[0] = in_color_trans[0];
-        out_color_trans[1] = 1 - in_color_trans[1];
-        out_color_trans[2] = 1 - in_color_trans[2];
-    }
-    else if (as_invert_channel_0 == 1 && as_invert_channel_1 == 1 && as_invert_channel_2 == 1)
-    {
-        out_color_trans[0] = 1 - in_color_trans[0];
-        out_color_trans[1] = 1 - in_color_trans[1];
-        out_color_trans[2] = 1 - in_color_trans[2];
-    }
-    else
-    {
-        out_color_trans = in_color_trans;
-    }
+
     out_outColor = transformc(in_color_model, "rgb", out_color_trans);
 }
