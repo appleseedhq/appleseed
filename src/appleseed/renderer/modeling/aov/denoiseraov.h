@@ -82,7 +82,7 @@ class DenoiserAOV
     void extract_num_samples_image(bcd::Deepimf& num_samples) const;
     void compute_covariances_image(bcd::Deepimf& covariances) const;
 
-    bool write_images(const char* file_path) const;
+    bool write_images(const char* file_path) const override;
 
   protected:
     foundation::auto_release_ptr<AOVAccumulator> create_accumulator() const override;
