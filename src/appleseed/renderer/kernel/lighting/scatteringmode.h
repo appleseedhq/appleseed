@@ -55,10 +55,10 @@ class ScatteringMode
     enum Mode
     {
         None                = 0,
-        Diffuse             = 1 << DiffuseBitShift,
-        Glossy              = 1 << GlossyBitShift,
-        Specular            = 1 << SpecularBitShift,
-        Volume              = 1 << VolumeBitShift,
+        Diffuse             = 1UL << DiffuseBitShift,
+        Glossy              = 1UL << GlossyBitShift,
+        Specular            = 1UL << SpecularBitShift,
+        Volume              = 1UL << VolumeBitShift,
         All                 = Diffuse | Glossy | Specular | Volume
     };
 

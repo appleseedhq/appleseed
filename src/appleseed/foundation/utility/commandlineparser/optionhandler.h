@@ -62,10 +62,10 @@ class OptionHandler
     // Flags.
     enum Flags
     {
-        None        = 0,        // none of the flags below are set
-        Required    = 1 << 0,   // this option is required and must appear on the command line
-        Hidden      = 1 << 1,   // don't list this option in program usage
-        Repeatable  = 1 << 2    // this option can appear multiple times on a command line
+        None        = 0,            // none of the flags below are set
+        Required    = 1UL << 0,     // this option is required and must appear on the command line
+        Hidden      = 1UL << 1,     // don't list this option in program usage
+        Repeatable  = 1UL << 2      // this option can appear multiple times on a command line
     };
 
     // Constructor.

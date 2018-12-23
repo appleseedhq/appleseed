@@ -48,12 +48,12 @@ APPLESEED_DECLARE_INPUT_VALUES(NPRShadingInputValues)
 
 enum NPRContourFeatures
 {
-    ObjectInstanceID        = 1 << 0,
-    MaterialID              = 1 << 1,
+    ObjectInstanceID        = 1UL << 0,
+    MaterialID              = 1UL << 1,
     AllIDFeatures           = ObjectInstanceID | MaterialID,
 
-    OcclusionEdges          = 1 << 2,
-    CreaseEdges             = 1 << 3,
+    OcclusionEdges          = 1UL << 2,
+    CreaseEdges             = 1UL << 3,
     AllDifferenceFeatures   = OcclusionEdges | CreaseEdges,
 
     AllFeatures             = ~0

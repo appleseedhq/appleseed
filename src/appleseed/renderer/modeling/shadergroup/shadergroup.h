@@ -143,24 +143,24 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     enum Flags
     {
         // Closures.
-        HasBSDFs        = 1 << 0,
-        HasEmission     = 1 << 1,
-        HasTransparency = 1 << 2,
-        HasSubsurface   = 1 << 3,
-        HasHoldout      = 1 << 4,
-        HasDebug        = 1 << 5,
-        HasNPR          = 1 << 6,
+        HasBSDFs        = 1UL << 0,
+        HasEmission     = 1UL << 1,
+        HasTransparency = 1UL << 2,
+        HasSubsurface   = 1UL << 3,
+        HasHoldout      = 1UL << 4,
+        HasDebug        = 1UL << 5,
+        HasNPR          = 1UL << 6,
         HasAllClosures  =
-            HasBSDFs        |
-            HasEmission     |
-            HasTransparency |
-            HasSubsurface   |
-            HasHoldout      |
-            HasDebug        |
-            HasNPR,
+              HasBSDFs
+            | HasEmission
+            | HasTransparency
+            | HasSubsurface
+            | HasHoldout
+            | HasDebug
+            | HasNPR,
 
         // Globals.
-        UsesdPdTime     = 1 << 7,
+        UsesdPdTime     = 1UL << 7,
         UsesAllGlobals  = UsesdPdTime
     };
     foundation::uint32 m_flags;

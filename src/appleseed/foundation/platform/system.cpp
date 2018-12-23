@@ -537,7 +537,7 @@ namespace
             "=d" (regs[edx]));
     }
 
-#define BIT(n)              (1ul << (n))
+#define BIT(n)              (1UL << (n))
 #define BITMASK(h, l)       ((BIT(h) | (BIT(h) - 1)) & ~(BIT(l) - 1))
 #define BITFIELD(x, h, l)   (((x) & BITMASK(h, l)) >> l)
 
@@ -995,8 +995,8 @@ namespace
         uint32 cpuinfo[4];
         cpuid(cpuinfo, 1);
 
-        const bool os_uses_xsave_xrstor = (cpuinfo[2] & (1 << 27)) != 0;
-        const bool cpu_avx_support = (cpuinfo[2] & (1 << 28)) != 0;
+        const bool os_uses_xsave_xrstor = (cpuinfo[2] & (1UL << 27)) != 0;
+        const bool cpu_avx_support = (cpuinfo[2] & (1UL << 28)) != 0;
 
         if (os_uses_xsave_xrstor && cpu_avx_support)
         {

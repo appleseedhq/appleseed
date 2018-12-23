@@ -84,7 +84,7 @@ class Triangulator
     enum Options
     {
         Default                 = 0,        // none of the flags below
-        KeepDegenerateTriangles = 1 << 0    // insert degenerate triangles into triangulation
+        KeepDegenerateTriangles = 1UL << 0  // insert degenerate triangles into triangulation
     };
 
     // Constructor.

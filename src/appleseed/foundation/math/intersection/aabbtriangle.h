@@ -73,12 +73,12 @@ namespace aabbtriangle_impl
         const Vector<T, 3>& v)
     {
         uint8 mask = 0;
-        if (v[0] >= bbox.min[0]) mask |= 1 << 0;
-        if (v[1] >= bbox.min[1]) mask |= 1 << 1;
-        if (v[2] >= bbox.min[2]) mask |= 1 << 2;
-        if (v[0] <= bbox.max[0]) mask |= 1 << 3;
-        if (v[1] <= bbox.max[1]) mask |= 1 << 4;
-        if (v[2] <= bbox.max[2]) mask |= 1 << 5;
+        if (v[0] >= bbox.min[0]) mask |= 1UL << 0;
+        if (v[1] >= bbox.min[1]) mask |= 1UL << 1;
+        if (v[2] >= bbox.min[2]) mask |= 1UL << 2;
+        if (v[0] <= bbox.max[0]) mask |= 1UL << 3;
+        if (v[1] <= bbox.max[1]) mask |= 1UL << 4;
+        if (v[2] <= bbox.max[2]) mask |= 1UL << 5;
         return mask;
     }
 
@@ -94,7 +94,7 @@ namespace aabbtriangle_impl
         // If the segment [s0, s1] does not straddle the plane of the
         // bounding box face along the specified dimension, it cannot
         // intersect the face.
-        if (!(mask & (1 << Bit)))
+        if (!(mask & (1UL << Bit)))
             return false;
 
         const T plane = bbox[MinMax][Dim];
