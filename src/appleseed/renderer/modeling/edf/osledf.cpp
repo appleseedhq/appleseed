@@ -183,6 +183,7 @@ namespace
                     outgoing,
                     s,
                     edf_prob);
+                assert(edf_prob >= 0.0f);
 
                 if (edf_prob > 0.0f)
                 {
@@ -190,6 +191,8 @@ namespace
                     probability += edf_prob * c->get_closure_pdf(i);
                 }
             }
+
+            assert(probability >= 0.0f);
         }
 
         float evaluate_pdf(
@@ -212,11 +215,13 @@ namespace
                         geometric_normal,
                         shading_basis,
                         outgoing);
+                assert(edf_prob >= 0.0f);
 
                 if (edf_prob > 0.0f)
                     probability += edf_prob * c->get_closure_pdf(i);
             }
 
+            assert(probability >= 0.0f);
             return probability;
         }
 

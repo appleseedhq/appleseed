@@ -198,6 +198,7 @@ namespace
                     incoming,
                     f,
                     value.m_glossy);
+            assert(pdf >= 0.0f);
 
             value.m_beauty = value.m_glossy;
 
@@ -218,7 +219,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            return
+            const float pdf =
                 MicrofacetBRDFHelper<false>::pdf(
                     m_mdf,
                     values->m_exponent,
@@ -227,6 +228,9 @@ namespace
                     shading_basis,
                     outgoing,
                     incoming);
+            assert(pdf >= 0.0f);
+
+            return pdf;
         }
 
       private:

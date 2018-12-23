@@ -158,6 +158,7 @@ namespace
                     rotate_minus_pi_around_x(
                         sample_cone_uniform(s, m_cos_outer_half_angle)));
             probability = sample_cone_uniform_pdf(static_cast<float>(m_cos_outer_half_angle));
+            assert(probability > 0.0f);
 
             const Vector3d axis = -normalize(light_transform.get_parent_z());
 

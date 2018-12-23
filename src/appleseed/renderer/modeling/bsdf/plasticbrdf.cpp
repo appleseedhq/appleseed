@@ -261,6 +261,7 @@ namespace
                 sample.m_aov_components.m_albedo = values->m_diffuse_reflectance;
             }
 
+            assert(sample.m_probability > 0.0f);
             sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
             sample.compute_reflected_differentials();
         }
@@ -325,10 +326,13 @@ namespace
             value.m_beauty = value.m_diffuse;
             value.m_beauty += value.m_glossy;
 
-            return
+            const float pdf =
                 ScatteringMode::has_diffuse_and_glossy(modes) ? lerp(pdf_diffuse, pdf_glossy, specular_probability) :
                 ScatteringMode::has_diffuse(modes) ? pdf_diffuse :
                 ScatteringMode::has_glossy(modes) ? pdf_glossy : 0.0f;
+            assert(pdf >= 0.0f);
+
+            return pdf;
         }
 
         float evaluate_pdf(
@@ -364,10 +368,13 @@ namespace
                     ? abs(wi.y) * RcpPi<float>()
                     : 0.0f;
 
-            return
+            const float pdf =
                 ScatteringMode::has_diffuse_and_glossy(modes) ? lerp(pdf_diffuse, pdf_glossy, specular_probability) :
                 ScatteringMode::has_diffuse(modes) ? pdf_diffuse :
                 ScatteringMode::has_glossy(modes) ? pdf_glossy : 0.0f;
+            assert(pdf >= 0.0f);
+
+            return pdf;
         }
 
       private:

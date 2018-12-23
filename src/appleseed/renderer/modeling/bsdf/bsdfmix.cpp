@@ -245,8 +245,11 @@ namespace
             if (bsdf0_prob > 0.0f) madd(value, bsdf0_value, w0);
             if (bsdf1_prob > 0.0f) madd(value, bsdf1_value, w1);
 
-            // Blend PDF values.
-            return bsdf0_prob * w0 + bsdf1_prob * w1;
+            // Compute the final PDF.
+            const float probability = bsdf0_prob * w0 + bsdf1_prob * w1;
+            assert(probability >= 0.0f);
+
+            return probability;
         }
 
         float evaluate_pdf(
@@ -263,13 +266,18 @@ namespace
             const Values* values = static_cast<const Values*>(data);
 
             // Retrieve blending weights.
-            const float w0 = values->m_inputs->m_weight[0];
-            const float w1 = values->m_inputs->m_weight[1];
+            float w0 = values->m_inputs->m_weight[0];
+            float w1 = values->m_inputs->m_weight[1];
             const float total_weight = w0 + w1;
 
             // Handle absorption.
             if (total_weight == 0.0f)
                 return 0.0f;
+
+            // Normalize the blending weights.
+            const float rcp_total_weight = 1.0f / total_weight;
+            w0 *= rcp_total_weight;
+            w1 *= rcp_total_weight;
 
             // Evaluate the PDF of the first BSDF.
             const float bsdf0_prob =
@@ -297,8 +305,11 @@ namespace
                           modes)
                     : 0.0f;
 
-            // Blend PDF values.
-            return (bsdf0_prob * w0 + bsdf1_prob * w1) / total_weight;
+            // Compute the final PDF.
+            const float probability = bsdf0_prob * w0 + bsdf1_prob * w1;
+            assert(probability >= 0.0f);
+
+            return probability;
         }
 
       private:
