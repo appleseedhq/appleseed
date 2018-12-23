@@ -166,6 +166,23 @@ class MicrofacetBRDFHelper
             mdf.pdf(wo, m, alpha_x, alpha_y, gamma) / std::abs(4.0f * cos_oh);
         assert(sample.m_probability >= 0.0f);
 
+        // Disabled until BSDF are evaluated in local space, because the numerous
+        // conversions between local space and world space kill precision.
+        //
+        // #ifndef NDEBUG
+        //         const float ref_probability =
+        //             pdf(
+        //                 mdf,
+        //                 alpha_x,
+        //                 alpha_y,
+        //                 gamma,
+        //                 sample.m_shading_basis,
+        //                 outgoing,
+        //                 incoming);
+        // 
+        //         assert(feq(sample.m_probability, ref_probability, 1.0e-2f));
+        // #endif
+
         // Skip samples with very low probability.
         if (sample.m_probability > 1.0e-6f)
         {

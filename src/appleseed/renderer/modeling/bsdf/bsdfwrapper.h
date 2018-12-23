@@ -145,6 +145,26 @@ void BSDFWrapper<BSDFImpl, Cull>::sample(
         assert(foundation::is_normalized(sample.m_incoming.get_value(), 1.0e-5f));
         assert(sample.m_probability == BSDFImpl::DiracDelta || sample.m_probability > 0.0f);
 
+        // Disabled until BSDF are evaluated in local space, because the numerous
+        // conversions between local space and world space kill precision.
+        //
+        // #ifndef NDEBUG
+        //         const float ref_probability =
+        //             evaluate_pdf(
+        //                 data,
+        //                 adjoint,
+        //                 sample.m_geometric_normal,
+        //                 sample.m_shading_basis,
+        //                 sample.m_outgoing.get_value(),
+        //                 sample.m_incoming.get_value(),
+        //                 modes);
+        // 
+        //         assert(
+        //             (sample.m_probability == BSDFImpl::DiracDelta && ref_probability == 0.0f) ||
+        //             (sample.m_probability > 0.0f && feq(sample.m_probability, ref_probability, 1.0e-2f)) ||
+        //             (sample.m_probability > 0.0f && ref_probability == 0.0f));  // todo: this case is worrisome!
+        // #endif
+
         if (cosine_mult)
         {
             if (adjoint)
