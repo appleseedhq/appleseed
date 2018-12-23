@@ -332,22 +332,28 @@ shader as_texture
         //
         // Reference:
         //
-        //  Mudbox separates with underscores nad starts the UV tiles at 1,
-        //  so exporting a layer as a PNG basename_color for instance, results
-        //  in basename_color_u1_v1.png.
+        //  Mudbox appends the U and V tiles to the texture name in the form
+        //  filename_u<U>_v<V>.extension with the UV tiles starting at 1.
+        //  So the first U and V tiles of a texture foobar.png would result
+        //  in foobar_u1_v1.png.
         //
-        //  ZBrush does the same as Mudbox, but starts at 0, so a file would be
-        //  basename_color_u0_v0.png.
+        //  ZBrush does the same as Mudbox but the UV tiles start at 0 instead
+        //  of 1, resulting in foobar_U0_V0.png for the first U and V tiles
+        //  respectively.
         //
-        //  Mari however separates the files with dots, so a file would result
-        //  in basename_color.1001.png.
+        //  Mari encodes the UV tiles as 1000+(u+1+v*10) and appends this to
+        //  the texture name using dots as separators. So a texture foobar.png
+        //  would result in foobar.1001.png for the first U and V tiles.
         //
-        //  To avoid conflicts with potential frame sequences, we assume first
-        //  that UV tiles for UDIM case case 4 digits, and always appear
-        //  _before_ (padded) frame numbers.
+        //  When using frame sequences we assume that the first dot separated
+        //  digits are the UDIM values, that is, that the UDIM values always 
+        //  appear before the (padded) frame numbers.
         //
-        //  Finally, OIIO expects _<U>_<V> for the Mudbox/Brush case, and
-        //  <UDIM> for the Mari case.
+        //  Finally the OIIO texture system expects the filename to have the
+        //  UV tiles or UDIM values replaced by the strings _<u>_<v>,
+        //  _<U>_<V>, and <UDIM> for the Mudbox, ZBrush and Mari cases
+        //  respectively, so we try to match the pattern and add the strings
+        //  automatically.
         //
 
         if (in_atlas_type == 1)
