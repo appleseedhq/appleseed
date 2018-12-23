@@ -124,6 +124,14 @@ void BSDFWrapper<BSDFImpl, Cull>::sample(
     assert(foundation::is_normalized(sample.m_geometric_normal));
     assert(foundation::is_normalized(sample.m_outgoing.get_value()));
 
+#ifndef NDEBUG
+    // Save the sampling context at the beginning of the iteration.
+    const SamplingContext backup_sampling_context(sampling_context);
+
+    // Resume execution here to reliably reproduce problems downstream.
+    sampling_context = backup_sampling_context;
+#endif
+
     BSDFImpl::sample(
         sampling_context,
         data,
