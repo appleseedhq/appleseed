@@ -139,8 +139,8 @@ namespace
     {
       public:
         KelemenBRDFImpl(
-            const char*             name,
-            const ParamArray&       params)
+            const char*                 name,
+            const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, params)
         {
             m_inputs.declare("matte_reflectance", InputFormatSpectralReflectance);
@@ -176,10 +176,10 @@ namespace
         }
 
         bool on_frame_begin(
-            const Project&          project,
-            const BaseGroup*        parent,
-            OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) override
+            const Project&              project,
+            const BaseGroup*            parent,
+            OnFrameBeginRecorder&       recorder,
+            IAbortSwitch*               abort_switch) override
         {
             if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
