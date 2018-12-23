@@ -29,7 +29,7 @@
 // Color utility shader which allows to invert one or more components of the input color.
 // Modeled after Pixar's RenderMan PxrInvert shader.
 
-shader as_inv_color
+shader as_invert_color
 [[  
     string help = "Inverts one or more individual color channels of the the input color in the respective color model. The output is a RGB color.",
     string icon = "asInvColor.png",
@@ -54,12 +54,12 @@ shader as_inv_color
         string help = "Input color.",
         int divider = 1
     ]],
-    string in_color_model = "rgb"
+    int in_color_model = 0
     [[
         string as_maya_attribute_name = "colormodel",
         string as_maya_attribute_short_name = "clm",
-        string widget = "popup",
-        string options = "rgb|hsv|hsl|XYZ|xyY",
+        string widget = "mapper",
+        string options = "RGB:0|HSV:1|HSL:2",
         string label = "Color Model",
         string page = "Color",
         string help = "The input color uses this color space."
@@ -106,7 +106,17 @@ shader as_inv_color
     ]]
 )
 {
-    color in_color_trans = transformc(in_color_model, in_color);
+    string color_model = "rgb";
+    color in_color_clamped = clamp(in_color, 0, 1);
+
+    if (in_color_model == 0)
+        color_model = "rgb";
+    else if (in_color_model == 1)
+        color_model = "hsv";
+    else
+        color_model = "hsl";
+
+    color in_color_trans = transformc(color_model, in_color_clamped);
     color out_color_trans = in_color_trans;
 
     if (as_invert_channel_0 == 1)
@@ -118,5 +128,5 @@ shader as_inv_color
     if (as_invert_channel_2 == 1)
         out_color_trans[2] = 1 - in_color_trans[2];
 
-    out_outColor = transformc(in_color_model, "rgb", out_color_trans);
+    out_outColor = transformc(color_model, "rgb", out_color_trans);
 }
