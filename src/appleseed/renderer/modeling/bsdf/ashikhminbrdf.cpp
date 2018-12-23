@@ -198,9 +198,10 @@ namespace
                     Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi));
 
                 // Compute the incoming direction in world space.
-                incoming =
-                    force_above_surface(
-                        reflect(sample.m_outgoing.get_value(), h), sample.m_geometric_normal);
+                const Vector3f& outgoing = sample.m_outgoing.get_value();
+                incoming = reflect(outgoing, h);
+                if (force_above_surface(incoming, sample.m_geometric_normal))
+                    h = normalize(incoming + outgoing);
             }
 
             // Compute dot products.

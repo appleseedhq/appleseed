@@ -188,8 +188,9 @@ class APPLESEED_DLLSYMBOL BSDF
         Spectrum&                   absorption) const;
 
     // Force a given direction to lie above a surface described by its normal vector.
-    static foundation::Vector3f force_above_surface(
-        const foundation::Vector3f& direction,
+    // Return true if the input direction was modified, false otherwise.
+    static bool force_above_surface(
+        foundation::Vector3f&       direction,
         const foundation::Vector3f& normal);
 
   private:
@@ -237,8 +238,8 @@ inline bool BSDF::is_purely_glossy_or_specular() const
     return m_modes == (ScatteringMode::Glossy | ScatteringMode::Specular);
 }
 
-inline foundation::Vector3f BSDF::force_above_surface(
-    const foundation::Vector3f&     direction,
+inline bool BSDF::force_above_surface(
+    foundation::Vector3f&           direction,
     const foundation::Vector3f&     normal)
 {
     const float Eps = 1.0e-4f;
@@ -246,10 +247,13 @@ inline foundation::Vector3f BSDF::force_above_surface(
     const float cos_theta = foundation::dot(direction, normal);
     const float correction = Eps - cos_theta;
 
-    return
-        correction > 0.0f
-            ? foundation::normalize(direction + correction * normal)
-            : direction;
+    if (correction > 0.0f)
+    {
+        direction = foundation::normalize(direction + correction * normal);
+        return true;
+    }
+
+    return false;
 }
 
 }   // namespace renderer

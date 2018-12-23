@@ -53,10 +53,8 @@ class SpecularBRDFHelper
         const foundation::Vector3f& outgoing = sample.m_outgoing.get_value();
 
         // Compute the incoming direction.
-        const foundation::Vector3f incoming(
-            BSDF::force_above_surface(
-                foundation::reflect(outgoing, n),
-                sample.m_geometric_normal));
+        foundation::Vector3f incoming = foundation::reflect(outgoing, n);
+        BSDF::force_above_surface(incoming, sample.m_geometric_normal);
 
         // No reflection below the shading surface.
         const float cos_in = dot(incoming, n);
