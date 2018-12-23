@@ -34,6 +34,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
+#include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 
 // appleseed.foundation headers.
@@ -132,7 +133,7 @@ class MicrofacetBRDFHelper
         const foundation::Vector3f ng =
             sample.m_shading_basis.transform_to_local(sample.m_geometric_normal);
 
-        if (force_above_surface(wi, ng))
+        if (BSDF::force_above_surface(wi, ng))
             m = foundation::normalize(wo + wi);
 
         if (wi.y == 0.0f)
@@ -289,7 +290,7 @@ class MicrofacetBRDFHelper
 
         wi = foundation::reflect(wo, m);
 
-        if (force_above_surface(wi, n))
+        if (BSDF::force_above_surface(wi, n))
             m = foundation::normalize(wo + wi);
 
         const float cos_in = std::abs(wi.y);
@@ -315,25 +316,6 @@ class MicrofacetBRDFHelper
         assert(probability >= 0.0f);
 
         return D * G / (4.0f * cos_on * cos_in);
-    }
-
-  private:
-    static bool force_above_surface(
-        foundation::Vector3f&           direction,
-        const foundation::Vector3f&     normal)
-    {
-        const float Eps = 1.0e-4f;
-
-        const float cos_theta = foundation::dot(direction, normal);
-        const float correction = Eps - cos_theta;
-
-        if (correction > 0.0f)
-        {
-            direction = foundation::normalize(direction + correction * normal);
-            return true;
-        }
-
-        return false;
     }
 };
 
