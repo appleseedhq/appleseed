@@ -163,7 +163,7 @@ class MicrofacetBRDFHelper
         const float cos_oh = foundation::dot(wo, m);
 
         sample.m_probability =
-            mdf.pdf(wo, m, alpha_x, alpha_y, gamma) / (4.0f * cos_oh);
+            mdf.pdf(wo, m, alpha_x, alpha_y, gamma) / std::abs(4.0f * cos_oh);
         assert(sample.m_probability >= 0.0f);
 
         // Skip samples with very low probability.
@@ -312,7 +312,7 @@ class MicrofacetBRDFHelper
                 alpha,
                 gamma);
 
-        probability = mdf.pdf(wo, m, alpha, alpha, gamma) / (4.0f * cos_oh);
+        probability = mdf.pdf(wo, m, alpha, alpha, gamma) / std::abs(4.0f * cos_oh);
         assert(probability >= 0.0f);
 
         return D * G / (4.0f * cos_on * cos_in);
