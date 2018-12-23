@@ -217,7 +217,10 @@ float BackwardLightSampler::evaluate_pdf(
                 triangle->m_light_tree_node_index)
             : triangle->m_triangle_prob;
 
-    return triangle_probability * triangle->m_rcp_area;
+    const float pdf = triangle_probability * triangle->m_rcp_area;
+    assert(pdf >= 0.0f);
+
+    return pdf;
 }
 
 Dictionary BackwardLightSampler::get_params_metadata()

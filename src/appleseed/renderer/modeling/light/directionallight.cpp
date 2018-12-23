@@ -246,6 +246,7 @@ namespace
             value = m_values.m_irradiance;
 
             probability = 1.0f / (Pi<float>() * square(static_cast<float>(disk_radius)));
+            assert(probability > 0.0f);
         }
     };
 }

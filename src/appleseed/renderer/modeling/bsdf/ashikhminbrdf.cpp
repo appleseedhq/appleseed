@@ -244,6 +244,7 @@ namespace
             sample.m_value.m_beauty = sample.m_value.m_diffuse;
             sample.m_value.m_beauty += sample.m_value.m_glossy;
             sample.m_probability = diffuse_weight * pdf_diffuse + glossy_weight * pdf_glossy;
+            assert(sample.m_probability >= 0.0f);
             sample.m_incoming = Dual3f(incoming);
             sample.compute_reflected_differentials();
         }
@@ -326,7 +327,11 @@ namespace
 
             value.m_beauty = value.m_diffuse;
             value.m_beauty += value.m_glossy;
-            return diffuse_weight * pdf_diffuse + glossy_weight * pdf_glossy;
+
+            const float probability = diffuse_weight * pdf_diffuse + glossy_weight * pdf_glossy;
+            assert(probability >= 0.0f);
+
+            return probability;
         }
 
         float evaluate_pdf(
@@ -390,7 +395,10 @@ namespace
                 assert(pdf_glossy >= 0.0f);
             }
 
-            return diffuse_weight * pdf_diffuse + glossy_weight * pdf_glossy;
+            const float probability = diffuse_weight * pdf_diffuse + glossy_weight * pdf_glossy;
+            assert(probability >= 0.0f);
+
+            return probability;
         }
 
       private:

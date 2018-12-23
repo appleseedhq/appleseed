@@ -278,6 +278,8 @@ namespace
                 }
 
                 sample.m_value.m_beauty = sample.m_value.m_glossy;
+
+                assert(sample.m_probability >= 0.0f);
             }
         }
 
@@ -386,6 +388,7 @@ namespace
 
             value.m_beauty = value.m_glossy;
 
+            assert(pdf >= 0.0f);
             return pdf;
         }
 
@@ -410,12 +413,14 @@ namespace
                 alpha_x,
                 alpha_y);
 
+            float pdf;
+
             switch (m_mdf_type)
             {
               case GGX:
                 {
                     const GGXMDF mdf;
-                    return MicrofacetBRDFHelper<true>::pdf(
+                    pdf = MicrofacetBRDFHelper<true>::pdf(
                         mdf,
                         alpha_x,
                         alpha_y,
@@ -429,7 +434,7 @@ namespace
               case Beckmann:
                 {
                     const BeckmannMDF mdf;
-                    return MicrofacetBRDFHelper<true>::pdf(
+                    pdf = MicrofacetBRDFHelper<true>::pdf(
                         mdf,
                         alpha_x,
                         alpha_y,
@@ -443,7 +448,7 @@ namespace
               case Std:
                 {
                     const StdMDF mdf;
-                    return MicrofacetBRDFHelper<true>::pdf(
+                    pdf = MicrofacetBRDFHelper<true>::pdf(
                         mdf,
                         alpha_x,
                         alpha_y,
@@ -455,9 +460,13 @@ namespace
                 break;
 
               default:
-                assert(false);
-                return 0.0f;
+                assert(!"Unexpected MDF type.");
+                pdf = 0.0f;
+                break;
             }
+
+            assert(pdf >= 0.0f);
+            return pdf;
         }
 
       private:

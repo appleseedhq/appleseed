@@ -467,6 +467,7 @@ namespace
                 + disk_radius * p[1] * basis.get_tangent_v();
 
             probability = 1.0f / (Pi<float>() * square(static_cast<float>(disk_radius)));
+            assert(probability > 0.0f);
 
             RegularSpectrum31f radiance;
             compute_sun_radiance(

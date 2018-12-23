@@ -375,6 +375,8 @@ namespace
               assert_otherwise;
             }
 
+            assert(sample.m_probability >= 0.0f);
+
             if (sample.m_probability < 1.0e-6f)
                 return;
 
@@ -505,6 +507,8 @@ namespace
                         eta);
             }
 
+            assert(probability > 0.0f);
+
             return is_refraction;
         }
 
@@ -524,12 +528,14 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
 
+            float pdf;
+
             switch (m_mdf_type)
             {
               case GGX:
                 {
                     const GGXMDF mdf;
-                    const float pdf = do_evaluate(
+                    pdf = do_evaluate(
                         mdf,
                         values,
                         adjoint,
@@ -544,15 +550,13 @@ namespace
                         outgoing,
                         incoming,
                         value.m_glossy);
-
-                    return pdf;
                 }
                 break;
 
               case Beckmann:
                 {
                     const BeckmannMDF mdf;
-                    const float pdf = do_evaluate(
+                    pdf = do_evaluate(
                         mdf,
                         values,
                         adjoint,
@@ -567,15 +571,13 @@ namespace
                         outgoing,
                         incoming,
                         value.m_glossy);
-
-                    return pdf;
                 }
                 break;
 
               case Std:
                 {
                     const StdMDF mdf;
-                    return do_evaluate(
+                    pdf = do_evaluate(
                         mdf,
                         values,
                         adjoint,
@@ -588,8 +590,12 @@ namespace
 
               default:
                 assert(!"Unexpected MDF type.");
-                return 0.0f;
+                pdf = 0.0f;
+                break;
             }
+
+            assert(pdf >= 0.0f);
+            return pdf;
         }
 
         template <typename MDF>
@@ -631,6 +637,7 @@ namespace
             const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             const Vector3f wi = basis.transform_to_local(incoming);
+            float pdf;
 
             if (wi.y * wo.y >= 0.0f)
             {
@@ -658,8 +665,9 @@ namespace
                     values->m_precomputed.m_refraction_weight,
                     F);
 
-                return
-                    r_probability * reflection_pdf(mdf, wo, m, cos_wom, alpha_x, alpha_y, gamma);
+                pdf =
+                    r_probability *
+                    reflection_pdf(mdf, wo, m, cos_wom, alpha_x, alpha_y, gamma);
             }
             else
             {
@@ -689,10 +697,13 @@ namespace
                     values->m_precomputed.m_refraction_weight,
                     F);
 
-                return
+                pdf =
                     (1.0f - r_probability) *
                     refraction_pdf(mdf, wo, wi, m, alpha_x, alpha_y, gamma, eta);
             }
+
+            assert(pdf >= 0.0f);
+            return pdf;
         }
 
         float evaluate_pdf(
@@ -709,12 +720,14 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
 
+            float pdf;
+
             switch (m_mdf_type)
             {
               case GGX:
                 {
                     const GGXMDF mdf;
-                    return do_evaluate_pdf(
+                    pdf = do_evaluate_pdf(
                         mdf,
                         values,
                         shading_basis,
@@ -726,7 +739,7 @@ namespace
               case Beckmann:
                 {
                     const BeckmannMDF mdf;
-                    return do_evaluate_pdf(
+                    pdf = do_evaluate_pdf(
                         mdf,
                         values,
                         shading_basis,
@@ -738,7 +751,7 @@ namespace
               case Std:
                 {
                     const StdMDF mdf;
-                    return do_evaluate_pdf(
+                    pdf = do_evaluate_pdf(
                         mdf,
                         values,
                         shading_basis,
@@ -749,8 +762,12 @@ namespace
 
               default:
                 assert(!"Unexpected MDF type.");
-                return 0.0f;
+                pdf = 0.0f;
+                break;
             }
+
+            assert(pdf >= 0.0f);
+            return pdf;
         }
 
         template <typename MDF>
@@ -784,9 +801,11 @@ namespace
                 values->m_anisotropy,
                 alpha_x,
                 alpha_y);
+
             const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             const Vector3f wi = basis.transform_to_local(incoming);
+            float pdf;
 
             if (wi.y * wo.y >= 0.0f)
             {
@@ -801,7 +820,7 @@ namespace
                     values->m_precomputed.m_refraction_weight,
                     F);
 
-                return
+                pdf =
                     r_probability *
                     reflection_pdf(mdf, wo, m, cos_wom, alpha_x, alpha_y, gamma);
             }
@@ -818,10 +837,13 @@ namespace
                     values->m_precomputed.m_refraction_weight,
                     F);
 
-                return
+                pdf =
                     (1.0f - r_probability) *
                     refraction_pdf(mdf, wo, wi, m, alpha_x, alpha_y, gamma, eta);
             }
+
+            assert(pdf >= 0.0f);
+            return pdf;
         }
 
         float sample_ior(
@@ -1342,6 +1364,7 @@ namespace
                     wi,
                     value,
                     probability);
+                assert(probability > 0.0f);
 
                 if (probability < 1.0e-6f)
                     continue;

@@ -177,6 +177,7 @@ namespace
             value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
 
             probability = sample_cone_uniform_pdf(m_cos_half_angle);
+            assert(probability > 0.0f);
         }
 
         float evaluate_pdf(

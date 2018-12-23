@@ -163,6 +163,7 @@ class MicrofacetBRDFHelper
 
         sample.m_probability =
             mdf.pdf(wo, m, alpha_x, alpha_y, gamma) / (4.0f * cos_oh);
+        assert(sample.m_probability >= 0.0f);
 
         // Skip samples with very low probability.
         if (sample.m_probability > 1.0e-6f)
@@ -311,6 +312,7 @@ class MicrofacetBRDFHelper
                 gamma);
 
         probability = mdf.pdf(wo, m, alpha, alpha, gamma) / (4.0f * cos_oh);
+        assert(probability >= 0.0f);
 
         return D * G / (4.0f * cos_on * cos_in);
     }

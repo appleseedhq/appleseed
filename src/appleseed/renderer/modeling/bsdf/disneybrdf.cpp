@@ -559,6 +559,8 @@ namespace
 
             sample.m_value.m_beauty = sample.m_value.m_diffuse;
             sample.m_value.m_beauty += sample.m_value.m_glossy;
+
+            assert(sample.m_probability >= 0.0f);
         }
 
         float evaluate(
@@ -661,6 +663,7 @@ namespace
             value.m_beauty = value.m_diffuse;
             value.m_beauty += value.m_glossy;
 
+            assert(pdf >= 0.0f);
             return pdf;
         }
 
@@ -732,6 +735,7 @@ namespace
                         incoming);
             }
 
+            assert(pdf >= 0.0f);
             return pdf;
         }
 

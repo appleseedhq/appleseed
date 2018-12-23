@@ -200,8 +200,11 @@ namespace
             }
             value.m_beauty = value.m_diffuse;
 
-            // Return the probability density of the sampled direction.
-            return cos_in * RcpPi<float>();
+            // Compute the probability density of the sampled direction.
+            const float pdf = cos_in * RcpPi<float>();
+            assert(pdf >= 0.0f);
+
+            return pdf;
         }
 
         float evaluate_pdf(
@@ -216,10 +219,14 @@ namespace
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0f;
 
-            // Return the probability density of the sampled direction.
             const Vector3f& n = shading_basis.get_normal();
             const float cos_in = abs(dot(incoming, n));
-            return cos_in * RcpPi<float>();
+
+            // Compute the probability density of the sampled direction.
+            const float pdf = cos_in * RcpPi<float>();
+            assert(pdf >= 0.f);
+
+            return pdf;
         }
 
       private:

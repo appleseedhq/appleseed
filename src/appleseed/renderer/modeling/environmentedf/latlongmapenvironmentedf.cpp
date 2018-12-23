@@ -241,6 +241,7 @@ namespace
             Color3f payload;
             float prob_xy;
             m_importance_sampler->sample(s, x, y, payload, prob_xy);
+            assert(prob_xy >= 0.0f);
 
             // Compute the coordinates in [0,1)^2 of the sample.
             const float jitter_x = frac(s[0] * m_importance_map_width);
@@ -273,6 +274,7 @@ namespace
 
             // Compute the probability density of this direction.
             probability = prob_xy * m_probability_scale / sin_theta;
+            assert(probability >= 0.0f);
         }
 
         void evaluate(
@@ -335,6 +337,7 @@ namespace
             // Compute and return the environment color and the PDF value.
             lookup_environment_map(shading_context, u, v, value);
             probability = compute_pdf(u, v, theta);
+            assert(probability >= 0.0f);
         }
 
         float evaluate_pdf(

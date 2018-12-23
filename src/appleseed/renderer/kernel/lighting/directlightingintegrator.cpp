@@ -420,6 +420,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
             Vector3f(outgoing.get_value()),
             Vector3f(incoming),
             material_value);
+    assert(material_probability >= 0.0f);
     if (material_probability == 0.0f)
         return;
 
@@ -524,6 +525,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
             Vector3f(outgoing.get_value()),
             Vector3f(incoming),
             material_value);
+    assert(material_probability >= 0.0f);
     if (material_probability == 0.0f)
         return;
 

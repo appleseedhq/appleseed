@@ -352,6 +352,7 @@ namespace
             sample.m_value.m_beauty += sample.m_value.m_glossy;
             sample.m_mode = mode;
             sample.m_probability = matte_weight * pdf_matte + specular_weight * pdf_specular;
+            assert(sample.m_probability > 0.0f);
             sample.m_incoming = Dual3f(incoming);
             sample.compute_reflected_differentials();
         }
@@ -436,7 +437,11 @@ namespace
 
             value.m_beauty = value.m_diffuse;
             value.m_beauty += value.m_glossy;
-            return matte_weight * pdf_matte + specular_weight * pdf_specular;
+
+            const float pdf = matte_weight * pdf_matte + specular_weight * pdf_specular;
+            assert(pdf >= 0.0f);
+
+            return pdf;
         }
 
         float evaluate_pdf(
@@ -499,7 +504,10 @@ namespace
                 assert(pdf_specular >= 0.0f);
             }
 
-            return matte_weight * pdf_matte + specular_weight * pdf_specular;
+            const float pdf = matte_weight * pdf_matte + specular_weight * pdf_specular;
+            assert(pdf >= 0.0f);
+
+            return pdf;
         }
 
       private:

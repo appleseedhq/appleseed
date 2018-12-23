@@ -74,6 +74,7 @@ void LightSamplerBase::sample_non_physical_light(
 
     // Store the probability density of this light.
     light_sample.m_probability = light_prob;
+    assert(light_sample.m_probability > 0.0f);
 }
 
 void LightSamplerBase::build_emitting_triangle_hash_table()
@@ -417,6 +418,7 @@ void LightSamplerBase::sample_emitting_triangle(
 
     // Compute the probability density of this sample.
     light_sample.m_probability = triangle_prob * emitting_triangle.m_rcp_area;
+    assert(light_sample.m_probability > 0.0f);
 }
 
 void LightSamplerBase::sample_emitting_triangles(

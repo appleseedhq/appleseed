@@ -176,6 +176,7 @@ namespace
             value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
 
             probability = cos_on * RcpPi<float>();
+            assert(probability > 0.0f);
         }
 
         float evaluate_pdf(

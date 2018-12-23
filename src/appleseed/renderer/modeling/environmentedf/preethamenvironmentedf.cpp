@@ -176,6 +176,7 @@ namespace
 
             value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
             probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
+            assert(probability >= 0.0f);
         }
 
         void evaluate(
@@ -218,6 +219,7 @@ namespace
 
             value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
             probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
+            assert(probability >= 0.0f);
         }
 
         float evaluate_pdf(
@@ -230,7 +232,10 @@ namespace
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
             const Vector3f shifted_outgoing = shift(local_outgoing);
 
-            return shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
+            const float probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
+            assert(probability >= 0.0f);
+
+            return probability;
         }
 
       private:

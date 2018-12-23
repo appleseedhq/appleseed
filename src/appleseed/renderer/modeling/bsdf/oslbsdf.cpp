@@ -263,14 +263,14 @@ namespace
             float pdfs[CompositeSurfaceClosure::MaxClosureEntries];
             c->compute_pdfs(modes, pdfs);
 
-            float prob = 0.0f;
+            float pdf = 0.0f;
 
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 if (pdfs[i] > 0.0f)
                 {
                     DirectShadingComponents s;
-                    const float pdf =
+                    const float closure_pdf =
                         bsdf_from_closure_id(c->get_closure_type(i))
                             .evaluate(
                                 c->get_closure_input_values(i),
@@ -283,15 +283,16 @@ namespace
                                 modes,
                                 s) * pdfs[i];
 
-                    if (pdf > 0.0f)
+                    if (closure_pdf > 0.0f)
                     {
                         madd(value, s, c->get_closure_weight(i));
-                        prob += pdf;
+                        pdf += closure_pdf;
                     }
                 }
             }
 
-            return prob;
+            assert(pdf >= 0.0f);
+            return pdf;
         }
 
         float evaluate_pdf(
@@ -308,13 +309,13 @@ namespace
             float pdfs[CompositeSurfaceClosure::MaxClosureEntries];
             c->compute_pdfs(modes, pdfs);
 
-            float prob = 0.0f;
+            float pdf = 0.0f;
 
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 if (pdfs[i] > 0.0f)
                 {
-                    prob +=
+                    const float closure_pdf =
                         bsdf_from_closure_id(c->get_closure_type(i))
                             .evaluate_pdf(
                                 c->get_closure_input_values(i),
@@ -324,10 +325,12 @@ namespace
                                 outgoing,
                                 incoming,
                                 modes) * pdfs[i];
+                    pdf += closure_pdf;
                 }
             }
 
-            return prob;
+            assert(pdf >= 0.0f);
+            return pdf;
         }
 
         float sample_ior(
