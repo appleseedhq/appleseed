@@ -170,7 +170,7 @@ else ()
     message (FATAL_ERROR "Unsupported platform or compiler (CMAKE_SYSTEM_NAME is \"${CMAKE_SYSTEM_NAME}\"). "
                          "Edit ${CMAKE_CURRENT_LIST_FILE} to add support for it.")
 endif ()
-
+add_definitions (-D_GLIBCXX_USE_CXX11_ABI=0)
 
 #--------------------------------------------------------------------------------------------------
 # Auto-generate version headers.

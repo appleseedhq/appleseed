@@ -34,6 +34,7 @@
 #include "renderer/modeling/object/curveobject.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/objecttraits.h"
+#include "renderer/modeling/object/sphereobject.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -77,6 +78,7 @@ void ObjectFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
     // Register built-in factories.
     register_factory(auto_release_ptr<FactoryType>(new CurveObjectFactory()));
     register_factory(auto_release_ptr<FactoryType>(new MeshObjectFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new SphereObjectFactory()));
 
     // Register factories defined in plugins.
     register_factories_from_plugins<Object>(
