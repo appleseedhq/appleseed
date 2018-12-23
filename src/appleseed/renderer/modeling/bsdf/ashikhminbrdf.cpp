@@ -314,8 +314,8 @@ namespace
                 const float exp_num_u = values->m_nu * cos_hu * cos_hu;
                 const float exp_num_v = values->m_nv * cos_hv * cos_hv;
                 const float exp_den = 1.0f - cos_hn * cos_hn;
-                const float exp = (exp_num_u + exp_num_v) / exp_den;
-                const float num = exp_den == 0.0f ? 0.0f : sval.m_kg * pow(cos_hn, exp);
+                const float exp = (exp_num_u + exp_num_v) / abs(exp_den);
+                const float num = cos_hn == 1.0f ? sval.m_kg : sval.m_kg * pow(cos_hn, exp);
                 const float den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
                 fresnel_reflectance_dielectric_schlick(value.m_glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
                 value.m_glossy *= num / den;
@@ -387,8 +387,8 @@ namespace
                 const float exp_num_u = values->m_nu * cos_hu * cos_hu;
                 const float exp_num_v = values->m_nv * cos_hv * cos_hv;
                 const float exp_den = 1.0f - cos_hn * cos_hn;
-                const float exp = (exp_num_u + exp_num_v) / exp_den;
-                const float num = exp_den == 0.0f ? 0.0f : sval.m_kg * pow(cos_hn, exp);
+                const float exp = (exp_num_u + exp_num_v) / abs(exp_den);
+                const float num = cos_hn == 1.0f ? sval.m_kg : sval.m_kg * pow(cos_hn, exp);
 
                 // Evaluate the PDF of the glossy component (equation 8).
                 pdf_glossy = num / cos_oh;      // omit division by 4 since num = pdf(h) / 4
