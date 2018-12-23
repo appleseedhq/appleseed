@@ -1,0 +1,11 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.9.8
+# options: -O2 -DNDEBUG -I/hdd/Devel/appleseedhq/appleseed/src/appleseed.shaders/include -o /hdd/Devel/appleseedhq/appleseed/sandbox/shaders/blenderseed/as_closure2surface.oso
+surface as_closure2surface	%meta{string,as_blender_node_name,"asClosure2Surface"} %meta{string,as_blender_category,"surface"} 
+param	closure color	in_input			%meta{string,label,"Input Closure"}  %read{0,0} %write{2147483647,-1}
+global	closure color	Ci	%read{2147483647,-1} %write{0,0}
+code ___main___
+# /hdd/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/blenderseed/as_closure2surface.osl:40
+#     Ci = in_input;
+	assign		Ci in_input 	%filename{"/hdd/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/blenderseed/as_closure2surface.osl"} %line{40} %argrw{"wr"}
+	end
