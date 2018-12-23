@@ -109,8 +109,9 @@ namespace
             result[i] = one_minus_t * a[i] + t;
     }
 
-    struct DisneySpecularFresnelFun
+    class DisneySpecularFresnelFun
     {
+      public:
         explicit DisneySpecularFresnelFun(const DisneyBRDFInputValues& values)
           : m_values(values)
         {
@@ -132,11 +133,13 @@ namespace
             mix_spectra_with_one(value, schlick_fresnel(cos_oh), value);
         }
 
+      private:
         const DisneyBRDFInputValues& m_values;
     };
 
-    struct DisneyClearcoatFresnelFun
+    class DisneyClearcoatFresnelFun
     {
+      public:
         explicit DisneyClearcoatFresnelFun(const DisneyBRDFInputValues& values)
           : m_values(values)
         {
@@ -152,6 +155,7 @@ namespace
             value.set(mix(0.04f, 1.0f, schlick_fresnel(cos_oh)) * 0.25f * m_values.m_clearcoat);
         }
 
+      private:
         const DisneyBRDFInputValues& m_values;
     };
 
@@ -319,10 +323,10 @@ namespace
     //
     // Disney BRDF.
     //
-    // References:
+    // Reference:
     //
-    //   [1] Physically-Based Shading at Disney
-    //       https://disney-animation.s3.amazonaws.com/library/s2012_pbs_disney_brdf_notes_v2.pdf
+    //   Physically-Based Shading at Disney
+    //   https://disney-animation.s3.amazonaws.com/library/s2012_pbs_disney_brdf_notes_v2.pdf
     //
 
     namespace

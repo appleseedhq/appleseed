@@ -185,7 +185,6 @@ float BSDFWrapper<BSDFImpl, Cull>::evaluate(
             incoming,
             modes,
             value);
-
     assert(probability >= 0.0f);
 
     if (probability > 0.0f && cosine_mult)
@@ -233,7 +232,6 @@ float BSDFWrapper<BSDFImpl, Cull>::evaluate_pdf(
             outgoing,
             incoming,
             modes);
-
     assert(probability >= 0.0f);
 
     return probability;

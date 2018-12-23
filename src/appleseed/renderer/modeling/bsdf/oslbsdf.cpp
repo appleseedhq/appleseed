@@ -226,6 +226,7 @@ namespace
                 {
                     DirectShadingComponents s;
                     const float pdf =
+                        pdfs[i] *
                         bsdf_from_closure_id(c->get_closure_type(i))
                             .evaluate(
                                 c->get_closure_input_values(i),
@@ -236,7 +237,7 @@ namespace
                                 sample.m_outgoing.get_value(),
                                 sample.m_incoming.get_value(),
                                 modes,
-                                s)  * pdfs[i];
+                                s);
 
                     if (pdf > 0.0f)
                     {
@@ -271,6 +272,7 @@ namespace
                 {
                     DirectShadingComponents s;
                     const float closure_pdf =
+                        pdfs[i] *
                         bsdf_from_closure_id(c->get_closure_type(i))
                             .evaluate(
                                 c->get_closure_input_values(i),
@@ -281,7 +283,7 @@ namespace
                                 outgoing,
                                 incoming,
                                 modes,
-                                s) * pdfs[i];
+                                s);
 
                     if (closure_pdf > 0.0f)
                     {
@@ -316,6 +318,7 @@ namespace
                 if (pdfs[i] > 0.0f)
                 {
                     const float closure_pdf =
+                        pdfs[i] *
                         bsdf_from_closure_id(c->get_closure_type(i))
                             .evaluate_pdf(
                                 c->get_closure_input_values(i),
@@ -324,7 +327,7 @@ namespace
                                 c->get_closure_shading_basis(i),
                                 outgoing,
                                 incoming,
-                                modes) * pdfs[i];
+                                modes);
                     pdf += closure_pdf;
                 }
             }

@@ -411,7 +411,7 @@ namespace
             float&                      probability)
         {
             // Compute the microfacet normal by sampling the MDF.
-            Vector3f m = mdf.sample(wo, Vector2f(s[0], s[1]), alpha_x, alpha_y, gamma);
+            const Vector3f m = mdf.sample(wo, Vector2f(s[0], s[1]), alpha_x, alpha_y, gamma);
             assert(m.y > 0.0f);
 
             const float rcp_eta = 1.0f / eta;
@@ -420,10 +420,11 @@ namespace
 
             float cos_theta_t;
             const float F = fresnel_reflectance(cos_wom, rcp_eta, cos_theta_t);
-            const float r_probability = choose_reflection_probability(
-                reflection_weight,
-                refraction_weight,
-                F);
+            const float r_probability =
+                choose_reflection_probability(
+                    reflection_weight,
+                    refraction_weight,
+                    F);
 
             bool is_refraction;
 
@@ -660,10 +661,11 @@ namespace
                     value.m_glossy);
                 value.m_beauty = value.m_glossy;
 
-                const float r_probability = choose_reflection_probability(
-                    values->m_precomputed.m_reflection_weight,
-                    values->m_precomputed.m_refraction_weight,
-                    F);
+                const float r_probability =
+                    choose_reflection_probability(
+                        values->m_precomputed.m_reflection_weight,
+                        values->m_precomputed.m_refraction_weight,
+                        F);
 
                 pdf =
                     r_probability *
@@ -692,10 +694,11 @@ namespace
                     value.m_glossy);
                 value.m_beauty = value.m_glossy;
 
-                const float r_probability = choose_reflection_probability(
-                    values->m_precomputed.m_reflection_weight,
-                    values->m_precomputed.m_refraction_weight,
-                    F);
+                const float r_probability =
+                    choose_reflection_probability(
+                        values->m_precomputed.m_reflection_weight,
+                        values->m_precomputed.m_refraction_weight,
+                        F);
 
                 pdf =
                     (1.0f - r_probability) *
@@ -815,10 +818,11 @@ namespace
 
                 const float F = fresnel_reflectance(cos_wom, rcp_eta);
 
-                const float r_probability = choose_reflection_probability(
-                    values->m_precomputed.m_reflection_weight,
-                    values->m_precomputed.m_refraction_weight,
-                    F);
+                const float r_probability =
+                    choose_reflection_probability(
+                        values->m_precomputed.m_reflection_weight,
+                        values->m_precomputed.m_refraction_weight,
+                        F);
 
                 pdf =
                     r_probability *
@@ -921,11 +925,7 @@ namespace
             const float r_probability = F * reflection_weight;
             const float t_probability = (1.0f - F) * refraction_weight;
             const float sum_probabilities = r_probability + t_probability;
-
-            if (sum_probabilities != 0.0f)
-                return r_probability / sum_probabilities;
-
-            return 1.0f;
+            return sum_probabilities != 0.0f ? r_probability / sum_probabilities : 1.0f;
         }
 
         static float fresnel_reflectance(
@@ -934,7 +934,6 @@ namespace
             float&                      cos_theta_t)
         {
             const float sin_theta_t2 = (1.0f - square(cos_theta_i)) * square(eta);
-
             if (sin_theta_t2 > 1.0f)
             {
                 cos_theta_t = 0.0f;
@@ -949,6 +948,7 @@ namespace
                 eta,
                 abs(cos_theta_i),
                 cos_theta_t);
+
             return F;
         }
 

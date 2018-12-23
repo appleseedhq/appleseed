@@ -381,7 +381,7 @@ namespace
                 break;
 
               default:
-                assert(false);
+                assert(!"Unexpected MDF type.");
                 pdf = 0.0f;
                 break;
             }

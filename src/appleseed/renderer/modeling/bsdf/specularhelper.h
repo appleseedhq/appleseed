@@ -29,14 +29,13 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/scalar.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
 
 namespace renderer
@@ -61,7 +60,7 @@ class SpecularBRDFHelper
 
         // No reflection below the shading surface.
         const float cos_in = dot(incoming, n);
-        if (cos_in < 0.0f)
+        if (cos_in <= 0.0f)
             return;
 
         f(outgoing, n, n, sample.m_value.m_glossy);

@@ -906,7 +906,6 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
                     foundation::exponential_distribution_pdf(
                         distance_sample,
                         extinction_coef[i]);
-
                 mis_weights_sum += foundation::square(probability);
             }
         }
