@@ -12,9 +12,9 @@
             <parameter name="shutter_open_end_time" value="0" />
             <transform time="0">
                 <matrix>
-                    0.685920655727386 -0.324013471603394 0.651558220386505 5.144311428070068
-                    0.727676331996918 0.305420845746994 -0.614170372486115 -4.988751411437988
-                    0.000000000000000 0.895395636558533 0.445271402597427 3.303947687149048
+                    0.685920655727386 -0.324013471603394 0.651558220386505 6.419224739074707
+                    0.727676331996918 0.305420845746994 -0.614170372486115 -6.111440658569336
+                    0.000000000000000 0.895395636558533 0.445271402597427 4.653886795043945
                     0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                 </matrix>
             </transform>
@@ -30,78 +30,6 @@
                     1.000000
                 </alpha>
             </color>
-            <shader_group name="Material.001_tree">
-                <shader type="shader" name="_shaders/as_disney_material" layer="asDisneyMaterial">
-                    <parameter name="in_anisotropy_amount" value="float 0" />
-                    <parameter name="in_anisotropy_angle" value="float 0" />
-                    <parameter name="in_anisotropy_vector_map" value="color 0 0 0" />
-                    <parameter name="in_clear_coat" value="float 0" />
-                    <parameter name="in_clear_coat_glossyness" value="float 1" />
-                    <parameter name="in_color" value="color 0.5 0.5 0.5" />
-                    <parameter name="in_enable_matte" value="int 0" />
-                    <parameter name="in_matte_opacity" value="float 0" />
-                    <parameter name="in_matte_opacity_color" value="color 1 0.5 0" />
-                    <parameter name="in_maximum_ray_depth" value="int 4" />
-                    <parameter name="in_metallic_amount" value="float 0" />
-                    <parameter name="in_roughness" value="float 0.5" />
-                    <parameter name="in_sheen_amount" value="float 0" />
-                    <parameter name="in_sheen_tint" value="float 0.5" />
-                    <parameter name="in_specular_amount" value="float 0.5" />
-                    <parameter name="in_specular_tint" value="float 0" />
-                    <parameter name="in_subsurface_amount" value="float 0" />
-                </shader>
-                <shader type="surface" name="_shaders/as_closure2surface" layer="asClosure2Surface">
-                </shader>
-                <connect_shaders src_layer="asDisneyMaterial" src_param="out_outColor" dst_layer="asClosure2Surface" dst_param="in_input" />
-            </shader_group>
-            <shader_group name="Material.002_tree">
-                <shader type="shader" name="_shaders/as_disney_material" layer="asDisneyMaterial">
-                    <parameter name="in_anisotropy_amount" value="float 0" />
-                    <parameter name="in_anisotropy_angle" value="float 0" />
-                    <parameter name="in_anisotropy_vector_map" value="color 0 0 0" />
-                    <parameter name="in_clear_coat" value="float 0" />
-                    <parameter name="in_clear_coat_glossyness" value="float 1" />
-                    <parameter name="in_color" value="color 0.5 0.5 0.5" />
-                    <parameter name="in_enable_matte" value="int 0" />
-                    <parameter name="in_matte_opacity" value="float 0" />
-                    <parameter name="in_matte_opacity_color" value="color 1 0.5 0" />
-                    <parameter name="in_maximum_ray_depth" value="int 4" />
-                    <parameter name="in_metallic_amount" value="float 0" />
-                    <parameter name="in_roughness" value="float 0.5" />
-                    <parameter name="in_sheen_amount" value="float 0" />
-                    <parameter name="in_sheen_tint" value="float 0.5" />
-                    <parameter name="in_specular_amount" value="float 0.5" />
-                    <parameter name="in_specular_tint" value="float 0" />
-                    <parameter name="in_subsurface_amount" value="float 0" />
-                </shader>
-                <shader type="surface" name="_shaders/as_closure2surface" layer="asClosure2Surface">
-                </shader>
-                <connect_shaders src_layer="asDisneyMaterial" src_param="out_outColor" dst_layer="asClosure2Surface" dst_param="in_input" />
-            </shader_group>
-            <shader_group name="Material.003_tree">
-                <shader type="shader" name="_shaders/as_disney_material" layer="asDisneyMaterial">
-                    <parameter name="in_anisotropy_amount" value="float 0" />
-                    <parameter name="in_anisotropy_angle" value="float 0" />
-                    <parameter name="in_anisotropy_vector_map" value="color 0 0 0" />
-                    <parameter name="in_clear_coat" value="float 0" />
-                    <parameter name="in_clear_coat_glossyness" value="float 1" />
-                    <parameter name="in_color" value="color 0.5 0.5 0.5" />
-                    <parameter name="in_enable_matte" value="int 0" />
-                    <parameter name="in_matte_opacity" value="float 0" />
-                    <parameter name="in_matte_opacity_color" value="color 1 0.5 0" />
-                    <parameter name="in_maximum_ray_depth" value="int 4" />
-                    <parameter name="in_metallic_amount" value="float 0" />
-                    <parameter name="in_roughness" value="float 0.5" />
-                    <parameter name="in_sheen_amount" value="float 0" />
-                    <parameter name="in_sheen_tint" value="float 0.5" />
-                    <parameter name="in_specular_amount" value="float 0.5" />
-                    <parameter name="in_specular_tint" value="float 0" />
-                    <parameter name="in_subsurface_amount" value="float 0" />
-                </shader>
-                <shader type="surface" name="_shaders/as_closure2surface" layer="asClosure2Surface">
-                </shader>
-                <connect_shaders src_layer="asDisneyMaterial" src_param="out_outColor" dst_layer="asClosure2Surface" dst_param="in_input" />
-            </shader_group>
             <shader_group name="Material.004_tree">
                 <shader type="shader" name="_shaders/as_disney_material" layer="asDisneyMaterial">
                     <parameter name="in_anisotropy_amount" value="float 0" />
@@ -126,36 +54,83 @@
                 </shader>
                 <connect_shaders src_layer="asDisneyMaterial" src_param="out_outColor" dst_layer="asClosure2Surface" dst_param="in_input" />
             </shader_group>
-            <surface_shader name="Material.001_mat_surface_shader" model="physical_surface_shader">
-                <parameter name="lighting_samples" value="1" />
-            </surface_shader>
-            <surface_shader name="Material.002_mat_surface_shader" model="physical_surface_shader">
-                <parameter name="lighting_samples" value="1" />
-            </surface_shader>
-            <surface_shader name="Material.003_mat_surface_shader" model="physical_surface_shader">
-                <parameter name="lighting_samples" value="1" />
-            </surface_shader>
+            <shader_group name="Material.005_tree">
+                <shader type="shader" name="_shaders/as_disney_material" layer="asDisneyMaterial">
+                    <parameter name="in_anisotropy_amount" value="float 0" />
+                    <parameter name="in_anisotropy_angle" value="float 0" />
+                    <parameter name="in_anisotropy_vector_map" value="color 0 0 0" />
+                    <parameter name="in_clear_coat" value="float 0" />
+                    <parameter name="in_clear_coat_glossyness" value="float 1" />
+                    <parameter name="in_color" value="color 0.5 0.5 0.5" />
+                    <parameter name="in_enable_matte" value="int 0" />
+                    <parameter name="in_matte_opacity" value="float 0" />
+                    <parameter name="in_matte_opacity_color" value="color 1 0.5 0" />
+                    <parameter name="in_maximum_ray_depth" value="int 4" />
+                    <parameter name="in_metallic_amount" value="float 0" />
+                    <parameter name="in_roughness" value="float 0.5" />
+                    <parameter name="in_sheen_amount" value="float 0" />
+                    <parameter name="in_sheen_tint" value="float 0.5" />
+                    <parameter name="in_specular_amount" value="float 0.5" />
+                    <parameter name="in_specular_tint" value="float 0" />
+                    <parameter name="in_subsurface_amount" value="float 0" />
+                </shader>
+                <shader type="surface" name="_shaders/as_closure2surface" layer="asClosure2Surface">
+                </shader>
+                <connect_shaders src_layer="asDisneyMaterial" src_param="out_outColor" dst_layer="asClosure2Surface" dst_param="in_input" />
+            </shader_group>
+            <shader_group name="Material.006_tree">
+                <shader type="shader" name="_shaders/as_disney_material" layer="asDisneyMaterial">
+                    <parameter name="in_anisotropy_amount" value="float 0" />
+                    <parameter name="in_anisotropy_angle" value="float 0" />
+                    <parameter name="in_anisotropy_vector_map" value="color 0 0 0" />
+                    <parameter name="in_clear_coat" value="float 0" />
+                    <parameter name="in_clear_coat_glossyness" value="float 1" />
+                    <parameter name="in_color" value="color 0.5 0.5 0.5" />
+                    <parameter name="in_enable_matte" value="int 0" />
+                    <parameter name="in_matte_opacity" value="float 0" />
+                    <parameter name="in_matte_opacity_color" value="color 1 0.5 0" />
+                    <parameter name="in_maximum_ray_depth" value="int 4" />
+                    <parameter name="in_metallic_amount" value="float 0" />
+                    <parameter name="in_roughness" value="float 0.5" />
+                    <parameter name="in_sheen_amount" value="float 0" />
+                    <parameter name="in_sheen_tint" value="float 0.5" />
+                    <parameter name="in_specular_amount" value="float 0.5" />
+                    <parameter name="in_specular_tint" value="float 0" />
+                    <parameter name="in_subsurface_amount" value="float 0" />
+                </shader>
+                <shader type="surface" name="_shaders/as_closure2surface" layer="asClosure2Surface">
+                </shader>
+                <connect_shaders src_layer="asDisneyMaterial" src_param="out_outColor" dst_layer="asClosure2Surface" dst_param="in_input" />
+            </shader_group>
             <surface_shader name="Material.004_mat_surface_shader" model="physical_surface_shader">
+                <parameter name="lighting_samples" value="1" />
+            </surface_shader>
+            <surface_shader name="Material.005_mat_surface_shader" model="physical_surface_shader">
+                <parameter name="lighting_samples" value="1" />
+            </surface_shader>
+            <surface_shader name="Material.006_mat_surface_shader" model="physical_surface_shader">
+                <parameter name="lighting_samples" value="1" />
+            </surface_shader>
+            <surface_shader name="Material_mat_surface_shader" model="physical_surface_shader">
                 <parameter name="lighting_samples" value="1" />
             </surface_shader>
             <surface_shader name="__default_surface_shader" model="diagnostic_surface_shader">
                 <parameter name="mode" value="facing_ratio" />
             </surface_shader>
-            <material name="Material.001_mat" model="osl_material">
-                <parameter name="osl_surface" value="Material.001_tree" />
-                <parameter name="surface_shader" value="Material.001_mat_surface_shader" />
-            </material>
-            <material name="Material.002_mat" model="osl_material">
-                <parameter name="osl_surface" value="Material.002_tree" />
-                <parameter name="surface_shader" value="Material.002_mat_surface_shader" />
-            </material>
-            <material name="Material.003_mat" model="osl_material">
-                <parameter name="osl_surface" value="Material.003_tree" />
-                <parameter name="surface_shader" value="Material.003_mat_surface_shader" />
-            </material>
             <material name="Material.004_mat" model="osl_material">
                 <parameter name="osl_surface" value="Material.004_tree" />
                 <parameter name="surface_shader" value="Material.004_mat_surface_shader" />
+            </material>
+            <material name="Material.005_mat" model="osl_material">
+                <parameter name="osl_surface" value="Material.005_tree" />
+                <parameter name="surface_shader" value="Material.005_mat_surface_shader" />
+            </material>
+            <material name="Material.006_mat" model="osl_material">
+                <parameter name="osl_surface" value="Material.006_tree" />
+                <parameter name="surface_shader" value="Material.006_mat_surface_shader" />
+            </material>
+            <material name="Material_mat" model="osl_material">
+                <parameter name="surface_shader" value="Material_mat_surface_shader" />
             </material>
             <material name="__default_material" model="generic_material">
                 <parameter name="surface_shader" value="__default_surface_shader" />
@@ -169,29 +144,29 @@
                 <parameter name="irradiance_multiplier" value="1" />
                 <transform>
                     <matrix>
-                        -0.290864646434784 -0.771100819110870 0.566393196582794 3.291961193084717
-                        0.955171167850494 -0.199883356690407 0.218391194939613 1.122271776199341
-                        -0.055189058184624 0.604524731636047 0.794672250747681 2.814824819564819
+                        -0.290864646434784 -0.771100819110870 0.566393196582794 4.246579170227051
+                        0.955171167850494 -0.199883356690407 0.218391194939613 1.930884957313538
+                        -0.055189058184624 0.604524731636047 0.794672250747681 3.800503730773926
                         0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                     </matrix>
                 </transform>
             </light>
+            <object name="Cube.001_obj" model="mesh_object">
+                <parameter name="filename" value="_geometry/88126803e0a929522a121e1c7a3ba194.binarymesh" />
+            </object>
             <object name="Cube.002_obj" model="mesh_object">
+                <parameter name="filename" value="_geometry/88126803e0a929522a121e1c7a3ba194.binarymesh" />
+            </object>
+            <object name="Cube.003_obj" model="mesh_object">
                 <parameter name="filename" value="_geometry/05283264c02fe4c6140437aa101171a1.binarymesh" />
             </object>
-            <object name="Cube.005_obj" model="mesh_object">
+            <object name="Cube.004_obj" model="mesh_object">
                 <parameter name="filename" value="_geometry/05283264c02fe4c6140437aa101171a1.binarymesh" />
             </object>
-            <object name="Cube.006_obj" model="mesh_object">
-                <parameter name="filename" value="_geometry/05283264c02fe4c6140437aa101171a1.binarymesh" />
-            </object>
-            <object name="Cube.007_obj" model="mesh_object">
-                <parameter name="filename" value="_geometry/05283264c02fe4c6140437aa101171a1.binarymesh" />
-            </object>
-            <object name="Plane_obj" model="mesh_object">
+            <object name="Plane.001_obj" model="mesh_object">
                 <parameter name="filename" value="_geometry/9d1b8e1776caa0e45e1756c4ca553235.binarymesh" />
             </object>
-            <object_instance name="Cube.000" object="Cube.005_obj.mesh">
+            <object_instance name="Cube" object="Cube.001_obj.mesh">
                 <parameter name="medium_priority" value="0" />
                 <parameter name="ray_bias_distance" value="0" />
                 <parameter name="ray_bias_method" value="none" />
@@ -206,14 +181,16 @@
                 </parameters>
                 <transform>
                     <matrix>
-                        0.273354470729828 0.000000000000000 0.000000000000000 0.369557529687881
-                        0.000000000000000 0.273354470729828 0.000000000000000 -1.136619091033936
-                        0.000000000000000 0.000000000000000 0.273354470729828 -0.072525039315224
+                        0.425018310546875 0.000000000000000 0.000000000000000 0.830534219741821
+                        0.000000000000000 0.425018310546875 0.000000000000000 0.548328995704651
+                        0.000000000000000 0.000000000000000 0.425018310546875 0.448585242033005
                         0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                     </matrix>
                 </transform>
-                <assign_material slot="default" side="front" material="Material.004_mat" />
-                <assign_material slot="default" side="back" material="Material.004_mat" />
+                <assign_material slot="slot-0" side="front" material="Material.005_mat" />
+                <assign_material slot="slot-1" side="front" material="Material.004_mat" />
+                <assign_material slot="slot-0" side="back" material="Material.005_mat" />
+                <assign_material slot="slot-1" side="back" material="Material.004_mat" />
             </object_instance>
             <object_instance name="Cube.001" object="Cube.002_obj.mesh">
                 <parameter name="medium_priority" value="0" />
@@ -230,16 +207,18 @@
                 </parameters>
                 <transform>
                     <matrix>
-                        0.273354470729828 0.000000000000000 0.000000000000000 1.370271086692810
-                        0.000000000000000 0.273354470729828 0.000000000000000 -0.980516910552979
-                        0.000000000000000 0.000000000000000 0.273354470729828 -0.085964381694794
+                        0.425018310546875 0.000000000000000 0.000000000000000 -0.594587028026581
+                        0.000000000000000 0.425018310546875 0.000000000000000 0.193882226943970
+                        0.000000000000000 0.000000000000000 0.425018310546875 0.448585242033005
                         0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                     </matrix>
                 </transform>
-                <assign_material slot="default" side="front" material="Material.003_mat" />
-                <assign_material slot="default" side="back" material="Material.003_mat" />
+                <assign_material slot="slot-0" side="front" material="Material.006_mat" />
+                <assign_material slot="slot-1" side="front" material="Material.004_mat" />
+                <assign_material slot="slot-0" side="back" material="Material.006_mat" />
+                <assign_material slot="slot-1" side="back" material="Material.004_mat" />
             </object_instance>
-            <object_instance name="Cube.002" object="Cube.006_obj.mesh">
+            <object_instance name="Cube.002" object="Cube.003_obj.mesh">
                 <parameter name="medium_priority" value="0" />
                 <parameter name="ray_bias_distance" value="0" />
                 <parameter name="ray_bias_method" value="none" />
@@ -254,16 +233,16 @@
                 </parameters>
                 <transform>
                     <matrix>
-                        0.273354470729828 0.000000000000000 0.000000000000000 -0.164647251367569
-                        0.000000000000000 0.273354470729828 0.000000000000000 0.101336568593979
-                        0.000000000000000 0.000000000000000 0.273354470729828 -0.069192558526993
+                        0.425018310546875 0.000000000000000 0.000000000000000 0.108972519636154
+                        0.000000000000000 0.425018310546875 0.000000000000000 -1.660434365272522
+                        0.000000000000000 0.000000000000000 0.425018310546875 0.444494217634201
                         0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                     </matrix>
                 </transform>
-                <assign_material slot="default" side="front" material="Material.001_mat" />
-                <assign_material slot="default" side="back" material="Material.001_mat" />
+                <assign_material slot="default" side="front" material="Material.004_mat" />
+                <assign_material slot="default" side="back" material="Material.004_mat" />
             </object_instance>
-            <object_instance name="Cube.003" object="Cube.007_obj.mesh">
+            <object_instance name="Cube.003" object="Cube.004_obj.mesh">
                 <parameter name="medium_priority" value="0" />
                 <parameter name="ray_bias_distance" value="0" />
                 <parameter name="ray_bias_method" value="none" />
@@ -278,16 +257,16 @@
                 </parameters>
                 <transform>
                     <matrix>
-                        0.273354470729828 0.000000000000000 0.000000000000000 0.960885524749756
-                        0.000000000000000 0.273354470729828 0.000000000000000 0.264689564704895
-                        0.000000000000000 0.000000000000000 0.273354470729828 -0.074396625161171
+                        0.425018310546875 0.000000000000000 0.000000000000000 1.112485647201538
+                        0.000000000000000 0.425018310546875 0.000000000000000 -0.773176550865173
+                        0.000000000000000 0.000000000000000 0.425018310546875 0.442218393087387
                         0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                     </matrix>
                 </transform>
-                <assign_material slot="default" side="front" material="Material.002_mat" />
-                <assign_material slot="default" side="back" material="Material.002_mat" />
+                <assign_material slot="default" side="front" material="Material.004_mat" />
+                <assign_material slot="default" side="back" material="Material.004_mat" />
             </object_instance>
-            <object_instance name="Plane" object="Plane_obj.mesh">
+            <object_instance name="Plane.001" object="Plane.001_obj.mesh">
                 <parameter name="medium_priority" value="0" />
                 <parameter name="ray_bias_distance" value="0" />
                 <parameter name="ray_bias_method" value="none" />
@@ -302,9 +281,9 @@
                 </parameters>
                 <transform>
                     <matrix>
-                        1.866938471794128 0.000000000000000 0.000000000000000 0.001629978418350
-                        0.000000000000000 1.866938471794128 0.000000000000000 -0.000683546066284
-                        0.000000000000000 0.000000000000000 1.866938471794128 -0.362233877182007
+                        2.255300045013428 0.000000000000000 0.000000000000000 0.000000000000000
+                        0.000000000000000 2.329090356826782 0.000000000000000 0.000000000000000
+                        0.000000000000000 0.000000000000000 0.796243548393250 0.000000000000000
                         0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                     </matrix>
                 </transform>
