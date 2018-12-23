@@ -441,7 +441,7 @@ inline size_t AABBBase<T, N>::rank() const
 template <typename T, size_t N>
 inline size_t AABBBase<T, N>::get_corner_count() const
 {
-    return 1 << N;
+    return 1UL << N;
 }
 
 template <typename T, size_t N>

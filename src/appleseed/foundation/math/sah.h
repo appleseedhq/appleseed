@@ -213,8 +213,8 @@ class SAHCostFunction
         // Fast modulo 3.
         // See http://www.codercorner.com/Modulo3.htm.
         const size_t d0 = dimension;
-        const size_t d1 = (1 << d0) & 3;
-        const size_t d2 = (1 << d1) & 3;
+        const size_t d1 = (1UL << d0) & 3;
+        const size_t d2 = (1UL << d1) & 3;
 
         // Compute the extent of the parent bounding box.
         const ValueType e1 = bbox.max[d1] - bbox.min[d1];

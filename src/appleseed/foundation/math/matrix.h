@@ -1452,8 +1452,8 @@ inline Quaternion<T> Matrix<T, 3, 3>::extract_unit_quaternion() const
 
         // Fast modulo 3.
         // See http://www.codercorner.com/Modulo3.htm.
-        const size_t j = (1 << i) & 3;
-        const size_t k = (1 << j) & 3;
+        const size_t j = (1UL << i) & 3;
+        const size_t k = (1UL << j) & 3;
 
         ValueType root =
             std::sqrt(m_comp[i*3+i] - m_comp[j*3+j] - m_comp[k*3+k] + ValueType(1.0));

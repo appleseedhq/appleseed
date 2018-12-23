@@ -54,8 +54,8 @@ class APPLESEED_DLLSYMBOL FileLogTarget
   public:
     enum Options
     {
-        Default                     = 0,        // none of the flags below
-        FlushAfterEveryMessage      = 1 << 0    // call fflush() on the file after every message
+        Default                     = 0,            // none of the flags below
+        FlushAfterEveryMessage      = 1UL << 0      // call fflush() on the file after every message
     };
 
     // Delete this instance.

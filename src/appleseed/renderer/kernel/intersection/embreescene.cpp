@@ -200,7 +200,7 @@ namespace
         const float offset = FP<float>::construct(
             0,
             max(static_cast<int32>(max_origin_exp - 23 + 11), 0),
-            2047 << (23 - 11));
+            2047UL << (23 - 11));
 
         // Divide by max_dir_component to compensate inverse operation
         // during intersection search. (Actual start point is org + dir * tnear)

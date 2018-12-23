@@ -89,8 +89,8 @@ class APPLESEED_DLLSYMBOL BSDF
     // BSDF types.
     enum Type
     {
-        Reflective   = 1 << 0,
-        Transmissive = 1 << 1,
+        Reflective   = 1UL << 0,
+        Transmissive = 1UL << 1,
         AllBSDFTypes = Reflective | Transmissive
     };
 

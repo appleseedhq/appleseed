@@ -66,7 +66,7 @@ VisibilityFlags::Type VisibilityFlags::parse(
     for (size_t i = 0; i < Count; ++i)
     {
         if (params.get_optional<bool>(Names[i], true, message_context))
-            flags |= 1 << i;
+            flags |= 1UL << i;
     }
 
     return flags;
@@ -77,7 +77,7 @@ ParamArray VisibilityFlags::to_dictionary(const Type flags)
     ParamArray params;
 
     for (size_t i = 0; i < Count; ++i)
-        params.insert(Names[i], (flags & (1 << i)) != 0);
+        params.insert(Names[i], (flags & (1UL << i)) != 0);
 
     return params;
 }

@@ -85,14 +85,14 @@ class ShadingPoint
     {
         PrimitiveNone               = 0,
 
-        PrimitiveTriangle           = 1 << 1,
-        PrimitiveProceduralSurface  = 1 << 2,
+        PrimitiveTriangle           = 1UL << 1,
+        PrimitiveProceduralSurface  = 1UL << 2,
 
-        PrimitiveCurve              = 1 << 3,
+        PrimitiveCurve              = 1UL << 3,
         PrimitiveCurve1             = PrimitiveCurve | 0,
         PrimitiveCurve3             = PrimitiveCurve | 1,
 
-        PrimitiveVolume             = 1 << 4
+        PrimitiveVolume             = 1UL << 4
     };
 
     // Constructor, calls clear().
@@ -300,24 +300,24 @@ class ShadingPoint
     // Flags to keep track of which on-demand results have been computed and cached.
     enum Members
     {
-        HasSourceGeometry               = 1 << 0,
-        HasTriangleVertexNormals        = 1 << 1,
-        HasTriangleVertexTangents       = 1 << 2,
-        HasUV0                          = 1 << 3,
-        HasPoint                        = 1 << 4,
-        HasBiasedPoint                  = 1 << 5,
-        HasRefinedPoints                = 1 << 6,
-        HasWorldSpaceDerivatives        = 1 << 7,
-        HasGeometricNormal              = 1 << 8,
-        HasOriginalShadingNormal        = 1 << 9,
-        HasShadingBasis                 = 1 << 10,
-        HasWorldSpaceTriangleVertices   = 1 << 11,
-        HasMaterials                    = 1 << 12,
-        HasWorldSpacePointVelocity      = 1 << 13,
-        HasAlpha                        = 1 << 14,
-        HasPerVertexColor               = 1 << 15,
-        HasScreenSpaceDerivatives       = 1 << 16,
-        HasOSLShaderGlobals             = 1 << 17
+        HasSourceGeometry               = 1UL << 0,
+        HasTriangleVertexNormals        = 1UL << 1,
+        HasTriangleVertexTangents       = 1UL << 2,
+        HasUV0                          = 1UL << 3,
+        HasPoint                        = 1UL << 4,
+        HasBiasedPoint                  = 1UL << 5,
+        HasRefinedPoints                = 1UL << 6,
+        HasWorldSpaceDerivatives        = 1UL << 7,
+        HasGeometricNormal              = 1UL << 8,
+        HasOriginalShadingNormal        = 1UL << 9,
+        HasShadingBasis                 = 1UL << 10,
+        HasWorldSpaceTriangleVertices   = 1UL << 11,
+        HasMaterials                    = 1UL << 12,
+        HasWorldSpacePointVelocity      = 1UL << 13,
+        HasAlpha                        = 1UL << 14,
+        HasPerVertexColor               = 1UL << 15,
+        HasScreenSpaceDerivatives       = 1UL << 16,
+        HasOSLShaderGlobals             = 1UL << 17
     };
     mutable foundation::uint32          m_members;
 

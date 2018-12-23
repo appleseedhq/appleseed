@@ -515,10 +515,10 @@ namespace
             const float f11 = get_pixel_value(image, props, x + 1, y + 1);
 
             // Corners are numbered clockwise starting in top-left corner.
-            const size_t b00 = f00 > isovalue ? 1 << 3 : 0;
-            const size_t b10 = f10 > isovalue ? 1 << 2 : 0;
-            const size_t b11 = f11 > isovalue ? 1 << 1 : 0;
-            const size_t b01 = f01 > isovalue ? 1 << 0 : 0;
+            const size_t b00 = f00 > isovalue ? 1UL << 3 : 0;
+            const size_t b10 = f10 > isovalue ? 1UL << 2 : 0;
+            const size_t b11 = f11 > isovalue ? 1UL << 1 : 0;
+            const size_t b01 = f01 > isovalue ? 1UL << 0 : 0;
             const size_t mask = b00 + b10 + b11 + b01;
 
             // Compute middle of top edge.

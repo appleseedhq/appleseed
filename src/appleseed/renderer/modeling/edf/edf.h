@@ -83,7 +83,7 @@ class APPLESEED_DLLSYMBOL EDF
 
     enum Flags
     {
-        CastIndirectLight = 1 << 0                              // does this light generate indirect lighting?
+        CastIndirectLight = 1UL << 0                            // does this light generate indirect lighting?
     };
 
     // Retrieve the flags.

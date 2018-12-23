@@ -136,8 +136,8 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     // Sides of this object instance's surface.
     enum Side
     {
-        FrontSide = 1 << 0,
-        BackSide  = 1 << 1,
+        FrontSide = 1UL << 0,
+        BackSide  = 1UL << 1,
         BothSides = FrontSide | BackSide
     };
 

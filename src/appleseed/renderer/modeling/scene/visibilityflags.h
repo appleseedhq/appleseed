@@ -52,16 +52,16 @@ class APPLESEED_DLLSYMBOL VisibilityFlags
     enum Values
     {
         Invisible       = 0,
-        CameraRay       = 1 << 0,
-        LightRay        = 1 << 1,
-        ShadowRay       = 1 << 2,
-        TransparencyRay = 1 << 3,
-        ProbeRay        = 1 << 4,
-        DiffuseRay      = 1 << 5,
-        GlossyRay       = 1 << 6,
-        SpecularRay     = 1 << 7,
-        SubsurfaceRay   = 1 << 8,
-        NPRRay          = 1 << 9,
+        CameraRay       = 1UL << 0,
+        LightRay        = 1UL << 1,
+        ShadowRay       = 1UL << 2,
+        TransparencyRay = 1UL << 3,
+        ProbeRay        = 1UL << 4,
+        DiffuseRay      = 1UL << 5,
+        GlossyRay       = 1UL << 6,
+        SpecularRay     = 1UL << 7,
+        SubsurfaceRay   = 1UL << 8,
+        NPRRay          = 1UL << 9,
         AllRays         = ~0
     };
 
