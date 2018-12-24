@@ -505,7 +505,8 @@ namespace
         }
     };
 
-    const char* CryptomatteAOVModel = "cryptomatte_aov";
+    const char* CryptomatteObjectAOVModel = "cryptomatte_object_aov";
+    const char* CryptomatteMaterialAOVModel = "cryptomatte_material_aov";
 }
 
 
@@ -529,9 +530,15 @@ CryptomatteAOV::CryptomatteAOV(const ParamArray& params)
     const string cryptomatte_type = params.get_optional<string>("cryptomatte_type", "object_names");
     
     if (cryptomatte_type == "object_names")
-        impl->m_layer_type = CryptomatteAOV::CryptomatteType::ObjectNames;
+    {
+        impl->m_layer_type = CryptomatteType::ObjectNames;
+        set_name(CryptomatteObjectAOVModel);
+    }
     else if (cryptomatte_type == "material_names")
-        impl->m_layer_type = CryptomatteAOV::CryptomatteType::MaterialNames;
+    {
+        impl->m_layer_type = CryptomatteType::MaterialNames;
+        set_name(CryptomatteMaterialAOVModel);
+    }
 
     impl->m_num_layers = params.get_optional<int>("cryptomatte_num_layers", 6);
 }
@@ -543,7 +550,10 @@ CryptomatteAOV::~CryptomatteAOV()
 
 const char* CryptomatteAOV::get_model() const
 {
-    return CryptomatteAOVModel;
+    if (impl->m_layer_type == CryptomatteAOV::CryptomatteType::ObjectNames)
+        return CryptomatteObjectAOVModel;
+    else
+        return CryptomatteMaterialAOVModel;
 }
 
 size_t CryptomatteAOV::get_channel_count() const
@@ -719,6 +729,11 @@ bool CryptomatteAOV::write_images(const char* file_path) const
 // CryptomatteAOVFactory class implementation.
 //
 
+CryptomatteAOVFactory::CryptomatteAOVFactory(const CryptomatteAOV::CryptomatteType aov_type)
+    : m_aov_type(aov_type)
+{
+}
+
 void CryptomatteAOVFactory::release()
 {
     delete this;
@@ -726,15 +741,23 @@ void CryptomatteAOVFactory::release()
 
 const char* CryptomatteAOVFactory::get_model() const
 {
-    return CryptomatteAOVModel;
+    if (m_aov_type == CryptomatteAOV::CryptomatteType::ObjectNames)
+        return CryptomatteObjectAOVModel;
+    else
+        return CryptomatteMaterialAOVModel;
 }
 
 Dictionary CryptomatteAOVFactory::get_model_metadata() const
 {
-    return
-        Dictionary()
-        .insert("name", get_model())
-        .insert("label", "Cryptomatte");
+    Dictionary metadata;
+    metadata.insert("name", get_model());
+
+    if (m_aov_type == CryptomatteAOV::CryptomatteType::ObjectNames)
+        metadata.insert("label", "CryptomatteObjects");
+    else
+        metadata.insert("label", "CryptomatteMaterials");
+
+    return metadata;
 }
 
 DictionaryArray CryptomatteAOVFactory::get_input_metadata() const
@@ -746,7 +769,14 @@ DictionaryArray CryptomatteAOVFactory::get_input_metadata() const
 auto_release_ptr<AOV> CryptomatteAOVFactory::create(
     const ParamArray&           params) const
 {
-    return auto_release_ptr<AOV>(new CryptomatteAOV(params));
+    ParamArray new_params(params);
+
+    if (m_aov_type == CryptomatteAOV::CryptomatteType::ObjectNames)
+        new_params.insert("cryptomatte_type", "object_names");
+    else
+        new_params.insert("cryptomatte_type", "material_names");
+
+    return auto_release_ptr<AOV>(new CryptomatteAOV(new_params));
 }
 
 }   // namespace renderer

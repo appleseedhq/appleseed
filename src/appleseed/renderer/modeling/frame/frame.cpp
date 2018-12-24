@@ -120,7 +120,6 @@ struct Frame::Impl
     string                          m_checkpoint_create_path;
     bool                            m_checkpoint_resume;
     string                          m_checkpoint_resume_path;
-    CryptomatteMode                 m_cryptomatte_mode;
 
     // When resuming a render, first pass index should be
     // the number of the resumed render's pass + 1.
@@ -1431,25 +1430,6 @@ void Frame::extract_parameters()
                 "denoiser",
                 "off");
             impl->m_denoising_mode = DenoisingMode::Off;
-        }
-    }
-
-    // Retrieve cryptomatte parameters.
-    {
-        const string cryptomatte_mode = m_params.get_optional<string>("cryptomatte", "off");
-        
-        if (cryptomatte_mode == "off")
-            impl->m_cryptomatte_mode = CryptomatteMode::Off;
-        else if (cryptomatte_mode == "write_outputs")
-            impl->m_cryptomatte_mode = CryptomatteMode::WriteOutputs;
-        else
-        {
-            RENDERER_LOG_ERROR(
-                "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
-                cryptomatte_mode.c_str(),
-                "denoiser",
-                "off");
-            impl->m_cryptomatte_mode = CryptomatteMode::Off;
         }
     }
 

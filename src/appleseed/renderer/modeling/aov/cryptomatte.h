@@ -104,6 +104,8 @@ class APPLESEED_DLLSYMBOL CryptomatteAOVFactory
     : public IAOVFactory
 {
   public:
+      CryptomatteAOVFactory(const CryptomatteAOV::CryptomatteType aov_type);
+
       // Delete this instance.
       void release() override;
 
@@ -118,6 +120,9 @@ class APPLESEED_DLLSYMBOL CryptomatteAOVFactory
 
     // Create a new AOV instance.
       foundation::auto_release_ptr<AOV> create(const ParamArray&           params) const override;
+
+  private:
+      CryptomatteAOV::CryptomatteType m_aov_type;
 };
 
 }       // namespace renderer
