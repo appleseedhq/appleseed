@@ -61,6 +61,8 @@ if (USE_RPATH_ORIGIN)
     )
 endif ()
 
+set_target_properties (animatecamera PROPERTIES FOLDER "Tools")
+
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.

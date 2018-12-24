@@ -58,6 +58,8 @@ if (USE_RPATH_ORIGIN)
     )
 endif ()
 
+set_target_properties (dumpmetadata PROPERTIES FOLDER "Tools")
+
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.

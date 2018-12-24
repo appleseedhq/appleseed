@@ -60,6 +60,8 @@ add_library (bcd STATIC ${sources})
 
 apply_static_lib_linker_flags (bcd)
 
+set_target_properties (bcd PROPERTIES FOLDER "Third Parties")
+
 
 #--------------------------------------------------------------------------------------------------
 # Static libraries.

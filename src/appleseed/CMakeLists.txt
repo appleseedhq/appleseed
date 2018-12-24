@@ -2116,6 +2116,8 @@ if (USE_VISIBILITY_MAP)
     )
 endif ()
 
+set_target_properties (appleseed PROPERTIES FOLDER "Core")
+
 
 #--------------------------------------------------------------------------------------------------
 # Preprocessor definitions.

@@ -139,6 +139,8 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     )
 endif ()
 
+set_target_properties (appleseed.python PROPERTIES FOLDER "Python Bindings")
+
 if (WITH_PYTHON3_BINDINGS)
     add_library (appleseed.python3 MODULE
         ${appleseed.python_sources}
@@ -159,6 +161,8 @@ if (WITH_PYTHON3_BINDINGS)
             SUFFIX ".pyd"
         )
     endif ()
+    
+    set_target_properties (appleseed.python3 PROPERTIES FOLDER "Python Bindings")
 endif ()
 
 
@@ -241,6 +245,8 @@ add_copy_dir_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.p
 if (WITH_PYTHON3_BINDINGS)
     add_copy_target_to_sandbox_py_module_command (appleseed.python3 appleseed)
 endif ()
+
+set_target_properties (appleseed.python.copy_py_files PROPERTIES FOLDER "Python Bindings")
 
 
 #--------------------------------------------------------------------------------------------------
