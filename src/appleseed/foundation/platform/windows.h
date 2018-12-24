@@ -33,6 +33,9 @@
     #error Unsupported platform.
 #endif
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Standard headers.
 #include <string>
 
@@ -51,6 +54,9 @@
 
 namespace foundation
 {
+
+// Disable all dialogs requiring user intervention, such as those popping up when assertions fail.
+APPLESEED_DLLSYMBOL void disable_all_windows_abort_dialogs();
 
 // Return the error message associated with the error code returned by GetLastError().
 std::string get_windows_last_error_message();
