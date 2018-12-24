@@ -56,6 +56,8 @@ if (USE_RPATH_ORIGIN)
     )
 endif ()
 
+set_target_properties (denoiser PROPERTIES FOLDER "Tools")
+
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.

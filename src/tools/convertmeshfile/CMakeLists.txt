@@ -59,6 +59,8 @@ if (USE_RPATH_ORIGIN)
     )
 endif ()
 
+set_target_properties (convertmeshfile PROPERTIES FOLDER "Tools")
+
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.

@@ -66,6 +66,8 @@ add_library (appleseed.shared SHARED
     ${appleseed.shared_sources}
 )
 
+set_target_properties (appleseed.shared PROPERTIES FOLDER "Core")
+
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.

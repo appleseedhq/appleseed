@@ -48,6 +48,8 @@ if (POLICY CMP0043)
     cmake_policy (SET CMP0043 OLD)  # consume the content of the suffixed COMPILE_DEFINITIONS_<CONFIG>
 endif ()
 
+set_property (GLOBAL PROPERTY USE_FOLDERS ON)
+
 include (cmake/utilities.txt)
 
 
@@ -650,11 +652,14 @@ if (WITH_DOXYGEN)
 
     if (DOXYGEN_FOUND)
         configure_file (${PROJECT_SOURCE_DIR}/scripts/appleseed.doxyfile.in ${PROJECT_BINARY_DIR}/appleseed.doxyfile @ONLY)
+
         add_custom_target (
             doc ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/appleseed.doxyfile
             WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
             COMMENT "Generating API Reference with Doxygen" VERBATIM
         )
+
+        set_target_properties (doc PROPERTIES FOLDER "Contents")
     endif ()
 endif ()
 

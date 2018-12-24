@@ -314,7 +314,7 @@ source_group ("src\\appleseed" FILES
 
 
 #--------------------------------------------------------------------------------------------------
-# Prepare the sandbox.
+# Target: Prepare the sandbox.
 #--------------------------------------------------------------------------------------------------
 
 add_custom_target (SANDBOX)
@@ -332,9 +332,11 @@ else ()
     )
 endif ()
 
+set_target_properties (SANDBOX PROPERTIES FOLDER "Contents")
+
 
 #--------------------------------------------------------------------------------------------------
-# Compile shaders and deploy header files to sandbox.
+# Target: Compile shaders and deploy header files to sandbox.
 #--------------------------------------------------------------------------------------------------
 
 # Build lists of absolute paths to OSL header files, in the sources and in the sandbox.
@@ -394,3 +396,5 @@ add_custom_target (
 )
 
 add_dependencies (appleseed.shaders SANDBOX)
+
+set_target_properties (appleseed.shaders PROPERTIES FOLDER "Contents")

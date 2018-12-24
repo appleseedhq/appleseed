@@ -604,6 +604,8 @@ if (USE_RPATH_ORIGIN)
     )
 endif ()
 
+set_target_properties (appleseed.studio PROPERTIES FOLDER "Applications")
+
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
@@ -664,6 +666,8 @@ add_copy_studio_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/
 add_copy_studio_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.studio/python/studio/plugins.py appleseed.studio)
 
 add_copy_target_exe_to_sandbox_command (appleseed.studio)
+
+set_target_properties (appleseed.studio.python.copy_py_files PROPERTIES FOLDER "Python Bindings")
 
 
 #--------------------------------------------------------------------------------------------------
