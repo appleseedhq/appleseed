@@ -38,6 +38,9 @@
 #include "foundation/core/thirdparties.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/system.h"
+#ifdef WIN32
+#include "foundation/platform/windows.h"
+#endif
 #include "foundation/utility/commandlineparser.h"
 #include "foundation/utility/log.h"
 
@@ -69,6 +72,10 @@ struct CommandLineHandlerBase::Impl
     FlagOptionHandler           m_message_coloring;
     FlagOptionHandler           m_display_options;
 
+#if defined WIN32 && defined DEBUG
+    FlagOptionHandler           m_disable_abort_dialogs;
+#endif
+
     string                      m_executable_name;
     CommandLineParser           m_parser;
     ParseResults                m_parse_results;
@@ -76,6 +83,72 @@ struct CommandLineHandlerBase::Impl
     explicit Impl(const char* application_name)
       : m_application_name(application_name)
     {
+    }
+
+    static const char* to_enabled_disabled(const bool value)
+    {
+        return value ? "enabled" : "disabled";
+    }
+
+    void print_version_information(SuperLogger& logger) const
+    {
+        LOG_INFO(
+            logger,
+            "%s, using %s version %s, %s configuration\n"
+            "compiled on %s at %s using %s version %s\n"
+            "copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited\n"
+            "copyright (c) 2014-2018 The appleseedhq Organization\n"
+            "this software is released under the MIT license (https://opensource.org/licenses/MIT).\n"
+            "visit https://appleseedhq.net/ for additional information and resources.",
+            m_application_name.c_str(),
+            Appleseed::get_lib_name(),
+            Appleseed::get_lib_version(),
+            Appleseed::get_lib_configuration(),
+            Appleseed::get_lib_compilation_date(),
+            Appleseed::get_lib_compilation_time(),
+            Compiler::get_compiler_name(),
+            Compiler::get_compiler_version());
+
+        const bool WithDisneyMaterial =
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
+            true;
+#else
+            false;
+#endif
+
+        const bool WithEmbree =
+#ifdef APPLESEED_WITH_EMBREE
+            true;
+#else
+            false;
+#endif
+
+        LOG_INFO(
+            logger,
+            "library features:\n"
+            "  instruction sets              %s\n"
+            "  Disney material               %s\n"
+            "  Embree                        %s",
+            Appleseed::get_lib_cpu_features(),
+            to_enabled_disabled(WithDisneyMaterial),
+            to_enabled_disabled(WithEmbree));
+    }
+
+    static void print_libraries_information(SuperLogger& logger)
+    {
+        LOG_INFO(logger, "third party libraries:");
+
+        const LibraryVersionArray versions = ThirdParties::get_versions();
+
+        for (size_t i = 0, e = versions.size(); i < e; ++i)
+        {
+            const APIStringPair& version = versions[i];
+            const char* lib_name = version.m_first.c_str();
+            const char* lib_version = version.m_second.c_str();
+            const size_t lib_name_length = strlen(lib_name);
+            const string spacing(30 - lib_name_length, ' ');
+            LOG_INFO(logger, "  %s%s%s", lib_name, spacing.c_str(), lib_version);
+        }
     }
 };
 
@@ -92,6 +165,9 @@ void CommandLineHandlerBase::add_default_options()
     add_system_option();
     add_message_verbosity_option();
     add_message_coloring_option();
+#if defined WIN32 && defined DEBUG
+    add_disable_abort_dialogs_option();
+#endif
     add_display_options_option();
 }
 
@@ -147,6 +223,18 @@ void CommandLineHandlerBase::add_message_coloring_option()
             .set_description("enable message coloring"));
 }
 
+#if defined WIN32 && defined DEBUG
+
+void CommandLineHandlerBase::add_disable_abort_dialogs_option()
+{
+    impl->m_parser.add_option_handler(
+        &impl->m_disable_abort_dialogs
+            .add_name("--disable-abort-dialogs")
+            .set_description("disable abort dialogs requiring user intervention"));
+}
+
+#endif
+
 void CommandLineHandlerBase::add_display_options_option()
 {
     impl->m_parser.add_option_handler(
@@ -171,6 +259,14 @@ void CommandLineHandlerBase::parse(const int argc, const char* argv[], SuperLogg
         print_program_usage(impl->m_executable_name.c_str(), logger);
         exit(EXIT_SUCCESS);
     }
+
+#if defined WIN32 && defined DEBUG
+
+    // Disable all abort dialogs as soon as possible.
+    if (impl->m_disable_abort_dialogs.is_set())
+        disable_all_windows_abort_dialogs();
+
+#endif
 
     //
     // Apply message coloring and verbosity settings a first time just after having
@@ -199,10 +295,10 @@ void CommandLineHandlerBase::apply(SuperLogger& logger)
         logger.set_verbosity_level_from_string(impl->m_message_verbosity.value().c_str());
 
     if (impl->m_version.is_set())
-        print_version_information(logger);
+        impl->print_version_information(logger);
 
     if (impl->m_libraries.is_set())
-        print_libraries_information(logger);
+        Impl::print_libraries_information(logger);
 
     if (impl->m_system.is_set())
         System::print_information(logger);
@@ -237,75 +333,6 @@ CommandLineParser& CommandLineHandlerBase::parser()
 const CommandLineParser& CommandLineHandlerBase::parser() const
 {
     return impl->m_parser;
-}
-
-namespace
-{
-    const char* to_enabled_disabled(const bool value)
-    {
-        return value ? "enabled" : "disabled";
-    }
-}
-
-void CommandLineHandlerBase::print_version_information(SuperLogger& logger) const
-{
-    LOG_INFO(
-        logger,
-        "%s, using %s version %s, %s configuration\n"
-        "compiled on %s at %s using %s version %s\n"
-        "copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited\n"
-        "copyright (c) 2014-2018 The appleseedhq Organization\n"
-        "this software is released under the MIT license (https://opensource.org/licenses/MIT).\n"
-        "visit https://appleseedhq.net/ for additional information and resources.",
-        impl->m_application_name.c_str(),
-        Appleseed::get_lib_name(),
-        Appleseed::get_lib_version(),
-        Appleseed::get_lib_configuration(),
-        Appleseed::get_lib_compilation_date(),
-        Appleseed::get_lib_compilation_time(),
-        Compiler::get_compiler_name(),
-        Compiler::get_compiler_version());
-
-    const bool WithDisneyMaterial =
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-        true;
-#else
-        false;
-#endif
-
-    const bool WithEmbree =
-#ifdef APPLESEED_WITH_EMBREE
-        true;
-#else
-        false;
-#endif
-
-    LOG_INFO(
-        logger,
-        "library features:\n"
-        "  instruction sets              %s\n"
-        "  Disney material               %s\n"
-        "  Embree                        %s",
-        Appleseed::get_lib_cpu_features(),
-        to_enabled_disabled(WithDisneyMaterial),
-        to_enabled_disabled(WithEmbree));
-}
-
-void CommandLineHandlerBase::print_libraries_information(SuperLogger& logger) const
-{
-    LOG_INFO(logger, "third party libraries:");
-
-    const LibraryVersionArray versions = ThirdParties::get_versions();
-
-    for (size_t i = 0, e = versions.size(); i < e; ++i)
-    {
-        const APIStringPair& version = versions[i];
-        const char* lib_name = version.m_first.c_str();
-        const char* lib_version = version.m_second.c_str();
-        const size_t lib_name_length = strlen(lib_name);
-        const string spacing(30 - lib_name_length, ' ');
-        LOG_INFO(logger, "  %s%s%s", lib_name, spacing.c_str(), lib_version);
-    }
 }
 
 }   // namespace shared

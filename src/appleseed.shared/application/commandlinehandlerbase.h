@@ -67,6 +67,9 @@ class SHAREDDLL CommandLineHandlerBase
     void add_message_verbosity_option();
     void add_message_coloring_option();
     void add_display_options_option();
+#if defined WIN32 && defined DEBUG
+    void add_disable_abort_dialogs_option();
+#endif
 
     // Parse the application's command line.
     virtual void parse(
@@ -91,9 +94,6 @@ class SHAREDDLL CommandLineHandlerBase
   private:
     struct Impl;
     Impl* impl;
-
-    void print_version_information(SuperLogger& logger) const;
-    void print_libraries_information(SuperLogger& logger) const;
 };
 
 }   // namespace shared

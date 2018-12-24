@@ -31,10 +31,30 @@
 // Interface header.
 #include "windows.h"
 
+// Windows headers.
+#include <crtdbg.h>
+
 using namespace std;
 
 namespace foundation
 {
+
+void disable_all_windows_abort_dialogs()
+{
+    //
+    // See comments at https://stackoverflow.com/q/53907689/393756 for explanations.
+    //
+
+    SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX);
+
+    _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
+    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
+    _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
+
+    _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
+    _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
+    _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
+}
 
 string get_windows_last_error_message()
 {
