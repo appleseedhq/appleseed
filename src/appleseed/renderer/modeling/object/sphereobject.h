@@ -31,18 +31,19 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/object/proceduralobject.h"
 
-#include "main/dllsymbol.h"
+// // Forward declarations.
+// namespace foundation    { class Dictionary; }
+// namespace foundation    { class DictionaryArray; }
+// namespace foundation    { class SearchPaths; }
+// namespace foundation    { class StringArray; }
+// namespace foundation    { class StringDictionary; }
+// namespace renderer      { class ParamArray; }
 
 
-// Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace foundation    { class DictionaryArray; }
-namespace foundation    { class SearchPaths; }
-namespace foundation    { class StringArray; }
-namespace foundation    { class StringDictionary; }
-namespace renderer      { class ParamArray; }
+namespace asf = foundation;
+namespace asr = renderer;
 
-namespace renderer
+namespace
 {
 //
 // A sphere object.
@@ -51,7 +52,7 @@ namespace renderer
 //
 
 class APPLESEED_DLLSYMBOL SphereObject
-  : public ProceduralObject
+  : public asr::ProceduralObject
 {
   public:
     // Delete this instance.
@@ -62,15 +63,15 @@ class APPLESEED_DLLSYMBOL SphereObject
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    bool on_frame_begin(
-        const Project&         project,
-        const BaseGroup*       parent,
-        OnFrameBeginRecorder&  recorder,
-        foundation::IAbortSwitch*          abort_switch) override;
+    virtual bool on_frame_begin(
+        const asr::Project&         project,
+        const asr::BaseGroup*       parent,
+        asr::OnFrameBeginRecorder&  recorder,
+        asf::IAbortSwitch*          abort_switch) override;
         
 
     // Compute the local space bounding box of the object over the shutter interval.
-    GAABB3 compute_local_bbox() const override;
+    asr::GAABB3 compute_local_bbox() const override;
 
     // Access materials slots.
     size_t get_material_slot_count() const override;
@@ -80,12 +81,12 @@ class APPLESEED_DLLSYMBOL SphereObject
     // Compute the intersection between a ray expressed in object space and
     // the surface of this object and return detailed intersection results.
     void intersect(
-        const ShadingRay&       ray,
+        const asr::ShadingRay&       ray,
         IntersectionResult&     result) const override;
 
     // Compute the intersection between a ray expressed in object space and
     // the surface of this object and simply return whether there was a hit.
-    bool intersect(const ShadingRay&  ray) const override;
+    bool intersect(const asr::ShadingRay&  ray) const override;
 
   private:
     double m_radius;
@@ -95,13 +96,10 @@ class APPLESEED_DLLSYMBOL SphereObject
 
     friend class SphereObjectFactory;
 
-    struct Impl;
-    Impl* impl;
-
     // Constructor.
     SphereObject(
         const char*         name,
-        const ParamArray&   params);
+        const asr::ParamArray&   params);
 
     // Destructor.
     ~SphereObject() override;
@@ -112,7 +110,7 @@ class APPLESEED_DLLSYMBOL SphereObject
 //
 
 class APPLESEED_DLLSYMBOL SphereObjectFactory
-  : public IObjectFactory
+  : public asr::IObjectFactory
 {
   public:
     // Delete this instance.
@@ -128,17 +126,16 @@ class APPLESEED_DLLSYMBOL SphereObjectFactory
     foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new single empty object.
-    foundation::auto_release_ptr<Object> create(
+    foundation::auto_release_ptr<asr::Object> create(
         const char*                 name,
-        const ParamArray&           params) const override;        
+        const asr::ParamArray&           params) const override;        
 
     // Create objects, potentially from external assets.
     bool create(
         const char*                     name,
-        const ParamArray&               params,
+        const asr::ParamArray&               params,
         const foundation::SearchPaths&  search_paths,
         const bool                      omit_loading_assets,
-        ObjectArray&                    objects) const override;
+        asr::ObjectArray&                    objects) const override;
 };
-
-}  // namespace renderer
+}

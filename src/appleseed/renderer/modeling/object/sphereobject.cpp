@@ -39,10 +39,41 @@
 // appleseed.foundation headers.
 #include "foundation/utility/api/specializedapiarrays.h"
 
-using namespace foundation;
-using namespace std;
 
-namespace renderer
+
+// appleseed.renderer headers.
+#include "renderer/api/object.h"
+#include "renderer/api/project.h"
+#include "renderer/api/rendering.h"
+#include "renderer/api/scene.h"
+#include "renderer/api/types.h"
+
+// todo: fix.
+#include "renderer/kernel/shading/shadingray.h"
+
+// appleseed.foundation headers.
+#include "foundation/math/ray.h"
+#include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
+#include "foundation/utility/api/specializedapiarrays.h"
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/job/iabortswitch.h"
+#include "foundation/utility/searchpaths.h"
+#include "foundation/utility/string.h"
+
+// appleseed.main headers.
+#include "main/dllvisibility.h"
+
+// Standard headers.
+#include <algorithm>
+#include <cmath>
+
+
+namespace asf = foundation;
+namespace asr = renderer;
+
+
+namespace
 {
 
 //
@@ -54,26 +85,12 @@ namespace
     const char* Model = "sphere_object";
 }
 
-struct SphereObject::Impl
-{
-    vector<string>              m_material_slots;
-    Impl()
-    {
-    }    
-};
-
 SphereObject::SphereObject(
     const char*                 name,
-    const ParamArray&           params)
+    const asr::ParamArray&           params)
     : ProceduralObject(name, params)
-    , impl(new Impl())
 {
 }    
-
-SphereObject::~SphereObject()
-{
-    delete impl;
-}
 
 void SphereObject::release()
 {
@@ -86,9 +103,9 @@ const char* SphereObject::get_model() const
 }
 
 bool SphereObject::on_frame_begin(
-    const Project&         project,
-    const BaseGroup*       parent,
-    OnFrameBeginRecorder&  recorder,
+    const asr::Project&         project,
+    const asr::BaseGroup*       parent,
+    asr::OnFrameBeginRecorder&  recorder,
     foundation::IAbortSwitch*          abort_switch)
 {
     if (!ProceduralObject::on_frame_begin(project, parent, recorder, abort_switch))
@@ -100,10 +117,10 @@ bool SphereObject::on_frame_begin(
     return true;
 }
 
-GAABB3 SphereObject::compute_local_bbox() const
+asr::GAABB3 SphereObject::compute_local_bbox() const
 {
-    const auto r = static_cast<GScalar>(get_uncached_radius());
-    return GAABB3(GVector3(-r), GVector3(r));
+    const auto r = static_cast<asr::GScalar>(get_uncached_radius());
+    return asr::GAABB3(asr::GVector3(-r), asr::GVector3(r));
 }
 
 size_t SphereObject::get_material_slot_count() const 
@@ -117,7 +134,7 @@ const char* SphereObject::get_material_slot(const size_t index) const
 }
 
 void SphereObject::intersect(
-const ShadingRay&  ray,
+const asr::ShadingRay&  ray,
 IntersectionResult&     result) const 
 {
     const double Epsilon = 1.0e-6;
@@ -159,7 +176,7 @@ IntersectionResult&     result) const
 }
 
 bool SphereObject::intersect(
-    const ShadingRay&  ray) const
+    const asr::ShadingRay&  ray) const
 {
     const double Epsilon = 1.0e-6;
 
@@ -202,29 +219,29 @@ const char* SphereObjectFactory::get_model() const
     return Model;
 }
 
-Dictionary SphereObjectFactory::get_model_metadata() const
+asf::Dictionary SphereObjectFactory::get_model_metadata() const
 {
     return
-        Dictionary()
+        asf::Dictionary()
             .insert("name", Model)
             .insert("label", "Sphere Object");
 }
 
-DictionaryArray SphereObjectFactory::get_input_metadata() const
+asf::DictionaryArray SphereObjectFactory::get_input_metadata() const
 {
-    DictionaryArray metadata;
+    asf::DictionaryArray metadata;
 
     metadata.push_back(
-        Dictionary()
+        asf::Dictionary()
             .insert("name", "radius")
             .insert("label", "Radius")
             .insert("type", "numeric")
             .insert("min",
-                Dictionary()
+                asf::Dictionary()
                     .insert("value", "0.0")
                     .insert("type", "hard"))
             .insert("max",
-                Dictionary()
+                asf::Dictionary()
                     .insert("value", "10.0")
                     .insert("type", "soft"))
             .insert("use", "optional")
@@ -233,19 +250,19 @@ DictionaryArray SphereObjectFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<Object> SphereObjectFactory::create(
-    const char*                 name,
-    const ParamArray&      params) const 
+asf::auto_release_ptr<asr::Object> SphereObjectFactory::create(
+    const char*                     name,
+    const asr::ParamArray&               params) const 
 {
-    return auto_release_ptr<Object>(new SphereObject(name, params));
+    return asf::auto_release_ptr<asr::Object>(new SphereObject(name, params));
 }
 
 bool SphereObjectFactory::create(
     const char*                     name,
-    const ParamArray&               params,
-    const SearchPaths&              search_paths,
+    const asr::ParamArray&               params,
+    const asf::SearchPaths&              search_paths,
     const bool                      omit_loading_assets,
-    ObjectArray&                    objects) const
+    asr::ObjectArray&                    objects) const
 {
     objects.push_back(create(name, params).release());
     return true;
