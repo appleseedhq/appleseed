@@ -39,39 +39,8 @@
 // appleseed.foundation headers.
 #include "foundation/utility/api/specializedapiarrays.h"
 
-
-
-// appleseed.renderer headers.
-#include "renderer/api/object.h"
-#include "renderer/api/project.h"
-#include "renderer/api/rendering.h"
-#include "renderer/api/scene.h"
-#include "renderer/api/types.h"
-
-// todo: fix.
-#include "renderer/kernel/shading/shadingray.h"
-
-// appleseed.foundation headers.
-#include "foundation/math/ray.h"
-#include "foundation/math/scalar.h"
-#include "foundation/math/vector.h"
-#include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/job/iabortswitch.h"
-#include "foundation/utility/searchpaths.h"
-#include "foundation/utility/string.h"
-
-// appleseed.main headers.
-#include "main/dllvisibility.h"
-
-// Standard headers.
-#include <algorithm>
-#include <cmath>
-
-
 namespace asf = foundation;
 namespace asr = renderer;
-
 
 namespace
 {

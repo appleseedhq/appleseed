@@ -31,15 +31,6 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/object/proceduralobject.h"
 
-// // Forward declarations.
-// namespace foundation    { class Dictionary; }
-// namespace foundation    { class DictionaryArray; }
-// namespace foundation    { class SearchPaths; }
-// namespace foundation    { class StringArray; }
-// namespace foundation    { class StringDictionary; }
-// namespace renderer      { class ParamArray; }
-
-
 namespace asf = foundation;
 namespace asr = renderer;
 
