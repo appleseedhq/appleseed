@@ -90,6 +90,8 @@ AOVFactoryRegistrar::AOVFactoryRegistrar(const SearchPaths& search_paths)
     impl->register_factory(auto_release_ptr<FactoryType>(new PositionAOVFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new ScreenSpaceVelocityAOVFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new UVAOVFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new CryptomatteAOVFactory(CryptomatteAOV::CryptomatteType::ObjectNames)));
+    impl->register_factory(auto_release_ptr<FactoryType>(new CryptomatteAOVFactory(CryptomatteAOV::CryptomatteType::MaterialNames)));
 }
 
 AOVFactoryRegistrar::~AOVFactoryRegistrar()
@@ -100,8 +102,6 @@ AOVFactoryRegistrar::~AOVFactoryRegistrar()
 void AOVFactoryRegistrar::register_factory_plugin(Plugin* plugin, void* plugin_entry_point)
 {
     impl->register_factory_plugin(plugin, plugin_entry_point);
-    register_factory(auto_release_ptr<FactoryType>(new CryptomatteAOVFactory(CryptomatteAOV::CryptomatteType::ObjectNames)));
-    register_factory(auto_release_ptr<FactoryType>(new CryptomatteAOVFactory(CryptomatteAOV::CryptomatteType::MaterialNames)));
 }
 
 AOVFactoryArray AOVFactoryRegistrar::get_factories() const
