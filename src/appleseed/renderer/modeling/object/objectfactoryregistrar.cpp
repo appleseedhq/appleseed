@@ -69,6 +69,28 @@ ObjectFactoryRegistrar::~ObjectFactoryRegistrar()
     delete impl;
 }
 
+void ObjectFactoryRegistrar::register_factory_plugin(Plugin* plugin, void* plugin_entry_point)
+{
+    // The registrar must be cleared before the plugins are unloaded.
+    impl->m_registrar.clear();
+    unload_all_plugins();
+
+    // Register built-in factories.
+    register_factory(auto_release_ptr<FactoryType>(new CurveObjectFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new MeshObjectFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new SphereObjectFactory()));
+
+    // Register factories defined in plugins.
+    register_factories_from_plugins<Object>(
+        search_paths,
+        [this](void* plugin_entry_point)
+        {
+            auto create_fn = reinterpret_cast<IObjectFactory* (*)()>(plugin_entry_point);
+            register_factory(foundation::auto_release_ptr<IObjectFactory>(create_fn()));
+        });
+    impl->register_factory_plugin(plugin, plugin_entry_point);
+}
+
 void ObjectFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 {
     // The registrar must be cleared before the plugins are unloaded.
