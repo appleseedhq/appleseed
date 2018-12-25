@@ -1,7 +1,7 @@
 C++ Plugins Instructions
 ========================
 
-Compiling the Plugins On Windows
+Compiling the Plugins on Windows
 --------------------------------
 
 The following instructions assume that:
@@ -52,15 +52,13 @@ Open a Command Prompt inside a plugin's folder, then type:
         -DAPPLESEED_DEPS_STAGE_DIR=C:\appleseed-deps\stage\vc14 ^
         ..
 
-Open the Visual Studio solution file (.sln file) that was generated in build and build the plugin in the configuration of your choice (Debug or Release).
+Open the Visual Studio solution file (.sln file) that was generated in `build\` and build the plugin in the configuration of your choice (Debug or Release).
 
 
-Compiling the Plugins On Linux
+Compiling the Plugins on Linux
 ------------------------------
 
-The following instructions assume that:
-
-  - You are using the prebuild linux dependencies that can be found [here](https://github.com/appleseedhq/prebuilt-linux-deps)
+The following instructions assume that you are using the prebuilt Linux dependencies that can be found [here](https://github.com/appleseedhq/prebuilt-linux-deps).
 
 Make sure to adapt them as required.
 
@@ -70,6 +68,8 @@ In a Bash shell, inside a plugin's directory, type:
     export CMAKE_INCLUDE_PATH=$APPLESEED_DEPENDENCIES/include
     export CMAKE_LIBRARY_PATH=$APPLESEED_DEPENDENCIES/lib
     export LD_LIBRARY_PATH=$APPLESEED_DEPENDENCIES/lib
+
+Then:
 
   - With an **end-user** release of appleseed:
 
@@ -135,4 +135,4 @@ Let's add two relative search paths (`build\Release` and `..\infiniteplaneobject
 </project>
 ```
 
-We now start appleseed.studio, open `distancefieldobject/distancefieldobject.appleseed` and press F5 to start progressive, interactive rendering. Pressing Shift+F5 stops the render.
+We can now start appleseed.studio, open `distancefieldobject/distancefieldobject.appleseed` and press F5 to start progressive, interactive rendering. Pressing Shift+F5 stops the render.
