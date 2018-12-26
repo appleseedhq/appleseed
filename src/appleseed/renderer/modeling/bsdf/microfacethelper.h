@@ -122,8 +122,7 @@ class MicrofacetBRDFHelper
         if (wo.y == 0.0f)
             return;
 
-        // Flip the outgoing vector to be in the same hemisphere as
-        // the shading normal if needed.
+        // Flip the outgoing vector to be in the same hemisphere as the shading normal if needed.
         if (Flip)
             wo.y = std::abs(wo.y);
 

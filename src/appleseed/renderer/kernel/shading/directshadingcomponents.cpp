@@ -29,9 +29,6 @@
 // Interface header.
 #include "directshadingcomponents.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/otherwise.h"
-
 namespace renderer
 {
 
@@ -73,13 +70,6 @@ DirectShadingComponents& operator*=(DirectShadingComponents& lhs, const float rh
     return lhs;
 }
 
-DirectShadingComponents& operator/=(DirectShadingComponents& lhs, const float rhs)
-{
-    const float rcp_rhs = 1.0f / rhs;
-    lhs *= rcp_rhs;
-    return lhs;
-}
-
 DirectShadingComponents& operator*=(DirectShadingComponents& lhs, const Spectrum& rhs)
 {
     lhs.m_beauty *= rhs;
@@ -88,6 +78,11 @@ DirectShadingComponents& operator*=(DirectShadingComponents& lhs, const Spectrum
     lhs.m_volume *= rhs;
     lhs.m_emission *= rhs;
     return lhs;
+}
+
+DirectShadingComponents& operator/=(DirectShadingComponents& lhs, const float rhs)
+{
+    return lhs *= 1.0f / rhs;
 }
 
 void madd(DirectShadingComponents& a, const DirectShadingComponents& b, const float c)

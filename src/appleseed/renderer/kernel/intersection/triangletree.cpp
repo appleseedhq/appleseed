@@ -589,11 +589,11 @@ void TriangleTree::build_bvh(
         triangle_keys,
         statistics);
 
-    const double storing_time = stopwatch.measure().get_seconds();
+    const double store_time = stopwatch.measure().get_seconds();
 
     statistics.insert_time("collection time", collection_time);
     statistics.insert_time("partition time", builder.get_build_time());
-    statistics.insert_time("store time", storing_time);
+    statistics.insert_time("store time", store_time);
 }
 
 void TriangleTree::build_sbvh(
@@ -700,11 +700,11 @@ void TriangleTree::build_sbvh(
         triangle_keys,
         statistics);
 
-    const double storing_time = stopwatch.measure().get_seconds();
+    const double store_time = stopwatch.measure().get_seconds();
 
     statistics.insert_time("collection time", collection_time);
     statistics.insert_time("partition time", builder.get_build_time());
-    statistics.insert_time("store time", storing_time);
+    statistics.insert_time("store time", store_time);
 }
 
 namespace
