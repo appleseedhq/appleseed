@@ -252,13 +252,13 @@ shader as_metal
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
-    int in_maximum_ray_depth = 8
+    int in_maximum_ray_depth = 100
     [[
         string as_maya_attribute_name = "maximumRayDepth",
         string as_maya_attribute_short_name = "mrd",
         int min = 0,
         int max = 100,
-        int softmax = 8,
+        int softmax = 16,
         string label = "Ray Depth",
         string page = "Advanced",
         int as_maya_attribute_connectable = 0,
