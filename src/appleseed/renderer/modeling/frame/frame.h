@@ -215,7 +215,7 @@ class APPLESEED_DLLSYMBOL Frame
     void extract_parameters();
 
     // Access the internal AOVs.
-    const AOVContainer& internal_aovs() const;
+    AOVContainer& internal_aovs() const;
 };
 
 

@@ -263,11 +263,11 @@ void Frame::clear_main_and_aov_images()
 {
     impl->m_image->clear(Color4f(0.0));
 
-    for (size_t i = 0, e = aovs().size(); i < e; ++i)
-        aovs().get_by_index(i)->clear_image();
+    for (AOV& aov : aovs())
+        aov.clear_image();
 
-    for (size_t i = 0, e = internal_aovs().size(); i < e; ++i)
-        internal_aovs().get_by_index(i)->clear_image();
+    for (AOV& aov : internal_aovs())
+        aov.clear_image();
 }
 
 ImageStack& Frame::aov_images() const
@@ -275,7 +275,7 @@ ImageStack& Frame::aov_images() const
     return *impl->m_aov_images;
 }
 
-const AOVContainer& Frame::internal_aovs() const
+AOVContainer& Frame::internal_aovs() const
 {
     return impl->m_internal_aovs;
 }
@@ -307,7 +307,6 @@ bool Frame::has_crop_window() const
 void Frame::set_crop_window(const AABB2u& crop_window)
 {
     impl->m_crop_window = crop_window;
-
     m_params.insert("crop_window", crop_window);
 }
 
@@ -368,11 +367,11 @@ bool Frame::on_frame_begin(
 
 void Frame::post_process_aov_images() const
 {
-    for (size_t i = 0, e = aovs().size(); i < e; ++i)
-        aovs().get_by_index(i)->post_process_image(*this);
+    for (AOV& aov : aovs())
+        aov.post_process_image(*this);
 
-    for (size_t i = 0, e = internal_aovs().size(); i < e; ++i)
-        internal_aovs().get_by_index(i)->post_process_image(*this);
+    for (AOV& aov : internal_aovs())
+        aov.post_process_image(*this);
 }
 
 ParamArray& Frame::render_info()
@@ -442,15 +441,13 @@ void Frame::denoise(
         options,
         abort_switch);
 
-    for (size_t i = 0, e = aovs().size(); i < e; ++i)
+    for (const AOV& aov : aovs())
     {
-        const AOV* aov = aovs().get_by_index(i);
-
-        if (aov->has_color_data())
+        if (aov.has_color_data())
         {
-            RENDERER_LOG_INFO("denoising %s aov...", aov->get_name());
+            RENDERER_LOG_INFO("denoising %s aov...", aov.get_name());
             denoise_aov_image(
-                aov->get_image(),
+                aov.get_image(),
                 num_samples,
                 impl->m_denoiser_aov->histograms_image(),
                 covariances,
@@ -694,18 +691,16 @@ bool Frame::write_aov_images(const char* file_path) const
 
     bool success = true;
 
-    for (size_t i = 0, e = aovs().size(); i < e; ++i)
+    for (const AOV& aov : aovs())
     {
-        const AOV* aov = aovs().get_by_index(i);
-
         // Compute AOV image file path.
-        const string aov_name = aov->get_name();
+        const string aov_name = aov.get_name();
         const string safe_aov_name = make_safe_filename(aov_name);
         const string aov_file_name = base_file_name + "." + safe_aov_name + ".exr";
         const string aov_file_path = (directory / aov_file_name).string();
 
         // Write AOV image.
-        if (!aov->write_images(aov_file_path.c_str()))
+        if (!aov.write_images(aov_file_path.c_str()))
             success = false;
     }
 
@@ -727,10 +722,9 @@ bool Frame::write_main_and_aov_images() const
     }
 
     // Write AOV images.
-    for (size_t i = 0, e = aovs().size(); i < e; ++i)
+    for (const AOV& aov : aovs())
     {
-        const AOV* aov = aovs().get_by_index(i);
-        bf::path filepath = aov->get_parameters().get_optional<string>("output_filename");
+        bf::path filepath = aov.get_parameters().get_optional<string>("output_filename");
         if (!filepath.empty())
         {
             const bf::path filepath_ext = filepath.extension();
@@ -743,7 +737,7 @@ bool Frame::write_main_and_aov_images() const
                 {
                     RENDERER_LOG_WARNING(
                         "aov \"%s\" cannot be saved to %s file; saving it to \"%s\" instead.",
-                        aov->get_path().c_str(),
+                        aov.get_path().c_str(),
                         filepath_ext.string().substr(1).c_str(),
                         new_filepath.string().c_str());
                 }
@@ -752,7 +746,7 @@ bool Frame::write_main_and_aov_images() const
             }
 
             // Write AOV image.
-            if (!aov->write_images(filepath.string().c_str()))
+            if (!aov.write_images(filepath.string().c_str()))
                 success = false;
         }
     }
@@ -787,25 +781,23 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
         writer.set_image_attributes(image_attributes);
     }
 
-    for (size_t i = 0, e = impl->m_aovs.size(); i < e; ++i)
+    for (const AOV& aov : aovs())
     {
-        const AOV* aov = impl->m_aovs.get_by_index(i);
-        const string aov_name = aov->get_name();
-        const Image& image = aov->get_image();
+        const string aov_name = aov.get_name();
+        const Image& image = aov.get_image();
 
-        if (aov->has_color_data())
+        if (aov.has_color_data())
         {
             // If the AOV has color data, assume we can save it as half floats.
             const CanvasProperties& props = image.properties();
             images.emplace_back(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
             writer.append_image(&(images.back()));
         }
-        else
-            writer.append_image(&image);
+        else writer.append_image(&image);
 
         image_attributes.insert("image_name", aov_name.c_str());
 
-        writer.set_image_channels(aov->get_channel_count(), aov->get_channel_names());
+        writer.set_image_channels(aov.get_channel_count(), aov.get_channel_names());
         writer.set_image_attributes(image_attributes);
     }
 
