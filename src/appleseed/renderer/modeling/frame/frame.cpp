@@ -496,8 +496,7 @@ namespace
     void write_exr_image(
         const bf::path&         file_path,
         const Image&            image,
-        ImageAttributes&        image_attributes,
-        const AOV*              aov)
+        ImageAttributes&        image_attributes)
     {
         create_parent_directories(file_path);
 
@@ -506,15 +505,6 @@ namespace
         GenericImageFileWriter writer(filename.c_str());
 
         writer.append_image(&image);
-
-        if (aov)
-        {
-            // If the AOV has color data, assume we can save it as half floats.
-            if (aov->has_color_data())
-                writer.set_image_output_format(PixelFormatHalf);
-
-            writer.set_image_channels(aov->get_channel_count(), aov->get_channel_names());
-        }
 
         image_attributes.insert("color_space", "linear");
         writer.set_image_attributes(image_attributes);
@@ -589,8 +579,7 @@ namespace
 
     bool write_image(
         const char*             file_path,
-        const Image&            image,
-        const AOV*              aov = nullptr)
+        const Image&            image)
     {
         assert(file_path);
 
@@ -616,8 +605,7 @@ namespace
                 write_exr_image(
                     bf_file_path,
                     image,
-                    image_attributes,
-                    aov);
+                    image_attributes);
             }
             else if (extension == ".png")
             {
@@ -717,7 +705,7 @@ bool Frame::write_aov_images(const char* file_path) const
         const string aov_file_path = (directory / aov_file_name).string();
 
         // Write AOV image.
-        if (!write_image(aov_file_path.c_str(), aov->get_image(), aov))
+        if (!aov->write_images(aov_file_path.c_str()))
             success = false;
     }
 
@@ -763,7 +751,8 @@ bool Frame::write_main_and_aov_images() const
                 filepath = new_filepath;
             }
 
-            if (!write_image(filepath.string().c_str(), aov->get_image(), aov))
+            // Write AOV image.
+            if (!aov->write_images(filepath.string().c_str()))
                 success = false;
         }
     }

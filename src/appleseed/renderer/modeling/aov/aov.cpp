@@ -30,11 +30,17 @@
 #include "aov.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/aov/imagestack.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+#include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
+#include "foundation/image/imageattributes.h"
+
+// Standard headers.
+#include <exception>
 
 using namespace foundation;
 
@@ -94,6 +100,37 @@ void AOV::create_image(
     m_image = &aov_images.get_image(m_image_index);
 }
 
+bool AOV::write_images(const char* file_path) const
+{
+    try
+    {
+        GenericImageFileWriter writer(file_path);
+
+        writer.append_image(&get_image());
+
+        if (has_color_data())
+            writer.set_image_output_format(PixelFormatHalf);
+
+        writer.set_image_channels(get_channel_count(), get_channel_names());
+
+        ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
+        image_attributes.insert("color_space", "linear");
+        writer.set_image_attributes(image_attributes);
+
+        writer.write();
+    }
+    catch (const std::exception& e)
+    {
+        RENDERER_LOG_ERROR(
+            "failed to write image file %s: %s.",
+            file_path,
+            e.what());
+
+        return false;
+    }
+
+    return true;
+}
 
 //
 // ColorAOV class implementation.
