@@ -152,12 +152,13 @@ bool BSDFSampler::sample(
         sample);
 
     // Filter scattering modes.
-    if (!(m_bsdf_sampling_modes & sample.m_mode))
+    if (!(m_bsdf_sampling_modes & sample.get_mode()))
         return false;
 
     incoming = sample.m_incoming;
     value = sample.m_value;
-    pdf = sample.m_probability;
+    pdf = sample.get_probability();
+
     return true;
 }
 

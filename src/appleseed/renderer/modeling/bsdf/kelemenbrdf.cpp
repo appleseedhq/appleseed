@@ -241,8 +241,6 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            sample.m_max_roughness = values->m_roughness;
-
             // Define aliases to match notations in the paper.
             const Vector3f& V = sample.m_outgoing.get_value();
             const Vector3f& N = sample.m_shading_basis.get_normal();
@@ -315,7 +313,7 @@ namespace
 
             float pdf_matte = 0.0f, pdf_specular = 0.0f;
 
-            if (ScatteringMode::has_diffuse(modes))
+            if (ScatteringMode::has_diffuse(modes) && matte_weight > 0.0f)
             {
                 // Compute the specular albedo for the incoming angle.
                 Spectrum specular_albedo_L;
@@ -335,7 +333,7 @@ namespace
                 assert(pdf_matte >= 0.0f);
             }
 
-            if (ScatteringMode::has_glossy(modes))
+            if (ScatteringMode::has_glossy(modes) && specular_weight > 0.0f)
             {
                 // Specular component (equation 3).
                 Spectrum rs(values->m_rs);
@@ -348,13 +346,18 @@ namespace
                 assert(pdf_specular >= 0.0f);
             }
 
-            sample.m_value.m_beauty = sample.m_value.m_diffuse;
-            sample.m_value.m_beauty += sample.m_value.m_glossy;
-            sample.m_mode = mode;
-            sample.m_probability = matte_weight * pdf_matte + specular_weight * pdf_specular;
-            assert(sample.m_probability > 0.0f);
-            sample.m_incoming = Dual3f(incoming);
-            sample.compute_reflected_differentials();
+            const float probability = matte_weight * pdf_matte + specular_weight * pdf_specular;
+            assert(probability >= 0.0f);
+
+            if (probability > 1.0e-6f)
+            {
+                sample.set_to_scattering(mode, probability);
+                sample.m_incoming = Dual3f(incoming);
+                sample.m_value.m_beauty = sample.m_value.m_diffuse;
+                sample.m_value.m_beauty += sample.m_value.m_glossy;
+                sample.m_max_roughness = values->m_roughness;
+                sample.compute_reflected_differentials();
+            }
         }
 
         float evaluate(

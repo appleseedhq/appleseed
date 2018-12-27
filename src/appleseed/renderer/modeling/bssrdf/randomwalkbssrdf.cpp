@@ -385,7 +385,7 @@ namespace
             bssrdf_sample.m_incoming_point.flip_side();
 
             // Sample the BSDF at the incoming point.
-            bsdf_sample.m_mode = ScatteringMode::None;
+            bsdf_sample.set_to_absorption();
             bsdf_sample.m_shading_point = &bssrdf_sample.m_incoming_point;
             bsdf_sample.m_geometric_normal = Vector3f(bssrdf_sample.m_incoming_point.get_geometric_normal());
             bsdf_sample.m_shading_basis = Basis3f(bssrdf_sample.m_incoming_point.get_shading_basis());
@@ -397,7 +397,7 @@ namespace
                 true,
                 bssrdf_sample.m_modes,
                 bsdf_sample);
-            if (bsdf_sample.m_mode == ScatteringMode::None)
+            if (bsdf_sample.get_mode() == ScatteringMode::None)
                 return false;
 
             const float cos_in = min(abs(dot(
@@ -567,12 +567,12 @@ namespace
                 bsdf_sample.m_geometric_normal = Vector3f(shading_point_ptr->get_geometric_normal());
                 bsdf_sample.m_shading_basis = Basis3f(shading_point_ptr->get_shading_basis());
                 bsdf_sample.m_outgoing = Dual3f(-direction);
-                bsdf_sample.m_mode = ScatteringMode::None;
+                bsdf_sample.set_to_absorption();
                 m_glass_bsdf->sample(sampling_context, glass_inputs, false, true, ScatteringMode::All, bsdf_sample);
                 const bool crossing_interface =
                     dot(bsdf_sample.m_outgoing.get_value(), bsdf_sample.m_geometric_normal) *
                     dot(bsdf_sample.m_incoming.get_value(), bsdf_sample.m_geometric_normal) < 0.0;
-                if (bsdf_sample.m_mode == ScatteringMode::None)
+                if (bsdf_sample.get_mode() == ScatteringMode::None)
                     return false;
 
                 assert(n_iteration != 1 || crossing_interface);  // no reflection should happen at the entry point
@@ -591,7 +591,7 @@ namespace
                 }
 
                 bssrdf_sample.m_value *= bsdf_sample.m_value.m_glossy;
-                bssrdf_sample.m_value /= bsdf_sample.m_probability;
+                bssrdf_sample.m_value /= bsdf_sample.get_probability();
                 glass_inputs->m_reflection_tint.set(1.0f);
 
                 // Sample distance (we always use classical sampling here).

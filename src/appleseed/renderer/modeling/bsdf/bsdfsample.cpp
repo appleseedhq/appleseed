@@ -29,9 +29,6 @@
 // Interface header.
 #include "bsdfsample.h"
 
-// appleseed.renderer headers.
-#include "renderer/modeling/bsdf/bsdf.h"
-
 // Standard headers.
 #include <algorithm>
 #include <cassert>

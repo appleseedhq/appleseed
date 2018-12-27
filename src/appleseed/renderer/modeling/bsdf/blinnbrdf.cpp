@@ -154,10 +154,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            sample.m_max_roughness = 1.0f;
-
             const FresnelFun f(values->m_precomputed.m_outside_ior / values->m_ior);
-
             MicrofacetBRDFHelper<false>::sample(
                 sampling_context,
                 m_mdf,
@@ -166,8 +163,9 @@ namespace
                 0.0f,
                 f,
                 sample);
-
             sample.m_value.m_beauty = sample.m_value.m_glossy;
+
+            sample.m_max_roughness = 1.0f;
         }
 
         float evaluate(

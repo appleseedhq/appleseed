@@ -107,9 +107,6 @@ namespace
             if (!ScatteringMode::has_diffuse(modes))
                 return;
 
-            // Set the scattering mode.
-            sample.m_mode = ScatteringMode::Diffuse;
-
             // Compute the incoming direction.
             sampling_context.split_in_place(2, 1);
             const Vector2f s = sampling_context.next2<Vector2f>();
@@ -117,46 +114,53 @@ namespace
             const Vector3f incoming = sample.m_shading_basis.transform_to_parent(wi);
             sample.m_incoming = Dual3f(incoming);
 
-            // Compute the BRDF value.
-            const InputValues* values = static_cast<const InputValues*>(data);
-            if (values->m_roughness != 0.0f)
-            {
-                const Vector3f& n = sample.m_shading_basis.get_normal();
-
-                // No reflection below the shading surface.
-                const float cos_in = dot(incoming, n);
-                if (cos_in < 0.0f)
-                    return;
-
-                const Vector3f& outgoing = sample.m_outgoing.get_value();
-                const float cos_on = abs(dot(outgoing, n));
-                oren_nayar_qualitative(
-                    cos_on,
-                    cos_in,
-                    values->m_roughness,
-                    values->m_reflectance,
-                    values->m_reflectance_multiplier,
-                    outgoing,
-                    incoming,
-                    n,
-                    sample.m_value.m_diffuse);
-
-                sample.m_aov_components.m_albedo = values->m_reflectance;
-            }
-            else
-            {
-                // Revert to Lambertian when roughness is zero.
-                sample.m_value.m_diffuse = values->m_reflectance;
-                sample.m_value.m_diffuse *= values->m_reflectance_multiplier * RcpPi<float>();
-            }
-            sample.m_value.m_beauty = sample.m_value.m_diffuse;
-            sample.m_max_roughness = 1.0f;
-
             // Compute the probability density of the sampled direction.
-            sample.m_probability = wi.y * RcpPi<float>();
-            assert(sample.m_probability > 0.0f);
+            const float probability = wi.y * RcpPi<float>();
+            assert(probability > 0.0f);
 
-            sample.compute_reflected_differentials();
+            if (probability > 1.0e-6f)
+            {
+                // Set the scattering mode.
+                sample.set_to_scattering(ScatteringMode::Diffuse, probability);
+
+                // Compute the BRDF value.
+                const InputValues* values = static_cast<const InputValues*>(data);
+                if (values->m_roughness != 0.0f)
+                {
+                    const Vector3f& n = sample.m_shading_basis.get_normal();
+
+                    // No reflection below the shading surface.
+                    const float cos_in = dot(incoming, n);
+                    if (cos_in < 0.0f)
+                        return;
+
+                    const Vector3f& outgoing = sample.m_outgoing.get_value();
+                    const float cos_on = abs(dot(outgoing, n));
+                    oren_nayar_qualitative(
+                        cos_on,
+                        cos_in,
+                        values->m_roughness,
+                        values->m_reflectance,
+                        values->m_reflectance_multiplier,
+                        outgoing,
+                        incoming,
+                        n,
+                        sample.m_value.m_diffuse);
+
+                    sample.m_aov_components.m_albedo = values->m_reflectance;
+                }
+                else
+                {
+                    // Revert to Lambertian when roughness is zero.
+                    sample.m_value.m_diffuse = values->m_reflectance;
+                    sample.m_value.m_diffuse *= values->m_reflectance_multiplier * RcpPi<float>();
+                }
+
+                sample.m_value.m_beauty = sample.m_value.m_diffuse;
+                sample.m_max_roughness = 1.0f;
+
+                sample.compute_reflected_differentials();
+            }
         }
 
         float evaluate(

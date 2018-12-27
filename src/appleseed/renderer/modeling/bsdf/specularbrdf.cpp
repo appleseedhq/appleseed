@@ -101,14 +101,14 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             
-            sample.m_max_roughness = 0.0f;
-
             const NoFresnelFun f(
                 values->m_reflectance,
                 values->m_reflectance_multiplier);
 
             SpecularBRDFHelper::sample(f, sample);
-            sample.m_value.m_beauty = sample.m_value.m_glossy;
+
+            if (sample.get_mode() != ScatteringMode::None)
+                sample.m_value.m_beauty = sample.m_value.m_glossy;
         }
 
         float evaluate(

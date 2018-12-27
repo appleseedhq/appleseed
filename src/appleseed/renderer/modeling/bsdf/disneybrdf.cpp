@@ -172,8 +172,6 @@ namespace
             const DisneyBRDFInputValues*    values,
             BSDFSample&                     sample) const
         {
-            sample.m_mode = ScatteringMode::Diffuse;
-
             // Compute the incoming direction.
             sampling_context.split_in_place(2, 1);
             const Vector2f s = sampling_context.next2<Vector2f>();
@@ -182,18 +180,21 @@ namespace
             sample.m_incoming = Dual3f(incoming);
 
             // Compute the component value and the probability density of the sampled direction.
-            sample.m_probability =
+            const float probability =
                 evaluate(
                     values,
                     sample.m_shading_basis,
                     sample.m_outgoing.get_value(),
                     incoming,
                     sample.m_value.m_diffuse);
-            assert(sample.m_probability > 0.0f);
+            assert(probability > 0.0f);
 
-            sample.m_aov_components.m_albedo = values->m_base_color;
-
-            sample.compute_reflected_differentials();
+            if (probability > 1.0e-6f)
+            {
+                sample.set_to_scattering(ScatteringMode::Diffuse, probability);
+                sample.m_aov_components.m_albedo = values->m_base_color;
+                sample.compute_reflected_differentials();
+            }
         }
 
         float evaluate(
@@ -265,8 +266,6 @@ namespace
             const DisneyBRDFInputValues*    values,
             BSDFSample&                     sample) const
         {
-            sample.m_mode = ScatteringMode::Glossy;
-
             // Compute the incoming direction.
             sampling_context.split_in_place(2, 1);
             const Vector2f s = sampling_context.next2<Vector2f>();
@@ -275,16 +274,20 @@ namespace
             sample.m_incoming = Dual3f(incoming);
 
             // Compute the component value and the probability density of the sampled direction.
-            sample.m_probability =
+            const float probability =
                 evaluate(
                     values,
                     sample.m_shading_basis,
                     sample.m_outgoing.get_value(),
                     incoming,
                     sample.m_value.m_glossy);
-            assert(sample.m_probability > 0.0f);
+            assert(probability > 0.0f);
 
-            sample.compute_reflected_differentials();
+            if (probability > 1.0e-6f)
+            {
+                sample.set_to_scattering(ScatteringMode::Glossy, probability);
+                sample.compute_reflected_differentials();
+            }
         }
 
         float evaluate(
@@ -415,8 +418,6 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            sample.m_max_roughness = values->m_roughness;
-
             // Compute component weights.
             float weights[NumComponents];
             if (!compute_component_weights(values, modes, weights))
@@ -434,16 +435,17 @@ namespace
             const float s = sampling_context.next2<float>();
 
             // Sample the chosen component.
+            float probability;
             if (s < cdf[DiffuseComponent])
             {
                 DisneyDiffuseComponent().sample(sampling_context, values, sample);
-                sample.m_probability *= weights[DiffuseComponent];
+                probability = weights[DiffuseComponent] * sample.get_probability();
                 weights[DiffuseComponent] = 0.0f;
             }
             else if (s < cdf[SheenComponent])
             {
                 DisneySheenComponent().sample(sampling_context, values, sample);
-                sample.m_probability *= weights[SheenComponent];
+                probability = weights[SheenComponent] * sample.get_probability();
                 weights[SheenComponent] = 0.0f;
             }
             else if (s < cdf[SpecularComponent])
@@ -463,7 +465,7 @@ namespace
                     0.0f,
                     DisneySpecularFresnelFun(*values),
                     sample);
-                sample.m_probability *= weights[SpecularComponent];
+                probability = weights[SpecularComponent] * sample.get_probability();
                 weights[SpecularComponent] = 0.0f;
             }
             else
@@ -478,11 +480,11 @@ namespace
                     0.0f,
                     DisneyClearcoatFresnelFun(*values),
                     sample);
-                sample.m_probability *= weights[ClearcoatComponent];
+                probability = weights[ClearcoatComponent] * sample.get_probability();
                 weights[ClearcoatComponent] = 0.0f;
             }
 
-            if (sample.m_mode == ScatteringMode::None)
+            if (sample.get_mode() == ScatteringMode::None)
                 return;
 
             const Vector3f& outgoing = sample.m_outgoing.get_value();
@@ -491,7 +493,7 @@ namespace
             if (weights[DiffuseComponent] > 0.0f)
             {
                 Spectrum diffuse;
-                sample.m_probability +=
+                probability +=
                     weights[DiffuseComponent] *
                     DisneyDiffuseComponent().evaluate(
                         values,
@@ -505,7 +507,7 @@ namespace
             if (weights[SheenComponent] > 0.0f)
             {
                 Spectrum sheen;
-                sample.m_probability +=
+                probability +=
                     weights[SheenComponent] *
                     DisneySheenComponent().evaluate(
                         values,
@@ -526,7 +528,7 @@ namespace
                     alpha_y);
                 Spectrum spec;
                 const GGXMDF ggx_mdf;
-                sample.m_probability +=
+                probability +=
                     weights[SpecularComponent] *
                     MicrofacetBRDFHelper<false>::evaluate(
                         ggx_mdf,
@@ -546,7 +548,7 @@ namespace
                 const float alpha = clearcoat_roughness(values);
                 Spectrum clear;
                 const GTR1MDF gtr1_mdf;
-                sample.m_probability +=
+                probability +=
                     weights[ClearcoatComponent] *
                     MicrofacetBRDFHelper<false>::evaluate(
                         gtr1_mdf,
@@ -561,10 +563,17 @@ namespace
                 sample.m_value.m_glossy += clear;
             }
 
-            sample.m_value.m_beauty = sample.m_value.m_diffuse;
-            sample.m_value.m_beauty += sample.m_value.m_glossy;
-
-            assert(sample.m_probability >= 0.0f);
+            if (probability > 1.0e-6f)
+            {
+                sample.set_to_scattering(sample.get_mode(), probability);
+                sample.m_value.m_beauty = sample.m_value.m_diffuse;
+                sample.m_value.m_beauty += sample.m_value.m_glossy;
+                sample.m_max_roughness = values->m_roughness;
+            }
+            else
+            {
+                sample.set_to_absorption();
+            }
         }
 
         float evaluate(

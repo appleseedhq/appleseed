@@ -211,12 +211,12 @@ namespace
             sample.m_value *= c->get_closure_weight(closure_index);
             sample.m_aov_components.m_albedo *= c->get_closure_weight(closure_index);
 
-            if (sample.m_mode == ScatteringMode::None ||
-                sample.m_mode == ScatteringMode::Specular ||
-                sample.m_probability < 1.0e-6f)
+            if (sample.get_mode() == ScatteringMode::None ||
+                sample.get_mode() == ScatteringMode::Specular ||
+                sample.get_probability() < 1.0e-6f)
                 return;
 
-            sample.m_probability *= pdfs[closure_index];
+            float probability = sample.get_probability() * pdfs[closure_index];
             pdfs[closure_index] = 0.0f;
 
             // Evaluate the closures we didn't sample.
@@ -242,10 +242,14 @@ namespace
                     if (pdf > 0.0f)
                     {
                         madd(sample.m_value, s, c->get_closure_weight(i));
-                        sample.m_probability += pdf;
+                        probability += pdf;
                     }
                 }
             }
+
+            if (probability > 1.0e-6f)
+                sample.set_to_scattering(sample.get_mode(), probability);
+            else sample.set_to_absorption();
         }
 
         float evaluate(

@@ -61,14 +61,10 @@ class SpecularBRDFHelper
         if (cos_in <= 0.0f)
             return;
 
+        sample.set_to_scattering(ScatteringMode::Specular, BSDF::DiracDelta);
+
         f(outgoing, n, n, sample.m_value.m_glossy);
-        sample.m_value.m_glossy *= (1.0f / cos_in);
-
-        // The probability density of the sampled direction is the Dirac delta.
-        sample.m_probability = BSDF::DiracDelta;
-
-        // Set the scattering mode.
-        sample.m_mode = ScatteringMode::Specular;
+        sample.m_value.m_glossy /= cos_in;
 
         sample.m_incoming = foundation::Dual3f(incoming);
         sample.compute_reflected_differentials();
