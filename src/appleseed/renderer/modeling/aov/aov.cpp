@@ -37,6 +37,7 @@
 #include "foundation/image/color.h"
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
+#include "foundation/image/imageattributes.h"
 
 // Standard headers.
 #include <exception>
@@ -107,7 +108,7 @@ bool AOV::write_images(const char* file_path) const
 
         writer.append_image(&get_image());
 
-        if(has_color_data())
+        if (has_color_data())
             writer.set_image_output_format(PixelFormatHalf);
 
         writer.set_image_channels(get_channel_count(), get_channel_names());

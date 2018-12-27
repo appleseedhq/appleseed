@@ -706,7 +706,7 @@ bool Frame::write_aov_images(const char* file_path) const
 
         // Write AOV image.
         if (!aov->write_images(aov_file_path.c_str()))
-            return false;
+            success = false;
     }
 
     return success;
@@ -753,7 +753,7 @@ bool Frame::write_main_and_aov_images() const
 
             // Write AOV image.
             if (!aov->write_images(filepath.string().c_str()))
-                return false;
+                success = false;
         }
     }
 

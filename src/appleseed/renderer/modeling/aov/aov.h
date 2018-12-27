@@ -92,7 +92,7 @@ class APPLESEED_DLLSYMBOL AOV
     // Apply any post-processing needed to the AOV image.
     virtual void post_process_image(const Frame& frame);
 
-    // Write image to EXR file.
+    // Write image to OpenEXR file.
     virtual bool write_images(const char* file_path) const;
 
   protected:
