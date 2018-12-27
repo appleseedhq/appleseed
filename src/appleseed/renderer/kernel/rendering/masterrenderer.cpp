@@ -453,11 +453,16 @@ struct MasterRenderer::Impl
         if (!components.create())
             return IRendererController::AbortRendering;
 
-        // Build or update ray tracing acceleration structures.
+        // Report whether Embree is used or not.
 #ifdef APPLESEED_WITH_EMBREE
-        m_project.set_use_embree(
-            m_params.get_optional<bool>("use_embree", false));
+        const bool use_embree = m_params.get_optional<bool>("use_embree", false);
+        m_project.set_use_embree(use_embree);
+#else
+        const bool use_embree = false;
 #endif
+        if (use_embree)
+             RENDERER_LOG_INFO("using Intel Embree ray tracing kernel.");
+        else RENDERER_LOG_INFO("using built-in ray tracing kernel.");
 
         // Updating the trace context causes ray tracing acceleration structures to be updated or rebuilt.
         m_project.update_trace_context();
