@@ -108,8 +108,7 @@ class ShadingContext
     void execute_osl_transparency(
         const ShaderGroup&          shader_group,
         const ShadingPoint&         shading_point,
-        Alpha&                      alpha,
-        float*                      holdout = nullptr) const;
+        Alpha&                      alpha) const;
 
     void execute_osl_emission(
         const ShaderGroup&  shader_group,
@@ -128,8 +127,12 @@ class ShadingContext
         Spectrum&                   value) const;
 
     void execute_osl_npr(
-        const ShaderGroup&  shader_group,
-        const ShadingPoint& shading_point) const;
+        const ShaderGroup&          shader_group,
+        const ShadingPoint&         shading_point) const;
+
+    void execute_osl_transparency_and_matte(
+        const ShaderGroup&          shader_group,
+        const ShadingPoint&         shading_point) const;
 
     // Choose one of the bsdf closures and set its shading basis in shading point.
     void choose_bsdf_closure_shading_basis(

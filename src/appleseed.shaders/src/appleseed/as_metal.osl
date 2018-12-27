@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017-2018 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017-2019 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -301,7 +301,20 @@ shader as_metal
     ]]
 )
 {
-    if (raytype("shadow") || raytype("transparency"))
+    if (raytype("transparency"))
+    {
+        if (in_enable_matte)
+        {
+            out_outMatteOpacity = as_matte(
+                in_matte_opacity_color,
+                in_matte_opacity);
+
+            out_outColor += out_outMatteOpacity;
+        }
+        return;
+    }
+
+    if (raytype("shadow"))
     {
         return;
     }
@@ -312,14 +325,6 @@ shader as_metal
     if (!status || ray_depth > in_maximum_ray_depth)
     {
         return;
-    }
-
-    if (in_enable_matte)
-    {
-        out_outMatteOpacity = in_matte_opacity *
-            in_matte_opacity_color * holdout();
-
-        out_outColor += out_outMatteOpacity;
     }
 
     string distribution;

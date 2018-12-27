@@ -276,17 +276,20 @@ shader as_subsurface
     ]]
 )
 {
-    if (raytype("shadow") || raytype("transparency"))
+    if (raytype("transparency"))
     {
+        if (in_enable_matte)
+        {
+            out_outMatteOpacity = as_matte(in_matte_opacity_color, in_matte_opacity);
+            out_outColor += out_outMatteOpacity;
+        }
+
         return;
     }
 
-    if (in_enable_matte)
+    if (raytype("shadow"))
     {
-        out_outMatteOpacity = in_matte_opacity *
-            in_matte_opacity_color * holdout();
-
-        out_outColor += out_outMatteOpacity;
+        return;
     }
 
     int ray_depth;

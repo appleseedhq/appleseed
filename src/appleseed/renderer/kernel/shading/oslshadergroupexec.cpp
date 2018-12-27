@@ -89,8 +89,7 @@ void OSLShaderGroupExec::execute_subsurface(
 void OSLShaderGroupExec::execute_transparency(
     const ShaderGroup&              shader_group,
     const ShadingPoint&             shading_point,
-    Alpha&                          alpha,
-    float*                          holdout) const
+    Alpha&                          alpha) const
 {
     do_execute(
         shader_group,
@@ -98,9 +97,16 @@ void OSLShaderGroupExec::execute_transparency(
         VisibilityFlags::TransparencyRay);
 
     process_transparency_tree(shading_point.get_osl_shader_globals().Ci, alpha);
+}
 
-    if (holdout)
-        *holdout = process_holdout_tree(shading_point.get_osl_shader_globals().Ci);
+void OSLShaderGroupExec::execute_transparency_and_matte(
+    const ShaderGroup&              shader_group,
+    const ShadingPoint&             shading_point) const
+{
+    do_execute(
+        shader_group,
+        shading_point,
+        VisibilityFlags::TransparencyRay);
 }
 
 void OSLShaderGroupExec::execute_shadow(

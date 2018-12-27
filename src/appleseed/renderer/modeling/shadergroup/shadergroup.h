@@ -112,14 +112,14 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Return true if the shader group contains at least one subsurface closure.
     bool has_subsurface() const;
 
-    // Return true if the shader group contains at least one holdout closure.
-    bool has_holdout() const;
-
     // Return true if the shader group contains at least one debug closure.
     bool has_debug() const;
 
     // Return true if the shader group contains at least one NPR closure.
     bool has_npr() const;
+
+    // Return true if the shader group contains at least one matte or holdout closure.
+    bool has_matte() const;
 
     // Return true if the shader group uses the dPdtime global.
     bool uses_dPdtime() const;
@@ -147,17 +147,17 @@ class APPLESEED_DLLSYMBOL ShaderGroup
         HasEmission     = 1UL << 1,
         HasTransparency = 1UL << 2,
         HasSubsurface   = 1UL << 3,
-        HasHoldout      = 1UL << 4,
-        HasDebug        = 1UL << 5,
-        HasNPR          = 1UL << 6,
+        HasDebug        = 1UL << 4,
+        HasNPR          = 1UL << 5,
+        HasMatte        = 1UL << 6,
         HasAllClosures  =
-              HasBSDFs
-            | HasEmission
-            | HasTransparency
-            | HasSubsurface
-            | HasHoldout
-            | HasDebug
-            | HasNPR,
+            HasBSDFs        |
+            HasEmission     |
+            HasTransparency |
+            HasSubsurface   |
+            HasDebug        |
+            HasNPR          |
+            HasMatte,
 
         // Globals.
         UsesdPdTime     = 1UL << 7,
@@ -231,11 +231,6 @@ inline bool ShaderGroup::has_subsurface() const
     return (m_flags & HasSubsurface) != 0;
 }
 
-inline bool ShaderGroup::has_holdout() const
-{
-    return (m_flags & HasHoldout) != 0;
-}
-
 inline bool ShaderGroup::has_debug() const
 {
     return (m_flags & HasDebug) != 0;
@@ -244,6 +239,11 @@ inline bool ShaderGroup::has_debug() const
 inline bool ShaderGroup::has_npr() const
 {
     return (m_flags & HasNPR) != 0;
+}
+
+inline bool ShaderGroup::has_matte() const
+{
+    return (m_flags & HasMatte) != 0;
 }
 
 inline bool ShaderGroup::uses_dPdtime() const
