@@ -210,15 +210,6 @@ void AssemblyTree::rebuild_assembly_tree()
         StatisticsVector::make(
             "assembly tree statistics",
             statistics).to_string().c_str());
-
-#ifdef APPLESEED_WITH_EMBREE
-
-    if (use_embree())
-    {
-        RENDERER_LOG_INFO("using Embree for assembly tree leaf intersection");
-    }
-
-#endif
 }
 
 void AssemblyTree::store_items_in_leaves(Statistics& statistics)
