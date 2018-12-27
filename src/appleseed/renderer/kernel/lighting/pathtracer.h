@@ -684,7 +684,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
             vertex.m_scattering_modes,
             sample);
 
-        next_ray.m_max_roughness = m_clamp_roughness ? sample.m_max_roughness : 0.0f;
+        next_ray.m_min_roughness = m_clamp_roughness ? sample.m_min_roughness : 0.0f;
 
         if (sample.get_mode() == ScatteringMode::Diffuse && !vertex.m_albedo_saved)
         {

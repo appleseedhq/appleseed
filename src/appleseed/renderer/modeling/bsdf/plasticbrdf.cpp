@@ -163,7 +163,7 @@ namespace
             values->m_specular_reflectance *= values->m_specular_reflectance_multiplier;
             values->m_diffuse_reflectance *= values->m_diffuse_reflectance_multiplier;
 
-            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_max_roughness);
+            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_min_roughness);
 
             new (&values->m_precomputed) InputValues::Precomputed();
             const float outside_ior = shading_point.get_ray().get_current_ior();
@@ -218,7 +218,7 @@ namespace
                     sample.m_value.m_glossy *= F;
                     sample.m_value.m_beauty = sample.m_value.m_glossy;
                     sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
-                    sample.m_max_roughness = values->m_roughness;
+                    sample.m_min_roughness = values->m_roughness;
                     sample.compute_reflected_differentials();
                 }
                 else
@@ -230,7 +230,7 @@ namespace
                     {
                         sample.set_to_scattering(ScatteringMode::Glossy, probability);
                         sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
-                        sample.m_max_roughness = values->m_roughness;
+                        sample.m_min_roughness = values->m_roughness;
 
                         evaluate_specular(
                             values->m_specular_reflectance,
@@ -259,7 +259,7 @@ namespace
                 {
                     sample.set_to_scattering(ScatteringMode::Diffuse, probability);
                     sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
-                    sample.m_max_roughness = values->m_roughness;
+                    sample.m_min_roughness = values->m_roughness;
 
                     const float Fi = fresnel_reflectance(wi, m, values->m_precomputed.m_eta);
                     evaluate_diffuse(

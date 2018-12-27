@@ -154,11 +154,6 @@ namespace
             return Model;
         }
 
-        size_t compute_input_data_size() const override
-        {
-            return sizeof(InputValues);
-        }
-
         bool on_frame_begin(
             const Project&              project,
             const BaseGroup*            parent,
@@ -201,6 +196,11 @@ namespace
             return true;
         }
 
+        size_t compute_input_data_size() const override
+        {
+            return sizeof(InputValues);
+        }
+
         void prepare_inputs(
             Arena&                      arena,
             const ShadingPoint&         shading_point,
@@ -210,7 +210,7 @@ namespace
 
             new (&values->m_precomputed) InputValues::Precomputed();
 
-            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_max_roughness);
+            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_min_roughness);
 
             if (shading_point.is_entering())
             {
@@ -383,7 +383,7 @@ namespace
                 sample.set_to_scattering(ScatteringMode::Glossy, probability);
                 sample.m_value.m_beauty = sample.m_value.m_glossy;
                 sample.m_incoming = Dual3f(basis.transform_to_parent(wi));
-                sample.m_max_roughness = values->m_roughness;
+                sample.m_min_roughness = values->m_roughness;
 
                 if (is_refraction)
                     sample.compute_transmitted_differentials(1.0f / eta);

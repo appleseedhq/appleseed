@@ -165,16 +165,6 @@ namespace
             return Model;
         }
 
-        void prepare_inputs(
-            Arena&                      arena,
-            const ShadingPoint&         shading_point,
-            void*                       data) const override
-        {
-            InputValues* values = static_cast<InputValues*>(data);
-
-            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_max_roughness);
-        }
-
         bool on_frame_begin(
             const Project&              project,
             const BaseGroup*            parent,
@@ -229,6 +219,16 @@ namespace
             m_mdf.reset();
 
             BSDF::on_frame_end(project, parent);
+        }
+
+        void prepare_inputs(
+            Arena&                      arena,
+            const ShadingPoint&         shading_point,
+            void*                       data) const override
+        {
+            InputValues* values = static_cast<InputValues*>(data);
+
+            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_min_roughness);
         }
 
         void sample(
@@ -355,7 +355,7 @@ namespace
                 sample.m_incoming = Dual3f(incoming);
                 sample.m_value.m_beauty = sample.m_value.m_diffuse;
                 sample.m_value.m_beauty += sample.m_value.m_glossy;
-                sample.m_max_roughness = values->m_roughness;
+                sample.m_min_roughness = values->m_roughness;
                 sample.compute_reflected_differentials();
             }
         }

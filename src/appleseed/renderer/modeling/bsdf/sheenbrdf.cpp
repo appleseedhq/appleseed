@@ -105,7 +105,7 @@ namespace
                 return;
 
             sample.set_to_scattering(ScatteringMode::Glossy, RcpTwoPi<float>());
-            sample.m_max_roughness = 1.0f;
+            sample.m_min_roughness = 1.0f;
 
             // Compute the incoming direction.
             sampling_context.split_in_place(2, 1);

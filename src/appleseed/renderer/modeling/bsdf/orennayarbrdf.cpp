@@ -157,7 +157,7 @@ namespace
                 }
 
                 sample.m_value.m_beauty = sample.m_value.m_diffuse;
-                sample.m_max_roughness = 1.0f;
+                sample.m_min_roughness = 1.0f;
 
                 sample.compute_reflected_differentials();
             }
