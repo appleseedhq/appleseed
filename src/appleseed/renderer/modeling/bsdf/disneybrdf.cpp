@@ -391,7 +391,7 @@ namespace
         {
             InputValues* values = static_cast<InputValues*>(data);
 
-            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_max_roughness);
+            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_min_roughness);
 
             new (&values->m_precomputed) InputValues::Precomputed();
 
@@ -568,7 +568,7 @@ namespace
                 sample.set_to_scattering(sample.get_mode(), probability);
                 sample.m_value.m_beauty = sample.m_value.m_diffuse;
                 sample.m_value.m_beauty += sample.m_value.m_glossy;
-                sample.m_max_roughness = values->m_roughness;
+                sample.m_min_roughness = values->m_roughness;
             }
             else
             {

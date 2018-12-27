@@ -62,7 +62,7 @@ class BSDFSample
     foundation::Dual3f              m_incoming;             // world space incoming direction, unit-length, defined only if m_mode != None
     DirectShadingComponents         m_value;                // BSDF value, defined only if m_mode != None
     AOVComponents                   m_aov_components;
-    float                           m_max_roughness;        // BSDF roughness
+    float                           m_min_roughness;        // minimum BSDF roughness down the line if Roughness Clamping is enabled
 
     // Constructor.
     BSDFSample(
@@ -103,7 +103,7 @@ inline BSDFSample::BSDFSample(
   , m_geometric_normal(shading_point->get_geometric_normal())
   , m_shading_basis(shading_point->get_shading_basis())
   , m_outgoing(outgoing)
-  , m_max_roughness(0.0f)
+  , m_min_roughness(0.0f)
 {
     set_to_absorption();
 }

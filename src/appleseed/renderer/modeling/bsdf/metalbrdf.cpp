@@ -113,34 +113,6 @@ namespace
             return Model;
         }
 
-        size_t compute_input_data_size() const override
-        {
-            return sizeof(InputValues);
-        }
-
-        void prepare_inputs(
-            Arena&                      arena,
-            const ShadingPoint&         shading_point,
-            void*                       data) const override
-        {
-            InputValues* values = static_cast<InputValues*>(data);
-            new (&values->m_precomputed) InputValues::Precomputed();
-
-            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_max_roughness);
-
-            artist_friendly_fresnel_conductor_reparameterization(
-                values->m_normal_reflectance,
-                values->m_edge_tint,
-                values->m_precomputed.m_n,
-                values->m_precomputed.m_k);
-            values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
-
-            average_artist_friendly_fresnel_reflectance_conductor(
-                values->m_normal_reflectance,
-                values->m_edge_tint,
-                values->m_precomputed.m_fresnel_average);
-        }
-
         bool on_frame_begin(
             const Project&              project,
             const BaseGroup*            parent,
@@ -168,6 +140,34 @@ namespace
             else return false;
 
             return true;
+        }
+
+        size_t compute_input_data_size() const override
+        {
+            return sizeof(InputValues);
+        }
+
+        void prepare_inputs(
+            Arena&                      arena,
+            const ShadingPoint&         shading_point,
+            void*                       data) const override
+        {
+            InputValues* values = static_cast<InputValues*>(data);
+            new (&values->m_precomputed) InputValues::Precomputed();
+
+            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_min_roughness);
+
+            artist_friendly_fresnel_conductor_reparameterization(
+                values->m_normal_reflectance,
+                values->m_edge_tint,
+                values->m_precomputed.m_n,
+                values->m_precomputed.m_k);
+            values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
+
+            average_artist_friendly_fresnel_reflectance_conductor(
+                values->m_normal_reflectance,
+                values->m_edge_tint,
+                values->m_precomputed.m_fresnel_average);
         }
 
         void sample(
@@ -231,7 +231,7 @@ namespace
                                 sample.m_shading_basis.get_normal(),
                                 sample.m_value.m_glossy);
 
-                            sample.m_max_roughness = values->m_roughness;
+                            sample.m_min_roughness = values->m_roughness;
                         }
                     }
                     break;
@@ -258,7 +258,7 @@ namespace
                                 sample.m_shading_basis.get_normal(),
                                 sample.m_value.m_glossy);
 
-                            sample.m_max_roughness = values->m_roughness;
+                            sample.m_min_roughness = values->m_roughness;
                         }
                     }
                     break;
@@ -276,7 +276,7 @@ namespace
                             sample);
 
                         if (sample.get_mode() != ScatteringMode::None)
-                            sample.m_max_roughness = values->m_roughness;
+                            sample.m_min_roughness = values->m_roughness;
                     }
                     break;
 
