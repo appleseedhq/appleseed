@@ -686,7 +686,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
 
         next_ray.m_max_roughness = m_clamp_roughness ? sample.m_max_roughness : 0.0f;
 
-        if (sample.m_mode == ScatteringMode::Diffuse && !vertex.m_albedo_saved)
+        if (sample.get_mode() == ScatteringMode::Diffuse && !vertex.m_albedo_saved)
         {
             vertex.m_albedo = sample.m_aov_components.m_albedo;
             vertex.m_albedo_saved = true;
@@ -697,36 +697,36 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     {
         // Since the BSDF is already sampled during BSSRDF sampling, it is not sampled here.
         // However, we need to check if the corresponding mode is still enabled.
-        if ((sample.m_mode & vertex.m_scattering_modes) == 0)
-            sample.m_mode = ScatteringMode::None;
+        if ((sample.get_mode() & vertex.m_scattering_modes) == 0)
+            sample.set_to_absorption();
     }
 
     // Terminate the path if it gets absorbed.
-    if (sample.m_mode == ScatteringMode::None)
+    if (sample.get_mode() == ScatteringMode::None)
         return false;
 
     // Terminate the path if this scattering event is not accepted.
-    if (!m_path_visitor.accept_scattering(vertex.m_prev_mode, sample.m_mode))
+    if (!m_path_visitor.accept_scattering(vertex.m_prev_mode, sample.get_mode()))
         return false;
 
     // Save the scattering properties for MIS at light-emitting vertices.
-    vertex.m_prev_mode = sample.m_mode;
-    vertex.m_prev_prob = sample.m_probability;
+    vertex.m_prev_mode = sample.get_mode();
+    vertex.m_prev_prob = sample.get_probability();
 
     // Update the AOV scattering mode only for the first bounce.
     if (vertex.m_path_length == 1)
-        vertex.m_aov_mode = sample.m_mode;
+        vertex.m_aov_mode = sample.get_mode();
 
     // Update path throughput.
-    if (sample.m_probability != BSDF::DiracDelta)
-        sample.m_value /= sample.m_probability;
+    if (sample.get_probability() != BSDF::DiracDelta)
+        sample.m_value /= sample.get_probability();
     vertex.m_throughput *= sample.m_value.m_beauty;
 
     // Update bounce counters.
     ++vertex.m_path_length;
-    m_diffuse_bounces +=  (sample.m_mode >> ScatteringMode::DiffuseBitShift)  & 1;
-    m_glossy_bounces +=   (sample.m_mode >> ScatteringMode::GlossyBitShift)   & 1;
-    m_specular_bounces += (sample.m_mode >> ScatteringMode::SpecularBitShift) & 1;
+    m_diffuse_bounces +=  (sample.get_mode() >> ScatteringMode::DiffuseBitShift)  & 1;
+    m_glossy_bounces +=   (sample.get_mode() >> ScatteringMode::GlossyBitShift)   & 1;
+    m_specular_bounces += (sample.get_mode() >> ScatteringMode::SpecularBitShift) & 1;
 
     // Construct the scattered ray.
     const ShadingRay& ray = vertex.get_ray();
@@ -734,7 +734,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     next_ray.m_org = vertex.m_shading_point->get_biased_point(incoming);
     next_ray.m_dir = foundation::improve_normalization<2>(incoming);
     next_ray.m_time = ray.m_time;
-    next_ray.m_flags = ScatteringMode::get_vis_flags(sample.m_mode),
+    next_ray.m_flags = ScatteringMode::get_vis_flags(sample.get_mode()),
     next_ray.m_depth = ray.m_depth + 1;
 
     // Compute scattered ray differentials.

@@ -180,8 +180,6 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            sample.m_max_roughness = values->m_roughness;
-
             const FresnelConductorFun f(
                 values->m_precomputed.m_n,
                 values->m_precomputed.m_k,
@@ -223,7 +221,7 @@ namespace
                             f,
                             sample);
 
-                        if (sample.m_mode == ScatteringMode::Glossy)
+                        if (sample.get_mode() != ScatteringMode::None)
                         {
                             add_energy_compensation_term(
                                 mdf,
@@ -232,6 +230,8 @@ namespace
                                 sample.m_incoming.get_value(),
                                 sample.m_shading_basis.get_normal(),
                                 sample.m_value.m_glossy);
+
+                            sample.m_max_roughness = values->m_roughness;
                         }
                     }
                     break;
@@ -248,7 +248,7 @@ namespace
                             f,
                             sample);
 
-                        if (sample.m_mode == ScatteringMode::Glossy)
+                        if (sample.get_mode() != ScatteringMode::None)
                         {
                             add_energy_compensation_term(
                                 mdf,
@@ -257,6 +257,8 @@ namespace
                                 sample.m_incoming.get_value(),
                                 sample.m_shading_basis.get_normal(),
                                 sample.m_value.m_glossy);
+
+                            sample.m_max_roughness = values->m_roughness;
                         }
                     }
                     break;
@@ -272,6 +274,9 @@ namespace
                             highlight_falloff_to_gama(values->m_highlight_falloff),
                             f,
                             sample);
+
+                        if (sample.get_mode() != ScatteringMode::None)
+                            sample.m_max_roughness = values->m_roughness;
                     }
                     break;
 

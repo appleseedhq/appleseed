@@ -53,7 +53,6 @@
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
-#include "foundation/utility/otherwise.h"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
@@ -249,8 +248,6 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            sample.m_max_roughness = values->m_roughness;
-
             if (!ScatteringMode::has_glossy(modes))
                 return;
 
@@ -284,6 +281,7 @@ namespace
 
             Vector3f wi;
             bool is_refraction;
+            float probability;
 
             switch (m_mdf_type)
             {
@@ -306,7 +304,7 @@ namespace
                         wo,
                         wi,
                         sample.m_value.m_glossy,
-                        sample.m_probability);
+                        probability);
 
                     add_energy_compensation_term(
                         mdf,
@@ -337,7 +335,7 @@ namespace
                         wo,
                         wi,
                         sample.m_value.m_glossy,
-                        sample.m_probability);
+                        probability);
 
                     add_energy_compensation_term(
                         mdf,
@@ -368,27 +366,29 @@ namespace
                         wo,
                         wi,
                         sample.m_value.m_glossy,
-                        sample.m_probability);
+                        probability);
                 }
                 break;
 
-              assert_otherwise;
+              default:
+                assert(!"Unexpected MDF type.");
+                probability = 0.0f;
+                break;
             }
 
-            assert(sample.m_probability >= 0.0f);
+            assert(probability >= 0.0f);
 
-            if (sample.m_probability < 1.0e-6f)
-                return;
+            if (probability > 1.0e-6f)
+            {
+                sample.set_to_scattering(ScatteringMode::Glossy, probability);
+                sample.m_value.m_beauty = sample.m_value.m_glossy;
+                sample.m_incoming = Dual3f(basis.transform_to_parent(wi));
+                sample.m_max_roughness = values->m_roughness;
 
-            sample.m_value.m_beauty = sample.m_value.m_glossy;
-
-            sample.m_mode = ScatteringMode::Glossy;
-
-            sample.m_incoming = Dual3f(basis.transform_to_parent(wi));
-
-            if (is_refraction)
-                sample.compute_transmitted_differentials(1.0f / eta);
-            else sample.compute_reflected_differentials();
+                if (is_refraction)
+                    sample.compute_transmitted_differentials(1.0f / eta);
+                else sample.compute_reflected_differentials();
+            }
         }
 
         template <typename MDF, typename SpectrumType>
@@ -1364,7 +1364,7 @@ namespace
                     wi,
                     value,
                     probability);
-                assert(probability > 0.0f);
+                assert(probability >= 0.0f);
 
                 if (probability < 1.0e-6f)
                     continue;

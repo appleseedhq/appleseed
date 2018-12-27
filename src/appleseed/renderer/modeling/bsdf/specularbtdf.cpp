@@ -127,8 +127,6 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            sample.m_max_roughness = 0.0f;
-
             const Vector3f& shading_normal = sample.m_shading_basis.get_normal();
             const float cos_theta_i = dot(sample.m_outgoing.get_value(), shading_normal);
             const float sin_theta_i2 = 1.0f - square(cos_theta_i);
@@ -195,11 +193,7 @@ namespace
 
             sample.m_value.m_beauty = sample.m_value.m_glossy;
 
-            // The probability density of the sampled direction is the Dirac delta.
-            sample.m_probability = DiracDelta;
-
-            // Set the scattering mode.
-            sample.m_mode = ScatteringMode::Specular;
+            sample.set_to_scattering(ScatteringMode::Specular, DiracDelta);
 
             // Set the incoming direction.
             incoming = improve_normalization(incoming);

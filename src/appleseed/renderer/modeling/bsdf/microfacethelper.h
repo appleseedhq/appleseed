@@ -112,10 +112,6 @@ class MicrofacetBRDFHelper
         FresnelFun                      f,
         BSDFSample&                     sample)
     {
-        // Compute the incoming direction by sampling the MDF.
-        sampling_context.split_in_place(2, 1);
-        const foundation::Vector2f s = sampling_context.next2<foundation::Vector2f>();
-
         const foundation::Vector3f& outgoing = sample.m_outgoing.get_value();
         foundation::Vector3f wo = sample.m_shading_basis.transform_to_local(outgoing);
 
@@ -126,44 +122,26 @@ class MicrofacetBRDFHelper
         if (Flip)
             wo.y = std::abs(wo.y);
 
+        // Compute the incoming direction by sampling the MDF.
+        sampling_context.split_in_place(2, 1);
+        const foundation::Vector2f s = sampling_context.next2<foundation::Vector2f>();
         foundation::Vector3f m = mdf.sample(wo, s, alpha_x, alpha_y, gamma);
         foundation::Vector3f wi = foundation::reflect(wo, m);
 
+        // Force the outgoing direction to lie above the geometric surface.
         const foundation::Vector3f ng =
             sample.m_shading_basis.transform_to_local(sample.m_geometric_normal);
-
         if (BSDF::force_above_surface(wi, ng))
             m = foundation::normalize(wo + wi);
 
         if (wi.y == 0.0f)
             return;
 
-        const foundation::Vector3f incoming =
-            sample.m_shading_basis.transform_to_parent(wi);
-
-        const float D = mdf.D(m, alpha_x, alpha_y, gamma);
-        const float G =
-            mdf.G(
-                wi,
-                wo,
-                m,
-                alpha_x,
-                alpha_y,
-                gamma);
-
-        const foundation::Vector3f n(0.0f, 1.0f, 0.0f);
-        f(wo, m, n, sample.m_value.m_glossy);
-
-        const float cos_on = wo.y;
-        const float cos_in = wi.y;
-
-        sample.m_value.m_glossy *= D * G / std::abs(4.0f * cos_on * cos_in);
-
         const float cos_oh = foundation::dot(wo, m);
 
-        sample.m_probability =
+        const float probability =
             mdf.pdf(wo, m, alpha_x, alpha_y, gamma) / std::abs(4.0f * cos_oh);
-        assert(sample.m_probability >= 0.0f);
+        assert(probability >= 0.0f);
 
         // Disabled until BSDF are evaluated in local space, because the numerous
         // conversions between local space and world space kill precision.
@@ -179,14 +157,35 @@ class MicrofacetBRDFHelper
         //                 outgoing,
         //                 incoming);
         // 
-        //         assert(feq(sample.m_probability, ref_probability, 1.0e-2f));
+        //         assert(feq(probability, ref_probability, 1.0e-2f));
         // #endif
 
         // Skip samples with very low probability.
-        if (sample.m_probability > 1.0e-6f)
+        if (probability > 1.0e-6f)
         {
-            sample.m_mode = ScatteringMode::Glossy;
+            sample.set_to_scattering(ScatteringMode::Glossy, probability);
+
+            const float D = mdf.D(m, alpha_x, alpha_y, gamma);
+            const float G =
+                mdf.G(
+                    wi,
+                    wo,
+                    m,
+                    alpha_x,
+                    alpha_y,
+                    gamma);
+
+            const foundation::Vector3f n(0.0f, 1.0f, 0.0f);
+            const float cos_on = wo.y;
+            const float cos_in = wi.y;
+
+            f(wo, m, n, sample.m_value.m_glossy);
+            sample.m_value.m_glossy *= D * G / std::abs(4.0f * cos_on * cos_in);
+
+            const foundation::Vector3f incoming =
+                sample.m_shading_basis.transform_to_parent(wi);
             sample.m_incoming = foundation::Dual<foundation::Vector3f>(incoming);
+
             sample.compute_reflected_differentials();
         }
     }
