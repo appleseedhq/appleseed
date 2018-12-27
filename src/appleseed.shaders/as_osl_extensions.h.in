@@ -177,4 +177,9 @@ closure color as_npr_contour(
     //   int    "quality" = 1
 ) BUILTIN;
 
+closure color as_matte(
+    color       matte_color,
+    float       matte_alpha,
+) BUILTIN;
+
 #endif  // AS_OSL_EXTENSIONS_H

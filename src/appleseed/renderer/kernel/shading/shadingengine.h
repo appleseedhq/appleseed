@@ -70,7 +70,8 @@ class ShadingEngine
         foundation::IAbortSwitch*   abort_switch = nullptr);
 
     // Shade a given intersection point.
-    void shade(
+    // Returns true if the path should be terminated.
+    bool shade(
         SamplingContext&            sampling_context,
         const PixelContext&         pixel_context,
         const ShadingContext&       shading_context,
@@ -83,7 +84,7 @@ class ShadingEngine
 
     void create_diagnostic_surface_shader(const ParamArray& params);
 
-    void shade_hit_point(
+    bool shade_hit_point(
         SamplingContext&            sampling_context,
         const PixelContext&         pixel_context,
         const ShadingContext&       shading_context,
@@ -105,7 +106,7 @@ class ShadingEngine
 // ShadingEngine class implementation.
 //
 
-inline void ShadingEngine::shade(
+inline bool ShadingEngine::shade(
     SamplingContext&            sampling_context,
     const PixelContext&         pixel_context,
     const ShadingContext&       shading_context,
@@ -115,7 +116,7 @@ inline void ShadingEngine::shade(
 {
     if (shading_point.hit_surface())
     {
-        shade_hit_point(
+        return shade_hit_point(
             sampling_context,
             pixel_context,
             shading_context,
@@ -132,6 +133,7 @@ inline void ShadingEngine::shade(
             shading_point,
             aov_accumulators,
             shading_result);
+        return true;
     }
 }
 

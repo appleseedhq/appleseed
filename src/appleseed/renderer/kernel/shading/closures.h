@@ -116,6 +116,7 @@ enum ClosureID
     DebugID,
     HoldoutID,
     TransparentID,
+    MatteID,
 
     // NPR closures.
     NPRShadingID,
@@ -346,7 +347,12 @@ class APPLESEED_ALIGN(16) CompositeNPRClosure
 //
 
 void process_transparency_tree(const OSL::ClosureColor* ci, Alpha& alpha);
-float process_holdout_tree(const OSL::ClosureColor* ci);
+
+bool process_matte_tree(
+    const OSL::ClosureColor*    ci,
+    foundation::Color3f&        matte_color,
+    float&                      matte_alpha);
+
 foundation::Color3f process_background_tree(const OSL::ClosureColor* ci);
 
 void register_closures(OSLShadingSystem& shading_system);
