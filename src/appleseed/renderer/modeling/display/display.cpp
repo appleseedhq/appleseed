@@ -61,7 +61,6 @@ namespace
 
 struct Display::Impl
 {
-    unique_ptr<Plugin>                      m_plugin;
     auto_release_ptr<ITileCallbackFactory>  m_tile_callback_factory;
 };
 
@@ -109,10 +108,12 @@ bool Display::open(const Project& project)
     plugin_path = to_string(project.search_paths().qualify(plugin_path));
 
     // Load the plugin.
+    Plugin* plugin = nullptr;
+
     try
     {
         impl = new Impl();
-        impl->m_plugin.reset(project.get_plugin_store().load_plugin(plugin_path.c_str()));
+        plugin = project.get_plugin_store().load_plugin(plugin_path.c_str());
     }
     catch (const ExceptionCannotLoadSharedLib& e)
     {
@@ -121,14 +122,14 @@ bool Display::open(const Project& project)
     }
 
     // Create the tile callback factory.
-    if (impl->m_plugin)
+    if (plugin)
     {
         try
         {
             typedef ITileCallbackFactory* (*CreateFnType)(const ParamArray*);
 
             const auto create_tile_callback_factory =
-                reinterpret_cast<CreateFnType>(impl->m_plugin->get_symbol("create_tile_callback_factory", false));
+                reinterpret_cast<CreateFnType>(plugin->get_symbol("create_tile_callback_factory", false));
 
             impl->m_tile_callback_factory.reset(create_tile_callback_factory(&m_params));
         }
