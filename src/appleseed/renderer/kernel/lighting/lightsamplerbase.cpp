@@ -143,6 +143,16 @@ void LightSamplerBase::collect_emitting_triangles(
         // Retrieve the object instance.
         const ObjectInstance* object_instance = assembly.object_instances().get_by_index(object_instance_index);
 
+        // Retrieve the object.
+        Object& object = object_instance->get_object();
+
+        // Only consider mesh objects.
+        if (strcmp(object.get_model(), MeshObjectFactory().get_model()) != 0)
+            continue;
+
+        const MeshObject& mesh = static_cast<const MeshObject&>(object);
+        const StaticTriangleTess& tess = mesh.get_static_triangle_tess();
+
         // Retrieve the materials of the object instance.
         const MaterialArray& front_materials = object_instance->get_front_materials();
         const MaterialArray& back_materials = object_instance->get_back_materials();
@@ -157,142 +167,133 @@ void LightSamplerBase::collect_emitting_triangles(
         const Transformd& assembly_instance_transform = transform_sequence.get_earliest_transform();
         const Transformd global_transform = assembly_instance_transform * object_instance_transform;
 
-        // Retrieve the object.
-        Object& object = object_instance->get_object();
-        const MeshObject& mesh = static_cast<const MeshObject&>(object);
-
+        // Loop over the triangles of the region.
         double object_area = 0.0;
+        for (size_t triangle_index = 0, triangle_count = tess.m_primitives.size();
+             triangle_index < triangle_count; ++triangle_index)
         {
-            // Retrieve the tessellation of the mesh.
-            const StaticTriangleTess& tess = mesh.get_static_triangle_tess();
+            // Fetch the triangle.
+            const Triangle& triangle = tess.m_primitives[triangle_index];
 
-            // Loop over the triangles of the region.
-            const size_t triangle_count = tess.m_primitives.size();
-            for (size_t triangle_index = 0; triangle_index < triangle_count; ++triangle_index)
+            // Skip triangles without a material.
+            if (triangle.m_pa == Triangle::None)
+                continue;
+
+            // Fetch the materials assigned to this triangle.
+            const size_t pa_index = static_cast<size_t>(triangle.m_pa);
+            const Material* front_material =
+                pa_index < front_materials.size() ? front_materials[pa_index] : nullptr;
+            const Material* back_material =
+                pa_index < back_materials.size() ? back_materials[pa_index] : nullptr;
+
+            // Skip triangles that don't emit light.
+            if ((front_material == nullptr || !front_material->has_emission()) &&
+                (back_material == nullptr || !back_material->has_emission()))
+                continue;
+
+            // Retrieve object instance space vertices of the triangle.
+            const GVector3& v0_os = tess.m_vertices[triangle.m_v0];
+            const GVector3& v1_os = tess.m_vertices[triangle.m_v1];
+            const GVector3& v2_os = tess.m_vertices[triangle.m_v2];
+
+            // Transform triangle vertices to assembly space.
+            const GVector3 v0_as = object_instance_transform.point_to_parent(v0_os);
+            const GVector3 v1_as = object_instance_transform.point_to_parent(v1_os);
+            const GVector3 v2_as = object_instance_transform.point_to_parent(v2_os);
+
+            // Compute the support plane of the hit triangle in assembly space.
+            const GTriangleType triangle_geometry(v0_as, v1_as, v2_as);
+            TriangleSupportPlaneType triangle_support_plane;
+            triangle_support_plane.initialize(TriangleType(triangle_geometry));
+
+            // Transform triangle vertices to world space.
+            const Vector3d v0(assembly_instance_transform.point_to_parent(v0_as));
+            const Vector3d v1(assembly_instance_transform.point_to_parent(v1_as));
+            const Vector3d v2(assembly_instance_transform.point_to_parent(v2_as));
+
+            // Compute the geometric normal to the triangle and the area of the triangle.
+            Vector3d geometric_normal = compute_triangle_normal(v0, v1, v2);
+            const double geometric_normal_norm = norm(geometric_normal);
+            if (geometric_normal_norm == 0.0)
+                continue;
+            const double rcp_geometric_normal_norm = 1.0 / geometric_normal_norm;
+            const double rcp_area = 2.0 * rcp_geometric_normal_norm;
+            const double area = 0.5 * geometric_normal_norm;
+            geometric_normal *= rcp_geometric_normal_norm;
+            assert(is_normalized(geometric_normal));
+
+            // Flip the geometric normal if the object instance requests so.
+            if (object_instance->must_flip_normals())
+                geometric_normal = -geometric_normal;
+
+            Vector3d n0, n1, n2;
+
+            if (triangle.m_n0 != Triangle::None &&
+                triangle.m_n1 != Triangle::None &&
+                triangle.m_n2 != Triangle::None)
             {
-                // Fetch the triangle.
-                const Triangle& triangle = tess.m_primitives[triangle_index];
+                // Retrieve object instance space vertex normals.
+                const Vector3d n0_os = Vector3d(tess.m_vertex_normals[triangle.m_n0]);
+                const Vector3d n1_os = Vector3d(tess.m_vertex_normals[triangle.m_n1]);
+                const Vector3d n2_os = Vector3d(tess.m_vertex_normals[triangle.m_n2]);
 
-                // Skip triangles without a material.
-                if (triangle.m_pa == Triangle::None)
-                    continue;
+                // Transform vertex normals to world space.
+                n0 = normalize(global_transform.normal_to_parent(n0_os));
+                n1 = normalize(global_transform.normal_to_parent(n1_os));
+                n2 = normalize(global_transform.normal_to_parent(n2_os));
 
-                // Fetch the materials assigned to this triangle.
-                const size_t pa_index = static_cast<size_t>(triangle.m_pa);
-                const Material* front_material =
-                    pa_index < front_materials.size() ? front_materials[pa_index] : nullptr;
-                const Material* back_material =
-                    pa_index < back_materials.size() ? back_materials[pa_index] : nullptr;
-
-                // Skip triangles that don't emit light.
-                if ((front_material == nullptr || !front_material->has_emission()) &&
-                    (back_material == nullptr || !back_material->has_emission()))
-                    continue;
-
-                // Retrieve object instance space vertices of the triangle.
-                const GVector3& v0_os = tess.m_vertices[triangle.m_v0];
-                const GVector3& v1_os = tess.m_vertices[triangle.m_v1];
-                const GVector3& v2_os = tess.m_vertices[triangle.m_v2];
-
-                // Transform triangle vertices to assembly space.
-                const GVector3 v0_as = object_instance_transform.point_to_parent(v0_os);
-                const GVector3 v1_as = object_instance_transform.point_to_parent(v1_os);
-                const GVector3 v2_as = object_instance_transform.point_to_parent(v2_os);
-
-                // Compute the support plane of the hit triangle in assembly space.
-                const GTriangleType triangle_geometry(v0_as, v1_as, v2_as);
-                TriangleSupportPlaneType triangle_support_plane;
-                triangle_support_plane.initialize(TriangleType(triangle_geometry));
-
-                // Transform triangle vertices to world space.
-                const Vector3d v0(assembly_instance_transform.point_to_parent(v0_as));
-                const Vector3d v1(assembly_instance_transform.point_to_parent(v1_as));
-                const Vector3d v2(assembly_instance_transform.point_to_parent(v2_as));
-
-                // Compute the geometric normal to the triangle and the area of the triangle.
-                Vector3d geometric_normal = compute_triangle_normal(v0, v1, v2);
-                const double geometric_normal_norm = norm(geometric_normal);
-                if (geometric_normal_norm == 0.0)
-                    continue;
-                const double rcp_geometric_normal_norm = 1.0 / geometric_normal_norm;
-                const double rcp_area = 2.0 * rcp_geometric_normal_norm;
-                const double area = 0.5 * geometric_normal_norm;
-                geometric_normal *= rcp_geometric_normal_norm;
-                assert(is_normalized(geometric_normal));
-
-                // Flip the geometric normal if the object instance requests so.
+                // Flip normals if the object instance requests so.
                 if (object_instance->must_flip_normals())
-                    geometric_normal = -geometric_normal;
-
-                Vector3d n0, n1, n2;
-
-                if (triangle.m_n0 != Triangle::None &&
-                    triangle.m_n1 != Triangle::None &&
-                    triangle.m_n2 != Triangle::None)
                 {
-                    // Retrieve object instance space vertex normals.
-                    const Vector3d n0_os = Vector3d(tess.m_vertex_normals[triangle.m_n0]);
-                    const Vector3d n1_os = Vector3d(tess.m_vertex_normals[triangle.m_n1]);
-                    const Vector3d n2_os = Vector3d(tess.m_vertex_normals[triangle.m_n2]);
-
-                    // Transform vertex normals to world space.
-                    n0 = normalize(global_transform.normal_to_parent(n0_os));
-                    n1 = normalize(global_transform.normal_to_parent(n1_os));
-                    n2 = normalize(global_transform.normal_to_parent(n2_os));
-
-                    // Flip normals if the object instance requests so.
-                    if (object_instance->must_flip_normals())
-                    {
-                        n0 = -n0;
-                        n1 = -n1;
-                        n2 = -n2;
-                    }
+                    n0 = -n0;
+                    n1 = -n1;
+                    n2 = -n2;
                 }
-                else
+            }
+            else
+            {
+                n0 = n1 = n2 = geometric_normal;
+            }
+
+            for (size_t side = 0; side < 2; ++side)
+            {
+                // Retrieve the material; skip sides without a material or without emission.
+                const Material* material = side == 0 ? front_material : back_material;
+                if (material == nullptr || !material->has_emission())
+                    continue;
+
+                // Invoke the triangle handling function.
+                const bool accept_triangle =
+                    triangle_handling(
+                        material,
+                        static_cast<float>(area),
+                        m_emitting_triangles.size());
+
+                if (accept_triangle)
                 {
-                    n0 = n1 = n2 = geometric_normal;
-                }
+                    // Create a light-emitting triangle.
+                    EmittingTriangle emitting_triangle;
+                    emitting_triangle.m_assembly_instance = &assembly_instance;
+                    emitting_triangle.m_object_instance_index = object_instance_index;
+                    emitting_triangle.m_triangle_index = triangle_index;
+                    emitting_triangle.m_v0 = v0;
+                    emitting_triangle.m_v1 = v1;
+                    emitting_triangle.m_v2 = v2;
+                    emitting_triangle.m_n0 = side == 0 ? n0 : -n0;
+                    emitting_triangle.m_n1 = side == 0 ? n1 : -n1;
+                    emitting_triangle.m_n2 = side == 0 ? n2 : -n2;
+                    emitting_triangle.m_geometric_normal = side == 0 ? geometric_normal : -geometric_normal;
+                    emitting_triangle.m_triangle_support_plane = triangle_support_plane;
+                    emitting_triangle.m_area = static_cast<float>(area);
+                    emitting_triangle.m_rcp_area = static_cast<float>(rcp_area);
+                    emitting_triangle.m_triangle_prob = 0.0f;   // will be initialized once the emitting triangle CDF is built
+                    emitting_triangle.m_material = material;
 
-                for (size_t side = 0; side < 2; ++side)
-                {
-                    // Retrieve the material; skip sides without a material or without emission.
-                    const Material* material = side == 0 ? front_material : back_material;
-                    if (material == nullptr || !material->has_emission())
-                        continue;
+                    // Store the light-emitting triangle.
+                    m_emitting_triangles.push_back(emitting_triangle);
 
-                    // Invoke the triangle handling function.
-                    const bool accept_triangle =
-                        triangle_handling(
-                            material,
-                            static_cast<float>(area),
-                            m_emitting_triangles.size());
-
-                    if (accept_triangle)
-                    {
-                        // Create a light-emitting triangle.
-                        EmittingTriangle emitting_triangle;
-                        emitting_triangle.m_assembly_instance = &assembly_instance;
-                        emitting_triangle.m_object_instance_index = object_instance_index;
-                        emitting_triangle.m_triangle_index = triangle_index;
-                        emitting_triangle.m_v0 = v0;
-                        emitting_triangle.m_v1 = v1;
-                        emitting_triangle.m_v2 = v2;
-                        emitting_triangle.m_n0 = side == 0 ? n0 : -n0;
-                        emitting_triangle.m_n1 = side == 0 ? n1 : -n1;
-                        emitting_triangle.m_n2 = side == 0 ? n2 : -n2;
-                        emitting_triangle.m_geometric_normal = side == 0 ? geometric_normal : -geometric_normal;
-                        emitting_triangle.m_triangle_support_plane = triangle_support_plane;
-                        emitting_triangle.m_area = static_cast<float>(area);
-                        emitting_triangle.m_rcp_area = static_cast<float>(rcp_area);
-                        emitting_triangle.m_triangle_prob = 0.0f;   // will be initialized once the emitting triangle CDF is built
-                        emitting_triangle.m_material = material;
-
-                        // Store the light-emitting triangle.
-                        m_emitting_triangles.push_back(emitting_triangle);
-
-                        // Accumulate the object area for OSL shaders.
-                        object_area += area;
-                    }
+                    // Accumulate the object area for OSL shaders.
+                    object_area += area;
                 }
             }
         }
