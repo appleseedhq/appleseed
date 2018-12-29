@@ -67,21 +67,27 @@ namespace
 }
 
 
-// The following function takes a series of pointers to Blender mesh data and modifies the appleseed MeshObject entity
-//      blender_object = the appleseed MeshObject created earlier in the export process
-//      bl_vert_count = the number of vertices in the mesh
-//      bl_vert_ptr = a string pointer to the first element of the vertex array
-//      Same template applies to mesh faces
+//
+// The following function takes a series of pointers to Blender mesh data
+// and modifies the appleseed MeshObject entity.
+//
+// Arguments:
+//
+//   blender_mesh: the appleseed MeshObject created earlier in the export process
+//   bl_vert_count: the number of vertices in the mesh
+//   bl_vert_ptr: a string pointer to the first element of the vertex array
+//   (Same template applies to mesh faces.)
+//
 
 void convert_bl_mesh(
-    MeshObject*                     blender_mesh,
-    const size_t                    bl_vert_count,
-    const uintptr_t                 bl_vert_ptr,
-    const size_t                    bl_faces_count,
-    const uintptr_t                 bl_faces_ptr,
-    const uintptr_t                 bl_uv_ptr,
-    const bool                      export_normals,
-    const bool                      export_uvs)
+    MeshObject*         blender_mesh,
+    const size_t        bl_vert_count,
+    const uintptr_t     bl_vert_ptr,
+    const size_t        bl_faces_count,
+    const uintptr_t     bl_faces_ptr,
+    const uintptr_t     bl_uv_ptr,
+    const bool          export_normals,
+    const bool          export_uvs)
 {
     // Convert uintptr_t numbers to actual pointers.
     const MVert* bl_vertices = reinterpret_cast<MVert*>(bl_vert_ptr);
@@ -173,11 +179,11 @@ void convert_bl_mesh(
 }
 
 void convert_bl_vertex_pose(
-    MeshObject*                     blender_mesh,
-    const size_t                    pose,
-    const size_t                    bl_vert_count,
-    const uintptr_t                 bl_vert_ptr,
-    const bool                      export_normals)
+    MeshObject*         blender_mesh,
+    const size_t        pose,
+    const size_t        bl_vert_count,
+    const uintptr_t     bl_vert_ptr,
+    const bool          export_normals)
 {
     // Convert uintptr_t numbers to actual pointers.
     const MVert* bl_vertices = reinterpret_cast<MVert*>(bl_vert_ptr);
