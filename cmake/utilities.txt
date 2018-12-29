@@ -28,6 +28,15 @@
 #
 
 
+# Print a progress message when a target is about to be built.
+macro (set_target_progress_message target message)
+    add_custom_command (
+        TARGET ${target}
+        PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo ${message}
+    )
+endmacro()
+
 # Replace slashes by backslashes in a string.
 macro (slashes_to_backslashes output input)
     string (REGEX REPLACE "/" "\\\\" ${output} ${input})

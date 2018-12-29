@@ -54,9 +54,9 @@ add_library (lz4 STATIC
     ${lz4_sources}
 )
 
-apply_static_lib_linker_flags (lz4)
-
 set_target_properties (lz4 PROPERTIES FOLDER "Third Parties")
+
+apply_static_lib_linker_flags (lz4)
 
 
 #--------------------------------------------------------------------------------------------------

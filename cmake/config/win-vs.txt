@@ -487,7 +487,7 @@ macro (add_copy_studio_py_file_to_sandbox_py_module_command py_src module_name)
     get_relative_path_from_module_name (relative_module_path ${module_name})
     set (module_path "${py_path}\\${relative_module_path}")
 
-    add_custom_command (TARGET appleseed.studio.python.copy_py_files POST_BUILD
+    add_custom_command (TARGET appleseed.studio.copy_py_files POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory "${module_path}"
         COMMAND ${CMAKE_COMMAND} -E copy "${py_src}" "${module_path}"
     )
