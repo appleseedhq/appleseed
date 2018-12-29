@@ -496,7 +496,7 @@ bool ObjectInstance::on_frame_begin(
         if (m_front_materials != m_back_materials)
         {
             RENDERER_LOG_WARNING(
-                "%s: object instance uses alpha mapping on one side (or both) but materials are different on front and back faces; "
+                "%sobject instance uses alpha mapping on one side (or both) but materials are different on front and back faces; "
                 "this may lead to unexpected or unphysical results since the direction of shadow rays is unpredictable.",
                 context.get());
         }
