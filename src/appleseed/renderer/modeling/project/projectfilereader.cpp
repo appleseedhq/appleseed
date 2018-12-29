@@ -2207,12 +2207,21 @@ namespace
       public:
         explicit SceneElementHandler(ParseContext& context)
           : BaseGroupElementHandler(context)
+          , m_project(nullptr)
         {
+        }
+
+        void set_project(Project* project)
+        {
+            m_project = project;
         }
 
         void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
+
+            // Discover and load plugins before building the scene.
+            m_project->get_plugin_store().load_all_plugins_from_paths(m_project->search_paths());
 
             m_scene = SceneFactory::create();
         }
@@ -2328,6 +2337,7 @@ namespace
         }
 
       private:
+        Project*                m_project;
         auto_release_ptr<Scene> m_scene;
     };
 
@@ -2855,12 +2865,6 @@ namespace
             m_project = project;
         }
 
-        void end_element() override
-        {
-            // Once all search paths are set, discover and load plugins.
-            m_project->get_plugin_store().load_all_plugins_from_paths(m_project->search_paths());
-        }
-
         void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
@@ -2970,38 +2974,23 @@ namespace
             switch (element)
             {
               case ElementConfigurations:
-                {
-                    ConfigurationsElementHandler* configs_handler =
-                        static_cast<ConfigurationsElementHandler*>(handler);
-                    configs_handler->set_project(m_project);
-                }
+                static_cast<ConfigurationsElementHandler*>(handler)->set_project(m_project);
                 break;
 
               case ElementOutput:
-                {
-                    OutputElementHandler* output_handler =
-                        static_cast<OutputElementHandler*>(handler);
-                    output_handler->set_project(m_project);
-                }
+                static_cast<OutputElementHandler*>(handler)->set_project(m_project);
                 break;
 
               case ElementScene:
+                static_cast<SceneElementHandler*>(handler)->set_project(m_project);
                 break;
 
               case ElementSearchPaths:
-                {
-                    SearchPathsElementHandler* paths_handler =
-                        static_cast<SearchPathsElementHandler*>(handler);
-                    paths_handler->set_project(m_project);
-                }
+                static_cast<SearchPathsElementHandler*>(handler)->set_project(m_project);
                 break;
 
               case ElementDisplay:
-                {
-                    DisplayElementHandler* display_handler =
-                        static_cast<DisplayElementHandler*>(handler);
-                    display_handler->set_project(m_project);
-                }
+                static_cast<DisplayElementHandler*>(handler)->set_project(m_project);
                 break;
 
               assert_otherwise;
