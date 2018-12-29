@@ -2110,13 +2110,13 @@ add_library (appleseed SHARED
     ${appleseed_sources}
 )
 
+set_target_properties (appleseed PROPERTIES FOLDER "Core")
+
 if (USE_VISIBILITY_MAP)
     set_target_properties (appleseed PROPERTIES
         LINK_FLAGS "-Wl,--version-script=${PROJECT_SOURCE_DIR}/src/appleseed/libappleseed.map"
     )
 endif ()
-
-set_target_properties (appleseed PROPERTIES FOLDER "Core")
 
 
 #--------------------------------------------------------------------------------------------------
@@ -2168,23 +2168,29 @@ target_link_libraries (appleseed
 
 # Copy OSL and OIIO tools to the sandbox.
 if (USE_EXTERNAL_OSL)
-    add_custom_command (TARGET appleseed PRE_BUILD
+    add_custom_command (TARGET appleseed
+        PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${OSL_QUERY_INFO} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
-    add_custom_command (TARGET appleseed PRE_BUILD
+    add_custom_command (TARGET appleseed
+        PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${OSL_MAKETX} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
-    add_custom_command (TARGET appleseed PRE_BUILD
+    add_custom_command (TARGET appleseed
+        PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${OPENIMAGEIO_OIIOTOOL} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
 else ()
-    add_custom_command (TARGET appleseed PRE_BUILD
+    add_custom_command (TARGET appleseed
+        PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/osl-release/bin/oslinfo${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
-    add_custom_command (TARGET appleseed PRE_BUILD
+    add_custom_command (TARGET appleseed
+        PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/bin/maketx${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
-    add_custom_command (TARGET appleseed PRE_BUILD
+    add_custom_command (TARGET appleseed
+        PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/bin/oiiotool${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
 endif ()

@@ -53,13 +53,13 @@ add_executable (projecttool
     ${projecttool_sources}
 )
 
+set_target_properties (projecttool PROPERTIES FOLDER "Tools")
+
 if (USE_RPATH_ORIGIN)
     set_target_properties (projecttool PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )
 endif ()
-
-set_target_properties (projecttool PROPERTIES FOLDER "Tools")
 
 
 #--------------------------------------------------------------------------------------------------

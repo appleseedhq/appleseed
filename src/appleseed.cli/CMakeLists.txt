@@ -59,13 +59,13 @@ add_executable (appleseed.cli
     ${appleseed.cli_sources}
 )
 
+set_target_properties (appleseed.cli PROPERTIES FOLDER "Applications")
+
 if (USE_RPATH_ORIGIN)
     set_target_properties (appleseed.cli PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )
 endif ()
-
-set_target_properties (appleseed.cli PROPERTIES FOLDER "Applications")
 
 
 #--------------------------------------------------------------------------------------------------
