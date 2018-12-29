@@ -97,7 +97,7 @@ namespace
             if (m_render_data.m_edf && m_render_data.m_alpha_map)
             {
                 RENDERER_LOG_WARNING(
-                    "%s: material is emitting light but may be partially or entirely transparent; "
+                    "%smaterial is emitting light but may be partially or entirely transparent; "
                     "this may lead to unexpected or unphysical results.",
                     context.get());
             }

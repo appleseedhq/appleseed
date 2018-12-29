@@ -236,7 +236,7 @@ IBasisModifier* Material::create_basis_modifier(const MessageContext& context) c
         if (texture.get_color_space() != ColorSpaceLinearRGB)
         {
             RENDERER_LOG_WARNING(
-                "%s: color space for displacement map \"%s\" "
+                "%scolor space for displacement map \"%s\" "
                 "should be \"%s\" but is \"%s\" instead; expect artifacts and/or slowdowns.",
                 context.get(),
                 texture.get_path().c_str(),
