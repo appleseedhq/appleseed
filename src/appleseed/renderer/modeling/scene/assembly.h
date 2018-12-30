@@ -47,6 +47,8 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstddef>
+#include <utility>
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
@@ -67,7 +69,9 @@ namespace renderer
 // An array of object instances.
 //
 
-APPLESEED_DECLARE_APIARRAY(ObjectInstanceArray, const ObjectInstance*);
+typedef std::pair<const ObjectInstance*, size_t> IndexedObjectInstance;
+
+APPLESEED_DECLARE_APIARRAY(IndexedObjectInstanceArray, IndexedObjectInstance);
 
 
 //
@@ -154,7 +158,7 @@ class APPLESEED_DLLSYMBOL Assembly
 
     struct RenderData
     {
-        ObjectInstanceArray         m_procedural_objects;
+        IndexedObjectInstanceArray  m_procedural_object_instances;
     };
 
     // Return whether render-time data are available for this entity.

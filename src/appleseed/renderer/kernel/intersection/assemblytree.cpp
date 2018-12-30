@@ -747,11 +747,15 @@ bool AssemblyLeafVisitor::visit(
         // Check the intersection between the ray and procedural objects.
         if (item.m_assembly->has_render_data())
         {
-            const ObjectInstanceArray& procedural_instances = item.m_assembly->get_render_data().m_procedural_objects;
-            for (size_t j = 0, e = procedural_instances.size(); j < e; ++j)
+            const IndexedObjectInstanceArray& procedural_object_instances =
+                item.m_assembly->get_render_data().m_procedural_object_instances;
+
+            for (size_t j = 0, e = procedural_object_instances.size(); j < e; ++j)
             {
                 // Retrieve the object and object instance.
-                const ObjectInstance* object_instance = procedural_instances[j];
+                const IndexedObjectInstance& object_instance_index_pair = procedural_object_instances[j];
+                const ObjectInstance* object_instance = object_instance_index_pair.first;
+                const size_t object_instance_index = object_instance_index_pair.second;
                 const Transformd& object_instance_transform = object_instance->get_transform();
                 const ProceduralObject& object = static_cast<const ProceduralObject&>(object_instance->get_object());
 
@@ -781,7 +785,7 @@ bool AssemblyLeafVisitor::visit(
                     m_shading_point.m_assembly_instance = item.m_assembly_instance;
                     m_shading_point.m_assembly_instance_transform = assembly_instance_transform;
                     m_shading_point.m_assembly_instance_transform_seq = assembly_instance_transform_seq;
-                    m_shading_point.m_object_instance_index = j;
+                    m_shading_point.m_object_instance_index = object_instance_index;
                     m_shading_point.m_primitive_index = 0;
                     m_shading_point.m_primitive_pa = result.m_material_slot;
                     m_shading_point.m_geometric_normal = object_instance_transform.normal_to_parent(result.m_geometric_normal);
@@ -947,11 +951,14 @@ bool AssemblyLeafProbeVisitor::visit(
         // Check the intersection between the ray and procedural objects.
         if (item.m_assembly->has_render_data())
         {
-            const ObjectInstanceArray& procedural_instances = item.m_assembly->get_render_data().m_procedural_objects;
-            for (size_t j = 0, e = procedural_instances.size(); j < e; ++j)
+            const IndexedObjectInstanceArray& procedural_object_instances =
+                item.m_assembly->get_render_data().m_procedural_object_instances;
+
+            for (size_t j = 0, e = procedural_object_instances.size(); j < e; ++j)
             {
                 // Retrieve the object and object instance.
-                const ObjectInstance* object_instance = procedural_instances[j];
+                const IndexedObjectInstance& object_instance_index_pair = procedural_object_instances[j];
+                const ObjectInstance* object_instance = object_instance_index_pair.first;
                 const Transformd& object_instance_transform = object_instance->get_transform();
                 const ProceduralObject& object = static_cast<const ProceduralObject&>(object_instance->get_object());
 

@@ -60,7 +60,7 @@ using namespace std;
 namespace renderer
 {
 
-APPLESEED_DEFINE_APIARRAY(ObjectInstanceArray);
+APPLESEED_DEFINE_APIARRAY(IndexedObjectInstanceArray);
 
 
 //
@@ -294,11 +294,12 @@ bool Assembly::on_frame_begin(
 
     // Collect procedural object instances.
     assert(!m_has_render_data);
-    for (const ObjectInstance& object_instance : object_instances())
+    for (size_t i = 0, e = object_instances().size(); i < e; ++i)
     {
-        const Object& object = object_instance.get_object();
+        const ObjectInstance* object_instance = object_instances().get_by_index(i);
+        const Object& object = object_instance->get_object();
         if (dynamic_cast<const ProceduralObject*>(&object) != nullptr)
-            m_render_data.m_procedural_objects.push_back(&object_instance);
+            m_render_data.m_procedural_object_instances.push_back(make_pair(object_instance, i));
     }
     m_has_render_data = true;
 
@@ -312,7 +313,7 @@ void Assembly::on_frame_end(
     // `m_has_render_data` may be false if `on_frame_begin()` failed.
     if (m_has_render_data)
     {
-        m_render_data.m_procedural_objects.clear();
+        m_render_data.m_procedural_object_instances.clear();
         m_has_render_data = false;
     }
 
