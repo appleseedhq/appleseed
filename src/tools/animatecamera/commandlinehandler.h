@@ -61,6 +61,7 @@ class CommandLineHandler
     foundation::ValueOptionHandler<double>          m_camera_target;
     foundation::ValueOptionHandler<double>          m_camera_distance;
     foundation::ValueOptionHandler<double>          m_camera_elevation;
+    foundation::ValueOptionHandler<float>           m_motion_blur;
 
     // Constructor.
     CommandLineHandler();

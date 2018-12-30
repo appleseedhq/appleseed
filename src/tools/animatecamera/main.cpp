@@ -166,7 +166,7 @@ namespace
 #ifdef _WIN32
             generate_windows_render_script(frames);
 #else
-            LOG_WARNING(m_logger, "oops, don't know how to generate a render script for this platform.");
+            LOG_WARNING(m_logger, "render script generation is not supported on this platform.");
 #endif
         }
 
@@ -259,17 +259,17 @@ namespace
                 "%s",
                 "@echo off\n"
                 "\n"
-                "set cmdoptions=/WAIT /BELOWNORMAL /MIN\n"
+                "set cmd_options=/WAIT /BELOWNORMAL /MIN\n"
                 "set bin=\"%1\"\n"
-                "set outputpath=\"%2\"\n"
-                "set options=\n"
+                "set output_path=\"%2\"\n"
+                "set options=%*\n"
                 "\n"
-                "if %outputpath% == \"\" (\n"
-                "    set outputpath=frames\n"
+                "if %output_path% == \"\" (\n"
+                "    set output_path=frames\n"
                 ")\n"
                 "\n"
                 "if %bin% == \"\" (\n"
-                "    echo Usage: %0 path-to-appleseed-binary\n"
+                "    echo Usage: %0 ^<path-to-appleseed-cli^>\n"
                 "    goto :end\n"
                 ")\n"
                 "\n"
@@ -278,8 +278,8 @@ namespace
                 "    goto :end\n"
                 ")\n"
                 "\n"
-                "if not exist %outputpath% (\n"
-                "    mkdir %outputpath%\n"
+                "if not exist %output_path% (\n"
+                "    mkdir %output_path%\n"
                 ")\n"
                 "\n");
 
@@ -292,7 +292,7 @@ namespace
 
                 const string project_filename = make_numbered_filename(m_base_output_filename + ".appleseed", current_frame);
                 const string image_filename = make_numbered_filename(m_base_output_filename + "." + output_format, current_frame);
-                const string image_filepath = "%outputpath%\\" + image_filename;
+                const string image_filepath = "%output_path%\\" + image_filename;
 
                 fprintf(script_file, "if exist \"%s\" (\n", image_filepath.c_str());
                 fprintf(script_file, "    echo Skipping %s because it was already rendered...\n", project_filename.c_str());
@@ -303,16 +303,17 @@ namespace
                     fprintf(script_file, "    echo Rendering %s to %s...\n", project_filename.c_str(), image_filepath.c_str());
                     fprintf(
                         script_file,
-                        "    start \"Rendering %s to %s...\" %%cmdoptions%% %%bin%% %s -o \"%s\" %%options%%\n",
+                        "    start \"Rendering %s to %s...\" %%cmd_options%% %%bin%% %s --output \"%s\" --noise-seed " FMT_SIZE_T " %%options%%\n",
                         project_filename.c_str(),
                         image_filepath.c_str(),
                         project_filename.c_str(),
-                        image_filepath.c_str());
+                        image_filepath.c_str(),
+                        current_frame);
                 }
                 else
                 {
                     const string source_image_filename = make_numbered_filename(m_base_output_filename + "." + output_format, actual_frame);
-                    const string source_image_filepath = "%outputpath%\\" + source_image_filename;
+                    const string source_image_filepath = "%output_path%\\" + source_image_filename;
 
                     fprintf(
                         script_file,
@@ -332,7 +333,7 @@ namespace
             fprintf(
                 script_file,
                 "echo.\n"
-                "echo Rendering terminated.\n"
+                "echo Rendering complete.\n"
                 "echo.\n"
                 "\n"
                 ":end\n");
@@ -363,7 +364,6 @@ namespace
             typedef pair<Transformd, Transformd> TransformPair;
             typedef map<TransformPair, size_t, TransformPairComparer<double>> TransformMap;
 
-            TransformMap transform_map;
             vector<size_t> frames;
 
             // Load the animation path file from disk.
@@ -372,9 +372,7 @@ namespace
                 g_cl.m_animation_path.value().c_str(),
                 g_cl.m_3dsmax_mode.is_set() ? AnimationPath::Autodesk3dsMax : AnimationPath::Default);
 
-            // Load the master project from disk.
-            auto_release_ptr<Project> project(load_master_project());
-
+            // No frame to render.
             if (animation_path.size() == 0)
                 return frames;
 
@@ -382,6 +380,12 @@ namespace
                 animation_path.size() > 1
                     ? animation_path.size() - 1
                     : 1;
+
+            // Load the master project from disk.
+            auto_release_ptr<Project> project(load_master_project());
+
+            const float motion_blur_amount = g_cl.m_motion_blur.value();
+            TransformMap transform_map;
 
             for (size_t i = 0; i < frame_count; ++i)
             {
@@ -412,6 +416,10 @@ namespace
                 camera->transform_sequence().set_transform(0.0f, animation_path[i]);
                 if (i + 1 < animation_path.size())
                     camera->transform_sequence().set_transform(1.0f, animation_path[i + 1]);
+
+                // Set the shutter close times.
+                camera->get_parameters().insert("shutter_close_begin_time", motion_blur_amount);
+                camera->get_parameters().insert("shutter_close_end_time", motion_blur_amount);
 
                 // Write the project file for this frame.
                 const string new_path = make_numbered_filename(m_base_output_filename + ".appleseed", frame);
@@ -459,6 +467,7 @@ namespace
                 g_cl.m_camera_target.values()[2]);
             const double normalized_distance = g_cl.m_camera_distance.value();
             const double normalized_elevation = g_cl.m_camera_elevation.value();
+            const float motion_blur_amount = g_cl.m_motion_blur.value();
 
             if (frame_count < 1)
                 LOG_FATAL(m_logger, "the frame count must be greater than or equal to 1.");
@@ -500,6 +509,10 @@ namespace
                 camera->transform_sequence().set_transform(0.0f, previous_transform);
                 camera->transform_sequence().set_transform(1.0f, new_transform);
                 previous_transform = new_transform;
+
+                // Set the shutter close times.
+                camera->get_parameters().insert("shutter_close_begin_time", motion_blur_amount);
+                camera->get_parameters().insert("shutter_close_end_time", motion_blur_amount);
 
                 // Write the project file for this frame.
                 const size_t frame = static_cast<size_t>(i + 1);

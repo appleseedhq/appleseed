@@ -118,6 +118,15 @@ CommandLineHandler::CommandLineHandler()
             .set_syntax("scalar")
             .set_exact_value_count(1)
             .set_default_value(2.0));
+
+    parser().add_option_handler(
+        &m_motion_blur
+            .add_name("--motion-blur")
+            .add_name("-m")
+            .set_description("set the amount of motion blur where 0 = none and 1 = full")
+            .set_syntax("amount")
+            .set_exact_value_count(1)
+            .set_default_value(1.0f));
 }
 
 void CommandLineHandler::print_program_usage(
