@@ -252,25 +252,30 @@ namespace
             probe_ray.m_tmin = 1.0e-6;
             probe_ray.m_tmax = norm(exit_point - probe_ray.m_org);
 
+            //
+            // Only consider hit points with the same material as the outgoing point and belonging
+            // to the same SSS set.
+            //
+            // Also check whether the chosen axis at the outcoming point and the surface normal at
+            // the incoming point are not orthogonal. Excluding such cases makes the calculation
+            // of sample contributions more robust.
+            //
+
             const Material* incoming_material = incoming_point.get_material();
             const Material* incoming_opposite_material = incoming_point.get_opposite_material();
 
             const bool same_material =
-                incoming_material == outgoing_material || incoming_opposite_material == outgoing_material;
+                incoming_material == outgoing_material ||
+                incoming_opposite_material == outgoing_material;
+
             const bool same_sss_set =
                 incoming_point.get_object_instance().is_in_same_sss_set(outgoing_object_instance);
 
-            const float dot_nn = static_cast<float>(
-                abs(dot(projection_basis.get_normal(), incoming_point.get_shading_normal())));
-            const float dot_nn_threshold = 1e-06f;
+            const float dot_nn =
+                static_cast<float>(
+                    abs(dot(projection_basis.get_normal(), incoming_point.get_shading_normal())));
 
-            // Only consider hit points with the same material as the outgoing point
-            // and belonging to the same SSS set.
-            //
-            // Also check whether the chosen axis at the outcoming point
-            // and the surface normal in the incoming point are not orthogonal.
-            // Excluding such cases makes the calculation of sample contribution more robust.
-            if (same_material && same_sss_set && dot_nn > dot_nn_threshold)
+            if (same_material && same_sss_set && dot_nn > 1.0e-6f)
             {
                 // Make sure the incoming point is on the front side of the surface.
                 // There is no such thing as subsurface scattering seen "from the inside".
@@ -306,8 +311,9 @@ namespace
         }
 
         // Compute the PDF of this incoming point.
-        const float dot_nn = static_cast<float>(
-            abs(dot(projection_basis.get_normal(), incoming_point.get_shading_normal())));
+        const float dot_nn =
+            static_cast<float>(
+                abs(dot(projection_basis.get_normal(), incoming_point.get_shading_normal())));
         incoming_point_prob = projection_axis_prob * disk_point_prob * dot_nn;
 
         // Weight the sample contribution with multiple importance sampling.
