@@ -39,7 +39,6 @@
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/aov/aovfactoryregistrar.h"
-#include "renderer/modeling/aov/cryptomatte.h"
 #include "renderer/modeling/aov/denoiseraov.h"
 #include "renderer/modeling/aov/iaovfactory.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
@@ -1184,18 +1183,10 @@ bool Frame::write_aov_images(const char* file_path) const
         const string aov_file_name = base_file_name + "." + safe_aov_name + ".exr";
         const string aov_file_path = (directory / aov_file_name).string();
 
-        if (dynamic_cast<const CryptomatteAOV*>(aov))
-        {
-            if (!dynamic_cast<const CryptomatteAOV*>(aov)->write_images(aov_file_path.c_str()))
-                success = false;
-        }
-        else
-        {
-            // Write AOV image.
+        // Write AOV image.
         ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
         if (!aov.write_images(aov_file_path.c_str(), image_attributes))
-                success = false;
-        }
+            success = false;
     }
 
     return success;
@@ -1237,13 +1228,7 @@ bool Frame::write_main_and_aov_images() const
 
             ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
             if (!aov.write_images(bf_file_path.string().c_str(), image_attributes))
-                if (!dynamic_cast<const CryptomatteAOV*>(aov)->write_images(filepath.string().c_str()))
-                    success = false;
-            }
-            else
-            {
-                    success = false;
-            }
+                success = false;
         }
     }
 

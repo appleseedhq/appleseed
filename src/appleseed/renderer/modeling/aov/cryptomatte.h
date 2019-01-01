@@ -86,7 +86,7 @@ class CryptomatteAOV
 
     foundation::auto_release_ptr<AOVAccumulator> create_accumulator() const override;
 
-    bool write_images(const char* file_path) const;
+    bool write_images(const char* file_path) const override;
 
   private:
     friend class CryptomatteAOVFactory;
