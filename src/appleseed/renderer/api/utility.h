@@ -38,6 +38,7 @@
 #include "renderer/utility/seexpr.h"
 #endif
 #include "renderer/utility/settingsparsing.h"
+#include "renderer/utility/stochasticcast.h"
 #include "renderer/utility/testutils.h"
 #include "renderer/utility/transformsequence.h"
 #include "renderer/utility/triangle.h"
