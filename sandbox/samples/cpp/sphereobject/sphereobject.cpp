@@ -92,7 +92,7 @@ namespace
 
         // This method is called once before rendering each frame.
         // Returns true on success, false otherwise.
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const asr::Project&         project,
             const asr::BaseGroup*       parent,
             asr::OnFrameBeginRecorder&  recorder,
