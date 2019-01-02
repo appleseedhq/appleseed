@@ -31,6 +31,7 @@
 
 // Standard headers.
 #include <algorithm>
+#include <cstddef>
 
 namespace foundation
 {
@@ -66,8 +67,11 @@ T max(const T a, const T b, const T c, const T d);
 
 
 //
-// Return both the lesser and the greater of three objects.
+// Return both the lesser and greater of a set of objects.
 //
+
+template <typename T>
+void minmax(const T a, const T b, T& min, T& max);
 
 template <typename T>
 void minmax(const T a, const T b, const T c, T& min, T& max);
@@ -92,6 +96,23 @@ T ssemin(const T a, const T b);
 
 template <typename T>
 T ssemax(const T a, const T b);
+
+
+//
+// Return the index of the lesser or greater of a set of objects.
+//
+
+template <typename T>
+size_t min_index(const T& a, const T& b);
+
+template <typename T>
+size_t min_index(const T& a, const T& b, const T& c);
+
+template <typename T>
+size_t max_index(const T& a, const T& b);
+
+template <typename T>
+size_t max_index(const T& a, const T& b, const T& c);
 
 
 //
@@ -123,21 +144,27 @@ inline T max(const T a, const T b, const T c, const T d)
 }
 
 template <typename T>
-inline void minmax(const T a, const T b, const T c, T& min, T& max)
+inline void minmax(const T a, const T b, T& min, T& max)
 {
-    if (a > b)
-    {
-        min = b;
-        max = a;
-    }
-    else
+    if (a < b)
     {
         min = a;
         max = b;
     }
+    else
+    {
+        min = b;
+        max = a;
+    }
+}
 
-    if (c > max) max = c;
+template <typename T>
+inline void minmax(const T a, const T b, const T c, T& min, T& max)
+{
+    minmax(a, b, min, max);
+
     if (c < min) min = c;
+    if (c > max) max = c;
 }
 
 template <typename T>
@@ -150,6 +177,34 @@ template <typename T>
 inline T ssemax(const T a, const T b)
 {
     return a > b ? a : b;
+}
+
+template <typename T>
+inline size_t min_index(const T& a, const T& b)
+{
+    return a < b ? 0 : 1;
+}
+
+template <typename T>
+inline size_t min_index(const T& a, const T& b, const T& c)
+{
+    if (a < b)
+        return a < c ? 0 : 2;
+    else return b < c ? 1 : 2;
+}
+
+template <typename T>
+inline size_t max_index(const T& a, const T& b)
+{
+    return a > b ? 0 : 1;
+}
+
+template <typename T>
+inline size_t max_index(const T& a, const T& b, const T& c)
+{
+    if (a > b)
+        return a > c ? 0 : 2;
+    else return b > c ? 1 : 2;
 }
 
 }   // namespace foundation

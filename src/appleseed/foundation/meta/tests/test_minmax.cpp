@@ -48,7 +48,7 @@ using namespace std;
 
 TEST_SUITE(Foundation_Math_MinMax)
 {
-    TEST_CASE(TestMin)
+    TEST_CASE(Min_ThreeArguments)
     {
         EXPECT_EQ(0, min(0, 1, 2));
         EXPECT_EQ(0, min(0, 2, 1));
@@ -58,7 +58,7 @@ TEST_SUITE(Foundation_Math_MinMax)
         EXPECT_EQ(0, min(2, 1, 0));
     }
 
-    TEST_CASE(TestMax)
+    TEST_CASE(Max_ThreeArguments)
     {
         EXPECT_EQ(2, max(0, 1, 2));
         EXPECT_EQ(2, max(0, 2, 1));
@@ -68,6 +68,13 @@ TEST_SUITE(Foundation_Math_MinMax)
         EXPECT_EQ(2, max(2, 1, 0));
     }
 
+    pair<int, int> minmax_pair(const int a, const int b)
+    {
+        int min, max;
+        minmax(a, b, min, max);
+        return make_pair(min, max);
+    }
+
     pair<int, int> minmax_pair(const int a, const int b, const int c)
     {
         int min, max;
@@ -75,7 +82,15 @@ TEST_SUITE(Foundation_Math_MinMax)
         return make_pair(min, max);
     }
 
-    TEST_CASE(TestMinMax)
+    TEST_CASE(MinMax_TwoArguments)
+    {
+        EXPECT_EQ(0, minmax_pair(0, 2).first);
+        EXPECT_EQ(2, minmax_pair(0, 2).second);
+        EXPECT_EQ(0, minmax_pair(2, 0).first);
+        EXPECT_EQ(2, minmax_pair(2, 0).second);
+    }
+
+    TEST_CASE(MinMax_ThreeArguments)
     {
         EXPECT_EQ(0, minmax_pair(0, 1, 2).first);
         EXPECT_EQ(2, minmax_pair(0, 1, 2).second);
@@ -156,4 +171,36 @@ TEST_SUITE(Foundation_Math_MinMax)
     }
 
 #endif  // APPLESEED_USE_SSE
+
+    TEST_CASE(MinIndex_TwoArguments)
+    {
+        EXPECT_EQ(0, min_index(0, 2));
+        EXPECT_EQ(1, min_index(2, 0));
+    }
+
+    TEST_CASE(MinIndex_ThreeArguments)
+    {
+        EXPECT_EQ(0, min_index(0, 1, 2));
+        EXPECT_EQ(0, min_index(0, 2, 1));
+        EXPECT_EQ(1, min_index(1, 0, 2));
+        EXPECT_EQ(2, min_index(1, 2, 0));
+        EXPECT_EQ(1, min_index(2, 0, 1));
+        EXPECT_EQ(2, min_index(2, 1, 0));
+    }
+
+    TEST_CASE(MaxIndex_TwoArguments)
+    {
+        EXPECT_EQ(1, max_index(0, 2));
+        EXPECT_EQ(0, max_index(2, 0));
+    }
+
+    TEST_CASE(MaxIndex_ThreeArguments)
+    {
+        EXPECT_EQ(2, max_index(0, 1, 2));
+        EXPECT_EQ(1, max_index(0, 2, 1));
+        EXPECT_EQ(2, max_index(1, 0, 2));
+        EXPECT_EQ(1, max_index(1, 2, 0));
+        EXPECT_EQ(0, max_index(2, 0, 1));
+        EXPECT_EQ(0, max_index(2, 1, 0));
+    }
 }
