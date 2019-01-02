@@ -115,6 +115,8 @@ BENCHMARK_SUITE(Foundation_Math_Intersection_RayAABB)
         RayInfoType     m_ray_info[RayCount];
 
         bool            m_hit;
+        T               m_tmin;
+        Vector<T, 3>    m_normal;
 
         Fixture()
           : m_aabb(VectorType(-1.0), VectorType(1.0))
@@ -137,6 +139,18 @@ BENCHMARK_SUITE(Foundation_Math_Intersection_RayAABB)
     {
         for (size_t i = 0; i < RayCount; ++i)
             m_hit ^= intersect(m_ray[i], m_ray_info[i], m_aabb);
+    }
+
+    BENCHMARK_CASE_F(Intersect_ReturnTMinAndNormal_SinglePrecision, Fixture<float>)
+    {
+        for (size_t i = 0; i < RayCount; ++i)
+            m_hit ^= intersect(m_ray[i], m_ray_info[i], m_aabb, m_tmin, m_normal);
+    }
+
+    BENCHMARK_CASE_F(Intersect_ReturnTMinAndNormal_DoublePrecision, Fixture<double>)
+    {
+        for (size_t i = 0; i < RayCount; ++i)
+            m_hit ^= intersect(m_ray[i], m_ray_info[i], m_aabb, m_tmin, m_normal);
     }
 
     BENCHMARK_CASE_F(Clip_SinglePrecision, Fixture<float>)
