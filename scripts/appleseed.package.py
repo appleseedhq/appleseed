@@ -404,7 +404,7 @@ class PackageBuilder:
 
     def add_shaders_to_stage(self):
         progress("Adding shaders to staging directory")
-        shutil.rmtree("appleseed/shaders")
+        safe_delete_directory("appleseed/shaders")
         shutil.copytree(os.path.join(self.settings.appleseed_path, "sandbox/shaders"), "appleseed/shaders")
         shutil.copytree(os.path.join(self.settings.appleseed_path, "src/appleseed.shaders/src"), "appleseed/shaders/src")
 
