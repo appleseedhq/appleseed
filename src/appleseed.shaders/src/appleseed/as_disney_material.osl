@@ -159,7 +159,7 @@ shader as_disney_material
         string as_maya_attribute_short_name = "cy",
         float min = 0.0,
         float max = 1.0,
-        string label = "Coating Glossyness",
+        string label = "Coating Glossiness",
         string page = "Clear Coat"
     ]],
     normal in_bump_normal = N
