@@ -674,6 +674,8 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
 
 void ShadingPoint::compute_normals() const
 {
+    cache_source_geometry();
+
     switch (m_primitive_type)
     {
       case PrimitiveTriangle:
