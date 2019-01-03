@@ -134,7 +134,7 @@ namespace
 void RenderWidget::start_render()
 {
     // Clear the image storage.
-    if (m_image_storage.get())
+    if (m_image_storage)
         m_image_storage->clear(Color4f(0.0f));
 }
 
@@ -281,7 +281,7 @@ void RenderWidget::slot_display_transform_changed(const QString& transform)
         OCIO::ConstContextRcPtr context = m_ocio_config->getCurrentContext();
         m_ocio_processor = m_ocio_config->getProcessor(context, transform_ptr, OCIO::TRANSFORM_DIR_FORWARD);
 
-        if (m_image_storage.get())
+        if (m_image_storage)
         {
             const CanvasProperties& frame_props = m_image_storage->properties();
             for (size_t y = 0; y < frame_props.m_tile_count_y; ++y)
@@ -317,7 +317,7 @@ namespace
 
 void RenderWidget::allocate_working_storage(const CanvasProperties& frame_props)
 {
-    if (!m_image_storage.get() || !is_compatible(*m_image_storage.get(), frame_props))
+    if (!m_image_storage || !is_compatible(*m_image_storage, frame_props))
     {
         m_image_storage.reset(
             new Image(
@@ -329,7 +329,7 @@ void RenderWidget::allocate_working_storage(const CanvasProperties& frame_props)
                 PixelFormatFloat));
     }
 
-    if (!m_float_tile_storage.get() || !is_compatible(*m_float_tile_storage.get(), frame_props))
+    if (!m_float_tile_storage || !is_compatible(*m_float_tile_storage, frame_props))
     {
         m_float_tile_storage.reset(
             new Tile(
@@ -339,7 +339,7 @@ void RenderWidget::allocate_working_storage(const CanvasProperties& frame_props)
                 PixelFormatFloat));
     }
 
-    if (!m_uint8_tile_storage.get() || !is_compatible(*m_uint8_tile_storage.get(), frame_props))
+    if (!m_uint8_tile_storage || !is_compatible(*m_uint8_tile_storage, frame_props))
     {
         m_uint8_tile_storage.reset(
             new Tile(

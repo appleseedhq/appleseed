@@ -429,18 +429,18 @@ void Frame::denoise(
 
     impl->m_denoiser_aov->fill_empty_samples();
 
-    Deepimf num_samples;
-    impl->m_denoiser_aov->extract_num_samples_image(num_samples);
+    Deepimf num_samples_image;
+    impl->m_denoiser_aov->extract_num_samples_image(num_samples_image);
 
-    Deepimf covariances;
-    impl->m_denoiser_aov->compute_covariances_image(covariances);
+    Deepimf covariances_image;
+    impl->m_denoiser_aov->compute_covariances_image(covariances_image);
 
     RENDERER_LOG_INFO("denoising beauty image...");
     denoise_beauty_image(
         image(),
-        num_samples,
+        num_samples_image,
         impl->m_denoiser_aov->histograms_image(),
-        covariances,
+        covariances_image,
         options,
         abort_switch);
 
@@ -451,9 +451,9 @@ void Frame::denoise(
             RENDERER_LOG_INFO("denoising %s aov...", aov.get_name());
             denoise_aov_image(
                 aov.get_image(),
-                num_samples,
+                num_samples_image,
                 impl->m_denoiser_aov->histograms_image(),
-                covariances,
+                covariances_image,
                 options,
                 abort_switch);
         }
@@ -556,13 +556,13 @@ namespace
     {
         Image transformed_image(image);
 
-        if (props.m_channel_count == 4)
+        // todo: we may want to be more specific here.
+        if (image.properties().m_channel_count == 4)
             transform_to_srgb(transformed_image);
 
         create_parent_directories(file_path);
 
         const std::string filename = file_path.string();
-
         GenericImageFileWriter writer(filename.c_str());
 
         writer.append_image(&transformed_image);
@@ -658,14 +658,14 @@ bool Frame::write_main_image(const char* file_path) const
     if (!write_image(file_path, half_image, image_attributes))
         return false;
 
-    // Write BCD histograms and covariances if enabled.
+    // Write BCD histograms and covariance AOVs if enabled.
     if (impl->m_denoising_mode == DenoisingMode::WriteOutputs)
     {
-        bf::path boost_file_path(file_path);
-        boost_file_path.replace_extension(".exr");
+        bf::path aov_file_path(file_path);
+        aov_file_path.replace_extension(".exr");
 
         ImageAttributes aov_image_attributes = ImageAttributes::create_default_attributes();
-        if (!impl->m_denoiser_aov->write_images(boost_file_path.string().c_str(), aov_image_attributes))
+        if (!impl->m_denoiser_aov->write_images(aov_file_path.string().c_str(), aov_image_attributes))
             return false;
     }
 
@@ -731,6 +731,7 @@ bool Frame::write_main_and_aov_images() const
     for (const AOV& aov : aovs())
     {
         bf::path filepath = aov.get_parameters().get_optional<string>("output_filename");
+
         if (!filepath.empty())
         {
             const bf::path filepath_ext = filepath.extension();
