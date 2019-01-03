@@ -62,9 +62,9 @@ UniqueID AOV::get_class_uid()
 }
 
 AOV::AOV(
-    const char*         name,
-    const ParamArray&   params)
-  : Entity(g_class_uid, params)
+    const char*             name,
+    const ParamArray&       params)
+  : Entity(g_class_uid,     params)
   , m_image(nullptr)
   , m_image_index(~size_t(0))
 {
@@ -86,11 +86,11 @@ void AOV::post_process_image(const Frame& frame)
 }
 
 void AOV::create_image(
-    const size_t        canvas_width,
-    const size_t        canvas_height,
-    const size_t        tile_width,
-    const size_t        tile_height,
-    ImageStack&         aov_images)
+    const size_t            canvas_width,
+    const size_t            canvas_height,
+    const size_t            tile_width,
+    const size_t            tile_height,
+    ImageStack&             aov_images)
 {
     m_image_index = aov_images.append(
         get_name(),
@@ -100,7 +100,9 @@ void AOV::create_image(
     m_image = &aov_images.get_image(m_image_index);
 }
 
-bool AOV::write_images(const char* file_path) const
+bool AOV::write_images(
+    const char*             file_path,
+    const ImageAttributes&  image_attributes) const
 {
     try
     {
@@ -113,9 +115,9 @@ bool AOV::write_images(const char* file_path) const
 
         writer.set_image_channels(get_channel_count(), get_channel_names());
 
-        ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
-        image_attributes.insert("color_space", "linear");
-        writer.set_image_attributes(image_attributes);
+        ImageAttributes image_attributes_copy(image_attributes);
+        image_attributes_copy.insert("color_space", "linear");
+        writer.set_image_attributes(image_attributes_copy);
 
         writer.write();
     }
@@ -199,11 +201,11 @@ void UnfilteredAOV::clear_image()
 }
 
 void UnfilteredAOV::create_image(
-    const size_t        canvas_width,
-    const size_t        canvas_height,
-    const size_t        tile_width,
-    const size_t        tile_height,
-    ImageStack&         aov_images)
+    const size_t            canvas_width,
+    const size_t            canvas_height,
+    const size_t            tile_width,
+    const size_t            tile_height,
+    ImageStack&             aov_images)
 {
     m_image =
         new Image(

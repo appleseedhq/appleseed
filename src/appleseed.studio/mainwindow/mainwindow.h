@@ -287,10 +287,10 @@ class MainWindow
 
     // Render widget actions.
     void slot_render_widget_context_menu(const QPoint& point);
-    void slot_save_raw_frame();
-    void slot_save_raw_frame_and_aovs();
-    void slot_quicksave_raw_frame_and_aovs();
-    void slot_save_post_processed_frame();
+    void slot_save_frame();
+    void slot_save_frame_and_aovs();
+    void slot_quicksave_frame_and_aovs();
+    void slot_save_render_widget_content();
     void slot_clear_frame();
     void slot_reset_zoom();
 

@@ -445,7 +445,9 @@ void DenoiserAOV::compute_covariances_image(Deepimf& covariances) const
     }
 }
 
-bool DenoiserAOV::write_images(const char* file_path) const
+bool DenoiserAOV::write_images(
+    const char*             file_path,
+    const ImageAttributes&  image_attributes) const
 {
     fill_empty_samples();
 

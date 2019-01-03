@@ -979,11 +979,11 @@ void MainWindow::add_render_tab(const QString& label)
         render_tab, SIGNAL(signal_clear_render_region()),
         SLOT(slot_clear_render_region()));
     connect(
-        render_tab, SIGNAL(signal_save_raw_frame_and_aovs()),
-        SLOT(slot_save_raw_frame_and_aovs()));
+        render_tab, SIGNAL(signal_save_frame_and_aovs()),
+        SLOT(slot_save_frame_and_aovs()));
     connect(
-        render_tab, SIGNAL(signal_quicksave_raw_frame_and_aovs()),
-        SLOT(slot_quicksave_raw_frame_and_aovs()));
+        render_tab, SIGNAL(signal_quicksave_frame_and_aovs()),
+        SLOT(slot_quicksave_frame_and_aovs()));
     connect(
         render_tab, SIGNAL(signal_reset_zoom()),
         SLOT(slot_reset_zoom()));
@@ -1977,9 +1977,10 @@ void MainWindow::slot_render_widget_context_menu(const QPoint& point)
         return;
 
     QMenu* menu = new QMenu(this);
-    menu->addAction("Save Post-Processed Frame...", this, SLOT(slot_save_post_processed_frame()));
-    menu->addAction("Save Raw Frame...", this, SLOT(slot_save_raw_frame()));
-    menu->addAction("Save Raw Frame and AOVs...", this, SLOT(slot_save_raw_frame_and_aovs()));
+    menu->addAction("Save Frame...", this, SLOT(slot_save_frame()));
+    menu->addAction("Save Frame and AOVs...", this, SLOT(slot_save_frame_and_aovs()));
+    menu->addSeparator();
+    menu->addAction("Save Render Widget Content...", this, SLOT(slot_save_render_widget_content()));
     menu->addSeparator();
     menu->addAction("Clear All", this, SLOT(slot_clear_frame()));
     menu->exec(point);
@@ -2014,13 +2015,13 @@ namespace
     }
 }
 
-void MainWindow::slot_save_raw_frame()
+void MainWindow::slot_save_frame()
 {
     assert(m_project_manager.is_project_open());
     assert(!m_rendering_manager.is_rendering());
 
     const QString filepath =
-        ask_frame_save_file_path(this, "Save Raw Frame As...", g_appleseed_image_files_filter, ".exr", m_settings);
+        ask_frame_save_file_path(this, "Save Frame As...", g_appleseed_image_files_filter, ".exr", m_settings);
 
     if (filepath.isEmpty())
         return;
@@ -2029,13 +2030,13 @@ void MainWindow::slot_save_raw_frame()
     frame->write_main_image(filepath.toAscii().constData());
 }
 
-void MainWindow::slot_save_raw_frame_and_aovs()
+void MainWindow::slot_save_frame_and_aovs()
 {
     assert(m_project_manager.is_project_open());
     assert(!m_rendering_manager.is_rendering());
 
     const QString filepath =
-        ask_frame_save_file_path(this, "Save Raw Frame and AOVs As...", g_appleseed_image_files_filter, ".exr", m_settings);
+        ask_frame_save_file_path(this, "Save Frame and AOVs As...", g_appleseed_image_files_filter, ".exr", m_settings);
 
     if (filepath.isEmpty())
         return;
@@ -2059,7 +2060,7 @@ namespace
     }
 }
 
-void MainWindow::slot_quicksave_raw_frame_and_aovs()
+void MainWindow::slot_quicksave_frame_and_aovs()
 {
     assert(m_project_manager.is_project_open());
     assert(!m_rendering_manager.is_rendering());
@@ -2080,13 +2081,13 @@ void MainWindow::slot_quicksave_raw_frame_and_aovs()
             find_next_available_path(quicksave_dir / "quicksave####.exr")));
 }
 
-void MainWindow::slot_save_post_processed_frame()
+void MainWindow::slot_save_render_widget_content()
 {
     assert(m_project_manager.is_project_open());
     assert(!m_rendering_manager.is_rendering());
 
     const QString filepath =
-        ask_frame_save_file_path(this, "Save Post-Processed Frame As...", g_qt_image_files_filter, ".png", m_settings);
+        ask_frame_save_file_path(this, "Save Render Widget Content As...", g_qt_image_files_filter, ".png", m_settings);
 
     if (filepath.isEmpty())
         return;
