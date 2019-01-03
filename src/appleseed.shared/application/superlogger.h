@@ -61,7 +61,7 @@ class SHAREDDLL SuperLogger
     void enable_message_coloring();
 
     // Set the verbosity level.
-    void set_verbosity_level_from_string(const char* level_name);
+    void set_verbosity_level_from_string(const char* level_name, const bool warn_if_invalid = true);
 
     // Apply a collection of settings to this logger.
     void configure_from_settings(const foundation::Dictionary& settings);

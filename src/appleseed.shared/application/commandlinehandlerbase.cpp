@@ -277,7 +277,7 @@ void CommandLineHandlerBase::parse(const int argc, const char* argv[], SuperLogg
         logger.enable_message_coloring();
 
     if (impl->m_message_verbosity.is_set())
-        logger.set_verbosity_level_from_string(impl->m_message_verbosity.value().c_str());
+        logger.set_verbosity_level_from_string(impl->m_message_verbosity.value().c_str(), false);
 }
 
 void CommandLineHandlerBase::apply(SuperLogger& logger)
