@@ -101,6 +101,7 @@ struct Frame::Impl
     string                          m_filter_name;
     float                           m_filter_radius;
     AABB2u                          m_crop_window;
+    bool                            m_enable_dithering;
     uint32                          m_noise_seed;
     DenoisingMode                   m_denoising_mode;
 
@@ -216,6 +217,7 @@ void Frame::print_settings()
         "  filter                        %s\n"
         "  filter size                   %f\n"
         "  crop window                   (%s, %s)-(%s, %s)\n"
+        "  dithering                     %s\n"
         "  noise seed                    %s\n"
         "  denoising mode                %s",
         get_path().c_str(),
@@ -231,6 +233,7 @@ void Frame::print_settings()
         pretty_uint(impl->m_crop_window.min[1]).c_str(),
         pretty_uint(impl->m_crop_window.max[0]).c_str(),
         pretty_uint(impl->m_crop_window.max[1]).c_str(),
+        impl->m_enable_dithering ? "on" : "off",
         pretty_uint(impl->m_noise_seed).c_str(),
         impl->m_denoising_mode == DenoisingMode::Off ? "off" :
         impl->m_denoising_mode == DenoisingMode::WriteOutputs ? "write outputs" : "denoise");
@@ -481,7 +484,7 @@ namespace
         create_parent_directories(bf::path(file_path));
     }
 
-    void add_chromaticities(ImageAttributes& image_attributes)
+    void add_chromaticities_attributes(ImageAttributes& image_attributes)
     {
         // Scene-linear sRGB / Rec. 709 chromaticities.
         image_attributes.insert("white_xy_chromaticity", Vector2f(0.3127f, 0.3290f));
@@ -549,10 +552,8 @@ namespace
     void write_png_image(
         const bf::path&         file_path,
         const Image&            image,
-        ImageAttributes&        image_attributes)
+        ImageAttributes         image_attributes)
     {
-        const CanvasProperties& props = image.properties();
-
         Image transformed_image(image);
 
         if (props.m_channel_count == 4)
@@ -576,7 +577,8 @@ namespace
 
     bool write_image(
         const char*             file_path,
-        const Image&            image)
+        const Image&            image,
+        ImageAttributes         image_attributes)
     {
         assert(file_path);
 
@@ -592,8 +594,7 @@ namespace
             bf_file_path.replace_extension(extension);
         }
 
-        ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
-        add_chromaticities(image_attributes);
+        add_chromaticities_attributes(image_attributes);
 
         try
         {
@@ -651,7 +652,10 @@ bool Frame::write_main_image(const char* file_path) const
     const Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
 
     // Write main image.
-    if (!write_image(file_path, half_image))
+    ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
+    if (impl->m_enable_dithering)
+        image_attributes.insert("dither", 42);  // the value of the dither attribute is a hash seed
+    if (!write_image(file_path, half_image, image_attributes))
         return false;
 
     // Write BCD histograms and covariances if enabled.
@@ -660,7 +664,8 @@ bool Frame::write_main_image(const char* file_path) const
         bf::path boost_file_path(file_path);
         boost_file_path.replace_extension(".exr");
 
-        if (!impl->m_denoiser_aov->write_images(boost_file_path.string().c_str()))
+        ImageAttributes aov_image_attributes = ImageAttributes::create_default_attributes();
+        if (!impl->m_denoiser_aov->write_images(boost_file_path.string().c_str(), aov_image_attributes))
             return false;
     }
 
@@ -700,7 +705,8 @@ bool Frame::write_aov_images(const char* file_path) const
         const string aov_file_path = (directory / aov_file_name).string();
 
         // Write AOV image.
-        if (!aov.write_images(aov_file_path.c_str()))
+        ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
+        if (!aov.write_images(aov_file_path.c_str(), image_attributes))
             success = false;
     }
 
@@ -745,8 +751,8 @@ bool Frame::write_main_and_aov_images() const
                 filepath = new_filepath;
             }
 
-            // Write AOV image.
-            if (!aov.write_images(filepath.string().c_str()))
+            ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
+            if (!aov.write_images(filepath.string().c_str(), image_attributes))
                 success = false;
         }
     }
@@ -760,7 +766,7 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
     stopwatch.start();
 
     ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
-    add_chromaticities(image_attributes);
+    add_chromaticities_attributes(image_attributes);
     image_attributes.insert("color_space", "linear");
 
     std::vector<Image> images;
@@ -826,7 +832,8 @@ bool Frame::archive(
     if (output_path)
         *output_path = duplicate_string(file_path.c_str());
 
-    return write_image(file_path.c_str(), *impl->m_image);
+    ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
+    return write_image(file_path.c_str(), *impl->m_image, image_attributes);
 }
 
 void Frame::extract_parameters()
@@ -909,6 +916,9 @@ void Frame::extract_parameters()
         Vector2u(0, 0),
         Vector2u(impl->m_frame_width - 1, impl->m_frame_height - 1));
     impl->m_crop_window = m_params.get_optional<AABB2u>("crop_window", default_crop_window);
+
+    // Retrieve dithering parameter.
+    impl->m_enable_dithering = m_params.get_optional<bool>("enable_dithering", true);
 
     // Retrieve noise seed.
     impl->m_noise_seed = m_params.get_optional<uint32>("noise_seed", 0);
@@ -1015,6 +1025,14 @@ DictionaryArray FrameFactory::get_input_metadata()
             .insert("type", "text")
             .insert("use", "optional")
             .insert("default", "0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "enable_dithering")
+            .insert("label", "Dithering")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "true"));
 
     metadata.push_back(
         Dictionary()

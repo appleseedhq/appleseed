@@ -105,26 +105,13 @@ namespace
     {
         switch (format)
         {
-          case PixelFormatUInt8:
-              return OIIO::TypeDesc::UINT8;
-
-          case PixelFormatUInt16:
-              return OIIO::TypeDesc::UINT16;
-
-          case PixelFormatUInt32:
-              return OIIO::TypeDesc::UINT32;
-
-          case PixelFormatHalf:
-              return OIIO::TypeDesc::HALF;
-
-          case PixelFormatFloat:
-              return OIIO::TypeDesc::FLOAT;
-
-          case PixelFormatDouble:
-              return OIIO::TypeDesc::DOUBLE;
-
-          default:
-              return OIIO::TypeDesc::UNKNOWN;
+          case PixelFormatUInt8: return OIIO::TypeDesc::UINT8;
+          case PixelFormatUInt16: return OIIO::TypeDesc::UINT16;
+          case PixelFormatUInt32: return OIIO::TypeDesc::UINT32;
+          case PixelFormatHalf: return OIIO::TypeDesc::HALF;
+          case PixelFormatFloat: return OIIO::TypeDesc::FLOAT;
+          case PixelFormatDouble: return OIIO::TypeDesc::DOUBLE;
+          default: return OIIO::TypeDesc::UNKNOWN;
         }
     }
 }
@@ -205,6 +192,60 @@ void GenericImageFileWriter::set_image_spec()
     set_image_output_format(props.m_pixel_format);
 }
 
+void GenericImageFileWriter::set_generic_image_attributes(const ImageAttributes& image_attributes)
+{
+    OIIO::ImageSpec& spec = impl->m_spec.back();
+
+    for (const_each<ImageAttributes> i = image_attributes; i; ++i)
+    {
+        // Fetch the name and the value of the attribute.
+        const std::string attr_name = i->key();
+        const std::string attr_value = i->value<std::string>();
+
+        if (attr_name == "author")
+            spec.attribute("Artist", attr_value);
+        else if (attr_name == "copyright")
+            spec.attribute("Copyright", attr_value);
+        else if (attr_name == "title")
+            spec.attribute("DocumentName", attr_value);
+        else if (attr_name == "description")
+            spec.attribute("ImageDescription", attr_value);
+        else if (attr_name == "date")
+            spec.attribute("DateTime", attr_value);
+        else if (attr_name == "software")
+            spec.attribute("Software", attr_value);
+        else if (attr_name == "computer")
+            spec.attribute("HostComputer", attr_value);
+        else if (attr_name == "image_name")
+            spec.attribute("oiio:subimagename", attr_value);
+        else if (attr_name == "color_space")
+            spec.attribute("oiio:ColorSpace", attr_value == "linear" ? "Linear" : attr_value);
+        else if (attr_name == "compression")
+            spec.attribute("compression", attr_value);
+        else if (attr_name == "compression_quality")
+            spec.attribute("CompressionQuality", from_string<int>(attr_value));
+        else if (attr_name == "dpi")
+        {
+            const size_t dpi = from_string<size_t>(attr_value);
+            const float dpm = dpi * (100.0f / 2.54f);
+            spec.attribute("XResolution", dpm);
+            spec.attribute("YResolution", dpm);
+            spec.attribute("ResolutionUnit", "cm");
+        }
+        else if (attr_name == "dither")
+            spec.attribute("oiio:dither", from_string<int>(attr_value));
+        else
+        {
+            // Write all other attributes as string attributes.
+            // A limitation of foundation::ImageAttributes (which is essentially
+            // a foundation::StringDictionary) is that type information is lost.
+            // This forces us to write attributes as string attributes, which may
+            // not be what is expected by OIIO.
+            spec.attribute(attr_name, attr_value);
+        }
+    }
+}
+
 void GenericImageFileWriter::set_exr_image_attributes(const ImageAttributes& image_attributes)
 {
     OIIO::ImageSpec& spec = impl->m_spec.back();
@@ -225,10 +266,17 @@ void GenericImageFileWriter::set_exr_image_attributes(const ImageAttributes& ima
         const Vector2f blue = image_attributes.get<Vector2f>("blue_xy_chromaticity");
         const Vector2f white = image_attributes.get<Vector2f>("white_xy_chromaticity");
 
-        chromaticities[0] = red[0]; chromaticities[1] = red[1];
-        chromaticities[2] = green[0]; chromaticities[3] = green[1];
-        chromaticities[4] = blue[0]; chromaticities[5] = blue[1];
-        chromaticities[6] = white[0]; chromaticities[7] = white[1];
+        chromaticities[0] = red[0];
+        chromaticities[1] = red[1];
+
+        chromaticities[2] = green[0];
+        chromaticities[3] = green[1];
+
+        chromaticities[4] = blue[0];
+        chromaticities[5] = blue[1];
+
+        chromaticities[6] = white[0];
+        chromaticities[7] = white[1];
 
         OIIO::TypeDesc type;
         type.basetype = OIIO::TypeDesc::BASETYPE::FLOAT;
@@ -236,68 +284,6 @@ void GenericImageFileWriter::set_exr_image_attributes(const ImageAttributes& ima
         type.arraylen = 8;
 
         spec.attribute("chromaticities", type, chromaticities);
-    }
-}
-
-void GenericImageFileWriter::set_generic_image_attributes(const ImageAttributes& image_attributes)
-{
-    OIIO::ImageSpec& spec = impl->m_spec.back();
-
-    for (const_each<ImageAttributes> i = image_attributes; i; ++i)
-    {
-        // Fetch the name and the value of the attribute.
-        const std::string attr_name = i->key();
-        const std::string attr_value = i->value<std::string>();
-
-        if (attr_name == "author")
-            spec.attribute("Artist", attr_value.c_str());
-
-        else if (attr_name == "copyright")
-            spec.attribute("Copyright", attr_value.c_str());
-
-        else if (attr_name == "title")
-            spec.attribute("DocumentName", attr_value.c_str());
-
-        else if (attr_name == "description")
-            spec.attribute("ImageDescription", attr_value.c_str());
-
-        else if (attr_name == "date")
-            spec.attribute("DateTime", attr_value.c_str());
-
-        else if (attr_name == "software")
-            spec.attribute("Software", attr_value.c_str());
-
-        else if (attr_name == "computer")
-            spec.attribute("HostComputer", attr_value.c_str());
-
-        else if (attr_name == "image_name")
-            spec.attribute("oiio:subimagename", attr_value.c_str());
-
-        else if (attr_name == "color_space")
-        {
-            if (attr_value == "linear")
-                spec.attribute("oiio:ColorSpace", "Linear");
-            else
-                spec.attribute("oiio:ColorSpace", attr_value.c_str());
-        }
-
-        else if (attr_name == "compression")
-            spec.attribute("compression", attr_value.c_str());
-
-        else if (attr_name == "compression_quality")
-            spec.attribute("CompressionQuality", from_string<int>(attr_value));
-
-        else if (attr_name == "dpi")
-        {
-            const size_t dpi = from_string<size_t>(attr_value);
-            const float dpm = dpi * (100.0f / 2.54f);
-            spec.attribute("XResolution", dpm);
-            spec.attribute("YResolution", dpm);
-            spec.attribute("ResolutionUnit", "cm");
-        }
-
-        else
-            spec.attribute(attr_name, attr_value.c_str());
     }
 }
 
@@ -312,7 +298,7 @@ void GenericImageFileWriter::set_image_attributes(const ImageAttributes& image_a
     // General image attributes.
     set_generic_image_attributes(image_attributes);
 
-    // Set image attributes depending of its extension.
+    // Set file format-specific image attributes.
     if (extension == ".exr")
         set_exr_image_attributes(image_attributes);
 }
@@ -495,13 +481,15 @@ void GenericImageFileWriter::write()
     switch (image_count)
     {
       case 0:
-          return;
+        return;
+
       case 1:
-          write_single_image();
-          break;
+        write_single_image();
+        break;
+
       default:
-          write_multi_images();
-          break;
+        write_multi_images();
+        break;
     }
 }
 
