@@ -92,10 +92,11 @@ void AOV::create_image(
     const size_t            tile_height,
     ImageStack&             aov_images)
 {
-    m_image_index = aov_images.append(
-        get_name(),
-        get_channel_count(),
-        PixelFormatFloat);
+    m_image_index =
+        aov_images.append(
+            get_name(),
+            get_channel_count(),
+            PixelFormatFloat);
 
     m_image = &aov_images.get_image(m_image_index);
 }
@@ -133,6 +134,7 @@ bool AOV::write_images(
 
     return true;
 }
+
 
 //
 // ColorAOV class implementation.

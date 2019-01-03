@@ -162,12 +162,12 @@ DictionaryArray GenericMaterialFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-        .insert("name", "volume")
-        .insert("label", "Volume")
-        .insert("type", "entity")
-        .insert("entity_types",
-            Dictionary().insert("volume", "Volume"))
-        .insert("use", "optional"));
+            .insert("name", "volume")
+            .insert("label", "Volume")
+            .insert("type", "entity")
+            .insert("entity_types",
+                Dictionary().insert("volume", "Volume"))
+            .insert("use", "optional"));
 
     add_alpha_map_metadata(metadata);
     add_displacement_metadata(metadata);
