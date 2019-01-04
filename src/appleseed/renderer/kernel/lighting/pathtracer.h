@@ -463,6 +463,31 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             }
         }
 
+
+        // Compute absorption for the segment inside the medium.
+        const ShadingRay::Medium* prev_medium = ray.m_media.get_current();
+        if (vertex.m_shading_point->hit_surface() && prev_medium != nullptr && prev_medium->m_material != nullptr)
+        {
+            const Material::RenderData& render_data = prev_medium->m_material->get_render_data();
+
+            if (render_data.m_bsdf)
+            {
+                // Execute the OSL shader if there is one.
+                if (render_data.m_shader_group)
+                {
+                    shading_context.execute_osl_shading(
+                        *render_data.m_shader_group,
+                        *vertex.m_shading_point);
+                }
+
+                const void* data = render_data.m_bsdf->evaluate_inputs(shading_context, *vertex.m_shading_point);
+                const float distance = static_cast<float>(norm(vertex.get_point() - medium_start));
+                Spectrum absorption;
+                render_data.m_bsdf->compute_absorption(data, distance, absorption);
+                vertex.m_throughput *= absorption;
+            }
+        }
+
         // Let the path visitor handle a hit.
         // cos(outgoing, normal) is used for changes of probability measure. In the case of subsurface
         // scattering, we purposely compute it at the outgoing vertex even though it may be used at
@@ -590,30 +615,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             // Ray is out-scattered by participating media:
             // inherit the medium list of the parent ray.
             next_ray.m_media.copy_from(ray.m_media);
-        }
-
-        // Compute absorption for the segment inside the medium.
-        const ShadingRay::Medium* prev_medium = ray.m_media.get_current();
-        if (vertex.m_shading_point->hit_surface() && prev_medium != nullptr && prev_medium->m_material != nullptr)
-        {
-            const Material::RenderData& render_data = prev_medium->m_material->get_render_data();
-
-            if (render_data.m_bsdf)
-            {
-                // Execute the OSL shader if there is one.
-                if (render_data.m_shader_group)
-                {
-                    shading_context.execute_osl_shading(
-                        *render_data.m_shader_group,
-                        *vertex.m_shading_point);
-                }
-
-                const void* data = render_data.m_bsdf->evaluate_inputs(shading_context, *vertex.m_shading_point);
-                const float distance = static_cast<float>(norm(vertex.get_point() - medium_start));
-                Spectrum absorption;
-                render_data.m_bsdf->compute_absorption(data, distance, absorption);
-                vertex.m_throughput *= absorption;
-            }
         }
 
         if (vertex.m_shading_point->hit_surface() && vertex.m_bsdf != nullptr)
