@@ -36,6 +36,7 @@
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
@@ -87,7 +88,8 @@ class PathTracer
         const size_t            max_volume_bounces,
         const bool              clamp_roughness,
         const size_t            max_iterations = 1000,
-        const double            near_start = 0.0);          // abort tracing if the first ray is shorter than this
+        const bool              retrace_primary_ray = false,    // start path tracing from the viewpoint instead of the first intersection
+        const double            near_start = 0.0);              // abort tracing if the first ray is shorter than this
 
     size_t trace(
         SamplingContext&        sampling_context,
@@ -114,6 +116,7 @@ class PathTracer
     const size_t                m_max_volume_bounces;
     const bool                  m_clamp_roughness;
     const size_t                m_max_iterations;
+    const bool                  m_retrace_primary_ray;
     const double                m_near_start;
     size_t                      m_diffuse_bounces;
     size_t                      m_glossy_bounces;
@@ -158,6 +161,7 @@ inline PathTracer<PathVisitor, Adjoint>::PathTracer(
     const size_t                max_volume_bounces,
     const bool                  clamp_roughness,
     const size_t                max_iterations,
+    const bool                  retrace_primary_ray,
     const double                near_start)
   : m_path_visitor(path_visitor)
   , m_rr_min_path_length(rr_min_path_length)
@@ -168,6 +172,7 @@ inline PathTracer<PathVisitor, Adjoint>::PathTracer(
   , m_max_volume_bounces(max_volume_bounces)
   , m_clamp_roughness(clamp_roughness)
   , m_max_iterations(max_iterations)
+  , m_retrace_primary_ray(retrace_primary_ray)
   , m_near_start(near_start)
 {
 }
@@ -206,16 +211,47 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
     vertex.m_path_length = 1;
     vertex.m_scattering_modes = ScatteringMode::All;
     vertex.m_throughput.set(1.0f);
-    vertex.m_shading_point = &shading_point;
     vertex.m_prev_mode = ScatteringMode::Specular;
     vertex.m_prev_prob = BSDF::DiracDelta;
     vertex.m_distance = 0.0;
     vertex.m_aov_mode = ScatteringMode::None;
 
+    vertex.m_edf = nullptr;
+    vertex.m_bsdf = nullptr;
+    vertex.m_bssrdf = nullptr;
+
+    vertex.m_parent_shading_point = nullptr;
+    vertex.m_shading_point = &shading_point;
+
     // This variable tracks the beginning of the path segment inside the current medium.
-    // While it is properly initialized when entering a medium, we also initialize it
-    // here to silence a gcc warning.
-    foundation::Vector3d medium_start(0.0);
+    foundation::Vector3d medium_start = vertex.get_ray().point_at(0.0);
+
+    if (m_retrace_primary_ray)
+    {
+        ShadingPoint* first_shading_point = m_shading_point_arena.allocate<ShadingPoint>();
+
+        // Create the primary ray.
+        ShadingRay primary_ray(
+            medium_start,
+            shading_point.get_ray().m_dir,
+            shading_point.get_ray().m_time,
+            shading_point.get_ray().m_flags,
+            shading_point.get_ray().m_depth);
+
+        // Initialize the media list of the primary ray.
+        shading_context.get_tracer().initialize_media_list(shading_context, primary_ray, &primary_ray.m_media);
+
+        // Trace the primary ray.
+        ShadingPoint view_shading_point;
+        shading_context.get_intersector().make_volume_shading_point(view_shading_point, shading_point.get_ray(), 0.0);
+        vertex.m_shading_point = &view_shading_point;
+        m_path_visitor.get_next_shading_point(
+            primary_ray,
+            &vertex,
+            first_shading_point);
+
+        vertex.m_shading_point = first_shading_point;
+    }
 
     m_diffuse_bounces = 0;
     m_glossy_bounces = 0;

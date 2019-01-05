@@ -438,6 +438,7 @@ namespace
                 ~size_t(0), // max volume bounces
                 false,      // don't clamp roughness
                 m_params.m_max_iterations,
+                false,                                      // no need to retrace the primary ray
                 edf->get_light_near_start());               // don't illuminate points closer than the light near start value
 
             // Trace the photon path.

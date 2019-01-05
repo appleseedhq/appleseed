@@ -102,9 +102,15 @@ class ShadingRay
         // Copy all media from the source ray.
         void copy_from(const MediaList& source);
 
-        // Copy all media from the source list and add an additional medium.
+        // Copy all media from the source list plus an additional medium.
         void add(
             const MediaList&            source,
+            const ObjectInstance*       object_instance,
+            const Material*             material,
+            const float                 ior);
+
+        // Add a medium.
+        void add_in_place(
             const ObjectInstance*       object_instance,
             const Material*             material,
             const float                 ior);
