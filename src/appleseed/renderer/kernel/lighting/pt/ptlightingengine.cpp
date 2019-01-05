@@ -225,7 +225,8 @@ namespace
                 m_params.m_max_specular_bounces,
                 m_params.m_max_volume_bounces == ~size_t(0) ? ~size_t(0) : m_params.m_max_volume_bounces + 1,
                 m_params.m_clamp_roughness,
-                shading_context.get_max_iterations());
+                shading_context.get_max_iterations(),
+                shading_point.get_scene().has_participating_media());  // the primary ray is retraced to account for volume scattering
 
             const size_t path_length =
                 path_tracer.trace(

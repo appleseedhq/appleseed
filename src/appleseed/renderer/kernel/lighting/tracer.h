@@ -138,6 +138,12 @@ class Tracer
         Spectrum&                       transmission,
         const ShadingRay::MediaList*    media = nullptr);
 
+    // Determine the media list for the given ray.
+    const void initialize_media_list(
+        const ShadingContext&           shading_context,
+        const ShadingRay&               ray,
+        ShadingRay::MediaList*          media);
+
   private:
     const Intersector&                  m_intersector;
     OSLShaderGroupExec&                 m_shadergroup_exec;

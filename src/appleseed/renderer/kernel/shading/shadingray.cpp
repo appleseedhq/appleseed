@@ -81,6 +81,25 @@ void ShadingRay::MediaList::add(
     m_size = j;
 }
 
+void ShadingRay::MediaList::add_in_place(const ObjectInstance* object_instance, const Material* material, const float ior)
+{
+    if (m_size == MaxMediumCount)
+        return;
+
+    m_list[m_size].m_object_instance = object_instance;
+    m_list[m_size].m_material = material;
+    m_list[m_size].m_ior = ior;
+
+    const int8 medium_priority = object_instance->get_medium_priority();
+
+    for (int8 i = m_size; i > 0 && m_list[i - 1].m_object_instance->get_medium_priority() < medium_priority; --i)
+    {
+        std::swap(m_list[i - 1], m_list[i]);
+    }
+
+    ++m_size;
+}
+
 void ShadingRay::MediaList::remove(
     const ShadingRay::MediaList&    source,
     const ObjectInstance*           object_instance)
