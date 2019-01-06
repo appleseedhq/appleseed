@@ -114,7 +114,7 @@ class GenericVolume : public Volume
             m_params.get_required<std::string>(
                 "phase_function_model",
                 "isotropic",
-                make_vector("isotropic", "henyey"),
+                make_vector("isotropic", "henyey", "rayleigh"),
                 context);
 
         if (phase_function == "isotropic")
@@ -126,6 +126,10 @@ class GenericVolume : public Volume
                     m_params.get_optional<float>("average_cosine", 0.0f),
                     -0.99f, +0.99f);
             m_bsdf.m_phase_function.reset(new HenyeyPhaseFunction(g));
+        }
+        else if (phase_function == "rayleigh")
+        {
+            m_bsdf.m_phase_function.reset(new RayleighPhaseFunction());
         }
         else return false;
 
@@ -360,7 +364,8 @@ DictionaryArray GenericVolumeFactory::get_input_metadata() const
             .insert("items",
                 Dictionary()
                     .insert("Isotropic", "isotropic")
-                    .insert("Henyey-Greenstein", "henyey"))
+                    .insert("Henyey-Greenstein", "henyey")
+                    .insert("Rayleigh", "rayleigh"))
             .insert("use", "required")
             .insert("default", "isotropic")
             .insert("on_change", "rebuild_form"));

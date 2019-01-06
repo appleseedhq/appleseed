@@ -271,4 +271,44 @@ TEST_SUITE(Renderer_Modeling_Volume)
 
         plotfile.write("unit tests/outputs/test_volume_henyey_samples.gnuplot");
     }
+
+    TEST_CASE(CheckRayleighSamplingConsistency)
+    {
+        TestSceneBase test_scene;
+        VolumeTestSceneContext context(test_scene);
+
+        PhaseFunctionBSDF bsdf("test_phase_function_bsdf", ParamArray());
+        bsdf.m_phase_function.reset(new RayleighPhaseFunction());
+
+        const Vector3f bias = context.get_sampling_bias(bsdf);
+
+        EXPECT_FEQ_EPS(bias, Vector3f(0.0f), 0.2f);
+    }
+
+    TEST_CASE(PlotRayleighSamples)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("Samples of Rayleigh phase function (multiplied by PDF)");
+        plotfile.set_xlabel("X");
+        plotfile.set_ylabel("Y");
+        plotfile.set_xrange(-0.3, +0.3);
+        plotfile.set_yrange(-0.15, +0.15);
+
+        TestSceneBase test_scene;
+        VolumeTestSceneContext context(test_scene);
+
+        PhaseFunctionBSDF bsdf("test_phase_function_bsdf", ParamArray());
+        bsdf.m_phase_function.reset(new RayleighPhaseFunction());
+
+        const vector<Vector2f> points = context.generate_samples_for_plot(bsdf);
+
+        plotfile
+            .new_plot()
+            .set_points(points)
+            .set_title("Rayleigh samples")
+            .set_color("blue")
+            .set_style("points");
+
+        plotfile.write("unit tests/outputs/test_volume_rayleigh_samples.gnuplot");
+    }
 }
