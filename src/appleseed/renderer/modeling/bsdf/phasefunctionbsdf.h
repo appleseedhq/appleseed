@@ -62,15 +62,15 @@ namespace renderer
     };
 
     class PhaseFunctionBSDF
-        : public BSDF
+      : public BSDF
     {
-    public:
+      public:
         std::unique_ptr<foundation::PhaseFunction> m_phase_function;
 
         PhaseFunctionBSDF(
             const char*                 name,
             const ParamArray&           params)
-            : BSDF(name, AllBSDFTypes, ScatteringMode::Volume, params)
+          : BSDF(name, AllBSDFTypes, ScatteringMode::Volume, params)
         {
             m_inputs.declare("scattering_coefficient", InputFormatSpectralReflectance);
         }
@@ -158,7 +158,7 @@ namespace renderer
             return m_phase_function->evaluate(-outgoing, incoming);
         }
 
-    private:
+      private:
         typedef PhaseFunctionBSDFInputValues InputValues;
     };
 } // namespace renderer
