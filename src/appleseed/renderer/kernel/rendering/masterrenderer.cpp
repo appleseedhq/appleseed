@@ -243,6 +243,9 @@ struct MasterRenderer::Impl
             m_texture_system->attribute("searchpath", project_search_paths);
         }
 
+        // Also use the project search paths to look for OpenImageIO plugins.
+        m_texture_system->attribute("plugin_searchpath", project_search_paths);
+
         // Initialize OSL.
         m_renderer_services->initialize(texture_store);
 
