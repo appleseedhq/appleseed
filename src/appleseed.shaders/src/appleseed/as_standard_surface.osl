@@ -610,7 +610,7 @@ shader as_standard_surface
             ? normalize(in_bump_normal_coating)
             : normalize(in_bump_normal_substrate);
 
-        float costheta_o = dot(-I, Nn);
+        float costheta_o = max(0.0, dot(-I, Nn));
 
         if (in_coating_ior > 1.0)
         {
@@ -758,7 +758,7 @@ shader as_standard_surface
         if ((compute_diffuse || compute_bssrdf || compute_edf ||
             compute_translucency) && max(in_specular_color) > 0.0)
         {
-            float costheta_o = dot(-I, Nn);
+            float costheta_o = max(0.0, dot(-I, Nn));
 
             if (in_fresnel_type == 0)
             {
