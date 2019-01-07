@@ -116,6 +116,10 @@ class OSLShaderGroupExec
         const ShaderGroup&              shader_group,
         const foundation::Vector3f&     outgoing) const;
 
+    void execute_volume(
+        const ShaderGroup&              shader_group,
+        const ShadingPoint&             shading_point) const;
+
     void do_execute(
         const ShaderGroup&              shader_group,
         const ShadingPoint&             shading_point,

@@ -149,6 +149,7 @@ void compute_ibl_bsdf_sampling(
 
         shading_context.get_tracer().trace_simple(
             shading_context,
+            sampling_context,
             shading_point,
             shadow_ray,
             transmission);
@@ -240,6 +241,7 @@ void compute_ibl_environment_sampling(
         shadow_ray.m_media = shading_point.get_ray().m_media;
         shading_context.get_tracer().trace_simple(
             shading_context,
+            sampling_context,
             shading_point,
             shadow_ray,
             transmission);

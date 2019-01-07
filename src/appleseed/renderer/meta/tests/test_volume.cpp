@@ -66,7 +66,6 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
-
 TEST_SUITE(Renderer_Modeling_Volume)
 {
     struct VolumeTestSceneContext
@@ -120,17 +119,16 @@ TEST_SUITE(Renderer_Modeling_Volume)
         }
 
         // Check if probabilistic sampling is consistent with the returned PDF values.
-        Vector3f get_sampling_bias(const PhaseFunctionBSDF& phase_function_bsdf)
+        Vector3f get_sampling_bias(const PhaseFunctionBSDFInputValues* bsdf_inputs)
         {
+            PhaseFunctionBSDF phase_function_bsdf("test_phase_function_bsdf", ParamArray());
+
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
             shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
 
             ShadingPoint shading_point;
             m_intersector.make_volume_shading_point(shading_point, shading_ray, 0.5f);
-
-            PhaseFunctionBSDFInputValues* bsdf_inputs = m_arena.allocate<PhaseFunctionBSDFInputValues>();
-            bsdf_inputs->m_albedo.set(1.0f);
 
             SamplingContext::RNGType rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
@@ -147,17 +145,16 @@ TEST_SUITE(Renderer_Modeling_Volume)
         }
 
         // Sample a given volume and find average cosine of scattering angle.
-        float get_aposteriori_average_cosine(const PhaseFunctionBSDF& phase_function_bsdf)
+        float get_aposteriori_average_cosine(const PhaseFunctionBSDFInputValues* bsdf_inputs)
         {
+            PhaseFunctionBSDF phase_function_bsdf("test_phase_function_bsdf", ParamArray());
+
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
             shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
 
             ShadingPoint shading_point;
             m_intersector.make_volume_shading_point(shading_point, shading_ray, 0.5f);
-
-            PhaseFunctionBSDFInputValues* bsdf_inputs = m_arena.allocate<PhaseFunctionBSDFInputValues>();
-            bsdf_inputs->m_albedo.set(1.0f);
 
             SamplingContext::RNGType rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
@@ -173,17 +170,16 @@ TEST_SUITE(Renderer_Modeling_Volume)
             return bias.x / NumberOfSamples;
         }
 
-        vector<Vector2f> generate_samples_for_plot(const PhaseFunctionBSDF& phase_function_bsdf)
+        vector<Vector2f> generate_samples_for_plot(const PhaseFunctionBSDFInputValues* bsdf_inputs)
         {
+            PhaseFunctionBSDF phase_function_bsdf("test_phase_function_bsdf", ParamArray());
+
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
             shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
 
             ShadingPoint shading_point;
             m_intersector.make_volume_shading_point(shading_point, shading_ray, 0.5f);
-
-            PhaseFunctionBSDFInputValues* bsdf_inputs = m_arena.allocate<PhaseFunctionBSDFInputValues>();
-            bsdf_inputs->m_albedo.set(1.0f);
 
             SamplingContext::RNGType rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
@@ -212,10 +208,12 @@ TEST_SUITE(Renderer_Modeling_Volume)
             TestSceneBase test_scene;
             VolumeTestSceneContext context(test_scene);
 
-            PhaseFunctionBSDF bsdf("test_phase_function_bsdf", ParamArray());
-            bsdf.m_phase_function.reset(new HenyeyPhaseFunction(G[i]));
+            PhaseFunctionBSDFInputValues inputs;
+            HenyeyPhaseFunction phi(G[i]);
+            inputs.m_albedo.set(1.0f);
+            inputs.m_phase_function = &phi;
 
-            const Vector3f bias = context.get_sampling_bias(bsdf);
+            const Vector3f bias = context.get_sampling_bias(&inputs);
 
             EXPECT_FEQ_EPS(bias, Vector3f(0.0f), 0.2f);
         }
@@ -230,10 +228,12 @@ TEST_SUITE(Renderer_Modeling_Volume)
             TestSceneBase test_scene;
             VolumeTestSceneContext context(test_scene);
 
-            PhaseFunctionBSDF bsdf("test_phase_function_bsdf", ParamArray());
-            bsdf.m_phase_function.reset(new HenyeyPhaseFunction(G[i]));
+            PhaseFunctionBSDFInputValues inputs;
+            HenyeyPhaseFunction phi(G[i]);
+            inputs.m_albedo.set(1.0f);
+            inputs.m_phase_function = &phi;
 
-            const float average_cosine = context.get_aposteriori_average_cosine(bsdf);
+            const float average_cosine = context.get_aposteriori_average_cosine(&inputs);
 
             EXPECT_FEQ_EPS(G[i], average_cosine, 0.05f);
         }
@@ -256,10 +256,12 @@ TEST_SUITE(Renderer_Modeling_Volume)
             TestSceneBase test_scene;
             VolumeTestSceneContext context(test_scene);
 
-            PhaseFunctionBSDF bsdf("test_phase_function_bsdf", ParamArray());
-            bsdf.m_phase_function.reset(new HenyeyPhaseFunction(G[i]));
+            PhaseFunctionBSDFInputValues inputs;
+            HenyeyPhaseFunction phi(G[i]);
+            inputs.m_albedo.set(1.0f);
+            inputs.m_phase_function = &phi;
 
-            const vector<Vector2f> points = context.generate_samples_for_plot(bsdf);
+            const vector<Vector2f> points = context.generate_samples_for_plot(&inputs);
 
             plotfile
                 .new_plot()
@@ -277,10 +279,12 @@ TEST_SUITE(Renderer_Modeling_Volume)
         TestSceneBase test_scene;
         VolumeTestSceneContext context(test_scene);
 
-        PhaseFunctionBSDF bsdf("test_phase_function_bsdf", ParamArray());
-        bsdf.m_phase_function.reset(new RayleighPhaseFunction());
+        PhaseFunctionBSDFInputValues inputs;
+        RayleighPhaseFunction phi;
+        inputs.m_albedo.set(1.0f);
+        inputs.m_phase_function = &phi;
 
-        const Vector3f bias = context.get_sampling_bias(bsdf);
+        const Vector3f bias = context.get_sampling_bias(&inputs);
 
         EXPECT_FEQ_EPS(bias, Vector3f(0.0f), 0.2f);
     }
@@ -297,10 +301,12 @@ TEST_SUITE(Renderer_Modeling_Volume)
         TestSceneBase test_scene;
         VolumeTestSceneContext context(test_scene);
 
-        PhaseFunctionBSDF bsdf("test_phase_function_bsdf", ParamArray());
-        bsdf.m_phase_function.reset(new RayleighPhaseFunction());
+        PhaseFunctionBSDFInputValues inputs;
+        RayleighPhaseFunction phi;
+        inputs.m_albedo.set(1.0f);
+        inputs.m_phase_function = &phi;
 
-        const vector<Vector2f> points = context.generate_samples_for_plot(bsdf);
+        const vector<Vector2f> points = context.generate_samples_for_plot(&inputs);
 
         plotfile
             .new_plot()

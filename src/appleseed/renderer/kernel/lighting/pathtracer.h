@@ -358,10 +358,10 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     if (entering)
                     {
                         // Execute the OSL shader if there is one.
-                        if (material_data.m_shader_group)
+                        if (material_data.m_surface_shader_group)
                         {
                             shading_context.execute_osl_shading(
-                                *material_data.m_shader_group,
+                                *material_data.m_surface_shader_group,
                                 *vertex.m_shading_point);
                         }
 
@@ -372,7 +372,12 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                                 shading_context, *vertex.m_shading_point);
                             ior = material_data.m_bsdf->sample_ior(sampling_context, data);
                         }
-                        next_ray.m_media.add(ray.m_media, &object_instance, material, ior);
+                        next_ray.m_media.add(
+                            ray.m_media,
+                            &object_instance,
+                            material,
+                            &vertex.m_shading_point->get_assembly_instance(),
+                            ior);
                     }
                     else next_ray.m_media.remove(ray.m_media, &object_instance);
 
@@ -398,12 +403,12 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 Alpha alpha = vertex.m_shading_point->get_alpha();
 
                 // Apply OSL transparency if needed.
-                if (material_data.m_shader_group &&
-                    material_data.m_shader_group->has_transparency())
+                if (material_data.m_surface_shader_group &&
+                    material_data.m_surface_shader_group->has_transparency())
                 {
                     Alpha a;
                     shading_context.execute_osl_transparency(
-                        *material_data.m_shader_group,
+                        *material_data.m_surface_shader_group,
                         *vertex.m_shading_point,
                         a);
                     alpha *= a;
@@ -450,10 +455,10 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             }
 
             // Execute the OSL shader if there is one.
-            if (material_data.m_shader_group)
+            if (material_data.m_surface_shader_group)
             {
                 shading_context.execute_osl_shading(
-                    *material_data.m_shader_group,
+                    *material_data.m_surface_shader_group,
                     *vertex.m_shading_point);
             }
 
@@ -491,12 +496,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         else
         {
             vertex.m_volume = material_data.m_volume;
-            // Evaluate the inputs of the Volume.
-            if (vertex.m_volume)
-            {
-                vertex.m_volume_data =
-                    vertex.m_volume->evaluate_inputs(shading_context, ray);
-            }
         }
 
         // Compute absorption for the segment inside the medium.
@@ -508,10 +507,10 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             if (render_data.m_bsdf)
             {
                 // Execute the OSL shader if there is one.
-                if (render_data.m_shader_group)
+                if (render_data.m_surface_shader_group)
                 {
                     shading_context.execute_osl_shading(
-                        *render_data.m_shader_group,
+                        *render_data.m_surface_shader_group,
                         *vertex.m_shading_point);
                 }
 
@@ -631,7 +630,12 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                         vertex.m_bsdf->sample_ior(
                             sampling_context,
                             vertex.m_bsdf_data);
-                    next_ray.m_media.add(ray.m_media, &object_instance, vertex.get_material(), ior);
+                    next_ray.m_media.add(
+                        ray.m_media,
+                        &object_instance,
+                        vertex.get_material(),
+                        &vertex.m_shading_point->get_assembly_instance(),
+                        ior);
                 }
                 else
                 {

@@ -51,6 +51,7 @@
 
 // Forward declarations.
 namespace foundation    { class Arena; }
+namespace foundation    { class PhaseFunction; }
 namespace renderer      { class BSDF; }
 namespace renderer      { class OSLShadingSystem; }
 
@@ -121,6 +122,12 @@ enum ClosureID
     // NPR closures.
     NPRShadingID,
     NPRContourID,
+
+    // Volume closures.
+    VolumeAbsorptionID,
+    VolumeIsotropicID,
+    VolumeHenyeyGreensteinID,
+    VolumeRayleighID,
 
     NumClosuresIDs
 };
@@ -343,6 +350,39 @@ class APPLESEED_ALIGN(16) CompositeNPRClosure
 
 
 //
+// Composite OSL volume closure.
+//
+
+class APPLESEED_ALIGN(16) CompositeVolumeClosure
+  : public CompositeClosure
+{
+public:
+    CompositeVolumeClosure(
+        const OSL::ClosureColor*    ci,
+        foundation::Arena&          arena);
+
+    template <typename PhaseFunctionType, typename ...Args>
+    void add_closure(
+        const ClosureID             closure_type,
+        const foundation::Color3f&  weight,
+        foundation::Arena&          arena,
+        Args...                     args);
+
+    foundation::PhaseFunction*      get_closure_phase_function(const size_t i) const;
+    const Spectrum&                 get_absorption() const;
+
+private:
+    foundation::PhaseFunction*      m_phase_functions[MaxClosureEntries];
+    Spectrum                        m_absorption_coef;
+
+    void process_closure_tree(
+        const OSL::ClosureColor*    closure,
+        const foundation::Color3f&  weight,
+        foundation::Arena&          arena);
+};
+
+
+//
 // Utility functions.
 //
 
@@ -354,6 +394,7 @@ bool process_matte_tree(
     float&                      matte_alpha);
 
 foundation::Color3f process_background_tree(const OSL::ClosureColor* ci);
+void process_absorption_tree(const OSL::ClosureColor* ci, Spectrum& absorption);
 
 void register_closures(OSLShadingSystem& shading_system);
 

@@ -88,14 +88,15 @@ class ShadingRay
 
     struct Medium
     {
-        const ObjectInstance*       m_object_instance;
-        const Material*             m_material;
-        float                       m_ior;
+        const AssemblyInstance*         m_assembly_instance;
+        const ObjectInstance*           m_object_instance;
+        const Material*                 m_material;
+        float                           m_ior;
 
         const Volume* get_volume() const;
     };
 
-    enum { MaxMediumCount = 8 };
+    enum { MaxMediumCount = 6 };
 
     struct MediaList
     {
@@ -106,16 +107,18 @@ class ShadingRay
 
         // Copy all media from the source list plus an additional medium.
         void add(
-            const MediaList&            source,
-            const ObjectInstance*       object_instance,
-            const Material*             material,
-            const float                 ior);
+            const MediaList&                source,
+            const ObjectInstance*           object_instance,
+            const Material*                 material,
+            const AssemblyInstance*         assembly_instance,
+            const float                     ior);
 
         // Add a medium.
         void add_in_place(
-            const ObjectInstance*       object_instance,
-            const Material*             material,
-            const float                 ior);
+            const ObjectInstance*           object_instance,
+            const Material*                 material,
+            const AssemblyInstance*         assembly_instance,
+            const float                     ior);
 
         // Copy all media from the source list except a given medium.
         void remove(

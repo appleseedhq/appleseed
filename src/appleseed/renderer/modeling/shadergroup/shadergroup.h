@@ -131,6 +131,9 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Return true if the shader group contains at least one matte or holdout closure.
     bool has_matte() const;
 
+    // Return true if the shader group contains at least one Volume closure.
+    bool has_volume() const;
+
     // Return true if the shader group uses the dPdtime global.
     bool uses_dPdtime() const;
 
@@ -160,6 +163,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
         HasDebug        = 1UL << 4,
         HasNPR          = 1UL << 5,
         HasMatte        = 1UL << 6,
+        HasVolume       = 1UL << 7,
         HasAllClosures  =
             HasBSDFs        |
             HasEmission     |
@@ -167,10 +171,11 @@ class APPLESEED_DLLSYMBOL ShaderGroup
             HasSubsurface   |
             HasDebug        |
             HasNPR          |
-            HasMatte,
+            HasMatte        |
+            HasVolume,
 
         // Globals.
-        UsesdPdTime     = 1UL << 7,
+        UsesdPdTime     = 1UL << 8,
         UsesAllGlobals  = UsesdPdTime
     };
     foundation::uint32 m_flags;
@@ -256,6 +261,11 @@ inline bool ShaderGroup::has_npr() const
 inline bool ShaderGroup::has_matte() const
 {
     return (m_flags & HasMatte) != 0;
+}
+
+inline bool ShaderGroup::has_volume() const
+{
+    return (m_flags & HasVolume) != 0;
 }
 
 inline bool ShaderGroup::uses_dPdtime() const

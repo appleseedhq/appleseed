@@ -371,10 +371,10 @@ namespace
                 light_sample.m_shading_normal,
                 shading_context.get_intersector());
 
-            if (material_data.m_shader_group)
+            if (material_data.m_surface_shader_group)
             {
                 shading_context.execute_osl_emission(
-                    *material_data.m_shader_group,
+                    *material_data.m_surface_shader_group,
                     light_shading_point);
             }
 

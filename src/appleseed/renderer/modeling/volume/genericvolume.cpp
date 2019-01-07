@@ -109,6 +109,18 @@ class GenericVolume
 
         const OnFrameBeginMessageContext context("volume", this);
 
+        m_inputs.evaluate_uniforms(&m_values);
+        m_values.m_absorption *= m_values.m_absorption_multiplier;
+        m_values.m_scattering *= m_values.m_scattering_multiplier;
+
+        // Precompute extinction and albedo.
+        m_values.m_precomputed.m_extinction = m_values.m_absorption + m_values.m_scattering;
+        for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+        {
+            m_values.m_precomputed.m_albedo[i] = m_values.m_scattering[i] == 0.0f ? 0.0f :
+                m_values.m_scattering[i] / m_values.m_precomputed.m_extinction[i];
+        }
+
         const std::string phase_function =
             m_params.get_required<std::string>(
                 "phase_function_model",
@@ -117,18 +129,18 @@ class GenericVolume
                 context);
 
         if (phase_function == "isotropic")
-            m_bsdf.m_phase_function.reset(new IsotropicPhaseFunction());
+            m_phase_function.reset(new IsotropicPhaseFunction());
         else if (phase_function == "henyey")
         {
             const float g =
                 clamp(
                     m_params.get_optional<float>("average_cosine", 0.0f),
                     -0.99f, +0.99f);
-            m_bsdf.m_phase_function.reset(new HenyeyPhaseFunction(g));
+            m_phase_function.reset(new HenyeyPhaseFunction(g));
         }
         else if (phase_function == "rayleigh")
         {
-            m_bsdf.m_phase_function.reset(new RayleighPhaseFunction());
+            m_phase_function.reset(new RayleighPhaseFunction());
         }
         else return false;
 
@@ -140,38 +152,12 @@ class GenericVolume
         return true;
     }
 
-    size_t compute_input_data_size() const override
-    {
-        return sizeof(InputValues);
-    }
-
-    void prepare_inputs(
-        Arena&              arena,
-        const ShadingRay&   volume_ray,
-        void*               data) const override
-    {
-        InputValues* values = static_cast<InputValues*>(data);
-
-        values->m_absorption *= values->m_absorption_multiplier;
-        values->m_scattering *= values->m_scattering_multiplier;
-
-        // Precompute extinction and albedo.
-        values->m_precomputed.m_extinction = values->m_absorption + values->m_scattering;
-        for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
-        {
-            values->m_precomputed.m_albedo[i] = values->m_scattering[i] == 0.0f ? 0.0f :
-                values->m_scattering[i] / values->m_precomputed.m_extinction[i];
-        }
-    }
-
     void sample(
-        foundation::Arena&      arena,
-        SamplingContext&        sampling_context,
-        const void*             data,
-        DistanceSample&         sample) const override
+        const ShadingContext&       shading_context,
+        SamplingContext&            sampling_context,
+        DistanceSample&             sample) const override
     {
-        const InputValues* values = static_cast<const InputValues*>(data);
-        const Spectrum& extinction_coef = values->m_precomputed.m_extinction;
+        const Spectrum& extinction_coef = m_values.m_precomputed.m_extinction;
 
         // Sample channel.
         sampling_context.split_in_place(1, 1);
@@ -189,18 +175,16 @@ class GenericVolume
         const double distance = sample_exponential_distribution(s1, extinction_coef[channel]);
 
         // Evaluate this sample.
-        evaluate(arena, data, distance, sample);
+        evaluate(shading_context, sampling_context, distance, sample);
     }
 
     void evaluate(
-        foundation::Arena&      arena,
-        const void*             data,
-        const double            distance,
-        DistanceSample&         sample) const override
+        const ShadingContext&       shading_context,
+        SamplingContext&            sampling_context,
+        const double                distance,
+        DistanceSample&             sample) const override
     {
-        const InputValues* values = static_cast<const InputValues*>(data);
-
-        const Spectrum& extinction_coef = values->m_precomputed.m_extinction;
+        const Spectrum& extinction_coef = m_values.m_precomputed.m_extinction;
         const ShadingRay& volume_ray = sample.m_incoming_point->get_ray();
 
         sample.m_distance = distance;
@@ -210,7 +194,7 @@ class GenericVolume
         {
             // The ray is transmitted.
             sample.m_distance = volume_ray.get_length();
-            evaluate_transmission(data, volume_ray, sample.m_value);
+            evaluate_transmission(shading_context, sampling_context, volume_ray, sample.m_value);
             sample.m_transmitted = true;
             for (int i = 0; i < Spectrum::size(); ++i)
             {
@@ -233,46 +217,49 @@ class GenericVolume
 
             // Assign phase-function-based BSDF.
             sample.m_bsdf = &m_bsdf;
-            auto bsdf_inputs = arena.allocate<PhaseFunctionBSDFInputValues>();
-            bsdf_inputs->m_albedo = values->m_precomputed.m_albedo;
+            auto bsdf_inputs = shading_context.get_arena().allocate<PhaseFunctionBSDFInputValues>();
+            bsdf_inputs->m_albedo = m_values.m_precomputed.m_albedo;
+            bsdf_inputs->m_phase_function = m_phase_function.get();
             sample.m_bsdf_data = bsdf_inputs;
         }
     }
 
     void evaluate_transmission(
-        const void*         data,
-        const ShadingRay&   volume_ray,
-        const float         distance,
-        Spectrum&           spectrum) const override
+        const ShadingContext&       shading_context,
+        SamplingContext&            sampling_context,
+        const ShadingRay&           volume_ray,
+        const float                 distance,
+        Spectrum&                   spectrum) const override
     {
-        const InputValues* values = static_cast<const InputValues*>(data);
-
         for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
         {
-            const float x = -distance * values->m_precomputed.m_extinction[i];
+            const float x = -distance * m_values.m_precomputed.m_extinction[i];
             assert(FP<float>::is_finite(x));
             spectrum[i] = std::exp(x);
         }
     }
 
     void evaluate_transmission(
-        const void*         data,
-        const ShadingRay&   volume_ray,
-        Spectrum&           spectrum) const override
+        const ShadingContext&       shading_context,
+        SamplingContext&            sampling_context,
+        const ShadingRay&           volume_ray,
+        Spectrum&                   spectrum) const override
     {
         if (!volume_ray.is_finite())
             spectrum.set(0.0f);
         else
         {
             const float distance = static_cast<float>(volume_ray.get_length());
-            evaluate_transmission(data, volume_ray, distance, spectrum);
+            evaluate_transmission(shading_context, sampling_context, volume_ray, distance, spectrum);
         }
     }
 
   private:
     typedef GenericVolumeInputValues InputValues;
 
-    PhaseFunctionBSDF m_bsdf;
+    std::unique_ptr<PhaseFunction>      m_phase_function;
+    InputValues                         m_values;
+    PhaseFunctionBSDF                   m_bsdf;
 };
 
 

@@ -269,6 +269,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     const ShadingPoint& light_shading_point =
         m_shading_context.get_tracer().trace_full(
             m_shading_context,
+            sampling_context,
             m_shading_point,
             shadow_ray,
             weight);
@@ -299,10 +300,10 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     if (cos_on <= 0.0f)
         return;
 
-    if (material_data.m_shader_group)
+    if (material_data.m_surface_shader_group)
     {
         m_shading_context.execute_osl_emission(
-            *material_data.m_shader_group,
+            *material_data.m_surface_shader_group,
             light_shading_point);
     }
 
@@ -426,6 +427,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     Spectrum transmission;
     m_shading_context.get_tracer().trace_between_simple(
         m_shading_context,
+        sampling_context,
         m_shading_point,
         sample.m_point,
         VisibilityFlags::ShadowRay,
@@ -460,10 +462,10 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         sample.m_shading_normal,
         m_shading_context.get_intersector());
 
-    if (material_data.m_shader_group)
+    if (material_data.m_surface_shader_group)
     {
         m_shading_context.execute_osl_emission(
-            *material_data.m_shader_group,
+            *material_data.m_surface_shader_group,
             light_shading_point);
     }
 
@@ -539,6 +541,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     Spectrum transmission;
     m_shading_context.get_tracer().trace_between_simple(
         m_shading_context,
+        sampling_context,
         m_shading_point,
         emission_position,
         VisibilityFlags::ShadowRay,

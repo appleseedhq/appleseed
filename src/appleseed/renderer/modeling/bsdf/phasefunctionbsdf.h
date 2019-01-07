@@ -39,9 +39,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
-#include "foundation/math/fresnel.h"
 #include "foundation/math/phasefunction.h"
-#include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 
@@ -58,21 +56,19 @@ namespace renderer
 
     APPLESEED_DECLARE_INPUT_VALUES(PhaseFunctionBSDFInputValues)
     {
-        Spectrum m_albedo;
+        Spectrum                    m_albedo;
+        foundation::PhaseFunction*  m_phase_function;
     };
 
     class PhaseFunctionBSDF
       : public BSDF
     {
       public:
-        std::unique_ptr<foundation::PhaseFunction> m_phase_function;
-
         PhaseFunctionBSDF(
             const char*                 name,
             const ParamArray&           params)
           : BSDF(name, AllBSDFTypes, ScatteringMode::Volume, params)
         {
-            m_inputs.declare("scattering_coefficient", InputFormatSpectralReflectance);
         }
 
         void release() override
@@ -93,8 +89,6 @@ namespace renderer
             const int                   modes,
             BSDFSample&                 sample) const override
         {
-            assert(m_phase_function);
-
             if (!ScatteringMode::has_volume(modes))
                 return;
 
@@ -103,7 +97,7 @@ namespace renderer
             sampling_context.split_in_place(2, 1);
             foundation::Vector2f s = sampling_context.next2<foundation::Vector2f>();
             foundation::Vector3f incoming;
-            const float pdf = m_phase_function->sample(-sample.m_outgoing.get_value(), s, incoming);
+            const float pdf = values->m_phase_function->sample(-sample.m_outgoing.get_value(), s, incoming);
             sample.set_to_scattering(ScatteringMode::Volume, pdf);
             sample.m_incoming = foundation::Dual3f(incoming);
 
@@ -124,8 +118,6 @@ namespace renderer
             const int                       modes,
             DirectShadingComponents&        value) const override
         {
-            assert(m_phase_function);
-
             const InputValues* values = static_cast<const InputValues*>(data);
             float pdf = evaluate_pdf(
                 data,
@@ -153,9 +145,9 @@ namespace renderer
             const foundation::Vector3f&     incoming,
             const int                       modes) const override
         {
-            assert(m_phase_function);
+            const InputValues* values = static_cast<const InputValues*>(data);
 
-            return m_phase_function->evaluate(-outgoing, incoming);
+            return values->m_phase_function->evaluate(-outgoing, incoming);
         }
 
       private:

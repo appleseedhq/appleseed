@@ -388,17 +388,13 @@ namespace
                     // The current ray is being cast into a participating medium.
                     //
 
-                    // Prepare volume for sampling.
                     const Volume* volume = current_medium->get_volume();
-                    void* volume_data = volume->evaluate_inputs(m_shading_context, ray);
-                    volume->prepare_inputs(m_shading_context.get_arena(), ray, volume_data);
-                    vertex->m_volume_data = volume_data;
 
                     if (vertex->m_scattering_modes & ScatteringMode::Volume)
                     {
                         const DistanceSample distance_sample = (volume->is_homogeneous() && m_params.m_enable_equiangular_sampling) ?
-                            sample_distance_mixed(ray, volume, volume_data, vertex, next_shading_point, 0.5f) :
-                            sample_distance_exponential(ray, volume, volume_data, vertex, next_shading_point);
+                            sample_distance_mixed(ray, volume, vertex, next_shading_point, 0.5f) :
+                            sample_distance_exponential(ray, volume, vertex, next_shading_point);
 
                         vertex->m_throughput *= distance_sample.m_value;
                         vertex->m_throughput /= distance_sample.m_probability;
@@ -420,7 +416,8 @@ namespace
                         // This special case is used to reduce the variance.
                         Spectrum transmission;
                         volume->evaluate_transmission(
-                            volume_data,
+                            m_shading_context,
+                            m_sampling_context,
                             next_shading_point->get_ray(),
                             transmission);
                         vertex->m_throughput *= transmission;
@@ -437,7 +434,6 @@ namespace
             DistanceSample sample_distance_exponential(
                 const ShadingRay&           ray,
                 const Volume*               volume,
-                const void*                 volume_data,
                 const PathVertex*           vertex,
                 const ShadingPoint*         next_shading_point)
             {
@@ -457,9 +453,8 @@ namespace
                 }
 
                 volume->sample(
-                    m_shading_context.get_arena(),
+                    m_shading_context,
                     m_sampling_context,
-                    vertex->m_volume_data,
                     distance_sample);
 
                 return distance_sample;
@@ -468,7 +463,6 @@ namespace
             DistanceSample sample_distance_mixed(
                 const ShadingRay&           ray,
                 const Volume*               volume,
-                const void*                 volume_data,
                 PathVertex*                 vertex,
                 const ShadingPoint*         next_shading_point,
                 const float                 equiangular_prob)
@@ -537,17 +531,16 @@ namespace
                     const float s = m_sampling_context.next2<float>();
                     const double distance = equiangular_distance_sampler.sample(s);
                     volume->evaluate(
-                        m_shading_context.get_arena(),
-                        vertex->m_volume_data,
+                        m_shading_context,
+                        m_sampling_context,
                         distance,
                         distance_sample);
                 }
                 else
                 {
                     volume->sample(
-                        m_shading_context.get_arena(),
+                        m_shading_context,
                         m_sampling_context,
-                        vertex->m_volume_data,
                         distance_sample);
                 }
                 distance_sample.m_probability *= (1.0f - equiangular_prob);
@@ -859,7 +852,7 @@ namespace
                     {
                         const Material::RenderData& material_data =
                             vertex.m_shading_point->get_material()->get_render_data();
-                        if (material_data.m_shader_group)
+                        if (material_data.m_surface_shader_group)
                         {
                             // todo: don't split if there's only one closure.
                             m_sampling_context.split_in_place(2, 1);

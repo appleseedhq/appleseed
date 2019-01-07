@@ -34,6 +34,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/material/material.h"
+#include "renderer/modeling/scene/assemblyinstance.h"
 
 using namespace foundation;
 
@@ -61,6 +62,7 @@ void ShadingRay::MediaList::add(
     const ShadingRay::MediaList&    source,
     const ObjectInstance*           object_instance,
     const Material*                 material,
+    const AssemblyInstance*         assembly_instance,
     const float                     ior)
 {
     assert(m_size == 0);
@@ -76,6 +78,7 @@ void ShadingRay::MediaList::add(
     {
         m_list[j].m_object_instance = object_instance;
         m_list[j].m_material = material;
+        m_list[j].m_assembly_instance = assembly_instance;
         m_list[j].m_ior = ior;
         ++j;
     }
@@ -86,13 +89,18 @@ void ShadingRay::MediaList::add(
     m_size = j;
 }
 
-void ShadingRay::MediaList::add_in_place(const ObjectInstance* object_instance, const Material* material, const float ior)
+void ShadingRay::MediaList::add_in_place(
+    const ObjectInstance*       object_instance,
+    const Material*             material,
+    const AssemblyInstance*     assembly_instance,
+    const float                 ior)
 {
     if (m_size == MaxMediumCount)
         return;
 
     m_list[m_size].m_object_instance = object_instance;
     m_list[m_size].m_material = material;
+    m_list[m_size].m_assembly_instance = assembly_instance;
     m_list[m_size].m_ior = ior;
 
     const int8 medium_priority = object_instance->get_medium_priority();

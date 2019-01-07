@@ -411,6 +411,12 @@ void Intersector::make_volume_shading_point(
     shading_point.m_ray = volume_ray;
     shading_point.m_ray.m_tmax = distance;
     shading_point.m_primitive_type = ShadingPoint::PrimitiveVolume;
+    const ShadingRay::Medium* medium = volume_ray.m_media.get_current();
+    if (medium != nullptr)
+    {
+        shading_point.m_assembly_instance = medium->m_assembly_instance;
+        shading_point.m_assembly_instance_transform_seq = &shading_point.m_assembly_instance->transform_sequence();
+    }
 
     // Available on-demand results: none.
     shading_point.m_members = 0;

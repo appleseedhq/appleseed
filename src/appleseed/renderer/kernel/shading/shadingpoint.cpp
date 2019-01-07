@@ -1011,8 +1011,8 @@ void ShadingPoint::initialize_osl_shader_globals(
     const VisibilityFlags::Type ray_flags,
     OSL::RendererServices*      renderer) const
 {
-    assert(hit_surface());
     assert(renderer);
+    assert(is_valid());
 
     if (!(m_members & HasOSLShaderGlobals))
     {
@@ -1045,35 +1045,8 @@ void ShadingPoint::initialize_osl_shader_globals(
             m_shader_globals.dIdy = Vector3f(0.0f);
         }
 
-        // Shading and geometric normals and backfacing flag.
-        m_shader_globals.N = Vector3f(get_shading_normal());
-        m_shader_globals.Ng = Vector3f(get_geometric_normal());
-        m_shader_globals.backfacing = get_side() == ObjectInstance::FrontSide ? 0 : 1;
-
-        // Surface parameters and their differentials.
-        const Vector2f& uv = get_uv(0);
-        m_shader_globals.u = uv[0];
-        m_shader_globals.v = uv[1];
-        if (ray.m_has_differentials)
-        {
-            const Vector2f& duvdx = get_duvdx(0);
-            const Vector2f& duvdy = get_duvdy(0);
-            m_shader_globals.dudx = duvdx[0];
-            m_shader_globals.dudy = duvdy[0];
-            m_shader_globals.dvdx = duvdx[1];
-            m_shader_globals.dvdy = duvdy[1];
-        }
-        else
-        {
-            m_shader_globals.dudx = 0.0f;
-            m_shader_globals.dudy = 0.0f;
-            m_shader_globals.dvdx = 0.0f;
-            m_shader_globals.dvdy = 0.0f;
-        }
-
-        // Surface tangents.
-        m_shader_globals.dPdu = Vector3f(get_dpdu(0));
-        m_shader_globals.dPdv = Vector3f(get_dpdv(0));
+        if (hit_surface())
+            initialize_osl_shader_globals_surface(sg, ray_flags, renderer);
 
         // Time and its derivative.
         m_shader_globals.time = ray.m_time.m_absolute;
@@ -1082,8 +1055,8 @@ void ShadingPoint::initialize_osl_shader_globals(
         // Velocity vector.
         m_shader_globals.dPdtime =
             sg.uses_dPdtime()
-                ? Vector3f(get_world_space_point_velocity())
-                : Vector3f(0.0f);
+            ? Vector3f(get_world_space_point_velocity())
+            : Vector3f(0.0f);
 
         // Point being illuminated and its differentials.
         m_shader_globals.Ps = Vector3f(0.0f);
@@ -1104,7 +1077,6 @@ void ShadingPoint::initialize_osl_shader_globals(
         m_obj_transform_info.m_object_instance_transform = &m_object_instance->get_transform();
         m_shader_globals.object2common = reinterpret_cast<OSL::TransformationPtr>(&m_obj_transform_info);
         m_shader_globals.shader2common = nullptr;
-
         m_members |= HasOSLShaderGlobals;
     }
 
@@ -1114,13 +1086,58 @@ void ShadingPoint::initialize_osl_shader_globals(
     // Always update the surface area of emissive objects.
     m_shader_globals.surfacearea =
         ray_flags == VisibilityFlags::LightRay && sg.has_emission()
-            ? sg.get_surface_area(&get_assembly_instance(), &get_object_instance())
-            : 0.0f;
+        ? sg.get_surface_area(&get_assembly_instance(), &get_object_instance())
+        : 0.0f;
 
     // Output closure.
     m_shader_globals.Ci = nullptr;
 }
 
+void ShadingPoint::initialize_osl_shader_globals_surface(
+    const ShaderGroup&          sg,
+    const VisibilityFlags::Type ray_flags,
+    OSL::RendererServices*      renderer) const
+{
+    assert(hit_surface());
+    assert(renderer);
+
+    const ShadingRay& ray = get_ray();
+    assert(is_normalized(ray.m_dir));
+
+    // Shading and geometric normals and backfacing flag.
+    m_shader_globals.N = Vector3f(get_shading_normal());
+    m_shader_globals.Ng = Vector3f(get_geometric_normal());
+    m_shader_globals.backfacing = get_side() == ObjectInstance::FrontSide ? 0 : 1;
+
+    // Surface parameters and their differentials.
+    const Vector2f& uv = get_uv(0);
+    m_shader_globals.u = uv[0];
+    m_shader_globals.v = uv[1];
+    if (ray.m_has_differentials)
+    {
+        const Vector2f& duvdx = get_duvdx(0);
+        const Vector2f& duvdy = get_duvdy(0);
+        m_shader_globals.dudx = duvdx[0];
+        m_shader_globals.dudy = duvdy[0];
+        m_shader_globals.dvdx = duvdx[1];
+        m_shader_globals.dvdy = duvdy[1];
+    }
+    else
+    {
+        m_shader_globals.dudx = 0.0f;
+        m_shader_globals.dudy = 0.0f;
+        m_shader_globals.dvdx = 0.0f;
+        m_shader_globals.dvdy = 0.0f;
+    }
+
+    // Surface tangents.
+    m_shader_globals.dPdu = Vector3f(get_dpdu(0));
+    m_shader_globals.dPdv = Vector3f(get_dpdv(0));
+
+    // Time and its derivative.
+    m_shader_globals.time = ray.m_time.m_absolute;
+    m_shader_globals.dtime = m_scene->get_active_camera()->get_shutter_time_interval();
+}
 
 //
 // ShadingPoint::OSLObjectTransformInfo class implementation.

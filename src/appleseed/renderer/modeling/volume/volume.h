@@ -70,49 +70,31 @@ class APPLESEED_DLLSYMBOL Volume
     // Return true if this volume represents homogeneous media, else false.
     virtual bool is_homogeneous() const = 0;
 
-    // Return the size in bytes to allocate for the input values of this volume
-    // and its precomputed values, if any. By default, enough space is allocated
-    // for the inputs alone, i.e. this returns get_inputs().compute_data_size().
-    // If a volume stores additional data such as precomputed values in its input
-    // block, it must override this method and return the correct size.
-    // If evaluate_inputs() is overridden, then this method is irrelevant.
-    virtual size_t compute_input_data_size() const;
-
-    // Evaluate the inputs of this volume, if any.
-    virtual void* evaluate_inputs(
-        const ShadingContext&       shading_context,
-        const ShadingRay&           volume_ray) const;
-
-    // Precompute data based on already evaluated input values.
-    virtual void prepare_inputs(
-        foundation::Arena&          arena,
-        const ShadingRay&           volume_ray,
-        void*                       data) const;
-
     // Sample the distance before the next scattering event.
     virtual void sample(
-        foundation::Arena&      arena,
-        SamplingContext&        sampling_context,
-        const void*             data,
-        DistanceSample&         sample) const = 0;
+        const ShadingContext&       shading_context,
+        SamplingContext&            sampling_context,
+        DistanceSample&             sample) const = 0;
 
     // Sample the distance before the next scattering event.
     virtual void evaluate(
-        foundation::Arena&      arena,
-        const void*             data,
-        const double            distance,
-        DistanceSample&         sample) const = 0;
+        const ShadingContext&       shading_context,
+        SamplingContext&            sampling_context,
+        const double                distance,
+        DistanceSample&             sample) const = 0;
 
     // Evaluate the transmission (spectrum) between the front end of the ray and a given point.
     virtual void evaluate_transmission(
-        const void*                 data,                       // input values
+        const ShadingContext&       shading_context,
+        SamplingContext&            sampling_context,
         const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
         const float                 distance,                   // distance to the point on this volume segment
         Spectrum&                   spectrum) const = 0;        // resulting spectrum
 
     // Evaluate the transmission (spectrum) of the entire ray.
     virtual void evaluate_transmission(
-        const void*                 data,                       // input values
+        const ShadingContext&       shading_context,
+        SamplingContext&            sampling_context,
         const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
         Spectrum&                   spectrum) const = 0;        // resulting spectrum
 };

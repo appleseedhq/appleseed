@@ -144,7 +144,12 @@ const void Tracer::initialize_media_list(
         // Update the medium list.
         const ObjectInstance& object_instance = shading_point_ptr->get_object_instance();
         if (entering && material)
-            next_ray.m_media.add(current_ray.m_media, &object_instance, material, 1.0f);
+            next_ray.m_media.add(
+                current_ray.m_media,
+                &object_instance,
+                material,
+                &shading_point_ptr->get_assembly_instance(),
+                1.0f);
         else
         {
             next_ray.m_media.remove(current_ray.m_media, &object_instance);
@@ -152,7 +157,11 @@ const void Tracer::initialize_media_list(
             {
                 // The ray leaves a medium that has been never entered before,
                 // which indicates that the initial point lies inside this media.
-                media->add_in_place(&object_instance, opposite_material, 1.0f);
+                media->add_in_place(
+                    &object_instance,
+                    opposite_material,
+                    &shading_point_ptr->get_assembly_instance(),
+                    1.0f);
             }
         }
 
@@ -167,6 +176,7 @@ const void Tracer::initialize_media_list(
 
 const ShadingPoint& Tracer::do_trace(
     const ShadingContext&       shading_context,
+    SamplingContext&            sampling_context,
     const ShadingRay&           ray,
     Spectrum&                   transmission,
     const ShadingPoint*         parent_shading_point)
@@ -229,9 +239,7 @@ const ShadingPoint& Tracer::do_trace(
         if (volume != nullptr)
         {
             Spectrum volume_transmission;
-            void* data = volume->evaluate_inputs(shading_context, volume_ray);
-            volume->prepare_inputs(shading_context.get_arena(), volume_ray, data);
-            volume->evaluate_transmission(data, volume_ray, volume_transmission);
+            volume->evaluate_transmission(shading_context, sampling_context, volume_ray, volume_transmission);
             transmission *= volume_transmission;
         }
 
@@ -273,7 +281,12 @@ const ShadingPoint& Tracer::do_trace(
         // Update the medium list.
         const ObjectInstance& object_instance = shading_point_ptr->get_object_instance();
         if (entering)
-            next_ray.m_media.add(current_ray.m_media, &object_instance, material, 1.0f);
+            next_ray.m_media.add(
+                current_ray.m_media,
+                &object_instance,
+                material,
+                &shading_point_ptr->get_assembly_instance(),
+                1.0f);
         else
             next_ray.m_media.remove(current_ray.m_media, &object_instance);
 
@@ -290,6 +303,7 @@ const ShadingPoint& Tracer::do_trace(
 
 const ShadingPoint& Tracer::do_trace_between(
     const ShadingContext&       shading_context,
+    SamplingContext&            sampling_context,
     const foundation::Vector3d& target,
     const ShadingRay&           ray,
     Spectrum&                   transmission,
@@ -335,9 +349,7 @@ const ShadingPoint& Tracer::do_trace_between(
         if (volume != nullptr)
         {
             Spectrum volume_transmission;
-            void* data = volume->evaluate_inputs(shading_context, volume_ray);
-            volume->prepare_inputs(shading_context.get_arena(), volume_ray, data);
-            volume->evaluate_transmission(data, volume_ray, volume_transmission);
+            volume->evaluate_transmission(shading_context, sampling_context, volume_ray, volume_transmission);
             transmission *= volume_transmission;
         }
 
@@ -396,7 +408,12 @@ const ShadingPoint& Tracer::do_trace_between(
         // Update the medium list.
         const ObjectInstance& object_instance = shading_point_ptr->get_object_instance();
         if (entering)
-            next_ray.m_media.add(current_ray.m_media, &object_instance, material, 1.0f);
+            next_ray.m_media.add(
+                current_ray.m_media,
+                &object_instance,
+                material,
+                &shading_point_ptr->get_assembly_instance(),
+                1.0f);
         else
             next_ray.m_media.remove(current_ray.m_media, &object_instance);
 
@@ -419,7 +436,7 @@ void Tracer::evaluate_alpha(
     alpha = shading_point.get_alpha();
 
     // Apply OSL transparency if needed.
-    if (const ShaderGroup* sg = material.get_render_data().m_shader_group)
+    if (const ShaderGroup* sg = material.get_render_data().m_surface_shader_group)
     {
         if (sg->has_transparency())
         {

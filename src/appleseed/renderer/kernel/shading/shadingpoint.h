@@ -398,6 +398,11 @@ class ShadingPoint
         const ShaderGroup&              sg,
         const VisibilityFlags::Type     ray_flags,
         OSL::RendererServices*          renderer) const;
+
+    void initialize_osl_shader_globals_surface(
+        const ShaderGroup&              sg,
+        const VisibilityFlags::Type     ray_flags,
+        OSL::RendererServices*          renderer) const;
 };
 
 
@@ -792,7 +797,7 @@ inline const foundation::Vector3d& ShadingPoint::get_vertex(const size_t i) cons
 
 inline const foundation::Vector3d& ShadingPoint::get_world_space_point_velocity() const
 {
-    assert(hit_surface());
+    assert(is_valid());
 
     if (!(m_members & HasWorldSpacePointVelocity))
     {
@@ -847,7 +852,7 @@ inline const Material* ShadingPoint::get_opposite_material() const
 
 inline const AssemblyInstance& ShadingPoint::get_assembly_instance() const
 {
-    assert(hit_surface());
+    assert(is_valid());
     return *m_assembly_instance;
 }
 
@@ -936,7 +941,7 @@ inline const foundation::Color3f& ShadingPoint::get_per_vertex_color() const
 
 inline OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
 {
-    assert(hit_surface());
+    assert(is_valid());
     assert(m_members & HasOSLShaderGlobals);
     return m_shader_globals;
 }

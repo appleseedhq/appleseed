@@ -2075,6 +2075,8 @@ set (renderer_modeling_volume_sources
     renderer/modeling/volume/genericvolume.cpp
     renderer/modeling/volume/genericvolume.h
     renderer/modeling/volume/ivolumefactory.h
+    renderer/modeling/volume/oslvolume.cpp
+    renderer/modeling/volume/oslvolume.h
     renderer/modeling/volume/volume.cpp
     renderer/modeling/volume/volume.h
     renderer/modeling/volume/volumefactoryregistrar.cpp

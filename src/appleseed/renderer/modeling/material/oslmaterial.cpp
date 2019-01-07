@@ -39,6 +39,8 @@
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
+#include "renderer/modeling/volume/oslvolume.h"
+#include "renderer/modeling/volume/volume.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/api/specializedapiarrays.h"
@@ -67,11 +69,13 @@ namespace
           : Material(name, params)
         {
             m_inputs.declare("osl_surface", InputFormatEntity, "");
+            m_inputs.declare("osl_volume", InputFormatEntity, "");
             m_inputs.declare("alpha_map", InputFormatFloat, "");
 
             m_osl_bsdf = OSLBSDFFactory().create();
             m_osl_bssrdf = OSLBSSRDFFactory().create();
             m_osl_edf = OSLEDFFactory().create();
+            m_osl_volume = OSLVolumeFactory().create();
         }
 
         void release() override
@@ -110,21 +114,31 @@ namespace
             if (!m_osl_edf->on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            m_render_data.m_shader_group = get_uncached_osl_surface();
+            if (!m_osl_volume->on_frame_begin(project, parent, recorder, abort_switch))
+                return false;
+
+            m_render_data.m_surface_shader_group = get_uncached_osl_surface();
+            m_render_data.m_volume_shader_group = get_uncached_osl_volume();
             m_render_data.m_bsdf = nullptr;
             m_render_data.m_bssrdf = nullptr;
             m_render_data.m_edf = nullptr;
+            m_render_data.m_volume = nullptr;
 
-            if (m_render_data.m_shader_group)
+            if (m_render_data.m_surface_shader_group)
             {
-                if (m_render_data.m_shader_group->has_bsdfs())
+                if (m_render_data.m_surface_shader_group->has_bsdfs())
                     m_render_data.m_bsdf = m_osl_bsdf.get();
 
-                if (m_render_data.m_shader_group->has_subsurface())
+                if (m_render_data.m_surface_shader_group->has_subsurface())
                     m_render_data.m_bssrdf = m_osl_bssrdf.get();
 
-                if (m_render_data.m_shader_group->has_emission())
+                if (m_render_data.m_surface_shader_group->has_emission())
                     m_render_data.m_edf = m_osl_edf.get();
+            }
+            if (m_render_data.m_volume_shader_group)
+            {
+                if (m_render_data.m_volume_shader_group->has_volume())
+                    m_render_data.m_volume = m_osl_volume.get();
             }
 
             return true;
@@ -134,11 +148,20 @@ namespace
         auto_release_ptr<BSDF>      m_osl_bsdf;
         auto_release_ptr<BSSRDF>    m_osl_bssrdf;
         auto_release_ptr<EDF>       m_osl_edf;
+        auto_release_ptr<Volume>    m_osl_volume;
 
         const ShaderGroup* get_uncached_osl_surface() const override
         {
             const ShaderGroup* sg =
                 static_cast<const ShaderGroup*>(m_inputs.get_entity("osl_surface"));
+
+            return sg && sg->is_valid() ? sg : nullptr;
+        }
+
+        const ShaderGroup* get_uncached_osl_volume() const override
+        {
+            const ShaderGroup* sg =
+                static_cast<const ShaderGroup*>(m_inputs.get_entity("osl_volume"));
 
             return sg && sg->is_valid() ? sg : nullptr;
         }
@@ -183,6 +206,16 @@ DictionaryArray OSLMaterialFactory::get_input_metadata() const
                 Dictionary()
                     .insert("shader_group", "Shader Groups"))
             .insert("use", "optional"));
+
+    metadata.push_back(
+        Dictionary()
+        .insert("name", "osl_volume")
+        .insert("label", "OSL Volume")
+        .insert("type", "entity")
+        .insert("entity_types",
+            Dictionary()
+            .insert("shader_group", "Shader Groups"))
+        .insert("use", "optional"));
 
     add_alpha_map_metadata(metadata);
 

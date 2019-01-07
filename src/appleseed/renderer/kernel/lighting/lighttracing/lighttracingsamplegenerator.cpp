@@ -354,6 +354,7 @@ namespace
                 Spectrum radiance;
                 m_shading_context.get_tracer().trace_between_simple(
                     m_shading_context,
+                    m_sampling_context,
                     light_sample.m_point - camera_outgoing,
                     light_sample.m_point,
                     time,
@@ -397,6 +398,7 @@ namespace
                 Spectrum radiance;
                 m_shading_context.get_tracer().trace_between_simple(
                     m_shading_context,
+                    m_sampling_context,
                     light_vertex - camera_outgoing,
                     light_vertex,
                     time,
@@ -448,6 +450,7 @@ namespace
                 Spectrum transmission;
                 m_shading_context.get_tracer().trace_between_simple(
                     m_shading_context,
+                    m_sampling_context,
                     vertex.get_point() - camera_outgoing,
                     vertex.get_point(),
                     vertex.get_time(),
@@ -624,10 +627,10 @@ namespace
                 light_sample.m_shading_normal,
                 m_shading_context.get_intersector());
 
-            if (material_data.m_shader_group)
+            if (material_data.m_surface_shader_group)
             {
                 m_shading_context.execute_osl_emission(
-                    *material_data.m_shader_group,
+                    *material_data.m_surface_shader_group,
                     light_shading_point);
             }
 

@@ -200,6 +200,16 @@ Color3f OSLShaderGroupExec::execute_background(
     return process_background_tree(sg.Ci);
 }
 
+void OSLShaderGroupExec::execute_volume(
+    const ShaderGroup&              shader_group,
+    const ShadingPoint&             shading_point) const
+{
+    do_execute(
+        shader_group,
+        shading_point,
+        VisibilityFlags::VolumeRay);
+}
+
 void OSLShaderGroupExec::do_execute(
     const ShaderGroup&              shader_group,
     const ShadingPoint&             shading_point,
