@@ -82,7 +82,8 @@ public:
         const ParamArray&   params)
         : Volume(name, params)
         , m_bsdf((std::string(name) + "_brdf").c_str(), ParamArray())
-        , m_extinction_majorant(10.0f)
+        , m_extinction_majorant(100.0f)
+        , m_max_iterations(1000)
     {
     }
 
@@ -127,8 +128,18 @@ public:
         sample.m_probability = 1.0f;
         bool continue_tracking = true;
         sample.m_distance = 0.0f;
+        size_t n_iterations = 0;
         while (continue_tracking)
         {
+            // Put a hard limit on the number of iterations.
+            if (n_iterations++ == m_max_iterations)
+            {
+                sample.m_value.set(0.0f);
+                sample.m_distance = volume_ray.get_length();
+                sample.m_transmitted = true;
+                break;
+            }
+
             // Sample distance exponentially, assuming that the ray is infinite.
             sampling_context.split_in_place(1, 1);
             const float s1 = sampling_context.next2<float>();
@@ -235,8 +246,16 @@ public:
         spectrum.set(1.0f);
         float current_distance = 0.0f;
         bool continue_tracking = true;
+        size_t n_iterations = 0;
         while (continue_tracking)
         {
+            // Put a hard limit on the number of iterations.
+            if (n_iterations++ == m_max_iterations)
+            {
+                spectrum.set(0.0f);
+                break;
+            }
+
             // Sample distance exponentially, assuming that the ray is infinite.
             sampling_context.split_in_place(1, 1);
             const float s1 = sampling_context.next2<float>();
@@ -294,6 +313,7 @@ public:
   private:
     PhaseFunctionBSDF   m_bsdf;
     Spectrum            m_extinction_majorant;
+    const size_t        m_max_iterations;
 };
 
 
