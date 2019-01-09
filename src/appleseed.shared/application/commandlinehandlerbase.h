@@ -74,7 +74,7 @@ class SHAREDDLL CommandLineHandlerBase
     // Parse the application's command line.
     virtual void parse(
         const int       argc,
-        const char*     argv[],
+        char*           argv[],
         SuperLogger&    logger);
 
     // Apply command line arguments. The parse() method must have been called beforehand.
