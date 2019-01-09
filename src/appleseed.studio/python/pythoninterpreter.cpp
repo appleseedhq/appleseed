@@ -107,7 +107,7 @@ namespace
         base_path = base_path.parent_path();
 
         // Compute full path.
-        lib_path = base_path / lib_path / "python2.7";
+        lib_path = base_path / lib_path / "python";
 
         return canonical(lib_path).make_preferred().string();
     }
@@ -128,7 +128,7 @@ namespace
         base_path = base_path.parent_path();
 
         // Compute full path.
-        const bf::path site_pkg_path = base_path / "lib" / "python2.7" / "site-packages";
+        const bf::path site_pkg_path = base_path / "lib" / "python" / "site-packages";
 
         return canonical(site_pkg_path).make_preferred().string();
     }
