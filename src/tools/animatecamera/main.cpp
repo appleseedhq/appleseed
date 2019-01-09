@@ -538,7 +538,7 @@ namespace
 // Entry point of animatecamera.
 //
 
-int main(int argc, const char* argv[])
+int main(int argc, char* argv[])
 {
     // Construct the logger that will be used throughout the program.
     SuperLogger logger;
