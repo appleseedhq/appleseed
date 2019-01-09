@@ -65,6 +65,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/path.h"
+#include "foundation/platform/python.h"
 #include "foundation/platform/system.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
@@ -1345,6 +1346,11 @@ void MainWindow::print_startup_information()
         Compiler::get_compiler_version());
 
     System::print_information(global_logger());
+
+    char* python_home = Py_GetPythonHome();
+    if (python_home == nullptr)
+        RENDERER_LOG_INFO("Python home not set.");
+    else RENDERER_LOG_INFO("Python home set to %s.", python_home);
 }
 
 namespace
