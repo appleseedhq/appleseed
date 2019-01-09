@@ -300,13 +300,13 @@ int main(int argc, char* argv[])
     // QApplication sets C locale to the user's locale, we need to fix this.
     std::setlocale(LC_ALL, "C");
 
-    // QT changes locale when loading image from disk for the very first time.
-    // The problem was tracked for both QImage and QPixmap.
-    // Both classes in their `load()` function call `QImageReader.read()`
-    // which results in change of the locale back to system settings.
-    // This is a dirty fix which loads any image at the very beginning and
-    // resets the locale right after, thus preventing the `QImageReader.read()`
-    // to change it again (as it happens only on the very first `read`).
+    // Qt changes the locale when loading images from disk for the very first time.
+    // The problem was tracked for both `QImage` and `QPixmap`: in their `load()`
+    // functions, both classes call `QImageReader::read()` which causes the locale
+    // to be changed to the system's one. The line that follows is a dirty fix
+    // that consists in loading an image (any image) at the very beginning and
+    // resetting the locale right after, thus preventing `QImageReader::read()`
+    // from changing it again (as it happens only on the very first `read()`).
     // Issue reported and tracked on GitHub under reference #1435.
     QImageReader(make_app_path("icons/icon.png")).read();   // any image
 
