@@ -63,6 +63,21 @@ CommandLineHandler::CommandLineHandler()
             .set_exact_value_count(1));
 }
 
+void CommandLineHandler::parse(
+    const int       argc,
+    char*           argv[])
+{
+    SuperLogger logger;
+
+#ifdef _WIN32
+    // On Windows, we will display command line arguments in a message box
+    // so we need to capture CommandLineHandler's output into a string.
+    logger.set_log_target(create_string_log_target());
+#endif
+
+    CommandLineHandlerBase::parse(argc, argv, logger);
+}
+
 void CommandLineHandler::print_program_usage(
     const char*     executable_name,
     SuperLogger&    logger) const

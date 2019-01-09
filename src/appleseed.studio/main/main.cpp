@@ -317,14 +317,8 @@ int main(int argc, char* argv[])
     check_installation();
 
     // Parse the command line.
-    SuperLogger logger;
-#ifdef _WIN32
-    // On Windows, we will display command line arguments in a message box
-    // so we need to capture CommandLineHandler's output into a string.
-    logger.set_log_target(create_string_log_target());
-#endif
     CommandLineHandler cl;
-    cl.parse(argc, const_cast<const char**>(argv), logger);
+    cl.parse(argc, argv);
 
     // Configure the application to use our default stylesheet file.
     set_default_stylesheet(application);
