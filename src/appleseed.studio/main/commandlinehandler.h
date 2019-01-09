@@ -49,7 +49,7 @@ namespace studio {
 //
 
 class CommandLineHandler
-  : public shared::CommandLineHandlerBase
+  : private shared::CommandLineHandlerBase
 {
   public:
     foundation::ValueOptionHandler<std::string> m_filename;
@@ -57,6 +57,11 @@ class CommandLineHandler
 
     // Constructor.
     CommandLineHandler();
+
+    // Parse the application's command line.
+    void parse(
+        const int               argc,
+        char*                   argv[]);
 
   private:
     // Emit usage instructions to the logger.
