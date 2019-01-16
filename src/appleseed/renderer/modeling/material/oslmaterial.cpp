@@ -118,7 +118,21 @@ namespace
                 return false;
 
             m_render_data.m_surface_shader_group = get_uncached_osl_surface();
+            if (m_render_data.m_surface_shader_group && m_render_data.m_surface_shader_group->has_volume())
+            {
+                RENDERER_LOG_WARNING(
+                    "Material %s has OSL surface shader containing volume closures. These closures will be ignored.",
+                    get_name());
+            }
+
             m_render_data.m_volume_shader_group = get_uncached_osl_volume();
+            if (m_render_data.m_volume_shader_group && m_render_data.m_volume_shader_group->has_surface())
+            {
+                RENDERER_LOG_WARNING(
+                    "Material %s has OSL volume shader containing surface closures. These closures will be ignored.",
+                    get_name());
+            }
+
             m_render_data.m_bsdf = nullptr;
             m_render_data.m_bssrdf = nullptr;
             m_render_data.m_edf = nullptr;
