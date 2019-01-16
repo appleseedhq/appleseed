@@ -38,6 +38,7 @@
 // OpenImageIO headers.
 #include "foundation/platform/_beginoiioheaders.h"
 #include "OpenImageIO/imageio.h"
+#include "OpenImageIO/version.h"
 #include "foundation/platform/_endoiioheaders.h"
 
 // Forward declarations.
@@ -91,9 +92,6 @@ class APPLESEED_DLLSYMBOL GenericImageFileWriter
   private:
     struct Impl;
     Impl* impl;
-
-    OIIO::ImageOutput*  m_writer;
-    const char*         m_filename;
 };
 
 }   // namespace foundation

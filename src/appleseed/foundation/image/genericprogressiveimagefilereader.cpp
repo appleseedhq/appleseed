@@ -43,6 +43,7 @@
 #include "OpenImageIO/imageio.h"
 #include "OpenImageIO/paramlist.h"
 #include "OpenImageIO/typedesc.h"
+#include "OpenImageIO/version.h"
 #include "foundation/platform/_endoiioheaders.h"
 
 // Standard headers.
@@ -65,7 +66,13 @@ struct GenericProgressiveImageFileReader::Impl
 {
     Logger*                                 m_logger;
     string                                  m_filename;
+
+#if OIIO_VERSION < 20000
     OIIO::ImageInput*                       m_input;
+#else
+    std::unique_ptr<OIIO::ImageInput>       m_input;
+#endif
+
     bool                                    m_supports_random_access;
     bool                                    m_is_tiled;
     CanvasProperties                        m_props;
@@ -173,11 +180,9 @@ void GenericProgressiveImageFileReader::close()
 
     impl->m_input->close();
 
-    // todo: we should really be calling OIIO::ImageInput::destroy(impl->m_input)
-    // but OpenImageIO 1.5.20 (the version included in appleseed-deps at the time
-    // of writing) is too old to have this method. Since on Windows we link to
-    // OpenImageIO statically, this should be safe anyway.
-    delete impl->m_input;
+#if OIIO_VERSION < 20000
+    OIIO::ImageInput::destroy(impl->m_input);
+#endif
 
     impl->m_input = nullptr;
 }
