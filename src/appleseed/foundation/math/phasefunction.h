@@ -84,9 +84,9 @@ class IsotropicPhaseFunction final
 //
 
 class RayleighPhaseFunction final
-    : public PhaseFunction
+  : public PhaseFunction
 {
-public:
+  public:
     float evaluate(const Vector3f& outgoing, const Vector3f& incoming) const override;
     float sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const override;
 };

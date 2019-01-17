@@ -64,7 +64,7 @@ namespace renderer
 // Call graph:
 //
 //   compute_outgoing_radiance_material_sampling
-//       take_single_material_sample
+//       take_single_bsdf_sample
 //
 //   compute_outgoing_radiance_light_sampling_low_variance
 //       add_emitting_triangle_sample_contribution
@@ -119,7 +119,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_material_sampling(
 
     for (size_t i = 0, e = m_bsdf_sample_count; i < e; ++i)
     {
-        take_single_material_sample(
+        take_single_bsdf_sample(
             sampling_context,
             mis_heuristic,
             outgoing,
@@ -235,7 +235,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling_low_v
     radiance += radiance_light_sampling;
 }
 
-void DirectLightingIntegrator::take_single_material_sample(
+void DirectLightingIntegrator::take_single_bsdf_sample(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
     const Dual3d&               outgoing,
@@ -424,65 +424,13 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
 
     // Compute the transmission factor between the light sample and the shading point.
     Spectrum transmission;
-    if (m_shading_point.hit_surface())
-    {
-        const foundation::Vector3d& geometric_normal = m_shading_point.get_geometric_normal();
-        const bool crossing_interface =
-            foundation::dot(outgoing.get_value(), geometric_normal) *
-            foundation::dot(incoming, geometric_normal) < 0.0;
-        const bool entering = m_shading_point.get_side() == ObjectInstance::FrontSide;
-        if (crossing_interface)
-        {
-            // Build the medium list of the shadow ray.
-            ShadingRay::MediaList shadow_ray_media;
-            // Ray goes under the surface:
-            // inherit the medium list of the parent ray and add/remove the current medium.
-            if (entering)
-            {
-                shadow_ray_media.add(
-                    m_shading_point.get_ray().m_media,
-                    &m_shading_point.get_object_instance(),
-                    material, 1.0f);
-            }
-            else
-            {
-                shadow_ray_media.remove(
-                    m_shading_point.get_ray().m_media,
-                    &m_shading_point.get_object_instance());
-            }
-            m_shading_context.get_tracer().trace_between_simple(
-                m_shading_context,
-                m_shading_point,
-                sample.m_point,
-                VisibilityFlags::ShadowRay,
-                transmission,
-                &shadow_ray_media);
-        }
-        else
-        {
-            // Reflected ray:
-            // inherit the medium list of the parent ray.
-            m_shading_context.get_tracer().trace_between_simple(
-                m_shading_context,
-                m_shading_point,
-                sample.m_point,
-                VisibilityFlags::ShadowRay,
-                transmission,
-                &m_shading_point.get_ray().m_media);
-        }
-    }
-    else
-    {
-        // Reflected ray:
-        // inherit the medium list of the parent ray.
-        m_shading_context.get_tracer().trace_between_simple(
-            m_shading_context,
-            m_shading_point,
-            sample.m_point,
-            VisibilityFlags::ShadowRay,
-            transmission,
-            &m_shading_point.get_ray().m_media);
-    }
+    m_shading_context.get_tracer().trace_between_simple(
+        m_shading_context,
+        m_shading_point,
+        sample.m_point,
+        VisibilityFlags::ShadowRay,
+        transmission,
+        &m_shading_point.get_ray().m_media);
 
     // Discard occluded samples.
     if (is_zero(transmission))

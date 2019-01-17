@@ -489,7 +489,6 @@ namespace
                 }
 
                 Vector3d pivot;
-                const Vector3d* pivot_ptr = &pivot;
                 const size_t light_count = m_light_sampler.get_non_physical_light_count();
                 m_sampling_context.split_in_place(1, 1);
                 const float s = m_sampling_context.next2<float>();
