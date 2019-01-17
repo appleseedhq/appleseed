@@ -499,7 +499,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             }
         }
 
-
         // Compute absorption for the segment inside the medium.
         const ShadingRay::Medium* prev_medium = ray.m_media.get_current();
         if (vertex.m_shading_point->hit_surface() && prev_medium != nullptr && prev_medium->m_material != nullptr)

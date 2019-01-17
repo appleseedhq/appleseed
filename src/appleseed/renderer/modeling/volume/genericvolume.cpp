@@ -31,9 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
-#include "foundation/math/cdf.h"
 #include "foundation/math/fp.h"
-#include "foundation/math/mis.h"
 #include "foundation/math/phasefunction.h"
 #include "foundation/math/sampling/equiangularsampler.h"
 #include "foundation/math/sampling/mappings.h"
@@ -73,7 +71,8 @@ namespace
 // Generic volume.
 //
 
-class GenericVolume : public Volume
+class GenericVolume
+  : public Volume
 {
   public:
     GenericVolume(
@@ -234,7 +233,6 @@ class GenericVolume : public Volume
 
             // Assign phase-function-based BSDF.
             sample.m_bsdf = &m_bsdf;
-            sample.m_bsdf_data;
             auto bsdf_inputs = arena.allocate<PhaseFunctionBSDFInputValues>();
             bsdf_inputs->m_albedo = values->m_precomputed.m_albedo;
             sample.m_bsdf_data = bsdf_inputs;

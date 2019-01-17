@@ -125,7 +125,7 @@ class DirectLightingIntegrator
     const size_t                        m_light_sample_count;
     const bool                          m_indirect;
 
-    void take_single_material_sample(
+    void take_single_bsdf_sample(
         SamplingContext&                sampling_context,
         const foundation::MISHeuristic  mis_heuristic,
         const foundation::Dual3d&       outgoing,

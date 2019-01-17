@@ -99,6 +99,8 @@ class ShadingRay
 
     struct MediaList
     {
+        MediaList();
+
         // Copy all media from the source ray.
         void copy_from(const MediaList& source);
 
@@ -133,7 +135,7 @@ class ShadingRay
         float get_underlying_ior() const;
 
         Medium                          m_list[MaxMediumCount]; // always sorted from highest to lowest priority
-        foundation::uint8               m_size = 0;
+        foundation::uint8               m_size;
     };
 
     // Public members, in an order that optimizes packing.

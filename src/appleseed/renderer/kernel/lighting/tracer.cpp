@@ -120,9 +120,6 @@ const void Tracer::initialize_media_list(
 
         const ShadingRay& current_ray = shading_point_ptr->get_ray();
 
-        const ShadingRay::Medium* medium = current_ray.m_media.get_current();
-        const Volume* volume = medium == nullptr ? nullptr : medium->get_volume();
-
         // Stop if the ray escaped the scene.
         if (!shading_point_ptr->hit_surface())
         {

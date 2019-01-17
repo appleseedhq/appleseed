@@ -40,6 +40,11 @@ using namespace foundation;
 namespace renderer
 {
 
+ShadingRay::MediaList::MediaList()
+    : m_size(0u)
+{
+}
+
 void ShadingRay::MediaList::copy_from(const ShadingRay::MediaList& source)
 {
     assert(m_size == 0);
