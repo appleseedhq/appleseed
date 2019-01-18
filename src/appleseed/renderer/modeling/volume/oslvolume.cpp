@@ -62,6 +62,22 @@
 
 using namespace foundation;
 
+
+namespace
+{
+
+float dot(const renderer::Spectrum& lhs, const renderer::Spectrum& rhs)
+{
+    float result = 0.0f;
+    for (size_t i = 0, e = renderer::Spectrum::size(); i < e; ++i)
+    {
+        result += lhs[i] * rhs[i];
+    }
+    return result;
+}
+}
+
+
 namespace renderer
 {
 
@@ -107,8 +123,6 @@ public:
         SamplingContext&            sampling_context,
         DistanceSample&             sample) const override
     {
-        size_t channel = 0;
-
         CompositeVolumeClosure* composite_closure =
             shading_context.get_arena().allocate_noinit<CompositeVolumeClosure>();
         const ShadingRay& volume_ray = sample.m_incoming_point->get_ray();
@@ -143,7 +157,7 @@ public:
             // Sample distance exponentially, assuming that the ray is infinite.
             sampling_context.split_in_place(1, 1);
             const float s1 = sampling_context.next2<float>();
-            sample.m_distance += sample_exponential_distribution(s1, m_extinction_majorant[channel]);
+            sample.m_distance += sample_exponential_distribution(s1, m_extinction_majorant);
 
             if (volume_ray.is_finite() && sample.m_distance > volume_ray.get_length())
             {
@@ -167,30 +181,44 @@ public:
                     volume_shading_point.get_osl_shader_globals().Ci,
                     shading_context.get_arena());
 
-                const Spectrum& absorption_coef = composite_closure->get_absorption();
-                Spectrum total_scattering_coef(0.0f);
+                Spectrum scattering_coef(0.0f);
                 for (size_t i = 0; i < composite_closure->get_closure_count(); ++i)
-                    total_scattering_coef += composite_closure->get_closure_weight(i);
-                const Spectrum extinction_coef = absorption_coef + total_scattering_coef;
+                   scattering_coef += composite_closure->get_closure_weight(i);
+                const Spectrum absorption_coef = composite_closure->get_absorption();
+                Spectrum null_coef;
+                for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+                {
+                    null_coef[i] = m_extinction_majorant - scattering_coef[i] - absorption_coef[i];
+                }
 
-                const float absorption = absorption_coef[channel];
-                const float total_scattering = total_scattering_coef[channel];
-                const float extinction = extinction_coef[channel];
-                const float abs_null = m_extinction_majorant[channel] - extinction;
-                assert(abs_null > 0.0f);
-                const float denominator = total_scattering + extinction + abs_null;
+                Spectrum channel_weights = sample.m_channel_sampling_weights;
+                channel_weights *= sample.m_value;
+                const float avg_absorption = dot(channel_weights, absorption_coef);
+                const float avg_scattering = dot(channel_weights, scattering_coef);
+                const float avg_extinction = avg_absorption + avg_scattering;
+                const float avg_null = dot(channel_weights, null_coef);
+                assert(avg_null >= 0.0f);
+                assert(min_value(null_coef) >= 0.0f);
 
                 sampling_context.split_in_place(1, 1);
+                const float denominator = (avg_null + avg_extinction);
                 const float s2 = sampling_context.next2<float>() * denominator;
                 float cdf = 0.0f;
-                for (size_t i = 0; i < composite_closure->get_closure_count() && continue_tracking; ++i)
+
+                const size_t num_closures = composite_closure->get_closure_count();
+                for (size_t i = 0; i < num_closures && continue_tracking; ++i)
                 {
-                    if (s2 < (cdf += composite_closure->get_closure_weight(i)[channel]))
+                    const Spectrum& scattering_coef_closure = composite_closure->get_closure_weight(i);
+                    const float avg_scattering_closure = dot(channel_weights, scattering_coef_closure);
+                    if (s2 < (cdf += avg_scattering_closure))
                     {
                         // The ray is scatterred with i-th phase function.
                         sample.m_transmitted = false;
 
                         // Assign phase-function-based BSDF.
+                        const float weight = denominator / (avg_scattering_closure * m_extinction_majorant);
+                        sample.m_value *= scattering_coef_closure;
+                        sample.m_value *= weight;
                         sample.m_bsdf = &m_bsdf;
                         sample.m_bsdf_data;
                         auto bsdf_inputs = shading_context.get_arena().allocate<PhaseFunctionBSDFInputValues>();
@@ -200,13 +228,19 @@ public:
                         continue_tracking = false;
                     }
                 }
-                if (continue_tracking && s2 < (cdf += absorption))
+                if (continue_tracking && s2 < (cdf += avg_absorption))
                 {
                     // The ray is absorbed.
                     sample.m_value.set(0.0f);
                     sample.m_distance = volume_ray.get_length();
                     sample.m_transmitted = true;
                     continue_tracking = false;
+                }
+                if (continue_tracking)
+                {
+                    const float weight = denominator / (avg_null * m_extinction_majorant);
+                    sample.m_value *= null_coef;
+                    sample.m_value *= weight;
                 }
             }
         }
@@ -228,8 +262,6 @@ public:
         const float                 distance,
         Spectrum&                   spectrum) const override
     {
-        size_t channel = 0;
-
         CompositeVolumeClosure* composite_closure =
             shading_context.get_arena().allocate_noinit<CompositeVolumeClosure>();
         ShadingPoint volume_shading_point;
@@ -259,7 +291,7 @@ public:
             // Sample distance exponentially, assuming that the ray is infinite.
             sampling_context.split_in_place(1, 1);
             const float s1 = sampling_context.next2<float>();
-            current_distance += sample_exponential_distribution(s1, m_extinction_majorant[channel]);
+            current_distance += sample_exponential_distribution(s1, m_extinction_majorant);
 
             if (volume_ray.is_finite() && current_distance > volume_ray.get_length())
             {
@@ -287,10 +319,12 @@ public:
                     total_scattering_coef += composite_closure->get_closure_weight(i);
                 const Spectrum extinction_coef = absorption_coef + total_scattering_coef;
 
-                const float extinction = extinction_coef[channel];
-
-                assert(extinction <= m_extinction_majorant[channel]);
-                spectrum *= (1.0f - extinction / m_extinction_majorant[channel]);
+                assert(max_value(extinction_coef) <= m_extinction_majorant);
+                const float rcp_extinction_majorant = rcp(m_extinction_majorant);
+                for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+                {
+                    spectrum[i] *= (1.0f - extinction_coef[i] * rcp_extinction_majorant);
+                }
             }
         }
     }
@@ -312,7 +346,7 @@ public:
 
   private:
     PhaseFunctionBSDF   m_bsdf;
-    Spectrum            m_extinction_majorant;
+    float               m_extinction_majorant;
     const size_t        m_max_iterations;
 };
 
