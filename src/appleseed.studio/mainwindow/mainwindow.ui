@@ -30,14 +30,8 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tab_render_channels">
       <property name="currentIndex">
-       <number>0</number>
+       <number>-1</number>
       </property>
-      <widget class="QWidget" name="tab_render_channels_dummy">
-       <attribute name="title">
-        <string>This Text Should Not Be Visible</string>
-       </attribute>
-       <layout class="QGridLayout" name="gridLayout_8"/>
-      </widget>
      </widget>
     </item>
    </layout>

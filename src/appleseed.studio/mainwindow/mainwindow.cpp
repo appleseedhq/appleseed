@@ -155,7 +155,6 @@ MainWindow::MainWindow(QWidget* parent)
     slot_load_settings();
 
     update_project_explorer();
-    remove_render_tabs();
     update_workspace();
 
     build_minimize_buttons();
