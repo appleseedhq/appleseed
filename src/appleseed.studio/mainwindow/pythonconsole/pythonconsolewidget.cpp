@@ -164,25 +164,6 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
     PythonInterpreter::instance().initialize(OutputRedirector(m_output));
 }
 
-void PythonConsoleWidget::wheelEvent(QWheelEvent* event)
-{
-    if (QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
-    {
-        const int new_font_size = font().pointSize() - event->delta() / 120;
-
-        QFont new_font = m_output->font();
-        new_font.setPointSize(new_font_size);
-        m_output->setFont(new_font);
-    }
-    else QWidget::wheelEvent(event);
-}
-
-void PythonConsoleWidget::slot_file_changed()
-{
-    if (m_input->document()->isModified())
-        m_is_file_dirty = true;
-}
-
 void PythonConsoleWidget::slot_execute_selection()
 {
     // QTextCursor returned by textCursor() function uses QChar(8233) instead of newline.
@@ -196,20 +177,9 @@ void PythonConsoleWidget::slot_execute_all()
     execute(m_input->toPlainText());
 }
 
-void PythonConsoleWidget::execute(const QString& script)
-{
-    PythonInterpreter::instance().execute(script.toStdString());
-}
-
 void PythonConsoleWidget::slot_clear_output()
 {
     m_output->clear();
-}
-
-void PythonConsoleWidget::slot_change_exec_selection_button_state()
-{
-    const bool is_enabled = !m_input->textCursor().selection().isEmpty();
-    m_action_execute_selection->setEnabled(is_enabled);
 }
 
 void PythonConsoleWidget::slot_new_file()
@@ -220,11 +190,75 @@ void PythonConsoleWidget::slot_new_file()
     close_file();
 }
 
-void PythonConsoleWidget::close_file()
+void PythonConsoleWidget::slot_open_file()
 {
-    m_input->clear();
-    m_opened_filepath.clear();
-    m_is_file_dirty = false;
+    if (!can_close_file())
+        return;
+
+    ParamArray& settings = PythonInterpreter::instance().get_main_window()->get_settings();
+
+    QString filepath =
+        get_open_filename(
+            this,
+            "Open...",
+            "Python Script File (*.py)",
+            settings,
+            SETTINGS_FILE_DIALOG_PYTHON_SCRIPTS);
+
+    if (!filepath.isEmpty())
+    {
+        filepath = QDir::toNativeSeparators(filepath);
+        open_file(filepath.toStdString());
+    }
+}
+
+void PythonConsoleWidget::slot_save_file()
+{
+    if (!has_file_path())
+        slot_save_file_as();
+    else
+        save_file(m_opened_filepath);
+}
+
+void PythonConsoleWidget::slot_save_file_as()
+{
+    ParamArray& settings = PythonInterpreter::instance().get_main_window()->get_settings();
+
+    const QString filepath =
+        get_save_filename(
+            this,
+            "Save As...",
+            "Python Script File (*.py)",
+            settings,
+            SETTINGS_FILE_DIALOG_PYTHON_SCRIPTS);
+
+    if (!filepath.isEmpty())
+        save_file(filepath.toStdString());
+}
+
+void PythonConsoleWidget::slot_file_changed()
+{
+    if (m_input->document()->isModified())
+        m_is_file_dirty = true;
+}
+
+void PythonConsoleWidget::slot_change_exec_selection_button_state()
+{
+    const bool is_enabled = !m_input->textCursor().selection().isEmpty();
+    m_action_execute_selection->setEnabled(is_enabled);
+}
+
+void PythonConsoleWidget::wheelEvent(QWheelEvent* event)
+{
+    if (QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
+    {
+        const int new_font_size = font().pointSize() - event->delta() / 120;
+
+        QFont new_font = m_output->font();
+        new_font.setPointSize(new_font_size);
+        m_output->setFont(new_font);
+    }
+    else QWidget::wheelEvent(event);
 }
 
 namespace
@@ -266,26 +300,9 @@ bool PythonConsoleWidget::can_close_file()
     return false;
 }
 
-void PythonConsoleWidget::slot_open_file()
+bool PythonConsoleWidget::has_file_path()
 {
-    if (!can_close_file())
-        return;
-
-    ParamArray& settings = PythonInterpreter::instance().get_main_window()->get_settings();
-
-    QString filepath =
-        get_open_filename(
-            this,
-            "Open...",
-            "Python Script File (*.py)",
-            settings,
-            SETTINGS_FILE_DIALOG_PYTHON_SCRIPTS);
-
-    if (!filepath.isEmpty())
-    {
-        filepath = QDir::toNativeSeparators(filepath);
-        open_file(filepath.toStdString());
-    }
+    return !m_opened_filepath.empty();
 }
 
 void PythonConsoleWidget::open_file(const string& filepath)
@@ -293,7 +310,7 @@ void PythonConsoleWidget::open_file(const string& filepath)
     fstream file(filepath, fstream::in);
     if (file.bad())
     {
-        RENDERER_LOG_ERROR("cannot open python script \"%s\" for reading.", filepath.c_str());
+        RENDERER_LOG_ERROR("cannot open Python script \"%s\" for reading.", filepath.c_str());
         return;
     }
 
@@ -310,36 +327,7 @@ void PythonConsoleWidget::open_file(const string& filepath)
     m_is_file_dirty = false;
 }
 
-void PythonConsoleWidget::slot_save_file()
-{
-    if (!has_file_path())
-        slot_save_file_as();
-    else
-        save_file(m_opened_filepath);
-}
-
-bool PythonConsoleWidget::has_file_path()
-{
-    return m_opened_filepath != "";
-}
-
-void PythonConsoleWidget::slot_save_file_as()
-{
-    ParamArray& settings = PythonInterpreter::instance().get_main_window()->get_settings();
-
-    const QString filepath =
-        get_save_filename(
-            this,
-            "Save As...",
-            "Python Script File (*.py)",
-            settings,
-            SETTINGS_FILE_DIALOG_PYTHON_SCRIPTS);
-
-    if (!filepath.isEmpty())
-        save_file(filepath.toStdString());
-}
-
-void PythonConsoleWidget::save_file(std::string filepath)
+void PythonConsoleWidget::save_file(string filepath)
 {
     const size_t extension_start = filepath.rfind('.') + 1;
     string extension = "";
@@ -352,7 +340,7 @@ void PythonConsoleWidget::save_file(std::string filepath)
     fstream file(filepath, fstream::out);
     if (file.bad())
     {
-        RENDERER_LOG_ERROR("cannot open python script \"%s\" for writing.", filepath.c_str());
+        RENDERER_LOG_ERROR("cannot open Python script \"%s\" for writing.", filepath.c_str());
         return;
     }
 
@@ -361,6 +349,18 @@ void PythonConsoleWidget::save_file(std::string filepath)
 
     m_opened_filepath = filepath;
     m_is_file_dirty = false;
+}
+
+void PythonConsoleWidget::close_file()
+{
+    m_input->clear();
+    m_opened_filepath.clear();
+    m_is_file_dirty = false;
+}
+
+void PythonConsoleWidget::execute(const QString& script)
+{
+    PythonInterpreter::instance().execute(script.toStdString());
 }
 
 }   // namespace studio

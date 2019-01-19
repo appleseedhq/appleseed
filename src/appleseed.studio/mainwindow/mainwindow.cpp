@@ -133,14 +133,12 @@ MainWindow::MainWindow(QWidget* parent)
 
     m_ui->setupUi(this);
 
-    statusBar()->addWidget(&m_status_bar);
-
     build_menus();
+    build_status_bar();
     build_toolbar();
     build_log_panel();
     build_python_console_panel();
     build_project_explorer();
-
     build_connections();
 
     const QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
@@ -151,13 +149,10 @@ MainWindow::MainWindow(QWidget* parent)
     m_ui->treewidget_project_explorer_scene->header()->restoreState(
         settings.value("main_window_project_explorer_state").toByteArray());
 
-    print_startup_information();
     slot_load_settings();
 
     update_project_explorer();
     update_workspace();
-
-    build_minimize_buttons();
 
     setAcceptDrops(true);
 }
@@ -589,6 +584,23 @@ void MainWindow::update_pause_resume_checkbox(const bool checked)
     m_ui->action_rendering_pause_resume_rendering->blockSignals(old_state);
 }
 
+void MainWindow::build_status_bar()
+{
+    statusBar()->addWidget(&m_status_bar);
+
+    m_minimize_buttons.push_back(new MinimizeButton(m_ui->project_explorer));
+    m_minimize_buttons.push_back(new MinimizeButton(m_ui->attribute_editor));
+    m_minimize_buttons.push_back(new MinimizeButton(m_ui->log));
+    m_minimize_buttons.push_back(new MinimizeButton(m_ui->python_console));
+
+    for (size_t i = 0; i < m_minimize_buttons.size(); ++i)
+    {
+        statusBar()->insertPermanentWidget(
+            static_cast<int>(i + 1),
+            m_minimize_buttons[i]);
+    }
+}
+
 void MainWindow::build_toolbar()
 {
     //
@@ -647,25 +659,39 @@ void MainWindow::build_toolbar()
 void MainWindow::build_log_panel()
 {
     LogWidget* log_widget = new LogWidget(m_ui->log_contents);
-    m_ui->log_contents->layout()->addWidget(log_widget);
-
     log_widget->setObjectName("textedit_log");
     log_widget->setUndoRedoEnabled(false);
     log_widget->setLineWrapMode(QTextEdit::NoWrap);
     log_widget->setReadOnly(true);
     log_widget->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    m_ui->log_contents->layout()->addWidget(log_widget);
 
     m_log_target.reset(new QtLogTarget(log_widget));
-
     global_logger().add_target(m_log_target.get());
+
+    RENDERER_LOG_INFO(
+        "%s, %s configuration\n"
+        "compiled on %s at %s using %s version %s",
+        Appleseed::get_synthetic_version_string(),
+        Appleseed::get_lib_configuration(),
+        Appleseed::get_lib_compilation_date(),
+        Appleseed::get_lib_compilation_time(),
+        Compiler::get_compiler_name(),
+        Compiler::get_compiler_version());
+
+    System::print_information(global_logger());
 }
 
 void MainWindow::build_python_console_panel()
 {
-    PythonConsoleWidget* console_widget = new PythonConsoleWidget(m_ui->python_console_contents);
-    m_ui->python_console_contents->layout()->addWidget(console_widget);
+    char* python_home = Py_GetPythonHome();
+    if (python_home == nullptr)
+        RENDERER_LOG_INFO("Python home not set.");
+    else RENDERER_LOG_INFO("Python home set to %s.", python_home);
 
-    console_widget->setObjectName("textedit_console");
+    PythonConsoleWidget* python_console_widget = new PythonConsoleWidget(m_ui->python_console_contents);
+    python_console_widget->setObjectName("textedit_python_console");
+    m_ui->python_console_contents->layout()->addWidget(python_console_widget);
 }
 
 void MainWindow::build_project_explorer()
@@ -683,21 +709,6 @@ void MainWindow::build_project_explorer()
         SLOT(slot_clear_filter()));
 
     m_ui->pushbutton_clear_filter->setEnabled(false);
-}
-
-void MainWindow::build_minimize_buttons()
-{
-    m_minimize_buttons.push_back(new MinimizeButton(m_ui->project_explorer));
-    m_minimize_buttons.push_back(new MinimizeButton(m_ui->attribute_editor));
-    m_minimize_buttons.push_back(new MinimizeButton(m_ui->log));
-    m_minimize_buttons.push_back(new MinimizeButton(m_ui->python_console));
-
-    for (size_t i = 0; i < m_minimize_buttons.size(); ++i)
-    {
-        statusBar()->insertPermanentWidget(
-            static_cast<int>(i + 1),
-            m_minimize_buttons[i]);
-    }
 }
 
 void MainWindow::build_connections()
@@ -1330,26 +1341,6 @@ void MainWindow::apply_post_processing_stage(
             i->second->get_render_widget()->update();
         }
     }
-}
-
-void MainWindow::print_startup_information()
-{
-    RENDERER_LOG_INFO(
-        "%s, %s configuration\n"
-        "compiled on %s at %s using %s version %s",
-        Appleseed::get_synthetic_version_string(),
-        Appleseed::get_lib_configuration(),
-        Appleseed::get_lib_compilation_date(),
-        Appleseed::get_lib_compilation_time(),
-        Compiler::get_compiler_name(),
-        Compiler::get_compiler_version());
-
-    System::print_information(global_logger());
-
-    char* python_home = Py_GetPythonHome();
-    if (python_home == nullptr)
-        RENDERER_LOG_INFO("Python home not set.");
-    else RENDERER_LOG_INFO("Python home set to %s.", python_home);
 }
 
 namespace
@@ -2144,22 +2135,22 @@ void MainWindow::slot_fullscreen()
 
     bool all_minimized = true;
     bool not_minimized = false;
-    for (each<vector<MinimizeButton*>> button = m_minimize_buttons; button; ++button)
+    for (const MinimizeButton* button : m_minimize_buttons)
     {
-        all_minimized = all_minimized && (*button)->is_on();
-        not_minimized = not_minimized || !(*button)->is_on();
+        all_minimized = all_minimized && button->is_on();
+        not_minimized = not_minimized || !button->is_on();
     }
 
-    // All were manually minimized, exit full screen mode
+    // All were manually minimized, exit full screen mode.
     if (all_minimized)
         m_fullscreen = false;
 
-    // At least one is on screen, enter full screen mode
+    // At least one is on screen, enter full screen mode.
     if (not_minimized)
         m_fullscreen = true;
 
-    for (each<vector<MinimizeButton*>> button = m_minimize_buttons; button; ++button)
-        (*button)->set_fullscreen(m_fullscreen);
+    for (MinimizeButton* button : m_minimize_buttons)
+        button->set_fullscreen(m_fullscreen);
 }
 
 void MainWindow::slot_show_settings_window()
