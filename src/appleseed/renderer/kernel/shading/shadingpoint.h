@@ -282,6 +282,10 @@ class ShadingPoint
     friend class TriangleLeafVisitor;
     friend class foundation::PoisonImpl<ShadingPoint>;
 
+    //
+    // Make sure to update `PoisonImpl<>::do_poison()` in shadinpoint.cpp when adding new data members.
+    //
+
     // Context.
     TextureCache*                       m_texture_cache;
     const Scene*                        m_scene;
