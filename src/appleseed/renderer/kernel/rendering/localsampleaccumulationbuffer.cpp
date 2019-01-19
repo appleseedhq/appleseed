@@ -308,6 +308,8 @@ void LocalSampleAccumulationBuffer::develop_to_tile(
     const size_t        origin_y,
     const AABB2u&       rect)
 {
+    assert(level.get_channel_count() == 4);
+
     if (rect.min.x > rect.max.x)
         return;
 
@@ -328,22 +330,22 @@ void LocalSampleAccumulationBuffer::develop_to_tile(
             Color4f values;
 
             // Prefix.
-            level.get_pixel(src_base + (rect.min.x >> s), &values[0]);
+            level.get_pixel(src_base + (rect.min.x >> s), values);
             for (size_t ix = rect.min.x; ix < prefix_end; ++ix)
-                color_tile.set_pixel<float>(dest_base + ix - origin_x, &values[0]);
+                color_tile.set_pixel<float>(dest_base + ix - origin_x, values);
 
             // Quick run.
             for (size_t ix = prefix_end; ix < suffix_begin; ix += m)
             {
-                level.get_pixel(src_base + (ix >> s), &values[0]);
+                level.get_pixel(src_base + (ix >> s), values);
                 for (size_t j = 0; j < m; ++j)
-                    color_tile.set_pixel<float>(dest_base + ix + j - origin_x, &values[0]);
+                    color_tile.set_pixel<float>(dest_base + ix + j - origin_x, values);
             }
 
             // Suffix.
-            level.get_pixel(src_base + (rect.max.x >> s), &values[0]);
+            level.get_pixel(src_base + (rect.max.x >> s), values);
             for (size_t ix = suffix_begin; ix < rect.max.x + 1; ++ix)
-                color_tile.set_pixel<float>(dest_base + ix - origin_x, &values[0]);
+                color_tile.set_pixel<float>(dest_base + ix - origin_x, values);
         }
     }
     else
@@ -356,8 +358,8 @@ void LocalSampleAccumulationBuffer::develop_to_tile(
             for (size_t ix = rect.min.x; ix <= rect.max.x; ++ix)
             {
                 Color4f values;
-                level.get_pixel(src_base + ix * level_width / image_width, &values[0]);
-                color_tile.set_pixel<float>(dest_base + ix - origin_x, &values[0]);
+                level.get_pixel(src_base + ix * level_width / image_width, values);
+                color_tile.set_pixel<float>(dest_base + ix - origin_x, values);
             }
         }
     }

@@ -53,7 +53,7 @@ BENCHMARK_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
         Fixture()
           : m_color_tile(64, 64, 4, PixelFormatHalf)
           , m_filter(1.5f, 1.5f)
-          , m_level(256, 256, 5, m_filter)
+          , m_level(256, 256, 4, m_filter)
           , m_rect(Vector2u(0, 0), Vector2u(63, 63))
         {
             m_level.clear();

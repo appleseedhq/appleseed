@@ -64,6 +64,7 @@ class FilteredTile
         const Filter2f&         filter);
 
     // Tile properties.
+    size_t get_channel_count() const;   // number of channels in one pixel, excluding the weight channel
     const AABB2u& get_crop_window() const;
     const Filter2f& get_filter() const;
 
@@ -139,6 +140,11 @@ class FilteredTile
 //
 // FilteredTile class implementation.
 //
+
+inline size_t FilteredTile::get_channel_count() const
+{
+    return m_channel_count - 1;
+}
 
 inline const AABB2u& FilteredTile::get_crop_window() const
 {
