@@ -30,17 +30,13 @@
 #include "oslvolume.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/basis.h"
-#include "foundation/math/cdf.h"
 #include "foundation/math/fp.h"
-#include "foundation/math/mis.h"
 #include "foundation/math/phasefunction.h"
-#include "foundation/math/sampling/equiangularsampler.h"
+#include "foundation/math/rr.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/arena.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/makevector.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -58,7 +54,6 @@
 #include <cmath>
 #include <limits>
 #include <memory>
-#include <string>
 
 using namespace foundation;
 
@@ -286,6 +281,22 @@ public:
             {
                 spectrum.set(0.0f);
                 break;
+            }
+
+            // Russian roulette to control the tradeoff between low variance and good performance.
+            const float rao_blackwell_factor = 0.1f;  // 1 - delta tracking, 0 - ratio tracking
+            const float avg_component = average_value(spectrum);
+            if (avg_component < rao_blackwell_factor)
+            {
+                const float p = std::min(avg_component / rao_blackwell_factor, 1.0f);
+                sampling_context.split_in_place(1, 1);
+                const float s = sampling_context.next2<float>();
+                if (!pass_rr(p, s))
+                {
+                    spectrum.set(0.0f);
+                    break;
+                }
+                spectrum *= rcp(p);
             }
 
             // Sample distance exponentially, assuming that the ray is infinite.
