@@ -1244,6 +1244,7 @@ void PoisonImpl<renderer::ShadingPoint>::do_poison(renderer::ShadingPoint& point
     poison(point.m_material);
     poison(point.m_opposite_material);
     poison(point.m_alpha);
+    poison(point.m_color);
 
     poison(point.m_asm_geo_normal);
     poison(point.m_front_point);
@@ -1296,6 +1297,10 @@ void PoisonImpl<renderer::ShadingPoint>::do_poison(renderer::ShadingPoint& point
     poison(point.m_shader_globals.raytype);
     poison(point.m_shader_globals.flipHandedness);
     poison(point.m_shader_globals.backfacing);
+
+    poison(point.m_surface_shader_diffuse);
+    poison(point.m_surface_shader_glossy);
+    poison(point.m_surface_shader_emission);
 }
 
 }   // namespace foundation
