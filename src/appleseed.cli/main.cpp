@@ -29,7 +29,6 @@
 
 // appleseed.cli headers.
 #include "commandlinehandler.h"
-#include "houdinitilecallbacks.h"
 #include "progresstilecallback.h"
 #include "stdouttilecallback.h"
 
@@ -475,23 +474,7 @@ namespace
 
         // Create the tile callback factory.
         unique_ptr<ITileCallbackFactory> tile_callback_factory;
-        if (g_cl.m_send_to_mplay.is_set())
-        {
-            tile_callback_factory.reset(
-                new MPlayTileCallbackFactory(
-                    project_filename.c_str(),
-                    is_progressive_render(params),
-                    g_logger));
-        }
-        else if (g_cl.m_send_to_hrmanpipe.is_set())
-        {
-            tile_callback_factory.reset(
-                new HRmanPipeTileCallbackFactory(
-                    g_cl.m_send_to_hrmanpipe.value(),
-                    is_progressive_render(params),
-                    g_logger));
-        }
-        else if (g_cl.m_send_to_stdout.is_set())
+        if (g_cl.m_send_to_stdout.is_set())
         {
             tile_callback_factory.reset(
                 new StdOutTileCallbackFactory(

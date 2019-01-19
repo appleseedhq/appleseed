@@ -151,18 +151,6 @@ CommandLineHandler::CommandLineHandler()
 #endif
 
     parser().add_option_handler(
-        &m_send_to_mplay
-            .add_name("--to-mplay")
-            .set_description("send render to Houdini's mplay"));
-
-    parser().add_option_handler(
-        &m_send_to_hrmanpipe
-            .add_name("--to-hrmanpipe")
-            .set_description("send render to Houdini's hrmanpipe; the argument is the socket number to pass to hrmanpipe")
-            .set_syntax("socket")
-            .set_exact_value_count(1));
-
-    parser().add_option_handler(
         &m_send_to_stdout
             .add_name("--to-stdout")
             .set_description("send render to standard output"));
