@@ -70,7 +70,6 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/log/logmessage.h"
-#include "foundation/utility/settings.h"
 
 // Qt headers.
 #include <QAction>
@@ -1647,48 +1646,16 @@ void MainWindow::slot_project_file_changed(const QString& filepath)
 void MainWindow::slot_load_settings()
 {
     Dictionary settings;
-
-    if (!Application::load_settings("appleseed.studio.xml", settings, global_logger(), LogMessage::Info))
-        return;
-
-    m_settings = settings;
-
-    slot_apply_settings();
+    if (Application::load_settings("appleseed.studio.xml", settings, global_logger(), LogMessage::Info))
+    {
+        m_settings = settings;
+        slot_apply_settings();
+    }
 }
 
 void MainWindow::slot_save_settings()
 {
-    SettingsFileWriter writer;
-
-    // First try to save the settings to the user path.
-    if (const char* p = Application::get_user_settings_path())
-    {
-        try
-        {
-            const bf::path user_settings_path(p);
-            bf::create_directories(user_settings_path);
-            const string user_settings_file_path = (user_settings_path / "appleseed.studio.xml").string();
-            if (writer.write(user_settings_file_path.c_str(), m_settings))
-            {
-                RENDERER_LOG_INFO("successfully saved settings to %s.", user_settings_file_path.c_str());
-                return;
-            }
-        }
-        catch (const bf::filesystem_error&)
-        {
-        }
-    }
-
-    // As a fallback, try to save the settings to the appleseed's installation directory.
-    const bf::path root_path(Application::get_root_path());
-    const string settings_file_path = (root_path / "settings" / "appleseed.studio.xml").string();
-    if (writer.write(settings_file_path.c_str(), m_settings))
-    {
-        RENDERER_LOG_INFO("successfully saved settings to %s.", settings_file_path.c_str());
-        return;
-    }
-
-    RENDERER_LOG_ERROR("failed to save settings to %s.", settings_file_path.c_str());
+    Application::save_settings("appleseed.studio.xml", m_settings, global_logger(), LogMessage::Info);
 }
 
 void MainWindow::slot_apply_settings()
