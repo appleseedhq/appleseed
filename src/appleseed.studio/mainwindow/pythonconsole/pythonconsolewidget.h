@@ -55,9 +55,6 @@ class PythonConsoleWidget
   public:
     explicit PythonConsoleWidget(QWidget* parent = nullptr);
 
-  protected:
-    void wheelEvent(QWheelEvent* event) override;
-
   public slots:
     void slot_execute_selection();
     void slot_execute_all();
@@ -72,6 +69,9 @@ class PythonConsoleWidget
     void slot_file_changed();
 
     void slot_change_exec_selection_button_state();
+
+  protected:
+    void wheelEvent(QWheelEvent* event) override;
 
   private:
     QPlainTextEdit* m_output;

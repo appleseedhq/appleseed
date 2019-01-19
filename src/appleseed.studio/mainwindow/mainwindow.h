@@ -185,11 +185,11 @@ class MainWindow
     void update_pause_resume_checkbox(const bool checked);
 
     // Other UI elements.
+    void build_status_bar();
     void build_toolbar();
     void build_log_panel();
     void build_python_console_panel();
     void build_project_explorer();
-    void build_minimize_buttons();
     void build_connections();
 
     // UI state management.
@@ -234,7 +234,6 @@ class MainWindow
         renderer::Frame&                working_frame);
 
     // Miscellaneous.
-    void print_startup_information();
     void initialize_ocio();
     void closeEvent(QCloseEvent* event) override;
 

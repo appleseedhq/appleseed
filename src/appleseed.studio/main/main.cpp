@@ -145,7 +145,7 @@ namespace
 
             if (bf::is_directory(python_path))
             {
-                const string python_path_str = bf::canonical(python_path).make_preferred().string();
+                const string python_path_str = safe_canonical(python_path).string();
 
                 char python_home[FOUNDATION_MAX_PATH_LENGTH + 1];
                 assert(python_path_str.size() <= FOUNDATION_MAX_PATH_LENGTH);
