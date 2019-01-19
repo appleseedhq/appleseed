@@ -47,8 +47,9 @@ void unit_vector_to_angles(
     T&                              theta,          // in [0, Pi]
     T&                              phi);           // in [-Pi, Pi]
 
+// Shift spherical coordinates by given amounts.
 template <typename T>
-inline void shift_angles(
+void shift_angles(
     T&                              theta,          // in [0, Pi]
     T&                              phi,            // in [-Pi, Pi]
     const T                         theta_shift,    // arbitrary, in radians
