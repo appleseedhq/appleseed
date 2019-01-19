@@ -101,7 +101,7 @@ namespace
                 "  model                         %s\n"
                 "  film width                    %f\n"
                 "  film height                   %f\n"
-                "  near-z                        %f\n"
+                "  near z                        %f\n"
                 "  shutter open begin time       %f\n"
                 "  shutter open end time         %f\n"
                 "  shutter close begin time      %f\n"

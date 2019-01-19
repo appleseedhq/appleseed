@@ -266,7 +266,7 @@ double Camera::extract_near_z() const
     if (near_z > 0.0)
     {
         RENDERER_LOG_ERROR(
-            "while defining camera \"%s\": invalid near-z value \"%f\", near-z values must be negative or zero; "
+            "while defining camera \"%s\": invalid near z value \"%f\", near z values must be negative or zero; "
             "using default value \"%f\".",
             get_path().c_str(),
             near_z,

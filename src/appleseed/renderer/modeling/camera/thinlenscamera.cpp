@@ -209,7 +209,7 @@ namespace
                 "  diaphragm map                 %s\n"
                 "  diaphragm blades              %s\n"
                 "  diaphragm tilt angle          %f\n"
-                "  near-z                        %f\n"
+                "  near z                        %f\n"
                 "  shift                         %f, %f\n"
                 "  shutter open begin time       %f\n"
                 "  shutter open end time         %f\n"
