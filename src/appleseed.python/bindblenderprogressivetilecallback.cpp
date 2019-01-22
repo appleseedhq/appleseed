@@ -62,7 +62,7 @@ namespace
     class BlenderProgressiveTileCallback
       : public ITileCallback
     {
-      public:
+    public:
         explicit BlenderProgressiveTileCallback(const bpy::object& request_redraw_callback)
           : m_buffer_width(0)
           , m_buffer_height(0)
@@ -172,19 +172,82 @@ namespace
                     glBindTexture(GL_TEXTURE_2D, 0);
                     m_updated_buffer = false;
                 }
-
-                glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-                glEnable(GL_TEXTURE_2D);
+                
+                int m_vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+                glShaderSource(m_vertex_shader, 1, &m_vertex_shader_source, nullptr);
+                glCompileShader(m_vertex_shader);
+                // Check for vertex_shader compile errors.
+                int m_success;
+                char m_infoLog[512];
+                glGetShaderiv(m_vertex_shader, GL_COMPILE_STATUS, &m_success);
+                if (!m_success)
+                {
+                    glGetShaderInfoLog(m_vertex_shader, 512, nullptr, m_infoLog);
+                    std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << m_infoLog << std::endl;
+                }
+                
+                int m_fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+                glShaderSource(m_fragment_shader, 1, &m_fragment_shader_source, nullptr);
+                glCompileShader(m_fragment_shader);
+                // Check for fragment_shader compile errors.
+                glGetShaderiv(m_fragment_shader, GL_COMPILE_STATUS, &m_success);
+                if (!m_success)
+                {
+                    glGetShaderInfoLog(m_fragment_shader, 512, NULL, m_infoLog);
+                    std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << m_infoLog << std::endl;
+                }
+                
+                int m_shader_program = glCreateProgram();
+                glAttachShader(m_shader_program, m_vertex_shader);
+                glAttachShader(m_shader_program, m_fragment_shader);
+                glLinkProgram(m_shader_program);
+                // Check for linking errors.
+                glGetProgramiv(m_shader_program, GL_LINK_STATUS, &m_success);
+                if (!m_success) {
+                glGetProgramInfoLog(m_shader_program, 512, NULL, m_infoLog);
+                std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << m_infoLog << std::endl;
+                }
+                glDeleteShader(m_vertex_shader);
+                glDeleteShader(m_fragment_shader);
+                
+                //Certex and texture co-ordinates.
+                float m_vertices[] = {
+                    x    ,  y    ,  0.0f,    0.0f,   1.0f,
+                    x + w,  y    ,  0.0f,    1.0f,   1.0f,
+                    x + w,  y + h,  0.0f,    1.0f,   0.0f, 
+                    x    ,  y + h,  0.0f,    0.0f,   0.0f
+                    };
+                    
+                unsigned int m_indices[] = {
+                    0,  1,  3,
+                    1,  2,  3
+                    };
+                
+                unsigned int m_vao_id, m_vbo_id, m_ebo_id;
+                glGenVertexArrays(1, &m_vao_id);
+                glGenBuffers(1, &m_vbo_id);
+                glGenBuffers(1, &m_ebo_id);
+                
+                glBindVertexArray(m_vao_id);
+                
+                glBindBuffer(GL_ARRAY_BUFFER, m_vbo_id);
+                glBufferData(GL_ARRAY_BUFFER, sizeof(m_vertices), m_vertices, GL_STATIC_DRAW);
+                
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo_id);
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m_indices), m_indices, GL_STATIC_DRAW);
+           
+                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+                glEnableVertexAttribArray(0);
+                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+                glEnableVertexAttribArray(1);
+                glBindVertexArray(0);
+                
+                glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, m_texture_id);
-                glBegin(GL_QUADS);
-                    glTexCoord2f(0.0f, 1.0f); glVertex3f(x    ,  y    , 0.0f);
-                    glTexCoord2f(1.0f, 1.0f); glVertex3f(x + w,  y    , 0.0f);
-                    glTexCoord2f(1.0f, 0.0f); glVertex3f(x + w,  y + h, 0.0f);
-                    glTexCoord2f(0.0f, 0.0f); glVertex3f(x    ,  y + h, 0.0f);
-                glEnd();
-                glBindTexture(GL_TEXTURE_2D, 0);
-                glDisable(GL_TEXTURE_2D);
+                glUseProgram(m_shader_program);
+                glUniform1i(glGetUniformLocation(m_shader_program, "texture"), 0);
+                glBindVertexArray(m_vao_id);
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
             }
         }
 
@@ -199,6 +262,25 @@ namespace
         size_t              m_texture_height;
 
         bpy::object         m_request_redraw_callback;
+        
+        const char *m_vertex_shader_source  = "#version 330 core\n"
+                                              "layout (location = 0) in vec3 pos;\n"
+                                              "layout (location = 1) in vec3 tex_coords;\n"
+                                              "out texture_coords;\n"
+                                              "void main()\n"
+                                              "{\n"
+                                              "   gl_Position = vec4(pos, 1.0);\n"
+                                              "   texture_coords = vec3(tex_coords);\n
+                                              "}\0";
+          
+        const char *m_fragment_shader_source = "#version 330 core\n"
+                                               "out vec4 tex;\n"
+                                               "in vec3 texture_coords;\n"
+                                               "unform sampler2D texture;\n"
+                                               "void main()\n"
+                                               "{\n"
+                                               "   tex = vec4(texture, texture_coords);\n"
+                                               "}\n\0";
 
         void delete_texture()
         {
