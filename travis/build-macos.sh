@@ -85,7 +85,7 @@ echo "------------------------"
 
 #echo "Running appleseed.python tests:"
 #echo "-------------------------------"
-#export PYTHONPATH=$PYTHONPATH:../sandbox/lib/Debug/python2.7
-#python ../sandbox/lib/Debug/python2.7/appleseed/test/runtests.py
+#export PYTHONPATH=$PYTHONPATH:../sandbox/lib/Debug/python
+#python ../sandbox/lib/Debug/python/appleseed/test/runtests.py
 
 set +e
