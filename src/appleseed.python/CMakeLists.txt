@@ -159,7 +159,7 @@ if (WITH_PYTHON3_BINDINGS)
             SUFFIX ".pyd"
         )
     endif ()
-    
+
     target_link_libraries (appleseed.python3
         ${OPENGL_LIBRARY}
     )

@@ -269,7 +269,7 @@ endmacro ()
 
 macro (get_sandbox_py_path path)
     get_sandbox_lib_path (${path})
-    set (${path} ${${path}}/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION})
+    set (${path} ${${path}}/python)
 endmacro ()
 
 macro (get_relative_path_from_module_name path name)

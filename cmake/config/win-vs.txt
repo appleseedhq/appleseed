@@ -372,7 +372,7 @@ macro (link_against_embree target)
     if (USE_EXTERNAL_EMBREE)
         target_link_libraries (${target} ${EMBREE_LIBRARIES})
     else ()
-        target_link_libraries (${target} 
+        target_link_libraries (${target}
             # Order matters here.
             # See appleseed-deps\src\embree\readme.pdf, section 3.3 CMake Configuration for details.
             debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/lexers.lib
@@ -414,7 +414,7 @@ endmacro ()
 
 macro (get_sandbox_py_path path)
     get_sandbox_lib_path (${path})
-    set (${path} ${${path}}\\python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION})
+    set (${path} ${${path}}\\python)
 endmacro ()
 
 macro (get_relative_path_from_module_name path name)
