@@ -34,6 +34,7 @@
 #include "renderer/utility/plugin.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/path.h"
 #include "foundation/platform/sharedlibrary.h"
 #include "foundation/utility/searchpaths.h"
 
@@ -132,8 +133,10 @@ struct PluginStore::Impl
         return plugin_map_it->second.get();
     }
 
-    void load_all_plugins_from_path_no_lock(const bf::path& path)
+    void load_all_plugins_from_path_no_lock(bf::path path)
     {
+        path = safe_canonical(path);
+
         // Only consider directories.
         if (!bf::exists(path) || !bf::is_directory(path))
         {
