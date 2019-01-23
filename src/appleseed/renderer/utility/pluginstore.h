@@ -31,6 +31,9 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Standard headers.
 #include <functional>
 
@@ -45,7 +48,7 @@ namespace renderer
 // All methods of this class are thread-safe.
 //
 
-class PluginStore
+class APPLESEED_DLLSYMBOL PluginStore
   : public foundation::NonCopyable
 {
   public:

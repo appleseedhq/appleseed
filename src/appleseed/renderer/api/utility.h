@@ -33,6 +33,7 @@
 #include "renderer/utility/bbox.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
+#include "renderer/utility/pluginstore.h"
 #include "renderer/utility/projectpoints.h"
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
 #include "renderer/utility/seexpr.h"
