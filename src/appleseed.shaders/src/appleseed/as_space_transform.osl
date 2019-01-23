@@ -47,14 +47,16 @@ shader as_space_transform
         string as_maya_attribute_name = "point",
         string as_maya_attribute_short_name = "p",
         string label = "Point to Transform",
-        string page = "Input"
+        string page = "Input",
+        int as_max_param_id = 0
     ]],
     normal in_normal = normal(0)
     [[
         string as_maya_attribute_name = "normal",
         string as_maya_attribute_short_name = "n",
         string label = "Normal to Transform",
-        string page = "Input"
+        string page = "Input",
+        int as_max_param_id = 2
     ]],
     vector in_vector = vector(0)
     [[
@@ -62,7 +64,8 @@ shader as_space_transform
         string as_maya_attribute_short_name = "ive",
         string label = "Vector to Transform",
         string page = "Input",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 4
     ]],
     string in_from_space = "common"
     [[
@@ -76,7 +79,8 @@ shader as_space_transform
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 6
     ]],
     string in_to_space = "common"
     [[
@@ -91,7 +95,8 @@ shader as_space_transform
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 7
     ]],
     int in_normalize_vectors = 0
     [[
@@ -105,32 +110,37 @@ shader as_space_transform
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 8
     ]],
 
     output point out_transformed_point = point(0)
     [[
         string as_maya_attribute_name = "outTransformedPoint",
         string as_maya_attribute_short_name = "tpo",
-        string label = "Transformed Point"
+        string label = "Transformed Point",
+        int as_max_param_id = 9
     ]],
     output normal out_transformed_normal = normal(0)
     [[
         string as_maya_attribute_name = "outTransformedNormal",
         string as_maya_attribute_short_name = "tno",
-        string label = "Transformed Normal"
+        string label = "Transformed Normal",
+        int as_max_param_id = 9
     ]],
     output vector out_transformed_vector = vector(0)
     [[
         string as_maya_attribute_name = "outTransformedVector",
         string as_maya_attribute_short_name = "tve",
-        string label = "Transformed Vector"
+        string label = "Transformed Vector",
+        int as_max_param_id = 9
     ]],
     output matrix out_transform_matrix = matrix(1)
     [[
         string as_maya_attribute_name = "outTransformMatrix",
         string as_maya_attribute_short_name = "oma",
-        string label = "Transform Matrix"
+        string label = "Transform Matrix",
+        int as_max_param_id = 9
     ]]
 )
 {

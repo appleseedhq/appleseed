@@ -51,13 +51,15 @@ shader as_voronoi3d
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Color 1",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 0
     ]],
     color in_color2 = color(0.1, 0.3, 0.9)
     [[
         string as_maya_attribute_name = "color2",
         string label = "Color 2",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 2
     ]],
     float in_contrast = 0.5
     [[
@@ -66,7 +68,8 @@ shader as_voronoi3d
         float min = 0.0,
         float max = 1.0,
         string label = "Contrast",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 4
     ]],
     float in_density = 1.0
     [[
@@ -77,7 +80,8 @@ shader as_voronoi3d
         float softmin = 1.0,
         float softmax = 3.0,
         string label = "Initial Density",
-        string page = "Cell"
+        string page = "Cell",
+        int as_max_param_id = 6
     ]],
     float in_jittering = 1.0
     [[
@@ -87,7 +91,8 @@ shader as_voronoi3d
         float max = 1.0,
         string label = "Jittering",
         string page = "Cell",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 8
     ]],
     int in_metric = 0
     [[
@@ -101,7 +106,8 @@ shader as_voronoi3d
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 10
     ]],
     float in_Minkowski_p = 5.0
     [[
@@ -112,7 +118,8 @@ shader as_voronoi3d
         float softmin = 0.1,
         float softmax = 10.0,
         string label = "Minkowski Parameter",
-        string page = "Cell"
+        string page = "Cell",
+        int as_max_param_id = 11
     ]],
     float in_coverage = 0.5
     [[
@@ -122,7 +129,8 @@ shader as_voronoi3d
         float max = 1.0,
         string label = "Akritean Coverage",
         string page = "Cell",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 13
     ]],
     int in_featuresMode = 0
     [[
@@ -135,7 +143,8 @@ shader as_voronoi3d
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 15
     ]],
     float in_amplitude = 1.0
     [[
@@ -147,7 +156,8 @@ shader as_voronoi3d
         float softmax = 1.0,
         string label = "Amplitude",
         string page = "Recursion",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 16
     ]],
     int in_octaves = 3
     [[
@@ -165,7 +175,8 @@ shader as_voronoi3d
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 18
     ]],
     float in_lacunarity = 2.217
     [[
@@ -181,7 +192,8 @@ shader as_voronoi3d
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 19
     ]],
     float in_persistence = 1.0
     [[
@@ -192,7 +204,8 @@ shader as_voronoi3d
         float softmin = 0.0,
         float softmax = 1.0,
         string label = "Persistence",
-        string page = "Recursion"
+        string page = "Recursion",
+        int as_max_param_id = 20
     ]],
     int in_softEdges = 1
     [[
@@ -205,7 +218,8 @@ shader as_voronoi3d
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 22
     ]],
     matrix in_placementMatrix = matrix(1)
     [[
@@ -214,7 +228,8 @@ shader as_voronoi3d
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string widget = "null",
-        string label = "Placement Matrix"
+        string label = "Placement Matrix",
+        int as_max_param_id = 23
     ]],
     point in_surfacePoint = P
     [[
@@ -223,7 +238,8 @@ shader as_voronoi3d
         string label = "Surface Point",
         string page = "Cell",
         string widget = "null",
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 24
     ]],
 
     MAYA_EFFECTS_3DTEX_PARAMETERS,
@@ -232,29 +248,34 @@ shader as_voronoi3d
     [[
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
-        string label = "Output Color"
+        string label = "Output Color",
+        int as_max_param_id = 31
     ]],
     output float out_outAlpha = 1.0
     [[
         string as_maya_attribute_name = "outAlpha",
         string as_maya_attribute_short_name = "oa",
         string label = "Output Alpha",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 31
     ]],
     output float out_outFeatures[4] = {0.0, 0.0, 0.0, 0.0}
     [[
         string as_maya_attribute_name = "outFeatures",
-        string label = "Output Features"
+        string label = "Output Features",
+        int as_max_param_id = 31
     ]],
     output point out_outPositions[4] = {0.0, 0.0, 0.0, 0.0}
     [[
         string as_maya_attribute_name = "outPositions",
-        string label = "Output Positions"
+        string label = "Output Positions",
+        int as_max_param_id = 31
     ]],
     output color out_outIDs[4] = {0, 0, 0, 0}
     [[
         string as_maya_attribute_name = "outIDs",
-        string label = "Output IDs"
+        string label = "Output IDs",
+        int as_max_param_id = 31
     ]]
 )
 {

@@ -49,49 +49,56 @@ shader as_switch_texture
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Input Color 0",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 0
     ]],
     color in_color1 = color(0)
     [[
         string as_maya_attribute_name = "color1",
         string as_maya_attribute_short_name = "c1",
         string label = "Input Color 1",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 2
     ]],
     color in_color2 = color(0)
     [[
         string as_maya_attribute_name = "color2",
         string as_maya_attribute_short_name = "c2",
         string label = "Input Color 2",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 4
     ]],
     color in_color3 = color(0)
     [[
         string as_maya_attribute_name = "color3",
         string as_maya_attribute_short_name = "c3",
         string label = "Input Color 3",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 6
     ]],
     color in_color4 = color(0)
     [[
         string as_maya_attribute_name = "color4",
         string as_maya_attribute_short_name = "c4",
         string label = "Input Color 4",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 8
     ]],
     color in_color5 = color(0)
     [[
         string as_maya_attribute_name = "color5",
         string as_maya_attribute_short_name = "c5",
         string label = "Input Color 5",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 10
     ]],
     color in_color6 = color(0)
     [[
         string as_maya_attribute_name = "color6",
         string as_maya_attribute_short_name = "c6",
         string label = "Input Color 6",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 12
     ]],
     color in_color7 = color(0)
     [[
@@ -99,7 +106,8 @@ shader as_switch_texture
         string as_maya_attribute_short_name = "c7",
         string label = "Input Color 7",
         string page = "Color",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 14
     ]],
     int in_cycle_mode = 0
     [[
@@ -113,7 +121,8 @@ shader as_switch_texture
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 16
     ]],
     int in_manifold_type = 0
     [[
@@ -128,7 +137,8 @@ shader as_switch_texture
         int gafferNoduleLayoutVisible = 0,
         string label = "Type",
         string page = "Manifold",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 17
     ]],
     string in_expression = ""
     [[
@@ -142,7 +152,8 @@ shader as_switch_texture
         int gafferNoduleLayoutVisible = 0,
         string label = "Expression",
         string page = "Manifold.String",
-        string help = "String expression to search in the object or object instance name."
+        string help = "String expression to search in the object or object instance name.",
+        int as_max_param_id = 18
     ]],
     int in_domain = 0
     [[
@@ -157,7 +168,8 @@ shader as_switch_texture
         int gafferNoduleLayoutVisible = 0,
         string label = "Domain",
         string page = "Manifold.String",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 19
     ]],
     int in_seed = 0xcafe
     [[
@@ -171,7 +183,8 @@ shader as_switch_texture
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 1,
         string label = "Seed",
-        string page = "Manifold.String"
+        string page = "Manifold.String",
+        int as_max_param_id = 20
     ]],
 
     output color out_outColor = color(0)
@@ -179,7 +192,8 @@ shader as_switch_texture
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
         string widget = "null",
-        string label = "Output Color"
+        string label = "Output Color",
+        int as_max_param_id = 21
     ]]
 )
 {

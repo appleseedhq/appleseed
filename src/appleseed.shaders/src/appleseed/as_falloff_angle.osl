@@ -49,7 +49,8 @@ shader as_falloff_angle
         string as_maya_attribute_name = "vector1",
         string as_maya_attribute_short_name = "v1",
         string label = "Vector 1",
-        string page = "Input"
+        string page = "Input",
+        int as_max_param_id = 0
     ]],
     int in_normalize_input_1 = 0
     [[
@@ -63,14 +64,16 @@ shader as_falloff_angle
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 2
     ]],
     vector in_vector_2 = vector(N)
     [[
         string as_maya_attribute_name = "vector2",
         string as_maya_attribute_short_name = "v2",
         string label = "Vector 2",
-        string page = "Input"
+        string page = "Input",
+        int as_max_param_id = 3
     ]],
     int in_normalize_input_2 = 0
     [[
@@ -85,6 +88,7 @@ shader as_falloff_angle
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1,
+        int as_max_param_id = 4
     ]],
     float in_smooth_lower_bound = 0.25
     [[
@@ -93,7 +97,8 @@ shader as_falloff_angle
         float min = 0.0,
         float max = 1.0,
         string label = "Smoothstep Lower Bound",
-        string page = "Interpolation"
+        string page = "Interpolation",
+        int as_max_param_id = 5
     ]],
     float in_smooth_upper_bound = 0.75
     [[
@@ -103,7 +108,8 @@ shader as_falloff_angle
         float max = 1.0,
         string label = "Smoothstep Upper Bound",
         string page = "Interpolation",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 7
     ]],
     int in_smooth_function = 0
     [[
@@ -117,14 +123,16 @@ shader as_falloff_angle
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 9
     ]],
 
     output float out_result = 0.0
     [[
         string as_maya_attribute_name = "result",
         string as_maya_attribute_short_name = "rel",
-        string label = "Result"
+        string label = "Result",
+        int as_max_param_id = 10
     ]]
 )
 {

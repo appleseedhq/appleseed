@@ -53,7 +53,8 @@ shader as_vary_color
         string label = "Input Color",
         string page = "Color",
         string help = "Scene-linear input color.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 0
     ]],
     int in_color_mode = 0
     [[
@@ -68,7 +69,8 @@ shader as_vary_color
         int gafferNoduleLayoutVisible = 0,
         string label = "Color Mode",
         string page = "Color",
-        string help ="Add manifold generated color to input color. Or scale it, or ignore it, setting as output the manifold generated color."
+        string help ="Add manifold generated color to input color. Or scale it, or ignore it, setting as output the manifold generated color.",
+        int as_max_param_id = 2
     ]],
     int in_manifold_type = 0
     [[
@@ -83,7 +85,8 @@ shader as_vary_color
         int gafferNoduleLayoutVisible = 0,
         string label = "Type",
         string page = "Manifold",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 3
     ]],
     string in_expression = ""
     [[
@@ -97,7 +100,8 @@ shader as_vary_color
         int gafferNoduleLayoutVisible = 0,
         string label = "Expression",
         string page = "Manifold.String",
-        string help = "String expression to search in the object or object instance name."
+        string help = "String expression to search in the object or object instance name.",
+        int as_max_param_id = 4
     ]],
     int in_domain = 0
     [[
@@ -112,7 +116,8 @@ shader as_vary_color
         int gafferNoduleLayoutVisible = 0,
         string label = "Domain",
         string page = "Manifold.String",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 5
     ]],
     int in_seed = 0xcafe
     [[
@@ -126,7 +131,8 @@ shader as_vary_color
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 1,
         string label = "Seed",
-        string page = "Manifold.String"
+        string page = "Manifold.String",
+        int as_max_param_id = 6
     ]],
     int in_variation_mode = 0
     [[
@@ -140,7 +146,8 @@ shader as_vary_color
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Variation Mode",
-        string page = "Variation"
+        string page = "Variation",
+        int as_max_param_id = 7
     ]],
     float in_vary_hue = 0.0
     [[
@@ -149,7 +156,8 @@ shader as_vary_color
         float min = 0.0,
         float max = 1.0,
         string label = "Vary Hue",
-        string page = "Variation.HSV"
+        string page = "Variation.HSV",
+        int as_max_param_id = 8
     ]],
     float in_vary_saturation = 0.0
     [[
@@ -158,7 +166,8 @@ shader as_vary_color
         float min = 0.0,
         float max = 1.0,
         string label = "Vary Saturation",
-        string page = "Variation.HSV"
+        string page = "Variation.HSV",
+        int as_max_param_id = 10
     ]],
     float in_vary_value = 0.0
     [[
@@ -167,7 +176,8 @@ shader as_vary_color
         float min = 0.0,
         float max = 1.0,
         string label = "Vary Value",
-        string page = "Variation.HSV"
+        string page = "Variation.HSV",
+        int as_max_param_id = 12
     ]],
     float in_vary_red = 0.0
     [[
@@ -176,7 +186,8 @@ shader as_vary_color
         float min = 0.0,
         float max = 1.0,
         string label = "Vary Red",
-        string page = "Variation.RGB"
+        string page = "Variation.RGB",
+        int as_max_param_id = 14
     ]],
     float in_vary_green = 0.0
     [[
@@ -185,7 +196,8 @@ shader as_vary_color
         float min = 0.0,
         float max = 1.0,
         string label = "Vary Green",
-        string page = "Variation.RGB"
+        string page = "Variation.RGB",
+        int as_max_param_id = 16
     ]],
     float in_vary_blue = 0.0
     [[
@@ -194,7 +206,8 @@ shader as_vary_color
         float min = 0.0,
         float max = 1.0,
         string label = "Vary Blue",
-        string page = "Variation.RGB"
+        string page = "Variation.RGB",
+        int as_max_param_id = 18
     ]],
     float in_vary_lstar = 0.0
     [[
@@ -203,7 +216,8 @@ shader as_vary_color
         float min = 0.0,
         float max = 1.0,
         string label = "Vary L*",
-        string page = "Variation.CIE L*a*b* 1976"
+        string page = "Variation.CIE L*a*b* 1976",
+        int as_max_param_id = 20
     ]],
     float in_vary_astar = 0.0
     [[
@@ -212,7 +226,8 @@ shader as_vary_color
         float min = 0.0,
         float max = 1.0,
         string label = "Vary a*",
-        string page = "Variation.CIE L*a*b* 1976"
+        string page = "Variation.CIE L*a*b* 1976",
+        int as_max_param_id = 22
     ]],
     float in_vary_bstar = 0.0
     [[
@@ -221,31 +236,36 @@ shader as_vary_color
         float min = 0.0,
         float max = 1.0,
         string label = "Vary b*",
-        string page = "Variation.CIE L*a*b* 1976"
+        string page = "Variation.CIE L*a*b* 1976",
+        int as_max_param_id = 24
     ]],
     output color out_outColor = color(0)
     [[
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
-        string label = "Output Color"
+        string label = "Output Color",
+        int as_max_param_id = 26
     ]],
     output int out_outHash = 0
     [[
         string as_maya_attribute_name = "outHash",
         string as_maya_attribute_short_name = "osh",
-        string label = "Output Hash"
+        string label = "Output Hash",
+        int as_max_param_id = 26
     ]],
     output color out_outID = color(0)
     [[
         string as_maya_attribute_name = "outID",
         string as_maya_attribute_short_name = "oid",
-        string label = "Output ID"
+        string label = "Output ID",
+        int as_max_param_id = 26
     ]],
     output float out_outGreyscale = 0.0
     [[
         string as_maya_attribute_name = "outGreyscale",
         string as_maya_attribute_short_name = "ogr",
-        string label = "Output Greyscale"
+        string label = "Output Greyscale",
+        int as_max_param_id = 26
     ]]
 )
 {

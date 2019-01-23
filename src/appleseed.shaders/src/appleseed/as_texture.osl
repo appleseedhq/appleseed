@@ -60,7 +60,8 @@ shader as_texture
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 0
     ]],
     int in_atlas_type = 0
     [[
@@ -76,7 +77,8 @@ shader as_texture
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 1
     ]],
     color in_color = color(0)
     [[
@@ -84,7 +86,8 @@ shader as_texture
         string as_maya_attribute_short_name = "c",
         string label = "Default Color",
         string page = "Texture",
-        string help = "Default Fill color to use if the texture lookup fails."
+        string help = "Default Fill color to use if the texture lookup fails.",
+        int as_max_param_id = 2
     ]],
     float in_alpha = 1.0
     [[
@@ -95,6 +98,7 @@ shader as_texture
         string label = "Default Alpha",
         string page = "Texture",
         string help = "Default Fill alpha value to use if the texture lookup fails.",
+        int as_max_param_id = 4
     ]],
     int in_starting_channel = 0
     [[
@@ -110,7 +114,8 @@ shader as_texture
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 6
     ]],
     float in_s_blur_amount = 0.0
     [[
@@ -120,7 +125,8 @@ shader as_texture
         float max = 1.0,
         string label = "S Blur",
         string page = "Texture.Advanced",
-        string help = "Additional blur for texture lookup, along the S direction."
+        string help = "Additional blur for texture lookup, along the S direction.",
+        int as_max_param_id = 7
     ]],
     float in_t_blur_amount = 0.0
     [[
@@ -130,7 +136,8 @@ shader as_texture
         float max = 1.0,
         string label = "T Blur",
         string page = "Texture.Advanced",
-        string help = "Additional blur for texture lookup, along the T direction."
+        string help = "Additional blur for texture lookup, along the T direction.",
+        int as_max_param_id = 9
     ]],
     float in_s_filter_width = 1.0
     [[
@@ -140,7 +147,8 @@ shader as_texture
         float softmax = 1.0,
         string label = "S Filter Width",
         string page = "Texture.Advanced",
-        string help = "Multiplier to scale the size of the filter width along the S direction."
+        string help = "Multiplier to scale the size of the filter width along the S direction.",
+        int as_max_param_id = 11
     ]],
     float in_t_filter_width = 1.0
     [[
@@ -151,7 +159,8 @@ shader as_texture
         string label = "T Filter Width",
         string page = "Texture.Advanced",
         string help = "Multiplier to scale the size of the filter width along the S direction.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 13
     ]],
     int in_s_wrap = 0
     [[
@@ -166,7 +175,8 @@ shader as_texture
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        string help = "Use the wrapping mode set on the texture, or override it."
+        string help = "Use the wrapping mode set on the texture, or override it.",
+        int as_max_param_id = 15
     ]],
     int in_t_wrap = 0
     [[
@@ -182,7 +192,8 @@ shader as_texture
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Use the wrapping mode set on the texture, or override it.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 16
     ]],
     int in_interpolation_method = 0
     [[
@@ -197,7 +208,8 @@ shader as_texture
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 17
     ]],
     int in_enable_cms = 0
     [[
@@ -212,7 +224,8 @@ shader as_texture
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 18
     ]],
     int in_eotf = 1
     [[
@@ -227,7 +240,8 @@ shader as_texture
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        string help = "Transfer function of the ingested material, refers to the Opto-Electronic Transfer Function required to transform the input into scene-linear values."
+        string help = "Transfer function of the ingested material, refers to the Opto-Electronic Transfer Function required to transform the input into scene-linear values.",
+        int as_max_param_id = 19
     ]],
     string in_rgb_primaries = "sRGB/Rec.709"
     [[
@@ -242,7 +256,8 @@ shader as_texture
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        string help = "RGB primaries, note that Rec.709 and sRGB share the same CIE xy chromaticity coordinates."
+        string help = "RGB primaries, note that Rec.709 and sRGB share the same CIE xy chromaticity coordinates.",
+        int as_max_param_id = 20
     ]],
     string in_workingspace_rgb_primaries = "sRGB/Rec.709"
     [[
@@ -257,21 +272,24 @@ shader as_texture
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        string help = "Working or rendering space RGB primaries. Note that Rec.709 and sRGB share the same CIE xy chromaticity coordinates."
+        string help = "Working or rendering space RGB primaries. Note that Rec.709 and sRGB share the same CIE xy chromaticity coordinates.",
+        int as_max_param_id = 21
     ]],
     float in_texture_coords[2] = {u, v}
     [[
         string as_maya_attribute_name = "uvCoord",
         string as_maya_attribute_short_name = "uv",
         string label = "UV Coords",
-        string page = "Texture Coordinates"
+        string page = "Texture Coordinates",
+        int as_max_param_id = 22
     ]],
     float in_texture_coords_filter[2] = {0.0, 0.0}
     [[
         string as_maya_attribute_name = "uvFilterSize",
         string as_maya_attribute_short_name = "fs",
         string label = "UV Filter Size",
-        string page = "Texture Coordinates"
+        string page = "Texture Coordinates",
+        int as_max_param_id = 24
     ]],
 
     output color out_color = color(0)
@@ -279,21 +297,24 @@ shader as_texture
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 25
     ]],
     output float out_alpha = 1.0
     [[
         string as_maya_attribute_name = "outAlpha",
         string as_maya_attribute_short_name = "oa",
         string label = "Output Alpha",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 25
     ]],
     output float out_channel = 0.0
     [[
         string as_maya_attribute_name = "outChannel",
         string as_maya_attribute_short_name = "och",
         string label = "Output Single Channel",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 25
     ]]
 )
 {

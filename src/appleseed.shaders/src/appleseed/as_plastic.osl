@@ -47,7 +47,8 @@ shader as_plastic
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Diffuse Color",
-        string page = "Diffuse"
+        string page = "Diffuse",
+        int as_max_param_id = 0
     ]],
     float in_diffuse_weight = 1.0
     [[
@@ -56,7 +57,8 @@ shader as_plastic
         float min = 0.0,
         float max = 1.0,
         string label = "Diffuse Weight",
-        string page = "Diffuse"
+        string page = "Diffuse",
+        int as_max_param_id = 2
     ]],
     float in_scattering = 0.0
     [[
@@ -65,14 +67,16 @@ shader as_plastic
         float min = 0.0,
         float max = 1.0,
         string label = "Scattering",
-        string page = "Diffuse"
+        string page = "Diffuse",
+        int as_max_param_id = 4
     ]],
     color in_specular_color = color(0.5)
     [[
         string as_maya_attribute_name = "specularColor",
         string as_maya_attribute_short_name = "scc",
         string label = "Specular Color",
-        string page = "Specular"
+        string page = "Specular",
+        int as_max_param_id = 6
     ]],
     float in_specular_weight = 1.0
     [[
@@ -82,7 +86,8 @@ shader as_plastic
         float max = 1.0,
         string label = "Specular Weight",
         string page = "Specular",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 8
     ]],
     float in_ior = 1.5
     [[
@@ -92,7 +97,8 @@ shader as_plastic
         float max = 2.5,
         string label = "IOR",
         string page = "Specular",
-        string help = "Index of refraction."
+        string help = "Index of refraction.",
+        int as_max_param_id = 10
     ]],
     int in_distribution = 0
     [[
@@ -107,7 +113,8 @@ shader as_plastic
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 12
     ]],
     float in_specular_roughness = 0.2
     [[
@@ -116,7 +123,8 @@ shader as_plastic
         float min = 0.0,
         float max = 1.0,
         string label = "Specular Roughness",
-        string page = "Specular"
+        string page = "Specular",
+        int as_max_param_id = 13
     ]],
     float in_specular_spread = 0.25
     [[
@@ -126,21 +134,24 @@ shader as_plastic
         float max = 1.0,
         string label = "Specular Spread",
         string page = "Specular",
-        string help = "Specular highlights spread, only valid for GTR, Student's t-MDF."
+        string help = "Specular highlights spread, only valid for GTR, Student's t-MDF.",
+        int as_max_param_id = 15
     ]],
     normal in_bump_normal = N
     [[
         string as_maya_attribute_name = "normalCamera",
         string as_maya_attribute_short_name = "n",
         string label = "Bump Normal",
-        string page = "Bump"
+        string page = "Bump",
+        int as_max_param_id = 17
     ]],
     color in_transparency = color(0)
     [[
         string as_maya_attribute_name = "transparency",
         string as_maya_attribute_short_name = "it",
         string label = "Transparency Color",
-        string page = "Transparency"
+        string page = "Transparency",
+        int as_max_param_id = 18
     ]],
     int in_enable_matte = 0
     [[
@@ -154,7 +165,8 @@ shader as_plastic
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 20
     ]],
     float in_matte_opacity = 0.0
     [[
@@ -164,7 +176,8 @@ shader as_plastic
         float max = 1.0,
         string label = "Matte Opacity",
         string page = "Matte Opacity",
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 21
     ]],
     color in_matte_opacity_color = color(1,0.5,0)
     [[
@@ -172,7 +185,8 @@ shader as_plastic
         string as_maya_attribute_short_name = "mac",
         string label = "Matte Opacity Color",
         string page = "Matte Opacity",
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 23
     ]],
     int in_maximum_ray_depth = 100
     [[
@@ -187,20 +201,23 @@ shader as_plastic
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 25
     ]],
 
     output closure color out_outColor = 0
     [[
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 26
     ]],
     output closure color out_outTransparency = 0
     [[
         string as_maya_attribute_name = "outTransparency",
         string as_maya_attribute_short_name = "ot",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 26
     ]],
     output closure color out_outMatteOpacity = 0
     [[
@@ -209,7 +226,8 @@ shader as_plastic
         string widget = "null",
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 26
     ]]
 )
 {

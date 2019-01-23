@@ -51,7 +51,8 @@ shader as_luminance
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Input Color",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 0
     ]],
     int in_deriveFromMayaCMS = 1
     [[
@@ -65,7 +66,8 @@ shader as_luminance
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 2
     ]],
     int in_inputColorSpace = 0
     [[
@@ -81,7 +83,8 @@ shader as_luminance
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 3
     ]],
     float in_chromaticityCoordsR[2] = {0.640, 0.330}
     [[
@@ -91,7 +94,8 @@ shader as_luminance
         float min = 0.0,
         float max = 1.0,
         string label = "R xy Coordinates",
-        string page = "Color Space.RGB Primaries"
+        string page = "Color Space.RGB Primaries",
+        int as_max_param_id = 5
     ]],
     float in_chromaticityCoordsG[2] = {0.300, 0.600}
     [[
@@ -101,7 +105,8 @@ shader as_luminance
         float min = 0.0,
         float max = 1.0,
         string label = "G xy Coordinates",
-        string page = "Color Space.RGB Primaries"
+        string page = "Color Space.RGB Primaries",
+        int as_max_param_id = 7
     ]],
     float in_chromaticityCoordsB[2] = {0.150, 0.060}
     [[
@@ -112,7 +117,8 @@ shader as_luminance
         float max = 1.0,
         string label = "B xy Coordinates",
         string page = "Color Space.RGB Primaries",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 9
     ]],
     int in_inputIlluminants = 0
     [[
@@ -128,7 +134,8 @@ shader as_luminance
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 10
     ]],
     int in_colorTemperature = 6504
     [[
@@ -142,7 +149,8 @@ shader as_luminance
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 1
+        int gafferNoduleLayoutVisible = 1,
+        int as_max_param_id = 11
     ]],
     float in_chromaticityCoordsW[2] = {0.3127, 0.329}
     [[
@@ -152,7 +160,8 @@ shader as_luminance
         float min = 0.0,
         float max = 1.0,
         string label = "W xy Coordinates",
-        string page = "Color Space.Illuminants"
+        string page = "Color Space.Illuminants",
+        int as_max_param_id = 13
     ]],
 
     MAYA_COLORMANAGEMENT_PARAMETERS,
@@ -161,7 +170,8 @@ shader as_luminance
     [[
         string as_maya_attribute_name = "result",
         string as_maya_attribute_short_name = "r",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 21
     ]]
 )
 {

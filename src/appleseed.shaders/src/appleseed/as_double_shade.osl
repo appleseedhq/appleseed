@@ -47,21 +47,24 @@ shader as_double_shade
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Front Color",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 0
     ]],
     color in_color2 = color(0)
     [[
         string as_maya_attribute_name = "color2",
         string as_maya_attribute_short_name = "c2",
         string label = "Back Color",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 2
     ]],
 
     output color out_color = color(0)
     [[
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
-        string label = "Output Color"
+        string label = "Output Color",
+        int as_max_param_id = 4
     ]]
 )
 {

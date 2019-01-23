@@ -53,14 +53,16 @@ shader as_noise3d
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Color 1",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 0
     ]],
     color in_color2 = color(1)
     [[
         string as_maya_attribute_name = "color2",
         string as_maya_attribute_short_name = "c2",
         string label = "Color 2",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 2
     ]],
     float in_contrast = 1.0
     [[
@@ -70,7 +72,8 @@ shader as_noise3d
         float min = 0.0,
         float max = 1.0,
         string label = "Contrast",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 4
     ]],
     int in_type = 0
     [[
@@ -85,7 +88,8 @@ shader as_noise3d
         string help = "Noise type used.",
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 6
     ]],
     float in_intensity = 1.0
     [[
@@ -96,7 +100,8 @@ shader as_noise3d
         float softmax = 1.0,
         string label = "Intensity",
         string help = "Global noise intensity.",
-        string page = "Noise"
+        string page = "Noise",
+        int as_max_param_id = 7
     ]],
     vector in_frequency = vector(1)
     [[
@@ -104,7 +109,8 @@ shader as_noise3d
         string as_maya_attribute_short_name = "frq",
         string label = "XYZ Frequency",
         string help = "Higher values increase the noise density.",
-        string page = "Noise"
+        string page = "Noise",
+        int as_max_param_id = 9
     ]],
     int in_ridges = 0
     [[
@@ -116,7 +122,8 @@ shader as_noise3d
         string label = "Ridges",
         string page = "Noise",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 11
     ]],
     int in_inflection = 0
     [[
@@ -129,7 +136,8 @@ shader as_noise3d
         string page = "Noise",
         string help = "Uses the absolute value of the noise.",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 12
     ]],
     int in_signed_noise = 0
     [[
@@ -142,7 +150,8 @@ shader as_noise3d
         string page = "Noise",
         string help = "Noise range in [0,1] or [-1,1].",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 13
     ]],
     // to be removed
     int in_animated_noise = 0
@@ -166,7 +175,8 @@ shader as_noise3d
         float softmax = 1.0,
         string label = "Frame Time",
         string page = "Noise.Motion",
-        string help = "Frame time, typically frame number."
+        string help = "Frame time, typically frame number.",
+        int as_max_param_id = 14
     ]],
     float in_time_scale = 0.0
     [[
@@ -176,7 +186,8 @@ shader as_noise3d
         float softmax = 1.0,
         string label = "Time Scale",
         string page = "Noise.Motion",
-        string help = "Global time scale, affects frame time."
+        string help = "Global time scale, affects frame time.",
+        int as_max_param_id = 16
     ]],
     int in_periodic = 0
     [[
@@ -189,14 +200,16 @@ shader as_noise3d
         string page = "Noise.Periodic",
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 18
     ]],
     vector in_period = vector(4)
     [[
         string as_maya_attribute_name = "period",
         string as_maya_attribute_short_name = "prd",
         string label = "Period",
-        string page = "Noise.Periodic"
+        string page = "Noise.Periodic",
+        int as_max_param_id = 19
     ]],
     float in_period_time = 4.0
     [[
@@ -205,7 +218,8 @@ shader as_noise3d
         float min = 0.0,
         float softmax = 16.0,
         string label = "Time Period",
-        string page = "Noise.Periodic"
+        string page = "Noise.Periodic",
+        int as_max_param_id = 21
     ]],
     float in_smoothness = 0.0
     [[
@@ -214,7 +228,8 @@ shader as_noise3d
         float min = 0.0,
         float max = 1.0,
         string label = "Smoothness",
-        string page = "Noise.Voronoise"
+        string page = "Noise.Voronoise",
+        int as_max_param_id = 23
     ]],
     float in_jittering = 0.0
     [[
@@ -223,7 +238,8 @@ shader as_noise3d
         float min = 0.0,
         float max = 1.0,
         string label = "Jittering",
-        string page = "Noise.Voronoise"
+        string page = "Noise.Voronoise",
+        int as_max_param_id = 25
     ]],
     int in_anisotropy = 0
     [[
@@ -237,14 +253,16 @@ shader as_noise3d
         string page = "Noise.Gabor",
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 27
     ]],
     vector in_direction = vector(1,0,0)
     [[
         string as_maya_attribute_name = "direction",
         string as_maya_attribute_short_name = "dir",
         string label = "Anisotropy Vector",
-        string page = "Noise.Gabor"
+        string page = "Noise.Gabor",
+        int as_max_param_id = 28
     ]],
     float in_bandwidth = 1.0
     [[
@@ -253,7 +271,8 @@ shader as_noise3d
         float min = 0.0,
         float softmax = 1.0,
         string label = "Bandwidth",
-        string page = "Noise.Gabor"
+        string page = "Noise.Gabor",
+        int as_max_param_id = 30
     ]],
     int in_impulses = 16
     [[
@@ -267,7 +286,8 @@ shader as_noise3d
         string page = "Noise.Gabor",
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 32
     ]],
     int in_filter_noise = 1
     [[
@@ -279,7 +299,8 @@ shader as_noise3d
         string label = "Filter",
         string page = "Noise.Gabor",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 33
     ]],
     float in_amplitude = 1.0
     [[
@@ -292,7 +313,8 @@ shader as_noise3d
         int slider = 0,
         string label = "Amplitude",
         string page = "Recursion",
-        string help = "Initial amplitude before recursion."
+        string help = "Initial amplitude before recursion.",
+        int as_max_param_id = 34
     ]],
     int in_octaves = 1
     [[
@@ -309,7 +331,8 @@ shader as_noise3d
         string help = "Maximum number of iterations.",
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 36
     ]],
     int in_cascade_mode = 0
     [[
@@ -324,7 +347,8 @@ shader as_noise3d
         string help = "Add sucessive frequencies, or multiply them.",
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 37
     ]],
     float in_lacunarity = 2.17
     [[
@@ -336,7 +360,8 @@ shader as_noise3d
         float softmax = 10.0,
         string label = "Lacunarity",
         string page = "Recursion",
-        string help = "Gap between successive frequencies."
+        string help = "Gap between successive frequencies.",
+        int as_max_param_id = 38
     ]],
     float in_offset = 0.0
     [[
@@ -346,7 +371,8 @@ shader as_noise3d
         float softmax = 1.0,
         string label = "Offset",
         string page = "Recursion",
-        string help = "Controls the multifractality."
+        string help = "Controls the multifractality.",
+        int as_max_param_id = 40
     ]],
     float in_noise_gain = 1.0
     [[
@@ -358,7 +384,8 @@ shader as_noise3d
         float softmax = 3.0,
         string label = "Gain",
         string page = "Recursion",
-        string help = "Controls the contrast of the fractal."
+        string help = "Controls the contrast of the fractal.",
+        int as_max_param_id = 42
     ]],
     float in_distortion = 0.0
     [[
@@ -368,20 +395,23 @@ shader as_noise3d
         float softmax = 1.0,
         string label = "Distortion",
         string page = "Recursion",
-        string help = "Distors the domain of the coordinates for each frequency."
+        string help = "Distors the domain of the coordinates for each frequency.",
+        int as_max_param_id = 44
     ]],
     point in_refPointCamera = P
     [[
         string as_maya_attribute_name = "refPointCamera",
         string as_maya_attribute_short_name = "rpc",
         string label = "Surface Point",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 46
     ]],
     matrix in_placementMatrix = matrix(1)
     [[
         string as_maya_attribute_name = "placementMatrix",
         string label = "Placement Matrix",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 47
     ]],
 
     MAYA_EFFECTS_3DTEX_PARAMETERS,
@@ -390,13 +420,15 @@ shader as_noise3d
     [[
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
-        string label = "Color"
+        string label = "Color",
+        int as_max_param_id = 54
     ]],
     output float out_outAlpha = 1.0
     [[
         string as_maya_attribute_name = "outAlpha",
         string as_maya_attribute_short_name = "oa",
-        string label = "Alpha"
+        string label = "Alpha",
+        int as_max_param_id = 54
     ]]
 )
 {

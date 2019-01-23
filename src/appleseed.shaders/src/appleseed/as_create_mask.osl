@@ -52,7 +52,8 @@ shader as_create_mask
         string as_maya_attribute_short_name = "c",
         string label = "Color",
         string page = "Color",
-        string help = "Color value to create mask from. It expects scene-linear values."
+        string help = "Color value to create mask from. It expects scene-linear values.",
+        int as_max_param_id = 0
     ]],
     float in_alpha = 0.0
     [[
@@ -62,7 +63,8 @@ shader as_create_mask
         float max = 1.0,
         string label = "Alpha",
         string page = "Color",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 2
     ]],
     int in_threshold_channel = 0
     [[
@@ -78,7 +80,8 @@ shader as_create_mask
         int gafferNoduleLayoutVisible = 0,
         string label = "Threshold Channel",
         string page = "Color",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 4
     ]],
     float in_threshold_value = 0.5
     [[
@@ -87,7 +90,8 @@ shader as_create_mask
         float softmin = 0.0,
         float softmax = 1.0,
         string label = "Threshold Value",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 5
     ]],
     int in_threshold_function = 0
     [[
@@ -101,7 +105,8 @@ shader as_create_mask
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Threshold Function",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 7
     ]],
     float in_threshold_contrast = 0.25
     [[
@@ -110,7 +115,8 @@ shader as_create_mask
         float min = 0.0,
         float max = 1.0,
         string label = "Threshold Contrast",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 8
     ]],
     float in_threshold_lower_bound = 0.15
     [[
@@ -119,7 +125,8 @@ shader as_create_mask
         float min = 0.0,
         float max = 1.0,
         string label = "Smoothstep Lower Bound",
-        string page = "Color.Step Bounds"
+        string page = "Color.Step Bounds",
+        int as_max_param_id = 10
     ]],
     float in_threshold_upper_bound = 0.85
     [[
@@ -128,14 +135,16 @@ shader as_create_mask
         float min = 0.0,
         float max = 1.0,
         string label = "Smoothstep Upper Bound",
-        string page = "Color.Step Bounds"
+        string page = "Color.Step Bounds",
+        int as_max_param_id = 12
     ]],
 
     output float out_result = 0.0
     [[
         string as_maya_attribute_name = "result",
         string as_maya_attribute_short_name = "res",
-        string label = "Output Value"
+        string label = "Output Value",
+        int as_max_param_id = 14
     ]]
 )
 {

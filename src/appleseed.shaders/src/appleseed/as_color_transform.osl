@@ -51,7 +51,8 @@ shader as_color_transform
         string as_maya_attribute_short_name = "c",
         string label = "Input Color",
         string page = "Color",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 0
     ]],
     int in_inputSpace = 0
     [[
@@ -65,7 +66,8 @@ shader as_color_transform
         string widget = "mapper",
         string options = "RGB:0|HSV:1|HSL:2|XYZ:3|xyY:4|CIE 1976 L*a*b*:5|CIE 1976 L*u*v*:6|CIE 1976 LCh_ab:7|CIE 1976 LCh_uv:8",
         string label = "Input Space",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 2
     ]],
     int in_outputSpace = 0
     [[
@@ -79,7 +81,8 @@ shader as_color_transform
         string widget = "mapper",
         string options = "RGB:0|HSV:1|HSL:2|CIE XYZ:3|CIE xyY:4|CIE 1976 L*a*b*:5|CIE 1976 L*u*v*:6|CIE 1976 LCh_ab:7|CIE 1976 LCh_uv:8",
         string label = "Output Space",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 3
     ]],
 
     MAYA_COLORMANAGEMENT_PARAMETERS,
@@ -89,7 +92,8 @@ shader as_color_transform
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
         string widget = "null",
-        string label = "Output Color"
+        string label = "Output Color",
+        int as_max_param_id = 11
     ]]
 )
 {

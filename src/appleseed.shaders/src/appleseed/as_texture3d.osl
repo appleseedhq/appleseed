@@ -59,7 +59,8 @@ shader as_texture3d
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "The 3D texture file (field3d, f3d, etc).",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 0
     ]],
     int in_starting_channel = 0
     [[
@@ -75,7 +76,8 @@ shader as_texture3d
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 1
     ]],
     color in_color = color(0)
     [[
@@ -83,7 +85,8 @@ shader as_texture3d
         string as_maya_attribute_short_name = "c",
         string label = "Default Color",
         string page = "3D Texture",
-        string help = "Default fill color to use if the texture lookup fails."
+        string help = "Default fill color to use if the texture lookup fails.",
+        int as_max_param_id = 2
     ]],
     float in_channel_fill = 0.0
     [[
@@ -94,7 +97,8 @@ shader as_texture3d
         string label = "Default Channel Fill",
         string page = "3D Texture",
         string help = "Default fill value for any channels requested but not present.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 4
     ]],
     float in_time = 0.0
     [[
@@ -103,7 +107,8 @@ shader as_texture3d
         float softmin = 0.0,
         string label = "Time",
         string page = "3D Texture",
-        string help = "Time value to use if the texture specifies a time varying local transformation."
+        string help = "Time value to use if the texture specifies a time varying local transformation.",
+        int as_max_param_id = 6
     ]],
     int in_s_wrap = 0
     [[
@@ -118,7 +123,8 @@ shader as_texture3d
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        string help = "Use the wrapping mode set on the texture, or override it."
+        string help = "Use the wrapping mode set on the texture, or override it.",
+        int as_max_param_id = 8
     ]],
     int in_t_wrap = 0
     [[
@@ -133,7 +139,8 @@ shader as_texture3d
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        string help = "Use the wrapping mode set on the texture, or override it."
+        string help = "Use the wrapping mode set on the texture, or override it.",
+        int as_max_param_id = 9
     ]],
     int in_r_wrap = 0
     [[
@@ -148,7 +155,8 @@ shader as_texture3d
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        string help = "Use the wrapping mode set on the texture, or override it."
+        string help = "Use the wrapping mode set on the texture, or override it.",
+        int as_max_param_id = 10
     ]],
     float in_s_blur = 0.0
     [[
@@ -163,7 +171,8 @@ shader as_texture3d
         int gafferNoduleLayoutVisible = 0,
         string label = "Blur Width",
         string page = "3D Texture.Blur",
-        string help = "Blur along the s direction, or width."
+        string help = "Blur along the s direction, or width.",
+        int as_max_param_id = 11
     ]],
     float in_t_blur = 0.0
     [[
@@ -178,7 +187,8 @@ shader as_texture3d
         int gafferNoduleLayoutVisible = 0,
         string label = "Blur Height",
         string page = "3D Texture.Blur",
-        string help = "Blur along the t direction, or height."
+        string help = "Blur along the t direction, or height.",
+        int as_max_param_id = 12
     ]],
     float in_r_blur = 0.0
     [[
@@ -194,7 +204,8 @@ shader as_texture3d
         string label = "Blur Depth",
         string page = "3D Texture.Blur",
         string help = "Blur along the r direction, or depth.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 13
     ]],
     float in_s_width = 1.0
     [[
@@ -209,7 +220,8 @@ shader as_texture3d
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        string help = "Scale the size of the filter defined by the partial derivatives along s or implicitly from P, with 0 disabling filtering altogether."
+        string help = "Scale the size of the filter defined by the partial derivatives along s or implicitly from P, with 0 disabling filtering altogether.",
+        int as_max_param_id = 14
     ]],
     float in_t_width = 1.0
     [[
@@ -224,7 +236,8 @@ shader as_texture3d
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        string help = "Scale the size of the filter defined by the partial derivatives along t or implicitly from P, with 0 disabling filtering altogether."
+        string help = "Scale the size of the filter defined by the partial derivatives along t or implicitly from P, with 0 disabling filtering altogether.",
+        int as_max_param_id = 15
     ]],
     float in_r_width = 1.0
     [[
@@ -239,7 +252,8 @@ shader as_texture3d
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        string help = "Scale the size of the filter defined by the partial derivatives along r or implicitly from P, with 0 disabling filtering altogether."
+        string help = "Scale the size of the filter defined by the partial derivatives along r or implicitly from P, with 0 disabling filtering altogether.",
+        int as_max_param_id = 16
     ]],
     point in_surface_point = P
     [[
@@ -247,7 +261,8 @@ shader as_texture3d
         string as_maya_attribute_short_name = "sp",
         string label = "Surface Point",
         string page = "Coordinates",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 17
     ]],
     int in_coordsys = 1
     [[
@@ -261,7 +276,8 @@ shader as_texture3d
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 18
     ]],
     matrix in_placement_matrix = matrix(1)
     [[
@@ -271,13 +287,15 @@ shader as_texture3d
         string page = "Coordinates",
         string widget = "null",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 19
     ]],
     output color out_color = color(0)
     [[
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 20
     ]]
 )
 {

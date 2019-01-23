@@ -52,7 +52,8 @@ shader as_sbs_pbrmaterial
         float max = 1.0,
         string label = "Ambient Occlusion",
         string page = "Ambient Occlusion",
-        string help = "Ambient occlusion channel texture from Substance Painter."
+        string help = "Ambient occlusion channel texture from Substance Painter.",
+        int as_max_param_id = 0
         // Default linear-encoded by SBS
     ]],
     color in_baseColor = color(0.5)
@@ -61,7 +62,8 @@ shader as_sbs_pbrmaterial
         string as_maya_attribute_short_name = "c",
         string label = "Surface Color",
         string page = "Base Color",
-        string help = "Diffuse base color or surface color channel."
+        string help = "Diffuse base color or surface color channel.",
+        int as_max_param_id = 2
         // Default sRGB encoded by SBS
     ]],
     color in_emissiveColor = color(0)
@@ -71,6 +73,7 @@ shader as_sbs_pbrmaterial
         string label = "Emissive Color",
         string page = "Emissive",
         string help = "Emissive channel",
+        int as_max_param_id = 4
         // Default sRGB encoded by SBS
     ]],
     float in_emissiveIntensity = 1.0
@@ -82,7 +85,8 @@ shader as_sbs_pbrmaterial
         float max = 10.0,
         string label = "Emissive Intensity",
         string page = "Emissive",
-        string help = "Controls how much light is emitted from the surface."
+        string help = "Controls how much light is emitted from the surface.",
+        int as_max_param_id = 6
     ]],
     float in_height = 0.5
     [[
@@ -92,7 +96,8 @@ shader as_sbs_pbrmaterial
         float softmax = 1.0,
         string label = "Height",
         string page = "Height",
-        string help = "Height channel."
+        string help = "Height channel.",
+        int as_max_param_id = 8
         // hidden
         // linear-encoded
     ]],
@@ -104,7 +109,8 @@ shader as_sbs_pbrmaterial
         float max = 1.0,
         string label = "Scale",
         string page = "Height",
-        string help = "A scaling factor for the height bump mapping."
+        string help = "A scaling factor for the height bump mapping.",
+        int as_max_param_id = 10
         // linear encoded
     ]],
     float in_metallic = 0.0
@@ -115,7 +121,8 @@ shader as_sbs_pbrmaterial
         float max = 1.0,
         string label = "Metallic",
         string page = "Metallic",
-        string help = "Metallicness channel."
+        string help = "Metallicness channel.",
+        int as_max_param_id = 12
         // linear encoded
     ]],
     normal in_normal = N
@@ -124,7 +131,8 @@ shader as_sbs_pbrmaterial
         string as_maya_attribute_short_name = "n",
         string label = "Normal",
         string page = "Normal",
-        string help = "Normal channel"
+        string help = "Normal channel",
+        int as_max_param_id = 13
         // linear encoded
     ]],
     float in_roughness = 0.5
@@ -135,7 +143,8 @@ shader as_sbs_pbrmaterial
         float max = 1.0,
         string label = "Roughness",
         string page = "Roughness",
-        string help = "Roughness channel."
+        string help = "Roughness channel.",
+        int as_max_param_id = 15
         // linear encoded
     ]],
     float in_opacity = 1.0
@@ -146,7 +155,8 @@ shader as_sbs_pbrmaterial
         float max = 1.0,
         string label = "Opacity",
         string page = "Opacity",
-        string help = "Opacity channel"
+        string help = "Opacity channel",
+        int as_max_param_id = 17
         // linear encoded
     ]],
     float in_specularLevel = 0.5
@@ -157,7 +167,8 @@ shader as_sbs_pbrmaterial
         float max = 1.0,
         string label = "Specular Level",
         string page = "Specular",
-        string help = "Specular level channel."
+        string help = "Specular level channel.",
+        int as_max_param_id = 19
         // linear encoded
     ]],
     float in_anisotropyLevel = 0.0
@@ -168,7 +179,8 @@ shader as_sbs_pbrmaterial
         float max = 1.0,
         string label = "Anisotropy Level",
         string page = "Anisotropy",
-        string help = "Anisotropy Level channel"
+        string help = "Anisotropy Level channel",
+        int as_max_param_id = 21
         // linear encoded
     ]],
     float in_anisotropyAngle = 0.0
@@ -179,7 +191,8 @@ shader as_sbs_pbrmaterial
         float max = 1.0,
         string label = "Anisotropy Angle",
         string page = "Anisotropy",
-        string help = "Anisotropy Angle channel, where 1 = 360 degrees."
+        string help = "Anisotropy Angle channel, where 1 = 360 degrees.",
+        int as_max_param_id = 23
         // see base.mdl for reference
         // linear encoded
     ]],
@@ -192,7 +205,8 @@ shader as_sbs_pbrmaterial
         string label = "Refraction",
         string page = "Refraction",
         string help = "Refraction channel",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 25
         // linear encoded
     ]],
     float in_refractionIOR = 1.5
@@ -213,7 +227,8 @@ shader as_sbs_pbrmaterial
         string label = "IOR",
         string page = "Refraction",
         string help = "Index of Refraction",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 27
     ]],
     float in_scattering = 0.0
     [[
@@ -223,7 +238,8 @@ shader as_sbs_pbrmaterial
         float max = 0.1,
         string label = "Scattering",
         string page = "Refraction",
-        string help = "Controls how much light is scattered through the surface."
+        string help = "Controls how much light is scattered through the surface.",
+        int as_max_param_id = 28
     ]],
     float in_absorption = 0.0
     [[
@@ -233,7 +249,8 @@ shader as_sbs_pbrmaterial
         float max = 1.0,
         string label = "Absorption",
         string page = "Refraction",
-        string help = "Controls how much light is absorbed through the surface."
+        string help = "Controls how much light is absorbed through the surface.",
+        int as_max_param_id = 30
     ]],
     color in_absorptionColor = color(1)
     [[
@@ -241,7 +258,8 @@ shader as_sbs_pbrmaterial
         string as_maya_attribute_short_name = "abc",
         string label = "Absorption Color",
         string page = "Refraction",
-        string help = "Simulates shifts in color when light passes through the surface."
+        string help = "Simulates shifts in color when light passes through the surface.",
+        int as_max_param_id = 32
     ]],
     int in_enable_matte = 0
     [[
@@ -255,7 +273,8 @@ shader as_sbs_pbrmaterial
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 34
     ]],
     float in_matte_opacity = 0.0
     [[
@@ -265,7 +284,8 @@ shader as_sbs_pbrmaterial
         float max = 1.0,
         string label = "Matte Opacity",
         string page = "Matte Opacity",
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 35
     ]],
     color in_matte_opacity_color = color(1,0.5,0)
     [[
@@ -273,7 +293,8 @@ shader as_sbs_pbrmaterial
         string as_maya_attribute_short_name = "mac",
         string label = "Matte Opacity Color",
         string page = "Matte Opacity",
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 37
     ]],
     int in_maximum_ray_depth = 100
     [[
@@ -291,7 +312,8 @@ shader as_sbs_pbrmaterial
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 39
     ]],
 
     // primvars
@@ -301,7 +323,8 @@ shader as_sbs_pbrmaterial
         int as_maya_attribute_hidden = 1,
         string widget = "null",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 40
     ]],
     vector Bn = vector(0)
     [[
@@ -309,7 +332,8 @@ shader as_sbs_pbrmaterial
         int as_maya_attribute_hidden = 1,
         string widget = "null",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 41
 
     ]],
 
@@ -318,13 +342,15 @@ shader as_sbs_pbrmaterial
     [[
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 42
     ]],
     output closure color out_outTransparency = 0
     [[
         string as_maya_attribute_name = "outTransparency",
         string as_maya_attribute_short_name = "ot",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 42
     ]],
     output closure color out_outMatteOpacity = 0
     [[
@@ -333,7 +359,8 @@ shader as_sbs_pbrmaterial
         string widget = "null",
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 42
     ]]
 )
 {

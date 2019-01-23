@@ -49,7 +49,8 @@ shader as_composite_color
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Source Color",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 0
     ]],
     float in_alpha = 1.0
     [[
@@ -59,14 +60,16 @@ shader as_composite_color
         float max = 1.0,
         string label = "Source Alpha",
         string page = "Color",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 2
     ]],
     color in_color2 = color(1)
     [[
         string as_maya_attribute_name = "color2",
         string as_maya_attribute_short_name = "c2",
         string label = "Destination Color",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 4
     ]],
     float in_alpha2 = 1.0
     [[
@@ -76,7 +79,8 @@ shader as_composite_color
         float max = 1.0,
         string label = "Destination Alpha",
         string page = "Color",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 6
     ]],
     string in_composite_mode = "Matte"
     [[
@@ -92,7 +96,8 @@ shader as_composite_color
         string label = "Composite Mode",
         string page = "Color",
         string help = "Compositing modes.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 8
     ]],
     int in_clamp_output = 0
     [[
@@ -105,7 +110,8 @@ shader as_composite_color
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Clamp Output",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 9
     ]],
 
     output color out_color = color(0)
@@ -113,14 +119,16 @@ shader as_composite_color
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
         string widget = "null",
-        string label = "Output Color"
+        string label = "Output Color",
+        int as_max_param_id = 10
     ]],
     output float out_alpha = 0.0
     [[
         string as_maya_attribute_name = "outAlpha",
         string as_maya_attribute_short_name = "oa",
         string widget = "null",
-        string label = "Output Alpha"
+        string label = "Output Alpha",
+        int as_max_param_id = 10
     ]]
 )
 {

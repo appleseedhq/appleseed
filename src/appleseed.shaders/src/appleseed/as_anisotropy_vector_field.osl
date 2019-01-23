@@ -55,14 +55,16 @@ shader as_anisotropy_vector_field
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 0,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 0
     ]],
     color in_color = color(1)
     [[
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Field Color",
-        string page = "Field"
+        string page = "Field",
+        int as_max_param_id = 1
     ]],
     int in_field_mode = 0
     [[
@@ -76,7 +78,8 @@ shader as_anisotropy_vector_field
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 3
     ]],
     float in_rotation_value = 0.0
     [[
@@ -86,7 +89,8 @@ shader as_anisotropy_vector_field
         float max = 1.0,
         string help = "Rotation value, mapping [0,1] to [0,360] degrees.",
         string label = "Rotation Value",
-        string page = "Rotation"
+        string page = "Rotation",
+        int as_max_param_id = 4
     ]],
     int in_rotation_mode = 0
     [[
@@ -101,7 +105,8 @@ shader as_anisotropy_vector_field
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 6
     ]],
     int in_normalize_output = 1
     [[
@@ -114,14 +119,16 @@ shader as_anisotropy_vector_field
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 7
     ]],
     normal in_surface_normal = N
     [[
         string as_maya_attribute_name = "normalCamera",
         string as_maya_attribute_short_name = "n",
         string label = "Surface Normal",
-        string page = "Normal"
+        string page = "Normal",
+        int as_max_param_id = 8
     ]],
     vector Tn = vector(0)
     [[
@@ -148,7 +155,8 @@ shader as_anisotropy_vector_field
     [[
         string as_maya_attribute_name = "anisotropyVector",
         string as_maya_attribute_short_name = "av",
-        string label = "Anisotropy Vector"
+        string label = "Anisotropy Vector",
+        int as_max_param_id = 9
     ]]
 )
 {

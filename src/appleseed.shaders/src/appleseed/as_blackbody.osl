@@ -59,7 +59,8 @@ shader as_blackbody
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 0
     ]],
     color in_color = color(0)
     [[
@@ -67,7 +68,8 @@ shader as_blackbody
         string as_maya_attribute_short_name = "inc",
         string label = "Color",
         string page = "Emission",
-        string help = "Emission color, only valid in custom mode."
+        string help = "Emission color, only valid in custom mode.",
+        int as_max_param_id = 1
     ]],
     float in_incandescence_amount = 0.0
     [[
@@ -76,7 +78,8 @@ shader as_blackbody
         float min = 0.0,
         float softmax = 1.0,
         string label = "Emission Amount",
-        string page = "Emission"
+        string page = "Emission",
+        int as_max_param_id = 3
     ]],
     float in_temperature_scale = 1.0
     [[
@@ -86,7 +89,8 @@ shader as_blackbody
         float max = 1.0,
         string label = "Temperature Scale",
         string page = "Emission",
-        string help = "Temperature scaling factor."
+        string help = "Temperature scaling factor.",
+        int as_max_param_id = 5
     ]],
     int in_temperature = 4300
     [[
@@ -104,7 +108,8 @@ shader as_blackbody
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 7
     ]],
     int in_area_normalize_edf = 0
     [[
@@ -117,7 +122,8 @@ shader as_blackbody
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 8
     ]],
     int in_tonemap_edf = 1
     [[
@@ -131,7 +137,8 @@ shader as_blackbody
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 9
     ]],
     float in_specular_amount = 0.0
     [[
@@ -140,7 +147,8 @@ shader as_blackbody
         float min = 0.0,
         float max = 1.0,
         string label = "Specular Weight",
-        string page = "Specular"
+        string page = "Specular",
+        int as_max_param_id = 10
     ]],
     float in_specular_roughness = 0.1
     [[
@@ -149,7 +157,8 @@ shader as_blackbody
         float min = 0.0,
         float max = 1.0,
         string label = "Specular Roughness",
-        string page = "Specular"
+        string page = "Specular",
+        int as_max_param_id = 12
     ]],
     float in_ior = 1.37
     [[
@@ -165,14 +174,16 @@ shader as_blackbody
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 14
     ]],
     normal in_bump_normal = N
     [[
         string as_maya_attribute_name = "normalCamera",
         string as_maya_attribute_short_name = "n",
         string label = "Surface Normal",
-        string page = "Bump"
+        string page = "Bump",
+        int as_max_param_id = 15
     ]],
     int in_enable_matte = 0
     [[
@@ -186,7 +197,8 @@ shader as_blackbody
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 16
     ]],
     float in_matte_opacity = 0.0
     [[
@@ -197,7 +209,8 @@ shader as_blackbody
         string label = "Matte Opacity",
         string page = "Matte Opacity",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 17
     ]],
     color in_matte_opacity_color = color(1,0.5,0)
     [[
@@ -209,7 +222,8 @@ shader as_blackbody
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 19
     ]],
     int in_maximum_ray_depth = 100
     [[
@@ -224,25 +238,29 @@ shader as_blackbody
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 20
     ]],
     output closure color out_color = 0
     [[
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 21
     ]],
     output closure color out_matte_opacity = 0
     [[
         string as_maya_attribute_name = "outMatteOpacity",
         string as_maya_attribute_short_name = "om",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 21
     ]],
     output color out_blackbody_color = color(0)
     [[
         string as_maya_attribute_name = "outBlackbodyColor",
         string as_maya_attribute_short_name = "bbc",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 21
     ]]
 )
 {

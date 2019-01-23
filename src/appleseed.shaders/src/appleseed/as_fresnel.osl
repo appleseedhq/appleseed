@@ -60,7 +60,8 @@ shader as_fresnel
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 0
     ]],
     float in_ior = 1.37
     [[
@@ -77,7 +78,8 @@ shader as_fresnel
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int separator = 1
+        int separator = 1,
+        int as_max_param_id = 1
     ]],
     color in_face_tint = color(0.85, 0.21, 0.05)
     [[
@@ -90,7 +92,8 @@ shader as_fresnel
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 2
     ]],
     color in_edge_tint = color(1)
     [[
@@ -104,7 +107,8 @@ shader as_fresnel
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 3
     ]],
     vector in_complex_eta = vector(0.21544, 1.0066, 1.2402)
     [[
@@ -116,7 +120,8 @@ shader as_fresnel
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 4
     ]],
     vector in_complex_kappa = vector(3.95560, 2.5823, 2.3929)
     [[
@@ -128,7 +133,8 @@ shader as_fresnel
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 5
     ]],
     normal in_surface_normal = N
     [[
@@ -136,7 +142,8 @@ shader as_fresnel
         string as_maya_attribute_short_name = "n",
         string label = "Surface Normal",
         string page = "Globals",
-        string help = "The unit length world space shading normal, it can be a bumped normal."
+        string help = "The unit length world space shading normal, it can be a bumped normal.",
+        int as_max_param_id = 6
     ]],
     vector in_viewer_vector = I
     [[
@@ -144,7 +151,8 @@ shader as_fresnel
         string as_maya_attribute_short_name = "i",
         string label = "Viewer Vector",
         string page = "Globals",
-        string help = "The unit length world space vector pointing from the viewer position to the point being shaded."
+        string help = "The unit length world space vector pointing from the viewer position to the point being shaded.",
+        int as_max_param_id = 7
     ]],
 
     output color out_color = color(0)
@@ -152,14 +160,16 @@ shader as_fresnel
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 8
     ]],
     output float out_alpha = 1.0
     [[
         string as_maya_attribute_name = "outAlpha",
         string as_maya_attribute_short_name = "oa",
         string label = "Output Alpha",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 8
     ]]
 )
 {

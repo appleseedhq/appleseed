@@ -52,7 +52,8 @@ shader as_texture_info
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        string help = "Texture file to query information from."
+        string help = "Texture file to query information from.",
+        int as_max_param_id = 0
     ]],
 
     output color out_average_color = color(0)
@@ -60,89 +61,102 @@ shader as_texture_info
         string as_maya_attribute_name = "averageColor",
         string as_maya_attribute_short_name = "avc",
         string label = "Average Color",
-        string help = "Returns the average color of the first 3 channels of the texture file."
+        string help = "Returns the average color of the first 3 channels of the texture file.",
+        int as_max_param_id = 2
     ]],
     output float out_average_alpha = 1.0
     [[
         string as_maya_attribute_name = "averageAlpha",
         string as_maya_attribute_short_name = "ava",
         string label = "Average Alpha",
-        string help = "Returns the average alpha of the channel with the 'A' name in the texture file, if it exists."
+        string help = "Returns the average alpha of the channel with the 'A' name in the texture file, if it exists.",
+        int as_max_param_id = 2
     ]],
     output vector out_resolution = vector(0)
     [[
         string as_maya_attribute_name = "resolution",
         string as_maya_attribute_short_name = "res",
         string label = "Resolution",
-        string help = "XY resolution, XYZ resolution for 3D textures."
+        string help = "XY resolution, XYZ resolution for 3D textures.",
+        int as_max_param_id = 2
     ]],
     output int out_num_channels = 0
     [[
         string as_maya_attribute_name = "numChannels",
         string as_maya_attribute_short_name = "cha",
         string label = "Channels",
-        string help = "Number of channels in the texture."
+        string help = "Number of channels in the texture.",
+        int as_max_param_id = 2
     ]],
     output int out_num_subimages = 0
     [[
         string as_maya_attribute_name = "numSubImages",
         string as_maya_attribute_short_name = "sub",
         string label = "Subimages",
-        string help = "Number of sub-images in the texture file."
+        string help = "Number of sub-images in the texture file.",
+        int as_max_param_id = 2
     ]],
     output string out_texture_type = ""
     [[
         string as_maya_attribute_name = "textureType",
         string as_maya_attribute_short_name = "ttt",
         string label = "Texture Type",
-        string help = "Semantic type of texture, plain texture, shadow, environmnet or volume texture."
+        string help = "Semantic type of texture, plain texture, shadow, environmnet or volume texture.",
+        int as_max_param_id = 2
     ]],
     output string out_texture_format = ""
     [[
         string as_maya_attribute_name = "textureFormat",
         string as_maya_attribute_short_name = "tfo",
         string label = "Texture Format",
-        string help = "Returns the texture format, plain, shadow, cubeface, volume, cubeface or latlong environment, volume texture."
+        string help = "Returns the texture format, plain, shadow, cubeface, volume, cubeface or latlong environment, volume texture.",
+        int as_max_param_id = 2
     ]],
     output vector out_data_window_min = vector(0)
     [[
         string as_maya_attribute_name = "dataWindowMinimum",
         string as_maya_attribute_short_name = "dmi",
         string label = "Data Window Minimum",
-        string help = "Pixel data window of the 2D/3D texture, XY(Z) minimum."
+        string help = "Pixel data window of the 2D/3D texture, XY(Z) minimum.",
+        int as_max_param_id = 2
     ]],
     output vector out_data_window_max = vector(0)
     [[
         string as_maya_attribute_name = "dataWindowMaximum",
         string as_maya_attribute_short_name = "dma",
         string label = "Data Window Maximum",
-        string help = "Pixel data window of the 2D/3D texture, XY(Z) maximum."
+        string help = "Pixel data window of the 2D/3D texture, XY(Z) maximum.",
+        int as_max_param_id = 2
     ]],
     output vector out_display_window_min = vector(0)
     [[
         string as_maya_attribute_name = "displayWindowMinimum",
         string as_maya_attribute_short_name = "wmi",
         string label = "Display Window Minimum",
-        string help = "Display (full) window of the 2D/3D texture, XY(Z) minimum."
+        string help = "Display (full) window of the 2D/3D texture, XY(Z) minimum.",
+        int as_max_param_id = 2
     ]],
     output vector out_display_window_max = vector(0)
     [[
         string as_maya_attribute_name = "displayWindowMaximum",
         string as_maya_attribute_short_name = "wma",
         string label = "Display Window Maximum",
-        string help = "Display (full) window of the 2D/3D texture, XY(Z) maximum."
+        string help = "Display (full) window of the 2D/3D texture, XY(Z) maximum.",
+        int as_max_param_id = 2
     ]],
     output matrix out_world_to_camera = matrix(1)
     [[
         string as_maya_attribute_name = "worldToCameraMatrix",
         string as_maya_attribute_short_name = "wtc",
-        string label = "World To Camera Matrix"
+        string label = "World To Camera Matrix",
+        int as_max_param_id = 2
     ]],
     output matrix out_world_to_screen = matrix(1)
     [[
         string as_maya_attribute_name = "worldToScreenMatrix",
         string as_maya_attribute_short_name = "wts",
-        string label = "World To Screen Matrix"
+        string label = "World To Screen Matrix",
+        int as_max_param_id = 2
     ]]
 )
 {

@@ -56,7 +56,8 @@ shader as_invert_color
         string label = "Input Color",
         string page = "Color",
         string help = "Color to invert.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 0
     ]],
     string in_color_model = "RGB"
     [[
@@ -71,7 +72,8 @@ shader as_invert_color
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 2
     ]],
     int in_invert_channel_x = 0
     [[
@@ -87,7 +89,9 @@ shader as_invert_color
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 4
+
     ]],
     int in_invert_channel_y = 0
     [[
@@ -103,7 +107,8 @@ shader as_invert_color
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 6
     ]],
     int in_invert_channel_z = 0
     [[
@@ -119,7 +124,8 @@ shader as_invert_color
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 8
     ]],
     output color out_outColor = color(0)
     [[
@@ -127,7 +133,8 @@ shader as_invert_color
         string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string page = "Output",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 10
     ]]
 )
 {

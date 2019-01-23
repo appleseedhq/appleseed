@@ -49,7 +49,8 @@ shader as_manifold2D
         string as_maya_attribute_name = "uvCoord",
         string label = "UV Coordinates",
         string page = "Coordinates",
-        int as_max_attribute_hidden = 1
+        int as_max_attribute_hidden = 1,
+        int as_max_param_id = 0
     ]],
     float in_uv_filter_size[2] = {
         UNDEFINED_UVFILTER, UNDEFINED_UVFILTER}
@@ -59,7 +60,8 @@ shader as_manifold2D
         string label = "UV Filter Size",
         string page = "Coordinates",
         string help = "UV coordinates filter widths",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 2
     ]],
     int in_bypass_uv = 0
     [[
@@ -73,7 +75,8 @@ shader as_manifold2D
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 3
     ]],
     int in_compute_filters = 1
     [[
@@ -88,7 +91,8 @@ shader as_manifold2D
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Compute the filter widths of the UV coordinates.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 4
     ]],
 
     //
@@ -99,7 +103,8 @@ shader as_manifold2D
         string as_maya_attribute_short_name = "sfr",
         string label = "Scale UV Frame",
         string page = "Frame",
-        string help = "Scale the UV frame."
+        string help = "Scale the UV frame.",
+        int as_max_param_id = 6
     ]],
     float in_translate_frame[2] = {0.0, 0.0}
     [[
@@ -108,7 +113,8 @@ shader as_manifold2D
         string label = "Translate UV Frame",
         string page = "Frame",
         string help = "Translate the UV frame.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 8
     ]],
     float in_rotate_frame = 0.0
     [[
@@ -118,7 +124,8 @@ shader as_manifold2D
         float softmax = 1.0,
         string label = "Rotate UV Frame",
         string page = "Frame",
-        string help = "Rotate the UV frame, where values in the unrestricted interval [0,1] map to [0,360] degrees."
+        string help = "Rotate the UV frame, where values in the unrestricted interval [0,1] map to [0,360] degrees.",
+        int as_max_param_id = 10
     ]],
     float in_frame_center[2] = {0.5, 0.5}
     [[
@@ -126,7 +133,8 @@ shader as_manifold2D
         string as_maya_attribute_short_name = "fce",
         string label = "UV Frame Center",
         string page = "Frame",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 12
     ]],
     string in_wrap_mode_u = "Periodic"
     [[
@@ -141,7 +149,8 @@ shader as_manifold2D
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        string help = "Wrap mode outside the [0,1] UV square. Textures already  have their wrap modes, but you might want to use this for a procedural texture."
+        string help = "Wrap mode outside the [0,1] UV square. Textures already  have their wrap modes, but you might want to use this for a procedural texture.",
+        int as_max_param_id = 13
     ]],
     string in_wrap_mode_v = "Periodic"
     [[
@@ -157,7 +166,8 @@ shader as_manifold2D
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string help = "Wrap mode outside the [0,1] UV square. Textures already have their wrap modes, but you might want to use this for a procedural texture.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 14
     ]],
 
     //
@@ -168,7 +178,8 @@ shader as_manifold2D
         string as_maya_attribute_short_name = "uvt",
         string label = "UV Tiles",
         string page = "Transform",
-        string help = "Number of UV tiles."
+        string help = "Number of UV tiles.",
+        int as_max_param_id = 16
     ]],
     float in_offset_tiles[2] = {0.0, 0.0}
     [[
@@ -177,7 +188,8 @@ shader as_manifold2D
         string label = "Offset Tiles",
         string page = "Transform",
         string help = "Offset UV Tiles along U, V or both.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 18
     ]],
     float in_rotate_tiles = 0.0
     [[
@@ -187,7 +199,8 @@ shader as_manifold2D
         float softmax = 1.0,
         string label = "Tiles Rotation",
         string page = "Transform",
-        string help = "Rotate the UV tiles, where the unrestricted interval [0,1] maps to [0,360] degrees."
+        string help = "Rotate the UV tiles, where the unrestricted interval [0,1] maps to [0,360] degrees.",
+        int as_max_param_id = 19
     ]],
     float in_tiles_center[2] = {0.5, 0.5}
     [[
@@ -196,7 +209,8 @@ shader as_manifold2D
         string label = "Tiles Center",
         string page = "Transform",
         string help = "The center of rotation for the UV tiles.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 22
     ]],
     float in_tiles_coverage[2] = {1.0, 1.0}
     [[
@@ -204,7 +218,8 @@ shader as_manifold2D
         string as_maya_attribute_short_name = "tco",
         string label = "Tiles Coverage",
         string page = "Transform",
-        string help = "The amount of area of the UV frame to cover."
+        string help = "The amount of area of the UV frame to cover.",
+        int as_max_param_id = 24
     ]],
 
     //
@@ -221,7 +236,8 @@ shader as_manifold2D
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        string help = "Mirror the UV tile along the U direction."
+        string help = "Mirror the UV tile along the U direction.",
+        int as_max_param_id = 25
     ]],
     int in_mirror_v = 0
     [[
@@ -235,7 +251,8 @@ shader as_manifold2D
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        string help = "Mirror the UV tile along the V direction."
+        string help = "Mirror the UV tile along the V direction.",
+        int as_max_param_id = 26
     ]],
     int in_wrap_u = 0
     [[
@@ -249,7 +266,8 @@ shader as_manifold2D
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        string help = "Wrap the UV tile along the U direction."
+        string help = "Wrap the UV tile along the U direction.",
+        int as_max_param_id = 27
     ]],
     int in_wrap_v = 0
     [[
@@ -263,7 +281,8 @@ shader as_manifold2D
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        string help = "Wrap the UV tile along the V direction."
+        string help = "Wrap the UV tile along the V direction.",
+        int as_max_param_id = 28
     ]],
     int in_stagger_uv = 0
     [[
@@ -277,7 +296,8 @@ shader as_manifold2D
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        string help = "Stagger each row half the tile width."
+        string help = "Stagger each row half the tile width.",
+        int as_max_param_id = 29
     ]],
     int in_swap_uv = 0
     [[
@@ -291,7 +311,8 @@ shader as_manifold2D
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        string help = "Swap the U and V coordinates."
+        string help = "Swap the U and V coordinates.",
+        int as_max_param_id = 30
     ]],
 
     //
@@ -302,7 +323,8 @@ shader as_manifold2D
         string as_maya_attribute_short_name = "nuv",
         string label = "Distort UV",
         string page = "Noise",
-        string help = "Distort U, V, or UV coordinates with a signed Perlin noise function."
+        string help = "Distort U, V, or UV coordinates with a signed Perlin noise function.",
+        int as_max_param_id = 32
     ]],
 
     //
@@ -312,7 +334,8 @@ shader as_manifold2D
         string as_maya_attribute_name = "outUV",
         string as_maya_attribute_short_name = "ouv",
         string label = "UV Coords",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 33
     ]],
     output float out_uvcoord_filter[2] = {
         UNDEFINED_UVFILTER, UNDEFINED_UVFILTER}
@@ -320,7 +343,8 @@ shader as_manifold2D
         string as_maya_attribute_name = "outUVFilter",
         string as_maya_attribute_short_name = "ouf",
         string label = "UV Filter Size",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 33
     ]]
 )
 {

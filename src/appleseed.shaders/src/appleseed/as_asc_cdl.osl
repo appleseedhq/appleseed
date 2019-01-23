@@ -58,7 +58,8 @@ shader as_asc_cdl
         string label = "Input Color",
         string page = "Color",
         string help = "Input color.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 0
     ]],
     string in_rgb_primaries = "sRGB/Rec.709"
     [[
@@ -73,7 +74,8 @@ shader as_asc_cdl
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 2
     ]],
     float in_slope = 1.0
     [[
@@ -86,6 +88,7 @@ shader as_asc_cdl
         string label = "Slope",
         string page = "Correction",
         string help = "Slope (adjusts the highlights).",
+        int as_max_param_id = 4
     ]],
     float in_offset = 0.0
     [[
@@ -96,6 +99,7 @@ shader as_asc_cdl
         string label = "Offset",
         string page = "Correction",
         string help = "Constant offset (adjusts the overall brightness).",
+        int as_max_param_id = 6
     ]],
     float in_power = 1.0
     [[
@@ -108,6 +112,7 @@ shader as_asc_cdl
         string label = "Power",
         string page = "Correction",
         string help = "Overall exponent (adjusts the midtones).",
+        int as_max_param_id = 8
     ]],
     float in_saturation = 1.0
     [[
@@ -120,6 +125,7 @@ shader as_asc_cdl
         string label = "Saturation",
         string page = "Output",
         string help = "Overall saturation applied after input color transformations.",
+        int as_max_param_id = 10
     ]],
     int in_clamp_output = 1
     [[
@@ -135,7 +141,8 @@ shader as_asc_cdl
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 12
     ]],
     output color out_outColor = color(0)
     [[
@@ -143,7 +150,8 @@ shader as_asc_cdl
         string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string page = "Output",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 14
     ]]
 )
 {

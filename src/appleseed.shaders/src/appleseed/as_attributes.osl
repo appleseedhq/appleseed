@@ -46,179 +46,208 @@ shader as_attributes
     [[
         string as_maya_attribute_name = "objectInstanceId",
         string as_maya_attribute_short_name = "oid",
-        string label = "Object Instance ID"
+        string label = "Object Instance ID",
+        int as_max_param_id = 0
     ]],
     output int out_object_instance_index = 0
     [[
         string as_maya_attribute_name = "objectInstanceIndex",
         string as_maya_attribute_short_name = "odx",
-        string label = "Object Instance Index"
+        string label = "Object Instance Index",
+        int as_max_param_id = 0
     ]],
     output string out_object_instance_name = ""
     [[
         string as_maya_attribute_name = "objectInstanceName",
         string as_maya_attribute_short_name = "oin",
-        string label = "Object Instance Name"
+        string label = "Object Instance Name",
+        int as_max_param_id = 0
     ]],
     output string out_object_name = ""
     [[
         string as_maya_attribute_name = "objectName",
         string as_maya_attribute_short_name = "onn",
-        string label = "Object Name"
+        string label = "Object Name",
+        int as_max_param_id = 0
     ]],
     output int out_assembly_instance_id = 0
     [[
         string as_maya_attribute_name = "assemblyInstanceId",
         string as_maya_attribute_short_name = "aid",
-        string label = "Assembly Instance ID"
+        string label = "Assembly Instance ID",
+        int as_max_param_id = 0
     ]],
     output string out_assembly_name = ""
     [[
         string as_maya_attribute_name = "assemblyName",
         string as_maya_attribute_short_name = "asn",
-        string label = "Assembly Name"
+        string label = "Assembly Name",
+        int as_max_param_id = 0
     ]],
     output string out_assembly_instance_name = ""
     [[
         string as_maya_attribute_name = "assemblyInstanceName",
         string as_maya_attribute_short_name = "ain",
-        string label = "Assembly Instance Name"
+        string label = "Assembly Instance Name",
+        int as_max_param_id = 0
     ]],
     // A float[2], but we can't connect array elements yet.
     output int out_camera_resolution[2] = {0, 0}
     [[
         string as_maya_attribute_name = "cameraResolution",
         string as_maya_attribute_short_name = "r",
-        string label = "Camera Resolution"
+        string label = "Camera Resolution",
+        int as_max_param_id = 0
     ]],
     output int out_camera_resolution_x = 0
     [[
         string as_maya_attribute_name = "cameraResolutionX",
         string as_maya_attribute_short_name = "rx",
-        string label = "Camera Resolution X"
+        string label = "Camera Resolution X",
+        int as_max_param_id = 0
     ]],
     output int out_camera_resolution_y = 0
     [[
         string as_maya_attribute_name = "cameraResolutionY",
         string as_maya_attribute_short_name = "ry",
-        string label = "Camera Resolution Y"
+        string label = "Camera Resolution Y",
+        int as_max_param_id = 0
     ]],
     output string out_camera_projection = ""
     [[
         string as_maya_attribute_name = "cameraProjection",
         string as_maya_attribute_short_name = "pr",
-        string label = "Camera Projection"
+        string label = "Camera Projection",
+        int as_max_param_id = 0
     ]],
     output float out_camera_pixel_aspect = 1.0
     [[
         string as_maya_attribute_name = "cameraPixelAspect",
         string as_maya_attribute_short_name = "cpa",
-        string label = "Camera Pixel Aspect"
+        string label = "Camera Pixel Aspect",
+        int as_max_param_id = 0
     ]],
     // This should be a float[4], but we can't connect array elements yet.
     output int out_camera_screen_window[4] = {0, 0, 0, 0}
     [[
         string as_maya_attribute_name = "cameraScreenWindow",
         string as_maya_attribute_short_name = "sw",
-        string label = "Camera Screen Window"
+        string label = "Camera Screen Window",
+        int as_max_param_id = 0
     ]],
     output float out_camera_screen_window_xmin = 0.0
     [[
         string as_maya_attribute_name = "cameraScreenWindowXMin",
         string as_maya_attribute_short_name = "xi",
-        string label = "Screen Window X Min"
+        string label = "Screen Window X Min",
+        int as_max_param_id = 0
     ]],
     output float out_camera_screen_window_ymin = 0.0
     [[
         string as_maya_attribute_name = "cameraScreenWindowYMin",
         string as_maya_attribute_short_name = "yi",
-        string label = "Screen Window Y Min"
+        string label = "Screen Window Y Min",
+        int as_max_param_id = 0
     ]],
     output float out_camera_screen_window_xmax = 0.0
     [[
         string as_maya_attribute_name = "cameraScreenWindowXMax",
         string as_maya_attribute_short_name = "xa",
-        string label = "Screen Window X Max"
+        string label = "Screen Window X Max",
+        int as_max_param_id = 0
     ]],
     output float out_camera_screen_window_ymax = 0.0
     [[
         string as_maya_attribute_name = "cameraScreenWindowYMax",
         string as_maya_attribute_short_name = "ya",
-        string label = "Screen Window Y Max"
+        string label = "Screen Window Y Max",
+        int as_max_param_id = 0
     ]],
     output float out_camera_fov = 0.0
     [[
         string as_maya_attribute_name = "cameraFOV",
         string as_maya_attribute_short_name = "cfo",
-        string label = "Camera FOV"
+        string label = "Camera FOV",
+        int as_max_param_id = 0
     ]],
     // No array elements connections yet, but this is near and far elements.
     output float out_camera_clip[2] = {0.0, 0.0}
     [[
         string as_maya_attribute_name = "cameraClip",
         string as_maya_attribute_short_name = "li",
-        string label = "Camera Clip Range"
+        string label = "Camera Clip Range",
+        int as_max_param_id = 0
     ]],
     output float out_camera_clip_near = 0.0
     [[
         string as_maya_attribute_name = "cameraClipNear",
         string as_maya_attribute_short_name = "ne",
-        string label = "Camera Clip Near"
+        string label = "Camera Clip Near",
+        int as_max_param_id = 0
     ]],
     output float out_camera_clip_far = 0.0
     [[
         string as_maya_attribute_name = "cameraClipFar",
         string as_maya_attribute_short_name = "nf",
-        string label = "Camera Clip Far"
+        string label = "Camera Clip Far",
+        int as_max_param_id = 0
     ]],
     // No array elements connections yet, but open/close times are below.
     output float out_camera_shutter[2] = {0.0, 0.0}
     [[
         string as_maya_attribute_name = "cameraShutter",
         string as_maya_attribute_short_name = "su",
-        string label = "Camera Shutter"
+        string label = "Camera Shutter",
+        int as_max_param_id = 0
     ]],
     output float out_camera_shutter_open = 0.0
     [[
         string as_maya_attribute_name = "cameraShutterOpen",
         string as_maya_attribute_short_name = "so",
-        string label = "Shutter Open Time"
+        string label = "Shutter Open Time",
+        int as_max_param_id = 0
     ]],
     output float out_camera_shutter_close = 0.0
     [[
         string as_maya_attribute_name = "cameraShutterClose",
         string as_maya_attribute_short_name = "sc",
-        string label = "Shutter Close Time"
+        string label = "Shutter Close Time",
+        int as_max_param_id = 0
     ]],
     output int out_global_frame = 0
     [[
         string as_maya_attribute_name = "globalFrame",
         string as_maya_attribute_short_name = "gfr",
-        string label = "Global Frame Number"
+        string label = "Global Frame Number",
+        int as_max_param_id = 0
     ]],
     output int out_path_ray_depth = 0
     [[
         string as_maya_attribute_name = "pathRayDepth",
         string as_maya_attribute_short_name = "prd",
-        string label = "Ray Depth"
+        string label = "Ray Depth",
+        int as_max_param_id = 0
     ]],
     output int out_path_has_ray_differentials = 0
     [[
         string as_maya_attribute_name = "pathHasRayDifferentials",
         string as_maya_attribute_short_name = "phd",
-        string label = "Ray Differentials"
+        string label = "Ray Differentials",
+        int as_max_param_id = 0
     ]],
     output float out_path_ray_length = 0.0
     [[
         string as_maya_attribute_name = "pathRayLength",
         string as_maya_attribute_short_name = "prl",
-        string label = "Ray Length"
+        string label = "Ray Length",
+        int as_max_param_id = 0
     ]],
     output float out_path_ray_ior = 0.0
     [[
         string as_maya_attribute_name = "pathRayIOR",
         string as_maya_attribute_short_name = "pri",
-        string label = "Ray IOR"
+        string label = "Ray IOR",
+        int as_max_param_id = 0
     ]]
 )
 {

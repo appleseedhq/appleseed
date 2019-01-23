@@ -47,7 +47,8 @@ shader as_blend_shader
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Layer 0",
-        string page = "Layers"
+        string page = "Layers",
+        int as_max_param_id = 0
     ]],
     float in_weight = 1.0
     [[
@@ -56,7 +57,8 @@ shader as_blend_shader
         float min = 0.0,
         float max = 1.0,
         string label = "Layer 0 Weight",
-        string page = "Layers"
+        string page = "Layers",
+        int as_max_param_id = 1
     ]],
     int in_layer_visibility = 1
     [[
@@ -70,14 +72,16 @@ shader as_blend_shader
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 3
     ]],
     closure color in_color1 = 0
     [[
         string as_maya_attribute_name = "color1",
         string as_maya_attribute_short_name = "c1",
         string label = "Layer 1",
-        string page = "Layers"
+        string page = "Layers",
+        int as_max_param_id = 4
     ]],
     float in_weight1 = 1.0
     [[
@@ -86,7 +90,8 @@ shader as_blend_shader
         float min = 0.0,
         float max = 1.0,
         string label = "Layer 1 Weight",
-        string page = "Layers"
+        string page = "Layers",
+        int as_max_param_id = 5
     ]],
     int in_layer_visibility1 = 0
     [[
@@ -100,14 +105,16 @@ shader as_blend_shader
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 7
     ]],
     closure color in_color2 = 0
     [[
         string as_maya_attribute_name = "color2",
         string as_maya_attribute_short_name = "c2",
         string label = "Layer 2",
-        string page = "Layers"
+        string page = "Layers",
+        int as_max_param_id = 8
     ]],
     float in_weight2 = 1.0
     [[
@@ -116,7 +123,8 @@ shader as_blend_shader
         float min = 0.0,
         float max = 1.0,
         string label = "Layer 2 Weight",
-        string page = "Layers"
+        string page = "Layers",
+        int as_max_param_id = 9
     ]],
     int in_layer_visibility2 = 0
     [[
@@ -130,14 +138,16 @@ shader as_blend_shader
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 11
     ]],
     closure color in_color3 = 0
     [[
         string as_maya_attribute_name = "color3",
         string as_maya_attribute_short_name = "c3",
         string label = "Layer 3",
-        string page = "Layers"
+        string page = "Layers",
+        int as_max_param_id = 12
     ]],
     float in_weight3 = 1.0
     [[
@@ -146,7 +156,8 @@ shader as_blend_shader
         float min = 0.0,
         float max = 1.0,
         string label = "Layer 3 Weight",
-        string page = "Layers"
+        string page = "Layers",
+        int as_max_param_id = 13
     ]],
     int in_layer_visibility3 = 0
     [[
@@ -160,14 +171,16 @@ shader as_blend_shader
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 15
     ]],
     closure color in_color4 = 0
     [[
         string as_maya_attribute_name = "color4",
         string as_maya_attribute_short_name = "c4",
         string label = "Layer 4",
-        string page = "Layers"
+        string page = "Layers",
+        int as_max_param_id = 16
     ]],
     float in_weight4 = 1.0
     [[
@@ -176,7 +189,8 @@ shader as_blend_shader
         float min = 0.0,
         float max = 1.0,
         string label = "Layer 4 Weight",
-        string page = "Layers"
+        string page = "Layers",
+        int as_max_param_id = 17
     ]],
     int in_layer_visibility4 = 0
     [[
@@ -190,14 +204,16 @@ shader as_blend_shader
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 19
     ]],
     closure color in_color5 = 0
     [[
         string as_maya_attribute_name = "color5",
         string as_maya_attribute_short_name = "c5",
         string label = "Layer 5",
-        string page = "Layers"
+        string page = "Layers",
+        int as_max_param_id = 20
     ]],
     float in_weight5 = 1.0
     [[
@@ -206,7 +222,8 @@ shader as_blend_shader
         float min = 0.0,
         float max = 1.0,
         string label = "Layer 5 Weight",
-        string page = "Layers"
+        string page = "Layers",
+        int as_max_param_id = 21
     ]],
     int in_layer_visibility5 = 0
     [[
@@ -220,14 +237,16 @@ shader as_blend_shader
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 23
     ]],
     closure color in_color6 = 0
     [[
         string as_maya_attribute_name = "color6",
         string as_maya_attribute_short_name = "c6",
         string label = "Layer 6",
-        string page = "Layers"
+        string page = "Layers",
+        int as_max_param_id = 24
     ]],
     float in_weight6 = 1.0
     [[
@@ -236,7 +255,8 @@ shader as_blend_shader
         float min = 0.0,
         float max = 1.0,
         string label = "Layer 6 Weight",
-        string page = "Layers"
+        string page = "Layers",
+        int as_max_param_id = 25
     ]],
     int in_layer_visibility6 = 0
     [[
@@ -250,14 +270,16 @@ shader as_blend_shader
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 27
     ]],
     closure color in_color7 = 0
     [[
         string as_maya_attribute_name = "color7",
         string as_maya_attribute_short_name = "c7",
         string label = "Layer 7",
-        string page = "Layers"
+        string page = "Layers",
+        int as_max_param_id = 28
     ]],
     float in_weight7 = 1.0
     [[
@@ -266,7 +288,8 @@ shader as_blend_shader
         float min = 0.0,
         float max = 1.0,
         string label = "Layer 7 Weight",
-        string page = "Layers"
+        string page = "Layers",
+        int as_max_param_id = 29
     ]],
     int in_layer_visibility7 = 0
     [[
@@ -280,7 +303,8 @@ shader as_blend_shader
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 31
     ]],
 
     output closure color out_color = 0
@@ -288,7 +312,8 @@ shader as_blend_shader
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
         string widget = "null",
-        string label = "Layered Output"
+        string label = "Layered Output",
+        int as_max_param_id = 32
     ]]
 )
 {

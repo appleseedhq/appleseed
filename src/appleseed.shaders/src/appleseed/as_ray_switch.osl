@@ -47,63 +47,72 @@ shader as_ray_switch
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Camera Ray Color",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 0
     ]],
     color in_color_light = color(0)
     [[
         string as_maya_attribute_name = "colorLight",
         string as_maya_attribute_short_name = "cli",
         string label = "Light Ray Color",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 2
     ]],
     color in_color_shadow = color(0)
     [[
         string as_maya_attribute_name = "colorShadow",
         string as_maya_attribute_short_name = "csh",
         string label = "Shadow Ray Color",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 4
     ]],
     color in_color_transparency = color(0)
     [[
         string as_maya_attribute_name = "colorTransparency",
         string as_maya_attribute_short_name = "ctr",
         string label = "Transparency Ray Color",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 6
     ]],
     color in_color_diffuse = color(0)
     [[
         string as_maya_attribute_name = "colorDiffuse",
         string as_maya_attribute_short_name = "cde",
         string label = "Diffuse Ray Color",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 8
     ]],
     color in_color_glossy = color(0)
     [[
         string as_maya_attribute_name = "colorGlossy",
         string as_maya_attribute_short_name = "cgl",
         string label = "Glossy Ray Color",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 10
     ]],
     color in_color_specular = color(0)
     [[
         string as_maya_attribute_name = "colorSpecular",
         string as_maya_attribute_short_name = "csp",
         string label = "Specular Ray Color",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 12
     ]],
     color in_color_subsurface = color(0)
     [[
         string as_maya_attribute_name = "colorSubsurface",
         string as_maya_attribute_short_name = "csu",
         string label = "Subsurface Ray Color",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 14
     ]],
 
     output color out_color = color(0)
     [[
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
-        string label = "Output Color"
+        string label = "Output Color",
+        int as_max_param_id = 16
     ]]
 )
 {

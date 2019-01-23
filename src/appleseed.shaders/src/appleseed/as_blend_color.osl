@@ -50,7 +50,8 @@ shader as_blend_color
         string as_maya_attribute_short_name = "c",
         string label = "Source Color",
         string page = "Color",
-        string help = "Layer 0 color, or base layer color."
+        string help = "Layer 0 color, or base layer color.",
+        int as_max_param_id = 0
     ]],
     float in_weight = 1.0
     [[
@@ -60,14 +61,16 @@ shader as_blend_color
         float max = 1.0,
         string label = "Source Weight",
         string page = "Color",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 2
     ]],
     color in_color2 = color(1)
     [[
         string as_maya_attribute_name = "color2",
         string as_maya_attribute_short_name = "c2",
         string label = "Blend Color",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 4
     ]],
     float in_weight2 = 1.0
     [[
@@ -77,7 +80,8 @@ shader as_blend_color
         float max = 1.0,
         string label = "Blend Weight",
         string page = "Color",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 6
     ]],
     string in_blend_mode = "Overlay"
     [[
@@ -93,7 +97,8 @@ shader as_blend_color
         string label = "Blending Mode",
         string page = "Color",
         string help = "Common image blending modes. For Porter-Duff compositing, use the Composite node.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 8
     ]],
     int in_clamp_output = 0
     [[
@@ -106,7 +111,8 @@ shader as_blend_color
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
         string label = "Clamp Output",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 9
     ]],
 
     output color out_color = color(0)
@@ -114,7 +120,8 @@ shader as_blend_color
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
         string widget = "null",
-        string label = "Output Color"
+        string label = "Output Color",
+        int as_max_param_id = 10
     ]]
 )
 {

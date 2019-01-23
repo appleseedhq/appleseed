@@ -47,7 +47,8 @@ shader as_swizzle
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Color",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 0
     ]],
     float in_alpha = 1.0
     [[
@@ -55,7 +56,8 @@ shader as_swizzle
         string as_maya_attribute_short_name = "a",
         string label = "Alpha Channel",
         string page = "Color",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 2
     ]],
     int in_red_channel = 0
     [[
@@ -68,7 +70,8 @@ shader as_swizzle
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
         string label = "Red Channel",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 4
     ]],
     int in_green_channel = 1
     [[
@@ -81,7 +84,8 @@ shader as_swizzle
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
         string label = "Green Channel",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 5
     ]],
     int in_blue_channel = 2
     [[
@@ -94,7 +98,8 @@ shader as_swizzle
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
         string label = "Blue Channel",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 6
     ]],
     int in_alpha_channel = 3
     [[
@@ -108,7 +113,8 @@ shader as_swizzle
         int gafferNoduleLayoutVisible = 0,
         string label = "Alpha Channel",
         string page = "Color",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 7
     ]],
     int in_invert_red = 0
     [[
@@ -120,7 +126,8 @@ shader as_swizzle
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
         string label = "Invert Red",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 8
     ]],
     int in_invert_green = 0
     [[
@@ -132,7 +139,8 @@ shader as_swizzle
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
         string label = "Invert Green",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 9
     ]],
     int in_invert_blue = 0
     [[
@@ -144,7 +152,8 @@ shader as_swizzle
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
         string label = "Invert Blue",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 10
     ]],
     int in_invert_alpha = 0
     [[
@@ -156,7 +165,8 @@ shader as_swizzle
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
         string label = "Invert Alpha",
-        string page = "Color"
+        string page = "Color",
+        int as_max_param_id = 11
     ]],
     vector in_vector = vector(0)
     [[
@@ -164,7 +174,8 @@ shader as_swizzle
         string as_maya_attribute_short_name = "vec",
         string label = "Vector Type",
         string page = "Vector",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 12
     ]],
     int in_x_channel = 0
     [[
@@ -177,7 +188,8 @@ shader as_swizzle
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
         string label = "X Component",
-        string page = "Vector"
+        string page = "Vector",
+        int as_max_param_id = 14
     ]],
     int in_y_channel = 1
     [[
@@ -190,7 +202,8 @@ shader as_swizzle
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
         string label = "Y Component",
-        string page = "Vector"
+        string page = "Vector",
+        int as_max_param_id = 15
     ]],
     int in_z_channel = 2
     [[
@@ -204,7 +217,8 @@ shader as_swizzle
         int gafferNoduleLayoutVisible = 0,
         string label = "Z Component",
         string page = "Vector",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 16
     ]],
     int in_invert_x = 0
     [[
@@ -216,7 +230,8 @@ shader as_swizzle
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
         string label = "Invert X",
-        string page = "Vector"
+        string page = "Vector",
+        int as_max_param_id = 17
     ]],
     int in_invert_y = 0
     [[
@@ -228,7 +243,8 @@ shader as_swizzle
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
         string label = "Invert Y",
-        string page = "Vector"
+        string page = "Vector",
+        int as_max_param_id = 18
     ]],
     int in_invert_z = 0
     [[
@@ -240,26 +256,30 @@ shader as_swizzle
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
         string label = "Invert Z",
-        string page = "Vector"
+        string page = "Vector",
+        int as_max_param_id = 19
     ]],
 
     output color out_color = color(0)
     [[
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
-        string label = "Output Color"
+        string label = "Output Color",
+        int as_max_param_id = 20
     ]],
     output float out_alpha = 1.0
     [[
         string as_maya_attribute_name = "outAlpha",
         string as_maya_attribute_short_name = "oa",
-        string label = "Output Alpha"
+        string label = "Output Alpha",
+        int as_max_param_id = 20
     ]],
     output vector out_vector = vector(0)
     [[
         string as_maya_attribute_name = "outVector",
         string as_maya_attribute_short_name = "ov",
-        string label = "Output Vector"
+        string label = "Output Vector",
+        int as_max_param_id = 20
     ]]
 )
 {

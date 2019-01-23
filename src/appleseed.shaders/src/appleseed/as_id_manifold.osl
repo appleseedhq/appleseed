@@ -57,7 +57,8 @@ shader as_id_manifold
         int gafferNoduleLayoutVisible = 0,
         string label = "Type",
         string page = "Manifold",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 0
     ]],
     string in_expression = ""
     [[
@@ -71,7 +72,8 @@ shader as_id_manifold
         int gafferNoduleLayoutVisible = 0,
         string label = "Expression",
         string page = "Manifold.String",
-        string help = "String expression to search in the object or object instance name."
+        string help = "String expression to search in the object or object instance name.",
+        int as_max_param_id = 1
     ]],
     int in_domain = 0
     [[
@@ -86,7 +88,8 @@ shader as_id_manifold
         int gafferNoduleLayoutVisible = 0,
         string label = "Domain",
         string page = "Manifold.String",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 2
     ]],
     int in_seed = 0xcafe
     [[
@@ -100,7 +103,8 @@ shader as_id_manifold
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 1,
         string label = "Seed",
-        string page = "Manifold.String"
+        string page = "Manifold.String",
+        int as_max_param_id = 3
     ]],
     int in_output_mode = 1
     [[
@@ -114,7 +118,8 @@ shader as_id_manifold
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 0,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 4
     ]],
 
     output int out_outHash = 0
@@ -127,13 +132,15 @@ shader as_id_manifold
     [[
         string as_maya_attribute_name = "outID",
         string as_maya_attribute_short_name = "oid",
-        string label = "Output ID"
+        string label = "Output ID",
+        int as_max_param_id = 5
     ]],
     output float out_outGreyscale = 0.0
     [[
         string as_maya_attribute_name = "outGreyscale",
         string as_maya_attribute_short_name = "ogr",
-        string label = "Output Greyscale"
+        string label = "Output Greyscale",
+        int as_max_param_id = 5
     ]]
 )
 {
