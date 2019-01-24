@@ -200,37 +200,38 @@ namespace
                     GLuint vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
                     glShaderSource(vertex_shader_id, 1, &vertex_shader_source, nullptr);
                     glCompileShader(vertex_shader_id);
+                    
                     // Check for vertex_shader compile errors.
                     int success;
-                    char infoLog[512];
+                    const int length = 512;
+                    char infoLog[length];
                     glGetShaderiv(vertex_shader_id, GL_COMPILE_STATUS, &success);
                     if (!success)
                     {
-                        glGetShaderInfoLog(vertex_shader_id, 512, nullptr, infoLog);
-                        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+                        glGetShaderInfoLog(vertex_shader_id, length, nullptr, infoLog);
                     }
                 
                     GLuint fragment_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
                     glShaderSource(fragment_shader_id, 1, &fragment_shader_source, nullptr);
                     glCompileShader(fragment_shader_id);
+                    
                     // Check for fragment_shader compile errors.
                     glGetShaderiv(fragment_shader_id, GL_COMPILE_STATUS, &success);
                     if (!success)
                     {
-                        glGetShaderInfoLog(fragment_shader_id, 512, NULL, infoLog);
-                        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+                        glGetShaderInfoLog(fragment_shader_id, length, nullptr, infoLog);
                     }
                 
                     m_shader_program_id = glCreateProgram();
                     glAttachShader(m_shader_program_id, vertex_shader_id);
                     glAttachShader(m_shader_program_id, fragment_shader_id);
                     glLinkProgram(m_shader_program_id);
+                    
                     // Check for linking errors.
                     glGetProgramiv(m_shader_program_id, GL_LINK_STATUS, &success);
                     if (!success) 
                     {
-                        glGetProgramInfoLog(m_shader_program_id, 512, NULL, infoLog);
-                        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+                        glGetProgramInfoLog(m_shader_program_id, length, nullptr, infoLog);
                     }
                     
                     glDeleteShader(vertex_shader_id);
