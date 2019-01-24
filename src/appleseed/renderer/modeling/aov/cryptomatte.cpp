@@ -620,7 +620,9 @@ auto_release_ptr<AOVAccumulator> CryptomatteAOV::create_accumulator() const
             impl->m_layer_type));
 }
 
-bool CryptomatteAOV::write_images(const char* file_path) const
+bool CryptomatteAOV::write_images(
+    const char*             file_path,
+    const ImageAttributes&  image_attributes) const
 {
     const bf::path boost_file_path(file_path);
     const bf::path directory = boost_file_path.parent_path();
@@ -652,14 +654,14 @@ bool CryptomatteAOV::write_images(const char* file_path) const
     char type_name_hex[9];
     sprintf(type_name_hex, "%08x", type_name_hash);
 
-    ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
-    image_attributes.insert("color_space", "linear");
+    ImageAttributes image_attributes_copy(image_attributes);
+    image_attributes_copy.insert("color_space", "linear");
 
     string layer_prefix("cryptomatte/");
     layer_prefix.append(string(type_name_hex).erase(7));
-    image_attributes.insert(layer_prefix + "/conversion", "uint32_to_float32");
-    image_attributes.insert(layer_prefix + "/hash", "MurmurHash3_32");
-    image_attributes.insert(layer_prefix + "/name", layer_name);
+    image_attributes_copy.insert(layer_prefix + "/conversion", "uint32_to_float32");
+    image_attributes_copy.insert(layer_prefix + "/hash", "MurmurHash3_32");
+    image_attributes_copy.insert(layer_prefix + "/name", layer_name);
 
     NameMap name_map;
     for (auto& pair : impl->m_tile_name_map)
@@ -684,7 +686,7 @@ bool CryptomatteAOV::write_images(const char* file_path) const
 
     const string manifest_string = format("{{0}}", manifest_str);
 
-    image_attributes.insert(layer_prefix + "/manifest", manifest_string.c_str());
+    image_attributes_copy.insert(layer_prefix + "/manifest", manifest_string.c_str());
 
     vector<string> channel_names;
     channel_names.push_back("R");
@@ -708,7 +710,7 @@ bool CryptomatteAOV::write_images(const char* file_path) const
         const int num_channels = (impl->m_num_layers * 2) + 3;
         MultiChannelExrFileWriter writer(exr_file_path.c_str(), &image);
         writer.set_image_channels(num_channels, channel_names);
-        writer.set_image_attributes(image_attributes);
+        writer.set_image_attributes(image_attributes_copy);
         writer.write();
     }
     catch (const exception& e)

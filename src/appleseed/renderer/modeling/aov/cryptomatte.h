@@ -43,6 +43,7 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace foundation    { class ImageAttributes; }
 namespace renderer      { class AOV; }
 namespace renderer      { class ParamArray; }
 
@@ -86,7 +87,9 @@ class CryptomatteAOV
 
     foundation::auto_release_ptr<AOVAccumulator> create_accumulator() const override;
 
-    bool write_images(const char* file_path) const override;
+    bool write_images(
+        const char*                         file_path,
+        const foundation::ImageAttributes&  image_attributes) const override;
 
   private:
     friend class CryptomatteAOVFactory;
