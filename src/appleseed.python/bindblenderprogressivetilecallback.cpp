@@ -314,7 +314,7 @@ namespace
         
         void delete_shader_buffer()
         {
-            if(m_updated_data_buffer)
+            if (m_updated_data_buffer)
             {
                 glDeleteProgram(m_shader_program_id);
                 glDeleteBuffers(1, &m_vbo_id);
