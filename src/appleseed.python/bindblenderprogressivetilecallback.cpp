@@ -174,7 +174,7 @@ namespace
                     glBindTexture(GL_TEXTURE_2D, 0);
                     m_updated_buffer = false;
                 }
-                if(!m_updated_data_buffer)
+                if (!m_updated_data_buffer)
                 {
                     const char* vertex_shader_source  = 
                         "#version 330 core\n"
