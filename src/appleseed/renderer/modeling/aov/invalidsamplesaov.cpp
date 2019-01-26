@@ -95,12 +95,15 @@ namespace
             // Because of tile margins, pi can lay outside of the crop window.
             if (inside_tile(pi) && m_crop_window.contains(pi))
             {
-                const Vector2i pt(pi.x - m_tile_bbox.min.x, pi.y - m_tile_bbox.min.y);
-
-                Color3f color(0.0f);
+                Color3f color;
                 color[0] = m_invalid_sample_count > 0 ? InvalidSample : ValidSample;
+                color[1] = 0.0f;
+                color[2] = 0.0f;
 
-                m_tile->set_pixel(pt.x, pt.y, color);
+                m_tile->set_pixel(
+                    pi.x - m_tile_bbox.min.x,
+                    pi.y - m_tile_bbox.min.y,
+                    color);
             }
         }
 
@@ -115,7 +118,7 @@ namespace
             if (inside_tile(pixel_context.get_pixel_coords()))
             {
                 if (!shading_result.is_valid())
-                    m_invalid_sample_count++;
+                    ++m_invalid_sample_count;
             }
         }
 

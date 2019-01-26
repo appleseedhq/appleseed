@@ -43,9 +43,9 @@
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/color/colorspace.h"
-#include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/utility/paramarray.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -66,6 +66,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <string>
 
 using namespace foundation;
 using namespace std;
@@ -216,10 +217,8 @@ void DiagnosticSurfaceShader::evaluate(
         {
             shading_result.set_main_to_opaque_pink();
 
-            const ShadingRay& ray = shading_point.get_ray();
-
             const Material* material = shading_point.get_material();
-            if (material)
+            if (material != nullptr)
             {
                 const Material::RenderData& material_data = material->get_render_data();
 
@@ -231,8 +230,9 @@ void DiagnosticSurfaceShader::evaluate(
                         shading_point);
                 }
 
-                if (material_data.m_bsdf)
+                if (material_data.m_bsdf != nullptr)
                 {
+                    const ShadingRay& ray = shading_point.get_ray();
                     const Dual3d outgoing(
                         -ray.m_dir,
                         ray.m_dir - ray.m_rx.m_dir,
@@ -274,7 +274,7 @@ void DiagnosticSurfaceShader::evaluate(
       case ShadingNormal:
         {
             const Material* material = shading_point.get_material();
-            if (material)
+            if (material != nullptr)
             {
                 const Material::RenderData& material_data = material->get_render_data();
 
@@ -499,7 +499,7 @@ void DiagnosticSurfaceShader::evaluate(
                 break;
 
             const Material* material = shading_point.get_material();
-            if (material)
+            if (material != nullptr)
             {
                 const Material::RenderData& material_data = material->get_render_data();
 

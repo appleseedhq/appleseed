@@ -69,6 +69,7 @@ AOVFactoryRegistrar::AOVFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
     // Register built-in factories.
+    impl->register_factory(auto_release_ptr<FactoryType>(new AlbedoAOVFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new DepthAOVFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new DiffuseAOVFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new DirectDiffuseAOVFactory()));
@@ -86,7 +87,6 @@ AOVFactoryRegistrar::AOVFactoryRegistrar(const SearchPaths& search_paths)
     impl->register_factory(auto_release_ptr<FactoryType>(new PixelVariationAOVFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new PositionAOVFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new UVAOVFactory()));
-    impl->register_factory(auto_release_ptr<FactoryType>(new AlbedoAOVFactory()));
 }
 
 AOVFactoryRegistrar::~AOVFactoryRegistrar()

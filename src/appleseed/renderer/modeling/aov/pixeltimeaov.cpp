@@ -61,7 +61,7 @@ namespace
 {
 
     //
-    // PixelTime AOV accumulator.
+    // Pixel Time AOV accumulator.
     //
 
     class PixelTimeAOVAccumulator
@@ -118,10 +118,13 @@ namespace
 
             const double median = m_samples[mid];
 
-            float* p = reinterpret_cast<float*>(
-                m_tile->pixel(pi.x - m_tile_bbox.min.x, pi.y - m_tile_bbox.min.y));
+            float* out =
+                reinterpret_cast<float*>(
+                    m_tile->pixel(
+                        pi.x - m_tile_bbox.min.x,
+                        pi.y - m_tile_bbox.min.y));
 
-            *p += static_cast<float>(median) * m_samples.size();
+            *out += static_cast<float>(median) * m_samples.size();
         }
 
       private:
@@ -131,7 +134,7 @@ namespace
 
 
     //
-    // PixelTime AOV.
+    // Pixel Time AOV.
     //
 
     const char* PixelTimeAOVModel = "pixel_time_aov";
@@ -162,7 +165,7 @@ namespace
 
         const char** get_channel_names() const override
         {
-            static const char* ChannelNames[] = {"PixelTime"};
+            static const char* ChannelNames[] = { "PixelTime" };
             return ChannelNames;
         }
 
