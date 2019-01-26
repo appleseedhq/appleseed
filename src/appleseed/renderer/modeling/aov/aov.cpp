@@ -38,6 +38,10 @@
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/image/imageattributes.h"
+#include "foundation/platform/defaulttimers.h"
+#include "foundation/utility/api/apistring.h"
+#include "foundation/utility/stopwatch.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <exception>
@@ -105,6 +109,9 @@ bool AOV::write_images(
     const char*             file_path,
     const ImageAttributes&  image_attributes) const
 {
+    Stopwatch<DefaultWallclockTimer> stopwatch;
+    stopwatch.start();
+
     try
     {
         GenericImageFileWriter writer(file_path);
@@ -125,12 +132,21 @@ bool AOV::write_images(
     catch (const std::exception& e)
     {
         RENDERER_LOG_ERROR(
-            "failed to write image file %s: %s.",
+            "failed to write image file %s for aov \"%s\": %s.",
             file_path,
+            get_path().c_str(),
             e.what());
 
         return false;
     }
+
+    stopwatch.measure();
+
+    RENDERER_LOG_INFO(
+        "wrote image file %s for aov \"%s\" in %s.",
+        file_path,
+        get_path().c_str(),
+        pretty_time(stopwatch.get_seconds()).c_str());
 
     return true;
 }

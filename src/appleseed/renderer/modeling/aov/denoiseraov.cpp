@@ -30,6 +30,7 @@
 #include "denoiseraov.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
@@ -41,9 +42,12 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
+#include "foundation/platform/defaulttimers.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/stopwatch.h"
+#include "foundation/utility/string.h"
 
 // BCD headers.
 #include "bcd/CovarianceMatrix.h"
@@ -457,21 +461,59 @@ bool DenoiserAOV::write_images(
     const string base_file_name = boost_file_path.stem().string();
     const string extension = boost_file_path.extension().string();
 
+    bool success = true;
+
+    Stopwatch<DefaultWallclockTimer> stopwatch;
+
     // Write histograms.
+    stopwatch.start();
     const string hist_file_name = base_file_name + ".hist" + extension;
     const string hist_file_path = (directory / hist_file_name).string();
-    bool result = ImageIO::writeMultiChannelsEXR(histograms_image(), hist_file_path.c_str());
+    if (ImageIO::writeMultiChannelsEXR(histograms_image(), hist_file_path.c_str()))
+    {
+        stopwatch.measure();
+        RENDERER_LOG_INFO(
+            "wrote image file %s for aov \"%s\" in %s.",
+            hist_file_path.c_str(),
+            get_path().c_str(),
+            pretty_time(stopwatch.get_seconds()).c_str());
+    }
+    else
+    {
+        RENDERER_LOG_ERROR(
+            "failed to write image file %s for aov \"%s\".",
+            hist_file_path.c_str(),
+            get_path().c_str());
+        success = false;
+    }
 
     // Compute covariances image.
     Deepimf covariances_image;
     compute_covariances_image(covariances_image);
 
     // Write covariances image.
+    stopwatch.start();
     const string cov_file_name = base_file_name + ".cov" + extension;
     const string cov_file_path = (directory / cov_file_name).string();
-    result = result && ImageIO::writeMultiChannelsEXR(covariances_image, cov_file_path.c_str());
+    if (ImageIO::writeMultiChannelsEXR(covariances_image, cov_file_path.c_str()))
+    {
+        stopwatch.measure();
+        RENDERER_LOG_INFO(
+            "wrote image file %s for aov \"%s\" in %s.",
+            cov_file_path.c_str(),
+            get_path().c_str(),
+            pretty_time(stopwatch.get_seconds()).c_str());
+    }
+    else
+    {
+        RENDERER_LOG_ERROR(
+            "failed to write image file %s for aov \"%s\".",
+            cov_file_path.c_str(),
+            get_path().c_str());
+        success = false;
+    }
 
-    return result;
+    return success;
 }
 
 auto_release_ptr<AOVAccumulator> DenoiserAOV::create_accumulator() const
