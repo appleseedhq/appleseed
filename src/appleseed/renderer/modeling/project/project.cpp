@@ -369,6 +369,9 @@ bool Project::on_frame_begin(
     OnFrameBeginRecorder&       recorder,
     IAbortSwitch*               abort_switch)
 {
+    if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
+
     assert(impl->m_scene.get() != nullptr);
     assert(impl->m_frame.get() != nullptr);
 
