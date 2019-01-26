@@ -464,6 +464,15 @@ void Frame::denoise(
 
 namespace
 {
+    void add_chromaticities_attributes(ImageAttributes& image_attributes)
+    {
+        // Scene-linear sRGB / Rec. 709 chromaticities.
+        image_attributes.insert("white_xy_chromaticity", Vector2f(0.3127f, 0.3290f));
+        image_attributes.insert("red_xy_chromaticity", Vector2f(0.64f, 0.33f));
+        image_attributes.insert("green_xy_chromaticity", Vector2f(0.30f, 0.60f));
+        image_attributes.insert("blue_xy_chromaticity",  Vector2f(0.15f, 0.06f));
+    }
+
     void create_parent_directories(const bf::path& file_path)
     {
         const bf::path parent_path = file_path.parent_path();
@@ -486,24 +495,14 @@ namespace
         create_parent_directories(bf::path(file_path));
     }
 
-    void add_chromaticities_attributes(ImageAttributes& image_attributes)
-    {
-        // Scene-linear sRGB / Rec. 709 chromaticities.
-        image_attributes.insert("white_xy_chromaticity", Vector2f(0.3127f, 0.3290f));
-        image_attributes.insert("red_xy_chromaticity", Vector2f(0.64f, 0.33f));
-        image_attributes.insert("green_xy_chromaticity", Vector2f(0.30f, 0.60f));
-        image_attributes.insert("blue_xy_chromaticity",  Vector2f(0.15f, 0.06f));
-    }
-
     void write_exr_image(
         const bf::path&         file_path,
         const Image&            image,
-        ImageAttributes&        image_attributes)
+        ImageAttributes         image_attributes)
     {
         create_parent_directories(file_path);
 
         const std::string filename = file_path.string();
-
         GenericImageFileWriter writer(filename.c_str());
 
         writer.append_image(&image);
