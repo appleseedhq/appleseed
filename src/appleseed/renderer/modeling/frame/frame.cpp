@@ -667,23 +667,26 @@ bool Frame::write_aov_images(const char* file_path) const
 {
     assert(file_path);
 
-    bf::path boost_file_path(file_path);
-    const bf::path file_path_ext = boost_file_path.extension();
+    if (impl->m_aovs.empty())
+        return true;
 
-    if (file_path_ext != ".exr")
+    bf::path bf_file_path(file_path);
+    const string extension = lower_case(bf_file_path.extension().string());
+
+    if (extension != ".exr")
     {
-        if (!aovs().empty() && has_extension(file_path_ext))
+        if (has_extension(bf_file_path))
         {
             RENDERER_LOG_WARNING(
                 "aovs cannot be saved to %s files; saving them to exr files instead.",
-                file_path_ext.string().substr(1).c_str());
+                extension.substr(1).c_str());
         }
 
-        boost_file_path.replace_extension(".exr");
+        bf_file_path.replace_extension(".exr");
     }
 
-    const bf::path directory = boost_file_path.parent_path();
-    const string base_file_name = boost_file_path.stem().string();
+    const bf::path directory = bf_file_path.parent_path();
+    const string base_file_name = bf_file_path.stem().string();
 
     bool success = true;
 
@@ -710,10 +713,10 @@ bool Frame::write_main_and_aov_images() const
 
     // Write main image.
     {
-        const string filepath = get_parameters().get_optional<string>("output_filename");
-        if (!filepath.empty())
+        const string file_path = get_parameters().get_optional<string>("output_filename");
+        if (!file_path.empty())
         {
-            if (!write_main_image(filepath.c_str()))
+            if (!write_main_image(file_path.c_str()))
                 success = false;
         }
     }
@@ -721,30 +724,25 @@ bool Frame::write_main_and_aov_images() const
     // Write AOV images.
     for (const AOV& aov : impl->m_aovs)
     {
-        bf::path filepath = aov.get_parameters().get_optional<string>("output_filename");
-
-        if (!filepath.empty())
+        bf::path bf_file_path = aov.get_parameters().get_optional<string>("output_filename");
+        if (!bf_file_path.empty())
         {
-            const bf::path filepath_ext = filepath.extension();
-            if (filepath_ext != ".exr")
+            const string extension = lower_case(bf_file_path.extension().string());
+            if (extension != ".exr")
             {
-                bf::path new_filepath(filepath);
-                new_filepath.replace_extension(".exr");
-
-                if (has_extension(filepath_ext))
+                if (has_extension(bf_file_path))
                 {
                     RENDERER_LOG_WARNING(
-                        "aov \"%s\" cannot be saved to %s file; saving it to \"%s\" instead.",
+                        "aov \"%s\" cannot be saved to %s file; saving it to exr file instead.",
                         aov.get_path().c_str(),
-                        filepath_ext.string().substr(1).c_str(),
-                        new_filepath.string().c_str());
+                        extension.substr(1).c_str());
                 }
 
-                filepath = new_filepath;
+                bf_file_path.replace_extension(".exr");
             }
 
             ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
-            if (!aov.write_images(filepath.string().c_str(), image_attributes))
+            if (!aov.write_images(bf_file_path.string().c_str(), image_attributes))
                 success = false;
         }
     }

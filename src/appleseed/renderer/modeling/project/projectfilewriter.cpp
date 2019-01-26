@@ -922,7 +922,7 @@ bool ProjectFileWriter::write(
     const char*     extra_comments)
 {
     return
-        bf::path(filepath).extension() == ".appleseedz"
+        lower_case(bf::path(filepath).extension().string()) == ".appleseedz"
             ? write_packed_project_file(project, filepath, options, extra_comments)
             : write_plain_project_file(project, filepath, options, extra_comments);
 }
