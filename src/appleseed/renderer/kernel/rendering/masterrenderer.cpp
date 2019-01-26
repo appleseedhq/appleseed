@@ -377,22 +377,19 @@ struct MasterRenderer::Impl
         {
             m_renderer_controller->on_rendering_begin();
 
-            // Construct an abort switch that will allow to abort initialization or rendering.
+            // Construct an abort switch that will allow to abort initialization.
             RendererControllerAbortSwitch abort_switch(*m_renderer_controller);
 
             // Expand procedural assemblies before scene entities inputs are bound.
             if (!m_project.get_scene()->expand_procedural_assemblies(m_project, &abort_switch))
+            {
+                m_renderer_controller->on_rendering_abort();
                 return RenderingResult::Aborted;
+            }
 
             // Bind scene entities inputs.
             if (!bind_scene_entities_inputs())
-                return RenderingResult::Aborted;
-
-            // Perform pre-render actions. Don't proceed if that failed.
-            OnRenderBeginRecorder recorder;
-            if (!m_project.get_scene()->on_render_begin(m_project, nullptr, recorder, &abort_switch))
             {
-                recorder.on_render_end(m_project);
                 m_renderer_controller->on_rendering_abort();
                 return RenderingResult::Aborted;
             }
@@ -403,27 +400,10 @@ struct MasterRenderer::Impl
             {
               case IRendererController::TerminateRendering:
                 m_renderer_controller->on_rendering_success();
-                break;
-
-              case IRendererController::AbortRendering:
-                m_renderer_controller->on_rendering_abort();
-                break;
-
-              case IRendererController::ReinitializeRendering:
-                break;
-
-              assert_otherwise;
-            }
-
-            // Perform post-render actions.
-            recorder.on_render_end(m_project);
-
-            switch (status)
-            {
-              case IRendererController::TerminateRendering:
                 return RenderingResult::Succeeded;
 
               case IRendererController::AbortRendering:
+                m_renderer_controller->on_rendering_abort();
                 return RenderingResult::Aborted;
 
               case IRendererController::ReinitializeRendering:
@@ -486,8 +466,23 @@ struct MasterRenderer::Impl
         // Print renderer component settings.
         components.print_settings();
 
+        // Perform pre-render actions. Don't proceed if that failed.
+        // Call on_render_begin() on the shading engine after calling it on the scene because
+        // it needs to access the scene's render data (to access the scene's bounding box).
+        OnRenderBeginRecorder recorder;
+        if (!m_project.get_scene()->on_render_begin(m_project, nullptr, recorder, &abort_switch) ||
+            !components.get_shading_engine().on_render_begin(m_project, recorder, &abort_switch) ||
+            abort_switch.is_aborted())
+        {
+            recorder.on_render_end(m_project);
+            return m_renderer_controller->get_status();
+        }
+
         // Execute the main rendering loop.
         const auto status = render_frame(components, abort_switch);
+
+        // Perform post-render actions.
+        recorder.on_render_end(m_project);
 
         const CanvasProperties& props = m_project.get_frame()->image().properties();
         m_project.get_light_path_recorder().finalize(

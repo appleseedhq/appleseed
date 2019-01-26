@@ -42,6 +42,7 @@
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class AOVAccumulatorContainer; }
 namespace renderer      { class OnFrameBeginRecorder; }
+namespace renderer      { class OnRenderBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class PixelContext; }
 namespace renderer      { class Project; }
@@ -62,8 +63,17 @@ class ShadingEngine
     // Constructor.
     explicit ShadingEngine(const ParamArray& params);
 
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
+    // This method is called before rendering begins, and whenever rendering is reinitialized
+    // (i.e. because an entity has been edited). At this point, all entities inputs are bound.
+    // Returns true on success, or false if an error occurred or if the abort switch was triggered.
+    bool on_render_begin(
+        const Project&              project,
+        OnRenderBeginRecorder&      recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr);
+
+    // This method is called before rendering a frame begins, and whenever rendering is restarted
+    // (i.e. because the camera has been moved). At this point, all entities inputs are bound.
+    // Returns true on success, or false if an error occurred or if the abort switch was triggered.
     bool on_frame_begin(
         const Project&              project,
         OnFrameBeginRecorder&       recorder,

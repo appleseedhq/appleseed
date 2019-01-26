@@ -69,15 +69,30 @@ ShadingEngine::ShadingEngine(const ParamArray& params)
     create_diagnostic_surface_shader(params);
 }
 
+bool ShadingEngine::on_render_begin(
+    const Project&              project,
+    OnRenderBeginRecorder&      recorder,
+    IAbortSwitch*               abort_switch)
+{
+    bool success = true;
+
+    if (m_diagnostic_surface_shader.get())
+        success = success && m_diagnostic_surface_shader->on_render_begin(project, nullptr, recorder, abort_switch);
+
+    return success;
+}
+
 bool ShadingEngine::on_frame_begin(
     const Project&              project,
     OnFrameBeginRecorder&       recorder,
     IAbortSwitch*               abort_switch)
 {
-    return
-        m_diagnostic_surface_shader.get()
-            ? m_diagnostic_surface_shader->on_frame_begin(project, nullptr, recorder, abort_switch)
-            : true;
+    bool success = true;
+
+    if (m_diagnostic_surface_shader.get())
+        success = success && m_diagnostic_surface_shader->on_frame_begin(project, nullptr, recorder, abort_switch);
+
+    return success;
 }
 
 void ShadingEngine::create_diagnostic_surface_shader(const ParamArray& params)
