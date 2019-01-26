@@ -437,7 +437,7 @@ void Frame::denoise(
     Deepimf covariances_image;
     impl->m_denoiser_aov->compute_covariances_image(covariances_image);
 
-    RENDERER_LOG_INFO("denoising beauty image...");
+    RENDERER_LOG_INFO("denoising frame \"%s\"...", get_path().c_str());
     denoise_beauty_image(
         image(),
         num_samples_image,
@@ -450,7 +450,7 @@ void Frame::denoise(
     {
         if (aov.has_color_data())
         {
-            RENDERER_LOG_INFO("denoising %s aov...", aov.get_name());
+            RENDERER_LOG_INFO("denoising aov \"%s\"...", aov.get_path().c_str());
             denoise_aov_image(
                 aov.get_image(),
                 num_samples_image,
@@ -578,6 +578,7 @@ namespace
     }
 
     bool write_image(
+        const Frame&            frame,
         const char*             file_path,
         const Image&            image,
         ImageAttributes         image_attributes)
@@ -617,8 +618,9 @@ namespace
             else
             {
                 RENDERER_LOG_ERROR(
-                    "failed to write image file %s: unsupported image format.",
-                    bf_file_path.string().c_str());
+                    "failed to write image file %s for frame \"%s\": unsupported image format.",
+                    bf_file_path.string().c_str(),
+                    frame.get_path().c_str());
 
                 return false;
             }
@@ -626,8 +628,9 @@ namespace
         catch (const exception& e)
         {
             RENDERER_LOG_ERROR(
-                "failed to write image file %s: %s.",
+                "failed to write image file %s for frame \"%s\": %s.",
                 bf_file_path.string().c_str(),
+                frame.get_path().c_str(),
                 e.what());
 
             return false;
@@ -636,8 +639,9 @@ namespace
         stopwatch.measure();
 
         RENDERER_LOG_INFO(
-            "wrote image file %s in %s.",
+            "wrote image file %s for frame \"%s\" in %s.",
             bf_file_path.string().c_str(),
+            frame.get_path().c_str(),
             pretty_time(stopwatch.get_seconds()).c_str());
 
         return true;
@@ -657,7 +661,7 @@ bool Frame::write_main_image(const char* file_path) const
     ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
     if (impl->m_enable_dithering)
         image_attributes.insert("dither", 42);  // the value of the dither attribute is a hash seed
-    if (!write_image(file_path, half_image, image_attributes))
+    if (!write_image(*this, file_path, half_image, image_attributes))
         return false;
 
     // Write BCD histograms and covariance AOVs if enabled.
@@ -834,7 +838,7 @@ bool Frame::archive(
         *output_path = duplicate_string(file_path.c_str());
 
     ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
-    return write_image(file_path.c_str(), *impl->m_image, image_attributes);
+    return write_image(*this, file_path.c_str(), *impl->m_image, image_attributes);
 }
 
 void Frame::extract_parameters()
