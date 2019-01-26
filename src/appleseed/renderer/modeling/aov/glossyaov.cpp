@@ -86,7 +86,7 @@ namespace
 
 
     //
-    // DirectGlossy AOV accumulator.
+    // Direct Glossy AOV accumulator.
     //
 
     class DirectGlossyAOVAccumulator
@@ -117,7 +117,7 @@ namespace
 
 
     //
-    // IndirectGlossy AOV accumulator.
+    // Indirect Glossy AOV accumulator.
     //
 
     class IndirectGlossyAOVAccumulator

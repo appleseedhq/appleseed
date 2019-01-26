@@ -152,7 +152,7 @@ size_t ColorAOV::get_channel_count() const
 
 const char** ColorAOV::get_channel_names() const
 {
-    static const char* ChannelNames[] = {"R", "G", "B", "A"};
+    static const char* ChannelNames[] = { "R", "G", "B", "A" };
     return ChannelNames;
 }
 
@@ -163,7 +163,7 @@ bool ColorAOV::has_color_data() const
 
 void ColorAOV::clear_image()
 {
-    m_image->clear(Color4f(0.0f, 0.0f, 0.0f, 0.0f));
+    m_image->clear(Color4f(0.0f));
 }
 
 
@@ -188,7 +188,7 @@ size_t UnfilteredAOV::get_channel_count() const
 
 const char** UnfilteredAOV::get_channel_names() const
 {
-    static const char* ChannelNames[] = {"R", "G", "B"};
+    static const char* ChannelNames[] = { "R", "G", "B" };
     return ChannelNames;
 }
 
@@ -199,7 +199,7 @@ bool UnfilteredAOV::has_color_data() const
 
 void UnfilteredAOV::clear_image()
 {
-    m_image->clear(Color3f(0.0f, 0.0f, 0.0f));
+    m_image->clear(Color3f(0.0f));
 }
 
 void UnfilteredAOV::create_image(

@@ -150,6 +150,7 @@ void UnfilteredAOVAccumulator::on_tile_end(
     m_tile = nullptr;
 }
 
+
 //
 // AOVAccumulatorContainer class implementation.
 //

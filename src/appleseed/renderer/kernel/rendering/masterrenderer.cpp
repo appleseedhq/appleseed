@@ -220,7 +220,7 @@ struct MasterRenderer::Impl
     // Initialize OSL's shading system.
     bool initialize_osl_shading_system(
         TextureStore&               texture_store,
-        foundation::IAbortSwitch&   abort_switch)
+        IAbortSwitch&               abort_switch)
     {
         // Construct a search paths string from the project's search paths.
         const string project_search_paths =

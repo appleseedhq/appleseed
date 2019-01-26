@@ -241,6 +241,8 @@ class ShadingPoint
     // Return the interpolated per-vertex color at the intersection point.
     const foundation::Color3f& get_per_vertex_color() const;
 
+    // Access the data structure that exposes this shading point to OSL.
+    // ShadingSystem::execute() takes a mutable OSL::ShaderGlobals reference.
     OSL::ShaderGlobals& get_osl_shader_globals() const;
 
     struct OSLObjectTransformInfo

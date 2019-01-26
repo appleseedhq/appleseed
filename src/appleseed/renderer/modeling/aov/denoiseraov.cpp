@@ -248,7 +248,7 @@ namespace
 
         Deepimf&        m_histograms;
 
-        inline bool outside_tile(const Vector2i& pi) const
+        bool outside_tile(const Vector2i& pi) const
         {
             return
                 pi.x < m_tile_origin_x ||

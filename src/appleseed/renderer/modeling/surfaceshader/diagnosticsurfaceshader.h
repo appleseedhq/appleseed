@@ -34,7 +34,6 @@
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/kvpair.h"
 
@@ -67,7 +66,7 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
     // Available shading modes.
     enum ShadingMode
     {
-        Albedo,                     // shade according to the surface bsdf's albedo component
+        Albedo,                     // surface BSDF's albedo component
         Coverage,                   // shade according to pixel coverage
         Barycentric,                // shade according to barycentric coordinates
         UV,                         // shade according to UV coordinates
