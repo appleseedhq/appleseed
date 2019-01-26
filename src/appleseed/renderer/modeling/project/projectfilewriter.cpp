@@ -90,6 +90,7 @@
 #include <cstdio>
 #include <cstring>
 #include <exception>
+#include <functional>
 #include <map>
 #include <set>
 #include <string>
@@ -153,6 +154,34 @@ namespace
         FILE*                   m_file;
         const int               m_options;
         Indenter                m_indenter;
+
+        // Return a lexicographically-sorted vector of references to entities.
+        template <typename Collection>
+        vector<std::reference_wrapper<const typename Collection::value_type>> sorted(const Collection& collection)
+        {
+            return sorted_impl<const typename Collection::value_type>(collection.begin(), collection.end());
+        }
+        template <typename Collection>
+        vector<std::reference_wrapper<typename Collection::value_type>> sorted(Collection& collection)
+        {
+            return sorted_impl<typename Collection::value_type>(collection.begin(), collection.end());
+        }
+        template <typename ValueType, typename Iterator>
+        vector<std::reference_wrapper<ValueType>> sorted_impl(Iterator input_begin, Iterator input_end)
+        {
+            vector<std::reference_wrapper<ValueType>> result;
+            result.reserve(std::distance(input_begin, input_end));
+
+            for (Iterator it = input_begin; it != input_end; ++it)
+                result.push_back(*it);
+
+            sort(result.begin(), result.end(), [](const Entity& lhs, const Entity& rhs)
+            {
+                return strcmp(lhs.get_name(), rhs.get_name()) < 0;
+            });
+
+            return result;
+        }
 
         // Write a vector of scalars.
         template <typename Vec>
@@ -274,41 +303,11 @@ namespace
             write_params(entity.get_parameters());
         }
 
-        // An alphabetically-sorted vector of mutable entities.
         template <typename Collection>
-        class SortedMutableEntityVector
-          : public vector<typename Collection::value_type*>
+        void write_collection(const Collection& collection)
         {
-          public:
-            explicit SortedMutableEntityVector(Collection& collection)
-            {
-                Base::reserve(collection.size());
-
-                for (auto& entity : collection)
-                    Base::push_back(&entity);
-
-                sort(Base::begin(), Base::end(), EntityOrderingPredicate());
-            }
-
-          private:
-            typedef vector<typename Collection::value_type*> Base;
-
-            struct EntityOrderingPredicate
-            {
-                bool operator()(const Entity* lhs, const Entity* rhs) const
-                {
-                    return strcmp(lhs->get_name(), rhs->get_name()) < 0;
-                }
-            };
-        };
-
-        template <typename Collection>
-        void write_collection(Collection& collection)
-        {
-            const SortedMutableEntityVector<Collection> sorted(collection);
-
-            for (const_each<SortedMutableEntityVector<Collection>> i = sorted; i; ++i)
-                write(**i);
+            for (const auto& entity : sorted(collection))
+                write(entity);
         }
 
         // Write an <aov> element.
@@ -327,7 +326,7 @@ namespace
         // Write an <aovs> element.
         void write_aovs(const Frame& frame)
         {
-            AOVContainer& aovs = frame.aovs();
+            const AOVContainer& aovs = frame.aovs();
             if (!aovs.empty())
             {
                 XMLElement element("aovs", m_file, m_indenter);
@@ -509,9 +508,8 @@ namespace
                     : XMLElement::HasNoContent);
 
             // Write configurations.
-            for (const_each<ConfigurationContainer> i = project.configurations(); i; ++i)
+            for (const Configuration& configuration : sorted(project.configurations()))
             {
-                const Configuration& configuration = *i;
                 if (!BaseConfigurationFactory::is_base_configuration(configuration.get_name()))
                     write_configuration(configuration);
             }
@@ -603,13 +601,10 @@ namespace
         // Write a collection of <object> elements.
         void write_object_collection(ObjectContainer& objects)
         {
-            const SortedMutableEntityVector<ObjectContainer> sorted(objects);
             set<string> groups;
 
-            for (const_each<SortedMutableEntityVector<ObjectContainer>> i = sorted; i; ++i)
+            for (Object& object : sorted(objects))
             {
-                Object& object = **i;
-
                 if (strcmp(object.get_model(), MeshObjectFactory().get_model()) == 0)
                     write_mesh_object(static_cast<MeshObject&>(object), groups);
                 else if (strcmp(object.get_model(), CurveObjectFactory().get_model()) == 0)
@@ -863,9 +858,7 @@ namespace
             element.add_attribute("name", shader.get_shader());
             element.add_attribute("layer", shader.get_layer());
             element.write(XMLElement::HasChildElements);
-
-            for (const_each<ShaderParamContainer> i = shader.shader_params(); i; ++i)
-                write(*i);
+            write_collection(shader.shader_params());
 
             if (shader.get_source_code())
                 write_osl_code(shader.get_source_code());

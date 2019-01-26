@@ -239,7 +239,7 @@ void Frame::print_settings()
         impl->m_denoising_mode == DenoisingMode::WriteOutputs ? "write outputs" : "denoise");
 }
 
-AOVContainer& Frame::aovs() const
+const AOVContainer& Frame::aovs() const
 {
     return impl->m_aovs;
 }
@@ -266,10 +266,10 @@ void Frame::clear_main_and_aov_images()
 {
     impl->m_image->clear(Color4f(0.0));
 
-    for (AOV& aov : aovs())
+    for (AOV& aov : impl->m_aovs)
         aov.clear_image();
 
-    for (AOV& aov : internal_aovs())
+    for (AOV& aov : impl->m_internal_aovs)
         aov.clear_image();
 }
 
@@ -325,19 +325,19 @@ uint32 Frame::get_noise_seed() const
 
 void Frame::collect_asset_paths(StringArray& paths) const
 {
-    for (const AOV& aov : aovs())
+    for (const AOV& aov : impl->m_aovs)
         aov.collect_asset_paths(paths);
 
-    for (const PostProcessingStage& stage : post_processing_stages())
+    for (const PostProcessingStage& stage : impl->m_post_processing_stages)
         stage.collect_asset_paths(paths);
 }
 
 void Frame::update_asset_paths(const StringDictionary& mappings)
 {
-    for (AOV& aov : aovs())
+    for (AOV& aov : impl->m_aovs)
         aov.update_asset_paths(mappings);
 
-    for (PostProcessingStage& stage : post_processing_stages())
+    for (PostProcessingStage& stage : impl->m_post_processing_stages)
         stage.update_asset_paths(mappings);
 }
 
@@ -347,7 +347,7 @@ bool Frame::on_frame_begin(
     OnFrameBeginRecorder&   recorder,
     IAbortSwitch*           abort_switch)
 {
-    for (AOV& aov : aovs())
+    for (AOV& aov : impl->m_aovs)
     {
         if (is_aborted(abort_switch))
             return false;
@@ -356,7 +356,7 @@ bool Frame::on_frame_begin(
             return false;
     }
 
-    for (PostProcessingStage& stage : post_processing_stages())
+    for (PostProcessingStage& stage : impl->m_post_processing_stages)
     {
         if (is_aborted(abort_switch))
             return false;
@@ -370,10 +370,10 @@ bool Frame::on_frame_begin(
 
 void Frame::post_process_aov_images() const
 {
-    for (AOV& aov : aovs())
+    for (AOV& aov : impl->m_aovs)
         aov.post_process_image(*this);
 
-    for (AOV& aov : internal_aovs())
+    for (AOV& aov : impl->m_internal_aovs)
         aov.post_process_image(*this);
 }
 
@@ -444,7 +444,7 @@ void Frame::denoise(
         options,
         abort_switch);
 
-    for (const AOV& aov : aovs())
+    for (const AOV& aov : impl->m_aovs)
     {
         if (aov.has_color_data())
         {
@@ -696,7 +696,7 @@ bool Frame::write_aov_images(const char* file_path) const
 
     bool success = true;
 
-    for (const AOV& aov : aovs())
+    for (const AOV& aov : impl->m_aovs)
     {
         // Compute AOV image file path.
         const string aov_name = aov.get_name();
@@ -728,7 +728,7 @@ bool Frame::write_main_and_aov_images() const
     }
 
     // Write AOV images.
-    for (const AOV& aov : aovs())
+    for (const AOV& aov : impl->m_aovs)
     {
         bf::path filepath = aov.get_parameters().get_optional<string>("output_filename");
 
@@ -788,7 +788,7 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
         writer.set_image_attributes(image_attributes);
     }
 
-    for (const AOV& aov : aovs())
+    for (const AOV& aov : impl->m_aovs)
     {
         const string aov_name = aov.get_name();
         const Image& image = aov.get_image();
