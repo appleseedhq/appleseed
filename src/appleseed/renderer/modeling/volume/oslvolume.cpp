@@ -93,7 +93,7 @@ public:
         const ParamArray&   params)
         : Volume(name, params)
         , m_bsdf((std::string(name) + "_brdf").c_str(), ParamArray())
-        , m_extinction_majorant(100.0f)
+        , m_extinction_majorant(1.0f)
         , m_max_iterations(1000)
     {
     }
@@ -247,7 +247,7 @@ public:
         const double                distance,
         DistanceSample&             sample) const override
     {
-        throw "";
+        assert(false);
     }
 
     void evaluate_transmission(

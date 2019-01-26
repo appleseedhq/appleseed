@@ -1,0 +1,8 @@
+volume volumetric_sphere()
+{
+    point local_point = transform("world", "object", P);
+
+	float dist = distance(local_point, point(0.0, 0.0, 10.0));
+
+	Ci = (dist < 10.0 ? 1.0 : 0.0) * (0.05 * absorption() + 0.25 * isotropic());
+}

@@ -1,0 +1,45 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.8.10
+# options: -O2 -DNDEBUG
+volume volumetric_sphere
+global	point	P	%read{0,0} %write{2147483647,-1}
+global	closure color	Ci	%read{2147483647,-1} %write{11,11}
+local	point	local_point	%read{1,1} %write{0,0}
+local	float	dist	%read{7,7} %write{1,1}
+const	string	$const1	"world"		%read{0,0} %write{2147483647,-1}
+const	string	$const2	"object"		%read{0,0} %write{2147483647,-1}
+const	point	$const3	0 0 10		%read{1,1} %write{2147483647,-1}
+temp	closure color	$tmp2	%read{3,3} %write{2,2}
+const	string	$const4	"absorption"		%read{2,2} %write{2147483647,-1}
+const	float	$const5	0.050000001		%read{3,3} %write{2147483647,-1}
+temp	closure color	$tmp3	%read{6,6} %write{3,3}
+temp	closure color	$tmp4	%read{5,5} %write{4,4}
+const	string	$const6	"isotropic"		%read{4,4} %write{2147483647,-1}
+const	float	$const7	0.25		%read{5,5} %write{2147483647,-1}
+temp	closure color	$tmp5	%read{6,6} %write{5,5}
+temp	closure color	$tmp6	%read{11,11} %write{6,6}
+temp	float	$tmp7	%read{11,11} %write{9,10}
+const	float	$const8	10		%read{7,7} %write{2147483647,-1}
+temp	int	$tmp8	%read{8,8} %write{7,7}
+const	float	$const9	1		%read{9,9} %write{2147483647,-1}
+const	float	$const10	0		%read{10,10} %write{2147483647,-1}
+code ___main___
+# C:\\Appleseed\\appleseed\\sandbox\\tests\\test scenes\\osl\\_shaders\\.\\volumetric_sphere.osl:4
+# 
+	transform	local_point $const1 $const2 P 	%filename{"C:\\Appleseed\\appleseed\\sandbox\\tests\\test scenes\\osl\\_shaders\\.\\volumetric_sphere.osl"} %line{4} %argrw{"wrrr"}
+# C:\\Appleseed\\appleseed\\sandbox\\tests\\test scenes\\osl\\_shaders\\.\\volumetric_sphere.osl:6
+# 
+	distance	dist local_point $const3 	%line{6} %argrw{"wrr"}
+# C:\\Appleseed\\appleseed\\sandbox\\tests\\test scenes\\osl\\_shaders\\.\\volumetric_sphere.osl:8
+# }
+	closure		$tmp2 $const4 	%line{8} %argrw{"wr"}
+	mul		$tmp3 $tmp2 $const5 	%argrw{"wrr"}
+	closure		$tmp4 $const6 	%argrw{"wr"}
+	mul		$tmp5 $tmp4 $const7 	%argrw{"wrr"}
+	add		$tmp6 $tmp3 $tmp5 	%argrw{"wrr"}
+	lt		$tmp8 dist $const8 	%argrw{"wrr"}
+	if		$tmp8 10 11 	%argrw{"r"}
+	assign		$tmp7 $const9 	%argrw{"wr"}
+	assign		$tmp7 $const10 	%argrw{"wr"}
+	mul		Ci $tmp6 $tmp7 	%argrw{"wrr"}
+	end

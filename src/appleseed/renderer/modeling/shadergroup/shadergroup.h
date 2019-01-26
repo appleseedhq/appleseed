@@ -269,13 +269,13 @@ inline bool ShaderGroup::has_matte() const
 inline bool ShaderGroup::has_surface() const
 {
     return (m_flags &
-        HasBSDFs        |
+        (HasBSDFs       |
         HasEmission     |
         HasTransparency |
         HasSubsurface   |
         HasDebug        |
         HasMatte        |
-        HasNPR) != 0;
+        HasNPR)) != 0;
 }
 
 inline bool ShaderGroup::has_volume() const
