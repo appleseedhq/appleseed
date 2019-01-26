@@ -347,23 +347,14 @@ bool Frame::on_frame_begin(
     OnFrameBeginRecorder&   recorder,
     IAbortSwitch*           abort_switch)
 {
-    for (AOV& aov : impl->m_aovs)
-    {
-        if (is_aborted(abort_switch))
-            return false;
+    if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
 
-        if (!aov.on_frame_begin(project, parent, recorder, abort_switch))
-            return false;
-    }
+    if (!invoke_on_frame_begin(impl->m_aovs, project, parent, recorder, abort_switch))
+        return false;
 
-    for (PostProcessingStage& stage : impl->m_post_processing_stages)
-    {
-        if (is_aborted(abort_switch))
-            return false;
-
-        if (!stage.on_frame_begin(project, parent, recorder, abort_switch))
-            return false;
-    }
+    if (!invoke_on_frame_begin(impl->m_post_processing_stages, project, parent, recorder, abort_switch))
+        return false;
 
     return true;
 }

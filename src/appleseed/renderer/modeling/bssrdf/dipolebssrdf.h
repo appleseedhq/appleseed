@@ -153,6 +153,9 @@ inline bool DipoleBSSRDF::on_frame_begin(
     OnFrameBeginRecorder&           recorder,
     foundation::IAbortSwitch*       abort_switch)
 {
+    if (!SeparableBSSRDF::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
+
     m_has_sigma_sources =
         m_inputs.source("sigma_a") != nullptr &&
         m_inputs.source("sigma_s") != nullptr;

@@ -353,9 +353,6 @@ bool Scene::on_render_begin(
     if (!Entity::on_render_begin(project, parent, recorder, abort_switch))
         return false;
 
-    if (!BaseGroup::on_render_begin(project, parent,recorder,  abort_switch))
-        return false;
-
     // The scene's render data must be computed before `on_render_begin()` is called on child entities,
     // because child entities such as cameras may retrieve the scene's bounding box or diameter.
     assert(!m_has_render_data);
@@ -366,6 +363,9 @@ bool Scene::on_render_begin(
     m_render_data.m_safe_diameter = m_render_data.m_diameter * GScalar(1.01);
     m_has_render_data = true;
 
+    if (!BaseGroup::on_render_begin(project, parent,recorder,  abort_switch))
+        return false;
+
     bool success = true;
     success = success && impl->m_default_surface_shader->on_render_begin(project, this, recorder, abort_switch);
     success = success && invoke_on_render_begin(environment_edfs(), project, this, recorder, abort_switch);
@@ -373,22 +373,15 @@ bool Scene::on_render_begin(
     if (impl->m_environment.get())
         success = success && impl->m_environment->on_render_begin(project, this, recorder, abort_switch);
     success = success && invoke_on_render_begin(cameras(), project, this, recorder, abort_switch);
-    if (!success)
-        return false;
 
-    return true;
+    return success;
 }
 
 void Scene::on_render_end(
     const Project&          project,
     const BaseGroup*        parent)
 {
-    // `m_has_render_data` may be false if `on_frame_begin()` failed.
-    if (m_has_render_data)
-        m_has_render_data = false;
-
-    for (each<CameraContainer> i = cameras(); i; ++i)
-        i->on_render_end(project, this);
+    m_has_render_data = false;
 
     Entity::on_render_end(project, parent);
 }

@@ -156,10 +156,10 @@ namespace
             const Project&          project,
             const BaseGroup*        parent) override
         {
-            BSSRDF::on_frame_end(project, parent);
-
             if (m_use_glass_bsdf)
                 m_glass_bsdf->on_frame_end(project, parent);
+
+            BSSRDF::on_frame_end(project, parent);
         }
 
         size_t compute_input_data_size() const override
