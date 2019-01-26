@@ -157,7 +157,7 @@ struct PluginStore::Impl
                 continue;
 
             // Only consider shared libraries.
-            if (filepath.extension() != SharedLibrary::get_default_file_extension())
+            if (lower_case(filepath.extension().string()) != SharedLibrary::get_default_file_extension())
                 continue;
 
             vector<PluginHandlerMap::value_type> relevant_plugin_handlers;
