@@ -107,17 +107,24 @@ struct Frame::Impl
 
     // Child entities.
     AOVContainer                    m_aovs;
+    DenoiserAOV*                    m_denoiser_aov;
     AOVContainer                    m_internal_aovs;
     PostProcessingStageContainer    m_post_processing_stages;
 
     // Images.
     unique_ptr<Image>               m_image;
     unique_ptr<ImageStack>          m_aov_images;
-    DenoiserAOV*                    m_denoiser_aov;
 
     // Internal state.
     unique_ptr<Filter2f>            m_filter;
     ParamArray                      m_render_info;
+
+    explicit Impl(Frame* parent)
+      : m_aovs(parent)
+      , m_internal_aovs(parent)
+      , m_post_processing_stages(parent)
+    {
+    }
 };
 
 Frame::Frame(
@@ -125,7 +132,7 @@ Frame::Frame(
     const ParamArray&   params,
     const AOVContainer& aovs)
   : Entity(g_class_uid, params)
-  , impl(new Impl())
+  , impl(new Impl(this))
 {
     set_name(name);
 
@@ -159,21 +166,24 @@ Frame::Frame(
             MaxAOVCount);
     }
 
-    // Copy and add AOVs.
+    // Copy and store AOVs.
     const AOVFactoryRegistrar aov_registrar;
     for (size_t i = 0, e = min(aovs.size(), MaxAOVCount); i < e; ++i)
     {
         const AOV* original_aov = aovs.get_by_index(i);
+
         const IAOVFactory* aov_factory = aov_registrar.lookup(original_aov->get_model());
         assert(aov_factory);
 
         auto_release_ptr<AOV> aov = aov_factory->create(original_aov->get_parameters());
+
         aov->create_image(
             impl->m_frame_width,
             impl->m_frame_height,
             impl->m_tile_width,
             impl->m_tile_height,
             aov_images());
+
         impl->m_aovs.insert(aov);
     }
 
@@ -181,7 +191,7 @@ Frame::Frame(
     if (impl->m_denoising_mode != DenoisingMode::Off)
     {
         auto_release_ptr<DenoiserAOV> aov = DenoiserAOVFactory::create();
-        impl->m_denoiser_aov = aov.get();
+        aov->set_parent(this);
 
         aov->create_image(
             impl->m_frame_width,
@@ -190,6 +200,7 @@ Frame::Frame(
             impl->m_tile_height,
             aov_images());
 
+        impl->m_denoiser_aov = aov.get();
         impl->m_internal_aovs.insert(auto_release_ptr<AOV>(aov));
     }
     else impl->m_denoiser_aov = nullptr;
