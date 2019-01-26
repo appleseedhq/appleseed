@@ -454,11 +454,8 @@ struct MasterRenderer::Impl
             m_params.child("texture_store"));
 
         // Initialize OSL's shading system.
-        if (!initialize_osl_shading_system(texture_store, abort_switch))
-            return IRendererController::AbortRendering;
-
-        // Don't proceed further if initialization was aborted.
-        if (abort_switch.is_aborted())
+        if (!initialize_osl_shading_system(texture_store, abort_switch) ||
+            abort_switch.is_aborted())
             return m_renderer_controller->get_status();
 
         // Create renderer components.

@@ -40,7 +40,6 @@
 #include "renderer/modeling/texture/texture.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/job/abortswitch.h"
 
 using namespace foundation;
@@ -113,40 +112,40 @@ bool BaseGroup::create_optimized_osl_shader_groups(
     const ShaderCompiler*       shader_compiler,
     IAbortSwitch*               abort_switch)
 {
-    bool success = true;
-
-    for (each<AssemblyContainer> i = assemblies(); i; ++i)
+    for (Assembly& assembly : assemblies())
     {
         if (is_aborted(abort_switch))
-            return true;
+            return false;
 
-        success = success && i->create_optimized_osl_shader_groups(
-            shading_system,
-            shader_compiler,
-            abort_switch);
+        if (!assembly.create_optimized_osl_shader_groups(
+                shading_system,
+                shader_compiler,
+                abort_switch))
+            return false;
     }
 
-    for (each<ShaderGroupContainer> i = shader_groups(); i; ++i)
+    for (ShaderGroup& shader_group : shader_groups())
     {
         if (is_aborted(abort_switch))
-            return true;
+            return false;
 
-        success = success && i->create_optimized_osl_shader_group(
-            shading_system,
-            shader_compiler,
-            abort_switch);
+        if (!shader_group.create_optimized_osl_shader_group(
+                shading_system,
+                shader_compiler,
+                abort_switch))
+            return false;
     }
 
-    return success;
+    return true;
 }
 
 void BaseGroup::release_optimized_osl_shader_groups()
 {
-    for (each<AssemblyContainer> i = assemblies(); i; ++i)
-        i->release_optimized_osl_shader_groups();
+    for (Assembly& assembly : assemblies())
+        assembly.release_optimized_osl_shader_groups();
 
-    for (each<ShaderGroupContainer> i = shader_groups(); i; ++i)
-        i->release_optimized_osl_shader_group();
+    for (ShaderGroup& shader_group : shader_groups())
+        shader_group.release_optimized_osl_shader_group();
 }
 
 AssemblyContainer& BaseGroup::assemblies() const
