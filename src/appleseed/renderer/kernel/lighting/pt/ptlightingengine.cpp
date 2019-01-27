@@ -848,7 +848,7 @@ namespace
                     // If we have an OSL shader, we need to choose one of the closures and set
                     // its shading basis into the shading point for the DirectLightingIntegrator
                     // to use it.
-                    if (m_params.m_enable_dl || m_params.m_enable_ibl)
+                    if (vertex.m_shading_point->hit_surface() && (m_params.m_enable_dl || m_params.m_enable_ibl))
                     {
                         const Material::RenderData& material_data =
                             vertex.m_shading_point->get_material()->get_render_data();
