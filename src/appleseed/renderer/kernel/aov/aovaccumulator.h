@@ -29,13 +29,11 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/aov/aovsettings.h"
 #include "renderer/modeling/aov/aovcontainer.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/image/color.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/autoreleaseptr.h"
@@ -117,31 +115,28 @@ class UnfilteredAOVAccumulator
   : public AOVAccumulator
 {
   public:
+    // Constructor.
     explicit UnfilteredAOVAccumulator(foundation::Image& image);
 
+    // This method is called before a tile gets rendered.
     void on_tile_begin(
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y,
         const size_t                max_spp) override;
 
+    // This method is called after a tile gets rendered.
     void on_tile_end(
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y) override;
 
   protected:
-    foundation::Image&  m_image;
-    foundation::Tile*   m_tile;
-
-    foundation::Tile*   m_filter_tile;
-
-    foundation::AABB2i  m_tile_bbox;
-
-    foundation::Tile& get_tile() const;
-    foundation::Tile& get_filter_tile() const;
-
-    bool inside_tile(const foundation::Vector2i& pi) const;
+    foundation::Image&              m_image;
+    foundation::Tile*               m_tile;
+    size_t                          m_tile_origin_x;
+    size_t                          m_tile_origin_y;
+    foundation::AABB2i              m_cropped_tile_bbox;
 };
 
 
@@ -153,10 +148,8 @@ class AOVAccumulatorContainer
   : public foundation::NonCopyable
 {
   public:
-    // Constructor.
+    // Constructors.
     AOVAccumulatorContainer();
-
-    // Constructor.
     explicit AOVAccumulatorContainer(const Frame& frame);
 
     // Destructor.
@@ -203,30 +196,10 @@ class AOVAccumulatorContainer
     void init();
     bool insert(foundation::auto_release_ptr<AOVAccumulator> aov_accum);
 
-    enum { MaxAovAccumulators = MaxAOVCount + 1 };  // MaxAOVCount + Beauty
+    enum { MaxAOVAccumulatorCount = MaxAOVCount + 1 };  // MaxAOVCount + Beauty
 
     size_t          m_size;
-    AOVAccumulator* m_accumulators[MaxAovAccumulators];
+    AOVAccumulator* m_accumulators[MaxAOVAccumulatorCount];
 };
-
-
-//
-// UnfilteredAOVAccumulator class implementation.
-//
-
-inline foundation::Tile& UnfilteredAOVAccumulator::get_tile() const
-{
-    return *m_tile;
-}
-
-inline foundation::Tile& UnfilteredAOVAccumulator::get_filter_tile() const
-{
-    return *m_filter_tile;
-}
-
-inline bool UnfilteredAOVAccumulator::inside_tile(const foundation::Vector2i& pi) const
-{
-    return m_tile_bbox.contains(pi);
-}
 
 }   // namespace renderer

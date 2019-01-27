@@ -55,11 +55,13 @@ BBox compute_union(const Iterator begin, const Iterator end);
 template <typename BBox, typename Iterator>
 BBox interpolate(const Iterator begin, const Iterator end, const double time);
 
-template <typename BBox, typename Tile, typename Int>
+// Clip an image space bounding box against a crop window and convert it to tile space.
+template <typename BBox, typename Int>
 BBox compute_tile_space_bbox(
-    const Tile&     tile,
     const Int       tile_origin_x,
     const Int       tile_origin_y,
+    const Int       tile_width,
+    const Int       tile_height,
     const BBox&     crop_window);
 
 
@@ -122,24 +124,31 @@ BBox interpolate(const Iterator begin, const Iterator end, const double time)
     return foundation::lerp(first[prev_index], first[prev_index + 1], k);
 }
 
-template <typename BBox, typename Tile, typename Int>
+template <typename BBox, typename Int>
 BBox compute_tile_space_bbox(
-    const Tile&     tile,
     const Int       tile_origin_x,
     const Int       tile_origin_y,
+    const Int       tile_width,
+    const Int       tile_height,
     const BBox&     crop_window)
 {
+    // Construct image space bounding box.
     BBox tile_bbox;
     tile_bbox.min.x = tile_origin_x;
     tile_bbox.min.y = tile_origin_y;
-    tile_bbox.max.x = tile_origin_x + static_cast<Int>(tile.get_width()) - 1;
-    tile_bbox.max.y = tile_origin_y + static_cast<Int>(tile.get_height()) - 1;
+    tile_bbox.max.x = tile_origin_x + tile_width - 1;
+    tile_bbox.max.y = tile_origin_y + tile_height - 1;
+    assert(tile_bbox.is_valid());
+
+    // Clip bounding box against crop window.
     tile_bbox = BBox::intersect(tile_bbox, crop_window);
-    // Transform the bounding box to local (tile) space.
+
+    // Transform bounding box to tile space.
     tile_bbox.min.x -= tile_origin_x;
     tile_bbox.min.y -= tile_origin_y;
     tile_bbox.max.x -= tile_origin_x;
     tile_bbox.max.y -= tile_origin_y;
+
     return tile_bbox;
 }
 

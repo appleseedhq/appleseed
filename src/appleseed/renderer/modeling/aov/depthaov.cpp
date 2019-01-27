@@ -82,14 +82,14 @@ namespace
             const Vector2i& pi = pixel_context.get_pixel_coords();
 
             // Ignore samples outside the tile.
-            if (!inside_tile(pi))
+            if (!m_cropped_tile_bbox.contains(pi))
                 return;
 
             float* out =
                 reinterpret_cast<float*>(
-                    get_tile().pixel(
-                        pi.x - m_tile_bbox.min.x,
-                        pi.y - m_tile_bbox.min.y));
+                    m_tile->pixel(
+                        pi.x - m_tile_origin_x,
+                        pi.y - m_tile_origin_y));
 
             const float depth =
                 shading_point.hit_surface()

@@ -33,15 +33,12 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/aov/aovaccumulator.h"
-#include "renderer/kernel/aov/tilestack.h"
-#include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/color.h"
-#include "foundation/image/colorspace.h"
-#include "foundation/image/tile.h"
-#include "foundation/platform/types.h"
-#include "foundation/utility/otherwise.h"
+#include "foundation/utility/string.h"
+
+// Standard headers.
+#include <string>
 
 using namespace foundation;
 
@@ -59,20 +56,20 @@ PixelRendererBase::PixelRendererBase()
 }
 
 void PixelRendererBase::on_tile_begin(
-    const Frame&            frame,
-    const size_t            tile_x,
-    const size_t            tile_y,
-    Tile&                   tile,
-    TileStack&              aov_tiles)
+    const Frame&                frame,
+    const size_t                tile_x,
+    const size_t                tile_y,
+    Tile&                       tile,
+    TileStack&                  aov_tiles)
 {
 }
 
 void PixelRendererBase::on_tile_end(
-    const Frame&            frame,
-    const size_t            tile_x,
-    const size_t            tile_y,
-    Tile&                   tile,
-    TileStack&              aov_tiles)
+    const Frame&                frame,
+    const size_t                tile_x,
+    const size_t                tile_y,
+    Tile&                       tile,
+    TileStack&                  aov_tiles)
 {
 }
 
@@ -84,6 +81,7 @@ void PixelRendererBase::on_pixel_begin(
     AOVAccumulatorContainer&    aov_accumulators)
 {
     m_invalid_sample_count = 0;
+
     aov_accumulators.on_pixel_begin(pi);
 }
 
@@ -94,14 +92,13 @@ void PixelRendererBase::on_pixel_end(
     const AABB2i&               tile_bbox,
     AOVAccumulatorContainer&    aov_accumulators)
 {
-    static const size_t MaxWarningsPerThread = 5;
-
     aov_accumulators.on_pixel_end(pi);
 
-    // Warns the user for bad pixels.
     if (m_invalid_sample_count > 0)
     {
-        m_invalid_pixel_count++;
+        static const size_t MaxWarningsPerThread = 5;
+
+        ++m_invalid_pixel_count;
 
         if (m_invalid_pixel_count <= MaxWarningsPerThread)
         {
