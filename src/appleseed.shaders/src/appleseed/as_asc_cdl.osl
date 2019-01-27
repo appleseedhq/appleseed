@@ -26,18 +26,23 @@
 // THE SOFTWARE.
 //
 
-// American Society of Cinematographers Color Decision List implementation
+//
+// References:
+//
+//  American Society of Cinematographers Color Decision List
+//  https://en.wikipedia.org/wiki/ASC_CDL
+//
 
 #include "appleseed/color/as_color_helpers.h"
 
 shader as_asc_cdl
 [[
-    string help = "Slope/Offset/Power Color Decision List utility shader according to the American Society of Cinematographers",
     string icon = "asAscCdl.png",
+    string help = "Slope/Offset/Power Color Decision List utility shader according to the American Society of Cinematographers",
     string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_asc_cdl.html#label-as-asc-cdl",
     
     string as_node_name = "asAscCdl",
-    string as_category = "color",
+    string as_category = "utility",
     
     string as_max_class_id = "1669361528 687027596", 
     string as_max_plugin_type = "texture",
@@ -55,15 +60,20 @@ shader as_asc_cdl
         string help = "Input color.",
         int divider = 1
     ]],
-    string in_colorspace = "sRGB/Rec.709"
+    string in_rgb_primaries = "sRGB/Rec.709"
     [[
-        string as_maya_attribute_name = "colorspace",
-        string as_maya_attribute_short_name = "csp",
+        string as_maya_attribute_name = "rgbPrimaries",
+        string as_maya_attribute_short_name = "pri",
         string widget = "popup",
         string options = "Rec.601|sRGB/Rec.709|AdobeRGB|Rec.2020|ACES|ACEScg|DCI-P3",
-        string label = "Color Space",
+        string label = "RGBW Primaries",
         string page = "Color",
-        string help = "Color space of the input color."
+        string help = "RGB primaries and white point of the input color.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
     ]],
     float in_slope = 1.0
     [[
@@ -111,9 +121,9 @@ shader as_asc_cdl
         string page = "Output",
         string help = "Overall saturation applied after input color transformations.",
     ]],
-    int as_clamp_output = 1
+    int in_clamp_output = 1
     [[
-        string as_maya_attribute_name = "clamp output",
+        string as_maya_attribute_name = "clampOutput",
         string as_maya_attribute_short_name = "clo",
         int min = 0,
         int max = 1,
@@ -121,26 +131,30 @@ shader as_asc_cdl
         string label = "Clamp Output",
         string page = "Output",
         string help = "Clamps output values to the range [0,1].",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
     ]],
     output color out_outColor = color(0)
     [[
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
-        string widget = "null",
-        string label = "Color"
+        string label = "Output Color",
+        string page = "Output",
+        string widget = "null"
     ]]
 )
 {
     color shifted_color = in_color * in_slope + in_offset;
     color transformed_color = pow(shifted_color, in_power);
-    float luma = as_luminance(transformed_color, in_colorspace);
+
+    float luma = as_luminance(transformed_color, in_rgb_primaries);
+
     color unclamped = mix(luma, transformed_color, in_saturation);
-    if (as_clamp_output == 1)
-    {   
-        out_outColor = clamp(unclamped, 0, 1);
-    }
-    else
-    {   
-        out_outColor = unclamped; 
-    }
+
+    out_outColor = (in_clamp_output)
+        ? clamp(unclamped, color(0), color(1))
+        : unclamped;
 }
