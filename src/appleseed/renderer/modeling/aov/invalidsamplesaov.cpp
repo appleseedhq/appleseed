@@ -30,15 +30,17 @@
 #include "invalidsamplesaov.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
-#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
+#include "foundation/image/tile.h"
+#include "foundation/math/aabb.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -74,26 +76,17 @@ namespace
         {
         }
 
-       void on_tile_begin(
-           const Frame&                frame,
-           const size_t                tile_x,
-           const size_t                tile_y,
-           const size_t                max_spp) override
-       {
-           UnfilteredAOVAccumulator::on_tile_begin(frame, tile_x, tile_y, max_spp);
-           m_crop_window = frame.get_crop_window();
-       }
-
         void on_pixel_begin(const Vector2i& pi) override
         {
+            UnfilteredAOVAccumulator::on_pixel_begin(pi);
+
             m_invalid_sample_count = 0;
         }
 
         void on_pixel_end(const Vector2i& pi) override
         {
             // Store a hint corresponding to the sample state in the tile.
-            // Because of tile margins, pi can lay outside of the crop window.
-            if (inside_tile(pi) && m_crop_window.contains(pi))
+            if (m_cropped_tile_bbox.contains(pi))
             {
                 Color3f color;
                 color[0] = m_invalid_sample_count > 0 ? InvalidSample : ValidSample;
@@ -101,10 +94,12 @@ namespace
                 color[2] = 0.0f;
 
                 m_tile->set_pixel(
-                    pi.x - m_tile_bbox.min.x,
-                    pi.y - m_tile_bbox.min.y,
+                    pi.x - m_tile_origin_x,
+                    pi.y - m_tile_origin_y,
                     color);
             }
+
+            UnfilteredAOVAccumulator::on_pixel_end(pi);
         }
 
         void write(
@@ -115,7 +110,7 @@ namespace
             ShadingResult&              shading_result) override
         {
             // Detect invalid samples.
-            if (inside_tile(pixel_context.get_pixel_coords()))
+            if (m_cropped_tile_bbox.contains(pixel_context.get_pixel_coords()))
             {
                 if (!shading_result.is_valid())
                     ++m_invalid_sample_count;
@@ -124,7 +119,6 @@ namespace
 
       private:
         size_t  m_invalid_sample_count;
-        AABB2i  m_crop_window;
     };
 
 
@@ -177,7 +171,7 @@ namespace
                     {
                         Color4f beauty_color;
                         beauty.get_pixel(x, y, beauty_color);
-                        color.set(0.2f * luminance(beauty_color.rgb())); // 20% of luminance
+                        color.set(0.2f * luminance(beauty_color.rgb()));    // 20% of luminance
                     }
 
                     m_image->set_pixel(x, y, color);

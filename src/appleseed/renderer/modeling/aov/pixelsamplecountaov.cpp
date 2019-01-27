@@ -76,8 +76,8 @@ namespace
 {
     // Return the maximum sample/pixel count from `image`'s pixels inside of `crop_window`.
     float get_max_spp_count(
-        const Image*  image,
-        const AABB2u& crop_window)
+        const Image*    image,
+        const AABB2u&   crop_window)
     {
         float max_spp = 0.0f;
 
@@ -102,9 +102,7 @@ namespace
         for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
         {
             for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
-            {
                 image->set_pixel(x, y, color);
-            }
         }
     }
 }

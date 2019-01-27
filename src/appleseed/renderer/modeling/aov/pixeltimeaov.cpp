@@ -85,46 +85,50 @@ namespace
 
         void on_sample_begin(const PixelContext& pixel_context) override
         {
-            m_stopwatch.clear();
             m_stopwatch.start();
         }
 
         void on_sample_end(const PixelContext& pixel_context) override
         {
-            m_stopwatch.measure();
-
             // Only collect samples inside the tile.
-            if (inside_tile(pixel_context.get_pixel_coords()))
+            if (m_cropped_tile_bbox.contains(pixel_context.get_pixel_coords()))
+            {
+                m_stopwatch.measure();
                 m_samples.push_back(m_stopwatch.get_seconds());
+            }
         }
 
         void on_pixel_begin(const Vector2i& pi) override
         {
+            UnfilteredAOVAccumulator::on_pixel_begin(pi);
+
             m_samples.clear();
         }
 
         void on_pixel_end(const Vector2i& pi) override
         {
-            if (m_samples.empty())
-                return;
+            if (m_cropped_tile_bbox.contains(pi) && !m_samples.empty())
+            {
+                // Compute the median of all the sample times we collected.
+                const size_t mid = m_samples.size() / 2;
 
-            // Compute the median of all the sample times we collected.
-            const size_t mid = m_samples.size() / 2;
+                nth_element(
+                    m_samples.begin(),
+                    m_samples.begin() + mid,
+                    m_samples.end());
 
-            nth_element(
-                m_samples.begin(),
-                m_samples.begin() + mid,
-                m_samples.end());
+                const double median = m_samples[mid];
 
-            const double median = m_samples[mid];
+                float* out =
+                    reinterpret_cast<float*>(
+                        m_tile->pixel(
+                            pi.x - m_tile_origin_x,
+                            pi.y - m_tile_origin_y));
 
-            float* out =
-                reinterpret_cast<float*>(
-                    m_tile->pixel(
-                        pi.x - m_tile_bbox.min.x,
-                        pi.y - m_tile_bbox.min.y));
+                *out += static_cast<float>(median) * m_samples.size();
+            }
 
-            *out += static_cast<float>(median) * m_samples.size();
+            UnfilteredAOVAccumulator::on_pixel_end(pi);
         }
 
       private:
