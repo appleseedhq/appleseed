@@ -71,6 +71,11 @@ namespace
           , m_texture_height(0)
           , m_request_redraw_callback(request_redraw_callback)
           , m_updated_data_buffer(false)
+          , m_shader_program_id(0)
+          , m_vao_id(0)
+          , m_vertex_vbo_id(0) 
+          , m_texture_vbo_id(0)
+          , m_ebo_id(0)
         {
         }
 
@@ -178,15 +183,15 @@ namespace
                 {
                     const char* vertex_shader_source  = 
                         "#version 330 core\n"
-                        "layout (location = 0) in vec3 pos;\n"
-                        "layout (location = 1) in vec3 tex_coords;\n"
+                        "layout (location = 0) in vec3 tex_coords;\n"
+                        "layout (location = 1) in vec3 pos;\n"
                         "out texture_coords;\n"
                         "void main()\n"
                         "{\n"
                         "   gl_Position = vec4(pos, 1.0);\n"
                         "   texture_coords = vec3(tex_coords);\n
                         "}\0";
-          
+                    
                     const char* fragment_shader_source =
                         "#version 330 core\n"
                         "out vec4 tex;\n"
@@ -236,41 +241,58 @@ namespace
                     
                     glDeleteShader(vertex_shader_id);
                     glDeleteShader(fragment_shader_id);
-               
-                    //Vertex and texture coordinates.
-                    GLfloat vertices[] = 
+                    
+                    m_texture_coords[8] =
                     {
-                        x    , y    , 0.0f, 0.0f, 1.0f
-                      , x + w, y    , 0.0f, 1.0f, 1.0f
-                      , x + w, y + h, 0.0f, 1.0f, 0.0f 
-                      , x    , y + h, 0.0f, 0.0f, 0.0f
+                        0.0f, 1.0f
+                      , 1.0f, 1.0f
+                      , 1.0f, 0.0f
+                      , 0.0f, 0.0f
                     };
                     
-                    GLuint indices[] =
-                    {
+                    m_indices[6] =
+                    {   
                         0, 1, 3
                       , 1, 2, 3
                     };
-              
+                    
                     glGenVertexArrays(1, &m_vao_id);
-                    glGenBuffers(1, &m_vbo_id);
+                    glGenBuffers(1, &m_vertex_vbo_id);
+                    glGenBuffers(1, &m_texture_vbo_id);
                     glGenBuffers(1, &m_ebo_id);
-                
+                    
                     glBindVertexArray(m_vao_id);
-                
-                    glBindBuffer(GL_ARRAY_BUFFER, m_vbo_id);
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-                
+                    
                     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo_id);
-                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-           
-                    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m_indices), m_indices, GL_STATIC_DRAW);
+                    
+                    glBindBuffer(GL_ARRAY_BUFFER, m_texture_vbo_id);
+                    glBufferData(GL_ARRAY_BUFFER, sizeof(m_texture_coords), m_texture_coords, GL_STATIC_DRAW);
+                    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
                     glEnableVertexAttribArray(0);
-                    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-                    glEnableVertexAttribArray(1);
+                    
                     glBindVertexArray(0);
                     m_updated_data_buffer = true;
                 }   
+                    
+                //Vertex coordinates.
+                m_vertex_coords[12] = 
+                {
+                    x    , y    , 0.0f
+                  , x + w, y    , 0.0f
+                  , x + w, y + h, 0.0f 
+                  , x    , y + h, 0.0f
+                };
+             
+                glBindVertexArray(m_vao_id);
+                
+                glBindBuffer(GL_ARRAY_BUFFER, m_vertex_vbo_id);
+                glBufferData(GL_ARRAY_BUFFER, sizeof(m_vertex_coords), m_vertex_coords, GL_DYNAMIC_DRAW);
+                glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+                glEnableVertexAttribArray(1);
+                
+                glBindVertexArray(0);
+                   
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, m_texture_id);
                 glUseProgram(m_shader_program_id);
@@ -294,9 +316,13 @@ namespace
 
         bpy::object         m_request_redraw_callback;
         
+        GLfloat             m_vertex_coords[12];
+        GLfloat             m_texture_coords[8];
+        GLuint              m_indices[6];
         GLuint              m_shader_program_id;
         GLuint              m_vao_id; 
-        GLuint              m_vbo_id; 
+        GLuint              m_vertex_vbo_id; 
+        GLuint              m_texture_vbo_id; 
         GLuint              m_ebo_id;
         bool                m_updated_data_buffer;   
                                                
@@ -317,9 +343,21 @@ namespace
             if (m_updated_data_buffer)
             {
                 glDeleteProgram(m_shader_program_id);
-                glDeleteBuffers(1, &m_vbo_id);
+                glDeleteVertexArrays(1, &m_vao_id);
+                glDeleteBuffers(1, &m_vertex_vbo_id);
+                glDeleteBuffers(1, &m_texture_vbo_id);
                 glDeleteBuffers(1, &m_ebo_id);
+                
+                delete[] m_vertex_coords;
+                delete[] m_texture_coords;
+                delete[] m_indices;
+                
                 m_updated_data_buffer = false;
+                m_shader_program_id = 0;
+                m_vao_id = 0;
+                m_vertex_vbo_id = 0; 
+                m_texture_vbo_id = 0;
+                m_ebo_id = 0;
             }
         }
 
