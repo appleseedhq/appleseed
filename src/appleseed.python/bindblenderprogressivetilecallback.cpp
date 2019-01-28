@@ -181,7 +181,7 @@ namespace
                 }
                 if (!m_updated_data_buffer)
                 {
-                    const char* vertex_shader_source  = 
+                    m_vertex_shader_source  = 
                         "#version 330 core\n"
                         "layout (location = 0) in vec3 tex_coords;\n"
                         "layout (location = 1) in vec3 pos;\n"
@@ -192,7 +192,7 @@ namespace
                         "   texture_coords = vec3(tex_coords);\n
                         "}\0";
                     
-                    const char* fragment_shader_source =
+                    m_fragment_shader_source =
                         "#version 330 core\n"
                         "out vec4 tex;\n"
                         "in vec3 texture_coords;\n"
@@ -203,7 +203,7 @@ namespace
                         "}\n\0";
                     
                     GLuint vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
-                    glShaderSource(vertex_shader_id, 1, &vertex_shader_source, nullptr);
+                    glShaderSource(vertex_shader_id, 1, &m_vertex_shader_source, nullptr);
                     glCompileShader(vertex_shader_id);
                     
                     // Check for vertex_shader compile errors.
@@ -217,7 +217,7 @@ namespace
                     }
                 
                     GLuint fragment_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
-                    glShaderSource(fragment_shader_id, 1, &fragment_shader_source, nullptr);
+                    glShaderSource(fragment_shader_id, 1, &m_fragment_shader_source, nullptr);
                     glCompileShader(fragment_shader_id);
                     
                     // Check for fragment_shader compile errors.
@@ -316,6 +316,8 @@ namespace
 
         bpy::object         m_request_redraw_callback;
         
+        const char*         m_vertex_shader_source;
+        const char*         m_fragment_shader_source;
         GLfloat             m_vertex_coords[12];
         GLfloat             m_texture_coords[8];
         GLuint              m_indices[6];
@@ -351,6 +353,8 @@ namespace
                 delete[] m_vertex_coords;
                 delete[] m_texture_coords;
                 delete[] m_indices;
+                delete m_vertex_shader_source;
+                delete m_fragment_shader_source;
                 
                 m_updated_data_buffer = false;
                 m_shader_program_id = 0;
