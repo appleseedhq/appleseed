@@ -93,7 +93,7 @@ public:
         const ParamArray&   params)
         : Volume(name, params)
         , m_bsdf((std::string(name) + "_brdf").c_str(), ParamArray())
-        , m_extinction_majorant(1.0f)
+        , m_extinction_majorant(10.0f)
         , m_max_iterations(1000)
     {
     }
@@ -144,7 +144,6 @@ public:
             if (n_iterations++ == m_max_iterations)
             {
                 sample.m_value.set(0.0f);
-                sample.m_distance = volume_ray.get_length();
                 sample.m_transmitted = true;
                 break;
             }
@@ -215,7 +214,6 @@ public:
                         sample.m_value *= scattering_coef_closure;
                         sample.m_value *= weight;
                         sample.m_bsdf = &m_bsdf;
-                        sample.m_bsdf_data;
                         auto bsdf_inputs = shading_context.get_arena().allocate<PhaseFunctionBSDFInputValues>();
                         bsdf_inputs->m_albedo.set(1.0f);
                         bsdf_inputs->m_phase_function = composite_closure->get_closure_phase_function(i);
@@ -227,7 +225,6 @@ public:
                 {
                     // The ray is absorbed.
                     sample.m_value.set(0.0f);
-                    sample.m_distance = volume_ray.get_length();
                     sample.m_transmitted = true;
                     continue_tracking = false;
                 }

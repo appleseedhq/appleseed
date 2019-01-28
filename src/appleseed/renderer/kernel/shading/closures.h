@@ -361,12 +361,11 @@ public:
         const OSL::ClosureColor*    ci,
         foundation::Arena&          arena);
 
-    template <typename PhaseFunctionType, typename ...Args>
+    template <typename PhaseFunctionType>
     void add_closure(
         const ClosureID             closure_type,
         const foundation::Color3f&  weight,
-        foundation::Arena&          arena,
-        Args...                     args);
+        PhaseFunctionType*          phase_function);
 
     foundation::PhaseFunction*      get_closure_phase_function(const size_t i) const;
     const Spectrum&                 get_absorption() const;

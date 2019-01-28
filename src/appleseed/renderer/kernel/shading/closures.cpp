@@ -1837,12 +1837,12 @@ namespace
             const Color3f&              weight,
             Arena&                      arena)
         {
-            const Params* p = static_cast<const Params*>(osl_params);
-
-            composite_closure.add_closure<IsotropicPhaseFunction>(
+            IsotropicPhaseFunction* phase_function = arena.allocate_noinit<IsotropicPhaseFunction>();
+            new (phase_function) IsotropicPhaseFunction();
+            composite_closure.add_closure(
                 id(),
                 weight,
-                arena);
+                phase_function);
         }
     };
 
@@ -2467,12 +2467,11 @@ CompositeVolumeClosure::CompositeVolumeClosure(
     process_absorption_tree(ci, m_absorption_coef);
 }
 
-template <typename PhaseFunctionType, typename ...Args>
+template <typename PhaseFunctionType>
 void CompositeVolumeClosure::add_closure(
     const ClosureID             closure_type,
     const foundation::Color3f&  weight,
-    foundation::Arena&          arena,
-    Args...                     args)
+    PhaseFunctionType*          phase_function)
 {
     // Make sure we have enough space.
     if APPLESEED_UNLIKELY(get_closure_count() >= MaxClosureEntries)
@@ -2483,11 +2482,7 @@ void CompositeVolumeClosure::add_closure(
 
     m_closure_types[m_closure_count] = closure_type;
     m_weights[m_closure_count].set(weight, g_std_lighting_conditions, Spectrum::Reflectance);
-
-    PhaseFunctionType* phase_function = arena.allocate_noinit<PhaseFunctionType>();
-    new (phase_function) PhaseFunctionType(args...);
     m_phase_functions[m_closure_count] = phase_function;
-
     ++m_closure_count;
 }
 

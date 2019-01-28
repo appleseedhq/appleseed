@@ -390,6 +390,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                         next_ray,
                         &vertex,
                         next_shading_point);
+                    if (foundation::is_zero(vertex.m_throughput))
+                        break;
 
                     // Update the pointers to the shading points and loop.
                     vertex.m_shading_point = next_shading_point;
@@ -447,6 +449,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                         next_ray,
                         &vertex,
                         next_shading_point);
+                    if (foundation::is_zero(vertex.m_throughput))
+                        break;
 
                     // Update the pointers to the shading points and loop.
                     vertex.m_shading_point = next_shading_point;
@@ -665,6 +669,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             next_ray,
             &vertex,
             next_shading_point);
+        if (foundation::is_zero(vertex.m_throughput))
+            break;
 
         // Update the pointers to the shading points.
         vertex.m_parent_shading_point = vertex.m_shading_point;
