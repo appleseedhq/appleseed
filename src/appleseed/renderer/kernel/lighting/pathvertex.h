@@ -52,6 +52,7 @@ namespace renderer  { class BSSRDF; }
 namespace renderer  { class EDF; }
 namespace renderer  { class Material; }
 namespace renderer  { class ShadingContext; }
+namespace renderer  { class Volume; }
 
 namespace renderer
 {
@@ -80,6 +81,7 @@ class PathVertex
     const EDF*                  m_edf;
     const BSDF*                 m_bsdf;
     const void*                 m_bsdf_data;
+    const Volume*               m_volume;
     const BSSRDF*               m_bssrdf;
     const void*                 m_bssrdf_data;
     const void*                 m_volume_data;
@@ -87,6 +89,7 @@ class PathVertex
     // Properties of the scattering event leading to this vertex.
     ScatteringMode::Mode        m_prev_mode;
     float                       m_prev_prob;
+    double                      m_distance;
 
     // AOV properties.
     ScatteringMode::Mode        m_aov_mode;
@@ -176,8 +179,7 @@ inline float PathVertex::get_bsdf_prob_area() const
     assert(m_prev_prob > 0.0f);
 
     // Veach: 8.2.2.2 eq. 8.10.
-    const double d = m_shading_point->get_distance();
-    const float g = static_cast<float>(m_cos_on / (d * d));
+    const float g = static_cast<float>(m_cos_on / (m_distance * m_distance));
     return m_prev_prob * g;
 }
 

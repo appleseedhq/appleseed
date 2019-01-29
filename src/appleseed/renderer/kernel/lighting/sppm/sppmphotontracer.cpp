@@ -95,6 +95,7 @@ namespace
 
     struct PathVisitor
     {
+        const ShadingContext&       m_shading_context;
         Spectrum                    m_initial_flux;     // initial particle flux (in W)
         const SPPMParameters&       m_params;
         const bool                  m_store_direct;
@@ -103,13 +104,15 @@ namespace
         SPPMPhotonVector&           m_photons;
 
         PathVisitor(
+            const ShadingContext&   shading_context,
             const Spectrum&         initial_flux,
             const SPPMParameters&   params,
             const bool              store_direct,
             const bool              store_indirect,
             const bool              store_caustics,
             SPPMPhotonVector&       photons)
-          : m_initial_flux(initial_flux)
+          : m_shading_context(shading_context)
+          , m_initial_flux(initial_flux)
           , m_params(params)
           , m_store_direct(store_direct)
           , m_store_indirect(store_indirect)
@@ -140,6 +143,18 @@ namespace
             }
 
             return true;
+        }
+
+        void get_next_shading_point(
+            const ShadingRay&           ray,
+            PathVertex*                 vertex,
+            ShadingPoint*               next_shading_point)
+        {
+            // This ray is being cast into an ordinary medium.
+            m_shading_context.get_intersector().trace(
+                ray,
+                *next_shading_point,
+                vertex->m_shading_point);
         }
 
         void on_miss(const PathVertex& vertex)
@@ -194,27 +209,6 @@ namespace
         }
 
         void on_scatter(const PathVertex& vertex)
-        {
-        }
-    };
-
-    //
-    // Volume visitor that does nothing.
-    //
-
-    struct VolumeVisitor
-    {
-        virtual bool accept_scattering(
-            const ScatteringMode::Mode  prev_mode)
-        {
-            return true;
-        }
-
-        virtual void on_scatter(PathVertex& vertex)
-        {
-        }
-
-        void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray)
         {
         }
     };
@@ -377,10 +371,10 @@ namespace
                 light_sample.m_shading_normal,
                 shading_context.get_intersector());
 
-            if (material_data.m_shader_group)
+            if (material_data.m_surface_shader_group)
             {
                 shading_context.execute_osl_emission(
-                    *material_data.m_shader_group,
+                    *material_data.m_surface_shader_group,
                     light_shading_point);
             }
 
@@ -427,16 +421,15 @@ namespace
             // Build the path tracer.
             const bool cast_indirect_light = (edf->get_flags() & EDF::CastIndirectLight) != 0;
             PathVisitor path_visitor(
+                shading_context,
                 initial_flux,
                 m_params,
                 m_params.m_dl_mode == SPPMParameters::SPPM, // store direct lighting photons?
                 cast_indirect_light,
                 m_params.m_enable_caustics,
                 m_local_photons);
-            VolumeVisitor volume_visitor;
-            PathTracer<PathVisitor, VolumeVisitor, true> path_tracer(      // true = adjoint
+            PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
                 path_visitor,
-                volume_visitor,
                 m_params.m_photon_tracing_rr_min_path_length,
                 m_params.m_photon_tracing_max_bounces,
                 ~size_t(0), // max diffuse bounces
@@ -445,6 +438,7 @@ namespace
                 ~size_t(0), // max volume bounces
                 false,      // don't clamp roughness
                 m_params.m_max_iterations,
+                false,                                      // no need to retrace the primary ray
                 edf->get_light_near_start());               // don't illuminate points closer than the light near start value
 
             // Trace the photon path.
@@ -490,16 +484,15 @@ namespace
             // Build the path tracer.
             const bool cast_indirect_light = (light_sample.m_light->get_flags() & EDF::CastIndirectLight) != 0;
             PathVisitor path_visitor(
+                shading_context,
                 initial_flux,
                 m_params,
                 m_params.m_dl_mode == SPPMParameters::SPPM, // store direct lighting photons?
                 cast_indirect_light,
                 m_params.m_enable_caustics,
                 m_local_photons);
-            VolumeVisitor volume_visitor;
-            PathTracer<PathVisitor, VolumeVisitor, true> path_tracer(      // true = adjoint
+            PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
                 path_visitor,
-                volume_visitor,
                 m_params.m_photon_tracing_rr_min_path_length,
                 m_params.m_photon_tracing_max_bounces,
                 ~size_t(0), // max diffuse bounces
@@ -698,16 +691,15 @@ namespace
             // Build the path tracer.
             const bool cast_indirect_light = true;  // right now environments always cast indirect light
             PathVisitor path_visitor(
+                shading_context,
                 initial_flux,
                 m_params,
                 true,
                 cast_indirect_light,
                 m_params.m_enable_caustics,
                 m_local_photons);
-            VolumeVisitor volume_visitor;
-            PathTracer<PathVisitor, VolumeVisitor, true> path_tracer(   // true = adjoint
+            PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
                 path_visitor,
-                volume_visitor,
                 m_params.m_photon_tracing_rr_min_path_length,
                 m_params.m_photon_tracing_max_bounces,
                 ~size_t(0), // max diffuse bounces

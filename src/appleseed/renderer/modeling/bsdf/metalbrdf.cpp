@@ -162,7 +162,7 @@ namespace
                 values->m_edge_tint,
                 values->m_precomputed.m_n,
                 values->m_precomputed.m_k);
-            values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
+            values->m_precomputed.m_outside_ior = shading_point.get_ray().m_media.get_current_ior();
 
             average_artist_friendly_fresnel_reflectance_conductor(
                 values->m_normal_reflectance,

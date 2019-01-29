@@ -65,6 +65,7 @@ APPLESEED_DECLARE_INPUT_VALUES(GenericVolumeInputValues)
     struct Precomputed
     {
         Spectrum    m_extinction;           // extinction coefficient of the media
+        Spectrum    m_albedo;               // single-scattering albedo of the media
     };
 
     Precomputed m_precomputed;

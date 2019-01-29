@@ -46,13 +46,13 @@ void PathVertex::compute_emitted_radiance(
     assert(m_edf);
 
     // No radiance if we're too close to the light.
-    if (m_shading_point->get_distance() < m_edf->get_light_near_start())
+    if (m_distance < m_edf->get_light_near_start())
     {
         radiance.set(0.0f);
         return;
     }
 
-    if (const ShaderGroup* sg = get_material()->get_render_data().m_shader_group)
+    if (const ShaderGroup* sg = get_material()->get_render_data().m_surface_shader_group)
         shading_context.execute_osl_emission(*sg, *m_shading_point);
 
     // Compute the emitted radiance.

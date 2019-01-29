@@ -107,6 +107,12 @@ bool has_participating_media(const MaterialArray& materials)
     {
         if (materials[i])
         {
+            if (const ShaderGroup* sg = materials[i]->get_uncached_osl_volume())
+            {
+                if (sg->has_volume())
+                    return true;
+            }
+
             if (materials[i]->get_uncached_volume() != nullptr)
                 return true;
         }

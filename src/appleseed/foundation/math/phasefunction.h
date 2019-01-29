@@ -76,4 +76,19 @@ class IsotropicPhaseFunction final
     float sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const override;
 };
 
+
+//
+// Rayleigh phase function.
+//
+// http://orbit.dtu.dk/files/6314521/3D9A1d01.pdf
+//
+
+class RayleighPhaseFunction final
+  : public PhaseFunction
+{
+  public:
+    float evaluate(const Vector3f& outgoing, const Vector3f& incoming) const override;
+    float sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const override;
+};
+
 }   // namespace foundation

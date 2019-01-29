@@ -112,6 +112,9 @@ class APPLESEED_DLLSYMBOL Material
     // Return the OSL surface shader of the material, or nullptr if the material doesn't have one.
     virtual const ShaderGroup* get_uncached_osl_surface() const;
 
+    // Return the OSL volume shader of the material, or nullptr if the material doesn't have one.
+    virtual const ShaderGroup* get_uncached_osl_volume() const;
+
     // Return true if this material has an alpha map.
     bool has_alpha_map() const;
 
@@ -142,7 +145,8 @@ class APPLESEED_DLLSYMBOL Material
         const EDF*                  m_edf;
         const Volume*               m_volume;
         const Source*               m_alpha_map;
-        const ShaderGroup*          m_shader_group;
+        const ShaderGroup*          m_surface_shader_group;
+        const ShaderGroup*          m_volume_shader_group;
         const IBasisModifier*       m_basis_modifier;   // owned by RenderData
     };
 

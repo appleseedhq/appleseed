@@ -122,9 +122,9 @@ bool ShadingEngine::shade_hit_point(
     const Material* material = shading_point.get_material();
 
     if (material != nullptr &&
-        material->get_render_data().m_shader_group != nullptr)
+        material->get_render_data().m_surface_shader_group != nullptr)
     {
-        const ShaderGroup* sg = material->get_render_data().m_shader_group;
+        const ShaderGroup* sg = material->get_render_data().m_surface_shader_group;
 
         const bool has_matte = sg->has_matte();
 

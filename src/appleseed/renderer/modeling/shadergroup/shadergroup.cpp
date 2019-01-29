@@ -75,6 +75,9 @@ namespace
     const OIIO::ustring g_npr_shading_str("as_npr_shading");
     const OIIO::ustring g_npr_contour_str("as_npr_contour");
 
+    const OIIO::ustring g_absorption_str("absorption");
+    const OIIO::ustring g_isotropic_str("isotropic");
+
     const OIIO::ustring g_dPdtime_str("dPdtime");
 
     bool is_subsurface_closure(const OIIO::ustring& closure_name)
@@ -82,6 +85,13 @@ namespace
         return
             closure_name == g_subsurface_str ||
             closure_name == g_randomwalk_glass_str;
+    }
+
+    bool is_volume_closure(const OIIO::ustring& closure_name)
+    {
+        return
+            closure_name == g_absorption_str ||
+            closure_name == g_isotropic_str;
     }
 }
 
@@ -249,9 +259,9 @@ bool ShaderGroup::create_optimized_osl_shader_group(
         report_has_closure(g_transparent_str.c_str(), HasTransparency);
         report_has_closure(g_subsurface_str.c_str(), HasSubsurface);
         report_has_closure(g_debug_str.c_str(), HasDebug);
-
         report_has_closure("NPR", HasNPR);
         report_has_closure(g_matte_str.c_str(), HasMatte);
+        report_has_closure("volume", HasVolume);
 
         get_shadergroup_globals_info(shading_system);
         report_uses_global("dPdtime", UsesdPdTime);
@@ -382,12 +392,12 @@ void ShaderGroup::get_shadergroup_closures_info(OSLShadingSystem& shading_system
                 m_flags |= HasDebug;
             else if (closures[i] == g_npr_shading_str)
                 m_flags |= HasNPR;
-            else if (closures[i] == g_npr_contour_str)
-                m_flags |= HasNPR;
             else if (
                 closures[i] == g_matte_str ||
                 closures[i] == g_holdout_str)
                 m_flags |= HasMatte;
+            else if (is_volume_closure(closures[i]))
+                m_flags |= HasVolume;
             else
                 m_flags |= HasBSDFs;
         }

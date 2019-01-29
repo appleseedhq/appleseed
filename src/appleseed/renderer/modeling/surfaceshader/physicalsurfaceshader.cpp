@@ -148,7 +148,7 @@ namespace
             // Run NPR surface shader if any.
             if (const Material* material = shading_point.get_material())
             {
-                if (const ShaderGroup* sg = material->get_render_data().m_shader_group)
+                if (const ShaderGroup* sg = material->get_render_data().m_surface_shader_group)
                 {
                     if (sg->has_npr())
                     {

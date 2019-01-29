@@ -266,6 +266,9 @@ bool Intersector::trace(
     // Retrieve assembly tree.
     const AssemblyTree& assembly_tree = m_trace_context.get_assembly_tree();
 
+    if (parent_shading_point && parent_shading_point->hit_volume())
+        parent_shading_point = nullptr;
+
     // Check the intersection between the ray and the assembly tree.
     AssemblyTreeIntersector intersector;
     AssemblyLeafVisitor visitor(
@@ -292,10 +295,10 @@ bool Intersector::trace(
         );
 
     // Detect and report self-intersections.
-    if (m_report_self_intersections)
+    if (m_report_self_intersections && !parent_shading_point->hit_volume())
         report_self_intersection(shading_point, parent_shading_point);
 
-    const ShadingRay::Medium* medium = ray.get_current_medium();
+    const ShadingRay::Medium* medium = ray.m_media.get_current();
     if (!shading_point.hit_surface() && medium != nullptr && medium->get_volume() != nullptr)
         shading_point.m_primitive_type = ShadingPoint::PrimitiveVolume;
 
@@ -399,7 +402,6 @@ void Intersector::make_volume_shading_point(
 #endif
 
     assert(is_normalized(volume_ray.m_dir));
-    assert(volume_ray.get_current_medium() != nullptr);
 
     // Context.
     shading_point.m_texture_cache = &m_texture_cache;
@@ -409,6 +411,12 @@ void Intersector::make_volume_shading_point(
     shading_point.m_ray = volume_ray;
     shading_point.m_ray.m_tmax = distance;
     shading_point.m_primitive_type = ShadingPoint::PrimitiveVolume;
+    const ShadingRay::Medium* medium = volume_ray.m_media.get_current();
+    if (medium != nullptr)
+    {
+        shading_point.m_assembly_instance = medium->m_assembly_instance;
+        shading_point.m_assembly_instance_transform_seq = &shading_point.m_assembly_instance->transform_sequence();
+    }
 
     // Available on-demand results: none.
     shading_point.m_members = 0;

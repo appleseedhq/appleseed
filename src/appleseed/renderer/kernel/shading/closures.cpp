@@ -55,6 +55,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/cdf.h"
 #include "foundation/math/fresnel.h"
+#include "foundation/math/phasefunction.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/arena.h"
 #include "foundation/utility/memory.h"
@@ -1799,6 +1800,78 @@ namespace
             values->m_quality = static_cast<size_t>(clamp(p->quality, 1, 4));
         }
     };
+
+    //
+    // Volume closures.
+    //
+
+    struct VolumeIsotropicClosure
+    {
+        struct Params
+        {
+        };
+
+        static const char* name()
+        {
+            return "isotropic";
+        }
+
+        static ClosureID id()
+        {
+            return VolumeIsotropicID;
+        }
+
+        static void register_closure(OSLShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
+        }
+
+        static void convert_closure(
+            CompositeVolumeClosure&     composite_closure,
+            const void*                 osl_params,
+            const Color3f&              weight,
+            Arena&                      arena)
+        {
+            IsotropicPhaseFunction* phase_function = arena.allocate_noinit<IsotropicPhaseFunction>();
+            new (phase_function) IsotropicPhaseFunction();
+            composite_closure.add_closure(
+                id(),
+                weight,
+                phase_function);
+        }
+    };
+
+    struct VolumeAbsorptionClosure
+    {
+        struct Params
+        {
+        };
+
+        static const char* name()
+        {
+            return "absorption";
+        }
+
+        static ClosureID id()
+        {
+            return VolumeAbsorptionID;
+        }
+
+        static void register_closure(OSLShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
+        }
+    };
 }
 
 
@@ -2386,6 +2459,93 @@ void CompositeNPRClosure::process_closure_tree(
     }
 }
 
+CompositeVolumeClosure::CompositeVolumeClosure(
+    const OSL::ClosureColor*    ci,
+    Arena&                      arena)
+{
+    process_closure_tree(ci, Color3f(1.0f), arena);
+    process_absorption_tree(ci, m_absorption_coef);
+}
+
+template <typename PhaseFunctionType>
+void CompositeVolumeClosure::add_closure(
+    const ClosureID             closure_type,
+    const foundation::Color3f&  weight,
+    PhaseFunctionType*          phase_function)
+{
+    // Make sure we have enough space.
+    if APPLESEED_UNLIKELY(get_closure_count() >= MaxClosureEntries)
+    {
+        throw ExceptionOSLRuntimeError(
+            "maximum number of closures in osl shader group exceeded");
+    }
+
+    m_closure_types[m_closure_count] = closure_type;
+    m_weights[m_closure_count].set(weight, g_std_lighting_conditions, Spectrum::Reflectance);
+    m_phase_functions[m_closure_count] = phase_function;
+    ++m_closure_count;
+}
+
+PhaseFunction* CompositeVolumeClosure::get_closure_phase_function(const size_t i) const
+{
+    assert(i < m_closure_count);
+    return m_phase_functions[i];
+}
+
+const Spectrum& CompositeVolumeClosure::get_absorption() const
+{
+    return m_absorption_coef;
+}
+
+void CompositeVolumeClosure::process_closure_tree(
+    const OSL::ClosureColor*    closure,
+    const foundation::Color3f&  weight,
+    foundation::Arena&          arena)
+{
+    if (closure == nullptr)
+        return;
+
+    switch (closure->id)
+    {
+      case OSL::ClosureColor::MUL:
+        {
+            const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
+            process_closure_tree(c->closure, weight * Color3f(c->weight), arena);
+        }
+        break;
+
+      case OSL::ClosureColor::ADD:
+        {
+            const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
+            process_closure_tree(c->closureA, weight, arena);
+            process_closure_tree(c->closureB, weight, arena);
+        }
+        break;
+
+      default:
+        {
+            const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
+
+            const Color3f w = weight * Color3f(c->w);
+            const float max_weight_component = max_value(w);
+
+            if (max_weight_component > 0.0f)
+            {
+                if (c->id == VolumeIsotropicID)
+                {
+                    VolumeIsotropicClosure::convert_closure(
+                        *this,
+                        c->data(),
+                        w,
+                        arena);
+                }
+            }
+        }
+        break;
+    }
+}
+
+
 
 //
 // Utility functions implementation.
@@ -2499,6 +2659,11 @@ Color3f process_background_tree(const OSL::ClosureColor* ci)
     return do_process_closure_id_tree(ci, BackgroundID);
 }
 
+void process_absorption_tree(const OSL::ClosureColor* ci, Spectrum& absorption)
+{
+    absorption.set(do_process_closure_id_tree(ci, VolumeAbsorptionID), g_std_lighting_conditions, Spectrum::Reflectance);
+}
+
 namespace
 {
     template <typename ClosureType>
@@ -2540,6 +2705,8 @@ void register_closures(OSLShadingSystem& shading_system)
     register_closure<SubsurfaceClosure>(shading_system);
     register_closure<TranslucentClosure>(shading_system);
     register_closure<TransparentClosure>(shading_system);
+    register_closure<VolumeAbsorptionClosure>(shading_system);
+    register_closure<VolumeIsotropicClosure>(shading_system);
 }
 
 }   // namespace renderer

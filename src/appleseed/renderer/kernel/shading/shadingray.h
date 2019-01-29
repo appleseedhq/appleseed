@@ -86,25 +86,68 @@ class ShadingRay
             const float             normalized);
     };
 
-    enum { MaxMediumCount = 8 };
-
     struct Medium
     {
-        const ObjectInstance*       m_object_instance;
-        const Material*             m_material;
-        float                       m_ior;
+        const AssemblyInstance*         m_assembly_instance;
+        const ObjectInstance*           m_object_instance;
+        const Material*                 m_material;
+        float                           m_ior;
 
         const Volume* get_volume() const;
+    };
+
+    enum { MaxMediumCount = 6 };
+
+    struct MediaList
+    {
+        MediaList();
+
+        // Copy all media from the source ray.
+        void copy_from(const MediaList& source);
+
+        // Copy all media from the source list plus an additional medium.
+        void add(
+            const MediaList&                source,
+            const ObjectInstance*           object_instance,
+            const Material*                 material,
+            const AssemblyInstance*         assembly_instance,
+            const float                     ior);
+
+        // Add a medium.
+        void add_in_place(
+            const ObjectInstance*           object_instance,
+            const Material*                 material,
+            const AssemblyInstance*         assembly_instance,
+            const float                     ior);
+
+        // Copy all media from the source list except a given medium.
+        void remove(
+            const MediaList&            source,
+            const ObjectInstance*       object_instance);
+
+        // Return the currently active medium.
+        const ShadingRay::Medium* get_current() const;
+
+        // Return the medium that would be active if we removed the currently active one.
+        const ShadingRay::Medium* get_underlying() const;
+
+        // Return the IOR of the medium the ray is currently in.
+        float get_current_ior() const;
+
+        // Return the IOR of the medium the ray would be in if it would leave the currently active medium.
+        float get_underlying_ior() const;
+
+        Medium                          m_list[MaxMediumCount]; // always sorted from highest to lowest priority
+        foundation::uint8               m_size;
     };
 
     // Public members, in an order that optimizes packing.
     RayType                         m_rx;
     RayType                         m_ry;
     Time                            m_time;
-    Medium                          m_media[MaxMediumCount];        // always sorted from highest to lowest priority
     VisibilityFlags::Type           m_flags;
+    MediaList                       m_media;
     DepthType                       m_depth;
-    foundation::uint8               m_medium_count;
     bool                            m_has_differentials;
     float                           m_min_roughness;
 
@@ -124,33 +167,6 @@ class ShadingRay
         const Time&                 time,
         const VisibilityFlags::Type flags,
         const DepthType             depth);
-
-    // Copy all media from the source ray.
-    void copy_media_from(const ShadingRay& source);
-
-    // Copy all media from the source ray and add an additional medium.
-    void add_medium(
-        const ShadingRay&           source,
-        const ObjectInstance*       object_instance,
-        const Material*             material,
-        const float                 ior);
-
-    // Copy all media from the source ray except a given medium.
-    void remove_medium(
-        const ShadingRay&           source,
-        const ObjectInstance*       object_instance);
-
-    // Return the currently active medium.
-    const ShadingRay::Medium* get_current_medium() const;
-
-    // Return the medium that would be active if we removed the currently active one.
-    const ShadingRay::Medium* get_previous_medium() const;
-
-    // Return the IOR of the medium the ray is currently in.
-    float get_current_ior() const;
-
-    // Return the IOR of the medium the ray would be in if it would leave the currently active medium.
-    float get_previous_ior() const;
 };
 
 
@@ -159,8 +175,7 @@ class ShadingRay
 //
 
 inline ShadingRay::ShadingRay()
-  : m_medium_count(0)
-  , m_has_differentials(false)
+  : m_has_differentials(false)
   , m_min_roughness(0.0f)
 {
 }
@@ -175,7 +190,6 @@ inline ShadingRay::ShadingRay(
   , m_time(time)
   , m_flags(flags)
   , m_depth(depth)
-  , m_medium_count(0)
   , m_has_differentials(false)
   , m_min_roughness(0.0f)
 {
@@ -193,30 +207,29 @@ inline ShadingRay::ShadingRay(
   , m_time(time)
   , m_flags(flags)
   , m_depth(depth)
-  , m_medium_count(0)
   , m_has_differentials(false)
   , m_min_roughness(0.0f)
 {
 }
 
-inline const ShadingRay::Medium* ShadingRay::get_current_medium() const
+inline const ShadingRay::Medium* ShadingRay::MediaList::get_current() const
 {
-    return m_medium_count > 0 ? &m_media[0] : nullptr;
+    return m_size > 0 ? &m_list[0] : nullptr;
 }
 
-inline const ShadingRay::Medium* ShadingRay::get_previous_medium() const
+inline const ShadingRay::Medium* ShadingRay::MediaList::get_underlying() const
 {
-    return m_medium_count > 1 ? &m_media[1] : nullptr;
+    return m_size > 1 ? &m_list[1] : nullptr;
 }
 
-inline float ShadingRay::get_current_ior() const
+inline float ShadingRay::MediaList::get_current_ior() const
 {
-    return m_medium_count > 0 ? m_media[0].m_ior : 1.0f;
+    return m_size > 0 ? m_list[0].m_ior : 1.0f;
 }
 
-inline float ShadingRay::get_previous_ior() const
+inline float ShadingRay::MediaList::get_underlying_ior() const
 {
-    return m_medium_count > 1 ? m_media[1].m_ior : 1.0f;
+    return m_size > 1 ? m_list[1].m_ior : 1.0f;
 }
 
 
@@ -266,15 +279,15 @@ namespace foundation
 
             for (size_t i = 0; i < renderer::ShadingRay::MaxMediumCount; ++i)
             {
-                poison(ray.m_media[i].m_object_instance);
-                poison(ray.m_media[i].m_material);
-                poison(ray.m_media[i].m_ior);
+                poison(ray.m_media.m_list[i].m_object_instance);
+                poison(ray.m_media.m_list[i].m_material);
+                poison(ray.m_media.m_list[i].m_ior);
             }
 
             poison(ray.m_flags);
             poison(ray.m_depth);
 
-            // Don't poison m_medium_count or m_has_differentials since
+            // Don't poison m_media.m_size or m_has_differentials since
             // they are properly initialized by the default constructor.
         }
     };

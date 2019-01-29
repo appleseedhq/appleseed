@@ -64,27 +64,4 @@ Volume::Volume(
     set_name(name);
 }
 
-size_t Volume::compute_input_data_size() const
-{
-    return get_inputs().compute_data_size();
-}
-
-void* Volume::evaluate_inputs(
-    const ShadingContext&   shading_context,
-    const ShadingRay&       volume_ray) const
-{
-    void* data = shading_context.get_arena().allocate(compute_input_data_size());
-
-    get_inputs().evaluate_uniforms(data);
-
-    return data;
-}
-
-void Volume::prepare_inputs(
-    foundation::Arena&      arena,
-    const ShadingRay&       volume_ray,
-    void*                   data) const
-{
-}
-
 }   // namespace renderer

@@ -62,7 +62,7 @@ void NPRSurfaceShaderHelper::evaluate(
     ShadingComponents&          radiance)
 {
     const Material* material = shading_point.get_material();
-    const ShaderGroup* sg = material->get_render_data().m_shader_group;
+    const ShaderGroup* sg = material->get_render_data().m_surface_shader_group;
 
     // For now, we only work in RGB mode.
     if (radiance.m_beauty.get_mode() == Spectrum::Spectral)

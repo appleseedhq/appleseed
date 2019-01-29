@@ -639,6 +639,9 @@ closure color subsurface(float eta, float g, color mfp, color albedo)
     return as_subsurface("better_dipole", N, albedo, mfp, eta);
 }
 
+closure color absorption() BUILTIN;
+closure color isotropic() BUILTIN;
+
 // Renderer state
 int backfacing () BUILTIN;
 int raytype (string typename) BUILTIN;

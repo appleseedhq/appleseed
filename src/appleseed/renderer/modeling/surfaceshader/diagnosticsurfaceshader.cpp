@@ -306,10 +306,10 @@ void DiagnosticSurfaceShader::evaluate(
                 const Material::RenderData& material_data = material->get_render_data();
 
                 // Execute the OSL shader if there is one.
-                if (material_data.m_shader_group)
+                if (material_data.m_surface_shader_group)
                 {
                     shading_context.execute_osl_shading(
-                        *material_data.m_shader_group,
+                        *material_data.m_surface_shader_group,
                         shading_point);
                 }
 
@@ -362,11 +362,11 @@ void DiagnosticSurfaceShader::evaluate(
                 const Material::RenderData& material_data = material->get_render_data();
 
                 // Execute the OSL shader if there is one.
-                if (material_data.m_shader_group)
+                if (material_data.m_surface_shader_group)
                 {
                     sampling_context.split_in_place(2, 1);
                     shading_context.execute_osl_bump(
-                        *material_data.m_shader_group,
+                        *material_data.m_surface_shader_group,
                         shading_point,
                         sampling_context.next2<Vector2f>());
                 }
@@ -602,10 +602,10 @@ void DiagnosticSurfaceShader::evaluate(
                 const Material::RenderData& material_data = material->get_render_data();
 
                 // Execute the OSL shader if there is one.
-                if (material_data.m_shader_group)
+                if (material_data.m_surface_shader_group)
                 {
                     shading_context.execute_osl_shading(
-                        *material_data.m_shader_group,
+                        *material_data.m_surface_shader_group,
                         shading_point);
                 }
 

@@ -174,11 +174,8 @@ namespace
                 m_answer,
                 radiance);
 
-            VolumeVisitor volume_visitor;
-
-            PathTracer<PathVisitor, VolumeVisitor, false> path_tracer(     // false = not adjoint
+            PathTracer<PathVisitor, false> path_tracer(     // false = not adjoint
                 path_visitor,
-                volume_visitor,
                 m_params.m_path_tracing_rr_min_path_length,
                 m_params.m_path_tracing_max_bounces,
                 ~size_t(0), // max diffuse bounces
@@ -266,6 +263,18 @@ namespace
                     return false;
 
                 return true;
+            }
+
+            void get_next_shading_point(
+                const ShadingRay&           ray,
+                PathVertex*                 vertex,
+                ShadingPoint*               next_shading_point)
+            {
+                // This ray is being cast into an ordinary medium.
+                m_shading_context.get_intersector().trace(
+                    ray,
+                    *next_shading_point,
+                    vertex->m_shading_point);
             }
 
             void on_miss(const PathVertex& vertex)
@@ -356,19 +365,15 @@ namespace
 
                 const size_t bsdf_sample_count = light_sample_count;
 
-                const BSDFSampler bsdf_sampler(
-                    *vertex.m_bsdf,
-                    vertex.m_bsdf_data,
-                    ScatteringMode::Diffuse,
-                    *vertex.m_shading_point);
-
                 // Unlike in the path tracer, we need to sample the diffuse components
                 // of the BSDF because we won't extend the path after a diffuse bounce.
                 const DirectLightingIntegrator integrator(
                     m_shading_context,
                     m_backward_light_sampler,
-                    bsdf_sampler,
-                    vertex.m_shading_point->get_time(),
+                    *vertex.m_shading_point,
+                    *vertex.m_bsdf,
+                    vertex.m_bsdf_data,
+                    ScatteringMode::Diffuse,
                     ScatteringMode::All,
                     bsdf_sample_count,
                     light_sample_count,
@@ -594,23 +599,6 @@ namespace
                     // Accumulate reflected flux.
                     radiance += bsdf_value.m_beauty;
                 }
-            }
-        };
-
-        struct VolumeVisitor
-        {
-            bool accept_scattering(
-                const ScatteringMode::Mode  prev_mode)
-            {
-                return true;
-            }
-
-            void on_scatter(PathVertex& vertex)
-            {
-            }
-
-            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray)
-            {
             }
         };
 

@@ -171,7 +171,7 @@ namespace
                 for (size_t t = 2; t < num_camera_vertices + 2; t++)
                 {
                     if (s + t <= m_num_max_vertices)
-                        connect(shading_context, shading_point, light_vertices, camera_vertices, s, t, radiance);
+                        connect(shading_context, sampling_context, shading_point, light_vertices, camera_vertices, s, t, radiance);
                 }
             }
 
@@ -182,6 +182,7 @@ namespace
         // todo: use an output parameter instead of returning a spectrum.
         Spectrum compute_geometry_term(
             const ShadingContext&       shading_context,
+            SamplingContext&            sampling_context,
             const ShadingPoint&         shading_point,
             const BDPTVertex&           a,
             const BDPTVertex&           b)
@@ -201,6 +202,7 @@ namespace
             {
                 shading_context.get_tracer().trace_between_simple(
                     shading_context,
+                    sampling_context,
                     a.m_position + (v * 1.0e-6),
                     b.m_position,
                     shading_point.get_ray().m_time,
@@ -338,6 +340,7 @@ namespace
 
         void connect(
             const ShadingContext&       shading_context,
+            SamplingContext&            sampling_context,
             const ShadingPoint&         shading_point,
             BDPTVertex*                 light_vertices,
             BDPTVertex*                 camera_vertices,
@@ -370,7 +373,7 @@ namespace
                     return;
                 }
 
-                Spectrum geometry = compute_geometry_term(shading_context, shading_point, camera_vertex, light_vertex);
+                Spectrum geometry = compute_geometry_term(shading_context, sampling_context, shading_point, camera_vertex, light_vertex);
 
                 DirectShadingComponents camera_eval_bsdf;
                 camera_vertex.m_bsdf->evaluate(
@@ -419,7 +422,7 @@ namespace
                     ScatteringMode::All,
                     light_eval_bsdf);
 
-                Spectrum geometry = compute_geometry_term(shading_context, shading_point, camera_vertex, light_vertex);
+                Spectrum geometry = compute_geometry_term(shading_context, sampling_context, shading_point, camera_vertex, light_vertex);
                 result = geometry * camera_eval_bsdf.m_beauty * light_eval_bsdf.m_beauty * camera_vertex.m_beta * light_vertex.m_beta;
             }
 
@@ -502,10 +505,10 @@ namespace
                 light_sample.m_shading_normal,
                 shading_context.get_intersector());
 
-            if (material_data.m_shader_group)
+            if (material_data.m_surface_shader_group)
             {
                 shading_context.execute_osl_emission(
-                    *material_data.m_shader_group,
+                    *material_data.m_surface_shader_group,
                     light_shading_point);
             }
 
@@ -564,10 +567,8 @@ namespace
                                      shading_context,
                                      vertices,
                                      &num_light_vertices);
-            VolumeVisitor volume_visitor;
-            PathTracer<PathVisitor, VolumeVisitor, true> path_tracer(
+            PathTracer<PathVisitor, true> path_tracer(
                 path_visitor,
-                volume_visitor,
                 ~size_t(0),
                 m_num_max_vertices - 2,
                 ~size_t(0),
@@ -606,11 +607,9 @@ namespace
         {
             size_t num_camera_vertices = 0;
             PathVisitor path_visitor(Spectrum(1.0), shading_context, vertices, &num_camera_vertices);
-            VolumeVisitor volume_visitor;
 
-            PathTracer<PathVisitor, VolumeVisitor, false> path_tracer(
+            PathTracer<PathVisitor, false> path_tracer(
                 path_visitor,
-                volume_visitor,
                 ~size_t(0),
                 m_num_max_vertices - 2,
                 ~size_t(0),
@@ -714,25 +713,11 @@ namespace
             void on_scatter(const PathVertex& vertex)
             {
             }
-        };
 
-        struct VolumeVisitor
-        {
-            VolumeVisitor()
-            {
-            }
-
-            bool accept_scattering(
-                const ScatteringMode::Mode  prev_mode)
-            {
-                return true;
-            }
-
-            void on_scatter(PathVertex& vertex)
-            {
-            }
-
-            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray)
+            void get_next_shading_point(
+                const ShadingRay&           ray,
+                PathVertex*                 vertex,
+                ShadingPoint*               next_shading_point)
             {
             }
         };
