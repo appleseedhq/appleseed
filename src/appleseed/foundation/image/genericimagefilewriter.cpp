@@ -43,6 +43,9 @@
 // Boost headers.
 #include "boost/filesystem/path.hpp"
 
+// OIIO headers.
+#include "OpenImageIO/version.h"
+
 // Standard headers.
 #include <algorithm>
 #include <cstring>
@@ -55,8 +58,14 @@ namespace foundation
 
 struct GenericImageFileWriter::Impl
 {
-    std::vector<const ICanvas*>     m_canvas;
-    std::vector<OIIO::ImageSpec>    m_spec;
+    const char*                         m_filename;
+#if OIIO_VERSION >= 20000
+    std::unique_ptr<OIIO::ImageOutput>  m_writer;
+#else
+    OIIO::ImageOutput*                  m_writer;
+#endif
+    std::vector<const ICanvas*>         m_canvas;
+    std::vector<OIIO::ImageSpec>        m_spec;
 };
 
 GenericImageFileWriter::GenericImageFileWriter(const char* filename) :
@@ -65,10 +74,10 @@ GenericImageFileWriter::GenericImageFileWriter(const char* filename) :
 {
     assert(filename);
 
-    m_filename = filename;
+    impl->m_filename = filename;
+    impl->m_writer   = OIIO::ImageOutput::create(impl->m_filename);
 
-    m_writer = OIIO::ImageOutput::create(m_filename);
-    if (m_writer == nullptr)
+    if (impl->m_writer == nullptr)
     {
         const std::string msg = OIIO::geterror();
         throw ExceptionIOError(msg.c_str());
@@ -77,9 +86,10 @@ GenericImageFileWriter::GenericImageFileWriter(const char* filename) :
 
 GenericImageFileWriter::~GenericImageFileWriter()
 {
-    // Destroy the ImageOutput stucture.
-    if (m_writer != nullptr)
-        OIIO::ImageOutput::destroy(m_writer);
+#if OIIO_VERSION < 20000
+    if (impl->m_writer != nullptr)
+        OIIO::ImageOutput::destroy(impl->m_writer);
+#endif
 
     delete impl;
 }
@@ -170,7 +180,7 @@ void GenericImageFileWriter::set_image_spec()
     spec.full_y = spec.y;
 
     // Size of a tile.
-    if (m_writer->supports("tiles"))
+    if (impl->m_writer->supports("tiles"))
     {
         spec.tile_width = static_cast<int>(props.m_tile_width);
         spec.tile_height = static_cast<int>(props.m_tile_height);
@@ -186,7 +196,7 @@ void GenericImageFileWriter::set_image_spec()
     set_image_channels(props.m_channel_count, channel_names);
 
     // Format of the pixel data.
-    const boost::filesystem::path filepath(m_filename);
+    const boost::filesystem::path filepath(impl->m_filename);
     const std::string extension = lower_case(filepath.extension().string());
 
     set_image_output_format(props.m_pixel_format);
@@ -292,7 +302,7 @@ void GenericImageFileWriter::set_image_attributes(const ImageAttributes& image_a
     assert(!impl->m_spec.empty());
 
     // Retrieve filename extension.
-    const boost::filesystem::path filepath(m_filename);
+    const boost::filesystem::path filepath(impl->m_filename);
     const std::string extension = lower_case(filepath.extension().string());
 
     // General image attributes.
@@ -340,7 +350,7 @@ void GenericImageFileWriter::write_tiles(const size_t image_index)
             const Tile& tile = canvas->tile(tile_x, tile_y);
 
             // Write the tile into the file.
-            if (!m_writer->write_tile(
+            if (!impl->m_writer->write_tile(
                     static_cast<int>(tile_offset_x),
                     static_cast<int>(tile_offset_y),
                     0,
@@ -349,7 +359,7 @@ void GenericImageFileWriter::write_tiles(const size_t image_index)
                     xstride,
                     ystride))
             {
-                const std::string msg = m_writer->geterror();
+                const std::string msg = impl->m_writer->geterror();
                 close_file();
                 throw ExceptionIOError(msg.c_str());
             }
@@ -406,14 +416,14 @@ void GenericImageFileWriter::write_scanlines(const size_t image_index)
         const size_t y_end = y_begin + props.m_tile_height;
 
         // Write scanline into the file.
-        if (!m_writer->write_scanlines(
+        if (!impl->m_writer->write_scanlines(
                 static_cast<int>(y_begin), 
                 static_cast<int>(y_end), 
                 0, 
                 convert_pixel_format(props.m_pixel_format),
                 buffer_ptr))
         {
-            const std::string msg = m_writer->geterror();
+            const std::string msg = impl->m_writer->geterror();
             close_file();
             throw ExceptionIOError(msg.c_str());
         }
@@ -424,7 +434,7 @@ void GenericImageFileWriter::write(const size_t image_index)
 {
     assert(image_index < impl->m_canvas.size());
 
-    if (m_writer->supports("tiles"))
+    if (impl->m_writer->supports("tiles"))
         write_tiles(image_index);
     else
         write_scanlines(image_index);
@@ -432,9 +442,9 @@ void GenericImageFileWriter::write(const size_t image_index)
 
 void GenericImageFileWriter::write_single_image()
 {
-    if (!m_writer->open(m_filename, impl->m_spec.back()))
+    if (!impl->m_writer->open(impl->m_filename, impl->m_spec.back()))
     {
-        const std::string msg = m_writer->geterror();
+        const std::string msg = impl->m_writer->geterror();
         throw ExceptionIOError(msg.c_str());
     }
 
@@ -447,12 +457,12 @@ void GenericImageFileWriter::write_single_image()
 
 void GenericImageFileWriter::write_multi_images()
 {
-    if (!m_writer->supports("multiimage"))
+    if (!impl->m_writer->supports("multiimage"))
         throw ExceptionIOError("File format is unable to write multiple images");
 
-    if (!m_writer->open(m_filename, static_cast<int>(get_image_count()), impl->m_spec.data()))
+    if (!impl->m_writer->open(impl->m_filename, static_cast<int>(get_image_count()), impl->m_spec.data()))
     {
-        const std::string msg = m_writer->geterror();
+        const std::string msg = impl->m_writer->geterror();
         throw ExceptionIOError(msg.c_str());
     }
     
@@ -460,9 +470,9 @@ void GenericImageFileWriter::write_multi_images()
     {
         if (i > 0)
         {
-            if (!m_writer->open(m_filename, impl->m_spec[i], OIIO::ImageOutput::AppendSubimage))
+            if (!impl->m_writer->open(impl->m_filename, impl->m_spec[i], OIIO::ImageOutput::AppendSubimage))
             {
-                const std::string msg = m_writer->geterror();
+                const std::string msg = impl->m_writer->geterror();
                 close_file();
                 throw ExceptionIOError(msg.c_str());
             }
@@ -495,10 +505,12 @@ void GenericImageFileWriter::write()
 
 void GenericImageFileWriter::close_file()
 {
+    assert(impl->m_writer);
+
     // Close the image file.
-    if (!m_writer->close())
+    if (!impl->m_writer->close())
     {
-        const std::string msg = m_writer->geterror();
+        const std::string msg = impl->m_writer->geterror();
         throw ExceptionIOError(msg.c_str());
     }
 }
