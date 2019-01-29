@@ -62,7 +62,7 @@ struct GenericImageFileWriter::Impl
 #if OIIO_VERSION >= 20000
     std::unique_ptr<OIIO::ImageOutput>  m_writer;
 #else
-    OIIO::ImageOutput* m_writer;
+    OIIO::ImageOutput*                  m_writer;
 #endif
     std::vector<const ICanvas*>         m_canvas;
     std::vector<OIIO::ImageSpec>        m_spec;
