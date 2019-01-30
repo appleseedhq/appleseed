@@ -36,15 +36,14 @@
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
 
-// BCD headers.
-#include "bcd/DeepImage.h"
-
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class ImageAttributes; }
-namespace renderer      { class AOV; }
+namespace foundation    { class Dictonary; }
+namespace foundation    { class DictonaryArray; }
+namespace renderer      { class ImageStack; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
@@ -64,7 +63,7 @@ class CryptomatteAOV
         MaterialNames,
     };
 
-    CryptomatteAOV(const ParamArray& params);
+    explicit CryptomatteAOV(const ParamArray& params);
 
     ~CryptomatteAOV() override;
 
@@ -94,17 +93,17 @@ class CryptomatteAOV
   private:
     friend class CryptomatteAOVFactory;
 
-    struct                      Impl;
-    Impl*                       impl;
+    struct Impl;
+    Impl* impl;
 };
 
 
 //
-// A factory for cryptomatte AOVs.
+// A factory for Cryptomatte AOVs.
 //
 
 class APPLESEED_DLLSYMBOL CryptomatteAOVFactory
-    : public IAOVFactory
+  : public IAOVFactory
 {
   public:
       CryptomatteAOVFactory(const CryptomatteAOV::CryptomatteType aov_type);
