@@ -229,7 +229,7 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
                 ++discontinuity_samples;
 
             // Handle forward difference rays.
-            if (discontinuity_samples == 0 && diff_contour_found == false && q == quality)
+            if (discontinuity_samples == 0 && !diff_contour_found && q == quality)
             {
                 if (other_shading_point.hit_surface() && values->m_features & NPRContourFeatures::AllDifferenceFeatures)
                 {
