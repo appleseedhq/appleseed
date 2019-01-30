@@ -31,6 +31,7 @@
 #include "imagebasedlighting.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/lighting/lightpathstream.h"
 #include "renderer/kernel/lighting/materialsamplers.h"
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
@@ -62,7 +63,8 @@ void compute_ibl_combined_sampling(
     const int                   env_sampling_modes,
     const size_t                material_sample_count,
     const size_t                env_sample_count,
-    DirectShadingComponents&    radiance)
+    DirectShadingComponents&    radiance,
+    LightPathStream*            light_path_stream)
 {
     assert(is_normalized(outgoing.get_value()));
 
@@ -88,7 +90,8 @@ void compute_ibl_combined_sampling(
         env_sampling_modes,
         material_sample_count,
         env_sample_count,
-        radiance_env_sampling);
+        radiance_env_sampling,
+        light_path_stream);
     radiance += radiance_env_sampling;
 }
 
@@ -169,7 +172,8 @@ void compute_ibl_environment_sampling(
     const int                   env_sampling_modes,
     const size_t                material_sample_count,
     const size_t                env_sample_count,
-    DirectShadingComponents&    radiance)
+    DirectShadingComponents&    radiance,
+    LightPathStream*            light_path_stream)
 {
     assert(is_normalized(outgoing.get_value()));
 
@@ -225,6 +229,16 @@ void compute_ibl_environment_sampling(
         env_value *= transmission;
         env_value *= mis_weight / env_prob;
         madd(radiance, material_value, env_value);
+
+        // Record light path event.
+        if (light_path_stream)
+        {
+            light_path_stream->sampled_environment(
+                environment_edf,
+                incoming,
+                material_value.m_beauty,
+                env_value);
+        }
     }
 
     if (env_sample_count > 1)

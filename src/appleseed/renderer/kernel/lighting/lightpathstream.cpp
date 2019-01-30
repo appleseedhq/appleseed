@@ -36,11 +36,14 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/color/colorspace.h"
+#include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/light/light.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
+#include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/memory.h"
@@ -54,12 +57,18 @@ using namespace foundation;
 namespace renderer
 {
 
+LightPathStream::LightPathStream(const Project& project)
+  : m_scene(*project.get_scene())   // at this time the scene's render data are not available
+{
+}
+
 void LightPathStream::clear()
 {
     clear_release_memory(m_events);
     clear_release_memory(m_hit_reflector_data);
     clear_release_memory(m_hit_emitter_data);
     clear_release_memory(m_sampled_emitter_data);
+    clear_release_memory(m_sampled_env_data);
 
     clear_release_memory(m_paths);
     clear_release_memory(m_vertices);
@@ -74,7 +83,10 @@ void LightPathStream::begin_path(
     assert(m_hit_reflector_data.empty());
     assert(m_hit_emitter_data.empty());
     assert(m_sampled_emitter_data.empty());
+    assert(m_sampled_env_data.empty());
     assert(camera != nullptr);
+
+    m_scene_diameter = 1.2f * static_cast<float>(m_scene.get_render_data().m_safe_diameter);
 
     m_camera = camera;
     m_camera_vertex_position = Vector3f(camera_vertex_position);
@@ -84,6 +96,7 @@ void LightPathStream::begin_path(
 
 void LightPathStream::hit_reflector(const PathVertex& vertex)
 {
+    // todo: properly handle this case.
     assert(m_hit_reflector_data.size() < 256);
 
     Event event;
@@ -92,7 +105,7 @@ void LightPathStream::hit_reflector(const PathVertex& vertex)
     m_events.push_back(event);
 
     HitReflectorData data;
-    data.m_entity = &vertex.m_shading_point->get_object_instance();
+    data.m_object_instance = &vertex.m_shading_point->get_object_instance();
     data.m_vertex_position = Vector3f(vertex.get_point());
     data.m_path_throughput = vertex.m_throughput.to_rgb(g_std_lighting_conditions);
     m_hit_reflector_data.push_back(data);
@@ -102,6 +115,7 @@ void LightPathStream::hit_emitter(
     const PathVertex&       vertex,
     const Spectrum&         emitted_radiance)
 {
+    // todo: properly handle this case.
     assert(m_hit_emitter_data.size() < 256);
 
     Event event;
@@ -110,7 +124,7 @@ void LightPathStream::hit_emitter(
     m_events.push_back(event);
 
     HitEmitterData data;
-    data.m_entity = &vertex.m_shading_point->get_object_instance();
+    data.m_object_instance = &vertex.m_shading_point->get_object_instance();
     data.m_vertex_position = Vector3f(vertex.get_point());
     data.m_path_throughput = vertex.m_throughput.to_rgb(g_std_lighting_conditions);
     data.m_emitted_radiance = emitted_radiance.to_rgb(g_std_lighting_conditions);
@@ -118,13 +132,11 @@ void LightPathStream::hit_emitter(
 }
 
 void LightPathStream::sampled_emitting_triangle(
-    const EmittingTriangle* triangle,
+    const EmittingTriangle& triangle,
     const Vector3d&         emission_position,
     const Spectrum&         material_value,
     const Spectrum&         emitted_radiance)
 {
-    assert(triangle != nullptr);
-
     Event event;
     event.m_type = EventType::SampledEmitter;
     event.m_data_index = static_cast<uint8>(m_sampled_emitter_data.size());
@@ -132,8 +144,8 @@ void LightPathStream::sampled_emitting_triangle(
 
     SampledEmitterData data;
     data.m_entity =
-        triangle->m_assembly_instance->get_assembly().object_instances().get_by_index(
-            triangle->m_object_instance_index);
+        triangle.m_assembly_instance->get_assembly().object_instances().get_by_index(
+            triangle.m_object_instance_index);
     data.m_vertex_position = Vector3f(emission_position);
     data.m_material_value = material_value.to_rgb(g_std_lighting_conditions);
     data.m_emitted_radiance = emitted_radiance.to_rgb(g_std_lighting_conditions);
@@ -141,24 +153,41 @@ void LightPathStream::sampled_emitting_triangle(
 }
 
 void LightPathStream::sampled_non_physical_light(
-    const Light*            light,
+    const Light&            light,
     const Vector3d&         emission_position,
     const Spectrum&         material_value,
     const Spectrum&         emitted_radiance)
 {
-    assert(light != nullptr);
-
     Event event;
     event.m_type = EventType::SampledEmitter;
     event.m_data_index = static_cast<uint8>(m_sampled_emitter_data.size());
     m_events.push_back(event);
 
     SampledEmitterData data;
-    data.m_entity = light;
+    data.m_entity = &light;
     data.m_vertex_position = Vector3f(emission_position);
     data.m_material_value = material_value.to_rgb(g_std_lighting_conditions);
     data.m_emitted_radiance = emitted_radiance.to_rgb(g_std_lighting_conditions);
     m_sampled_emitter_data.push_back(data);
+}
+
+void LightPathStream::sampled_environment(
+    const EnvironmentEDF&   environment_edf,
+    const Vector3f&         emission_direction,
+    const Spectrum&         material_value,
+    const Spectrum&         emitted_radiance)
+{
+    Event event;
+    event.m_type = EventType::SampledEnvironment;
+    event.m_data_index = static_cast<uint8>(m_sampled_env_data.size());
+    m_events.push_back(event);
+
+    SampledEnvData data;
+    data.m_environment_edf = &environment_edf;
+    data.m_emission_direction = emission_direction;
+    data.m_material_value = material_value.to_rgb(g_std_lighting_conditions);
+    data.m_emitted_radiance = emitted_radiance.to_rgb(g_std_lighting_conditions);
+    m_sampled_env_data.push_back(data);
 }
 
 void LightPathStream::end_path()
@@ -184,6 +213,10 @@ void LightPathStream::end_path()
                 create_path_from_sampled_emitter(i);
                 break;
 
+              case EventType::SampledEnvironment:
+                create_path_from_sampled_environment(i);
+                break;
+
               assert_otherwise;
             }
         }
@@ -193,6 +226,7 @@ void LightPathStream::end_path()
     clear_keep_memory(m_hit_reflector_data);
     clear_keep_memory(m_hit_emitter_data);
     clear_keep_memory(m_sampled_emitter_data);
+    clear_keep_memory(m_sampled_env_data);
 }
 
 void LightPathStream::create_path_from_hit_emitter(const size_t emitter_event_index)
@@ -208,7 +242,7 @@ void LightPathStream::create_path_from_hit_emitter(const size_t emitter_event_in
 
     // Emitter vertex.
     StoredPathVertex emitter_vertex;
-    emitter_vertex.m_entity = hit_emitter_data.m_entity;
+    emitter_vertex.m_entity = hit_emitter_data.m_object_instance;
     emitter_vertex.m_position = hit_emitter_data.m_vertex_position;
     emitter_vertex.m_radiance = hit_emitter_data.m_emitted_radiance;
     m_vertices.push_back(emitter_vertex);
@@ -228,13 +262,13 @@ void LightPathStream::create_path_from_hit_emitter(const size_t emitter_event_in
 
             // Reflector vertex.
             StoredPathVertex reflector_vertex;
-            reflector_vertex.m_entity = event_data.m_entity;
+            reflector_vertex.m_entity = event_data.m_object_instance;
             reflector_vertex.m_position = event_data.m_vertex_position;
             reflector_vertex.m_radiance = current_radiance;
             m_vertices.push_back(reflector_vertex);
 
             // Update current radiance.
-            const auto throughput = event_data.m_path_throughput;
+            const auto& throughput = event_data.m_path_throughput;
             current_radiance *= prev_throughput;
             current_radiance /= throughput;
             prev_throughput = throughput;
@@ -255,6 +289,14 @@ void LightPathStream::create_path_from_hit_emitter(const size_t emitter_event_in
 
 void LightPathStream::create_path_from_sampled_emitter(const size_t emitter_event_index)
 {
+    // Find the last scattering event.
+    assert(emitter_event_index > 0);
+    size_t last_scattering_event_index = emitter_event_index - 1;
+    while (m_events[last_scattering_event_index].m_type != EventType::HitReflector &&
+           m_events[last_scattering_event_index].m_type != EventType::HitEmitter)
+        --last_scattering_event_index;
+    const HitReflectorData& last_reflector_data = get_reflector_data(last_scattering_event_index);
+
     const auto& sampled_emitter_event = m_events[emitter_event_index];
     const auto& sampled_emitter_data = m_sampled_emitter_data[sampled_emitter_event.m_data_index];
 
@@ -271,16 +313,8 @@ void LightPathStream::create_path_from_sampled_emitter(const size_t emitter_even
     emitter_vertex.m_radiance = sampled_emitter_data.m_emitted_radiance;
     m_vertices.push_back(emitter_vertex);
 
-    // Find the last event that is not a SampledEmitter one.
-    assert(emitter_event_index > 0);
-    size_t last_scattering_event_index = emitter_event_index - 1;
-    while (m_events[last_scattering_event_index].m_type == EventType::SampledEmitter)
-        --last_scattering_event_index;
-
     Color3f current_radiance = sampled_emitter_data.m_emitted_radiance;
-    Color3f prev_throughput =
-        sampled_emitter_data.m_material_value *
-        get_reflector_data(last_scattering_event_index).m_path_throughput;
+    Color3f prev_throughput = sampled_emitter_data.m_material_value * last_reflector_data.m_path_throughput;
 
     // Walk back the list of events and create path vertices.
     for (size_t i = last_scattering_event_index + 1; i > 0; --i)
@@ -294,13 +328,79 @@ void LightPathStream::create_path_from_sampled_emitter(const size_t emitter_even
 
             // Reflector vertex.
             StoredPathVertex reflector_vertex;
-            reflector_vertex.m_entity = event_data.m_entity;
+            reflector_vertex.m_entity = event_data.m_object_instance;
             reflector_vertex.m_position = event_data.m_vertex_position;
             reflector_vertex.m_radiance = current_radiance;
             m_vertices.push_back(reflector_vertex);
 
             // Update current radiance.
-            const auto throughput = event_data.m_path_throughput;
+            const auto& throughput = event_data.m_path_throughput;
+            current_radiance *= prev_throughput;
+            current_radiance /= throughput;
+            prev_throughput = throughput;
+        }
+    }
+
+    // Camera vertex.
+    StoredPathVertex camera_vertex;
+    camera_vertex.m_entity = m_camera;
+    camera_vertex.m_position = m_camera_vertex_position;
+    camera_vertex.m_radiance = current_radiance;
+    m_vertices.push_back(camera_vertex);
+
+    // Store path.
+    stored_path.m_vertex_end_index = static_cast<uint32>(m_vertices.size());
+    m_paths.push_back(stored_path);
+}
+
+void LightPathStream::create_path_from_sampled_environment(const size_t env_event_index)
+{
+    // Find the last scattering event.
+    assert(env_event_index > 0);
+    size_t last_scattering_event_index = env_event_index - 1;
+    while (m_events[last_scattering_event_index].m_type != EventType::HitReflector &&
+           m_events[last_scattering_event_index].m_type != EventType::HitEmitter)
+        --last_scattering_event_index;
+    const HitReflectorData& last_reflector_data = get_reflector_data(last_scattering_event_index);
+
+    const auto& sampled_env_event = m_events[env_event_index];
+    const auto& sampled_env_data = m_sampled_env_data[sampled_env_event.m_data_index];
+
+    // Create path.
+    StoredPath stored_path;
+    stored_path.m_pixel_coords = Vector2u16(m_pixel_coords);
+    stored_path.m_sample_position = m_sample_position;
+    stored_path.m_vertex_begin_index = static_cast<uint32>(m_vertices.size());
+
+    // Emitter vertex.
+    StoredPathVertex emitter_vertex;
+    emitter_vertex.m_entity = sampled_env_data.m_environment_edf;
+    emitter_vertex.m_position = last_reflector_data.m_vertex_position + m_scene_diameter * sampled_env_data.m_emission_direction;
+    emitter_vertex.m_radiance = sampled_env_data.m_emitted_radiance;
+    m_vertices.push_back(emitter_vertex);
+
+    Color3f current_radiance = sampled_env_data.m_emitted_radiance;
+    Color3f prev_throughput = sampled_env_data.m_material_value * last_reflector_data.m_path_throughput;
+
+    // Walk back the list of events and create path vertices.
+    for (size_t i = last_scattering_event_index + 1; i > 0; --i)
+    {
+        const auto event_index = i - 1;
+        const auto& event = m_events[event_index];
+        if (event.m_type == EventType::HitReflector ||
+            event.m_type == EventType::HitEmitter)
+        {
+            const auto& event_data = get_reflector_data(event_index);
+
+            // Reflector vertex.
+            StoredPathVertex reflector_vertex;
+            reflector_vertex.m_entity = event_data.m_object_instance;
+            reflector_vertex.m_position = event_data.m_vertex_position;
+            reflector_vertex.m_radiance = current_radiance;
+            m_vertices.push_back(reflector_vertex);
+
+            // Update current radiance.
+            const auto& throughput = event_data.m_path_throughput;
             current_radiance *= prev_throughput;
             current_radiance /= throughput;
             prev_throughput = throughput;

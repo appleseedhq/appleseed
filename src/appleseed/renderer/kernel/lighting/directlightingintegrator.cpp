@@ -465,7 +465,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     if (light_path_stream)
     {
         light_path_stream->sampled_emitting_triangle(
-            sample.m_triangle,
+            *sample.m_triangle,
             sample.m_point,
             material_value.m_beauty,
             edf_value);
@@ -540,7 +540,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     if (light_path_stream)
     {
         light_path_stream->sampled_non_physical_light(
-            light,
+            *light,
             emission_position,
             material_value.m_beauty,
             light_value);
