@@ -173,7 +173,7 @@ namespace
             result.reserve(std::distance(input_begin, input_end));
 
             for (Iterator it = input_begin; it != input_end; ++it)
-                result.push_back(*it);
+                result.emplace_back(*it);
 
             sort(result.begin(), result.end(), [](const Entity& lhs, const Entity& rhs)
             {
