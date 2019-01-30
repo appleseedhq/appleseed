@@ -66,6 +66,8 @@ APPLESEED_DEFINE_APIARRAY(LightPathArray);
 
 struct LightPathRecorder::Impl
 {
+    const Project&                      m_project;
+
     boost::mutex                        m_mutex;
     vector<unique_ptr<LightPathStream>> m_streams;
 
@@ -79,10 +81,15 @@ struct LightPathRecorder::Impl
     size_t                              m_render_width;
     size_t                              m_render_height;
     vector<IndexEntry>                  m_index;
+
+    explicit Impl(const Project& project)
+      : m_project(project)
+    {
+    }
 };
 
-LightPathRecorder::LightPathRecorder()
-  : impl(new Impl())
+LightPathRecorder::LightPathRecorder(const Project& project)
+  : impl(new Impl(project))
 {
 }
 
@@ -113,7 +120,7 @@ LightPathStream* LightPathRecorder::create_stream()
 {
     boost::mutex::scoped_lock lock(impl->m_mutex);
 
-    auto stream = new LightPathStream();
+    auto stream = new LightPathStream(impl->m_project);
     impl->m_streams.push_back(unique_ptr<LightPathStream>(stream));
 
     return stream;

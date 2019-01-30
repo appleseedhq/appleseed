@@ -127,16 +127,17 @@ struct Project::Impl
     LightPathRecorder                   m_light_path_recorder;
     unique_ptr<TraceContext>            m_trace_context;
 
-    Impl()
+    explicit Impl(const Project& project)
       : m_format_revision(ProjectFormatRevision)
       , m_search_paths("APPLESEED_SEARCHPATH", SearchPaths::environment_path_separator())
+      , m_light_path_recorder(project)
     {
     }
 };
 
 Project::Project(const char* name)
   : Entity(g_class_uid)
-  , impl(new Impl())
+  , impl(new Impl(*this))
 {
     set_name(name);
     add_base_configurations();
