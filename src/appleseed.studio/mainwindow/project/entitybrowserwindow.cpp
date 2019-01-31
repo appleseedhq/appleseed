@@ -95,7 +95,7 @@ namespace
             const QString item_value = i->value<QString>();
 
             QListWidgetItem* item = new QListWidgetItem(item_label, list_widget);
-            item->setData(0, item_value);
+            item->setData(Qt::UserRole, item_value);
         }
     }
 
@@ -183,7 +183,7 @@ void EntityBrowserWindow::slot_item_activated(QListWidgetItem* item)
 {
     const Page& page = m_pages[m_ui->tab_widget->currentIndex()];
 
-    emit signal_accepted(QString::fromStdString(page.m_page_name), item->data(0).toString());
+    emit signal_accepted(QString::fromStdString(page.m_page_name), item->data(Qt::UserRole).toString());
 }
 
 void EntityBrowserWindow::slot_accept()
