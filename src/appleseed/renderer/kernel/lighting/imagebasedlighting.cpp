@@ -31,12 +31,12 @@
 #include "imagebasedlighting.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/materialsamplers.h"
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 
@@ -57,23 +57,29 @@ void compute_ibl_combined_sampling(
     SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
     const EnvironmentEDF&       environment_edf,
+    const ShadingPoint&         shading_point,
     const Dual3d&               outgoing,
-    const IMaterialSampler&     material_sampler,
+    const BSDF&                 bsdf,
+    const void*                 bsdf_data,
+    const int                   bsdf_sampling_modes,
     const int                   env_sampling_modes,
-    const size_t                material_sample_count,
+    const size_t                bsdf_sample_count,
     const size_t                env_sample_count,
     DirectShadingComponents&    radiance)
 {
     assert(is_normalized(outgoing.get_value()));
 
     // Compute IBL by sampling the BSDF.
-    compute_ibl_material_sampling(
+    compute_ibl_bsdf_sampling(
         sampling_context,
         shading_context,
         environment_edf,
+        shading_point,
         outgoing,
-        material_sampler,
-        material_sample_count,
+        bsdf,
+        bsdf_data,
+        bsdf_sampling_modes,
+        bsdf_sample_count,
         env_sample_count,
         radiance);
 
@@ -83,21 +89,26 @@ void compute_ibl_combined_sampling(
         sampling_context,
         shading_context,
         environment_edf,
+        shading_point,
         outgoing,
-        material_sampler,
+        bsdf,
+        bsdf_data,
         env_sampling_modes,
-        material_sample_count,
+        bsdf_sample_count,
         env_sample_count,
         radiance_env_sampling);
     radiance += radiance_env_sampling;
 }
 
-void compute_ibl_material_sampling(
+void compute_ibl_bsdf_sampling(
     SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
     const EnvironmentEDF&       environment_edf,
+    const ShadingPoint&         shading_point,
     const Dual3d&               outgoing,
-    const IMaterialSampler&     material_sampler,
+    const BSDF&                 bsdf,
+    const void*                 bsdf_data,
+    const int                   bsdf_sampling_modes,
     const size_t                bsdf_sample_count,
     const size_t                env_sample_count,
     DirectShadingComponents&    radiance)
@@ -113,20 +124,35 @@ void compute_ibl_material_sampling(
         // includes the contribution of a specular component since these are explicitly rejected
         // afterward. We need a mechanism to indicate that we want the contribution of some of
         // the components only.
-        Dual3f incoming;
-        DirectShadingComponents material_value;
-        float material_prob;
-        if (!material_sampler.sample(
-                sampling_context,
-                Dual3d(outgoing),
-                incoming,
-                material_value,
-                material_prob))
+        BSDFSample sample(&shading_point, Dual3f(outgoing));
+        bsdf.sample(
+            sampling_context,
+            bsdf_data,
+            false,              // not adjoint
+            true,               // multiply by |cos(incoming, normal)|
+            bsdf_sampling_modes,
+            sample);
+
+        // Filter scattering modes.
+        if (!(bsdf_sampling_modes & sample.get_mode()))
             continue;
 
         // Discard occluded samples.
         Spectrum transmission;
-        material_sampler.trace_simple(shading_context, incoming.get_value(), transmission);
+        ShadingRay shadow_ray(
+            shading_point.get_point(),
+            Vector3d(sample.m_incoming.get_value()),
+            shading_point.get_ray().m_time,
+            VisibilityFlags::ShadowRay,
+            shading_point.get_ray().m_depth + 1);
+        shadow_ray.m_media = shading_point.get_ray().m_media;
+
+        shading_context.get_tracer().trace_simple(
+            shading_context,
+            shading_point,
+            shadow_ray,
+            transmission);
+
         if (is_zero(transmission))
             continue;
 
@@ -135,25 +161,25 @@ void compute_ibl_material_sampling(
         float env_prob;
         environment_edf.evaluate(
             shading_context,
-            incoming.get_value(),
+            sample.m_incoming.get_value(),
             env_value,
             env_prob);
 
         // Apply all weights, including MIS weight.
-        if (material_prob == BSDF::DiracDelta)
+        if (sample.get_probability() == BSDF::DiracDelta)
             env_value *= transmission;
         else
         {
             const float mis_weight =
                 mis_power2(
-                    bsdf_sample_count * material_prob,
+                    bsdf_sample_count * sample.get_probability(),
                     env_sample_count * env_prob);
             env_value *= transmission;
-            env_value *= mis_weight / material_prob;
+            env_value *= mis_weight / sample.get_probability();
         }
 
         // Add the contribution of this sample to the illumination.
-        madd(radiance, material_value, env_value);
+        madd(radiance, sample.m_value, env_value);
     }
 
     if (bsdf_sample_count > 1)
@@ -164,10 +190,12 @@ void compute_ibl_environment_sampling(
     SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
     const EnvironmentEDF&       environment_edf,
+    const ShadingPoint&         shading_point,
     const Dual3d&               outgoing,
-    const IMaterialSampler&     material_sampler,
+    const BSDF&                 bsdf,
+    const void*                 bsdf_data,
     const int                   env_sampling_modes,
-    const size_t                material_sample_count,
+    const size_t                bsdf_sample_count,
     const size_t                env_sample_count,
     DirectShadingComponents&    radiance)
 {
@@ -176,8 +204,11 @@ void compute_ibl_environment_sampling(
     radiance.set(0.0f);
 
     // Check if PDF of the sampler is Dirac delta and therefore cannot contribute to the light sampling.
-    if (!material_sampler.contributes_to_light_sampling())
+    if (bsdf.is_purely_specular())
         return;
+
+    const Vector3f geometric_normal(shading_point.get_geometric_normal());
+    const Basis3f shading_basis(shading_point.get_shading_basis());
 
     sampling_context.split_in_place(2, env_sample_count);
 
@@ -200,31 +231,47 @@ void compute_ibl_environment_sampling(
 
         // Discard occluded samples.
         Spectrum transmission;
-        material_sampler.trace_simple(shading_context, incoming, transmission);
+        ShadingRay shadow_ray(
+            shading_point.get_point(),
+            Vector3d(incoming),
+            shading_point.get_ray().m_time,
+            VisibilityFlags::ShadowRay,
+            shading_point.get_ray().m_depth + 1);
+        shadow_ray.m_media = shading_point.get_ray().m_media;
+        shading_context.get_tracer().trace_simple(
+            shading_context,
+            shading_point,
+            shadow_ray,
+            transmission);
         if (is_zero(transmission))
             continue;
 
         // Evaluate the BSDF.
-        DirectShadingComponents material_value;
-        const float material_prob =
-            material_sampler.evaluate(
-                env_sampling_modes,
+        DirectShadingComponents bsdf_value;
+        const float bsdf_probability =
+            bsdf.evaluate(
+                bsdf_data,
+                false,                          // not adjoint
+                true,                           // multiply by |cos(incoming, normal)|
+                geometric_normal,
+                shading_basis,
                 Vector3f(outgoing.get_value()),
                 incoming,
-                material_value);
-        if (material_prob == 0.0f)
+                env_sampling_modes,
+                bsdf_value);
+        if (bsdf_probability == 0.0f)
             continue;
 
         // Compute MIS weight.
         const float mis_weight =
             mis_power2(
                 env_sample_count * env_prob,
-                material_sample_count * material_prob);
+                bsdf_sample_count * bsdf_probability);
 
         // Add the contribution of this sample to the illumination.
         env_value *= transmission;
         env_value *= mis_weight / env_prob;
-        madd(radiance, material_value, env_value);
+        madd(radiance, bsdf_value, env_value);
     }
 
     if (env_sample_count > 1)

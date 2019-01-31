@@ -83,6 +83,88 @@ Tracer::Tracer(
     }
 }
 
+const void Tracer::initialize_media_list(
+    const ShadingContext&       shading_context,
+    const ShadingRay&           ray,
+    ShadingRay::MediaList*      media)
+{
+    if (m_assume_no_participating_media)
+        return;
+
+    assert(is_normalized(ray.m_dir));
+
+    size_t shading_point_index = 0;
+    Vector3d point = ray.m_org;
+    size_t iterations = 0;
+
+    m_shading_points[shading_point_index].clear();
+    m_intersector.trace(
+        ray,
+        m_shading_points[shading_point_index],
+        nullptr);
+
+    while (true)
+    {
+        // Put a hard limit on the number of iterations.
+        if (++iterations >= m_max_iterations)
+        {
+            RENDERER_LOG_WARNING(
+                "reached hard iteration limit (%s), breaking trace loop.",
+                pretty_int(m_max_iterations).c_str());
+            break;
+        }
+
+        // Update the pointers to the shading points.
+        const ShadingPoint* shading_point_ptr = &m_shading_points[shading_point_index];
+        shading_point_index = 1 - shading_point_index;
+
+        const ShadingRay& current_ray = shading_point_ptr->get_ray();
+
+        // Stop if the ray escaped the scene.
+        if (!shading_point_ptr->hit_surface())
+        {
+            break;
+        }
+
+        // Retrieve the material at the shading point.
+        const Material* material = shading_point_ptr->get_material();
+        const Material* opposite_material = shading_point_ptr->get_opposite_material();
+
+        // Continue the ray in the same direction.
+        ShadingRay next_ray(
+            point,
+            current_ray.m_dir,
+            current_ray.m_time,
+            current_ray.m_flags,
+            current_ray.m_depth);
+
+        // Determine whether the ray is entering or leaving a medium.
+        const bool entering = shading_point_ptr->is_entering();
+
+        // Update the medium list.
+        const ObjectInstance& object_instance = shading_point_ptr->get_object_instance();
+        if (entering && material)
+            next_ray.m_media.add(current_ray.m_media, &object_instance, material, 1.0f);
+        else
+        {
+            next_ray.m_media.remove(current_ray.m_media, &object_instance);
+            if (next_ray.m_media.m_size == current_ray.m_media.m_size)
+            {
+                // The ray leaves a medium that has been never entered before,
+                // which indicates that the initial point lies inside this media.
+                media->add_in_place(&object_instance, opposite_material, 1.0f);
+            }
+        }
+
+        // Trace ray further.
+        m_shading_points[shading_point_index].clear();
+        m_intersector.trace(
+            next_ray,
+            m_shading_points[shading_point_index],
+            shading_point_ptr);
+    }
+}
+
 const ShadingPoint& Tracer::do_trace(
     const ShadingContext&       shading_context,
     const ShadingRay&           ray,
@@ -121,7 +203,7 @@ const ShadingPoint& Tracer::do_trace(
 
         const ShadingRay& current_ray = shading_point_ptr->get_ray();
 
-        const ShadingRay::Medium* medium = current_ray.get_current_medium();
+        const ShadingRay::Medium* medium = current_ray.m_media.get_current();
         const Volume* volume = medium == nullptr ? nullptr : medium->get_volume();
 
         // Stop if the ray escaped the scene.
@@ -183,7 +265,7 @@ const ShadingPoint& Tracer::do_trace(
             current_ray.m_dir,
             current_ray.m_time,
             current_ray.m_flags,
-            current_ray.m_depth + (volume == nullptr ? 0 : 1));
+            current_ray.m_depth);
 
         // Determine whether the ray is entering or leaving a medium.
         const bool entering = shading_point_ptr->is_entering();
@@ -191,9 +273,9 @@ const ShadingPoint& Tracer::do_trace(
         // Update the medium list.
         const ObjectInstance& object_instance = shading_point_ptr->get_object_instance();
         if (entering)
-            next_ray.add_medium(current_ray, &object_instance, material, 1.0f);
+            next_ray.m_media.add(current_ray.m_media, &object_instance, material, 1.0f);
         else
-            next_ray.remove_medium(current_ray, &object_instance);
+            next_ray.m_media.remove(current_ray.m_media, &object_instance);
 
         // Trace ray further.
         m_shading_points[shading_point_index].clear();
@@ -244,7 +326,7 @@ const ShadingPoint& Tracer::do_trace_between(
         const ShadingRay& current_ray = shading_point_ptr->get_ray();
 
         // Get information about the medium that contains the shadow ray.
-        const ShadingRay::Medium* medium = current_ray.get_current_medium();
+        const ShadingRay::Medium* medium = current_ray.m_media.get_current();
         const Volume* volume =
             (medium == nullptr) ? nullptr : medium->get_volume();
         const ShadingRay& volume_ray = shading_point_ptr->get_ray();
@@ -306,7 +388,7 @@ const ShadingPoint& Tracer::do_trace_between(
             dist * (1.0 - 1.0e-6),  // ray tmax
             current_ray.m_time,
             current_ray.m_flags,
-            current_ray.m_depth + (volume == nullptr ? 0 : 1));
+            current_ray.m_depth);
 
         // Determine whether the ray is entering or leaving a medium.
         const bool entering = shading_point_ptr->is_entering();
@@ -314,9 +396,9 @@ const ShadingPoint& Tracer::do_trace_between(
         // Update the medium list.
         const ObjectInstance& object_instance = shading_point_ptr->get_object_instance();
         if (entering)
-            next_ray.add_medium(current_ray, &object_instance, material, 1.0f);
+            next_ray.m_media.add(current_ray.m_media, &object_instance, material, 1.0f);
         else
-            next_ray.remove_medium(current_ray, &object_instance);
+            next_ray.m_media.remove(current_ray.m_media, &object_instance);
 
         // Trace ray further.
         m_shading_points[shading_point_index].clear();

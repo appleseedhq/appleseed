@@ -40,62 +40,86 @@ using namespace foundation;
 namespace renderer
 {
 
-void ShadingRay::copy_media_from(const ShadingRay& source)
+ShadingRay::MediaList::MediaList()
+    : m_size(0u)
 {
-    assert(m_medium_count == 0);
-
-    const uint8 n = source.m_medium_count;
-
-    m_medium_count = n;
-
-    for (uint8 i = 0; i < n; ++i)
-        m_media[i] = source.m_media[i];
 }
 
-void ShadingRay::add_medium(
-    const ShadingRay&       source,
-    const ObjectInstance*   object_instance,
-    const Material*         material,
-    const float             ior)
+void ShadingRay::MediaList::copy_from(const ShadingRay::MediaList& source)
 {
-    assert(m_medium_count == 0);
+    assert(m_size == 0);
+
+    const uint8 n = source.m_size;
+
+    m_size = n;
+
+    for (uint8 i = 0; i < n; ++i)
+        m_list[i] = source.m_list[i];
+}
+
+void ShadingRay::MediaList::add(
+    const ShadingRay::MediaList&    source,
+    const ObjectInstance*           object_instance,
+    const Material*                 material,
+    const float                     ior)
+{
+    assert(m_size == 0);
 
     const int8 medium_priority = object_instance->get_medium_priority();
-    const uint8 n = source.m_medium_count;
+    const uint8 n = source.m_size;
     uint8 i = 0, j = 0;
 
-    while (i < n && source.m_media[i].m_object_instance->get_medium_priority() >= medium_priority)
-        m_media[j++] = source.m_media[i++];
+    while (i < n && source.m_list[i].m_object_instance->get_medium_priority() > medium_priority)
+        m_list[j++] = source.m_list[i++];
 
     if (j < MaxMediumCount)
     {
-        m_media[j].m_object_instance = object_instance;
-        m_media[j].m_material = material;
-        m_media[j].m_ior = ior;
+        m_list[j].m_object_instance = object_instance;
+        m_list[j].m_material = material;
+        m_list[j].m_ior = ior;
         ++j;
     }
 
     while (i < n && j < MaxMediumCount)
-        m_media[j++] = source.m_media[i++];
+        m_list[j++] = source.m_list[i++];
 
-    m_medium_count = j;
+    m_size = j;
 }
 
-void ShadingRay::remove_medium(
-    const ShadingRay&       source,
-    const ObjectInstance*   object_instance)
+void ShadingRay::MediaList::add_in_place(const ObjectInstance* object_instance, const Material* material, const float ior)
 {
-    assert(m_medium_count == 0);
+    if (m_size == MaxMediumCount)
+        return;
+
+    m_list[m_size].m_object_instance = object_instance;
+    m_list[m_size].m_material = material;
+    m_list[m_size].m_ior = ior;
+
+    const int8 medium_priority = object_instance->get_medium_priority();
+
+    for (int8 i = m_size; i > 0 && m_list[i - 1].m_object_instance->get_medium_priority() < medium_priority; --i)
+    {
+        std::swap(m_list[i - 1], m_list[i]);
+    }
+
+    ++m_size;
+}
+
+void ShadingRay::MediaList::remove(
+    const ShadingRay::MediaList&    source,
+    const ObjectInstance*           object_instance)
+{
+    assert(m_size == 0);
 
     uint8 j = 0;
 
-    for (uint8 i = 0, e = source.m_medium_count; i < e; ++i)
+    for (uint8 i = 0, e = source.m_size; i < e; ++i)
     {
-        if (source.m_media[i].m_object_instance != object_instance)
-            m_media[j++] = source.m_media[i];
+        if (source.m_list[i].m_object_instance != object_instance)
+            m_list[j++] = source.m_list[i];
     }
-
-    m_medium_count = j;
+    
+    m_size = j;
 }
 
 const Volume* ShadingRay::Medium::get_volume() const

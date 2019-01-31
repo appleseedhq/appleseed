@@ -134,6 +134,9 @@ inline VisibilityFlags::Type ScatteringMode::get_vis_flags(const Mode mode)
       case Specular:
         return VisibilityFlags::SpecularRay;
 
+      case Volume:
+          return VisibilityFlags::VolumeRay;
+
       default:
         assert(!"Invalid scattering mode.");
         return VisibilityFlags::DiffuseRay;

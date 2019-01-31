@@ -46,7 +46,14 @@ namespace foundation
 
 namespace
 {
-    inline float henyey_pdf(const float g, const float sqr_g, const float cosine)
+    // Find real solution for x^3 + 3Ax + 2B.
+    float cardano_formula(const float a, const float b)
+    {
+        const float u = std::pow(b + std::sqrt(square(b) + cube(a)), 0.333333f);
+        return a / u - u;
+    }
+
+    float henyey_pdf(const float g, const float sqr_g, const float cosine)
     {
         //
         // p(x) = 1/2 * (1 - g^2) / (1 + g^2 - 2gx)^(3/2),
@@ -58,6 +65,11 @@ namespace
         const float denominator = std::pow(1.0f + sqr_g - 2.0f * g * cosine, -1.5f);
 
         return RcpFourPi<float>() * numerator * denominator;
+    }
+
+    float rayleigh_pdf(const float cosine)
+    {
+        return RcpFourPi<float>() * 0.75f * (1.0f + square(cosine));
     }
 }
 
@@ -126,6 +138,34 @@ float IsotropicPhaseFunction::sample(const Vector3f& outgoing, const Vector2f& s
 {
     incoming = sample_sphere_uniform(s);
     return RcpFourPi<float>();
+}
+
+
+//
+// RayleighPhaseFunction class implementation.
+//
+
+float RayleighPhaseFunction::evaluate(const Vector3f& outgoing, const Vector3f& incoming) const
+{
+    return rayleigh_pdf(dot(incoming, outgoing));
+}
+
+float RayleighPhaseFunction::sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const
+{
+    const float cosine = cardano_formula(1.0f, 4.0f * s[0] - 2.0f);
+    assert(-1.0f < cosine && cosine <= 1.0f);
+    const float sine = std::sqrt(saturate(1.0f - cosine * cosine));
+    const Vector2f tangent = sample_circle_uniform(s[1]);
+    const Basis3f basis(outgoing);
+
+    incoming =
+        basis.get_tangent_u() * tangent.x * sine +
+        basis.get_tangent_v() * tangent.y * sine +
+        basis.get_normal()    * cosine;
+
+    assert(feq(norm(incoming), 1.0f));
+
+    return rayleigh_pdf(cosine);
 }
 
 }   // namespace foundation

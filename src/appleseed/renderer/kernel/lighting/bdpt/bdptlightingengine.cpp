@@ -564,10 +564,8 @@ namespace
                                      shading_context,
                                      vertices,
                                      &num_light_vertices);
-            VolumeVisitor volume_visitor;
-            PathTracer<PathVisitor, VolumeVisitor, true> path_tracer(
+            PathTracer<PathVisitor, true> path_tracer(
                 path_visitor,
-                volume_visitor,
                 ~size_t(0),
                 m_num_max_vertices - 2,
                 ~size_t(0),
@@ -606,11 +604,9 @@ namespace
         {
             size_t num_camera_vertices = 0;
             PathVisitor path_visitor(Spectrum(1.0), shading_context, vertices, &num_camera_vertices);
-            VolumeVisitor volume_visitor;
 
-            PathTracer<PathVisitor, VolumeVisitor, false> path_tracer(
+            PathTracer<PathVisitor, false> path_tracer(
                 path_visitor,
-                volume_visitor,
                 ~size_t(0),
                 m_num_max_vertices - 2,
                 ~size_t(0),
@@ -714,25 +710,11 @@ namespace
             void on_scatter(const PathVertex& vertex)
             {
             }
-        };
 
-        struct VolumeVisitor
-        {
-            VolumeVisitor()
-            {
-            }
-
-            bool accept_scattering(
-                const ScatteringMode::Mode  prev_mode)
-            {
-                return true;
-            }
-
-            void on_scatter(PathVertex& vertex)
-            {
-            }
-
-            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray)
+            void get_next_shading_point(
+                const ShadingRay&           ray,
+                PathVertex*                 vertex,
+                ShadingPoint*               next_shading_point)
             {
             }
         };

@@ -37,14 +37,13 @@
 #include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
+#include "renderer/modeling/bsdf/phasefunctionbsdf.h"
 #include "renderer/modeling/entity/onframebeginrecorder.h"
 #include "renderer/modeling/input/scalarsource.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/texture/texture.h"
-#include "renderer/modeling/volume/genericvolume.h"
-#include "renderer/modeling/volume/volume.h"
 #include "renderer/utility/paramarray.h"
 #include "renderer/utility/testutils.h"
 
@@ -66,6 +65,7 @@
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+
 
 TEST_SUITE(Renderer_Modeling_Volume)
 {
@@ -119,38 +119,18 @@ TEST_SUITE(Renderer_Modeling_Volume)
         {
         }
 
-        // Integrate PDF of volume using straightforward Monte Carlo approach.
-        float integrate_volume_pdf(const Volume& volume)
-        {
-            ShadingRay shading_ray;
-            shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
-            shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
-            void* data = volume.evaluate_inputs(m_shading_context, shading_ray);
-            volume.prepare_inputs(m_arena, shading_ray, data);
-
-            SamplingContext::RNGType rng;
-            SamplingContext sampling_context(rng, SamplingContext::RNGMode, 2, NumberOfSamples);
-
-            float integral = 0.0f;
-            for (size_t i = 0; i < NumberOfSamples; ++i)
-            {
-                const Vector2f s = sampling_context.next2<Vector2f>();
-                const Vector3f incoming = sample_sphere_uniform<float>(s);
-                integral += volume.evaluate(data, shading_ray, 0.5f, incoming);
-            }
-
-            return integral * foundation::FourPi<float>() / NumberOfSamples;
-        }
-
         // Check if probabilistic sampling is consistent with the returned PDF values.
-        Vector3f get_sampling_bias(const Volume& volume)
+        Vector3f get_sampling_bias(const PhaseFunctionBSDF& phase_function_bsdf)
         {
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
             shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
 
-            void* data = volume.evaluate_inputs(m_shading_context, shading_ray);
-            volume.prepare_inputs(m_arena, shading_ray, data);
+            ShadingPoint shading_point;
+            m_intersector.make_volume_shading_point(shading_point, shading_ray, 0.5f);
+
+            PhaseFunctionBSDFInputValues* bsdf_inputs = m_arena.allocate<PhaseFunctionBSDFInputValues>();
+            bsdf_inputs->m_albedo.set(1.0f);
 
             SamplingContext::RNGType rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
@@ -158,24 +138,26 @@ TEST_SUITE(Renderer_Modeling_Volume)
             Vector3f bias(0.0f);
             for (size_t i = 0; i < NumberOfSamples; ++i)
             {
-                Vector3f incoming;
-                const float pdf = volume.sample(
-                    sampling_context, data, shading_ray, 0.5f, incoming);
-                bias += incoming / pdf;
+                BSDFSample sample(&shading_point, Dual3f(Vector3f(-shading_ray.m_dir)));
+                phase_function_bsdf.sample(sampling_context, bsdf_inputs, false, false, ScatteringMode::All, sample);
+                bias += sample.m_incoming.get_value() / sample.get_probability();
             }
 
             return bias / static_cast<float>(NumberOfSamples);
         }
 
         // Sample a given volume and find average cosine of scattering angle.
-        float get_aposteriori_average_cosine(const Volume& volume)
+        float get_aposteriori_average_cosine(const PhaseFunctionBSDF& phase_function_bsdf)
         {
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
             shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
 
-            void* data = volume.evaluate_inputs(m_shading_context, shading_ray);
-            volume.prepare_inputs(m_arena, shading_ray, data);
+            ShadingPoint shading_point;
+            m_intersector.make_volume_shading_point(shading_point, shading_ray, 0.5f);
+
+            PhaseFunctionBSDFInputValues* bsdf_inputs = m_arena.allocate<PhaseFunctionBSDFInputValues>();
+            bsdf_inputs->m_albedo.set(1.0f);
 
             SamplingContext::RNGType rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
@@ -183,23 +165,25 @@ TEST_SUITE(Renderer_Modeling_Volume)
             Vector3f bias(0.0f);
             for (size_t i = 0; i < NumberOfSamples; ++i)
             {
-                Vector3f incoming;
-                volume.sample(
-                    sampling_context, data, shading_ray, 0.5f, incoming);
-                bias += incoming;
+                BSDFSample sample(&shading_point, Dual3f(Vector3f(-shading_ray.m_dir)));
+                phase_function_bsdf.sample(sampling_context, bsdf_inputs, false, false, ScatteringMode::All, sample);
+                bias += sample.m_incoming.get_value();
             }
 
             return bias.x / NumberOfSamples;
         }
 
-        vector<Vector2f> generate_samples_for_plot(const Volume& volume)
+        vector<Vector2f> generate_samples_for_plot(const PhaseFunctionBSDF& phase_function_bsdf)
         {
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
             shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
 
-            void* data = volume.evaluate_inputs(m_shading_context, shading_ray);
-            volume.prepare_inputs(m_arena, shading_ray, data);
+            ShadingPoint shading_point;
+            m_intersector.make_volume_shading_point(shading_point, shading_ray, 0.5f);
+
+            PhaseFunctionBSDFInputValues* bsdf_inputs = m_arena.allocate<PhaseFunctionBSDFInputValues>();
+            bsdf_inputs->m_albedo.set(1.0f);
 
             SamplingContext::RNGType rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
@@ -208,45 +192,16 @@ TEST_SUITE(Renderer_Modeling_Volume)
             points.reserve(NumberOfSamples);
             for (size_t i = 0; i < NumberOfSamplesPlot; ++i)
             {
-                Vector3f incoming;
-                const float pdf = volume.sample(
-                    sampling_context, data, shading_ray, 0.5f, incoming);
-                points.emplace_back(incoming.x * pdf, incoming.y * pdf);
+                BSDFSample sample(&shading_point, Dual3f(Vector3f(-shading_ray.m_dir)));
+                phase_function_bsdf.sample(sampling_context, bsdf_inputs, false, false, ScatteringMode::All, sample);
+                points.emplace_back(
+                    sample.m_incoming.get_value().x * sample.get_probability(),
+                    sample.m_incoming.get_value().y * sample.get_probability());
             }
 
             return points;
         }
     };
-
-    TEST_CASE(CheckHenyeyPdfIntegratesToOne)
-    {
-        static const float G[4] = { -0.5f, 0.0f, +0.3f, +0.8f };
-
-        for (size_t i = 0; i < countof(G); ++i)
-        {
-            TestSceneBase test_scene;
-
-            auto_release_ptr<Assembly> assembly(
-                AssemblyFactory().create("assembly", ParamArray()));
-
-            auto_release_ptr<Volume> volume =
-                GenericVolumeFactory().create("volume",
-                    ParamArray()
-                        .insert("absorption", 0.5f)
-                        .insert("scattering", 0.5f)
-                        .insert("phase_function_model", "henyey")
-                        .insert("average_cosine", G[i]));
-            Volume& volume_ref = volume.ref();
-            assembly->volumes().insert(volume);
-
-            test_scene.m_scene.assemblies().insert(assembly);
-
-            VolumeTestSceneContext context(test_scene);
-            const float integral = context.integrate_volume_pdf(volume_ref);
-
-            EXPECT_FEQ_EPS(1.0f, integral, 0.05f);
-        }
-    }
 
     TEST_CASE(CheckHenyeySamplingConsistency)
     {
@@ -255,24 +210,12 @@ TEST_SUITE(Renderer_Modeling_Volume)
         for (size_t i = 0; i < countof(G); ++i)
         {
             TestSceneBase test_scene;
-
-            auto_release_ptr<Assembly> assembly(
-                AssemblyFactory().create("assembly", ParamArray()));
-
-            auto_release_ptr<Volume> volume =
-                GenericVolumeFactory().create("volume",
-                    ParamArray()
-                        .insert("absorption", 0.5f)
-                        .insert("scattering", 0.5f)
-                        .insert("phase_function_model", "henyey")
-                        .insert("average_cosine", G[i]));
-            Volume& volume_ref = volume.ref();
-            assembly->volumes().insert(volume);
-
-            test_scene.m_scene.assemblies().insert(assembly);
-
             VolumeTestSceneContext context(test_scene);
-            const Vector3f bias = context.get_sampling_bias(volume_ref);
+
+            PhaseFunctionBSDF bsdf("test_phase_function_bsdf", ParamArray());
+            bsdf.m_phase_function.reset(new HenyeyPhaseFunction(G[i]));
+
+            const Vector3f bias = context.get_sampling_bias(bsdf);
 
             EXPECT_FEQ_EPS(bias, Vector3f(0.0f), 0.2f);
         }
@@ -285,24 +228,12 @@ TEST_SUITE(Renderer_Modeling_Volume)
         for (size_t i = 0; i < countof(G); ++i)
         {
             TestSceneBase test_scene;
-
-            auto_release_ptr<Assembly> assembly(
-                AssemblyFactory().create("assembly", ParamArray()));
-
-            auto_release_ptr<Volume> volume =
-                GenericVolumeFactory().create("volume",
-                    ParamArray()
-                        .insert("absorption", 0.5f)
-                        .insert("scattering", 0.5f)
-                        .insert("phase_function_model", "henyey")
-                        .insert("average_cosine", G[i]));
-            Volume& volume_ref = volume.ref();
-            assembly->volumes().insert(volume);
-
-            test_scene.m_scene.assemblies().insert(assembly);
-
             VolumeTestSceneContext context(test_scene);
-            const float average_cosine = context.get_aposteriori_average_cosine(volume_ref);
+
+            PhaseFunctionBSDF bsdf("test_phase_function_bsdf", ParamArray());
+            bsdf.m_phase_function.reset(new HenyeyPhaseFunction(G[i]));
+
+            const float average_cosine = context.get_aposteriori_average_cosine(bsdf);
 
             EXPECT_FEQ_EPS(G[i], average_cosine, 0.05f);
         }
@@ -323,24 +254,12 @@ TEST_SUITE(Renderer_Modeling_Volume)
         for (size_t i = 0; i < countof(G); ++i)
         {
             TestSceneBase test_scene;
-
-            auto_release_ptr<Assembly> assembly(
-                AssemblyFactory().create("assembly", ParamArray()));
-
-            auto_release_ptr<Volume> volume =
-                GenericVolumeFactory().create("volume",
-                    ParamArray()
-                        .insert("absorption", 0.5f)
-                        .insert("scattering", 0.5f)
-                        .insert("phase_function_model", "henyey")
-                        .insert("average_cosine", G[i]));
-            Volume& volume_ref = volume.ref();
-            assembly->volumes().insert(volume);
-
-            test_scene.m_scene.assemblies().insert(assembly);
-
             VolumeTestSceneContext context(test_scene);
-            const vector<Vector2f> points = context.generate_samples_for_plot(volume_ref);
+
+            PhaseFunctionBSDF bsdf("test_phase_function_bsdf", ParamArray());
+            bsdf.m_phase_function.reset(new HenyeyPhaseFunction(G[i]));
+
+            const vector<Vector2f> points = context.generate_samples_for_plot(bsdf);
 
             plotfile
                 .new_plot()
@@ -351,5 +270,45 @@ TEST_SUITE(Renderer_Modeling_Volume)
         }
 
         plotfile.write("unit tests/outputs/test_volume_henyey_samples.gnuplot");
+    }
+
+    TEST_CASE(CheckRayleighSamplingConsistency)
+    {
+        TestSceneBase test_scene;
+        VolumeTestSceneContext context(test_scene);
+
+        PhaseFunctionBSDF bsdf("test_phase_function_bsdf", ParamArray());
+        bsdf.m_phase_function.reset(new RayleighPhaseFunction());
+
+        const Vector3f bias = context.get_sampling_bias(bsdf);
+
+        EXPECT_FEQ_EPS(bias, Vector3f(0.0f), 0.2f);
+    }
+
+    TEST_CASE(PlotRayleighSamples)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("Samples of Rayleigh phase function (multiplied by PDF)");
+        plotfile.set_xlabel("X");
+        plotfile.set_ylabel("Y");
+        plotfile.set_xrange(-0.3, +0.3);
+        plotfile.set_yrange(-0.15, +0.15);
+
+        TestSceneBase test_scene;
+        VolumeTestSceneContext context(test_scene);
+
+        PhaseFunctionBSDF bsdf("test_phase_function_bsdf", ParamArray());
+        bsdf.m_phase_function.reset(new RayleighPhaseFunction());
+
+        const vector<Vector2f> points = context.generate_samples_for_plot(bsdf);
+
+        plotfile
+            .new_plot()
+            .set_points(points)
+            .set_title("Rayleigh samples")
+            .set_color("blue")
+            .set_style("points");
+
+        plotfile.write("unit tests/outputs/test_volume_rayleigh_samples.gnuplot");
     }
 }
