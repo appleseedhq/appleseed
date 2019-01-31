@@ -110,6 +110,8 @@ bool ProjectManager::save_project_as(const string& filepath)
     if (successful)
     {
         m_project->set_path(filepath.c_str());
+        m_project->search_paths().set_root_path(bf::absolute(filepath).parent_path().string());
+        emit signal_project_path_changed(QString::fromStdString(filepath));
         m_dirty_flag = false;
     }
 

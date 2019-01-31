@@ -118,6 +118,7 @@ class ProjectManager
 
   signals:
     void signal_load_project_async_complete(const QString& filepath, const bool successful);
+    void signal_project_path_changed(const QString& new_filepath);
 
   private slots:
     void slot_load_project_async_complete();

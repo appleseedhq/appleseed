@@ -35,6 +35,7 @@
 namespace appleseed { namespace studio { class ItemRegistry; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
+namespace appleseed { namespace studio { class ProjectManager; } }
 namespace appleseed { namespace studio { class RenderingManager; } }
 namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
@@ -50,20 +51,23 @@ class EntityEditorContext
   : public foundation::NonCopyable
 {
   public:
-    EntityEditorContext(
-        renderer::Project&      project,
-        ProjectExplorer&        project_explorer,
-        ProjectBuilder&         project_builder,
-        ItemRegistry&           item_registry,
-        RenderingManager&       rendering_manager,
-        renderer::ParamArray&   settings);
-
     renderer::Project&          m_project;
+    ProjectManager&             m_project_manager;
     ProjectExplorer&            m_project_explorer;
     ProjectBuilder&             m_project_builder;
     ItemRegistry&               m_item_registry;
     RenderingManager&           m_rendering_manager;
     renderer::ParamArray&       m_settings;
+
+    // Constructor.
+    EntityEditorContext(
+        renderer::Project&      project,
+        ProjectManager&         project_manager,
+        ProjectExplorer&        project_explorer,
+        ProjectBuilder&         project_builder,
+        ItemRegistry&           item_registry,
+        RenderingManager&       rendering_manager,
+        renderer::ParamArray&   settings);
 };
 
 
@@ -73,12 +77,14 @@ class EntityEditorContext
 
 inline EntityEditorContext::EntityEditorContext(
     renderer::Project&          project,
+    ProjectManager&             project_manager,
     ProjectExplorer&            project_explorer,
     ProjectBuilder&             project_builder,
     ItemRegistry&               item_registry,
     RenderingManager&           rendering_manager,
     renderer::ParamArray&       settings)
   : m_project(project)
+  , m_project_manager(project_manager)
   , m_project_explorer(project_explorer)
   , m_project_builder(project_builder)
   , m_item_registry(item_registry)

@@ -773,6 +773,7 @@ void MainWindow::update_project_explorer()
                 m_ui->treewidget_project_explorer_scene,
                 m_attribute_editor,
                 *m_project_manager.get_project(),
+                m_project_manager,
                 m_rendering_manager,
                 m_settings);
 
