@@ -33,7 +33,6 @@
 #include "renderer/kernel/rendering/irenderercontroller.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
 
 // Standard headers.
