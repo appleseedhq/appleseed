@@ -217,7 +217,7 @@ macro (link_against_platform target)
 endmacro ()
 
 macro (link_against_zlib target)
-    if (USE_EXTERNAL_ZLIB)
+    if (USE_SYSTEM_ZLIB)
         target_link_libraries (${target} ${ZLIB_LIBRARIES})
     else ()
         target_link_libraries (${target}
@@ -228,7 +228,7 @@ macro (link_against_zlib target)
 endmacro ()
 
 macro (link_against_libpng target)
-    if (USE_EXTERNAL_PNG)
+    if (USE_SYSTEM_PNG)
         target_link_libraries (${target} ${PNG_LIBRARIES})
     else ()
         target_link_libraries (${target}
@@ -239,7 +239,7 @@ macro (link_against_libpng target)
 endmacro ()
 
 macro (link_against_openexr target)
-    if (USE_EXTERNAL_EXR)
+    if (USE_SYSTEM_EXR)
         target_link_libraries (${target}
             ${IMATH_LIBRARIES}
             ${OPENEXR_LIBRARIES}
@@ -261,7 +261,7 @@ macro (link_against_openexr target)
 endmacro ()
 
 macro (link_against_xercesc target)
-    if (USE_EXTERNAL_XERCES)
+    if (USE_SYSTEM_XERCES)
         target_link_libraries (${target} ${XERCES_LIBRARIES})
     else ()
         target_link_libraries (${target}
@@ -272,7 +272,7 @@ macro (link_against_xercesc target)
 endmacro ()
 
 macro (link_against_oiio target)
-    if (USE_EXTERNAL_OIIO)
+    if (USE_SYSTEM_OIIO)
         target_link_libraries (${target}
             ${OPENIMAGEIO_LIBRARIES}
             ${LIBJPEG_LIBRARY}
@@ -291,7 +291,7 @@ macro (link_against_oiio target)
 endmacro ()
 
 macro (link_against_ocio target)
-    if (USE_EXTERNAL_OCIO)
+    if (USE_SYSTEM_OCIO)
         target_link_libraries (${target}
             ${OPENCOLORIO_LIBRARIES}
         )
@@ -316,7 +316,7 @@ macro (link_against_osl target)
         LLVMObject LLVMCore LLVMSupport
     )
 
-    if (USE_EXTERNAL_OSL)
+    if (USE_SYSTEM_OSL)
         target_link_libraries (${target}
             ${OSL_EXEC_LIBRARY}
             ${OSL_QUERY_LIBRARY}
@@ -344,7 +344,7 @@ macro (link_against_osl target)
 endmacro ()
 
 macro (link_against_seexpr target)
-    if (USE_EXTERNAL_SEEXPR)
+    if (USE_SYSTEM_SEEXPR)
         target_link_libraries (${target} ${SEEXPR_LIBRARIES})
     else ()
         target_link_libraries (${target}
@@ -355,7 +355,7 @@ macro (link_against_seexpr target)
 endmacro ()
 
 macro (link_against_seexpreditor target)
-    if (USE_EXTERNAL_SEEXPR)
+    if (USE_SYSTEM_SEEXPR)
         target_link_libraries (${target} ${SEEXPREDITOR_LIBRARIES})
     else ()
         target_link_libraries (${target}
@@ -366,7 +366,7 @@ macro (link_against_seexpreditor target)
 endmacro ()
 
 macro (link_against_embree target)
-    if (USE_EXTERNAL_EMBREE)
+    if (USE_SYSTEM_EMBREE)
         target_link_libraries (${target} ${EMBREE_LIBRARIES})
     else ()
         target_link_libraries (${target}
