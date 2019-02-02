@@ -91,16 +91,6 @@ set (c_compiler_flags_common
 set (cxx_compiler_flags_common
     -Wno-reorder
 )
-if (WARNINGS_AS_ERRORS)
-    if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR
-        CMAKE_BUILD_TYPE STREQUAL "Profile" OR
-        CMAKE_BUILD_TYPE STREQUAL "Release")
-        set (c_compiler_flags_common
-            ${c_compiler_flags_common}
-            -Werror                                     # treat Warnings As Errors
-        )
-    endif ()
-endif ()
 set (cxx_compiler_flags_common
     ${cxx_compiler_flags_common}
     -std=c++11                                          # enable C++11
@@ -139,12 +129,21 @@ if (is_x86)
         )
     endif ()
 endif ()
-set (exe_linker_flags_common
-    -Werror                                             # Treat Warnings As Errors
-)
-set (shared_lib_linker_flags_common
-    -Werror                                             # Treat Warnings As Errors
-)
+if (WARNINGS_AS_ERRORS)
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR
+        CMAKE_BUILD_TYPE STREQUAL "Release")
+        set (c_compiler_flags_common
+            ${c_compiler_flags_common}
+            -Werror                                     # treat Warnings As Errors
+        )
+        set (exe_linker_flags_common
+            -Werror                                     # treat Warnings As Errors
+        )
+        set (shared_lib_linker_flags_common
+            -Werror                                     # treat Warnings As Errors
+        )
+    endif ()
+endif ()
 if (HIDE_SYMBOLS)
     set (c_compiler_flags_common
         ${c_compiler_flags_common}
