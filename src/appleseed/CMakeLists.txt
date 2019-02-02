@@ -2167,7 +2167,7 @@ target_link_libraries (appleseed
 #--------------------------------------------------------------------------------------------------
 
 # Copy OSL and OIIO tools to the sandbox.
-if (USE_EXTERNAL_OSL)
+if (USE_SYSTEM_OSL)
     add_custom_command (TARGET appleseed
         PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${OSL_QUERY_INFO} ${PROJECT_SOURCE_DIR}/sandbox/bin/

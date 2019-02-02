@@ -45,7 +45,7 @@ set (CMAKE_MODULE_PATH
 # Build options.
 #--------------------------------------------------------------------------------------------------
 
-option (USE_EXTERNAL_OIIO   "Use external OpenImageIO library"          OFF)
+option (USE_SYSTEM_OIIO     "Use system OpenImageIO library"            OFF)
 option (USE_STATIC_OIIO     "Use static OpenImageIO libraries"          ON)
 
 
@@ -62,7 +62,7 @@ endif ()
 
 
 #--------------------------------------------------------------------------------------------------
-# Find external packages.
+# Find packages.
 #--------------------------------------------------------------------------------------------------
 
 find_package (Imath)
@@ -70,7 +70,7 @@ find_package (Imath)
 if (USE_STATIC_OIIO)
     add_definitions (-DOIIO_STATIC_BUILD)
 endif ()
-if (USE_EXTERNAL_OIIO)
+if (USE_SYSTEM_OIIO)
     find_package (OpenImageIO REQUIRED)
 endif ()
 
@@ -81,7 +81,7 @@ endif ()
 
 include_directories (${IMATH_INCLUDE_DIRS})
 
-if (USE_EXTERNAL_OIIO)
+if (USE_SYSTEM_OIIO)
     include_directories (${OPENIMAGEIO_INCLUDE_DIRS})
 else ()
     include_directories (${APPLESEED_DEPS_STAGE_DIR}/oiio-debug/include)
