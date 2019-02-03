@@ -100,6 +100,8 @@ endif ()
 # Compiler features.
 #--------------------------------------------------------------------------------------------------
 
+set (CMAKE_CXX_STANDARD 11)
+
 include (WriteCompilerDetectionHeader)
 
 write_compiler_detection_header (
