@@ -133,6 +133,11 @@ namespace
         return &(project->configurations());
     }
 
+    PluginStore* get_plugin_store(Project* project)
+    {
+        return &(project->get_plugin_store());
+    }
+
     bool write_project_default_opts(
         const ProjectFileWriter*            writer,
         Project*                            project,
@@ -344,6 +349,8 @@ void bind_project()
 
         .def("set_scene", &Project::set_scene)
         .def("get_scene", &Project::get_scene, bpy::return_value_policy<bpy::reference_existing_object>())
+
+        .def("get_plugin_store", get_plugin_store, bpy::return_value_policy<bpy::reference_existing_object>())
 
         .def("set_frame", &Project::set_frame)
         .def("get_frame", &Project::get_frame, bpy::return_value_policy<bpy::reference_existing_object>())

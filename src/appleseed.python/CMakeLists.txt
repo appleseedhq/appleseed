@@ -84,6 +84,7 @@ set (sources
     bindmeshobject.cpp
     bindmurmurhash.cpp
     bindobject.cpp
+    bindpluginstore.cpp
     bindpostprocessingstage.cpp
     bindproject.cpp
     bindquaternion.cpp

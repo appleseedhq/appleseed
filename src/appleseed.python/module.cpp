@@ -60,6 +60,7 @@ void bind_matrix();
 void bind_mesh_object();
 void bind_murmurhash();
 void bind_object();
+void bind_plugin_store();
 void bind_post_processing_stage();
 void bind_project();
 void bind_quaternion();
@@ -133,6 +134,7 @@ extern "C" void bind_appleseed_python_classes()
     bind_frame();
     bind_fresnel();
     bind_display();
+    bind_plugin_store();
     bind_project();
 
     bind_renderer_controller();

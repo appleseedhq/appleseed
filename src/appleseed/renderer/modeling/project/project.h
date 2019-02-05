@@ -48,6 +48,7 @@
 #include "renderer/modeling/surfaceshader/surfaceshadertraits.h"
 #include "renderer/modeling/texture/texturetraits.h"
 #include "renderer/modeling/volume/volumetraits.h"
+#include "renderer/utility/pluginstore.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
