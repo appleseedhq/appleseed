@@ -333,7 +333,7 @@ set_target_progress_message (prepare_sandbox "Preparing sandbox...")
 # )
 
 # Copy the OSL compiler to sandbox/bin/.
-if (USE_SYSTEM_OSL)
+if (USE_FIND_PACKAGE_FOR_OSL)
     add_custom_command (
         TARGET prepare_sandbox
         COMMAND ${CMAKE_COMMAND} -E copy ${OSL_COMPILER} ${PROJECT_SOURCE_DIR}/sandbox/bin/

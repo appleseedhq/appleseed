@@ -45,8 +45,13 @@ set (CMAKE_MODULE_PATH
 # Build options.
 #--------------------------------------------------------------------------------------------------
 
-option (USE_SYSTEM_OIIO     "Use system OpenImageIO library"            OFF)
-option (USE_SYSTEM_OSL      "Use system OpenShadingLanguage library"    OFF)
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    option (USE_FIND_PACKAGE_FOR_OIIO "Use find_package() for OpenImageIO library"         OFF)
+    option (USE_FIND_PACKAGE_FOR_OSL  "Use find_package() for OpenShadingLanguage library" OFF)
+else()
+    set (USE_FIND_PACKAGE_FOR_OIIO ON)
+    set (USE_FIND_PACKAGE_FOR_OSL  ON)
+endif()
 
 option (USE_STATIC_BOOST    "Use static Boost libraries"                ON)
 option (USE_STATIC_OIIO     "Use static OpenImageIO libraries"          ON)
@@ -102,14 +107,14 @@ find_package (OpenEXR)
 if (USE_STATIC_OIIO)
     add_definitions (-DOIIO_STATIC_BUILD)
 endif ()
-if (USE_SYSTEM_OIIO)
+if (USE_FIND_PACKAGE_FOR_OIIO)
     find_package (OpenImageIO REQUIRED)
 endif ()
 
 if (USE_STATIC_OSL)
     add_definitions (-DOSL_STATIC_LIBRARY)
 endif ()
-if (USE_SYSTEM_OSL)
+if (USE_FIND_PACKAGE_FOR_OSL)
     find_package (OSL REQUIRED)
 endif ()
 
@@ -122,13 +127,13 @@ include_directories (${APPLESEED_INCLUDE_DIRS})
 include_directories (${IMATH_INCLUDE_DIRS})
 include_directories (${OPENEXR_INCLUDE_DIRS})
 
-if (USE_SYSTEM_OIIO)
+if (USE_FIND_PACKAGE_FOR_OIIO)
     include_directories (${OPENIMAGEIO_INCLUDE_DIRS})
 else ()
     include_directories (${APPLESEED_DEPS_STAGE_DIR}/oiio-debug/include)
 endif ()
 
-if (USE_SYSTEM_OSL)
+if (USE_FIND_PACKAGE_FOR_OSL)
     include_directories (${OSL_INCLUDE_DIRS})
 else ()
     include_directories (${APPLESEED_DEPS_STAGE_DIR}/osl-debug/include)
