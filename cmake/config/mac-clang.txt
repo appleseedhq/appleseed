@@ -136,7 +136,7 @@ macro (link_against_platform target)
 endmacro ()
 
 macro (link_against_zlib target)
-    if (USE_SYSTEM_ZLIB)
+    if (USE_FIND_PACKAGE_FOR_ZLIB)
         target_link_libraries (${target} ${ZLIB_LIBRARIES})
     else ()
         target_link_libraries (${target}
@@ -146,7 +146,7 @@ macro (link_against_zlib target)
 endmacro ()
 
 macro (link_against_libpng target)
-    if (USE_SYSTEM_PNG)
+    if (USE_FIND_PACKAGE_FOR_PNG)
         target_link_libraries (${target} ${PNG_LIBRARIES})
     else ()
         target_link_libraries (${target}
@@ -156,7 +156,7 @@ macro (link_against_libpng target)
 endmacro ()
 
 macro (link_against_openexr target)
-    if (USE_SYSTEM_EXR)
+    if (USE_FIND_PACKAGE_FOR_EXR)
         target_link_libraries (${target}
             ${IMATH_LIBRARIES}
             ${OPENEXR_LIBRARIES}
@@ -173,7 +173,7 @@ macro (link_against_openexr target)
 endmacro ()
 
 macro (link_against_xercesc target)
-    if (USE_SYSTEM_XERCES)
+    if (USE_FIND_PACKAGE_FOR_XERCES)
         target_link_libraries (${target} ${XERCES_LIBRARIES})
     else ()
         target_link_libraries (${target}
@@ -203,7 +203,7 @@ macro (link_against_seexpreditor target)
 endmacro ()
 
 macro (link_against_embree target)
-    if (USE_SYSTEM_EMBREE)
+    if (USE_FIND_PACKAGE_FOR_EMBREE)
         target_link_libraries (${target} ${EMBREE_LIBRARIES})
     else ()
         #TODO
