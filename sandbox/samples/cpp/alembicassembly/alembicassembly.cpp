@@ -118,7 +118,7 @@ namespace
 
     // Return if given time samples are linearly time spaced between start_time
     // and end_time.
-    const bool are_linearly_sampled(
+    bool are_linearly_sampled(
         const AbcChrono_t start_time,
         const AbcChrono_t end_time,
         const std::vector<AbcChrono_t>& samples)
@@ -399,7 +399,7 @@ namespace
         const char* get_model() const override
         {
             return Model;
-        };
+        }
 
         // Delete this instance.
         void release() override
@@ -1092,7 +1092,7 @@ namespace
     }
 
     // Return object in given archive from given path.
-    const bool path_to_obj(
+    bool path_to_obj(
         const Abc::IArchive& archive,
         const std::string& path,
         Abc::IObject& obj)
@@ -1144,7 +1144,7 @@ namespace
 
 
     //
-    // Factory for the new assembly model.
+    // Factory for alembic assembly model.
     //
 
     class AlembicAssemblyFactory
@@ -1163,7 +1163,7 @@ namespace
             return Model;
         }
 
-        // Create a new assembly.
+        // Create an alembic assembly.
         asf::auto_release_ptr<asr::Assembly> create(
             const char*             name,
             const asr::ParamArray&  params) const override
