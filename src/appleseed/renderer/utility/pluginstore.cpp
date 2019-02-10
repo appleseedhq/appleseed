@@ -119,7 +119,9 @@ struct PluginStore::Impl
             plugin_map_it = insert_result.first;
 
             // Insert the corresponding entry into the inverse map.
+#ifndef NDEBUG
             const auto inverse_insert_result =
+#endif
                 m_plugin_inverse_map.insert(PluginInverseMap::value_type(plugin_map_it->second.get(), plugin_map_it));
             assert(inverse_insert_result.second);
 

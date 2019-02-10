@@ -826,8 +826,7 @@ bool Frame::archive(
     assert(directory);
 
     // Construct the name of the image file.
-    const string filename =
-        "autosave." + get_time_stamp_string() + ".exr";
+    const string filename = "autosave." + get_time_stamp_string() + ".exr";
 
     // Construct the path to the image file.
     const string file_path = (bf::path(directory) / filename).string();
