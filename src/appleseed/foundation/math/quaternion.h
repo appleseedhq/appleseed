@@ -157,12 +157,17 @@ template <typename T> bool is_normalized(const Quaternion<T>& q, const T eps);
 // Spherical linear interpolation between two unit-length quaternions.
 template <typename T> Quaternion<T> slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t);
 
+//
 // Approximate but faster spherical linear interpolation between two unit-length quaternions.
 // See http://zeuxcg.org/2015/07/23/approximating-slerp/ for derivation and error analysis.
+//
 // Another interesting reference:
+//
 //   Slerping Clock Cycles
 //   J.M.P. van Waveren
 //   http://fabiensanglard.net/doom3_documentation/37725-293747_293747.pdf
+//
+
 template <typename T> Quaternion<T> fast_slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t);
 
 // Rotation of a vector by a quaternion.
@@ -513,9 +518,13 @@ inline Vector<T, 3> rotate(const Quaternion<T>& q, const Vector<T, 3>& v)
     //
     //     return (q * Quaternion<T>(T(0.0), v) * conjugate(q)).v;
     //
+    // Reference for the optimized implementation:
+    //
+    //   https://fgiesen.wordpress.com/2019/02/09/rotating-a-single-vector-using-a-quaternion/
+    //
 
-    const Vector<T, 3> w = q.s * v + cross(q.v, v);
-    return dot(q.v, v) * q.v + q.s * w + cross(w, -q.v);
+    const Vector<T, 3> t = T(2.0) * cross(q.v, v);
+    return v + q.s * t + cross(q.v, t);
 }
 
 }   // namespace foundation
