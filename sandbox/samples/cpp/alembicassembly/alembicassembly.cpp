@@ -32,6 +32,7 @@
 #include "renderer/api/log.h"
 #include "renderer/api/object.h"
 #include "renderer/api/project.h"
+#include "renderer/api/rasterization.h"
 #include "renderer/api/scene.h"
 #include "renderer/api/utility.h"
 
@@ -1163,6 +1164,86 @@ namespace
             return Model;
         }
 
+        // Return metadata for this assembly model.
+        asf::Dictionary get_model_metadata() const override
+        {
+            return
+                asf::Dictionary()
+                    .insert("name", Model)
+                    .insert("label", "Alembic Assembly");
+        }
+
+        // Return metadata for the inputs of this object model.
+        asf::DictionaryArray get_input_metadata() const override
+        {
+            asf::DictionaryArray metadata;
+
+            metadata.push_back(
+                asf::Dictionary()
+                    .insert("name", "file_path")
+                    .insert("label", "File path")
+                    .insert("type", "text")
+                    .insert("use", "required"));
+
+            metadata.push_back(
+                asf::Dictionary()
+                    .insert("name", "shutter_open_time")
+                    .insert("label", "Shutter Open Time")
+                    .insert("type", "numeric")
+                    .insert("default", "0.0")
+                    .insert("min",
+                        asf::Dictionary()
+                            .insert("value", "-1.0")
+                            .insert("type", "soft"))
+                    .insert("max",
+                        asf::Dictionary()
+                            .insert("value", "1.0")
+                            .insert("type", "soft"))
+                    .insert("use", "optional"));
+
+            metadata.push_back(
+                asf::Dictionary()
+                    .insert("name", "shutter_close_time")
+                    .insert("label", "Shutter Close Time")
+                    .insert("type", "numeric")
+                    .insert("default", "0.0")
+                    .insert("min",
+                        asf::Dictionary()
+                            .insert("value", "-1.0")
+                            .insert("type", "soft"))
+                    .insert("max",
+                        asf::Dictionary()
+                            .insert("value", "1.0")
+                            .insert("type", "soft"))
+                    .insert("use", "optional"));
+
+            metadata.push_back(
+                asf::Dictionary()
+                    .insert("name", "time_offset")
+                    .insert("label", "Time Offset")
+                    .insert("type", "numeric")
+                    .insert("default", "0.0")
+                    .insert("min",
+                        asf::Dictionary()
+                            .insert("value", "-1.0")
+                            .insert("type", "soft"))
+                    .insert("max",
+                        asf::Dictionary()
+                            .insert("value", "1.0")
+                            .insert("type", "soft"))
+                    .insert("use", "optional"));
+
+            metadata.push_back(
+                asf::Dictionary()
+                    .insert("name", "verbose")
+                    .insert("label", "Verbose")
+                    .insert("type", "bool")
+                    .insert("default", "false")
+                    .insert("use", "optional"));
+
+            return metadata;
+        }
+
         // Create an alembic assembly.
         asf::auto_release_ptr<asr::Assembly> create(
             const char*             name,
@@ -1204,6 +1285,10 @@ namespace
             return Model;
         }
 
+        void print_settings() const override
+        {
+        }
+
         bool on_frame_begin(
             const asr::Project&                  project,
             const asr::BaseGroup*                parent,
@@ -1214,8 +1299,10 @@ namespace
         }
 
         bool on_render_begin(
-            const asr::Project&      project,
-            asf::IAbortSwitch*       abort_switch) override
+            const asr::Project&             project,
+            const asr::BaseGroup*           parent,
+            asr::OnRenderBeginRecorder&     recorder,
+            asf::IAbortSwitch*              abort_switch = nullptr) override
         {
             if (m_file_path.empty())
             {
@@ -1371,7 +1458,7 @@ namespace
             }
 
             // Of course, we don't forget to call the camera method.
-            return m_camera->on_render_begin(project, abort_switch);
+            return m_camera->on_render_begin(project, parent, recorder, abort_switch);
         }
 
         void spawn_ray(
@@ -1409,6 +1496,11 @@ namespace
             asf::Vector2d&           b_ndc) const override
         {
             m_camera->project_segment(time, a, b, a_ndc, b_ndc);
+        }
+
+        asr::RasterizationCamera get_rasterization_camera() const override
+        {
+            return m_camera->get_rasterization_camera();
         }
 
       private:
