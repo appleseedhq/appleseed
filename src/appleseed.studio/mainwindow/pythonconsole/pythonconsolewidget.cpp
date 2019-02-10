@@ -195,7 +195,8 @@ void PythonConsoleWidget::slot_open_file()
     if (!can_close_file())
         return;
 
-    ParamArray& settings = PythonInterpreter::instance().get_main_window()->get_settings();
+    // todo: we shouldn't have to go through the Python interpreter to retrieve application settings.
+    ParamArray& settings = PythonInterpreter::instance().get_main_window()->get_application_settings();
 
     QString filepath =
         get_open_filename(
@@ -222,7 +223,8 @@ void PythonConsoleWidget::slot_save_file()
 
 void PythonConsoleWidget::slot_save_file_as()
 {
-    ParamArray& settings = PythonInterpreter::instance().get_main_window()->get_settings();
+    // todo: we shouldn't have to go through the Python interpreter to retrieve application settings.
+    ParamArray& settings = PythonInterpreter::instance().get_main_window()->get_application_settings();
 
     const QString filepath =
         get_save_filename(
