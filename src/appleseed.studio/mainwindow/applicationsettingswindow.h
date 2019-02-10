@@ -36,38 +36,41 @@
 
 // Forward declarations.
 namespace renderer  { class ParamArray; }
-namespace Ui        { class SettingsWindow; }
+namespace Ui        { class ApplicationSettingsWindow; }
 class QWidget;
 
 namespace appleseed {
 namespace studio {
 
 //
-// Settings window.
+// Application settings window.
 //
 
-class SettingsWindow
+class ApplicationSettingsWindow
   : public WindowBase
 {
     Q_OBJECT
 
   public:
     // Constructor.
-    SettingsWindow(
-        renderer::ParamArray&   settings,
-        QWidget*                parent = nullptr);
+    ApplicationSettingsWindow(
+        renderer::ParamArray&       settings,
+        QWidget*                    parent = nullptr);
 
     // Destructor.
-    ~SettingsWindow() override;
+    ~ApplicationSettingsWindow() override;
 
   signals:
-    void signal_settings_modified() const;
+    void signal_application_settings_modified() const;
+
+  public slots:
+    void slot_reload_application_settings();
 
   private:
     // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
-    Ui::SettingsWindow*     m_ui;
+    Ui::ApplicationSettingsWindow*  m_ui;
 
-    renderer::ParamArray&   m_settings;
+    renderer::ParamArray&           m_settings;
 
     void build_connections();
 
@@ -77,6 +80,7 @@ class SettingsWindow
   private slots:
     void slot_save_configuration_and_close();
     void slot_restore_configuration_and_close();
+    void slot_enable_disable_rendering_threads_spinbox();
 };
 
 }   // namespace studio

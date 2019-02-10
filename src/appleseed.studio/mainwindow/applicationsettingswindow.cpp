@@ -27,10 +27,10 @@
 //
 
 // Interface header.
-#include "settingswindow.h"
+#include "applicationsettingswindow.h"
 
 // UI definition header.
-#include "ui_settingswindow.h"
+#include "ui_applicationsettingswindow.h"
 
 // appleseed.studio headers.
 #include "utility/miscellaneous.h"
@@ -40,7 +40,9 @@
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/system.h"
 #include "foundation/utility/log/logmessage.h"
+#include "foundation/utility/string.h"
 
 // Qt headers.
 #include <QKeySequence>
@@ -58,12 +60,12 @@ namespace appleseed {
 namespace studio {
 
 //
-// SettingsWindow class implementation.
+// ApplicationSettingsWindow class implementation.
 //
 
-SettingsWindow::SettingsWindow(ParamArray& settings, QWidget* parent)
-  : WindowBase(parent, "settings_window")
-  , m_ui(new Ui::SettingsWindow())
+ApplicationSettingsWindow::ApplicationSettingsWindow(ParamArray& settings, QWidget* parent)
+  : WindowBase(parent, "application_settings_window")
+  , m_ui(new Ui::ApplicationSettingsWindow())
   , m_settings(settings)
 {
     m_ui->setupUi(this);
@@ -77,12 +79,17 @@ SettingsWindow::SettingsWindow(ParamArray& settings, QWidget* parent)
     load_settings();
 }
 
-SettingsWindow::~SettingsWindow()
+ApplicationSettingsWindow::~ApplicationSettingsWindow()
 {
     delete m_ui;
 }
 
-void SettingsWindow::build_connections()
+void ApplicationSettingsWindow::slot_reload_application_settings()
+{
+    load_settings();
+}
+
+void ApplicationSettingsWindow::build_connections()
 {
     connect(m_ui->buttonbox, SIGNAL(accepted()), SLOT(slot_save_configuration_and_close()));
     connect(m_ui->buttonbox, SIGNAL(rejected()), SLOT(slot_restore_configuration_and_close()));
@@ -98,9 +105,13 @@ void SettingsWindow::build_connections()
     connect(
         create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
         SLOT(slot_restore_configuration_and_close()));
+
+    connect(
+        m_ui->checkbox_rendering_threads_auto, SIGNAL(stateChanged(int)),
+        SLOT(slot_enable_disable_rendering_threads_spinbox()));
 }
 
-void SettingsWindow::load_settings()
+void ApplicationSettingsWindow::load_settings()
 {
     // Exploit the fact that category values match combobox item indices exactly.
     const string message_verbosity =
@@ -121,6 +132,29 @@ void SettingsWindow::load_settings()
         sampling_mode == "qmc" ? 1 :
         1);     // qmc if an unknown value was found
 
+    // Rendering threads.
+    m_ui->spinbox_rendering_threads->setValue(static_cast<int>(System::get_logical_cpu_core_count()));
+    m_ui->spinbox_rendering_threads->setEnabled(false);
+    m_ui->checkbox_rendering_threads_auto->setChecked(true);
+    const string rendering_threads_str =
+        m_settings.get_path_optional<string>(SETTINGS_RENDERING_THREADS, "auto");
+    if (rendering_threads_str != "auto")
+    {
+        try
+        {
+            const int rendering_threads = from_string<int>(rendering_threads_str);
+            if (rendering_threads > 0)
+            {
+                m_ui->spinbox_rendering_threads->setEnabled(true);
+                m_ui->spinbox_rendering_threads->setValue(rendering_threads);
+                m_ui->checkbox_rendering_threads_auto->setChecked(false);
+            }
+        }
+        catch (const ExceptionStringConversionError&)
+        {
+        }
+    }
+
     // Autosave.
     m_ui->checkbox_autosave->setChecked(
         m_settings.get_path_optional<bool>(SETTINGS_AUTOSAVE, false));
@@ -134,7 +168,7 @@ void SettingsWindow::load_settings()
         m_settings.get_path_optional<bool>(SETTINGS_PRINT_FINAL_AVERAGE_LUMINANCE, false));
 }
 
-void SettingsWindow::save_settings()
+void ApplicationSettingsWindow::save_settings()
 {
     // Exploit the fact that category values match combobox item indices exactly.
     const auto sampling_mode_index = m_ui->combobox_message_verbosity->currentIndex();
@@ -149,6 +183,13 @@ void SettingsWindow::save_settings()
     m_settings.insert_path(SETTINGS_SAMPLING_MODE,
         m_ui->combobox_sampling_mode->currentIndex() == 0 ? "rng" : "qmc");
 
+    // Rendering threads.
+    string rendering_threads_str;
+    if (m_ui->checkbox_rendering_threads_auto->isChecked())
+        rendering_threads_str = "auto";
+    else rendering_threads_str = to_string(m_ui->spinbox_rendering_threads->value());
+    m_settings.insert_path(SETTINGS_RENDERING_THREADS, rendering_threads_str);
+
     // Autosave.
     m_settings.insert_path(SETTINGS_AUTOSAVE, m_ui->checkbox_autosave->isChecked());
 
@@ -160,22 +201,28 @@ void SettingsWindow::save_settings()
     m_settings.insert_path(SETTINGS_PRINT_FINAL_AVERAGE_LUMINANCE,
         m_ui->checkbox_print_final_average_luminance->isChecked());
 
-    emit signal_settings_modified();
+    emit signal_application_settings_modified();
 }
 
-void SettingsWindow::slot_save_configuration_and_close()
+void ApplicationSettingsWindow::slot_save_configuration_and_close()
 {
     save_settings();
     close();
 }
 
-void SettingsWindow::slot_restore_configuration_and_close()
+void ApplicationSettingsWindow::slot_restore_configuration_and_close()
 {
     load_settings();
     close();
 }
 
+void ApplicationSettingsWindow::slot_enable_disable_rendering_threads_spinbox()
+{
+    m_ui->spinbox_rendering_threads->setEnabled(
+        m_ui->checkbox_rendering_threads_auto->checkState() != Qt::Checked);
+}
+
 }   // namespace studio
 }   // namespace appleseed
 
-#include "mainwindow/moc_cpp_settingswindow.cxx"
+#include "mainwindow/moc_cpp_applicationsettingswindow.cxx"

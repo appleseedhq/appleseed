@@ -45,6 +45,7 @@
 namespace appleseed { namespace studio { class ProjectManager; } }
 namespace appleseed { namespace studio { class RenderSettingsPanel; } }
 namespace renderer  { class Configuration; }
+namespace renderer  { class ParamArray; }
 namespace Ui        { class RenderingSettingsWindow; }
 class QWidget;
 
@@ -64,6 +65,7 @@ class RenderingSettingsWindow
     // Constructor.
     RenderingSettingsWindow(
         ProjectManager&                 project_manager,
+        const renderer::ParamArray&     application_settings,
         QWidget*                        parent = nullptr);
 
     // Destructor.
@@ -73,7 +75,11 @@ class RenderingSettingsWindow
     void reload();
 
   signals:
-    void signal_settings_modified() const;
+    void signal_rendering_settings_modified() const;
+    void signal_application_settings_modified() const;
+
+  public slots:
+    void slot_reload_application_settings();
 
   private:
     typedef std::vector<RenderSettingsPanel*> PanelCollection;
@@ -82,6 +88,8 @@ class RenderingSettingsWindow
     Ui::RenderingSettingsWindow*        m_ui;
 
     ProjectManager&                     m_project_manager;
+    const renderer::ParamArray&         m_application_settings;
+
     PanelCollection                     m_panels;
     QString                             m_current_configuration_name;
     std::map<std::string, std::string>  m_initial_values;

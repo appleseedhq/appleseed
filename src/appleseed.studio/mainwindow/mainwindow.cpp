@@ -148,7 +148,7 @@ MainWindow::MainWindow(QWidget* parent)
     m_ui->treewidget_project_explorer_scene->header()->restoreState(
         settings.value("main_window_project_explorer_state").toByteArray());
 
-    slot_load_settings();
+    slot_load_application_settings();
 
     update_project_explorer();
     update_workspace();
@@ -312,9 +312,9 @@ ProjectManager* MainWindow::get_project_manager()
     return &m_project_manager;
 }
 
-ParamArray& MainWindow::get_settings()
+ParamArray& MainWindow::get_application_settings()
 {
-    return m_settings;
+    return m_application_settings;
 }
 
 QDockWidget* MainWindow::create_dock_widget(const char* dock_name)
@@ -325,7 +325,7 @@ QDockWidget* MainWindow::create_dock_widget(const char* dock_name)
     dock_widget->setObjectName(object_name);
     dock_widget->setWindowTitle(dock_name);
 
-    const auto actions = m_ui->menu_view->actions();
+    const QList<QAction*> actions = m_ui->menu_view->actions();
     QAction* menu_separator = actions.last();
     for (int i = actions.size() - 2; i != 0; --i)
     {
@@ -425,9 +425,9 @@ void MainWindow::build_menus()
     // Tools menu.
     //
 
-    connect(m_ui->action_tools_settings, SIGNAL(triggered()), SLOT(slot_show_settings_window()));
-    connect(m_ui->action_tools_save_settings, SIGNAL(triggered()), SLOT(slot_save_settings()));
-    connect(m_ui->action_tools_reload_settings, SIGNAL(triggered()), SLOT(slot_load_settings()));
+    connect(m_ui->action_tools_settings, SIGNAL(triggered()), SLOT(slot_show_application_settings_window()));
+    connect(m_ui->action_tools_save_settings, SIGNAL(triggered()), SLOT(slot_save_application_settings()));
+    connect(m_ui->action_tools_reload_settings, SIGNAL(triggered()), SLOT(slot_load_application_settings()));
 
     //
     // Help menu.
@@ -766,7 +766,7 @@ void MainWindow::update_project_explorer()
             new AttributeEditor(
                 m_ui->attribute_editor_scrollarea_contents,
                 *m_project_manager.get_project(),
-                m_settings);
+                m_application_settings);
 
         m_project_explorer =
             new ProjectExplorer(
@@ -775,7 +775,7 @@ void MainWindow::update_project_explorer()
                 *m_project_manager.get_project(),
                 m_project_manager,
                 m_rendering_manager,
-                m_settings);
+                m_application_settings);
 
         connect(
             m_project_explorer, SIGNAL(signal_project_modified()),
@@ -1033,7 +1033,7 @@ void MainWindow::add_light_paths_tab()
         m_light_paths_tab =
             new LightPathsTab(
                 *m_project_manager.get_project(),
-                m_settings);
+                m_application_settings);
 
         // Connect render tabs to the light paths tab.
         for (const auto& kv : m_render_tabs)
@@ -1069,11 +1069,14 @@ ParamArray MainWindow::get_project_params(const char* configuration_name) const
             ? m_project_manager.get_project()->configurations().get_by_name(configuration_name)
             : nullptr;
 
+    // Start with the parameters from the base configuration.
     if (configuration && configuration->get_base())
         params = configuration->get_base()->get_parameters();
 
-    params.merge(m_settings);
+    // Override with application settings.
+    params.merge(m_application_settings);
 
+    // Override with parameters from the configuration.
     if (configuration)
         params.merge(configuration->get_parameters());
 
@@ -1285,7 +1288,7 @@ void MainWindow::apply_false_colors_settings()
     Frame* frame = project->get_frame();
     assert(frame != nullptr);
 
-    const ParamArray& false_colors_params = m_settings.child("false_colors");
+    const ParamArray& false_colors_params = m_application_settings.child("false_colors");
     const bool false_colors_enabled = false_colors_params.get_optional<bool>("enabled", false);
 
     if (false_colors_enabled)
@@ -1386,7 +1389,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     settings.setValue("main_window_project_explorer_state",
         m_ui->treewidget_project_explorer_scene->header()->saveState());
 
-    slot_save_settings();
+    slot_save_application_settings();
 
     if (m_test_window.get())
         m_test_window->close();
@@ -1419,7 +1422,7 @@ void MainWindow::slot_open_project()
             this,
             "Open...",
             get_project_files_filter(),
-            m_settings,
+            m_application_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
     if (!filepath.isEmpty())
@@ -1537,7 +1540,7 @@ void MainWindow::slot_save_project_as()
             this,
             "Save As...",
             get_project_files_filter(ProjectFilesFilterPlainProjects),
-            m_settings,
+            m_application_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
     if (!filepath.isEmpty())
@@ -1557,7 +1560,7 @@ void MainWindow::slot_pack_project_as()
             this,
             "Pack As...",
             get_project_files_filter(ProjectFilesFilterPackedProjects),
-            m_settings,
+            m_application_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
     if (!filepath.isEmpty())
@@ -1629,7 +1632,7 @@ void MainWindow::slot_toggle_project_file_monitoring(const bool checked)
         enable_project_file_monitoring();
     else disable_project_file_monitoring();
 
-    m_settings.insert_path(
+    m_application_settings.insert_path(
         SETTINGS_WATCH_FILE_CHANGES,
         m_project_file_watcher != nullptr);
 }
@@ -1644,26 +1647,26 @@ void MainWindow::slot_project_file_changed(const QString& filepath)
     slot_reload_project();
 }
 
-void MainWindow::slot_load_settings()
+void MainWindow::slot_load_application_settings()
 {
     Dictionary settings;
     if (Application::load_settings("appleseed.studio.xml", settings, global_logger(), LogMessage::Info))
     {
-        m_settings = settings;
-        slot_apply_settings();
+        m_application_settings = settings;
+        slot_apply_application_settings();
     }
 }
 
-void MainWindow::slot_save_settings()
+void MainWindow::slot_save_application_settings()
 {
-    Application::save_settings("appleseed.studio.xml", m_settings, global_logger(), LogMessage::Info);
+    Application::save_settings("appleseed.studio.xml", m_application_settings, global_logger(), LogMessage::Info);
 }
 
-void MainWindow::slot_apply_settings()
+void MainWindow::slot_apply_application_settings()
 {
-    if (m_settings.strings().exist(SETTINGS_MESSAGE_VERBOSITY))
+    if (m_application_settings.strings().exist(SETTINGS_MESSAGE_VERBOSITY))
     {
-        const char* level_name = m_settings.get(SETTINGS_MESSAGE_VERBOSITY);
+        const char* level_name = m_application_settings.get(SETTINGS_MESSAGE_VERBOSITY);
         const LogMessage::Category level = LogMessage::get_category_value(level_name);
 
         if (level < LogMessage::NumMessageCategories)
@@ -1671,7 +1674,7 @@ void MainWindow::slot_apply_settings()
         else RENDERER_LOG_ERROR("invalid message verbosity level \"%s\".", level_name);
     }
 
-    if (m_settings.get_optional<bool>(SETTINGS_WATCH_FILE_CHANGES))
+    if (m_application_settings.get_optional<bool>(SETTINGS_WATCH_FILE_CHANGES))
     {
         m_action_monitor_project_file->setChecked(true);
         enable_project_file_monitoring();
@@ -1681,6 +1684,8 @@ void MainWindow::slot_apply_settings()
         m_action_monitor_project_file->setChecked(false);
         disable_project_file_monitoring();
     }
+
+    emit signal_application_settings_modified();
 }
 
 void MainWindow::slot_start_interactive_rendering()
@@ -1824,8 +1829,8 @@ void MainWindow::slot_show_false_colors_window()
 
     m_false_colors_window->initialize(
         *project,
-        m_settings,
-        m_settings.child("false_colors"));
+        m_application_settings,
+        m_application_settings.child("false_colors"));
 
     m_false_colors_window->showNormal();
     m_false_colors_window->activateWindow();
@@ -1833,7 +1838,7 @@ void MainWindow::slot_show_false_colors_window()
 
 void MainWindow::slot_apply_false_colors_settings_changes(Dictionary values)
 {
-    m_settings.push("false_colors").merge(values);
+    m_application_settings.push("false_colors").merge(values);
     apply_false_colors_settings();
 }
 
@@ -1922,7 +1927,7 @@ void MainWindow::slot_set_render_region(const QRect& rect)
     {
         set_render_region_action.get()->operator()(*m_project_manager.get_project());
 
-        if (m_settings.get_path_optional<bool>(SETTINGS_RENDER_REGION_TRIGGERS_RENDERING))
+        if (m_application_settings.get_path_optional<bool>(SETTINGS_RENDER_REGION_TRIGGERS_RENDERING))
             start_rendering(InteractiveRendering);
     }
     else
@@ -1985,7 +1990,12 @@ void MainWindow::slot_save_frame()
     assert(!m_rendering_manager.is_rendering());
 
     const QString filepath =
-        ask_frame_save_file_path(this, "Save Frame As...", g_appleseed_image_files_filter, ".exr", m_settings);
+        ask_frame_save_file_path(
+            this,
+            "Save Frame As...",
+            g_appleseed_image_files_filter,
+            ".exr",
+            m_application_settings);
 
     if (filepath.isEmpty())
         return;
@@ -2000,7 +2010,12 @@ void MainWindow::slot_save_frame_and_aovs()
     assert(!m_rendering_manager.is_rendering());
 
     const QString filepath =
-        ask_frame_save_file_path(this, "Save Frame and AOVs As...", g_appleseed_image_files_filter, ".exr", m_settings);
+        ask_frame_save_file_path(
+            this,
+            "Save Frame and AOVs As...",
+            g_appleseed_image_files_filter,
+            ".exr",
+            m_application_settings);
 
     if (filepath.isEmpty())
         return;
@@ -2051,7 +2066,12 @@ void MainWindow::slot_save_render_widget_content()
     assert(!m_rendering_manager.is_rendering());
 
     const QString filepath =
-        ask_frame_save_file_path(this, "Save Render Widget Content As...", g_qt_image_files_filter, ".png", m_settings);
+        ask_frame_save_file_path(
+            this,
+            "Save Render Widget Content As...",
+            g_qt_image_files_filter,
+            ".png",
+            m_application_settings);
 
     if (filepath.isEmpty())
         return;
@@ -2074,7 +2094,7 @@ void MainWindow::slot_clear_frame()
 
 void MainWindow::slot_reset_zoom()
 {
-    const auto current_tab_index = m_ui->tab_render_channels->currentIndex();
+    const int current_tab_index = m_ui->tab_render_channels->currentIndex();
     const auto render_tab_it = m_tab_index_to_render_tab.find(current_tab_index);
     if (render_tab_it != m_tab_index_to_render_tab.end())
         render_tab_it->second->reset_zoom();
@@ -2121,23 +2141,28 @@ void MainWindow::slot_fullscreen()
         button->set_fullscreen(m_fullscreen);
 }
 
-void MainWindow::slot_show_settings_window()
+void MainWindow::slot_show_application_settings_window()
 {
-    if (m_settings_window.get() == nullptr)
+    if (m_application_settings_window.get() == nullptr)
     {
-        m_settings_window.reset(new SettingsWindow(m_settings, this));
+        m_application_settings_window.reset(
+            new ApplicationSettingsWindow(m_application_settings, this));
 
         connect(
-            m_settings_window.get(), SIGNAL(signal_settings_modified()),
-            SLOT(slot_save_settings()));
+            m_application_settings_window.get(), SIGNAL(signal_application_settings_modified()),
+            SLOT(slot_save_application_settings()));
 
         connect(
-            m_settings_window.get(), SIGNAL(signal_settings_modified()),
-            SLOT(slot_apply_settings()));
+            m_application_settings_window.get(), SIGNAL(signal_application_settings_modified()),
+            SLOT(slot_apply_application_settings()));
+
+        connect(
+            this, SIGNAL(signal_application_settings_modified()),
+            m_application_settings_window.get(), SLOT(slot_reload_application_settings()));
     }
 
-    m_settings_window->showNormal();
-    m_settings_window->activateWindow();
+    m_application_settings_window->showNormal();
+    m_application_settings_window->activateWindow();
 }
 
 void MainWindow::slot_show_rendering_settings_window()
@@ -2147,11 +2172,18 @@ void MainWindow::slot_show_rendering_settings_window()
     if (m_rendering_settings_window.get() == nullptr)
     {
         m_rendering_settings_window.reset(
-            new RenderingSettingsWindow(m_project_manager, this));
+            new RenderingSettingsWindow(
+                m_project_manager,
+                m_application_settings,
+                this));
 
         connect(
-            m_rendering_settings_window.get(), SIGNAL(signal_settings_modified()),
+            m_rendering_settings_window.get(), SIGNAL(signal_rendering_settings_modified()),
             SLOT(slot_project_modified()));
+
+        connect(
+            this, SIGNAL(signal_application_settings_modified()),
+            m_rendering_settings_window.get(), SLOT(slot_reload_application_settings()));
     }
 
     m_rendering_settings_window->showNormal();

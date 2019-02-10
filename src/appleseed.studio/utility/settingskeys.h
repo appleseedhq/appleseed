@@ -36,6 +36,7 @@
 
 #define SETTINGS_MESSAGE_VERBOSITY                  "message_verbosity"
 #define SETTINGS_SAMPLING_MODE                      "sampling_mode"
+#define SETTINGS_RENDERING_THREADS                  "rendering_threads"
 #define SETTINGS_AUTOSAVE                           "autosave"
 #define SETTINGS_PRINT_FINAL_AVERAGE_LUMINANCE      "print_final_average_luminance"
 
