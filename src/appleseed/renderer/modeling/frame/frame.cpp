@@ -663,7 +663,6 @@ namespace
 
         bf::path bf_file_path(file_path);
         string extension = lower_case(bf_file_path.extension().string());
-        std::cout << "extension: "<<extension << '\n';
 
         if (!has_extension(bf_file_path))
         {
