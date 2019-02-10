@@ -282,6 +282,9 @@ source_group ("mainwindow\\rendering" FILES
 )
 
 set (mainwindow_sources
+    mainwindow/applicationsettingswindow.cpp
+    mainwindow/applicationsettingswindow.h
+    mainwindow/applicationsettingswindow.ui
     mainwindow/configurationmanagerwindow.cpp
     mainwindow/configurationmanagerwindow.h
     mainwindow/configurationmanagerwindow.ui
@@ -300,9 +303,6 @@ set (mainwindow_sources
     mainwindow/renderingsettingswindow.cpp
     mainwindow/renderingsettingswindow.h
     mainwindow/renderingsettingswindow.ui
-    mainwindow/settingswindow.cpp
-    mainwindow/settingswindow.h
-    mainwindow/settingswindow.ui
     mainwindow/statusbar.cpp
     mainwindow/statusbar.h
 )

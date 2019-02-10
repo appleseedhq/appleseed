@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SettingsWindow</class>
- <widget class="QWidget" name="SettingsWindow">
+ <class>ApplicationSettingsWindow</class>
+ <widget class="QWidget" name="ApplicationSettingsWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -109,8 +109,29 @@
           <string>Rendering</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_2">
-          <item row="0" column="0">
-           <layout class="QGridLayout" name="layout_sampling_mode">
+          <item row="5" column="0">
+           <widget class="QCheckBox" name="checkbox_print_final_average_luminance">
+            <property name="text">
+             <string>Print average luminance when render ends</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QCheckBox" name="checkbox_autosave">
+            <property name="text">
+             <string>Automatically save all renders to disk</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <layout class="QGridLayout" name="layout_rendering">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_sampling_mode">
+              <property name="text">
+               <string>Sampling Mode</string>
+              </property>
+             </widget>
+            </item>
             <item row="0" column="1">
              <widget class="QComboBox" name="combobox_sampling_mode">
               <property name="currentIndex">
@@ -128,28 +149,28 @@
               </item>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_sampling_mode">
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_rendering_threads">
               <property name="text">
-               <string>Sampling Mode</string>
+               <string>Rendering Threads</string>
               </property>
              </widget>
             </item>
+            <item row="1" column="1">
+             <layout class="QHBoxLayout" name="layout_rendering_threads">
+              <item>
+               <widget class="QSpinBox" name="spinbox_rendering_threads"/>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="checkbox_rendering_threads_auto">
+                <property name="text">
+                 <string>Auto</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
            </layout>
-          </item>
-          <item row="1" column="0">
-           <widget class="QCheckBox" name="checkbox_autosave">
-            <property name="text">
-             <string>Automatically save all renders to disk</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QCheckBox" name="checkbox_print_final_average_luminance">
-            <property name="text">
-             <string>Print average luminance when render ends</string>
-            </property>
-           </widget>
           </item>
          </layout>
         </widget>

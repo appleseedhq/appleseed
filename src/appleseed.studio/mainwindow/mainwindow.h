@@ -32,13 +32,13 @@
 // appleseed.studio headers.
 #include "debug/benchmarks/benchmarkwindow.h"
 #include "debug/tests/testwindow.h"
+#include "mainwindow/applicationsettingswindow.h"
 #include "mainwindow/falsecolorswindow.h"
 #include "mainwindow/project/projectmanager.h"
 #include "mainwindow/qtlogtarget.h"
 #include "mainwindow/rendering/renderingmanager.h"
 #include "mainwindow/rendering/rendertab.h"
 #include "mainwindow/renderingsettingswindow.h"
-#include "mainwindow/settingswindow.h"
 #include "mainwindow/statusbar.h"
 
 // appleseed.renderer headers.
@@ -107,12 +107,13 @@ class MainWindow
     void on_project_change();
 
     ProjectManager* get_project_manager();
-    renderer::ParamArray& get_settings();
+    renderer::ParamArray& get_application_settings();
 
     QDockWidget* create_dock_widget(const char* dock_name);
 
   signals:
     void signal_refresh_attribute_editor(const foundation::Dictionary& values) const;
+    void signal_application_settings_modified() const;
 
   private:
     enum RenderingMode
@@ -143,9 +144,9 @@ class MainWindow
     StatusBar                                   m_status_bar;
     std::unique_ptr<QtLogTarget>                m_log_target;
 
-    renderer::ParamArray                        m_settings;
+    renderer::ParamArray                        m_application_settings;
 
-    std::unique_ptr<SettingsWindow>             m_settings_window;
+    std::unique_ptr<ApplicationSettingsWindow>  m_application_settings_window;
     std::unique_ptr<RenderingSettingsWindow>    m_rendering_settings_window;
     std::unique_ptr<TestWindow>                 m_test_window;
     std::unique_ptr<BenchmarkWindow>            m_benchmark_window;
@@ -257,10 +258,10 @@ class MainWindow
     void slot_toggle_project_file_monitoring(const bool checked);
     void slot_project_file_changed(const QString& filepath);
 
-    // Settings I/O.
-    void slot_load_settings();
-    void slot_save_settings();
-    void slot_apply_settings();
+    // Application settings I/O.
+    void slot_load_application_settings();
+    void slot_save_application_settings();
+    void slot_apply_application_settings();
 
     // Rendering.
     void slot_start_interactive_rendering();
@@ -302,7 +303,7 @@ class MainWindow
     void slot_fullscreen();
 
     // Child windows.
-    void slot_show_settings_window();
+    void slot_show_application_settings_window();
     void slot_show_rendering_settings_window();
     void slot_show_test_window();
     void slot_show_benchmark_window();

@@ -43,6 +43,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
+#include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -1314,9 +1315,12 @@ namespace
     class SystemPanel
       : public LightingEnginePanel
     {
+        Q_OBJECT
+
       public:
-        SystemPanel(const Configuration& config, QWidget* parent = nullptr)
+        SystemPanel(const Configuration& config, const ParamArray& application_settings, QWidget* parent = nullptr)
           : LightingEnginePanel("System", parent)
+          , m_application_settings(application_settings)
         {
             fold();
 
@@ -1333,12 +1337,15 @@ namespace
 
             load_directly_linked_values(config);
 
-            set_widget("rendering_threads.override", config.get_parameters().strings().exist("rendering_threads"));
+            const bool override_rendering_threads = config.get_parameters().strings().exist("rendering_threads");
+            set_widget("rendering_threads.override", override_rendering_threads);
 
-            const string default_rendering_threads = to_string(System::get_logical_cpu_core_count());
-            const string rendering_threads = get_config<string>(config, "rendering_threads", "auto");
-            set_widget("rendering_threads.value", rendering_threads == "auto" ? default_rendering_threads : rendering_threads);
+            const string rendering_threads =
+                override_rendering_threads
+                    ? get_config<string>(config, "rendering_threads", "auto")
+                    : application_settings.get_optional<string>("rendering_threads", "auto");
             set_widget("rendering_threads.auto", rendering_threads == "auto");
+            set_widget("rendering_threads.value", rendering_threads == "auto" ? to_string(System::get_logical_cpu_core_count()) : rendering_threads);
 
             const size_t MB = 1024 * 1024;
             const size_t DefaultTextureStoreSizeMB = 1024 * MB;
@@ -1365,13 +1372,24 @@ namespace
             else config.get_parameters().remove_path("texture_store.max_size");
 
             if (get_widget<bool>("tile_ordering.override"))
-            {
                 set_config(config, "generic_frame_renderer.tile_ordering", get_widget<string>("tile_ordering.value"));
-            }
             else config.get_parameters().remove_path("generic_frame_renderer.tile_ordering");
         }
 
+      public slots:
+        void slot_reload_application_settings()
+        {
+            if (!get_widget<bool>("rendering_threads.override"))
+            {
+                const string rendering_threads = m_application_settings.get_optional<string>("rendering_threads", "auto");
+                set_widget("rendering_threads.auto", rendering_threads == "auto");
+                set_widget("rendering_threads.value", rendering_threads == "auto" ? to_string(System::get_logical_cpu_core_count()) : rendering_threads);
+            }
+        }
+
       private:
+        const ParamArray& m_application_settings;
+
 #ifdef APPLESEED_WITH_EMBREE
         void create_system_use_embree_settings(QVBoxLayout* parent)
         {
@@ -1427,10 +1445,11 @@ namespace
 // RenderingSettingsWindow class implementation.
 //
 
-RenderingSettingsWindow::RenderingSettingsWindow(ProjectManager& project_manager, QWidget* parent)
+RenderingSettingsWindow::RenderingSettingsWindow(ProjectManager& project_manager, const ParamArray& application_settings, QWidget* parent)
   : WindowBase(parent, "rendering_settings_window")
   , m_ui(new Ui::RenderingSettingsWindow())
   , m_project_manager(project_manager)
+  , m_application_settings(application_settings)
 {
     m_ui->setupUi(this);
 
@@ -1456,23 +1475,28 @@ void RenderingSettingsWindow::reload()
     assert(m_project_manager.get_project() != nullptr);
 
     // Collect configuration names.
-    vector<QString> configs;
-    for (const_each<ConfigurationContainer> i = m_project_manager.get_project()->configurations(); i; ++i)
+    vector<QString> config_names;
+    for (const Configuration& config : m_project_manager.get_project()->configurations())
     {
-        if (!BaseConfigurationFactory::is_base_configuration(i->get_name()))
-            configs.emplace_back(i->get_name());
+        if (!BaseConfigurationFactory::is_base_configuration(config.get_name()))
+            config_names.emplace_back(config.get_name());
     }
 
     // Sort configuration names alphabetically.
-    sort(configs.begin(), configs.end());
+    sort(config_names.begin(), config_names.end());
 
-    // This will load an empty configuration.
+    // This has the side effect of loading an empty configuration.
     m_current_configuration_name.clear();
 
-    // This will load the first configuration.
+    // This has the side effect of loading the first configuration.
     m_ui->combobox_configurations->clear();
-    for (size_t i = 0; i < configs.size(); ++i)
-        m_ui->combobox_configurations->addItem(configs[i]);
+    for (const QString& config_name : config_names)
+        m_ui->combobox_configurations->addItem(config_name);
+}
+
+void RenderingSettingsWindow::slot_reload_application_settings()
+{
+    emit signal_application_settings_modified();
 }
 
 void RenderingSettingsWindow::create_connections()
@@ -1535,7 +1559,11 @@ void RenderingSettingsWindow::create_panels(const Configuration& config)
     if (!interactive)
         m_panels.push_back(new SPPMPanel(config));
 
-    m_panels.push_back(new SystemPanel(config));
+    SystemPanel* system_panel = new SystemPanel(config, m_application_settings);
+    connect(
+        this, SIGNAL(signal_application_settings_modified()),
+        system_panel, SLOT(slot_reload_application_settings()));
+    m_panels.push_back(system_panel);
 }
 
 void RenderingSettingsWindow::create_layout()
@@ -1589,7 +1617,7 @@ void RenderingSettingsWindow::save_current_configuration()
 
     m_initial_values = get_widget_values();
 
-    emit signal_settings_modified();
+    emit signal_rendering_settings_modified();
 }
 
 Configuration& RenderingSettingsWindow::get_configuration(const QString& name) const
