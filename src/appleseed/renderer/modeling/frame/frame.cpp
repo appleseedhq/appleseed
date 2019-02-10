@@ -575,6 +575,80 @@ namespace
         writer.write();
     }
 
+    void write_tif_image(
+        const bf::path&         file_path,
+        const Image&            image,
+        ImageAttributes         image_attributes)
+    {
+        Image transformed_image(image);
+
+        // todo: we may want to be more specific here.
+        if (image.properties().m_channel_count == 4)
+            transform_to_srgb(transformed_image);
+
+        create_parent_directories(file_path);
+
+        const std::string filename = file_path.string();
+        GenericImageFileWriter writer(filename.c_str());
+
+        writer.append_image(&transformed_image);
+
+        writer.set_image_output_format(PixelFormat::PixelFormatUInt16);
+
+        image_attributes.insert("color_space", "sRGB");
+        writer.set_image_attributes(image_attributes);
+
+        writer.write();
+    }
+
+    void write_bmp_image(
+        const bf::path&         file_path,
+        const Image&            image,
+        ImageAttributes         image_attributes)
+    {
+        Image transformed_image(image);
+
+        // todo: we may want to be more specific here.
+        if (image.properties().m_channel_count == 4)
+            transform_to_srgb(transformed_image);
+
+        create_parent_directories(file_path);
+
+        const std::string filename = file_path.string();
+        GenericImageFileWriter writer(filename.c_str());
+
+        writer.append_image(&transformed_image);
+
+        writer.set_image_output_format(PixelFormat::PixelFormatUInt8);
+
+        image_attributes.insert("color_space", "sRGB");
+        writer.set_image_attributes(image_attributes);
+
+        writer.write();
+    }
+
+    void write_jpg_image(
+      const bf::path&         file_path,
+      const Image&            image,
+      ImageAttributes         image_attributes)
+    {
+      Image transformed_image(image);
+      // todo: we may want to be more specific here.
+      if (image.properties().m_channel_count == 4)
+          transform_to_srgb(transformed_image);
+
+      create_parent_directories(file_path);
+
+      const std::string filename = file_path.string();
+      GenericImageFileWriter writer(filename.c_str());
+
+      writer.append_image(&transformed_image);
+      writer.set_image_output_format(PixelFormat::PixelFormatUInt8);
+      image_attributes.insert("color_space", "sRGB");
+      writer.set_image_attributes(image_attributes);
+      writer.write();
+    }
+
     bool write_image(
         const char*             file_path,
         const Image&            image,
@@ -587,6 +661,7 @@ namespace
 
         bf::path bf_file_path(file_path);
         string extension = lower_case(bf_file_path.extension().string());
+        std::cout << "extension: "<<extension << '\n';
 
         if (!has_extension(bf_file_path))
         {
@@ -608,6 +683,27 @@ namespace
             else if (extension == ".png")
             {
                 write_png_image(
+                    bf_file_path,
+                    image,
+                    image_attributes);
+            }
+            else if (extension == ".jpg")
+            {
+                write_jpg_image(
+                    bf_file_path,
+                    image,
+                    image_attributes);
+            }
+            else if (extension == ".tif")
+            {
+                write_tif_image(
+                    bf_file_path,
+                    image,
+                    image_attributes);
+            }
+            else if (extension == ".bmp")
+            {
+                write_bmp_image(
                     bf_file_path,
                     image,
                     image_attributes);

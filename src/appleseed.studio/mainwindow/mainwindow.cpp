@@ -1999,7 +1999,7 @@ void MainWindow::slot_save_frame_and_aovs()
     assert(!m_rendering_manager.is_rendering());
 
     const QString filepath =
-        ask_frame_save_file_path(this, "Save Frame and AOVs As...", g_appleseed_image_files_filter, ".exr", m_settings);
+        ask_frame_save_file_path(this, "Save Frame and AOVs As...", g_qt_image_files_filter, ".exr", m_settings);
 
     if (filepath.isEmpty())
         return;
