@@ -88,8 +88,9 @@ class APPLESEED_DLLSYMBOL Frame
     // Print this entity's parameters to the renderer's global logger.
     void print_settings();
 
-    // Access the AOVs.
-    AOVContainer& aovs() const;
+    // Return the AOVs. The returned contained is read-only.
+    // Construct a new Frame instance to add or modify AOVs.
+    const AOVContainer& aovs() const;
 
     // Access the post-processing stages.
     PostProcessingStageContainer& post_processing_stages() const;

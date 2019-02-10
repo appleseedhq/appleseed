@@ -107,17 +107,24 @@ struct Frame::Impl
 
     // Child entities.
     AOVContainer                    m_aovs;
+    DenoiserAOV*                    m_denoiser_aov;
     AOVContainer                    m_internal_aovs;
     PostProcessingStageContainer    m_post_processing_stages;
 
     // Images.
     unique_ptr<Image>               m_image;
     unique_ptr<ImageStack>          m_aov_images;
-    DenoiserAOV*                    m_denoiser_aov;
 
     // Internal state.
     unique_ptr<Filter2f>            m_filter;
     ParamArray                      m_render_info;
+
+    explicit Impl(Frame* parent)
+      : m_aovs(parent)
+      , m_internal_aovs(parent)
+      , m_post_processing_stages(parent)
+    {
+    }
 };
 
 Frame::Frame(
@@ -125,7 +132,7 @@ Frame::Frame(
     const ParamArray&   params,
     const AOVContainer& aovs)
   : Entity(g_class_uid, params)
-  , impl(new Impl())
+  , impl(new Impl(this))
 {
     set_name(name);
 
@@ -159,21 +166,24 @@ Frame::Frame(
             MaxAOVCount);
     }
 
-    // Copy and add AOVs.
+    // Copy and store AOVs.
     const AOVFactoryRegistrar aov_registrar;
     for (size_t i = 0, e = min(aovs.size(), MaxAOVCount); i < e; ++i)
     {
         const AOV* original_aov = aovs.get_by_index(i);
+
         const IAOVFactory* aov_factory = aov_registrar.lookup(original_aov->get_model());
         assert(aov_factory);
 
         auto_release_ptr<AOV> aov = aov_factory->create(original_aov->get_parameters());
+
         aov->create_image(
             impl->m_frame_width,
             impl->m_frame_height,
             impl->m_tile_width,
             impl->m_tile_height,
             aov_images());
+
         impl->m_aovs.insert(aov);
     }
 
@@ -181,7 +191,7 @@ Frame::Frame(
     if (impl->m_denoising_mode != DenoisingMode::Off)
     {
         auto_release_ptr<DenoiserAOV> aov = DenoiserAOVFactory::create();
-        impl->m_denoiser_aov = aov.get();
+        aov->set_parent(this);
 
         aov->create_image(
             impl->m_frame_width,
@@ -190,6 +200,7 @@ Frame::Frame(
             impl->m_tile_height,
             aov_images());
 
+        impl->m_denoiser_aov = aov.get();
         impl->m_internal_aovs.insert(auto_release_ptr<AOV>(aov));
     }
     else impl->m_denoiser_aov = nullptr;
@@ -239,7 +250,7 @@ void Frame::print_settings()
         impl->m_denoising_mode == DenoisingMode::WriteOutputs ? "write outputs" : "denoise");
 }
 
-AOVContainer& Frame::aovs() const
+const AOVContainer& Frame::aovs() const
 {
     return impl->m_aovs;
 }
@@ -266,10 +277,10 @@ void Frame::clear_main_and_aov_images()
 {
     impl->m_image->clear(Color4f(0.0));
 
-    for (AOV& aov : aovs())
+    for (AOV& aov : impl->m_aovs)
         aov.clear_image();
 
-    for (AOV& aov : internal_aovs())
+    for (AOV& aov : impl->m_internal_aovs)
         aov.clear_image();
 }
 
@@ -325,19 +336,19 @@ uint32 Frame::get_noise_seed() const
 
 void Frame::collect_asset_paths(StringArray& paths) const
 {
-    for (const AOV& aov : aovs())
+    for (const AOV& aov : impl->m_aovs)
         aov.collect_asset_paths(paths);
 
-    for (const PostProcessingStage& stage : post_processing_stages())
+    for (const PostProcessingStage& stage : impl->m_post_processing_stages)
         stage.collect_asset_paths(paths);
 }
 
 void Frame::update_asset_paths(const StringDictionary& mappings)
 {
-    for (AOV& aov : aovs())
+    for (AOV& aov : impl->m_aovs)
         aov.update_asset_paths(mappings);
 
-    for (PostProcessingStage& stage : post_processing_stages())
+    for (PostProcessingStage& stage : impl->m_post_processing_stages)
         stage.update_asset_paths(mappings);
 }
 
@@ -347,33 +358,24 @@ bool Frame::on_frame_begin(
     OnFrameBeginRecorder&   recorder,
     IAbortSwitch*           abort_switch)
 {
-    for (AOV& aov : aovs())
-    {
-        if (is_aborted(abort_switch))
-            return false;
+    if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
 
-        if (!aov.on_frame_begin(project, parent, recorder, abort_switch))
-            return false;
-    }
+    if (!invoke_on_frame_begin(impl->m_aovs, project, parent, recorder, abort_switch))
+        return false;
 
-    for (PostProcessingStage& stage : post_processing_stages())
-    {
-        if (is_aborted(abort_switch))
-            return false;
-
-        if (!stage.on_frame_begin(project, parent, recorder, abort_switch))
-            return false;
-    }
+    if (!invoke_on_frame_begin(impl->m_post_processing_stages, project, parent, recorder, abort_switch))
+        return false;
 
     return true;
 }
 
 void Frame::post_process_aov_images() const
 {
-    for (AOV& aov : aovs())
+    for (AOV& aov : impl->m_aovs)
         aov.post_process_image(*this);
 
-    for (AOV& aov : internal_aovs())
+    for (AOV& aov : impl->m_internal_aovs)
         aov.post_process_image(*this);
 }
 
@@ -435,7 +437,7 @@ void Frame::denoise(
     Deepimf covariances_image;
     impl->m_denoiser_aov->compute_covariances_image(covariances_image);
 
-    RENDERER_LOG_INFO("denoising beauty image...");
+    RENDERER_LOG_INFO("denoising frame \"%s\"...", get_path().c_str());
     denoise_beauty_image(
         image(),
         num_samples_image,
@@ -444,11 +446,11 @@ void Frame::denoise(
         options,
         abort_switch);
 
-    for (const AOV& aov : aovs())
+    for (const AOV& aov : impl->m_aovs)
     {
         if (aov.has_color_data())
         {
-            RENDERER_LOG_INFO("denoising %s aov...", aov.get_name());
+            RENDERER_LOG_INFO("denoising aov \"%s\"...", aov.get_path().c_str());
             denoise_aov_image(
                 aov.get_image(),
                 num_samples_image,
@@ -462,6 +464,15 @@ void Frame::denoise(
 
 namespace
 {
+    void add_chromaticities_attributes(ImageAttributes& image_attributes)
+    {
+        // Scene-linear sRGB / Rec. 709 chromaticities.
+        image_attributes.insert("white_xy_chromaticity", Vector2f(0.3127f, 0.3290f));
+        image_attributes.insert("red_xy_chromaticity", Vector2f(0.64f, 0.33f));
+        image_attributes.insert("green_xy_chromaticity", Vector2f(0.30f, 0.60f));
+        image_attributes.insert("blue_xy_chromaticity",  Vector2f(0.15f, 0.06f));
+    }
+
     void create_parent_directories(const bf::path& file_path)
     {
         const bf::path parent_path = file_path.parent_path();
@@ -484,24 +495,14 @@ namespace
         create_parent_directories(bf::path(file_path));
     }
 
-    void add_chromaticities_attributes(ImageAttributes& image_attributes)
-    {
-        // Scene-linear sRGB / Rec. 709 chromaticities.
-        image_attributes.insert("white_xy_chromaticity", Vector2f(0.3127f, 0.3290f));
-        image_attributes.insert("red_xy_chromaticity", Vector2f(0.64f, 0.33f));
-        image_attributes.insert("green_xy_chromaticity", Vector2f(0.30f, 0.60f));
-        image_attributes.insert("blue_xy_chromaticity",  Vector2f(0.15f, 0.06f));
-    }
-
     void write_exr_image(
         const bf::path&         file_path,
         const Image&            image,
-        ImageAttributes&        image_attributes)
+        ImageAttributes         image_attributes)
     {
         create_parent_directories(file_path);
 
         const std::string filename = file_path.string();
-
         GenericImageFileWriter writer(filename.c_str());
 
         writer.append_image(&image);
@@ -650,6 +651,7 @@ namespace
     }
 
     bool write_image(
+        const Frame&            frame,
         const char*             file_path,
         const Image&            image,
         ImageAttributes         image_attributes)
@@ -711,8 +713,9 @@ namespace
             else
             {
                 RENDERER_LOG_ERROR(
-                    "failed to write image file %s: unsupported image format.",
-                    bf_file_path.string().c_str());
+                    "failed to write image file %s for frame \"%s\": unsupported image format.",
+                    bf_file_path.string().c_str(),
+                    frame.get_path().c_str());
 
                 return false;
             }
@@ -720,8 +723,9 @@ namespace
         catch (const exception& e)
         {
             RENDERER_LOG_ERROR(
-                "failed to write image file %s: %s.",
+                "failed to write image file %s for frame \"%s\": %s.",
                 bf_file_path.string().c_str(),
+                frame.get_path().c_str(),
                 e.what());
 
             return false;
@@ -730,8 +734,9 @@ namespace
         stopwatch.measure();
 
         RENDERER_LOG_INFO(
-            "wrote image file %s in %s.",
+            "wrote image file %s for frame \"%s\" in %s.",
             bf_file_path.string().c_str(),
+            frame.get_path().c_str(),
             pretty_time(stopwatch.get_seconds()).c_str());
 
         return true;
@@ -751,7 +756,7 @@ bool Frame::write_main_image(const char* file_path) const
     ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
     if (impl->m_enable_dithering)
         image_attributes.insert("dither", 42);  // the value of the dither attribute is a hash seed
-    if (!write_image(file_path, half_image, image_attributes))
+    if (!write_image(*this, file_path, half_image, image_attributes))
         return false;
 
     // Write BCD histograms and covariance AOVs if enabled.
@@ -772,27 +777,30 @@ bool Frame::write_aov_images(const char* file_path) const
 {
     assert(file_path);
 
-    bf::path boost_file_path(file_path);
-    const bf::path file_path_ext = boost_file_path.extension();
+    if (impl->m_aovs.empty())
+        return true;
 
-    if (file_path_ext != ".exr")
+    bf::path bf_file_path(file_path);
+    const string extension = lower_case(bf_file_path.extension().string());
+
+    if (extension != ".exr")
     {
-        if (!aovs().empty() && has_extension(file_path_ext))
+        if (has_extension(bf_file_path))
         {
             RENDERER_LOG_WARNING(
                 "aovs cannot be saved to %s files; saving them to exr files instead.",
-                file_path_ext.string().substr(1).c_str());
+                extension.substr(1).c_str());
         }
 
-        boost_file_path.replace_extension(".exr");
+        bf_file_path.replace_extension(".exr");
     }
 
-    const bf::path directory = boost_file_path.parent_path();
-    const string base_file_name = boost_file_path.stem().string();
+    const bf::path directory = bf_file_path.parent_path();
+    const string base_file_name = bf_file_path.stem().string();
 
     bool success = true;
 
-    for (const AOV& aov : aovs())
+    for (const AOV& aov : impl->m_aovs)
     {
         // Compute AOV image file path.
         const string aov_name = aov.get_name();
@@ -815,41 +823,36 @@ bool Frame::write_main_and_aov_images() const
 
     // Write main image.
     {
-        const string filepath = get_parameters().get_optional<string>("output_filename");
-        if (!filepath.empty())
+        const string file_path = get_parameters().get_optional<string>("output_filename");
+        if (!file_path.empty())
         {
-            if (!write_main_image(filepath.c_str()))
+            if (!write_main_image(file_path.c_str()))
                 success = false;
         }
     }
 
     // Write AOV images.
-    for (const AOV& aov : aovs())
+    for (const AOV& aov : impl->m_aovs)
     {
-        bf::path filepath = aov.get_parameters().get_optional<string>("output_filename");
-
-        if (!filepath.empty())
+        bf::path bf_file_path = aov.get_parameters().get_optional<string>("output_filename");
+        if (!bf_file_path.empty())
         {
-            const bf::path filepath_ext = filepath.extension();
-            if (filepath_ext != ".exr")
+            const string extension = lower_case(bf_file_path.extension().string());
+            if (extension != ".exr")
             {
-                bf::path new_filepath(filepath);
-                new_filepath.replace_extension(".exr");
-
-                if (has_extension(filepath_ext))
+                if (has_extension(bf_file_path))
                 {
                     RENDERER_LOG_WARNING(
-                        "aov \"%s\" cannot be saved to %s file; saving it to \"%s\" instead.",
+                        "aov \"%s\" cannot be saved to %s file; saving it to exr file instead.",
                         aov.get_path().c_str(),
-                        filepath_ext.string().substr(1).c_str(),
-                        new_filepath.string().c_str());
+                        extension.substr(1).c_str());
                 }
 
-                filepath = new_filepath;
+                bf_file_path.replace_extension(".exr");
             }
 
             ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
-            if (!aov.write_images(filepath.string().c_str(), image_attributes))
+            if (!aov.write_images(bf_file_path.string().c_str(), image_attributes))
                 success = false;
         }
     }
@@ -884,7 +887,7 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
         writer.set_image_attributes(image_attributes);
     }
 
-    for (const AOV& aov : aovs())
+    for (const AOV& aov : impl->m_aovs)
     {
         const string aov_name = aov.get_name();
         const Image& image = aov.get_image();
@@ -930,7 +933,7 @@ bool Frame::archive(
         *output_path = duplicate_string(file_path.c_str());
 
     ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
-    return write_image(file_path.c_str(), *impl->m_image, image_attributes);
+    return write_image(*this, file_path.c_str(), *impl->m_image, image_attributes);
 }
 
 void Frame::extract_parameters()

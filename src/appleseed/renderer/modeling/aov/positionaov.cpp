@@ -78,24 +78,27 @@ namespace
             const Vector2i& pi = pixel_context.get_pixel_coords();
 
             // Ignore samples outside the tile.
-            if (!inside_tile(pi))
+            if (!m_cropped_tile_bbox.contains(pi))
                 return;
 
-            float* p = reinterpret_cast<float*>(
-                get_tile().pixel(pi.x - m_tile_bbox.min.x, pi.y - m_tile_bbox.min.y));
+            float* out =
+                reinterpret_cast<float*>(
+                    m_tile->pixel(
+                        pi.x - m_tile_origin_x,
+                        pi.y - m_tile_origin_y));
 
             if (shading_point.hit_surface())
             {
-                const Vector3d& q = shading_point.get_point();
-                p[0] = static_cast<float>(q[0]);
-                p[1] = static_cast<float>(q[1]);
-                p[2] = static_cast<float>(q[2]);
+                const Vector3d& p = shading_point.get_point();
+                out[0] = static_cast<float>(p[0]);
+                out[1] = static_cast<float>(p[1]);
+                out[2] = static_cast<float>(p[2]);
             }
             else
             {
-                p[0] = 0.5f;
-                p[1] = 0.5f;
-                p[2] = 0.5f;
+                out[0] = 0.0f;
+                out[1] = 0.0f;
+                out[2] = 0.0f;
             }
         }
     };
@@ -128,7 +131,7 @@ namespace
 
         void clear_image() override
         {
-            m_image->clear(Color3f(0.5f, 0.5f, 0.5f));
+            m_image->clear(Color3f(0.0f));
         }
 
       protected:

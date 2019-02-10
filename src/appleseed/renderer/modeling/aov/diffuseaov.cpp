@@ -87,7 +87,7 @@ namespace
 
 
     //
-    // DirectDiffuse AOV accumulator.
+    // Direct Diffuse AOV accumulator.
     //
 
     class DirectDiffuseAOVAccumulator
@@ -118,7 +118,7 @@ namespace
 
 
     //
-    // IndirectDiffuse AOV accumulator.
+    // Indirect Diffuse AOV accumulator.
     //
 
     class IndirectDiffuseAOVAccumulator
@@ -183,7 +183,7 @@ namespace
 
 
     //
-    // DirectDiffuse AOV.
+    // Direct Diffuse AOV.
     //
 
     const char* DirectDiffuseAOVModel = "direct_diffuse_aov";
@@ -217,7 +217,7 @@ namespace
 
 
     //
-    // IndirectDiffuse AOV.
+    // Indirect Diffuse AOV.
     //
 
     const char* IndirectDiffuseAOVModel = "indirect_diffuse_aov";

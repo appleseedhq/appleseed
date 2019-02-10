@@ -41,6 +41,7 @@
 // Forward declarations.
 namespace renderer  { class Entity; }
 namespace renderer  { class LightPathStream; }
+namespace renderer  { class Project; }
 
 namespace renderer
 {
@@ -82,7 +83,7 @@ class APPLESEED_DLLSYMBOL LightPathRecorder
 {
   public:
     // Constructor.
-    LightPathRecorder();
+    explicit LightPathRecorder(const Project& project);
 
     // Destructor.
     ~LightPathRecorder();
@@ -133,6 +134,7 @@ class APPLESEED_DLLSYMBOL LightPathRecorder
     Impl* impl;
 
     // Merge `source` into `dest` and clear `source`.
+    // Being a static method of `LightPathRecorder` grants it access to the internals of `LightPathStream`.
     static void merge_streams(
         LightPathStream&    dest,
         LightPathStream&    source);

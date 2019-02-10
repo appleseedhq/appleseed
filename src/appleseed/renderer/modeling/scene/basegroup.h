@@ -56,12 +56,6 @@ namespace renderer
 class APPLESEED_DLLSYMBOL BaseGroup
 {
   public:
-    // Constructor.
-    explicit BaseGroup(Entity* parent = nullptr);
-
-    // Destructor.
-    ~BaseGroup();
-
     // Access the colors.
     ColorContainer& colors() const;
 
@@ -111,6 +105,13 @@ class APPLESEED_DLLSYMBOL BaseGroup
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,
         foundation::IAbortSwitch*   abort_switch = nullptr);
+
+  protected:
+    // Constructor.
+    explicit BaseGroup(Entity* parent = nullptr);
+
+    // Destructor.
+    ~BaseGroup();
 
   private:
     struct Impl;

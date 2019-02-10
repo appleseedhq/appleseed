@@ -192,6 +192,7 @@ void invoke_update_asset_paths(
     const foundation::StringDictionary& mappings);
 
 // Utility function to invoke on_render_begin() on a collection of entities.
+// Returns true on success, or false if an error occurred or if the abort switch was triggered.
 template <typename EntityCollection>
 bool invoke_on_render_begin(
     EntityCollection&                   entities,
@@ -201,6 +202,7 @@ bool invoke_on_render_begin(
     foundation::IAbortSwitch*           abort_switch);
 
 // Utility function to invoke on_frame_begin() on a collection of entities.
+// Returns true on success, or false if an error occurred or if the abort switch was triggered.
 template <typename EntityCollection>
 bool invoke_on_frame_begin(
     EntityCollection&                   entities,

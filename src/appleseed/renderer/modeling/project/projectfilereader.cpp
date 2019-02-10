@@ -3309,7 +3309,7 @@ auto_release_ptr<Project> ProjectFileReader::read(
     if (!xerces_context.is_initialized())
         return auto_release_ptr<Project>(nullptr);
 
-    if ((options & OmitProjectSchemaValidation) == false && schema_filepath == nullptr)
+    if (!(options & OmitProjectSchemaValidation) && schema_filepath == nullptr)
     {
         RENDERER_LOG_ERROR(
             "project schema validation enabled, but no schema filepath provided.");
@@ -3378,7 +3378,7 @@ auto_release_ptr<Assembly> ProjectFileReader::read_archive(
     if (!xerces_context.is_initialized())
         return auto_release_ptr<Assembly>(nullptr);
 
-    if ((options & OmitProjectSchemaValidation) == false && schema_filepath == nullptr)
+    if (!(options & OmitProjectSchemaValidation) && schema_filepath == nullptr)
     {
         RENDERER_LOG_ERROR(
             "archive schema validation enabled, but no schema filepath provided.");
@@ -3465,7 +3465,7 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
     auto_release_ptr<Project> project(ProjectFactory::create(project_filepath));
     project->set_path(project_filepath);
 
-    if ((options & OmitSearchPaths) == false)
+    if (!(options & OmitSearchPaths))
     {
         project->search_paths().set_root_path(
             bf::absolute(project_filepath).parent_path().string());
@@ -3493,7 +3493,7 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
     unique_ptr<SAX2XMLReader> parser(XMLReaderFactory::createXMLReader());
     parser->setFeature(XMLUni::fgSAX2CoreNameSpaces, true);         // perform namespace processing
 
-    if ((options & OmitProjectSchemaValidation) == false)
+    if (!(options & OmitProjectSchemaValidation))
     {
         assert(schema_filepath);
         parser->setFeature(XMLUni::fgSAX2CoreValidation, true);     // report all validation errors

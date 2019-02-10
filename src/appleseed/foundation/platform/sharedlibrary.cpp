@@ -105,6 +105,7 @@ namespace
 
 const char* SharedLibrary::get_default_file_extension()
 {
+    // This method must return lower case strings.
 #ifdef _WIN32
     return ".dll";
 #else

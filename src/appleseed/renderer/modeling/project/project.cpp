@@ -127,16 +127,17 @@ struct Project::Impl
     LightPathRecorder                   m_light_path_recorder;
     unique_ptr<TraceContext>            m_trace_context;
 
-    Impl()
+    explicit Impl(const Project& project)
       : m_format_revision(ProjectFormatRevision)
       , m_search_paths("APPLESEED_SEARCHPATH", SearchPaths::environment_path_separator())
+      , m_light_path_recorder(project)
     {
     }
 };
 
 Project::Project(const char* name)
   : Entity(g_class_uid)
-  , impl(new Impl())
+  , impl(new Impl(*this))
 {
     set_name(name);
     add_base_configurations();
@@ -369,6 +370,9 @@ bool Project::on_frame_begin(
     OnFrameBeginRecorder&       recorder,
     IAbortSwitch*               abort_switch)
 {
+    if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
+
     assert(impl->m_scene.get() != nullptr);
     assert(impl->m_frame.get() != nullptr);
 

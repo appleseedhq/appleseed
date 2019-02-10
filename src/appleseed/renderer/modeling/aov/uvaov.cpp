@@ -78,24 +78,27 @@ namespace
             const Vector2i& pi = pixel_context.get_pixel_coords();
 
             // Ignore samples outside the tile.
-            if (!inside_tile(pi))
+            if (!m_cropped_tile_bbox.contains(pi))
                 return;
 
-            float* p = reinterpret_cast<float*>(
-                get_tile().pixel(pi.x - m_tile_bbox.min.x, pi.y - m_tile_bbox.min.y));
+            float* out =
+                reinterpret_cast<float*>(
+                    m_tile->pixel(
+                        pi.x - m_tile_origin_x,
+                        pi.y - m_tile_origin_y));
 
             if (shading_point.hit_surface())
             {
                 const Vector2f& uv = shading_point.get_uv(0);
-                p[0] = uv[0];
-                p[1] = uv[1];
-                p[2] = 0.0f;
+                out[0] = uv[0];
+                out[1] = uv[1];
+                out[2] = 0.0f;
             }
             else
             {
-                p[0] = 0.0f;
-                p[1] = 0.0f;
-                p[2] = 0.0f;
+                out[0] = 0.0f;
+                out[1] = 0.0f;
+                out[2] = 0.0f;
             }
         }
     };

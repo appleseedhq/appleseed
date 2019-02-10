@@ -102,6 +102,7 @@ void ProjectItem::slot_edit_search_paths()
         m_search_paths_window.reset(
             new SearchPathsWindow(
                 m_editor_context.m_project,
+                m_editor_context.m_project_manager,
                 QTreeWidgetItem::treeWidget()));
 
         connect(

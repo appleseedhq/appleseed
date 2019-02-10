@@ -116,6 +116,8 @@ namespace
         {
             if (m_reader.is_open())
                 m_reader.close();
+
+            Texture::on_frame_end(project, parent);
         }
 
         ColorSpace get_color_space() const override

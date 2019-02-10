@@ -34,6 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
+#include "foundation/math/vector.h"
 
 // Standard headers.
 #include <cstddef>
@@ -60,34 +61,34 @@ class PixelRendererBase
 
     // This method is called before a tile gets rendered.
     void on_tile_begin(
-        const Frame&                frame,
-        const size_t                tile_x,
-        const size_t                tile_y,
-        foundation::Tile&           tile,
-        TileStack&                  aov_tiles) override;
+        const Frame&                    frame,
+        const size_t                    tile_x,
+        const size_t                    tile_y,
+        foundation::Tile&               tile,
+        TileStack&                      aov_tiles) override;
 
     // This method is called after a tile has been rendered.
     void on_tile_end(
-        const Frame&                frame,
-        const size_t                tile_x,
-        const size_t                tile_y,
-        foundation::Tile&           tile,
-        TileStack&                  aov_tiles) override;
+        const Frame&                    frame,
+        const size_t                    tile_x,
+        const size_t                    tile_y,
+        foundation::Tile&               tile,
+        TileStack&                      aov_tiles) override;
 
   protected:
     void on_pixel_begin(
-        const Frame&                        frame,
-        const foundation::Vector2i&         pi,
-        const foundation::Vector2i&         pt,
-        const foundation::AABB2i&           tile_bbox,
-        AOVAccumulatorContainer&            aov_accumulators);
+        const Frame&                    frame,
+        const foundation::Vector2i&     pi,
+        const foundation::Vector2i&     pt,
+        const foundation::AABB2i&       tile_bbox,
+        AOVAccumulatorContainer&        aov_accumulators);
 
     void on_pixel_end(
-        const Frame&                        frame,
-        const foundation::Vector2i&         pi,
-        const foundation::Vector2i&         pt,
-        const foundation::AABB2i&           tile_bbox,
-        AOVAccumulatorContainer&            aov_accumulators);
+        const Frame&                    frame,
+        const foundation::Vector2i&     pi,
+        const foundation::Vector2i&     pt,
+        const foundation::AABB2i&       tile_bbox,
+        AOVAccumulatorContainer&        aov_accumulators);
 
     void signal_invalid_sample();
 

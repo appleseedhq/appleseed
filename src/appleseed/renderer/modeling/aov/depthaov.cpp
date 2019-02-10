@@ -82,17 +82,21 @@ namespace
             const Vector2i& pi = pixel_context.get_pixel_coords();
 
             // Ignore samples outside the tile.
-            if (!inside_tile(pi))
+            if (!m_cropped_tile_bbox.contains(pi))
                 return;
 
-            float* p = reinterpret_cast<float*>(
-                get_tile().pixel(pi.x - m_tile_bbox.min.x, pi.y - m_tile_bbox.min.y));
+            float* out =
+                reinterpret_cast<float*>(
+                    m_tile->pixel(
+                        pi.x - m_tile_origin_x,
+                        pi.y - m_tile_origin_y));
 
-            const float depth = shading_point.hit_surface()
-                ? static_cast<float>(shading_point.get_distance())
-                : numeric_limits<float>::max();
+            const float depth =
+                shading_point.hit_surface()
+                    ? static_cast<float>(shading_point.get_distance())
+                    : numeric_limits<float>::max();
 
-            *p = depth;
+            *out = depth;
         }
     };
 
@@ -129,7 +133,7 @@ namespace
 
         const char** get_channel_names() const override
         {
-            static const char* ChannelNames[] = {"Z"};
+            static const char* ChannelNames[] = { "Z" };
             return ChannelNames;
         }
 

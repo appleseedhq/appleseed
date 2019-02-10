@@ -704,7 +704,8 @@ namespace
                             *vertex.m_bsdf,
                             vertex.m_bsdf_data,
                             vertex.m_scattering_modes,
-                            vertex_radiance);
+                            vertex_radiance,
+                            m_light_path_stream);
                     }
                 }
 
@@ -805,7 +806,8 @@ namespace
                 const BSDF&                 bsdf,
                 const void*                 bsdf_data,
                 const int                   scattering_modes,
-                DirectShadingComponents&    vertex_radiance)
+                DirectShadingComponents&    vertex_radiance,
+                LightPathStream*            light_path_stream)
             {
                 DirectShadingComponents ibl_radiance;
 
@@ -830,7 +832,8 @@ namespace
                     scattering_modes,
                     1,                      // bsdf_sample_count
                     env_sample_count,
-                    ibl_radiance);
+                    ibl_radiance,
+                    light_path_stream);
 
                 // Divide by the sample count when this number is less than 1.
                 if (m_params.m_rcp_ibl_env_sample_count > 0.0f)

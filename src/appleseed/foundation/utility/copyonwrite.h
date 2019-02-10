@@ -42,11 +42,11 @@ namespace foundation
 
 //
 // A copy-on-write wrapper for any type that models RegularType.
-// This class is based on stlab's copy-on-write class:
+// This class is based on stlab's copy_on_write class:
 // https://github.com/stlab/libraries
 //
 
-template <typename T> // T models RegularType.
+template <typename T>   // T models RegularType
 class CopyOnWrite
 {
   public:
@@ -55,27 +55,13 @@ class CopyOnWrite
       : m_model(nullptr)
     {
     }
-
     explicit CopyOnWrite(const T& x)
       : m_model(new Model(x))
     {
     }
-
     explicit CopyOnWrite(T&& x)
       : m_model(new Model(std::forward<T>(x)))
     {
-    }
-
-    // Destructor.
-    ~CopyOnWrite()
-    {
-        if (m_model)
-        {
-            assert(m_model->m_count > 0);
-
-            if (--m_model->m_count == 0)
-                delete m_model;
-        }
     }
 
     // Copy constructor.
@@ -91,6 +77,18 @@ class CopyOnWrite
     {
         m_model = other.m_model;
         other.m_model = nullptr;
+    }
+
+    // Destructor.
+    ~CopyOnWrite()
+    {
+        if (m_model)
+        {
+            assert(m_model->m_count > 0);
+
+            if (--m_model->m_count == 0)
+                delete m_model;
+        }
     }
 
     // Copy assignment.
@@ -115,7 +113,7 @@ class CopyOnWrite
     }
 
     // Return true if the wrapped object is not shared
-    // by other copy on write wrappers.
+    // by other copy-on-write wrappers.
     bool unique() const APPLESEED_NOEXCEPT
     {
         assert(m_model);

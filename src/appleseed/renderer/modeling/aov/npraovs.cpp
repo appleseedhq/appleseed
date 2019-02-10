@@ -55,7 +55,7 @@ namespace renderer
 namespace
 {
     //
-    // NPR shading AOV accumulator.
+    // NPR Shading AOV accumulator.
     //
 
     class NPRShadingAOVAccumulator
@@ -84,7 +84,7 @@ namespace
 
 
     //
-    // NPRShading AOV.
+    // NPR Shading AOV.
     //
 
     const char* NPRShadingAOVModel = "npr_shading_aov";
@@ -118,7 +118,7 @@ namespace
 
 
     //
-    // NPR shading AOV accumulator.
+    // NPR Contour AOV accumulator.
     //
 
     class NPRContourAOVAccumulator
@@ -147,7 +147,7 @@ namespace
 
 
     //
-    // NPRContour AOV.
+    // NPR Contour AOV.
     //
 
     const char* NPRContourAOVModel = "npr_contour_aov";

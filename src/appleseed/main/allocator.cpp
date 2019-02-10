@@ -152,7 +152,7 @@ namespace
     {
       public:
         StackWalkerOutputToFile()
-          : m_file(0)
+          : m_file(nullptr)
           , m_level(0)
           , m_skip(false)
         {
@@ -180,7 +180,7 @@ namespace
             if (m_skip)
                 return;
 
-            if (m_file == 0)
+            if (m_file == nullptr)
                 StackWalker::OnOutput(szText);
             else fprintf(m_file, "        %s", szText);
 

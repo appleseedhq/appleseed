@@ -94,12 +94,6 @@ set (c_compiler_flags_common
     /MP                                     # Multi-processor Compilation
     /GF                                     # Enable String Pooling
 )
-if (WARNINGS_AS_ERRORS)
-    set (c_compiler_flags_common
-         ${c_compiler_flags_common}
-         /WX                                # Treat Warnings As Errors
-    )
-endif ()
 set (cxx_compiler_flags_common
     /wd4068                                 # Disable warning C4068: unknown pragma
     /wd4091                                 # Disable warning C4091: 'typedef' : ignored on left of X when no variable is declared
@@ -121,6 +115,11 @@ set (shared_lib_linker_flags_common
 )
 
 # Debug configuration.
+set (c_compiler_flags_debug
+    ${c_compiler_flags_debug}
+    /WX                                     # Treat Warnings As Errors
+    /MDd                                    # set Runtime Library to Multi-threaded Debug DLL
+)
 if (CMAKE_SIZEOF_VOID_P EQUAL 8)
     set (c_compiler_flags_debug
         /Zi                                 # set Debug Information Format to Program Database
@@ -130,13 +129,10 @@ else ()
         /ZI                                 # set Debug Information Format to Program Database for Edit & Continue
     )
 endif ()
-set (c_compiler_flags_debug
-    ${c_compiler_flags_debug}
-    /MDd                                    # set Runtime Library to Multi-threaded Debug DLL
-)
 
 # Release configuration.
 set (c_compiler_flags_release
+    /WX                                     # Treat Warnings As Errors
     /Zi                                     # set Debug Information Format to Program Database
     /O2                                     # Maximum Optimization (Favor Speed)
     /Ob2                                    # set Inline Function Expansion to Any Suitable
@@ -181,8 +177,8 @@ set (shared_lib_linker_flags_release
 
 # Ship configuration.
 set (c_compiler_flags_ship
-    /GL                                     # Enable link-time code generation
     /WX-                                    # Disable Treat Warnings As Errors
+    /GL                                     # Enable link-time code generation
 )
 set (exe_linker_flags_ship
     /LTCG                                   # Use Link Time Code Generation
@@ -197,6 +193,7 @@ set (static_lib_linker_flags_ship
 
 # Profile configuration.
 set (c_compiler_flags_profile
+    /WX-                                    # Disable Treat Warnings As Errors
     /GL                                     # Enable link-time code generation
 )
 set (exe_linker_flags_profile
@@ -220,7 +217,7 @@ macro (link_against_platform target)
 endmacro ()
 
 macro (link_against_zlib target)
-    if (USE_EXTERNAL_ZLIB)
+    if (USE_FIND_PACKAGE_FOR_ZLIB)
         target_link_libraries (${target} ${ZLIB_LIBRARIES})
     else ()
         target_link_libraries (${target}
@@ -231,7 +228,7 @@ macro (link_against_zlib target)
 endmacro ()
 
 macro (link_against_libpng target)
-    if (USE_EXTERNAL_PNG)
+    if (USE_FIND_PACKAGE_FOR_PNG)
         target_link_libraries (${target} ${PNG_LIBRARIES})
     else ()
         target_link_libraries (${target}
@@ -242,7 +239,7 @@ macro (link_against_libpng target)
 endmacro ()
 
 macro (link_against_openexr target)
-    if (USE_EXTERNAL_EXR)
+    if (USE_FIND_PACKAGE_FOR_EXR)
         target_link_libraries (${target}
             ${IMATH_LIBRARIES}
             ${OPENEXR_LIBRARIES}
@@ -264,7 +261,7 @@ macro (link_against_openexr target)
 endmacro ()
 
 macro (link_against_xercesc target)
-    if (USE_EXTERNAL_XERCES)
+    if (USE_FIND_PACKAGE_FOR_XERCES)
         target_link_libraries (${target} ${XERCES_LIBRARIES})
     else ()
         target_link_libraries (${target}
@@ -275,7 +272,7 @@ macro (link_against_xercesc target)
 endmacro ()
 
 macro (link_against_oiio target)
-    if (USE_EXTERNAL_OIIO)
+    if (USE_FIND_PACKAGE_FOR_OIIO)
         target_link_libraries (${target}
             ${OPENIMAGEIO_LIBRARIES}
             ${LIBJPEG_LIBRARY}
@@ -294,7 +291,7 @@ macro (link_against_oiio target)
 endmacro ()
 
 macro (link_against_ocio target)
-    if (USE_EXTERNAL_OCIO)
+    if (USE_FIND_PACKAGE_FOR_OCIO)
         target_link_libraries (${target}
             ${OPENCOLORIO_LIBRARIES}
         )
@@ -319,7 +316,7 @@ macro (link_against_osl target)
         LLVMObject LLVMCore LLVMSupport
     )
 
-    if (USE_EXTERNAL_OSL)
+    if (USE_FIND_PACKAGE_FOR_OSL)
         target_link_libraries (${target}
             ${OSL_EXEC_LIBRARY}
             ${OSL_QUERY_LIBRARY}
@@ -347,7 +344,7 @@ macro (link_against_osl target)
 endmacro ()
 
 macro (link_against_seexpr target)
-    if (USE_EXTERNAL_SEEXPR)
+    if (USE_FIND_PACKAGE_FOR_SEEXPR)
         target_link_libraries (${target} ${SEEXPR_LIBRARIES})
     else ()
         target_link_libraries (${target}
@@ -358,7 +355,7 @@ macro (link_against_seexpr target)
 endmacro ()
 
 macro (link_against_seexpreditor target)
-    if (USE_EXTERNAL_SEEXPR)
+    if (USE_FIND_PACKAGE_FOR_SEEXPR)
         target_link_libraries (${target} ${SEEXPREDITOR_LIBRARIES})
     else ()
         target_link_libraries (${target}
@@ -369,7 +366,7 @@ macro (link_against_seexpreditor target)
 endmacro ()
 
 macro (link_against_embree target)
-    if (USE_EXTERNAL_EMBREE)
+    if (USE_FIND_PACKAGE_FOR_EMBREE)
         target_link_libraries (${target} ${EMBREE_LIBRARIES})
     else ()
         target_link_libraries (${target}

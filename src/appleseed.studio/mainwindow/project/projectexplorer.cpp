@@ -61,6 +61,7 @@ ProjectExplorer::ProjectExplorer(
     QTreeWidget*        tree_widget,
     AttributeEditor*    attribute_editor,
     Project&            project,
+    ProjectManager&     project_manager,
     RenderingManager&   rendering_manager,
     ParamArray&         settings)
   : m_tree_widget(tree_widget)
@@ -68,6 +69,7 @@ ProjectExplorer::ProjectExplorer(
   , m_project_builder(project)
   , m_editor_context(
         project,
+        project_manager,
         *this,
         m_project_builder,
         m_item_registry,
