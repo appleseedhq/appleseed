@@ -43,9 +43,11 @@ endif ()
 # Compiler version.
 #--------------------------------------------------------------------------------------------------
 
-execute_process (COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
+execute_process (
+    COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
     OUTPUT_VARIABLE COMPILER_VERSION
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     message (STATUS "Using gcc ${COMPILER_VERSION} as the compiler")
