@@ -432,8 +432,8 @@ set (appleseedpython_sources
     ../appleseed.python/bindmeshobject.cpp
     ../appleseed.python/bindmurmurhash.cpp
     ../appleseed.python/bindobject.cpp
-    ../appleseed.python/bindpostprocessingstage.cpp
     ../appleseed.python/bindpluginstore.cpp
+    ../appleseed.python/bindpostprocessingstage.cpp
     ../appleseed.python/bindproject.cpp
     ../appleseed.python/bindquaternion.cpp
     ../appleseed.python/bindrenderercontroller.cpp
