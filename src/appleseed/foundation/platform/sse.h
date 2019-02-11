@@ -36,7 +36,14 @@
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
 
-// Platform headers.
+//
+// x86 intrinsics headers.
+//
+// Reference:
+//
+//   https://stackoverflow.com/questions/11228855/header-files-for-x86-simd-intrinsics
+//
+
 #if defined _MSC_VER
 #include <intrin.h>
 #else
