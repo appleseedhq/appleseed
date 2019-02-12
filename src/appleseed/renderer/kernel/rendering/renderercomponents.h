@@ -106,7 +106,7 @@ class RendererComponents
     std::unique_ptr<ISampleRendererFactory>                         m_sample_renderer_factory;
     std::unique_ptr<ISampleGeneratorFactory>                        m_sample_generator_factory;
     std::unique_ptr<IPixelRendererFactory>                          m_pixel_renderer_factory;
-    foundation::auto_release_ptr<IShadingResultFrameBufferFactory>  m_shading_result_framebuffer_factory;
+    std::unique_ptr<IShadingResultFrameBufferFactory>               m_shading_result_framebuffer_factory;
     std::unique_ptr<ITileRendererFactory>                           m_tile_renderer_factory;
     std::unique_ptr<IPassCallback>                                  m_pass_callback;
     foundation::auto_release_ptr<IFrameRenderer>                    m_frame_renderer;

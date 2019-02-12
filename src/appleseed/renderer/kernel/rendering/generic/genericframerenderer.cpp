@@ -325,10 +325,6 @@ namespace
 
                 const size_t start_pass = m_frame.get_initial_pass();
 
-                PermanentShadingResultFrameBufferFactory* buffer_factory =
-                    static_cast<PermanentShadingResultFrameBufferFactory*>(
-                        m_framebuffer_factory);
-
                 //
                 // Rendering passes.
                 //
@@ -389,7 +385,7 @@ namespace
                         assert(!m_job_queue.has_scheduled_or_running_jobs());
                     }
 
-                    m_frame.save_checkpoint(buffer_factory, pass);
+                    m_frame.save_checkpoint(m_framebuffer_factory, pass);
                 }
 
                 // Check abort flag.

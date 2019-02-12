@@ -36,7 +36,6 @@
 #include "renderer/kernel/rendering/iframerenderer.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/oiioerrorhandler.h"
-#include "renderer/kernel/rendering/permanentshadingresultframebufferfactory.h"
 #include "renderer/kernel/rendering/renderercomponents.h"
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/rendering/serialrenderercontroller.h"
@@ -466,10 +465,7 @@ struct MasterRenderer::Impl
 
         // Load the checkpoint if any.
         Frame& frame = *m_project.get_frame();
-        PermanentShadingResultFrameBufferFactory* buffer_factory =
-            static_cast<PermanentShadingResultFrameBufferFactory*>(
-                &(components.get_shading_result_framebuffer_factory()));
-        if (!frame.load_checkpoint(buffer_factory))
+        if (!frame.load_checkpoint(&(components.get_shading_result_framebuffer_factory())))
             return IRendererController::AbortRendering;
 
         // Print renderer component settings.

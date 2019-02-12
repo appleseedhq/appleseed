@@ -35,7 +35,7 @@
 #include "renderer/kernel/aov/aovsettings.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/denoising/denoiser.h"
-#include "renderer/kernel/rendering/permanentshadingresultframebufferfactory.h"
+#include "renderer/kernel/rendering/ishadingresultframebufferfactory.h"
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/aov/aovfactoryregistrar.h"
@@ -492,6 +492,12 @@ void Frame::denoise(
 
 namespace
 {
+    inline size_t get_checkpoint_total_channel_count(const size_t aov_count)
+    {
+        // The beauty image plus the shadding result framebuffer.
+        return ShadingResultFrameBuffer::get_total_channel_count(aov_count) + 1;
+    }
+
     typedef vector<tuple<string, CanvasProperties, ImageAttributes>> CheckpointProperties;
 
     //
@@ -504,15 +510,15 @@ namespace
       public:
         ShadingBufferCanvas(
             const Frame&                                frame,
-            PermanentShadingResultFrameBufferFactory*   buffer_factory)
-          : m_frame(frame)
-          , m_buffer_factory(buffer_factory)
+            IShadingResultFrameBufferFactory*           buffer_factory)
+          : m_buffer_factory(buffer_factory)
+          , m_frame(frame)
           , m_props(
                 m_frame.image().properties().m_canvas_width,
                 m_frame.image().properties().m_canvas_height,
                 m_frame.image().properties().m_tile_width,
                 m_frame.image().properties().m_tile_height,
-                (1 + m_frame.aov_images().size()) * 4 + 1,
+                get_checkpoint_total_channel_count(m_frame.aov_images().size()),
                 PixelFormatFloat)
         {
             assert(buffer_factory);
@@ -552,8 +558,8 @@ namespace
         }
 
       private:
+        IShadingResultFrameBufferFactory*           m_buffer_factory;
         const Frame&                                m_frame;
-        PermanentShadingResultFrameBufferFactory*   m_buffer_factory;
         const CanvasProperties                      m_props;
 
         AABB2i get_tile_bbox(
@@ -625,7 +631,7 @@ namespace
             return false;
         }
 
-        // Check for weight layer.
+        // Check for shading buffer layer.
         const string second_layer_name = get<0>(checkpoint_props[1]);
         if (second_layer_name != "appleseed:RenderingBuffer")
         {
@@ -633,8 +639,9 @@ namespace
             return false;
         }
 
-        // Check that weight layer has correct amount of channel.
-        const size_t expect_channel_count = (1 + frame.aov_images().size()) * 4 + 1;
+        // Check that the shading buffer layer has correct amount of channel.
+        // The checkpoint should contain the beauty image and the shading buffer.
+        const size_t expect_channel_count = get_checkpoint_total_channel_count(frame.aov_images().size());
         if (get<1>(checkpoint_props[1]).m_channel_count != expect_channel_count)
         {
             RENDERER_LOG_ERROR("incorrect checkpoint: the shading buffer doesn't contain the correct number of channels.");
@@ -736,7 +743,7 @@ namespace
 
 }
 
-bool Frame::load_checkpoint(PermanentShadingResultFrameBufferFactory* buffer_factory)
+bool Frame::load_checkpoint(IShadingResultFrameBufferFactory* buffer_factory)
 {
     if  (!impl->m_checkpoint_resume)
         return true;
@@ -870,7 +877,7 @@ bool Frame::load_checkpoint(PermanentShadingResultFrameBufferFactory* buffer_fac
 }
 
 void Frame::save_checkpoint(
-    PermanentShadingResultFrameBufferFactory*   buffer_factory,
+    IShadingResultFrameBufferFactory*           buffer_factory,
     const size_t                                pass) const
 {
     if (!impl->m_checkpoint_create)
@@ -880,47 +887,53 @@ void Frame::save_checkpoint(
 
     GenericImageFileWriter writer(impl->m_checkpoint_create_path.c_str());
 
-    ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
-    image_attributes.insert("appleseed:LastPass", pass);
-
-    // Create layers.
-    // Buffer containing pixels' weight.
-    ShadingBufferCanvas weight_canvas(*this, buffer_factory);
-
-    // Create channel names.
-    const size_t shading_channel_count = weight_canvas.properties().m_channel_count;
-    vector<string> shading_channel_names; // for shading buffer
-    vector<const char *> shading_channel_names_cr;
-
-    static const string channel_name_prefix = "channel_";
-    for (size_t i = 0; i < shading_channel_count; ++i)
+    // Add the beauty image.
     {
-        shading_channel_names.push_back(channel_name_prefix + pad_left(to_string(i + 1), '0', 4));
-        shading_channel_names_cr.push_back(shading_channel_names[i].c_str());
+        writer.append_image(&image());
+        ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
+        image_attributes.insert("appleseed:LastPass", pass);
+        image_attributes.insert("image_name", "beauty");
+        writer.set_image_attributes(image_attributes);
     }
 
-    assert(shading_channel_names.size() == shading_channel_count);
+    // Buffer containing pixels' weight.
+    ShadingBufferCanvas pixels_weight_buffer(*this, buffer_factory);
+    const size_t shading_channel_count = pixels_weight_buffer.properties().m_channel_count;
 
-    // Add layers in the file.
-    writer.append_image(&image());
-    image_attributes.insert("image_name", "beauty");
-    writer.set_image_attributes(image_attributes);
-
-    writer.append_image(&weight_canvas);
-    image_attributes.insert("image_name", "appleseed:RenderingBuffer");
-    writer.set_image_channels(shading_channel_count, shading_channel_names_cr.data());
-    writer.set_image_attributes(image_attributes);
-
-    // Add AOV layers.
-    for (size_t i = 0, e = aovs().size(); i < e; ++i)
+    // Create channel names.
+    vector<string> shading_channel_names;
+    vector<const char *> shading_channel_names_cstr;
     {
-        const AOV* aov = aovs().get_by_index(i);
+        static const string channel_name_prefix = "channel_";
+        for (size_t i = 0; i < shading_channel_count; ++i)
+        {
+            shading_channel_names.push_back(channel_name_prefix + pad_left(to_string(i + 1), '0', 4));
+            shading_channel_names_cstr.push_back(shading_channel_names[i].c_str());
+        }
 
-        const char* aov_name = aov->get_name();
-        const Image& aov_image = aov->get_image();
+        assert(shading_channel_names.size() == shading_channel_count);
+    }
+
+    // Add the shading buffer.
+    {
+        writer.append_image(&pixels_weight_buffer);
+        writer.set_image_channels(shading_channel_count, shading_channel_names_cstr.data());
+
+        ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
+        image_attributes.insert("image_name", "appleseed:RenderingBuffer");
+        writer.set_image_attributes(image_attributes);
+    }
+
+    // Add AOV images.
+    for (const AOV& aov : aovs())
+    {
+        const char* aov_name = aov.get_name();
+        const Image& aov_image = aov.get_image();
         writer.append_image(&aov_image);
+        writer.set_image_channels(aov.get_channel_count(), aov.get_channel_names());
+
+        ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
         image_attributes.insert("image_name", aov_name);
-        writer.set_image_channels(aov->get_channel_count(), aov->get_channel_names());
         writer.set_image_attributes(image_attributes);
     }
 
@@ -928,13 +941,10 @@ void Frame::save_checkpoint(
     writer.write();
 
     // Add internal AOVs layers (in external files).
-    for (size_t i = 0, e = internal_aovs().size(); i < e; ++i)
+    for (const AOV& aov : internal_aovs())
     {
-        const AOV* aov = internal_aovs().get_by_index(i);
-
-        const DenoiserAOV* denoiser_aov = dynamic_cast<const DenoiserAOV*>(aov);
-
         // Save denoiser checkpoint.
+        const DenoiserAOV* denoiser_aov = dynamic_cast<const DenoiserAOV*>(&aov);
         if (denoiser_aov != nullptr)
             save_denoiser_checkpoint(impl->m_checkpoint_create_path, denoiser_aov);
     }

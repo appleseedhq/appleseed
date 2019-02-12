@@ -62,9 +62,9 @@ namespace foundation    { class Tile; }
 namespace renderer      { class BaseGroup; }
 namespace renderer      { class DenoiserAOV; }
 namespace renderer      { class ImageStack; }
+namespace renderer      { class IShadingResultFrameBufferFactory; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
-namespace renderer      { class PermanentShadingResultFrameBufferFactory; }
 namespace renderer      { class Project; }
 
 namespace renderer
@@ -179,12 +179,11 @@ class APPLESEED_DLLSYMBOL Frame
     // Open the checkpoint if checkpoint is enabled and the file located
     // at checkpoint_path exists and is valid.
     // Returns true if successful or if checkpoint is disabled, false otherwise.
-    bool load_checkpoint(
-        PermanentShadingResultFrameBufferFactory*   buffer_factory);
+    bool load_checkpoint(IShadingResultFrameBufferFactory*   buffer_factory);
 
     // Create a checkpoint file for the resuming the render at the current pass.
     void save_checkpoint(
-        PermanentShadingResultFrameBufferFactory*   buffer_factory,
+        IShadingResultFrameBufferFactory*           buffer_factory,
         const size_t                                pass) const;
 
     // Write the main image to disk.
