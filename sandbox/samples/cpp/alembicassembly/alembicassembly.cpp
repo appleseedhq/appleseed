@@ -1290,19 +1290,19 @@ namespace
         }
 
         bool on_frame_begin(
-            const asr::Project&                  project,
-            const asr::BaseGroup*                parent,
-            asr::OnFrameBeginRecorder&           recorder,
-            asf::IAbortSwitch*       abort_switch = nullptr) override
+            const asr::Project&         project,
+            const asr::BaseGroup*       parent,
+            asr::OnFrameBeginRecorder&  recorder,
+            asf::IAbortSwitch*          abort_switch = nullptr) override
         {
             m_camera->on_frame_begin(project, parent, recorder, abort_switch);
         }
 
         bool on_render_begin(
-            const asr::Project&             project,
-            const asr::BaseGroup*           parent,
-            asr::OnRenderBeginRecorder&     recorder,
-            asf::IAbortSwitch*              abort_switch = nullptr) override
+            const asr::Project&         project,
+            const asr::BaseGroup*       parent,
+            asr::OnRenderBeginRecorder& recorder,
+            asf::IAbortSwitch*          abort_switch = nullptr) override
         {
             if (m_file_path.empty())
             {
