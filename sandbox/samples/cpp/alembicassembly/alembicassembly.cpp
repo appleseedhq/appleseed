@@ -1295,7 +1295,7 @@ namespace
             asr::OnFrameBeginRecorder&  recorder,
             asf::IAbortSwitch*          abort_switch = nullptr) override
         {
-            m_camera->on_frame_begin(project, parent, recorder, abort_switch);
+            return m_camera->on_frame_begin(project, parent, recorder, abort_switch);
         }
 
         bool on_render_begin(
