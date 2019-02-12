@@ -44,8 +44,14 @@ namespace foundation
 //
 // Distribution adapters.
 //
+// Interesting reference:
+//
+//   Uniform random floats: How to generate a double-precision floating-point number
+//   in [0, 1] uniformly at random given a uniform random source of bits.
+//   http://mumble.net/~campbell/tmp/random_real.c
+//
 
-// Return a random number in the integer interval [0, 0x7fffffff].
+// Return a random number in the integer interval [0, 0x7FFFFFFF].
 template <typename RNG> int32 rand_int31(RNG& rng);
 
 // Return a random number in the integer interval [min, max].
@@ -112,7 +118,12 @@ VectorType rand_vector3(RNG& rng);
 template <typename RNG>
 inline int32 rand_int31(RNG& rng)
 {
-    return static_cast<int32>(rng.rand_uint32() >> 1);
+    const int32 result = static_cast<int32>(rng.rand_uint32() >> 1);
+
+    assert(result >= 0);
+    assert(result <= 0x7FFFFFFFUL);
+
+    return result;
 }
 
 template <typename RNG>
@@ -137,13 +148,23 @@ inline int32 rand_int1(RNG& rng, const int32 min, const int32 max)
 template <typename RNG>
 inline float rand_float1(RNG& rng)
 {
-    return rng.rand_uint32() * (1.0f / 4294967295UL);
+    const float result = rng.rand_uint32() * (1.0f / 0xFFFFFFFFUL);
+
+    assert(result >= 0.0f);
+    assert(result <= 1.0f);
+
+    return result;
 }
 
 template <typename RNG>
 inline double rand_double1(RNG& rng)
 {
-    return rng.rand_uint32() * (1.0 / 4294967295UL);
+    const double result = rng.rand_uint32() * (1.0 / 0xFFFFFFFFUL);
+
+    assert(result >= 0.0);
+    assert(result <= 1.0);
+
+    return result;
 }
 
 template <typename T, typename RNG>
@@ -172,14 +193,26 @@ template <typename RNG>
 inline float rand_float1(RNG& rng, const float min, const float max)
 {
     assert(min <= max);
-    return lerp(min, max, rand_float1(rng));
+
+    const float result = lerp(min, max, rand_float1(rng));
+
+    assert(result >= min);
+    assert(result <= max);
+
+    return result;
 }
 
 template <typename RNG>
 inline double rand_double1(RNG& rng, const double min, const double max)
 {
     assert(min <= max);
-    return lerp(min, max, rand_double1(rng));
+
+    const double result = lerp(min, max, rand_double1(rng));
+
+    assert(result >= min);
+    assert(result <= max);
+
+    return result;
 }
 
 template <typename RNG>
@@ -198,13 +231,23 @@ template <typename RNG>
 inline float rand_float2(RNG& rng)
 {
     // 2.3283063e-010f is the biggest float K such that K * (2^32 - 1) < 1.
-    return rng.rand_uint32() * 2.3283063e-010f;
+    const float result = rng.rand_uint32() * 2.3283063e-010f;
+
+    assert(result >= 0.0f);
+    assert(result < 1.0f);
+
+    return result;
 }
 
 template <typename RNG>
 inline double rand_double2(RNG& rng)
 {
-    return rng.rand_uint32() * (1.0 / 4294967296.0);
+    const double result = rng.rand_uint32() * (1.0 / 4294967296.0);
+
+    assert(result >= 0.0);
+    assert(result < 1.0);
+
+    return result;
 }
 
 template <typename T, typename RNG>
@@ -233,14 +276,26 @@ template <typename RNG>
 inline float rand_float2(RNG& rng, const float min, const float max)
 {
     assert(min <= max);
-    return lerp(min, max, rand_float2(rng));
+
+    const float result = lerp(min, max, rand_float2(rng));
+
+    assert(result >= min);
+    assert(result < max);
+
+    return result;
 }
 
 template <typename RNG>
 inline double rand_double2(RNG& rng, const double min, const double max)
 {
     assert(min <= max);
-    return lerp(min, max, rand_double2(rng));
+
+    const double result = lerp(min, max, rand_double2(rng));
+
+    assert(result >= min);
+    assert(result < max);
+
+    return result;
 }
 
 template <typename RNG>
@@ -258,13 +313,23 @@ inline double rand2(RNG& rng, const double min, const double max)
 template <typename RNG>
 inline float rand_float3(RNG& rng)
 {
-    return rng.rand_uint32() * 2.3283060e-010f + std::numeric_limits<float>::epsilon();
+    const float result = rng.rand_uint32() * 2.3283060e-010f + std::numeric_limits<float>::epsilon();
+
+    assert(result > 0.0f);
+    assert(result < 1.0f);
+
+    return result;
 }
 
 template <typename RNG>
 inline double rand_double3(RNG& rng)
 {
-    return rng.rand_uint32() * 2.3283064370807963e-10 + std::numeric_limits<double>::epsilon();
+    const double result = rng.rand_uint32() * 2.3283064370807963e-10 + std::numeric_limits<double>::epsilon();
+
+    assert(result > 0.0);
+    assert(result < 1.0);
+
+    return result;
 }
 
 template <typename T, typename RNG>
@@ -293,14 +358,26 @@ template <typename RNG>
 inline float rand_float3(RNG& rng, const float min, const float max)
 {
     assert(min <= max);
-    return lerp(min, max, rand_float3(rng));
+
+    const float result = lerp(min, max, rand_float3(rng));
+
+    assert(result > min);
+    assert(result < max);
+
+    return result;
 }
 
 template <typename RNG>
 inline double rand_double3(RNG& rng, const double min, const double max)
 {
     assert(min <= max);
-    return lerp(min, max, rand_double3(rng));
+
+    const double result = lerp(min, max, rand_double3(rng));
+
+    assert(result > min);
+    assert(result < max);
+
+    return result;
 }
 
 template <typename RNG>
@@ -320,15 +397,23 @@ inline double rand_double2_res53(RNG& rng)
 {
     const uint32 a = rng.rand_uint32() >> 5;
     const uint32 b = rng.rand_uint32() >> 6;
-    return (a * 67108864.0 + b) * (1.0 / 9007199254740992.0);
+
+    const double result = (a * 67108864.0 + b) * (1.0 / 9007199254740992.0);
+
+    assert(result >= 0.0);
+    assert(result < 1.0);
+
+    return result;
 }
 
 template <typename VectorType, typename RNG>
 inline VectorType rand_vector1(RNG& rng)
 {
     VectorType v;
+
     for (size_t i = 0; i < VectorType::Dimension; ++i)
         v[i] = rand1<typename VectorType::ValueType>(rng);
+
     return v;
 }
 
@@ -336,8 +421,10 @@ template <typename VectorType, typename RNG>
 inline VectorType rand_vector2(RNG& rng)
 {
     VectorType v;
+
     for (size_t i = 0; i < VectorType::Dimension; ++i)
         v[i] = rand2<typename VectorType::ValueType>(rng);
+
     return v;
 }
 
@@ -345,8 +432,10 @@ template <typename VectorType, typename RNG>
 inline VectorType rand_vector3(RNG& rng)
 {
     VectorType v;
+
     for (size_t i = 0; i < VectorType::Dimension; ++i)
         v[i] = rand3<typename VectorType::ValueType>(rng);
+
     return v;
 }
 
