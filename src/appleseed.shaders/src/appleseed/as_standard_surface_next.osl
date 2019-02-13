@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017-2018 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2019 Luis Barrancos, Rafael Brune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -181,38 +181,23 @@ shader as_standard_surface_next
         string label = "Specular Roughness",
         string page = "Specular"
     ]],
-    float in_specular_roughness_2 = 0.0
+    float in_specular_haziness = 0.0
     [[
-        string as_maya_attribute_name = "specularRoughness2",
-        string as_maya_attribute_short_name = "sr2",
+        string as_maya_attribute_name = "specularHaziness",
+        string as_maya_attribute_short_name = "sha",
         float min = 0.0,
         float max = 1.0,
-        string label = "Specular Roughness 2",
+        string label = "Specular Haziness",
         string page = "Specular"
     ]],
-    float in_specular_roughness_blend = 0.0
+    float in_specular_haze_extent = 0.0
     [[
-        string as_maya_attribute_name = "specularBlend",
-        string as_maya_attribute_short_name = "srb",
+        string as_maya_attribute_name = "specularHazeExtent",
+        string as_maya_attribute_short_name = "she",
         float min = 0.0,
         float max = 1.0,
-        string label = "Specular Blend",
-        string page = "Specular",
-        string help = "Specular blend, controls the blending weight between the two specular roughness values.",
-    ]],
-    float in_specular_spread = 0.25
-    [[
-        string as_maya_attribute_name = "specularSpread",
-        string as_maya_attribute_short_name = "sps",
-        float min = 0.0,
-        float max = 1.0,
-        string label = "Specular Spread",
-        string page = "Specular",
-        string help = "Specular spread, controls the tails of the highlights.",
-        int divider = 1,
-        int as_maya_attribute_hidden = 1,
-        int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        string label = "Specular Haze Extent",
+        string page = "Specular"
     ]],
     int in_fresnel_type = 0
     [[
@@ -530,13 +515,13 @@ shader as_standard_surface_next
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
-    int in_maximum_ray_depth = 8
+    int in_maximum_ray_depth = 100
     [[
         string as_maya_attribute_name = "maximumRayDepth",
         string as_maya_attribute_short_name = "mrd",
         int min = 0,
         int max = 100,
-        int softmax = 8,
+        int softmax = 16,
         string label = "Ray Depth",
         string page = "Advanced",
         int as_maya_attribute_connectable = 0,
@@ -592,7 +577,20 @@ shader as_standard_surface_next
         out_outColor += out_outTransparency;
     }
 
-    if (raytype("shadow") || raytype("transparency"))
+    if (raytype("transparency"))
+    {
+        if (in_enable_matte)
+        {
+            out_outMatteOpacity = as_matte(
+                in_matte_opacity_color,
+                in_matte_opacity);
+
+            out_outColor += out_outMatteOpacity;
+        }
+        return;
+    }
+
+    if (raytype("shadow"))
     {
         return;
     }
@@ -603,14 +601,6 @@ shader as_standard_surface_next
     if (!status || ray_depth > in_maximum_ray_depth)
     {
         return;
-    }
-
-    if (in_enable_matte)
-    {
-        out_outMatteOpacity = in_matte_opacity *
-            in_matte_opacity_color * holdout();
-
-        out_outColor += out_outMatteOpacity;
     }
 
     if (in_transparency == 1.0)
@@ -633,7 +623,7 @@ shader as_standard_surface_next
             ? normalize(in_bump_normal_coating)
             : normalize(in_bump_normal_substrate);
 
-        float costheta_o = dot(-I, Nn);
+        float costheta_o = max(0.0, dot(-I, Nn));
 
         if (in_coating_ior > 1.0)
         {
@@ -741,8 +731,8 @@ shader as_standard_surface_next
                     in_specular_color,
                     in_refraction_amount * in_refraction_tint,
                     in_specular_roughness,
-                    in_specular_roughness_2,
-                    in_specular_roughness_blend,
+                    in_specular_haziness,
+                    in_specular_haze_extent,
                     in_anisotropy_amount,
                     in_ior,
                     in_absorption_color,
@@ -755,8 +745,8 @@ shader as_standard_surface_next
                         Nn,
                         tangent,
                         in_specular_roughness,
-                        in_specular_roughness_2,
-                        in_specular_roughness_blend,
+                        in_specular_haziness,
+                        in_specular_haze_extent,
                         in_anisotropy_amount,
                         in_ior);
             }
@@ -767,11 +757,12 @@ shader as_standard_surface_next
                 in_specular_color * as_hazy_metal(
                     Nn,
                     tangent,
+                    in_specular_color,
                     in_face_tint,
                     in_edge_tint,
                     in_specular_roughness,
-                    in_specular_roughness_2,
-                    in_specular_roughness_blend,
+                    in_specular_haziness,
+                    in_specular_haze_extent,
                     in_anisotropy_amount);
         }
 
@@ -781,7 +772,7 @@ shader as_standard_surface_next
         if ((compute_diffuse || compute_bssrdf || compute_edf ||
             compute_translucency) && max(in_specular_color) > 0.0)
         {
-            float costheta_o = dot(-I, Nn);
+            float costheta_o = max(0.0, dot(-I, Nn));
 
             if (in_fresnel_type == 0)
             {

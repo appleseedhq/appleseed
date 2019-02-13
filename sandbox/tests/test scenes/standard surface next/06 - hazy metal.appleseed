@@ -130,7 +130,7 @@
                                 <parameter name="in_edge_tint" value="color 1 1 1" />
                                 <parameter name="in_enable_matte" value="int 0" />
                                 <parameter name="in_face_tint" value="color 0.85 0.85 0.85" />
-                                <parameter name="in_fresnel_type" value="int 0" />
+                                <parameter name="in_fresnel_type" value="int 1" />
                                 <parameter name="in_incandescence_amount" value="float 0" />
                                 <parameter name="in_incandescence_color" value="color 0 0 0" />
                                 <parameter name="in_incandescence_type" value="int 0" />
@@ -140,11 +140,10 @@
                                 <parameter name="in_maximum_ray_depth" value="int 8" />
                                 <parameter name="in_refraction_amount" value="float 0.0" />
                                 <parameter name="in_refraction_tint" value="color 1 1 1" />
-                                <parameter name="in_specular_color" value="color 1.0 1.0 1.0" />
+                                <parameter name="in_specular_color" value="color 0.5 0.5 0.5" />
                                 <parameter name="in_specular_roughness" value="float 0.1" />
-            		            <parameter name="in_specular_roughness_2" value="float 0.5" />
-                                <parameter name="in_specular_roughness_blend" value="float 0.5" />
-                                <parameter name="in_specular_spread" value="float 0.25" />
+                                <parameter name="in_specular_haziness" value="float 0.99" />
+                                <parameter name="in_specular_haze_extent" value="float 0.7" />
                                 <parameter name="in_sss_maximum_ray_depth" value="int 2" />
                                 <parameter name="in_sss_mfp" value="color 0 0 0" />
                                 <parameter name="in_sss_mfp_scale" value="float 1" />

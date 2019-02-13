@@ -126,11 +126,11 @@
                                 <parameter name="in_coating_roughness" value="float 0" />
                                 <parameter name="in_color" value="color 0.15 0.15 0.15" />
                                 <parameter name="in_diffuse_roughness" value="float 0.4" />
-                                <parameter name="in_diffuse_weight" value="float 1" />
+                                <parameter name="in_diffuse_weight" value="float 0" />
                                 <parameter name="in_edge_tint" value="color 1 1 1" />
                                 <parameter name="in_enable_matte" value="int 0" />
                                 <parameter name="in_face_tint" value="color 0.85 0.85 0.85" />
-                                <parameter name="in_fresnel_type" value="int 1" />
+                                <parameter name="in_fresnel_type" value="int 0" />
                                 <parameter name="in_incandescence_amount" value="float 0" />
                                 <parameter name="in_incandescence_color" value="color 0 0 0" />
                                 <parameter name="in_incandescence_type" value="int 0" />
@@ -138,13 +138,12 @@
                                 <parameter name="in_matte_opacity" value="float 0" />
                                 <parameter name="in_matte_opacity_color" value="color 1 1 1" />
                                 <parameter name="in_maximum_ray_depth" value="int 8" />
-                                <parameter name="in_refraction_amount" value="float 0.0" />
+                                <parameter name="in_refraction_amount" value="float 1.0" />
                                 <parameter name="in_refraction_tint" value="color 1 1 1" />
                                 <parameter name="in_specular_color" value="color 1.0 1.0 1.0" />
-                                <parameter name="in_specular_roughness" value="float 0.1" />
-            		            <parameter name="in_specular_roughness_2" value="float 0.5" />
-                                <parameter name="in_specular_roughness_blend" value="float 0.0" />
-                                <parameter name="in_specular_spread" value="float 0.25" />
+                                <parameter name="in_specular_roughness" value="float 0.22" />
+            		            <parameter name="in_specular_haziness" value="float 0.0" />
+                                <parameter name="in_specular_haze_extent" value="float 0.5" />
                                 <parameter name="in_sss_maximum_ray_depth" value="int 2" />
                                 <parameter name="in_sss_mfp" value="color 0 0 0" />
                                 <parameter name="in_sss_mfp_scale" value="float 1" />
@@ -197,6 +196,7 @@
             </object_instance>
             <object_instance name="studio_teapot.teapot_inst" object="studio_teapot.teapot">
                 <assign_material slot="default" side="front" material="shaderball_mat" />
+                <assign_material slot="default" side="back" material="shaderball_mat" />
             </object_instance>
             <object_instance name="studio_teapot.top_light_inst" object="studio_teapot.top_light">
                 <assign_material slot="default" side="front" material="top_light_material" />
@@ -256,7 +256,7 @@
             <parameters name="uniform_pixel_renderer">
                 <parameter name="decorrelate_pixels" value="true" />
                 <parameter name="force_antialiasing" value="false" />
-                <parameter name="samples" value="32" />
+                <parameter name="samples" value="128" />
             </parameters>
         </configuration>
         <configuration name="interactive" base="base_interactive">

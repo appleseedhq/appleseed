@@ -81,6 +81,7 @@ source_group ("include\\appleseed\\fractal" FILES
 
 set (include_appleseed_material_sources
     include/appleseed/material/as_material_helpers.h
+    include/appleseed/material/as_hazy_gloss.h
 )
 list (APPEND osl_headers
     ${include_appleseed_material_sources}

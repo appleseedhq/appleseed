@@ -142,9 +142,8 @@
                                 <parameter name="in_refraction_tint" value="color 1 1 1" />
                                 <parameter name="in_specular_color" value="color 1.0 1.0 1.0" />
                                 <parameter name="in_specular_roughness" value="float 0.1" />
-            		            <parameter name="in_specular_roughness_2" value="float 0.5" />
-                                <parameter name="in_specular_roughness_blend" value="float 0.0" />
-                                <parameter name="in_specular_spread" value="float 0.25" />
+                                <parameter name="in_specular_haziness" value="float 0.1" />
+                                <parameter name="in_specular_haze_extent" value="float 0.3" />
                                 <parameter name="in_sss_maximum_ray_depth" value="int 2" />
                                 <parameter name="in_sss_mfp" value="color 0 0 0" />
                                 <parameter name="in_sss_mfp_scale" value="float 1" />
