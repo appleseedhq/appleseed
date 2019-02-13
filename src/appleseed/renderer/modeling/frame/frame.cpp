@@ -494,7 +494,7 @@ namespace
 {
     inline size_t get_checkpoint_total_channel_count(const size_t aov_count)
     {
-        // The beauty image plus the shadding result framebuffer.
+        // The beauty image plus the shading result framebuffer.
         return ShadingResultFrameBuffer::get_total_channel_count(aov_count) + 1;
     }
 
@@ -1430,7 +1430,8 @@ void Frame::extract_parameters()
         {
             string path = m_params.get_optional<string>("checkpoint_create_path", "");
             const bool use_default_path = path.empty();
-            if (use_default_path) path = m_params.get_required<string>("output_path");
+            if (use_default_path)
+                path = m_params.get_required<string>("output_path");
 
             bf::path bf_path(path.c_str());
 
@@ -1439,7 +1440,7 @@ void Frame::extract_parameters()
             if (extension != ".exr")
             {
                 // Only .exr files are allowed.
-                RENDERER_LOG_ERROR("checkpoint file must be an \".exr\" file, disabling checkpoint creation");
+                RENDERER_LOG_ERROR("checkpoint file must be an \".exr\" file, disabling checkpoint creation.");
                 impl->m_checkpoint_create = false;
             }
             else
@@ -1465,7 +1466,8 @@ void Frame::extract_parameters()
         {
             string path = m_params.get_optional<string>("checkpoint_resume_path", "");
             const bool use_default_path = path == "";
-            if (use_default_path) path = m_params.get_required<string>("output_path");
+            if (use_default_path)
+                path = m_params.get_required<string>("output_path");
 
             bf::path bf_path(path.c_str());
 
@@ -1474,7 +1476,7 @@ void Frame::extract_parameters()
             if (extension != ".exr")
             {
                 // Only .exr files are allowed.
-                RENDERER_LOG_ERROR("checkpoint file must be an \".exr\" file, disabling checkpoint resuming");
+                RENDERER_LOG_ERROR("checkpoint file must be an \".exr\" file, disabling checkpoint resuming.");
                 impl->m_checkpoint_resume = false;
             }
             else

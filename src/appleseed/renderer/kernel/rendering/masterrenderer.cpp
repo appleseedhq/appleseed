@@ -490,7 +490,6 @@ struct MasterRenderer::Impl
         recorder.on_render_end(m_project);
 
         const CanvasProperties& props = m_project.get_frame()->image().properties();
-
         m_project.get_light_path_recorder().finalize(
             props.m_canvas_width,
             props.m_canvas_height);

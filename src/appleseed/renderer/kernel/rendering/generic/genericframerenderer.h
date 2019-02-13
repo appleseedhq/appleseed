@@ -58,8 +58,8 @@ class GenericFrameRendererFactory
     // Constructor.
     GenericFrameRendererFactory(
         const Frame&                        frame,
-        ITileRendererFactory*               tile_renderer_factory,
         IShadingResultFrameBufferFactory*   framebuffer_factory,
+        ITileRendererFactory*               tile_renderer_factory,
         ITileCallbackFactory*               tile_callback_factory,      // may be nullptr
         IPassCallback*                      pass_callback,              // may be nullptr
         const ParamArray&                   params);
@@ -73,10 +73,10 @@ class GenericFrameRendererFactory
     // Return a new generic frame renderer instance.
     static IFrameRenderer* create(
         const Frame&                        frame,
-        ITileRendererFactory*               tile_renderer_factory,
         IShadingResultFrameBufferFactory*   framebuffer_factory,
-        ITileCallbackFactory*               tile_callback_factory,      // may be 0
-        IPassCallback*                      pass_callback,              // may be 0
+        ITileRendererFactory*               tile_renderer_factory,
+        ITileCallbackFactory*               tile_callback_factory,      // may be nullptr
+        IPassCallback*                      pass_callback,              // may be nullptr
         const ParamArray&                   params);
 
     // Return the metadata of the generic frame renderer parameters.
@@ -84,10 +84,10 @@ class GenericFrameRendererFactory
 
   private:
     const Frame&                            m_frame;
-    ITileRendererFactory*                   m_tile_renderer_factory;
     IShadingResultFrameBufferFactory*       m_framebuffer_factory;
-    ITileCallbackFactory*                   m_tile_callback_factory;    // may be 0
-    IPassCallback*                          m_pass_callback;            // may be 0
+    ITileRendererFactory*                   m_tile_renderer_factory;
+    ITileCallbackFactory*                   m_tile_callback_factory;    // may be nullptr
+    IPassCallback*                          m_pass_callback;            // may be nullptr
     const ParamArray                        m_params;
 };
 

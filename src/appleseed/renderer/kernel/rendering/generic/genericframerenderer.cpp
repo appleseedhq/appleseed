@@ -83,8 +83,8 @@ namespace
       public:
         GenericFrameRenderer(
             const Frame&                        frame,
-            ITileRendererFactory*               tile_renderer_factory,
             IShadingResultFrameBufferFactory*   framebuffer_factory,
+            ITileRendererFactory*               tile_renderer_factory,
             ITileCallbackFactory*               tile_callback_factory,
             IPassCallback*                      pass_callback,
             const ParamArray&                   params)
@@ -192,8 +192,8 @@ namespace
                     m_params.m_pass_count,
                     m_params.m_spectrum_mode,
                     m_tile_renderers,
-                    m_framebuffer_factory,
                     m_tile_callbacks,
+                    m_framebuffer_factory,
                     m_pass_callback,
                     m_job_queue,
                     m_params.m_thread_count,
@@ -297,8 +297,8 @@ namespace
                 const size_t                        pass_count,
                 const Spectrum::Mode                spectrum_mode,
                 vector<ITileRenderer*>&             tile_renderers,
-                IShadingResultFrameBufferFactory*   framebuffer_factory,
                 vector<ITileCallback*>&             tile_callbacks,
+                IShadingResultFrameBufferFactory*   framebuffer_factory,
                 IPassCallback*                      pass_callback,
                 JobQueue&                           job_queue,
                 const size_t                        thread_count,
@@ -307,8 +307,8 @@ namespace
               : m_frame(frame)
               , m_tile_ordering(tile_ordering)
               , m_tile_renderers(tile_renderers)
-              , m_framebuffer_factory(framebuffer_factory)
               , m_tile_callbacks(tile_callbacks)
+              , m_framebuffer_factory(framebuffer_factory)
               , m_pass_callback(pass_callback)
               , m_pass_count(pass_count)
               , m_spectrum_mode(spectrum_mode)
@@ -424,8 +424,8 @@ namespace
             const Frame&                            m_frame;
             const TileJobFactory::TileOrdering      m_tile_ordering;
             vector<ITileRenderer*>&                 m_tile_renderers;
-            IShadingResultFrameBufferFactory*       m_framebuffer_factory;
             vector<ITileCallback*>&                 m_tile_callbacks;
+            IShadingResultFrameBufferFactory*       m_framebuffer_factory;
             IPassCallback*                          m_pass_callback;
             const size_t                            m_pass_count;
             const Spectrum::Mode                    m_spectrum_mode;
@@ -505,14 +505,14 @@ namespace
 
 GenericFrameRendererFactory::GenericFrameRendererFactory(
     const Frame&                        frame,
-    ITileRendererFactory*               tile_renderer_factory,
     IShadingResultFrameBufferFactory*   framebuffer_factory,
+    ITileRendererFactory*               tile_renderer_factory,
     ITileCallbackFactory*               tile_callback_factory,
     IPassCallback*                      pass_callback,
     const ParamArray&                   params)
   : m_frame(frame)
-  , m_tile_renderer_factory(tile_renderer_factory)
   , m_framebuffer_factory(framebuffer_factory)
+  , m_tile_renderer_factory(tile_renderer_factory)
   , m_tile_callback_factory(tile_callback_factory)
   , m_pass_callback(pass_callback)
   , m_params(params)
@@ -529,8 +529,8 @@ IFrameRenderer* GenericFrameRendererFactory::create()
     return
         new GenericFrameRenderer(
             m_frame,
-            m_tile_renderer_factory,
             m_framebuffer_factory,
+            m_tile_renderer_factory,
             m_tile_callback_factory,
             m_pass_callback,
             m_params);
@@ -538,8 +538,8 @@ IFrameRenderer* GenericFrameRendererFactory::create()
 
 IFrameRenderer* GenericFrameRendererFactory::create(
     const Frame&                        frame,
-    ITileRendererFactory*               tile_renderer_factory,
     IShadingResultFrameBufferFactory*   framebuffer_factory,
+    ITileRendererFactory*               tile_renderer_factory,
     ITileCallbackFactory*               tile_callback_factory,
     IPassCallback*                      pass_callback,
     const ParamArray&                   params)
@@ -547,8 +547,8 @@ IFrameRenderer* GenericFrameRendererFactory::create(
     return
         new GenericFrameRenderer(
             frame,
-            tile_renderer_factory,
             framebuffer_factory,
+            tile_renderer_factory,
             tile_callback_factory,
             pass_callback,
             params);

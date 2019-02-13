@@ -176,10 +176,9 @@ class APPLESEED_DLLSYMBOL Frame
         const size_t                                thread_count,
         foundation::IAbortSwitch*                   abort_switch) const;
 
-    // Open the checkpoint if checkpoint is enabled and the file located
-    // at checkpoint_path exists and is valid.
-    // Returns true if successful or if checkpoint is disabled, false otherwise.
-    bool load_checkpoint(IShadingResultFrameBufferFactory*   buffer_factory);
+    // Open the checkpoint if the chekpoint resume option is enabled.
+    // Returns true if successful, false otherwise.
+    bool load_checkpoint(IShadingResultFrameBufferFactory*  buffer_factory);
 
     // Create a checkpoint file for the resuming the render at the current pass.
     void save_checkpoint(

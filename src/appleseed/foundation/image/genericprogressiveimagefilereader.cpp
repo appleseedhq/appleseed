@@ -314,9 +314,9 @@ void GenericProgressiveImageFileReader::read_tile(
         const size_t tile_width = min(impl->m_props.m_tile_width, impl->m_props.m_canvas_width - origin_x);
         const size_t tile_height = min(impl->m_props.m_tile_height, impl->m_props.m_canvas_height - origin_y);
 
-        // The tile fits perfectly into the canvas.
         if (tile_width == impl->m_props.m_tile_width && tile_height == impl->m_props.m_tile_height)
         {
+            // The tile fits perfectly into the canvas.
             assert(output_tile->get_width() == impl->m_props.m_tile_width);
             assert(output_tile->get_height() == impl->m_props.m_tile_height);
 
