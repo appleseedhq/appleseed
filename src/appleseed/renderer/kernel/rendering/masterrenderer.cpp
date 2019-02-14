@@ -463,6 +463,11 @@ struct MasterRenderer::Impl
         // Updating the trace context causes ray tracing acceleration structures to be updated or rebuilt.
         m_project.update_trace_context();
 
+        // Load the checkpoint if any.
+        Frame& frame = *m_project.get_frame();
+        if (!frame.load_checkpoint(&(components.get_shading_result_framebuffer_factory())))
+            return IRendererController::AbortRendering;
+
         // Print renderer component settings.
         components.print_settings();
 

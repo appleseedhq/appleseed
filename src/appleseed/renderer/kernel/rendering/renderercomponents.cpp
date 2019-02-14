@@ -485,6 +485,12 @@ bool RendererComponents::create_frame_renderer_factory()
     }
     else if (name == "generic")
     {
+        if (m_shading_result_framebuffer_factory.get() == nullptr)
+        {
+            RENDERER_LOG_ERROR("cannot use the generic frame renderer without a shading result framebuffer.");
+            return false;
+        }
+
         if (m_tile_renderer_factory.get() == nullptr)
         {
             RENDERER_LOG_ERROR("cannot use the generic frame renderer without a tile renderer.");
@@ -494,6 +500,7 @@ bool RendererComponents::create_frame_renderer_factory()
         m_frame_renderer.reset(
             GenericFrameRendererFactory::create(
                 m_frame,
+                m_shading_result_framebuffer_factory.get(),
                 m_tile_renderer_factory.get(),
                 m_tile_callback_factory,
                 m_pass_callback.get(),

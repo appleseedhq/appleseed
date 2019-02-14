@@ -80,6 +80,12 @@ class DenoiserAOV
     const bcd::Deepimf& histograms_image() const;
     bcd::Deepimf& histograms_image();
 
+    const bcd::Deepimf& covariance_image() const;
+    bcd::Deepimf& covariance_image();
+
+    const bcd::Deepimf& sum_image() const;
+    bcd::Deepimf& sum_image();
+
     void extract_num_samples_image(bcd::Deepimf& num_samples_image) const;
     void compute_covariances_image(bcd::Deepimf& covariances_image) const;
 

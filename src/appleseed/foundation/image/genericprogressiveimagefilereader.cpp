@@ -85,9 +85,11 @@ struct GenericProgressiveImageFileReader::Impl
             throw ExceptionIOError(OIIO::geterror().c_str());
 
         m_supports_random_access = m_input->supports("random_access") != 0;
+        read_spec(m_input->spec());
+    }
 
-        const OIIO::ImageSpec& spec = m_input->spec();
-
+    void read_spec(const OIIO::ImageSpec& spec)
+    {
         m_is_tiled = spec.tile_width > 0 && spec.tile_height > 0 && spec.tile_depth > 0;
 
         size_t tile_width, tile_height;
@@ -240,11 +242,56 @@ void GenericProgressiveImageFileReader::read_image_attributes(
     }
 }
 
+bool GenericProgressiveImageFileReader::choose_subimage(const size_t subimage) const
+{
+    OIIO::ImageSpec spec;
+    const bool success = impl->m_input->seek_subimage(
+        static_cast<int>(subimage),
+        0,
+        spec);
+
+    if (success)
+        impl->read_spec(spec);
+
+    return success;
+}
+
 Tile* GenericProgressiveImageFileReader::read_tile(
     const size_t        tile_x,
     const size_t        tile_y)
 {
     assert(is_open());
+
+    // Compute tile's dimensions.
+    const size_t tile_width = impl->m_is_tiled
+        ? min(impl->m_props.m_tile_width, impl->m_props.m_canvas_width - (tile_x * impl->m_props.m_tile_width))
+        : impl->m_props.m_canvas_width;
+    const size_t tile_height = impl->m_is_tiled
+        ? min(impl->m_props.m_tile_height, impl->m_props.m_canvas_height - (tile_y * impl->m_props.m_tile_height))
+        : impl->m_props.m_canvas_height;
+
+    // Create the tile.
+    Tile* output_tile = new Tile(
+        tile_width,
+        tile_height,
+        impl->m_props.m_channel_count,
+        impl->m_props.m_pixel_format);
+
+    // Read the tile from the file.
+    read_tile(tile_x, tile_y, output_tile);
+
+    return output_tile;
+}
+
+void GenericProgressiveImageFileReader::read_tile(
+    const size_t        tile_x,
+    const size_t        tile_y,
+    Tile*               output_tile)
+{
+    assert(is_open());
+    assert(output_tile);
+    assert(output_tile->get_channel_count() == impl->m_props.m_channel_count);
+    assert(output_tile->get_pixel_format() == impl->m_props.m_pixel_format);
 
     if (impl->m_is_tiled)
     {
@@ -262,46 +309,53 @@ Tile* GenericProgressiveImageFileReader::read_tile(
         // the correct dimensions, at some expenses.
         //
 
-        unique_ptr<Tile> source_tile(
-            new Tile(
-                impl->m_props.m_tile_width,
-                impl->m_props.m_tile_height,
-                impl->m_props.m_channel_count,
-                impl->m_props.m_pixel_format));
-
         const size_t origin_x = tile_x * impl->m_props.m_tile_width;
         const size_t origin_y = tile_y * impl->m_props.m_tile_height;
-
-        if (!impl->m_input->read_tile(
-                static_cast<int>(origin_x),
-                static_cast<int>(origin_y),
-                0, // z
-                impl->m_input->spec().format,
-                source_tile->get_storage()))
-            throw ExceptionIOError(impl->m_input->geterror().c_str());
-
         const size_t tile_width = min(impl->m_props.m_tile_width, impl->m_props.m_canvas_width - origin_x);
         const size_t tile_height = min(impl->m_props.m_tile_height, impl->m_props.m_canvas_height - origin_y);
 
         if (tile_width == impl->m_props.m_tile_width && tile_height == impl->m_props.m_tile_height)
-            return source_tile.release();
-
-        unique_ptr<Tile> shrunk_tile(
-            new Tile(
-                tile_width,
-                tile_height,
-                impl->m_props.m_channel_count,
-                impl->m_props.m_pixel_format));
-
-        for (size_t y = 0; y < tile_height; ++y)
         {
-            memcpy(
-                shrunk_tile->pixel(0, y),
-                source_tile->pixel(0, y),
-                tile_width * impl->m_props.m_pixel_size);
-        }
+            // The tile fits perfectly into the canvas.
+            assert(output_tile->get_width() == impl->m_props.m_tile_width);
+            assert(output_tile->get_height() == impl->m_props.m_tile_height);
 
-        return shrunk_tile.release();
+            if (!impl->m_input->read_tile(
+                    static_cast<int>(origin_x),
+                    static_cast<int>(origin_y),
+                    0, // z
+                    impl->m_input->spec().format,
+                    output_tile->get_storage()))
+                throw ExceptionIOError(impl->m_input->geterror().c_str());
+        }
+        else
+        {
+            assert(output_tile->get_width() == tile_width);
+            assert(output_tile->get_height() == tile_height);
+
+            unique_ptr<Tile> source_tile(
+                new Tile(
+                    impl->m_props.m_tile_width,
+                    impl->m_props.m_tile_height,
+                    impl->m_props.m_channel_count,
+                    impl->m_props.m_pixel_format));
+
+            if (!impl->m_input->read_tile(
+                    static_cast<int>(origin_x),
+                    static_cast<int>(origin_y),
+                    0, // z
+                    impl->m_input->spec().format,
+                    source_tile->get_storage()))
+                throw ExceptionIOError(impl->m_input->geterror().c_str());
+
+            for (size_t y = 0; y < tile_height; ++y)
+            {
+                memcpy(
+                    output_tile->pixel(0, y),
+                    source_tile->pixel(0, y),
+                    tile_width * impl->m_props.m_pixel_size);
+            }
+        }
     }
     else
     {
@@ -309,12 +363,8 @@ Tile* GenericProgressiveImageFileReader::read_tile(
         // Scanline image.
         //
 
-        unique_ptr<Tile> tile(
-            new Tile(
-                impl->m_props.m_canvas_width,
-                impl->m_props.m_canvas_height,
-                impl->m_props.m_channel_count,
-                impl->m_props.m_pixel_format));
+        assert(output_tile->get_width() == impl->m_props.m_canvas_width);
+        assert(output_tile->get_height() == impl->m_props.m_canvas_height);
 
         if (!impl->m_supports_random_access)
         {
@@ -324,10 +374,8 @@ Tile* GenericProgressiveImageFileReader::read_tile(
 
         if (!impl->m_input->read_image(
                 impl->m_input->spec().format,
-                tile->get_storage()))
+                output_tile->get_storage()))
             throw ExceptionIOError(impl->m_input->geterror().c_str());
-
-        return tile.release();
     }
 }
 

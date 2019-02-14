@@ -300,8 +300,6 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_interactiv
     parameters.insert("spectrum_mode", "rgb");
     parameters.insert("sampling_mode", "qmc");
 
-    parameters.insert("passes", 1);
-
     parameters.insert("frame_renderer", "progressive");
     parameters.insert("sample_generator", "generic");
     parameters.insert("sample_renderer", "generic");
