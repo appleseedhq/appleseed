@@ -255,8 +255,8 @@ void Frame::print_settings()
         "  dithering                     %s\n"
         "  noise seed                    %s\n"
         "  denoising mode                %s\n"
-        "  resume checkpoint             %s\n"
-        "  create checkpoint             %s",
+        "  create checkpoint             %s\n"
+        "  resume checkpoint             %s\n",
         get_path().c_str(),
         get_uid(),
         camera_name != nullptr ? camera_name : "none",
