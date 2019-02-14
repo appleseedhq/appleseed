@@ -188,13 +188,13 @@ namespace
             m_pass_manager_func.reset(
                 new PassManagerFunc(
                     m_frame,
-                    m_params.m_tile_ordering,
-                    m_params.m_pass_count,
-                    m_params.m_spectrum_mode,
+                    m_framebuffer_factory,
                     m_tile_renderers,
                     m_tile_callbacks,
-                    m_framebuffer_factory,
                     m_pass_callback,
+                    m_params.m_spectrum_mode,
+                    m_params.m_tile_ordering,
+                    m_params.m_pass_count,
                     m_job_queue,
                     m_params.m_thread_count,
                     m_abort_switch,
@@ -293,25 +293,25 @@ namespace
           public:
             PassManagerFunc(
                 const Frame&                        frame,
-                const TileJobFactory::TileOrdering  tile_ordering,
-                const size_t                        pass_count,
-                const Spectrum::Mode                spectrum_mode,
+                IShadingResultFrameBufferFactory*   framebuffer_factory,
                 vector<ITileRenderer*>&             tile_renderers,
                 vector<ITileCallback*>&             tile_callbacks,
-                IShadingResultFrameBufferFactory*   framebuffer_factory,
                 IPassCallback*                      pass_callback,
+                const Spectrum::Mode                spectrum_mode,
+                const TileJobFactory::TileOrdering  tile_ordering,
+                const size_t                        pass_count,
                 JobQueue&                           job_queue,
                 const size_t                        thread_count,
                 IAbortSwitch&                       abort_switch,
                 bool&                               is_rendering)
               : m_frame(frame)
-              , m_tile_ordering(tile_ordering)
+              , m_framebuffer_factory(framebuffer_factory)
               , m_tile_renderers(tile_renderers)
               , m_tile_callbacks(tile_callbacks)
-              , m_framebuffer_factory(framebuffer_factory)
               , m_pass_callback(pass_callback)
-              , m_pass_count(pass_count)
               , m_spectrum_mode(spectrum_mode)
+              , m_tile_ordering(tile_ordering)
+              , m_pass_count(pass_count)
               , m_job_queue(job_queue)
               , m_thread_count(thread_count)
               , m_abort_switch(abort_switch)
@@ -422,13 +422,13 @@ namespace
 
           private:
             const Frame&                            m_frame;
-            const TileJobFactory::TileOrdering      m_tile_ordering;
+            IShadingResultFrameBufferFactory*       m_framebuffer_factory;
             vector<ITileRenderer*>&                 m_tile_renderers;
             vector<ITileCallback*>&                 m_tile_callbacks;
-            IShadingResultFrameBufferFactory*       m_framebuffer_factory;
             IPassCallback*                          m_pass_callback;
-            const size_t                            m_pass_count;
             const Spectrum::Mode                    m_spectrum_mode;
+            const TileJobFactory::TileOrdering      m_tile_ordering;
+            const size_t                            m_pass_count;
             JobQueue&                               m_job_queue;
             const size_t                            m_thread_count;
             IAbortSwitch&                           m_abort_switch;
@@ -473,9 +473,9 @@ namespace
         unique_ptr<JobManager>                  m_job_manager;
         AbortSwitch                             m_abort_switch;
 
+        IShadingResultFrameBufferFactory*       m_framebuffer_factory;
         vector<ITileRenderer*>                  m_tile_renderers;   // tile renderers, one per thread
         vector<ITileCallback*>                  m_tile_callbacks;   // tile callbacks, none or one per thread
-        IShadingResultFrameBufferFactory*       m_framebuffer_factory;
         IPassCallback*                          m_pass_callback;
 
         TileJobFactory                          m_tile_job_factory;
