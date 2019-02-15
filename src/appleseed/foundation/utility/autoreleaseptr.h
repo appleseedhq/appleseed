@@ -147,6 +147,11 @@ class auto_release_ptr
         return m_ptr;
     }
 
+    operator bool() const
+    {
+        return static_cast<bool>(m_ptr);
+    }
+
     // Return the wrapped pointer.
     T* get() const throw()
     {
