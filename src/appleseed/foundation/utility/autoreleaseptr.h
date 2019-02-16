@@ -147,6 +147,7 @@ class auto_release_ptr
         return m_ptr;
     }
 
+    // Implicit bool conversion of the wrapped pointer.
     operator bool() const
     {
         return static_cast<bool>(m_ptr);
