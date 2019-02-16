@@ -1204,7 +1204,7 @@ void MainWindow::stop_monitoring_project_file()
 
 void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 {
-    if (event->mimeData()->hasFormat("text/plain") || event->mimeData()->hasFormat("text/uri-list"))
+    if (event->mimeData()->hasFormat("text/uri-list"))
          event->acceptProposedAction();
 }
 
@@ -1215,15 +1215,8 @@ void MainWindow::dropEvent(QDropEvent* event)
         const QList<QUrl> urls = event->mimeData()->urls();
         QApplication::sendEvent(this, new QCloseEvent());
         open_project_async(urls[0].toLocalFile());
+        event->acceptProposedAction();
     }
-    else
-    {
-        const QString text = event->mimeData()->text();
-        QApplication::sendEvent(this, new QCloseEvent());
-        open_project_async(text);
-    }
-
-     event->accept();
 }
 
 void MainWindow::start_rendering(const RenderingMode rendering_mode)
