@@ -146,13 +146,12 @@ namespace
                     make_vector("diffuse", "glass"),
                     context);
 
-            if (surface_bsdf == "diffuse")
-                m_use_glass_bsdf = false;
-            else if (surface_bsdf == "glass" && m_glass_bsdf->on_frame_begin(project, parent, recorder, abort_switch))
-                m_use_glass_bsdf = true;
-            else return false;
+            m_use_glass_bsdf = surface_bsdf == "glass";
 
-            return true;
+            return
+                m_use_glass_bsdf
+                    ? m_glass_bsdf->on_frame_begin(project, parent, recorder, abort_switch)
+                    : true;
         }
 
         void on_frame_end(
