@@ -76,7 +76,7 @@ namespace
     typedef Alembic::Abc::chrono_t AbcChrono_t;
 
     // Roll into given xform sequence stack and return the flatten one.
-    asr::TransformSequence flatten_xform_seq(const std::vector<asr::TransformSequence>& xform_seq_stack)
+    const asr::TransformSequence flatten_xform_seq(const std::vector<asr::TransformSequence>& xform_seq_stack)
     {
         assert(!xform_seq_stack.empty());
 
