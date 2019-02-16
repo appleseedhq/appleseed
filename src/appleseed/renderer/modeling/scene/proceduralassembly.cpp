@@ -67,7 +67,7 @@ bool ProceduralAssembly::expand_contents(
     if (!do_expand_contents(project, parent, abort_switch))
         return false;
 
-    RENDERER_LOG_DEBUG(
+    RENDERER_LOG_INFO(
         "procedural assembly \"%s\" expanded to the following entities:\n"
         "  assemblies                    %s\n"
         "  assembly instances            %s\n"
