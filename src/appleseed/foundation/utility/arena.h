@@ -61,7 +61,7 @@ class Arena
     const uint8* get_storage() const;
 
   private:
-    enum { ArenaSize = 256 * 1024 };    // bytes
+    enum { ArenaSize = 384 * 1024 };    // bytes
 
     APPLESEED_SIMD4_ALIGN uint8 m_storage[ArenaSize];
     const uint8*                m_end;
