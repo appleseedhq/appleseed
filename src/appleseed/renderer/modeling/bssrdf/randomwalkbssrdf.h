@@ -32,11 +32,9 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/ibssrdffactory.h"
-#include "renderer/modeling/bssrdf/separablebssrdf.h"
 #include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
@@ -68,10 +66,10 @@ APPLESEED_DECLARE_INPUT_VALUES(RandomwalkBSSRDFInputValues)
 
     struct Precomputed
     {
-        Spectrum                m_albedo;
-        Spectrum                m_extinction;
-        float                   m_rcp_diffusion_length;
-        float                   m_eta;
+        Spectrum    m_albedo;
+        Spectrum    m_extinction;
+        float       m_rcp_diffusion_length;
+        float       m_eta;
     };
 
     Precomputed     m_precomputed;

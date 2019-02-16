@@ -37,6 +37,7 @@
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/glassbsdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
+#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/bssrdf/sss.h"
 
@@ -52,15 +53,17 @@
 #include "foundation/utility/arena.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
+#include "foundation/utility/poison.h"
 
 // Standard headers.
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer      { class BSDFSample; }
-namespace renderer      { class BSSRDFSample; }
-namespace renderer      { class ShadingContext; }
+namespace renderer  { class BSDFSample; }
+namespace renderer  { class BSSRDFSample; }
+namespace renderer  { class ShadingContext; }
 
 using namespace foundation;
 using namespace std;
@@ -235,6 +238,11 @@ namespace
             Vector3f slab_normal;
             Vector3f direction;
             bool transmitted = false;
+
+            poison(scattering_point);
+            poison(slab_normal);
+            poison(direction);
+
             if (m_use_glass_bsdf)
             {
                 bool volume_scattering_occurred;
@@ -489,7 +497,7 @@ namespace
             assert(abs(cosine) <= 1.0f);
             const Basis3f basis(normal);
             const Vector2f tangent = sample_circle_uniform(s);
-            const float sine = sqrt(saturate(1.0f - cosine * cosine));
+            const float sine = sqrt(max(1.0f - cosine * cosine, 0.0f));
             return
                 basis.get_tangent_u() * tangent.x * sine +
                 basis.get_tangent_v() * tangent.y * sine +
@@ -505,8 +513,7 @@ namespace
             const float s = sampling_context.next2<float>();
 
             // Compute the probability of extending this path.
-            const float scattering_prob =
-                std::min(max_value(bssrdf_sample.m_value), 0.99f);
+            const float scattering_prob = min(max_value(bssrdf_sample.m_value), 0.99f);
 
             // Russian Roulette.
             if (!pass_rr(scattering_prob, s))
@@ -519,10 +526,81 @@ namespace
             return true;
         }
 
-        // Compute the probability to pick classical sampling instead of biased (Dwivedi) sampling.
-        static float compute_classical_sampling_probability(const float anisotropy)
+        static void compute_transmission(
+            const float             distance,
+            const Spectrum&         extinction,
+            const Spectrum&         channel_pdf,
+            const bool              transmitted,
+            Spectrum&               transmission)
         {
-            return max(0.1f, pow(abs(anisotropy), 3.0f));
+            float mis_base = 0.0f;
+
+            if (transmitted)
+            {
+                for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+                {
+                    const float x = -distance * extinction[i];
+                    assert(FP<float>::is_finite(x));
+
+                    transmission[i] = exp(x);
+
+                    // One-sample estimator (Veach: 9.2.4 eq. 9.15).
+                    mis_base += transmission[i] * channel_pdf[i];
+                }
+            }
+            else
+            {
+                for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+                {
+                    const float x = -distance * extinction[i];
+                    assert(FP<float>::is_finite(x));
+
+                    transmission[i] = exp(x) * extinction[i];
+
+                    // One-sample estimator (Veach: 9.2.4 eq. 9.15).
+                    mis_base += transmission[i] * channel_pdf[i];
+                }
+            }
+
+            transmission *= rcp(mis_base);
+        }
+
+        static void compute_transmission(
+            const float             distance,
+            const Spectrum&         extinction,
+            const bool              transmitted,
+            Spectrum&               transmission)
+        {
+            float mis_base = 0.0f;
+
+            if (transmitted)
+            {
+                for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+                {
+                    const float x = -distance * extinction[i];
+                    assert(FP<float>::is_finite(x));
+
+                    transmission[i] = exp(x);
+
+                    // One-sample estimator (Veach: 9.2.4 eq. 9.15).
+                    mis_base += transmission[i];
+                }
+            }
+            else
+            {
+                for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+                {
+                    const float x = -distance * extinction[i];
+                    assert(FP<float>::is_finite(x));
+
+                    transmission[i] = exp(x) * extinction[i];
+
+                    // One-sample estimator (Veach: 9.2.4 eq. 9.15).
+                    mis_base += transmission[i];
+                }
+            }
+
+            transmission *= Spectrum::size() / mis_base;
         }
 
         bool trace_zero_scattering_path_glass(
@@ -712,53 +790,6 @@ namespace
             }
 
             return true;
-        }
-
-        static void compute_transmission(
-            const float             distance,
-            const Spectrum&         extinction,
-            const Spectrum&         channel_pdf,
-            const bool              transmitted,
-            Spectrum&               transmission)
-        {
-            float mis_base = 0.0f;
-
-            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
-            {
-                const float x = -distance * extinction[i];
-                assert(FP<float>::is_finite(x));
-                transmission[i] = std::exp(x);
-                if (!transmitted)
-                    transmission[i] *= extinction[i];
-
-                // One-sample estimator (Veach: 9.2.4 eq. 9.15).
-                mis_base += transmission[i] * channel_pdf[i];
-            }
-
-            transmission *= rcp(mis_base);
-        }
-
-        static void compute_transmission(
-            const float             distance,
-            const Spectrum&         extinction,
-            const bool              transmitted,
-            Spectrum&               transmission)
-        {
-            float mis_base = 0.0f;
-
-            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
-            {
-                const float x = -distance * extinction[i];
-                assert(FP<float>::is_finite(x));
-                transmission[i] = std::exp(x);
-                if (!transmitted)
-                    transmission[i] *= extinction[i];
-
-                // One-sample estimator (Veach: 9.2.4 eq. 9.15).
-                mis_base += transmission[i];
-            }
-
-            transmission *= Spectrum::size() / mis_base;
         }
 
         float compute_total_refraction_intensity(
