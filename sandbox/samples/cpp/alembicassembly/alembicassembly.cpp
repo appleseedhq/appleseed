@@ -75,21 +75,6 @@ namespace
     typedef Alembic::Abc::index_t  AbcIndex_t;
     typedef Alembic::Abc::chrono_t AbcChrono_t;
 
-    // Roll into given matrix stack and return the flatten one.
-    asf::Matrix4d flatten_xform(const std::vector<asf::Matrix4d>& mtx_stack)
-    {
-        // The matrix we will return.
-        asf::Matrix4d out_mtx = mtx_stack.front();
-
-        // Multiply the each matrix of the stack from bottom to top.
-        for (size_t i = 1; i < mtx_stack.size(); i++)
-        {
-            out_mtx = mtx_stack[i] * out_mtx;
-        }
-
-        return out_mtx;
-    }
-
     // Roll into given xform sequence stack and return the flatten one.
     asr::TransformSequence flatten_xform_seq(const std::vector<asr::TransformSequence>& xform_seq_stack)
     {
