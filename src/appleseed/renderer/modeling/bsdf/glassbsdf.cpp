@@ -280,8 +280,8 @@ namespace
             const Vector3f s = sampling_context.next2<Vector3f>();
 
             Vector3f wi;
-            bool is_refraction;
             float probability;
+            bool is_refraction;
 
             switch (m_mdf_type)
             {
@@ -372,7 +372,9 @@ namespace
 
               default:
                 assert(!"Unexpected MDF type.");
+                wi = Vector3f(0.0f);
                 probability = 0.0f;
+                is_refraction = false;
                 break;
             }
 
