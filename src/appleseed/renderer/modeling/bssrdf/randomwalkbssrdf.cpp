@@ -140,7 +140,7 @@ namespace
             const OnFrameBeginMessageContext context("bssrdf", this);
 
             const string surface_bsdf =
-                m_params.get_required<string>(
+                m_params.get_optional<string>(
                     "surface_bsdf_model",
                     "diffuse",
                     make_vector("diffuse", "glass"),
@@ -955,7 +955,7 @@ DictionaryArray RandomwalkBSSRDFFactory::get_input_metadata() const
                 Dictionary()
                     .insert("Glass BSDF", "glass")
                     .insert("Diffuse BTDF", "diffuse"))
-            .insert("use", "required")
+            .insert("use", "optional")
             .insert("default", "diffuse")
             .insert("on_change", "rebuild_form"));
 
