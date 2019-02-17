@@ -148,7 +148,7 @@ class auto_release_ptr
     }
 
     // Bool conversion of the wrapped pointer.
-#if (defined _MSC_VER && _MSC_VER >= 1800) || defined(__GNUC__)
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
     explicit
 #endif
     operator bool() const
