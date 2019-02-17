@@ -147,7 +147,10 @@ class auto_release_ptr
         return m_ptr;
     }
 
-    // Implicit bool conversion of the wrapped pointer.
+    // Bool conversion of the wrapped pointer.
+#if defined _MSC_VER && _MSC_VER >= 1800
+    explicit
+#endif
     operator bool() const
     {
         return static_cast<bool>(m_ptr);
