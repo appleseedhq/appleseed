@@ -85,7 +85,9 @@ class PoisonImpl
 template <typename T>
 inline void poison(T& x)
 {
+#ifdef DEBUG
     PoisonImpl<T>::do_poison(x);
+#endif
 }
 
 template <typename T>

@@ -416,9 +416,7 @@ class ShadingPoint
 
 APPLESEED_FORCE_INLINE ShadingPoint::ShadingPoint()
 {
-#ifdef DEBUG
     foundation::poison(*this);
-#endif
 
     clear();
 }
