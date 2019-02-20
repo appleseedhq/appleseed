@@ -49,6 +49,7 @@ ItemBase::ItemBase(
   , m_allow_edition(true)
   , m_allow_deletion(true)
 {
+    setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 }
 
 ItemBase::ItemBase(
@@ -60,6 +61,7 @@ ItemBase::ItemBase(
   , m_allow_edition(true)
   , m_allow_deletion(true)
 {
+    setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
     set_title(title);
 }
 

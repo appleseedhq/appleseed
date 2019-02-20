@@ -139,6 +139,9 @@ class RenderWidget
         const size_t            tile_y);
 
     void paintEvent(QPaintEvent* event) override;
+
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
 };
 
 

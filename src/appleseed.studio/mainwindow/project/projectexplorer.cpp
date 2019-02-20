@@ -47,6 +47,8 @@
 #include <Qt>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
+#include <QDrag>
+#include <QMimeData>
 
 // Standard headers.
 #include <cassert>
@@ -94,6 +96,10 @@ ProjectExplorer::ProjectExplorer(
     connect(
         m_tree_widget, SIGNAL(itemActivated(QTreeWidgetItem*, int)),
         SLOT(slot_edit_item(QTreeWidgetItem*, int)));
+
+    connect(
+        m_tree_widget, SIGNAL(itemPressed(QTreeWidgetItem*, int)),
+        this, SLOT(slot_drag_item(QTreeWidgetItem*, int)));
 
     m_delete_shortcut.reset(
         new QShortcut(QKeySequence(Qt::Key_Delete), m_tree_widget));
@@ -245,6 +251,20 @@ void ProjectExplorer::slot_item_selection_changed()
 void ProjectExplorer::slot_edit_item(QTreeWidgetItem* item, int column)
 {
     static_cast<ItemBase*>(item)->slot_edit();
+}
+
+void ProjectExplorer::slot_drag_item(QTreeWidgetItem* item, int column)
+{
+    if (item && item->flags() & Qt::ItemIsDragEnabled)
+    {
+        QDrag* drag = new QDrag(m_tree_widget);
+        QMimeData* mimeData = new QMimeData;
+
+        mimeData->setText(item->text(column));
+        drag->setMimeData(mimeData);
+
+        Qt::DropAction dropAction = drag->exec();
+    }
 }
 
 void ProjectExplorer::slot_delete_items()
