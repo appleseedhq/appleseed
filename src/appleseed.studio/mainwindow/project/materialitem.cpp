@@ -75,6 +75,7 @@ MaterialItem::MaterialItem(
         parent,
         collection_item)
 {
+    setFlags(flags() | Qt::ItemIsDragEnabled);
 }
 
 QMenu* MaterialItem::get_single_item_context_menu() const

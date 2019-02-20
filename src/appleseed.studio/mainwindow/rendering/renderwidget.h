@@ -46,6 +46,9 @@ namespace OCIO = OCIO_NAMESPACE;
 #include <QMutex>
 #include <QPainter>
 #include <QWidget>
+#include <QDropEvent>
+#include <QDragEnterEvent>
+#include <QDragLeaveEvent>
 
 // Standard headers.
 #include <cstddef>
@@ -139,6 +142,8 @@ class RenderWidget
         const size_t            tile_y);
 
     void paintEvent(QPaintEvent* event) override;
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
 };
 
 

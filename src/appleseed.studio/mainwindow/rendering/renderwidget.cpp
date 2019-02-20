@@ -45,6 +45,7 @@
 #include <QColor>
 #include <QMutexLocker>
 #include <Qt>
+#include <QMimeData>
 
 // Standard headers.
 #include <algorithm>
@@ -79,6 +80,8 @@ RenderWidget::RenderWidget(
     const char* display_name = m_ocio_config->getDefaultDisplay();
     const char* default_transform = m_ocio_config->getDefaultView(display_name);
     slot_display_transform_changed(default_transform);
+
+    setAcceptDrops(true);
 }
 
 QImage RenderWidget::capture()
@@ -420,6 +423,17 @@ void RenderWidget::paintEvent(QPaintEvent* event)
     m_painter.begin(this);
     m_painter.drawImage(rect(), m_image);
     m_painter.end();
+}
+
+void RenderWidget::dragEnterEvent(QDragEnterEvent* event)
+{
+    if (event->mimeData()->hasFormat("text/plain"))
+        event->acceptProposedAction();
+}
+
+void RenderWidget::dropEvent(QDropEvent* event)
+{
+
 }
 
 }   // namespace studio
