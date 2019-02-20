@@ -263,7 +263,7 @@ void ProjectExplorer::slot_drag_item(QTreeWidgetItem* item, int column)
         mimeData->setText(item->text(column));
         drag->setMimeData(mimeData);
 
-        Qt::DropAction dropAction = drag->exec();
+        drag->exec();
     }
 }
 
