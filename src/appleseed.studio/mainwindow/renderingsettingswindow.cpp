@@ -938,19 +938,28 @@ namespace
             create_pt_volume_settings(layout);
             create_pt_advanced_settings(layout);
 
-            create_direct_link("lighting_components.dl",                        "pt.enable_dl");
-            create_direct_link("lighting_components.ibl",                       "pt.enable_ibl");
-            create_direct_link("lighting_components.caustics",                  "pt.enable_caustics");
-            create_direct_link("pt.bounces.rr_start_bounce",                    "pt.rr_min_path_length");
-            create_direct_link("volume.distance_samples",                       "pt.volume_distance_samples");
-            create_direct_link("volume.optimize_for_lights_outside_volumes",    "pt.optimize_for_lights_outside_volumes");
-            create_direct_link("advanced.next_event_estimation",                "pt.next_event_estimation");
-            create_direct_link("advanced.dl.light_samples",                     "pt.dl_light_samples");
-            create_direct_link("advanced.dl.low_light_threshold",               "pt.dl_low_light_threshold");
-            create_direct_link("advanced.ibl.env_samples",                      "pt.ibl_env_samples");
-            create_direct_link("advanced.light_sampler.algorithm",              "light_sampler.algorithm");
-            create_direct_link("advanced.record_light_paths",                   "pt.record_light_paths");
-            create_direct_link("advanced.clamp_roughness",                      "pt.clamp_roughness");
+            create_direct_link("lighting_components.dl",                            "pt.enable_dl");
+            create_direct_link("lighting_components.ibl",                           "pt.enable_ibl");
+            create_direct_link("lighting_components.caustics",                      "pt.enable_caustics");
+
+            create_direct_link("pt.bounces.rr_start_bounce",                        "pt.rr_min_path_length");
+
+            create_direct_link("volume.distance_samples",                           "pt.volume_distance_samples");
+            create_direct_link("volume.optimize_for_lights_outside_volumes",        "pt.optimize_for_lights_outside_volumes");
+
+            create_direct_link("advanced.next_event_estimation",                    "pt.next_event_estimation");
+
+            create_direct_link("advanced.dl.light_samples",                         "pt.dl_light_samples");
+            create_direct_link("advanced.dl.low_light_threshold",                   "pt.dl_low_light_threshold");
+
+            create_direct_link("advanced.ibl.env_samples",                          "pt.ibl_env_samples");
+
+            create_direct_link("advanced.light_sampler.algorithm",                  "light_sampler.algorithm");
+            create_direct_link("advanced.light_sampler.enable_importance_sampling", "light_sampler.enable_importance_sampling");
+
+            create_direct_link("advanced.record_light_paths",                       "pt.record_light_paths");
+
+            create_direct_link("advanced.clamp_roughness",                          "pt.clamp_roughness");
 
             load_directly_linked_values(config);
 
@@ -1033,11 +1042,13 @@ namespace
             QFormLayout* sublayout = create_form_layout();
             parent->addLayout(sublayout);
 
-            QComboBox* light_sampling = create_combobox("advanced.light_sampler.algorithm");
-            light_sampling->setToolTip(m_params_metadata.get_path("light_sampler.algorithm.help"));
-            light_sampling->addItem("CDF", "cdf");
-            light_sampling->addItem("Light Tree", "lighttree");
-            sublayout->addRow("Light Sampler:", light_sampling);
+            QComboBox* light_sampler = create_combobox("advanced.light_sampler.algorithm");
+            light_sampler->setToolTip(m_params_metadata.get_path("light_sampler.algorithm.help"));
+            light_sampler->addItem("CDF", "cdf");
+            light_sampler->addItem("Light Tree", "lighttree");
+            sublayout->addRow("Light Sampler:", light_sampler);
+
+            sublayout->addRow(create_checkbox("advanced.light_sampler.enable_importance_sampling", "Enable Importance Sampling"));
         }
 
         void create_pt_advanced_nee_dl_settings(QVBoxLayout* parent)
