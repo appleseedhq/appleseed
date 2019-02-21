@@ -1055,34 +1055,9 @@ namespace
 // PTLightingEngineFactory class implementation.
 //
 
-PTLightingEngineFactory::PTLightingEngineFactory(
-    const BackwardLightSampler&     light_sampler,
-    LightPathRecorder&              light_path_recorder,
-    const ParamArray&               params)
-  : m_light_sampler(light_sampler)
-  , m_light_path_recorder(light_path_recorder)
-  , m_params(params)
-{
-}
-
-void PTLightingEngineFactory::release()
-{
-    delete this;
-}
-
-ILightingEngine* PTLightingEngineFactory::create()
-{
-    return
-        new PTLightingEngine(
-            m_light_sampler,
-            m_light_path_recorder,
-            m_params);
-}
-
 Dictionary PTLightingEngineFactory::get_params_metadata()
 {
     Dictionary metadata;
-    add_common_params_metadata(metadata, true);
 
     metadata.dictionaries().insert(
         "enable_dl",
@@ -1091,6 +1066,14 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("default", "true")
             .insert("label", "Enable Direct Lighting")
             .insert("help", "Enable direct lighting"));
+
+    metadata.dictionaries().insert(
+        "enable_ibl",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "on")
+            .insert("label", "Enable IBL")
+            .insert("help", "Enable image-based lighting"));
 
     metadata.dictionaries().insert(
         "enable_caustics",
@@ -1168,6 +1151,30 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("help", "Explicitly connect path vertices to light sources to improve efficiency"));
 
     metadata.dictionaries().insert(
+        "dl_light_samples",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "1.0")
+            .insert("label", "Light Samples")
+            .insert("help", "Number of samples used to estimate direct lighting"));
+
+    metadata.dictionaries().insert(
+        "dl_low_light_threshold",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "0.0")
+            .insert("label", "Low Light Threshold")
+            .insert("help", "Light contribution threshold to disable shadow rays"));
+
+    metadata.dictionaries().insert(
+        "ibl_env_samples",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "1.0")
+            .insert("label", "IBL Samples")
+            .insert("help", "Number of samples used to estimate environment lighting"));
+
+    metadata.dictionaries().insert(
         "clamp_roughness",
         Dictionary()
             .insert("type", "bool")
@@ -1212,6 +1219,30 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("help", "Record light paths in memory to later allow visualizing them or saving them to disk"));
 
     return metadata;
+}
+
+PTLightingEngineFactory::PTLightingEngineFactory(
+    const BackwardLightSampler&     light_sampler,
+    LightPathRecorder&              light_path_recorder,
+    const ParamArray&               params)
+  : m_light_sampler(light_sampler)
+  , m_light_path_recorder(light_path_recorder)
+  , m_params(params)
+{
+}
+
+void PTLightingEngineFactory::release()
+{
+    delete this;
+}
+
+ILightingEngine* PTLightingEngineFactory::create()
+{
+    return
+        new PTLightingEngine(
+            m_light_sampler,
+            m_light_path_recorder,
+            m_params);
 }
 
 }   // namespace renderer

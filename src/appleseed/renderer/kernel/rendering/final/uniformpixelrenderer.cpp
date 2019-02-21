@@ -314,27 +314,6 @@ namespace
 // UniformPixelRendererFactory class implementation.
 //
 
-UniformPixelRendererFactory::UniformPixelRendererFactory(
-    const Frame&                frame,
-    ISampleRendererFactory*     factory,
-    const ParamArray&           params)
-  : m_frame(frame)
-  , m_factory(factory)
-  , m_params(params)
-{
-}
-
-void UniformPixelRendererFactory::release()
-{
-    delete this;
-}
-
-IPixelRenderer* UniformPixelRendererFactory::create(
-    const size_t                thread_index)
-{
-    return new UniformPixelRenderer(m_frame, m_factory, m_params, thread_index);
-}
-
 Dictionary UniformPixelRendererFactory::get_params_metadata()
 {
     Dictionary metadata;
@@ -368,6 +347,27 @@ Dictionary UniformPixelRendererFactory::get_params_metadata()
                 "Avoid correlation patterns at the expense of slightly more sampling noise"));
 
     return metadata;
+}
+
+UniformPixelRendererFactory::UniformPixelRendererFactory(
+    const Frame&                frame,
+    ISampleRendererFactory*     factory,
+    const ParamArray&           params)
+  : m_frame(frame)
+  , m_factory(factory)
+  , m_params(params)
+{
+}
+
+void UniformPixelRendererFactory::release()
+{
+    delete this;
+}
+
+IPixelRenderer* UniformPixelRendererFactory::create(
+    const size_t                thread_index)
+{
+    return new UniformPixelRenderer(m_frame, m_factory, m_params, thread_index);
 }
 
 }   // namespace renderer

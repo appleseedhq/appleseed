@@ -55,6 +55,9 @@ class GenericFrameRendererFactory
   : public IFrameRendererFactory
 {
   public:
+    // Return parameters metadata.
+    static foundation::Dictionary get_params_metadata();
+
     // Constructor.
     GenericFrameRendererFactory(
         const Frame&                        frame,
@@ -78,9 +81,6 @@ class GenericFrameRendererFactory
         ITileCallbackFactory*               tile_callback_factory,      // may be nullptr
         IPassCallback*                      pass_callback,              // may be nullptr
         const ParamArray&                   params);
-
-    // Return the metadata of the generic frame renderer parameters.
-    static foundation::Dictionary get_params_metadata();
 
   private:
     const Frame&                            m_frame;

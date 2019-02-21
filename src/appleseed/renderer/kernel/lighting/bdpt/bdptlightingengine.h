@@ -48,6 +48,9 @@ class BDPTLightingEngineFactory
   : public ILightingEngineFactory
 {
   public:
+    // Return parameters metadata.
+    static foundation::Dictionary get_params_metadata();
+
     // Constructor.
     BDPTLightingEngineFactory(
         const Project&              project,
@@ -59,9 +62,6 @@ class BDPTLightingEngineFactory
 
     // Return a new path tracing lighting engine instance.
     ILightingEngine* create() override;
-
-    // Return the metadata of the BDPT lighting engine parameters.
-    static foundation::Dictionary get_params_metadata();
 
   private:
     const Project&                  m_project;

@@ -744,6 +744,55 @@ namespace
 // BDPTLightingEngineFactory class implementation.
 //
 
+Dictionary BDPTLightingEngineFactory::get_params_metadata()
+{
+    Dictionary metadata;
+
+    metadata.dictionaries().insert(
+        "enable_ibl",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "on")
+            .insert("label", "Enable IBL")
+            .insert("help", "Enable image-based lighting"));
+
+    metadata.dictionaries().insert(
+        "max_bounces",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "8")
+            .insert("unlimited", "true")
+            .insert("min", "0")
+            .insert("label", "Max Bounces")
+            .insert("help", "Maximum number of bounces"));
+
+    metadata.dictionaries().insert(
+        "dl_light_samples",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "1.0")
+            .insert("label", "Light Samples")
+            .insert("help", "Number of samples used to estimate direct lighting"));
+
+    metadata.dictionaries().insert(
+        "dl_low_light_threshold",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "0.0")
+            .insert("label", "Low Light Threshold")
+            .insert("help", "Light contribution threshold to disable shadow rays"));
+
+    metadata.dictionaries().insert(
+        "ibl_env_samples",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "1.0")
+            .insert("label", "IBL Samples")
+            .insert("help", "Number of samples used to estimate environment lighting"));
+
+    return metadata;
+}
+
 BDPTLightingEngineFactory::BDPTLightingEngineFactory(
     const Project&              project,
     const ForwardLightSampler&  light_sampler,
@@ -766,24 +815,6 @@ ILightingEngine* BDPTLightingEngineFactory::create()
             m_project,
             m_light_sampler,
             m_params);
-}
-
-Dictionary BDPTLightingEngineFactory::get_params_metadata()
-{
-    Dictionary metadata;
-    add_common_params_metadata(metadata, true);
-
-    metadata.dictionaries().insert(
-        "max_bounces",
-        Dictionary()
-            .insert("type", "int")
-            .insert("default", "8")
-            .insert("unlimited", "true")
-            .insert("min", "0")
-            .insert("label", "Max Bounces")
-            .insert("help", "Maximum number of bounces"));
-
-    return metadata;
 }
 
 }   // namespace renderer

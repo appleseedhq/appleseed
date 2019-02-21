@@ -53,6 +53,9 @@ class SPPMLightingEngineFactory
   : public ILightingEngineFactory
 {
   public:
+    // Return parameters metadata.
+    static foundation::Dictionary get_params_metadata();
+
     // Constructor.
     SPPMLightingEngineFactory(
         const SPPMPassCallback&         pass_callback,
@@ -65,9 +68,6 @@ class SPPMLightingEngineFactory
 
     // Return a new SPPM lighting engine instance.
     ILightingEngine* create() override;
-
-    // Return the metadata of the SPPM lighting engine parameters.
-    static foundation::Dictionary get_params_metadata();
 
   private:
     const SPPMParameters            m_params;

@@ -660,37 +660,17 @@ namespace
 // SPPMLightingEngineFactory class implementation.
 //
 
-SPPMLightingEngineFactory::SPPMLightingEngineFactory(
-    const SPPMPassCallback&         pass_callback,
-    const ForwardLightSampler&      forward_light_sampler,
-    const BackwardLightSampler&     backward_light_sampler,
-    const SPPMParameters&           params)
-  : m_pass_callback(pass_callback)
-  , m_forward_light_sampler(forward_light_sampler)
-  , m_backward_light_sampler(backward_light_sampler)
-  , m_params(params)
-{
-}
-
-void SPPMLightingEngineFactory::release()
-{
-    delete this;
-}
-
-ILightingEngine* SPPMLightingEngineFactory::create()
-{
-    return
-        new SPPMLightingEngine(
-            m_pass_callback,
-            m_forward_light_sampler,
-            m_backward_light_sampler,
-            m_params);
-}
-
 Dictionary SPPMLightingEngineFactory::get_params_metadata()
 {
     Dictionary metadata;
-    add_common_params_metadata(metadata, false);
+
+    metadata.dictionaries().insert(
+        "enable_ibl",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "on")
+            .insert("label", "Enable IBL")
+            .insert("help", "Enable image-based lighting"));
 
     metadata.dictionaries().insert(
         "enable_caustics",
@@ -838,6 +818,33 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
             .insert("help", "Evolution rate of photon gathering radius"));
 
     return metadata;
+}
+
+SPPMLightingEngineFactory::SPPMLightingEngineFactory(
+    const SPPMPassCallback&         pass_callback,
+    const ForwardLightSampler&      forward_light_sampler,
+    const BackwardLightSampler&     backward_light_sampler,
+    const SPPMParameters&           params)
+  : m_pass_callback(pass_callback)
+  , m_forward_light_sampler(forward_light_sampler)
+  , m_backward_light_sampler(backward_light_sampler)
+  , m_params(params)
+{
+}
+
+void SPPMLightingEngineFactory::release()
+{
+    delete this;
+}
+
+ILightingEngine* SPPMLightingEngineFactory::create()
+{
+    return
+        new SPPMLightingEngine(
+            m_pass_callback,
+            m_forward_light_sampler,
+            m_backward_light_sampler,
+            m_params);
 }
 
 }   // namespace renderer
