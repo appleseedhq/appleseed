@@ -53,6 +53,37 @@ namespace renderer
 // BackwardLightSampler class implementation.
 //
 
+Dictionary BackwardLightSampler::get_params_metadata()
+{
+    Dictionary metadata;
+
+    metadata.insert(
+        "algorithm",
+        Dictionary()
+            .insert("type", "enum")
+            .insert("values", "cdf|lighttree")
+            .insert("default", "cdf")
+            .insert("label", "Light Sampler")
+            .insert("help", "Light sampling algoritm")
+            .insert(
+                "options",
+                Dictionary()
+                    .insert(
+                        "cdf",
+                        Dictionary()
+                            .insert("label", "CDF")
+                            .insert("help", "Cumulative Distribution Function"))
+                    .insert(
+                        "lighttree",
+                        Dictionary()
+                            .insert("label", "Light Tree")
+                            .insert("help", "Lights organized in a BVH"))));
+
+    metadata.merge(LightSamplerBase::get_params_metadata());
+
+    return metadata;
+}
+
 BackwardLightSampler::BackwardLightSampler(
     const Scene&                        scene,
     const ParamArray&                   params)
@@ -221,35 +252,6 @@ float BackwardLightSampler::evaluate_pdf(
     assert(pdf >= 0.0f);
 
     return pdf;
-}
-
-Dictionary BackwardLightSampler::get_params_metadata()
-{
-    Dictionary metadata;
-
-    metadata.insert(
-        "algorithm",
-        Dictionary()
-            .insert("type", "enum")
-            .insert("values", "cdf|lighttree")
-            .insert("default", "cdf")
-            .insert("label", "Light Sampler")
-            .insert("help", "Light sampling algoritm")
-            .insert(
-                "options",
-                Dictionary()
-                    .insert(
-                        "cdf",
-                        Dictionary()
-                            .insert("label", "CDF")
-                            .insert("help", "Cumulative Distribution Function"))
-                    .insert(
-                        "lighttree",
-                        Dictionary()
-                            .insert("label", "Light Tree")
-                            .insert("help", "Lights organized in a BVH"))));
-
-    return metadata;
 }
 
 void BackwardLightSampler::sample_light_tree(

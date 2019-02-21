@@ -42,10 +42,11 @@
 #include <functional>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
-namespace renderer  { class AssemblyInstance; }
-namespace renderer  { class Material; }
-namespace renderer  { class MaterialArray; }
+namespace foundation    { class Dictionary; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class AssemblyInstance; }
+namespace renderer      { class Material; }
+namespace renderer      { class MaterialArray; }
 
 namespace renderer
 {
@@ -61,6 +62,9 @@ class LightSamplerBase
   : public foundation::NonCopyable
 {
   public:
+    // Return metadata for parameters common to all light samplers.
+    static foundation::Dictionary get_params_metadata();
+
     // Constructor.
     explicit LightSamplerBase(const ParamArray& params);
 

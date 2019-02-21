@@ -40,6 +40,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling/mappings.h"
+#include "foundation/utility/containers/dictionary.h"
 
 using namespace foundation;
 using namespace std;
@@ -51,11 +52,26 @@ namespace renderer
 // LightSamplerBase class implementation.
 //
 
+Dictionary LightSamplerBase::get_params_metadata()
+{
+    Dictionary metadata;
+
+    metadata.insert(
+        "enable_importance_sampling",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "false")
+            .insert("label", "Enable Importance Sampling")
+            .insert("help", "Enable Importance Sampling"));
+
+    return metadata;
+}
+
 LightSamplerBase::LightSamplerBase(const ParamArray& params)
   : m_params(params)
   , m_emitting_triangle_hash_table(m_triangle_key_hasher)
-  {
-  }
+{
+}
 
 void LightSamplerBase::sample_non_physical_light(
     const ShadingRay::Time&             time,

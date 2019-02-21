@@ -61,6 +61,9 @@ class BackwardLightSampler
   : public LightSamplerBase
 {
   public:
+    // Return parameters metadata.
+    static foundation::Dictionary get_params_metadata();
+
     // Constructor.
     BackwardLightSampler(
         const Scene&                        scene,
@@ -88,9 +91,6 @@ class BackwardLightSampler
     float evaluate_pdf(
         const ShadingPoint&                 light_shading_point,
         const ShadingPoint&                 surface_shading_point) const;
-
-    // Return the metadata of the light sampler parameters.
-    static foundation::Dictionary get_params_metadata();
 
   private:
     bool                                    m_use_light_tree;
