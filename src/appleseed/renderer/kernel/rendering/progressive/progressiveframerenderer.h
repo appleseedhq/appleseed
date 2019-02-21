@@ -53,6 +53,9 @@ class ProgressiveFrameRendererFactory
   : public IFrameRendererFactory
 {
   public:
+    // Return parameters metadata.
+    static foundation::Dictionary get_params_metadata();
+
     // Constructor.
     ProgressiveFrameRendererFactory(
         const Project&              project,
@@ -72,9 +75,6 @@ class ProgressiveFrameRendererFactory
         ISampleGeneratorFactory*    generator_factory,
         ITileCallbackFactory*       callback_factory,       // may be 0
         const ParamArray&           params);
-
-    // Return the metadata of the progressive frame renderer parameters.
-    static foundation::Dictionary get_params_metadata();
 
   private:
     const Project&                  m_project;

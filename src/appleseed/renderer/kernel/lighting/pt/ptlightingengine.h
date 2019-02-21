@@ -52,6 +52,9 @@ class PTLightingEngineFactory
   : public ILightingEngineFactory
 {
   public:
+    // Return parameters metadata.
+    static foundation::Dictionary get_params_metadata();
+
     // Constructor.
     PTLightingEngineFactory(
         const BackwardLightSampler&     light_sampler,
@@ -63,9 +66,6 @@ class PTLightingEngineFactory
 
     // Return a new path tracing lighting engine instance.
     ILightingEngine* create() override;
-
-    // Return the metadata of the PT lighting engine parameters.
-    static foundation::Dictionary get_params_metadata();
 
   private:
     const BackwardLightSampler&         m_light_sampler;

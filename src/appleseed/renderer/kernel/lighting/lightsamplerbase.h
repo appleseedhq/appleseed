@@ -62,9 +62,6 @@ class LightSamplerBase
   : public foundation::NonCopyable
 {
   public:
-    // Return metadata for parameters common to all light samplers.
-    static foundation::Dictionary get_params_metadata();
-
     // Constructor.
     explicit LightSamplerBase(const ParamArray& params);
 
@@ -105,7 +102,10 @@ class LightSamplerBase
 
     EmittingTriangleKeyHasher               m_triangle_key_hasher;
     EmittingTriangleHashTable               m_emitting_triangle_hash_table;
- 
+
+    // Return metadata for parameters common to all light samplers.
+    static foundation::Dictionary get_params_metadata();
+
     // Build a hash table that allows to find the emitting triangle at a given shading point.
     void build_emitting_triangle_hash_table();
 

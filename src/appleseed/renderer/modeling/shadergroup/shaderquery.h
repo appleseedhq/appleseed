@@ -78,7 +78,7 @@ class APPLESEED_DLLSYMBOL ShaderQuery
     // Return shader parameter information.
     const foundation::Dictionary& get_param_info(const size_t param_index) const;
 
-    // Return the shader metadata.
+    // Return shader metadata.
     const foundation::Dictionary& get_metadata() const;
 
   private:
@@ -87,7 +87,7 @@ class APPLESEED_DLLSYMBOL ShaderQuery
     struct Impl;
     Impl* impl;
 
-    explicit ShaderQuery();
+    ShaderQuery();
     explicit ShaderQuery(const char* search_path);
     explicit ShaderQuery(const foundation::SearchPaths& search_paths);
 

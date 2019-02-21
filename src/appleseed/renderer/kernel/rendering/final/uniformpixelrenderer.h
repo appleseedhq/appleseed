@@ -55,6 +55,9 @@ class UniformPixelRendererFactory
   : public IPixelRendererFactory
 {
   public:
+    // Return parameters metadata.
+    static foundation::Dictionary get_params_metadata();
+
     // Constructor.
     UniformPixelRendererFactory(
         const Frame&                frame,
@@ -67,9 +70,6 @@ class UniformPixelRendererFactory
     // Return a new uniform pixel renderer instance.
     IPixelRenderer* create(
         const size_t                thread_index) override;
-
-    // Return the metadata of the uniform pixel renderer parameters.
-    static foundation::Dictionary get_params_metadata();
 
   private:
     const Frame&                    m_frame;

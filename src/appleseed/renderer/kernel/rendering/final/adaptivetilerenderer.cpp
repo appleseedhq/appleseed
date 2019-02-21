@@ -963,35 +963,6 @@ namespace
 // AdaptiveTileRendererFactory class implementation.
 //
 
-AdaptiveTileRendererFactory::AdaptiveTileRendererFactory(
-    const Frame&                        frame,
-    ISampleRendererFactory*             sample_renderer_factory,
-    IShadingResultFrameBufferFactory*   framebuffer_factory,
-    const ParamArray&                   params)
-  : m_frame(frame)
-  , m_sample_renderer_factory(sample_renderer_factory)
-  , m_framebuffer_factory(framebuffer_factory)
-  , m_params(params)
-{
-}
-
-void AdaptiveTileRendererFactory::release()
-{
-    delete this;
-}
-
-ITileRenderer* AdaptiveTileRendererFactory::create(
-    const size_t    thread_index)
-{
-    return
-        new AdaptiveTileRenderer(
-            m_frame,
-            m_sample_renderer_factory,
-            m_framebuffer_factory,
-            m_params,
-            thread_index);
-}
-
 Dictionary AdaptiveTileRendererFactory::get_params_metadata()
 {
     Dictionary metadata;
@@ -1037,6 +1008,35 @@ Dictionary AdaptiveTileRendererFactory::get_params_metadata()
             .insert("help", "Maximum amount of noise allowed in the image"));
 
     return metadata;
+}
+
+AdaptiveTileRendererFactory::AdaptiveTileRendererFactory(
+    const Frame&                        frame,
+    ISampleRendererFactory*             sample_renderer_factory,
+    IShadingResultFrameBufferFactory*   framebuffer_factory,
+    const ParamArray&                   params)
+  : m_frame(frame)
+  , m_sample_renderer_factory(sample_renderer_factory)
+  , m_framebuffer_factory(framebuffer_factory)
+  , m_params(params)
+{
+}
+
+void AdaptiveTileRendererFactory::release()
+{
+    delete this;
+}
+
+ITileRenderer* AdaptiveTileRendererFactory::create(
+    const size_t    thread_index)
+{
+    return
+        new AdaptiveTileRenderer(
+            m_frame,
+            m_sample_renderer_factory,
+            m_framebuffer_factory,
+            m_params,
+            thread_index);
 }
 
 }   // namespace renderer

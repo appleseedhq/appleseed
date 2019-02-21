@@ -104,6 +104,12 @@ class TextureStore
         volatile foundation::uint32 m_owners;
     };
 
+    // Return parameters metadata.
+    static foundation::Dictionary get_params_metadata();
+
+    // Return the default texture store size in bytes.
+    static size_t get_default_size();
+
     // Constructor.
     TextureStore(
         const Scene&        scene,
@@ -117,12 +123,6 @@ class TextureStore
 
     // Retrieve performance statistics.
     foundation::StatisticsVector get_statistics() const;
-
-    // Return the default texture store size in bytes.
-    static size_t get_default_size();
-
-    // Return the metadata of the texture store parameters.
-    static foundation::Dictionary get_params_metadata();
 
   private:
     struct TileKeyHasher

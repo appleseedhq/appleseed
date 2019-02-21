@@ -366,31 +366,6 @@ namespace
 // AdaptivePixelRendererFactory class implementation.
 //
 
-AdaptivePixelRendererFactory::AdaptivePixelRendererFactory(
-    const Frame&                frame,
-    ISampleRendererFactory*     factory,
-    const ParamArray&           params)
-  : m_frame(frame)
-  , m_factory(factory)
-  , m_params(params)
-{
-}
-
-void AdaptivePixelRendererFactory::release()
-{
-    delete this;
-}
-
-IPixelRenderer* AdaptivePixelRendererFactory::create(
-    const size_t                thread_index)
-{
-    return new AdaptivePixelRenderer(
-        m_frame,
-        m_factory,
-        m_params,
-        thread_index);
-}
-
 Dictionary AdaptivePixelRendererFactory::get_params_metadata()
 {
     Dictionary metadata;
@@ -420,6 +395,31 @@ Dictionary AdaptivePixelRendererFactory::get_params_metadata()
             .insert("help", "Quality factor"));
 
     return metadata;
+}
+
+AdaptivePixelRendererFactory::AdaptivePixelRendererFactory(
+    const Frame&                frame,
+    ISampleRendererFactory*     factory,
+    const ParamArray&           params)
+  : m_frame(frame)
+  , m_factory(factory)
+  , m_params(params)
+{
+}
+
+void AdaptivePixelRendererFactory::release()
+{
+    delete this;
+}
+
+IPixelRenderer* AdaptivePixelRendererFactory::create(
+    const size_t                thread_index)
+{
+    return new AdaptivePixelRenderer(
+        m_frame,
+        m_factory,
+        m_params,
+        thread_index);
 }
 
 }   // namespace renderer

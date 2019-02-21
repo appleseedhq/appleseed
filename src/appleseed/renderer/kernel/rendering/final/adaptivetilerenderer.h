@@ -51,6 +51,9 @@ class AdaptiveTileRendererFactory
   : public ITileRendererFactory
 {
   public:
+    // Return parameters metadata.
+    static foundation::Dictionary get_params_metadata();
+
     // Constructor.
     AdaptiveTileRendererFactory(
         const Frame&                        frame,
@@ -64,9 +67,6 @@ class AdaptiveTileRendererFactory
     // Return a new generic tile renderer instance.
     ITileRenderer* create(
         const size_t                        thread_index) override;
-
-    // Return the metadata of the adaptive pixel renderer parameters.
-    static foundation::Dictionary get_params_metadata();
 
   private:
     const Frame&                            m_frame;

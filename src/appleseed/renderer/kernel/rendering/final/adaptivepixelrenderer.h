@@ -52,6 +52,9 @@ class AdaptivePixelRendererFactory
   : public IPixelRendererFactory
 {
   public:
+    // Return parameters metadata.
+    static foundation::Dictionary get_params_metadata();
+
     // Constructor.
     AdaptivePixelRendererFactory(
         const Frame&                frame,
@@ -64,9 +67,6 @@ class AdaptivePixelRendererFactory
     // Return a new adaptive pixel renderer instance.
     IPixelRenderer* create(
         const size_t                thread_index) override;
-
-    // Return the metadata of the adaptive pixel renderer parameters.
-    static foundation::Dictionary get_params_metadata();
 
   private:
     const Frame&                    m_frame;

@@ -503,6 +503,45 @@ namespace
 // GenericFrameRendererFactory class implementation.
 //
 
+Dictionary GenericFrameRendererFactory::get_params_metadata()
+{
+    Dictionary metadata;
+
+    metadata.dictionaries().insert(
+        "tile_ordering",
+        Dictionary()
+            .insert("type", "enum")
+            .insert("values", "linear|spiral|hilbert|random")
+            .insert("default", "spiral")
+            .insert("label", "Tile Order")
+            .insert("help", "Tile rendering order")
+            .insert(
+                "options",
+                Dictionary()
+                    .insert(
+                        "linear",
+                        Dictionary()
+                            .insert("label", "Linear")
+                            .insert("help", "Linear tile ordering"))
+                    .insert(
+                        "spiral",
+                        Dictionary()
+                            .insert("label", "Spiral")
+                            .insert("help", "Spiral tile ordering"))
+                    .insert(
+                        "hilbert",
+                        Dictionary()
+                            .insert("label", "Hilbert")
+                            .insert("help", "Hilbert tile ordering"))
+                    .insert(
+                        "random",
+                        Dictionary()
+                            .insert("label", "Random")
+                            .insert("help", "Random tile ordering"))));
+
+    return metadata;
+}
+
 GenericFrameRendererFactory::GenericFrameRendererFactory(
     const Frame&                        frame,
     IShadingResultFrameBufferFactory*   framebuffer_factory,
@@ -552,45 +591,6 @@ IFrameRenderer* GenericFrameRendererFactory::create(
             tile_callback_factory,
             pass_callback,
             params);
-}
-
-Dictionary GenericFrameRendererFactory::get_params_metadata()
-{
-    Dictionary metadata;
-
-    metadata.dictionaries().insert(
-        "tile_ordering",
-        Dictionary()
-            .insert("type", "enum")
-            .insert("values", "linear|spiral|hilbert|random")
-            .insert("default", "spiral")
-            .insert("label", "Tile Order")
-            .insert("help", "Tile rendering order")
-            .insert(
-                "options",
-                Dictionary()
-                    .insert(
-                        "linear",
-                        Dictionary()
-                            .insert("label", "Linear")
-                            .insert("help", "Linear tile ordering"))
-                    .insert(
-                        "spiral",
-                        Dictionary()
-                            .insert("label", "Spiral")
-                            .insert("help", "Spiral tile ordering"))
-                    .insert(
-                        "hilbert",
-                        Dictionary()
-                            .insert("label", "Hilbert")
-                            .insert("help", "Hilbert tile ordering"))
-                    .insert(
-                        "random",
-                        Dictionary()
-                            .insert("label", "Random")
-                            .insert("help", "Random tile ordering"))));
-
-    return metadata;
 }
 
 }   // namespace renderer
