@@ -362,6 +362,17 @@ inline void Statistics::insert<uint64>(
 }
 
 template <>
+inline void Statistics::insert<float>(
+    const std::string&                  name,
+    const float&                        value,
+    const std::string&                  unit)
+{
+    insert(
+        std::unique_ptr<FloatingPointEntry>(
+            new FloatingPointEntry(name, unit, value)));
+}
+
+template <>
 inline void Statistics::insert<double>(
     const std::string&                  name,
     const double&                       value,
