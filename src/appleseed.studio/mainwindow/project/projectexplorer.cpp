@@ -257,8 +257,8 @@ void ProjectExplorer::slot_drag_item(QTreeWidgetItem* item, int column)
 {
     if (item && item->flags() & Qt::ItemIsDragEnabled)
     {
-        QDrag *drag = new QDrag(m_tree_widget);
-        QMimeData *mimeData = new QMimeData;
+        QDrag* drag = new QDrag(m_tree_widget);
+        QMimeData* mimeData = new QMimeData;
 
         mimeData->setText(item->text(column));
         drag->setMimeData(mimeData);
