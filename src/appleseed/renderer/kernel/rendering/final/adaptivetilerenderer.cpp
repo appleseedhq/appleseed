@@ -241,8 +241,8 @@ namespace
           , m_sample_aov_tile(nullptr)
           , m_variation_aov_tile(nullptr)
           , m_sample_renderer(sample_renderer_factory->create(thread_index))
-          , m_total_pixel(0)
-          , m_total_pixel_converged(0)
+          , m_total_pixel_count(0)
+          , m_total_converged_pixel_count(0)
         {
             compute_tile_margins(frame, thread_index == 0);
 
@@ -360,7 +360,7 @@ namespace
                 second_framebuffer->copy_from(*framebuffer);
             else second_framebuffer->clear();
 
-            const size_t pixel_count = framebuffer->get_width() * framebuffer->get_height();
+            const size_t tile_pixel_count = framebuffer->get_width() * framebuffer->get_height();
 
             // Blocks rendering.
             deque<PixelBlock> rendering_blocks;
@@ -504,14 +504,14 @@ namespace
             // Rendering finished, fill diagnostic AOVs and update statistics.
             //
 
-            size_t tile_converged_pixel = 0;
+            size_t tile_converged_pixel_count = 0;
             float average_noise_level = 0.0f;
 
             for (size_t i = 0, n = rendering_blocks.size(); i < n; ++i)
             {
                 const PixelBlock& pb = rendering_blocks[i];
                 const AABB2u pb_image_aabb = AABB2i::intersect(framebuffer->get_crop_window(), pb.m_surface);
-                const size_t pb_pixel_count = static_cast<size_t>(pb_image_aabb.volume());
+                const size_t pb_pixel_count = pb_image_aabb.volume();
 
                 average_noise_level += pb.m_block_error * pb_pixel_count;
             }
@@ -520,7 +520,7 @@ namespace
             {
                 const PixelBlock& pb = finished_blocks[i];
                 const AABB2u pb_image_aabb = AABB2i::intersect(framebuffer->get_crop_window(), pb.m_surface);
-                const size_t pb_pixel_count = static_cast<size_t>(pb_image_aabb.volume());
+                const size_t pb_pixel_count = pb_image_aabb.volume();
 
                 average_noise_level += pb.m_block_error * pb_pixel_count;
 
@@ -528,7 +528,7 @@ namespace
                 m_spp.insert(pb.m_spp, pb_pixel_count);
 
                 if (pb.m_converged)
-                    tile_converged_pixel += pb_pixel_count;
+                    tile_converged_pixel_count += pb_pixel_count;
 
                 if (m_sample_aov_tile == nullptr && m_variation_aov_tile == nullptr)
                     continue;
@@ -539,7 +539,6 @@ namespace
                     {
                         // Retrieve the coordinates of the pixel in the padded tile.
                         const Vector2u pt(x, y);
-
 
                         if (m_sample_aov_tile != nullptr)
                         {
@@ -553,34 +552,44 @@ namespace
                         {
                             Color3f variation;
                             m_variation_aov_tile->get_pixel(pt.x, pt.y, variation);
-                            variation[0] += static_cast<float>(pb.m_block_error);
+                            variation[0] += pb.m_block_error;
                             m_variation_aov_tile->set_pixel(pt.x, pt.y, variation);
                         }
                     }
                 }
             }
 
-            m_total_pixel += pixel_count;
-            m_total_pixel_converged += tile_converged_pixel;
-            average_noise_level /= static_cast<float>(pixel_count);
+            m_total_pixel_count += tile_pixel_count;
+            m_total_converged_pixel_count += tile_converged_pixel_count;
+            average_noise_level /= tile_pixel_count;
 
-            // Warn the user if adaptive sampling wasn't efficient on this tile.
-            if (static_cast<float>(tile_converged_pixel) < BlockConvergenceWarningThreshold * pixel_count)
-            {
-                RENDERER_LOG_WARNING(
-                    "tile (" FMT_SIZE_T ", " FMT_SIZE_T "): only %s of the pixels have converged; average samples/pixel is %s.",
-                    tile_x,
-                    tile_y,
-                    pretty_percent(tile_converged_pixel, pixel_count, 1).c_str(),
-                    pretty_scalar(m_spp.get_mean(), 1).c_str());
-            }
-
-            // Inform the user about the tile average noise level.
+            // Print final statistics about this tile.
+            const string converged_pixels_string = pretty_percent(tile_converged_pixel_count, tile_pixel_count, 0);
+            Statistics stats;
+            stats.insert(
+                "pixels",
+                format(
+                    "total {0}  converged {1} ({2})",
+                    pretty_uint(tile_pixel_count),
+                    pretty_uint(tile_converged_pixel_count),
+                    converged_pixels_string));
+            stats.insert("samples/pixel", m_spp);
+            stats.insert("average noise level", average_noise_level);
             RENDERER_LOG_DEBUG(
-                "tile (" FMT_SIZE_T ", " FMT_SIZE_T "): average noise level is %f.",
+                "tile (" FMT_SIZE_T ", " FMT_SIZE_T ") final statistics:\n%s",
                 tile_x,
                 tile_y,
-                average_noise_level);
+                stats.to_string().c_str());
+
+            // Warn the user if adaptive sampling wasn't efficient on this tile.
+            if (static_cast<float>(tile_converged_pixel_count) < BlockConvergenceWarningThreshold * tile_pixel_count)
+            {
+                RENDERER_LOG_WARNING(
+                    "convergence rate for tile (" FMT_SIZE_T ", " FMT_SIZE_T ") is %s.",
+                    tile_x,
+                    tile_y,
+                    converged_pixels_string.c_str());
+            }
 
             // Develop the framebuffer to the tile.
             framebuffer->develop_to_tile(tile, aov_tiles);
@@ -603,7 +612,7 @@ namespace
             stats.insert("samples/pixel", m_spp);
 
             // Converged pixels over total pixels.
-            stats.insert_percent("convergence rate", m_total_pixel_converged, m_total_pixel);
+            stats.insert_percent("convergence rate", m_total_converged_pixel_count, m_total_pixel_count);
 
             StatisticsVector vec;
             vec.insert("adaptive tile renderer statistics", stats);
@@ -649,9 +658,10 @@ namespace
 
         // Members used for statistics.
         Population<uint64>                      m_spp;
-        size_t                                  m_total_pixel;
-        size_t                                  m_total_pixel_converged;
+        size_t                                  m_total_pixel_count;
+        size_t                                  m_total_converged_pixel_count;
 
+        // todo: factorize, this also exists in the GenericTileRenderer.
         void compute_tile_margins(
             const Frame&                        frame,
             const bool                          primary)
