@@ -67,8 +67,7 @@ class APPLESEED_DLLSYMBOL DepthAOVFactory
     foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new AOV instance.
-    foundation::auto_release_ptr<AOV> create(
-        const ParamArray&   params) const override;
+    foundation::auto_release_ptr<AOV> create(const ParamArray& params) const override;
 };
 
 }   // namespace renderer

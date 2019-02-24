@@ -129,7 +129,7 @@ namespace
             return UVAOVModel;
         }
 
-      protected:
+      private:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
@@ -167,8 +167,7 @@ DictionaryArray UVAOVFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<AOV> UVAOVFactory::create(
-    const ParamArray&   params) const
+auto_release_ptr<AOV> UVAOVFactory::create(const ParamArray& params) const
 {
     return auto_release_ptr<AOV>(new UVAOV(params));
 }

@@ -93,9 +93,6 @@ class DenoiserAOV
         const char*                         file_path,
         const foundation::ImageAttributes&  image_attributes) const override;
 
-  protected:
-    foundation::auto_release_ptr<AOVAccumulator> create_accumulator() const override;
-
   private:
     friend class DenoiserAOVFactory;
 
@@ -105,6 +102,8 @@ class DenoiserAOV
     DenoiserAOV(
         const float  max_hist_value,
         const size_t num_bins);
+
+    foundation::auto_release_ptr<AOVAccumulator> create_accumulator() const override;
 };
 
 

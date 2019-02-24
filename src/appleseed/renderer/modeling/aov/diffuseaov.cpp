@@ -173,7 +173,7 @@ namespace
             return DiffuseAOVModel;
         }
 
-      protected:
+      private:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
@@ -207,7 +207,7 @@ namespace
             return DirectDiffuseAOVModel;
         }
 
-      protected:
+      private:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
@@ -241,7 +241,7 @@ namespace
             return IndirectDiffuseAOVModel;
         }
 
-      protected:
+      private:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
@@ -279,8 +279,7 @@ DictionaryArray DiffuseAOVFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<AOV> DiffuseAOVFactory::create(
-    const ParamArray&   params) const
+auto_release_ptr<AOV> DiffuseAOVFactory::create(const ParamArray& params) const
 {
     return auto_release_ptr<AOV>(new DiffuseAOV(params));
 }
@@ -314,8 +313,7 @@ DictionaryArray DirectDiffuseAOVFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<AOV> DirectDiffuseAOVFactory::create(
-    const ParamArray&   params) const
+auto_release_ptr<AOV> DirectDiffuseAOVFactory::create(const ParamArray& params) const
 {
     return auto_release_ptr<AOV>(new DirectDiffuseAOV(params));
 }
@@ -349,8 +347,7 @@ DictionaryArray IndirectDiffuseAOVFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<AOV> IndirectDiffuseAOVFactory::create(
-    const ParamArray&   params) const
+auto_release_ptr<AOV> IndirectDiffuseAOVFactory::create(const ParamArray& params) const
 {
     return auto_release_ptr<AOV>(new IndirectDiffuseAOV(params));
 }
