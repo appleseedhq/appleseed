@@ -26,7 +26,7 @@ appleseed is available as a portable C++ library with C++ and Python APIs, as a 
 
 * [How to build appleseed from source](https://github.com/appleseedhq/appleseed/wiki/Building-appleseed)
 * [Coding philosophy and guidelines](https://github.com/appleseedhq/appleseed/wiki/Coding-Philosophy-and-Guidelines)
-* [Detailed projects ideas](https://github.com/appleseedhq/appleseed/wiki/List-of-Project-ideas-for-GSoC-2018)
+* [Detailed projects ideas](https://github.com/appleseedhq/appleseed/wiki/List-of-Project-ideas-for-GSoC-2019)
 * [Developer and contributor wiki](https://github.com/appleseedhq/appleseed/wiki)
 
 ## Related Projects
