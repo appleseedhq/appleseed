@@ -1,4 +1,5 @@
 #!/bin/sh
+
 set -e
 
 THISDIR=`pwd`
@@ -6,7 +7,6 @@ mkdir local
 
 export LD_LIBRARY_PATH=$THISDIR/local/lib:$APPLESEED_DEPENDENCIES/lib:../sandbox/lib/Debug:$LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=$THISDIR/local/lib:$DYLD_LIBRARY_PATH
-
 
 echo "Setting up the deps:"
 echo "--------------------"
@@ -16,14 +16,13 @@ brew update
 brew upgrade
 
 echo "============= Installing deps"
-brew install boost-python zlib xerces-c llvm@3.9 openimageio
+brew install boost-python llvm@3.9 lz4 openimageio xerces-c zlib
 brew tap cartr/qt4
 brew tap-pin cartr/qt4
 brew install qt@4 pyqt@4
 
 mkdir -p $HOME/Library/Python/2.7/lib/python/site-packages
 echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> $HOME/Library/Python/2.7/lib/python/site-packages/homebrew.pth
-
 
 echo "Installing OSL:"
 echo "---------------"
@@ -52,27 +51,31 @@ echo "Main build:"
 echo "-----------"
 mkdir build
 cd build
-cmake -DWITH_DISNEY_MATERIAL=ON -DUSE_STATIC_BOOST=OFF \
-     -DWITH_STUDIO=OFF -DWITH_PYTHON2_BINDINGS=OFF -DWITH_EMBREE=OFF \
-     -DZLIB_INCLUDE_DIR=/usr/local/opt/zlib/include \
-     -DZLIB_LIBRARY=/usr/local/opt/zlib/lib/libz.dylib\
-     -DPYTHON_INCLUDE_DIR=/usr/local/Cellar/python@2/2.7.15/Frameworks/Python.framework/Versions/2.7/include/python2.7/ \
-     -DPYTHON_LIBRARY=/usr/local/Cellar/python@2/2.7.15/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
-     -DBoost_PYTHON_LIBRARY_RELEASE=/usr/local/lib/libboost_python27.dylib\
-     -DOSL_INCLUDE_DIR=$THISDIR/local/include\
-     -DOSL_LIBRARIES=$THISDIR/local/lib\
-     -DOSL_EXEC_LIBRARY=$THISDIR/local/lib/liboslexec.dylib \
-     -DOSL_COMP_LIBRARY=$THISDIR/local/lib/liboslcomp.dylib\
-     -DOSL_QUERY_LIBRARY=$THISDIR/local/lib/liboslquery.dylib \
-     -DOSL_COMPILER=$THISDIR/local/bin/oslc \
-     -DOSL_QUERY_INFO=$THISDIR/local/bin/oslinfo \
-     -DSEEXPR_INCLUDE_DIR=$THISDIR/local/include \
-     -DSEEXPR_LIBRARY=$THISDIR/local/lib/libSeExpr.dylib\
-     -DSEEXPREDITOR_INCLUDE_DIR=$THISDIR/local/include\
-     -DSEEXPREDITOR_LIBRARY=$THISDIR/local/lib/libSeExprEditor.dylib\
-     -D HIDE_SYMBOLS=ON \
-     -D CMAKE_BUILD_TYPE=Debug \
-     ..
+cmake \
+    -D CMAKE_BUILD_TYPE=Debug \
+    -D HIDE_SYMBOLS=ON \
+    -D WITH_STUDIO=OFF \
+    -D WITH_PYTHON2_BINDINGS=OFF \
+    -D WITH_DISNEY_MATERIAL=ON \
+    -D WITH_EMBREE=OFF \
+    -D USE_STATIC_BOOST=OFF \
+    -D Boost_PYTHON_LIBRARY_RELEASE=/usr/local/lib/libboost_python27.dylib \
+    -D OSL_INCLUDE_DIR=$THISDIR/local/include \
+    -D OSL_LIBRARIES=$THISDIR/local/lib \
+    -D OSL_EXEC_LIBRARY=$THISDIR/local/lib/liboslexec.dylib \
+    -D OSL_COMP_LIBRARY=$THISDIR/local/lib/liboslcomp.dylib \
+    -D OSL_QUERY_LIBRARY=$THISDIR/local/lib/liboslquery.dylib \
+    -D OSL_COMPILER=$THISDIR/local/bin/oslc \
+    -D OSL_QUERY_INFO=$THISDIR/local/bin/oslinfo \
+    -D PYTHON_INCLUDE_DIR=/usr/local/Cellar/python@2/2.7.15/Frameworks/Python.framework/Versions/2.7/include/python2.7/ \
+    -D PYTHON_LIBRARY=/usr/local/Cellar/python@2/2.7.15/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
+    -D SEEXPR_INCLUDE_DIR=$THISDIR/local/include \
+    -D SEEXPR_LIBRARY=$THISDIR/local/lib/libSeExpr.dylib \
+    -D SEEXPREDITOR_INCLUDE_DIR=$THISDIR/local/include \
+    -D SEEXPREDITOR_LIBRARY=$THISDIR/local/lib/libSeExprEditor.dylib \
+    -D ZLIB_INCLUDE_DIR=/usr/local/opt/zlib/include \
+    -D ZLIB_LIBRARY=/usr/local/opt/zlib/lib/libz.dylib \
+    ..
 make -j 2
 
 echo "Running appleseed tests:"

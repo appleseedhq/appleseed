@@ -135,13 +135,11 @@ macro (link_against_platform target)
     )
 endmacro ()
 
-macro (link_against_zlib target)
-    if (USE_FIND_PACKAGE_FOR_ZLIB)
-        target_link_libraries (${target} ${ZLIB_LIBRARIES})
+macro (link_against_embree target)
+    if (USE_FIND_PACKAGE_FOR_EMBREE)
+        target_link_libraries (${target} ${EMBREE_LIBRARIES})
     else ()
-        target_link_libraries (${target}
-            ${CMAKE_SOURCE_DIR}/build/${platform}/zlib/libz.a
-        )
+        # TODO
     endif ()
 endmacro ()
 
@@ -153,6 +151,24 @@ macro (link_against_libpng target)
             ${CMAKE_SOURCE_DIR}/build/${platform}/libpng/libpng.a
         )
     endif ()
+endmacro ()
+
+macro (link_against_lz4 target)
+    if (USE_FIND_PACKAGE_FOR_LZ4)
+        target_link_libraries (${target} ${LZ4_LIBRARY})
+    else ()
+        target_link_libraries (${target}
+            ${CMAKE_SOURCE_DIR}/build/${platform}/lz4/lz4.a
+        )
+    endif ()
+endmacro ()
+
+macro (link_against_ocio target)
+    target_link_libraries (${target} ${OPENCOLORIO_LIBRARIES})
+endmacro ()
+
+macro (link_against_oiio target)
+    target_link_libraries (${target} ${OPENIMAGEIO_LIBRARIES})
 endmacro ()
 
 macro (link_against_openexr target)
@@ -172,24 +188,6 @@ macro (link_against_openexr target)
     endif ()
 endmacro ()
 
-macro (link_against_xercesc target)
-    if (USE_FIND_PACKAGE_FOR_XERCES)
-        target_link_libraries (${target} ${XERCES_LIBRARIES})
-    else ()
-        target_link_libraries (${target}
-            ${CMAKE_SOURCE_DIR}/build/${platform}/xerces-c/libxerces-c.a
-        )
-    endif ()
-endmacro ()
-
-macro (link_against_ocio target)
-    target_link_libraries (${target} ${OPENCOLORIO_LIBRARIES})
-endmacro ()
-
-macro (link_against_oiio target)
-    target_link_libraries (${target} ${OPENIMAGEIO_LIBRARIES})
-endmacro ()
-
 macro (link_against_osl target)
     target_link_libraries (${target} ${OSL_EXEC_LIBRARY} ${OSL_COMP_LIBRARY} ${OSL_QUERY_LIBRARY})
 endmacro ()
@@ -202,11 +200,23 @@ macro (link_against_seexpreditor target)
     target_link_libraries (${target} ${SEEXPREDITOR_LIBRARIES})
 endmacro ()
 
-macro (link_against_embree target)
-    if (USE_FIND_PACKAGE_FOR_EMBREE)
-        target_link_libraries (${target} ${EMBREE_LIBRARIES})
+macro (link_against_xercesc target)
+    if (USE_FIND_PACKAGE_FOR_XERCES)
+        target_link_libraries (${target} ${XERCES_LIBRARIES})
     else ()
-        #TODO
+        target_link_libraries (${target}
+            ${CMAKE_SOURCE_DIR}/build/${platform}/xerces-c/libxerces-c.a
+        )
+    endif ()
+endmacro ()
+
+macro (link_against_zlib target)
+    if (USE_FIND_PACKAGE_FOR_ZLIB)
+        target_link_libraries (${target} ${ZLIB_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            ${CMAKE_SOURCE_DIR}/build/${platform}/zlib/libz.a
+        )
     endif ()
 endmacro ()
 

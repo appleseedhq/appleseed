@@ -105,16 +105,16 @@ set (CMAKE_CXX_STANDARD 11)
 include (WriteCompilerDetectionHeader)
 
 write_compiler_detection_header (
-  FILE ${PROJECT_SOURCE_DIR}/src/appleseed/foundation/platform/compilerfeatures.h
-  PREFIX APPLESEED
-  COMPILERS GNU Clang MSVC AppleClang
-  FEATURES
-    cxx_final
-    cxx_noexcept
-    cxx_constexpr
-    cxx_defaulted_functions
-    cxx_deleted_functions
-    cxx_generalized_initializers
+    FILE ${PROJECT_SOURCE_DIR}/src/appleseed/foundation/platform/compilerfeatures.h
+    PREFIX APPLESEED
+    COMPILERS GNU Clang MSVC AppleClang
+    FEATURES
+        cxx_final
+        cxx_noexcept
+        cxx_constexpr
+        cxx_defaulted_functions
+        cxx_deleted_functions
+        cxx_generalized_initializers
 )
 
 
@@ -137,6 +137,7 @@ option (WITH_DOXYGEN                        "Generate API reference with Doxygen
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     option (USE_FIND_PACKAGE_FOR_EMBREE     "Use find_package() for Embree library"                     OFF)
     option (USE_FIND_PACKAGE_FOR_EXR        "Use find_package() for OpenEXR library"                    OFF)
+    option (USE_FIND_PACKAGE_FOR_LZ4        "Use find_package() for LZ4 library"                        OFF)
     option (USE_FIND_PACKAGE_FOR_OCIO       "Use find_package() for OpenColorIO library"                OFF)
     option (USE_FIND_PACKAGE_FOR_OIIO       "Use find_package() for OpenImageIO library"                OFF)
     option (USE_FIND_PACKAGE_FOR_OSL        "Use find_package() for OpenShadingLanguage library"        OFF)
@@ -147,6 +148,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 else ()
     set (USE_FIND_PACKAGE_FOR_EMBREE ON)
     set (USE_FIND_PACKAGE_FOR_EXR    ON)
+    set (USE_FIND_PACKAGE_FOR_LZ4    ON)
     set (USE_FIND_PACKAGE_FOR_OCIO   ON)
     set (USE_FIND_PACKAGE_FOR_OIIO   ON)
     set (USE_FIND_PACKAGE_FOR_OSL    ON)
@@ -249,12 +251,14 @@ link_directories (${Boost_LIBRARY_DIRS})
 # Find packages.
 #--------------------------------------------------------------------------------------------------
 
-if (USE_FIND_PACKAGE_FOR_ZLIB)
-    find_package (ZLIB REQUIRED)
-endif ()
-
-if (USE_FIND_PACKAGE_FOR_PNG)
-    find_package (PNG REQUIRED)
+if (WITH_EMBREE)
+    add_definitions (-DAPPLESEED_WITH_EMBREE)
+    if (USE_STATIC_EMBREE)
+        add_definitions (-DEMBREE_STATIC_LIB)
+    endif ()
+    if (USE_FIND_PACKAGE_FOR_EMBREE)
+        find_package (Embree REQUIRED)
+    endif ()
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_EXR)
@@ -262,16 +266,8 @@ if (USE_FIND_PACKAGE_FOR_EXR)
     find_package (OpenEXR REQUIRED)
 endif ()
 
-if (USE_FIND_PACKAGE_FOR_XERCES)
-    add_definitions (-DAPPLESEED_WITH_EXTERNAL_XERCES)
-    find_package (Xerces REQUIRED)
-endif ()
-
-if (USE_STATIC_OIIO)
-    add_definitions (-DOIIO_STATIC_BUILD)
-endif ()
-if (USE_FIND_PACKAGE_FOR_OIIO)
-    find_package (OpenImageIO REQUIRED)
+if (USE_FIND_PACKAGE_FOR_LZ4)
+    find_package (LZ4 REQUIRED)
 endif ()
 
 if (WITH_STUDIO)
@@ -283,11 +279,22 @@ if (WITH_STUDIO)
     endif ()
 endif ()
 
+if (USE_STATIC_OIIO)
+    add_definitions (-DOIIO_STATIC_BUILD)
+endif ()
+if (USE_FIND_PACKAGE_FOR_OIIO)
+    find_package (OpenImageIO REQUIRED)
+endif ()
+
 if (USE_STATIC_OSL)
     add_definitions (-DOSL_STATIC_LIBRARY)
 endif ()
 if (USE_FIND_PACKAGE_FOR_OSL)
     find_package (OSL REQUIRED)
+endif ()
+
+if (USE_FIND_PACKAGE_FOR_PNG)
+    find_package (PNG REQUIRED)
 endif ()
 
 if (WITH_DISNEY_MATERIAL)
@@ -300,14 +307,13 @@ if (WITH_DISNEY_MATERIAL)
     endif ()
 endif ()
 
-if (WITH_EMBREE)
-    add_definitions (-DAPPLESEED_WITH_EMBREE)
-    if (USE_STATIC_EMBREE)
-        add_definitions (-DEMBREE_STATIC_LIB)
-    endif ()
-    if (USE_FIND_PACKAGE_FOR_EMBREE)
-        find_package (Embree REQUIRED)
-    endif ()
+if (USE_FIND_PACKAGE_FOR_XERCES)
+    add_definitions (-DAPPLESEED_WITH_EXTERNAL_XERCES)
+    find_package (Xerces REQUIRED)
+endif ()
+
+if (USE_FIND_PACKAGE_FOR_ZLIB)
+    find_package (ZLIB REQUIRED)
 endif ()
 
 
@@ -318,20 +324,15 @@ endif ()
 # Common include paths.
 include_directories (
     src/thirdparty/bcd
-    src/thirdparty/lz4
     src/appleseed
 )
 
-if (USE_FIND_PACKAGE_FOR_ZLIB)
-    include_directories (${ZLIB_INCLUDE_DIRS})
-else ()
-    include_directories (${APPLESEED_DEPS_STAGE_DIR}/zlib-debug/include)
-endif ()
-
-if (USE_FIND_PACKAGE_FOR_PNG)
-    include_directories (${PNG_INCLUDE_DIR})
-else ()
-    include_directories (${APPLESEED_DEPS_STAGE_DIR}/libpng-debug/include)
+if (WITH_EMBREE)
+    if (USE_FIND_PACKAGE_FOR_EMBREE)
+        include_directories (${EMBREE_INCLUDE_DIRS})
+    else ()
+        include_directories (${APPLESEED_DEPS_STAGE_DIR}/embree-debug/include)
+    endif ()
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_EXR)
@@ -350,16 +351,10 @@ else ()
     )
 endif ()
 
-if (USE_FIND_PACKAGE_FOR_XERCES)
-    include_directories (${XERCES_INCLUDE_DIRS})
+if (USE_FIND_PACKAGE_FOR_LZ4)
+    include_directories (${LZ4_INCLUDE_DIR})
 else ()
-    include_directories (${APPLESEED_DEPS_STAGE_DIR}/xerces-c-debug/include)
-endif ()
-
-if (USE_FIND_PACKAGE_FOR_OIIO)
-    include_directories (${OPENIMAGEIO_INCLUDE_DIRS})
-else ()
-    include_directories (${APPLESEED_DEPS_STAGE_DIR}/oiio-debug/include)
+    include_directories (${APPLESEED_DEPS_STAGE_DIR}/lz4-debug/include)
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_OCIO)
@@ -368,10 +363,22 @@ else ()
     include_directories (${APPLESEED_DEPS_STAGE_DIR}/ocio-debug/include)
 endif ()
 
+if (USE_FIND_PACKAGE_FOR_OIIO)
+    include_directories (${OPENIMAGEIO_INCLUDE_DIRS})
+else ()
+    include_directories (${APPLESEED_DEPS_STAGE_DIR}/oiio-debug/include)
+endif ()
+
 if (USE_FIND_PACKAGE_FOR_OSL)
     include_directories (${OSL_INCLUDE_DIRS})
 else ()
     include_directories (${APPLESEED_DEPS_STAGE_DIR}/osl-debug/include)
+endif ()
+
+if (USE_FIND_PACKAGE_FOR_PNG)
+    include_directories (${PNG_INCLUDE_DIR})
+else ()
+    include_directories (${APPLESEED_DEPS_STAGE_DIR}/libpng-debug/include)
 endif ()
 
 if (WITH_DISNEY_MATERIAL)
@@ -385,13 +392,18 @@ if (WITH_DISNEY_MATERIAL)
     endif ()
 endif ()
 
-if (WITH_EMBREE)
-    if (NOT USE_FIND_PACKAGE_FOR_EMBREE)
-        include_directories (${APPLESEED_DEPS_STAGE_DIR}/embree-debug/include/)
-    else ()
-        include_directories (${EMBREE_INCLUDE_DIRS})
-    endif ()
+if (USE_FIND_PACKAGE_FOR_XERCES)
+    include_directories (${XERCES_INCLUDE_DIRS})
+else ()
+    include_directories (${APPLESEED_DEPS_STAGE_DIR}/xerces-c-debug/include)
 endif ()
+
+if (USE_FIND_PACKAGE_FOR_ZLIB)
+    include_directories (${ZLIB_INCLUDE_DIRS})
+else ()
+    include_directories (${APPLESEED_DEPS_STAGE_DIR}/zlib-debug/include)
+endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Preprocessor definitions.
@@ -606,7 +618,6 @@ endmacro ()
 #--------------------------------------------------------------------------------------------------
 
 add_subdirectory (src/thirdparty/bcd)
-add_subdirectory (src/thirdparty/lz4)
 
 add_subdirectory (src/appleseed)
 add_subdirectory (src/appleseed.shaders)
@@ -632,7 +643,7 @@ if (WITH_PYTHON2_BINDINGS)
         list (GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
     else ()
         # Default to latest Python 2 release if version string cannot be read.
-        message (STATUS "Cannot find Python version. Using 2.7 by default")
+        message (STATUS "Cannot find Python version; using Python 2.7 by default.")
         set (PYTHON_MAJOR_VERSION "2")
         set (PYTHON_MINOR_VERSION "7")
     endif ()
@@ -642,7 +653,7 @@ endif ()
 
 if (WITH_STUDIO)
     if (NOT WITH_PYTHON2_BINDINGS)
-        message (FATAL_ERROR "WITH_PYTHON2_BINDINGS should be \"ON\" to build appleseed.studio")
+        message (FATAL_ERROR "Option WITH_PYTHON2_BINDINGS should be \"ON\" to build appleseed.studio.")
     endif ()
     add_subdirectory (src/appleseed.studio)
 endif ()

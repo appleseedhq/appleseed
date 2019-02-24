@@ -48,6 +48,9 @@
 // libpng headers.
 #include <png.h>
 
+// LZ4 headers.
+#include <lz4.h>
+
 // OpenColorIO headers.
 #include <OpenColorIO/OpenColorABI.h>
 
@@ -88,7 +91,6 @@ LibraryVersionArray ThirdParties::get_versions()
     static const char* LibJpegTurboVersion = "1.3.1";
     static const char* LibTIFFVersion = "4.0.3";
     static const char* LLVMVersion = "3.4.2";
-    static const char* LZ4Version = "revision 98 (July 1st, 2013)";
     static const char* SeExprVersion = "commit db9610a24401fa7198c54c8768d0484175f54172";
 
     LibraryVersionArray versions;
@@ -107,7 +109,7 @@ LibraryVersionArray ThirdParties::get_versions()
     versions.push_back(APIStringPair("libpng", PNG_LIBPNG_VER_STRING));
     versions.push_back(APIStringPair("LibTIFF", LibTIFFVersion));
     versions.push_back(APIStringPair("LLVM", LLVMVersion));
-    versions.push_back(APIStringPair("LZ4", LZ4Version));
+    versions.push_back(APIStringPair("LZ4", format("{0}.{1}.{2}", LZ4_VERSION_MAJOR, LZ4_VERSION_MINOR, LZ4_VERSION_RELEASE)));
     versions.push_back(APIStringPair("OpenColorIO", OCIO_VERSION));
     versions.push_back(APIStringPair("OpenEXR", OPENEXR_VERSION_STRING));
     versions.push_back(APIStringPair("OpenImageIO", OIIO_VERSION_STRING));
