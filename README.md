@@ -40,4 +40,4 @@ appleseed is available as a portable C++ library with C++ and Python APIs, as a 
 
 appleseed and its accompanying software is released under the [MIT license](https://en.wikipedia.org/wiki/MIT_License).
 
-© 2010-2018 The appleseedhq Organization
+© 2010-2019 The appleseedhq Organization
