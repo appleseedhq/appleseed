@@ -68,12 +68,11 @@ class PixelSampleCountAOV
 
     void set_normalization_range(const size_t min_spp, const size_t max_spp);
 
-  protected:
-    foundation::auto_release_ptr<AOVAccumulator> create_accumulator() const override;
-
   private:
     size_t m_min_spp;
     size_t m_max_spp;
+
+    foundation::auto_release_ptr<AOVAccumulator> create_accumulator() const override;
 };
 
 

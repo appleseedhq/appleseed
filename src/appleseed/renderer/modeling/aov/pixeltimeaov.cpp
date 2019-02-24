@@ -215,7 +215,7 @@ namespace
             }
         }
 
-      protected:
+      private:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(new PixelTimeAOVAccumulator(get_image()));
@@ -252,8 +252,7 @@ DictionaryArray PixelTimeAOVFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<AOV> PixelTimeAOVFactory::create(
-    const ParamArray&   params) const
+auto_release_ptr<AOV> PixelTimeAOVFactory::create(const ParamArray& params) const
 {
     return auto_release_ptr<AOV>(new PixelTimeAOV(params));
 }

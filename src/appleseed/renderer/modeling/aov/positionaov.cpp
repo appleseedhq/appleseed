@@ -134,7 +134,7 @@ namespace
             m_image->clear(Color3f(0.0f));
         }
 
-      protected:
+      private:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
@@ -172,8 +172,7 @@ DictionaryArray PositionAOVFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<AOV> PositionAOVFactory::create(
-    const ParamArray&   params) const
+auto_release_ptr<AOV> PositionAOVFactory::create(const ParamArray& params) const
 {
     return auto_release_ptr<AOV>(new PositionAOV(params));
 }

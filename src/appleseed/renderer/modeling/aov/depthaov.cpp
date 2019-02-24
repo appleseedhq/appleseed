@@ -142,7 +142,7 @@ namespace
             m_image->clear(Color<float, 1>(numeric_limits<float>::max()));
         }
 
-      protected:
+      private:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
@@ -181,8 +181,7 @@ DictionaryArray DepthAOVFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<AOV> DepthAOVFactory::create(
-    const ParamArray&   params) const
+auto_release_ptr<AOV> DepthAOVFactory::create(const ParamArray& params) const
 {
     return auto_release_ptr<AOV>(new DepthAOV(params));
 }

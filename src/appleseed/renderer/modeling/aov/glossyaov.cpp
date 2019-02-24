@@ -172,7 +172,7 @@ namespace
             return GlossyAOVModel;
         }
 
-      protected:
+      private:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
@@ -206,7 +206,7 @@ namespace
             return DirectGlossyAOVModel;
         }
 
-      protected:
+      private:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
@@ -240,7 +240,7 @@ namespace
             return IndirectGlossyAOVModel;
         }
 
-      protected:
+      private:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
@@ -278,8 +278,7 @@ DictionaryArray GlossyAOVFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<AOV> GlossyAOVFactory::create(
-    const ParamArray&   params) const
+auto_release_ptr<AOV> GlossyAOVFactory::create(const ParamArray& params) const
 {
     return auto_release_ptr<AOV>(new GlossyAOV(params));
 }
@@ -313,8 +312,7 @@ DictionaryArray DirectGlossyAOVFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<AOV> DirectGlossyAOVFactory::create(
-    const ParamArray&   params) const
+auto_release_ptr<AOV> DirectGlossyAOVFactory::create(const ParamArray& params) const
 {
     return auto_release_ptr<AOV>(new DirectGlossyAOV(params));
 }
@@ -348,8 +346,7 @@ DictionaryArray IndirectGlossyAOVFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<AOV> IndirectGlossyAOVFactory::create(
-    const ParamArray&   params) const
+auto_release_ptr<AOV> IndirectGlossyAOVFactory::create(const ParamArray& params) const
 {
     return auto_release_ptr<AOV>(new IndirectGlossyAOV(params));
 }
