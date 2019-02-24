@@ -216,13 +216,31 @@ set (static_lib_linker_flags_profile
 macro (link_against_platform target)
 endmacro ()
 
-macro (link_against_zlib target)
-    if (USE_FIND_PACKAGE_FOR_ZLIB)
-        target_link_libraries (${target} ${ZLIB_LIBRARIES})
+macro (link_against_embree target)
+    if (USE_FIND_PACKAGE_FOR_EMBREE)
+        target_link_libraries (${target} ${EMBREE_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/zlib-debug/lib/zlibstaticd.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/zlib-release/lib/zlibstatic.lib
+            # Order matters here.
+            # See appleseed-deps\src\embree\readme.pdf, section 3.3 CMake Configuration for details.
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/lexers.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/math.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/simd.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/sys.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/tasking.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/embree3.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/embree_sse42.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/embree_avx.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/embree_avx2.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/lexers.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/math.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/simd.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/sys.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/tasking.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/embree3.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/embree_sse42.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/embree_avx.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/embree_avx2.lib
         )
     endif ()
 endmacro ()
@@ -238,35 +256,30 @@ macro (link_against_libpng target)
     endif ()
 endmacro ()
 
-macro (link_against_openexr target)
-    if (USE_FIND_PACKAGE_FOR_EXR)
-        target_link_libraries (${target}
-            ${IMATH_LIBRARIES}
-            ${OPENEXR_LIBRARIES}
-        )
+macro (link_against_lz4 target)
+    if (USE_FIND_PACKAGE_FOR_LZ4)
+        target_link_libraries (${target} ${LZ4_LIBRARY})
     else ()
         target_link_libraries (${target}
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-debug/lib/Half.lib
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-debug/lib/Iex-2_2.lib
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-debug/lib/IlmThread-2_2.lib
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-debug/lib/Imath-2_2.lib
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/openexr-debug/lib/IlmImf-2_2.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-release/lib/Half.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-release/lib/Iex-2_2.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-release/lib/IlmThread-2_2.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-release/lib/Imath-2_2.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/openexr-release/lib/IlmImf-2_2.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/lz4-debug/lib/lz4.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/lz4-release/lib/lz4.lib
         )
     endif ()
 endmacro ()
 
-macro (link_against_xercesc target)
-    if (USE_FIND_PACKAGE_FOR_XERCES)
-        target_link_libraries (${target} ${XERCES_LIBRARIES})
+macro (link_against_ocio target)
+    if (USE_FIND_PACKAGE_FOR_OCIO)
+        target_link_libraries (${target}
+            ${OPENCOLORIO_LIBRARIES}
+        )
     else ()
         target_link_libraries (${target}
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/xerces-c-debug/lib/xerces-c_3D.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/xerces-c-release/lib/xerces-c_3.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ocio-debug/lib/libyaml-cppmdd.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ocio-debug/lib/OpenColorIO.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ocio-debug/lib/tinyxml.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/libyaml-cppmd.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/OpenColorIO.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/tinyxml.lib
         )
     endif ()
 endmacro ()
@@ -290,19 +303,24 @@ macro (link_against_oiio target)
     endif ()
 endmacro ()
 
-macro (link_against_ocio target)
-    if (USE_FIND_PACKAGE_FOR_OCIO)
+macro (link_against_openexr target)
+    if (USE_FIND_PACKAGE_FOR_EXR)
         target_link_libraries (${target}
-            ${OPENCOLORIO_LIBRARIES}
+            ${IMATH_LIBRARIES}
+            ${OPENEXR_LIBRARIES}
         )
     else ()
         target_link_libraries (${target}
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/ocio-debug/lib/libyaml-cppmdd.lib
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/ocio-debug/lib/OpenColorIO.lib
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/ocio-debug/lib/tinyxml.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/libyaml-cppmd.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/OpenColorIO.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/tinyxml.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-debug/lib/Half.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-debug/lib/Iex-2_2.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-debug/lib/IlmThread-2_2.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-debug/lib/Imath-2_2.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/openexr-debug/lib/IlmImf-2_2.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-release/lib/Half.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-release/lib/Iex-2_2.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-release/lib/IlmThread-2_2.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-release/lib/Imath-2_2.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/openexr-release/lib/IlmImf-2_2.lib
         )
     endif ()
 endmacro ()
@@ -365,31 +383,24 @@ macro (link_against_seexpreditor target)
     endif ()
 endmacro ()
 
-macro (link_against_embree target)
-    if (USE_FIND_PACKAGE_FOR_EMBREE)
-        target_link_libraries (${target} ${EMBREE_LIBRARIES})
+macro (link_against_xercesc target)
+    if (USE_FIND_PACKAGE_FOR_XERCES)
+        target_link_libraries (${target} ${XERCES_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            # Order matters here.
-            # See appleseed-deps\src\embree\readme.pdf, section 3.3 CMake Configuration for details.
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/lexers.lib
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/math.lib
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/simd.lib
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/sys.lib
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/tasking.lib
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/embree3.lib
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/embree_sse42.lib
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/embree_avx.lib
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/embree-debug/lib/embree_avx2.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/lexers.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/math.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/simd.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/sys.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/tasking.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/embree3.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/embree_sse42.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/embree_avx.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/embree-release/lib/embree_avx2.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/xerces-c-debug/lib/xerces-c_3D.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/xerces-c-release/lib/xerces-c_3.lib
+        )
+    endif ()
+endmacro ()
+
+macro (link_against_zlib target)
+    if (USE_FIND_PACKAGE_FOR_ZLIB)
+        target_link_libraries (${target} ${ZLIB_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/zlib-debug/lib/zlibstaticd.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/zlib-release/lib/zlibstatic.lib
         )
     endif ()
 endmacro ()

@@ -34,8 +34,8 @@
 #include "foundation/utility/memory.h"
 #include "foundation/utility/otherwise.h"
 
-// lz4 headers.
-#include "lz4.h"
+// LZ4 headers.
+#include <lz4.h>
 
 // Standard headers.
 #include <algorithm>
@@ -573,18 +573,30 @@ LZ4CompressedWriterAdapter::~LZ4CompressedWriterAdapter()
 
 void LZ4CompressedWriterAdapter::flush_buffer()
 {
+    // Make sure we have some data to compress and write.
+    assert(m_buffer_index > 0);
+
+    // Allocate memory for the compressed buffer.
     const size_t max_compressed_buffer_size =
         static_cast<size_t>(LZ4_compressBound(static_cast<int>(m_buffer_index)));
     ensure_minimum_size(m_compressed_buffer, max_compressed_buffer_size);
 
+    // Compress data.
     const int compressed_buffer_size =
-        LZ4_compress(
+        LZ4_compress_default(
             reinterpret_cast<const char*>(&m_buffer[0]),
             reinterpret_cast<char*>(&m_compressed_buffer[0]),
-            static_cast<int>(m_buffer_index));
+            static_cast<int>(m_buffer_index),
+            static_cast<int>(max_compressed_buffer_size));
+    assert(compressed_buffer_size > 0);
 
+    // Write uncompressed size.
     m_file.write(static_cast<uint64>(m_buffer_index));
+
+    // Write compressed size.
     m_file.write(static_cast<uint64>(compressed_buffer_size));
+
+    // Write compressed data.
     m_file.write(&m_compressed_buffer[0], compressed_buffer_size);
 
     m_buffer_index = 0;
@@ -602,22 +614,34 @@ LZ4CompressedReaderAdapter::LZ4CompressedReaderAdapter(BufferedFile& file)
 
 bool LZ4CompressedReaderAdapter::fill_buffer()
 {
+    // Read uncompressed size.
     size_t buffer_size;
     if (read_uint64(m_file, buffer_size) == 0)
         return false;
 
+    // Allocate memory for the uncompressed buffer.
     ensure_minimum_size(m_buffer, buffer_size);
 
+    // Read compressed size.
     size_t compressed_buffer_size;
     read_uint64(m_file, compressed_buffer_size);
 
+    // Allocate memory for the compressed buffer.
     ensure_minimum_size(m_compressed_buffer, compressed_buffer_size);
+
+    // Read compressed data.
     m_file.read(&m_compressed_buffer[0], compressed_buffer_size);
 
-    LZ4_decompress_fast(
-        reinterpret_cast<const char*>(&m_compressed_buffer[0]),
-        reinterpret_cast<char*>(&m_buffer[0]),
-        static_cast<int>(buffer_size));
+    // Decompress data.
+#ifndef NDEBUG
+    const int decompressed_bytes =
+#endif
+        LZ4_decompress_safe(
+            reinterpret_cast<const char*>(&m_compressed_buffer[0]),
+            reinterpret_cast<char*>(&m_buffer[0]),
+            static_cast<int>(compressed_buffer_size),
+            static_cast<int>(buffer_size));
+    assert(decompressed_bytes == static_cast<int>(buffer_size));
 
     m_buffer_index = 0;
     m_buffer_end = buffer_size;

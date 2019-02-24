@@ -2142,6 +2142,7 @@ link_against_xercesc (appleseed)
 
 link_against_openexr (appleseed)
 link_against_zlib (appleseed)
+link_against_lz4 (appleseed)
 
 link_against_oiio (appleseed)
 link_against_osl (appleseed)
@@ -2157,7 +2158,6 @@ endif ()
 target_link_libraries (appleseed
     bcd
     ${Boost_LIBRARIES}
-    lz4
     ${CMAKE_DL_LIBS}
     "${APPLESEED_LINK_EXTRA_LIBRARIES}"
 )
