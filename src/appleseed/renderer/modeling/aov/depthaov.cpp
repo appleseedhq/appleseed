@@ -94,8 +94,7 @@ namespace
             if (shading_point.hit_surface())
             {
                 shading_result.m_aovs[0].a = 1.0f;
-                const float depth = static_cast<float>(shading_point.get_distance());
-                *out = depth;
+                *out = static_cast<float>(shading_point.get_distance());
             }
             else
             {
@@ -144,7 +143,7 @@ namespace
 
         void clear_image() override
         {
-            m_image->clear(Color<float, 1>(numeric_limits<float>::max()));
+            m_image->clear(Color<float, 1>(0.0f));
         }
 
       protected:
