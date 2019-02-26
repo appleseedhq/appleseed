@@ -143,7 +143,7 @@ namespace
 
         void clear_image() override
         {
-            m_image->clear(Color<float, 1>(0.0f));
+            m_image->clear(Color<float, 2>(0.0f));
         }
 
       protected:
