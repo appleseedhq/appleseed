@@ -78,9 +78,11 @@ namespace
     // Roll into given xform sequence stack and return the flatten one.
     const asr::TransformSequence flatten_xform_seq(const std::vector<asr::TransformSequence>& xform_seq_stack)
     {
-        assert(!xform_seq_stack.empty());
-
-        if (xform_seq_stack.size() == 1)
+        if (xform_seq_stack.empty())
+        {
+            return asr::TransformSequence();
+        }
+        else if (xform_seq_stack.size() == 1)
         {
             // one item, we don't need to flatten anything
             return xform_seq_stack.back();
@@ -454,7 +456,6 @@ namespace
             if (m_verbose)
                 log_archive(archive, core_type);
 
-            m_xform_seq_stack.push_back(asr::TransformSequence());
 
             // Retrieve archive root object.
             Abc::IObject root = archive.getTop();
@@ -468,22 +469,8 @@ namespace
             if (m_verbose)
                 log_obj(root);
 
-            // Root children.
-            const size_t children_count = root.getNumChildren();
-
-            if (children_count)
-            {
-                for (size_t i = 0, e = root.getNumChildren(); i < e; i++)
-                {
-                    Abc::IObject child = root.getChild(i);
-                    walk(child);
-                }
-            }
-            else
-            {
-                RENDERER_LOG_WARNING("no children for root: %s",
-                                     archive.getName().c_str());
-            }
+            // Start to traverse hierarchy.
+            walk(root);
 
             // We don't need tracked MeshObject now the archive parsing is over.
             m_mesh_cache.clear();
@@ -595,37 +582,48 @@ namespace
                 auto front_material_mappings = asf::StringDictionary();
                 //front_material_mappings.insert("white_material", "white_material");
 
-                // Create an assembly.
-                asf::auto_release_ptr<asr::Assembly> xform_assembly(
-                    asr::AssemblyFactory().create(  // TODO: Do I really have to instantiate AssemblyFactory?
-                        (obj_name+"_assembly").c_str(),
-                        asr::ParamArray()));
+                auto xform_seq = flatten_xform_seq(m_xform_seq_stack);
 
-                // Create an instance of this object and insert it into the assembly.
-                xform_assembly->object_instances().insert(
-                    asr::ObjectInstanceFactory::create(
-                        (obj_name+"_inst").c_str(), // Instance name.
-                        asr::ParamArray(),
-                        mesh_name.c_str(), // Object name.
-                        asf::Transformd::identity(),
-                        front_material_mappings));
-
-                // Create an instance of the assembly.
-                asf::auto_release_ptr<asr::AssemblyInstance> xform_assembly_inst(
-                    asr::AssemblyInstanceFactory::create(
-                        (obj_name+"_assembly_inst").c_str(),
-                        asr::ParamArray(),
-                        (obj_name+"_assembly").c_str()));
-
-                if (m_xform_seq_stack.size())
+                if (xform_seq.empty())
                 {
-                    auto xform_seq = flatten_xform_seq(m_xform_seq_stack);
+                    // No transform sequence directly instanciate object.
+                    this->object_instances().insert(
+                        asr::ObjectInstanceFactory::create(
+                            (obj_name+"_inst").c_str(), // Instance name.
+                            asr::ParamArray(),
+                            mesh_name.c_str(), // Object name.
+                            asf::Transformd::identity(),
+                            front_material_mappings));
+                }
+                else
+                {
+                    // Create an assembly.
+                    asf::auto_release_ptr<asr::Assembly> xform_assembly(
+                        asr::AssemblyFactory().create(  // TODO: Do I really have to instantiate AssemblyFactory?
+                            (obj_name+"_assembly").c_str(),
+                            asr::ParamArray()));
+
+                    // Create an instance of this object and insert it into the assembly.
+                    xform_assembly->object_instances().insert(
+                        asr::ObjectInstanceFactory::create(
+                            (obj_name+"_inst").c_str(), // Instance name.
+                            asr::ParamArray(),
+                            mesh_name.c_str(), // Object name.
+                            asf::Transformd::identity(),
+                            front_material_mappings));
+
+                    // Create an instance of the assembly.
+                    asf::auto_release_ptr<asr::AssemblyInstance> xform_assembly_inst(
+                        asr::AssemblyInstanceFactory::create(
+                            (obj_name+"_assembly_inst").c_str(),
+                            asr::ParamArray(),
+                            (obj_name+"_assembly").c_str()));
 
                     xform_assembly_inst->transform_sequence() = xform_seq;
-                }
 
-                this->assemblies().insert(xform_assembly);
-                this->assembly_instances().insert(xform_assembly_inst);
+                    this->assemblies().insert(xform_assembly);
+                    this->assembly_instances().insert(xform_assembly_inst);
+                }
 
             }  // IPolyMesh.
 
