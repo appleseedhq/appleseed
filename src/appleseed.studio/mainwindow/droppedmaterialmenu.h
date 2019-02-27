@@ -47,23 +47,29 @@ class DroppedMaterialMenu
 {
     Q_OBJECT
 
-    const foundation::Vector2d& m_drop_pos;
-    const std::string& m_material_name;
-
 public:
+    // constructor
     DroppedMaterialMenu(const foundation::Vector2d& drop_pos, const std::string& material_name);
 
-private slots:
-    void slot_apply_to_front();
-    void slot_apply_to_back();
-    void slot_apply_to_both();
+    // destructor
+    ~DroppedMaterialMenu() override = default;
 
 signals:
     void signal_apply_material(
         const foundation::Vector2d& drop_pos,
         const std::string& material_name,
         renderer::ObjectInstance::Side side);
+
+private:
+    const foundation::Vector2d& m_drop_pos;
+    const std::string& m_material_name;
+
+private slots:
+    void slot_apply_to_front();
+    void slot_apply_to_back();
+    void slot_apply_to_both();
+
 };
 
-}
-}
+}   // namespace studio
+}   // namespace appleseed
