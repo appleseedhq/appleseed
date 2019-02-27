@@ -497,17 +497,23 @@ void RenderingManager::slot_camera_change_end()
 
 void RenderingManager::slot_material_dropped(const foundation::Vector2d& drop_pos, const std::string& material_name)
 {
+    if (!m_project->has_trace_context())
+    {
+        RENDERER_LOG_INFO("the scene must be rendering or must have been rendered at least once for drag&drop to be available.");
+        return;
+    }
+
     DroppedMaterialMenu* menu = new DroppedMaterialMenu(drop_pos, material_name);
 
     connect(menu,
         SIGNAL(signal_apply_material(
-            const foundation::Vector2d& drop_pos,
-            const std::string& material_name,
-            renderer::ObjectInstance::Side side)),
+            const foundation::Vector2d&,
+            const std::string&,
+            renderer::ObjectInstance::Side)),
         SLOT(slot_change_material(
-            const foundation::Vector2d& drop_pos,
-            const std::string& material_name,
-            renderer::ObjectInstance::Side side)));
+            const foundation::Vector2d&,
+            const std::string&,
+            renderer::ObjectInstance::Side)));
 
     menu->exec(QCursor::pos());
 }
