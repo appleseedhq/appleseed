@@ -314,7 +314,7 @@ namespace
                 RENDERER_LOG_INFO("                     data type POD type: number of POD");
                 break;
             case AbcUtil::kUnknownPOD:
-                RENDERER_LOG_WARNING("                  data type POD type: unknown");
+                RENDERER_LOG_WARNING("                     data type POD type: unknown");
                 break;
             assert_otherwise;
         }
