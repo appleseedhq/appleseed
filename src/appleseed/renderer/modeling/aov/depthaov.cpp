@@ -91,12 +91,16 @@ namespace
                         pi.x - m_tile_origin_x,
                         pi.y - m_tile_origin_y));
 
-            const float depth =
-                shading_point.hit_surface()
-                    ? static_cast<float>(shading_point.get_distance())
-                    : numeric_limits<float>::max();
-
-            *out = depth;
+            if (shading_point.hit_surface())
+            {
+                shading_result.m_aovs[0].a = 1.0f;
+                *out = static_cast<float>(shading_point.get_distance());
+            }
+            else
+            {
+                shading_result.m_aovs[0].a = 0.0f;
+                *out = 0.0f;
+            }
         }
     };
 
@@ -128,18 +132,18 @@ namespace
 
         size_t get_channel_count() const override
         {
-            return 1;
+            return 2;
         }
 
         const char** get_channel_names() const override
         {
-            static const char* ChannelNames[] = { "Z" };
+            static const char* ChannelNames[] = { "Z", "A" };
             return ChannelNames;
         }
 
         void clear_image() override
         {
-            m_image->clear(Color<float, 1>(numeric_limits<float>::max()));
+            m_image->clear(Color<float, 2>(0.0f));
         }
 
       protected:
