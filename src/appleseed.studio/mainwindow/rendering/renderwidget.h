@@ -144,6 +144,11 @@ class RenderWidget
     void paintEvent(QPaintEvent* event) override;
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dropEvent(QDropEvent* event) override;
+
+signals:
+    void signal_material_dropped(
+        const foundation::Vector2d& drop_pos,
+        const std::string& material_name);
 };
 
 
