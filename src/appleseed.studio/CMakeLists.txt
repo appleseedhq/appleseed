@@ -296,6 +296,8 @@ set (mainwindow_sources
     mainwindow/mainwindow.cpp
     mainwindow/mainwindow.h
     mainwindow/mainwindow.ui
+	mainwindow/droppedmaterialmenu.cpp
+	mainwindow/droppedmaterialmenu.h
     mainwindow/minimizebutton.cpp
     mainwindow/minimizebutton.h
     mainwindow/qtlogtarget.cpp

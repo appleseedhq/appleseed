@@ -34,6 +34,7 @@
 #include "mainwindow/rendering/cameracontroller.h"
 #include "mainwindow/rendering/rendertab.h"
 #include "mainwindow/rendering/renderwidget.h"
+#include "mainwindow/droppedmaterialmenu.h"
 #include "mainwindow/statusbar.h"
 
 // appleseed.shared headers.
@@ -496,7 +497,19 @@ void RenderingManager::slot_camera_change_end()
 
 void RenderingManager::slot_material_dropped(const foundation::Vector2d& drop_pos, const std::string& material_name)
 {
-    slot_change_material(drop_pos, material_name, ObjectInstance::Side::BothSides);
+    DroppedMaterialMenu* menu = new DroppedMaterialMenu(drop_pos, material_name);
+
+    connect(menu,
+        SIGNAL(signal_apply_material(
+            const foundation::Vector2d& drop_pos,
+            const std::string& material_name,
+            renderer::ObjectInstance::Side side)),
+        SLOT(slot_change_material(
+            const foundation::Vector2d& drop_pos,
+            const std::string& material_name,
+            renderer::ObjectInstance::Side side)));
+
+    menu->exec(QCursor::pos());
 }
 
 namespace
