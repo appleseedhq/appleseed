@@ -56,7 +56,8 @@ namespace OCIO = OCIO_NAMESPACE;
 
 // Forward declarations.
 namespace foundation    { class CanvasProperties; }
-namespace renderer      { class Frame; }
+namespace renderer      { class Frame; class Project; }
+
 class QPaintEvent;
 
 namespace appleseed {
@@ -75,10 +76,11 @@ class RenderWidget
   public:
     // Constructor.
     RenderWidget(
-        const size_t            width,
-        const size_t            height,
-        OCIO::ConstConfigRcPtr  ocio_config,
-        QWidget*                parent = nullptr);
+        const renderer::Project&    project,
+        const size_t                width,
+        const size_t                height,
+        OCIO::ConstConfigRcPtr      ocio_config,
+        QWidget*                    parent = nullptr);
 
     // Thread-safe.
     QImage capture() override;
@@ -120,6 +122,8 @@ class RenderWidget
     void slot_display_transform_changed(const QString& transform);
 
   private:
+    const renderer::Project&            m_project;
+
     mutable QMutex                      m_mutex;
     QImage                              m_image;
     QPainter                            m_painter;
@@ -143,6 +147,7 @@ class RenderWidget
 
     void paintEvent(QPaintEvent* event) override;
     void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
     void dropEvent(QDropEvent* event) override;
 
 signals:

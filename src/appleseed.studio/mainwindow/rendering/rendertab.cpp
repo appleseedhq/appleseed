@@ -203,6 +203,7 @@ void RenderTab::create_render_widget()
 
     m_render_widget =
         new RenderWidget(
+            m_project,
             props.m_canvas_width,
             props.m_canvas_height,
             m_ocio_config);

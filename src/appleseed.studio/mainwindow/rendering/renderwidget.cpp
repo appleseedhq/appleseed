@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
+#include "renderer/api/project.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -63,11 +64,13 @@ namespace studio {
 //
 
 RenderWidget::RenderWidget(
+    const Project&          project,
     const size_t            width,
     const size_t            height,
     OCIO::ConstConfigRcPtr  ocio_config,
     QWidget*                parent)
   : QWidget(parent)
+  , m_project(project)
   , m_mutex(QMutex::Recursive)
   , m_ocio_config(ocio_config)
 {
@@ -427,8 +430,16 @@ void RenderWidget::paintEvent(QPaintEvent* event)
 
 void RenderWidget::dragEnterEvent(QDragEnterEvent* event)
 {
-    if (event->mimeData()->hasFormat("text/plain"))
+    if (event->mimeData()->hasFormat("text/plain") && m_project.has_trace_context())
         event->acceptProposedAction();
+}
+
+void RenderWidget::dragMoveEvent(QDragMoveEvent* event)
+{
+    if (event->pos().x() > pos().x() + width() || event->pos().y() > pos().y() + height())
+        event->ignore();
+    else
+        event->accept();
 }
 
 void RenderWidget::dropEvent(QDropEvent* event)
