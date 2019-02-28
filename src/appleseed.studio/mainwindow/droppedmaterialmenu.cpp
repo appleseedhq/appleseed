@@ -35,7 +35,8 @@ namespace studio {
 DroppedMaterialMenu::DroppedMaterialMenu(
     const foundation::Vector2d& drop_pos,
     const std::string& material_name)
-    : m_drop_pos(drop_pos), m_material_name(material_name)
+    : m_drop_pos(drop_pos)
+    , m_material_name(material_name)
 {
     QAction* front = addAction("Front side");
     QAction* back = addAction("Back side");
