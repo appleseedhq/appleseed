@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_TILEJOBFACTORY_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_TILEJOBFACTORY_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -36,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/rng/mersennetwister.h"
+#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
@@ -74,7 +74,7 @@ class TileJobFactory
         const TileOrdering                  tile_ordering,
         const TileJob::TileRendererVector&  tile_renderers,
         const TileJob::TileCallbackVector&  tile_callbacks,
-        const size_t                        pass_hash,
+        const foundation::uint32            pass_hash,
         const Spectrum::Mode                spectrum_mode,
         TileJobVector&                      tile_jobs,
         foundation::IAbortSwitch&           abort_switch);
@@ -88,6 +88,4 @@ class TileJobFactory
         std::vector<size_t>&                tiles);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_TILEJOBFACTORY_H
+}   // namespace renderer

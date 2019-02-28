@@ -27,13 +27,10 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_COLOR_H
-#define APPLESEED_RENDERER_API_COLOR_H
+#pragma once
 
 // API headers.
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/color/colortraits.h"
 #include "renderer/modeling/color/wavelengths.h"
-
-#endif  // !APPLESEED_RENDERER_API_COLOR_H

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_VALUEOPTIONHANDLER_H
-#define APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_VALUEOPTIONHANDLER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -321,6 +320,4 @@ void ValueOptionHandler<T>::print(std::string& s) const
     }
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_VALUEOPTIONHANDLER_H
+}   // namespace foundation

@@ -26,10 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_VERSION_H
-#define APPLESEED_RENDERER_API_VERSION_H
+#pragma once
 
 // API headers.
 #include "foundation/core/version.h"
-
-#endif  // !APPLESEED_RENDERER_API_VERSION_H

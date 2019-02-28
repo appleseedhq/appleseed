@@ -357,7 +357,7 @@ unique_ptr<Deepimf> MultiscaleDenoiser::downscaleSum(const Deepimf& i_rImage)
         }
     }
 
-    return move(uImage);
+    return uImage;
 }
 
 unique_ptr<Deepimf> MultiscaleDenoiser::downscaleAverage(const Deepimf& i_rImage)

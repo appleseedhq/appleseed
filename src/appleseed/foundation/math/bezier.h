@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BEZIER_H
-#define APPLESEED_FOUNDATION_MATH_BEZIER_H
+#pragma once
 
 namespace foundation
 {
@@ -133,6 +132,4 @@ inline V evaluate_bezier3_derivative(const V v0, const V v1, const V v2, const V
     return T(3.0) * (u2 * (v1 - v0) + t2 * (v3 - v2)) + T(6.0) * u * t * (v2 - v1);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_BEZIER_H
+}   // namespace foundation

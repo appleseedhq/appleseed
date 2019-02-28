@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BEZIERCURVE_H
-#define APPLESEED_FOUNDATION_MATH_BEZIERCURVE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -1210,6 +1209,4 @@ bool BezierCurveIntersector<BezierCurveType>::converge(
     }
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_BEZIERCURVE_H
+}   // namespace foundation

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_EPHEMERALSHADINGRESULTFRAMEBUFFERFACTORY_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_EPHEMERALSHADINGRESULTFRAMEBUFFERFACTORY_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/ishadingresultframebufferfactory.h"
@@ -64,6 +63,4 @@ class EphemeralShadingResultFrameBufferFactory
         ShadingResultFrameBuffer*   framebuffer) override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_EPHEMERALSHADINGRESULTFRAMEBUFFERFACTORY_H
+}   // namespace renderer

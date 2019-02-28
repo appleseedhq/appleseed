@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BVH_BVH_BBOXSORTPREDICATE_H
-#define APPLESEED_FOUNDATION_MATH_BVH_BVH_BBOXSORTPREDICATE_H
+#pragma once
 
 // Standard headers.
 #include <cstddef>
@@ -157,7 +156,5 @@ inline bool StableBboxSortPredicate<AABBVector>::operator()(
     return false;
 }
 
-}       // namespace bvh
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_BVH_BVH_BBOXSORTPREDICATE_H
+}   // namespace bvh
+}   // namespace foundation

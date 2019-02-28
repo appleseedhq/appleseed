@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MESH_OBJMESHFILEREADER_H
-#define APPLESEED_FOUNDATION_MESH_OBJMESHFILEREADER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -82,8 +81,8 @@ class OBJMeshFileReader
     enum Options
     {
         Default                 = 0,            // none of the flags below
-        FavorSpeedOverPrecision = 1 << 0,       // use approximate algorithm for parsing floating-point values
-        StopOnInvalidFaceDef    = 1 << 1        // stop parsing on invalid face definitions
+        FavorSpeedOverPrecision = 1UL << 0,     // use approximate algorithm for parsing floating-point values
+        StopOnInvalidFaceDef    = 1UL << 1      // stop parsing on invalid face definitions
     };
 
     // Constructor.
@@ -101,6 +100,4 @@ class OBJMeshFileReader
     const int               m_options;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MESH_OBJMESHFILEREADER_H
+}   // namespace foundation

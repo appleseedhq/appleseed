@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELENTITYEDITORFORMFACTORY_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELENTITYEDITORFORMFACTORY_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditorformfactorybase.h"
@@ -143,7 +142,5 @@ std::string MultiModelEntityEditorFormFactory<FactoryRegistrar>::add_model_widge
     return model;
 }
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELENTITYEDITORFORMFACTORY_H
+}   // namespace studio
+}   // namespace appleseed

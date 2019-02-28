@@ -36,6 +36,9 @@
 // appleseed.shared headers.
 #include "application/application.h"
 
+// appleseed.renderer headers.
+#include "renderer/api/log.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/platform/path.h"
@@ -86,7 +89,28 @@ MainWindow* PythonInterpreter::get_main_window() const
 
 namespace
 {
-    string compute_appleseed_python_module_path()
+    bf::path compute_site_packages_path()
+    {
+        // Start with the absolute path to appleseed.studio's executable.
+        bf::path base_path(get_executable_path());
+
+        // Strip appleseed.studio's executable filename from the path.
+        base_path = base_path.parent_path();
+
+        // Go up in the hierarchy until bin/ is found.
+        while (base_path.filename() != "bin")
+            base_path = base_path.parent_path();
+
+        // One more step up to reach the parent of bin/.
+        base_path = base_path.parent_path();
+
+        // Compute full path.
+        const bf::path site_pkg_path = base_path / "lib" / "python" / "site-packages";
+
+        return safe_canonical(site_pkg_path);
+    }
+
+    bf::path compute_appleseed_python_module_path()
     {
         // Start with the absolute path to appleseed.studio's executable.
         bf::path base_path(get_executable_path());
@@ -107,33 +131,12 @@ namespace
         base_path = base_path.parent_path();
 
         // Compute full path.
-        lib_path = base_path / lib_path / "python2.7";
+        lib_path = base_path / lib_path / "python";
 
-        return canonical(lib_path).make_preferred().string();
+        return safe_canonical(lib_path);
     }
 
-    string compute_site_packages_path()
-    {
-        // Start with the absolute path to appleseed.studio's executable.
-        bf::path base_path(get_executable_path());
-
-        // Strip appleseed.studio's executable filename from the path.
-        base_path = base_path.parent_path();
-
-        // Go up in the hierarchy until bin/ is found.
-        while (base_path.filename() != "bin")
-            base_path = base_path.parent_path();
-
-        // One more step up to reach the parent of bin/.
-        base_path = base_path.parent_path();
-
-        // Compute full path.
-        const bf::path site_pkg_path = base_path / "lib" / "python2.7" / "site-packages";
-
-        return canonical(site_pkg_path).make_preferred().string();
-    }
-
-    string compute_bundled_plugins_path()
+    bf::path compute_bundled_plugins_path()
     {
         // Start with the absolute path to appleseed.studio's executable.
         bf::path base_path(get_executable_path());
@@ -150,10 +153,8 @@ namespace
 
         // Compute full path.
         bf::path plugins_path = base_path / "studio" / "plugins";
-        plugins_path.make_preferred();
 
-        // Do not use bf::canonical() here as this function requires that the folder exists.
-        return plugins_path.string();
+        return safe_canonical(plugins_path);
     }
 }
 
@@ -183,9 +184,38 @@ void PythonInterpreter::initialize(OutputRedirector redirector)
     bpy::object main_module = bpy::import("__main__");
     m_main_namespace = main_module.attr("__dict__");
 
-    // Add paths to appleseed module and other dependencies to sys.path.
-    bpy::import("sys").attr("path").attr("append")(compute_site_packages_path());
-    bpy::import("sys").attr("path").attr("append")(compute_appleseed_python_module_path());
+    // Locate the path to Python's site-packages/ directory.
+    const bf::path site_packages_path = compute_site_packages_path();
+    if (bf::is_directory(site_packages_path))
+    {
+        RENDERER_LOG_INFO("Python's site-packages directory found at %s.",
+            site_packages_path.string().c_str());
+    }
+    else
+    {
+        RENDERER_LOG_WARNING(
+            "Python's site-packages directory does not exist: %s",
+            site_packages_path.string().c_str());
+    }
+
+    // Locate the path to appleseed Python module's directory.
+    const bf::path appleseed_python_module_path = compute_appleseed_python_module_path();
+    if (bf::is_directory(appleseed_python_module_path))
+    {
+        RENDERER_LOG_INFO(
+            "appleseed Python module's directory found at %s.",
+            appleseed_python_module_path.string().c_str());
+    }
+    else
+    {
+        RENDERER_LOG_WARNING(
+            "appleseed Python module's directory does not exist: %s",
+            appleseed_python_module_path.string().c_str());
+    }
+
+    // Add paths to Python's site-packages/ and appleseed Python module's directory to sys.path.
+    bpy::import("sys").attr("path").attr("append")(site_packages_path.string());
+    bpy::import("sys").attr("path").attr("append")(appleseed_python_module_path.string());
 
     // Redirect stdout and stderr to the output panel.
     bpy::class_<OutputRedirector>("OutputRedirector", bpy::no_init)
@@ -211,7 +241,7 @@ void PythonInterpreter::load_plugins()
         format(
             "import appleseed.studio.plugins\n"
             "appleseed.studio.plugins.load_plugins('{0}')\n",
-            compute_bundled_plugins_path()));
+            compute_bundled_plugins_path().string()));
 }
 
 bpy::object PythonInterpreter::execute(const string& command, const bool notify)

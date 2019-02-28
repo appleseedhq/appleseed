@@ -31,6 +31,7 @@
 #include "imagebasedlighting.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/lighting/lightpathstream.h"
 #include "renderer/kernel/lighting/materialsamplers.h"
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
@@ -62,7 +63,8 @@ void compute_ibl_combined_sampling(
     const int                   env_sampling_modes,
     const size_t                material_sample_count,
     const size_t                env_sample_count,
-    DirectShadingComponents&    radiance)
+    DirectShadingComponents&    radiance,
+    LightPathStream*            light_path_stream)
 {
     assert(is_normalized(outgoing.get_value()));
 
@@ -88,7 +90,8 @@ void compute_ibl_combined_sampling(
         env_sampling_modes,
         material_sample_count,
         env_sample_count,
-        radiance_env_sampling);
+        radiance_env_sampling,
+        light_path_stream);
     radiance += radiance_env_sampling;
 }
 
@@ -126,18 +129,11 @@ void compute_ibl_material_sampling(
 
         // Discard occluded samples.
         Spectrum transmission;
-        const ShadingPoint& shading_point = material_sampler.trace(
-            shading_context,
-            incoming.get_value(),
-            transmission);
-
-        if (shading_point.hit_surface())
+        material_sampler.trace_simple(shading_context, incoming.get_value(), transmission);
+        if (is_zero(transmission))
             continue;
 
-        if (max_value(transmission) == 0.0f)
-            continue;
-
-        // Evaluate the environment's EDF.
+        // Evaluate the environment EDF.
         Spectrum env_value(Spectrum::Illuminance);
         float env_prob;
         environment_edf.evaluate(
@@ -176,15 +172,16 @@ void compute_ibl_environment_sampling(
     const int                   env_sampling_modes,
     const size_t                material_sample_count,
     const size_t                env_sample_count,
-    DirectShadingComponents&    radiance)
+    DirectShadingComponents&    radiance,
+    LightPathStream*            light_path_stream)
 {
     assert(is_normalized(outgoing.get_value()));
 
     radiance.set(0.0f);
 
-    // todo: if we had a way to know that a BSDF is purely specular, we could
-    // immediately return black here since there will be no contribution from
-    // such a BSDF.
+    // Check if PDF of the sampler is Dirac delta and therefore cannot contribute to the light sampling.
+    if (!material_sampler.contributes_to_light_sampling())
+        return;
 
     sampling_context.split_in_place(2, env_sample_count);
 
@@ -207,24 +204,18 @@ void compute_ibl_environment_sampling(
 
         // Discard occluded samples.
         Spectrum transmission;
-        const ShadingPoint& shading_point = material_sampler.trace(
-            shading_context,
-            incoming,
-            transmission);
-
-        if (shading_point.hit_surface())
-            continue;
-        
-        if (max_value(transmission) == 0.0f)
+        material_sampler.trace_simple(shading_context, incoming, transmission);
+        if (is_zero(transmission))
             continue;
 
         // Evaluate the BSDF.
         DirectShadingComponents material_value;
-        const float material_prob = material_sampler.evaluate(
-            env_sampling_modes,
-            Vector3f(outgoing.get_value()),
-            incoming,
-            material_value);
+        const float material_prob =
+            material_sampler.evaluate(
+                env_sampling_modes,
+                Vector3f(outgoing.get_value()),
+                incoming,
+                material_value);
         if (material_prob == 0.0f)
             continue;
 
@@ -238,6 +229,16 @@ void compute_ibl_environment_sampling(
         env_value *= transmission;
         env_value *= mis_weight / env_prob;
         madd(radiance, material_value, env_value);
+
+        // Record light path event.
+        if (light_path_stream)
+        {
+            light_path_stream->sampled_environment(
+                environment_edf,
+                incoming,
+                material_value.m_beauty,
+                env_value);
+        }
     }
 
     if (env_sample_count > 1)

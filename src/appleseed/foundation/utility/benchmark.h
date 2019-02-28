@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_H
-#define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_H
+#pragma once
 
 // Interface headers.
 #include "foundation/utility/benchmark/benchmarkaggregator.h"
@@ -44,5 +43,3 @@
 #include "foundation/utility/benchmark/loggerbenchmarklistener.h"
 #include "foundation/utility/benchmark/timingresult.h"
 #include "foundation/utility/benchmark/xmlfilebenchmarklistener.h"
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_BENCHMARK_H

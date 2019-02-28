@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_EDF_OSLEDF_H
-#define APPLESEED_RENDERER_MODELING_EDF_OSLEDF_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
@@ -49,6 +48,4 @@ class OSLEDFFactory
     foundation::auto_release_ptr<EDF> create() const;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_EDF_OSLEDF_H
+}   // namespace renderer

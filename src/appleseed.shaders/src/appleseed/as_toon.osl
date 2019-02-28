@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2018-2019 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -42,16 +42,18 @@
 
 shader as_toon
 [[
-    string as_maya_node_name = "asToon",
-    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string as_blender_node_name = "asToon",
-    string as_blender_category = "shader",
     string help = "Non-Photo-Realistic (NPR) Toon material node",
     string icon = "asToon.png",
-    int as_maya_type_id = 0x00127a01,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_toon.html#label-as-toon",
+
+    string as_node_name = "asToon",
+    string as_category = "shader",
+
     string as_max_class_id = "163266005 1857516981",
     string as_max_plugin_type = "material",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_toon.html#label-as-toon"
+
+    int as_maya_type_id = 0x00127a01,
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch"
 ]]
 (
     //
@@ -270,13 +272,13 @@ shader as_toon
         string page = "Diffuse.Toon" ,
         string help = "Softness of tonal range transition, higher values produce softner results, lower values produce sharper transitions"
     ]],
-    int in_diffuse_ray_depth = 2
+    int in_diffuse_ray_depth = 100
     [[
         string as_maya_attribute_name = "diffuseRayDepth",
         string as_maya_attribute_short_name = "drd",
         int min = 0,
-        int max = 16,
-        int softmax = 8,
+        int max = 100,
+        int softmax = 16,
         string widget = "slider",
         int slidermin = 0,
         int slidermax = 8,
@@ -458,13 +460,13 @@ shader as_toon
         string page = "Specular.Toon",
         string help = "Attenuate facing incidence reflection, similar to Fresnel, retaining reflection intensity at the grazing angles."
     ]],
-    int in_specular_ray_depth = 2
+    int in_specular_ray_depth = 100
     [[
         string as_maya_attribute_name = "specularRayDepth",
         string as_maya_attribute_short_name = "srd",
         int min = 0,
-        int max = 16,
-        int softmax = 8,
+        int max = 100,
+        int softmax = 16,
         string widget = "slider",
         int slidermin = 0,
         int slidermax = 8,
@@ -756,7 +758,20 @@ shader as_toon
         out_outColor += out_outTransparency;
     }
 
-    if (raytype("shadow") || raytype("transparency"))
+    if (raytype("transparency"))
+    {
+        if (in_enable_matte)
+        {
+            out_outMatteOpacity = as_matte(
+                in_matte_opacity_color,
+                in_matte_opacity);
+
+            out_outColor += out_outMatteOpacity;
+        }
+        return;
+    }
+
+    if (raytype("shadow"))
     {
         return;
     }
@@ -861,7 +876,7 @@ shader as_toon
         {
             int status = getattribute("surface_shader:emission", emission_term);
 
-            float facing_ratio = dot(normalize(-I), normalize(in_bump_normal));
+            float facing_ratio = dot(-I, normalize(in_bump_normal));
             float attenuation = (in_incandescence_attenuation * 4.0) + 1.0;
 
             facing_ratio = pow(max(0.0, facing_ratio), attenuation);
@@ -965,8 +980,7 @@ shader as_toon
             float diffuse_Y = clamp(luminance(rim_term), 0.0, 1.0);
             float mixing = smoothstep(0.5, 0.9, diffuse_Y);
 
-            float facing = 1.0 - max(0.0, dot(normalize(in_bump_normal),
-                                              normalize(-I)));
+            float facing = 1.0 - max(0.0, dot(normalize(in_bump_normal), -I));
 
             float rim_factor = mixing *
                 pow(facing, max(2.0, sqrt(in_rim_softness) * 10));
@@ -1028,7 +1042,7 @@ shader as_toon
             if (in_facing_attenuation > 0.0)
             {
                 float cos_theta_o = max(0.0,
-                    dot(normalize(-I), normalize(in_bump_normal)));
+                    dot(-I, normalize(in_bump_normal)));
 
                 float tmp = 1.0 - in_facing_attenuation;
                 float F = tmp + (1.0 - tmp) * (1.0 - pow(cos_theta_o, 5));
@@ -1062,14 +1076,5 @@ shader as_toon
             in_occlusion_threshold,
             in_contour_creases,
             in_crease_threshold);
-
-        // Matte holdouts, masks in the final "npr" path.
-        if (in_enable_matte)
-        {
-            out_outMatteOpacity = in_matte_opacity *
-                in_matte_opacity_color * holdout();
-
-            out_outColor += out_outMatteOpacity;
-        }
     }
 }

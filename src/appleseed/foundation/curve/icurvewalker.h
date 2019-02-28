@@ -26,13 +26,13 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CURVE_ICURVEWALKER_H
-#define APPLESEED_FOUNDATION_CURVE_ICURVEWALKER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/vector.h"
+#include "foundation/curve/curvebasis.h"
 #include "foundation/image/color.h"
+#include "foundation/math/vector.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -55,7 +55,7 @@ class APPLESEED_DLLSYMBOL ICurveWalker
     virtual ~ICurveWalker() {}
 
     // Return the basis of the curve.
-    virtual size_t get_basis() const = 0;
+    virtual CurveBasis get_basis() const = 0;
 
     // Return the number of curves.
     virtual size_t get_curve_count() const = 0;
@@ -76,6 +76,4 @@ class APPLESEED_DLLSYMBOL ICurveWalker
     virtual Color3f get_vertex_color(const size_t i) const = 0;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CURVE_ICURVEWALKER_H
+}   // namespace foundation

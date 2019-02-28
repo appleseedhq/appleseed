@@ -86,7 +86,7 @@ class ProjectBuilder
 
         auto_release_ptr<Project> project(ProjectFactory::create("heightfield"));
         project->add_default_configurations();
-        project->search_paths().push_back("data");
+        project->search_paths().push_back_explicit_path("data");
 
         auto_release_ptr<Scene> scene(SceneFactory::create());
         auto_release_ptr<Assembly> assembly(AssemblyFactory().create("assembly"));

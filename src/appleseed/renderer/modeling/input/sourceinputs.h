@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_INPUT_SOURCEINPUTS_H
-#define APPLESEED_RENDERER_MODELING_INPUT_SOURCEINPUTS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -41,15 +40,17 @@ namespace renderer
 class APPLESEED_DLLSYMBOL SourceInputs
 {
   public:
-    explicit SourceInputs(const foundation::Vector2f& uv);
+    // Texture coordinates from UV set #0.
+    float   m_uv_x;
+    float   m_uv_y;
 
-    float       m_uv_x;           // texture coordinates from UV set #0
-    float       m_uv_y;
-    double      m_point_x;        // world space intersection point
-    double      m_point_y;
-    double      m_point_z;
+    // World space intersection point.
+    double  m_point_x;
+    double  m_point_y;
+    double  m_point_z;
+
+    // Constructor.
+    explicit SourceInputs(const foundation::Vector2f& uv);
 };
 
-}
-
-#endif  // !APPLESEED_RENDERER_MODELING_INPUT_SOURCEINPUTS_H
+}   // namespace renderer

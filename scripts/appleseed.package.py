@@ -155,10 +155,10 @@ def merge_tree(src, dst, symlinks=False, ignore=None):
             elif os.path.isdir(srcname):
                 merge_tree(srcname, dstname, symlinks, ignore)
             else:
-                # Will raise a SpecialFileError for unsupported file types
+                # Will raise a SpecialFileError for unsupported file types.
                 shutil.copy2(srcname, dstname)
-        # catch the Error from the recursive copytree so that we can
-        # continue with other files
+        # Catch the Error from the recursive copytree so that we can
+        # continue with other files.
         except Error, err:
             errors.extend(err.args[0])
         except EnvironmentError, why:
@@ -167,7 +167,7 @@ def merge_tree(src, dst, symlinks=False, ignore=None):
         shutil.copystat(src, dst)
     except OSError, why:
         if WindowsError is not None and isinstance(why, WindowsError):
-            # Copying file access times may fail on Windows
+            # Copying file access times may fail on Windows.
             pass
         else:
             errors.append((src, dst, str(why)))
@@ -404,7 +404,7 @@ class PackageBuilder:
 
     def add_shaders_to_stage(self):
         progress("Adding shaders to staging directory")
-        shutil.rmtree("appleseed/shaders")
+        safe_delete_directory("appleseed/shaders")
         shutil.copytree(os.path.join(self.settings.appleseed_path, "sandbox/shaders"), "appleseed/shaders")
         shutil.copytree(os.path.join(self.settings.appleseed_path, "src/appleseed.shaders/src"), "appleseed/shaders/src")
 
@@ -527,6 +527,7 @@ class MacPackageBuilder(PackageBuilder):
     def alter_stage(self):
         safe_delete_file("appleseed/bin/.DS_Store")
         self.add_dependencies_to_stage()
+        self.add_python_to_stage()
         self.fixup_binaries()
         self.create_qt_conf_file()
         os.rename("appleseed/bin/appleseed.studio", "appleseed/bin/appleseed-studio")
@@ -538,6 +539,14 @@ class MacPackageBuilder(PackageBuilder):
         self.copy_qt_framework("QtGui")
         self.copy_qt_resources("QtGui")
         self.copy_qt_framework("QtOpenGL")
+
+    def add_python_to_stage(self):
+        progress("Mac-specific: Adding Python 2.7 to staging directory")
+        safe_make_directory("appleseed/python27")
+        shutil.copytree(os.path.join(self.settings.python_path, "bin"), "appleseed/python27/bin")
+        shutil.copytree(os.path.join(self.settings.python_path, "include"), "appleseed/python27/include")
+        shutil.copytree(os.path.join(self.settings.python_path, "lib"), "appleseed/python27/lib")
+        shutil.copytree(os.path.join(self.settings.python_path, "share"), "appleseed/python27/share")
 
     def copy_qt_framework(self, framework_name):
         framework_dir = framework_name + ".framework"
@@ -636,6 +645,10 @@ class MacPackageBuilder(PackageBuilder):
             if not m:
                 fatal("Failed to parse line from otool(1) output: " + line)
             lib = m.group(1)
+
+            # Ignore libs relative to @rpath.
+            if "@rpath" in lib:
+                continue
 
             # Ignore libs relative to @loader_path.
             if "@loader_path" in lib:

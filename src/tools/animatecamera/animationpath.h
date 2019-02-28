@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_ANIMATECAMERA_ANIMATIONPATH_H
-#define APPLESEED_ANIMATECAMERA_ANIMATIONPATH_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -75,7 +74,5 @@ class AnimationPath
     std::vector<foundation::Transformd> m_keyframes;
 };
 
-}       // namespace animatecamera
-}       // namespace appleseed
-
-#endif  // !APPLESEED_ANIMATECAMERA_ANIMATIONPATH_H
+}   // namespace animatecamera
+}   // namespace appleseed

@@ -27,15 +27,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_ADAPTIVEPIXELRENDERER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_ADAPTIVEPIXELRENDERER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/ipixelrenderer.h"
 #include "renderer/utility/paramarray.h"
-
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cstddef>
@@ -56,6 +52,9 @@ class AdaptivePixelRendererFactory
   : public IPixelRendererFactory
 {
   public:
+    // Return parameters metadata.
+    static foundation::Dictionary get_params_metadata();
+
     // Constructor.
     AdaptivePixelRendererFactory(
         const Frame&                frame,
@@ -69,15 +68,10 @@ class AdaptivePixelRendererFactory
     IPixelRenderer* create(
         const size_t                thread_index) override;
 
-    // Return the metadata of the adaptive pixel renderer parameters.
-    static foundation::Dictionary get_params_metadata();
-
   private:
     const Frame&                    m_frame;
     ISampleRendererFactory*         m_factory;
     ParamArray                      m_params;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_ADAPTIVEPIXELRENDERER_H
+}   // namespace renderer

@@ -26,16 +26,19 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_SEARCHPATHSWINDOW_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_SEARCHPATHSWINDOW_H
+#pragma once
+
+// appleseed.studio headers.
+#include "utility/windowbase.h"
 
 // Qt headers.
 #include <QObject>
-#include <QWidget>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class ProjectManager; } }
 namespace renderer  { class Project; }
 namespace Ui        { class SearchPathsWindow; }
+class QWidget;
 
 namespace appleseed {
 namespace studio {
@@ -45,7 +48,7 @@ namespace studio {
 //
 
 class SearchPathsWindow
-  : public QWidget
+  : public WindowBase
 {
     Q_OBJECT
 
@@ -53,6 +56,7 @@ class SearchPathsWindow
     // Constructor.
     SearchPathsWindow(
         const renderer::Project&    project,
+        ProjectManager&             project_manager,
         QWidget*                    parent = nullptr);
 
     // Destructor.
@@ -74,6 +78,7 @@ class SearchPathsWindow
   private slots:
     void accept();
     void reject();
+    void slot_update_root_path();
     void slot_add();
     void slot_remove();
     void slot_move_up();
@@ -84,7 +89,5 @@ class SearchPathsWindow
 
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_SEARCHPATHSWINDOW_H
+}   // namespace studio
+}   // namespace appleseed

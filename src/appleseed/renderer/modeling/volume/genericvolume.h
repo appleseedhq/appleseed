@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_VOLUME_GENERICVOLUME_H
-#define APPLESEED_RENDERER_MODELING_VOLUME_GENERICVOLUME_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -98,6 +97,4 @@ class APPLESEED_DLLSYMBOL GenericVolumeFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_VOLUME_GENERICVOLUME_H
+}   // namespace renderer

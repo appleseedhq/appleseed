@@ -26,11 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_SOURCE_H
-#define APPLESEED_RENDERER_API_SOURCE_H
+#pragma once
 
 // API headers.
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/sourceinputs.h"
-
-#endif  // !APPLESEED_RENDERER_API_SOURCE_H

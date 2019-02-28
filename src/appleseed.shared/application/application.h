@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_SHARED_APPLICATION_APPLICATION_H
-#define APPLESEED_SHARED_APPLICATION_APPLICATION_H
+#pragma once
 
 // appleseed.shared headers.
 #include "dllsymbol.h"
@@ -43,6 +42,7 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class Logger; }
+namespace foundation    { class SearchPaths; }
 
 namespace appleseed {
 namespace shared {
@@ -81,12 +81,24 @@ class SHAREDDLL Application
     static const char* get_tests_root_path();
 
     // Load a settings file from appleseed's settings directory.
-    // Returns true if settings could be loaded.
+    // Returns true if settings could be loaded, false otherwise.
     static bool load_settings(
         const char*                             filename,
         foundation::Dictionary&                 settings,
         foundation::Logger&                     logger,
         const foundation::LogMessage::Category  category = foundation::LogMessage::Debug);
+
+    // Save settings to a settings file in appleseed's settings directory.
+    // Returns true if settings could be saved, false otherwise.
+    static bool save_settings(
+        const char*                             filename,
+        const foundation::Dictionary&           settings,
+        foundation::Logger&                     logger,
+        const foundation::LogMessage::Category  category = foundation::LogMessage::Debug);
+
+    // Initialize resource search paths (currently path to OSL headers).
+    static void initialize_resource_search_paths(
+        foundation::SearchPaths&                search_paths);
 
     // Change the current directory to the root path of the application's tests.
     // Returns the path to the current directory.
@@ -100,17 +112,15 @@ class SHAREDDLL Application
 
 inline boost::filesystem::path Application::change_current_directory_to_tests_root_path()
 {
-    using namespace boost;
+    namespace bf = boost::filesystem;
 
-    const filesystem::path old_current_path = filesystem::current_path();
+    const bf::path old_current_path = bf::current_path();
 
-    const filesystem::path tests_root_path(Application::get_tests_root_path());
-    filesystem::current_path(tests_root_path);
+    const bf::path tests_root_path(Application::get_tests_root_path());
+    bf::current_path(tests_root_path);
 
     return old_current_path;
 }
 
-}       // namespace shared
-}       // namespace appleseed
-
-#endif  // !APPLESEED_SHARED_APPLICATION_APPLICATION_H
+}   // namespace shared
+}   // namespace appleseed

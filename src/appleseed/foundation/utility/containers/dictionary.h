@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_CONTAINERS_DICTIONARY_H
-#define APPLESEED_FOUNDATION_UTILITY_CONTAINERS_DICTIONARY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/stringexception.h"
@@ -642,6 +641,4 @@ inline const DictionaryDictionary& Dictionary::dictionaries() const
     return m_dictionaries;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_CONTAINERS_DICTIONARY_H
+}   // namespace foundation

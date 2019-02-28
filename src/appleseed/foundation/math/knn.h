@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_KNN_H
-#define APPLESEED_FOUNDATION_MATH_KNN_H
+#pragma once
 
 // Interface headers.
 #include "foundation/math/knn/knn_answer.h"
@@ -36,5 +35,3 @@
 #include "foundation/math/knn/knn_query.h"
 #include "foundation/math/knn/knn_statistics.h"
 #include "foundation/math/knn/knn_tree.h"
-
-#endif  // !APPLESEED_FOUNDATION_MATH_KNN_H

@@ -27,24 +27,25 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_AOV_H
-#define APPLESEED_RENDERER_API_AOV_H
+#pragma once
 
 // API headers.
 #include "renderer/kernel/aov/imagestack.h"
+#include "renderer/modeling/aov/albedoaov.h"
 #include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/aov/aovcontainer.h"
 #include "renderer/modeling/aov/aovfactoryregistrar.h"
 #include "renderer/modeling/aov/aovtraits.h"
 #include "renderer/modeling/aov/depthaov.h"
-#include "renderer/modeling/aov/diagnosticaov.h"
 #include "renderer/modeling/aov/diffuseaov.h"
 #include "renderer/modeling/aov/emissionaov.h"
 #include "renderer/modeling/aov/glossyaov.h"
 #include "renderer/modeling/aov/iaovfactory.h"
+#include "renderer/modeling/aov/invalidsamplesaov.h"
 #include "renderer/modeling/aov/normalaov.h"
+#include "renderer/modeling/aov/npraovs.h"
+#include "renderer/modeling/aov/pixelsamplecountaov.h"
 #include "renderer/modeling/aov/pixeltimeaov.h"
+#include "renderer/modeling/aov/pixelvariationaov.h"
 #include "renderer/modeling/aov/positionaov.h"
 #include "renderer/modeling/aov/uvaov.h"
-
-#endif  // !APPLESEED_RENDERER_API_AOV_H

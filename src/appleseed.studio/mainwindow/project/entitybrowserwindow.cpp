@@ -50,6 +50,7 @@
 #include <QRegExp>
 #include <QShortcut>
 #include <Qt>
+#include <QWidget>
 
 using namespace foundation;
 using namespace std;
@@ -60,7 +61,7 @@ namespace studio {
 EntityBrowserWindow::EntityBrowserWindow(
     QWidget*                parent,
     const string&           window_title)
-  : QWidget(parent)
+  : WindowBase(parent, "entity_browser_window")
   , m_ui(new Ui::EntityBrowserWindow())
 {
     m_ui->setupUi(this);
@@ -74,29 +75,9 @@ EntityBrowserWindow::EntityBrowserWindow(
     m_ui->buttonbox->button(QDialogButtonBox::Ok)->setEnabled(false);
     m_ui->pushbutton_clear_filter->setEnabled(false);
 
-    connect(
-        m_ui->tab_widget, SIGNAL(currentChanged(int)),
-        this, SLOT(slot_current_tab_changed(int)));
+    create_connections();
 
-    connect(m_ui->buttonbox, SIGNAL(accepted()), this, SLOT(slot_accept()));
-    connect(m_ui->buttonbox, SIGNAL(rejected()), this, SLOT(close()));
-    connect(m_ui->pushbutton_clear_filter, SIGNAL(clicked()), this, SLOT(slot_clear_filter()));
-
-    connect(
-        m_ui->lineedit_filter, SIGNAL(textChanged(const QString&)),
-        SLOT(slot_filter_text_changed(const QString&)));
-
-    connect(
-        create_window_local_shortcut(this, Qt::Key_Return), SIGNAL(activated()),
-        this, SLOT(slot_accept()));
-
-    connect(
-        create_window_local_shortcut(this, Qt::Key_Enter), SIGNAL(activated()),
-        this, SLOT(slot_accept()));
-
-    connect(
-        create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
-        this, SLOT(close()));
+    WindowBase::load_settings();
 }
 
 EntityBrowserWindow::~EntityBrowserWindow()
@@ -114,13 +95,10 @@ namespace
             const QString item_value = i->value<QString>();
 
             QListWidgetItem* item = new QListWidgetItem(item_label, list_widget);
-            item->setData(0, item_value);
+            item->setData(Qt::UserRole, item_value);
         }
     }
-}
 
-namespace
-{
     void filter_item(QListWidgetItem* item, const QRegExp& regexp)
     {
         const bool visible = regexp.indexIn(item->text()) >= 0;
@@ -161,6 +139,33 @@ void EntityBrowserWindow::add_items_page(
     m_pages[tab_index] = page;
 }
 
+void EntityBrowserWindow::create_connections()
+{
+    connect(
+        m_ui->tab_widget, SIGNAL(currentChanged(int)),
+        this, SLOT(slot_current_tab_changed(int)));
+
+    connect(m_ui->buttonbox, SIGNAL(accepted()), this, SLOT(slot_accept()));
+    connect(m_ui->buttonbox, SIGNAL(rejected()), this, SLOT(close()));
+    connect(m_ui->pushbutton_clear_filter, SIGNAL(clicked()), this, SLOT(slot_clear_filter()));
+
+    connect(
+        m_ui->lineedit_filter, SIGNAL(textChanged(const QString&)),
+        SLOT(slot_filter_text_changed(const QString&)));
+
+    connect(
+        create_window_local_shortcut(this, Qt::Key_Return), SIGNAL(activated()),
+        this, SLOT(slot_accept()));
+
+    connect(
+        create_window_local_shortcut(this, Qt::Key_Enter), SIGNAL(activated()),
+        this, SLOT(slot_accept()));
+
+    connect(
+        create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
+        this, SLOT(close()));
+}
+
 void EntityBrowserWindow::slot_current_tab_changed(int tab_index)
 {
     slot_item_selection_changed();
@@ -178,7 +183,7 @@ void EntityBrowserWindow::slot_item_activated(QListWidgetItem* item)
 {
     const Page& page = m_pages[m_ui->tab_widget->currentIndex()];
 
-    emit signal_accepted(QString::fromStdString(page.m_page_name), item->data(0).toString());
+    emit signal_accepted(QString::fromStdString(page.m_page_name), item->data(Qt::UserRole).toString());
 }
 
 void EntityBrowserWindow::slot_accept()

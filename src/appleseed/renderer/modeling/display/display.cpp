@@ -34,10 +34,10 @@
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/utility/plugin.h"
+#include "renderer/utility/pluginstore.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/sharedlibrary.h"
-#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.
@@ -59,29 +59,15 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
+struct Display::Impl
+{
+    auto_release_ptr<ITileCallbackFactory>  m_tile_callback_factory;
+};
+
 UniqueID Display::get_class_uid()
 {
     return g_class_uid;
 }
-
-struct Display::Impl
-{
-    Impl(
-        const char*         plugin_path,
-        const ParamArray&   params)
-      : m_plugin(PluginCache::load(plugin_path))
-    {
-        typedef ITileCallbackFactory* (*CreateFnType)(const ParamArray*);
-
-        CreateFnType create_fn =
-            reinterpret_cast<CreateFnType>(m_plugin->get_symbol("create_tile_callback_factory", false));
-
-        m_tile_callback_factory.reset(create_fn(&params));
-    }
-
-    auto_release_ptr<Plugin>                m_plugin;
-    auto_release_ptr<ITileCallbackFactory>  m_tile_callback_factory;
-};
 
 Display::Display(
     const char*         name,
@@ -106,12 +92,10 @@ bool Display::open(const Project& project)
 {
     string plugin_path;
 
+    // Retrieve plugin name.
     try
     {
-        // Qualify the plugin path.
         plugin_path = m_params.get("plugin_name");
-        plugin_path += SharedLibrary::get_default_file_extension();
-        plugin_path = to_string(project.search_paths().qualify(plugin_path));
     }
     catch (const ExceptionDictionaryKeyNotFound&)
     {
@@ -119,24 +103,41 @@ bool Display::open(const Project& project)
         return false;
     }
 
+    // Construct the path to the plugin file.
+    plugin_path += SharedLibrary::get_default_file_extension();
+    plugin_path = to_string(project.search_paths().qualify(plugin_path));
+
+    // Load the plugin.
+    Plugin* plugin = nullptr;
+
     try
     {
-        impl = new Impl(plugin_path.c_str(), m_params);
+        impl = new Impl();
+        plugin = project.get_plugin_store().load_plugin(plugin_path.c_str());
     }
     catch (const ExceptionCannotLoadSharedLib& e)
     {
         RENDERER_LOG_ERROR("cannot open display: %s", e.what());
         return false;
     }
-    catch (const ExceptionPluginInitializationFailed&)
+
+    // Create the tile callback factory.
+    if (plugin)
     {
-        RENDERER_LOG_ERROR("initialization of display plugin %s failed", plugin_path.c_str());
-        return false;
-    }
-    catch (const ExceptionSharedLibCannotGetSymbol& e)
-    {
-        RENDERER_LOG_ERROR("cannot load symbol %s from display plugin", e.what());
-        return false;
+        try
+        {
+            typedef ITileCallbackFactory* (*CreateFnType)(const ParamArray*);
+
+            const auto create_tile_callback_factory =
+                reinterpret_cast<CreateFnType>(plugin->get_symbol("create_tile_callback_factory", false));
+
+            impl->m_tile_callback_factory.reset(create_tile_callback_factory(&m_params));
+        }
+        catch (const ExceptionSharedLibCannotGetSymbol& e)
+        {
+            RENDERER_LOG_ERROR("initialization of display plugin %s failed: %s", plugin_path.c_str(), e.what());
+            return false;
+        }
     }
 
     return true;
@@ -150,10 +151,10 @@ void Display::close()
 
 ITileCallbackFactory* Display::get_tile_callback_factory() const
 {
-    if (impl)
-        return impl->m_tile_callback_factory.get();
-
-    return nullptr;
+    return
+        impl != nullptr
+            ? impl->m_tile_callback_factory.get()
+            : nullptr;
 }
 
 

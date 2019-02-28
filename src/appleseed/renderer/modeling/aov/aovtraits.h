@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_AOV_AOVTRAITS_H
-#define APPLESEED_RENDERER_MODELING_AOV_AOVTRAITS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/aov/aov.h"
@@ -83,6 +82,4 @@ struct EntityTraits<AOV>
     }
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_AOV_AOVTRAITS_H
+}   // namespace renderer

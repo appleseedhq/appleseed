@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_ENTITY_H
-#define APPLESEED_RENDERER_API_ENTITY_H
+#pragma once
 
 // API headers.
 #include "renderer/modeling/entity/connectableentity.h"
@@ -36,5 +35,3 @@
 #include "renderer/modeling/entity/entitymap.h"
 #include "renderer/modeling/entity/entitytraits.h"
 #include "renderer/modeling/entity/entityvector.h"
-
-#endif  // !APPLESEED_RENDERER_API_ENTITY_H

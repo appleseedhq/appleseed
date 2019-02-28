@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYINSTANCEITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYINSTANCEITEM_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityactions.h"
@@ -72,7 +71,5 @@ class AssemblyInstanceItem
     void do_delete();
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYINSTANCEITEM_H
+}   // namespace studio
+}   // namespace appleseed

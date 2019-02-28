@@ -26,22 +26,19 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_BSSRDFFACTORYREGISTRAR_H
-#define APPLESEED_RENDERER_MODELING_BSSRDF_BSSRDFFACTORYREGISTRAR_H
-
-// appleseed.renderer headers.
-#include "renderer/modeling/entity/entityfactoryregistrar.h"
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/api/apiarray.h"
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/searchpaths.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer      { class IBSSRDFFactory; }
+namespace renderer  { class BSSRDF; }
+namespace renderer  { class IBSSRDFFactory; }
+namespace renderer  { class Plugin; }
 
 namespace renderer
 {
@@ -58,9 +55,9 @@ APPLESEED_DECLARE_APIARRAY(BSSRDFFactoryArray, IBSSRDFFactory*);
 //
 
 class APPLESEED_DLLSYMBOL BSSRDFFactoryRegistrar
-  : public EntityFactoryRegistrar
 {
   public:
+    typedef BSSRDF EntityType;
     typedef IBSSRDFFactory FactoryType;
     typedef BSSRDFFactoryArray FactoryArrayType;
 
@@ -69,10 +66,10 @@ class APPLESEED_DLLSYMBOL BSSRDFFactoryRegistrar
         const foundation::SearchPaths& search_paths = foundation::SearchPaths());
 
     // Destructor.
-    ~BSSRDFFactoryRegistrar() override;
+    ~BSSRDFFactoryRegistrar();
 
-    // Reinitialize the registrar; load plugins found in provided search paths.
-    void reinitialize(const foundation::SearchPaths& search_paths);
+    // Register a factory defined in a plugin.
+    void register_factory_plugin(Plugin* plugin, void* plugin_entry_point);
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;
@@ -83,11 +80,6 @@ class APPLESEED_DLLSYMBOL BSSRDFFactoryRegistrar
   private:
     struct Impl;
     Impl* impl;
-
-    // Register a factory.
-    void register_factory(foundation::auto_release_ptr<FactoryType> factory);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_BSSRDFFACTORYREGISTRAR_H
+}   // namespace renderer

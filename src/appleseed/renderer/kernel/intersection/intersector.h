@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_INTERSECTOR_H
-#define APPLESEED_RENDERER_KERNEL_INTERSECTION_INTERSECTOR_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/curvetree.h"
@@ -36,11 +35,9 @@
 #include "renderer/kernel/intersection/embreescene.h"
 #endif
 #include "renderer/kernel/intersection/intersectionsettings.h"
-#include "renderer/kernel/intersection/regiontree.h"
 #include "renderer/kernel/intersection/triangletree.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
-#include "renderer/modeling/object/regionkit.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -117,7 +114,6 @@ class Intersector
         const AssemblyInstance*             assembly_instance,
         const foundation::Transformd&       assembly_instance_transform,
         const size_t                        object_instance_index,
-        const size_t                        region_index,
         const size_t                        primitive_index,
         const TriangleSupportPlaneType&     triangle_support_plane) const;
 
@@ -138,15 +134,11 @@ class Intersector
     const bool                                      m_report_self_intersections;
 
     // Access caches.
-    mutable RegionTreeAccessCache                   m_region_tree_cache;
     mutable TriangleTreeAccessCache                 m_triangle_tree_cache;
     mutable CurveTreeAccessCache                    m_curve_tree_cache;
 #ifdef APPLESEED_WITH_EMBREE
     mutable EmbreeSceneAccessCache                  m_embree_scene_cache;
 #endif
-    mutable RegionKitAccessCache                    m_region_kit_cache;
-    mutable StaticTriangleTessAccessCache           m_tess_cache;
-
     // Intersection statistics.
     mutable foundation::uint64                      m_shading_ray_count;
     mutable foundation::uint64                      m_probe_ray_count;
@@ -157,6 +149,4 @@ class Intersector
 #endif
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_INTERSECTOR_H
+}   // namespace renderer

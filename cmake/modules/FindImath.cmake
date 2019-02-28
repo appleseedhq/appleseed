@@ -30,6 +30,12 @@
 #
 # Find Imath headers and libraries.
 #
+# This module can take the following variables to define
+# custom search locations:
+#
+#   ILMBASE_ROOT
+#   ILMBASE_LOCATION
+#
 # This module defines the following variables:
 #
 #   IMATH_FOUND         True if Imath was found
@@ -39,11 +45,35 @@
 
 include (FindPackageHandleStandardArgs)
 
-find_path (IMATH_INCLUDE_DIR NAMES OpenEXR/ImathVec.h)
+find_path (IMATH_INCLUDE_DIR NAMES ImathVec.h
+           PATH_SUFFIXES OpenEXR
+           HINTS ${ILMBASE_ROOT}
+                 ${ILMBASE_LOCATION}
+                 /usr/local/include
+                 /usr/include
+)
 
-find_library (IMATH_HALF_LIBRARY NAMES Half)
-find_library (IMATH_IEX_LIBRARY NAMES Iex)
-find_library (IMATH_MATH_LIBRARY NAMES Imath)
+find_library (IMATH_HALF_LIBRARY NAMES Half-2_3 Half-2_2 Half
+              PATH_SUFFIXES lib64 lib
+              HINTS ${ILMBASE_ROOT}
+                    ${ILMBASE_LOCATION}
+                    /usr/local
+                    /usr
+)
+find_library (IMATH_IEX_LIBRARY NAMES Iex-2_3 Iex-2_2 Iex
+              PATH_SUFFIXES lib64 lib
+              HINTS ${ILMBASE_ROOT}
+                    ${ILMBASE_LOCATION}
+                    /usr/local
+                    /usr
+)
+find_library (IMATH_MATH_LIBRARY NAMES Imath-2_3 Imath-2_2 Imath
+              PATH_SUFFIXES lib64 lib
+              HINTS ${ILMBASE_ROOT}
+                    ${ILMBASE_LOCATION}
+                    /usr/local
+                    /usr
+)
 
 # Handle the QUIETLY and REQUIRED arguments and set IMATH_FOUND.
 find_package_handle_standard_args (IMATH DEFAULT_MSG

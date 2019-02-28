@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENTITY_ONRENDERBEGINRECORDER_H
-#define APPLESEED_RENDERER_MODELING_ENTITY_ONRENDERBEGINRECORDER_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -60,6 +59,4 @@ class APPLESEED_DLLSYMBOL OnRenderBeginRecorder
     Impl* impl;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_ENTITY_ONRENDERBEGINRECORDER_H
+}   // namespace renderer

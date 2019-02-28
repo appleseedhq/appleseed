@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_REGULARSPECTRUM_H
-#define APPLESEED_FOUNDATION_IMAGE_REGULARSPECTRUM_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/fp.h"
@@ -66,7 +65,7 @@ class RegularSpectrum
 #ifdef APPLESEED_USE_SSE
     RegularSpectrum();
 #else
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     RegularSpectrum() = default;                            // leave all components uninitialized
 #else
     RegularSpectrum() {}                                    // leave all components uninitialized
@@ -905,6 +904,4 @@ inline bool is_finite(const RegularSpectrum<T, N>& s)
     return true;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_REGULARSPECTRUM_H
+}   // namespace foundation

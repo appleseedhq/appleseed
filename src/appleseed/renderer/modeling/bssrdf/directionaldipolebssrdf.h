@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_DIRECTIONALDIPOLEBSSRDF_H
-#define APPLESEED_RENDERER_MODELING_BSSRDF_DIRECTIONALDIPOLEBSSRDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bssrdf/dipolebssrdffactory.h"
@@ -70,6 +69,4 @@ class APPLESEED_DLLSYMBOL DirectionalDipoleBSSRDFFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_DIRECTIONALDIPOLEBSSRDF_H
+}   // namespace renderer

@@ -26,15 +26,12 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_AOV_AOV_H
-#define APPLESEED_RENDERER_MODELING_AOV_AOV_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/aabb.h"
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
@@ -46,6 +43,7 @@
 
 // Forward declarations.
 namespace foundation    { class Image; }
+namespace foundation    { class ImageAttributes; }
 namespace renderer      { class AOVAccumulator; }
 namespace renderer      { class AOVAccumulatorContainer; }
 namespace renderer      { class Frame; }
@@ -88,10 +86,15 @@ class APPLESEED_DLLSYMBOL AOV
     foundation::Image& get_image() const;
 
     // Clear the AOV image to default values.
-    virtual void clear_image();
+    virtual void clear_image() = 0;
 
-    // Apply any post processing needed to the AOV image.
-    virtual void post_process_image(const foundation::AABB2u& crop_window);
+    // Apply any post-processing needed to the AOV image.
+    virtual void post_process_image(const Frame& frame);
+
+    // Write image to OpenEXR file.
+    virtual bool write_images(
+        const char*                         file_path,
+        const foundation::ImageAttributes&  image_attributes) const;
 
   protected:
     friend class AOVAccumulatorContainer;
@@ -132,6 +135,9 @@ class ColorAOV
 
     // Return true if this AOV contains color data.
     bool has_color_data() const override;
+
+    // Clear the AOV image to default values.
+    void clear_image() override;
 };
 
 
@@ -149,12 +155,19 @@ class UnfilteredAOV
     // Destructor.
     ~UnfilteredAOV() override;
 
+    // Return the number of channels of this AOV.
+    size_t get_channel_count() const override;
+
+    // Return the AOV channel names.
+    const char** get_channel_names() const override;
+
     // Return true if this AOV contains color data.
     bool has_color_data() const override;
 
-  protected:
-    foundation::Image*  m_filter_image;
+    // Clear the AOV image to default values.
+    void clear_image() override;
 
+  protected:
     void create_image(
         const size_t    canvas_width,
         const size_t    canvas_height,
@@ -163,6 +176,4 @@ class UnfilteredAOV
         ImageStack&     aov_images) override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_AOV_AOV_H
+}   // namespace renderer

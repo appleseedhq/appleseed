@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_PATHVERTEX_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_PATHVERTEX_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -187,6 +186,4 @@ inline float PathVertex::get_light_prob_area(const BackwardLightSampler& light_s
     return light_sampler.evaluate_pdf(*m_shading_point, *m_parent_shading_point);
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_PATHVERTEX_H
+}   // namespace renderer

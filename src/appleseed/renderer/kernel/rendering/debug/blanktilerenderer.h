@@ -27,14 +27,10 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_DEBUG_BLANKTILERENDERER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_DEBUG_BLANKTILERENDERER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/itilerenderer.h"
-
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cstddef>
@@ -63,6 +59,4 @@ class BlankTileRendererFactory
     ITileRenderer* create(const size_t thread_index) override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_DEBUG_BLANKTILERENDERER_H
+}   // namespace renderer

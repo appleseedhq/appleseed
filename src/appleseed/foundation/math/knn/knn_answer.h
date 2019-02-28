@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_KNN_KNN_ANSWER_H
-#define APPLESEED_FOUNDATION_MATH_KNN_KNN_ANSWER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -252,7 +251,5 @@ inline void Answer<T>::heapify(const size_t index)
     }
 }
 
-}       // namespace knn
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_KNN_KNN_ANSWER_H
+}   // namespace knn
+}   // namespace foundation

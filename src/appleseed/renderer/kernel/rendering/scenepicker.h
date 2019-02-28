@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_SCENEPICKER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_SCENEPICKER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -110,6 +109,4 @@ class APPLESEED_DLLSYMBOL ScenePicker
     Impl* impl;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_SCENEPICKER_H
+}   // namespace renderer

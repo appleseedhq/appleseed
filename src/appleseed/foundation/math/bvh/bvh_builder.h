@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BVH_BVH_BUILDER_H
-#define APPLESEED_FOUNDATION_MATH_BVH_BVH_BUILDER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -229,7 +228,5 @@ void Builder<Tree, Partitioner>::subdivide_recurse(
     }
 }
 
-}       // namespace bvh
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_BVH_BVH_BUILDER_H
+}   // namespace bvh
+}   // namespace foundation

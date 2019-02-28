@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERGROUP_H
-#define APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERGROUP_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/connectableentity.h"
@@ -47,8 +46,9 @@ namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class AssemblyInstance; }
 namespace renderer      { class OSLShadingSystem; }
-namespace renderer      { class ParamArray; }
 namespace renderer      { class ObjectInstance; }
+namespace renderer      { class ParamArray; }
+namespace renderer      { class ShaderCompiler; }
 
 namespace renderer
 {
@@ -77,6 +77,14 @@ class APPLESEED_DLLSYMBOL ShaderGroup
         const char*                 layer,
         const ParamArray&           params);
 
+    // Add a new shader to the group.
+    void add_source_shader(
+        const char*                 type,
+        const char*                 name,
+        const char*                 layer,
+        const char*                 source,
+        const ParamArray&           params);
+
     // Add a connection between two parameters of two shaders.
     void add_connection(
         const char*                 src_layer,
@@ -87,6 +95,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Create internal OSL shader group.
     bool create_optimized_osl_shader_group(
         OSLShadingSystem&           shading_system,
+        const ShaderCompiler*       shader_compiler,
         foundation::IAbortSwitch*   abort_switch = nullptr);
 
     // Release internal OSL shader group.
@@ -113,14 +122,14 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Return true if the shader group contains at least one subsurface closure.
     bool has_subsurface() const;
 
-    // Return true if the shader group contains at least one holdout closure.
-    bool has_holdout() const;
-
     // Return true if the shader group contains at least one debug closure.
     bool has_debug() const;
 
     // Return true if the shader group contains at least one NPR closure.
     bool has_npr() const;
+
+    // Return true if the shader group contains at least one matte or holdout closure.
+    bool has_matte() const;
 
     // Return true if the shader group uses the dPdtime global.
     bool uses_dPdtime() const;
@@ -144,24 +153,24 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     enum Flags
     {
         // Closures.
-        HasBSDFs        = 1 << 0,
-        HasEmission     = 1 << 1,
-        HasTransparency = 1 << 2,
-        HasSubsurface   = 1 << 3,
-        HasHoldout      = 1 << 4,
-        HasDebug        = 1 << 5,
-        HasNPR          = 1 << 6,
+        HasBSDFs        = 1UL << 0,
+        HasEmission     = 1UL << 1,
+        HasTransparency = 1UL << 2,
+        HasSubsurface   = 1UL << 3,
+        HasDebug        = 1UL << 4,
+        HasNPR          = 1UL << 5,
+        HasMatte        = 1UL << 6,
         HasAllClosures  =
             HasBSDFs        |
             HasEmission     |
             HasTransparency |
             HasSubsurface   |
-            HasHoldout      |
             HasDebug        |
-            HasNPR,
+            HasNPR          |
+            HasMatte,
 
         // Globals.
-        UsesdPdTime     = 1 << 7,
+        UsesdPdTime     = 1UL << 7,
         UsesAllGlobals  = UsesdPdTime
     };
     foundation::uint32 m_flags;
@@ -171,6 +180,8 @@ class APPLESEED_DLLSYMBOL ShaderGroup
 
     // Destructor.
     ~ShaderGroup() override;
+
+    bool compile_source_shaders(const ShaderCompiler* compiler);
 
     void get_shadergroup_closures_info(OSLShadingSystem& shading_system);
     void report_has_closure(const char* closure_name, const Flags flag) const;
@@ -232,11 +243,6 @@ inline bool ShaderGroup::has_subsurface() const
     return (m_flags & HasSubsurface) != 0;
 }
 
-inline bool ShaderGroup::has_holdout() const
-{
-    return (m_flags & HasHoldout) != 0;
-}
-
 inline bool ShaderGroup::has_debug() const
 {
     return (m_flags & HasDebug) != 0;
@@ -247,11 +253,14 @@ inline bool ShaderGroup::has_npr() const
     return (m_flags & HasNPR) != 0;
 }
 
+inline bool ShaderGroup::has_matte() const
+{
+    return (m_flags & HasMatte) != 0;
+}
+
 inline bool ShaderGroup::uses_dPdtime() const
 {
     return (m_flags & UsesdPdTime) != 0;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERGROUP_H
+}   // namespace renderer

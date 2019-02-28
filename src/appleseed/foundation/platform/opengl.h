@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_OPENGL_H
-#define APPLESEED_FOUNDATION_PLATFORM_OPENGL_H
+#pragma once
 
 // On Windows, the OpenGL headers require that <windows.h> is included first.
 #ifdef _WIN32
@@ -43,5 +42,3 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #endif
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_OPENGL_H

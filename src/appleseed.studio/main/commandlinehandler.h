@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_COMMANDLINEHANDLER_H
-#define APPLESEED_STUDIO_COMMANDLINEHANDLER_H
+#pragma once
 
 // appleseed.shared headers.
 #include "application/commandlinehandlerbase.h"
@@ -50,7 +49,7 @@ namespace studio {
 //
 
 class CommandLineHandler
-  : public shared::CommandLineHandlerBase
+  : private shared::CommandLineHandlerBase
 {
   public:
     foundation::ValueOptionHandler<std::string> m_filename;
@@ -59,6 +58,11 @@ class CommandLineHandler
     // Constructor.
     CommandLineHandler();
 
+    // Parse the application's command line.
+    void parse(
+        const int               argc,
+        char*                   argv[]);
+
   private:
     // Emit usage instructions to the logger.
     void print_program_usage(
@@ -66,7 +70,5 @@ class CommandLineHandler
         shared::SuperLogger&    logger) const override;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_COMMANDLINEHANDLER_H
+}   // namespace studio
+}   // namespace appleseed

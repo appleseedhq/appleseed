@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_COLOR_H
-#define APPLESEED_FOUNDATION_IMAGE_COLOR_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/fp.h"
@@ -67,7 +66,7 @@ class Color
     static const size_t Components = N;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     Color() = default;                          // leave all components uninitialized
 #else
     Color() {}                                  // leave all components uninitialized
@@ -195,7 +194,7 @@ class Color<T, 3>
     ValueType r, g, b;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     Color() = default;                          // leave all components uninitialized
 #else
     Color() {}                                  // leave all components uninitialized
@@ -260,7 +259,7 @@ class Color<T, 4>
     ValueType r, g, b, a;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     Color() = default;                          // leave all components uninitialized
 #else
     Color() {}                                  // leave all components uninitialized
@@ -304,9 +303,22 @@ class Color<T, 4>
     ValueType& operator[](const size_t i);
     const ValueType& operator[](const size_t i) const;
 
-    // Apply/undo alpha premultiplication.
-    void premultiply();
-    void unpremultiply();
+    //
+    // References and interesting resources on alpha compositing:
+    //
+    //   http://keithp.com/~keithp/porterduff/p253-porter.pdf
+    //   http://en.wikipedia.org/wiki/Alpha_compositing
+    //   http://dvd-hq.info/alpha_matting.php
+    //   http://my.opera.com/emoller/blog/2012/08/28/alpha-blending
+    //
+
+    // Apply/undo alpha premultiplication in place.
+    void premultiply_in_place();
+    void unpremultiply_in_place();
+
+    // Retrieve premultiplied/unpremultiplied copies of this color.
+    Color premultiplied() const;
+    Color unpremultiplied() const;
 };
 
 
@@ -1105,7 +1117,7 @@ inline const T& Color<T, 4>::operator[](const size_t i) const
 }
 
 template <typename T>
-inline void Color<T, 4>::premultiply()
+inline void Color<T, 4>::premultiply_in_place()
 {
     r *= a;
     g *= a;
@@ -1113,15 +1125,42 @@ inline void Color<T, 4>::premultiply()
 }
 
 template <typename T>
-inline void Color<T, 4>::unpremultiply()
+inline void Color<T, 4>::unpremultiply_in_place()
 {
-    if (a > T(0.0))
+    if (a != T(0.0))
     {
         const T rcp_a = T(1.0) / a;
         r *= rcp_a;
         g *= rcp_a;
         b *= rcp_a;
     }
+}
+
+template <typename T>
+inline Color<T, 4> Color<T, 4>:: premultiplied() const
+{
+    return
+        Color(
+            r * a,
+            g * a,
+            b * a,
+            a);
+}
+
+template <typename T>
+inline Color<T, 4> Color<T, 4>::unpremultiplied() const
+{
+    if (a != T(0.0))
+    {
+        const T rcp_a = T(1.0) / a;
+        return
+            Color(
+                r * rcp_a,
+                g * rcp_a,
+                b * rcp_a,
+                a);
+    }
+    else return *this;
 }
 
 
@@ -1144,6 +1183,4 @@ Color<T, 3> integer_to_color3(const Int i)
         static_cast<T>(z) * (1.0f / 4294967295.0f));
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_COLOR_H
+}   // namespace foundation

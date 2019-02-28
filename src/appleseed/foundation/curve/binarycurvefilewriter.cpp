@@ -33,7 +33,6 @@
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/curve/icurvewalker.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstring>
@@ -75,14 +74,12 @@ void BinaryCurveFileWriter::write(const ICurveWalker& walker)
 void BinaryCurveFileWriter::write_signature()
 {
     static const char Signature[11] = { 'B', 'I', 'N', 'A', 'R', 'Y', 'C', 'U', 'R', 'V', 'E' };
-
     checked_write(m_file, Signature, sizeof(Signature));
 }
 
 void BinaryCurveFileWriter::write_version()
 {
     const uint16 Version = 2;
-
     checked_write(m_file, Version);
 }
 
@@ -109,9 +106,7 @@ void BinaryCurveFileWriter::write_curve_count(const ICurveWalker& walker)
     checked_write(m_writer, curve_count);
 }
 
-void BinaryCurveFileWriter::write_curve(const ICurveWalker &walker,
-                                        const uint32 curve_id,
-                                        uint32 &vertex_count)
+void BinaryCurveFileWriter::write_curve(const ICurveWalker& walker, const uint32 curve_id, uint32& vertex_count)
 {
     const uint32 count = static_cast<uint32>(walker.get_vertex_count(curve_id));
     checked_write(m_writer, count);

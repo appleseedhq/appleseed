@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_SHARED_DLLSYMBOL_H
-#define APPLESEED_SHARED_DLLSYMBOL_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllvisibility.h"
@@ -38,5 +37,3 @@
 #else
     #define SHAREDDLL APPLESEED_DLL_IMPORT
 #endif
-
-#endif  // !APPLESEED_SHARED_DLLSYMBOL_H

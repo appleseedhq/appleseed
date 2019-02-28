@@ -53,18 +53,6 @@ source_group ("" FILES
     ${standard_osl_headers}
 )
 
-set (include_appleseed_gaffer_sources
-    include/appleseed/gaffer/color.h
-    include/appleseed/gaffer/transform.h
-    include/appleseed/gaffer/udim.h
-)
-list (APPEND osl_headers
-    ${include_appleseed_gaffer_sources}
-)
-source_group ("include\\appleseed\\gaffer" FILES
-    ${include_appleseed_gaffer_sources}
-)
-
 set (include_appleseed_color_sources
     include/appleseed/color/as_chromatic_adaptation.h
     include/appleseed/color/as_color_blend_modes.h
@@ -157,171 +145,12 @@ source_group ("include\\appleseed\\transform" FILES
 
 set (src_blenderseed_sources
      src/blenderseed/as_blender_areaLight.osl
-     src/blenderseed/as_closure2surface.osl
 )
-
 list (APPEND osl_sources
     ${src_blenderseed_sources}
 )
 source_group ("src\\blenderseed" FILES
     ${src_blenderseed_sources}
-)
-
-set (src_gaffer_color_sources
-     src/gaffer/color/as_blackbody.osl
-     src/gaffer/color/as_color_add.osl
-     src/gaffer/color/as_color_build.osl
-     src/gaffer/color/as_color_mix.osl
-     src/gaffer/color/as_color_multiply.osl
-     src/gaffer/color/as_color_saturation.osl
-     src/gaffer/color/as_color_split.osl
-     src/gaffer/color/as_luminance.osl
-     src/gaffer/color/as_wavelength.osl
-)
-list (APPEND osl_sources
-    ${src_gaffer_color_sources}
-)
-source_group ("src\\gaffer\\color" FILES
-    ${src_gaffer_color_sources}
-)
-
-set (src_gaffer_float_sources
-     src/gaffer/float/as_float_add.osl
-     src/gaffer/float/as_float_cast.osl
-     src/gaffer/float/as_float_mix.osl
-     src/gaffer/float/as_float_multiply.osl
-     src/gaffer/float/as_float_pow.osl
-     src/gaffer/float/as_float_remap.osl
-)
-list (APPEND osl_sources
-    ${src_gaffer_float_sources}
-)
-source_group ("src\\gaffer\\float" FILES
-    ${src_gaffer_float_sources}
-)
-
-set (src_gaffer_input_sources
-     src/gaffer/input/as_globals.osl
-     src/gaffer/input/as_input.osl
-     src/gaffer/input/as_object_input.osl
-     src/gaffer/input/as_ray_info.osl
-)
-list (APPEND osl_sources
-    ${src_gaffer_input_sources}
-)
-source_group ("src\\gaffer\\input" FILES
-    ${src_gaffer_input_sources}
-)
-
-set (src_gaffer_material_sources
-     src/gaffer/material/as_disney_material.osl
-     src/gaffer/material/as_material_builder.osl
-)
-list (APPEND osl_sources
-    ${src_gaffer_material_sources}
-)
-source_group ("src\\gaffer\\material" FILES
-    ${src_gaffer_material_sources}
-)
-
-set (src_gaffer_normal_sources
-     src/gaffer/normal/as_bump_map.osl
-     src/gaffer/normal/as_normal_map.osl
-)
-list (APPEND osl_sources
-    ${src_gaffer_normal_sources}
-)
-source_group ("src\\gaffer\\normal" FILES
-    ${src_gaffer_normal_sources}
-)
-
-set (src_gaffer_surface_sources
-     src/gaffer/surface/as_diffuse_surface.osl
-     src/gaffer/surface/as_emission_surface.osl
-     src/gaffer/surface/as_glass_surface.osl
-     src/gaffer/surface/as_glossy_surface.osl
-     src/gaffer/surface/as_metal_surface.osl
-     src/gaffer/surface/as_plastic_surface.osl
-     src/gaffer/surface/as_sheen_surface.osl
-     src/gaffer/surface/as_subsurface_surface.osl
-     src/gaffer/surface/as_surface_add.osl
-     src/gaffer/surface/as_surface_mix.osl
-     src/gaffer/surface/as_surface_multiply.osl
-     src/gaffer/surface/as_surface_switch.osl
-     src/gaffer/surface/as_translucent_surface.osl
-     src/gaffer/surface/as_transparency_surface.osl
-)
-list (APPEND osl_sources
-    ${src_gaffer_surface_sources}
-)
-source_group ("src\\gaffer\\surface" FILES
-    ${src_gaffer_surface_sources}
-)
-
-set (src_gaffer_texture2d_sources
-     src/gaffer/texture2d/as_color_texture.osl
-     src/gaffer/texture2d/as_noise2d.osl
-     src/gaffer/texture2d/as_scalar_texture.osl
-)
-list (APPEND osl_sources
-    ${src_gaffer_texture2d_sources}
-)
-source_group ("src\\gaffer\\texture2d" FILES
-    ${src_gaffer_texture2d_sources}
-)
-
-set (src_gaffer_texture3d_sources
-     src/gaffer/texture3d/as_noise3d.osl
-     src/gaffer/texture3d/as_noise4d.osl
-)
-list (APPEND osl_sources
-    ${src_gaffer_texture3d_sources}
-)
-source_group ("src\\gaffer\\texture3d" FILES
-    ${src_gaffer_texture3d_sources}
-)
-
-set (src_gaffer_transform_sources
-     src/gaffer/transform/as_map2d.osl
-     src/gaffer/transform/as_map3d.osl
-     src/gaffer/transform/as_transform.osl
-)
-list (APPEND osl_sources
-    ${src_gaffer_transform_sources}
-)
-source_group ("src\\gaffer\\transform" FILES
-    ${src_gaffer_transform_sources}
-)
-
-set (src_gaffer_utility_sources
-     src/gaffer/utility/as_condition.osl
-     src/gaffer/utility/as_float2_build.osl
-     src/gaffer/utility/as_float2_split.osl
-     src/gaffer/utility/as_switch.osl
-)
-list (APPEND osl_sources
-    ${src_gaffer_utility_sources}
-)
-source_group ("src\\gaffer\\utility" FILES
-    ${src_gaffer_utility_sources}
-)
-
-set (src_gaffer_vector_sources
-     src/gaffer/vector/as_anisotropy_dir.osl
-     src/gaffer/vector/as_vector_add.osl
-     src/gaffer/vector/as_vector_build.osl
-     src/gaffer/vector/as_vector_cross.osl
-     src/gaffer/vector/as_vector_dot.osl
-     src/gaffer/vector/as_vector_mix.osl
-     src/gaffer/vector/as_vector_multiply.osl
-     src/gaffer/vector/as_vector_normalize.osl
-     src/gaffer/vector/as_vector_split.osl
-)
-list (APPEND osl_sources
-    ${src_gaffer_vector_sources}
-)
-source_group ("src\\gaffer\\vector" FILES
-    ${src_gaffer_vector_sources}
 )
 
 set (src_max_sources
@@ -362,7 +191,6 @@ set (src_maya_sources
      src/maya/as_maya_checker.osl
      src/maya/as_maya_clamp.osl
      src/maya/as_maya_clearCoat.osl
-     src/maya/as_maya_closure2Surface.osl
      src/maya/as_maya_cloth.osl
      src/maya/as_maya_cloud.osl
      src/maya/as_maya_color2Components.osl
@@ -416,7 +244,6 @@ set (src_maya_sources
      src/maya/as_maya_solidFractal.osl
      src/maya/as_maya_stencil.osl
      src/maya/as_maya_stucco.osl
-     src/maya/as_maya_texture2Surface.osl
      src/maya/as_maya_transposeMatrix.osl
      src/maya/as_maya_tripleShadingSwitch.osl
      src/maya/as_maya_uv2Components.osl
@@ -436,11 +263,13 @@ source_group ("src\\maya" FILES
 
 set (src_appleseed_sources
      src/appleseed/as_anisotropy_vector_field.osl
+     src/appleseed/as_asc_cdl.osl
      src/appleseed/as_attributes.osl
      src/appleseed/as_blackbody.osl
      src/appleseed/as_blend_color.osl
      src/appleseed/as_blend_shader.osl
      src/appleseed/as_bump.osl
+     src/appleseed/as_closure2surface.osl
      src/appleseed/as_color_transform.osl
      src/appleseed/as_composite_color.osl
      src/appleseed/as_create_mask.osl
@@ -451,8 +280,10 @@ set (src_appleseed_sources
      src/appleseed/as_glass.osl
      src/appleseed/as_globals.osl
      src/appleseed/as_id_manifold.osl
+     src/appleseed/as_invert_color.osl
      src/appleseed/as_luminance.osl
      src/appleseed/as_manifold2d.osl
+     src/appleseed/as_matte.osl
      src/appleseed/as_metal.osl
      src/appleseed/as_noise2d.osl
      src/appleseed/as_noise3d.osl
@@ -466,6 +297,7 @@ set (src_appleseed_sources
      src/appleseed/as_switch_texture.osl
      src/appleseed/as_swizzle.osl
      src/appleseed/as_texture.osl
+     src/appleseed/as_texture2surface.osl
      src/appleseed/as_texture3d.osl
      src/appleseed/as_texture_info.osl
      src/appleseed/as_toon.osl
@@ -481,40 +313,41 @@ source_group ("src\\appleseed" FILES
     ${src_appleseed_sources}
 )
 
-set (src_npr_sources
-     src/npr/as_xtoon.osl
-)
-
-list (APPEND osl_sources
-    ${src_npr_sources}
-)
-source_group ("src\\npr" FILES
-    ${src_npr_sources}
-)
-
 
 #--------------------------------------------------------------------------------------------------
-# Prepare the sandbox.
+# Target: Prepare the sandbox.
 #--------------------------------------------------------------------------------------------------
 
-add_custom_target (SANDBOX)
+add_custom_target (
+    prepare_sandbox
+    VERBATIM
+)
 
-# Copy the OSL compiler to the sandbox.
-if (USE_EXTERNAL_OSL)
+set_target_properties (prepare_sandbox PROPERTIES FOLDER "Contents")
+set_target_progress_message (prepare_sandbox "Preparing sandbox...")
+
+# Delete the sandbox/shaders/ directory.
+# add_custom_command (
+#     TARGET prepare_sandbox
+#     COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_SOURCE_DIR}/sandbox/shaders/
+# )
+
+# Copy the OSL compiler to sandbox/bin/.
+if (USE_FIND_PACKAGE_FOR_OSL)
     add_custom_command (
-        TARGET SANDBOX
+        TARGET prepare_sandbox
         COMMAND ${CMAKE_COMMAND} -E copy ${OSL_COMPILER} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
 else ()
     add_custom_command (
-        TARGET SANDBOX
+        TARGET prepare_sandbox
         COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/osl-release/bin/oslc${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
 endif ()
 
 
 #--------------------------------------------------------------------------------------------------
-# Compile shaders and deploy header files to sandbox.
+# Target: Compile shaders and deploy header files to sandbox.
 #--------------------------------------------------------------------------------------------------
 
 # Build lists of absolute paths to OSL header files, in the sources and in the sandbox.
@@ -538,15 +371,15 @@ foreach (osl_source ${osl_sources})
     )
 
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set (OSL_OPTIONS -O0 -DDEBUG)
+        set (OSLC_OPTIONS -O0 -DDEBUG)
     else ()
-        set (OSL_OPTIONS -O2 -DNDEBUG)
+        set (OSLC_OPTIONS -O2 -DNDEBUG)
     endif ()
 
     add_custom_command (
         OUTPUT ${oso_dir}/${oso_filename}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${oso_dir}
-        COMMAND ${PROJECT_SOURCE_DIR}/sandbox/bin/oslc ${OSL_OPTIONS}
+        COMMAND ${PROJECT_SOURCE_DIR}/sandbox/bin/oslc ${OSLC_OPTIONS}
             -I"${PROJECT_SOURCE_DIR}/src/appleseed.shaders/include"
             -o "${oso_dir}/${oso_filename}" "${PROJECT_SOURCE_DIR}/src/appleseed.shaders/${osl_source}"
         MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/${osl_source}
@@ -571,6 +404,10 @@ add_custom_target (
     appleseed.shaders ALL
     DEPENDS ${abs_osl_headers_sandbox}
     SOURCES ${abs_osl_headers_sources} ${osl_sources}
+    VERBATIM
 )
 
-add_dependencies (appleseed.shaders SANDBOX)
+set_target_properties (appleseed.shaders PROPERTIES FOLDER "Contents")
+set_target_progress_message (appleseed.shaders "Compiling OSL shaders...")
+
+add_dependencies (appleseed.shaders prepare_sandbox)

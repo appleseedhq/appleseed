@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BVH_BVH_PARTITIONERBASE_H
-#define APPLESEED_FOUNDATION_MATH_BVH_BVH_PARTITIONERBASE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -206,7 +205,5 @@ inline const std::vector<size_t>& PartitionerBase<Tree>::get_item_ordering(
     return m_indices[dimension];
 }
 
-}       // namespace bvh
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_BVH_BVH_PARTITIONERBASE_H
+}   // namespace bvh
+}   // namespace foundation

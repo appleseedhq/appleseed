@@ -34,7 +34,7 @@
 
 shader as_maya_noise
 [[
-    string as_maya_node_name = "noise"
+    string as_node_name = "noise"
 ]]
 (
     float in_threshold = 0.0

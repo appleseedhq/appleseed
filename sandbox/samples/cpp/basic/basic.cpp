@@ -69,7 +69,7 @@ asf::auto_release_ptr<asr::Project> build_project()
 {
     // Create an empty project.
     asf::auto_release_ptr<asr::Project> project(asr::ProjectFactory::create("test project"));
-    project->search_paths().push_back("data");
+    project->search_paths().push_back_explicit_path("data");
 
     // Add default configurations to the project.
     project->add_default_configurations();

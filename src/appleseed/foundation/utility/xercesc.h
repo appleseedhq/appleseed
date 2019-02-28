@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_XERCESC_H
-#define APPLESEED_FOUNDATION_UTILITY_XERCESC_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -491,6 +490,4 @@ void SAX2ContentHandler<ElementID>::characters(
     m_handler_stack.top()->characters(chars, length);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_XERCESC_H
+}   // namespace foundation

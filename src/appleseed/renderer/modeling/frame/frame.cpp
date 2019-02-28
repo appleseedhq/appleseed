@@ -35,16 +35,21 @@
 #include "renderer/kernel/aov/aovsettings.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/denoising/denoiser.h"
+#include "renderer/kernel/rendering/ishadingresultframebufferfactory.h"
+#include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/aov/aovfactoryregistrar.h"
 #include "renderer/modeling/aov/denoiseraov.h"
 #include "renderer/modeling/aov/iaovfactory.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
+#include "renderer/utility/bbox.h"
+#include "renderer/utility/filesystem.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/genericimagefilewriter.h"
+#include "foundation/image/genericprogressiveimagefilereader.h"
 #include "foundation/image/image.h"
 #include "foundation/image/imageattributes.h"
 #include "foundation/image/pixel.h"
@@ -62,11 +67,17 @@
 // Boost headers.
 #include "boost/filesystem.hpp"
 
+// BCD headers.
+#include "bcd/DeepImage.h"
+#include "bcd/ImageIO.h"
+
 // Standard headers.
 #include <algorithm>
 #include <exception>
 #include <memory>
 #include <string>
+#include <tuple>
+#include <vector>
 
 using namespace bcd;
 using namespace foundation;
@@ -100,20 +111,41 @@ struct Frame::Impl
     size_t                          m_tile_height;
     string                          m_filter_name;
     float                           m_filter_radius;
-    unique_ptr<Filter2f>            m_filter;
     AABB2u                          m_crop_window;
-    ParamArray                      m_render_info;
+    bool                            m_enable_dithering;
+    uint32                          m_noise_seed;
     DenoisingMode                   m_denoising_mode;
+    bool                            m_checkpoint_create;
+    string                          m_checkpoint_create_path;
+    bool                            m_checkpoint_resume;
+    string                          m_checkpoint_resume_path;
+
+    // When resuming a render, first pass index should be
+    // the number of the resumed render's pass + 1.
+    // Otherwise it's 0.
+    size_t                          m_initial_pass;
+    size_t                          m_pass_count;
 
     // Child entities.
     AOVContainer                    m_aovs;
+    DenoiserAOV*                    m_denoiser_aov;
     AOVContainer                    m_internal_aovs;
     PostProcessingStageContainer    m_post_processing_stages;
 
     // Images.
     unique_ptr<Image>               m_image;
     unique_ptr<ImageStack>          m_aov_images;
-    DenoiserAOV*                    m_denoiser_aov;
+
+    // Internal state.
+    unique_ptr<Filter2f>            m_filter;
+    ParamArray                      m_render_info;
+
+    explicit Impl(Frame* parent)
+      : m_aovs(parent)
+      , m_internal_aovs(parent)
+      , m_post_processing_stages(parent)
+    {
+    }
 };
 
 Frame::Frame(
@@ -121,7 +153,7 @@ Frame::Frame(
     const ParamArray&   params,
     const AOVContainer& aovs)
   : Entity(g_class_uid, params)
-  , impl(new Impl())
+  , impl(new Impl(this))
 {
     set_name(name);
 
@@ -155,21 +187,24 @@ Frame::Frame(
             MaxAOVCount);
     }
 
-    // Copy and add AOVs.
+    // Copy and store AOVs.
     const AOVFactoryRegistrar aov_registrar;
     for (size_t i = 0, e = min(aovs.size(), MaxAOVCount); i < e; ++i)
     {
         const AOV* original_aov = aovs.get_by_index(i);
+
         const IAOVFactory* aov_factory = aov_registrar.lookup(original_aov->get_model());
         assert(aov_factory);
 
         auto_release_ptr<AOV> aov = aov_factory->create(original_aov->get_parameters());
+
         aov->create_image(
             impl->m_frame_width,
             impl->m_frame_height,
             impl->m_tile_width,
             impl->m_tile_height,
             aov_images());
+
         impl->m_aovs.insert(aov);
     }
 
@@ -177,7 +212,7 @@ Frame::Frame(
     if (impl->m_denoising_mode != DenoisingMode::Off)
     {
         auto_release_ptr<DenoiserAOV> aov = DenoiserAOVFactory::create();
-        impl->m_denoiser_aov = aov.get();
+        aov->set_parent(this);
 
         aov->create_image(
             impl->m_frame_width,
@@ -186,10 +221,13 @@ Frame::Frame(
             impl->m_tile_height,
             aov_images());
 
+        impl->m_denoiser_aov = aov.get();
         impl->m_internal_aovs.insert(auto_release_ptr<AOV>(aov));
     }
-    else
-        impl->m_denoiser_aov = nullptr;
+    else impl->m_denoiser_aov = nullptr;
+
+    impl->m_initial_pass = 0;
+    impl->m_pass_count = params.get_optional<size_t>("passes", 1);
 }
 
 Frame::~Frame()
@@ -207,16 +245,21 @@ void Frame::print_settings()
     const char* camera_name = get_active_camera_name();
 
     RENDERER_LOG_INFO(
-        "frame \"%s\" settings:\n"
-        "  camera                        \"%s\"\n"
+        "frame \"%s\" (#" FMT_UNIQUE_ID ") parameters:\n"
+        "  camera name                   \"%s\"\n"
         "  resolution                    %s x %s\n"
         "  tile size                     %s x %s\n"
         "  filter                        %s\n"
         "  filter size                   %f\n"
         "  crop window                   (%s, %s)-(%s, %s)\n"
-        "  denoising mode                %s",
+        "  dithering                     %s\n"
+        "  noise seed                    %s\n"
+        "  denoising mode                %s\n"
+        "  create checkpoint             %s\n"
+        "  resume checkpoint             %s\n",
         get_path().c_str(),
-        camera_name ? camera_name : "none",
+        get_uid(),
+        camera_name != nullptr ? camera_name : "none",
         pretty_uint(impl->m_frame_width).c_str(),
         pretty_uint(impl->m_frame_height).c_str(),
         pretty_uint(impl->m_tile_width).c_str(),
@@ -227,11 +270,15 @@ void Frame::print_settings()
         pretty_uint(impl->m_crop_window.min[1]).c_str(),
         pretty_uint(impl->m_crop_window.max[0]).c_str(),
         pretty_uint(impl->m_crop_window.max[1]).c_str(),
+        impl->m_enable_dithering ? "on" : "off",
+        pretty_uint(impl->m_noise_seed).c_str(),
         impl->m_denoising_mode == DenoisingMode::Off ? "off" :
-        impl->m_denoising_mode == DenoisingMode::WriteOutputs ? "write outputs" : "denoise");
+        impl->m_denoising_mode == DenoisingMode::WriteOutputs ? "write outputs" : "denoise",
+        impl->m_checkpoint_create ? impl->m_checkpoint_create_path.c_str() : "off",
+        impl->m_checkpoint_resume ? impl->m_checkpoint_resume_path.c_str() : "off");
 }
 
-AOVContainer& Frame::aovs() const
+const AOVContainer& Frame::aovs() const
 {
     return impl->m_aovs;
 }
@@ -243,10 +290,10 @@ PostProcessingStageContainer& Frame::post_processing_stages() const
 
 const char* Frame::get_active_camera_name() const
 {
-    if (m_params.strings().exist("camera"))
-        return m_params.strings().get("camera");
-
-    return nullptr;
+    return
+        m_params.strings().exist("camera")
+            ? m_params.strings().get("camera")
+            : nullptr;
 }
 
 Image& Frame::image() const
@@ -258,11 +305,11 @@ void Frame::clear_main_and_aov_images()
 {
     impl->m_image->clear(Color4f(0.0));
 
-    for (size_t i = 0, e = aovs().size(); i < e; ++i)
-        aovs().get_by_index(i)->clear_image();
+    for (AOV& aov : impl->m_aovs)
+        aov.clear_image();
 
-    for (size_t i = 0, e = internal_aovs().size(); i < e; ++i)
-        internal_aovs().get_by_index(i)->clear_image();
+    for (AOV& aov : impl->m_internal_aovs)
+        aov.clear_image();
 }
 
 ImageStack& Frame::aov_images() const
@@ -270,14 +317,14 @@ ImageStack& Frame::aov_images() const
     return *impl->m_aov_images;
 }
 
-const AOVContainer& Frame::internal_aovs() const
-{
-    return impl->m_internal_aovs;
-}
-
 const Filter2f& Frame::get_filter() const
 {
     return *impl->m_filter.get();
+}
+
+size_t Frame::get_initial_pass() const
+{
+    return impl->m_initial_pass;
 }
 
 void Frame::reset_crop_window()
@@ -302,7 +349,6 @@ bool Frame::has_crop_window() const
 void Frame::set_crop_window(const AABB2u& crop_window)
 {
     impl->m_crop_window = crop_window;
-
     m_params.insert("crop_window", crop_window);
 }
 
@@ -311,58 +357,54 @@ const AABB2u& Frame::get_crop_window() const
     return impl->m_crop_window;
 }
 
+uint32 Frame::get_noise_seed() const
+{
+    return impl->m_noise_seed;
+}
+
 void Frame::collect_asset_paths(StringArray& paths) const
 {
-    for (const AOV& aov : aovs())
+    for (const AOV& aov : impl->m_aovs)
         aov.collect_asset_paths(paths);
 
-    for (const PostProcessingStage& stage : post_processing_stages())
+    for (const PostProcessingStage& stage : impl->m_post_processing_stages)
         stage.collect_asset_paths(paths);
 }
 
 void Frame::update_asset_paths(const StringDictionary& mappings)
 {
-    for (AOV& aov : aovs())
+    for (AOV& aov : impl->m_aovs)
         aov.update_asset_paths(mappings);
 
-    for (PostProcessingStage& stage : post_processing_stages())
+    for (PostProcessingStage& stage : impl->m_post_processing_stages)
         stage.update_asset_paths(mappings);
 }
 
 bool Frame::on_frame_begin(
-    const Project&          project,
-    const BaseGroup*        parent,
-    OnFrameBeginRecorder&   recorder,
-    IAbortSwitch*           abort_switch)
+    const Project&                                  project,
+    const BaseGroup*                                parent,
+    OnFrameBeginRecorder&                           recorder,
+    IAbortSwitch*                                   abort_switch)
 {
-    for (AOV& aov : aovs())
-    {
-        if (is_aborted(abort_switch))
-            return false;
+    if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
 
-        if (!aov.on_frame_begin(project, parent, recorder, abort_switch))
-            return false;
-    }
+    if (!invoke_on_frame_begin(impl->m_aovs, project, parent, recorder, abort_switch))
+        return false;
 
-    for (PostProcessingStage& stage : post_processing_stages())
-    {
-        if (is_aborted(abort_switch))
-            return false;
-
-        if (!stage.on_frame_begin(project, parent, recorder, abort_switch))
-            return false;
-    }
+    if (!invoke_on_frame_begin(impl->m_post_processing_stages, project, parent, recorder, abort_switch))
+        return false;
 
     return true;
 }
 
 void Frame::post_process_aov_images() const
 {
-    for (size_t i = 0, e = aovs().size(); i < e; ++i)
-        aovs().get_by_index(i)->post_process_image(get_crop_window());
+    for (AOV& aov : impl->m_aovs)
+        aov.post_process_image(*this);
 
-    for (size_t i = 0, e = internal_aovs().size(); i < e; ++i)
-        internal_aovs().get_by_index(i)->post_process_image(get_crop_window());
+    for (AOV& aov : impl->m_internal_aovs)
+        aov.post_process_image(*this);
 }
 
 ParamArray& Frame::render_info()
@@ -376,8 +418,8 @@ Frame::DenoisingMode Frame::get_denoising_mode() const
 }
 
 void Frame::denoise(
-    const size_t        thread_count,
-    IAbortSwitch*       abort_switch) const
+    const size_t                                thread_count,
+    IAbortSwitch*                               abort_switch) const
 {
     DenoiserOptions options;
 
@@ -417,33 +459,31 @@ void Frame::denoise(
 
     impl->m_denoiser_aov->fill_empty_samples();
 
-    Deepimf num_samples;
-    impl->m_denoiser_aov->extract_num_samples_image(num_samples);
+    Deepimf num_samples_image;
+    impl->m_denoiser_aov->extract_num_samples_image(num_samples_image);
 
-    Deepimf covariances;
-    impl->m_denoiser_aov->compute_covariances_image(covariances);
+    Deepimf covariances_image;
+    impl->m_denoiser_aov->compute_covariances_image(covariances_image);
 
-    RENDERER_LOG_INFO("denoising beauty image...");
+    RENDERER_LOG_INFO("denoising frame \"%s\"...", get_path().c_str());
     denoise_beauty_image(
         image(),
-        num_samples,
+        num_samples_image,
         impl->m_denoiser_aov->histograms_image(),
-        covariances,
+        covariances_image,
         options,
         abort_switch);
 
-    for (size_t i = 0, e = aovs().size(); i < e; ++i)
+    for (const AOV& aov : impl->m_aovs)
     {
-        const AOV* aov = aovs().get_by_index(i);
-
-        if (aov->has_color_data())
+        if (aov.has_color_data())
         {
-            RENDERER_LOG_INFO("denoising %s aov...", aov->get_name());
+            RENDERER_LOG_INFO("denoising aov \"%s\"...", aov.get_path().c_str());
             denoise_aov_image(
-                aov->get_image(),
-                num_samples,
+                aov.get_image(),
+                num_samples_image,
                 impl->m_denoiser_aov->histograms_image(),
-                covariances,
+                covariances_image,
                 options,
                 abort_switch);
         }
@@ -452,29 +492,472 @@ void Frame::denoise(
 
 namespace
 {
-    void create_parent_directories(const bf::path& file_path)
+    inline size_t get_checkpoint_total_channel_count(const size_t aov_count)
     {
-        const bf::path parent_path = file_path.parent_path();
+        // The beauty image plus the shading result framebuffer.
+        return ShadingResultFrameBuffer::get_total_channel_count(aov_count) + 1;
+    }
 
-        if (!parent_path.empty() && !bf::exists(parent_path))
+    typedef vector<tuple<string, CanvasProperties, ImageAttributes>> CheckpointProperties;
+
+    //
+    // Interface used to save the rendering buffer in checkpoints.
+    //
+
+    class ShadingBufferCanvas
+      : public ICanvas
+    {
+      public:
+        ShadingBufferCanvas(
+            const Frame&                                frame,
+            IShadingResultFrameBufferFactory*           buffer_factory)
+          : m_buffer_factory(buffer_factory)
+          , m_frame(frame)
+          , m_props(
+                m_frame.image().properties().m_canvas_width,
+                m_frame.image().properties().m_canvas_height,
+                m_frame.image().properties().m_tile_width,
+                m_frame.image().properties().m_tile_height,
+                get_checkpoint_total_channel_count(m_frame.aov_images().size()),
+                PixelFormatFloat)
         {
-            bsys::error_code ec;
-            if (!bf::create_directories(parent_path, ec))
+            assert(buffer_factory);
+        }
+
+        const CanvasProperties& properties() const override
+        {
+            return m_props;
+        }
+
+        Tile& tile(
+            const size_t            tile_x,
+            const size_t            tile_y) override
+        {
+            ShadingResultFrameBuffer* tile_buffer = m_buffer_factory->create(
+                m_frame,
+                tile_x,
+                tile_y,
+                get_tile_bbox(tile_x, tile_y));
+
+            assert(tile_buffer);
+            return *tile_buffer;
+        }
+
+        const Tile& tile(
+            const size_t            tile_x,
+            const size_t            tile_y) const override
+        {
+            const ShadingResultFrameBuffer* tile_buffer = m_buffer_factory->create(
+                m_frame,
+                tile_x,
+                tile_y,
+                get_tile_bbox(tile_x, tile_y));
+
+            assert(tile_buffer);
+            return *tile_buffer;
+        }
+
+      private:
+        IShadingResultFrameBufferFactory*           m_buffer_factory;
+        const Frame&                                m_frame;
+        const CanvasProperties                      m_props;
+
+        AABB2i get_tile_bbox(
+            const size_t            tile_x,
+            const size_t            tile_y) const
+        {
+            const Image& image = m_frame.image();
+            const CanvasProperties& props = image.properties();
+
+            // Compute the image space bounding box of the tile.
+            const size_t tile_origin_x = props.m_tile_width * tile_x;
+            const size_t tile_origin_y = props.m_tile_height * tile_y;
+
+            const Tile& frame_tile = image.tile(tile_x, tile_y);
+
+            // Compute the tile space bounding box of the pixels to render.
+            return compute_tile_space_bbox(
+                tile_origin_x,
+                tile_origin_y,
+                frame_tile.get_width(),
+                frame_tile.get_height(),
+                m_frame.get_crop_window());
+        }
+    };
+
+    void get_denoiser_checkpoint_paths(
+        const string&                   checkpoint_path,
+        string&                         hist_path,
+        string&                         cov_path,
+        string&                         sum_path)
+    {
+        const bf::path boost_file_path(checkpoint_path);
+        const bf::path directory = boost_file_path.parent_path();
+        const string base_file_name = boost_file_path.stem().string() + ".denoiser";
+        const string extension = boost_file_path.extension().string();
+
+        const string hist_file_name = base_file_name + ".hist" + extension;
+        hist_path = (directory / hist_file_name).string();
+
+        const string cov_file_name = base_file_name + ".cov" + extension;
+        cov_path = (directory / cov_file_name).string();
+
+        const string sum_file_name = base_file_name + ".sum" + extension;
+        sum_path = (directory / sum_file_name).string();
+    }
+
+    bool is_checkpoint_compatible(
+        const string&                   checkpoint_path,
+        const Frame&                    frame,
+        const CheckpointProperties&     checkpoint_props)
+    {
+        const Image& frame_image = frame.image();
+        const CanvasProperties& frame_props = frame_image.properties();
+        const CanvasProperties& beauty_props = get<1>(checkpoint_props[0]);
+        const ImageAttributes& exr_attributes = get<2>(checkpoint_props[0]);
+        const string initial_layer_name = get<0>(checkpoint_props[0]);
+
+        // Check for atttributes.
+        if (!exr_attributes.exist("appleseed:LastPass"))
+        {
+            RENDERER_LOG_ERROR("incorrect checkpoint: some attributes are missing.");
+            return false;
+        }
+
+        // Check for beauty layer.
+        if (initial_layer_name != "beauty")
+        {
+            RENDERER_LOG_ERROR("incorrect checkpoint: beauty layer is missing.");
+            return false;
+        }
+
+        // Check for shading buffer layer.
+        const string second_layer_name = get<0>(checkpoint_props[1]);
+        if (second_layer_name != "appleseed:RenderingBuffer")
+        {
+            RENDERER_LOG_ERROR("incorrect checkpoint: rendering buffer layer is missing.");
+            return false;
+        }
+
+        // Check that the shading buffer layer has correct amount of channel.
+        // The checkpoint should contain the beauty image and the shading buffer.
+        const size_t expect_channel_count = get_checkpoint_total_channel_count(frame.aov_images().size());
+        if (get<1>(checkpoint_props[1]).m_channel_count != expect_channel_count)
+        {
+            RENDERER_LOG_ERROR("incorrect checkpoint: the shading buffer doesn't contain the correct number of channels.");
+            return false;
+        }
+
+        // Check canvas properties.
+        if (frame_props.m_canvas_width != beauty_props.m_canvas_width ||
+            frame_props.m_canvas_height != beauty_props.m_canvas_height ||
+            frame_props.m_tile_width != beauty_props.m_tile_width ||
+            frame_props.m_tile_height != beauty_props.m_tile_height ||
+            frame_props.m_channel_count != beauty_props.m_channel_count ||
+            frame_props.m_pixel_format != beauty_props.m_pixel_format)
+        {
+            RENDERER_LOG_ERROR("incorrect checkpoint: the beauty layer properties doesn't match the renderer properties.");
+            return false;
+        }
+
+        // Check if AOVs are here.
+        if (checkpoint_props.size() < frame.aovs().size() + 2)
+        {
+            RENDERER_LOG_ERROR("incorrect checkpoint: some aovs are missing.");
+            return false;
+        }
+
+        // Check if denoising is enabled and pass exists.
+        if (frame.get_denoising_mode() != Frame::DenoisingMode::Off)
+        {
+            string hist_file_path, cov_file_path, sum_file_path;
+            get_denoiser_checkpoint_paths(
+                checkpoint_path,
+                hist_file_path,
+                cov_file_path,
+                sum_file_path);
+
+            if (!bf::exists(bf::path(hist_file_path.c_str())) ||
+                !bf::exists(bf::path(cov_file_path.c_str())) ||
+                !bf::exists(bf::path(sum_file_path.c_str())))
             {
-                RENDERER_LOG_ERROR(
-                    "could not create directory %s: %s",
-                    parent_path.c_str(),
-                    ec.message().c_str());
+                RENDERER_LOG_ERROR("cannot load denoiser's checkpoint from disk because one or several files are missing.");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool load_denoiser_checkpoint(
+        const string&                   checkpoint_path,
+        DenoiserAOV*                    denoiser_aov)
+    {
+        // todo: reload denoiser checkpoint from the same file.
+        Deepimf& histograms_image = denoiser_aov->histograms_image();
+        Deepimf& covariance_image = denoiser_aov->covariance_image();
+        Deepimf& sum_image = denoiser_aov->sum_image();
+
+        string hist_file_path, cov_file_path, sum_file_path;
+        get_denoiser_checkpoint_paths(checkpoint_path, hist_file_path, cov_file_path, sum_file_path);
+
+        // Load histograms.
+        bool result = ImageIO::loadMultiChannelsEXR(histograms_image, hist_file_path.c_str());
+
+        // Load covariance accumulator.
+        result = result && ImageIO::loadMultiChannelsEXR(covariance_image, cov_file_path.c_str());
+
+        // Load sum accumulator.
+        result = result && ImageIO::loadMultiChannelsEXR(sum_image, sum_file_path.c_str());
+
+        if (!result)
+            RENDERER_LOG_ERROR("could not load denoiser checkpoint.");
+
+        return result;
+    }
+
+    void save_denoiser_checkpoint(
+        const string&                   checkpoint_path,
+        const DenoiserAOV*              denoiser_aov)
+    {
+        // todo: save denoiser checkpoint in the same file.
+        const Deepimf& histograms_image = denoiser_aov->histograms_image();
+        const Deepimf& covariance_image = denoiser_aov->covariance_image();
+        const Deepimf& sum_image = denoiser_aov->sum_image();
+
+        string hist_file_path, cov_file_path, sum_file_path;
+        get_denoiser_checkpoint_paths(checkpoint_path, hist_file_path, cov_file_path, sum_file_path);
+
+        // Add histograms layer.
+        bool result = ImageIO::writeMultiChannelsEXR(histograms_image, hist_file_path.c_str());
+
+        // Add covariances layer.
+        result = result && ImageIO::writeMultiChannelsEXR(covariance_image, cov_file_path.c_str());
+
+        // Add sum layer.
+        result = result && ImageIO::writeMultiChannelsEXR(sum_image, sum_file_path.c_str());
+
+        if (!result)
+            RENDERER_LOG_ERROR("could not save denoiser checkpoint.");
+    }
+
+}
+
+bool Frame::load_checkpoint(IShadingResultFrameBufferFactory* buffer_factory)
+{
+    if  (!impl->m_checkpoint_resume)
+        return true;
+
+    bf::path bf_path(impl->m_checkpoint_resume_path.c_str());
+
+    // Check if the file exists.
+    if (!bf::exists(bf_path))
+    {
+        RENDERER_LOG_WARNING("no checkpoint found, starting a new render.");
+        return true;
+    }
+
+    // Open the file.
+    GenericProgressiveImageFileReader reader;
+    reader.open(impl->m_checkpoint_resume_path.c_str());
+
+    // First, read layers name and properties.
+    CheckpointProperties checkpoint_props;
+    size_t layer_index = 0;
+    while (reader.choose_subimage(layer_index))
+    {
+        CanvasProperties layer_canvas_props;
+        ImageAttributes layer_attributes;
+
+        reader.read_canvas_properties(layer_canvas_props);
+        reader.read_image_attributes(layer_attributes);
+
+        const string layer_name =
+            layer_attributes.exist("name")
+                ? layer_attributes.get<string>("name")
+                : "undefined";
+
+        checkpoint_props.emplace_back(
+            layer_name,
+            layer_canvas_props,
+            layer_attributes);
+
+        ++layer_index;
+    }
+
+    // Check checkpoint's compatibility.
+    if (!is_checkpoint_compatible(impl->m_checkpoint_resume_path, *this, checkpoint_props))
+    {
+        return false;
+    }
+
+    const size_t start_pass = get<2>(checkpoint_props[0]).get<size_t>("appleseed:LastPass") + 1;
+
+    // Check if passes have already been rendered.
+    if (impl->m_pass_count <= start_pass)
+    {
+        RENDERER_LOG_WARNING("the requested passes have already been rendered and saved into the checkpoint.");
+        return false;
+    }
+
+    // Interface the shading buffer in a canvas.
+    ShadingBufferCanvas shading_canvas(*this, buffer_factory);
+
+    // Load tiles from the checkpoint.
+    const CanvasProperties& beauty_props = get<1>(checkpoint_props[0]);
+
+    for (size_t tile_y = 0; tile_y < beauty_props.m_tile_count_y; ++tile_y)
+    {
+        for (size_t tile_x = 0; tile_x < beauty_props.m_tile_count_x; ++tile_x)
+        {
+            // Read shading buffer.
+            reader.choose_subimage(1);
+            Tile& shading_tile = shading_canvas.tile(tile_x, tile_y);
+            reader.read_tile(tile_x, tile_y, &shading_tile);
+
+            // No need to read beauty and filtered AOVs because they
+            // are in the shading buffer.
+
+            // Read unfiltered AOV layers.
+            vector<unique_ptr<Tile>> aov_tiles;
+            vector<const float*> aov_ptrs;
+            for (size_t i = 0; i < aovs().size(); ++i)
+            {
+                UnfilteredAOV* aov = dynamic_cast<UnfilteredAOV*>(
+                    aovs().get_by_index(i));
+
+                if (aov == nullptr)
+                    continue;
+
+                const string aov_name = aov->get_name();
+
+                // Search layer index in the file.
+                size_t subimage_index(~0);
+                for (size_t s = 0; s < checkpoint_props.size(); ++s)
+                {
+                    if (get<0>(checkpoint_props[s]) == aov_name)
+                    {
+                        subimage_index = s;
+                        break;
+                    }
+                }
+
+                assert(subimage_index != size_t(~0));
+
+                Image& aov_image = aov->get_image();
+                Tile& aov_tile = aov_image.tile(tile_x, tile_y);
+                reader.choose_subimage(subimage_index);
+                reader.read_tile(tile_x, tile_y, &aov_tile);
             }
         }
     }
 
-    void create_parent_directories(const char* file_path)
+    // Load internal AOVs (from external files).
+    for (size_t i = 0, e = internal_aovs().size(); i < e; ++i)
     {
-        create_parent_directories(bf::path(file_path));
+        AOV* aov = internal_aovs().get_by_index(i);
+
+        DenoiserAOV* denoiser_aov = dynamic_cast<DenoiserAOV*>(aov);
+
+        // Load denoiser checkpoint.
+        if (denoiser_aov != nullptr)
+        {
+            if (!load_denoiser_checkpoint(impl->m_checkpoint_resume_path, denoiser_aov))
+                return false;
+        }
     }
 
-    void add_chromaticities(ImageAttributes& image_attributes)
+    RENDERER_LOG_INFO("read checkpoint file %s, resuming rendering at pass %s.",
+        impl->m_checkpoint_resume_path.c_str(),
+        pretty_uint(start_pass).c_str());
+
+    impl->m_initial_pass = start_pass;
+
+    return true;
+}
+
+void Frame::save_checkpoint(
+    IShadingResultFrameBufferFactory*           buffer_factory,
+    const size_t                                pass) const
+{
+    if (!impl->m_checkpoint_create)
+        return;
+
+    create_parent_directories(impl->m_checkpoint_create_path.c_str());
+
+    GenericImageFileWriter writer(impl->m_checkpoint_create_path.c_str());
+
+    // Add the beauty image.
+    {
+        writer.append_image(&image());
+        ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
+        image_attributes.insert("appleseed:LastPass", pass);
+        image_attributes.insert("image_name", "beauty");
+        writer.set_image_attributes(image_attributes);
+    }
+
+    // Buffer containing pixels' weight.
+    ShadingBufferCanvas pixels_weight_buffer(*this, buffer_factory);
+    const size_t shading_channel_count = pixels_weight_buffer.properties().m_channel_count;
+
+    // Create channel names.
+    vector<string> shading_channel_names;
+    vector<const char *> shading_channel_names_cstr;
+    {
+        static const string channel_name_prefix = "channel_";
+        for (size_t i = 0; i < shading_channel_count; ++i)
+        {
+            shading_channel_names.push_back(channel_name_prefix + pad_left(to_string(i + 1), '0', 4));
+            shading_channel_names_cstr.push_back(shading_channel_names[i].c_str());
+        }
+
+        assert(shading_channel_names.size() == shading_channel_count);
+    }
+
+    // Add the shading buffer.
+    {
+        writer.append_image(&pixels_weight_buffer);
+        writer.set_image_channels(shading_channel_count, shading_channel_names_cstr.data());
+
+        ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
+        image_attributes.insert("image_name", "appleseed:RenderingBuffer");
+        writer.set_image_attributes(image_attributes);
+    }
+
+    // Add AOV images.
+    for (const AOV& aov : aovs())
+    {
+        const char* aov_name = aov.get_name();
+        const Image& aov_image = aov.get_image();
+        writer.append_image(&aov_image);
+        writer.set_image_channels(aov.get_channel_count(), aov.get_channel_names());
+
+        ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
+        image_attributes.insert("image_name", aov_name);
+        writer.set_image_attributes(image_attributes);
+    }
+
+    // Write the file.
+    writer.write();
+
+    // Add internal AOVs layers (in external files).
+    for (const AOV& aov : internal_aovs())
+    {
+        // Save denoiser checkpoint.
+        const DenoiserAOV* denoiser_aov = dynamic_cast<const DenoiserAOV*>(&aov);
+        if (denoiser_aov != nullptr)
+            save_denoiser_checkpoint(impl->m_checkpoint_create_path, denoiser_aov);
+    }
+
+    RENDERER_LOG_INFO("wrote checkpoint file %s for pass %s.",
+        impl->m_checkpoint_create_path.c_str(),
+        pretty_uint(pass + 1).c_str());
+}
+
+namespace
+{
+
+    void add_chromaticities_attributes(ImageAttributes& image_attributes)
     {
         // Scene-linear sRGB / Rec. 709 chromaticities.
         image_attributes.insert("white_xy_chromaticity", Vector2f(0.3127f, 0.3290f));
@@ -486,25 +969,14 @@ namespace
     void write_exr_image(
         const bf::path&         file_path,
         const Image&            image,
-        ImageAttributes&        image_attributes,
-        const AOV*              aov)
+        ImageAttributes         image_attributes)
     {
         create_parent_directories(file_path);
 
         const std::string filename = file_path.string();
-
         GenericImageFileWriter writer(filename.c_str());
 
         writer.append_image(&image);
-
-        if (aov)
-        {
-            // If the AOV has color data, assume we can save it as half floats.
-            if (aov->has_color_data())
-                writer.set_image_output_format(PixelFormatHalf);
-
-            writer.set_image_channels(aov->get_channel_count(), aov->get_channel_names());
-        }
 
         image_attributes.insert("color_space", "linear");
         writer.set_image_attributes(image_attributes);
@@ -528,10 +1000,10 @@ namespace
             Color4f color(*pixel_ptr);
 
             // Apply color space conversion and clamping.
-            color.unpremultiply();
+            color.unpremultiply_in_place();
             color.rgb() = fast_linear_rgb_to_srgb(color.rgb());
             color = saturate(color);
-            color.premultiply();
+            color.premultiply_in_place();
 
             // Store the pixel color.
             *pixel_ptr = color;
@@ -552,19 +1024,17 @@ namespace
     void write_png_image(
         const bf::path&         file_path,
         const Image&            image,
-        ImageAttributes&        image_attributes)
+        ImageAttributes         image_attributes)
     {
-        const CanvasProperties& props = image.properties();
-
         Image transformed_image(image);
 
-        if (props.m_channel_count == 4)
+        // todo: we may want to be more specific here.
+        if (image.properties().m_channel_count == 4)
             transform_to_srgb(transformed_image);
 
         create_parent_directories(file_path);
 
         const std::string filename = file_path.string();
-
         GenericImageFileWriter writer(filename.c_str());
 
         writer.append_image(&transformed_image);
@@ -578,9 +1048,10 @@ namespace
     }
 
     bool write_image(
+        const Frame&            frame,
         const char*             file_path,
         const Image&            image,
-        const AOV*              aov = nullptr)
+        ImageAttributes         image_attributes)
     {
         assert(file_path);
 
@@ -596,8 +1067,7 @@ namespace
             bf_file_path.replace_extension(extension);
         }
 
-        ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
-        add_chromaticities(image_attributes);
+        add_chromaticities_attributes(image_attributes);
 
         try
         {
@@ -606,8 +1076,7 @@ namespace
                 write_exr_image(
                     bf_file_path,
                     image,
-                    image_attributes,
-                    aov);
+                    image_attributes);
             }
             else if (extension == ".png")
             {
@@ -619,8 +1088,9 @@ namespace
             else
             {
                 RENDERER_LOG_ERROR(
-                    "failed to write image file %s: unsupported image format.",
-                    bf_file_path.string().c_str());
+                    "failed to write image file %s for frame \"%s\": unsupported image format.",
+                    bf_file_path.string().c_str(),
+                    frame.get_path().c_str());
 
                 return false;
             }
@@ -628,8 +1098,9 @@ namespace
         catch (const exception& e)
         {
             RENDERER_LOG_ERROR(
-                "failed to write image file %s: %s.",
+                "failed to write image file %s for frame \"%s\": %s.",
                 bf_file_path.string().c_str(),
+                frame.get_path().c_str(),
                 e.what());
 
             return false;
@@ -638,8 +1109,9 @@ namespace
         stopwatch.measure();
 
         RENDERER_LOG_INFO(
-            "wrote image file %s in %s.",
+            "wrote image file %s for frame \"%s\" in %s.",
             bf_file_path.string().c_str(),
+            frame.get_path().c_str(),
             pretty_time(stopwatch.get_seconds()).c_str());
 
         return true;
@@ -656,16 +1128,20 @@ bool Frame::write_main_image(const char* file_path) const
     const Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
 
     // Write main image.
-    if (!write_image(file_path, half_image))
+    ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
+    if (impl->m_enable_dithering)
+        image_attributes.insert("dither", 42);  // the value of the dither attribute is a hash seed
+    if (!write_image(*this, file_path, half_image, image_attributes))
         return false;
 
-    // Write BCD histograms and covariances if enabled.
+    // Write BCD histograms and covariance AOVs if enabled.
     if (impl->m_denoising_mode == DenoisingMode::WriteOutputs)
     {
-        bf::path boost_file_path(file_path);
-        boost_file_path.replace_extension(".exr");
+        bf::path aov_file_path(file_path);
+        aov_file_path.replace_extension(".exr");
 
-        if (!impl->m_denoiser_aov->write_images(boost_file_path.string().c_str()))
+        ImageAttributes aov_image_attributes = ImageAttributes::create_default_attributes();
+        if (!impl->m_denoiser_aov->write_images(aov_file_path.string().c_str(), aov_image_attributes))
             return false;
     }
 
@@ -676,38 +1152,40 @@ bool Frame::write_aov_images(const char* file_path) const
 {
     assert(file_path);
 
-    bf::path boost_file_path(file_path);
-    const bf::path file_path_ext = boost_file_path.extension();
+    if (impl->m_aovs.empty())
+        return true;
 
-    if (file_path_ext != ".exr")
+    bf::path bf_file_path(file_path);
+    const string extension = lower_case(bf_file_path.extension().string());
+
+    if (extension != ".exr")
     {
-        if (!aovs().empty() && has_extension(file_path_ext))
+        if (has_extension(bf_file_path))
         {
             RENDERER_LOG_WARNING(
                 "aovs cannot be saved to %s files; saving them to exr files instead.",
-                file_path_ext.string().substr(1).c_str());
+                extension.substr(1).c_str());
         }
 
-        boost_file_path.replace_extension(".exr");
+        bf_file_path.replace_extension(".exr");
     }
 
-    const bf::path directory = boost_file_path.parent_path();
-    const string base_file_name = boost_file_path.stem().string();
+    const bf::path directory = bf_file_path.parent_path();
+    const string base_file_name = bf_file_path.stem().string();
 
     bool success = true;
 
-    for (size_t i = 0, e = aovs().size(); i < e; ++i)
+    for (const AOV& aov : impl->m_aovs)
     {
-        const AOV* aov = aovs().get_by_index(i);
-
         // Compute AOV image file path.
-        const string aov_name = aov->get_name();
+        const string aov_name = aov.get_name();
         const string safe_aov_name = make_safe_filename(aov_name);
         const string aov_file_name = base_file_name + "." + safe_aov_name + ".exr";
         const string aov_file_path = (directory / aov_file_name).string();
 
         // Write AOV image.
-        if (!write_image(aov_file_path.c_str(), aov->get_image(), aov))
+        ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
+        if (!aov.write_images(aov_file_path.c_str(), image_attributes))
             success = false;
     }
 
@@ -720,40 +1198,36 @@ bool Frame::write_main_and_aov_images() const
 
     // Write main image.
     {
-        const string filepath = get_parameters().get_optional<string>("output_filename");
-        if (!filepath.empty())
+        const string file_path = get_parameters().get_optional<string>("output_filename");
+        if (!file_path.empty())
         {
-            if (!write_main_image(filepath.c_str()))
+            if (!write_main_image(file_path.c_str()))
                 success = false;
         }
     }
 
     // Write AOV images.
-    for (size_t i = 0, e = aovs().size(); i < e; ++i)
+    for (const AOV& aov : impl->m_aovs)
     {
-        const AOV* aov = aovs().get_by_index(i);
-        bf::path filepath = aov->get_parameters().get_optional<string>("output_filename");
-        if (!filepath.empty())
+        bf::path bf_file_path = aov.get_parameters().get_optional<string>("output_filename");
+        if (!bf_file_path.empty())
         {
-            const bf::path filepath_ext = filepath.extension();
-            if (filepath_ext != ".exr")
+            const string extension = lower_case(bf_file_path.extension().string());
+            if (extension != ".exr")
             {
-                bf::path new_filepath(filepath);
-                new_filepath.replace_extension(".exr");
-
-                if (has_extension(filepath_ext))
+                if (has_extension(bf_file_path))
                 {
                     RENDERER_LOG_WARNING(
-                        "aov \"%s\" cannot be saved to %s file; saving it to \"%s\" instead.",
-                        aov->get_path().c_str(),
-                        filepath_ext.string().substr(1).c_str(),
-                        new_filepath.string().c_str());
+                        "aov \"%s\" cannot be saved to %s file; saving it to exr file instead.",
+                        aov.get_path().c_str(),
+                        extension.substr(1).c_str());
                 }
 
-                filepath = new_filepath;
+                bf_file_path.replace_extension(".exr");
             }
 
-            if (!write_image(filepath.string().c_str(), aov->get_image(), aov))
+            ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
+            if (!aov.write_images(bf_file_path.string().c_str(), image_attributes))
                 success = false;
         }
     }
@@ -767,7 +1241,7 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
     stopwatch.start();
 
     ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
-    add_chromaticities(image_attributes);
+    add_chromaticities_attributes(image_attributes);
     image_attributes.insert("color_space", "linear");
 
     std::vector<Image> images;
@@ -788,25 +1262,23 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
         writer.set_image_attributes(image_attributes);
     }
 
-    for (size_t i = 0, e = impl->m_aovs.size(); i < e; ++i)
+    for (const AOV& aov : impl->m_aovs)
     {
-        const AOV* aov = impl->m_aovs.get_by_index(i);
-        const string aov_name = aov->get_name();
-        const Image& image = aov->get_image();
+        const string aov_name = aov.get_name();
+        const Image& image = aov.get_image();
 
-        if (aov->has_color_data())
+        if (aov.has_color_data())
         {
             // If the AOV has color data, assume we can save it as half floats.
             const CanvasProperties& props = image.properties();
             images.emplace_back(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
             writer.append_image(&(images.back()));
         }
-        else
-            writer.append_image(&image);
+        else writer.append_image(&image);
 
         image_attributes.insert("image_name", aov_name.c_str());
 
-        writer.set_image_channels(aov->get_channel_count(), aov->get_channel_names());
+        writer.set_image_channels(aov.get_channel_count(), aov.get_channel_names());
         writer.set_image_attributes(image_attributes);
     }
 
@@ -819,14 +1291,13 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
 }
 
 bool Frame::archive(
-    const char*         directory,
-    char**              output_path) const
+    const char*                                 directory,
+    char**                                      output_path) const
 {
     assert(directory);
 
     // Construct the name of the image file.
-    const string filename =
-        "autosave." + get_time_stamp_string() + ".exr";
+    const string filename = "autosave." + get_time_stamp_string() + ".exr";
 
     // Construct the path to the image file.
     const string file_path = (bf::path(directory) / filename).string();
@@ -835,7 +1306,8 @@ bool Frame::archive(
     if (output_path)
         *output_path = duplicate_string(file_path.c_str());
 
-    return write_image(file_path.c_str(), *impl->m_image);
+    ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
+    return write_image(*this, file_path.c_str(), *impl->m_image, image_attributes);
 }
 
 void Frame::extract_parameters()
@@ -919,6 +1391,12 @@ void Frame::extract_parameters()
         Vector2u(impl->m_frame_width - 1, impl->m_frame_height - 1));
     impl->m_crop_window = m_params.get_optional<AABB2u>("crop_window", default_crop_window);
 
+    // Retrieve dithering parameter.
+    impl->m_enable_dithering = m_params.get_optional<bool>("enable_dithering", true);
+
+    // Retrieve noise seed.
+    impl->m_noise_seed = m_params.get_optional<uint32>("noise_seed", 0);
+
     // Retrieve denoiser parameters.
     {
         const string denoise_mode = m_params.get_optional<string>("denoiser", "off");
@@ -939,6 +1417,86 @@ void Frame::extract_parameters()
             impl->m_denoising_mode = DenoisingMode::Off;
         }
     }
+
+    // Retrieve checkpoint parameters.
+    {
+        // Create option.
+        impl->m_checkpoint_create = m_params.get_optional<bool>("checkpoint_create", false);
+        impl->m_checkpoint_create_path = "";
+
+        // Check if the checkpoint create path is valid.
+        if (impl->m_checkpoint_create)
+        {
+            string path = m_params.get_optional<string>("checkpoint_create_path", "");
+            const bool use_default_path = path.empty();
+            if (use_default_path)
+                path = m_params.get_required<string>("output_path");
+
+            bf::path bf_path(path.c_str());
+
+            const string extension = lower_case(bf_path.extension().string());
+
+            if (extension != ".exr")
+            {
+                // Only .exr files are allowed.
+                RENDERER_LOG_ERROR("checkpoint file must be an \".exr\" file, disabling checkpoint creation.");
+                impl->m_checkpoint_create = false;
+            }
+            else
+            {
+                // Add ".checkpoint" in the filename.
+                if (use_default_path && !ends_with(path, ".checkpoint.exr"))
+                {
+                    const bf::path directory = bf_path.parent_path();
+                    const string base_file_name = bf_path.stem().string();
+                    path = (directory / (base_file_name + ".checkpoint.exr")).string();
+                }
+
+                impl->m_checkpoint_create_path = path;
+            }
+        }
+
+        // Resume option.
+        impl->m_checkpoint_resume = m_params.get_optional<bool>("checkpoint_resume", false);
+        impl->m_checkpoint_resume_path = "";
+
+        // Check if the checkpoint resume path is valid.
+        if (impl->m_checkpoint_resume)
+        {
+            string path = m_params.get_optional<string>("checkpoint_resume_path", "");
+            const bool use_default_path = path == "";
+            if (use_default_path)
+                path = m_params.get_required<string>("output_path");
+
+            bf::path bf_path(path.c_str());
+
+            const string extension = lower_case(bf_path.extension().string());
+
+            if (extension != ".exr")
+            {
+                // Only .exr files are allowed.
+                RENDERER_LOG_ERROR("checkpoint file must be an \".exr\" file, disabling checkpoint resuming.");
+                impl->m_checkpoint_resume = false;
+            }
+            else
+            {
+                // Add ".checkpoint" in the filename.
+                if (use_default_path && !ends_with(path, ".checkpoint.exr"))
+                {
+                    const bf::path directory = bf_path.parent_path();
+                    const string base_file_name = bf_path.stem().string();
+                    path = (directory / (base_file_name + ".checkpoint.exr")).string();
+                }
+
+                impl->m_checkpoint_resume_path = path;
+            }
+        }
+    }
+}
+
+AOVContainer& Frame::internal_aovs() const
+{
+    return impl->m_internal_aovs;
 }
 
 
@@ -1013,6 +1571,22 @@ DictionaryArray FrameFactory::get_input_metadata()
                     .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.5"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "noise_seed")
+            .insert("label", "Noise Seed")
+            .insert("type", "text")
+            .insert("use", "optional")
+            .insert("default", "0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "enable_dithering")
+            .insert("label", "Dithering")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "true"));
 
     metadata.push_back(
         Dictionary()
@@ -1121,7 +1695,7 @@ DictionaryArray FrameFactory::get_input_metadata()
     metadata.push_back(
         Dictionary()
             .insert("name", "mark_invalid_pixels")
-            .insert("label", "Mark Invalid pixels")
+            .insert("label", "Mark Invalid Pixels")
             .insert("type", "boolean")
             .insert("use", "optional")
             .insert("default", "false")

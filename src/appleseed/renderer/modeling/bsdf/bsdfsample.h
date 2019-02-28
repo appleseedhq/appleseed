@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_BSDFSAMPLE_H
-#define APPLESEED_RENDERER_MODELING_BSDF_BSDFSAMPLE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -35,6 +34,7 @@
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/bsdf/bsdf.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -58,25 +58,30 @@ class BSDFSample
     foundation::Basis3f             m_shading_basis;        // world space shading basis at the point where sampling is done
     foundation::Dual3f              m_outgoing;             // world space outgoing direction, unit-length
 
-    // Roughness.
-    float                           m_max_roughness;        // BSDF roughness
-
     // Outputs.
-    ScatteringMode::Mode            m_mode;                 // scattering mode
     foundation::Dual3f              m_incoming;             // world space incoming direction, unit-length, defined only if m_mode != None
-    float                           m_probability;          // PDF value, defined only if m_mode != None
     DirectShadingComponents         m_value;                // BSDF value, defined only if m_mode != None
     AOVComponents                   m_aov_components;
+    float                           m_min_roughness;        // minimum BSDF roughness down the line if Roughness Clamping is enabled
 
     // Constructor.
     BSDFSample(
         const ShadingPoint*         shading_point,
         const foundation::Dual3f&   outgoing);
 
+    void set_to_absorption();
+    void set_to_scattering(const ScatteringMode::Mode mode, const float probability);
+
+    ScatteringMode::Mode get_mode() const;
+    float get_probability() const;
+
     void compute_reflected_differentials();
     void compute_transmitted_differentials(const float eta);
 
   private:
+    ScatteringMode::Mode            m_mode;                 // scattering mode
+    float                           m_probability;          // PDF value
+
     void compute_normal_derivatives(
         foundation::Vector3f&       dndx,
         foundation::Vector3f&       dndy,
@@ -98,10 +103,46 @@ inline BSDFSample::BSDFSample(
   , m_geometric_normal(shading_point->get_geometric_normal())
   , m_shading_basis(shading_point->get_shading_basis())
   , m_outgoing(outgoing)
-  , m_mode(ScatteringMode::None)
+  , m_min_roughness(0.0f)
 {
+    set_to_absorption();
 }
 
-}       // namespace renderer
+inline void BSDFSample::set_to_absorption()
+{
+    m_mode = ScatteringMode::None;
+    m_probability = 0.0f;
+}
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_BSDFSAMPLE_H
+inline void BSDFSample::set_to_scattering(const ScatteringMode::Mode mode, const float probability)
+{
+    assert(
+        mode == ScatteringMode::None ||
+        mode == ScatteringMode::Diffuse ||
+        mode == ScatteringMode::Glossy ||
+        mode == ScatteringMode::Specular);
+    assert(
+        (mode == ScatteringMode::None     && probability == 0.0f) ||
+        (mode == ScatteringMode::Specular && probability == BSDF::DiracDelta) ||
+        (mode != ScatteringMode::Specular && probability > 0.0f));
+
+    m_mode = mode;
+    m_probability = probability;
+}
+
+inline ScatteringMode::Mode BSDFSample::get_mode() const
+{
+    return m_mode;
+}
+
+inline float BSDFSample::get_probability() const
+{
+    assert(
+        (m_mode == ScatteringMode::None     && m_probability == 0.0f) ||
+        (m_mode == ScatteringMode::Specular && m_probability == BSDF::DiracDelta) ||
+        (m_mode != ScatteringMode::Specular && m_probability > 0.0f));
+
+    return m_probability;
+}
+
+}   // namespace renderer

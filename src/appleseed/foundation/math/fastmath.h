@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_FASTMATH_H
-#define APPLESEED_FOUNDATION_MATH_FASTMATH_H
+#pragma once
 
 // appleseed.foundation headers.
 #ifdef APPLESEED_USE_SSE
@@ -669,6 +668,4 @@ inline void faster_exp(float x[4])
 
 #endif  // APPLESEED_USE_SSE
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_FASTMATH_H
+}   // namespace foundation

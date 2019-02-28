@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_PATH_H
-#define APPLESEED_FOUNDATION_PLATFORM_PATH_H
+#pragma once
 
 // appleseed.foundation headers.
 #ifdef _WIN32
@@ -97,6 +96,11 @@ APPLESEED_DLLSYMBOL const char* get_home_directory();
 // Operations on boost::filesystem::path objects.
 //
 
+// Try to call boost::filesystem::canonical() on a given path such that it won't fail
+// if the path does not exist, then call boost::filesystem::path::make_preferred() on
+// the result.
+boost::filesystem::path safe_canonical(const boost::filesystem::path& p);
+
 // Return true if a path has a non-empty extension.
 bool has_extension(const boost::filesystem::path& p);
 
@@ -119,6 +123,21 @@ boost::filesystem::path find_next_available_path(const boost::filesystem::path& 
 // Inline implementation of functions using boost::filesystem to allow using them
 // outside of appleseed's shared library (for instance in appleseed.studio).
 //
+
+inline boost::filesystem::path safe_canonical(const boost::filesystem::path& p)
+{
+    auto result = p;
+
+    try
+    {
+        result = boost::filesystem::canonical(result);
+    }
+    catch (const boost::filesystem::filesystem_error&)
+    {
+    }
+
+    return result.make_preferred();
+}
 
 inline bool has_extension(const boost::filesystem::path& p)
 {
@@ -177,6 +196,4 @@ inline boost::filesystem::path find_next_available_path(const boost::filesystem:
     return boost::filesystem::path(get_numbered_string(pattern, 1));
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_PATH_H
+}   // namespace foundation

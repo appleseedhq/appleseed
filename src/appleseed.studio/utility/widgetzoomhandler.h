@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_WIDGETZOOMHANDLER_H
-#define APPLESEED_STUDIO_UTILITY_WIDGETZOOMHANDLER_H
+#pragma once
 
 // Qt headers.
 #include <QObject>
@@ -87,7 +86,5 @@ class WidgetZoomHandler
     void apply_scale_factor();
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_UTILITY_WIDGETZOOMHANDLER_H
+}   // namespace studio
+}   // namespace appleseed

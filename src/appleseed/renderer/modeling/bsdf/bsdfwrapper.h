@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_BSDFWRAPPER_H
-#define APPLESEED_RENDERER_MODELING_BSDF_BSDFWRAPPER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -125,6 +124,14 @@ void BSDFWrapper<BSDFImpl, Cull>::sample(
     assert(foundation::is_normalized(sample.m_geometric_normal));
     assert(foundation::is_normalized(sample.m_outgoing.get_value()));
 
+#ifndef NDEBUG
+    // Save the sampling context at the beginning of the iteration.
+    const SamplingContext backup_sampling_context(sampling_context);
+
+    // Resume execution here to reliably reproduce problems downstream.
+    sampling_context = backup_sampling_context;
+#endif
+
     BSDFImpl::sample(
         sampling_context,
         data,
@@ -133,10 +140,29 @@ void BSDFWrapper<BSDFImpl, Cull>::sample(
         modes,
         sample);
 
-    if (sample.m_mode != ScatteringMode::None)
+    if (sample.get_mode() != ScatteringMode::None)
     {
         assert(foundation::is_normalized(sample.m_incoming.get_value(), 1.0e-5f));
-        assert(sample.m_probability == BSDFImpl::DiracDelta || sample.m_probability > 0.0f);
+
+        // Disabled until BSDF are evaluated in local space, because the numerous
+        // conversions between local space and world space kill precision.
+        //
+        // #ifndef NDEBUG
+        //         const float ref_probability =
+        //             evaluate_pdf(
+        //                 data,
+        //                 adjoint,
+        //                 sample.m_geometric_normal,
+        //                 sample.m_shading_basis,
+        //                 sample.m_outgoing.get_value(),
+        //                 sample.m_incoming.get_value(),
+        //                 modes);
+        // 
+        //         assert(
+        //             (sample.m_probability == BSDFImpl::DiracDelta && ref_probability == 0.0f) ||
+        //             (sample.m_probability > 0.0f && feq(sample.m_probability, ref_probability, 1.0e-2f)) ||
+        //             (sample.m_probability > 0.0f && ref_probability == 0.0f));  // todo: this case is worrisome!
+        // #endif
 
         if (cosine_mult)
         {
@@ -186,7 +212,6 @@ float BSDFWrapper<BSDFImpl, Cull>::evaluate(
             incoming,
             modes,
             value);
-
     assert(probability >= 0.0f);
 
     if (probability > 0.0f && cosine_mult)
@@ -234,7 +259,6 @@ float BSDFWrapper<BSDFImpl, Cull>::evaluate_pdf(
             outgoing,
             incoming,
             modes);
-
     assert(probability >= 0.0f);
 
     return probability;
@@ -252,6 +276,4 @@ bool BSDFWrapper<BSDFImpl, Cull>::is_culled(
     return BSDFImpl::get_type() == BSDF::Reflective ? cos_n < 0.0f : cos_n > 0.0f;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_BSDFWRAPPER_H
+}   // namespace renderer

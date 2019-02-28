@@ -35,7 +35,7 @@
 
 shader as_maya_crater
 [[
-    string as_maya_node_name = "crater"
+    string as_node_name = "crater"
 ]]
 (
     float in_shaker = 1.5

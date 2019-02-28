@@ -97,6 +97,7 @@
 #include "renderer/modeling/volume/volume.h"
 #include "renderer/modeling/volume/volumefactoryregistrar.h"
 #include "renderer/utility/paramarray.h"
+#include "renderer/utility/pluginstore.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -400,6 +401,7 @@ namespace
         ElementMatrix,
         ElementObject,
         ElementObjectInstance,
+        ElementOSLCode,
         ElementOutput,
         ElementParameter,
         ElementParameters,
@@ -508,7 +510,6 @@ namespace
     {
       public:
         explicit ParametersElementHandler(ParseContext& context)
-          : m_context(context)
         {
         }
 
@@ -532,8 +533,7 @@ namespace
         }
 
       private:
-        ParseContext&   m_context;
-        string          m_name;
+        string m_name;
     };
 
 
@@ -1675,7 +1675,6 @@ namespace
     {
       public:
         explicit ObjectInstanceElementHandler(ParseContext& context)
-          : m_context(context)
         {
         }
 
@@ -1746,7 +1745,6 @@ namespace
       private:
         typedef TransformSequenceElementHandler<ParametrizedElementHandler> Base;
 
-        ParseContext&                       m_context;
         auto_release_ptr<ObjectInstance>    m_object_instance;
         StringDictionary                    m_front_material_mappings;
         StringDictionary                    m_back_material_mappings;
@@ -1764,7 +1762,6 @@ namespace
     {
       public:
         explicit AssemblyInstanceElementHandler(ParseContext& context)
-          : m_context(context)
         {
         }
 
@@ -1799,10 +1796,38 @@ namespace
       private:
         typedef TransformSequenceElementHandler<ParametrizedElementHandler> Base;
 
-        ParseContext&                       m_context;
         auto_release_ptr<AssemblyInstance>  m_assembly_instance;
         string                              m_name;
         string                              m_assembly;
+    };
+
+
+    //
+    // <osl_code> element handler.
+    //
+
+    class OSLCodeElementHandler
+      : public ElementHandlerBaseType
+    {
+      public:
+        explicit OSLCodeElementHandler(ParseContext& context)
+        {
+        }
+
+        void characters(
+            const XMLCh* const  chars,
+            const XMLSize_t     length) override
+        {
+            m_code = trim_both(transcode(chars));
+        }
+
+        const string& get_code() const
+        {
+            return m_code;
+        }
+
+      private:
+        string  m_code;
     };
 
 
@@ -1815,7 +1840,6 @@ namespace
     {
       public:
         explicit ShaderElementHandler(ParseContext& context)
-          : m_context(context)
         {
         }
 
@@ -1827,31 +1851,56 @@ namespace
             m_layer = get_value(attrs, "layer");
         }
 
-        const string& type() const
+        void end_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler) override
+        {
+            switch (element)
+            {
+              case ElementOSLCode:
+                {
+                    OSLCodeElementHandler* code_handler =
+                        static_cast<OSLCodeElementHandler*>(handler);
+                    m_code = code_handler->get_code();
+                }
+                break;
+
+              default:
+                ParametrizedElementHandler::end_child_element(element, handler);
+                break;
+            }
+        }
+
+        const string& get_type() const
         {
             return m_type;
         }
 
-        const string& name() const
+        const string& get_name() const
         {
             return m_name;
         }
 
-        const string& layer() const
+        const string& get_layer() const
         {
             return m_layer;
         }
 
-        const ParamArray& params() const
+        const string& get_code() const
+        {
+            return m_code;
+        }
+
+        const ParamArray& get_params() const
         {
             return m_params;
         }
 
       private:
-        ParseContext&   m_context;
-        string          m_type;
-        string          m_name;
-        string          m_layer;
+        string  m_type;
+        string  m_name;
+        string  m_layer;
+        string  m_code;
     };
 
 
@@ -1864,7 +1913,6 @@ namespace
     {
       public:
         explicit ShaderConnectionElementHandler(ParseContext& context)
-          : m_context(context)
         {
         }
 
@@ -1897,11 +1945,10 @@ namespace
         }
 
       private:
-        ParseContext&   m_context;
-        string          m_src_layer;
-        string          m_src_param;
-        string          m_dst_layer;
-        string          m_dst_param;
+        string m_src_layer;
+        string m_src_param;
+        string m_dst_layer;
+        string m_dst_param;
     };
 
 
@@ -1914,7 +1961,6 @@ namespace
     {
       public:
         explicit ShaderGroupElementHandler(ParseContext& context)
-          : m_context(context)
         {
         }
 
@@ -1934,11 +1980,24 @@ namespace
                 {
                     ShaderElementHandler* shader_handler =
                         static_cast<ShaderElementHandler*>(handler);
-                    m_shader_group->add_shader(
-                        shader_handler->type().c_str(),
-                        shader_handler->name().c_str(),
-                        shader_handler->layer().c_str(),
-                        shader_handler->params());
+
+                    if (shader_handler->get_code().empty())
+                    {
+                        m_shader_group->add_shader(
+                            shader_handler->get_type().c_str(),
+                            shader_handler->get_name().c_str(),
+                            shader_handler->get_layer().c_str(),
+                            shader_handler->get_params());
+                    }
+                    else
+                    {
+                        m_shader_group->add_source_shader(
+                            shader_handler->get_type().c_str(),
+                            shader_handler->get_name().c_str(),
+                            shader_handler->get_layer().c_str(),
+                            shader_handler->get_code().c_str(),
+                            shader_handler->get_params());
+                    }
                 }
                 break;
 
@@ -1962,7 +2021,6 @@ namespace
         }
 
       private:
-        ParseContext&                   m_context;
         string                          m_name;
         auto_release_ptr<ShaderGroup>   m_shader_group;
     };
@@ -2218,12 +2276,21 @@ namespace
       public:
         explicit SceneElementHandler(ParseContext& context)
           : BaseGroupElementHandler(context)
+          , m_project(nullptr)
         {
+        }
+
+        void set_project(Project* project)
+        {
+            m_project = project;
         }
 
         void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
+
+            // Discover and load plugins before building the scene.
+            m_project->get_plugin_store().load_all_plugins_from_paths(m_project->search_paths());
 
             m_scene = SceneFactory::create();
         }
@@ -2339,6 +2406,7 @@ namespace
         }
 
       private:
+        Project*                m_project;
         auto_release_ptr<Scene> m_scene;
     };
 
@@ -2552,7 +2620,6 @@ namespace
     {
       public:
         explicit FrameElementHandler(ParseContext& context)
-          : m_context(context)
         {
         }
 
@@ -2630,7 +2697,6 @@ namespace
         }
 
       private:
-        ParseContext&                   m_context;
         auto_release_ptr<Frame>         m_frame;
         string                          m_name;
         AOVContainer                    m_aovs;
@@ -2647,8 +2713,7 @@ namespace
     {
       public:
         explicit OutputElementHandler(ParseContext& context)
-          : m_context(context)
-          , m_project(nullptr)
+          : m_project(nullptr)
         {
         }
 
@@ -2678,7 +2743,6 @@ namespace
         }
 
       private:
-        ParseContext&   m_context;
         Project*        m_project;
     };
 
@@ -2766,8 +2830,7 @@ namespace
     {
       public:
         explicit ConfigurationsElementHandler(ParseContext& context)
-          : m_context(context)
-          , m_project(nullptr)
+          : m_project(nullptr)
         {
         }
 
@@ -2819,7 +2882,6 @@ namespace
         }
 
       private:
-        ParseContext&   m_context;
         Project*        m_project;
     };
 
@@ -2833,7 +2895,6 @@ namespace
     {
       public:
         explicit SearchPathElementHandler(ParseContext& context)
-          : m_context(context)
         {
         }
 
@@ -2850,7 +2911,6 @@ namespace
         }
 
       private:
-        ParseContext&   m_context;
         string          m_path;
     };
 
@@ -2872,11 +2932,6 @@ namespace
         void set_project(Project* project)
         {
             m_project = project;
-        }
-
-        void end_element() override
-        {
-            m_project->reinitialize_factory_registrars();
         }
 
         void end_child_element(
@@ -2920,8 +2975,7 @@ namespace
     {
       public:
         explicit DisplayElementHandler(ParseContext& context)
-          : m_context(context)
-          , m_project(nullptr)
+          : m_project(nullptr)
         {
         }
 
@@ -2943,9 +2997,8 @@ namespace
         }
 
       private:
-        ParseContext&   m_context;
-        Project*        m_project;
-        string          m_name;
+        Project*    m_project;
+        string      m_name;
     };
 
 
@@ -2990,38 +3043,23 @@ namespace
             switch (element)
             {
               case ElementConfigurations:
-                {
-                    ConfigurationsElementHandler* configs_handler =
-                        static_cast<ConfigurationsElementHandler*>(handler);
-                    configs_handler->set_project(m_project);
-                }
+                static_cast<ConfigurationsElementHandler*>(handler)->set_project(m_project);
                 break;
 
               case ElementOutput:
-                {
-                    OutputElementHandler* output_handler =
-                        static_cast<OutputElementHandler*>(handler);
-                    output_handler->set_project(m_project);
-                }
+                static_cast<OutputElementHandler*>(handler)->set_project(m_project);
                 break;
 
               case ElementScene:
+                static_cast<SceneElementHandler*>(handler)->set_project(m_project);
                 break;
 
               case ElementSearchPaths:
-                {
-                    SearchPathsElementHandler* paths_handler =
-                        static_cast<SearchPathsElementHandler*>(handler);
-                    paths_handler->set_project(m_project);
-                }
+                static_cast<SearchPathsElementHandler*>(handler)->set_project(m_project);
                 break;
 
               case ElementDisplay:
-                {
-                    DisplayElementHandler* display_handler =
-                        static_cast<DisplayElementHandler*>(handler);
-                    display_handler->set_project(m_project);
-                }
+                static_cast<DisplayElementHandler*>(handler)->set_project(m_project);
                 break;
 
               assert_otherwise;
@@ -3109,6 +3147,7 @@ namespace
             register_factory_helper<ObjectElementHandler>("object", ElementObject);
             register_factory_helper<ObjectInstanceElementHandler>("object_instance", ElementObjectInstance);
             register_factory_helper<OutputElementHandler>("output", ElementOutput);
+            register_factory_helper<OSLCodeElementHandler>("osl_code", ElementOSLCode);
             register_factory_helper<ParameterElementHandler>("parameter", ElementParameter);
             register_factory_helper<ParametersElementHandler>("parameters", ElementParameters);
             register_factory_helper<PostProcessingStageElementHandler>("post_processing_stage", ElementPostProcessingStage);
@@ -3270,7 +3309,7 @@ auto_release_ptr<Project> ProjectFileReader::read(
     if (!xerces_context.is_initialized())
         return auto_release_ptr<Project>(nullptr);
 
-    if ((options & OmitProjectSchemaValidation) == false && schema_filepath == nullptr)
+    if (!(options & OmitProjectSchemaValidation) && schema_filepath == nullptr)
     {
         RENDERER_LOG_ERROR(
             "project schema validation enabled, but no schema filepath provided.");
@@ -3339,7 +3378,7 @@ auto_release_ptr<Assembly> ProjectFileReader::read_archive(
     if (!xerces_context.is_initialized())
         return auto_release_ptr<Assembly>(nullptr);
 
-    if ((options & OmitProjectSchemaValidation) == false && schema_filepath == nullptr)
+    if (!(options & OmitProjectSchemaValidation) && schema_filepath == nullptr)
     {
         RENDERER_LOG_ERROR(
             "archive schema validation enabled, but no schema filepath provided.");
@@ -3426,7 +3465,7 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
     auto_release_ptr<Project> project(ProjectFactory::create(project_filepath));
     project->set_path(project_filepath);
 
-    if ((options & OmitSearchPaths) == false)
+    if (!(options & OmitSearchPaths))
     {
         project->search_paths().set_root_path(
             bf::absolute(project_filepath).parent_path().string());
@@ -3454,7 +3493,7 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
     unique_ptr<SAX2XMLReader> parser(XMLReaderFactory::createXMLReader());
     parser->setFeature(XMLUni::fgSAX2CoreNameSpaces, true);         // perform namespace processing
 
-    if ((options & OmitProjectSchemaValidation) == false)
+    if (!(options & OmitProjectSchemaValidation))
     {
         assert(schema_filepath);
         parser->setFeature(XMLUni::fgSAX2CoreValidation, true);     // report all validation errors

@@ -200,12 +200,12 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(1,  log2_int(2));
         EXPECT_EQ(1,  log2_int(3));
         EXPECT_EQ(2,  log2_int(4));
-        EXPECT_EQ(5,  log2_int<int16>(1 << 5));
-        EXPECT_EQ(5,  log2_int<int32>(1 << 5));
-        EXPECT_EQ(5,  log2_int<int64>(1 << 5));
-        EXPECT_EQ(5,  log2_int<uint16>(1 << 5));
-        EXPECT_EQ(5,  log2_int<uint32>(1 << 5));
-        EXPECT_EQ(5,  log2_int<uint64>(1 << 5));
+        EXPECT_EQ(5,  log2_int<int16>(1UL << 5));
+        EXPECT_EQ(5,  log2_int<int32>(1UL << 5));
+        EXPECT_EQ(5,  log2_int<int64>(1UL << 5));
+        EXPECT_EQ(5,  log2_int<uint16>(1UL << 5));
+        EXPECT_EQ(5,  log2_int<uint32>(1UL << 5));
+        EXPECT_EQ(5,  log2_int<uint64>(1UL << 5));
         EXPECT_EQ(16, log2_int(1UL << 16));
         EXPECT_EQ(31, log2_int(1UL << 31));
     }
@@ -304,6 +304,19 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(3221225472UL, truncate<uint32>(3221225472.0));
     }
 
+    TEST_CASE(Round_FloatToSignedInteger)
+    {
+        EXPECT_EQ( 0, round<int>(0.0f));
+        EXPECT_EQ( 3, round<int>(3.0f));
+        EXPECT_EQ( 3, round<int>(3.1f));
+        EXPECT_EQ( 4, round<int>(3.5f));
+        EXPECT_EQ( 4, round<int>(3.9f));
+        EXPECT_EQ(-3, round<int>(-3.0f));
+        EXPECT_EQ(-3, round<int>(-3.1f));
+        EXPECT_EQ(-4, round<int>(-3.5f));
+        EXPECT_EQ(-4, round<int>(-3.9f));
+    }
+
     TEST_CASE(FastFloor)
     {
         EXPECT_EQ(-2.0f, fast_floor(-1.5f));
@@ -326,17 +339,16 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(+2.0f, fast_ceil(+1.5f));
     }
 
-    TEST_CASE(Round_FloatToSignedInteger)
+    TEST_CASE(Frac)
     {
-        EXPECT_EQ(0, round<int>(0.0f));
-        EXPECT_EQ(3, round<int>(3.0f));
-        EXPECT_EQ(3, round<int>(3.1f));
-        EXPECT_EQ(4, round<int>(3.5f));
-        EXPECT_EQ(4, round<int>(3.9f));
-        EXPECT_EQ(-3, round<int>(-3.0f));
-        EXPECT_EQ(-3, round<int>(-3.1f));
-        EXPECT_EQ(-4, round<int>(-3.5f));
-        EXPECT_EQ(-4, round<int>(-3.9f));
+        EXPECT_FEQ(0.0, frac(+0.0));
+        EXPECT_FEQ(0.5, frac(+0.5));
+        EXPECT_FEQ(0.0, frac(+1.0));
+        EXPECT_FEQ(0.2, frac(+4.2));
+        EXPECT_FEQ(0.0, frac(-0.0));
+        EXPECT_FEQ(0.5, frac(-0.5));
+        EXPECT_FEQ(0.0, frac(-1.0));
+        EXPECT_FEQ(0.8, frac(-4.2));
     }
 
     TEST_CASE(Mod)

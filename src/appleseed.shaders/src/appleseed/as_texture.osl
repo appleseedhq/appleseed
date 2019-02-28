@@ -34,16 +34,18 @@
 
 shader as_texture
 [[
-    string as_maya_node_name = "asTexture",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/2d:swatch/AppleseedRenderSwatch:texture",
-    string as_blender_node_name = "asTexture",
-    string as_blender_category = "texture2d",
     string help = "Texture lookup node.",
     string icon = "asTexture.png",
-    int as_maya_type_id = 0x001279fa,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_texture.html#label-as-texture",
+
+    string as_node_name = "asTexture",
+    string as_category = "texture2d",
+
     string as_max_class_id = "1220608380 1037264235",
     string as_max_plugin_type = "texture",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_texture.html#label-as-texture"
+
+    int as_maya_type_id = 0x001279fa,
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/2d:swatch/AppleseedRenderSwatch:texture"
 ]]
 (
     string in_filename = ""
@@ -310,42 +312,48 @@ shader as_texture
         }
     }
 
-    string wrap_mode[2], texname = in_filename;
     float uv_coords[2];
+    string wrap_mode[2], texname = "";
+
+    set_wrap_mode(in_s_wrap, in_t_wrap, wrap_mode);
 
     if (in_atlas_type == 0)
     {
-        uv_coords[0] = mod(in_texture_coords[0], UVWRAP);
-        uv_coords[1] = mod(in_texture_coords[1], UVWRAP);
+        texname = in_filename;
 
-        set_wrap_mode(in_s_wrap, in_t_wrap, wrap_mode);
+        uv_coords[0] = in_texture_coords[0];
+        uv_coords[1] = in_texture_coords[1];
     }
     else
     {
         uv_coords[0] = u;
         uv_coords[1] = v;
-        wrap_mode[0] = "default";
-        wrap_mode[1] = "default";
 
         //
         // Reference:
         //
-        //  Mudbox separates with underscores nad starts the UV tiles at 1,
-        //  so exporting a layer as a PNG basename_color for instance, results
-        //  in basename_color_u1_v1.png.
+        //  Mudbox appends the U and V tiles to the texture name in the form
+        //  filename_u<U>_v<V>.extension with the UV tiles starting at 1.
+        //  So the first U and V tiles of a texture foobar.png would result
+        //  in foobar_u1_v1.png.
         //
-        //  ZBrush does the same as Mudbox, but starts at 0, so a file would be
-        //  basename_color_u0_v0.png.
+        //  ZBrush does the same as Mudbox but the UV tiles start at 0 instead
+        //  of 1, resulting in foobar_U0_V0.png for the first U and V tiles
+        //  respectively.
         //
-        //  Mari however separates the files with dots, so a file would result
-        //  in basename_color.1001.png.
+        //  Mari encodes the UV tiles as 1000+(u+1+v*10) and appends this to
+        //  the texture name using dots as separators. So a texture foobar.png
+        //  would result in foobar.1001.png for the first U and V tiles.
         //
-        //  To avoid conflicts with potential frame sequences, we assume first
-        //  that UV tiles for UDIM case case 4 digits, and always appear
-        //  _before_ (padded) frame numbers.
+        //  When using frame sequences we assume that the first dot separated
+        //  digits are the UDIM values, that is, that the UDIM values always 
+        //  appear before the (padded) frame numbers.
         //
-        //  Finally, OIIO expects _<U>_<V> for the Mudbox/Brush case, and
-        //  <UDIM> for the Mari case.
+        //  Finally the OIIO texture system expects the filename to have the
+        //  UV tiles or UDIM values replaced by the strings _<u>_<v>,
+        //  _<U>_<V>, and <UDIM> for the Mudbox, ZBrush and Mari cases
+        //  respectively, so we try to match the pattern and add the strings
+        //  automatically.
         //
 
         if (in_atlas_type == 1)
@@ -374,22 +382,19 @@ shader as_texture
         }
         else if (in_atlas_type == 3)
         {
-            string results[20], texname = "";
-            int nums = split(in_filename, results, "."), found_tiles = 0;
+            // We assume the file name consists of whatever convention, but
+            // that the UDIM is the first occurrence of 4 digits separated
+            // by a dot character, with the 1st one in [1-9] range and the
+            // remaining 3 in [0-9] range.
 
-            for (int i = 0; i < nums; ++i)
+            int match[2];
+
+            if (regex_search(in_filename, match, "\.[1-9][0-9]{3}\."))
             {
-                if (!found_tiles && regex_search(results[i], "^[0-9]{4}"))
-                {
-                    results[i] = "<UDIM>";
-                    found_tiles = 1;
-                }
-                texname = concat(texname, results[i]);
-
-                if (i < nums - 1)
-                {
-                    texname = concat(texname, results[i]);
-                }
+                texname = concat(
+                    substr(in_filename, 0, match[0]),
+                    ".<UDIM>.",
+                    substr(in_filename, match[1]));
             }
         }
         else

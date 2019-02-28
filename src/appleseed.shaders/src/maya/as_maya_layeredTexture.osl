@@ -33,7 +33,7 @@
 
 shader as_maya_layeredTexture
 [[
-    string as_maya_node_name = "layeredTexture"
+    string as_node_name = "layeredTexture"
 ]]
 (
     color in_color[] = {color(0)}

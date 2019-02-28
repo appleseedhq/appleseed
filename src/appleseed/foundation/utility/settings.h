@@ -27,11 +27,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_SETTINGS_H
-#define APPLESEED_FOUNDATION_UTILITY_SETTINGS_H
+#pragma once
 
 // Interface headers.
 #include "foundation/utility/settings/settingsfilereader.h"
 #include "foundation/utility/settings/settingsfilewriter.h"
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_SETTINGS_H

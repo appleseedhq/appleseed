@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_XMLFILEBENCHMARKLISTENER_H
-#define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_XMLFILEBENCHMARKLISTENER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/benchmark/benchmarklistenerbase.h"
@@ -117,6 +116,4 @@ class APPLESEED_DLLSYMBOL XMLFileBenchmarkListener
 // Create an instance of a benchmark listener that outputs to a XML file.
 APPLESEED_DLLSYMBOL XMLFileBenchmarkListener* create_xmlfile_benchmark_listener();
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_BENCHMARK_XMLFILEBENCHMARKLISTENER_H
+}   // namespace foundation

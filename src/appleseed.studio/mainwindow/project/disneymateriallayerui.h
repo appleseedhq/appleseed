@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_DISNEYMATERIALLAYERUI_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_DISNEYMATERIALLAYERUI_H
+#pragma once
 
 // appleseed.studio headers.
 #include "utility/inputwidgetproxies.h"
@@ -132,7 +131,5 @@ class DisneyMaterialLayerUI
     void unfold();
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_DISNEYMATERIALLAYERUI_H
+}   // namespace studio
+}   // namespace appleseed

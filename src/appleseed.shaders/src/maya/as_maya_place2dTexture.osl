@@ -33,7 +33,7 @@
 
 shader as_maya_place2dTexture
 [[
-    string as_maya_node_name = "place2dTexture",
+    string as_node_name = "place2dTexture",
     string help = "ZOMGER",
     string URL = "http://www.appleseedhq.net"
 ]]

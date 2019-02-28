@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_MATERIAL_BUMPMAPPINGMODIFIER_H
-#define APPLESEED_RENDERER_MODELING_MATERIAL_BUMPMAPPINGMODIFIER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/material/ibasismodifier.h"
@@ -72,6 +71,4 @@ class BumpMappingModifier
         const float                 v) const;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_BUMPMAPPINGMODIFIER_H
+}   // namespace renderer

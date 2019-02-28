@@ -55,13 +55,11 @@ namespace renderer
 Tracer::Tracer(
     const Scene&                scene,
     const Intersector&          intersector,
-    TextureCache&               texture_cache,
     OSLShaderGroupExec&         shadergroup_exec,
     const float                 transparency_threshold,
     const size_t                max_iterations,
     const bool                  print_details)
   : m_intersector(intersector)
-  , m_texture_cache(texture_cache)
   , m_shadergroup_exec(shadergroup_exec)
   , m_assume_no_alpha_mapping(!scene.uses_alpha_mapping())
   , m_assume_no_participating_media(!scene.has_participating_media())

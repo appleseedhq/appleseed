@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_ENVIRONMENTEDF_H
-#define APPLESEED_RENDERER_API_ENVIRONMENTEDF_H
+#pragma once
 
 // API headers.
 #include "renderer/modeling/environmentedf/constantenvironmentedf.h"
@@ -43,5 +42,3 @@
 #include "renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h"
 #include "renderer/modeling/environmentedf/oslenvironmentedf.h"
 #include "renderer/modeling/environmentedf/preethamenvironmentedf.h"
-
-#endif  // !APPLESEED_RENDERER_API_ENVIRONMENTEDF_H

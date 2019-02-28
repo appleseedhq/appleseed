@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_KNN_KNN_NODE_H
-#define APPLESEED_FOUNDATION_MATH_KNN_KNN_NODE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -189,7 +188,5 @@ inline size_t Node<T>::get_point_count() const
     return static_cast<size_t>(m_point_count);
 }
 
-}       // namespace knn
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_KNN_KNN_NODE_H
+}   // namespace knn
+}   // namespace foundation

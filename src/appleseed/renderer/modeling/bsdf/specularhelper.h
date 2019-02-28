@@ -26,18 +26,16 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_SPECULARHELPER_H
-#define APPLESEED_RENDERER_MODELING_BSDF_SPECULARHELPER_H
+#pragma once
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/scalar.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
 
 namespace renderer
@@ -55,30 +53,22 @@ class SpecularBRDFHelper
         const foundation::Vector3f& outgoing = sample.m_outgoing.get_value();
 
         // Compute the incoming direction.
-        const foundation::Vector3f incoming(
-            BSDF::force_above_surface(
-                foundation::reflect(outgoing, n),
-                sample.m_geometric_normal));
+        foundation::Vector3f incoming = foundation::reflect(outgoing, n);
+        BSDF::force_above_surface(incoming, sample.m_geometric_normal);
 
         // No reflection below the shading surface.
         const float cos_in = dot(incoming, n);
-        if (cos_in < 0.0f)
+        if (cos_in <= 0.0f)
             return;
 
+        sample.set_to_scattering(ScatteringMode::Specular, BSDF::DiracDelta);
+
         f(outgoing, n, n, sample.m_value.m_glossy);
-        sample.m_value.m_glossy *= (1.0f / cos_in);
-
-        // The probability density of the sampled direction is the Dirac delta.
-        sample.m_probability = BSDF::DiracDelta;
-
-        // Set the scattering mode.
-        sample.m_mode = ScatteringMode::Specular;
+        sample.m_value.m_glossy /= cos_in;
 
         sample.m_incoming = foundation::Dual3f(incoming);
         sample.compute_reflected_differentials();
     }
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_SPECULARHELPER_H
+}   // namespace renderer

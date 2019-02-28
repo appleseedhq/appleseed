@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_QTLOGTARGET_H
-#define APPLESEED_STUDIO_MAINWINDOW_QTLOGTARGET_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -77,7 +76,5 @@ class QtLogTarget
     void signal_append_item(const QColor& color, const QString& text);
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_QTLOGTARGET_H
+}   // namespace studio
+}   // namespace appleseed

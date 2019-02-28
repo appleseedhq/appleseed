@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_COMMANDLINEPARSER_H
-#define APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_COMMANDLINEPARSER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -73,7 +72,7 @@ class CommandLineParser
     // Returns true on success, or false if one or multiple errors were detected.
     void parse(
         const int       argc,
-        const char*     argv[],
+        char*           argv[],
         ParseResults&   results);
 
     // Print the options that were recognized during parsing.
@@ -106,7 +105,7 @@ class CommandLineParser
     // Collect the options from a command line.
     void collect_options(
         const int       argc,
-        const char*     argv[],
+        char*           argv[],
         ParseResults&   results);
 
     // Check if the required options are present.
@@ -177,7 +176,7 @@ inline void CommandLineParser::print_usage(Logger& logger) const
 
 inline void CommandLineParser::parse(
     const int       argc,
-    const char*     argv[],
+    char*           argv[],
     ParseResults&   results)
 {
     collect_options(argc, argv, results);
@@ -279,7 +278,7 @@ inline bool CommandLineParser::is_handler_used(const OptionHandler* handler) con
 
 inline void CommandLineParser::collect_options(
     const int       argc,
-    const char*     argv[],
+    char*           argv[],
     ParseResults&   results)
 {
     assert(m_options.empty());
@@ -372,6 +371,4 @@ inline void CommandLineParser::process_options(ParseResults& results)
     }
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_COMMANDLINEPARSER_H
+}   // namespace foundation

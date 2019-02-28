@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BSP_BSP_NODE_H
-#define APPLESEED_FOUNDATION_MATH_BSP_BSP_NODE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -135,6 +134,7 @@ inline bool Node<T>::is_leaf() const
 template <typename T>
 inline void Node<T>::set_child_node_index(const size_t index)
 {
+    assert(is_interior());
     assert(index < (1UL << 29));
     m_info &= 0x80000003UL;
     m_info |= static_cast<uint32>(index) << 2;
@@ -143,12 +143,14 @@ inline void Node<T>::set_child_node_index(const size_t index)
 template <typename T>
 inline size_t Node<T>::get_child_node_index() const
 {
+    assert(is_interior());
     return static_cast<size_t>((m_info & 0x7FFFFFFFUL) >> 2);
 }
 
 template <typename T>
 inline void Node<T>::set_split_dim(const size_t dim)
 {
+    assert(is_interior());
     assert(dim < 4);
     m_info &= 0xFFFFFFFCUL;
     m_info |= static_cast<uint32>(dim);
@@ -157,24 +159,28 @@ inline void Node<T>::set_split_dim(const size_t dim)
 template <typename T>
 inline size_t Node<T>::get_split_dim() const
 {
+    assert(is_interior());
     return static_cast<size_t>(m_info & 0x00000003UL);
 }
 
 template <typename T>
 inline void Node<T>::set_split_abs(const ValueType abscissa)
 {
+    assert(is_interior());
     m_abscissa = abscissa;
 }
 
 template <typename T>
 inline T Node<T>::get_split_abs() const
 {
+    assert(is_interior());
     return m_abscissa;
 }
 
 template <typename T>
 inline void Node<T>::set_leaf_index(const size_t index)
 {
+    assert(is_leaf());
     assert(index < (1UL << 31));
     m_info &= 0x80000000UL;
     m_info |= static_cast<uint32>(index);
@@ -183,12 +189,14 @@ inline void Node<T>::set_leaf_index(const size_t index)
 template <typename T>
 inline size_t Node<T>::get_leaf_index() const
 {
+    assert(is_leaf());
     return static_cast<size_t>(m_info & 0x7FFFFFFFUL);
 }
 
 template <typename T>
 inline void Node<T>::set_leaf_size(const size_t size)
 {
+    assert(is_leaf());
     typedef typename TypeConv<T>::UInt UInt;
     m_abscissa = binary_cast<T>(static_cast<UInt>(size));
 }
@@ -196,11 +204,10 @@ inline void Node<T>::set_leaf_size(const size_t size)
 template <typename T>
 inline size_t Node<T>::get_leaf_size() const
 {
+    assert(is_leaf());
     typedef typename TypeConv<T>::UInt UInt;
     return static_cast<size_t>(binary_cast<UInt>(m_abscissa));
 }
 
-}       // namespace bsp
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_BSP_BSP_NODE_H
+}   // namespace bsp
+}   // namespace foundation

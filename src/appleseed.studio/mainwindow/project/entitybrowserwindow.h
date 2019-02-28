@@ -27,13 +27,14 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYBROWSERWINDOW_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYBROWSERWINDOW_H
+#pragma once
+
+// appleseed.studio headers.
+#include "utility/windowbase.h"
 
 // Qt headers.
 #include <QObject>
 #include <QString>
-#include <QWidget>
 
 // Standard headers.
 #include <map>
@@ -44,20 +45,23 @@ namespace foundation    { class StringDictionary; }
 namespace Ui            { class EntityBrowserWindow; }
 class QListWidget;
 class QListWidgetItem;
+class QWidget;
 
 namespace appleseed {
 namespace studio {
 
 class EntityBrowserWindow
-  : public QWidget
+  : public WindowBase
 {
     Q_OBJECT
 
   public:
+    // Construtor.
     EntityBrowserWindow(
         QWidget*                            parent,
         const std::string&                  window_title);
 
+    // Destructor.
     ~EntityBrowserWindow() override;
 
     void add_items_page(
@@ -80,6 +84,8 @@ class EntityBrowserWindow
 
     std::map<int, Page>         m_pages;
 
+    void create_connections();
+
   private slots:
     void slot_current_tab_changed(int tab_index);
     void slot_item_selection_changed();
@@ -89,7 +95,5 @@ class EntityBrowserWindow
     void slot_filter_text_changed(const QString& pattern);
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYBROWSERWINDOW_H
+}   // namespace studio
+}   // namespace appleseed

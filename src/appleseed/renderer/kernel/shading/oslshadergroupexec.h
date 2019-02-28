@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_OSLSHADERGROUPEXEC_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_OSLSHADERGROUPEXEC_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -89,8 +88,11 @@ class OSLShaderGroupExec
     void execute_transparency(
         const ShaderGroup&              shader_group,
         const ShadingPoint&             shading_point,
-        Alpha&                          alpha,
-        float*                          holdout = nullptr) const;
+        Alpha&                          alpha) const;
+
+    void execute_transparency_and_matte(
+        const ShaderGroup&              shader_group,
+        const ShadingPoint&             shading_point) const;
 
     void execute_shadow(
         const ShaderGroup&              shader_group,
@@ -124,6 +126,4 @@ class OSLShaderGroupExec
         const foundation::Vector2f&     s) const;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_OSLSHADERGROUPEXEC_H
+}   // namespace renderer

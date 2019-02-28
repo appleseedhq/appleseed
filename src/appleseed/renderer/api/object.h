@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_OBJECT_H
-#define APPLESEED_RENDERER_API_OBJECT_H
+#pragma once
 
 // API headers.
 #include "renderer/modeling/object/curveobject.h"
@@ -45,5 +44,3 @@
 #include "renderer/modeling/object/objecttraits.h"
 #include "renderer/modeling/object/proceduralobject.h"
 #include "renderer/modeling/object/triangle.h"
-
-#endif  // !APPLESEED_RENDERER_API_OBJECT_H

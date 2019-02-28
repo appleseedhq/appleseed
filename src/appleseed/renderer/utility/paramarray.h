@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_PARAMARRAY_H
-#define APPLESEED_RENDERER_UTILITY_PARAMARRAY_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
@@ -611,6 +610,4 @@ bool ParamArray::contains(
     return false;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_UTILITY_PARAMARRAY_H
+}   // namespace renderer

@@ -82,7 +82,6 @@ void BinaryMeshFileWriter::write(const IMeshWalker& walker)
 void BinaryMeshFileWriter::write_signature()
 {
     static const char Signature[10] = { 'B', 'I', 'N', 'A', 'R', 'Y', 'M', 'E', 'S', 'H' };
-
     checked_write(m_file, Signature, sizeof(Signature));
 }
 

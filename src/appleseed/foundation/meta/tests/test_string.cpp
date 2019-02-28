@@ -310,25 +310,25 @@ TEST_SUITE(Foundation_Utility_String)
         });
     }
 
-    TEST_CASE(StrcmpNoCaseHandlesEmptyString)
+    TEST_CASE(StrcmpNocase)
     {
-        EXPECT_EQ(0, strcmp_nocase("", ""));
-    }
-
-    TEST_CASE(TestStrCmpNoCase)
-    {
-        EXPECT_EQ(0, strcmp_nocase("seal", "SEAL"));
-        EXPECT_EQ(0, strcmp_nocase("HeLLo", "hEllO"));
+        EXPECT_EQ( 0, strcmp_nocase("seal", "SEAL"));
+        EXPECT_EQ( 0, strcmp_nocase("HeLLo", "hEllO"));
+        EXPECT_EQ( 0, strcmp_nocase("", ""));
 
         EXPECT_EQ(-1, strcmp_nocase("a", "b"));
         EXPECT_EQ(-1, strcmp_nocase("A", "b"));
         EXPECT_EQ(-1, strcmp_nocase("a", "B"));
         EXPECT_EQ(-1, strcmp_nocase("A", "B"));
+        EXPECT_EQ(-1, strcmp_nocase("an", "another"));
+        EXPECT_EQ(-1, strcmp_nocase("", "hello"));
 
-        EXPECT_EQ(1, strcmp_nocase("b", "a"));
-        EXPECT_EQ(1, strcmp_nocase("B", "a"));
-        EXPECT_EQ(1, strcmp_nocase("b", "A"));
-        EXPECT_EQ(1, strcmp_nocase("B", "A"));
+        EXPECT_EQ(+1, strcmp_nocase("b", "a"));
+        EXPECT_EQ(+1, strcmp_nocase("B", "a"));
+        EXPECT_EQ(+1, strcmp_nocase("b", "A"));
+        EXPECT_EQ(+1, strcmp_nocase("B", "A"));
+        EXPECT_EQ(+1, strcmp_nocase("another", "an"));
+        EXPECT_EQ(+1, strcmp_nocase("hello", ""));
     }
 
     TEST_CASE(TrimLeftHandlesEmptyString)

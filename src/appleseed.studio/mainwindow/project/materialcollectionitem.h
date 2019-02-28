@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALCOLLECTIONITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALCOLLECTIONITEM_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyitem.h"
@@ -77,7 +76,5 @@ class MaterialCollectionItem
     AssemblyItem*       m_parent_item;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALCOLLECTIONITEM_H
+}   // namespace studio
+}   // namespace appleseed

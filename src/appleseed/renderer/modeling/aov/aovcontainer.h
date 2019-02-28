@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_AOV_AOVCONTAINER_H
-#define APPLESEED_RENDERER_MODELING_AOV_AOVCONTAINER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entityvector.h"
@@ -40,6 +39,4 @@ namespace renderer
 
 typedef TypedEntityVector<AOV> AOVContainer;
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_AOV_AOVCONTAINER_H
+}   // namespace renderer

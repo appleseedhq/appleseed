@@ -28,16 +28,18 @@
 
 shader as_anisotropy_vector_field
 [[
-    string as_maya_node_name = "asAnisotropyVectorField",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string as_blender_node_name = "asAnisotropyVectorField",
-    string as_blender_category = "utility",
     string help = "Creates an anisotropy field vector from an input color.",
     string icon = "asAnisotropyVectorField.png",
-    int as_maya_type_id = 0x001278e0,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_anisotropy_vector_field.html#label-as-anisotropy-vector-field",
+
+    string as_node_name = "asAnisotropyVectorField",
+    string as_category = "utility",
+
     string as_max_class_id = "755844571 356534419",
     string as_max_plugin_type = "texture",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_anisotropy_vector_field.html#label-as-anisotropy-vector-field"
+
+    int as_maya_type_id = 0x001278e0,
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility"
 ]]
 (
     float in_rotation_angle = 0.0

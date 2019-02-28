@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_NUMERICTYPE_H
-#define APPLESEED_FOUNDATION_UTILITY_NUMERICTYPE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -140,6 +139,4 @@ inline const char* NumericType::name(const NumericTypeID id)
     }
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_NUMERICTYPE_H
+}   // namespace foundation

@@ -43,6 +43,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
+#include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -69,6 +70,7 @@
 #include <QSpinBox>
 #include <Qt>
 #include <QVBoxLayout>
+#include <QWidget>
 
 // Standard headers.
 #include <algorithm>
@@ -257,10 +259,10 @@ class RenderSettingsPanel
         QDoubleSpinBox* spinbox = new QDoubleSpinBox();
         m_widget_proxies[widget_key] = new DoubleSpinBoxProxy(spinbox);
 
-        spinbox->setMaximumWidth(60);
         spinbox->setRange(min, max);
         spinbox->setDecimals(decimals);
         spinbox->setSingleStep(step);
+        set_widget_width_for_value(spinbox, max, SpinBoxMargin, SpinBoxMinWidth);
 
         new MouseWheelFocusEventFilter(spinbox);
 
@@ -630,7 +632,7 @@ namespace
             max_samples->setToolTip(m_params_metadata.get_path("adaptive_tile_renderer.max_samples.help"));
             sublayout->addRow("Max Samples:", max_samples);
 
-            QDoubleSpinBox* noise_threshold = create_double_input("adaptive_tile_sampler.noise_threshold", 0.0, 25.0, 1, 0.02);
+            QDoubleSpinBox* noise_threshold = create_double_input("adaptive_tile_sampler.noise_threshold", 0.0001, 10000.0, 4, 0.02);
             noise_threshold->setToolTip(m_params_metadata.get_path("adaptive_tile_renderer.noise_threshold.help"));
             sublayout->addRow("Noise Threshold:", noise_threshold);
         }
@@ -936,19 +938,28 @@ namespace
             create_pt_volume_settings(layout);
             create_pt_advanced_settings(layout);
 
-            create_direct_link("lighting_components.dl",                        "pt.enable_dl");
-            create_direct_link("lighting_components.ibl",                       "pt.enable_ibl");
-            create_direct_link("lighting_components.caustics",                  "pt.enable_caustics");
-            create_direct_link("pt.bounces.rr_start_bounce",                    "pt.rr_min_path_length");
-            create_direct_link("volume.distance_samples",                       "pt.volume_distance_samples");
-            create_direct_link("volume.optimize_for_lights_outside_volumes",    "pt.optimize_for_lights_outside_volumes");
-            create_direct_link("advanced.next_event_estimation",                "pt.next_event_estimation");
-            create_direct_link("advanced.dl.light_samples",                     "pt.dl_light_samples");
-            create_direct_link("advanced.dl.low_light_threshold",               "pt.dl_low_light_threshold");
-            create_direct_link("advanced.ibl.env_samples",                      "pt.ibl_env_samples");
-            create_direct_link("advanced.light_sampler.algorithm",              "light_sampler.algorithm");
-            create_direct_link("advanced.record_light_paths",                   "pt.record_light_paths");
-            create_direct_link("advanced.clamp_roughness",                      "pt.clamp_roughness");
+            create_direct_link("lighting_components.dl",                            "pt.enable_dl");
+            create_direct_link("lighting_components.ibl",                           "pt.enable_ibl");
+            create_direct_link("lighting_components.caustics",                      "pt.enable_caustics");
+
+            create_direct_link("pt.bounces.rr_start_bounce",                        "pt.rr_min_path_length");
+
+            create_direct_link("volume.distance_samples",                           "pt.volume_distance_samples");
+            create_direct_link("volume.optimize_for_lights_outside_volumes",        "pt.optimize_for_lights_outside_volumes");
+
+            create_direct_link("advanced.next_event_estimation",                    "pt.next_event_estimation");
+
+            create_direct_link("advanced.dl.light_samples",                         "pt.dl_light_samples");
+            create_direct_link("advanced.dl.low_light_threshold",                   "pt.dl_low_light_threshold");
+
+            create_direct_link("advanced.ibl.env_samples",                          "pt.ibl_env_samples");
+
+            create_direct_link("advanced.light_sampler.algorithm",                  "light_sampler.algorithm");
+            create_direct_link("advanced.light_sampler.enable_importance_sampling", "light_sampler.enable_importance_sampling");
+
+            create_direct_link("advanced.record_light_paths",                       "pt.record_light_paths");
+
+            create_direct_link("advanced.clamp_roughness",                          "pt.clamp_roughness");
 
             load_directly_linked_values(config);
 
@@ -1031,11 +1042,13 @@ namespace
             QFormLayout* sublayout = create_form_layout();
             parent->addLayout(sublayout);
 
-            QComboBox* light_sampling = create_combobox("advanced.light_sampler.algorithm");
-            light_sampling->setToolTip(m_params_metadata.get_path("light_sampler.algorithm.help"));
-            light_sampling->addItem("CDF", "cdf");
-            light_sampling->addItem("Light Tree", "lighttree");
-            sublayout->addRow("Light Sampler:", light_sampling);
+            QComboBox* light_sampler = create_combobox("advanced.light_sampler.algorithm");
+            light_sampler->setToolTip(m_params_metadata.get_path("light_sampler.algorithm.help"));
+            light_sampler->addItem("CDF", "cdf");
+            light_sampler->addItem("Light Tree", "lighttree");
+            sublayout->addRow("Light Sampler:", light_sampler);
+
+            sublayout->addRow(create_checkbox("advanced.light_sampler.enable_importance_sampling", "Enable Importance Sampling"));
         }
 
         void create_pt_advanced_nee_dl_settings(QVBoxLayout* parent)
@@ -1076,7 +1089,7 @@ namespace
 
         void create_pt_advanced_nee_max_ray_intensity_settings(QVBoxLayout* parent)
         {
-            QDoubleSpinBox* max_ray_intensity = create_double_input("advanced.max_ray_intensity", 0.0, 1.0e9, 3, 0.1);
+            QDoubleSpinBox* max_ray_intensity = create_double_input("advanced.max_ray_intensity", 0.0, 1.0e4, 1, 0.1);
             max_ray_intensity->setToolTip(m_params_metadata.get_path("pt.max_ray_intensity.help"));
 
             QCheckBox* unlimited_ray_intensity = create_checkbox("advanced.unlimited_ray_intensity", "Unlimited");
@@ -1133,6 +1146,7 @@ namespace
             create_components_settings(layout);
             create_photon_tracing_settings(layout);
             create_radiance_estimation_settings(layout);
+            create_advanced_settings(layout);
 
             create_direct_link("lighting_components.ibl",                        "sppm.enable_ibl");
             create_direct_link("lighting_components.caustics",                   "sppm.enable_caustics");
@@ -1160,6 +1174,9 @@ namespace
             if (photon_type == "mono")
                 set_widget("photon_type.mono", true);
             else set_widget("photon_type.poly", true);
+
+            set_widget("advanced.unlimited_ray_intensity", !config.get_parameters().exist_path("sppm.path_tracing_max_ray_intensity"));
+            set_widget("advanced.max_ray_intensity", get_config<double>(config, "sppm.path_tracing_max_ray_intensity", 1.0));
         }
 
         void save_config(Configuration& config) const override
@@ -1175,6 +1192,10 @@ namespace
 
             set_config(config, "sppm.photon_type",
                 get_widget<bool>("photon_type.mono") ? "mono" : "poly");
+
+            if (get_widget<bool>("advanced.unlimited_ray_intensity"))
+                config.get_parameters().remove_path("sppm.path_tracing_max_ray_intensity");
+            else set_config(config, "sppm.path_tracing_max_ray_intensity", get_widget<double>("advanced.max_ray_intensity"));
         }
 
       private:
@@ -1274,6 +1295,28 @@ namespace
             alpha->setToolTip(m_params_metadata.get_path("sppm.alpha.help"));
             sublayout->addRow("Alpha:", alpha);
         }
+
+        void create_advanced_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = new QGroupBox("Advanced");
+            parent->addWidget(groupbox);
+
+            QVBoxLayout* layout = create_vertical_layout();
+            groupbox->setLayout(layout);
+
+            create_advanced_max_ray_intensity_settings(layout);
+        }
+
+        void create_advanced_max_ray_intensity_settings(QVBoxLayout* parent)
+        {
+            QDoubleSpinBox* max_ray_intensity = create_double_input("advanced.max_ray_intensity", 0.0, 1.0e4, 1, 0.1);
+            max_ray_intensity->setToolTip(m_params_metadata.get_path("sppm.path_tracing_max_ray_intensity.help"));
+
+            QCheckBox* unlimited_ray_intensity = create_checkbox("advanced.unlimited_ray_intensity", "Unlimited");
+            connect(unlimited_ray_intensity, SIGNAL(toggled(bool)), max_ray_intensity, SLOT(setDisabled(bool)));
+
+            parent->addLayout(create_form_layout("Max Ray Intensity:", create_horizontal_group(max_ray_intensity, unlimited_ray_intensity)));
+        }
     };
 
     //
@@ -1283,9 +1326,12 @@ namespace
     class SystemPanel
       : public LightingEnginePanel
     {
+        Q_OBJECT
+
       public:
-        SystemPanel(const Configuration& config, QWidget* parent = nullptr)
+        SystemPanel(const Configuration& config, const ParamArray& application_settings, QWidget* parent = nullptr)
           : LightingEnginePanel("System", parent)
+          , m_application_settings(application_settings)
         {
             fold();
 
@@ -1302,12 +1348,15 @@ namespace
 
             load_directly_linked_values(config);
 
-            set_widget("rendering_threads.override", config.get_parameters().strings().exist("rendering_threads"));
+            const bool override_rendering_threads = config.get_parameters().strings().exist("rendering_threads");
+            set_widget("rendering_threads.override", override_rendering_threads);
 
-            const string default_rendering_threads = to_string(System::get_logical_cpu_core_count());
-            const string rendering_threads = get_config<string>(config, "rendering_threads", "auto");
-            set_widget("rendering_threads.value", rendering_threads == "auto" ? default_rendering_threads : rendering_threads);
+            const string rendering_threads =
+                override_rendering_threads
+                    ? get_config<string>(config, "rendering_threads", "auto")
+                    : application_settings.get_optional<string>("rendering_threads", "auto");
             set_widget("rendering_threads.auto", rendering_threads == "auto");
+            set_widget("rendering_threads.value", rendering_threads == "auto" ? to_string(System::get_logical_cpu_core_count()) : rendering_threads);
 
             const size_t MB = 1024 * 1024;
             const size_t DefaultTextureStoreSizeMB = 1024 * MB;
@@ -1334,13 +1383,24 @@ namespace
             else config.get_parameters().remove_path("texture_store.max_size");
 
             if (get_widget<bool>("tile_ordering.override"))
-            {
                 set_config(config, "generic_frame_renderer.tile_ordering", get_widget<string>("tile_ordering.value"));
-            }
             else config.get_parameters().remove_path("generic_frame_renderer.tile_ordering");
         }
 
+      public slots:
+        void slot_reload_application_settings()
+        {
+            if (!get_widget<bool>("rendering_threads.override"))
+            {
+                const string rendering_threads = m_application_settings.get_optional<string>("rendering_threads", "auto");
+                set_widget("rendering_threads.auto", rendering_threads == "auto");
+                set_widget("rendering_threads.value", rendering_threads == "auto" ? to_string(System::get_logical_cpu_core_count()) : rendering_threads);
+            }
+        }
+
       private:
+        const ParamArray& m_application_settings;
+
 #ifdef APPLESEED_WITH_EMBREE
         void create_system_use_embree_settings(QVBoxLayout* parent)
         {
@@ -1396,10 +1456,11 @@ namespace
 // RenderingSettingsWindow class implementation.
 //
 
-RenderingSettingsWindow::RenderingSettingsWindow(ProjectManager& project_manager, QWidget* parent)
-  : QWidget(parent)
+RenderingSettingsWindow::RenderingSettingsWindow(ProjectManager& project_manager, const ParamArray& application_settings, QWidget* parent)
+  : WindowBase(parent, "rendering_settings_window")
   , m_ui(new Ui::RenderingSettingsWindow())
   , m_project_manager(project_manager)
+  , m_application_settings(application_settings)
 {
     m_ui->setupUi(this);
 
@@ -1409,6 +1470,8 @@ RenderingSettingsWindow::RenderingSettingsWindow(ProjectManager& project_manager
     m_ui->scrollareawidget->hide();
 
     create_connections();
+
+    WindowBase::load_settings();
 
     reload();
 }
@@ -1423,23 +1486,28 @@ void RenderingSettingsWindow::reload()
     assert(m_project_manager.get_project() != nullptr);
 
     // Collect configuration names.
-    vector<QString> configs;
-    for (const_each<ConfigurationContainer> i = m_project_manager.get_project()->configurations(); i; ++i)
+    vector<QString> config_names;
+    for (const Configuration& config : m_project_manager.get_project()->configurations())
     {
-        if (!BaseConfigurationFactory::is_base_configuration(i->get_name()))
-            configs.emplace_back(i->get_name());
+        if (!BaseConfigurationFactory::is_base_configuration(config.get_name()))
+            config_names.emplace_back(config.get_name());
     }
 
     // Sort configuration names alphabetically.
-    sort(configs.begin(), configs.end());
+    sort(config_names.begin(), config_names.end());
 
-    // This will load an empty configuration.
+    // This has the side effect of loading an empty configuration.
     m_current_configuration_name.clear();
 
-    // This will load the first configuration.
+    // This has the side effect of loading the first configuration.
     m_ui->combobox_configurations->clear();
-    for (size_t i = 0; i < configs.size(); ++i)
-        m_ui->combobox_configurations->addItem(configs[i]);
+    for (const QString& config_name : config_names)
+        m_ui->combobox_configurations->addItem(config_name);
+}
+
+void RenderingSettingsWindow::slot_reload_application_settings()
+{
+    emit signal_application_settings_modified();
 }
 
 void RenderingSettingsWindow::create_connections()
@@ -1502,7 +1570,11 @@ void RenderingSettingsWindow::create_panels(const Configuration& config)
     if (!interactive)
         m_panels.push_back(new SPPMPanel(config));
 
-    m_panels.push_back(new SystemPanel(config));
+    SystemPanel* system_panel = new SystemPanel(config, m_application_settings);
+    connect(
+        this, SIGNAL(signal_application_settings_modified()),
+        system_panel, SLOT(slot_reload_application_settings()));
+    m_panels.push_back(system_panel);
 }
 
 void RenderingSettingsWindow::create_layout()
@@ -1556,7 +1628,7 @@ void RenderingSettingsWindow::save_current_configuration()
 
     m_initial_values = get_widget_values();
 
-    emit signal_settings_modified();
+    emit signal_rendering_settings_modified();
 }
 
 Configuration& RenderingSettingsWindow::get_configuration(const QString& name) const

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PYTHON_GILLOCKS_H
-#define APPLESEED_PYTHON_GILLOCKS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -61,5 +60,3 @@ class ScopedGILUnlock
     bool                m_threads_initialized;
     PyThreadState*      m_state;
 };
-
-#endif  // !APPLESEED_PYTHON_GILLOCKS_H

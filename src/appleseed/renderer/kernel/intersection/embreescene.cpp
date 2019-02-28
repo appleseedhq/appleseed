@@ -34,7 +34,6 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/object/curveobject.h"
-#include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/triangle.h"
@@ -110,21 +109,16 @@ namespace
         // Retrieve the object.
         Object& object = object_instance.get_object();
 
-        // TODO: remove regions.
-        // Retrieve the region kit of the object.
-        const Access<RegionKit> region_kit(&object.get_region_kit());
+        const MeshObject& mesh = static_cast<const MeshObject&>(object);
+        const StaticTriangleTess& tess = mesh.get_static_triangle_tess();
 
-        assert(region_kit->size() == 1);
-        const size_t region_idx = 0;
-        const IRegion* region = region_kit->at(region_idx);
-        const Access<StaticTriangleTess> tess(&region->get_static_triangle_tess());
-        const unsigned int motion_steps_count = static_cast<unsigned int>(tess->get_motion_segment_count()) + 1;
+        const unsigned int motion_steps_count = static_cast<unsigned int>(tess.get_motion_segment_count()) + 1;
         geometry_data.m_motion_steps_count = motion_steps_count;
 
         //
         // Retrieve per vertex data.
         //
-        const unsigned int vertices_count = static_cast<unsigned int>(tess->m_vertices.size());
+        const unsigned int vertices_count = static_cast<unsigned int>(tess.m_vertices.size());
         geometry_data.m_vertices_count = vertices_count;
         geometry_data.m_vertices_stride = sizeof(GVector3);
 
@@ -134,7 +128,7 @@ namespace
         // Retrieve assembly space vertices.
         for (size_t i = 0; i < vertices_count; ++i)
         {
-            const GVector3& vertex_os = tess->m_vertices[i];
+            const GVector3& vertex_os = tess.m_vertices[i];
             geometry_data.m_vertices[i] = transform.point_to_parent(vertex_os);
         }
 
@@ -142,7 +136,7 @@ namespace
         {
             for (size_t i = 0; i < vertices_count; ++i)
             {
-                const GVector3& vertex_os = tess->get_vertex_pose(i, m - 1);
+                const GVector3& vertex_os = tess.get_vertex_pose(i, m - 1);
                 geometry_data.m_vertices[vertices_count * m + i] = transform.point_to_parent(vertex_os);
             }
         }
@@ -150,7 +144,7 @@ namespace
         //
         // Retrieve per primitive data.
         //
-        const size_t primitives_count = tess->m_primitives.size();
+        const size_t primitives_count = tess.m_primitives.size();
 
         geometry_data.m_primitives = new uint32[primitives_count * 3];
         geometry_data.m_primitives_stride = sizeof(uint32) * 3;
@@ -158,9 +152,9 @@ namespace
 
         for (size_t i = 0; i < primitives_count; ++i)
         {
-            geometry_data.m_primitives[i * 3] = tess->m_primitives[i].m_v0;
-            geometry_data.m_primitives[i * 3 + 1] = tess->m_primitives[i].m_v1;
-            geometry_data.m_primitives[i * 3 + 2] = tess->m_primitives[i].m_v2;
+            geometry_data.m_primitives[i * 3] = tess.m_primitives[i].m_v0;
+            geometry_data.m_primitives[i * 3 + 1] = tess.m_primitives[i].m_v1;
+            geometry_data.m_primitives[i * 3 + 2] = tess.m_primitives[i].m_v2;
         }
     };
 
@@ -206,7 +200,7 @@ namespace
         const float offset = FP<float>::construct(
             0,
             max(static_cast<int32>(max_origin_exp - 23 + 11), 0),
-            2047 << (23 - 11));
+            2047UL << (23 - 11));
 
         // Divide by max_dir_component to compensate inverse operation
         // during intersection search. (Actual start point is org + dir * tnear)
@@ -439,7 +433,6 @@ void EmbreeScene::intersect(ShadingPoint& shading_point) const
 
         shading_point.m_object_instance_index = geometry_data->m_object_instance_idx;
         // TODO: remove regions
-        shading_point.m_region_index = 0;
         shading_point.m_primitive_index = rayhit.hit.primID;
         shading_point.m_primitive_type = ShadingPoint::PrimitiveTriangle;
         shading_point.m_ray.m_tmax = rayhit.ray.tfar;
@@ -448,12 +441,46 @@ void EmbreeScene::intersect(ShadingPoint& shading_point) const
         const uint32 v1_idx = geometry_data->m_primitives[rayhit.hit.primID * 3 + 1];
         const uint32 v2_idx = geometry_data->m_primitives[rayhit.hit.primID * 3 + 2];
 
-        const TriangleType triangle(
-            Vector3d(geometry_data->m_vertices[v0_idx]),
-            Vector3d(geometry_data->m_vertices[v1_idx]),
-            Vector3d(geometry_data->m_vertices[v2_idx]));
+        if (geometry_data->m_motion_steps_count > 1)
+        {
+            const uint32 last_motion_step_idx = geometry_data->m_motion_steps_count - 1;
 
-        shading_point.m_triangle_support_plane.initialize(triangle);
+            const uint32 motion_step_begin_idx = static_cast<uint32>(rayhit.ray.time * last_motion_step_idx);
+            const uint32 motion_step_end_idx = motion_step_begin_idx + 1;
+
+            const uint32 motion_step_begin_offset = motion_step_begin_idx * geometry_data->m_vertices_count;
+            const uint32 motion_step_end_offset = motion_step_end_idx * geometry_data->m_vertices_count;
+
+            const float motion_step_begin_time = static_cast<float>(motion_step_begin_idx) / last_motion_step_idx;
+
+            // Linear interpolation coefficients.
+            const float p = (rayhit.ray.time - motion_step_begin_time) * last_motion_step_idx;
+            const float q = 1.0f - p;
+
+            assert(p > 0.0f && p <= 1.0f);
+
+            const TriangleType triangle(
+                Vector3d(
+                    geometry_data->m_vertices[motion_step_begin_offset + v0_idx] * q
+                    + geometry_data->m_vertices[motion_step_end_offset + v0_idx] * p),
+                Vector3d(
+                    geometry_data->m_vertices[motion_step_begin_offset + v1_idx] * q
+                    + geometry_data->m_vertices[motion_step_end_offset + v1_idx] * p),
+                Vector3d(
+                    geometry_data->m_vertices[motion_step_begin_offset + v2_idx] * q
+                    + geometry_data->m_vertices[motion_step_end_offset + v2_idx] * p));
+
+            shading_point.m_triangle_support_plane.initialize(triangle);
+        }
+        else
+        {
+            const TriangleType triangle(
+                Vector3d(geometry_data->m_vertices[v0_idx]),
+                Vector3d(geometry_data->m_vertices[v1_idx]),
+                Vector3d(geometry_data->m_vertices[v2_idx]));
+
+            shading_point.m_triangle_support_plane.initialize(triangle);
+        }
     }
 }
 

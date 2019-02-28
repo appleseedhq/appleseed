@@ -83,7 +83,7 @@ namespace
 
     // If defined, the texture cache returns solid tiles whose color depends on whether
     // the requested tile could be found in the cache or not.
-    #undef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
+    #undef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCE
 
     class GenericSampleRenderer
       : public ISampleRenderer
@@ -116,7 +116,6 @@ namespace
           , m_tracer(
                 m_scene,
                 m_intersector,
-                m_texture_cache,
                 m_shadergroup_exec,
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations,
@@ -170,7 +169,7 @@ namespace
             AOVAccumulatorContainer&    aov_accumulators,
             ShadingResult&              shading_result) override
         {
-#ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
+#ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCE
 
             const uint64 last_texture_cache_hit_count = m_texture_cache.get_hit_count();
             const uint64 last_texture_cache_miss_count = m_texture_cache.get_miss_count();
@@ -218,8 +217,8 @@ namespace
 
                 if (iterations == 1)
                 {
-                    // Shade the intersection point.
-                    m_shading_engine.shade(
+                    // Shade the first intersection point along the ray.
+                    const bool terminate_path = m_shading_engine.shade(
                         sampling_context,
                         pixel_context,
                         m_shading_context,
@@ -227,15 +226,14 @@ namespace
                         aov_accumulators,
                         shading_result);
 
-                    // Apply alpha premultiplication.
-                    if (shading_point_ptr->hit_surface())
-                        shading_result.apply_alpha_premult();
+                    if (terminate_path)
+                        break;
                 }
                 else
                 {
-                    // Shade the intersection point.
+                    // Shade the next intersection point along the ray.
                     ShadingResult local_result(shading_result.m_aov_count);
-                    m_shading_engine.shade(
+                    const bool terminate_path = m_shading_engine.shade(
                         sampling_context,
                         pixel_context,
                         m_shading_context,
@@ -243,12 +241,11 @@ namespace
                         aov_accumulators,
                         local_result);
 
-                    // Apply alpha premultiplication.
-                    if (shading_point_ptr->hit_surface())
-                        local_result.apply_alpha_premult();
-
-                    // Compositing.
+                    // Composite `shading_result` over `local_result`.
                     shading_result.composite_over(local_result);
+
+                    if (terminate_path)
+                        break;
                 }
 
                 // Stop once we hit the environment.
@@ -272,7 +269,7 @@ namespace
             // Inform the AOV accumulators that we are done rendering a sample.
             aov_accumulators.on_sample_end(pixel_context);
 
-#ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
+#ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCE
 
             const uint64 delta_hit_count = m_texture_cache.get_hit_count() - last_texture_cache_hit_count;
             const uint64 delta_miss_count = m_texture_cache.get_miss_count() - last_texture_cache_miss_count;

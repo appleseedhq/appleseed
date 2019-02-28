@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_BSSRDFTRAITS_H
-#define APPLESEED_RENDERER_MODELING_BSSRDF_BSSRDFTRAITS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bssrdf/bssrdf.h"
@@ -83,6 +82,4 @@ struct EntityTraits<BSSRDF>
     }
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_BSSRDFTRAITS_H
+}   // namespace renderer

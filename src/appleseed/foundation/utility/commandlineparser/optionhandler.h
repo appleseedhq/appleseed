@@ -27,14 +27,14 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_OPTIONHANDLER_H
-#define APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_OPTIONHANDLER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/foreach.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 #include <string>
 #include <vector>
@@ -63,10 +63,10 @@ class OptionHandler
     // Flags.
     enum Flags
     {
-        None        = 0,        // none of the flags below are set
-        Required    = 1 << 0,   // this option is required and must appear on the command line
-        Hidden      = 1 << 1,   // don't list this option in program usage
-        Repeatable  = 1 << 2    // this option can appear multiple times on a command line
+        None        = 0,            // none of the flags below are set
+        Required    = 1UL << 0,     // this option is required and must appear on the command line
+        Hidden      = 1UL << 1,     // don't list this option in program usage
+        Repeatable  = 1UL << 2      // this option can appear multiple times on a command line
     };
 
     // Constructor.
@@ -74,6 +74,9 @@ class OptionHandler
 
     // Add a name for this option.
     OptionHandler& add_name(const std::string& name);
+
+    // Return the first name of the option.
+    const std::string& get_name() const;
 
     // Set a description of this option.
     OptionHandler& set_description(const std::string& description);
@@ -133,6 +136,12 @@ inline OptionHandler& OptionHandler::add_name(const std::string& name)
     return *this;
 }
 
+inline const std::string& OptionHandler::get_name() const
+{
+    assert(!m_names.empty());
+    return m_names[0];
+}
+
 inline OptionHandler& OptionHandler::set_description(const std::string& description)
 {
     m_description = description;
@@ -172,6 +181,4 @@ inline bool OptionHandler::match_name(const std::string& arg) const
     return false;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_OPTIONHANDLER_H
+}   // namespace foundation

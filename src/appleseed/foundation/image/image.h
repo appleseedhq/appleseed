@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_IMAGE_H
-#define APPLESEED_FOUNDATION_IMAGE_IMAGE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
@@ -91,7 +90,8 @@ class APPLESEED_DLLSYMBOL Image
     const CanvasProperties& properties() const override;
 
     // Direct access to a given tile.
-    // Warning: it is not safe to call these methods concurrently from multiple threads.
+    // It is safe to access distinct tiles from multiple threads concurrently
+    // (however it is not safe to access the same tile from multiple threads).
     Tile& tile(
         const size_t        tile_x,
         const size_t        tile_y) override;
@@ -124,6 +124,4 @@ inline const CanvasProperties& Image::properties() const
     return m_props;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_IMAGE_H
+}   // namespace foundation

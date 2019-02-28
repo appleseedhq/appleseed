@@ -28,13 +28,13 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_MICROFACETHELPER_H
-#define APPLESEED_RENDERER_MODELING_BSDF_MICROFACETHELPER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
+#include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 
 // appleseed.foundation headers.
@@ -112,64 +112,80 @@ class MicrofacetBRDFHelper
         FresnelFun                      f,
         BSDFSample&                     sample)
     {
-        // Compute the incoming direction by sampling the MDF.
-        sampling_context.split_in_place(2, 1);
-        const foundation::Vector2f s = sampling_context.next2<foundation::Vector2f>();
-
         const foundation::Vector3f& outgoing = sample.m_outgoing.get_value();
         foundation::Vector3f wo = sample.m_shading_basis.transform_to_local(outgoing);
 
         if (wo.y == 0.0f)
             return;
 
-        // Flip the outgoing vector to be in the same hemisphere as
-        // the shading normal if needed.
+        // Flip the outgoing vector to be in the same hemisphere as the shading normal if needed.
         if (Flip)
             wo.y = std::abs(wo.y);
 
+        // Compute the incoming direction by sampling the MDF.
+        sampling_context.split_in_place(2, 1);
+        const foundation::Vector2f s = sampling_context.next2<foundation::Vector2f>();
         foundation::Vector3f m = mdf.sample(wo, s, alpha_x, alpha_y, gamma);
         foundation::Vector3f wi = foundation::reflect(wo, m);
 
+        // Force the outgoing direction to lie above the geometric surface.
         const foundation::Vector3f ng =
             sample.m_shading_basis.transform_to_local(sample.m_geometric_normal);
-
-        if (force_above_surface(wi, ng))
+        if (BSDF::force_above_surface(wi, ng))
             m = foundation::normalize(wo + wi);
 
         if (wi.y == 0.0f)
             return;
 
-        const foundation::Vector3f incoming =
-            sample.m_shading_basis.transform_to_parent(wi);
-
-        const float D = mdf.D(m, alpha_x, alpha_y, gamma);
-        const float G =
-            mdf.G(
-                wi,
-                wo,
-                m,
-                alpha_x,
-                alpha_y,
-                gamma);
-
-        const foundation::Vector3f n(0.0f, 1.0f, 0.0f);
-        f(wo, m, n, sample.m_value.m_glossy);
-
-        const float cos_on = wo.y;
-        const float cos_in = wi.y;
-
-        sample.m_value.m_glossy *= D * G / std::abs(4.0f * cos_on * cos_in);
-
         const float cos_oh = foundation::dot(wo, m);
 
-        sample.m_probability =
-            mdf.pdf(wo, m, alpha_x, alpha_y, gamma) / (4.0f * cos_oh);
+        const float probability =
+            mdf.pdf(wo, m, alpha_x, alpha_y, gamma) / std::abs(4.0f * cos_oh);
+        assert(probability >= 0.0f);
+
+        // Disabled until BSDF are evaluated in local space, because the numerous
+        // conversions between local space and world space kill precision.
+        //
+        // #ifndef NDEBUG
+        //         const float ref_probability =
+        //             pdf(
+        //                 mdf,
+        //                 alpha_x,
+        //                 alpha_y,
+        //                 gamma,
+        //                 sample.m_shading_basis,
+        //                 outgoing,
+        //                 incoming);
+        // 
+        //         assert(feq(probability, ref_probability, 1.0e-2f));
+        // #endif
 
         // Skip samples with very low probability.
-        if (sample.m_probability > 1e-6f)
+        if (probability > 1.0e-6f)
         {
-            sample.m_mode = ScatteringMode::Glossy;
+            sample.set_to_scattering(ScatteringMode::Glossy, probability);
+
+            const float D = mdf.D(m, alpha_x, alpha_y, gamma);
+            const float G =
+                mdf.G(
+                    wi,
+                    wo,
+                    m,
+                    alpha_x,
+                    alpha_y,
+                    gamma);
+
+            const foundation::Vector3f n(0.0f, 1.0f, 0.0f);
+            const float cos_on = wo.y;
+            const float cos_in = wi.y;
+
+            f(wo, m, n, sample.m_value.m_glossy);
+            sample.m_value.m_glossy *= D * G / std::abs(4.0f * cos_on * cos_in);
+
+            const foundation::Vector3f incoming =
+                sample.m_shading_basis.transform_to_parent(wi);
             sample.m_incoming = foundation::Dual<foundation::Vector3f>(incoming);
+
             sample.compute_reflected_differentials();
         }
     }
@@ -289,7 +305,7 @@ class MicrofacetBRDFHelper
 
         wi = foundation::reflect(wo, m);
 
-        if (force_above_surface(wi, n))
+        if (BSDF::force_above_surface(wi, n))
             m = foundation::normalize(wo + wi);
 
         const float cos_in = std::abs(wi.y);
@@ -311,28 +327,10 @@ class MicrofacetBRDFHelper
                 alpha,
                 gamma);
 
-        probability = mdf.pdf(wo, m, alpha, alpha, gamma) / (4.0f * cos_oh);
+        probability = mdf.pdf(wo, m, alpha, alpha, gamma) / std::abs(4.0f * cos_oh);
+        assert(probability >= 0.0f);
 
         return D * G / (4.0f * cos_on * cos_in);
-    }
-
-  private:
-    static bool force_above_surface(
-        foundation::Vector3f&           direction,
-        const foundation::Vector3f&     normal)
-    {
-        const float Eps = 1.0e-4f;
-
-        const float cos_theta = foundation::dot(direction, normal);
-        const float correction = Eps - cos_theta;
-
-        if (correction > 0.0f)
-        {
-            direction = foundation::normalize(direction + correction * normal);
-            return true;
-        }
-
-        return false;
     }
 };
 
@@ -365,6 +363,4 @@ void microfacet_energy_compensation_term(
 // Used in Renderer_Modeling_BSDF_EnergyCompensation unit test.
 void write_microfacet_directional_albedo_tables(const char* directory);
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_MICROFACETHELPER_H
+}   // namespace renderer

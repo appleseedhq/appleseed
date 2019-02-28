@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_FOREACH_H
-#define APPLESEED_FOUNDATION_UTILITY_FOREACH_H
+#pragma once
 
 namespace foundation
 {
@@ -248,6 +247,4 @@ inline typename each<C>::iterator each<C>::it() const
     return i;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_FOREACH_H
+}   // namespace foundation

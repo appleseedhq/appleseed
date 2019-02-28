@@ -34,9 +34,8 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/camera/camera.h"
-#include "renderer/modeling/object/iregion.h"
+#include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/object.h"
-#include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/object/triangle.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
@@ -53,7 +52,6 @@
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/transform.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/lazy.h"
 
 // Standard headers.
 #include <algorithm>
@@ -207,40 +205,30 @@ void AOVoxelTree::build(
             // Retrieve the object.
             Object& object = object_instance.get_object();
 
-            // Retrieve the region kit of the object.
-            Access<RegionKit> region_kit(&object.get_region_kit());
+            // Retrieve the tessellation of the mesh.
+            const MeshObject& mesh = static_cast<const MeshObject&>(object);
+            const StaticTriangleTess& tess = mesh.get_static_triangle_tess();
 
-            // Loop over the regions of the object.
-            const size_t region_count = region_kit->size();
-            for (size_t region_index = 0; region_index < region_count; ++region_index)
+            // Push all triangles of the mesh into the tree.
+            const size_t triangle_count = tess.m_primitives.size();
+            for (size_t triangle_index = 0; triangle_index < triangle_count; ++triangle_index)
             {
-                // Retrieve the region.
-                const IRegion* region = (*region_kit)[region_index];
+                // Fetch the triangle.
+                const Triangle& triangle = tess.m_primitives[triangle_index];
 
-                // Retrieve the tessellation of the region.
-                Access<StaticTriangleTess> tess(&region->get_static_triangle_tess());
+                // Retrieve object instance space vertices of the triangle.
+                const GVector3& v0_os = tess.m_vertices[triangle.m_v0];
+                const GVector3& v1_os = tess.m_vertices[triangle.m_v1];
+                const GVector3& v2_os = tess.m_vertices[triangle.m_v2];
 
-                // Push all triangles of the region into the tree.
-                const size_t triangle_count = tess->m_primitives.size();
-                for (size_t triangle_index = 0; triangle_index < triangle_count; ++triangle_index)
-                {
-                    // Fetch the triangle.
-                    const Triangle& triangle = tess->m_primitives[triangle_index];
+                // Transform triangle vertices to world space.
+                const GVector3 v0(transform.point_to_parent(v0_os));
+                const GVector3 v1(transform.point_to_parent(v1_os));
+                const GVector3 v2(transform.point_to_parent(v2_os));
 
-                    // Retrieve object instance space vertices of the triangle.
-                    const GVector3& v0_os = tess->m_vertices[triangle.m_v0];
-                    const GVector3& v1_os = tess->m_vertices[triangle.m_v1];
-                    const GVector3& v2_os = tess->m_vertices[triangle.m_v2];
-
-                    // Transform triangle vertices to world space.
-                    const GVector3 v0(transform.point_to_parent(v0_os));
-                    const GVector3 v1(transform.point_to_parent(v1_os));
-                    const GVector3 v2(transform.point_to_parent(v2_os));
-
-                    // Push the triangle into the tree.
-                    TriangleIntersector intersector(v0, v1, v2);
-                    builder.push(intersector);
-                }
+                // Push the triangle into the tree.
+                TriangleIntersector intersector(v0, v1, v2);
+                builder.push(intersector);
             }
         }
     }

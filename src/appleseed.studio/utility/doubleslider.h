@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_DOUBLESLIDER_H
-#define APPLESEED_STUDIO_UTILITY_DOUBLESLIDER_H
+#pragma once
 
 // Qt headers.
 #include <QObject>
@@ -104,7 +103,5 @@ class DoubleSlider
     void rangeChanged(const double min, const double max);
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_UTILITY_DOUBLESLIDER_H
+}   // namespace studio
+}   // namespace appleseed

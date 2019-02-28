@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKRESULT_H
-#define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKRESULT_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -124,6 +123,4 @@ class APPLESEED_DLLSYMBOL BenchmarkResult
     Impl* impl;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKRESULT_H
+}   // namespace foundation

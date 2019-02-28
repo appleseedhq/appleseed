@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERTAB_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERTAB_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/cameracontroller.h"
@@ -107,8 +106,8 @@ class RenderTab
     void load_state(const State& state);
 
   signals:
-    void signal_save_raw_frame_and_aovs();
-    void signal_quicksave_raw_frame_and_aovs();
+    void signal_save_frame_and_aovs();
+    void signal_quicksave_frame_and_aovs();
     void signal_set_render_region(const QRect& rect);
     void signal_clear_render_region();
     void signal_render_widget_context_menu(const QPoint& point);
@@ -163,7 +162,5 @@ class RenderTab
     void recreate_handlers();
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERTAB_H
+}   // namespace studio
+}   // namespace appleseed

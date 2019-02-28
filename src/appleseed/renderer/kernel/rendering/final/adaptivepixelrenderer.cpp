@@ -43,6 +43,7 @@
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
+#include "renderer/modeling/aov/pixelsamplecountaov.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/utility/settingsparsing.h"
 
@@ -94,6 +95,17 @@ namespace
         {
             m_variation_aov_index = frame.aovs().get_index("pixel_variation");
             m_sample_aov_index = frame.aovs().get_index("pixel_sample_count");
+
+            // Send sampling parameters to the sample count AOV.
+            if (m_sample_aov_index != ~size_t(0))
+            {
+                PixelSampleCountAOV* sample_aov =
+                    static_cast<PixelSampleCountAOV*>(
+                        frame.aovs().get_by_index(m_sample_aov_index));
+
+                // The AOV takes care of normalizing values depending on sampling parameters.
+                sample_aov->set_normalization_range(m_params.m_min_samples, m_params.m_max_samples);
+            }
         }
 
         void release() override
@@ -169,7 +181,7 @@ namespace
             Tile&                       tile,
             TileStack&                  aov_tiles,
             const AABB2i&               tile_bbox,
-            const size_t                pass_hash,
+            const uint32                pass_hash,
             const Vector2i&             pi,
             const Vector2i&             pt,
             AOVAccumulatorContainer&    aov_accumulators,
@@ -281,26 +293,27 @@ namespace
             // Store diagnostics values in the diagnostics tile.
             if ((m_sample_aov_tile || m_variation_aov_tile) && tile_bbox.contains(pt))
             {
-                Color3f value(0.0f, 0.0f, 0.0f);
-
                 if (m_sample_aov_tile)
                 {
-                    value[0] = static_cast<float>(trackers[0].get_size());
-
-                    m_sample_aov_tile->set_pixel(pt.x, pt.y, value);
+                    Color3f samples;
+                    m_sample_aov_tile->get_pixel(pt.x, pt.y, samples);
+                    samples[0] += static_cast<float>(trackers[0].get_size());
+                    m_sample_aov_tile->set_pixel(pt.x, pt.y, samples);
                 }
 
                 if (m_variation_aov_tile)
                 {
-                    value[0] =
-                        saturate(
-                            max(
-                                trackers[0].get_variation(),
-                                trackers[1].get_variation(),
-                                trackers[2].get_variation())
-                            / m_params.m_max_variation);
+                    Color3f variation;
+                    m_variation_aov_tile->get_pixel(pt.x, pt.y, variation);
 
-                    m_variation_aov_tile->set_pixel(pt.x, pt.y, value);
+                    variation[0] +=
+                        max(
+                            trackers[0].get_variation(),
+                            trackers[1].get_variation(),
+                            trackers[2].get_variation())
+                        / (m_params.m_max_variation * static_cast<float>(m_params.m_passes));
+
+                    m_variation_aov_tile->set_pixel(pt.x, pt.y, variation);
                 }
             }
 
@@ -324,12 +337,14 @@ namespace
             const size_t                    m_min_samples;
             const size_t                    m_max_samples;
             const float                     m_max_variation;
+            const size_t                    m_passes;
 
             explicit Parameters(const ParamArray& params)
               : m_sampling_mode(get_sampling_context_mode(params))
               , m_min_samples(params.get_required<size_t>("min_samples", 16))
               , m_max_samples(params.get_required<size_t>("max_samples", 256))
               , m_max_variation(pow(10.0f, -params.get_optional<float>("quality", 2.0f)))
+              , m_passes(params.get_optional<size_t>("passes", 1))
             {
             }
         };
@@ -350,31 +365,6 @@ namespace
 //
 // AdaptivePixelRendererFactory class implementation.
 //
-
-AdaptivePixelRendererFactory::AdaptivePixelRendererFactory(
-    const Frame&                frame,
-    ISampleRendererFactory*     factory,
-    const ParamArray&           params)
-  : m_frame(frame)
-  , m_factory(factory)
-  , m_params(params)
-{
-}
-
-void AdaptivePixelRendererFactory::release()
-{
-    delete this;
-}
-
-IPixelRenderer* AdaptivePixelRendererFactory::create(
-    const size_t                thread_index)
-{
-    return new AdaptivePixelRenderer(
-        m_frame,
-        m_factory,
-        m_params,
-        thread_index);
-}
 
 Dictionary AdaptivePixelRendererFactory::get_params_metadata()
 {
@@ -405,6 +395,31 @@ Dictionary AdaptivePixelRendererFactory::get_params_metadata()
             .insert("help", "Quality factor"));
 
     return metadata;
+}
+
+AdaptivePixelRendererFactory::AdaptivePixelRendererFactory(
+    const Frame&                frame,
+    ISampleRendererFactory*     factory,
+    const ParamArray&           params)
+  : m_frame(frame)
+  , m_factory(factory)
+  , m_params(params)
+{
+}
+
+void AdaptivePixelRendererFactory::release()
+{
+    delete this;
+}
+
+IPixelRenderer* AdaptivePixelRendererFactory::create(
+    const size_t                thread_index)
+{
+    return new AdaptivePixelRenderer(
+        m_frame,
+        m_factory,
+        m_params,
+        thread_index);
 }
 
 }   // namespace renderer

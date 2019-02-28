@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_POISON_H
-#define APPLESEED_FOUNDATION_UTILITY_POISON_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/fp.h"
@@ -86,7 +85,9 @@ class PoisonImpl
 template <typename T>
 inline void poison(T& x)
 {
+#ifdef DEBUG
     PoisonImpl<T>::do_poison(x);
+#endif
 }
 
 template <typename T>
@@ -123,6 +124,4 @@ class PoisonImpl<double>
     }
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_POISON_H
+}   // namespace foundation

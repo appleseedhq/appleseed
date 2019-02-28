@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_OSLSHADINGSYSTEM_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_OSLSHADINGSYSTEM_H
+#pragma once
 
 // OSL headers.
 #include "foundation/platform/_beginoslheaders.h"
@@ -76,6 +75,4 @@ class OSLShadingSystemFactory
         OIIOErrorHandler*   err = nullptr);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_OSLSHADINGSYSTEM_H
+}   // namespace renderer

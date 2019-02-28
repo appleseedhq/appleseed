@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CURVE_BINARYCURVEFILEWRITER_H
-#define APPLESEED_FOUNDATION_CURVE_BINARYCURVEFILEWRITER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/curve/icurvefilewriter.h"
@@ -68,12 +67,7 @@ class BinaryCurveFileWriter
     void write_curves(const ICurveWalker& walker);
     void write_curve_count(const ICurveWalker& walker);
     void write_basis(const ICurveWalker& walker);
-    void write_curve(
-        const ICurveWalker &walker,
-        const uint32 curve_id,
-        uint32 &vertex_count);
+    void write_curve(const ICurveWalker& walker, const uint32 curve_id, uint32& vertex_count);
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CURVE_BINARYCURVEFILEWRITER_H
+}   // namespace foundation

@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_DENOISING_DENOISER_H
-#define APPLESEED_RENDERER_KERNEL_DENOISING_DENOISER_H
+#pragma once
 
 // BCD headers.
 #include "bcd/DeepImage.h"
@@ -86,6 +85,4 @@ bool denoise_aov_image(
     const DenoiserOptions&      options,
     foundation::IAbortSwitch*   abort_switch);
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_DENOISING_DENOISER_H
+}   // namespace renderer

@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/aov/aovcomponents.h"
+#include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingray.h"
@@ -69,15 +70,30 @@ ShadingEngine::ShadingEngine(const ParamArray& params)
     create_diagnostic_surface_shader(params);
 }
 
+bool ShadingEngine::on_render_begin(
+    const Project&              project,
+    OnRenderBeginRecorder&      recorder,
+    IAbortSwitch*               abort_switch)
+{
+    bool success = true;
+
+    if (m_diagnostic_surface_shader.get())
+        success = success && m_diagnostic_surface_shader->on_render_begin(project, nullptr, recorder, abort_switch);
+
+    return success;
+}
+
 bool ShadingEngine::on_frame_begin(
     const Project&              project,
     OnFrameBeginRecorder&       recorder,
     IAbortSwitch*               abort_switch)
 {
-    return
-        m_diagnostic_surface_shader.get()
-            ? m_diagnostic_surface_shader->on_frame_begin(project, nullptr, recorder, abort_switch)
-            : true;
+    bool success = true;
+
+    if (m_diagnostic_surface_shader.get())
+        success = success && m_diagnostic_surface_shader->on_frame_begin(project, nullptr, recorder, abort_switch);
+
+    return success;
 }
 
 void ShadingEngine::create_diagnostic_surface_shader(const ParamArray& params)
@@ -91,7 +107,7 @@ void ShadingEngine::create_diagnostic_surface_shader(const ParamArray& params)
     }
 }
 
-void ShadingEngine::shade_hit_point(
+bool ShadingEngine::shade_hit_point(
     SamplingContext&            sampling_context,
     const PixelContext&         pixel_context,
     const ShadingContext&       shading_context,
@@ -105,17 +121,39 @@ void ShadingEngine::shade_hit_point(
     // Retrieve the material of the intersected surface.
     const Material* material = shading_point.get_material();
 
-    // Apply OSL transparency if needed.
-    if (material &&
-        material->get_render_data().m_shader_group &&
-        material->get_render_data().m_shader_group->has_transparency())
+    if (material != nullptr &&
+        material->get_render_data().m_shader_group != nullptr)
     {
-        Alpha alpha;
-        shading_context.execute_osl_transparency(
-            *material->get_render_data().m_shader_group,
-            shading_point,
-            alpha);
-        shading_result.m_main.a *= alpha[0];
+        const ShaderGroup* sg = material->get_render_data().m_shader_group;
+
+        const bool has_matte = sg->has_matte();
+
+        if (sg->has_transparency() || has_matte)
+        {
+            shading_context.execute_osl_transparency_and_matte(*sg, shading_point);
+
+            if (has_matte)
+            {
+                Color4f matte;
+                const bool any_matte_closure = process_matte_tree(
+                    shading_point.get_osl_shader_globals().Ci,
+                    matte.rgb(),
+                    matte.a);
+
+                if (any_matte_closure)
+                {
+                    shading_result.m_main = matte;
+                    return true;
+                }
+            }
+
+            if (sg->has_transparency())
+            {
+                Alpha alpha;
+                process_transparency_tree(shading_point.get_osl_shader_globals().Ci, alpha);
+                shading_result.m_main.a *= alpha[0];
+            }
+        }
     }
 
     // Shade the sample if it isn't fully transparent.
@@ -130,7 +168,7 @@ void ShadingEngine::shade_hit_point(
             {
                 // The intersected surface has no material: return solid pink.
                 shading_result.set_main_to_opaque_pink();
-                return;
+                return true;
             }
 
             // Use the surface shader of the intersected surface.
@@ -140,7 +178,7 @@ void ShadingEngine::shade_hit_point(
             {
                 // The intersected surface has no surface shader: return solid pink.
                 shading_result.set_main_to_opaque_pink();
-                return;
+                return true;
             }
         }
 
@@ -152,7 +190,12 @@ void ShadingEngine::shade_hit_point(
             shading_point,
             aov_accumulators,
             shading_result);
+
+        // Apply alpha premultiplication.
+        shading_result.apply_alpha_premult();
     }
+
+    return false;
 }
 
 void ShadingEngine::shade_environment(
@@ -190,9 +233,10 @@ void ShadingEngine::shade_environment(
             value,
             aov_value,
             shading_result);
+
+        // Apply alpha premultiplication.
+        shading_result.apply_alpha_premult();
     }
-    else
-        shading_result.m_main.set(0.0f);
 }
 
 }   // namespace renderer

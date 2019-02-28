@@ -127,8 +127,6 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            sample.m_max_roughness = 0.0f;
-
             const Vector3f& shading_normal = sample.m_shading_basis.get_normal();
             const float cos_theta_i = dot(sample.m_outgoing.get_value(), shading_normal);
             const float sin_theta_i2 = 1.0f - square(cos_theta_i);
@@ -195,11 +193,7 @@ namespace
 
             sample.m_value.m_beauty = sample.m_value.m_glossy;
 
-            // The probability density of the sampled direction is the Dirac delta.
-            sample.m_probability = DiracDelta;
-
-            // Set the scattering mode.
-            sample.m_mode = ScatteringMode::Specular;
+            sample.set_to_scattering(ScatteringMode::Specular, DiracDelta);
 
             // Set the incoming direction.
             incoming = improve_normalization(incoming);
@@ -308,7 +302,7 @@ DictionaryArray SpecularBTDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "0.5"));
 
@@ -318,7 +312,7 @@ DictionaryArray SpecularBTDFFactory::get_input_metadata() const
             .insert("label", "Reflectance Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -330,7 +324,7 @@ DictionaryArray SpecularBTDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "0.5"));
 
@@ -340,7 +334,7 @@ DictionaryArray SpecularBTDFFactory::get_input_metadata() const
             .insert("label", "Transmittance Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -350,7 +344,7 @@ DictionaryArray SpecularBTDFFactory::get_input_metadata() const
             .insert("label", "Fresnel Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_TEXTURE_TEXTURE_H
-#define APPLESEED_RENDERER_MODELING_TEXTURE_TEXTURE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
@@ -96,6 +95,4 @@ class APPLESEED_DLLSYMBOL Texture
         const foundation::Tile*     tile) = 0;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_TEXTURE_TEXTURE_H
+}   // namespace renderer

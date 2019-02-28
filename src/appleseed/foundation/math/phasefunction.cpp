@@ -33,9 +33,9 @@
 #include "foundation/math/basis.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
-#include "foundation/math/vector.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 
@@ -55,7 +55,7 @@ namespace
         //
 
         const float numerator = (1.0f - sqr_g);
-        const float denominator = std::pow(1.0f + sqr_g - 2.0f * g * cosine, -1.5f);
+        const float denominator = pow(1.0f + sqr_g - 2.0f * g * cosine, -1.5f);
 
         return RcpFourPi<float>() * numerator * denominator;
     }
@@ -87,7 +87,7 @@ float HenyeyPhaseFunction::sample(const Vector3f& outgoing, const Vector2f& s, V
     const float t = 2.0f * s[0] - 1.0f;
 
     float cosine;
-    if (std::abs(m_g) < +1e-5f)
+    if (abs(m_g) < 1.0e-5f)
     {
         cosine = t; // isotropic
     }
@@ -97,7 +97,7 @@ float HenyeyPhaseFunction::sample(const Vector3f& outgoing, const Vector2f& s, V
         cosine = 0.5f / m_g * (1.0f + sqr_g - p * p);
     }
 
-    const float sine = std::sqrt(saturate(1.0f - cosine * cosine));
+    const float sine = sqrt(max(1.0f - cosine * cosine, 0.0f));
     const Vector2f tangent = sample_circle_uniform(s[1]);
     const Basis3f basis(outgoing);
 

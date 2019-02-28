@@ -130,7 +130,7 @@ namespace
 
 void bind_assembly()
 {
-    bpy::class_<BaseGroup, boost::noncopyable>("BaseGroup")
+    bpy::class_<BaseGroup, boost::noncopyable>("BaseGroup", bpy::no_init)
         .def("colors", &BaseGroup::colors, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("textures", &BaseGroup::textures, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("texture_instances", &BaseGroup::texture_instances, bpy::return_value_policy<bpy::reference_existing_object>())

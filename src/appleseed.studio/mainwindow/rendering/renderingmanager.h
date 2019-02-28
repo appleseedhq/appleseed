@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERINGMANAGER_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERINGMANAGER_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/qtrenderercontroller.h"
@@ -45,6 +44,7 @@
 #include "foundation/platform/thread.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/job/abortswitch.h"
+#include "foundation/utility/searchpaths.h"
 
 // Qt headers.
 #include <QObject>
@@ -166,6 +166,7 @@ class RenderingManager
 
     renderer::Project*                          m_project;
     renderer::ParamArray                        m_params;
+    foundation::SearchPaths                     m_resource_search_paths;
     RenderingMode                               m_rendering_mode;
     RenderTab*                                  m_render_tab;
 
@@ -204,7 +205,5 @@ class RenderingManager
     void slot_master_renderer_thread_finished();
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERINGMANAGER_H
+}   // namespace studio
+}   // namespace appleseed

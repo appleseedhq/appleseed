@@ -32,6 +32,27 @@
 # Source files.
 #--------------------------------------------------------------------------------------------------
 
+set (foundation_array_sources
+    foundation/array/algorithm.cpp
+    foundation/array/algorithm.h
+    foundation/array/applyvisitor.h
+    foundation/array/array.cpp
+    foundation/array/array.h
+    foundation/array/arrayref.h
+    foundation/array/arraytraits.h
+    foundation/array/arrayview.h
+    foundation/array/exception.cpp
+    foundation/array/exception.h
+    foundation/array/meshalgorithm.cpp
+    foundation/array/meshalgorithm.h
+)
+list (APPEND appleseed_sources
+    ${foundation_array_sources}
+)
+source_group ("foundation\\array" FILES
+    ${foundation_array_sources}
+)
+
 set (foundation_core_concepts_sources
     foundation/core/concepts/iunknown.h
     foundation/core/concepts/noncopyable.h
@@ -77,6 +98,8 @@ set (foundation_curve_sources
     foundation/curve/binarycurvefilereader.h
     foundation/curve/binarycurvefilewriter.cpp
     foundation/curve/binarycurvefilewriter.h
+    foundation/curve/curvebasis.cpp
+    foundation/curve/curvebasis.h
     foundation/curve/genericcurvefilereader.cpp
     foundation/curve/genericcurvefilereader.h
     foundation/curve/genericcurvefilewriter.cpp
@@ -284,6 +307,7 @@ set (foundation_math_sources
     foundation/math/bvh.h
     foundation/math/cdf.h
     foundation/math/combination.h
+    foundation/math/compressedunitvector.h
     foundation/math/distance.h
     foundation/math/dual.h
     foundation/math/fastmath.h
@@ -393,6 +417,7 @@ set (foundation_meta_benchmarks_sources
     foundation/meta/benchmarks/benchmark_samesign.cpp
     foundation/meta/benchmarks/benchmark_sampling.cpp
     foundation/meta/benchmarks/benchmark_string.cpp
+    foundation/meta/benchmarks/benchmark_tile.cpp
     foundation/meta/benchmarks/benchmark_transform.cpp
     foundation/meta/benchmarks/benchmark_vector.cpp
     foundation/meta/benchmarks/benchmark_voxelgrid.cpp
@@ -407,6 +432,9 @@ source_group ("foundation\\meta\\benchmarks" FILES
 set (foundation_meta_tests_sources
     foundation/meta/tests/test_aabb.cpp
     foundation/meta/tests/test_analysis.cpp
+    foundation/meta/tests/test_array.cpp
+    foundation/meta/tests/test_arrayalgorithm.cpp
+    foundation/meta/tests/test_arrayapplyvisitor.cpp
     foundation/meta/tests/test_attributeset.cpp
     foundation/meta/tests/test_autoreleaseptr.cpp
     foundation/meta/tests/test_benchmarkaggregator.cpp
@@ -426,7 +454,9 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_color.cpp
     foundation/meta/tests/test_colorspace.cpp
     foundation/meta/tests/test_commandlineparser.cpp
+    foundation/meta/tests/test_compressedunitvector.cpp
     foundation/meta/tests/test_concepts.cpp
+    foundation/meta/tests/test_copyonwrite.cpp
     foundation/meta/tests/test_countof.cpp
     foundation/meta/tests/test_datetime.cpp
     foundation/meta/tests/test_dictionary.cpp
@@ -447,6 +477,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_intersection_frustumsegment.cpp
     foundation/meta/tests/test_intersection_planesegment.cpp
     foundation/meta/tests/test_intersection_rayaabb.cpp
+    foundation/meta/tests/test_intersection_raysphere.cpp
     foundation/meta/tests/test_intersection_raytriangle.cpp
     foundation/meta/tests/test_iostreamop.cpp
     foundation/meta/tests/test_job.cpp
@@ -596,6 +627,7 @@ set (foundation_resources_logo_sources
     foundation/resources/logo/appleseed-seeds-32.h
     foundation/resources/logo/appleseed-seeds-64.cpp
     foundation/resources/logo/appleseed-seeds-64.h
+    foundation/resources/logo/generatelogofiles.cpp
 )
 list (APPEND appleseed_sources
     ${foundation_resources_logo_sources}
@@ -823,6 +855,7 @@ set (foundation_utility_sources
     foundation/utility/casts.h
     foundation/utility/cc.h
     foundation/utility/commandlineparser.h
+    foundation/utility/copyonwrite.h
     foundation/utility/countof.h
     foundation/utility/filter.h
     foundation/utility/foreach.h
@@ -996,9 +1029,6 @@ set (renderer_kernel_intersection_sources
     renderer/kernel/intersection/intersector.cpp
     renderer/kernel/intersection/intersector.h
     renderer/kernel/intersection/probevisitorbase.h
-    renderer/kernel/intersection/regioninfo.h
-    renderer/kernel/intersection/regiontree.cpp
-    renderer/kernel/intersection/regiontree.h
     renderer/kernel/intersection/tracecontext.cpp
     renderer/kernel/intersection/tracecontext.h
     renderer/kernel/intersection/treerepository.h
@@ -1095,7 +1125,6 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/directlightingintegrator.h
     renderer/kernel/lighting/forwardlightsampler.cpp
     renderer/kernel/lighting/forwardlightsampler.h
-    renderer/kernel/lighting/ilightingengine.cpp
     renderer/kernel/lighting/ilightingengine.h
     renderer/kernel/lighting/imagebasedlighting.cpp
     renderer/kernel/lighting/imagebasedlighting.h
@@ -1350,6 +1379,7 @@ source_group ("renderer\\kernel\\volume" FILES
 )
 
 set (renderer_meta_benchmarks_sources
+    renderer/meta/benchmarks/benchmark_dynamicspectrum.cpp
     renderer/meta/benchmarks/benchmark_frame.cpp
     renderer/meta/benchmarks/benchmark_localsampleaccumulationbuffer.cpp
     renderer/meta/benchmarks/benchmark_transformsequence.cpp
@@ -1415,8 +1445,6 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/denoiseraov.h
     renderer/modeling/aov/depthaov.cpp
     renderer/modeling/aov/depthaov.h
-    renderer/modeling/aov/diagnosticaov.cpp
-    renderer/modeling/aov/diagnosticaov.h
     renderer/modeling/aov/diffuseaov.cpp
     renderer/modeling/aov/diffuseaov.h
     renderer/modeling/aov/emissionaov.cpp
@@ -1424,12 +1452,18 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/glossyaov.cpp
     renderer/modeling/aov/glossyaov.h
     renderer/modeling/aov/iaovfactory.h
+    renderer/modeling/aov/invalidsamplesaov.cpp
+    renderer/modeling/aov/invalidsamplesaov.h
     renderer/modeling/aov/normalaov.cpp
     renderer/modeling/aov/normalaov.h
     renderer/modeling/aov/npraovs.cpp
     renderer/modeling/aov/npraovs.h
+    renderer/modeling/aov/pixelsamplecountaov.cpp
+    renderer/modeling/aov/pixelsamplecountaov.h
     renderer/modeling/aov/pixeltimeaov.cpp
     renderer/modeling/aov/pixeltimeaov.h
+    renderer/modeling/aov/pixelvariationaov.cpp
+    renderer/modeling/aov/pixelvariationaov.h
     renderer/modeling/aov/positionaov.cpp
     renderer/modeling/aov/positionaov.h
     renderer/modeling/aov/uvaov.cpp
@@ -1627,7 +1661,6 @@ set (renderer_modeling_entity_sources
     renderer/modeling/entity/connectableentity.h
     renderer/modeling/entity/entity.cpp
     renderer/modeling/entity/entity.h
-    renderer/modeling/entity/entityfactoryregistrar.cpp
     renderer/modeling/entity/entityfactoryregistrar.h
     renderer/modeling/entity/entitymap.cpp
     renderer/modeling/entity/entitymap.h
@@ -1638,7 +1671,6 @@ set (renderer_modeling_entity_sources
     renderer/modeling/entity/onframebeginrecorder.h
     renderer/modeling/entity/onrenderbeginrecorder.cpp
     renderer/modeling/entity/onrenderbeginrecorder.h
-    renderer/modeling/entity/registerentityfactories.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_entity_sources}
@@ -1815,7 +1847,6 @@ set (renderer_modeling_object_sources
     renderer/modeling/object/curveobjectwriter.h
     renderer/modeling/object/iobjectfactory.cpp
     renderer/modeling/object/iobjectfactory.h
-    renderer/modeling/object/iregion.h
     renderer/modeling/object/meshobject.cpp
     renderer/modeling/object/meshobject.h
     renderer/modeling/object/meshobjectoperations.cpp
@@ -1833,7 +1864,6 @@ set (renderer_modeling_object_sources
     renderer/modeling/object/objecttraits.h
     renderer/modeling/object/proceduralobject.cpp
     renderer/modeling/object/proceduralobject.h
-    renderer/modeling/object/regionkit.h
     renderer/modeling/object/triangle.h
 )
 list (APPEND appleseed_sources
@@ -1850,8 +1880,6 @@ set (renderer_modeling_postprocessingstage_sources
     renderer/modeling/postprocessingstage/colormappostprocessingstage.h
     renderer/modeling/postprocessingstage/ipostprocessingstagefactory.cpp
     renderer/modeling/postprocessingstage/ipostprocessingstagefactory.h
-    renderer/modeling/postprocessingstage/isolinespostprocessingstage.cpp
-    renderer/modeling/postprocessingstage/isolinespostprocessingstage.h
     renderer/modeling/postprocessingstage/postprocessingstage.cpp
     renderer/modeling/postprocessingstage/postprocessingstage.h
     renderer/modeling/postprocessingstage/postprocessingstagecontainer.h
@@ -2016,6 +2044,8 @@ set (renderer_utility_sources
     renderer/utility/autodeskmax.h
     renderer/utility/bbox.h
     renderer/utility/dynamicspectrum.h
+    renderer/utility/filesystem.cpp
+    renderer/utility/filesystem.h
     renderer/utility/iostreamop.h
     renderer/utility/messagecontext.cpp
     renderer/utility/messagecontext.h
@@ -2023,9 +2053,14 @@ set (renderer_utility_sources
     renderer/utility/paramarray.h
     renderer/utility/plugin.cpp
     renderer/utility/plugin.h
+    renderer/utility/pluginstore.cpp
+    renderer/utility/pluginstore.h
+    renderer/utility/projectpoints.cpp
+    renderer/utility/projectpoints.h
     renderer/utility/seexpr.h
     renderer/utility/settingsparsing.cpp
     renderer/utility/settingsparsing.h
+    renderer/utility/spectrumclamp.h
     renderer/utility/stochasticcast.h
     renderer/utility/testutils.cpp
     renderer/utility/testutils.h
@@ -2078,6 +2113,8 @@ add_library (appleseed SHARED
     ${appleseed_sources}
 )
 
+set_target_properties (appleseed PROPERTIES FOLDER "Core")
+
 if (USE_VISIBILITY_MAP)
     set_target_properties (appleseed PROPERTIES
         LINK_FLAGS "-Wl,--version-script=${PROJECT_SOURCE_DIR}/src/appleseed/libappleseed.map"
@@ -2124,9 +2161,6 @@ target_link_libraries (appleseed
     ${Boost_LIBRARIES}
     lz4
     ${CMAKE_DL_LIBS}
-)
-
-target_link_libraries (appleseed
     "${APPLESEED_LINK_EXTRA_LIBRARIES}"
 )
 
@@ -2136,24 +2170,30 @@ target_link_libraries (appleseed
 #--------------------------------------------------------------------------------------------------
 
 # Copy OSL and OIIO tools to the sandbox.
-if (USE_EXTERNAL_OSL)
-    add_custom_command (TARGET appleseed PRE_BUILD
+if (USE_FIND_PACKAGE_FOR_OSL)
+    add_custom_command (TARGET appleseed
+        PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${OSL_QUERY_INFO} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
-    add_custom_command (TARGET appleseed PRE_BUILD
+    add_custom_command (TARGET appleseed
+        PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${OSL_MAKETX} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
-    add_custom_command (TARGET appleseed PRE_BUILD
+    add_custom_command (TARGET appleseed
+        PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${OPENIMAGEIO_OIIOTOOL} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
 else ()
-    add_custom_command (TARGET appleseed PRE_BUILD
+    add_custom_command (TARGET appleseed
+        PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/osl-release/bin/oslinfo${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
-    add_custom_command (TARGET appleseed PRE_BUILD
+    add_custom_command (TARGET appleseed
+        PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/bin/maketx${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
-    add_custom_command (TARGET appleseed PRE_BUILD
+    add_custom_command (TARGET appleseed
+        PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/bin/oiiotool${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
 endif ()

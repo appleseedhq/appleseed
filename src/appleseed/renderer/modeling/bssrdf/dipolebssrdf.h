@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_DIPOLEBSSRDF_H
-#define APPLESEED_RENDERER_MODELING_BSSRDF_DIPOLEBSSRDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -154,6 +153,9 @@ inline bool DipoleBSSRDF::on_frame_begin(
     OnFrameBeginRecorder&           recorder,
     foundation::IAbortSwitch*       abort_switch)
 {
+    if (!SeparableBSSRDF::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
+
     m_has_sigma_sources =
         m_inputs.source("sigma_a") != nullptr &&
         m_inputs.source("sigma_s") != nullptr;
@@ -235,6 +237,4 @@ void DipoleBSSRDF::do_prepare_inputs(
         dipole_max_radius(foundation::min_value(values->m_precomputed.m_sigma_tr));
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_DIPOLEBSSRDF_H
+}   // namespace renderer

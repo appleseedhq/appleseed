@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_CAMERA_THINLENSCAMERA_H
-#define APPLESEED_RENDERER_MODELING_CAMERA_THINLENSCAMERA_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/camera/icamerafactory.h"
@@ -75,6 +74,4 @@ class APPLESEED_DLLSYMBOL ThinLensCameraFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_CAMERA_THINLENSCAMERA_H
+}   // namespace renderer

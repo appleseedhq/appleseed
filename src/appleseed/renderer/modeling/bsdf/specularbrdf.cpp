@@ -101,14 +101,14 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             
-            sample.m_max_roughness = 0.0f;
-
             const NoFresnelFun f(
                 values->m_reflectance,
                 values->m_reflectance_multiplier);
 
             SpecularBRDFHelper::sample(f, sample);
-            sample.m_value.m_beauty = sample.m_value.m_glossy;
+
+            if (sample.get_mode() != ScatteringMode::None)
+                sample.m_value.m_beauty = sample.m_value.m_glossy;
         }
 
         float evaluate(
@@ -179,7 +179,7 @@ DictionaryArray SpecularBRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "0.5"));
 
@@ -189,7 +189,7 @@ DictionaryArray SpecularBRDFFactory::get_input_metadata() const
             .insert("label", "Reflectance Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 

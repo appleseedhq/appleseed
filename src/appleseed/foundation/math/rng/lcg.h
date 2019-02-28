@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_RNG_LCG_H
-#define APPLESEED_FOUNDATION_MATH_RNG_LCG_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -85,6 +84,4 @@ inline uint32 LCG::rand_uint32()
     return m_s;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_RNG_LCG_H
+}   // namespace foundation

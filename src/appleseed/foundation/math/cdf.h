@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_CDF_H
-#define APPLESEED_FOUNDATION_MATH_CDF_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -337,6 +336,4 @@ T invert_cdf_function(
     return x;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_CDF_H
+}   // namespace foundation

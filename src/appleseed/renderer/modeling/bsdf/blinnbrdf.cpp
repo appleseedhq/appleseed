@@ -154,10 +154,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            sample.m_max_roughness = 1.0f;
-
             const FresnelFun f(values->m_precomputed.m_outside_ior / values->m_ior);
-
             MicrofacetBRDFHelper<false>::sample(
                 sampling_context,
                 m_mdf,
@@ -166,8 +163,9 @@ namespace
                 0.0f,
                 f,
                 sample);
-
             sample.m_value.m_beauty = sample.m_value.m_glossy;
+
+            sample.m_min_roughness = 1.0f;
         }
 
         float evaluate(
@@ -198,6 +196,7 @@ namespace
                     incoming,
                     f,
                     value.m_glossy);
+            assert(pdf >= 0.0f);
 
             value.m_beauty = value.m_glossy;
 
@@ -218,7 +217,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            return
+            const float pdf =
                 MicrofacetBRDFHelper<false>::pdf(
                     m_mdf,
                     values->m_exponent,
@@ -227,6 +226,9 @@ namespace
                     shading_basis,
                     outgoing,
                     incoming);
+            assert(pdf >= 0.0f);
+
+            return pdf;
         }
 
       private:
@@ -271,7 +273,7 @@ DictionaryArray BlinnBRDFFactory::get_input_metadata() const
             .insert("label", "Exponent")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "0.5"));
 

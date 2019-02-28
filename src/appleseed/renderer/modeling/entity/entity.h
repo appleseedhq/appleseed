@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENTITY_ENTITY_H
-#define APPLESEED_RENDERER_MODELING_ENTITY_ENTITY_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/utility/paramarray.h"
@@ -118,28 +117,52 @@ class APPLESEED_DLLSYMBOL Entity
     virtual void collect_asset_paths(foundation::StringArray& paths) const;
     virtual void update_asset_paths(const foundation::StringDictionary& mappings);
 
-    // This method is called once before rendering.
-    // Returns true on success, false otherwise.
+    //
+    // Rendering proceeds roughly as follow, both in final and interactive modes:
+    //
+    //     Loop:
+    //         [Bind scene entities inputs]
+    //         on_render_begin()
+    //
+    //         Loop:
+    //             [Retrieve camera position]
+    //             on_frame_begin()
+    //             [Render frame]
+    //             on_frame_end()
+    //         Until an entity is edited
+    //
+    //         on_render_end()
+    //     Until rendering ends naturally or is aborted
+    //
+    // See the `MasterRenderer` class in masterrenderer.cpp for details.
+    //
+
+    // This method is called before rendering begins, and whenever rendering is reinitialized
+    // (i.e. because an entity has been edited). At this point, all entities inputs are bound.
+    // Returns true on success, or false if an error occurred or if the abort switch was triggered.
     virtual bool on_render_begin(
         const Project&                  project,
         const BaseGroup*                parent,
         OnRenderBeginRecorder&          recorder,
         foundation::IAbortSwitch*       abort_switch = nullptr);
 
-    // This method is called once after rendering.
+    // This method is called after rendering has ended. It is guaranteed to be called if
+    // `on_render_begin()` was called and was successful (i.e. returned true).
     virtual void on_render_end(
         const Project&                  project,
         const BaseGroup*                parent);
 
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
+    // This method is called before rendering a frame begins, and whenever rendering is restarted
+    // (i.e. because the camera has been moved). At this point, all entities inputs are bound.
+    // Returns true on success, or false if an error occurred or if the abort switch was triggered.
     virtual bool on_frame_begin(
         const Project&                  project,
         const BaseGroup*                parent,
         OnFrameBeginRecorder&           recorder,
         foundation::IAbortSwitch*       abort_switch = nullptr);
 
-    // This method is called once after rendering each frame (only if on_frame_begin() was called).
+    // This method is called after rendering a frame has ended. It is guaranteed to be called if
+    // `on_frame_begin()` was called and was successful (i.e. returned true).
     virtual void on_frame_end(
         const Project&                  project,
         const BaseGroup*                parent);
@@ -169,6 +192,7 @@ void invoke_update_asset_paths(
     const foundation::StringDictionary& mappings);
 
 // Utility function to invoke on_render_begin() on a collection of entities.
+// Returns true on success, or false if an error occurred or if the abort switch was triggered.
 template <typename EntityCollection>
 bool invoke_on_render_begin(
     EntityCollection&                   entities,
@@ -178,6 +202,7 @@ bool invoke_on_render_begin(
     foundation::IAbortSwitch*           abort_switch);
 
 // Utility function to invoke on_frame_begin() on a collection of entities.
+// Returns true on success, or false if an error occurred or if the abort switch was triggered.
 template <typename EntityCollection>
 bool invoke_on_frame_begin(
     EntityCollection&                   entities,
@@ -286,6 +311,4 @@ bool invoke_on_frame_begin(
     return true;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_ENTITY_ENTITY_H
+}   // namespace renderer

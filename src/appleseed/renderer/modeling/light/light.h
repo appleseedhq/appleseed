@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_LIGHT_LIGHT_H
-#define APPLESEED_RENDERER_MODELING_LIGHT_LIGHT_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -79,8 +78,8 @@ class APPLESEED_DLLSYMBOL Light
 
     enum Flags
     {
-        CastIndirectLight = 1 << 0,         // does this light generate indirect lighting?
-        LightTreeCompatible = 1 << 1        // can this light be used by the LightTree?
+        CastIndirectLight = 1UL << 0,       // does this light generate indirect lighting?
+        LightTreeCompatible = 1UL << 1      // can this light be used by the LightTree?
     };
 
     // Retrieve the flags.
@@ -155,6 +154,4 @@ inline int Light::get_flags() const
     return m_flags;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_LIGHT_LIGHT_H
+}   // namespace renderer

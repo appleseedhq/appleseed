@@ -53,6 +53,8 @@ add_executable (convertmeshfile
     ${convertmeshfile_sources}
 )
 
+set_target_properties (convertmeshfile PROPERTIES FOLDER "Tools")
+
 if (USE_RPATH_ORIGIN)
     set_target_properties (convertmeshfile PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"

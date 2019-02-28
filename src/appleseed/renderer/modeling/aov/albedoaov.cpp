@@ -89,7 +89,7 @@ namespace
     // Albedo AOV.
     //
 
-    const char* AlbedoModel = "albedo_aov";
+    const char* AlbedoAOVModel = "albedo_aov";
 
     class AlbedoAOV
       : public ColorAOV
@@ -107,9 +107,10 @@ namespace
 
         const char* get_model() const override
         {
-            return AlbedoModel;
+            return AlbedoAOVModel;
         }
 
+      protected:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
@@ -130,7 +131,7 @@ void AlbedoAOVFactory::release()
 
 const char* AlbedoAOVFactory::get_model() const
 {
-    return AlbedoModel;
+    return AlbedoAOVModel;
 }
 
 Dictionary AlbedoAOVFactory::get_model_metadata() const

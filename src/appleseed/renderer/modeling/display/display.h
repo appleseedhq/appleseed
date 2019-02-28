@@ -26,14 +26,12 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_DISPLAY_DISPLAY_H
-#define APPLESEED_RENDERER_MODELING_DISPLAY_DISPLAY_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
@@ -49,7 +47,7 @@ namespace renderer
 {
 
 //
-// Plugin tile callback.
+// Tile callback plugin.
 //
 
 class APPLESEED_DLLSYMBOL Display
@@ -97,6 +95,4 @@ class APPLESEED_DLLSYMBOL DisplayFactory
         const ParamArray&   params);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_DISPLAY_DISPLAY_H
+}   // namespace renderer

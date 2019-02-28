@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_INTERSECTIONSETTINGS_H
-#define APPLESEED_RENDERER_KERNEL_INTERSECTION_INTERSECTIONSETTINGS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -56,24 +55,6 @@ const double AssemblyTreeInteriorNodeTraversalCost = 1.0;
 
 // Relative cost of intersecting an assembly.
 const double AssemblyTreeTriangleIntersectionCost = 10.0;
-
-
-//
-// Region tree settings.
-//
-
-// Maximum region duplication rate.
-const double RegionTreeMaxDuplication = 2.0;
-
-// Maximum number of regions per leaf.
-const size_t RegionTreeMaxLeafSize = 64;
-
-// Maximum depth of the tree.
-const size_t RegionTreeMaxDepth = 16;
-
-// Size of the region tree access cache.
-const size_t RegionTreeAccessCacheLines = 16;
-const size_t RegionTreeAccessCacheWays = 1;
 
 
 //
@@ -168,6 +149,4 @@ const size_t EmbreeSceneAccessCacheWays = 2;
 // be used when the triangle model is set to Moller-Trumbore (MT).
 #define RENDERER_ADAPTIVE_OFFSET
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_INTERSECTIONSETTINGS_H
+}   // namespace renderer

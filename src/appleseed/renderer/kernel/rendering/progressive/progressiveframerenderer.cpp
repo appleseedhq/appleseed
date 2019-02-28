@@ -141,7 +141,6 @@ namespace
                         m_params.m_spectrum_mode,
                         m_job_queue,
                         i,                              // job index
-                        m_params.m_thread_count,        // job count
                         m_abort_switch));
             }
 
@@ -748,6 +747,28 @@ namespace
 // ProgressiveFrameRendererFactory class implementation.
 //
 
+Dictionary ProgressiveFrameRendererFactory::get_params_metadata()
+{
+    Dictionary metadata;
+
+    metadata.dictionaries().insert(
+        "max_fps",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "30.0")
+            .insert("label", "Max FPS")
+            .insert("help", "Maximum progressive rendering update rate in frames per second"));
+
+    metadata.dictionaries().insert(
+        "max_samples",
+        Dictionary()
+            .insert("type", "int")
+            .insert("label", "Max Samples")
+            .insert("help", "Maximum number of samples per pixel"));
+
+    return metadata;
+}
+
 ProgressiveFrameRendererFactory::ProgressiveFrameRendererFactory(
     const Project&              project,
     ISampleGeneratorFactory*    generator_factory,
@@ -787,28 +808,6 @@ IFrameRenderer* ProgressiveFrameRendererFactory::create(
             generator_factory,
             callback_factory,
             params);
-}
-
-Dictionary ProgressiveFrameRendererFactory::get_params_metadata()
-{
-    Dictionary metadata;
-
-    metadata.dictionaries().insert(
-        "max_fps",
-        Dictionary()
-            .insert("type", "float")
-            .insert("default", "30.0")
-            .insert("label", "Max FPS")
-            .insert("help", "Maximum progressive rendering update rate in frames per second"));
-
-    metadata.dictionaries().insert(
-        "max_samples",
-        Dictionary()
-            .insert("type", "int")
-            .insert("label", "Max Samples")
-            .insert("help", "Maximum number of samples per pixel"));
-
-    return metadata;
 }
 
 }   // namespace renderer

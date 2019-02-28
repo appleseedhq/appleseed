@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_PYTHON_H
-#define APPLESEED_FOUNDATION_PLATFORM_PYTHON_H
+#pragma once
 
 #if defined _MSC_VER
     // C4244: conversion from 'Py_ssize_t' to 'unsigned int', possible loss of data
@@ -59,6 +58,4 @@ T* get_pointer(const auto_release_ptr<T>& p)
     return p.get();
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_PYTHON_H
+}   // namespace foundation

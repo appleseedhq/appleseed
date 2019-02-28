@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_INSTANCECOLLECTIONITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_INSTANCECOLLECTIONITEM_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitembase.h"
@@ -96,7 +95,5 @@ ItemBase* InstanceCollectionItem<Entity, EntityItem, ParentEntity>::create_item(
             this);
 }
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_INSTANCECOLLECTIONITEM_H
+}   // namespace studio
+}   // namespace appleseed

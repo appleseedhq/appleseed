@@ -27,30 +27,29 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SURFACESHADER_DIAGNOSTICSURFACESHADER_H
-#define APPLESEED_RENDERER_MODELING_SURFACESHADER_DIAGNOSTICSURFACESHADER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/kvpair.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Standard headers.
-#include <cstddef>
-
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
+namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class AOVAccumulatorContainer; }
+namespace renderer      { class BaseGroup; }
+namespace renderer      { class OnRenderBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class PixelContext; }
+namespace renderer      { class Project; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 
@@ -68,7 +67,7 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
     // Available shading modes.
     enum ShadingMode
     {
-        Albedo,                     // shade according to the surface bsdf's albedo component
+        Albedo,                     // surface BSDF's albedo component
         Coverage,                   // shade according to pixel coverage
         Barycentric,                // shade according to barycentric coordinates
         UV,                         // shade according to UV coordinates
@@ -78,6 +77,7 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
         ShadingNormal,              // shade according to the (possibly modified) shading normal
         OriginalShadingNormal,      // shade according to the original shading normal
         WorldSpacePosition,         // shade according to the world space position
+        WorldSpaceVelocity,         // shade according to the world space point velocity
         Sides,                      // shade according to the surface side
         Depth,                      // shade according to distance from camera
         ScreenSpaceWireframe,       // screen-space wireframe
@@ -85,7 +85,6 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
         AmbientOcclusion,           // ambient occlusion
         AssemblyInstances,          // assign a unique color to each assembly instance
         ObjectInstances,            // assign a unique color to each object instance
-        Regions,                    // assign a unique color to each region
         Primitives,                 // assign a unique color to each primitive
         Materials,                  // assign a unique color to each material
         RaySpread,                  // shade according to the reflected ray spread
@@ -96,16 +95,20 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
     static const foundation::KeyValuePair<const char*, ShadingMode> ShadingModeValues[];
     static const foundation::KeyValuePair<const char*, const char*> ShadingModeNames[];
 
-    // Constructor.
-    DiagnosticSurfaceShader(
-        const char*                 name,
-        const ParamArray&           params);
-
     // Delete this instance.
     void release() override;
 
     // Return a string identifying the model of this surface shader.
     const char* get_model() const override;
+
+    // This method is called before rendering begins, and whenever rendering is reinitialized
+    // (i.e. because an entity has been edited). At this point, all entities inputs are bound.
+    // Returns true on success, or false if an error occurred or if the abort switch was triggered.
+    bool on_render_begin(
+        const Project&              project,
+        const BaseGroup*            parent,
+        OnRenderBeginRecorder&      recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
     // Evaluate the shading at a given point.
     void evaluate(
@@ -117,23 +120,18 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
         ShadingResult&              shading_result) const override;
 
   private:
-    ShadingMode m_shading_mode;
-    double      m_ao_max_distance;
-    size_t      m_ao_samples;
+    friend class DiagnosticSurfaceShaderFactory;
 
-    void extract_parameters();
+    struct Impl;
+    Impl* impl;
 
-    static void set_result(
-        const foundation::Color3f&  color,
-        ShadingResult&              shading_result);
+    // Constructor.
+    DiagnosticSurfaceShader(
+        const char*                 name,
+        const ParamArray&           params);
 
-    static void set_result(
-        const foundation::Color4f&  color,
-        ShadingResult&              shading_result);
-
-    static void set_result(
-        const Spectrum&             value,
-        ShadingResult&              shading_result);
+    // Destructor.
+    ~DiagnosticSurfaceShader() override;
 };
 
 
@@ -163,6 +161,4 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShaderFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SURFACESHADER_DIAGNOSTICSURFACESHADER_H
+}   // namespace renderer

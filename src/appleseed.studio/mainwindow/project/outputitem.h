@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_OUTPUTITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_OUTPUTITEM_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/itembase.h"
@@ -49,7 +48,5 @@ class OutputItem
         renderer::Frame*        frame);
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_OUTPUTITEM_H
+}   // namespace studio
+}   // namespace appleseed

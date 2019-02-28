@@ -36,8 +36,7 @@
 //      ISBN: 9781558608481
 //
 
-#ifndef AS_FRACTAL_HELPERS_H
-#define AS_FRACTAL_HELPERS_H
+#pragma once
 
 #include "appleseed/fractal/as_noise_helpers.h"
 #include "appleseed/math/as_math_complex.h"
@@ -547,5 +546,3 @@ float value_noise3d(point Pp)
 
     return mix(x, y, f[2]);
 }
-
-#endif // !AS_FRACTAL_HELPERS_H

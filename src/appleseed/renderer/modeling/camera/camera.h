@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_CAMERA_CAMERA_H
-#define APPLESEED_RENDERER_MODELING_CAMERA_CAMERA_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -80,7 +79,7 @@ class APPLESEED_DLLSYMBOL Camera
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
-    // Print this component's settings to the renderer's global logger.
+    // Print this entity's parameters to the renderer's global logger.
     virtual void print_settings() const = 0;
 
     // Access the transform sequence of the camera.
@@ -298,6 +297,4 @@ inline float Camera::get_shutter_middle_time() const
     return 0.5f * (m_shutter_open_begin_time + m_shutter_close_end_time);
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_CAMERA_CAMERA_H
+}   // namespace renderer

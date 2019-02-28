@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
+#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <algorithm>
@@ -60,16 +61,18 @@ void Drawing::draw_filled_rect(
     const size_t x1 = static_cast<size_t>(min(to.x, w - 1));
     const size_t y1 = static_cast<size_t>(min(to.y, h - 1));
 
+    const Color4f color_premult = color.premultiplied();
+
     for (size_t y = y0; y <= y1; ++y)
     {
         for (size_t x = x0; x <= x1; ++x)
         {
-            Color4f background;
-            image.get_pixel(x, y, background);
+            Color4f background_premult;
+            image.get_pixel(x, y, background_premult);
 
             image.set_pixel(
                 x, y,
-                color * color.a + background * (1.0f - color.a));
+                color_premult + background_premult * (1.0f - color_premult.a));
         }
     }
 }
@@ -79,7 +82,7 @@ void Drawing::draw_dot(
     const Vector2d&     position,
     const Color4f&      color)
 {
-    static size_t DotIntensity[16] =
+    static const uint8 DotAlphaMask[16] =
     {
          24, 171, 178,  48,
         159, 255, 255, 207,
@@ -103,18 +106,22 @@ void Drawing::draw_dot(
 
             if (ix >= 0 && iy >= 0 && ix < w && iy < h)
             {
-                const float alpha = color.a * DotIntensity[y * 4 + x] * (1.0f / 255.0f);
+                const float dot_alpha = DotAlphaMask[y * 4 + x] * (1.0f / 255.0f);
 
-                Color4f background;
+                Color4f color_premult = color;
+                color_premult.a *= dot_alpha;
+                color_premult.premultiply_in_place();
+
+                Color4f background_premult;
                 image.get_pixel(
                     static_cast<size_t>(ix),
                     static_cast<size_t>(iy),
-                    background);
+                    background_premult);
 
                 image.set_pixel(
                     static_cast<size_t>(ix),
                     static_cast<size_t>(iy),
-                    color * alpha + background * (1.0f - alpha));
+                    color_premult + background_premult * (1.0f - color_premult.a));
             }
         }
     }
@@ -123,15 +130,17 @@ void Drawing::draw_dot(
 void Drawing::blit_bitmap(
     Image&              image,
     const Vector2i&     position,
-    const uint8*        bitmap,
+    const void*         bitmap,
     const size_t        bitmap_width,
     const size_t        bitmap_height,
     const PixelFormat   bitmap_pixel_format,
-    const Color4f&      multiplier)
+    const Color4f&      tint)
 {
     const CanvasProperties& props = image.properties();
     const int image_width = static_cast<int>(props.m_canvas_width);
     const int image_height = static_cast<int>(props.m_canvas_height);
+
+    const size_t pixel_size = 4 * Pixel::size(bitmap_pixel_format);
 
     for (size_t y = 0; y < bitmap_height; ++y)
     {
@@ -142,29 +151,29 @@ void Drawing::blit_bitmap(
 
             if (ix >= 0 && iy >= 0 && ix < image_width && iy < image_height)
             {
-                const uint8* pixel = bitmap + (y * bitmap_width + x) * 4;
+                const uint8* pixel = static_cast<const uint8*>(bitmap) + (y * bitmap_width + x) * pixel_size;
 
-                Color4f color(0.0f);
+                Color4f color_premult(0.0f);
                 Pixel::convert_from_format<float>(
                     bitmap_pixel_format,
                     pixel,
-                    pixel + 4,
+                    pixel + pixel_size,
                     1,
-                    &color[0],
+                    &color_premult[0],
                     1);
 
-                color *= multiplier;
+                color_premult *= tint;
 
-                Color4f background;
+                Color4f background_premult;
                 image.get_pixel(
                     static_cast<size_t>(ix),
                     static_cast<size_t>(iy),
-                    background);
+                    background_premult);
 
                 image.set_pixel(
                     static_cast<size_t>(ix),
                     static_cast<size_t>(iy),
-                    color * color.a + background * (1.0f - color.a));
+                    color_premult + background_premult * (1.0f - color_premult.a));
             }
         }
     }

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_AOV_TILESTACK_H
-#define APPLESEED_RENDERER_KERNEL_AOV_TILESTACK_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovsettings.h"
@@ -119,6 +118,4 @@ inline const foundation::Tile& TileStack::get_tile(
     return *m_tiles[index];
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_AOV_TILESTACK_H
+}   // namespace renderer

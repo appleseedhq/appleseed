@@ -25,8 +25,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef AS_MATH_COMPLEX_H
-#define AS_MATH_COMPLEX_H
+#pragma once
 
 struct Complex
 {
@@ -228,5 +227,3 @@ void sqrt_complex(output Complex Z)
         }
     }
 }
-
-#endif // !AS_MATH_COMPLEX_H

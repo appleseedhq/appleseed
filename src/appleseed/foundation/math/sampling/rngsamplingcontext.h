@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_SAMPLING_RNGSAMPLINGCONTEXT_H
-#define APPLESEED_FOUNDATION_MATH_SAMPLING_RNGSAMPLINGCONTEXT_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/rng/distribution.h"
@@ -182,6 +181,4 @@ inline Vector<T, N> RNGSamplingContext<RNG>::next2(Tag<Vector<T, N>>)
     return v;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_SAMPLING_RNGSAMPLINGCONTEXT_H
+}   // namespace foundation

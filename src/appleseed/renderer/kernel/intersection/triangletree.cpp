@@ -43,9 +43,8 @@
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/material/material.h"
-#include "renderer/modeling/object/iregion.h"
+#include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/object.h"
-#include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/object/triangle.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
@@ -106,8 +105,8 @@ namespace
     template <typename AABBType>
     void collect_static_triangles(
         const GAABB3&                   tree_bbox,
-        const RegionInfo&               region_info,
         const ObjectInstance&           object_instance,
+        const size_t                    object_instance_index,
         const StaticTriangleTess&       tess,
         const bool                      save_memory,
         vector<TriangleKey>*            triangle_keys,
@@ -167,8 +166,7 @@ namespace
             {
                 triangle_keys->push_back(
                     TriangleKey(
-                        region_info.get_object_instance_index(),
-                        region_info.get_region_index(),
+                        object_instance_index,
                         i,
                         triangle.m_pa));
             }
@@ -201,8 +199,8 @@ namespace
     template <typename AABBType>
     void collect_moving_triangles(
         const GAABB3&                   tree_bbox,
-        const RegionInfo&               region_info,
         const ObjectInstance&           object_instance,
+        const size_t                    object_instance_index,
         const StaticTriangleTess&       tess,
         const double                    time,
         const bool                      save_memory,
@@ -280,8 +278,7 @@ namespace
             {
                 triangle_keys->push_back(
                     TriangleKey(
-                        region_info.get_object_instance_index(),
-                        region_info.get_region_index(),
+                        object_instance_index,
                         i,
                         triangle.m_pa));
             }
@@ -334,39 +331,31 @@ namespace
 
         size_t triangle_vertex_count = 0;
 
-        const size_t region_count = arguments.m_regions.size();
-
-        for (size_t i = 0; i < region_count; ++i)
+        for (size_t i = 0, e = arguments.m_assembly.object_instances().size(); i < e; ++i)
         {
-            // Fetch the region info.
-            const RegionInfo& region_info = arguments.m_regions[i];
-
             // Retrieve the object instance and its transformation.
             const ObjectInstance* object_instance =
-                arguments.m_assembly.object_instances().get_by_index(
-                    region_info.get_object_instance_index());
+                arguments.m_assembly.object_instances().get_by_index(i);
             assert(object_instance);
 
             // Retrieve the object.
             Object& object = object_instance->get_object();
 
-            // Retrieve the region kit of the object.
-            Access<RegionKit> region_kit(&object.get_region_kit());
+            // Process only mesh objects.
+            if (strcmp(object.get_model(), MeshObjectFactory().get_model()) != 0)
+                continue;
 
-            // Retrieve the region.
-            const IRegion* region = (*region_kit)[region_info.get_region_index()];
-
-            // Retrieve the tessellation of the region.
-            Access<StaticTriangleTess> tess(&region->get_static_triangle_tess());
+            const MeshObject& mesh = static_cast<const MeshObject&>(object);
+            const StaticTriangleTess& tess = mesh.get_static_triangle_tess();
 
             // Collect the triangles from this tessellation.
-            if (tess->get_motion_segment_count() > 0)
+            if (tess.get_motion_segment_count() > 0)
             {
                 collect_moving_triangles(
                     arguments.m_bbox,
-                    region_info,
                     *object_instance,
-                    tess.ref(),
+                    i,
+                    tess,
                     time,
                     save_memory,
                     triangle_keys,
@@ -379,9 +368,9 @@ namespace
             {
                 collect_static_triangles(
                     arguments.m_bbox,
-                    region_info,
                     *object_instance,
-                    tess.ref(),
+                    i,
+                    tess,
                     save_memory,
                     triangle_keys,
                     triangle_vertex_infos,
@@ -397,13 +386,11 @@ TriangleTree::Arguments::Arguments(
     const Scene&            scene,
     const UniqueID          triangle_tree_uid,
     const GAABB3&           bbox,
-    const Assembly&         assembly,
-    const RegionInfoVector& regions)
+    const Assembly&         assembly)
   : m_scene(scene)
   , m_triangle_tree_uid(triangle_tree_uid)
   , m_bbox(bbox)
   , m_assembly(assembly)
-  , m_regions(regions)
 {
 }
 
@@ -517,11 +504,9 @@ void TriangleTree::build_bvh(
 
     // Collect triangles intersecting the bounding box of this tree.
     RENDERER_LOG_INFO(
-        "collecting geometry for triangle tree #" FMT_UNIQUE_ID " from assembly \"%s\" (%s %s)...",
+        "collecting geometry for triangle tree #" FMT_UNIQUE_ID " from assembly \"%s\"...",
         m_arguments.m_triangle_tree_uid,
-        m_arguments.m_assembly.get_path().c_str(),
-        pretty_uint(m_arguments.m_regions.size()).c_str(),
-        plural(m_arguments.m_regions.size(), "region").c_str());
+        m_arguments.m_assembly.get_path().c_str());
     stopwatch.start();
     vector<TriangleKey> triangle_keys;
     vector<TriangleVertexInfo> triangle_vertex_infos;
@@ -604,11 +589,11 @@ void TriangleTree::build_bvh(
         triangle_keys,
         statistics);
 
-    const double storing_time = stopwatch.measure().get_seconds();
+    const double store_time = stopwatch.measure().get_seconds();
 
     statistics.insert_time("collection time", collection_time);
     statistics.insert_time("partition time", builder.get_build_time());
-    statistics.insert_time("store time", storing_time);
+    statistics.insert_time("store time", store_time);
 }
 
 void TriangleTree::build_sbvh(
@@ -621,11 +606,9 @@ void TriangleTree::build_sbvh(
 
     // Collect triangles intersecting the bounding box of this tree.
     RENDERER_LOG_INFO(
-        "collecting geometry for triangle tree #" FMT_UNIQUE_ID " from assembly \"%s\" (%s %s)...",
+        "collecting geometry for triangle tree #" FMT_UNIQUE_ID " from assembly \"%s\"...",
         m_arguments.m_triangle_tree_uid,
-        m_arguments.m_assembly.get_path().c_str(),
-        pretty_uint(m_arguments.m_regions.size()).c_str(),
-        plural(m_arguments.m_regions.size(), "region").c_str());
+        m_arguments.m_assembly.get_path().c_str());
     vector<TriangleKey> triangle_keys;
     vector<TriangleVertexInfo> triangle_vertex_infos;
     vector<GVector3> triangle_vertices;
@@ -717,11 +700,11 @@ void TriangleTree::build_sbvh(
         triangle_keys,
         statistics);
 
-    const double storing_time = stopwatch.measure().get_seconds();
+    const double store_time = stopwatch.measure().get_seconds();
 
     statistics.insert_time("collection time", collection_time);
     statistics.insert_time("partition time", builder.get_build_time());
-    statistics.insert_time("store time", storing_time);
+    statistics.insert_time("store time", store_time);
 }
 
 namespace
@@ -1099,13 +1082,25 @@ namespace
     typedef set<FilterKey> FilterKeySet;
     typedef map<size_t, const FilterKey*> IndexToFilterKeyMap;
 
-    // Collect the set of object instances referenced by a set of regions.
+    // Collect the set of object instances contained in an assembly.
     void collect_object_instances(
-        const RegionInfoVector&             regions,
+        const Assembly&                     assembly,
         IndexSet&                           object_instances)
     {
-        for (const_each<RegionInfoVector> i = regions; i; ++i)
-            object_instances.insert(i->get_object_instance_index());
+        for (size_t i = 0, e = assembly.object_instances().size(); i < e; ++i)
+        {
+            // Retrieve the object instance and its transformation.
+            const ObjectInstance* object_instance =
+                assembly.object_instances().get_by_index(i);
+            assert(object_instance);
+
+            // Retrieve the object.
+            Object& object = object_instance->get_object();
+
+            // Process only mesh objects.
+            if (strcmp(object.get_model(), MeshObjectFactory().get_model()) == 0)
+                object_instances.insert(i);
+        }
     }
 
     // Create filter keys for a set of object instances, and establish an (object instance) -> (filter key) mapping.
@@ -1255,7 +1250,7 @@ void TriangleTree::update_intersection_filters()
 {
     // Collect object instances.
     IndexSet object_instances;
-    collect_object_instances(m_arguments.m_regions, object_instances);
+    collect_object_instances(m_arguments.m_assembly, object_instances);
 
     // Create filter keys and map object instances to filter keys.
     FilterKeySet filter_keys;
@@ -1495,7 +1490,6 @@ void TriangleLeafVisitor::read_hit_triangle_data() const
         // Copy the triangle key.
         const TriangleKey& triangle_key = m_tree.m_triangle_keys[m_hit_triangle_index];
         m_shading_point.m_object_instance_index = triangle_key.get_object_instance_index();
-        m_shading_point.m_region_index = triangle_key.get_region_index();
         m_shading_point.m_primitive_index = triangle_key.get_triangle_index();
 
         // Compute and store the support plane of the hit triangle.

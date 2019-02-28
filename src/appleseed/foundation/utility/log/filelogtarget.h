@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_LOG_FILELOGTARGET_H
-#define APPLESEED_FOUNDATION_UTILITY_LOG_FILELOGTARGET_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -55,8 +54,8 @@ class APPLESEED_DLLSYMBOL FileLogTarget
   public:
     enum Options
     {
-        Default                     = 0,        // none of the flags below
-        FlushAfterEveryMessage      = 1 << 0    // call fflush() on the file after every message
+        Default                     = 0,            // none of the flags below
+        FlushAfterEveryMessage      = 1UL << 0      // call fflush() on the file after every message
     };
 
     // Delete this instance.
@@ -93,6 +92,4 @@ class APPLESEED_DLLSYMBOL FileLogTarget
 APPLESEED_DLLSYMBOL FileLogTarget* create_file_log_target(
     const int options = FileLogTarget::Options::Default);
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_LOG_FILELOGTARGET_H
+}   // namespace foundation

@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTYPES_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTYPES_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/intersectionsettings.h"
@@ -74,7 +73,6 @@ class EmittingTriangle
   public:
     const AssemblyInstance*     m_assembly_instance;
     size_t                      m_object_instance_index;
-    size_t                      m_region_index;
     size_t                      m_triangle_index;
     size_t                      m_light_tree_node_index;
     foundation::Vector3d        m_v0, m_v1, m_v2;               // world space vertices of the triangle
@@ -87,6 +85,4 @@ class EmittingTriangle
     const Material*             m_material;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTYPES_H
+}   // namespace renderer

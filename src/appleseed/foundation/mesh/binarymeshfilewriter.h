@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MESH_BINARYMESHFILEWRITER_H
-#define APPLESEED_FOUNDATION_MESH_BINARYMESHFILEWRITER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/mesh/imeshfilewriter.h"
@@ -77,6 +76,4 @@ class BinaryMeshFileWriter
     void write_face(const IMeshWalker& walker, const size_t face_index);
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MESH_BINARYMESHFILEWRITER_H
+}   // namespace foundation

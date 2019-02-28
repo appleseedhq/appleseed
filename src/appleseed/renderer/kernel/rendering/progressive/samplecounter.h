@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLECOUNTER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLECOUNTER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -59,6 +58,4 @@ class SampleCounter
     boost::atomic<foundation::uint64>   m_sample_count;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLECOUNTER_H
+}   // namespace renderer

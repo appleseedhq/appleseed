@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_RENDERERSERVICES_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_RENDERERSERVICES_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -361,6 +360,4 @@ class RendererServices
         void*                       val);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_RENDERERSERVICES_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_KVPAIR_H
-#define APPLESEED_FOUNDATION_UTILITY_KVPAIR_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/countof.h"
@@ -83,6 +82,4 @@ const KeyValuePairType* lookup_kvpair_array(
     return nullptr;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_KVPAIR_H
+}   // namespace foundation

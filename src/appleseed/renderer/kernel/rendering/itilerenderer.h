@@ -27,11 +27,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_ITILERENDERER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_ITILERENDERER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
+#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
@@ -60,7 +60,7 @@ class ITileRenderer
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y,
-        const size_t                pass_hash,
+        const foundation::uint32    pass_hash,
         foundation::IAbortSwitch&   abort_switch) = 0;
 
     // Retrieve performance statistics.
@@ -80,6 +80,4 @@ class ITileRendererFactory
     virtual ITileRenderer* create(const size_t thread_index) = 0;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_ITILERENDERER_H
+}   // namespace renderer

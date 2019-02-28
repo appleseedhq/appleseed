@@ -64,12 +64,12 @@ class MitsHairFileReader
   private:
     const std::string       m_filename;
     const float             m_radius;
-    const size_t            m_basis;
+    const size_t            m_degree;
 
     static void read_and_check_signature(BufferedFile& file);
 
     void read_curves(ReaderAdapter& reader, ICurveBuilder& builder);
-    void push_vertex_properties(Vector3f& v, ICurveBuilder& builder);
+    void push_vertex_properties(const Vector3f& v, ICurveBuilder& builder);
 };
 
 }       // namespace foundation

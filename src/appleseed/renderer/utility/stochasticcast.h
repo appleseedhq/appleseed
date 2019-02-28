@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_STOCHASTICCAST_H
-#define APPLESEED_RENDERER_UTILITY_STOCHASTICCAST_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -45,6 +44,24 @@ namespace renderer
 //
 // Randomly cast a non-negative scalar n to an integer such that the expected value of that integer is n.
 //
+
+template <typename RNG, typename Int, typename Float>
+inline Int stochastic_cast(RNG& rng, const Float n)
+{
+    assert(n >= Float(0.0));
+
+    Int i = foundation::truncate<Int>(n);
+
+    const Float r = n - i;
+
+    if (r > Float(0.0))
+    {
+        if (foundation::rand2<Float>(rng) < n - i)
+            ++i;
+    }
+
+    return i;
+}
 
 template <typename Int, typename Float>
 inline Int stochastic_cast(SamplingContext& sampling_context, const Float n)
@@ -66,6 +83,4 @@ inline Int stochastic_cast(SamplingContext& sampling_context, const Float n)
     return i;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_UTILITY_STOCHASTICCAST_H
+}   // namespace renderer

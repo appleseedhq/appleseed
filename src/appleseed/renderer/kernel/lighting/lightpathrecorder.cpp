@@ -66,6 +66,8 @@ APPLESEED_DEFINE_APIARRAY(LightPathArray);
 
 struct LightPathRecorder::Impl
 {
+    const Project&                      m_project;
+
     boost::mutex                        m_mutex;
     vector<unique_ptr<LightPathStream>> m_streams;
 
@@ -79,10 +81,15 @@ struct LightPathRecorder::Impl
     size_t                              m_render_width;
     size_t                              m_render_height;
     vector<IndexEntry>                  m_index;
+
+    explicit Impl(const Project& project)
+      : m_project(project)
+    {
+    }
 };
 
-LightPathRecorder::LightPathRecorder()
-  : impl(new Impl())
+LightPathRecorder::LightPathRecorder(const Project& project)
+  : impl(new Impl(project))
 {
 }
 
@@ -106,14 +113,14 @@ size_t LightPathRecorder::get_light_path_count() const
     for (const auto& stream : impl->m_streams)
         count += stream->m_paths.size();
 
-    return count;;
+    return count;
 }
 
 LightPathStream* LightPathRecorder::create_stream()
 {
     boost::mutex::scoped_lock lock(impl->m_mutex);
 
-    auto stream = new LightPathStream();
+    auto stream = new LightPathStream(impl->m_project);
     impl->m_streams.push_back(unique_ptr<LightPathStream>(stream));
 
     return stream;
@@ -249,7 +256,7 @@ void LightPathRecorder::get_light_path_vertex(
     assert(impl->m_streams.size() == 1);
     const LightPathStream* stream = impl->m_streams[0].get();
 
-    assert(index < stream->m_vertices.size());;
+    assert(index < stream->m_vertices.size());
     const auto& source_vertex = stream->m_vertices[index];
 
     result.m_entity = source_vertex.m_entity;

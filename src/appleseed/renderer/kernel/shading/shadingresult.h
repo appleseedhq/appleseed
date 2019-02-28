@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRESULT_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRESULT_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovsettings.h"
@@ -36,7 +35,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
-#include "foundation/utility/poison.h"
 
 // Standard headers.
 #include <cassert>
@@ -48,7 +46,7 @@ namespace renderer
 //
 // The result of shading an image sample.
 //
-// All colors are expressed in linear RGB.
+// All colors are expressed in linear RGB and use premultiplied alpha.
 //
 
 class ShadingResult
@@ -61,7 +59,7 @@ class ShadingResult
     size_t              m_aov_count;
 
     // Constructor.
-    // AOVs are cleared to transparent black but the main output is left uninitialized.
+    // The main output and AOVs are cleared to transparent black.
     explicit ShadingResult(const size_t aov_count = 0);
 
     // Return false if the main output contains NaN, negative or infinite values.
@@ -90,31 +88,34 @@ inline ShadingResult::ShadingResult(const size_t aov_count)
 {
     assert(aov_count <= MaxAOVCount);
 
-#ifdef DEBUG
-    poison(*this);
-#endif
+    m_main.set(0.0f);
 
-    // Set all AOVs to transparent black.
     for (size_t i = 0, e = m_aov_count; i < e; ++i)
         m_aovs[i].set(0.0f);
 }
 
-}       // namespace renderer
-
-namespace foundation
+inline void ShadingResult::composite_over(const ShadingResult& background)
 {
-    template <>
-    class PoisonImpl<renderer::ShadingResult>
-    {
-      public:
-        static void do_poison(renderer::ShadingResult& result)
-        {
-            poison(result.m_main);
+    m_main += (1.0f - m_main.a) * background.m_main;
 
-            for (size_t i = 0, e = result.m_aov_count; i < e; ++i)
-                poison(result.m_aovs[i]);
-        }
-    };
+    for (size_t i = 0, e = m_aov_count; i < e; ++i)
+    {
+        foundation::Color4f& aov = m_aovs[i];
+        aov += (1.0f - aov.a) * background.m_aovs[i];
+    }
 }
 
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRESULT_H
+inline void ShadingResult::apply_alpha_premult()
+{
+    m_main.premultiply_in_place();
+
+    for (size_t i = 0, e = m_aov_count; i < e; ++i)
+        m_aovs[i].premultiply_in_place();
+}
+
+inline void ShadingResult::set_main_to_opaque_pink()
+{
+    m_main = foundation::Color4f(1.0f, 0.0f, 1.0f, 1.0f);
+}
+
+}   // namespace renderer

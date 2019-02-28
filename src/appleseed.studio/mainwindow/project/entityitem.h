@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYITEM_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityactions.h"
@@ -198,7 +197,5 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::do_delete()
     }
 }
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYITEM_H
+}   // namespace studio
+}   // namespace appleseed

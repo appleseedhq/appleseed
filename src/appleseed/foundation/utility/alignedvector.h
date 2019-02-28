@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_ALIGNEDVECTOR_H
-#define APPLESEED_FOUNDATION_UTILITY_ALIGNEDVECTOR_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/alignedallocator.h"
@@ -54,7 +53,7 @@ namespace foundation
 //   std::vector of Aligned Elements
 //   http://thetweaker.wordpress.com/2010/05/05/stdvector-of-aligned-elements/
 //
-//   std::vector of Aligned Elements – Revisited
+//   std::vector of Aligned Elements Revisited
 //   http://thetweaker.wordpress.com/2010/08/15/stdvector-of-aligned-elements-revisited/
 //
 //   StackOverflow: Self-contained, STL-compatible implementation of std::vector
@@ -143,6 +142,4 @@ class AlignedVector
 
 #undef ALIGNED_VECTOR_BASE
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_ALIGNEDVECTOR_H
+}   // namespace foundation

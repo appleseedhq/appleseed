@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_CHARTWIDGET_H
-#define APPLESEED_STUDIO_UTILITY_CHARTWIDGET_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -208,7 +207,5 @@ class ChartWidget
     void draw_frame(QPainter& painter) const;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_UTILITY_CHARTWIDGET_H
+}   // namespace studio
+}   // namespace appleseed

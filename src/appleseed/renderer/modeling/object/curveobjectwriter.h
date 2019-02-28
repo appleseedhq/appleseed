@@ -26,18 +26,10 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTWRITER_H
-#define APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTWRITER_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
-
-// appleseed.renderer headers.
-#include "renderer/modeling/object/curveobject.h"
-
-// Standard headers.
-#include <fstream>
-#include <ostream>
 
 // Forward declarations.
 namespace renderer  { class CurveObject; }
@@ -59,6 +51,4 @@ class APPLESEED_DLLSYMBOL CurveObjectWriter
         const char*         filepath);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTWRITER_H
+}   // namespace renderer

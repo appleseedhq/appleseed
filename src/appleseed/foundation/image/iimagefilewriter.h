@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_IIMAGEFILEWRITER_H
-#define APPLESEED_FOUNDATION_IMAGE_IIMAGEFILEWRITER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -55,6 +54,4 @@ class APPLESEED_DLLSYMBOL IImageFileWriter
     virtual ~IImageFileWriter() {}
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_IIMAGEFILEWRITER_H
+}   // namespace foundation

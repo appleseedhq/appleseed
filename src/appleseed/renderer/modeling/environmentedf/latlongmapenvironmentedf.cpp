@@ -50,7 +50,6 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
-#include "foundation/math/fp.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/sampling/imageimportancesampler.h"
 #include "foundation/math/scalar.h"
@@ -242,10 +241,15 @@ namespace
             Color3f payload;
             float prob_xy;
             m_importance_sampler->sample(s, x, y, payload, prob_xy);
+            assert(prob_xy >= 0.0f);
 
-            // Compute the coordinates in [0,1]^2 of the sample.
-            const float u = (x + 0.5f) * m_rcp_importance_map_width;
-            const float v = (y + 0.5f) * m_rcp_importance_map_height;
+            // Compute the coordinates in [0,1)^2 of the sample.
+            const float jitter_x = frac(s[0] * m_importance_map_width);
+            const float jitter_y = frac(s[1] * m_importance_map_height);
+            const float u = (x + jitter_x) * m_rcp_importance_map_width;
+            const float v = (y + jitter_y) * m_rcp_importance_map_height;
+            assert(u >= 0.0f && u < 1.0f);
+            assert(v >= 0.0f && v < 1.0f);
 
             // Compute the spherical coordinates of the sample.
             float theta, phi;
@@ -270,6 +274,7 @@ namespace
 
             // Compute the probability density of this direction.
             probability = prob_xy * m_probability_scale / sin_theta;
+            assert(probability >= 0.0f);
         }
 
         void evaluate(
@@ -332,6 +337,7 @@ namespace
             // Compute and return the environment color and the PDF value.
             lookup_environment_map(shading_context, u, v, value);
             probability = compute_pdf(u, v, theta);
+            assert(probability >= 0.0f);
         }
 
         float evaluate_pdf(
@@ -475,9 +481,13 @@ namespace
             const size_t x = truncate<size_t>(m_importance_map_width * u);
             const size_t y = truncate<size_t>(m_importance_map_height * v);
             const float prob_xy = m_importance_sampler->get_pdf(x, y);
+            assert(prob_xy >= 0.0f);
 
             // Compute the probability density of the emission direction.
-            return prob_xy * m_probability_scale / sin(theta);
+            const float pdf = prob_xy > 0.0f ? prob_xy * m_probability_scale / sin(theta) : 0.0f;
+            assert(pdf >= 0.0f);
+
+            return pdf;
         }
     };
 }
@@ -517,7 +527,7 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "1.0")
             .insert("help", "Environment texture"));
@@ -528,7 +538,7 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const
             .insert("label", "Radiance Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "Environment texture radiance multiplier"));
@@ -539,7 +549,7 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const
             .insert("label", "Exposure")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "0.0")
             .insert("help", "Environment exposure"));

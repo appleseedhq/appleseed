@@ -27,15 +27,17 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_CONFIGURATIONMANAGERWINDOW_H
-#define APPLESEED_STUDIO_MAINWINDOW_CONFIGURATIONMANAGERWINDOW_H
+#pragma once
+
+// appleseed.studio headers.
+#include "utility/windowbase.h"
 
 // Qt headers.
 #include <QObject>
-#include <QWidget>
 
 // Forward declarations.
-namespace Ui    { class ConfigurationManagerWindow; }
+namespace Ui { class ConfigurationManagerWindow; }
+class QWidget;
 
 namespace appleseed {
 namespace studio {
@@ -45,7 +47,7 @@ namespace studio {
 //
 
 class ConfigurationManagerWindow
-  : public QWidget
+  : public WindowBase
 {
     Q_OBJECT
 
@@ -59,11 +61,7 @@ class ConfigurationManagerWindow
   private:
     // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
     Ui::ConfigurationManagerWindow* m_ui;
-
-  private slots:
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_CONFIGURATIONMANAGERWINDOW_H
+}   // namespace studio
+}   // namespace appleseed

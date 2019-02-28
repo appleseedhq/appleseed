@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_ITILECALLBACK_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_ITILECALLBACK_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
@@ -100,6 +99,4 @@ class APPLESEED_DLLSYMBOL ITileCallbackFactory
     virtual ITileCallback* create() = 0;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_ITILECALLBACK_H
+}   // namespace renderer

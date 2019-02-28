@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_INTERSECTION_PLANESEGMENT_H
-#define APPLESEED_FOUNDATION_MATH_INTERSECTION_PLANESEGMENT_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -39,7 +38,7 @@ namespace foundation
 {
 
 //
-// 3D ray-segment intersection.
+// 3D ray-segment intersection functions.
 //
 
 // Clip a line segment against the negative half space of a plane.
@@ -125,6 +124,4 @@ inline bool clip(
     return true;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_INTERSECTION_PLANESEGMENT_H
+}   // namespace foundation

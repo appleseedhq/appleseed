@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_JOB_JOBMANAGER_H
-#define APPLESEED_FOUNDATION_UTILITY_JOB_JOBMANAGER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -58,15 +57,15 @@ class APPLESEED_DLLSYMBOL JobManager
   public:
     enum Flags
     {
-        KeepRunningOnEmptyQueue = 1 << 0,   // the worker thread keeps running even if the job queue is empty
-        KeepRunningOnJobFailure = 1 << 1    // the worker thread keeps executing jobs from the work queue even if one or more jobs failed
+        KeepRunningOnEmptyQueue = 1UL << 0,     // the worker thread keeps running even if the job queue is empty
+        KeepRunningOnJobFailure = 1UL << 1      // the worker thread keeps executing jobs from the work queue even if one or more jobs failed
     };
 
     // Constructor.
     JobManager(
         Logger&         logger,
         JobQueue&       job_queue,
-        const size_t    thread_count,       // the number of simultaneous worker threads
+        const size_t    thread_count,           // the number of simultaneous worker threads
         const int       flags = 0);
 
     // Destructor. Returns once currently running jobs are completed.
@@ -93,6 +92,4 @@ class APPLESEED_DLLSYMBOL JobManager
     Impl* impl;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_JOB_JOBMANAGER_H
+}   // namespace foundation

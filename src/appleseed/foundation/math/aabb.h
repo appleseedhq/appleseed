@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_AABB_H
-#define APPLESEED_FOUNDATION_MATH_AABB_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/minmax.h"
@@ -73,7 +72,7 @@ class AABBBase
     VectorType min, max;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     AABBBase() = default;               // leave all components uninitialized
 #else
     AABBBase() {}                       // leave all components uninitialized
@@ -173,7 +172,7 @@ class AABB
     typedef AABB<T, N> AABBType;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     AABB() = default;                   // leave all components uninitialized
 #else
     AABB() {}                           // leave all components uninitialized
@@ -442,7 +441,7 @@ inline size_t AABBBase<T, N>::rank() const
 template <typename T, size_t N>
 inline size_t AABBBase<T, N>::get_corner_count() const
 {
-    return 1 << N;
+    return 1UL << N;
 }
 
 template <typename T, size_t N>
@@ -757,6 +756,4 @@ inline bool feq(const AABBBase<T, N>& lhs, const AABBBase<T, N>& rhs, const T ep
 }
 
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_AABB_H
+}   // namespace foundation

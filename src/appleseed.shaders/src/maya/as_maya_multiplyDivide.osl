@@ -30,7 +30,7 @@
 
 shader as_maya_multiplyDivide
 [[
-    string as_maya_node_name = "multiplyDivide"
+    string as_node_name = "multiplyDivide"
 ]]
 (
     int in_operation = 1

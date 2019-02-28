@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_TEST_GLOBALTESTSUITE_H
-#define APPLESEED_FOUNDATION_UTILITY_TEST_GLOBALTESTSUITE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/singleton.h"
@@ -64,6 +63,4 @@ inline GlobalTestSuite::GlobalTestSuite()
     TestSuiteRepository::instance().register_suite(this);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_TEST_GLOBALTESTSUITE_H
+}   // namespace foundation

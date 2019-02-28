@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BVH_H
-#define APPLESEED_FOUNDATION_MATH_BVH_H
+#pragma once
 
 // Interface headers.
 #include "foundation/math/bvh/bvh_bboxsortpredicate.h"
@@ -43,5 +42,3 @@
 #include "foundation/math/bvh/bvh_spatialbuilder.h"
 #include "foundation/math/bvh/bvh_statistics.h"
 #include "foundation/math/bvh/bvh_tree.h"
-
-#endif  // !APPLESEED_FOUNDATION_MATH_BVH_H

@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_COLORMAPPOSTPROCESSINGSTAGE_H
-#define APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_COLORMAPPOSTPROCESSINGSTAGE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/postprocessingstage/ipostprocessingstagefactory.h"
@@ -70,6 +69,4 @@ class APPLESEED_DLLSYMBOL ColorMapPostProcessingStageFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_COLORMAPPOSTPROCESSINGSTAGE_H
+}   // namespace renderer

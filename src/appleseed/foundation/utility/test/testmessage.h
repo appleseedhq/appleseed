@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_TEST_TESTMESSAGE_H
-#define APPLESEED_FOUNDATION_UTILITY_TEST_TESTMESSAGE_H
+#pragma once
 
 namespace foundation
 {
@@ -59,6 +58,4 @@ struct TestMessage
     }
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_TEST_TESTMESSAGE_H
+}   // namespace foundation

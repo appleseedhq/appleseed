@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_HALF_H
-#define APPLESEED_FOUNDATION_MATH_HALF_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -447,6 +446,4 @@ inline __m128 half_to_float(const __m128i h)
 
 #endif  // APPLESEED_USE_SSE
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_HALF_H
+}   // namespace foundation

@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_DYNAMICSPECTRUM_H
-#define APPLESEED_RENDERER_UTILITY_DYNAMICSPECTRUM_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -826,7 +825,7 @@ namespace foundation
 template <typename T, size_t N>
 inline bool is_zero(const renderer::DynamicSpectrum<T, N>& s)
 {
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
     {
         if (s[i] != T(0.0))
             return false;
@@ -838,7 +837,7 @@ inline bool is_zero(const renderer::DynamicSpectrum<T, N>& s)
 template <typename T, size_t N>
 inline bool feq(const renderer::DynamicSpectrum<T, N>& lhs, const renderer::DynamicSpectrum<T, N>& rhs)
 {
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
     {
         if (!feq(lhs[i], rhs[i]))
             return false;
@@ -850,7 +849,7 @@ inline bool feq(const renderer::DynamicSpectrum<T, N>& lhs, const renderer::Dyna
 template <typename T, size_t N>
 inline bool feq(const renderer::DynamicSpectrum<T, N>& lhs, const renderer::DynamicSpectrum<T, N>& rhs, const T eps)
 {
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
     {
         if (!feq(lhs[i], rhs[i], eps))
             return false;
@@ -862,7 +861,7 @@ inline bool feq(const renderer::DynamicSpectrum<T, N>& lhs, const renderer::Dyna
 template <typename T, size_t N>
 inline bool fz(const renderer::DynamicSpectrum<T, N>& s)
 {
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
     {
         if (!fz(s[i]))
             return false;
@@ -874,7 +873,7 @@ inline bool fz(const renderer::DynamicSpectrum<T, N>& s)
 template <typename T, size_t N>
 inline bool fz(const renderer::DynamicSpectrum<T, N>& s, const T eps)
 {
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
     {
         if (!fz(s[i], eps))
             return false;
@@ -888,7 +887,7 @@ inline renderer::DynamicSpectrum<T, N> rcp(const renderer::DynamicSpectrum<T, N>
 {
     renderer::DynamicSpectrum<T, N> result;
 
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
         result[i] = T(1.0) / s[i];
 
     return result;
@@ -897,7 +896,7 @@ inline renderer::DynamicSpectrum<T, N> rcp(const renderer::DynamicSpectrum<T, N>
 template <typename T, size_t N>
 inline bool is_saturated(const renderer::DynamicSpectrum<T, N>& s)
 {
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
     {
         if (s[i] < T(0.0) || s[i] > T(1.0))
             return false;
@@ -911,7 +910,7 @@ inline renderer::DynamicSpectrum<T, N> saturate(const renderer::DynamicSpectrum<
 {
     renderer::DynamicSpectrum<T, N> result;
 
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
         result[i] = saturate(s[i]);
 
     return result;
@@ -928,7 +927,7 @@ inline renderer::DynamicSpectrum<T, N> clamp(const renderer::DynamicSpectrum<T, 
 {
     renderer::DynamicSpectrum<T, N> result;
 
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
         result[i] = clamp(s[i], min, max);
 
     return result;
@@ -937,7 +936,7 @@ inline renderer::DynamicSpectrum<T, N> clamp(const renderer::DynamicSpectrum<T, 
 template <typename T, size_t N>
 inline void clamp_in_place(renderer::DynamicSpectrum<T, N>& s, const T min, const T max)
 {
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
     {
         if (s[i] < min)
             s[i] = min;
@@ -952,7 +951,7 @@ inline renderer::DynamicSpectrum<T, N> clamp_low(const renderer::DynamicSpectrum
 {
     renderer::DynamicSpectrum<T, N> result;
 
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
         result[i] = std::max(s[i], min);
 
     return result;
@@ -961,7 +960,7 @@ inline renderer::DynamicSpectrum<T, N> clamp_low(const renderer::DynamicSpectrum
 template <typename T, size_t N>
 inline void clamp_low_in_place(renderer::DynamicSpectrum<T, N>& s, const T min)
 {
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
     {
         if (s[i] < min)
             s[i] = min;
@@ -973,7 +972,7 @@ inline renderer::DynamicSpectrum<T, N> clamp_high(const renderer::DynamicSpectru
 {
     renderer::DynamicSpectrum<T, N> result;
 
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
         result[i] = std::min(s[i], max);
 
     return result;
@@ -982,7 +981,7 @@ inline renderer::DynamicSpectrum<T, N> clamp_high(const renderer::DynamicSpectru
 template <typename T, size_t N>
 inline void clamp_high_in_place(renderer::DynamicSpectrum<T, N>& s, const T max)
 {
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
     {
         if (s[i] > max)
             s[i] = max;
@@ -997,7 +996,7 @@ inline renderer::DynamicSpectrum<T, N> lerp(
 {
     renderer::DynamicSpectrum<T, N> result;
 
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
         result[i] = foundation::lerp(a[i], b[i], t[i]);
 
     return result;
@@ -1042,7 +1041,7 @@ inline T min_value(const renderer::DynamicSpectrum<T, N>& s)
 {
     T value = s[0];
 
-    for (size_t i = 1; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 1, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
     {
         if (value > s[i])
             value = s[i];
@@ -1081,7 +1080,7 @@ inline T max_value(const renderer::DynamicSpectrum<T, N>& s)
 {
     T value = s[0];
 
-    for (size_t i = 1; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 1, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
     {
         if (value < s[i])
             value = s[i];
@@ -1121,7 +1120,7 @@ inline size_t min_index(const renderer::DynamicSpectrum<T, N>& s)
     size_t index = 0;
     T value = s[0];
 
-    for (size_t i = 1; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 1, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
     {
         const T x = s[i];
 
@@ -1141,7 +1140,7 @@ inline size_t max_index(const renderer::DynamicSpectrum<T, N>& s)
     size_t index = 0;
     T value = s[0];
 
-    for (size_t i = 1; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 1, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
     {
         const T x = s[i];
 
@@ -1161,7 +1160,7 @@ inline size_t min_abs_index(const renderer::DynamicSpectrum<T, N>& s)
     size_t index = 0;
     T value = std::abs(s[0]);
 
-    for (size_t i = 1; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 1, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
     {
         const T x = std::abs(s[i]);
 
@@ -1181,7 +1180,7 @@ inline size_t max_abs_index(const renderer::DynamicSpectrum<T, N>& s)
     size_t index = 0;
     T value = std::abs(s[0]);
 
-    for (size_t i = 1; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 1, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
     {
         const T x = std::abs(s[i]);
 
@@ -1200,7 +1199,7 @@ inline T sum_value(const renderer::DynamicSpectrum<T, N>& s)
 {
     T sum = s[0];
 
-    for (size_t i = 1; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 1, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
         sum += s[i];
 
     return sum;
@@ -1215,7 +1214,7 @@ inline T average_value(const renderer::DynamicSpectrum<T, N>& s)
 template <typename T, size_t N>
 inline bool has_nan(const renderer::DynamicSpectrum<T, N>& s)
 {
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
     {
         if (s[i] != s[i])
             return true;
@@ -1227,7 +1226,7 @@ inline bool has_nan(const renderer::DynamicSpectrum<T, N>& s)
 template <typename T, size_t N>
 inline bool is_finite(const renderer::DynamicSpectrum<T, N>& s)
 {
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
     {
         if (!FP<T>::is_finite(s[i]))
             return false;
@@ -1241,7 +1240,7 @@ inline renderer::DynamicSpectrum<T, N> sqrt(const renderer::DynamicSpectrum<T, N
 {
     renderer::DynamicSpectrum<T, N> result;
 
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
         result[i] = std::sqrt(s[i]);
 
     return result;
@@ -1277,7 +1276,7 @@ inline renderer::DynamicSpectrum<T, N> pow(const renderer::DynamicSpectrum<T, N>
 {
     renderer::DynamicSpectrum<T, N> result;
 
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
         result[i] = std::pow(x[i], y);
 
     return result;
@@ -1290,7 +1289,7 @@ inline renderer::DynamicSpectrum<T, N> pow(
 {
     renderer::DynamicSpectrum<T, N> result;
 
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
         result[i] = std::pow(x[i], y[i]);
 
     return result;
@@ -1301,7 +1300,7 @@ inline renderer::DynamicSpectrum<T, N> log(const renderer::DynamicSpectrum<T, N>
 {
     renderer::DynamicSpectrum<T, N> result;
 
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
         result[i] = std::log(s[i]);
 
     return result;
@@ -1312,7 +1311,7 @@ inline renderer::DynamicSpectrum<T, N> exp(const renderer::DynamicSpectrum<T, N>
 {
     renderer::DynamicSpectrum<T, N> result;
 
-    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
         result[i] = std::exp(s[i]);
 
     return result;
@@ -1324,11 +1323,9 @@ class PoisonImpl<renderer::DynamicSpectrum<T, N>>
   public:
     static void do_poison(renderer::DynamicSpectrum<T, N>& s)
     {
-        for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+        for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
             poison(s[i]);
     }
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_RENDERER_UTILITY_DYNAMICSPECTRUM_H
+}   // namespace foundation

@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_AOV_DENOISERAOV_H
-#define APPLESEED_RENDERER_MODELING_AOV_DENOISERAOV_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/aov/aov.h"
@@ -42,6 +41,7 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace foundation    { class ImageAttributes; }
 namespace renderer      { class AOV; }
 namespace renderer      { class ParamArray; }
 
@@ -75,17 +75,26 @@ class DenoiserAOV
 
     void clear_image() override;
 
-    foundation::auto_release_ptr<AOVAccumulator> create_accumulator() const override;
-
     void fill_empty_samples() const;
 
     const bcd::Deepimf& histograms_image() const;
     bcd::Deepimf& histograms_image();
 
-    void extract_num_samples_image(bcd::Deepimf& num_samples) const;
-    void compute_covariances_image(bcd::Deepimf& covariances) const;
+    const bcd::Deepimf& covariance_image() const;
+    bcd::Deepimf& covariance_image();
 
-    bool write_images(const char* file_path) const;
+    const bcd::Deepimf& sum_image() const;
+    bcd::Deepimf& sum_image();
+
+    void extract_num_samples_image(bcd::Deepimf& num_samples_image) const;
+    void compute_covariances_image(bcd::Deepimf& covariances_image) const;
+
+    bool write_images(
+        const char*                         file_path,
+        const foundation::ImageAttributes&  image_attributes) const override;
+
+  protected:
+    foundation::auto_release_ptr<AOVAccumulator> create_accumulator() const override;
 
   private:
     friend class DenoiserAOVFactory;
@@ -111,6 +120,4 @@ class DenoiserAOVFactory
         const size_t num_bins = 20);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_AOV_DENOISERAOV_H
+}   // namespace renderer

@@ -113,34 +113,6 @@ namespace
             return Model;
         }
 
-        size_t compute_input_data_size() const override
-        {
-            return sizeof(InputValues);
-        }
-
-        void prepare_inputs(
-            Arena&                      arena,
-            const ShadingPoint&         shading_point,
-            void*                       data) const override
-        {
-            InputValues* values = static_cast<InputValues*>(data);
-            new (&values->m_precomputed) InputValues::Precomputed();
-
-            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_max_roughness);
-
-            artist_friendly_fresnel_conductor_reparameterization(
-                values->m_normal_reflectance,
-                values->m_edge_tint,
-                values->m_precomputed.m_n,
-                values->m_precomputed.m_k);
-            values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
-
-            average_artist_friendly_fresnel_reflectance_conductor(
-                values->m_normal_reflectance,
-                values->m_edge_tint,
-                values->m_precomputed.m_fresnel_average);
-        }
-
         bool on_frame_begin(
             const Project&              project,
             const BaseGroup*            parent,
@@ -170,6 +142,34 @@ namespace
             return true;
         }
 
+        size_t compute_input_data_size() const override
+        {
+            return sizeof(InputValues);
+        }
+
+        void prepare_inputs(
+            Arena&                      arena,
+            const ShadingPoint&         shading_point,
+            void*                       data) const override
+        {
+            InputValues* values = static_cast<InputValues*>(data);
+            new (&values->m_precomputed) InputValues::Precomputed();
+
+            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_min_roughness);
+
+            artist_friendly_fresnel_conductor_reparameterization(
+                values->m_normal_reflectance,
+                values->m_edge_tint,
+                values->m_precomputed.m_n,
+                values->m_precomputed.m_k);
+            values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
+
+            average_artist_friendly_fresnel_reflectance_conductor(
+                values->m_normal_reflectance,
+                values->m_edge_tint,
+                values->m_precomputed.m_fresnel_average);
+        }
+
         void sample(
             SamplingContext&            sampling_context,
             const void*                 data,
@@ -179,8 +179,6 @@ namespace
             BSDFSample&                 sample) const override
         {
             const InputValues* values = static_cast<const InputValues*>(data);
-
-            sample.m_max_roughness = values->m_roughness;
 
             const FresnelConductorFun f(
                 values->m_precomputed.m_n,
@@ -223,7 +221,7 @@ namespace
                             f,
                             sample);
 
-                        if (sample.m_mode == ScatteringMode::Glossy)
+                        if (sample.get_mode() != ScatteringMode::None)
                         {
                             add_energy_compensation_term(
                                 mdf,
@@ -232,6 +230,8 @@ namespace
                                 sample.m_incoming.get_value(),
                                 sample.m_shading_basis.get_normal(),
                                 sample.m_value.m_glossy);
+
+                            sample.m_min_roughness = values->m_roughness;
                         }
                     }
                     break;
@@ -248,7 +248,7 @@ namespace
                             f,
                             sample);
 
-                        if (sample.m_mode == ScatteringMode::Glossy)
+                        if (sample.get_mode() != ScatteringMode::None)
                         {
                             add_energy_compensation_term(
                                 mdf,
@@ -257,6 +257,8 @@ namespace
                                 sample.m_incoming.get_value(),
                                 sample.m_shading_basis.get_normal(),
                                 sample.m_value.m_glossy);
+
+                            sample.m_min_roughness = values->m_roughness;
                         }
                     }
                     break;
@@ -272,6 +274,9 @@ namespace
                             highlight_falloff_to_gama(values->m_highlight_falloff),
                             f,
                             sample);
+
+                        if (sample.get_mode() != ScatteringMode::None)
+                            sample.m_min_roughness = values->m_roughness;
                     }
                     break;
 
@@ -386,6 +391,8 @@ namespace
             }
 
             value.m_beauty = value.m_glossy;
+
+            assert(pdf >= 0.0f);
             return pdf;
         }
 
@@ -410,12 +417,14 @@ namespace
                 alpha_x,
                 alpha_y);
 
+            float pdf;
+
             switch (m_mdf_type)
             {
               case GGX:
                 {
                     GGXMDF mdf;
-                    return MicrofacetBRDFHelper<false>::pdf(
+                    pdf = MicrofacetBRDFHelper<false>::pdf(
                         mdf,
                         alpha_x,
                         alpha_y,
@@ -429,7 +438,7 @@ namespace
               case Beckmann:
                 {
                     BeckmannMDF mdf;
-                    return MicrofacetBRDFHelper<false>::pdf(
+                    pdf = MicrofacetBRDFHelper<false>::pdf(
                         mdf,
                         alpha_x,
                         alpha_y,
@@ -443,7 +452,7 @@ namespace
               case Std:
                 {
                     StdMDF mdf;
-                    return MicrofacetBRDFHelper<false>::pdf(
+                    pdf = MicrofacetBRDFHelper<false>::pdf(
                         mdf,
                         alpha_x,
                         alpha_y,
@@ -456,8 +465,12 @@ namespace
 
               default:
                 assert(false);
-                return 0.0f;
+                pdf = 0.0f;
+                break;
             }
+
+            assert(pdf >= 0.0f);
+            return pdf;
         }
 
       private:
@@ -562,7 +575,7 @@ DictionaryArray MetalBRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "0.92"));
 
@@ -574,7 +587,7 @@ DictionaryArray MetalBRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "0.98"));
 
@@ -584,7 +597,7 @@ DictionaryArray MetalBRDFFactory::get_input_metadata() const
             .insert("label", "Reflectance Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -596,7 +609,7 @@ DictionaryArray MetalBRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("min",
                 Dictionary()
@@ -632,7 +645,7 @@ DictionaryArray MetalBRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("min",
                 Dictionary()

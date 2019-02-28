@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_UID_H
-#define APPLESEED_FOUNDATION_UTILITY_UID_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -69,7 +68,7 @@ class APPLESEED_DLLSYMBOL Identifiable
     UniqueID get_uid() const;
 
   private:
-    const UniqueID  m_unique_id;
+    const UniqueID m_unique_id;
 };
 
 
@@ -96,6 +95,4 @@ inline UniqueID Identifiable::get_uid() const
     return m_unique_id;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_UID_H
+}   // namespace foundation

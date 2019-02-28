@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MESH_IMESHBUILDER_H
-#define APPLESEED_FOUNDATION_MESH_IMESHBUILDER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -94,6 +93,4 @@ class APPLESEED_DLLSYMBOL IMeshBuilder
     virtual void end_mesh() = 0;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MESH_IMESHBUILDER_H
+}   // namespace foundation

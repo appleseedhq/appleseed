@@ -1,5 +1,6 @@
 .vs/
 build/
+sandbox/shaders/
 __pycache__
 *.pyc
 *.pyo

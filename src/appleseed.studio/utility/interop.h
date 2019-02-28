@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_INTEROP_H
-#define APPLESEED_STUDIO_UTILITY_INTEROP_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -174,6 +173,4 @@ inline std::ostream& operator<<(std::ostream& s, const QColor& color)
           << color.alpha();
 }
 
-}       // namespace std
-
-#endif  // !APPLESEED_STUDIO_UTILITY_INTEROP_H
+}   // namespace std

@@ -40,6 +40,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
 #include "foundation/platform/path.h"
+#include "foundation/platform/python.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/preprocessor.h"
 
@@ -77,6 +78,10 @@ namespace bf = boost::filesystem;
 
 namespace
 {
+    // On Windows, messages emitted through this logger won't be visible unless appleseed.studio's subsystem
+    // is set to Console (in appleseed.studio properties under Linker / System / SubSystem).
+    SuperLogger g_logger;
+
     void check_compatibility()
     {
         const char* missing_feature = nullptr;
@@ -110,29 +115,68 @@ namespace
 
             exit(EXIT_FAILURE);
         }
+    }
 
-        // If the PYTHONHOME environment variable is defined, use the Python installation it points to.
-        // If it is not defined, use the bundled Python installation.
-        if (getenv("PYTHONHOME") == nullptr)
+    void configure_python()
+    {
+        const char* python_home_var = getenv("PYTHONHOME");
+
+        if (python_home_var != nullptr && strlen(python_home_var) > 0)
         {
-#ifdef _WIN32
-            const string python_path =
-                bf::canonical(
-                    bf::path(Application::get_root_path()) / "python27"
-                ).make_preferred().string();
+            // PYTHONHOME is set: the embedded Python interpreter will use the Python installation
+            // the variable points to.
+            LOG_INFO(
+                g_logger,
+                "PYTHONHOME environment variable set to %s: embedded Python interpreter will use "
+                "the Python installation expected to exist at this path.",
+                python_home_var);
+        }
+        else
+        {
+            // PYTHONHOME not set or empty: use the Python installation bundled with appleseed.studio.
+
+#if defined _WIN32 || __APPLE__
+            // On Windows and macOS, Python's standard libraries are located in python27/Lib/.
+            bf::path python_path = bf::path(Application::get_root_path()) / "python27";
 #else
-            const string python_path =
-                bf::canonical(
-                    bf::path(Application::get_root_path())
-                ).make_preferred().string();
+            // On Linux, Python's standard libraries are located in lib/python2.7/.
+            bf::path python_path = bf::path(Application::get_root_path());
 #endif
 
-            static char python_home[FOUNDATION_MAX_PATH_LENGTH + 1];
+            if (bf::is_directory(python_path))
+            {
+                const string python_path_str = safe_canonical(python_path).string();
 
-            assert(python_path.size() <= FOUNDATION_MAX_PATH_LENGTH);
-            strncpy(python_home, python_path.c_str(), sizeof(python_home) - 1);
+                // The C string below must be declared static because Python just keeps a pointer to it.
+                static char python_home[FOUNDATION_MAX_PATH_LENGTH + 1];
+                assert(python_path_str.size() <= FOUNDATION_MAX_PATH_LENGTH);
+                strncpy(python_home, python_path_str.c_str(), sizeof(python_home) - 1);
 
-            Py_SetPythonHome(python_home);
+                LOG_INFO(
+                    g_logger,
+                    "PYTHONHOME environment variable not set or empty: embedded Python interpreter "
+                    "will use Python installation expected to exist in %s.",
+                    python_home);
+
+                Py_SetPythonHome(python_home);
+            }
+            else
+            {
+                const string python_path_str = python_path.make_preferred().string();
+
+                QMessageBox msgbox;
+                msgbox.setWindowTitle("Python 2.7 Installation Not Found");
+                msgbox.setIcon(QMessageBox::Critical);
+                msgbox.setText(
+                    QString(
+                        "No Python 2.7 installation could be found in %1 where appleseed.studio expects one "
+                        "to be, and the PYTHONHOME environment variable is not defined or is empty. "
+                        "appleseed.studio may not work satisfactorily.").arg(QString::fromStdString(python_path_str)));
+                msgbox.setStandardButtons(QMessageBox::Ok);
+                msgbox.setDefaultButton(QMessageBox::Ok);
+                set_minimum_width(msgbox, 600);
+                msgbox.exec();
+            }
         }
     }
 
@@ -298,13 +342,13 @@ int main(int argc, char* argv[])
     // QApplication sets C locale to the user's locale, we need to fix this.
     std::setlocale(LC_ALL, "C");
 
-    // QT changes locale when loading image from disk for the very first time.
-    // The problem was tracked for both QImage and QPixmap.
-    // Both classes in their `load()` function call `QImageReader.read()`
-    // which results in change of the locale back to system settings.
-    // This is a dirty fix which loads any image at the very beginning and
-    // resets the locale right after, thus preventing the `QImageReader.read()`
-    // to change it again (as it happens only on the very first `read`).
+    // Qt changes the locale when loading images from disk for the very first time.
+    // The problem was tracked for both `QImage` and `QPixmap`: in their `load()`
+    // functions, both classes call `QImageReader::read()` which causes the locale
+    // to be changed to the system's one. The line that follows is a dirty fix
+    // that consists in loading an image (any image) at the very beginning and
+    // resetting the locale right after, thus preventing `QImageReader::read()`
+    // from changing it again (as it happens only on the very first `read()`).
     // Issue reported and tracked on GitHub under reference #1435.
     QImageReader(make_app_path("icons/icon.png")).read();   // any image
 
@@ -314,15 +358,12 @@ int main(int argc, char* argv[])
     // Make sure appleseed is correctly installed.
     check_installation();
 
+    // Configure the embedded Python interpreter.
+    configure_python();
+
     // Parse the command line.
-    SuperLogger logger;
-#ifdef _WIN32
-    // On Windows, we will display command line arguments in a message box
-    // so we need to capture CommandLineHandler's output into a string.
-    logger.set_log_target(create_string_log_target());
-#endif
     CommandLineHandler cl;
-    cl.parse(argc, const_cast<const char**>(argv), logger);
+    cl.parse(argc, argv);
 
     // Configure the application to use our default stylesheet file.
     set_default_stylesheet(application);

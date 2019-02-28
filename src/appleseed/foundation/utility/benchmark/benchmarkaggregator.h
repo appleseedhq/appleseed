@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKAGGREGATOR_H
-#define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKAGGREGATOR_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -70,6 +69,4 @@ class APPLESEED_DLLSYMBOL BenchmarkAggregator
     Impl* impl;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKAGGREGATOR_H
+}   // namespace foundation

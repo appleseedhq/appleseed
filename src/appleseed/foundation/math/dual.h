@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_DUAL_H
-#define APPLESEED_FOUNDATION_MATH_DUAL_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -50,7 +49,7 @@ class Dual
     typedef T ValueType;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     Dual() = default;                         // leave all components uninitialized
 #else
     Dual() {}                                 // leave all components uninitialized
@@ -162,6 +161,4 @@ inline void Dual<T>::set_derivatives(const T& dx, const T& dy)
     m_has_derivatives = true;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_DUAL_H
+}   // namespace foundation

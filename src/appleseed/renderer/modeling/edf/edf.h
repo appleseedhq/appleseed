@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_EDF_EDF_H
-#define APPLESEED_RENDERER_MODELING_EDF_EDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -84,7 +83,7 @@ class APPLESEED_DLLSYMBOL EDF
 
     enum Flags
     {
-        CastIndirectLight = 1 << 0                              // does this light generate indirect lighting?
+        CastIndirectLight = 1UL << 0                            // does this light generate indirect lighting?
     };
 
     // Retrieve the flags.
@@ -191,6 +190,4 @@ inline float EDF::get_max_contribution() const
     return m_max_contribution;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_EDF_EDF_H
+}   // namespace renderer

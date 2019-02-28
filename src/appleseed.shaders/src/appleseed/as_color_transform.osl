@@ -31,16 +31,18 @@
 
 shader as_color_transform
 [[
-    string as_maya_node_name = "asColorTransform",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string as_blender_node_name = "asColorTransform",
-    string as_blender_category = "color",
     string help = "Transforms a color from one color model to another color model.",
     string icon = "asColorTransform.png",
-    int as_maya_type_id = 0x001279c8,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_color_transform.html#label-as-color-transform",
+
+    string as_node_name = "asColorTransform",
+    string as_category = "color",
+
     string as_max_class_id = "1025180725 1433928109",
     string as_max_plugin_type = "texture",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_color_transform.html#label-as-color-transform"
+
+    int as_maya_type_id = 0x001279c8,
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility"
 ]]
 (
     color in_color = color(0.5)

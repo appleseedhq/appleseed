@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_ANIMATECAMERA_COMMANDLINEHANDLER_H
-#define APPLESEED_ANIMATECAMERA_COMMANDLINEHANDLER_H
+#pragma once
 
 // appleseed.shared headers.
 #include "application/commandlinehandlerbase.h"
@@ -62,6 +61,7 @@ class CommandLineHandler
     foundation::ValueOptionHandler<double>          m_camera_target;
     foundation::ValueOptionHandler<double>          m_camera_distance;
     foundation::ValueOptionHandler<double>          m_camera_elevation;
+    foundation::ValueOptionHandler<float>           m_motion_blur;
 
     // Constructor.
     CommandLineHandler();
@@ -73,7 +73,5 @@ class CommandLineHandler
         shared::SuperLogger&    logger) const override;
 };
 
-}       // namespace animatecamera
-}       // namespace appleseed
-
-#endif  // !APPLESEED_ANIMATECAMERA_COMMANDLINEHANDLER_H
+}   // namespace animatecamera
+}   // namespace appleseed

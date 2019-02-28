@@ -52,6 +52,8 @@ add_executable (makefluffy
     ${makefluffy_sources}
 )
 
+set_target_properties (makefluffy PROPERTIES FOLDER "Tools")
+
 if (USE_RPATH_ORIGIN)
     set_target_properties (makefluffy PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"

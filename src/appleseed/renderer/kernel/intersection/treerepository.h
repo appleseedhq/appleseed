@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_TREEREPOSITORY_H
-#define APPLESEED_RENDERER_KERNEL_INTERSECTION_TREEREPOSITORY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -144,6 +143,4 @@ void TreeRepository<TreeType>::for_each(Func& func)
         func(*(i->second.m_tree), i->second.m_ref);
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_TREEREPOSITORY_H
+}   // namespace renderer

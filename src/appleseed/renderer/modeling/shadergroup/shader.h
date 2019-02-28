@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADER_H
-#define APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
@@ -49,6 +48,7 @@ namespace renderer      { class Assembly; }
 namespace renderer      { class OSLShadingSystem; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
+namespace renderer      { class ShaderCompiler; }
 namespace renderer      { class ShaderGroup; }
 
 namespace renderer
@@ -69,6 +69,8 @@ class APPLESEED_DLLSYMBOL Shader
     const char* get_shader() const;
     const char* get_layer() const;
 
+    const char* get_source_code() const;
+
     const ShaderParamContainer& shader_params() const;
 
   private:
@@ -84,12 +86,20 @@ class APPLESEED_DLLSYMBOL Shader
         const char*         layer,
         const ParamArray&   params);
 
+    // Constructor.
+    Shader(
+        const char*         type,
+        const char*         shader,
+        const char*         layer,
+        const char*         source,
+        const ParamArray&   params);
+
     // Destructor.
     ~Shader() override;
+
+    bool compile_shader(const ShaderCompiler* compiler);
 
     bool add(OSLShadingSystem& shading_system);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADER_H
+}   // namespace renderer

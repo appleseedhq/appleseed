@@ -40,7 +40,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/uid.h"
 
@@ -70,6 +69,7 @@ namespace
     const OIIO::ustring g_subsurface_str("as_subsurface");
     const OIIO::ustring g_randomwalk_glass_str("as_randomwalk_glass");
     const OIIO::ustring g_holdout_str("holdout");
+    const OIIO::ustring g_matte_str("as_matte");
     const OIIO::ustring g_debug_str("debug");
 
     const OIIO::ustring g_npr_shading_str("as_npr_shading");
@@ -128,10 +128,10 @@ void ShaderGroup::clear()
 }
 
 void ShaderGroup::add_shader(
-    const char*         type,
-    const char*         name,
-    const char*         layer,
-    const ParamArray&   params)
+    const char*             type,
+    const char*             name,
+    const char*             layer,
+    const ParamArray&       params)
 {
     auto_release_ptr<Shader> shader(
         new Shader(
@@ -145,11 +145,31 @@ void ShaderGroup::add_shader(
     RENDERER_LOG_DEBUG("created shader %s, layer = %s.", name, layer);
 }
 
+void ShaderGroup::add_source_shader(
+    const char*             type,
+    const char*             name,
+    const char*             layer,
+    const char*             source,
+    const ParamArray&       params)
+{
+    auto_release_ptr<Shader> shader(
+        new Shader(
+            type,
+            name,
+            layer,
+            source,
+            params));
+
+    impl->m_shaders.insert(shader);
+
+    RENDERER_LOG_DEBUG("created source shader %s, layer = %s.", name, layer);
+}
+
 void ShaderGroup::add_connection(
-    const char*         src_layer,
-    const char*         src_param,
-    const char*         dst_layer,
-    const char*         dst_param)
+    const char*             src_layer,
+    const char*             src_param,
+    const char*             dst_layer,
+    const char*             dst_param)
 {
     auto_release_ptr<ShaderConnection> connection(
         new ShaderConnection(
@@ -169,13 +189,17 @@ void ShaderGroup::add_connection(
 }
 
 bool ShaderGroup::create_optimized_osl_shader_group(
-    OSLShadingSystem&   shading_system,
-    IAbortSwitch*       abort_switch)
+    OSLShadingSystem&       shading_system,
+    const ShaderCompiler*   shader_compiler,
+    IAbortSwitch*           abort_switch)
 {
     if (is_valid())
         return true;
 
     RENDERER_LOG_DEBUG("setting up shader group \"%s\"...", get_path().c_str());
+
+    if (!compile_source_shaders(shader_compiler))
+        return false;
 
     try
     {
@@ -187,7 +211,7 @@ bool ShaderGroup::create_optimized_osl_shader_group(
             return false;
         }
 
-        for (each<ShaderContainer> i = impl->m_shaders; i; ++i)
+        for (Shader& shader : impl->m_shaders)
         {
             if (is_aborted(abort_switch))
             {
@@ -195,11 +219,11 @@ bool ShaderGroup::create_optimized_osl_shader_group(
                 return true;
             }
 
-            if (!i->add(shading_system))
+            if (!shader.add(shading_system))
                 return false;
         }
 
-        for (each<ShaderConnectionContainer> i = impl->m_connections; i; ++i)
+        for (ShaderConnection& connection : impl->m_connections)
         {
             if (is_aborted(abort_switch))
             {
@@ -207,7 +231,7 @@ bool ShaderGroup::create_optimized_osl_shader_group(
                 return true;
             }
 
-            if (!i->add(shading_system))
+            if (!connection.add(shading_system))
                 return false;
         }
 
@@ -224,10 +248,13 @@ bool ShaderGroup::create_optimized_osl_shader_group(
         report_has_closure(g_emission_str.c_str(), HasEmission);
         report_has_closure(g_transparent_str.c_str(), HasTransparency);
         report_has_closure(g_subsurface_str.c_str(), HasSubsurface);
-        report_has_closure(g_holdout_str.c_str(), HasHoldout);
         report_has_closure(g_debug_str.c_str(), HasDebug);
 
         report_has_closure("NPR", HasNPR);
+        report_has_closure(g_matte_str.c_str(), HasMatte);
+
+        get_shadergroup_globals_info(shading_system);
+        report_uses_global("dPdtime", UsesdPdTime);
 
         return true;
     }
@@ -269,6 +296,19 @@ float ShaderGroup::get_surface_area(
 void* ShaderGroup::osl_shader_group() const
 {
     return impl->m_shader_group_ref.get();
+}
+
+bool ShaderGroup::compile_source_shaders(const ShaderCompiler* compiler)
+{
+    for (Shader& shader : impl->m_shaders)
+    {
+        const bool success = shader.compile_shader(compiler);
+
+        if (!success)
+            return false;
+    }
+
+    return true;
 }
 
 void ShaderGroup::get_shadergroup_closures_info(OSLShadingSystem& shading_system)
@@ -338,14 +378,16 @@ void ShaderGroup::get_shadergroup_closures_info(OSLShadingSystem& shading_system
                 m_flags |= HasTransparency;
             else if (is_subsurface_closure(closures[i]))
                 m_flags |= HasSubsurface;
-            else if (closures[i] == g_holdout_str)
-                m_flags |= HasHoldout;
             else if (closures[i] == g_debug_str)
                 m_flags |= HasDebug;
             else if (closures[i] == g_npr_shading_str)
                 m_flags |= HasNPR;
             else if (closures[i] == g_npr_contour_str)
                 m_flags |= HasNPR;
+            else if (
+                closures[i] == g_matte_str ||
+                closures[i] == g_holdout_str)
+                m_flags |= HasMatte;
             else
                 m_flags |= HasBSDFs;
         }

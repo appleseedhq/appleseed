@@ -27,13 +27,12 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_COMPILER_H
-#define APPLESEED_FOUNDATION_PLATFORM_COMPILER_H
+#pragma once
 
 //
 // Quick reminder about Visual Studio versions:
 //
-//   Visual Studio 2017   MSVC++ 15.0   _MSC_VER == 1910
+//   Visual Studio 2017   MSVC++ 14.1   _MSC_VER == 1910
 //   Visual Studio 2015   MSVC++ 14.0   _MSC_VER == 1900
 //   Visual Studio 2013   MSVC++ 12.0   _MSC_VER == 1800
 //   Visual Studio 2012   MSVC++ 11.0   _MSC_VER == 1700 (oldest supported version)
@@ -45,6 +44,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/platform/compilerfeatures.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -211,11 +211,11 @@ namespace foundation
 
 // gcc: supported since gcc 4.6.
 #if defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 6)))
-    #define APPLESEED_UNUSED   __attribute__((unused))
+    #define APPLESEED_UNUSED __attribute__((unused))
 
 // clang.
 #elif defined(__clang__)
-    #define APPLESEED_UNUSED   __attribute__((unused))
+    #define APPLESEED_UNUSED __attribute__((unused))
 
 // Other compilers: ignore.
 #else
@@ -308,6 +308,4 @@ class APPLESEED_DLLSYMBOL Compiler
     static const char* get_compiler_version();
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_COMPILER_H
+}   // namespace foundation

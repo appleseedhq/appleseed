@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_RR_H
-#define APPLESEED_FOUNDATION_MATH_RR_H
+#pragma once
 
 // Standard headers.
 #include <cassert>
@@ -51,6 +50,4 @@ inline bool pass_rr(const T probability, const T sample)
     return sample < probability;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_RR_H
+}   // namespace foundation

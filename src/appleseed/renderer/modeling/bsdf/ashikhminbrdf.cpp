@@ -112,8 +112,6 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            sample.m_max_roughness = 1.0f;
-
             // Compute reflectance-related values.
             RVal rval;
             if (!compute_rval(rval, values))
@@ -198,9 +196,10 @@ namespace
                     Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi));
 
                 // Compute the incoming direction in world space.
-                incoming =
-                    force_above_surface(
-                        reflect(sample.m_outgoing.get_value(), h), sample.m_geometric_normal);
+                const Vector3f& outgoing = sample.m_outgoing.get_value();
+                incoming = reflect(outgoing, h);
+                if (force_above_surface(incoming, sample.m_geometric_normal))
+                    h = normalize(incoming + outgoing);
             }
 
             // Compute dot products.
@@ -212,14 +211,13 @@ namespace
 
             float pdf_diffuse = 0.0f, pdf_glossy = 0.0f;
 
-            if (ScatteringMode::has_diffuse(modes))
+            if (ScatteringMode::has_diffuse(modes) && diffuse_weight > 0.0f)
             {
                 // Evaluate the diffuse component of the BRDF (equation 5).
                 const float a = 1.0f - pow5(1.0f - 0.5f * cos_in);
                 const float b = 1.0f - pow5(1.0f - 0.5f * cos_on);
                 sample.m_value.m_diffuse = rval.m_kd;
                 sample.m_value.m_diffuse *= a * b;
-
                 sample.m_aov_components.m_albedo = values->m_rd;
 
                 // Evaluate the PDF of the diffuse component.
@@ -227,12 +225,16 @@ namespace
                 assert(pdf_diffuse > 0.0f);
             }
 
-            if (ScatteringMode::has_glossy(modes))
+            if (ScatteringMode::has_glossy(modes) && glossy_weight > 0.0f)
             {
                 // Evaluate the glossy component of the BRDF (equation 4).
                 const float num = sval.m_kg * pow(cos_hn, exp);
                 const float den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
-                fresnel_reflectance_dielectric_schlick(sample.m_value.m_glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
+                fresnel_reflectance_dielectric_schlick(
+                    sample.m_value.m_glossy,
+                    rval.m_scaled_rg,
+                    cos_oh,
+                    values->m_fr_multiplier);
                 sample.m_value.m_glossy *= num / den;
 
                 // Evaluate the PDF of the glossy component (equation 8).
@@ -240,12 +242,18 @@ namespace
                 assert(pdf_glossy >= 0.0f);
             }
 
-            sample.m_mode = mode;
-            sample.m_value.m_beauty = sample.m_value.m_diffuse;
-            sample.m_value.m_beauty += sample.m_value.m_glossy;
-            sample.m_probability = diffuse_weight * pdf_diffuse + glossy_weight * pdf_glossy;
-            sample.m_incoming = Dual3f(incoming);
-            sample.compute_reflected_differentials();
+            const float probability = diffuse_weight * pdf_diffuse + glossy_weight * pdf_glossy;
+            assert(probability >= 0.0f);
+
+            if (probability > 1.0e-6f)
+            {
+                sample.set_to_scattering(mode, probability);
+                sample.m_incoming = Dual3f(incoming);
+                sample.m_value.m_beauty = sample.m_value.m_diffuse;
+                sample.m_value.m_beauty += sample.m_value.m_glossy;
+                sample.m_min_roughness = 1.0f;
+                sample.compute_reflected_differentials();
+            }
         }
 
         float evaluate(
@@ -313,10 +321,14 @@ namespace
                 const float exp_num_u = values->m_nu * cos_hu * cos_hu;
                 const float exp_num_v = values->m_nv * cos_hv * cos_hv;
                 const float exp_den = 1.0f - cos_hn * cos_hn;
-                const float exp = (exp_num_u + exp_num_v) / exp_den;
-                const float num = exp_den == 0.0f ? 0.0f : sval.m_kg * pow(cos_hn, exp);
+                const float exp = (exp_num_u + exp_num_v) / abs(exp_den);
+                const float num = cos_hn == 1.0f ? sval.m_kg : sval.m_kg * pow(cos_hn, exp);
                 const float den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
-                fresnel_reflectance_dielectric_schlick(value.m_glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
+                fresnel_reflectance_dielectric_schlick(
+                    value.m_glossy,
+                    rval.m_scaled_rg,
+                    cos_oh,
+                    values->m_fr_multiplier);
                 value.m_glossy *= num / den;
 
                 // Evaluate the PDF of the glossy component (equation 8).
@@ -326,7 +338,11 @@ namespace
 
             value.m_beauty = value.m_diffuse;
             value.m_beauty += value.m_glossy;
-            return diffuse_weight * pdf_diffuse + glossy_weight * pdf_glossy;
+
+            const float probability = diffuse_weight * pdf_diffuse + glossy_weight * pdf_glossy;
+            assert(probability >= 0.0f);
+
+            return probability;
         }
 
         float evaluate_pdf(
@@ -382,15 +398,18 @@ namespace
                 const float exp_num_u = values->m_nu * cos_hu * cos_hu;
                 const float exp_num_v = values->m_nv * cos_hv * cos_hv;
                 const float exp_den = 1.0f - cos_hn * cos_hn;
-                const float exp = (exp_num_u + exp_num_v) / exp_den;
-                const float num = exp_den == 0.0f ? 0.0f : sval.m_kg * pow(cos_hn, exp);
+                const float exp = (exp_num_u + exp_num_v) / abs(exp_den);
+                const float num = cos_hn == 1.0f ? sval.m_kg : sval.m_kg * pow(cos_hn, exp);
 
                 // Evaluate the PDF of the glossy component (equation 8).
                 pdf_glossy = num / cos_oh;      // omit division by 4 since num = pdf(h) / 4
                 assert(pdf_glossy >= 0.0f);
             }
 
-            return diffuse_weight * pdf_diffuse + glossy_weight * pdf_glossy;
+            const float probability = diffuse_weight * pdf_diffuse + glossy_weight * pdf_glossy;
+            assert(probability >= 0.0f);
+
+            return probability;
         }
 
       private:
@@ -538,7 +557,7 @@ DictionaryArray AshikhminBRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "0.5"));
 
@@ -548,7 +567,7 @@ DictionaryArray AshikhminBRDFFactory::get_input_metadata() const
             .insert("label", "Diffuse Reflectance Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -560,7 +579,7 @@ DictionaryArray AshikhminBRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "0.5"));
 
@@ -570,7 +589,7 @@ DictionaryArray AshikhminBRDFFactory::get_input_metadata() const
             .insert("label", "Glossy Reflectance Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -580,7 +599,7 @@ DictionaryArray AshikhminBRDFFactory::get_input_metadata() const
             .insert("label", "Fresnel Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -590,7 +609,7 @@ DictionaryArray AshikhminBRDFFactory::get_input_metadata() const
             .insert("label", "Shininess U")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "100.0"));
 
@@ -600,7 +619,7 @@ DictionaryArray AshikhminBRDFFactory::get_input_metadata() const
             .insert("label", "Shininess V")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "100.0"));
 

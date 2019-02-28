@@ -156,10 +156,9 @@ float TextRenderer::compute_string_height(
 
 void TextRenderer::draw_string(
     Image&                  image,
-    const ColorSpace        image_color_space,
     const Font              font,
     const float             font_height,
-    const Color4f&          color_srgb,
+    const Color4f&          color,
     const float             origin_x,
     const float             origin_y,
     const char*             string)
@@ -171,10 +170,9 @@ void TextRenderer::draw_string(
 
     draw_string(
         image,
-        image_color_space,
         font_info,
         font_height,
-        color_srgb,
+        color,
         origin_x,
         origin_y,
         string);
@@ -182,11 +180,10 @@ void TextRenderer::draw_string(
 
 void TextRenderer::draw_string(
     Image&                  image,
-    const ColorSpace        image_color_space,
     const Font              font,
     const float             font_height,
     const float             line_spacing,
-    const Color4f&          color_srgb,
+    const Color4f&          color,
     const float             origin_x,
     const float             origin_y,
     const char*             string)
@@ -198,11 +195,10 @@ void TextRenderer::draw_string(
 
     draw_string(
         image,
-        image_color_space,
         font_info,
         font_height,
         line_spacing,
-        color_srgb,
+        color,
         origin_x,
         origin_y,
         string);
@@ -210,21 +206,19 @@ void TextRenderer::draw_string(
 
 void TextRenderer::draw_string(
     Image&                  image,
-    const ColorSpace        image_color_space,
     const stbtt_fontinfo&   font_info,
     const float             font_height,
-    const Color4f&          color_srgb,
+    const Color4f&          color,
     const float             origin_x,
     const float             origin_y,
     const char*             string)
 {
     draw_string(
         image,
-        image_color_space,
         font_info,
         font_height,
         DefaultLineSpacing,
-        color_srgb,
+        color,
         origin_x,
         origin_y,
         string);
@@ -232,11 +226,10 @@ void TextRenderer::draw_string(
 
 void TextRenderer::draw_string(
     Image&                  image,
-    const ColorSpace        image_color_space,
     const stbtt_fontinfo&   font_info,
     const float             font_height,
     const float             line_spacing,
-    const Color4f&          color_srgb,
+    const Color4f&          color,
     const float             origin_x,
     const float             origin_y,
     const char*             string)
@@ -244,10 +237,6 @@ void TextRenderer::draw_string(
     const CanvasProperties& props = image.properties();
     const int canvas_width = static_cast<int>(props.m_canvas_width);
     const int canvas_height = static_cast<int>(props.m_canvas_height);
-
-    const Color4f color_linear_rgb(
-        srgb_to_linear_rgb(color_srgb.rgb()),
-        color_srgb.a);
 
     // Compute font scaling factor for the desired pixel height.
     const float scale = stbtt_ScaleForPixelHeight(&font_info, font_height);
@@ -331,32 +320,19 @@ void TextRenderer::draw_string(
                 const float alpha = alpha_uint8 * (1.0f / 255.0f);
 
                 // Retrieve background color.
-                Color4f background;
-                image.get_pixel(ix, iy, background);
+                Color4f background_premult;
+                image.get_pixel(ix, iy, background_premult);
 
-                if (image_color_space == ColorSpaceSRGB)
-                {
-                    // Convert background color from sRGB to linear RGB.
-                    background.rgb() = fast_srgb_to_linear_rgb(background.rgb());
-                }
-
-                Color4f pixel = color_linear_rgb;
-
-                // Premultiply text color.
-                // todo: should only multiply RGB components?!
-                pixel *= pixel.a * alpha;
+                // Compute premultiplied text color.
+                Color4f color_premult = color;
+                color_premult.a *= alpha;
+                color_premult.premultiply_in_place();
 
                 // Composite text over background.
-                pixel += (1.0f - pixel.a) * background;
-
-                if (image_color_space == ColorSpaceSRGB)
-                {
-                    // Convert result from linear RGB back to sRGB.
-                    pixel.rgb() = linear_rgb_to_srgb(pixel.rgb());
-                }
+                color_premult += background_premult * (1.0f - color_premult.a);
 
                 // Write final color to image.
-                image.set_pixel(ix, iy, pixel);
+                image.set_pixel(ix, iy, color_premult);
             }
         }
 

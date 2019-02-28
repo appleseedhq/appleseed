@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_CLOSURES_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_CLOSURES_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -117,6 +116,7 @@ enum ClosureID
     DebugID,
     HoldoutID,
     TransparentID,
+    MatteID,
 
     // NPR closures.
     NPRShadingID,
@@ -347,7 +347,12 @@ class APPLESEED_ALIGN(16) CompositeNPRClosure
 //
 
 void process_transparency_tree(const OSL::ClosureColor* ci, Alpha& alpha);
-float process_holdout_tree(const OSL::ClosureColor* ci);
+
+bool process_matte_tree(
+    const OSL::ClosureColor*    ci,
+    foundation::Color3f&        matte_color,
+    float&                      matte_alpha);
+
 foundation::Color3f process_background_tree(const OSL::ClosureColor* ci);
 
 void register_closures(OSLShadingSystem& shading_system);
@@ -420,6 +425,4 @@ inline float CompositeEmissionClosure::get_closure_pdf(const size_t index) const
     return m_pdfs[index];
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_CLOSURES_H
+}   // namespace renderer

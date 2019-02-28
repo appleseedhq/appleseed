@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_TREEWIDGET_H
-#define APPLESEED_STUDIO_UTILITY_TREEWIDGET_H
+#pragma once
 
 // Forward declarations.
 class QString;
@@ -45,7 +44,5 @@ int find_sorted_position(QTreeWidgetItem* parent, const QString& item_text);
 // Move an item such that the children of its parent are lexicographically ordered.
 void move_to_sorted_position(QTreeWidgetItem* item);
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_UTILITY_TREEWIDGET_H
+}   // namespace studio
+}   // namespace appleseed

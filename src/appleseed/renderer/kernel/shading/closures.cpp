@@ -832,6 +832,48 @@ namespace
         }
     };
 
+    struct MatteClosure
+    {
+        struct Params
+        {
+            OSL::Color3 matte_color;
+            float       matte_alpha;
+        };
+
+        static const char* name()
+        {
+            return "as_matte";
+        }
+
+        static ClosureID id()
+        {
+            return MatteID;
+        }
+
+        static void prepare_closure(
+            OSL::RendererServices*      render_services,
+            int                         id,
+            void*                       data)
+        {
+            // Initialize keyword parameter defaults.
+            Params* params = new (data) Params();
+            params->matte_color = OSL::Color3(0.0f);
+            params->matte_alpha = 0.0f;
+        }
+
+        static void register_closure(OSLShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_COLOR_PARAM(Params, matte_color),
+                CLOSURE_FLOAT_PARAM(Params, matte_alpha),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
+        }
+    };
+
     struct MetalClosure
     {
         struct Params
@@ -946,13 +988,14 @@ namespace
     {
         struct Params
         {
+            OSL::Color3 reflectance;
             OSL::Vec3   N;
             float       roughness;
         };
 
         static const char* name()
         {
-            return "oren_nayar";
+            return "as_oren_nayar";
         }
 
         static ClosureID id()
@@ -969,6 +1012,7 @@ namespace
         {
             const OSL::ClosureParam params[] =
             {
+                CLOSURE_COLOR_PARAM(Params, reflectance),
                 CLOSURE_VECTOR_PARAM(Params, N),
                 CLOSURE_FLOAT_PARAM(Params, roughness),
                 CLOSURE_FINISH_PARAM(Params)
@@ -997,9 +1041,13 @@ namespace
                     p->N,
                     arena);
 
-            values->m_reflectance.set(1.0f);
+            const Color3f reflectance = Color3f(p->reflectance);
+            values->m_reflectance.set(reflectance, g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = max(p->roughness, 0.0f);
+
+            const float w = luminance(weight) * luminance(reflectance);
+            composite_closure.override_closure_scalar_weight(w);
         }
     };
 
@@ -1357,7 +1405,43 @@ namespace
         {
             const Params* p = static_cast<const Params*>(osl_params);
 
-            if (p->profile == g_normalized_diffusion_profile_str)
+            if (p->profile == g_standard_dipole_profile_str)
+            {
+                DipoleBSSRDFInputValues* values =
+                    composite_closure.add_closure<DipoleBSSRDFInputValues>(
+                        SubsurfaceStandardDipoleID,
+                        shading_basis,
+                        weight,
+                        p->N,
+                        arena);
+
+                copy_parameters(p, values);
+            }
+            else if (p->profile == g_better_dipole_profile_str)
+            {
+                DipoleBSSRDFInputValues* values =
+                    composite_closure.add_closure<DipoleBSSRDFInputValues>(
+                        SubsurfaceBetterDipoleID,
+                        shading_basis,
+                        weight,
+                        p->N,
+                        arena);
+
+                copy_parameters(p, values);
+            }
+            else if (p->profile == g_directional_dipole_profile_str)
+            {
+                DipoleBSSRDFInputValues* values =
+                    composite_closure.add_closure<DipoleBSSRDFInputValues>(
+                        SubsurfaceDirectionalDipoleID,
+                        shading_basis,
+                        weight,
+                        p->N,
+                        arena);
+
+                copy_parameters(p, values);
+            }
+            else if (p->profile == g_normalized_diffusion_profile_str)
             {
                 NormalizedDiffusionBSSRDFInputValues* values =
                     composite_closure.add_closure<NormalizedDiffusionBSSRDFInputValues>(
@@ -1396,46 +1480,9 @@ namespace
             }
             else
             {
-                DipoleBSSRDFInputValues* values;
-
-                if (p->profile == g_better_dipole_profile_str)
-                {
-                    values =
-                        composite_closure.add_closure<DipoleBSSRDFInputValues>(
-                            SubsurfaceBetterDipoleID,
-                            shading_basis,
-                            weight,
-                            p->N,
-                            arena);
-                }
-                else if (p->profile == g_standard_dipole_profile_str)
-                {
-                    values =
-                        composite_closure.add_closure<DipoleBSSRDFInputValues>(
-                            SubsurfaceStandardDipoleID,
-                            shading_basis,
-                            weight,
-                            p->N,
-                            arena);
-                }
-                else if (p->profile == g_directional_dipole_profile_str)
-                {
-                    values =
-                        composite_closure.add_closure<DipoleBSSRDFInputValues>(
-                            SubsurfaceDirectionalDipoleID,
-                            shading_basis,
-                            weight,
-                            p->N,
-                            arena);
-                }
-                else
-                {
-                    string msg = "unknown subsurface profile: ";
-                    msg += p->profile.c_str();
-                    throw ExceptionOSLRuntimeError(msg.c_str());
-                }
-
-                copy_parameters(p, values);
+                string msg = "unknown subsurface profile: ";
+                msg += p->profile.c_str();
+                throw ExceptionOSLRuntimeError(msg.c_str());
             }
         }
 
@@ -1623,7 +1670,9 @@ namespace
         }
     };
 
+    //
     // NPR closures.
+    //
 
     struct NPRShadingClosure
     {
@@ -1674,6 +1723,7 @@ namespace
             float       occlusion_threshold;
             int         creases;
             float       creases_threshold;
+            int         quality;
         };
 
         static const char* name()
@@ -1684,6 +1734,16 @@ namespace
         static ClosureID id()
         {
             return NPRContourID;
+        }
+
+        static void prepare_closure(
+            OSL::RendererServices*      render_services,
+            int                         id,
+            void*                       data)
+        {
+            // Initialize keyword parameter defaults.
+            Params* params = new (data) Params();
+            params->quality = 1;
         }
 
         static void register_closure(OSLShadingSystem& shading_system)
@@ -1701,10 +1761,11 @@ namespace
                 CLOSURE_INT_PARAM(Params, creases),
                 CLOSURE_FLOAT_PARAM(Params, creases_threshold),
 
+                CLOSURE_INT_KEYPARAM(Params, quality, "quality"),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
+            shading_system.register_closure(name(), id(), params, &prepare_closure, nullptr);
         }
 
         static void convert_closure(
@@ -1735,6 +1796,7 @@ namespace
             values->m_cos_crease_threshold = cos(deg_to_rad(p->creases_threshold));
 
             values->m_features = features;
+            values->m_quality = static_cast<size_t>(clamp(p->quality, 1, 4));
         }
     };
 }
@@ -1981,7 +2043,7 @@ size_t CompositeSurfaceClosure::choose_closure(
 }
 
 void CompositeSurfaceClosure::add_ior(
-    const foundation::Color3f&  weight,
+    const Color3f&              weight,
     const float                 ior)
 {
     // We use the luminance of the weight as the IOR weight.
@@ -2066,7 +2128,7 @@ size_t CompositeSubsurfaceClosure::choose_closure(const float w) const
 void CompositeSubsurfaceClosure::process_closure_tree(
     const OSL::ClosureColor*    closure,
     const Basis3f&              original_shading_basis,
-    const foundation::Color3f&  weight,
+    const Color3f&              weight,
     Arena&                      arena)
 {
     if (closure == nullptr)
@@ -2377,9 +2439,59 @@ void process_transparency_tree(const OSL::ClosureColor* ci, Alpha& alpha)
     alpha.set(1.0f - transparency);
 }
 
-float process_holdout_tree(const OSL::ClosureColor* ci)
+bool process_matte_tree(
+    const OSL::ClosureColor*    closure,
+    Color3f&                    matte_color,
+    float&                      matte_alpha)
 {
-    return saturate(luminance(do_process_closure_id_tree(ci, HoldoutID)));
+    if (closure)
+    {
+        switch (closure->id)
+        {
+          case OSL::ClosureColor::MUL:
+            {
+                const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
+                const bool is_matte = process_matte_tree(c->closure, matte_color, matte_alpha);
+                matte_color = Color3f(c->weight) * matte_color;
+                matte_alpha = saturate(luminance(Color3f((c->weight) * matte_alpha)));
+                return is_matte;
+            }
+
+          case OSL::ClosureColor::ADD:
+            {
+                const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
+                Color3f color_a(0.0f), color_b(0.0f);
+                float alpha_a(0.0f), alpha_b(0.0f);
+                const bool is_matte_a = process_matte_tree(c->closureA, color_a, alpha_a);
+                const bool is_matte_b = process_matte_tree(c->closureB, color_b, alpha_b);
+                matte_color = color_a + color_b;
+                matte_alpha = alpha_a + alpha_b;
+                return is_matte_a || is_matte_b;
+            }
+
+          default:
+            {
+                const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
+
+                if (c->id == MatteID)
+                {
+                    const MatteClosure::Params* p = static_cast<const MatteClosure::Params*>(c->data());
+                    matte_color = p->matte_color;
+                    matte_alpha = p->matte_alpha;
+                    return true;
+                }
+                else if (c->id == HoldoutID)
+                {
+                    matte_color.set(0.0f);
+                    matte_alpha = 0.0f;
+                    return true;
+                }
+            }
+            break;
+        }
+    }
+
+    return false;
 }
 
 Color3f process_background_tree(const OSL::ClosureColor* ci)
@@ -2415,19 +2527,19 @@ void register_closures(OSLShadingSystem& shading_system)
     register_closure<GlassClosure>(shading_system);
     register_closure<GlossyClosure>(shading_system);
     register_closure<HoldoutClosure>(shading_system);
+    register_closure<MatteClosure>(shading_system);
     register_closure<MetalClosure>(shading_system);
+    register_closure<NPRContourClosure>(shading_system);
+    register_closure<NPRShadingClosure>(shading_system);
     register_closure<OrenNayarClosure>(shading_system);
     register_closure<PhongClosure>(shading_system);
     register_closure<PlasticClosure>(shading_system);
+    register_closure<RandomwalkGlassClosure>(shading_system);
     register_closure<ReflectionClosure>(shading_system);
     register_closure<SheenClosure>(shading_system);
     register_closure<SubsurfaceClosure>(shading_system);
-    register_closure<RandomwalkGlassClosure>(shading_system);
     register_closure<TranslucentClosure>(shading_system);
     register_closure<TransparentClosure>(shading_system);
-
-    register_closure<NPRShadingClosure>(shading_system);
-    register_closure<NPRContourClosure>(shading_system);
 }
 
 }   // namespace renderer

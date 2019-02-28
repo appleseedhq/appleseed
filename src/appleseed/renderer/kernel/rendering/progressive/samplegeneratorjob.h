@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLEGENERATORJOB_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLEGENERATORJOB_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -64,7 +63,6 @@ class SampleGeneratorJob
         const Spectrum::Mode        spectrum_mode,
         foundation::JobQueue&       job_queue,
         const size_t                job_index,
-        const size_t                job_count,
         foundation::IAbortSwitch&   abort_switch);
 
     // Execute the job.
@@ -77,10 +75,7 @@ class SampleGeneratorJob
     const Spectrum::Mode            m_spectrum_mode;
     foundation::JobQueue&           m_job_queue;
     const size_t                    m_job_index;
-    const size_t                    m_job_count;
     foundation::IAbortSwitch&       m_abort_switch;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLEGENERATORJOB_H
+}   // namespace renderer

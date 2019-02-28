@@ -125,16 +125,26 @@ namespace
             // Evaluate uniform inputs.
             m_inputs.evaluate_uniforms(&m_values);
 
+            // Warn if distance input is not uniform.
             Source* distance_src = get_inputs().source("distance");
             assert(distance_src != nullptr);
-            if (distance_src->is_uniform())
-                distance_src->evaluate_uniform(m_values.m_distance);
-            else
+            if (!distance_src->is_uniform())
             {
                 RENDERER_LOG_WARNING(
                     "distance between sun and scene \"%s\" is not uniform, using default value of 149.6 million km.",
                     get_path().c_str());
                 m_values.m_distance = 149.6f;
+            }
+
+            // Warn if size multiplier input is not uniform.
+            const Source* size_multiplier_src = get_inputs().source("size_multiplier");
+            assert(size_multiplier_src != nullptr);
+            if (!size_multiplier_src->is_uniform())
+            {
+                RENDERER_LOG_WARNING(
+                    "size multiplier of the sun light \"%s\" is not uniform.",
+                    get_path().c_str());
+                m_values.m_size_multiplier = 1.0f;
             }
 
             // Compute the Sun's solid angle.
@@ -148,17 +158,6 @@ namespace
 
             // Apply turbidity bias.
             m_values.m_turbidity += BaseTurbidity;
-
-            const Source* size_multiplier_src = get_inputs().source("size_multiplier");
-            assert(size_multiplier_src != nullptr);
-            if (size_multiplier_src->is_uniform())
-                size_multiplier_src->evaluate_uniform(m_values.m_size_multiplier);
-            else
-            {
-                RENDERER_LOG_WARNING(
-                    "size multiplier of the sun light \"%s\" is not uniform.",
-                    get_path().c_str());
-            }
 
             const Scene::RenderData& scene_data = project.get_scene()->get_render_data();
             m_scene_center = Vector3d(scene_data.m_center);
@@ -294,12 +293,17 @@ namespace
                 float sun_theta, sun_phi;
                 sun_theta_src->evaluate_uniform(sun_theta);
                 sun_phi_src->evaluate_uniform(sun_phi);
+
+                Transformd scratch;
+                const Transformd& env_edf_transform = env_edf->transform_sequence().evaluate(0.0f, scratch);
+
                 set_transform(
                     Transformd::from_local_to_parent(
                         Matrix4d::make_rotation(
                             Quaterniond::make_rotation(
-                                Vector3d(0.0, 0.0, -1.0),
-                                -Vector3d::make_unit_vector(deg_to_rad(sun_theta), deg_to_rad(sun_phi))))));
+                                Vector3d(0.0, 0.0, -1.0),   // default emission direction of this light
+                                -Vector3d::make_unit_vector(deg_to_rad(sun_theta), deg_to_rad(sun_phi))))) *
+                    env_edf_transform);
             }
 
             // Use the Sun turbidity from the EDF if it has one.
@@ -337,7 +341,13 @@ namespace
             // Compute the relative optical mass.
             const float cos_theta = -static_cast<float>(outgoing.y);
             const float theta = acos(cos_theta);
-            const float m = 1.0f / (cos_theta + 0.15f * pow(93.885f - rad_to_deg(theta), -1.253f));
+            const float theta_delta = 93.885f - rad_to_deg(theta);
+            if (theta_delta < 0.0f)
+            {
+                radiance.set(0.0f);
+                return;
+            }
+            const float m = 1.0f / (cos_theta + 0.15f * pow(theta_delta, -1.253f));
 
             // Compute transmittance due to Rayleigh scattering.
             RegularSpectrum31f tau_r;
@@ -457,6 +467,7 @@ namespace
                 + disk_radius * p[1] * basis.get_tangent_v();
 
             probability = 1.0f / (Pi<float>() * square(static_cast<float>(disk_radius)));
+            assert(probability > 0.0f);
 
             RegularSpectrum31f radiance;
             compute_sun_radiance(
@@ -478,6 +489,8 @@ namespace
             Spectrum&               value,
             float&                  probability) const
         {
+            assert(m_safe_scene_diameter > 0.0);
+
             // sun_diameter = 1.3914
             // angular_diameter = 2 * arctan(sun_diameter / (2 * distance))
             // tan(angular_diameter / 2) * distance = sun_radius

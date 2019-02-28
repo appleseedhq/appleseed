@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_TEST_EXCEPTIONASSERTIONFAILURE_H
-#define APPLESEED_FOUNDATION_UTILITY_TEST_EXCEPTIONASSERTIONFAILURE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -59,6 +58,4 @@ inline ExceptionAssertionFailure::ExceptionAssertionFailure()
 {
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_TEST_EXCEPTIONASSERTIONFAILURE_H
+}   // namespace foundation

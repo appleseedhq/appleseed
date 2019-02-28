@@ -69,7 +69,6 @@ void LightSample::make_shading_point(
         m_triangle->m_assembly_instance,
         m_triangle->m_assembly_instance->transform_sequence().get_earliest_transform(),
         m_triangle->m_object_instance_index,
-        m_triangle->m_region_index,
         m_triangle->m_triangle_index,
         m_triangle->m_triangle_support_plane);
 }

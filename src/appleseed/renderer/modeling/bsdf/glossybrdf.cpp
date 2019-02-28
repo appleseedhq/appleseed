@@ -118,28 +118,6 @@ namespace
             return Model;
         }
 
-        size_t compute_input_data_size() const override
-        {
-            return sizeof(InputValues);
-        }
-
-        void prepare_inputs(
-            Arena&                      arena,
-            const ShadingPoint&         shading_point,
-            void*                       data) const override
-        {
-            InputValues* values = static_cast<InputValues*>(data);
-
-            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_max_roughness);
-
-            new (&values->m_precomputed) InputValues::Precomputed();
-            values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
-
-            values->m_precomputed.m_fresnel_average =
-                average_fresnel_reflectance_dielectric(
-                    values->m_ior / values->m_precomputed.m_outside_ior);
-        }
-
         bool on_frame_begin(
             const Project&              project,
             const BaseGroup*            parent,
@@ -169,6 +147,28 @@ namespace
             return true;
         }
 
+        size_t compute_input_data_size() const override
+        {
+            return sizeof(InputValues);
+        }
+
+        void prepare_inputs(
+            Arena&                      arena,
+            const ShadingPoint&         shading_point,
+            void*                       data) const override
+        {
+            InputValues* values = static_cast<InputValues*>(data);
+
+            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_min_roughness);
+
+            new (&values->m_precomputed) InputValues::Precomputed();
+            values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
+
+            values->m_precomputed.m_fresnel_average =
+                average_fresnel_reflectance_dielectric(
+                    values->m_ior / values->m_precomputed.m_outside_ior);
+        }
+
         void sample(
             SamplingContext&            sampling_context,
             const void*                 data,
@@ -178,8 +178,6 @@ namespace
             BSDFSample&                 sample) const override
         {
             const InputValues* values = static_cast<const InputValues*>(data);
-
-            sample.m_max_roughness = values->m_roughness;
 
             const FresnelDielectricFun f(
                 values->m_reflectance,
@@ -222,7 +220,7 @@ namespace
                             f,
                             sample);
 
-                        if (sample.m_mode == ScatteringMode::Glossy)
+                        if (sample.get_mode() != ScatteringMode::None)
                         {
                             add_energy_compensation_term(
                                 mdf,
@@ -231,6 +229,8 @@ namespace
                                 sample.m_incoming.get_value(),
                                 sample.m_shading_basis.get_normal(),
                                 sample.m_value.m_glossy);
+
+                            sample.m_min_roughness = values->m_roughness;
                         }
                     }
                     break;
@@ -247,7 +247,7 @@ namespace
                             f,
                             sample);
 
-                        if (sample.m_mode == ScatteringMode::Glossy)
+                        if (sample.get_mode() != ScatteringMode::None)
                         {
                             add_energy_compensation_term(
                                 mdf,
@@ -256,6 +256,8 @@ namespace
                                 sample.m_incoming.get_value(),
                                 sample.m_shading_basis.get_normal(),
                                 sample.m_value.m_glossy);
+
+                            sample.m_min_roughness = values->m_roughness;
                         }
                     }
                     break;
@@ -271,6 +273,9 @@ namespace
                             highlight_falloff_to_gama(values->m_highlight_falloff),
                             f,
                             sample);
+
+                        if (sample.get_mode() != ScatteringMode::None)
+                            sample.m_min_roughness = values->m_roughness;
                     }
                     break;
 
@@ -379,13 +384,14 @@ namespace
                 break;
 
               default:
-                assert(false);
+                assert(!"Unexpected MDF type.");
                 pdf = 0.0f;
                 break;
             }
 
             value.m_beauty = value.m_glossy;
 
+            assert(pdf >= 0.0f);
             return pdf;
         }
 
@@ -410,12 +416,14 @@ namespace
                 alpha_x,
                 alpha_y);
 
+            float pdf;
+
             switch (m_mdf_type)
             {
               case GGX:
                 {
                     const GGXMDF mdf;
-                    return MicrofacetBRDFHelper<true>::pdf(
+                    pdf = MicrofacetBRDFHelper<true>::pdf(
                         mdf,
                         alpha_x,
                         alpha_y,
@@ -429,7 +437,7 @@ namespace
               case Beckmann:
                 {
                     const BeckmannMDF mdf;
-                    return MicrofacetBRDFHelper<true>::pdf(
+                    pdf = MicrofacetBRDFHelper<true>::pdf(
                         mdf,
                         alpha_x,
                         alpha_y,
@@ -443,7 +451,7 @@ namespace
               case Std:
                 {
                     const StdMDF mdf;
-                    return MicrofacetBRDFHelper<true>::pdf(
+                    pdf = MicrofacetBRDFHelper<true>::pdf(
                         mdf,
                         alpha_x,
                         alpha_y,
@@ -455,9 +463,13 @@ namespace
                 break;
 
               default:
-                assert(false);
-                return 0.0f;
+                assert(!"Unexpected MDF type.");
+                pdf = 0.0f;
+                break;
             }
+
+            assert(pdf >= 0.0f);
+            return pdf;
         }
 
       private:
@@ -562,7 +574,7 @@ DictionaryArray GlossyBRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "0.75"));
 
@@ -572,7 +584,7 @@ DictionaryArray GlossyBRDFFactory::get_input_metadata() const
             .insert("label", "Reflectance Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -584,7 +596,7 @@ DictionaryArray GlossyBRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("min",
                 Dictionary()
@@ -620,7 +632,7 @@ DictionaryArray GlossyBRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("min",
                 Dictionary()
@@ -656,7 +668,7 @@ DictionaryArray GlossyBRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("min",
                 Dictionary()

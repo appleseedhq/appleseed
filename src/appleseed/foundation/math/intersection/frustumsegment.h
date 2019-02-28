@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_INTERSECTION_FRUSTUMSEGMENT_H
-#define APPLESEED_FOUNDATION_MATH_INTERSECTION_FRUSTUMSEGMENT_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/frustum.h"
@@ -41,7 +40,7 @@ namespace foundation
 {
 
 //
-// Frustum-segment intersection.
+// 3D frustum-segment clipping function.
 //
 
 // Clip a line segment against the frustum.
@@ -72,6 +71,4 @@ inline bool clip(
     return true;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_INTERSECTION_FRUSTUMSEGMENT_H
+}   // namespace foundation

@@ -33,7 +33,7 @@
 
 shader as_maya_envChrome
 [[
-    string as_maya_node_name = "envChrome"
+    string as_node_name = "envChrome"
 ]]
 (
     color in_skyColor = color(0.784, 0.784, 1.0)

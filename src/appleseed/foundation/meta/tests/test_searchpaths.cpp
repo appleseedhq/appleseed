@@ -58,9 +58,9 @@ TEST_SUITE(Foundation_Utility_SearchPaths)
     {
         set_environment_var(TestEnvVarName, "");
 
-        const SearchPaths searchpaths(TestEnvVarName, ';');
+        const SearchPaths search_paths(TestEnvVarName, ';');
 
-        const APIString result = searchpaths.to_string(';');
+        const APIString result = search_paths.to_string(';');
         EXPECT_EQ("", to_string(result));
     }
 
@@ -68,9 +68,9 @@ TEST_SUITE(Foundation_Utility_SearchPaths)
     {
         set_environment_var(TestEnvVarName, "C:\\Windows\\System32;C:\\Windows;C:\\Program Files");
 
-        const SearchPaths searchpaths(TestEnvVarName, ';');
+        const SearchPaths search_paths(TestEnvVarName, ';');
 
-        const APIString result = searchpaths.to_string(';');
+        const APIString result = search_paths.to_string(';');
         EXPECT_EQ("C:\\Windows\\System32;C:\\Windows;C:\\Program Files", to_string(result));
     }
 
@@ -78,36 +78,36 @@ TEST_SUITE(Foundation_Utility_SearchPaths)
     {
         set_environment_var(TestEnvVarName, "C:\\Windows\\System32;C:\\Windows;C:\\Program Files");
 
-        SearchPaths searchpaths(TestEnvVarName, ';');
-        searchpaths.set_root_path("C:\\Some\\Root\\Path");
-        searchpaths.push_back_explicit_path("C:\\Users\\UserName\\appleseed");
+        SearchPaths search_paths(TestEnvVarName, ';');
+        search_paths.set_root_path("C:\\Some\\Root\\Path");
+        search_paths.push_back_explicit_path("C:\\Users\\UserName\\appleseed");
 
-        searchpaths.clear_explicit_paths();
+        search_paths.clear_explicit_paths();
 
-        const APIString result = searchpaths.to_string(';');
+        const APIString result = search_paths.to_string(';');
         EXPECT_EQ("C:\\Some\\Root\\Path;C:\\Windows\\System32;C:\\Windows;C:\\Program Files", to_string(result));
     }
 
     TEST_CASE(ToString)
     {
-        SearchPaths searchpaths;
-        searchpaths.push_back_explicit_path("C:\\Windows\\System32");
-        searchpaths.push_back_explicit_path("C:\\Windows");
-        searchpaths.push_back_explicit_path("C:\\Program Files");
+        SearchPaths search_paths;
+        search_paths.push_back_explicit_path("C:\\Windows\\System32");
+        search_paths.push_back_explicit_path("C:\\Windows");
+        search_paths.push_back_explicit_path("C:\\Program Files");
 
-        const APIString result = searchpaths.to_string(';');
+        const APIString result = search_paths.to_string(';');
 
         EXPECT_EQ("C:\\Windows\\System32;C:\\Windows;C:\\Program Files", to_string(result));
     }
 
     TEST_CASE(ToStringReversed)
     {
-        SearchPaths searchpaths;
-        searchpaths.push_back_explicit_path("C:\\Windows\\System32");
-        searchpaths.push_back_explicit_path("C:\\Windows");
-        searchpaths.push_back_explicit_path("C:\\Program Files");
+        SearchPaths search_paths;
+        search_paths.push_back_explicit_path("C:\\Windows\\System32");
+        search_paths.push_back_explicit_path("C:\\Windows");
+        search_paths.push_back_explicit_path("C:\\Program Files");
 
-        const APIString result = searchpaths.to_string_reversed(';');
+        const APIString result = search_paths.to_string_reversed(';');
 
         EXPECT_EQ("C:\\Program Files;C:\\Windows;C:\\Windows\\System32", to_string(result));
     }
@@ -127,9 +127,9 @@ TEST_SUITE(Foundation_Utility_SearchPaths)
     {
         set_environment_var(TestEnvVarName, "");
 
-        const SearchPaths searchpaths(TestEnvVarName, ':');
+        const SearchPaths search_paths(TestEnvVarName, ':');
 
-        const APIString result = searchpaths.to_string(':');
+        const APIString result = search_paths.to_string(':');
         EXPECT_EQ("", to_string(result));
     }
 
@@ -137,9 +137,9 @@ TEST_SUITE(Foundation_Utility_SearchPaths)
     {
         set_environment_var(TestEnvVarName, "/tmp:/usr/tmp:/var/local/tmp");
 
-        const SearchPaths searchpaths(TestEnvVarName, ':');
+        const SearchPaths search_paths(TestEnvVarName, ':');
 
-        const APIString result = searchpaths.to_string(':');
+        const APIString result = search_paths.to_string(':');
         EXPECT_EQ("/tmp:/usr/tmp:/var/local/tmp", to_string(result));
     }
 
@@ -147,36 +147,36 @@ TEST_SUITE(Foundation_Utility_SearchPaths)
     {
         set_environment_var(TestEnvVarName, "/tmp:/usr/tmp:/var/local/tmp");
 
-        SearchPaths searchpaths(TestEnvVarName, ':');
-        searchpaths.set_root_path("/some/root/path");
-        searchpaths.push_back_explicit_path("/home/username/appleseed");
+        SearchPaths search_paths(TestEnvVarName, ':');
+        search_paths.set_root_path("/some/root/path");
+        search_paths.push_back_explicit_path("/home/username/appleseed");
 
-        searchpaths.clear_explicit_paths();
+        search_paths.clear_explicit_paths();
 
-        const APIString result = searchpaths.to_string(':');
+        const APIString result = search_paths.to_string(':');
         EXPECT_EQ("/some/root/path:/tmp:/usr/tmp:/var/local/tmp", to_string(result));
     }
 
     TEST_CASE(ToString)
     {
-        SearchPaths searchpaths;
-        searchpaths.push_back_explicit_path("/tmp");
-        searchpaths.push_back_explicit_path("/usr/tmp");
-        searchpaths.push_back_explicit_path("/var/local/tmp");
+        SearchPaths search_paths;
+        search_paths.push_back_explicit_path("/tmp");
+        search_paths.push_back_explicit_path("/usr/tmp");
+        search_paths.push_back_explicit_path("/var/local/tmp");
 
-        const APIString result = searchpaths.to_string(':');
+        const APIString result = search_paths.to_string(':');
 
         EXPECT_EQ("/tmp:/usr/tmp:/var/local/tmp", to_string(result));
     }
 
     TEST_CASE(ToStringReversed)
     {
-        SearchPaths searchpaths;
-        searchpaths.push_back_explicit_path("/tmp");
-        searchpaths.push_back_explicit_path("/usr/tmp");
-        searchpaths.push_back_explicit_path("/var/local/tmp");
+        SearchPaths search_paths;
+        search_paths.push_back_explicit_path("/tmp");
+        search_paths.push_back_explicit_path("/usr/tmp");
+        search_paths.push_back_explicit_path("/var/local/tmp");
 
-        const APIString result = searchpaths.to_string_reversed(':');
+        const APIString result = search_paths.to_string_reversed(':');
 
         EXPECT_EQ("/var/local/tmp:/usr/tmp:/tmp", to_string(result));
     }

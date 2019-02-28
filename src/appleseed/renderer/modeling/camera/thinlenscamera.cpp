@@ -198,7 +198,7 @@ namespace
         void print_settings() const override
         {
             RENDERER_LOG_INFO(
-                "camera \"%s\" settings:\n"
+                "camera \"%s\" (#" FMT_UNIQUE_ID ") parameters:\n"
                 "  model                         %s\n"
                 "  film width                    %f\n"
                 "  film height                   %f\n"
@@ -209,13 +209,14 @@ namespace
                 "  diaphragm map                 %s\n"
                 "  diaphragm blades              %s\n"
                 "  diaphragm tilt angle          %f\n"
-                "  near-z                        %f\n"
+                "  near z                        %f\n"
                 "  shift                         %f, %f\n"
                 "  shutter open begin time       %f\n"
                 "  shutter open end time         %f\n"
                 "  shutter close begin time      %f\n"
                 "  shutter close end time        %f",
                 get_path().c_str(),
+                get_uid(),
                 Model,
                 m_film_dimensions[0],
                 m_film_dimensions[1],
@@ -742,7 +743,7 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "optional"));
 
     CameraFactory::add_clipping_metadata(metadata);

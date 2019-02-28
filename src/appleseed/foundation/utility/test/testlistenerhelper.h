@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_TEST_TESTLISTENERHELPER_H
-#define APPLESEED_FOUNDATION_UTILITY_TEST_TESTLISTENERHELPER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -62,6 +61,4 @@ class APPLESEED_DLLSYMBOL TestListenerHelper
         APPLESEED_PRINTF_FMT_ATTR(7, 8);
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_TEST_TESTLISTENERHELPER_H
+}   // namespace foundation

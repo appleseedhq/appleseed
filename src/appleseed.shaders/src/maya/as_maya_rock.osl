@@ -86,7 +86,7 @@ float cheap_sin(float x)
 
 shader as_maya_rock
 [[
-    string as_maya_node_name = "rock"
+    string as_node_name = "rock"
 ]]
 (
     color in_color1 = color(0.235, 0.0, 0.0)

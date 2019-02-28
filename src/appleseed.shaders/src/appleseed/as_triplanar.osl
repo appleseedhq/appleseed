@@ -32,16 +32,18 @@
 
 shader as_triplanar
 [[
-    string as_maya_node_name = "asTriPlanar",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string as_blender_node_name = "asTriPlanar",
-    string as_blender_category = "texture3d",
     string help = "Tri-planar projection node.",
     string icon = "asTriPlanar.png",
-    int as_maya_type_id = 0x001279e5,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_triplanar.html#label-as-triplanar",
+
+    string as_node_name = "asTriPlanar",
+    string as_category = "texture3d",
+
     string as_max_class_id = "925310807 310517888",
     string as_max_plugin_type = "texture",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_triplanar.html#label-as-triplanar"
+
+    int as_maya_type_id = 0x001279e5,
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility"
 ]]
 (
     string in_blend_mode = "Color"
@@ -198,7 +200,7 @@ shader as_triplanar
     [[
         string as_maya_attribute_name = "xAxisHorizontalOffset",
         string as_maya_attribute_short_name = "xho",
-        float min = 0.0,
+        float softmin = -1.0,
         float softmax = 1.0,
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
@@ -212,7 +214,7 @@ shader as_triplanar
     [[
         string as_maya_attribute_name = "xAxisVerticalOffset",
         string as_maya_attribute_short_name = "xvo",
-        float min = 0.0,
+        float softmin = -1.0,
         float softmax = 1.0,
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
@@ -227,7 +229,7 @@ shader as_triplanar
     [[
         string as_maya_attribute_name = "xAxisRotationAngle",
         string as_maya_attribute_short_name = "xra",
-        float min = -360.0,
+        float softmin = -360.0,
         float softmax = 360.0,
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
@@ -293,7 +295,7 @@ shader as_triplanar
         int gafferNoduleLayoutVisible = 0,
         string label = "T Flip",
         string page = "Projection.X Axis"
-    ]],
+    ]], 
     string in_x_tex_eotf = "sRGB"
     [[
         string as_maya_attribute_name = "xTextureEOTF",
@@ -384,7 +386,7 @@ shader as_triplanar
     [[
         string as_maya_attribute_name = "yAxisHorizontalOffset",
         string as_maya_attribute_short_name = "yho",
-        float min = 0.0,
+        float softmin = -1.0,
         float softmax = 1.0,
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
@@ -398,7 +400,7 @@ shader as_triplanar
     [[
         string as_maya_attribute_name = "yAxisVerticalOffset",
         string as_maya_attribute_short_name = "yvo",
-        float min = 0.0,
+        float softmin = -1.0,
         float softmax = 1.0,
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
@@ -570,7 +572,7 @@ shader as_triplanar
     [[
         string as_maya_attribute_name = "zAxisHorizontalOffset",
         string as_maya_attribute_short_name = "zho",
-        float min = 0.0,
+        float softmin = -1.0,
         float softmax = 1.0,
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
@@ -584,7 +586,7 @@ shader as_triplanar
     [[
         string as_maya_attribute_name = "zAxisVerticalOffset",
         string as_maya_attribute_short_name = "zvo",
-        float min = 0.0,
+        float softmin = -1.0,
         float softmax = 1.0,
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
@@ -737,11 +739,18 @@ shader as_triplanar
     ]]
 )
 {
+    // Takes normals in [-1,1] range.
     normal rnm_blend(normal A, normal B)
     {
         normal a = A + normal(0.0, 0.0, 1.0);
         normal b = B * normal(-1.0, -1.0, 1.0);
-        return a * dot(a, b) / a[2] - b;
+        normal n = a * dot(a, b) / a[2] - b;
+
+        if (n[2] < 0)
+        {
+            n = normalize(normal(n[0], n[1], 0.0));
+        }
+        return n;
     }
 
     normal Nn = normalize(in_normal);
@@ -752,6 +761,7 @@ shader as_triplanar
         if (in_placement_matrix != matrix(1))
         {
             matrix xform = matrix("common", "object") *
+
                 inverse(in_placement_matrix);
             Nn = transform(xform, Nn);
             Pp = transform(xform, Pp);
@@ -806,7 +816,11 @@ shader as_triplanar
         Nn = normalize(Nn);
     }
 
-    normal normal_sign = sign(Nn);
+    normal normal_sign = normal(
+        Nn[0] < 0 ? -1 : 1,
+        Nn[1] < 0 ? -1 : 1,
+        Nn[2] < 0 ? -1 : 1); // sign(x)=0 when x==0
+
     normal abs_normal = abs(Nn);
 
     vector blending = pow(abs_normal, (1.0 - in_blend_softness) * 16);
@@ -838,17 +852,21 @@ shader as_triplanar
                 wrap_mode[1],
                 in_x_axis_sflip,
                 in_x_axis_tflip,
+                (int) normal_sign[0],
                 x_alpha);
 
             if (in_blend_mode == "Tangent Normal")
             {
+                normal tmp = clamp(x_axis * 2.0 - 1.0, -1.0, 1.0);
+                tmp[0] *= normal_sign[0]; // account for flipped UVs
+
                 normal X = rnm_blend(
                     normal(Nn[2], Nn[1], abs_normal[0]),
-                    normal(x_axis) * 2.0 - 1.0);
+                    tmp);
 
                 X[2] *= normal_sign[0];
 
-                out_normal += blending[0] * X;
+                out_normal += blending[0] * normal(X[2], X[1], X[0]);
             }
             else
             {
@@ -900,17 +918,21 @@ shader as_triplanar
                 wrap_mode[1],
                 in_y_axis_sflip,
                 in_y_axis_tflip,
+                (int) normal_sign[1],
                 y_alpha);
 
             if (in_blend_mode == "Tangent Normal")
             {
+                normal tmp = clamp(y_axis * 2.0 - 1.0, -1.0, 1.0);
+                tmp[0] *= normal_sign[1];
+                
                 normal Y = rnm_blend(
                     normal(Nn[0], Nn[2], abs_normal[1]),
-                    normal(y_axis) * 2.0 - 1.0);
+                    tmp);
 
                 Y[2] *= normal_sign[1];
 
-                out_normal += blending[1] * Y;
+                out_normal += blending[1] * normal(Y[0], Y[2], Y[1]);
             }
             else
             {
@@ -958,17 +980,21 @@ shader as_triplanar
                 wrap_mode[1],
                 in_z_axis_sflip,
                 in_z_axis_tflip,
+                (int) -normal_sign[2],
                 z_alpha);
 
             if (in_blend_mode == "Tangent Normal")
             {
+                normal tmp = clamp(z_axis * 2.0 - 1.0, -1.0, 1.0);
+                tmp[0] *= -normal_sign[2];
+
                 normal Z = rnm_blend(
                     normal(Nn[0], Nn[1], abs_normal[2]),
-                    normal(z_axis) * 2.0 - 1.0);
+                    tmp);
 
                 Z[2] *= normal_sign[2];
 
-                out_normal += blending[2] * Z;
+                out_normal += blending[2] * normal(Z[0], Z[1], Z[2]);
             }
             else
             {
@@ -991,5 +1017,7 @@ shader as_triplanar
         out_color += blending[2] * in_z_axis_color;
         out_alpha += blending[2];
     }
-    out_normal = normalize(out_normal + Nn);
+    out_normal = normalize(out_normal);
+
+    if (dot(out_normal, N) < 0.0) out_normal *= normal(-1);
 }

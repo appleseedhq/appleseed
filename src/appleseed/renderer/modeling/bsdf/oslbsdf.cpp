@@ -211,14 +211,12 @@ namespace
             sample.m_value *= c->get_closure_weight(closure_index);
             sample.m_aov_components.m_albedo *= c->get_closure_weight(closure_index);
 
-            if (sample.m_mode == ScatteringMode::None ||
-                sample.m_mode == ScatteringMode::Specular ||
-                sample.m_probability < 1e-6f)
-            {
+            if (sample.get_mode() == ScatteringMode::None ||
+                sample.get_mode() == ScatteringMode::Specular ||
+                sample.get_probability() < 1.0e-6f)
                 return;
-            }
 
-            sample.m_probability *= pdfs[closure_index];
+            float probability = sample.get_probability() * pdfs[closure_index];
             pdfs[closure_index] = 0.0f;
 
             // Evaluate the closures we didn't sample.
@@ -228,6 +226,7 @@ namespace
                 {
                     DirectShadingComponents s;
                     const float pdf =
+                        pdfs[i] *
                         bsdf_from_closure_id(c->get_closure_type(i))
                             .evaluate(
                                 c->get_closure_input_values(i),
@@ -238,15 +237,19 @@ namespace
                                 sample.m_outgoing.get_value(),
                                 sample.m_incoming.get_value(),
                                 modes,
-                                s)  * pdfs[i];
+                                s);
 
                     if (pdf > 0.0f)
                     {
                         madd(sample.m_value, s, c->get_closure_weight(i));
-                        sample.m_probability += pdf;
+                        probability += pdf;
                     }
                 }
             }
+
+            if (probability > 1.0e-6f)
+                sample.set_to_scattering(sample.get_mode(), probability);
+            else sample.set_to_absorption();
         }
 
         float evaluate(
@@ -265,14 +268,15 @@ namespace
             float pdfs[CompositeSurfaceClosure::MaxClosureEntries];
             c->compute_pdfs(modes, pdfs);
 
-            float prob = 0.0f;
+            float pdf = 0.0f;
 
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 if (pdfs[i] > 0.0f)
                 {
                     DirectShadingComponents s;
-                    const float pdf =
+                    const float closure_pdf =
+                        pdfs[i] *
                         bsdf_from_closure_id(c->get_closure_type(i))
                             .evaluate(
                                 c->get_closure_input_values(i),
@@ -283,17 +287,18 @@ namespace
                                 outgoing,
                                 incoming,
                                 modes,
-                                s) * pdfs[i];
+                                s);
 
-                    if (pdf > 0.0f)
+                    if (closure_pdf > 0.0f)
                     {
                         madd(value, s, c->get_closure_weight(i));
-                        prob += pdf;
+                        pdf += closure_pdf;
                     }
                 }
             }
 
-            return prob;
+            assert(pdf >= 0.0f);
+            return pdf;
         }
 
         float evaluate_pdf(
@@ -310,13 +315,14 @@ namespace
             float pdfs[CompositeSurfaceClosure::MaxClosureEntries];
             c->compute_pdfs(modes, pdfs);
 
-            float prob = 0.0f;
+            float pdf = 0.0f;
 
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 if (pdfs[i] > 0.0f)
                 {
-                    prob +=
+                    const float closure_pdf =
+                        pdfs[i] *
                         bsdf_from_closure_id(c->get_closure_type(i))
                             .evaluate_pdf(
                                 c->get_closure_input_values(i),
@@ -325,11 +331,13 @@ namespace
                                 c->get_closure_shading_basis(i),
                                 outgoing,
                                 incoming,
-                                modes) * pdfs[i];
+                                modes);
+                    pdf += closure_pdf;
                 }
             }
 
-            return prob;
+            assert(pdf >= 0.0f);
+            return pdf;
         }
 
         float sample_ior(

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_GENERICPROGRESSIVEIMAGEFILEREADER_H
-#define APPLESEED_FOUNDATION_IMAGE_GENERICPROGRESSIVEIMAGEFILEREADER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/iprogressiveimagefilereader.h"
@@ -80,16 +79,23 @@ class APPLESEED_DLLSYMBOL GenericProgressiveImageFileReader
     void read_image_attributes(
         ImageAttributes&    attrs) override;
 
+    // Choose the layer in the image file if available.
+    bool choose_subimage(const size_t subimage) const;
+
     // Read an image tile. Returns a newly allocated tile.
     Tile* read_tile(
         const size_t        tile_x,
         const size_t        tile_y) override;
+
+    // Read an image tile. Outputs the content in the given tile.
+    void read_tile(
+        const size_t        tile_x,
+        const size_t        tile_y,
+        Tile*               output_tile);
 
   private:
     struct Impl;
     Impl* impl;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_GENERICPROGRESSIVEIMAGEFILEREADER_H
+}   // namespace foundation

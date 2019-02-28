@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_ISHADINGRESULTFRAMEBUFFERFACTORY_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_ISHADINGRESULTFRAMEBUFFERFACTORY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
@@ -58,6 +57,4 @@ class IShadingResultFrameBufferFactory
         ShadingResultFrameBuffer*   framebuffer) = 0;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_ISHADINGRESULTFRAMEBUFFERFACTORY_H
+}   // namespace renderer

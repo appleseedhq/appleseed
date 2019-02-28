@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPASSCALLBACK_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPASSCALLBACK_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/sppm/sppmparameters.h"
@@ -40,7 +39,6 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/timers.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/stopwatch.h"
 
 // Standard headers.
@@ -84,15 +82,15 @@ class SPPMPassCallback
 
     // This method is called at the beginning of a pass.
     void on_pass_begin(
-        const Frame&                frame,
-        foundation::JobQueue&       job_queue,
-        foundation::IAbortSwitch&   abort_switch) override;
+        const Frame&                    frame,
+        foundation::JobQueue&           job_queue,
+        foundation::IAbortSwitch&       abort_switch) override;
 
     // This method is called at the end of a pass.
     void on_pass_end(
-        const Frame&                frame,
-        foundation::JobQueue&       job_queue,
-        foundation::IAbortSwitch&   abort_switch) override;
+        const Frame&                    frame,
+        foundation::JobQueue&           job_queue,
+        foundation::IAbortSwitch&       abort_switch) override;
 
     // Return the i'th photon.
     const SPPMMonoPhoton& get_mono_photon(const size_t i) const;
@@ -107,7 +105,7 @@ class SPPMPassCallback
   private:
     const SPPMParameters                m_params;
     SPPMPhotonTracer                    m_photon_tracer;
-    foundation::uint32                  m_pass_number;
+    size_t                              m_pass_number;
     SPPMPhotonVector                    m_photons;
     std::unique_ptr<SPPMPhotonMap>      m_photon_map;
     float                               m_initial_lookup_radius;
@@ -141,6 +139,4 @@ inline float SPPMPassCallback::get_lookup_radius() const
     return m_lookup_radius;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPASSCALLBACK_H
+}   // namespace renderer

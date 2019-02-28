@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_REGISTRAR_H
-#define APPLESEED_FOUNDATION_UTILITY_REGISTRAR_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -121,6 +120,4 @@ const typename Registrar<T>::Items& Registrar<T>::items() const
     return m_items;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_REGISTRAR_H
+}   // namespace foundation

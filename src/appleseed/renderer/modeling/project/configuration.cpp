@@ -69,42 +69,6 @@ UniqueID Configuration::get_class_uid()
     return g_class_uid;
 }
 
-Configuration::Configuration(const char* name)
-  : Entity(g_class_uid)
-  , m_base(nullptr)
-{
-    set_name(name);
-}
-
-void Configuration::release()
-{
-    delete this;
-}
-
-void Configuration::set_base(const Configuration* base)
-{
-    m_base = base;
-}
-
-const Configuration* Configuration::get_base() const
-{
-    return m_base;
-}
-
-ParamArray Configuration::get_inherited_parameters() const
-{
-    if (m_base)
-    {
-        ParamArray params = m_base->m_params;
-        params.merge(m_params);
-        return params;
-    }
-    else
-    {
-        return m_params;
-    }
-}
-
 Dictionary Configuration::get_metadata()
 {
     Dictionary metadata;
@@ -229,10 +193,51 @@ Dictionary Configuration::get_metadata()
         "progressive_frame_renderer",
         ProgressiveFrameRendererFactory::get_params_metadata());
 
-    metadata.dictionaries().insert("pt", PTLightingEngineFactory::get_params_metadata());
-    metadata.dictionaries().insert("sppm", SPPMLightingEngineFactory::get_params_metadata());
+    metadata.dictionaries().insert(
+        "pt",
+        PTLightingEngineFactory::get_params_metadata());
+
+    metadata.dictionaries().insert(
+        "sppm",
+        SPPMLightingEngineFactory::get_params_metadata());
 
     return metadata;
+}
+
+Configuration::Configuration(const char* name)
+  : Entity(g_class_uid)
+  , m_base(nullptr)
+{
+    set_name(name);
+}
+
+void Configuration::release()
+{
+    delete this;
+}
+
+void Configuration::set_base(const Configuration* base)
+{
+    m_base = base;
+}
+
+const Configuration* Configuration::get_base() const
+{
+    return m_base;
+}
+
+ParamArray Configuration::get_inherited_parameters() const
+{
+    if (m_base)
+    {
+        ParamArray params = m_base->m_params;
+        params.merge(m_params);
+        return params;
+    }
+    else
+    {
+        return m_params;
+    }
 }
 
 
@@ -299,8 +304,6 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_interactiv
 
     parameters.insert("spectrum_mode", "rgb");
     parameters.insert("sampling_mode", "qmc");
-
-    parameters.insert("passes", 1);
 
     parameters.insert("frame_renderer", "progressive");
     parameters.insert("sample_generator", "generic");

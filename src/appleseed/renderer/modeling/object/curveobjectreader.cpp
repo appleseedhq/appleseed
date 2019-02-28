@@ -50,7 +50,6 @@
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/api/apistring.h"
-#include "foundation/utility/memory.h"
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/stopwatch.h"
@@ -77,19 +76,15 @@ namespace renderer
 // CurveObjectReader class implementation.
 //
 
-namespace {
-
-    //
-    // Curve object builder.
-    //
-
+namespace
+{
     class CurveObjectBuilder
       : public ICurveBuilder
     {
       public:
         CurveObjectBuilder(
-            const ParamArray &params,
-            const string &name)
+            const ParamArray& params,
+            const string& name)
           : m_params(params)
           , m_name(name)
           , m_split_count(0)
@@ -102,41 +97,16 @@ namespace {
             return m_object;
         }
 
-        size_t get_curve_count() const
-        {
-            return m_object->get_curve_count();
-        }
-
         size_t get_total_vertex_count() const
         {
             return m_total_vertex_count;
         }
 
-        const char* get_basis() const
-        {
-            switch (m_object->get_basis())
-            {
-              case CurveBasis::Linear:
-                return "linear";
-
-              case CurveBasis::Bezier:
-                return "bezier";
-
-              case CurveBasis::Bspline:
-                return "b-spline";
-
-              case CurveBasis::Catmullrom:
-                return "catmull-rom";
-
-              default:
-                return "invalid basis";
-            }
-        }
-
-        void begin_curve_object(unsigned char basis, const size_t count) override
+        void begin_curve_object(const CurveBasis basis, const size_t count) override
         {
             // Create an empty curve object.
-            m_object = static_cast<CurveObject*>(
+            m_object =
+                static_cast<CurveObject*>(
                     CurveObjectFactory().create(m_name.c_str(), m_params).release());
 
             m_split_count = m_params.get_optional<size_t>("presplits", 0);
@@ -152,11 +122,13 @@ namespace {
                 break;
 
               case CurveBasis::Bezier:
-              case CurveBasis::Bspline:
-              case CurveBasis::Catmullrom:
+              case CurveBasis::BSpline:
+              case CurveBasis::CatmullRom:
                 m_object->reserve_curves3(count);
                 m_object->reserve_curves1(0);
                 break;
+
+              assert_otherwise;
             }
         }
 
@@ -178,11 +150,14 @@ namespace {
                 push_curve3(3);
                 break;
 
-              case CurveBasis::Bspline:
-              case CurveBasis::Catmullrom:
+              case CurveBasis::BSpline:
+              case CurveBasis::CatmullRom:
                 push_curve3(1);
                 break;
+
+              assert_otherwise;
             }
+
             m_total_vertex_count += m_vertices.size();
         }
 
@@ -215,15 +190,19 @@ namespace {
             const size_t ControlPointCount = 4;
             const size_t curve_count = m_params.get_optional<size_t>("curves", 100);
             const GScalar curve_width = m_params.get_optional<GScalar>("width", GScalar(0.002));
-            const unsigned char basis = m_params.get_optional<unsigned char>("basis", 2);
 
-            begin_curve_object(basis, curve_count);
+            // todo: does this code really work with any basis?
+            const unsigned char basis = m_params.get_optional<unsigned char>("basis", 2);
+            assert(basis >= 1 && basis <= 4);
+
+            begin_curve_object(static_cast<CurveBasis>(basis), curve_count);
 
             MersenneTwister rng;
 
             for (size_t c = 0; c < curve_count; ++c)
             {
                 begin_curve();
+
                 for (size_t p = 0; p < ControlPointCount; ++p)
                 {
                     // http://math.stackexchange.com/questions/87230/picking-random-points-in-the-volume-of-sphere-with-uniform-probability
@@ -234,10 +213,12 @@ namespace {
                     push_vertex_color(Color3f(0.2f, 0.0f, 0.7f));   // default color
                     push_vertex_opacity(1.0f);                      // default opacity
                 }
+
                 end_curve();
             }
 
             end_curve_object();
+
             return auto_release_ptr<CurveObject>(m_object);
         }
 
@@ -250,15 +231,19 @@ namespace {
             const GScalar root_width = m_params.get_optional<GScalar>("root_width", GScalar(0.001));
             const GScalar tip_width = m_params.get_optional<GScalar>("tip_width", GScalar(0.0001));
             const GScalar curliness = m_params.get_optional<GScalar>("curliness", GScalar(0.5));
-            const unsigned char basis = m_params.get_optional<unsigned char>("basis", 2);
 
-            begin_curve_object(basis, curve_count);
+            // todo: does this code really work with any basis?
+            const unsigned char basis = m_params.get_optional<unsigned char>("basis", 2);
+            assert(basis >= 1 && basis <= 4);
+
+            begin_curve_object(static_cast<CurveBasis>(basis), curve_count);
 
             MersenneTwister rng;
 
             for (size_t c = 0; c < curve_count; ++c)
             {
                 begin_curve();
+
                 static const size_t Bases[] = { 2 };
                 const GVector2 s = hammersley_sequence<GScalar, 2>(Bases, curve_count, c);
                 const GVector3 d = sample_sphere_uniform(s);
@@ -280,13 +265,14 @@ namespace {
                     push_vertex_color(Color3f(0.2f, 0.0f, 0.7f));   // default color
                     push_vertex_opacity(1.0f);                      // default opacity
                 }
+
                 end_curve();
             }
 
             end_curve_object();
+
             return auto_release_ptr<CurveObject>(m_object);
         }
-
 
       private:
         const ParamArray    m_params;
@@ -325,25 +311,29 @@ namespace {
 
         void push_curve1()
         {
+            assert(m_vertices.size() >= 2);
+
             for (size_t i = 0; i < m_vertices.size() - 1; ++i)
             {
-                const GVector3 points[2] = {m_vertices[i], m_vertices[i + 1]};
-                const GScalar widths[2] = {m_widths[i], m_widths[i + 1]};
-                const GScalar opacities[2] = {m_opacities[i], m_opacities[i + 1]};
-                const Color3f colors[2] = {m_colors[i], m_colors[i + 1]};
+                const GVector3 points[2] = { m_vertices[i], m_vertices[i + 1] };
+                const GScalar widths[2] = { m_widths[i], m_widths[i + 1] };
+                const GScalar opacities[2] = { m_opacities[i], m_opacities[i + 1] };
+                const Color3f colors[2] = { m_colors[i], m_colors[i + 1] };
 
                 m_object->push_curve1(Curve1Type(points, widths, opacities, colors));
             }
         }
 
-        void push_curve3(int stride)
+        void push_curve3(const size_t stride)
         {
+            assert(m_vertices.size() >= 4);
+
             for (size_t i = 0; i < m_vertices.size() - 3; i += stride)
             {
-                const GVector3 points[4] = {m_vertices[i], m_vertices[i + 1], m_vertices[i + 2], m_vertices[i + 3]};
-                const GScalar widths[4] = {m_widths[i], m_widths[i + 1], m_widths[i + 2], m_widths[i + 3]};
-                const GScalar opacities[4] = {m_opacities[i], m_opacities[i + 1], m_opacities[i + 2], m_opacities[i + 3]};
-                const Color3f colors[4] = {m_colors[i], m_colors[i + 1], m_colors[i + 2], m_colors[i + 3]};
+                const GVector3 points[4] = { m_vertices[i], m_vertices[i + 1], m_vertices[i + 2], m_vertices[i + 3] };
+                const GScalar widths[4] = { m_widths[i], m_widths[i + 1], m_widths[i + 2], m_widths[i + 3] };
+                const GScalar opacities[4] = { m_opacities[i], m_opacities[i + 1], m_opacities[i + 2], m_opacities[i + 3] };
+                const Color3f colors[4] = { m_colors[i], m_colors[i + 1], m_colors[i + 2], m_colors[i + 3] };
 
                 split_and_store(Curve3Type(points, widths, opacities, colors), m_split_count);
             }
@@ -379,8 +369,10 @@ auto_release_ptr<CurveObject> CurveObjectReader::read(
         return auto_release_ptr<CurveObject>(nullptr);
     }
 
-    const char* filename = search_paths.qualify(filepath.c_str()).c_str();
-    GenericCurveFileReader reader(filename, radius, basis);
+    GenericCurveFileReader reader(
+        search_paths.qualify(filepath.c_str()).c_str(),
+        radius,
+        basis);
 
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
@@ -398,10 +390,12 @@ auto_release_ptr<CurveObject> CurveObjectReader::read(
     stopwatch.measure();
 
     RENDERER_LOG_INFO(
-        "loaded curve file %s (%s %s, %s %s, %s %s) in %s.", filepath.c_str(),
-        pretty_int(builder.get_curve_count()).c_str(),"curves",
-        builder.get_basis(), "type",
-        pretty_int(builder.get_total_vertex_count()).c_str(),
+        "loaded curve file %s (%s %s, %s type, %s %s) in %s.",
+        filepath.c_str(),
+        pretty_uint(builder.get_object()->get_curve_count()).c_str(),
+        builder.get_object()->get_curve_count() > 1 ? "curves" : "curve",
+        get_curve_basis_name(builder.get_object()->get_basis()),
+        pretty_uint(builder.get_total_vertex_count()).c_str(),
         builder.get_total_vertex_count() > 1 ? "vertices" : "vertex",
         pretty_time(stopwatch.get_seconds()).c_str());
 

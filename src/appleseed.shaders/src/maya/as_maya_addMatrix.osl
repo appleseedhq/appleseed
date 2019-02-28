@@ -30,7 +30,7 @@
 
 shader as_maya_addMatrix
 [[
-    string as_maya_node_name = "addMatrix"
+    string as_node_name = "addMatrix"
 ]]
 (
     matrix in_matrixIn[] = {0}

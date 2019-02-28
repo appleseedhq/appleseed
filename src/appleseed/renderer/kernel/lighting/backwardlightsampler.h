@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_BACKWARDLIGHTSAMPLER_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_BACKWARDLIGHTSAMPLER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/lightsamplerbase.h"
@@ -62,6 +61,9 @@ class BackwardLightSampler
   : public LightSamplerBase
 {
   public:
+    // Return parameters metadata.
+    static foundation::Dictionary get_params_metadata();
+
     // Constructor.
     BackwardLightSampler(
         const Scene&                        scene,
@@ -90,14 +92,10 @@ class BackwardLightSampler
         const ShadingPoint&                 light_shading_point,
         const ShadingPoint&                 surface_shading_point) const;
 
-    // Return the metadata of the light sampler parameters.
-    static foundation::Dictionary get_params_metadata();
-
   private:
     bool                                    m_use_light_tree;
-    
+
     NonPhysicalLightVector                  m_light_tree_lights;
-    size_t                                  m_light_tree_light_count;
     std::unique_ptr<LightTree>              m_light_tree;
 
     void sample_light_tree(
@@ -130,6 +128,4 @@ inline bool BackwardLightSampler::has_lightset() const
     return !m_emitting_triangles.empty() || !m_light_tree_lights.empty();
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_BACKWARDLIGHTSAMPLER_H
+}   // namespace renderer

@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SCENE_PROCEDURALASSEMBLY_H
-#define APPLESEED_RENDERER_MODELING_SCENE_PROCEDURALASSEMBLY_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -76,6 +75,4 @@ class APPLESEED_DLLSYMBOL ProceduralAssembly
     bool m_expanded;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SCENE_PROCEDURALASSEMBLY_H
+}   // namespace renderer

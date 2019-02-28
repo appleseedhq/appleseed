@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_BSSRDF_H
-#define APPLESEED_RENDERER_API_BSSRDF_H
+#pragma once
 
 // API headers.
 #include "renderer/modeling/bssrdf/betterdipolebssrdf.h"
@@ -41,5 +40,3 @@
 #include "renderer/modeling/bssrdf/randomwalkbssrdf.h"
 #include "renderer/modeling/bssrdf/separablebssrdf.h"
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
-
-#endif  // !APPLESEED_RENDERER_API_BSSRDF_H

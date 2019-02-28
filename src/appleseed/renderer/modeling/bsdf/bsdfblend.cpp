@@ -229,8 +229,11 @@ namespace
             if (bsdf0_prob > 0.0f) madd(value, bsdf0_value, w0);
             if (bsdf1_prob > 0.0f) madd(value, bsdf1_value, w1);
 
-            // Blend PDF values.
-            return bsdf0_prob * w0 + bsdf1_prob * w1;
+            // Compute the final PDF.
+            const float probability = bsdf0_prob * w0 + bsdf1_prob * w1;
+            assert(probability >= 0.0f);
+
+            return probability;
         }
 
         float evaluate_pdf(
@@ -276,8 +279,11 @@ namespace
                           modes)
                     : 0.0f;
 
-            // Blend PDF values.
-            return bsdf0_prob * w0 + bsdf1_prob * w1;
+            // Compute the final PDF.
+            const float probability = bsdf0_prob * w0 + bsdf1_prob * w1;
+            assert(probability >= 0.0f);
+
+            return probability;
         }
 
       private:
@@ -349,7 +355,7 @@ DictionaryArray BSDFBlendFactory::get_input_metadata() const
             .insert("label", "Weight")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "0.5"));
 

@@ -139,8 +139,8 @@ namespace
     {
       public:
         KelemenBRDFImpl(
-            const char*             name,
-            const ParamArray&       params)
+            const char*                 name,
+            const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, params)
         {
             m_inputs.declare("matte_reflectance", InputFormatSpectralReflectance);
@@ -165,21 +165,11 @@ namespace
             return Model;
         }
 
-        void prepare_inputs(
-            Arena&                      arena,
-            const ShadingPoint&         shading_point,
-            void*                       data) const override
-        {
-            InputValues* values = static_cast<InputValues*>(data);
-
-            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_max_roughness);
-        }
-
         bool on_frame_begin(
-            const Project&          project,
-            const BaseGroup*        parent,
-            OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) override
+            const Project&              project,
+            const BaseGroup*            parent,
+            OnFrameBeginRecorder&       recorder,
+            IAbortSwitch*               abort_switch) override
         {
             if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
@@ -231,6 +221,16 @@ namespace
             BSDF::on_frame_end(project, parent);
         }
 
+        void prepare_inputs(
+            Arena&                      arena,
+            const ShadingPoint&         shading_point,
+            void*                       data) const override
+        {
+            InputValues* values = static_cast<InputValues*>(data);
+
+            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_min_roughness);
+        }
+
         void sample(
             SamplingContext&            sampling_context,
             const void*                 data,
@@ -240,8 +240,6 @@ namespace
             BSDFSample&                 sample) const override
         {
             const InputValues* values = static_cast<const InputValues*>(data);
-
-            sample.m_max_roughness = values->m_roughness;
 
             // Define aliases to match notations in the paper.
             const Vector3f& V = sample.m_outgoing.get_value();
@@ -315,7 +313,7 @@ namespace
 
             float pdf_matte = 0.0f, pdf_specular = 0.0f;
 
-            if (ScatteringMode::has_diffuse(modes))
+            if (ScatteringMode::has_diffuse(modes) && matte_weight > 0.0f)
             {
                 // Compute the specular albedo for the incoming angle.
                 Spectrum specular_albedo_L;
@@ -335,7 +333,7 @@ namespace
                 assert(pdf_matte >= 0.0f);
             }
 
-            if (ScatteringMode::has_glossy(modes))
+            if (ScatteringMode::has_glossy(modes) && specular_weight > 0.0f)
             {
                 // Specular component (equation 3).
                 Spectrum rs(values->m_rs);
@@ -348,12 +346,18 @@ namespace
                 assert(pdf_specular >= 0.0f);
             }
 
-            sample.m_value.m_beauty = sample.m_value.m_diffuse;
-            sample.m_value.m_beauty += sample.m_value.m_glossy;
-            sample.m_mode = mode;
-            sample.m_probability = matte_weight * pdf_matte + specular_weight * pdf_specular;
-            sample.m_incoming = Dual3f(incoming);
-            sample.compute_reflected_differentials();
+            const float probability = matte_weight * pdf_matte + specular_weight * pdf_specular;
+            assert(probability >= 0.0f);
+
+            if (probability > 1.0e-6f)
+            {
+                sample.set_to_scattering(mode, probability);
+                sample.m_incoming = Dual3f(incoming);
+                sample.m_value.m_beauty = sample.m_value.m_diffuse;
+                sample.m_value.m_beauty += sample.m_value.m_glossy;
+                sample.m_min_roughness = values->m_roughness;
+                sample.compute_reflected_differentials();
+            }
         }
 
         float evaluate(
@@ -436,7 +440,11 @@ namespace
 
             value.m_beauty = value.m_diffuse;
             value.m_beauty += value.m_glossy;
-            return matte_weight * pdf_matte + specular_weight * pdf_specular;
+
+            const float pdf = matte_weight * pdf_matte + specular_weight * pdf_specular;
+            assert(pdf >= 0.0f);
+
+            return pdf;
         }
 
         float evaluate_pdf(
@@ -499,7 +507,10 @@ namespace
                 assert(pdf_specular >= 0.0f);
             }
 
-            return matte_weight * pdf_matte + specular_weight * pdf_specular;
+            const float pdf = matte_weight * pdf_matte + specular_weight * pdf_specular;
+            assert(pdf >= 0.0f);
+
+            return pdf;
         }
 
       private:
@@ -778,7 +789,7 @@ DictionaryArray KelemenBRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "0.5"));
 
@@ -788,7 +799,7 @@ DictionaryArray KelemenBRDFFactory::get_input_metadata() const
             .insert("label", "Matte Reflectance Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 

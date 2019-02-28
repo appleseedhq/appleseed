@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_PIXEL_H
-#define APPLESEED_FOUNDATION_IMAGE_PIXEL_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/half.h"
@@ -1219,6 +1218,4 @@ inline void Pixel::convert(
     }
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_PIXEL_H
+}   // namespace foundation

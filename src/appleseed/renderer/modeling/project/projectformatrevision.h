@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
-#define APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
+#pragma once
 
 namespace renderer
 {
@@ -39,8 +38,6 @@ namespace renderer
 // when you increment this value.
 //
 
-const size_t ProjectFormatRevision = 27;
+const size_t ProjectFormatRevision = 29;
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
+}   // namespace renderer

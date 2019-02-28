@@ -30,6 +30,12 @@
 #
 # Find OpenEXR headers and libraries.
 #
+# This module can take the following variables to define
+# custom search locations:
+#
+#   OPENEXR_ROOT
+#   OPENEXR_LOCATION
+
 # This module defines the following variables:
 #
 #   OPENEXR_FOUND           True if OpenEXR was found
@@ -39,10 +45,30 @@
 
 include (FindPackageHandleStandardArgs)
 
-find_path (OPENEXR_INCLUDE_DIR NAMES OpenEXR/ImfHeader.h)
+find_path (OPENEXR_INCLUDE_DIR NAMES ImfHeader.h
+           PATH_SUFFIXES OpenEXR
+           HINTS ${OPENEXR_ROOT}/include
+                 ${OPENEXR_LOCATION}/include
+                 /usr/local/include
+                 /usr/include
+)
 
-find_library (OPENEXR_IMF_LIBRARY NAMES IlmImf)
-find_library (OPENEXR_THREADS_LIBRARY NAMES IlmThread)
+find_library (OPENEXR_IMF_LIBRARY NAMES IlmImf-2_3 IlmImf-2_2 IlmImf
+              PATH_SUFFIXES lib64 lib
+              HINTS ${OPENEXR_ROOT}
+                    ${OPENEXR_LOCATION}
+                    /usr/local
+                    /usr
+)
+
+find_library (OPENEXR_THREADS_LIBRARY
+              NAMES IlmThread-2_3 IlmThread-2_2 IlmThread
+              PATH_SUFFIXES lib64 lib
+              HINTS ${OPENEXR_ROOT}
+                    ${OPENEXR_LOCATION}
+                    /usr/local
+                    /usr
+)
 
 # Handle the QUIETLY and REQUIRED arguments and set OPENEXR_FOUND.
 find_package_handle_standard_args (OPENEXR DEFAULT_MSG

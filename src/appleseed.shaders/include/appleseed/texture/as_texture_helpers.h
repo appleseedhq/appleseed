@@ -25,8 +25,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef AS_TEXTURE_HELPERS_H
-#define AS_TEXTURE_HELPERS_H
+#pragma once
 
 #include "appleseed/transform/as_transform_helpers.h"
 
@@ -124,6 +123,7 @@ color get_projection_color(
     string twrap,
     int sflip,
     int tflip,
+    int backside,
     output float alpha)
 {
     float st[2] = {s_coord, t_coord};
@@ -142,6 +142,8 @@ color get_projection_color(
     st[0] += x_offset;
     st[1] += y_offset;
 
+    st[0] *= backside;
+
     return (color) texture(
         filename,
         st[0],
@@ -149,8 +151,6 @@ color get_projection_color(
         "swrap", swrap,
         "twrap", twrap,
         "missingcolor", color(0),
-        "missingalpha", 0.0,
+        "missingalpha", 1.0,
         "alpha", alpha);
 }
-
-#endif // !AS_TEXTURE_HELPERS_H

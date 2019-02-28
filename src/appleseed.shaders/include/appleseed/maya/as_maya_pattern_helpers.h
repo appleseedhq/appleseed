@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef AS_MAYA_PATTERN_HELPERS_H
-#define AS_MAYA_PATTERN_HELPERS_H
+#pragma once
 
 #include "appleseed/pattern/as_pattern_helpers.h"
 
@@ -42,5 +41,3 @@ float compute_filtered_lines(
 
     return 1.0 - filtered_pulsetrain(width, 1.0, x, filterwidth(offset));
 }
-
-#endif // !AS_MAYA_PATTERN_HELPERS_H

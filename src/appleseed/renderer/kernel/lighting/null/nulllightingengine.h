@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_NULL_NULLLIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_NULL_NULLLIGHTINGENGINE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -78,6 +77,4 @@ class NullLightingEngine
     }
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_NULL_NULLLIGHTINGENGINE_H
+}   // namespace renderer

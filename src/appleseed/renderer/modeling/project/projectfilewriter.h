@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEWRITER_H
-#define APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEWRITER_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -48,11 +47,11 @@ class APPLESEED_DLLSYMBOL ProjectFileWriter
   public:
     enum Options
     {
-        Defaults                    = 0,        // none of the flags below
-        OmitHeaderComment           = 1 << 0,   // do not write the header comment
-        OmitWritingGeometryFiles    = 1 << 1,   // do not write geometry files to disk
-        OmitHandlingAssetFiles      = 1 << 2,   // do not change paths to asset files (such as texture files)
-        CopyAllAssets               = 1 << 3    // copy all asset files (by default copy asset files with relative paths only)
+        Defaults                    = 0,            // none of the flags below
+        OmitHeaderComment           = 1UL << 0,     // do not write the header comment
+        OmitWritingGeometryFiles    = 1UL << 1,     // do not write geometry files to disk
+        OmitHandlingAssetFiles      = 1UL << 2,     // do not change paths to asset files (such as texture files)
+        CopyAllAssets               = 1UL << 3      // copy all asset files (by default copy asset files with relative paths only)
     };
 
     // Write a project to disk.
@@ -81,6 +80,4 @@ class APPLESEED_DLLSYMBOL ProjectFileWriter
         const char*     extra_comments);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEWRITER_H
+}   // namespace renderer

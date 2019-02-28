@@ -107,9 +107,6 @@ namespace
             if (!ScatteringMode::has_diffuse(modes))
                 return;
 
-            // Set the scattering mode.
-            sample.m_mode = ScatteringMode::Diffuse;
-
             // Compute the incoming direction.
             sampling_context.split_in_place(2, 1);
             const Vector2f s = sampling_context.next2<Vector2f>();
@@ -117,47 +114,53 @@ namespace
             const Vector3f incoming = sample.m_shading_basis.transform_to_parent(wi);
             sample.m_incoming = Dual3f(incoming);
 
-            // Compute the BRDF value.
-            const InputValues* values = static_cast<const InputValues*>(data);
-            if (values->m_roughness != 0.0f)
-            {
-                const Vector3f& n = sample.m_shading_basis.get_normal();
-
-                // No reflection below the shading surface.
-                const float cos_in = dot(incoming, n);
-                if (cos_in < 0.0f)
-                    return;
-
-                const Vector3f& outgoing = sample.m_outgoing.get_value();
-                const float cos_on = abs(dot(outgoing, n));
-                oren_nayar_qualitative(
-                    cos_on,
-                    cos_in,
-                    values->m_roughness,
-                    values->m_reflectance,
-                    values->m_reflectance_multiplier,
-                    outgoing,
-                    incoming,
-                    n,
-                    sample.m_value.m_diffuse);
-
-                sample.m_aov_components.m_albedo = values->m_reflectance;
-            }
-            else
-            {
-                // Revert to Lambertian when roughness is zero.
-                sample.m_value.m_diffuse = values->m_reflectance;
-                sample.m_value.m_diffuse *= values->m_reflectance_multiplier * RcpPi<float>();
-            }
-            sample.m_value.m_beauty = sample.m_value.m_diffuse;
-            
-            sample.m_max_roughness = 1.0f;
-
             // Compute the probability density of the sampled direction.
-            sample.m_probability = wi.y * RcpPi<float>();
-            assert(sample.m_probability > 0.0f);
+            const float probability = wi.y * RcpPi<float>();
+            assert(probability > 0.0f);
 
-            sample.compute_reflected_differentials();
+            if (probability > 1.0e-6f)
+            {
+                // Set the scattering mode.
+                sample.set_to_scattering(ScatteringMode::Diffuse, probability);
+
+                // Compute the BRDF value.
+                const InputValues* values = static_cast<const InputValues*>(data);
+                if (values->m_roughness != 0.0f)
+                {
+                    const Vector3f& n = sample.m_shading_basis.get_normal();
+
+                    // No reflection below the shading surface.
+                    const float cos_in = dot(incoming, n);
+                    if (cos_in < 0.0f)
+                        return;
+
+                    const Vector3f& outgoing = sample.m_outgoing.get_value();
+                    const float cos_on = abs(dot(outgoing, n));
+                    oren_nayar_qualitative(
+                        cos_on,
+                        cos_in,
+                        values->m_roughness,
+                        values->m_reflectance,
+                        values->m_reflectance_multiplier,
+                        outgoing,
+                        incoming,
+                        n,
+                        sample.m_value.m_diffuse);
+
+                    sample.m_aov_components.m_albedo = values->m_reflectance;
+                }
+                else
+                {
+                    // Revert to Lambertian when roughness is zero.
+                    sample.m_value.m_diffuse = values->m_reflectance;
+                    sample.m_value.m_diffuse *= values->m_reflectance_multiplier * RcpPi<float>();
+                }
+
+                sample.m_value.m_beauty = sample.m_value.m_diffuse;
+                sample.m_min_roughness = 1.0f;
+
+                sample.compute_reflected_differentials();
+            }
         }
 
         float evaluate(
@@ -201,8 +204,11 @@ namespace
             }
             value.m_beauty = value.m_diffuse;
 
-            // Return the probability density of the sampled direction.
-            return cos_in * RcpPi<float>();
+            // Compute the probability density of the sampled direction.
+            const float pdf = cos_in * RcpPi<float>();
+            assert(pdf >= 0.0f);
+
+            return pdf;
         }
 
         float evaluate_pdf(
@@ -217,10 +223,14 @@ namespace
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0f;
 
-            // Return the probability density of the sampled direction.
             const Vector3f& n = shading_basis.get_normal();
             const float cos_in = abs(dot(incoming, n));
-            return cos_in * RcpPi<float>();
+
+            // Compute the probability density of the sampled direction.
+            const float pdf = cos_in * RcpPi<float>();
+            assert(pdf >= 0.f);
+
+            return pdf;
         }
 
       private:
@@ -284,7 +294,6 @@ namespace
             r2 *=
                   0.17f
                 * square(reflectance_multiplier) * RcpPi<float>()
-                * cos_in
                 * sigma2 / (sigma2 + 0.13f)
                 * (1.0f - delta_cos_phi * square(2.0f * beta * RcpPi<float>()));
             value += r2;
@@ -330,7 +339,7 @@ DictionaryArray OrenNayarBRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "0.5"));
 
@@ -340,7 +349,7 @@ DictionaryArray OrenNayarBRDFFactory::get_input_metadata() const
             .insert("label", "Reflectance Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -350,7 +359,7 @@ DictionaryArray OrenNayarBRDFFactory::get_input_metadata() const
             .insert("label", "Roughness")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "0.1"));
 

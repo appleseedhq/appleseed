@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECT_CONFIGURATIONCONTAINER_H
-#define APPLESEED_RENDERER_MODELING_PROJECT_CONFIGURATIONCONTAINER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entitymap.h"
@@ -45,6 +44,4 @@ namespace renderer
 
 typedef TypedEntityMap<Configuration> ConfigurationContainer;
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_CONFIGURATIONCONTAINER_H
+}   // namespace renderer

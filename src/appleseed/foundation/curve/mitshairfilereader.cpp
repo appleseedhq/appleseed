@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionioerror.h"
+#include "foundation/curve/curvebasis.h"
 #include "foundation/curve/icurvebuilder.h"
 #include "foundation/image/color.h"
 #include "foundation/math/fp.h"
@@ -38,7 +39,7 @@
 #include "foundation/platform/types.h"
 #include "foundation/utility/bufferedfile.h"
 #include "foundation/utility/memory.h"
-#include <foundation/utility/otherwise.h>
+#include "foundation/utility/otherwise.h"
 
 // Standard headers.
 #include <cstring>
@@ -53,10 +54,10 @@ namespace foundation
 // MitsHairFileReader class implementation.
 //
 
-MitsHairFileReader::MitsHairFileReader(const string& filename, const float radius, const size_t basis)
+MitsHairFileReader::MitsHairFileReader(const string& filename, const float radius, const size_t degree)
   : m_filename(filename)
   , m_radius(radius)
-  , m_basis(basis)
+  , m_degree(degree)
 {
 }
 
@@ -103,7 +104,7 @@ void MitsHairFileReader::read_curves(ReaderAdapter& reader, ICurveBuilder& build
             // Expected EOF
         }
 
-        builder.begin_curve_object(static_cast<unsigned char>(m_basis));
+        builder.begin_curve_object(static_cast<CurveBasis>(m_degree));
         builder.begin_curve();
 
         vector<Vector3f> vertices, new_vertices;
@@ -115,7 +116,7 @@ void MitsHairFileReader::read_curves(ReaderAdapter& reader, ICurveBuilder& build
 
             if (FP<float>::is_inf(x))
             {
-                switch (m_basis)
+                switch (m_degree)
                 {
                   case 1:
                     if (vertices.size() >= 2)
@@ -174,7 +175,7 @@ void MitsHairFileReader::read_curves(ReaderAdapter& reader, ICurveBuilder& build
     }
 }
 
-void MitsHairFileReader::push_vertex_properties(Vector3f& v, ICurveBuilder& builder)
+void MitsHairFileReader::push_vertex_properties(const Vector3f& v, ICurveBuilder& builder)
 {
     builder.push_vertex(v);
     builder.push_vertex_width(m_radius);

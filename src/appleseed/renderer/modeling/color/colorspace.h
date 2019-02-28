@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_COLOR_COLORSPACE_H
-#define APPLESEED_RENDERER_MODELING_COLOR_COLORSPACE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
@@ -41,6 +40,4 @@ namespace renderer
 
 extern foundation::LightingConditions g_std_lighting_conditions;
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_COLOR_COLORSPACE_H
+}   // namespace renderer

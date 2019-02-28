@@ -393,7 +393,6 @@ TEST_SUITE(Foundation_Math_QMC)
         }
 
         GenericImageFileWriter writer("unit tests/outputs/test_qmc_sampleimageplanewithhaltonsequence.png");
-
         writer.append_image(&image);
         writer.write();
     }
@@ -438,7 +437,6 @@ TEST_SUITE(Foundation_Math_QMC)
         }
 
         GenericImageFileWriter writer("unit tests/outputs/test_qmc_sampleimageplanewithhaltonsequence_uniformized.png");
-
         writer.append_image(&image);
         writer.write();
     }
@@ -484,7 +482,6 @@ TEST_SUITE(Foundation_Math_QMC)
         }
 
         GenericImageFileWriter writer("unit tests/outputs/test_qmc_sampleimageplanewithhaltonsequence_uniformized_64bitoffset.png");
-
         writer.append_image(&image);
         writer.write();
     }

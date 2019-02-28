@@ -62,6 +62,25 @@ namespace renderer
 // TextureStore class implementation.
 //
 
+Dictionary TextureStore::get_params_metadata()
+{
+    Dictionary metadata;
+    metadata.dictionaries().insert(
+        "max_size",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", get_default_size())
+            .insert("label", "Texture Cache Size")
+            .insert("help", "Texture cache size in bytes"));
+
+    return metadata;
+}
+
+size_t TextureStore::get_default_size()
+{
+    return 1024 * 1024 * 1024;
+}
+
 TextureStore::TextureStore(
     const Scene&        scene,
     const ParamArray&   params)
@@ -76,25 +95,6 @@ StatisticsVector TextureStore::get_statistics() const
     stats.insert_size("peak size", m_tile_swapper.get_peak_memory_size());
 
     return StatisticsVector::make("texture store statistics", stats);
-}
-
-size_t TextureStore::get_default_size()
-{
-    return 1024 * 1024 * 1024;
-}
-
-Dictionary TextureStore::get_params_metadata()
-{
-    Dictionary metadata;
-    metadata.dictionaries().insert(
-        "max_size",
-        Dictionary()
-            .insert("type", "int")
-            .insert("default", get_default_size())
-            .insert("label", "Texture Cache Size")
-            .insert("help", "Texture cache size in bytes"));
-
-    return metadata;
 }
 
 

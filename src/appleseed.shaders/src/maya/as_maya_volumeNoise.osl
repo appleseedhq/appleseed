@@ -36,7 +36,7 @@
 
 shader as_maya_volumeNoise
 [[
-    string as_maya_node_name = "volumeNoise"
+    string as_node_name = "volumeNoise"
 ]]
 (
     float in_threshold = 0.0

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_INTERSECTIONFILTER_H
-#define APPLESEED_RENDERER_KERNEL_INTERSECTION_INTERSECTIONFILTER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/trianglekey.h"
@@ -41,7 +40,6 @@
 #include "foundation/utility/bitmask.h"
 
 // Standard headers.
-#include <cassert>
 #include <cstddef>
 #include <vector>
 
@@ -158,8 +156,6 @@ inline bool IntersectionFilter::accept(
     const double                u,
     const double                v) const
 {
-    assert(triangle_key.get_region_index() == 0);
-
     // Don't use the alpha mask if the UV coordinates are indefinite.
     // This can happen in rare circumstances, when hitting degenerate
     // or nearly degenerate geometry. Since we cannot guarantee to
@@ -193,6 +189,4 @@ inline bool IntersectionFilter::accept(
     return true;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_INTERSECTIONFILTER_H
+}   // namespace renderer

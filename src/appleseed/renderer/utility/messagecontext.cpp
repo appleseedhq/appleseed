@@ -118,7 +118,7 @@ OnFrameBeginMessageContext::OnFrameBeginMessageContext(
     const char*     entity_type,
     const Entity*   entity)
 {
-    set_message(format("while preparing {0} \"{1}\" for frame: ", entity_type, entity->get_path()));
+    set_message(format("while preparing {0} \"{1}\" for rendering a frame: ", entity_type, entity->get_path()));
 }
 
 }   // namespace renderer

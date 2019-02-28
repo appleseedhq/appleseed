@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_TRIANGULATOR_H
-#define APPLESEED_FOUNDATION_MATH_TRIANGULATOR_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -85,7 +84,7 @@ class Triangulator
     enum Options
     {
         Default                 = 0,        // none of the flags below
-        KeepDegenerateTriangles = 1 << 0    // insert degenerate triangles into triangulation
+        KeepDegenerateTriangles = 1UL << 0  // insert degenerate triangles into triangulation
     };
 
     // Constructor.
@@ -526,6 +525,4 @@ void Triangulator<T>::debug(
     file.draw_point(Vector3d(v1.x, v1.y, 0.0), "color.yellow", 10);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_TRIANGULATOR_H
+}   // namespace foundation

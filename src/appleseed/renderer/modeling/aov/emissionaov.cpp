@@ -89,7 +89,7 @@ namespace
     // Emission AOV.
     //
 
-    const char* Model = "emission_aov";
+    const char* EmissionAOVModel = "emission_aov";
 
     class EmissionAOV
       : public ColorAOV
@@ -107,9 +107,10 @@ namespace
 
         const char* get_model() const override
         {
-            return Model;
+            return EmissionAOVModel;
         }
 
+      protected:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
@@ -130,14 +131,14 @@ void EmissionAOVFactory::release()
 
 const char* EmissionAOVFactory::get_model() const
 {
-    return Model;
+    return EmissionAOVModel;
 }
 
 Dictionary EmissionAOVFactory::get_model_metadata() const
 {
     return
         Dictionary()
-            .insert("name", Model)
+            .insert("name", get_model())
             .insert("label", "Emission");
 }
 

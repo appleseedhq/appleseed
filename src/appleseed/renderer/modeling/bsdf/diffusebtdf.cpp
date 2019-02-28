@@ -116,32 +116,33 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            sample.m_max_roughness = 1.0f;
-
             // Compute the incoming direction.
             sampling_context.split_in_place(2, 1);
             const Vector2f s = sampling_context.next2<Vector2f>();
             Vector3f wi = sample_hemisphere_cosine(s);
             const float cos_in = wi.y;
 
-            // Flip the incoming direction to the other side of the surface.
-            wi.y = -wi.y;
-
-            sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
-
-            // Compute the BRDF value.
-            sample.m_value.m_diffuse = values->m_transmittance;
-            sample.m_value.m_diffuse *= values->m_transmittance_multiplier * RcpPi<float>();
-            sample.m_value.m_beauty = sample.m_value.m_diffuse;
-
             // Compute the probability density of the sampled direction.
-            sample.m_probability = cos_in * RcpPi<float>();
-            assert(sample.m_probability > 0.0f);
+            const float probability = cos_in * RcpPi<float>();
+            assert(probability > 0.0f);
 
-            // Set the scattering mode.
-            sample.m_mode = ScatteringMode::Diffuse;
+            if (probability > 1.0e-6f)
+            {
+                sample.set_to_scattering(ScatteringMode::Diffuse, probability);
 
-            sample.m_aov_components.m_albedo = values->m_transmittance;
+                // Flip the incoming direction to the other side of the surface.
+                wi.y = -wi.y;
+
+                sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
+
+                // Compute the BRDF value.
+                sample.m_value.m_diffuse = values->m_transmittance;
+                sample.m_value.m_diffuse *= values->m_transmittance_multiplier * RcpPi<float>();
+                sample.m_value.m_beauty = sample.m_value.m_diffuse;
+                sample.m_aov_components.m_albedo = values->m_transmittance;
+
+                sample.m_min_roughness = 1.0f;
+            }
         }
 
         float evaluate(
@@ -248,7 +249,7 @@ DictionaryArray DiffuseBTDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "0.5"));
 
@@ -258,7 +259,7 @@ DictionaryArray DiffuseBTDFFactory::get_input_metadata() const
             .insert("label", "Transmittance Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 

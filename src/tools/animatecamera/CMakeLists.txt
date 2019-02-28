@@ -55,6 +55,8 @@ add_executable (animatecamera
     ${animatecamera_sources}
 )
 
+set_target_properties (animatecamera PROPERTIES FOLDER "Tools")
+
 if (USE_RPATH_ORIGIN)
     set_target_properties (animatecamera PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"

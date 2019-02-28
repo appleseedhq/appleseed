@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_INTERSECTION_RAYPLANE_H
-#define APPLESEED_FOUNDATION_MATH_INTERSECTION_RAYPLANE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/ray.h"
@@ -38,7 +37,7 @@ namespace foundation
 {
 
 //
-// 3D ray-plane intersection.
+// 3D ray-plane intersection functions.
 //
 
 template <typename T>
@@ -56,7 +55,7 @@ bool intersect(
 
 
 //
-// 3D ray-plane intersection implementation.
+// 3D ray-plane intersection functions implementation.
 //
 
 template <typename T>
@@ -79,13 +78,11 @@ inline bool intersect(
     const Vector<T, 3> u = point - ray.m_org;
     const T denom = dot(ray.m_dir, normal);
 
-    if (denom == T(0))
+    if (denom == T(0.0))
         return false;
 
     t = dot(u, normal) / denom;
     return true;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_INTERSECTION_RAYPLANE_H
+}   // namespace foundation

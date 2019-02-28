@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_RNG_PCG_H
-#define APPLESEED_FOUNDATION_MATH_RNG_PCG_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -89,6 +88,4 @@ inline uint32 PCG::rand_uint32()
 
 #pragma warning (pop)
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_RNG_PCG_H
+}   // namespace foundation

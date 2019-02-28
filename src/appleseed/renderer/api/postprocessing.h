@@ -26,17 +26,13 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_POSTPROCESSING_H
-#define APPLESEED_RENDERER_API_POSTPROCESSING_H
+#pragma once
 
 // API headers.
 #include "renderer/modeling/postprocessingstage/colormappostprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/ipostprocessingstagefactory.h"
-#include "renderer/modeling/postprocessingstage/isolinespostprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstagecontainer.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstagefactoryregistrar.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstagetraits.h"
 #include "renderer/modeling/postprocessingstage/renderstamppostprocessingstage.h"
-
-#endif  // !APPLESEED_RENDERER_API_POSTPROCESSING_H

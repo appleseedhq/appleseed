@@ -51,15 +51,15 @@ struct GenericCurveFileReader::Impl
 {
     string  m_filename;
     float   m_radius;
-    size_t  m_basis;
+    size_t  m_degree;
 };
 
-GenericCurveFileReader::GenericCurveFileReader(const char* filename, const float radius, const size_t basis)
+GenericCurveFileReader::GenericCurveFileReader(const char* filename, const float radius, const size_t degree)
   : impl(new Impl())
 {
     impl->m_filename = filename;
     impl->m_radius = radius;
-    impl->m_basis = basis;
+    impl->m_degree = degree;
 }
 
 GenericCurveFileReader::~GenericCurveFileReader()
@@ -79,7 +79,7 @@ void GenericCurveFileReader::read(ICurveBuilder& builder)
     }
     else if (extension == ".mitshair")
     {
-        MitsHairFileReader reader(impl->m_filename, impl->m_radius, impl->m_basis);
+        MitsHairFileReader reader(impl->m_filename, impl->m_radius, impl->m_degree);
         reader.read(builder);
     }
     else

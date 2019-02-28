@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_VOXELGRID_H
-#define APPLESEED_FOUNDATION_MATH_VOXELGRID_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -396,6 +395,4 @@ void VoxelGrid3<ValueType, CoordType>::quadratic_lookup(
     }
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_VOXELGRID_H
+}   // namespace foundation

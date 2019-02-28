@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PYTHON_UNALIGNEDTRANSFORM_H
-#define APPLESEED_PYTHON_UNALIGNEDTRANSFORM_H
+#pragma once
 
 // appleseed.python headers.
 #include "unalignedmatrix44.h"
@@ -155,6 +154,4 @@ inline std::ostream& operator<<(std::ostream& s, const UnalignedTransform<T>& xf
 typedef UnalignedTransform<float>  UnalignedTransformf;
 typedef UnalignedTransform<double> UnalignedTransformd;
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_PYTHON_UNALIGNEDTRANSFORM_H
+}   // namespace foundation

@@ -30,7 +30,7 @@
 
 shader as_maya_vectorProduct
 [[
-    string as_maya_node_name = "vectorProduct"
+    string as_node_name = "vectorProduct"
 ]]
 (
     // components = input1X|Y|Z

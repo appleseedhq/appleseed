@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_UNIFORMPIXELRENDERER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_UNIFORMPIXELRENDERER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/ipixelrenderer.h"
@@ -56,6 +55,9 @@ class UniformPixelRendererFactory
   : public IPixelRendererFactory
 {
   public:
+    // Return parameters metadata.
+    static foundation::Dictionary get_params_metadata();
+
     // Constructor.
     UniformPixelRendererFactory(
         const Frame&                frame,
@@ -69,15 +71,10 @@ class UniformPixelRendererFactory
     IPixelRenderer* create(
         const size_t                thread_index) override;
 
-    // Return the metadata of the uniform pixel renderer parameters.
-    static foundation::Dictionary get_params_metadata();
-
   private:
     const Frame&                    m_frame;
     ISampleRendererFactory*         m_factory;
     ParamArray                      m_params;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_UNIFORMPIXELRENDERER_H
+}   // namespace renderer

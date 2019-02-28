@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERREGIONHANDLER_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERREGIONHANDLER_H
+#pragma once
 
 // Qt headers.
 #include <QObject>
@@ -82,7 +81,5 @@ class RenderRegionHandler
     bool eventFilter(QObject* object, QEvent* event) override;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERREGIONHANDLER_H
+}   // namespace studio
+}   // namespace appleseed

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SCENE_OBJECTINSTANCE_H
-#define APPLESEED_RENDERER_MODELING_SCENE_OBJECTINSTANCE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -104,7 +103,7 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     bool transform_swaps_handedness() const;
 
     // Return true if the normals of this instance must be flipped.
-    bool flip_normals() const;
+    bool must_flip_normals() const;
 
     // Return or set visibility flags of this instance.
     foundation::uint32 get_vis_flags() const;
@@ -137,8 +136,8 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     // Sides of this object instance's surface.
     enum Side
     {
-        FrontSide = 1 << 0,
-        BackSide  = 1 << 1,
+        FrontSide = 1UL << 0,
+        BackSide  = 1UL << 1,
         BothSides = FrontSide | BackSide
     };
 
@@ -257,7 +256,7 @@ inline bool ObjectInstance::transform_swaps_handedness() const
     return m_transform_swaps_handedness;
 }
 
-inline bool ObjectInstance::flip_normals() const
+inline bool ObjectInstance::must_flip_normals() const
 {
     return m_flip_normals;
 }
@@ -303,6 +302,4 @@ inline const MaterialArray& ObjectInstance::get_back_materials() const
     return m_back_materials;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SCENE_OBJECTINSTANCE_H
+}   // namespace renderer

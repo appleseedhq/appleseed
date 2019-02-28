@@ -30,7 +30,7 @@
 
 shader as_maya_plusMinusAverage
 [[
-    string as_maya_node_name = "plusMinusAverage"
+    string as_node_name = "plusMinusAverage"
 ]]
 (
     int in_operation = 1

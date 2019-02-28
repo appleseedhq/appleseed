@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_SHAREDLIBRARY_H
-#define APPLESEED_FOUNDATION_PLATFORM_SHAREDLIBRARY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -35,6 +34,7 @@
 #ifdef _WIN32
 #include "foundation/platform/windows.h"
 #endif
+#include "foundation/utility/api/apistring.h"
 
 namespace foundation
 {
@@ -70,6 +70,19 @@ class ExceptionSharedLibCannotGetSymbol
 
 
 //
+// Exception thrown when a shared library is not found.
+//
+
+class ExceptionSharedLibNotFound
+  : public Exception
+{
+  public:
+    // Constructor.
+    explicit ExceptionSharedLibNotFound(const char* error_msg);
+};
+
+
+//
 // SharedLibrary class.
 //
 
@@ -89,6 +102,9 @@ class SharedLibrary
     // Get a symbol from the shared library.
     void* get_symbol(const char* name, const bool no_throw = true) const;
 
+    // Find the filename of a loaded shared library from a symbol.
+    static APIString get_filename_from_symbol(const void* address);
+
   private:
 #ifdef _WIN32
     HMODULE m_handle;
@@ -97,6 +113,4 @@ class SharedLibrary
 #endif
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_SHAREDLIBRARY_H
+}   // namespace foundation

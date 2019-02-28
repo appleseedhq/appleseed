@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ASSEMBLY_ASSEMBLYTRAITS_H
-#define APPLESEED_RENDERER_MODELING_ASSEMBLY_ASSEMBLYTRAITS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entitytraits.h"
@@ -83,6 +82,4 @@ struct EntityTraits<Assembly>
     }
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_ASSEMBLY_ASSEMBLYTRAITS_H
+}   // namespace renderer

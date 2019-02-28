@@ -64,19 +64,8 @@ set (c_compiler_flags_common
     -Wno-deprecated-register                            # don't complain about "register" (OpenEXR issue)
     -fno-math-errno                                     # ignore errno when calling math functions
 )
-if (WARNINGS_AS_ERRORS)
-    if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR
-        CMAKE_BUILD_TYPE STREQUAL "Profile" OR
-        CMAKE_BUILD_TYPE STREQUAL "Release")
-        set (c_compiler_flags_common
-            ${c_compiler_flags_common}
-            -Werror                                     # treat Warnings As Errors
-        )
-    endif ()
-endif ()
 set (cxx_compiler_flags_common
     ${cxx_compiler_flags_common}
-    -std=c++11                                          # enable C++11
     -stdlib=libc++
 )
 if (USE_SSE)
@@ -112,12 +101,23 @@ if (USE_AVX2)
     )
 endif ()
 set (exe_linker_flags_common
-    -Werror                                             # Treat Warnings As Errors
     -bind_at_load
 )
-set (shared_lib_linker_flags_common
-    -Werror                                             # Treat Warnings As Errors
-)
+if (WARNINGS_AS_ERRORS)
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR
+        CMAKE_BUILD_TYPE STREQUAL "Release")
+        set (c_compiler_flags_common
+            ${c_compiler_flags_common}
+            -Werror                                     # treat Warnings As Errors
+        )
+        set (exe_linker_flags_common
+            -Werror                                     # treat Warnings As Errors
+        )
+        set (shared_lib_linker_flags_common
+            -Werror                                     # treat Warnings As Errors
+        )
+    endif ()
+endif ()
 
 # Release configuration.
 set (c_compiler_flags_release
@@ -136,7 +136,7 @@ macro (link_against_platform target)
 endmacro ()
 
 macro (link_against_zlib target)
-    if (USE_EXTERNAL_ZLIB)
+    if (USE_FIND_PACKAGE_FOR_ZLIB)
         target_link_libraries (${target} ${ZLIB_LIBRARIES})
     else ()
         target_link_libraries (${target}
@@ -146,7 +146,7 @@ macro (link_against_zlib target)
 endmacro ()
 
 macro (link_against_libpng target)
-    if (USE_EXTERNAL_PNG)
+    if (USE_FIND_PACKAGE_FOR_PNG)
         target_link_libraries (${target} ${PNG_LIBRARIES})
     else ()
         target_link_libraries (${target}
@@ -156,7 +156,7 @@ macro (link_against_libpng target)
 endmacro ()
 
 macro (link_against_openexr target)
-    if (USE_EXTERNAL_EXR)
+    if (USE_FIND_PACKAGE_FOR_EXR)
         target_link_libraries (${target}
             ${IMATH_LIBRARIES}
             ${OPENEXR_LIBRARIES}
@@ -173,7 +173,7 @@ macro (link_against_openexr target)
 endmacro ()
 
 macro (link_against_xercesc target)
-    if (USE_EXTERNAL_XERCES)
+    if (USE_FIND_PACKAGE_FOR_XERCES)
         target_link_libraries (${target} ${XERCES_LIBRARIES})
     else ()
         target_link_libraries (${target}
@@ -203,7 +203,7 @@ macro (link_against_seexpreditor target)
 endmacro ()
 
 macro (link_against_embree target)
-    if (USE_EXTERNAL_EMBREE)
+    if (USE_FIND_PACKAGE_FOR_EMBREE)
         target_link_libraries (${target} ${EMBREE_LIBRARIES})
     else ()
         #TODO
@@ -225,7 +225,7 @@ endmacro ()
 
 macro (get_sandbox_py_path path)
     get_sandbox_lib_path (${path})
-    set (${path} ${${path}}/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION})
+    set (${path} ${${path}}/python)
 endmacro ()
 
 macro (get_relative_path_from_module_name path name)
@@ -291,7 +291,7 @@ macro (add_copy_studio_py_file_to_sandbox_py_module_command py_src module_name)
     get_relative_path_from_module_name (relative_module_path ${module_name})
     set (module_path "${py_path}/${relative_module_path}")
 
-    add_custom_command (TARGET appleseed.studio.python.copy_py_files POST_BUILD
+    add_custom_command (TARGET appleseed.studio.copy_py_files POST_BUILD
         COMMAND mkdir -p ${module_path}
         COMMAND cp ${py_src} ${module_path}
     )

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_VOXEL_VOXEL_INTERSECTOR_H
-#define APPLESEED_FOUNDATION_MATH_VOXEL_VOXEL_INTERSECTOR_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -203,7 +202,5 @@ bool Intersector<T, Tree, S>::intersect(
 
 #undef FOUNDATION_VOXEL_TRAVERSAL_STATS
 
-}       // namespace voxel
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_VOXEL_VOXEL_INTERSECTOR_H
+}   // namespace voxel
+}   // namespace foundation

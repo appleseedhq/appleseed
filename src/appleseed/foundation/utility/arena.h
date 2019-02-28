@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_ARENA_H
-#define APPLESEED_FOUNDATION_UTILITY_ARENA_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -62,7 +61,7 @@ class Arena
     const uint8* get_storage() const;
 
   private:
-    enum { ArenaSize = 256 * 1024 };    // bytes
+    enum { ArenaSize = 384 * 1024 };    // bytes
 
     APPLESEED_SIMD4_ALIGN uint8 m_storage[ArenaSize];
     const uint8*                m_end;
@@ -119,6 +118,4 @@ inline const uint8* Arena::get_storage() const
     return m_storage;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_ARENA_H
+}   // namespace foundation

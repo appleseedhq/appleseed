@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_MATERIAL_DISNEYMATERIAL_H
-#define APPLESEED_RENDERER_MODELING_MATERIAL_DISNEYMATERIAL_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/disneybrdf.h"
@@ -197,6 +196,4 @@ class APPLESEED_DLLSYMBOL DisneyMaterialFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_DISNEYMATERIAL_H
+}   // namespace renderer

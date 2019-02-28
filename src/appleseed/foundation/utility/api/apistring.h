@@ -26,10 +26,10 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_API_APISTRING_H
-#define APPLESEED_FOUNDATION_UTILITY_API_APISTRING_H
+#pragma once
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/string.h"
 
 // appleseed.main headers.
@@ -49,26 +49,28 @@ class APPLESEED_DLLSYMBOL APIString
 {
   public:
     // Constructors.
-    APIString();
+    APIString() APPLESEED_NOEXCEPT;
     APIString(const char* s);
     APIString(const std::string& s);
     APIString(const APIString& rhs);
+    APIString(APIString&& rhs) APPLESEED_NOEXCEPT;
 
     // Destructor.
     ~APIString();
 
-    // Assignment operator.
+    // Assignment operators.
     APIString& operator=(const APIString& rhs);
+    APIString& operator=(APIString&& rhs) APPLESEED_NOEXCEPT;
 
     // Comparison operators.
-    bool operator==(const APIString& rhs) const;
-    bool operator!=(const APIString& rhs) const;
+    bool operator==(const APIString& rhs) const APPLESEED_NOEXCEPT;
+    bool operator!=(const APIString& rhs) const APPLESEED_NOEXCEPT;
 
     // Return true if the string is empty.
-    bool empty() const;
+    bool empty() const APPLESEED_NOEXCEPT;
 
     // Access the string as a C string.
-    const char* c_str() const;
+    const char* c_str() const APPLESEED_NOEXCEPT;
 
   private:
     const char* m_s;
@@ -93,6 +95,4 @@ inline std::string to_string(const APIString& value)
     return std::string(value.c_str());
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_API_APISTRING_H
+}   // namespace foundation

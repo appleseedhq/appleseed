@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_SPHERICALCOORDINATES_H
-#define APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_SPHERICALCOORDINATES_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
@@ -48,8 +47,9 @@ void unit_vector_to_angles(
     T&                              theta,          // in [0, Pi]
     T&                              phi);           // in [-Pi, Pi]
 
+// Shift spherical coordinates by given amounts.
 template <typename T>
-inline void shift_angles(
+void shift_angles(
     T&                              theta,          // in [0, Pi]
     T&                              phi,            // in [-Pi, Pi]
     const T                         theta_shift,    // arbitrary, in radians
@@ -151,6 +151,4 @@ inline void unit_square_to_angles(
     phi = Pi<T>() * (T(2.0) * u - T(1.0));
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_SPHERICALCOORDINATES_H
+}   // namespace renderer

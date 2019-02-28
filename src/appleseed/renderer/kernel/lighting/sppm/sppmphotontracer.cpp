@@ -70,7 +70,6 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/timers.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/arena.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job.h"
@@ -240,7 +239,7 @@ namespace
             SPPMPhotonVector&               global_photons,
             const size_t                    photon_begin,
             const size_t                    photon_end,
-            const size_t                    pass_hash,
+            const uint32                    pass_hash,
             IAbortSwitch&                   abort_switch)
           : m_scene(scene)
           , m_photon_targets(photon_targets)
@@ -253,7 +252,6 @@ namespace
           , m_tracer(
                 m_scene,
                 m_intersector,
-                m_texture_cache,
                 m_shadergroup_exec,
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations,
@@ -295,7 +293,13 @@ namespace
             for (size_t i = m_photon_begin; i < m_photon_end && !m_abort_switch.is_aborted(); ++i)
             {
                 m_arena.clear();
-                trace_light_photon(shading_context, sampling_context);
+
+                // Generate a uniform sample in [0,1)^4.
+                const Vector4f light_sample_s = sampling_context.next2<Vector4f>();
+
+                // Trace a photon.
+                SamplingContext child_sampling_context(sampling_context);
+                trace_light_photon(shading_context, child_sampling_context, light_sample_s);
             }
 
             m_global_photons.append(m_local_photons);
@@ -315,7 +319,7 @@ namespace
         SPPMPhotonVector&           m_global_photons;
         const size_t                m_photon_begin;
         const size_t                m_photon_end;
-        const size_t                m_pass_hash;
+        const uint32                m_pass_hash;
         IAbortSwitch&               m_abort_switch;
         SPPMPhotonVector            m_local_photons;
         float                       m_shutter_open_begin_time;
@@ -323,16 +327,16 @@ namespace
 
         void trace_light_photon(
             const ShadingContext&   shading_context,
-            SamplingContext&        sampling_context)
+            SamplingContext&        sampling_context,
+            const Vector4f&         light_sample_s)
         {
-            const Vector4f s = sampling_context.next2<Vector4f>();
             LightSample light_sample;
             m_light_sampler.sample(
                 ShadingRay::Time::create_with_normalized_time(
-                    s[0],
+                    light_sample_s[0],
                     m_shutter_open_begin_time,
                     m_shutter_close_end_time),
-                Vector3f(s[1], s[2], s[3]),
+                Vector3f(light_sample_s[1], light_sample_s[2], light_sample_s[3]),
                 light_sample);
 
             if (light_sample.m_triangle)
@@ -381,7 +385,7 @@ namespace
             }
 
             // Sample the EDF.
-            SamplingContext child_sampling_context = sampling_context.split(2, 1);
+            sampling_context.split_in_place(2, 1);
             Vector3f emission_direction;
             Spectrum edf_value(Spectrum::Illuminance);
             float edf_prob;
@@ -390,7 +394,7 @@ namespace
                 edf->evaluate_inputs(shading_context, light_shading_point),
                 Vector3f(light_sample.m_geometric_normal),
                 Basis3f(Vector3f(light_sample.m_shading_normal)),
-                child_sampling_context.next2<Vector2f>(),
+                sampling_context.next2<Vector2f>(),
                 emission_direction,
                 edf_value,
                 edf_prob);
@@ -409,12 +413,12 @@ namespace
                 m_intersector);
 
             // Build the photon ray.
-            child_sampling_context.split_in_place(1, 1);
+            sampling_context.split_in_place(1, 1);
             const ShadingRay ray(
                 light_sample.m_point,
                 Vector3d(emission_direction),
                 ShadingRay::Time::create_with_normalized_time(
-                    child_sampling_context.next2<float>(),
+                    sampling_context.next2<float>(),
                     m_shutter_open_begin_time,
                     m_shutter_close_end_time),
                 VisibilityFlags::LightRay,
@@ -444,11 +448,7 @@ namespace
                 edf->get_light_near_start());               // don't illuminate points closer than the light near start value
 
             // Trace the photon path.
-            path_tracer.trace(
-                child_sampling_context,
-                shading_context,
-                ray,
-                &parent_shading_point);
+            path_tracer.trace(sampling_context, shading_context, ray, &parent_shading_point);
         }
 
         void trace_non_physical_light_photon(
@@ -457,14 +457,14 @@ namespace
             const LightSample&      light_sample)
         {
             // Sample the light.
-            SamplingContext child_sampling_context = sampling_context.split(2, 1);
+            sampling_context.split_in_place(2, 1);
             Vector3d emission_position, emission_direction;
             Spectrum light_value(Spectrum::Illuminance);
             float light_prob;
             light_sample.m_light->sample(
                 shading_context,
                 light_sample.m_light_transform,
-                child_sampling_context.next2<Vector2d>(),
+                sampling_context.next2<Vector2d>(),
                 m_photon_targets,
                 emission_position,
                 emission_direction,
@@ -476,12 +476,12 @@ namespace
             initial_flux /= light_sample.m_probability * light_prob * m_params.m_light_photon_count;
 
             // Build the photon ray.
-            child_sampling_context.split_in_place(1, 1);
+            sampling_context.split_in_place(1, 1);
             const ShadingRay ray(
                 emission_position,
                 emission_direction,
                 ShadingRay::Time::create_with_normalized_time(
-                    child_sampling_context.next2<float>(),
+                    sampling_context.next2<float>(),
                     m_shutter_open_begin_time,
                     m_shutter_close_end_time),
                 VisibilityFlags::LightRay,
@@ -510,10 +510,7 @@ namespace
                 m_params.m_max_iterations);
 
             // Trace the photon path.
-            path_tracer.trace(
-                child_sampling_context,
-                shading_context,
-                ray);
+            path_tracer.trace(sampling_context, shading_context, ray);
         }
     };
 
@@ -529,7 +526,6 @@ namespace
         EnvironmentPhotonTracingJob(
             const Scene&                scene,
             const LightTargetArray&     photon_targets,
-            const ForwardLightSampler&  light_sampler,
             const TraceContext&         trace_context,
             TextureStore&               texture_store,
             OIIOTextureSystem&          oiio_texture_system,
@@ -538,12 +534,11 @@ namespace
             SPPMPhotonVector&           global_photons,
             const size_t                photon_begin,
             const size_t                photon_end,
-            const size_t                pass_hash,
+            const uint32                pass_hash,
             IAbortSwitch&               abort_switch)
           : m_scene(scene)
           , m_photon_targets(photon_targets)
           , m_env_edf(*scene.get_environment()->get_environment_edf())
-          , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache)
           , m_oiio_texture_system(oiio_texture_system)
@@ -552,7 +547,6 @@ namespace
           , m_tracer(
                 m_scene,
                 m_intersector,
-                m_texture_cache,
                 m_shadergroup_exec,
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations,
@@ -599,7 +593,13 @@ namespace
             for (size_t i = m_photon_begin; i < m_photon_end && !m_abort_switch.is_aborted(); ++i)
             {
                 m_arena.clear();
-                trace_env_photon(shading_context, sampling_context);
+
+                // Generate a uniform sample in [0,1)^2.
+                const Vector2f env_edf_s = sampling_context.next2<Vector2f>();
+
+                // Trace a photon.
+                SamplingContext child_sampling_context(sampling_context);
+                trace_env_photon(shading_context, child_sampling_context, env_edf_s);
             }
 
             m_global_photons.append(m_local_photons);
@@ -609,7 +609,6 @@ namespace
         const Scene&                m_scene;
         const LightTargetArray&     m_photon_targets;
         const EnvironmentEDF&       m_env_edf;
-        const ForwardLightSampler&  m_light_sampler;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
         OIIOTextureSystem&          m_oiio_texture_system;
@@ -620,7 +619,7 @@ namespace
         SPPMPhotonVector&           m_global_photons;
         const size_t                m_photon_begin;
         const size_t                m_photon_end;
-        const size_t                m_pass_hash;
+        const uint32                m_pass_hash;
         IAbortSwitch&               m_abort_switch;
         SPPMPhotonVector            m_local_photons;
         float                       m_shutter_open_begin_time;
@@ -632,7 +631,8 @@ namespace
 
         void trace_env_photon(
             const ShadingContext&   shading_context,
-            SamplingContext&        sampling_context)
+            SamplingContext&        sampling_context,
+            const Vector2f&         env_edf_s)
         {
             // Sample the environment.
             Vector3f outgoing;
@@ -640,13 +640,14 @@ namespace
             float env_edf_prob;
             m_env_edf.sample(
                 shading_context,
-                sampling_context.next2<Vector2f>(),
-                outgoing,                                   // points toward the environment
+                env_edf_s,
+                outgoing,   // points toward the environment
                 env_edf_value,
                 env_edf_prob);
 
-            SamplingContext child_sampling_context = sampling_context.split(2, 1);
-            Vector2d s = child_sampling_context.next2<Vector2d>();
+            // Generate a uniform sample in [0,1)^2.
+            sampling_context.split_in_place(2, 1);
+            Vector2d s = sampling_context.next2<Vector2d>();
 
             // Compute the center and radius of the target disk.
             Vector3d disk_center;
@@ -676,7 +677,6 @@ namespace
                 - m_safe_scene_diameter * basis.get_normal()
                 + disk_radius * p[0] * basis.get_tangent_u() +
                 + disk_radius * p[1] * basis.get_tangent_v();
-
             const float disk_point_prob = 1.0f / (Pi<float>() * square(static_cast<float>(disk_radius)));
 
             // Compute the initial particle weight.
@@ -684,19 +684,19 @@ namespace
             initial_flux /= disk_point_prob * env_edf_prob * m_params.m_env_photon_count;
 
             // Build the photon ray.
-            child_sampling_context.split_in_place(1, 1);
+            sampling_context.split_in_place(1, 1);
             const ShadingRay ray(
                 ray_origin,
                 -Vector3d(outgoing),
                 ShadingRay::Time::create_with_normalized_time(
-                    child_sampling_context.next2<float>(),
+                    sampling_context.next2<float>(),
                     m_shutter_open_begin_time,
                     m_shutter_close_end_time),
                 VisibilityFlags::LightRay,
                 0);
 
             // Build the path tracer.
-            const bool cast_indirect_light = true;          // right now environments always cast indirect light
+            const bool cast_indirect_light = true;  // right now environments always cast indirect light
             PathVisitor path_visitor(
                 initial_flux,
                 m_params,
@@ -705,7 +705,7 @@ namespace
                 m_params.m_enable_caustics,
                 m_local_photons);
             VolumeVisitor volume_visitor;
-            PathTracer<PathVisitor, VolumeVisitor, true> path_tracer(      // true = adjoint
+            PathTracer<PathVisitor, VolumeVisitor, true> path_tracer(   // true = adjoint
                 path_visitor,
                 volume_visitor,
                 m_params.m_photon_tracing_rr_min_path_length,
@@ -718,10 +718,7 @@ namespace
                 m_params.m_max_iterations);
 
             // Trace the photon path.
-            path_tracer.trace(
-                child_sampling_context,
-                shading_context,
-                ray);
+            path_tracer.trace(sampling_context, shading_context, ray);
         }
     };
 }
@@ -811,7 +808,7 @@ namespace
 
 void SPPMPhotonTracer::trace_photons(
     SPPMPhotonVector&       photons,
-    const size_t            pass_hash,
+    const uint32            pass_hash,
     JobQueue&               job_queue,
     IAbortSwitch&           abort_switch)
 {
@@ -878,7 +875,7 @@ void SPPMPhotonTracer::trace_photons(
 void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
     const LightTargetArray& photon_targets,
     SPPMPhotonVector&       photons,
-    const size_t            pass_hash,
+    const uint32            pass_hash,
     JobQueue&               job_queue,
     size_t&                 job_count,
     size_t&                 emitted_photon_count,
@@ -918,7 +915,7 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
 void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
     const LightTargetArray& photon_targets,
     SPPMPhotonVector&       photons,
-    const size_t            pass_hash,
+    const uint32            pass_hash,
     JobQueue&               job_queue,
     size_t&                 job_count,
     size_t&                 emitted_photon_count,
@@ -938,7 +935,6 @@ void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
             new EnvironmentPhotonTracingJob(
                 m_scene,
                 photon_targets,
-                m_light_sampler,
                 m_trace_context,
                 m_texture_store,
                 m_oiio_texture_system,

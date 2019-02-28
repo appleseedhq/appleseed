@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_SETTINGSKEYS_H
-#define APPLESEED_STUDIO_UTILITY_SETTINGSKEYS_H
+#pragma once
 
 // Defines are sometimes more convenient than C++ constants...
 
@@ -37,6 +36,7 @@
 
 #define SETTINGS_MESSAGE_VERBOSITY                  "message_verbosity"
 #define SETTINGS_SAMPLING_MODE                      "sampling_mode"
+#define SETTINGS_RENDERING_THREADS                  "rendering_threads"
 #define SETTINGS_AUTOSAVE                           "autosave"
 #define SETTINGS_PRINT_FINAL_AVERAGE_LUMINANCE      "print_final_average_luminance"
 
@@ -52,5 +52,3 @@
 
 #define SETTINGS_RENDER_REGION_TRIGGERS_RENDERING   "ui.render_region.triggers_rendering"
 #define SETTINGS_WATCH_FILE_CHANGES                 "ui.watch_file_changes"
-
-#endif  // !APPLESEED_STUDIO_UTILITY_SETTINGSKEYS_H

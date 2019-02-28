@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_LINENUMBERAREA_H
-#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_LINENUMBERAREA_H
+#pragma once
 
 // Qt headers.
 #include <QObject>
@@ -63,7 +62,5 @@ class LineNumberArea
     int area_width();
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_LINENUMBERAREA_H
+}   // namespace studio
+}   // namespace appleseed

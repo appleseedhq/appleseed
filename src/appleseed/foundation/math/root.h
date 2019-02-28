@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_ROOT_H
-#define APPLESEED_FOUNDATION_MATH_ROOT_H
+#pragma once
 
 // Standard headers.
 #include <cmath>
@@ -219,6 +218,4 @@ void find_multiple_roots_newton(
     }
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_ROOT_H
+}   // namespace foundation

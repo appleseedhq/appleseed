@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017-2018 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017-2019 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,16 +28,18 @@
 
 shader as_plastic
 [[
-    string as_maya_node_name = "asPlastic",
-    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string as_blender_node_name = "asPlastic",
-    string as_blender_category = "shader",
     string icon = "asPlastic.png",
     string help = "A plastic material, layering a diffuse and specular terms.",
-    int as_maya_type_id = 0x001279d7,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_plastic.html#label-as-plastic",
+
+    string as_node_name = "asPlastic",
+    string as_category = "shader",
+
     string as_max_class_id = "1525511449 941587614",
     string as_max_plugin_type = "material",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_plastic.html#label-as-plastic"
+
+    int as_maya_type_id = 0x001279d7,
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch"
 ]]
 (
     color in_color = color(0.5)
@@ -172,13 +174,13 @@ shader as_plastic
         string page = "Matte Opacity",
         int gafferNoduleLayoutVisible = 0
     ]],
-    int in_maximum_ray_depth = 4
+    int in_maximum_ray_depth = 100
     [[
         string as_maya_attribute_name = "maximumRayDepth",
         string as_maya_attribute_short_name = "mr",
         int min = 0,
         int max = 100,
-        int softmax = 8,
+        int softmax = 16,
         string label = "Ray Depth",
         string page = "Advanced",
         int as_maya_attribute_connectable = 0,
@@ -219,7 +221,20 @@ shader as_plastic
         out_outColor += out_outTransparency;
     }
 
-    if (raytype("shadow") || raytype("transparency"))
+    if (raytype("transparency"))
+    {
+        if (in_enable_matte)
+        {
+            out_outMatteOpacity = as_matte(
+                in_matte_opacity_color,
+                in_matte_opacity);
+
+            out_outColor += out_outMatteOpacity;
+        }
+        return;
+    }
+
+    if (raytype("shadow"))
     {
         return;
     }
@@ -230,14 +245,6 @@ shader as_plastic
     if (!status || ray_depth > in_maximum_ray_depth)
     {
         return;
-    }
-
-    if (in_enable_matte)
-    {
-        out_outMatteOpacity = in_matte_opacity *
-            in_matte_opacity_color * holdout();
-
-        out_outColor += out_outMatteOpacity;
     }
 
     if (in_transparency == 1.0)

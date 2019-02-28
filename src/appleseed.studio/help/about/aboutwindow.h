@@ -27,37 +27,41 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_HELP_ABOUT_ABOUTWINDOW_H
-#define APPLESEED_STUDIO_HELP_ABOUT_ABOUTWINDOW_H
+#pragma once
+
+// appleseed.studio headers.
+#include "utility/windowbase.h"
 
 // Qt headers.
 #include <QObject>
-#include <QWidget>
 
 // Forward declarations.
 namespace Ui { class AboutWindow; }
+class QWidget;
 
 namespace appleseed {
 namespace studio {
 
 class AboutWindow
-  : public QWidget
+  : public WindowBase
 {
     Q_OBJECT
 
   public:
+    // Constructor.
     explicit AboutWindow(QWidget* parent = nullptr);
 
+    // Destructor.
     ~AboutWindow() override;
 
   private:
     // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
     Ui::AboutWindow* m_ui;
 
-    void set_version_strings();
+    void set_library_version();
+    void set_library_features();
+    void set_third_party_libraries_information();
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_HELP_ABOUT_ABOUTWINDOW_H
+}   // namespace studio
+}   // namespace appleseed

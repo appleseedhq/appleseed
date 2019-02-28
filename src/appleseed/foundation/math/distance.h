@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_DISTANCE_H
-#define APPLESEED_FOUNDATION_MATH_DISTANCE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
@@ -133,7 +132,7 @@ inline T square_distance(
 
     for (size_t i = 0; i < N; ++i)
     {
-        // todo: reimplement without branches, measure performances.
+        // todo: reimplement without branches, measure performance.
         if (p[i] < bbox.min[i])
             d += square(bbox.min[i] - p[i]);
         else if (p[i] > bbox.max[i])
@@ -151,6 +150,4 @@ inline T square_distance(
     return square_distance(p, bbox);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_DISTANCE_H
+}   // namespace foundation

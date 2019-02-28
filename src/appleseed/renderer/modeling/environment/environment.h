@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENT_ENVIRONMENT_H
-#define APPLESEED_RENDERER_MODELING_ENVIRONMENT_ENVIRONMENT_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/connectableentity.h"
@@ -145,6 +144,4 @@ inline EnvironmentShader* Environment::get_environment_shader() const
     return m_environment_shader;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENT_ENVIRONMENT_H
+}   // namespace renderer

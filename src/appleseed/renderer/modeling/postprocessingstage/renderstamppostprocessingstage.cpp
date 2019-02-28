@@ -70,8 +70,8 @@ namespace
     {
       public:
         RenderStampPostProcessingStage(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : PostProcessingStage(name, params)
         {
         }
@@ -104,8 +104,9 @@ namespace
             // Render stamp settings.
             const auto Font = TextRenderer::Font::UbuntuL;
             const float FontHeight = 14.0f;
-            const Color4f FontColor(0.8f, 0.8f, 0.8f, 1.0f);
-            const Color4f BackgroundColor(0.0f, 0.0f, 0.0f, 0.9f);
+            const Color4f FontColor(srgb_to_linear_rgb(Color3f(0.9f, 0.9f, 0.9f)), 1.0f);   // linear RGB
+            const Color4f BackgroundColor(0.0f, 0.0f, 0.0f, 0.95f);                         // linear RGB
+            const Color4f LogoTint(1.0f, 1.0f, 1.0f, 0.8f);                                 // linear RGB
             const float MarginH = 6.0f;
             const float MarginV = 4.0f;
 
@@ -117,7 +118,7 @@ namespace
             string text = m_format_string;
             text = replace(text, "{lib-name}", Appleseed::get_lib_name());
             text = replace(text, "{lib-version}", Appleseed::get_lib_version());
-            text = replace(text, "{lib-variant}", Appleseed::get_lib_variant());
+            text = replace(text, "{lib-cpu-features}", Appleseed::get_lib_cpu_features());
             text = replace(text, "{lib-config}", Appleseed::get_lib_configuration());
             text = replace(text, "{lib-build-date}", Appleseed::get_lib_compilation_date());
             text = replace(text, "{lib-build-time}", Appleseed::get_lib_compilation_time());
@@ -144,7 +145,6 @@ namespace
             // Draw the string into the image.
             TextRenderer::draw_string(
                 frame.image(),
-                ColorSpaceLinearRGB,
                 Font,
                 FontHeight,
                 FontColor,
@@ -161,8 +161,8 @@ namespace
                 appleseed_seeds_16,
                 appleseed_seeds_16_width,
                 appleseed_seeds_16_height,
-                PixelFormatUInt8,
-                Color4f(1.0f, 1.0f, 1.0f, 0.8f));
+                PixelFormatFloat,
+                LogoTint);
         }
 
       private:

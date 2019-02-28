@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SCENE_BASEGROUP_H
-#define APPLESEED_RENDERER_MODELING_SCENE_BASEGROUP_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/scene/containers.h"
@@ -45,6 +44,7 @@ namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class OnRenderBeginRecorder; }
 namespace renderer      { class OSLShadingSystem; }
 namespace renderer      { class Project; }
+namespace renderer      { class ShaderCompiler; }
 
 namespace renderer
 {
@@ -56,12 +56,6 @@ namespace renderer
 class APPLESEED_DLLSYMBOL BaseGroup
 {
   public:
-    // Constructor.
-    explicit BaseGroup(Entity* parent = nullptr);
-
-    // Destructor.
-    ~BaseGroup();
-
     // Access the colors.
     ColorContainer& colors() const;
 
@@ -80,6 +74,7 @@ class APPLESEED_DLLSYMBOL BaseGroup
     // Create OSL shader groups and optimize them.
     bool create_optimized_osl_shader_groups(
         OSLShadingSystem&           shading_system,
+        const ShaderCompiler*       shader_compiler,
         foundation::IAbortSwitch*   abort_switch = nullptr);
 
     // Release internal OSL shader groups.
@@ -111,11 +106,16 @@ class APPLESEED_DLLSYMBOL BaseGroup
         OnFrameBeginRecorder&       recorder,
         foundation::IAbortSwitch*   abort_switch = nullptr);
 
+  protected:
+    // Constructor.
+    explicit BaseGroup(Entity* parent = nullptr);
+
+    // Destructor.
+    ~BaseGroup();
+
   private:
     struct Impl;
     Impl* impl;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SCENE_BASEGROUP_H
+}   // namespace renderer

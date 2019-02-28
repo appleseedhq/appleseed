@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_ZIP_H
-#define APPLESEED_FOUNDATION_UTILITY_ZIP_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -95,6 +94,4 @@ std::vector<std::string> get_filenames_with_extension_from_zip(
 
 std::set<std::string> recursive_ls(const boost::filesystem::path& dir);
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_ZIP_H
+}   // namespace foundation

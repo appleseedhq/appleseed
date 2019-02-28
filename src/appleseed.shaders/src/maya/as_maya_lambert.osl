@@ -32,7 +32,7 @@
 
 shader as_maya_lambert
 [[
-    string as_maya_node_name = "lambert"
+    string as_node_name = "lambert"
 ]]
 (
     color in_color = color(0.5)
@@ -175,7 +175,7 @@ shader as_maya_lambert
         {
             transparency = mix(
                 transparency,
-                abs(dot(-normalize(I), normalize(in_normalCamera))),
+                abs(dot(-I, normalize(in_normalCamera))),
                 in_shadowAttenuation);
         }
 

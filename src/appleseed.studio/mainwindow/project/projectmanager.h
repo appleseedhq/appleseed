@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTMANAGER_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTMANAGER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
@@ -119,6 +118,7 @@ class ProjectManager
 
   signals:
     void signal_load_project_async_complete(const QString& filepath, const bool successful);
+    void signal_project_path_changed(const QString& new_filepath);
 
   private slots:
     void slot_load_project_async_complete();
@@ -141,7 +141,5 @@ class ProjectManager
         const renderer::ProjectFileWriter::Options  options);
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTMANAGER_H
+}   // namespace studio
+}   // namespace appleseed

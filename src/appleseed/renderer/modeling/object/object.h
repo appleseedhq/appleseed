@@ -27,16 +27,13 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_OBJECT_OBJECT_H
-#define APPLESEED_RENDERER_MODELING_OBJECT_OBJECT_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/connectableentity.h"
-#include "renderer/modeling/object/regionkit.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/lazy.h"
 #include "foundation/utility/uid.h"
 
 // appleseed.main headers.
@@ -78,9 +75,6 @@ class APPLESEED_DLLSYMBOL Object
 
     // Compute the local space bounding box of the object over the shutter interval.
     virtual GAABB3 compute_local_bbox() const = 0;
-
-    // Return the region kit of the object.
-    virtual foundation::Lazy<RegionKit>& get_region_kit() = 0;
 
     // Access materials slots.
     virtual size_t get_material_slot_count() const = 0;
@@ -128,6 +122,4 @@ inline const Source* Object::get_alpha_map() const
     return m_alpha_map;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_OBJECT_H
+}   // namespace renderer

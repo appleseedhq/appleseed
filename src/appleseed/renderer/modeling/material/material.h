@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_MATERIAL_MATERIAL_H
-#define APPLESEED_RENDERER_MODELING_MATERIAL_MATERIAL_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/connectableentity.h"
@@ -176,6 +175,4 @@ inline const Material::RenderData& Material::get_render_data() const
     return m_render_data;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_MATERIAL_H
+}   // namespace renderer

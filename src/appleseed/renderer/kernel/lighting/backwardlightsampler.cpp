@@ -53,6 +53,37 @@ namespace renderer
 // BackwardLightSampler class implementation.
 //
 
+Dictionary BackwardLightSampler::get_params_metadata()
+{
+    Dictionary metadata;
+
+    metadata.insert(
+        "algorithm",
+        Dictionary()
+            .insert("type", "enum")
+            .insert("values", "cdf|lighttree")
+            .insert("default", "cdf")
+            .insert("label", "Light Sampler")
+            .insert("help", "Light sampling algoritm")
+            .insert(
+                "options",
+                Dictionary()
+                    .insert(
+                        "cdf",
+                        Dictionary()
+                            .insert("label", "CDF")
+                            .insert("help", "Cumulative Distribution Function"))
+                    .insert(
+                        "lighttree",
+                        Dictionary()
+                            .insert("label", "Light Tree")
+                            .insert("help", "Lights organized in a BVH"))));
+
+    metadata.merge(LightSamplerBase::get_params_metadata());
+
+    return metadata;
+}
+
 BackwardLightSampler::BackwardLightSampler(
     const Scene&                        scene,
     const ParamArray&                   params)
@@ -90,7 +121,7 @@ BackwardLightSampler::BackwardLightSampler(
             }
         });
     m_non_physical_light_count = m_non_physical_lights.size();
-    
+
     // Collect all light-emitting triangles.
     collect_emitting_triangles(
         scene.assembly_instances(),
@@ -201,7 +232,6 @@ float BackwardLightSampler::evaluate_pdf(
     const EmittingTriangleKey triangle_key(
         light_shading_point.get_assembly_instance().get_uid(),
         light_shading_point.get_object_instance_index(),
-        light_shading_point.get_region_index(),
         light_shading_point.get_primitive_index());
 
     const auto* triangle_ptr = m_emitting_triangle_hash_table.get(triangle_key);
@@ -218,36 +248,10 @@ float BackwardLightSampler::evaluate_pdf(
                 triangle->m_light_tree_node_index)
             : triangle->m_triangle_prob;
 
-    return triangle_probability * triangle->m_rcp_area;
-}
+    const float pdf = triangle_probability * triangle->m_rcp_area;
+    assert(pdf >= 0.0f);
 
-Dictionary BackwardLightSampler::get_params_metadata()
-{
-    Dictionary metadata;
-
-    metadata.insert(
-        "algorithm",
-        Dictionary()
-            .insert("type", "enum")
-            .insert("values", "cdf|lighttree")
-            .insert("default", "cdf")
-            .insert("label", "Light Sampler")
-            .insert("help", "Light sampling algoritm")
-            .insert(
-                "options",
-                Dictionary()
-                    .insert(
-                        "cdf",
-                        Dictionary()
-                            .insert("label", "CDF")
-                            .insert("help", "Cumulative Distribution Function"))
-                    .insert(
-                        "lighttree",
-                        Dictionary()
-                            .insert("label", "Light Tree")
-                            .insert("help", "Lights organized in a BVH"))));
-
-    return metadata;
+    return pdf;
 }
 
 void BackwardLightSampler::sample_light_tree(

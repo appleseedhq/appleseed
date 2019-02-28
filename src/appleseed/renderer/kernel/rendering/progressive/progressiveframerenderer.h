@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_PROGRESSIVEFRAMERENDERER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_PROGRESSIVEFRAMERENDERER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/iframerenderer.h"
@@ -54,6 +53,9 @@ class ProgressiveFrameRendererFactory
   : public IFrameRendererFactory
 {
   public:
+    // Return parameters metadata.
+    static foundation::Dictionary get_params_metadata();
+
     // Constructor.
     ProgressiveFrameRendererFactory(
         const Project&              project,
@@ -74,9 +76,6 @@ class ProgressiveFrameRendererFactory
         ITileCallbackFactory*       callback_factory,       // may be 0
         const ParamArray&           params);
 
-    // Return the metadata of the progressive frame renderer parameters.
-    static foundation::Dictionary get_params_metadata();
-
   private:
     const Project&                  m_project;
     ISampleGeneratorFactory*        m_generator_factory;
@@ -84,6 +83,4 @@ class ProgressiveFrameRendererFactory
     ParamArray                      m_params;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_PROGRESSIVEFRAMERENDERER_H
+}   // namespace renderer

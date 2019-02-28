@@ -30,7 +30,7 @@
 
 shader as_maya_reverse
 [[
-    string as_maya_node_name = "reverse"
+    string as_node_name = "reverse"
 ]]
 (
     color in_input = color(0)

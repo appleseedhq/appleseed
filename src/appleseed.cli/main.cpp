@@ -29,7 +29,6 @@
 
 // appleseed.cli headers.
 #include "commandlinehandler.h"
-#include "houdinitilecallbacks.h"
 #include "progresstilecallback.h"
 #include "stdouttilecallback.h"
 
@@ -55,6 +54,7 @@
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/filter.h"
 #include "foundation/utility/log.h"
+#include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
@@ -237,51 +237,18 @@ namespace
         print_unit_benchmark_result(result);
     }
 
-    void set_frame_parameter(Project& project, const string& key, const string& value)
+    void apply_rendering_settings_command_line_options(ParamArray& params)
     {
-        const Frame* frame = project.get_frame();
-        assert(frame);
+        if (g_cl.m_disable_autosave.is_set())
+            params.insert_path("autosave", false);
 
-        ParamArray params = frame->get_parameters();
-        params.insert(key, value);
-
-        auto_release_ptr<Frame> new_frame(
-            FrameFactory::create(
-                frame->get_name(),
-                params,
-                frame->aovs()));
-
-        project.set_frame(new_frame);
-    }
-
-    void apply_resolution_command_line_option(Project& project)
-    {
-        if (g_cl.m_resolution.is_set())
+        if (g_cl.m_threads.is_set())
         {
-            const string resolution =
-                  foundation::to_string(g_cl.m_resolution.values()[0]) + ' ' +
-                  foundation::to_string(g_cl.m_resolution.values()[1]);
-
-            set_frame_parameter(project, "resolution", resolution);
+            params.insert_path(
+                "rendering_threads",
+                g_cl.m_threads.value());
         }
-    }
 
-    void apply_crop_window_command_line_option(Project& project)
-    {
-        if (g_cl.m_window.is_set())
-        {
-            const string crop_window =
-                  foundation::to_string(g_cl.m_window.values()[0]) + ' ' +
-                  foundation::to_string(g_cl.m_window.values()[1]) + ' ' +
-                  foundation::to_string(g_cl.m_window.values()[2]) + ' ' +
-                  foundation::to_string(g_cl.m_window.values()[3]);
-
-            set_frame_parameter(project, "crop_window", crop_window);
-        }
-    }
-
-    void apply_samples_command_line_option(ParamArray& params)
-    {
         if (g_cl.m_samples.is_set())
         {
             params.insert_path(
@@ -296,47 +263,23 @@ namespace
                 "adaptive_pixel_renderer.max_samples",
                 g_cl.m_samples.values()[1]);
         }
-    }
 
-    void apply_passes_command_line_option(ParamArray& params)
-    {
         if (g_cl.m_passes.is_set())
         {
             params.insert_path(
-                "generic_frame_renderer.passes",
+                "passes",
                 g_cl.m_passes.values()[0]);
         }
-    }
 
-    void apply_visibility_command_line_options(
-        Assembly&           assembly,
-        const RegExFilter&  show_filter,
-        const RegExFilter&  hide_filter)
-    {
-        for (ObjectInstance& object_instance : assembly.object_instances())
+        if (g_cl.m_override_shading.is_set())
         {
-            if (!show_filter.accepts(object_instance.get_name()) ||
-                hide_filter.accepts(object_instance.get_name()))
-                object_instance.set_vis_flags(VisibilityFlags::Invisible);
+            params.insert_path(
+                "shading_engine.override_shading.mode",
+                g_cl.m_override_shading.value());
         }
-
-        for (Assembly& child_assembly : assembly.assemblies())
-            apply_visibility_command_line_options(child_assembly, show_filter, hide_filter);
     }
 
-    void apply_visibility_command_line_options(
-        Project&            project,
-        const string&       show_regex,
-        const string&       hide_regex)
-    {
-        const RegExFilter show_filter(show_regex.c_str(), RegExFilter::CaseSensitive);
-        const RegExFilter hide_filter(hide_regex.c_str(), RegExFilter::CaseSensitive);
-
-        for (Assembly& assembly : project.get_scene()->assemblies())
-            apply_visibility_command_line_options(assembly, show_filter, hide_filter);
-    }
-
-    void apply_parameter_command_line_options(ParamArray& params)
+    void apply_custom_parameter_command_line_options(ParamArray& params)
     {
         for (size_t i = 0; i < g_cl.m_params.values().size(); ++i)
         {
@@ -353,52 +296,147 @@ namespace
         }
     }
 
-    void apply_command_line_options(Project& project, ParamArray& params)
+    bool apply_frame_command_line_options(Project& project)
     {
-        // Apply --disable-autosave option.
-        if (g_cl.m_disable_autosave.is_set())
-            params.insert_path("autosave", false);
+        const Frame* frame = project.get_frame();
+        assert(frame != nullptr);
 
-        // Apply --threads option.
-        if (g_cl.m_threads.is_set())
+        ParamArray params = frame->get_parameters();
+
+        if (g_cl.m_resolution.is_set())
         {
-            params.insert_path(
-                "rendering_threads",
-                g_cl.m_threads.value());
+            const string resolution =
+                  foundation::to_string(g_cl.m_resolution.values()[0]) + ' ' +
+                  foundation::to_string(g_cl.m_resolution.values()[1]);
+            params.insert("resolution", resolution);
         }
 
-        // Apply --resolution option.
-        apply_resolution_command_line_option(project);
-
-        // Apply --window option.
-        apply_crop_window_command_line_option(project);
-
-        // Apply --samples option.
-        apply_samples_command_line_option(params);
-
-        // Apply --passes option.
-        apply_passes_command_line_option(params);
-
-        // Apply --override-shading option.
-        if (g_cl.m_override_shading.is_set())
+        if (g_cl.m_window.is_set())
         {
-            params.insert_path(
-                "shading_engine.override_shading.mode",
-                g_cl.m_override_shading.value());
+            const string crop_window =
+                  foundation::to_string(g_cl.m_window.values()[0]) + ' ' +
+                  foundation::to_string(g_cl.m_window.values()[1]) + ' ' +
+                  foundation::to_string(g_cl.m_window.values()[2]) + ' ' +
+                  foundation::to_string(g_cl.m_window.values()[3]);
+            params.insert("crop_window", crop_window);
         }
 
-        // Apply --show-object-instances and --hide-object-instances options.
-        if (g_cl.m_show_object_instances.is_set() ||
-            g_cl.m_hide_object_instances.is_set())
+        if (g_cl.m_noise_seed.is_set())
         {
-            apply_visibility_command_line_options(
-                project,
-                g_cl.m_show_object_instances.is_set() ? g_cl.m_show_object_instances.value() : ".*",        // match everything
-                g_cl.m_hide_object_instances.is_set() ? g_cl.m_hide_object_instances.value() : "(?!)");     // match nothing
+            const uint32 noise_seed = static_cast<uint32>(g_cl.m_noise_seed.value());
+            params.insert("noise_seed", noise_seed);
         }
 
-        // Apply --parameter options.
-        apply_parameter_command_line_options(params);
+        if (g_cl.m_output.is_set())
+        {
+            const char* file_path = g_cl.m_output.value().c_str();
+            params.insert("output_path", file_path);
+        }
+
+        if (g_cl.m_checkpoint_create.is_set())
+        {
+            params.insert("checkpoint_create", true);
+
+            if (g_cl.m_checkpoint_create.values().empty() && !g_cl.m_output.is_set())
+            {
+                LOG_ERROR(
+                    g_logger,
+                    "output path must be specified if no path is given for %s",
+                    g_cl.m_checkpoint_create.get_name().c_str());
+                return false;
+            }
+
+            params.insert(
+                "checkpoint_create_path",
+                !g_cl.m_checkpoint_create.values().empty()
+                    ? g_cl.m_checkpoint_create.value()
+                    : "");
+        }
+
+        if (g_cl.m_checkpoint_resume.is_set())
+        {
+            params.insert("checkpoint_resume", true);
+
+            if (g_cl.m_checkpoint_resume.values().empty() && !g_cl.m_output.is_set())
+            {
+                LOG_ERROR(
+                    g_logger,
+                    "output path must be specified if no path is given for %s",
+                    g_cl.m_checkpoint_resume.get_name().c_str());
+                return false;
+            }
+
+            params.insert(
+                "checkpoint_resume_path",
+                !g_cl.m_checkpoint_resume.values().empty()
+                    ? g_cl.m_checkpoint_resume.value()
+                    : "");
+        }
+
+        if (g_cl.m_passes.is_set())
+            params.insert_path("passes", g_cl.m_passes.values()[0]);
+
+        auto_release_ptr<Frame> new_frame(
+            FrameFactory::create(
+                frame->get_name(),
+                params,
+                frame->aovs()));
+
+        project.set_frame(new_frame);
+
+        return true;
+    }
+
+    void apply_visibility_command_line_options_recursive(
+        Assembly&           assembly,
+        const RegExFilter&  show_filter,
+        const RegExFilter&  hide_filter)
+    {
+        for (ObjectInstance& object_instance : assembly.object_instances())
+        {
+            if (!show_filter.accepts(object_instance.get_name()) ||
+                hide_filter.accepts(object_instance.get_name()))
+                object_instance.set_vis_flags(VisibilityFlags::Invisible);
+        }
+
+        for (Assembly& child_assembly : assembly.assemblies())
+            apply_visibility_command_line_options_recursive(child_assembly, show_filter, hide_filter);
+    }
+
+    void apply_visibility_command_line_options(Project& project)
+    {
+        if (g_cl.m_show_object_instances.is_set() || g_cl.m_hide_object_instances.is_set())
+        {
+            const string show_regex =
+                g_cl.m_show_object_instances.is_set()
+                    ? g_cl.m_show_object_instances.value()
+                    : ".*";     // match everything
+
+            const string hide_regex =
+                g_cl.m_hide_object_instances.is_set()
+                    ? g_cl.m_hide_object_instances.value()
+                    : "(?!)";   // match nothing
+
+            const RegExFilter show_filter(show_regex.c_str(), RegExFilter::CaseSensitive);
+            const RegExFilter hide_filter(hide_regex.c_str(), RegExFilter::CaseSensitive);
+
+            for (Assembly& assembly : project.get_scene()->assemblies())
+                apply_visibility_command_line_options_recursive(assembly, show_filter, hide_filter);
+        }
+    }
+
+    bool apply_command_line_options(Project& project, ParamArray& params)
+    {
+        // Apply command line options that alter renderer settings.
+        apply_rendering_settings_command_line_options(params);
+        apply_custom_parameter_command_line_options(params);
+
+        // Apply command line options that alter the project.
+        if (!apply_frame_command_line_options(project))
+            return false;
+        apply_visibility_command_line_options(project);
+
+        return true;
     }
 
 #if defined __APPLE__ || defined _WIN32
@@ -466,9 +504,7 @@ namespace
         params.merge(configuration->get_parameters());
 
         // Apply the command line options.
-        apply_command_line_options(project, params);
-
-        return true;
+        return apply_command_line_options(project, params);
     }
 
     bool is_progressive_render(const ParamArray& params)
@@ -491,23 +527,7 @@ namespace
 
         // Create the tile callback factory.
         unique_ptr<ITileCallbackFactory> tile_callback_factory;
-        if (g_cl.m_send_to_mplay.is_set())
-        {
-            tile_callback_factory.reset(
-                new MPlayTileCallbackFactory(
-                    project_filename.c_str(),
-                    is_progressive_render(params),
-                    g_logger));
-        }
-        else if (g_cl.m_send_to_hrmanpipe.is_set())
-        {
-            tile_callback_factory.reset(
-                new HRmanPipeTileCallbackFactory(
-                    g_cl.m_send_to_hrmanpipe.value(),
-                    is_progressive_render(params),
-                    g_logger));
-        }
-        else if (g_cl.m_send_to_stdout.is_set())
+        if (g_cl.m_send_to_stdout.is_set())
         {
             tile_callback_factory.reset(
                 new StdOutTileCallbackFactory(
@@ -523,11 +543,15 @@ namespace
             }
         }
 
+        SearchPaths resource_search_paths;
+        Application::initialize_resource_search_paths(resource_search_paths);
+
         // Create the master renderer.
         DefaultRendererController renderer_controller;
         MasterRenderer renderer(
             project.ref(),
             params,
+            resource_search_paths,
             &renderer_controller,
             tile_callback_factory.get());
 
@@ -638,11 +662,15 @@ namespace
         if (!configure_project(project.ref(), params))
             return false;
 
+        SearchPaths resource_search_paths;
+        Application::initialize_resource_search_paths(resource_search_paths);
+
         // Create the master renderer.
         DefaultRendererController renderer_controller;
         MasterRenderer renderer(
             project.ref(),
             params,
+            resource_search_paths,
             &renderer_controller);
 
         double total_time_seconds, render_time_seconds;
@@ -686,7 +714,7 @@ namespace
 // Entry point of appleseed.cli.
 //
 
-int main(int argc, const char* argv[])
+int main(int argc, char* argv[])
 {
     // Enable memory tracking immediately as to catch as many leaks as possible.
     start_memory_tracking();

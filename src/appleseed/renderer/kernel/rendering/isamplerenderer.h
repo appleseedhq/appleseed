@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_ISAMPLERENDERER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_ISAMPLERENDERER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -86,6 +85,4 @@ class ISampleRendererFactory
     virtual ISampleRenderer* create(const size_t thread_index) = 0;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_ISAMPLERENDERER_H
+}   // namespace renderer

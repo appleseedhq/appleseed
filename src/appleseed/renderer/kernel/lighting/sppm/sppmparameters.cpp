@@ -109,6 +109,8 @@ SPPMParameters::SPPMParameters(const ParamArray& params)
   , m_photon_tracing_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("photon_tracing_rr_min_path_length", 6)))
   , m_path_tracing_max_bounces(fixup_bounces(params.get_optional<int>("path_tracing_max_bounces", -1)))
   , m_path_tracing_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("path_tracing_rr_min_path_length", 6)))
+  , m_path_tracing_max_ray_intensity(params.get_optional<float>("path_tracing_max_ray_intensity", 0.0f))
+  , m_path_tracing_has_max_ray_intensity(params.strings().exist("path_tracing_max_ray_intensity"))
   , m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
   , m_max_iterations(params.get_optional<size_t>("max_iterations", 100))
   , m_initial_radius_percents(params.get_optional<float>("initial_radius", 0.1f))
@@ -152,6 +154,7 @@ void SPPMParameters::print() const
     RENDERER_LOG_INFO(
         "sppm path tracing settings:\n"
         "  max bounces                   %s\n"
+        "  max ray intensity             %s\n"
         "  russian roulette start bounce %s\n"
         "  initial radius                %s%%\n"
         "  alpha                         %s\n"
@@ -159,6 +162,7 @@ void SPPMParameters::print() const
         "  dl light samples              %s\n"
         "  dl light threshold            %s",
         m_path_tracing_max_bounces == ~size_t(0) ? "unlimited" : pretty_uint(m_path_tracing_max_bounces).c_str(),
+        m_path_tracing_has_max_ray_intensity ? pretty_scalar(m_path_tracing_max_ray_intensity).c_str() : "unlimited",
         m_path_tracing_rr_min_path_length == ~size_t(0) ? "unlimited" : pretty_uint(m_path_tracing_rr_min_path_length).c_str(),
         pretty_scalar(m_initial_radius_percents, 3).c_str(),
         pretty_scalar(m_alpha, 1).c_str(),

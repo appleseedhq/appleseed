@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_EDF_EDFTRAITS_H
-#define APPLESEED_RENDERER_MODELING_EDF_EDFTRAITS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/edf/edf.h"
@@ -84,6 +83,4 @@ struct EntityTraits<EDF>
     }
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_EDF_EDFTRAITS_H
+}   // namespace renderer

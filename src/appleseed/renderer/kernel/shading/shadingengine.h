@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGENGINE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -43,6 +42,7 @@
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class AOVAccumulatorContainer; }
 namespace renderer      { class OnFrameBeginRecorder; }
+namespace renderer      { class OnRenderBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class PixelContext; }
 namespace renderer      { class Project; }
@@ -63,15 +63,25 @@ class ShadingEngine
     // Constructor.
     explicit ShadingEngine(const ParamArray& params);
 
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
+    // This method is called before rendering begins, and whenever rendering is reinitialized
+    // (i.e. because an entity has been edited). At this point, all entities inputs are bound.
+    // Returns true on success, or false if an error occurred or if the abort switch was triggered.
+    bool on_render_begin(
+        const Project&              project,
+        OnRenderBeginRecorder&      recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr);
+
+    // This method is called before rendering a frame begins, and whenever rendering is restarted
+    // (i.e. because the camera has been moved). At this point, all entities inputs are bound.
+    // Returns true on success, or false if an error occurred or if the abort switch was triggered.
     bool on_frame_begin(
         const Project&              project,
         OnFrameBeginRecorder&       recorder,
         foundation::IAbortSwitch*   abort_switch = nullptr);
 
     // Shade a given intersection point.
-    void shade(
+    // Returns true if the path should be terminated.
+    bool shade(
         SamplingContext&            sampling_context,
         const PixelContext&         pixel_context,
         const ShadingContext&       shading_context,
@@ -84,7 +94,7 @@ class ShadingEngine
 
     void create_diagnostic_surface_shader(const ParamArray& params);
 
-    void shade_hit_point(
+    bool shade_hit_point(
         SamplingContext&            sampling_context,
         const PixelContext&         pixel_context,
         const ShadingContext&       shading_context,
@@ -106,7 +116,7 @@ class ShadingEngine
 // ShadingEngine class implementation.
 //
 
-inline void ShadingEngine::shade(
+inline bool ShadingEngine::shade(
     SamplingContext&            sampling_context,
     const PixelContext&         pixel_context,
     const ShadingContext&       shading_context,
@@ -116,28 +126,25 @@ inline void ShadingEngine::shade(
 {
     if (shading_point.hit_surface())
     {
-        return
-            shade_hit_point(
-                sampling_context,
-                pixel_context,
-                shading_context,
-                shading_point,
-                aov_accumulators,
-                shading_result);
+        return shade_hit_point(
+            sampling_context,
+            pixel_context,
+            shading_context,
+            shading_point,
+            aov_accumulators,
+            shading_result);
     }
     else
     {
-        return
-            shade_environment(
-                sampling_context,
-                pixel_context,
-                shading_context,
-                shading_point,
-                aov_accumulators,
-                shading_result);
+        shade_environment(
+            sampling_context,
+            pixel_context,
+            shading_context,
+            shading_point,
+            aov_accumulators,
+            shading_result);
+        return true;
     }
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGENGINE_H
+}   // namespace renderer

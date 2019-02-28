@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_QTTILECALLBACK_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_QTTILECALLBACK_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
@@ -59,7 +58,5 @@ class QtTileCallbackFactory
     RenderWidget* m_render_widget;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_QTTILECALLBACK_H
+}   // namespace studio
+}   // namespace appleseed

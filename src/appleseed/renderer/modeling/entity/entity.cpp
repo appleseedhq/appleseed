@@ -118,16 +118,10 @@ APIString Entity::get_path() const
 {
     std::string path;
 
-    const Entity* entity = this;
-
-    while (entity)
+    for (const Entity* entity = this; entity != nullptr; entity = entity->get_parent())
     {
-        if (!path.empty())
-            path.insert(0, "/");
-
         path.insert(0, entity->get_name());
-
-        entity = entity->get_parent();
+        path.insert(0, "/");
     }
 
     return APIString(path.c_str());

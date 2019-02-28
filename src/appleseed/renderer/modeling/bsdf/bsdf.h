@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_BSDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_BSDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -90,8 +89,8 @@ class APPLESEED_DLLSYMBOL BSDF
     // BSDF types.
     enum Type
     {
-        Reflective   = 1 << 0,
-        Transmissive = 1 << 1,
+        Reflective   = 1UL << 0,
+        Transmissive = 1UL << 1,
         AllBSDFTypes = Reflective | Transmissive
     };
 
@@ -143,8 +142,11 @@ class APPLESEED_DLLSYMBOL BSDF
 
     // Given an outgoing direction, sample the BSDF and compute the incoming
     // direction, its probability density and the value of the BSDF for this
-    // pair of directions. Return the scattering mode. If the scattering mode
-    // is None, the BSDF and PDF values are undefined.
+    // pair of directions. Return the scattering mode. The returned scattering
+    // mode can only be None, Diffuse, Glossy or Specular. If the scattering
+    // mode is None, the BSDF value is undefined. If the scattering mode is
+    // any other value than None, the returned PDF value must either be equal
+    // to DiracDelta or must be strictly positive.
     virtual void sample(
         SamplingContext&            sampling_context,
         const void*                 data,                       // input values
@@ -189,8 +191,9 @@ class APPLESEED_DLLSYMBOL BSDF
         Spectrum&                   absorption) const;
 
     // Force a given direction to lie above a surface described by its normal vector.
-    static foundation::Vector3f force_above_surface(
-        const foundation::Vector3f& direction,
+    // Return true if the input direction was modified, false otherwise.
+    static bool force_above_surface(
+        foundation::Vector3f&       direction,
         const foundation::Vector3f& normal);
 
   private:
@@ -238,8 +241,8 @@ inline bool BSDF::is_purely_glossy_or_specular() const
     return m_modes == (ScatteringMode::Glossy | ScatteringMode::Specular);
 }
 
-inline foundation::Vector3f BSDF::force_above_surface(
-    const foundation::Vector3f&     direction,
+inline bool BSDF::force_above_surface(
+    foundation::Vector3f&           direction,
     const foundation::Vector3f&     normal)
 {
     const float Eps = 1.0e-4f;
@@ -247,12 +250,13 @@ inline foundation::Vector3f BSDF::force_above_surface(
     const float cos_theta = foundation::dot(direction, normal);
     const float correction = Eps - cos_theta;
 
-    return
-        correction > 0.0f
-            ? foundation::normalize(direction + correction * normal)
-            : direction;
+    if (correction > 0.0f)
+    {
+        direction = foundation::normalize(direction + correction * normal);
+        return true;
+    }
+
+    return false;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_BSDF_H
+}   // namespace renderer

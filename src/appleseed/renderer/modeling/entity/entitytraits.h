@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENTITY_ENTITYTRAITS_H
-#define APPLESEED_RENDERER_MODELING_ENTITY_ENTITYTRAITS_H
+#pragma once
 
 namespace renderer
 {
@@ -43,6 +42,4 @@ namespace renderer
 
 template <typename Entity> struct EntityTraits;
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_ENTITY_ENTITYTRAITS_H
+}   // namespace renderer

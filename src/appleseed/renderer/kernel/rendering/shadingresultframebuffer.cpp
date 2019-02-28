@@ -48,15 +48,6 @@ using namespace std;
 namespace renderer
 {
 
-namespace
-{
-    inline size_t get_total_channel_count(const size_t aov_count)
-    {
-        // The main image plus a number of AOVs, all RGBA.
-        return (1 + aov_count) * 4;
-    }
-}
-
 ShadingResultFrameBuffer::ShadingResultFrameBuffer(
     const size_t                    width,
     const size_t                    height,

@@ -1,0 +1,186 @@
+
+//
+// This source file is part of appleseed.
+// Visit https://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2018 Herbert Crepaz, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// References:
+//
+//      Color utility shader which allows to invert one or more components of
+//      the input color. Modeled after Pixar's RenderMan PxrInvert shader.
+//      https://rmanwiki.pixar.com/display/REN22/PxrInvert
+//
+
+shader as_invert_color
+[[
+    string icon = "asInvertColor.png",
+    string help = "Inverts one or more individual color channels of the the input color in the respective color model. The output is a RGB color.",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_invert_color.html#label-as-invert-color",
+    
+    string as_node_name = "asInvertColor",
+    string as_category = "utility",
+    
+    string as_max_class_id = "1105087319 977155459", 
+    string as_max_plugin_type = "texture",
+    
+    int as_maya_type_id = 0x00127a08,
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility"
+]]
+(
+    color in_color = color(0)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Input Color",
+        string page = "Color",
+        string help = "Color to invert.",
+        int divider = 1
+    ]],
+    string in_color_model = "RGB"
+    [[
+        string as_maya_attribute_name = "colorModel",
+        string as_maya_attribute_short_name = "clm",
+        string widget = "popup",
+        string options = "RGB|HSV|HSL",
+        string label = "Color Model",
+        string page = "Color",
+        string help = "The input color uses this color space.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_invert_channel_x = 0
+    [[
+        string as_maya_attribute_name = "invertChannelX",
+        string as_maya_attribute_short_name = "icx",
+        int min = 0,
+        int max = 1,
+        string widget = "checkBox",
+        string label = "Invert X Component",
+        string page = "Output",
+        string help = "Inverts the X component of the input color.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_invert_channel_y = 0
+    [[
+        string as_maya_attribute_name = "invertChannelY",
+        string as_maya_attribute_short_name = "icy",
+        int min = 0,
+        int max = 1,
+        string widget = "checkBox",
+        string label = "Invert Y Component",
+        string page = "Output",
+        string help = "Inverts the Y component of the input color.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_invert_channel_z = 0
+    [[
+        string as_maya_attribute_name = "invertChannelZ",
+        string as_maya_attribute_short_name = "icz",
+        int min = 0,
+        int max = 1,
+        string widget = "checkBox",
+        string label = "Invert Z Component",
+        string page = "Output",
+        string help = "Inverts the Z component of the input color.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string label = "Output Color",
+        string page = "Output",
+        string widget = "null"
+    ]]
+)
+{
+    if (in_color_model == "RGB")
+    {
+        out_outColor = clamp(in_color, color(0), color(1)); 
+
+        if (in_invert_channel_x) out_outColor[0] = 1.0 - out_outColor[0];
+        if (in_invert_channel_y) out_outColor[1] = 1.0 - out_outColor[1];
+        if (in_invert_channel_z) out_outColor[2] = 1.0 - out_outColor[2];
+    }
+    else
+    {
+        color color_rgb = clamp(in_color, color(0), color(1)), tmp = color(0);
+
+        if (in_color_model == "HSL")
+        {
+            tmp = transformc("rgb", "hsl", color_rgb);
+        }
+        else if (in_color_model == "HSV")
+        {
+            tmp = transformc("rgb", "hsv", color_rgb);
+        }
+        else
+        {
+#ifdef DEBUG
+            string shadername = "";
+            getattribute("shader:shadername", shadername);
+            warning("[DEBUG]: Invalid color mode %s, in %s, %s:%d\n",
+                    in_color_model, shadername, __FILE__, __LINE__);
+#endif
+        }
+
+        if (in_invert_channel_x) tmp[0] = 1.0 - tmp[0];
+        if (in_invert_channel_y) tmp[1] = 1.0 - tmp[1];
+        if (in_invert_channel_z) tmp[2] = 1.0 - tmp[2];
+
+        if (in_color_model == "HSL")
+        {
+            out_outColor = transformc("hsl", "rgb", tmp);
+        }
+        else if (in_color_model == "HSV")
+        {
+            out_outColor = transformc("hsv", "rgb", tmp);
+        }
+        else
+        {
+#ifdef DEBUG
+            string shadername = "";
+            getattribute("shader:shadername", shadername);
+            warning("[DEBUG]: Invalid color mode %s, in %s, %s:%d\n",
+                    in_color_model, shadername, __FILE__, __LINE__);
+#endif
+        }
+    }
+}

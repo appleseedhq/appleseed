@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_IMAGEBASEDLIGHTING_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_IMAGEBASEDLIGHTING_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -45,6 +44,7 @@ namespace renderer  { class BSDF; }
 namespace renderer  { class DirectShadingComponents; }
 namespace renderer  { class EnvironmentEDF; }
 namespace renderer  { class IMaterialSampler; }
+namespace renderer  { class LightPathStream; }
 namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
 
@@ -65,7 +65,8 @@ void compute_ibl_combined_sampling(
     const int                       env_sampling_modes,     // permitted scattering modes during environment sampling
     const size_t                    material_sample_count,  // number of samples in BSDF sampling
     const size_t                    env_sample_count,       // number of samples in environment sampling
-    DirectShadingComponents&        radiance);
+    DirectShadingComponents&        radiance,
+    LightPathStream*                light_path_stream);
 
 // Compute outgoing radiance due to image-based lighting via BSDF sampling only.
 void compute_ibl_material_sampling(
@@ -88,8 +89,7 @@ void compute_ibl_environment_sampling(
     const int                       env_sampling_modes,     // permitted scattering modes during environment sampling
     const size_t                    material_sample_count,
     const size_t                    env_sample_count,       // number of samples in environment sampling
-    DirectShadingComponents&        radiance);
+    DirectShadingComponents&        radiance,
+    LightPathStream*                light_path_stream);
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_IMAGEBASEDLIGHTING_H
+}   // namespace renderer

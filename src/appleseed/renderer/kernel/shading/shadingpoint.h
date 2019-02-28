@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGPOINT_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGPOINT_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -37,7 +36,6 @@
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/curveobject.h"
-#include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/object/triangle.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
@@ -87,14 +85,14 @@ class ShadingPoint
     {
         PrimitiveNone               = 0,
 
-        PrimitiveTriangle           = 1 << 1,
-        PrimitiveProceduralSurface  = 1 << 2,
+        PrimitiveTriangle           = 1UL << 1,
+        PrimitiveProceduralSurface  = 1UL << 2,
 
-        PrimitiveCurve              = 1 << 3,
+        PrimitiveCurve              = 1UL << 3,
         PrimitiveCurve1             = PrimitiveCurve | 0,
         PrimitiveCurve3             = PrimitiveCurve | 1,
 
-        PrimitiveVolume             = 1 << 4
+        PrimitiveVolume             = 1UL << 4
     };
 
     // Constructor, calls clear().
@@ -231,9 +229,6 @@ class ShadingPoint
     // Return the index, within the assembly, of the object instance that was hit.
     size_t get_object_instance_index() const;
 
-    // Return the index, within the object, of the region containing the hit triangle.
-    size_t get_region_index() const;
-
     // Return the index of the hit primitive.
     size_t get_primitive_index() const;
 
@@ -246,6 +241,8 @@ class ShadingPoint
     // Return the interpolated per-vertex color at the intersection point.
     const foundation::Color3f& get_per_vertex_color() const;
 
+    // Access the data structure that exposes this shading point to OSL.
+    // ShadingSystem::execute() takes a mutable OSL::ShaderGlobals reference.
     OSL::ShaderGlobals& get_osl_shader_globals() const;
 
     struct OSLObjectTransformInfo
@@ -282,15 +279,16 @@ class ShadingPoint
     friend class Intersector;
     friend class NPRSurfaceShaderHelper;
     friend class OSLShaderGroupExec;
-    friend class RegionLeafVisitor;
     friend class RendererServices;
     friend class ShadingPointBuilder;
     friend class TriangleLeafVisitor;
     friend class foundation::PoisonImpl<ShadingPoint>;
 
+    //
+    // Make sure to update `PoisonImpl<>::do_poison()` in shadinpoint.cpp when adding new data members.
+    //
+
     // Context.
-    RegionKitAccessCache*               m_region_kit_cache;
-    StaticTriangleTessAccessCache*      m_tess_cache;
     TextureCache*                       m_texture_cache;
     const Scene*                        m_scene;
     mutable ShadingRay                  m_ray;                              // world space ray (m_tmax = distance to intersection)
@@ -302,31 +300,30 @@ class ShadingPoint
     foundation::Transformd              m_assembly_instance_transform;      // transform of the hit assembly instance at ray time
     const TransformSequence*            m_assembly_instance_transform_seq;  // transform sequence of the hit assembly instance.
     size_t                              m_object_instance_index;            // index of the object instance that was hit
-    size_t                              m_region_index;                     // index of the region containing the hit triangle
     size_t                              m_primitive_index;                  // index of the hit primitive
     TriangleSupportPlaneType            m_triangle_support_plane;           // support plane of the hit triangle
 
     // Flags to keep track of which on-demand results have been computed and cached.
     enum Members
     {
-        HasSourceGeometry               = 1 << 0,
-        HasTriangleVertexNormals        = 1 << 1,
-        HasTriangleVertexTangents       = 1 << 2,
-        HasUV0                          = 1 << 3,
-        HasPoint                        = 1 << 4,
-        HasBiasedPoint                  = 1 << 5,
-        HasRefinedPoints                = 1 << 6,
-        HasWorldSpaceDerivatives        = 1 << 7,
-        HasGeometricNormal              = 1 << 8,
-        HasOriginalShadingNormal        = 1 << 9,
-        HasShadingBasis                 = 1 << 10,
-        HasWorldSpaceTriangleVertices   = 1 << 11,
-        HasMaterials                    = 1 << 12,
-        HasWorldSpacePointVelocity      = 1 << 13,
-        HasAlpha                        = 1 << 14,
-        HasPerVertexColor               = 1 << 15,
-        HasScreenSpaceDerivatives       = 1 << 16,
-        HasOSLShaderGlobals             = 1 << 17
+        HasSourceGeometry               = 1UL << 0,
+        HasTriangleVertexNormals        = 1UL << 1,
+        HasTriangleVertexTangents       = 1UL << 2,
+        HasUV0                          = 1UL << 3,
+        HasPoint                        = 1UL << 4,
+        HasBiasedPoint                  = 1UL << 5,
+        HasRefinedPoints                = 1UL << 6,
+        HasWorldSpaceDerivatives        = 1UL << 7,
+        HasGeometricNormal              = 1UL << 8,
+        HasOriginalShadingNormal        = 1UL << 9,
+        HasShadingBasis                 = 1UL << 10,
+        HasWorldSpaceTriangleVertices   = 1UL << 11,
+        HasMaterials                    = 1UL << 12,
+        HasWorldSpacePointVelocity      = 1UL << 13,
+        HasAlpha                        = 1UL << 14,
+        HasPerVertexColor               = 1UL << 15,
+        HasScreenSpaceDerivatives       = 1UL << 16,
+        HasOSLShaderGlobals             = 1UL << 17
     };
     mutable foundation::uint32          m_members;
 
@@ -419,17 +416,13 @@ class ShadingPoint
 
 APPLESEED_FORCE_INLINE ShadingPoint::ShadingPoint()
 {
-#ifdef DEBUG
     foundation::poison(*this);
-#endif
 
     clear();
 }
 
 inline ShadingPoint::ShadingPoint(const ShadingPoint& rhs)
-  : m_region_kit_cache(rhs.m_region_kit_cache)
-  , m_tess_cache(rhs.m_tess_cache)
-  , m_texture_cache(rhs.m_texture_cache)
+  : m_texture_cache(rhs.m_texture_cache)
   , m_scene(rhs.m_scene)
   , m_ray(rhs.m_ray)
   , m_primitive_type(rhs.m_primitive_type)
@@ -438,7 +431,6 @@ inline ShadingPoint::ShadingPoint(const ShadingPoint& rhs)
   , m_assembly_instance_transform(rhs.m_assembly_instance_transform)
   , m_assembly_instance_transform_seq(rhs.m_assembly_instance_transform_seq)
   , m_object_instance_index(rhs.m_object_instance_index)
-  , m_region_index(rhs.m_region_index)
   , m_primitive_index(rhs.m_primitive_index)
   , m_triangle_support_plane(rhs.m_triangle_support_plane)
   , m_members(0)
@@ -447,8 +439,6 @@ inline ShadingPoint::ShadingPoint(const ShadingPoint& rhs)
 
 inline ShadingPoint& ShadingPoint::operator=(const ShadingPoint& rhs)
 {
-    m_region_kit_cache = rhs.m_region_kit_cache;
-    m_tess_cache = rhs.m_tess_cache;
     m_texture_cache = rhs.m_texture_cache;
     m_scene = rhs.m_scene;
     m_ray = rhs.m_ray;
@@ -458,7 +448,6 @@ inline ShadingPoint& ShadingPoint::operator=(const ShadingPoint& rhs)
     m_assembly_instance_transform = rhs.m_assembly_instance_transform;
     m_assembly_instance_transform_seq = rhs.m_assembly_instance_transform_seq;
     m_object_instance_index = rhs.m_object_instance_index;
-    m_region_index = rhs.m_region_index;
     m_primitive_index = rhs.m_primitive_index;
     m_triangle_support_plane = rhs.m_triangle_support_plane;
     m_members = 0;
@@ -467,8 +456,6 @@ inline ShadingPoint& ShadingPoint::operator=(const ShadingPoint& rhs)
 
 APPLESEED_FORCE_INLINE void ShadingPoint::clear()
 {
-    m_region_kit_cache = nullptr;
-    m_tess_cache = nullptr;
     m_texture_cache = nullptr;
     m_scene = nullptr;
     m_primitive_type = PrimitiveNone;
@@ -895,12 +882,6 @@ inline size_t ShadingPoint::get_object_instance_index() const
     return m_object_instance_index;
 }
 
-inline size_t ShadingPoint::get_region_index() const
-{
-    assert(hit_surface());
-    return m_region_index;
-}
-
 inline size_t ShadingPoint::get_primitive_index() const
 {
     assert(hit_surface());
@@ -984,7 +965,7 @@ inline void ShadingPoint::fetch_materials() const
     }
 }
 
-}       // namespace renderer
+}   // namespace renderer
 
 namespace foundation
 {
@@ -995,5 +976,3 @@ namespace foundation
         static void do_poison(renderer::ShadingPoint& point);
     };
 }
-
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGPOINT_H

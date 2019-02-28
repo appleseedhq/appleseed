@@ -36,7 +36,7 @@
 
 shader as_maya_granite
 [[
-    string as_maya_node_name = "granite",
+    string as_node_name = "granite",
 ]]
 (
     color in_color1 = color(0)

@@ -62,13 +62,13 @@ bool ProceduralAssembly::expand_contents(
     if (m_expanded)
         return true;
 
-    RENDERER_LOG_INFO("expanding procedural assembly %s...", get_path().c_str());
+    RENDERER_LOG_INFO("expanding procedural assembly \"%s\"...", get_path().c_str());
 
     if (!do_expand_contents(project, parent, abort_switch))
         return false;
 
-    RENDERER_LOG_DEBUG(
-        "procedural assembly %s expanded to the following entities:\n"
+    RENDERER_LOG_INFO(
+        "procedural assembly \"%s\" expanded to the following entities:\n"
         "  assemblies                    %s\n"
         "  assembly instances            %s\n"
         "  bsdfs                         %s\n"

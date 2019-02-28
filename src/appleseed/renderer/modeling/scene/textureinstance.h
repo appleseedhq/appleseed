@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SCENE_TEXTUREINSTANCE_H
-#define APPLESEED_RENDERER_MODELING_SCENE_TEXTUREINSTANCE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
@@ -203,6 +202,4 @@ inline TextureAlphaMode TextureInstance::get_effective_alpha_mode() const
     return m_effective_alpha_mode;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SCENE_TEXTUREINSTANCE_H
+}   // namespace renderer

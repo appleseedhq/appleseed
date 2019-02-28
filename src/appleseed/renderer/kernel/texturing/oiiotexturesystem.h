@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_TEXTURING_OIIOTEXTURESYSTEM_H
-#define APPLESEED_RENDERER_KERNEL_TEXTURING_OIIOTEXTURESYSTEM_H
+#pragma once
 
 // OpenImageIO headers.
 #include "foundation/platform/_beginoiioheaders.h"
@@ -56,6 +55,4 @@ class OIIOTextureSystemFactory
     static OIIOTextureSystem* create(const bool shared = true);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_TEXTURING_OIIOTEXTURESYSTEM_H
+}   // namespace renderer

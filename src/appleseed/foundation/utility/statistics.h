@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_STATISTICS_H
-#define APPLESEED_FOUNDATION_UTILITY_STATISTICS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/stringexception.h"
@@ -363,6 +362,17 @@ inline void Statistics::insert<uint64>(
 }
 
 template <>
+inline void Statistics::insert<float>(
+    const std::string&                  name,
+    const float&                        value,
+    const std::string&                  unit)
+{
+    insert(
+        std::unique_ptr<FloatingPointEntry>(
+            new FloatingPointEntry(name, unit, value)));
+}
+
+template <>
 inline void Statistics::insert<double>(
     const std::string&                  name,
     const double&                       value,
@@ -535,6 +545,4 @@ std::string Statistics::PopulationEntry<T>::to_string() const
     return sstr.str();
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_STATISTICS_H
+}   // namespace foundation

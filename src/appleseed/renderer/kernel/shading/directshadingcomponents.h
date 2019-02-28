@@ -26,14 +26,10 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_DIRECTSHADINGCOMPONENTS_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_DIRECTSHADINGCOMPONENTS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-
-// appleseed.renderer headers.
-#include "renderer/kernel/lighting/scatteringmode.h"
 
 namespace renderer
 {
@@ -41,11 +37,11 @@ namespace renderer
 class DirectShadingComponents
 {
   public:
-    Spectrum m_beauty;
-    Spectrum m_diffuse;
-    Spectrum m_glossy;
-    Spectrum m_volume;
-    Spectrum m_emission;
+    Spectrum    m_beauty;
+    Spectrum    m_diffuse;
+    Spectrum    m_glossy;
+    Spectrum    m_volume;
+    Spectrum    m_emission;
 
     // Constructor. Clears all components to 0.
     DirectShadingComponents();
@@ -54,15 +50,11 @@ class DirectShadingComponents
 };
 
 DirectShadingComponents& operator+=(DirectShadingComponents& lhs, const DirectShadingComponents& rhs);
-
 DirectShadingComponents& operator*=(DirectShadingComponents& lhs, const float rhs);
-DirectShadingComponents& operator/=(DirectShadingComponents& lhs, const float rhs);
-
 DirectShadingComponents& operator*=(DirectShadingComponents& lhs, const Spectrum& rhs);
+DirectShadingComponents& operator/=(DirectShadingComponents& lhs, const float rhs);
 
 void madd(DirectShadingComponents& a, const DirectShadingComponents& b, const float c);
 void madd(DirectShadingComponents& a, const DirectShadingComponents& b, const Spectrum& c);
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_DIRECTSHADINGCOMPONENTS_H
+}   // namespace renderer

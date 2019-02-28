@@ -30,6 +30,7 @@
 #include "denoiseraov.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
@@ -41,9 +42,12 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
+#include "foundation/platform/defaulttimers.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/stopwatch.h"
+#include "foundation/utility/string.h"
 
 // BCD headers.
 #include "bcd/CovarianceMatrix.h"
@@ -66,7 +70,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Denoiser AOV accumulator.
     //
@@ -131,7 +134,7 @@ namespace
                 return;
 
             // Accumulate unpremultiplied samples.
-            m_accum.unpremultiply();
+            m_accum.unpremultiply_in_place();
 
             // Update the num samples channel.
             m_histograms.get(pi.y, pi.x, static_cast<int>(m_samples_channel_index)) += 1.0f;
@@ -164,7 +167,7 @@ namespace
                 // Clamp to 0.
                 value = max(value, 0.0f);
 
-                // Exponential scaling
+                // Exponential scaling.
                 if (m_gamma > 1.0f) value = pow(value, m_rcp_gamma);
 
                 // Normalize to the maximum value.
@@ -223,7 +226,7 @@ namespace
             {
                 // Composite over the previous sample.
                 Color4f main = shading_result.m_main;
-                main.premultiply();
+                main.premultiply_in_place();
                 m_accum += (1.0f - m_accum.a) * shading_result.m_main;
                 ++m_sample_count;
             }
@@ -249,7 +252,7 @@ namespace
 
         Deepimf&        m_histograms;
 
-        inline bool outside_tile(const Vector2i& pi) const
+        bool outside_tile(const Vector2i& pi) const
         {
             return
                 pi.x < m_tile_origin_x ||
@@ -259,8 +262,9 @@ namespace
         }
     };
 
-    const char* DenoiserModel = "denoiser_aov";
+    const char* DenoiserAOVModel = "denoiser_aov";
 }
+
 
 //
 // Denoiser AOV class implementation.
@@ -276,7 +280,6 @@ struct DenoiserAOV::Impl
     Deepimf m_covariance_accum;
 
     Deepimf m_histograms;
-    Deepimf m_covariances;
 };
 
 DenoiserAOV::DenoiserAOV(
@@ -297,7 +300,7 @@ DenoiserAOV::~DenoiserAOV()
 
 const char* DenoiserAOV::get_model() const
 {
-    return DenoiserModel;
+    return DenoiserAOVModel;
 }
 
 size_t DenoiserAOV::get_channel_count() const
@@ -340,18 +343,6 @@ void DenoiserAOV::clear_image()
     impl->m_histograms.fill(0.0f);
 }
 
-auto_release_ptr<AOVAccumulator> DenoiserAOV::create_accumulator() const
-{
-    return auto_release_ptr<AOVAccumulator>(
-        new DenoiserAOVAccumulator(
-            impl->m_num_bins,
-            impl->m_gamma,
-            impl->m_max_value,
-            impl->m_sum_accum,
-            impl->m_covariance_accum,
-            impl->m_histograms));
-}
-
 void DenoiserAOV::fill_empty_samples() const
 {
     const int w = impl->m_histograms.getWidth();
@@ -360,19 +351,19 @@ void DenoiserAOV::fill_empty_samples() const
     const int num_bins = static_cast<int>(impl->m_num_bins);
     const int samples_channel_index = num_bins * 3;
 
-    for (int j = 0; j < h; ++j)
+    for (int y = 0; y < h; ++y)
     {
-        for (int i = 0; i < w; ++i)
+        for (int x = 0; x < w; ++x)
         {
             const float num_samples =
-                impl->m_histograms.get(j, i, samples_channel_index);
+                impl->m_histograms.get(y, x, samples_channel_index);
 
             if (num_samples == 0.0f)
             {
-                impl->m_histograms.get(j, i, 0) = 1.0f;
-                impl->m_histograms.get(j, i, num_bins) = 1.0f;
-                impl->m_histograms.get(j, i, num_bins * 2) = 1.0f;
-                impl->m_histograms.get(j, i, samples_channel_index) = 1.0f;
+                impl->m_histograms.get(y, x, 0) = 1.0f;
+                impl->m_histograms.get(y, x, num_bins) = 1.0f;
+                impl->m_histograms.get(y, x, num_bins * 2) = 1.0f;
+                impl->m_histograms.get(y, x, samples_channel_index) = 1.0f;
             }
         }
     }
@@ -388,26 +379,48 @@ Deepimf& DenoiserAOV::histograms_image()
     return impl->m_histograms;
 }
 
-void DenoiserAOV::extract_num_samples_image(bcd::Deepimf& num_samples) const
+const Deepimf& DenoiserAOV::covariance_image() const
+{
+    return impl->m_covariance_accum;
+}
+
+Deepimf& DenoiserAOV::covariance_image()
+{
+    return impl->m_covariance_accum;
+}
+
+const Deepimf& DenoiserAOV::sum_image() const
+{
+    return impl->m_sum_accum;
+}
+
+Deepimf& DenoiserAOV::sum_image()
+{
+    return impl->m_sum_accum;
+}
+
+void DenoiserAOV::extract_num_samples_image(bcd::Deepimf& num_samples_image) const
 {
     const int w = impl->m_histograms.getWidth();
     const int h = impl->m_histograms.getHeight();
     const int samples_channel_index = static_cast<int>(impl->m_num_bins * 3);
 
-    num_samples.resize(w, h, 1);
+    num_samples_image.resize(w, h, 1);
 
-    for (int j = 0; j < h; ++j)
-        for (int i = 0; i < w; ++i)
-            num_samples.get(j, i, 0) = impl->m_histograms.get(j, i, samples_channel_index);
+    for (int y = 0; y < h; ++y)
+    {
+        for (int x = 0; x < w; ++x)
+            num_samples_image.get(y, x, 0) = impl->m_histograms.get(y, x, samples_channel_index);
+    }
 }
 
-void DenoiserAOV::compute_covariances_image(Deepimf& covariances) const
+void DenoiserAOV::compute_covariances_image(Deepimf& covariances_image) const
 {
     const int w = impl->m_covariance_accum.getWidth();
     const int h = impl->m_covariance_accum.getHeight();
 
-    covariances.resize(w, h, 6);
-    covariances.fill(0.0f);
+    covariances_image.resize(w, h, 6);
+    covariances_image.fill(0.0f);
 
     const int samples_channel_index = static_cast<int>(impl->m_num_bins * 3);
 
@@ -418,16 +431,15 @@ void DenoiserAOV::compute_covariances_image(Deepimf& covariances) const
     const size_t c_xz = static_cast<size_t>(ESymmetricMatrix3x3Data::e_xz);
     const size_t c_xy = static_cast<size_t>(ESymmetricMatrix3x3Data::e_xy);
 
-    for (int j = 0; j < h; ++j)
+    for (int y = 0; y < h; ++y)
     {
-        for (int i = 0; i < w; ++i)
+        for (int x = 0; x < w; ++x)
         {
-            const float sample_count = impl->m_histograms.get(j, i, samples_channel_index);
+            const float sample_count = impl->m_histograms.get(y, x, samples_channel_index);
 
             if (sample_count != 0.0f)
             {
                 const float rcp_sample_count = 1.0f / sample_count;
-
                 const float bias_correction_factor =
                     sample_count == 1.0f
                         ? 1.0f
@@ -436,28 +448,30 @@ void DenoiserAOV::compute_covariances_image(Deepimf& covariances) const
                 // Compute the mean.
                 float mean[3];
                 for (int k = 0; k < 3; ++k)
-                    mean[k] = impl->m_sum_accum.get(j, i, k) * rcp_sample_count;
+                    mean[k] = impl->m_sum_accum.get(y, x, k) * rcp_sample_count;
 
                 // Compute the covariances.
-                const float xx = impl->m_covariance_accum.get(j, i, c_xx);
-                const float yy = impl->m_covariance_accum.get(j, i, c_yy);
-                const float zz = impl->m_covariance_accum.get(j, i, c_zz);
-                const float yz = impl->m_covariance_accum.get(j, i, c_yz);
-                const float xz = impl->m_covariance_accum.get(j, i, c_xz);
-                const float xy = impl->m_covariance_accum.get(j, i, c_xy);
+                const float xx = impl->m_covariance_accum.get(y, x, c_xx);
+                const float yy = impl->m_covariance_accum.get(y, x, c_yy);
+                const float zz = impl->m_covariance_accum.get(y, x, c_zz);
+                const float yz = impl->m_covariance_accum.get(y, x, c_yz);
+                const float xz = impl->m_covariance_accum.get(y, x, c_xz);
+                const float xy = impl->m_covariance_accum.get(y, x, c_xy);
 
-                covariances.get(j, i, c_xx) = (xx * rcp_sample_count - mean[0] * mean[0]) * bias_correction_factor;
-                covariances.get(j, i, c_yy) = (yy * rcp_sample_count - mean[1] * mean[1]) * bias_correction_factor;
-                covariances.get(j, i, c_zz) = (zz * rcp_sample_count - mean[2] * mean[2]) * bias_correction_factor;
-                covariances.get(j, i, c_yz) = (yz * rcp_sample_count - mean[1] * mean[2]) * bias_correction_factor;
-                covariances.get(j, i, c_xz) = (xz * rcp_sample_count - mean[0] * mean[2]) * bias_correction_factor;
-                covariances.get(j, i, c_xy) = (xy * rcp_sample_count - mean[0] * mean[1]) * bias_correction_factor;
+                covariances_image.get(y, x, c_xx) = (xx * rcp_sample_count - mean[0] * mean[0]) * bias_correction_factor;
+                covariances_image.get(y, x, c_yy) = (yy * rcp_sample_count - mean[1] * mean[1]) * bias_correction_factor;
+                covariances_image.get(y, x, c_zz) = (zz * rcp_sample_count - mean[2] * mean[2]) * bias_correction_factor;
+                covariances_image.get(y, x, c_yz) = (yz * rcp_sample_count - mean[1] * mean[2]) * bias_correction_factor;
+                covariances_image.get(y, x, c_xz) = (xz * rcp_sample_count - mean[0] * mean[2]) * bias_correction_factor;
+                covariances_image.get(y, x, c_xy) = (xy * rcp_sample_count - mean[0] * mean[1]) * bias_correction_factor;
             }
         }
     }
 }
 
-bool DenoiserAOV::write_images(const char* file_path) const
+bool DenoiserAOV::write_images(
+    const char*             file_path,
+    const ImageAttributes&  image_attributes) const
 {
     fill_empty_samples();
 
@@ -466,35 +480,85 @@ bool DenoiserAOV::write_images(const char* file_path) const
     const string base_file_name = boost_file_path.stem().string();
     const string extension = boost_file_path.extension().string();
 
+    bool success = true;
+
+    Stopwatch<DefaultWallclockTimer> stopwatch;
+
     // Write histograms.
+    stopwatch.start();
     const string hist_file_name = base_file_name + ".hist" + extension;
     const string hist_file_path = (directory / hist_file_name).string();
+    if (ImageIO::writeMultiChannelsEXR(histograms_image(), hist_file_path.c_str()))
+    {
+        stopwatch.measure();
+        RENDERER_LOG_INFO(
+            "wrote image file %s for aov \"%s\" in %s.",
+            hist_file_path.c_str(),
+            get_path().c_str(),
+            pretty_time(stopwatch.get_seconds()).c_str());
+    }
+    else
+    {
+        RENDERER_LOG_ERROR(
+            "failed to write image file %s for aov \"%s\".",
+            hist_file_path.c_str(),
+            get_path().c_str());
+        success = false;
+    }
 
-    bool result = ImageIO::writeMultiChannelsEXR(histograms_image(), hist_file_path.c_str());
+    // Compute covariances image.
+    Deepimf covariances_image;
+    compute_covariances_image(covariances_image);
 
-    // Write covariances.
+    // Write covariances image.
+    stopwatch.start();
     const string cov_file_name = base_file_name + ".cov" + extension;
     const string cov_file_path = (directory / cov_file_name).string();
+    if (ImageIO::writeMultiChannelsEXR(covariances_image, cov_file_path.c_str()))
+    {
+        stopwatch.measure();
+        RENDERER_LOG_INFO(
+            "wrote image file %s for aov \"%s\" in %s.",
+            cov_file_path.c_str(),
+            get_path().c_str(),
+            pretty_time(stopwatch.get_seconds()).c_str());
+    }
+    else
+    {
+        RENDERER_LOG_ERROR(
+            "failed to write image file %s for aov \"%s\".",
+            cov_file_path.c_str(),
+            get_path().c_str());
+        success = false;
+    }
 
-    Deepimf covariances;
-    compute_covariances_image(covariances);
-
-    result = result && ImageIO::writeMultiChannelsEXR(covariances, cov_file_path.c_str());
-
-    return result;
+    return success;
 }
+
+auto_release_ptr<AOVAccumulator> DenoiserAOV::create_accumulator() const
+{
+    return auto_release_ptr<AOVAccumulator>(
+        new DenoiserAOVAccumulator(
+            impl->m_num_bins,
+            impl->m_gamma,
+            impl->m_max_value,
+            impl->m_sum_accum,
+            impl->m_covariance_accum,
+            impl->m_histograms));
+}
+
 
 //
 // DenoiserAOVFactory class implementation.
 //
 
-foundation::auto_release_ptr<DenoiserAOV> DenoiserAOVFactory::create(
+auto_release_ptr<DenoiserAOV> DenoiserAOVFactory::create(
     const float  max_hist_value,
     const size_t num_bins)
 {
-    return auto_release_ptr<DenoiserAOV>(new DenoiserAOV(
-        max_hist_value,
-        num_bins));
+    return
+        auto_release_ptr<DenoiserAOV>(
+            new DenoiserAOV(max_hist_value, num_bins));
 }
 
 }   // namespace renderer

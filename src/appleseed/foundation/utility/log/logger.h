@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_LOG_LOGGER_H
-#define APPLESEED_FOUNDATION_UTILITY_LOG_LOGGER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -133,6 +132,4 @@ inline void Logger::set_format(const LogMessage::Category category, const std::s
     set_format(category, format.c_str());
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_LOG_LOGGER_H
+}   // namespace foundation

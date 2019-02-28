@@ -101,29 +101,32 @@ namespace
             if (!ScatteringMode::has_diffuse(modes))
                 return;
 
-            // Set the scattering mode.
-            sample.m_mode = ScatteringMode::Diffuse;
-
             // Compute the incoming direction.
             sampling_context.split_in_place(2, 1);
             const Vector2f s = sampling_context.next2<Vector2f>();
             const Vector3f wi = sample_hemisphere_cosine(s);
             sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
 
-            // Compute the BRDF value.
-            const LambertianBRDFInputValues* values = static_cast<const LambertianBRDFInputValues*>(data);
-            sample.m_value.m_diffuse = values->m_reflectance;
-            sample.m_value.m_diffuse *= values->m_reflectance_multiplier * RcpPi<float>();
-            sample.m_value.m_beauty = sample.m_value.m_diffuse;
-
-            sample.m_aov_components.m_albedo = values->m_reflectance;
-            sample.m_max_roughness = 1.0f;
-
             // Compute the probability density of the sampled direction.
-            sample.m_probability = wi.y * RcpPi<float>();
-            assert(sample.m_probability > 0.0f);
+            const float probability = wi.y * RcpPi<float>();
+            assert(probability > 0.0f);
 
-            sample.compute_reflected_differentials();
+            if (probability > 1.0e-6f)
+            {
+                // Set the scattering mode.
+                sample.set_to_scattering(ScatteringMode::Diffuse, probability);
+
+                // Compute the BRDF value.
+                const LambertianBRDFInputValues* values = static_cast<const LambertianBRDFInputValues*>(data);
+                sample.m_value.m_diffuse = values->m_reflectance;
+                sample.m_value.m_diffuse *= values->m_reflectance_multiplier * RcpPi<float>();
+                sample.m_value.m_beauty = sample.m_value.m_diffuse;
+
+                sample.m_aov_components.m_albedo = values->m_reflectance;
+                sample.m_min_roughness = 1.0f;
+
+                sample.compute_reflected_differentials();
+            }
         }
 
         float evaluate(
@@ -209,7 +212,7 @@ DictionaryArray LambertianBRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "0.5"));
 
@@ -219,7 +222,7 @@ DictionaryArray LambertianBRDFFactory::get_input_metadata() const
             .insert("label", "Reflectance Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 

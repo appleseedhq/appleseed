@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_PT_PTLIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_PT_PTLIGHTINGENGINE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/ilightingengine.h"
@@ -53,6 +52,9 @@ class PTLightingEngineFactory
   : public ILightingEngineFactory
 {
   public:
+    // Return parameters metadata.
+    static foundation::Dictionary get_params_metadata();
+
     // Constructor.
     PTLightingEngineFactory(
         const BackwardLightSampler&     light_sampler,
@@ -65,15 +67,10 @@ class PTLightingEngineFactory
     // Return a new path tracing lighting engine instance.
     ILightingEngine* create() override;
 
-    // Return the metadata of the PT lighting engine parameters.
-    static foundation::Dictionary get_params_metadata();
-
   private:
     const BackwardLightSampler&         m_light_sampler;
     LightPathRecorder&                  m_light_path_recorder;
     ParamArray                          m_params;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_PT_PTLIGHTINGENGINE_H
+}   // namespace renderer

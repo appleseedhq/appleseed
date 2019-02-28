@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_SHADINGRESULTFRAMEBUFFER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_SHADINGRESULTFRAMEBUFFER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/filteredtile.h"
@@ -64,6 +63,8 @@ class ShadingResultFrameBuffer
         const foundation::AABB2u&       crop_window,
         const foundation::Filter2f&     filter);
 
+    static size_t get_total_channel_count(const size_t aov_count);
+
     void add(
         const float                     x,
         const float                     y,
@@ -86,6 +87,10 @@ class ShadingResultFrameBuffer
     std::vector<float>                  m_scratch;
 };
 
-}       // namespace renderer
+inline size_t ShadingResultFrameBuffer::get_total_channel_count(const size_t aov_count)
+{
+    // The main image plus a number of AOVs, all RGBA.
+    return (1 + aov_count) * 4;
+}
 
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_SHADINGRESULTFRAMEBUFFER_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_TEXTURING_TEXTURECACHE_H
-#define APPLESEED_RENDERER_KERNEL_TEXTURING_TEXTURECACHE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/texturing/texturestore.h"
@@ -189,6 +188,4 @@ inline void TextureCache::TileRecordSwapper::unload(const TileKey& key, TileReco
     m_store.release(*record);
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_TEXTURING_TEXTURECACHE_H
+}   // namespace renderer

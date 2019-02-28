@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_EMBREESCENE_H
-#define APPLESEED_RENDERER_KERNEL_INTERSECTION_EMBREESCENE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -140,6 +139,4 @@ class EmbreeSceneFactory
     const EmbreeScene::Arguments        m_arguments;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_EMBREESCENE_H
+}   // namespace renderer

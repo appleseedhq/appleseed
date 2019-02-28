@@ -1,12 +1,11 @@
 
 //
 // This source file is part of appleseed.
-// Visit http://appleseedhq.net/ for additional information and resources.
+// Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
-// Copyright (c) 2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2016-2018 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -50,6 +49,11 @@ float max(color C)  { return max(C[0], max(C[1], C[2])); }
 
 float min(vector V) { return min(V[0], min(V[1], V[2])); }
 float max(vector V) { return max(V[0], max(V[1], V[2])); }
+
+closure color as_oren_nayar(
+    color       reflectance,
+    normal      N,
+    float       sigma) BUILTIN;
 
 closure color as_sheen(normal N) BUILTIN;
 
@@ -157,7 +161,6 @@ closure color as_plastic(
     float       diffuse_weight,
     float       scattering) BUILTIN;
 
-
 closure color as_npr_shading() BUILTIN;
 
 closure color as_npr_contour(
@@ -170,6 +173,13 @@ closure color as_npr_contour(
     float       occlusion_threshold,
     int         creases,
     float       creases_threshold
+    // keyword arguments:
+    //   int    "quality" = 1
+) BUILTIN;
+
+closure color as_matte(
+    color       matte_color,
+    float       matte_alpha,
 ) BUILTIN;
 
 #endif  // AS_OSL_EXTENSIONS_H

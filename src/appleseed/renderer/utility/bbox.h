@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_BBOX_H
-#define APPLESEED_RENDERER_UTILITY_BBOX_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
@@ -55,6 +54,15 @@ BBox compute_union(const Iterator begin, const Iterator end);
 // Evaluate a path of equidistant bounding boxes for a given time value in [0,1).
 template <typename BBox, typename Iterator>
 BBox interpolate(const Iterator begin, const Iterator end, const double time);
+
+// Clip an image space bounding box against a crop window and convert it to tile space.
+template <typename BBox, typename Int>
+BBox compute_tile_space_bbox(
+    const Int       tile_origin_x,
+    const Int       tile_origin_y,
+    const Int       tile_width,
+    const Int       tile_height,
+    const BBox&     crop_window);
 
 
 //
@@ -116,6 +124,32 @@ BBox interpolate(const Iterator begin, const Iterator end, const double time)
     return foundation::lerp(first[prev_index], first[prev_index + 1], k);
 }
 
-}       // namespace renderer
+template <typename BBox, typename Int>
+BBox compute_tile_space_bbox(
+    const Int       tile_origin_x,
+    const Int       tile_origin_y,
+    const Int       tile_width,
+    const Int       tile_height,
+    const BBox&     crop_window)
+{
+    // Construct image space bounding box.
+    BBox tile_bbox;
+    tile_bbox.min.x = tile_origin_x;
+    tile_bbox.min.y = tile_origin_y;
+    tile_bbox.max.x = tile_origin_x + tile_width - 1;
+    tile_bbox.max.y = tile_origin_y + tile_height - 1;
+    assert(tile_bbox.is_valid());
 
-#endif  // !APPLESEED_RENDERER_UTILITY_BBOX_H
+    // Clip bounding box against crop window.
+    tile_bbox = BBox::intersect(tile_bbox, crop_window);
+
+    // Transform bounding box to tile space.
+    tile_bbox.min.x -= tile_origin_x;
+    tile_bbox.min.y -= tile_origin_y;
+    tile_bbox.max.x -= tile_origin_x;
+    tile_bbox.max.y -= tile_origin_y;
+
+    return tile_bbox;
+}
+
+}   // namespace renderer

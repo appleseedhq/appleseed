@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_GLOBAL_GLOBALTYPES_H
-#define APPLESEED_RENDERER_GLOBAL_GLOBALTYPES_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/utility/dynamicspectrum.h"
@@ -70,6 +69,4 @@ typedef foundation::QMCSamplingContext<
     foundation::Xoroshiro128plus
 > SamplingContext;
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_GLOBAL_GLOBALTYPES_H
+}   // namespace renderer

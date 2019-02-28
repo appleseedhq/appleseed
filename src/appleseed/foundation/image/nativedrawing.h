@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_NATIVEDRAWING_H
-#define APPLESEED_FOUNDATION_IMAGE_NATIVEDRAWING_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -96,6 +95,4 @@ class APPLESEED_DLLSYMBOL NativeDrawing
         const Tile&     tile);
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_NATIVEDRAWING_H
+}   // namespace foundation

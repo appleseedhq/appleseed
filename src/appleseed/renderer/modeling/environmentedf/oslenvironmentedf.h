@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_OSLENVIRONMENTEDF_H
-#define APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_OSLENVIRONMENTEDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/environmentedf/ienvironmentedffactory.h"
@@ -74,6 +73,4 @@ class APPLESEED_DLLSYMBOL OSLEnvironmentEDFFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_OSLENVIRONMENTEDF_H
+}   // namespace renderer

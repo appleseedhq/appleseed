@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_FRAMEITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_FRAMEITEM_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityactions.h"
@@ -81,7 +80,5 @@ class FrameItem
     void edit(const foundation::Dictionary& values);
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_FRAMEITEM_H
+}   // namespace studio
+}   // namespace appleseed

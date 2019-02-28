@@ -33,7 +33,7 @@
 
 shader as_maya_grid
 [[
-    string as_maya_node_name = "grid"
+    string as_node_name = "grid"
 ]]
 (
     color in_fillerColor = color(0)

@@ -206,7 +206,6 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
           , m_tracer(
                 Base::m_scene,
                 m_intersector,
-                m_texture_cache,
                 m_sg_exec)
           , m_shading_context(
                 m_intersector,

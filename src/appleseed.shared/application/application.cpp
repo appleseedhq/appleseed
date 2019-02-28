@@ -35,6 +35,7 @@
 #include "foundation/platform/system.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/log.h"
+#include "foundation/utility/searchpaths.h"
 #include "foundation/utility/settings.h"
 #include "foundation/utility/string.h"
 
@@ -73,7 +74,7 @@ void Application::check_installation(Logger& logger)
 bool Application::is_compatible_with_host(const char** missing_feature)
 {
 #ifdef APPLESEED_X86
-    System::X86CpuFeatures features;
+    System::X86CPUFeatures features;
     System::detect_x86_cpu_features(features);
 
 #ifdef APPLESEED_USE_SSE
@@ -200,12 +201,12 @@ const char* Application::get_user_settings_path()
 // Windows.
 #if defined _WIN32
 
-        return 0;
+        return nullptr;
 
 // macOS.
 #elif defined __APPLE__
 
-        return 0;
+        return nullptr;
 
 // Other Unices.
 #elif defined __linux__ || defined __FreeBSD__
@@ -262,10 +263,10 @@ bool Application::load_settings(
 
     SettingsFileReader reader(logger);
 
-    // First try to read the settings from the user path.
+    // First try to read settings from the user path.
     if (const char* user_path = get_user_settings_path())
     {
-        const bf::path user_settings_file_path = bf::path(user_path) / filename;
+        const bf::path user_settings_file_path = safe_canonical(bf::path(user_path) / filename);
         if (bf::exists(user_settings_file_path) &&
             reader.read(
                 user_settings_file_path.string().c_str(),
@@ -277,18 +278,70 @@ bool Application::load_settings(
         }
     }
 
-    // As a fallback, try to read the settings from the appleseed installation directory.
-    const bf::path settings_file_path = root_path / "settings" / filename;
+    // As a fallback, try to read settings from appleseed's installation directory.
+    const string settings_file_path = safe_canonical(root_path / "settings" / filename).string();
     if (reader.read(
-            settings_file_path.string().c_str(),
+            settings_file_path.c_str(),
             schema_file_path.string().c_str(),
             settings))
     {
-        LOG(logger, category, "successfully loaded settings from %s.", settings_file_path.string().c_str());
+        LOG(logger, category, "successfully loaded settings from %s.", settings_file_path.c_str());
         return true;
     }
 
+    LOG(logger, LogMessage::Error, "failed to load settings from %s.", settings_file_path.c_str());
     return false;
+}
+
+bool Application::save_settings(
+    const char*                 filename,
+    const Dictionary&           settings,
+    Logger&                     logger,
+    const LogMessage::Category  category)
+{
+    SettingsFileWriter writer;
+
+    // First try to write settings to the user path.
+    if (const char* user_path = get_user_settings_path())
+    {
+        try
+        {
+            const bf::path user_settings_path(user_path);
+            bf::create_directories(user_settings_path);
+
+            const string user_settings_file_path = safe_canonical(user_settings_path / filename).string();
+            if (writer.write(user_settings_file_path.c_str(), settings))
+            {
+                LOG(logger, category, "successfully saved settings to %s.", user_settings_file_path.c_str());
+                return true;
+            }
+        }
+        catch (const bf::filesystem_error&)
+        {
+        }
+    }
+
+    // As a fallback, try to write settings to appleseed's installation directory.
+    const bf::path root_path(get_root_path());
+    const string settings_file_path = safe_canonical(root_path / "settings" / filename).string();
+    if (writer.write(settings_file_path.c_str(), settings))
+    {
+        LOG(logger, category, "successfully saved settings to %s.", settings_file_path.c_str());
+        return true;
+    }
+
+    LOG(logger, LogMessage::Error, "failed to save settings to %s.", settings_file_path.c_str());
+    return false;
+}
+
+void Application::initialize_resource_search_paths(SearchPaths& search_paths)
+{
+    search_paths.clear_explicit_paths();
+
+    const bf::path root_path = Application::get_root_path();
+
+    search_paths.push_back_explicit_path(
+        (root_path / "shaders").string().c_str()); // OSL headers.
 }
 
 }   // namespace shared

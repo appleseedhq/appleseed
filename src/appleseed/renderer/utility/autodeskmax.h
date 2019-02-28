@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_AUTODESKMAX_H
-#define APPLESEED_RENDERER_UTILITY_AUTODESKMAX_H
+#pragma once
 
 // Standard headers.
 #include <cmath>
@@ -52,6 +51,4 @@ inline T autodesk_max_decay(
         std::pow(s, decay_exponent);
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_UTILITY_AUTODESKMAX_H
+}   // namespace renderer

@@ -35,7 +35,7 @@
 
 shader as_maya_brownian
 [[
-    string as_maya_node_name = "brownian"
+    string as_node_name = "brownian"
 ]]
 (
     float in_lacunarity = 4.0

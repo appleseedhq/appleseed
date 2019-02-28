@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_DEBUG_TESTS_QTTESTLISTENER_H
-#define APPLESEED_STUDIO_DEBUG_TESTS_QTTESTLISTENER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -112,7 +111,5 @@ class QtTestListener
     Stopwatch           m_case_stopwatch;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_DEBUG_TESTS_QTTESTLISTENER_H
+}   // namespace studio
+}   // namespace appleseed

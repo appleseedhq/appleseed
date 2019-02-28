@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_INPUT_INPUTARRAY_H
-#define APPLESEED_RENDERER_MODELING_INPUT_INPUTARRAY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -248,6 +247,4 @@ class APPLESEED_DLLSYMBOL InputArray
 
 #define APPLESEED_DECLARE_INPUT_VALUES(name) struct APPLESEED_ALIGN(16) name
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_INPUT_INPUTARRAY_H
+}   // namespace renderer

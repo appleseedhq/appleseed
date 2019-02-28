@@ -33,11 +33,15 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
+#include "renderer/modeling/object/curveobject.h"
 
 // appleseed.foundation headers.
 #include "foundation/curve/genericcurvefilewriter.h"
 #include "foundation/curve/icurvewalker.h"
+#include "foundation/math/scalar.h"
 #include "foundation/platform/defaulttimers.h"
+#include "foundation/platform/types.h"
+#include "foundation/utility/otherwise.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 
@@ -46,6 +50,7 @@
 #include <cstddef>
 #include <exception>
 #include <string>
+#include <vector>
 
 using namespace foundation;
 using namespace std;
@@ -59,45 +64,21 @@ namespace renderer
 
 namespace
 {
-    //
-    // Curve object walker.
-    //
-
     class CurveObjectWalker
       : public ICurveWalker
     {
       public:
         explicit CurveObjectWalker(const CurveObject& object)
-          : m_object(object),
-            m_curve_count(0),
-            m_total_vertex_count(0)
+          : m_object(object)
+          , m_curve_count(0)
+          , m_total_vertex_count(0)
         {
             create_parameters();
         }
 
-        size_t get_basis() const override
+        CurveBasis get_basis() const override
         {
-            switch (m_object.get_basis())
-            {
-              case CurveBasis::Bezier:
-              case CurveBasis::Bspline:
-              case CurveBasis::Catmullrom:
-                return static_cast<unsigned char>(CurveBasis::Bezier);
-            }
-
-            return static_cast<unsigned char>(m_object.get_basis());
-        }
-
-        const char* get_basis_string() const
-        {
-            switch (m_object.get_basis())
-            {
-              case CurveBasis::Linear:
-                return "linear";
-
-              default:
-                return "bezier";
-            }
+            return m_object.get_basis();
         }
 
         size_t get_curve_count() const override
@@ -107,7 +88,7 @@ namespace
 
         size_t get_vertex_count(const size_t i) const override
         {
-            return m_vertex_counts[i+1];
+            return m_vertex_counts[i + 1];
         }
 
         Vector3f get_vertex(const size_t i) const override
@@ -151,10 +132,11 @@ namespace
 
         void create_curve1_parameters()
         {
-            uint32 vertex_count = 0;
+            size_t vertex_count = 0;
 
-            for (uint32 i = 0; i < m_object.get_curve1_count(); ++i)
+            for (size_t i = 0, e = m_object.get_curve1_count(); i < e; ++i)
             {
+                // todo: why use feq() here?
                 if (m_vertices.empty() || !feq(m_vertices.back(), m_object.get_curve1(i).get_control_point(0)))
                 {
                     m_vertices.push_back(m_object.get_curve1(i).get_control_point(0));
@@ -164,8 +146,9 @@ namespace
 
                     m_vertex_counts.push_back(vertex_count);
                     vertex_count = 1;
-                    m_curve_count++;
-                    m_total_vertex_count++;
+
+                    ++m_curve_count;
+                    ++m_total_vertex_count;
                 }
 
                 m_vertices.push_back(m_object.get_curve1(i).get_control_point(1));
@@ -173,18 +156,20 @@ namespace
                 m_opacities.push_back(m_object.get_curve1(i).get_opacity(1));
                 m_colors.push_back(m_object.get_curve1(i).get_color(1));
 
-                vertex_count++;
-                m_total_vertex_count++;
+                ++vertex_count;
+                ++m_total_vertex_count;
             }
+
             m_vertex_counts.push_back(vertex_count);
         }
 
         void create_curve3_parameters()
         {
-            uint32 vertex_count = 0;
+            size_t vertex_count = 0;
 
-            for (uint32 i = 0; i < m_object.get_curve3_count(); ++i)
+            for (size_t i = 0, e = m_object.get_curve3_count(); i < e; ++i)
             {
+                // todo: why use feq() here?
                 if (m_vertices.empty() || !feq(m_vertices.back(), m_object.get_curve3(i).get_control_point(0)))
                 {
                     m_vertices.push_back(m_object.get_curve3(i).get_control_point(0));
@@ -194,8 +179,9 @@ namespace
 
                     m_vertex_counts.push_back(vertex_count);
                     vertex_count = 1;
-                    m_curve_count++;
-                    m_total_vertex_count++;
+
+                    ++m_curve_count;
+                    ++m_total_vertex_count;
                 }
 
                 for (size_t k = 1; k < 4; ++k)
@@ -205,10 +191,11 @@ namespace
                     m_opacities.push_back(m_object.get_curve3(i).get_opacity(k));
                     m_colors.push_back(m_object.get_curve3(i).get_color(k));
 
-                    vertex_count++;
-                    m_total_vertex_count++;
+                    ++vertex_count;
+                    ++m_total_vertex_count;
                 }
             }
+
             m_vertex_counts.push_back(vertex_count);
         }
 
@@ -221,10 +208,12 @@ namespace
                 break;
 
               case CurveBasis::Bezier:
-              case CurveBasis::Bspline:
-              case CurveBasis::Catmullrom:
+              case CurveBasis::BSpline:
+              case CurveBasis::CatmullRom:
                 create_curve3_parameters();
                 break;
+
+              assert_otherwise;
             }
         }
     };
@@ -255,10 +244,12 @@ bool CurveObjectWriter::write(
     stopwatch.measure();
 
     RENDERER_LOG_INFO(
-        "wrote curve file %s (%s %s, %s %s, %s %s) in %s.", filepath,
-        pretty_int(walker.get_curve_count()).c_str(),"curves",
-        walker.get_basis_string(), "type",
-        pretty_int(walker.get_total_vertex_count()).c_str(),
+        "wrote curve file %s (%s %s, %s type, %s %s) in %s.",
+        filepath,
+        pretty_uint(walker.get_curve_count()).c_str(),
+        walker.get_curve_count() > 1 ? "curves" : "curve",
+        get_curve_basis_name(object.get_basis()),
+        pretty_uint(walker.get_total_vertex_count()).c_str(),
         walker.get_total_vertex_count() > 1 ? "vertices" : "vertex",
         pretty_time(stopwatch.get_seconds()).c_str());
 

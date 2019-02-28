@@ -58,6 +58,8 @@ set (sources
 
 add_library (bcd STATIC ${sources})
 
+set_target_properties (bcd PROPERTIES FOLDER "Third Parties")
+
 apply_static_lib_linker_flags (bcd)
 
 

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_TRANSFORM_H
-#define APPLESEED_FOUNDATION_MATH_TRANSFORM_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
@@ -65,7 +64,7 @@ class Transform
     typedef Transform<T> TransformType;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     Transform() = default;                      // leave the transformation uninitialized
 #else
     Transform() {}                              // leave the transformation uninitialized
@@ -179,7 +178,7 @@ class TransformInterpolator
     typedef Transform<T> TransformType;
 
     // Constructors.
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
     TransformInterpolator() = default;          // leave the interpolator uninitialized
 #else
     TransformInterpolator() {}                  // leave the interpolator uninitialized
@@ -789,6 +788,4 @@ inline void TransformInterpolator<T>::evaluate(const T t, Transform<T>& result) 
     result.m_local_to_parent[15] = result.m_parent_to_local[15] = T(1.0);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_TRANSFORM_H
+}   // namespace foundation

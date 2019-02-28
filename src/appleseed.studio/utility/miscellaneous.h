@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_MISCELLANEOUS_H
-#define APPLESEED_STUDIO_UTILITY_MISCELLANEOUS_H
+#pragma once
 
 // Qt headers.
 #include <QFileDialog>
@@ -58,13 +57,13 @@ QString get_oiio_image_files_filter();
 
 enum ProjectFilesFilter
 {
-    ProjectFilesFilterAllProjects       = 1 << 0,   // all project files extensions
-    ProjectFilesFilterPlainProjects     = 1 << 1,   // .appleseed extension
-    ProjectFilesFilterPackedProjects    = 1 << 2,   // .appleseedz extension
+    ProjectFilesFilterAllProjects       = 1UL << 0,     // all project files extensions
+    ProjectFilesFilterPlainProjects     = 1UL << 1,     // .appleseed extension
+    ProjectFilesFilterPackedProjects    = 1UL << 2,     // .appleseedz extension
     ProjectFilesFilterDefault           =
-        ProjectFilesFilterAllProjects |
-        ProjectFilesFilterPlainProjects |
-        ProjectFilesFilterPackedProjects
+          ProjectFilesFilterAllProjects
+        | ProjectFilesFilterPlainProjects
+        | ProjectFilesFilterPackedProjects
 };
 
 // Return a file dialog filter string for appleseed projects.
@@ -156,7 +155,5 @@ QList<ToType> qlist_static_cast(const QList<FromType>& list)
     return result;
 }
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_UTILITY_MISCELLANEOUS_H
+}   // namespace studio
+}   // namespace appleseed

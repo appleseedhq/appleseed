@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_CAMERA_ORTHOGRAPHICCAMERA_H
-#define APPLESEED_RENDERER_MODELING_CAMERA_ORTHOGRAPHICCAMERA_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/camera/icamerafactory.h"
@@ -74,6 +73,4 @@ class APPLESEED_DLLSYMBOL OrthographicCameraFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_CAMERA_ORTHOGRAPHICCAMERA_H
+}   // namespace renderer

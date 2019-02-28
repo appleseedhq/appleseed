@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_PARSERESULTS_H
-#define APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_PARSERESULTS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -62,6 +61,4 @@ class APPLESEED_DLLSYMBOL ParseResults
     }
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_PARSERESULTS_H
+}   // namespace foundation

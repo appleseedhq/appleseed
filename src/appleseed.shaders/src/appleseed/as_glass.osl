@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017-2018 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017-2019 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,16 +28,18 @@
 
 shader as_glass
 [[
-    string as_maya_node_name = "asGlass",
-    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string as_blender_node_name = "asGlass",
-    string as_blender_category = "shader",
     string help = "Glass material with absorption.",
     string icon = "asGlass.png",
-    int as_maya_type_id = 0x001279c4,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_glass.html#label-as-glass",
+
+    string as_node_name = "asGlass",
+    string as_category = "shader",
+
     string as_max_class_id = "1785798004 1778718452",
     string as_max_plugin_type = "material",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_glass.html#label-as-glass"
+
+    int as_maya_type_id = 0x001279c4,
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch"
 ]]
 (
     color in_surface_transmittance = color(1.0)
@@ -229,13 +231,13 @@ shader as_glass
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
-    int in_maximum_ray_depth = 4
+    int in_maximum_ray_depth = 100
     [[
         string as_maya_attribute_name = "maximumRayDepth",
         string as_maya_attribute_short_name = "mr",
         int min = 0,
         int max = 100,
-        int softmax = 8,
+        int softmax = 16,
         string label = "Ray Depth",
         string page = "Advanced",
         int as_maya_attribute_connectable = 0,
@@ -284,17 +286,22 @@ shader as_glass
     ]]
 )
 {
-    if (raytype("shadow") || raytype("transparency"))
+    if (raytype("transparency"))
     {
+        if (in_enable_matte)
+        {
+            out_outMatteOpacity = as_matte(
+                in_matte_opacity_color,
+                in_matte_opacity);
+
+            out_outColor += out_outMatteOpacity;
+        }
         return;
     }
 
-    if (in_enable_matte)
+    if (raytype("shadow"))
     {
-        out_outMatteOpacity = in_matte_opacity *
-            in_matte_opacity_color * holdout();
-
-        out_outColor += out_outMatteOpacity;
+        return;
     }
 
     int ray_depth = 0;

@@ -35,9 +35,11 @@
 
 // Forward declarations.
 void bind_aov();
+void bind_appleseed();
 void bind_assembly();
 void bind_basis();
 void bind_bbox();
+void bind_blender_mesh_converter();
 void bind_bsdf();
 void bind_bssrdf();
 void bind_camera();
@@ -63,7 +65,9 @@ void bind_project();
 void bind_quaternion();
 void bind_renderer_controller();
 void bind_scene();
+void bind_shader_compiler();
 void bind_shader_group();
+void bind_shader_query();
 void bind_surface_shader();
 void bind_texture();
 void bind_tile_callback();
@@ -85,6 +89,8 @@ extern "C" void bind_appleseed_python_classes()
     boost::python::scope().attr("APPLESEED_VERSION_MATURITY") = APPLESEED_VERSION_MATURITY;
     boost::python::scope().attr("APPLESEED_VERSION_STRING") = APPLESEED_VERSION_STRING;
 
+    bind_appleseed();
+
     bind_utility();
     bind_murmurhash();
     bind_logger();
@@ -104,7 +110,10 @@ extern "C" void bind_appleseed_python_classes()
     bind_bssrdf();
     bind_edf();
     bind_volume();
+
+    bind_shader_compiler();
     bind_shader_group();
+    bind_shader_query();
 
     bind_surface_shader();
     bind_material();
@@ -132,6 +141,7 @@ extern "C" void bind_appleseed_python_classes()
 
 #if PY_MAJOR_VERSION == 3
     bind_blender_progressive_tile_callback();
+    bind_blender_mesh_converter();
 #endif
 }
 

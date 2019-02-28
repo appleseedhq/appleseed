@@ -36,7 +36,7 @@
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/sourceinputs.h"
 #include "renderer/modeling/material/ibasismodifier.h"
-#include "renderer/modeling/object/iregion.h"
+#include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
@@ -189,20 +189,9 @@ void ShadingPoint::fetch_source_geometry() const
 
 void ShadingPoint::fetch_triangle_source_geometry() const
 {
-    // Retrieve the region kit of the object.
-    assert(m_region_kit_cache);
-    const RegionKit& region_kit =
-        *m_region_kit_cache->access(
-            m_object->get_uid(), m_object->get_region_kit());
-
-    // Retrieve the region.
-    const IRegion* region = region_kit[m_region_index];
-
-    // Retrieve the tessellation of the region.
-    assert(m_tess_cache);
-    const StaticTriangleTess& tess =
-        *m_tess_cache->access(
-            region->get_uid(), region->get_static_triangle_tess());
+    // Retrieve the tessellation of the object.
+    const MeshObject& mesh = static_cast<const MeshObject&>(*m_object);
+    const StaticTriangleTess& tess = mesh.get_static_triangle_tess();
 
     // Compute motion interpolation parameters.
     const size_t motion_segment_count = tess.get_motion_segment_count();
@@ -685,6 +674,8 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
 
 void ShadingPoint::compute_normals() const
 {
+    cache_source_geometry();
+
     switch (m_primitive_type)
     {
       case PrimitiveTriangle:
@@ -720,7 +711,7 @@ void ShadingPoint::compute_normals() const
 
     // Store which side of the geometric surface we hit.
     const bool back = dot(m_ray.m_dir, m_geometric_normal) > 0.0;
-    m_side = back ^ m_object_instance->flip_normals()
+    m_side = back ^ m_object_instance->must_flip_normals()
         ? ObjectInstance::BackSide
         : ObjectInstance::FrontSide;
 
@@ -859,21 +850,9 @@ void ShadingPoint::compute_world_space_point_velocity() const
 
     if (m_primitive_type == PrimitiveTriangle)
     {
-        // Retrieve the region kit of the object.
-        assert(m_region_kit_cache);
-        const RegionKit& region_kit =
-            *m_region_kit_cache->access(
-                m_object->get_uid(), m_object->get_region_kit());
-
-        // Retrieve the region.
-        const IRegion* region = region_kit[m_region_index];
-
-        // Retrieve the tessellation of the region.
-        assert(m_tess_cache);
-        const StaticTriangleTess& tess =
-            *m_tess_cache->access(
-                region->get_uid(), region->get_static_triangle_tess());
-        const size_t motion_segment_count = tess.get_motion_segment_count();
+        // Retrieve the tessellation of the mesh.
+        const MeshObject& mesh = static_cast<const MeshObject&>(*m_object);
+        const StaticTriangleTess& tess = mesh.get_static_triangle_tess();
 
         // Retrieve the triangle.
         const Triangle& triangle = tess.m_primitives[m_primitive_index];
@@ -882,6 +861,9 @@ void ShadingPoint::compute_world_space_point_velocity() const
         assert(triangle.m_v0 != Triangle::None);
         assert(triangle.m_v1 != Triangle::None);
         assert(triangle.m_v2 != Triangle::None);
+
+        const size_t motion_segment_count = tess.get_motion_segment_count();
+
         if (motion_segment_count > 0)
         {
             // Fetch triangle vertices from the first pose.
@@ -1020,7 +1002,6 @@ void ShadingPoint::compute_per_vertex_color() const
     }
 }
 
-
 void ShadingPoint::initialize_osl_shader_globals(
     const ShaderGroup&          sg,
     const VisibilityFlags::Type ray_flags,
@@ -1048,8 +1029,8 @@ void ShadingPoint::initialize_osl_shader_globals(
             m_shader_globals.dPdx = Vector3f(get_dpdx());
             m_shader_globals.dPdy = Vector3f(get_dpdy());
             m_shader_globals.dPdz = Vector3f(0.0);
-            m_shader_globals.dIdx = Vector3f(ray.m_rx.m_dir);
-            m_shader_globals.dIdy = Vector3f(ray.m_ry.m_dir);
+            m_shader_globals.dIdx = Vector3f(ray.m_rx.m_dir - ray.m_dir);
+            m_shader_globals.dIdy = Vector3f(ray.m_ry.m_dir - ray.m_dir);
         }
         else
         {
@@ -1209,8 +1190,6 @@ class PoisonImpl<OSL::Vec3>
 
 void PoisonImpl<renderer::ShadingPoint>::do_poison(renderer::ShadingPoint& point)
 {
-    poison(point.m_region_kit_cache);
-    poison(point.m_tess_cache);
     poison(point.m_texture_cache);
     poison(point.m_scene);
     poison(point.m_ray);
@@ -1221,7 +1200,6 @@ void PoisonImpl<renderer::ShadingPoint>::do_poison(renderer::ShadingPoint& point
     poison(point.m_assembly_instance_transform);
     poison(point.m_assembly_instance_transform_seq);
     poison(point.m_object_instance_index);
-    poison(point.m_region_index);
     poison(point.m_primitive_index);
     poison(point.m_triangle_support_plane);
 
@@ -1266,6 +1244,7 @@ void PoisonImpl<renderer::ShadingPoint>::do_poison(renderer::ShadingPoint& point
     poison(point.m_material);
     poison(point.m_opposite_material);
     poison(point.m_alpha);
+    poison(point.m_color);
 
     poison(point.m_asm_geo_normal);
     poison(point.m_front_point);
@@ -1318,6 +1297,10 @@ void PoisonImpl<renderer::ShadingPoint>::do_poison(renderer::ShadingPoint& point
     poison(point.m_shader_globals.raytype);
     poison(point.m_shader_globals.flipHandedness);
     poison(point.m_shader_globals.backfacing);
+
+    poison(point.m_surface_shader_diffuse);
+    poison(point.m_surface_shader_glossy);
+    poison(point.m_surface_shader_emission);
 }
 
 }   // namespace foundation

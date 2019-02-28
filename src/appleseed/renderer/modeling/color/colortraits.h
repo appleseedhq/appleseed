@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_COLOR_COLORTRAITS_H
-#define APPLESEED_RENDERER_MODELING_COLOR_COLORTRAITS_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/color/colorentity.h"
@@ -85,6 +84,4 @@ struct EntityTraits<ColorEntity>
     }
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_COLOR_COLORTRAITS_H
+}   // namespace renderer

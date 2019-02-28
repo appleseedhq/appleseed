@@ -50,6 +50,7 @@
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/utility/spectrumclamp.h"
 #include "renderer/utility/stochasticcast.h"
 
 // appleseed.foundation headers.
@@ -161,7 +162,7 @@ namespace
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             ShadingComponents&      radiance,               // output radiance, in W.sr^-1.m^-2
-            AOVComponents&          components) override      
+            AOVComponents&          components) override
         {
             if (m_light_path_stream)
             {
@@ -200,7 +201,7 @@ namespace
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             ShadingComponents&      radiance,               // output radiance, in W.sr^-1.m^-2
-            AOVComponents&          components)               
+            AOVComponents&          components)
         {
             PathVisitor path_visitor(
                 m_params,
@@ -587,8 +588,8 @@ namespace
                 env_radiance *= vertex.m_throughput;
 
                 // Optionally clamp secondary rays contribution.
-                if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1)
-                    clamp_contribution(env_radiance);
+                if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1 && vertex.m_prev_mode != ScatteringMode::Specular)
+                    clamp_contribution(env_radiance, m_params.m_max_ray_intensity);
 
                 // Update path radiance.
                 m_path_radiance.add_emission(
@@ -618,8 +619,8 @@ namespace
                     emitted_radiance *= vertex.m_throughput;
 
                     // Optionally clamp secondary rays contribution.
-                    if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1)
-                        clamp_contribution(emitted_radiance);
+                    if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1 && vertex.m_prev_mode != ScatteringMode::Specular)
+                        clamp_contribution(emitted_radiance, m_params.m_max_ray_intensity);
 
                     // Update path radiance.
                     m_path_radiance.add_emission(
@@ -667,6 +668,7 @@ namespace
                             vertex.m_shading_point->get_material()->get_render_data();
                         if (material_data.m_shader_group)
                         {
+                            // todo: don't split if there's only one closure.
                             m_sampling_context.split_in_place(2, 1);
                             m_shading_context.choose_bsdf_closure_shading_basis(
                                 *vertex.m_shading_point,
@@ -702,7 +704,8 @@ namespace
                             *vertex.m_bsdf,
                             vertex.m_bsdf_data,
                             vertex.m_scattering_modes,
-                            vertex_radiance);
+                            vertex_radiance,
+                            m_light_path_stream);
                     }
                 }
 
@@ -710,8 +713,8 @@ namespace
                 vertex_radiance *= vertex.m_throughput;
 
                 // Optionally clamp secondary rays contribution.
-                if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1)
-                    clamp_contribution(vertex_radiance);
+                if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1 && vertex.m_prev_mode != ScatteringMode::Specular)
+                    clamp_contribution(vertex_radiance, m_params.m_max_ray_intensity);
 
                 // Update path radiance.
                 m_path_radiance.add(
@@ -803,7 +806,8 @@ namespace
                 const BSDF&                 bsdf,
                 const void*                 bsdf_data,
                 const int                   scattering_modes,
-                DirectShadingComponents&    vertex_radiance)
+                DirectShadingComponents&    vertex_radiance,
+                LightPathStream*            light_path_stream)
             {
                 DirectShadingComponents ibl_radiance;
 
@@ -828,7 +832,8 @@ namespace
                     scattering_modes,
                     1,                      // bsdf_sample_count
                     env_sample_count,
-                    ibl_radiance);
+                    ibl_radiance,
+                    light_path_stream);
 
                 // Divide by the sample count when this number is less than 1.
                 if (m_params.m_rcp_ibl_env_sample_count > 0.0f)
@@ -836,29 +841,6 @@ namespace
 
                 // Add image-based lighting contribution.
                 vertex_radiance += ibl_radiance;
-            }
-
-            void clamp_contribution(Spectrum& radiance) const
-            {
-                const float avg = average_value(radiance);
-
-                if (avg > m_params.m_max_ray_intensity)
-                    radiance *= m_params.m_max_ray_intensity / avg;
-            }
-
-            void clamp_contribution(DirectShadingComponents& radiance) const
-            {
-                // Clamp all components.
-                clamp_contribution(radiance.m_diffuse);
-                clamp_contribution(radiance.m_glossy);
-                clamp_contribution(radiance.m_volume);
-                clamp_contribution(radiance.m_emission);
-
-                // Rebuild the beauty component.
-                radiance.m_beauty  = radiance.m_diffuse;
-                radiance.m_beauty += radiance.m_glossy;
-                radiance.m_beauty += radiance.m_volume;
-                radiance.m_beauty += radiance.m_emission;
             }
         };
 
@@ -1073,34 +1055,9 @@ namespace
 // PTLightingEngineFactory class implementation.
 //
 
-PTLightingEngineFactory::PTLightingEngineFactory(
-    const BackwardLightSampler&     light_sampler,
-    LightPathRecorder&              light_path_recorder,
-    const ParamArray&               params)
-  : m_light_sampler(light_sampler)
-  , m_light_path_recorder(light_path_recorder)
-  , m_params(params)
-{
-}
-
-void PTLightingEngineFactory::release()
-{
-    delete this;
-}
-
-ILightingEngine* PTLightingEngineFactory::create()
-{
-    return
-        new PTLightingEngine(
-            m_light_sampler,
-            m_light_path_recorder,
-            m_params);
-}
-
 Dictionary PTLightingEngineFactory::get_params_metadata()
 {
     Dictionary metadata;
-    add_common_params_metadata(metadata, true);
 
     metadata.dictionaries().insert(
         "enable_dl",
@@ -1109,6 +1066,14 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("default", "true")
             .insert("label", "Enable Direct Lighting")
             .insert("help", "Enable direct lighting"));
+
+    metadata.dictionaries().insert(
+        "enable_ibl",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "on")
+            .insert("label", "Enable IBL")
+            .insert("help", "Enable image-based lighting"));
 
     metadata.dictionaries().insert(
         "enable_caustics",
@@ -1186,6 +1151,30 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("help", "Explicitly connect path vertices to light sources to improve efficiency"));
 
     metadata.dictionaries().insert(
+        "dl_light_samples",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "1.0")
+            .insert("label", "Light Samples")
+            .insert("help", "Number of samples used to estimate direct lighting"));
+
+    metadata.dictionaries().insert(
+        "dl_low_light_threshold",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "0.0")
+            .insert("label", "Low Light Threshold")
+            .insert("help", "Light contribution threshold to disable shadow rays"));
+
+    metadata.dictionaries().insert(
+        "ibl_env_samples",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "1.0")
+            .insert("label", "IBL Samples")
+            .insert("help", "Number of samples used to estimate environment lighting"));
+
+    metadata.dictionaries().insert(
         "clamp_roughness",
         Dictionary()
             .insert("type", "bool")
@@ -1230,6 +1219,30 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("help", "Record light paths in memory to later allow visualizing them or saving them to disk"));
 
     return metadata;
+}
+
+PTLightingEngineFactory::PTLightingEngineFactory(
+    const BackwardLightSampler&     light_sampler,
+    LightPathRecorder&              light_path_recorder,
+    const ParamArray&               params)
+  : m_light_sampler(light_sampler)
+  , m_light_path_recorder(light_path_recorder)
+  , m_params(params)
+{
+}
+
+void PTLightingEngineFactory::release()
+{
+    delete this;
+}
+
+ILightingEngine* PTLightingEngineFactory::create()
+{
+    return
+        new PTLightingEngine(
+            m_light_sampler,
+            m_light_path_recorder,
+            m_params);
 }
 
 }   // namespace renderer

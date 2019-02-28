@@ -30,7 +30,7 @@
 
 shader as_maya_condition
 [[
-    string as_maya_node_name = "condition"
+    string as_node_name = "condition"
 ]]
 (
     int in_operation = 0

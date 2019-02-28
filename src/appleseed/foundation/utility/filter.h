@@ -27,13 +27,10 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_FILTER_H
-#define APPLESEED_FOUNDATION_UTILITY_FILTER_H
+#pragma once
 
 // Interface headers.
 #include "foundation/utility/filter/ifilter.h"
 #include "foundation/utility/filter/passthroughfilter.h"
 #include "foundation/utility/filter/regexfilter.h"
 #include "foundation/utility/filter/rejectallfilter.h"
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_FILTER_H

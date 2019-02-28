@@ -90,6 +90,7 @@
 #include <cstdio>
 #include <cstring>
 #include <exception>
+#include <functional>
 #include <map>
 #include <set>
 #include <string>
@@ -154,6 +155,34 @@ namespace
         const int               m_options;
         Indenter                m_indenter;
 
+        // Return a lexicographically-sorted vector of references to entities.
+        template <typename Collection>
+        vector<std::reference_wrapper<const typename Collection::value_type>> sorted(const Collection& collection)
+        {
+            return sorted_impl<const typename Collection::value_type>(collection.begin(), collection.end());
+        }
+        template <typename Collection>
+        vector<std::reference_wrapper<typename Collection::value_type>> sorted(Collection& collection)
+        {
+            return sorted_impl<typename Collection::value_type>(collection.begin(), collection.end());
+        }
+        template <typename ValueType, typename Iterator>
+        vector<std::reference_wrapper<ValueType>> sorted_impl(Iterator input_begin, Iterator input_end)
+        {
+            vector<std::reference_wrapper<ValueType>> result;
+            result.reserve(std::distance(input_begin, input_end));
+
+            for (Iterator it = input_begin; it != input_end; ++it)
+                result.emplace_back(*it);
+
+            sort(result.begin(), result.end(), [](const Entity& lhs, const Entity& rhs)
+            {
+                return strcmp(lhs.get_name(), rhs.get_name()) < 0;
+            });
+
+            return result;
+        }
+
         // Write a vector of scalars.
         template <typename Vec>
         void write_vector(
@@ -215,6 +244,7 @@ namespace
                 float time;
                 Transformd transform;
                 transform_sequence.get_transform(0, time, transform);
+
                 if (transform.get_local_to_parent() == Matrix4d::identity())
                     return;
             }
@@ -274,41 +304,11 @@ namespace
             write_params(entity.get_parameters());
         }
 
-        // An alphabetically-sorted vector of mutable entities.
         template <typename Collection>
-        class SortedMutableEntityVector
-          : public vector<typename Collection::value_type*>
+        void write_collection(const Collection& collection)
         {
-          public:
-            explicit SortedMutableEntityVector(Collection& collection)
-            {
-                Base::reserve(collection.size());
-
-                for (auto& entity : collection)
-                    Base::push_back(&entity);
-
-                sort(Base::begin(), Base::end(), EntityOrderingPredicate());
-            }
-
-          private:
-            typedef vector<typename Collection::value_type*> Base;
-
-            struct EntityOrderingPredicate
-            {
-                bool operator()(const Entity* lhs, const Entity* rhs) const
-                {
-                    return strcmp(lhs->get_name(), rhs->get_name()) < 0;
-                }
-            };
-        };
-
-        template <typename Collection>
-        void write_collection(Collection& collection)
-        {
-            const SortedMutableEntityVector<Collection> sorted(collection);
-
-            for (const_each<SortedMutableEntityVector<Collection>> i = sorted; i; ++i)
-                write(**i);
+            for (const auto& entity : sorted(collection))
+                write(entity);
         }
 
         // Write an <aov> element.
@@ -327,11 +327,12 @@ namespace
         // Write an <aovs> element.
         void write_aovs(const Frame& frame)
         {
-            AOVContainer& aovs = frame.aovs();
+            const AOVContainer& aovs = frame.aovs();
             if (!aovs.empty())
             {
                 XMLElement element("aovs", m_file, m_indenter);
                 element.write(XMLElement::HasChildElements);
+
                 write_collection(aovs);
             }
         }
@@ -349,7 +350,7 @@ namespace
 
             // Don't write the content of the assembly if it was
             // generated procedurally.
-            if (dynamic_cast<const ProceduralAssembly*>(&assembly))
+            if (dynamic_cast<const ProceduralAssembly*>(&assembly) != nullptr)
             {
                 element.write(
                     !assembly.get_parameters().empty()
@@ -357,46 +358,46 @@ namespace
                         : XMLElement::HasNoContent);
 
                 write_params(assembly.get_parameters());
-                return;
             }
+            else
+            {
+                element.write(
+                    !assembly.get_parameters().empty() ||
+                    !assembly.colors().empty() ||
+                    !assembly.textures().empty() ||
+                    !assembly.texture_instances().empty() ||
+                    !assembly.bsdfs().empty() ||
+                    !assembly.bssrdfs().empty() ||
+                    !assembly.edfs().empty() ||
+                    !assembly.shader_groups().empty() ||
+                    !assembly.surface_shaders().empty() ||
+                    !assembly.materials().empty() ||
+                    !assembly.lights().empty() ||
+                    !assembly.objects().empty() ||
+                    !assembly.object_instances().empty() ||
+                    !assembly.volumes().empty() ||
+                    !assembly.assemblies().empty() ||
+                    !assembly.assembly_instances().empty()
+                        ? XMLElement::HasChildElements
+                        : XMLElement::HasNoContent);
 
-            element.write(
-                !assembly.get_parameters().empty() ||
-                !assembly.colors().empty() ||
-                !assembly.textures().empty() ||
-                !assembly.texture_instances().empty() ||
-                !assembly.bsdfs().empty() ||
-                !assembly.bssrdfs().empty() ||
-                !assembly.edfs().empty() ||
-                !assembly.shader_groups().empty() ||
-                !assembly.surface_shaders().empty() ||
-                !assembly.materials().empty() ||
-                !assembly.lights().empty() ||
-                !assembly.objects().empty() ||
-                !assembly.object_instances().empty() ||
-                !assembly.volumes().empty() ||
-                !assembly.assemblies().empty() ||
-                !assembly.assembly_instances().empty()
-                    ? XMLElement::HasChildElements
-                    : XMLElement::HasNoContent);
-
-            write_params(assembly.get_parameters());
-
-            write_collection(assembly.colors());
-            write_collection(assembly.textures());
-            write_collection(assembly.texture_instances());
-            write_collection(assembly.bsdfs());
-            write_collection(assembly.bssrdfs());
-            write_collection(assembly.edfs());
-            write_collection(assembly.shader_groups());
-            write_collection(assembly.surface_shaders());
-            write_collection(assembly.materials());
-            write_collection(assembly.lights());
-            write_object_collection(assembly.objects());
-            write_collection(assembly.object_instances());
-            write_collection(assembly.volumes());
-            write_collection(assembly.assemblies());
-            write_collection(assembly.assembly_instances());
+                write_params(assembly.get_parameters());
+                write_collection(assembly.colors());
+                write_collection(assembly.textures());
+                write_collection(assembly.texture_instances());
+                write_collection(assembly.bsdfs());
+                write_collection(assembly.bssrdfs());
+                write_collection(assembly.edfs());
+                write_collection(assembly.shader_groups());
+                write_collection(assembly.surface_shaders());
+                write_collection(assembly.materials());
+                write_collection(assembly.lights());
+                write_object_collection(assembly.objects());
+                write_collection(assembly.object_instances());
+                write_collection(assembly.volumes());
+                write_collection(assembly.assemblies());
+                write_collection(assembly.assembly_instances());
+            }
         }
 
         // Write an <assembly_instance> element.
@@ -467,7 +468,6 @@ namespace
             element.write(XMLElement::HasChildElements);
 
             write_params(color_entity.get_parameters());
-
             write_value_array("values", color_entity.get_values());
             write_value_array("alpha", color_entity.get_alpha());
         }
@@ -483,6 +483,7 @@ namespace
                 !configuration.get_parameters().empty()
                     ? XMLElement::HasChildElements
                     : XMLElement::HasNoContent);
+
             write_params(configuration.get_parameters());
         }
 
@@ -490,9 +491,9 @@ namespace
         {
             size_t count = 0;
 
-            for (const_each<ConfigurationContainer> i = configurations; i; ++i)
+            for (const Configuration& configuration : configurations)
             {
-                if (!BaseConfigurationFactory::is_base_configuration(i->get_name()))
+                if (!BaseConfigurationFactory::is_base_configuration(configuration.get_name()))
                     ++count;
             }
 
@@ -509,9 +510,8 @@ namespace
                     : XMLElement::HasNoContent);
 
             // Write configurations.
-            for (const_each<ConfigurationContainer> i = project.configurations(); i; ++i)
+            for (const Configuration& configuration : sorted(project.configurations()))
             {
-                const Configuration& configuration = *i;
                 if (!BaseConfigurationFactory::is_base_configuration(configuration.get_name()))
                     write_configuration(configuration);
             }
@@ -571,6 +571,7 @@ namespace
                 !frame.post_processing_stages().empty()
                     ? XMLElement::HasChildElements
                     : XMLElement::HasNoContent);
+
             write_params(frame.get_parameters());
             write_aovs(frame);
             write_post_processing_stages(frame);
@@ -603,13 +604,10 @@ namespace
         // Write a collection of <object> elements.
         void write_object_collection(ObjectContainer& objects)
         {
-            const SortedMutableEntityVector<ObjectContainer> sorted(objects);
             set<string> groups;
 
-            for (const_each<SortedMutableEntityVector<ObjectContainer>> i = sorted; i; ++i)
+            for (Object& object : sorted(objects))
             {
-                Object& object = **i;
-
                 if (strcmp(object.get_model(), MeshObjectFactory().get_model()) == 0)
                     write_mesh_object(static_cast<MeshObject&>(object), groups);
                 else if (strcmp(object.get_model(), CurveObjectFactory().get_model()) == 0)
@@ -742,7 +740,6 @@ namespace
 
             write_params(object_instance.get_parameters());
             write_transform(object_instance.get_transform());
-
             write_assign_materials(ObjectInstance::FrontSide, object_instance.get_front_material_mappings());
             write_assign_materials(ObjectInstance::BackSide, object_instance.get_back_material_mappings());
         }
@@ -769,11 +766,12 @@ namespace
         // Write an <post_processing_stages> element.
         void write_post_processing_stages(const Frame& frame)
         {
-            PostProcessingStageContainer& stages = frame.post_processing_stages();
+            const PostProcessingStageContainer& stages = frame.post_processing_stages();
             if (!stages.empty())
             {
                 XMLElement element("post_processing_stages", m_file, m_indenter);
                 element.write(XMLElement::HasChildElements);
+
                 write_collection(stages);
             }
         }
@@ -797,17 +795,14 @@ namespace
                     : XMLElement::HasNoContent);
 
             write_params(scene.get_parameters());
-
             write_collection(scene.cameras());
             write_collection(scene.colors());
             write_collection(scene.textures());
             write_collection(scene.texture_instances());
             write_collection(scene.environment_edfs());
             write_collection(scene.environment_shaders());
-
             if (scene.get_environment())
                 write(*scene.get_environment());
-
             write_collection(scene.shader_groups());
             write_collection(scene.assemblies());
             write_collection(scene.assembly_instances());
@@ -846,6 +841,15 @@ namespace
             element.write(XMLElement::HasNoContent);
         }
 
+        // Write an <osl_code> element.
+        void write_osl_code(const char* code)
+        {
+            XMLElement element("osl_code", m_file, m_indenter);
+            element.write(XMLElement::HasChildElements);
+
+            fprintf(m_file, "%s\n", code);
+        }
+
         // Write a <shader> element.
         void write(const Shader& shader)
         {
@@ -855,8 +859,10 @@ namespace
             element.add_attribute("layer", shader.get_layer());
             element.write(XMLElement::HasChildElements);
 
-            for (const_each<ShaderParamContainer> i = shader.shader_params(); i; ++i)
-                write(*i);
+            write_collection(shader.shader_params());
+
+            if (shader.get_source_code())
+                write_osl_code(shader.get_source_code());
         }
 
         // Write a <connect_shaders> element.
@@ -877,11 +883,13 @@ namespace
             element.add_attribute("name", shader_group.get_name());
             element.write(XMLElement::HasChildElements);
 
-            for (const_each<ShaderContainer> i = shader_group.shaders(); i; ++i)
-                write(*i);
+            // Write shaders in the original order.
+            for (const Shader& shader : shader_group.shaders())
+                write(shader);
 
-            for (const_each<ShaderConnectionContainer> i = shader_group.shader_connections(); i; ++i)
-                write(*i);
+            // Write shader connections in the original order.
+            for (const ShaderConnection& shader_connection : shader_group.shader_connections())
+                write(shader_connection);
         }
 
         // Write a <surface_shader> element.
@@ -917,7 +925,7 @@ bool ProjectFileWriter::write(
     const char*     extra_comments)
 {
     return
-        bf::path(filepath).extension() == ".appleseedz"
+        lower_case(bf::path(filepath).extension().string()) == ".appleseedz"
             ? write_packed_project_file(project, filepath, options, extra_comments)
             : write_plain_project_file(project, filepath, options, extra_comments);
 }

@@ -176,6 +176,7 @@ namespace
             value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
 
             probability = cos_on * RcpPi<float>();
+            assert(probability > 0.0f);
         }
 
         float evaluate_pdf(
@@ -242,7 +243,7 @@ DictionaryArray DiffuseEDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "1.0"));
 
@@ -252,7 +253,7 @@ DictionaryArray DiffuseEDFFactory::get_input_metadata() const
             .insert("label", "Radiance Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 

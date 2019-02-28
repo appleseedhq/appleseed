@@ -128,6 +128,9 @@ bool Camera::on_render_begin(
     OnRenderBeginRecorder&  recorder,
     IAbortSwitch*           abort_switch)
 {
+    if (!Entity::on_render_begin(project, parent, recorder, abort_switch))
+        return false;
+
     m_shutter_open_begin_time =
         m_params.get_optional<float>(
             "shutter_open_begin_time",
@@ -266,7 +269,7 @@ double Camera::extract_near_z() const
     if (near_z > 0.0)
     {
         RENDERER_LOG_ERROR(
-            "while defining camera \"%s\": invalid near-z value \"%f\", near-z values must be negative or zero; "
+            "while defining camera \"%s\": invalid near z value \"%f\", near z values must be negative or zero; "
             "using default value \"%f\".",
             get_path().c_str(),
             near_z,
@@ -492,13 +495,13 @@ void Camera::initialize_ray(
     ray.m_flags = VisibilityFlags::CameraRay;
     ray.m_depth = 0;
 
-    float sample_time = 0.0f;
-
+    float sample_time;
     if (m_motion_blur_enabled)
     {
         sampling_context.split_in_place(1, 1);
         sample_time = map_to_shutter_curve(sampling_context.next2<float>());
     }
+    else sample_time = 0.0f;
 
     ray.m_time =
         ShadingRay::Time::create_with_normalized_time(

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_FILTER_REGEXFILTER_H
-#define APPLESEED_FOUNDATION_UTILITY_FILTER_REGEXFILTER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/filter/ifilter.h"
@@ -73,6 +72,4 @@ class APPLESEED_DLLSYMBOL RegExFilter
     Impl* impl;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_FILTER_REGEXFILTER_H
+}   // namespace foundation

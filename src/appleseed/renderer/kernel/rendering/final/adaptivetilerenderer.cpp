@@ -43,7 +43,9 @@
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
+#include "renderer/modeling/aov/pixelsamplecountaov.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/utility/bbox.h"
 #include "renderer/utility/settingsparsing.h"
 
 // appleseed.foundation headers.
@@ -52,6 +54,7 @@
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/aabb.h"
+#include "foundation/math/fastmath.h"
 #include "foundation/math/filter.h"
 #include "foundation/math/ordering.h"
 #include "foundation/math/population.h"
@@ -68,6 +71,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cmath>
 #include <deque>
 #include <memory>
 #include <string>
@@ -110,8 +114,10 @@ namespace
     {
         // The bounding box of the block, including tile's margin.
         AABB2i          m_surface;
+
         // Samples/pixel made in this block.
         size_t          m_spp;
+
         // Noise amount of the pixel block.
         float           m_block_error;
         bool            m_converged;
@@ -125,21 +131,85 @@ namespace
         // Orientation of the block.
         Axis            m_main_axis;
 
-        explicit PixelBlock(
-            const AABB2i&       surface)
+        explicit PixelBlock(const AABB2i& surface)
           : m_surface(surface)
           , m_spp(0)
-          , m_block_error(0)
+          , m_block_error(0.0f)
           , m_converged(false)
         {
             assert(m_surface.is_valid());
-
-            if (m_surface.extent(0) >= m_surface.extent(1))
-                m_main_axis = Axis::Horizontal; // block is wider
-            else
-                m_main_axis = Axis::Vertical; // block is taller
+            m_main_axis =
+                m_surface.extent(0) >= m_surface.extent(1)
+                    ? Axis::Horizontal  // block is wider
+                    : Axis::Vertical;   // block is taller
         }
     };
+
+
+    //
+    // Calculation of noise level inside a block or a pixel.
+    //
+
+    // Compute the variance of a weighted pixel given the value of the same pixel with 2 different samples count.
+    // The first given pixel `main` contains N samples.
+    // The second given pixel `second` contains N/2 samples (samples included in `second` are also in `main`).
+    float compute_weighted_pixel_variance(
+        const float*            main,
+        const float*            second)
+    {
+        // Get weights.
+        const float main_weight = *main++;
+        const float rcp_main_weight = main_weight == 0.0f ? 0.0f : 1.0f / main_weight;
+        const float second_weight = *second++;
+        const float rcp_second_weight = second_weight == 0.0f ? 0.0f : 1.0f / second_weight;
+
+        // Get colors and assign weights.
+        Color4f main_color(main[0], main[1], main[2], main[3]);
+        main_color *= rcp_main_weight;
+
+        Color4f second_color(second[0], second[1], second[2], second[3]);
+        second_color *= rcp_second_weight;
+
+        const float rgb = abs(main_color.r) + abs(main_color.g) + abs(main_color.b);
+
+        if (rgb == 0.0f)
+            return 0.0f;
+
+        // Compute variance.
+        return
+            fast_rcp_sqrt(rgb) * (
+                abs(main_color.r - second_color.r) +
+                abs(main_color.g - second_color.g) +
+                abs(main_color.b - second_color.b));
+    }
+
+    // Compute the variance of the tile `main` for pixels in the bounding box `bb`.
+    // A second tile `second` is used which contains half of the samples of `main`.
+    float compute_tile_variance(
+        const AABB2u&           bb,
+        const FilteredTile*     main,
+        const FilteredTile*     second)
+    {
+        float error = 0.0f;
+
+        assert(main->get_crop_window() == second->get_crop_window());
+        assert(main->get_crop_window().contains(bb.min));
+        assert(main->get_crop_window().contains(bb.max));
+
+        // Loop over block pixels.
+        for (size_t y = bb.min.y; y <= bb.max.y; ++y)
+        {
+            for (size_t x = bb.min.x; x <= bb.max.x; ++x)
+            {
+                const float* main_ptr = main->pixel(x, y);
+                const float* second_ptr = second->pixel(x, y);
+
+                error = max(error, compute_weighted_pixel_variance(main_ptr, second_ptr));
+            }
+        }
+
+        return error;
+    }
 
 
     //
@@ -171,13 +241,26 @@ namespace
           , m_sample_aov_tile(nullptr)
           , m_variation_aov_tile(nullptr)
           , m_sample_renderer(sample_renderer_factory->create(thread_index))
-          , m_total_pixel(0)
-          , m_total_pixel_converged(0)
+          , m_total_pixel_count(0)
+          , m_total_converged_pixel_count(0)
         {
             compute_tile_margins(frame, thread_index == 0);
 
             m_sample_aov_index = frame.aovs().get_index("pixel_sample_count");
             m_variation_aov_index = frame.aovs().get_index("pixel_variation");
+
+            // Send sampling parameters to the sample count AOV.
+            if (m_sample_aov_index != ~size_t(0))
+            {
+                PixelSampleCountAOV* sample_aov =
+                    static_cast<PixelSampleCountAOV*>(
+                        frame.aovs().get_by_index(m_sample_aov_index));
+
+                // The AOV takes care of normalizing values depending on sampling parameters.
+                sample_aov->set_normalization_range(
+                    m_params.m_min_samples,
+                    m_params.m_max_samples * m_params.m_passes);
+            }
         }
 
         void release() override
@@ -208,7 +291,7 @@ namespace
             const Frame&                        frame,
             const size_t                        tile_x,
             const size_t                        tile_y,
-            const size_t                        pass_hash,
+            const uint32                        pass_hash,
             IAbortSwitch&                       abort_switch) override
         {
             // Retrieve frame properties.
@@ -222,22 +305,19 @@ namespace
             TileStack aov_tiles = frame.aov_images().tiles(tile_x, tile_y);
             const int tile_origin_x = static_cast<int>(frame_properties.m_tile_width * tile_x);
             const int tile_origin_y = static_cast<int>(frame_properties.m_tile_height * tile_y);
+            const int tile_width = static_cast<int>(tile.get_width());
+            const int tile_height = static_cast<int>(tile.get_height());
 
-            // Compute the image space bounding box of the pixels to render.
-            AABB2i tile_bbox;
-            tile_bbox.min.x = tile_origin_x;
-            tile_bbox.min.y = tile_origin_y;
-            tile_bbox.max.x = tile_origin_x + static_cast<int>(tile.get_width()) - 1;
-            tile_bbox.max.y = tile_origin_y + static_cast<int>(tile.get_height()) - 1;
-            tile_bbox = AABB2i::intersect(tile_bbox, AABB2i(frame.get_crop_window()));
+            // Compute the tile space bounding box of the pixels to render.
+            const AABB2i tile_bbox =
+                compute_tile_space_bbox(
+                    tile_origin_x,
+                    tile_origin_y,
+                    tile_width,
+                    tile_height,
+                    frame.get_crop_window());
             if (!tile_bbox.is_valid())
                 return;
-
-            // Transform the bounding box to local (tile) space.
-            tile_bbox.min.x -= tile_origin_x;
-            tile_bbox.min.y -= tile_origin_y;
-            tile_bbox.max.x -= tile_origin_x;
-            tile_bbox.max.y -= tile_origin_y;
 
             // Pad the bounding box with tile margins.
             AABB2i padded_tile_bbox;
@@ -278,10 +358,9 @@ namespace
 
             if (m_params.m_passes > 1)
                 second_framebuffer->copy_from(*framebuffer);
-            else
-                second_framebuffer->clear();
+            else second_framebuffer->clear();
 
-            const size_t pixel_count = framebuffer->get_width() * framebuffer->get_height();
+            const size_t tile_pixel_count = framebuffer->get_width() * framebuffer->get_height();
 
             // Blocks rendering.
             deque<PixelBlock> rendering_blocks;
@@ -343,7 +422,7 @@ namespace
                 rendering_blocks.pop_front();
 
                 // Each batch contains 'min' samples.
-                assert(pb.m_spp < m_params.m_max_samples || m_params.m_max_samples == 0);
+                assert(pb.m_spp <= m_params.m_max_samples || m_params.m_max_samples == 0);
                 const size_t batch_size =
                     m_params.m_max_samples > 0
                         ? min(m_params.m_batch_size, m_params.m_max_samples - pb.m_spp)
@@ -373,10 +452,11 @@ namespace
                 const AABB2u block_image_bb = AABB2i::intersect(framebuffer->get_crop_window(), pb.m_surface);
 
                 // Evaluate block's noise amount.
-                pb.m_block_error = FilteredTile::compute_tile_variance(
-                    block_image_bb,
-                    framebuffer,
-                    second_framebuffer.get());
+                pb.m_block_error =
+                    compute_tile_variance(
+                        block_image_bb,
+                        framebuffer,
+                        second_framebuffer.get());
 
                 if (batch_size < m_params.m_batch_size)
                 {
@@ -391,17 +471,17 @@ namespace
                 }
                 else if (pb.m_block_error <= m_params.m_splitting_threshold)
                 {
-                    // The block needs to be splitted.
-                    if (pb.m_main_axis == PixelBlock::Axis::Horizontal
-                        && block_image_bb.extent(0) >= BlockSplittingThreshold)
+                    // The block needs to be split.
+                    if (pb.m_main_axis == PixelBlock::Axis::Horizontal &&
+                        block_image_bb.extent(0) >= BlockSplittingThreshold)
                     {
                         split_pixel_block(
                             pb,
                             rendering_blocks,
                             static_cast<int>((block_image_bb.min.x + block_image_bb.max.x) / 2));
                     }
-                    else if (pb.m_main_axis == PixelBlock::Axis::Vertical
-                        && block_image_bb.extent(1) >= BlockSplittingThreshold)
+                    else if (pb.m_main_axis == PixelBlock::Axis::Vertical &&
+                             block_image_bb.extent(1) >= BlockSplittingThreshold)
                     {
                         split_pixel_block(
                             pb,
@@ -420,20 +500,35 @@ namespace
                 }
             }
 
+            //
             // Rendering finished, fill diagnostic AOVs and update statistics.
-            size_t tile_converged_pixel = 0;
+            //
+
+            size_t tile_converged_pixel_count = 0;
+            float average_noise_level = 0.0f;
+
+            for (size_t i = 0, n = rendering_blocks.size(); i < n; ++i)
+            {
+                const PixelBlock& pb = rendering_blocks[i];
+                const AABB2u pb_image_aabb = AABB2i::intersect(framebuffer->get_crop_window(), pb.m_surface);
+                const size_t pb_pixel_count = pb_image_aabb.volume();
+
+                average_noise_level += pb.m_block_error * pb_pixel_count;
+            }
 
             for (size_t i = 0, n = finished_blocks.size(); i < n; ++i)
             {
                 const PixelBlock& pb = finished_blocks[i];
                 const AABB2u pb_image_aabb = AABB2i::intersect(framebuffer->get_crop_window(), pb.m_surface);
-                const size_t pb_pixel_count = static_cast<size_t>(pb_image_aabb.volume());
+                const size_t pb_pixel_count = pb_image_aabb.volume();
+
+                average_noise_level += pb.m_block_error * pb_pixel_count;
 
                 // Update statistics.
                 m_spp.insert(pb.m_spp, pb_pixel_count);
 
                 if (pb.m_converged)
-                    tile_converged_pixel += pb_pixel_count;
+                    tile_converged_pixel_count += pb_pixel_count;
 
                 if (m_sample_aov_tile == nullptr && m_variation_aov_tile == nullptr)
                     continue;
@@ -445,34 +540,55 @@ namespace
                         // Retrieve the coordinates of the pixel in the padded tile.
                         const Vector2u pt(x, y);
 
-                        Color3f value(0.0f);
-
                         if (m_sample_aov_tile != nullptr)
                         {
-                            m_sample_aov_tile->get_pixel(pt.x, pt.y, value);
-                            value[0] += static_cast<float>(pb.m_spp);
-                            m_sample_aov_tile->set_pixel(pt.x, pt.y, value);
+                            Color3f samples;
+                            m_sample_aov_tile->get_pixel(pt.x, pt.y, samples);
+                            samples[0] += static_cast<float>(pb.m_spp);
+                            m_sample_aov_tile->set_pixel(pt.x, pt.y, samples);
                         }
 
                         if (m_variation_aov_tile != nullptr)
                         {
-                            m_sample_aov_tile->get_pixel(pt.x, pt.y, value);
-                            value[0] += static_cast<float>(pb.m_block_error);
-                            m_variation_aov_tile->set_pixel(pt.x, pt.y, value);
+                            Color3f variation;
+                            m_variation_aov_tile->get_pixel(pt.x, pt.y, variation);
+                            variation[0] += pb.m_block_error;
+                            m_variation_aov_tile->set_pixel(pt.x, pt.y, variation);
                         }
                     }
                 }
             }
 
-            m_total_pixel += pixel_count;
-            m_total_pixel_converged += tile_converged_pixel;
+            m_total_pixel_count += tile_pixel_count;
+            m_total_converged_pixel_count += tile_converged_pixel_count;
+            average_noise_level /= tile_pixel_count;
+
+            // Print final statistics about this tile.
+            const string converged_pixels_string = pretty_percent(tile_converged_pixel_count, tile_pixel_count, 0);
+            Statistics stats;
+            stats.insert(
+                "pixels",
+                format(
+                    "total {0}  converged {1} ({2})",
+                    pretty_uint(tile_pixel_count),
+                    pretty_uint(tile_converged_pixel_count),
+                    converged_pixels_string));
+            stats.insert("samples/pixel", m_spp);
+            stats.insert("average noise level", average_noise_level);
+            RENDERER_LOG_DEBUG(
+                "tile (" FMT_SIZE_T ", " FMT_SIZE_T ") final statistics:\n%s",
+                tile_x,
+                tile_y,
+                stats.to_string().c_str());
 
             // Warn the user if adaptive sampling wasn't efficient on this tile.
-            if (static_cast<float>(tile_converged_pixel) < BlockConvergenceWarningThreshold * pixel_count)
+            if (static_cast<float>(tile_converged_pixel_count) < BlockConvergenceWarningThreshold * tile_pixel_count)
             {
-                RENDERER_LOG_WARNING("%s of tile's pixels have converged, average sample/pixel: %s.",
-                    pretty_percent(tile_converged_pixel, pixel_count, 1).c_str(),
-                    pretty_uint(static_cast<size_t>(m_spp.get_mean())).c_str());
+                RENDERER_LOG_WARNING(
+                    "convergence rate for tile (" FMT_SIZE_T ", " FMT_SIZE_T ") is %s.",
+                    tile_x,
+                    tile_y,
+                    converged_pixels_string.c_str());
             }
 
             // Develop the framebuffer to the tile.
@@ -481,7 +597,7 @@ namespace
             // Release the framebuffer.
             m_framebuffer_factory->destroy(framebuffer);
 
-            // Inform the AOV accumulators that we are done rendering a tile.
+            // Inform the AOV accumulators that we are done rendering the tile.
             m_aov_accumulators.on_tile_end(frame, tile_x, tile_y);
 
             // Inform the pixel renderer that we are done rendering the tile.
@@ -496,7 +612,7 @@ namespace
             stats.insert("samples/pixel", m_spp);
 
             // Converged pixels over total pixels.
-            stats.insert_percent("convergence rate", m_total_pixel_converged, m_total_pixel);
+            stats.insert_percent("convergence rate", m_total_converged_pixel_count, m_total_pixel_count);
 
             StatisticsVector vec;
             vec.insert("adaptive tile renderer statistics", stats);
@@ -542,9 +658,10 @@ namespace
 
         // Members used for statistics.
         Population<uint64>                      m_spp;
-        size_t                                  m_total_pixel;
-        size_t                                  m_total_pixel_converged;
+        size_t                                  m_total_pixel_count;
+        size_t                                  m_total_converged_pixel_count;
 
+        // todo: factorize, this also exists in the GenericTileRenderer.
         void compute_tile_margins(
             const Frame&                        frame,
             const bool                          primary)
@@ -583,6 +700,7 @@ namespace
         {
             if (m_sample_aov_index != ~size_t(0))
                 m_sample_aov_tile = &frame.aovs().get_by_index(m_sample_aov_index)->get_image().tile(tile_x, tile_y);
+
             if (m_variation_aov_index != ~size_t(0))
                 m_variation_aov_tile = &frame.aovs().get_by_index(m_variation_aov_index)->get_image().tile(tile_x, tile_y);
         }
@@ -688,7 +806,7 @@ namespace
             const Frame&                        frame,
             const size_t                        frame_width,
             const size_t                        frame_height,
-            const size_t                        pass_hash,
+            const uint32                        pass_hash,
             const size_t                        aov_count)
         {
             // Loop over the block's pixels.
@@ -746,7 +864,7 @@ namespace
             const Vector2i&                     pt,
             ShadingResultFrameBuffer*           framebuffer,
             ShadingResultFrameBuffer*           second_framebuffer,
-            const size_t                        pass_hash,
+            const uint32                        pass_hash,
             const size_t                        instance,
             const size_t                        batch_size,
             const size_t                        aov_count)
@@ -757,9 +875,9 @@ namespace
             SamplingContext sampling_context(
                 rng,
                 m_params.m_sampling_mode,
-                2,                              // number of dimensions
-                batch_size,                     // number of samples
-                instance);                      // initial instance number
+                2,                          // number of dimensions
+                0,                          // number of samples -- unknown
+                instance);                  // initial instance number
 
             for (size_t i = 0; i < batch_size; ++i)
             {
@@ -855,6 +973,53 @@ namespace
 // AdaptiveTileRendererFactory class implementation.
 //
 
+Dictionary AdaptiveTileRendererFactory::get_params_metadata()
+{
+    Dictionary metadata;
+
+    metadata.dictionaries().insert(
+        "batch_size",
+        Dictionary()
+            .insert("type", "int")
+            .insert("min", "1")
+            .insert("max", "1000000")
+            .insert("default", "16")
+            .insert("label", "Batch Size")
+            .insert("help", "How many samples to render before each convergence estimation"));
+
+    metadata.dictionaries().insert(
+        "min_samples",
+        Dictionary()
+            .insert("type", "int")
+            .insert("min", "0")
+            .insert("max", "1000000")
+            .insert("default", "16")
+            .insert("label", "Min Samples")
+            .insert("help", "Number of uniform samples to render before adaptive sampling"));
+
+    metadata.dictionaries().insert(
+        "max_samples",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "256")
+            .insert("min", "0")
+            .insert("max", "1000000")
+            .insert("label", "Max Samples")
+            .insert("help", "Maximum number of anti-aliasing samples (0 for unlimited)"));
+
+    metadata.dictionaries().insert(
+        "noise_threshold",
+        Dictionary()
+            .insert("type", "float")
+            .insert("min", "0.0001")
+            .insert("max", "10000.0")
+            .insert("default", "0.1")
+            .insert("label", "Noise Threshold")
+            .insert("help", "Maximum amount of noise allowed in the image"));
+
+    return metadata;
+}
+
 AdaptiveTileRendererFactory::AdaptiveTileRendererFactory(
     const Frame&                        frame,
     ISampleRendererFactory*             sample_renderer_factory,
@@ -882,45 +1047,6 @@ ITileRenderer* AdaptiveTileRendererFactory::create(
             m_framebuffer_factory,
             m_params,
             thread_index);
-}
-
-Dictionary AdaptiveTileRendererFactory::get_params_metadata()
-{
-    Dictionary metadata;
-
-    metadata.dictionaries().insert(
-        "batch_size",
-        Dictionary()
-            .insert("type", "int")
-            .insert("default", "16")
-            .insert("label", "Batch Size")
-            .insert("help", "How many samples to render before each convergence estimation"));
-
-    metadata.dictionaries().insert(
-        "min_samples",
-        Dictionary()
-            .insert("type", "int")
-            .insert("default", "0")
-            .insert("label", "Min Samples")
-            .insert("help", "Number of uniform samples to render before adaptive sampling"));
-
-    metadata.dictionaries().insert(
-        "max_samples",
-        Dictionary()
-            .insert("type", "int")
-            .insert("default", "256")
-            .insert("label", "Max Samples")
-            .insert("help", "Maximum number of anti-aliasing samples (0 for unlimited)"));
-
-    metadata.dictionaries().insert(
-        "noise_threshold",
-        Dictionary()
-            .insert("type", "float")
-            .insert("default", "1.0")
-            .insert("label", "Noise Threshold")
-            .insert("help", "Maximum amount of noise allowed in the image"));
-
-    return metadata;
 }
 
 }   // namespace renderer

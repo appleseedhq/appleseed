@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_POPULATION_H
-#define APPLESEED_FOUNDATION_MATH_POPULATION_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
@@ -236,6 +235,4 @@ inline double Population<T>::get_var() const
     return m_mean == 0.0 ? dev : dev / m_mean;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_POPULATION_H
+}   // namespace foundation

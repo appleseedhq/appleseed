@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/version.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <sstream>
@@ -71,19 +72,6 @@ const char* Appleseed::get_lib_version()
     return APPLESEED_VERSION_STRING;
 }
 
-const char* Appleseed::get_lib_variant()
-{
-#if defined APPLESEED_USE_AVX
-    return "AVX";
-#elif defined APPLESEED_USE_SSE42
-    return "SSE4.2";
-#elif defined APPLESEED_USE_SSE
-    return "SSE2";
-#else
-    return "";
-#endif
-}
-
 const char* Appleseed::get_lib_configuration()
 {
 #ifdef DEBUG
@@ -105,6 +93,47 @@ const char* Appleseed::get_lib_compilation_time()
 
 namespace
 {
+    struct LibCPUFeaturesString
+    {
+        string m_value;
+
+        LibCPUFeaturesString()
+        {
+            stringstream sstr;
+
+#ifdef APPLESEED_USE_SSE
+            sstr << "SSE SSE2 ";
+#endif
+
+#ifdef APPLESEED_USE_SSE42
+            sstr << "SSE3 SSSE3 SSE4.1 SSE4.2 ";
+#endif
+
+#ifdef APPLESEED_USE_AVX
+            sstr << "AVX ";
+#endif
+
+#ifdef APPLESEED_USE_F16C
+            sstr << "F16C ";
+#endif
+
+            m_value =
+                sstr.str().empty()
+                    ? "base instruction set"
+                    : trim_right(sstr.str());
+        }
+    };
+
+    LibCPUFeaturesString g_lib_cpu_features_string;
+}
+
+const char* Appleseed::get_lib_cpu_features()
+{
+    return g_lib_cpu_features_string.m_value.c_str();
+}
+
+namespace
+{
     struct SyntheticVersionString
     {
         string m_value;
@@ -117,10 +146,10 @@ namespace
             sstr << " version ";
             sstr << Appleseed::get_lib_version();
 
-            if (Appleseed::get_lib_variant()[0] != '\0')
+            if (Appleseed::get_lib_cpu_features()[0] != '\0')
             {
                 sstr << " (";
-                sstr << Appleseed::get_lib_variant();
+                sstr << Appleseed::get_lib_cpu_features();
                 sstr << ")";
             }
 

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_FRESNEL_H
-#define APPLESEED_FOUNDATION_MATH_FRESNEL_H
+#pragma once
 
 // Foundation headers.
 #include "foundation/math/scalar.h"
@@ -682,6 +681,4 @@ inline void average_artist_friendly_fresnel_reflectance_conductor(
     reflectance -= normal_reflectance2 * edge_tint  * ValueType(0.2586000);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_FRESNEL_H
+}   // namespace foundation

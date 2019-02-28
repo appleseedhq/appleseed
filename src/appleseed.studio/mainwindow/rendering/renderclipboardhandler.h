@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERCLIPBOARDHANDLER_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERCLIPBOARDHANDLER_H
+#pragma once
 
 // Qt headers.
 #include <QObject>
@@ -64,7 +63,5 @@ class RenderClipboardHandler
     bool eventFilter(QObject* object, QEvent* event) override;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERCLIPBOARDHANDLER_H
+}   // namespace studio
+}   // namespace appleseed

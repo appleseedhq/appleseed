@@ -30,11 +30,21 @@
 #include "aov.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/aov/imagestack.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+#include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
+#include "foundation/image/imageattributes.h"
+#include "foundation/platform/defaulttimers.h"
+#include "foundation/utility/api/apistring.h"
+#include "foundation/utility/stopwatch.h"
+#include "foundation/utility/string.h"
+
+// Standard headers.
+#include <exception>
 
 using namespace foundation;
 
@@ -56,9 +66,9 @@ UniqueID AOV::get_class_uid()
 }
 
 AOV::AOV(
-    const char*         name,
-    const ParamArray&   params)
-  : Entity(g_class_uid, params)
+    const char*             name,
+    const ParamArray&       params)
+  : Entity(g_class_uid,     params)
   , m_image(nullptr)
   , m_image_index(~size_t(0))
 {
@@ -70,32 +80,79 @@ void AOV::release()
     delete this;
 }
 
-void AOV::create_image(
-    const size_t        canvas_width,
-    const size_t        canvas_height,
-    const size_t        tile_width,
-    const size_t        tile_height,
-    ImageStack&         aov_images)
-{
-    m_image_index = aov_images.append(
-        get_name(),
-        4, // todo: check if we can pass aov->get_channel_count() here
-        PixelFormatFloat);
-    m_image = &aov_images.get_image(m_image_index);
-}
-
 Image& AOV::get_image() const
 {
     return *m_image;
 }
 
-void AOV::clear_image()
+void AOV::post_process_image(const Frame& frame)
 {
-    m_image->clear(Color4f(0.0f));
 }
 
-void AOV::post_process_image(const AABB2u& crop_window)
+void AOV::create_image(
+    const size_t            canvas_width,
+    const size_t            canvas_height,
+    const size_t            tile_width,
+    const size_t            tile_height,
+    ImageStack&             aov_images)
 {
+    m_image_index = aov_images.get_index(get_name());
+
+    if (m_image_index == ~size_t(0))
+    {
+        m_image_index = aov_images.append(
+            get_name(),
+            get_channel_count(),
+            PixelFormatFloat);
+    }
+
+    m_image = &aov_images.get_image(m_image_index);
+}
+
+bool AOV::write_images(
+    const char*             file_path,
+    const ImageAttributes&  image_attributes) const
+{
+    Stopwatch<DefaultWallclockTimer> stopwatch;
+    stopwatch.start();
+
+    try
+    {
+        GenericImageFileWriter writer(file_path);
+
+        writer.append_image(&get_image());
+
+        if (has_color_data())
+            writer.set_image_output_format(PixelFormatHalf);
+
+        writer.set_image_channels(get_channel_count(), get_channel_names());
+
+        ImageAttributes image_attributes_copy(image_attributes);
+        image_attributes_copy.insert("color_space", "linear");
+        writer.set_image_attributes(image_attributes_copy);
+
+        writer.write();
+    }
+    catch (const std::exception& e)
+    {
+        RENDERER_LOG_ERROR(
+            "failed to write image file %s for aov \"%s\": %s.",
+            file_path,
+            get_path().c_str(),
+            e.what());
+
+        return false;
+    }
+
+    stopwatch.measure();
+
+    RENDERER_LOG_INFO(
+        "wrote image file %s for aov \"%s\" in %s.",
+        file_path,
+        get_path().c_str(),
+        pretty_time(stopwatch.get_seconds()).c_str());
+
+    return true;
 }
 
 
@@ -110,18 +167,23 @@ ColorAOV::ColorAOV(const char* name, const ParamArray& params)
 
 size_t ColorAOV::get_channel_count() const
 {
-    return 3;
+    return 4;
 }
 
 const char** ColorAOV::get_channel_names() const
 {
-    static const char* ChannelNames[] = {"R", "G", "B"};
+    static const char* ChannelNames[] = { "R", "G", "B", "A" };
     return ChannelNames;
 }
 
 bool ColorAOV::has_color_data() const
 {
     return true;
+}
+
+void ColorAOV::clear_image()
+{
+    m_image->clear(Color4f(0.0f));
 }
 
 
@@ -131,14 +193,23 @@ bool ColorAOV::has_color_data() const
 
 UnfilteredAOV::UnfilteredAOV(const char* name, const ParamArray& params)
   : AOV(name, params)
-  , m_filter_image(nullptr)
 {
 }
 
 UnfilteredAOV::~UnfilteredAOV()
 {
     delete m_image;
-    delete m_filter_image;
+}
+
+size_t UnfilteredAOV::get_channel_count() const
+{
+    return 3;
+}
+
+const char** UnfilteredAOV::get_channel_names() const
+{
+    static const char* ChannelNames[] = { "R", "G", "B" };
+    return ChannelNames;
 }
 
 bool UnfilteredAOV::has_color_data() const
@@ -146,12 +217,17 @@ bool UnfilteredAOV::has_color_data() const
     return false;
 }
 
+void UnfilteredAOV::clear_image()
+{
+    m_image->clear(Color3f(0.0f));
+}
+
 void UnfilteredAOV::create_image(
-    const size_t        canvas_width,
-    const size_t        canvas_height,
-    const size_t        tile_width,
-    const size_t        tile_height,
-    ImageStack&         aov_images)
+    const size_t            canvas_width,
+    const size_t            canvas_height,
+    const size_t            tile_width,
+    const size_t            tile_height,
+    ImageStack&             aov_images)
 {
     m_image =
         new Image(
@@ -162,19 +238,7 @@ void UnfilteredAOV::create_image(
             get_channel_count(),
             PixelFormatFloat);
 
-    // Extra image to keep track of the distance
-    // to the nearest sample for each pixel.
-    m_filter_image =
-        new Image(
-            canvas_width,
-            canvas_height,
-            tile_width,
-            tile_height,
-            1,
-            PixelFormatFloat);
-
-    // We need to clear the image because the default channel value
-    // might not be zero and also to initialize the pixel distance channel.
+    // We need to clear the image because the default channel value might not be zero.
     clear_image();
 }
 

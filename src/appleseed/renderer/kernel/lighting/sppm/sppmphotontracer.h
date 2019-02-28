@@ -27,14 +27,14 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTONTRACER_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTONTRACER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/sppm/sppmparameters.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
@@ -69,7 +69,7 @@ class SPPMPhotonTracer
 
     void trace_photons(
         SPPMPhotonVector&           photons,
-        const size_t                pass_hash,
+        const foundation::uint32    pass_hash,
         foundation::JobQueue&       job_queue,
         foundation::IAbortSwitch&   abort_switch);
 
@@ -87,7 +87,7 @@ class SPPMPhotonTracer
     void schedule_light_photon_tracing_jobs(
         const LightTargetArray&     photon_targets,
         SPPMPhotonVector&           photons,
-        const size_t                pass_hash,
+        const foundation::uint32    pass_hash,
         foundation::JobQueue&       job_queue,
         size_t&                     job_count,
         size_t&                     emitted_photon_count,
@@ -96,13 +96,11 @@ class SPPMPhotonTracer
     void schedule_environment_photon_tracing_jobs(
         const LightTargetArray&     photon_targets,
         SPPMPhotonVector&           photons,
-        const size_t                pass_hash,
+        const foundation::uint32    pass_hash,
         foundation::JobQueue&       job_queue,
         size_t&                     job_count,
         size_t&                     emitted_photon_count,
         foundation::IAbortSwitch&   abort_switch);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTONTRACER_H
+}   // namespace renderer

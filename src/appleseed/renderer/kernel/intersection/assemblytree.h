@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_ASSEMBLYTREE_H
-#define APPLESEED_RENDERER_KERNEL_INTERSECTION_ASSEMBLYTREE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/curvetree.h"
@@ -36,7 +35,6 @@
 #include "renderer/kernel/intersection/embreescene.h"
 #endif
 #include "renderer/kernel/intersection/probevisitorbase.h"
-#include "renderer/kernel/intersection/regiontree.h"
 #include "renderer/kernel/intersection/treerepository.h"
 #include "renderer/kernel/intersection/triangletree.h"
 #include "renderer/kernel/shading/shadingray.h"
@@ -135,9 +133,6 @@ class AssemblyTree
     TreeRepository<TriangleTree>    m_triangle_tree_repository;
     TriangleTreeContainer           m_triangle_trees;
 
-    TreeRepository<RegionTree>      m_region_tree_repository;
-    RegionTreeContainer             m_region_trees;
-
     TreeRepository<CurveTree>       m_curve_tree_repository;
     CurveTreeContainer              m_curve_trees;
 
@@ -163,7 +158,6 @@ class AssemblyTree
     void delete_unused_child_trees(const AssemblyVector& assemblies);
 
     void create_child_trees(const Assembly& assembly);
-    void create_region_tree(const Assembly& assembly);
     void create_triangle_tree(const Assembly& assembly);
     void create_curve_tree(const Assembly& assembly);
 
@@ -175,11 +169,9 @@ class AssemblyTree
 #endif
 
     void delete_child_trees(const foundation::UniqueID assembly_id);
-    void delete_region_tree(const foundation::UniqueID assembly_id);
     void delete_triangle_tree(const foundation::UniqueID assembly_id);
     void delete_curve_tree(const foundation::UniqueID assembly_id);
 
-    void update_region_trees();
     void update_triangle_trees();
 };
 
@@ -196,7 +188,6 @@ class AssemblyLeafVisitor
     AssemblyLeafVisitor(
         ShadingPoint&                               shading_point,
         const AssemblyTree&                         tree,
-        RegionTreeAccessCache&                      region_tree_cache,
         TriangleTreeAccessCache&                    triangle_tree_cache,
         CurveTreeAccessCache&                       curve_tree_cache,
 #ifdef APPLESEED_WITH_EMBREE
@@ -223,7 +214,6 @@ class AssemblyLeafVisitor
   private:
     ShadingPoint&                                   m_shading_point;
     const AssemblyTree&                             m_tree;
-    RegionTreeAccessCache&                          m_region_tree_cache;
     TriangleTreeAccessCache&                        m_triangle_tree_cache;
     CurveTreeAccessCache&                           m_curve_tree_cache;
 #ifdef APPLESEED_WITH_EMBREE
@@ -249,7 +239,6 @@ class AssemblyLeafProbeVisitor
     // Constructor.
     AssemblyLeafProbeVisitor(
         const AssemblyTree&                         tree,
-        RegionTreeAccessCache&                      region_tree_cache,
         TriangleTreeAccessCache&                    triangle_tree_cache,
         CurveTreeAccessCache&                       curve_tree_cache,
 #ifdef APPLESEED_WITH_EMBREE
@@ -275,7 +264,6 @@ class AssemblyLeafProbeVisitor
 
   private:
     const AssemblyTree&                             m_tree;
-    RegionTreeAccessCache&                          m_region_tree_cache;
     TriangleTreeAccessCache&                        m_triangle_tree_cache;
     CurveTreeAccessCache&                           m_curve_tree_cache;
 #ifdef APPLESEED_WITH_EMBREE
@@ -313,7 +301,6 @@ typedef foundation::bvh::Intersector<
 inline AssemblyLeafVisitor::AssemblyLeafVisitor(
     ShadingPoint&                                   shading_point,
     const AssemblyTree&                             tree,
-    RegionTreeAccessCache&                          region_tree_cache,
     TriangleTreeAccessCache&                        triangle_tree_cache,
     CurveTreeAccessCache&                           curve_tree_cache,
 #ifdef APPLESEED_WITH_EMBREE
@@ -327,7 +314,6 @@ inline AssemblyLeafVisitor::AssemblyLeafVisitor(
     )
   : m_shading_point(shading_point)
   , m_tree(tree)
-  , m_region_tree_cache(region_tree_cache)
   , m_triangle_tree_cache(triangle_tree_cache)
   , m_curve_tree_cache(curve_tree_cache)
 #ifdef APPLESEED_WITH_EMBREE
@@ -348,7 +334,6 @@ inline AssemblyLeafVisitor::AssemblyLeafVisitor(
 
 inline AssemblyLeafProbeVisitor::AssemblyLeafProbeVisitor(
     const AssemblyTree&                             tree,
-    RegionTreeAccessCache&                          region_tree_cache,
     TriangleTreeAccessCache&                        triangle_tree_cache,
     CurveTreeAccessCache&                           curve_tree_cache,
 #ifdef APPLESEED_WITH_EMBREE
@@ -361,7 +346,6 @@ inline AssemblyLeafProbeVisitor::AssemblyLeafProbeVisitor(
 #endif
     )
   : m_tree(tree)
-  , m_region_tree_cache(region_tree_cache)
   , m_triangle_tree_cache(triangle_tree_cache)
   , m_curve_tree_cache(curve_tree_cache)
 #ifdef APPLESEED_WITH_EMBREE
@@ -375,6 +359,4 @@ inline AssemblyLeafProbeVisitor::AssemblyLeafProbeVisitor(
 {
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_ASSEMBLYTREE_H
+}   // namespace renderer

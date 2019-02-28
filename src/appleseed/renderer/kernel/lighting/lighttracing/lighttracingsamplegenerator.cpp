@@ -69,6 +69,7 @@
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/math/basis.h"
+#include "foundation/math/hash.h"
 #include "foundation/math/population.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
@@ -171,7 +172,6 @@ namespace
           , m_tracer(
                 m_scene,
                 m_intersector,
-                m_texture_cache,
                 m_shadergroup_exec,
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations)
@@ -363,7 +363,7 @@ namespace
                     radiance);
 
                 // Ignore occluded vertices.
-                if (max_value(radiance) == 0.0f)
+                if (is_zero(radiance))
                     return;
 
                 // Adjust cos(alpha) to account for the fact that the camera outgoing direction was not unit-length.
@@ -406,7 +406,7 @@ namespace
                     radiance);
 
                 // Ignore occluded vertices.
-                if (max_value(radiance) == 0.0f)
+                if (is_zero(radiance))
                     return;
 
                 // Store the contribution of this vertex.
@@ -457,7 +457,7 @@ namespace
                     transmission);
 
                 // Ignore occluded vertices.
-                if (max_value(transmission) == 0.0f)
+                if (is_zero(transmission))
                     return;
 
                 // Normalize the camera outgoing direction.
@@ -553,23 +553,24 @@ namespace
         {
             m_arena.clear();
 
+            // Create a sampling context.
+            const size_t instance = mix_uint32(m_frame.get_noise_seed(), static_cast<uint32>(sequence_index));
             SamplingContext sampling_context(
                 m_rng,
                 m_params.m_sampling_mode,
-                0,
-                sequence_index,
-                sequence_index);
+                instance);
 
             size_t stored_sample_count = 0;
 
+            // Trace one path from one of the lights.
             if (m_light_sampler.has_lights())
                 stored_sample_count += generate_light_sample(sampling_context, samples);
 
+            // Trace one path from the environment.
             if (m_params.m_enable_ibl)
             {
                 const EnvironmentEDF* env_edf = m_scene.get_environment()->get_environment_edf();
-
-                if (env_edf)
+                if (env_edf != nullptr)
                 {
                     stored_sample_count +=
                         generate_environment_sample(sampling_context, env_edf, samples);

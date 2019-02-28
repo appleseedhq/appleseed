@@ -32,7 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/snprintf.h"
-#ifdef APPLESEED_USE_SSE
+#ifdef APPLESEED_USE_SSE42
 #include "foundation/platform/sse.h"
 #endif
 #include "foundation/platform/types.h"
@@ -140,9 +140,23 @@ void WorkerThread::run()
 {
     set_thread_name();
 
-#if defined APPLESEED_WITH_EMBREE && defined APPLESEED_USE_SSE
+#if defined APPLESEED_WITH_EMBREE && defined APPLESEED_USE_SSE42
+
+    //
+    // When Embree support is enabled, enable 'Flush to Zero' and 'Denormals are Zero' modes.
+    //
+    // Note: On some platforms, the preprocessor symbols _MM_SET_DENORMALS_ZERO_MODE() and
+    // _MM_DENORMALS_ZERO_ON are only defined if __SSE3__ is defined; executing these lines
+    // with APPLESEED_USE_SSE42 should ensure they are always defined.
+    //
+    // Reference:
+    //
+    //   https://embree.github.io/api.html#mxcsr-control-and-status-register
+    //
+
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+
 #endif
 
     while (!m_abort_switch.is_aborted())

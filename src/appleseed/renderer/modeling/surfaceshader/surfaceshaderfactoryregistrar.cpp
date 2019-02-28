@@ -31,7 +31,7 @@
 #include "surfaceshaderfactoryregistrar.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/entity/registerentityfactories.h"
+#include "renderer/modeling/entity/entityfactoryregistrar.h"
 #include "renderer/modeling/surfaceshader/aosurfaceshader.h"
 #include "renderer/modeling/surfaceshader/constantsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/diagnosticsurfaceshader.h"
@@ -39,16 +39,9 @@
 #include "renderer/modeling/surfaceshader/surfaceshadertraits.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
-#include "foundation/utility/registrar.h"
-
-// Standard headers.
-#include <cassert>
-#include <string>
-#include <utility>
+#include "foundation/utility/autoreleaseptr.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -56,14 +49,22 @@ namespace renderer
 APPLESEED_DEFINE_APIARRAY(SurfaceShaderFactoryArray);
 
 struct SurfaceShaderFactoryRegistrar::Impl
+  : public EntityFactoryRegistrarImpl<
+        SurfaceShaderFactoryRegistrar::EntityType,
+        SurfaceShaderFactoryRegistrar::FactoryType,
+        SurfaceShaderFactoryRegistrar::FactoryArrayType
+    >
 {
-    Registrar<ISurfaceShaderFactory> m_registrar;
 };
 
 SurfaceShaderFactoryRegistrar::SurfaceShaderFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
-    reinitialize(search_paths);
+    // Register built-in factories.
+    impl->register_factory(auto_release_ptr<FactoryType>(new AOSurfaceShaderFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new ConstantSurfaceShaderFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new DiagnosticSurfaceShaderFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new PhysicalSurfaceShaderFactory()));
 }
 
 SurfaceShaderFactoryRegistrar::~SurfaceShaderFactoryRegistrar()
@@ -71,49 +72,19 @@ SurfaceShaderFactoryRegistrar::~SurfaceShaderFactoryRegistrar()
     delete impl;
 }
 
-void SurfaceShaderFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
+void SurfaceShaderFactoryRegistrar::register_factory_plugin(Plugin* plugin, void* plugin_entry_point)
 {
-    // The registrar must be cleared before the plugins are unloaded.
-    impl->m_registrar.clear();
-    unload_all_plugins();
-
-    // Register built-in factories.
-    register_factory(auto_release_ptr<FactoryType>(new AOSurfaceShaderFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new ConstantSurfaceShaderFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new DiagnosticSurfaceShaderFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new PhysicalSurfaceShaderFactory()));
-
-    // Register factories defined in plugins.
-    register_factories_from_plugins<SurfaceShader>(
-        search_paths,
-        [this](void* plugin_entry_point)
-        {
-            auto create_fn = reinterpret_cast<ISurfaceShaderFactory* (*)()>(plugin_entry_point);
-            register_factory(foundation::auto_release_ptr<ISurfaceShaderFactory>(create_fn()));
-        });
+    impl->register_factory_plugin(plugin, plugin_entry_point);
 }
 
 SurfaceShaderFactoryArray SurfaceShaderFactoryRegistrar::get_factories() const
 {
-    FactoryArrayType factories;
-
-    for (const_each<Registrar<FactoryType>::Items> i = impl->m_registrar.items(); i; ++i)
-        factories.push_back(i->second);
-
-    return factories;
+    return impl->get_factories();
 }
 
-const SurfaceShaderFactoryRegistrar::FactoryType*
-SurfaceShaderFactoryRegistrar::lookup(const char* name) const
+const SurfaceShaderFactoryRegistrar::FactoryType* SurfaceShaderFactoryRegistrar::lookup(const char* name) const
 {
-    assert(name);
-    return impl->m_registrar.lookup(name);
-}
-
-void SurfaceShaderFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
-{
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, move(factory));
+    return impl->lookup(name);
 }
 
 }   // namespace renderer

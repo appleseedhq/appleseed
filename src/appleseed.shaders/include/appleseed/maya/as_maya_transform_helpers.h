@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef AS_MAYA_TRANSFORM_HELPERS_H
-#define AS_MAYA_TRANSFORM_HELPERS_H
+#pragma once
 
 int outside_place3d_volume(
     point surface_point,
@@ -67,5 +66,3 @@ int outside_place3d_volume(
     }
     return outside;
 }
-
-#endif // !AS_MAYA_TRANSFORM_HELPERS_H

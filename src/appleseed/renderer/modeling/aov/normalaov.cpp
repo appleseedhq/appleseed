@@ -63,8 +63,8 @@ namespace
       : public UnfilteredAOVAccumulator
     {
       public:
-        NormalAOVAccumulator(Image& image, Image& filter_image)
-          : UnfilteredAOVAccumulator(image, filter_image)
+        explicit NormalAOVAccumulator(Image& image)
+          : UnfilteredAOVAccumulator(image)
         {
         }
 
@@ -78,36 +78,27 @@ namespace
             const Vector2i& pi = pixel_context.get_pixel_coords();
 
             // Ignore samples outside the tile.
-            if (outside_tile(pi))
+            if (!m_cropped_tile_bbox.contains(pi))
                 return;
 
-            float* p = reinterpret_cast<float*>(
-                get_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
+            float* out =
+                reinterpret_cast<float*>(
+                    m_tile->pixel(
+                        pi.x - m_tile_origin_x,
+                        pi.y - m_tile_origin_y));
 
-            float* f = reinterpret_cast<float*>(
-                get_filter_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
-
-            const float min_sample_square_distance = *f;
-            const float sample_square_distance =
-                square_distance_to_pixel_center(pixel_context.get_sample_position());
-
-            if (sample_square_distance < min_sample_square_distance)
+            if (shading_point.hit_surface())
             {
-                if (shading_point.hit_surface())
-                {
-                    const Vector3d& n = shading_point.get_shading_normal();
-                    p[0] = static_cast<float>(n[0]) * 0.5f + 0.5f;
-                    p[1] = static_cast<float>(n[1]) * 0.5f + 0.5f;
-                    p[2] = static_cast<float>(n[2]) * 0.5f + 0.5f;
-                    *f = sample_square_distance;
-                }
-                else
-                {
-                    p[0] = 0.5f;
-                    p[1] = 0.5f;
-                    p[2] = 0.5f;
-                    *f = sample_square_distance;
-                }
+                const Vector3d& n = shading_point.get_shading_normal();
+                out[0] = static_cast<float>(n[0]) * 0.5f + 0.5f;
+                out[1] = static_cast<float>(n[1]) * 0.5f + 0.5f;
+                out[2] = static_cast<float>(n[2]) * 0.5f + 0.5f;
+            }
+            else
+            {
+                out[0] = 0.5f;
+                out[1] = 0.5f;
+                out[2] = 0.5f;
             }
         }
     };
@@ -117,7 +108,7 @@ namespace
     // Normal AOV.
     //
 
-    const char* Model = "normal_aov";
+    const char* NormalAOVModel = "normal_aov";
 
     class NormalAOV
       : public UnfilteredAOV
@@ -135,30 +126,19 @@ namespace
 
         const char* get_model() const override
         {
-            return Model;
-        }
-
-        size_t get_channel_count() const override
-        {
-            return 3;
-        }
-
-        const char** get_channel_names() const override
-        {
-            static const char* ChannelNames[] = {"R", "G", "B"};
-            return ChannelNames;
+            return NormalAOVModel;
         }
 
         void clear_image() override
         {
-            m_image->clear(Color3f(0.5f, 0.5f, 0.5f));
-            m_filter_image->clear(Color<float, 1>(numeric_limits<float>::max()));
+            m_image->clear(Color3f(0.5f));
         }
 
+      protected:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
-                new NormalAOVAccumulator(get_image(), *m_filter_image));
+                new NormalAOVAccumulator(get_image()));
         }
     };
 }
@@ -175,14 +155,14 @@ void NormalAOVFactory::release()
 
 const char* NormalAOVFactory::get_model() const
 {
-    return Model;
+    return NormalAOVModel;
 }
 
 Dictionary NormalAOVFactory::get_model_metadata() const
 {
     return
         Dictionary()
-            .insert("name", Model)
+            .insert("name", get_model())
             .insert("label", "Normal");
 }
 

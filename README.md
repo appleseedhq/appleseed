@@ -1,4 +1,4 @@
-# appleseed [![Build Status](https://travis-ci.org/appleseedhq/appleseed.svg?branch=master)](https://travis-ci.org/appleseedhq/appleseed)
+# appleseed [![Build Status](https://travis-ci.org/appleseedhq/appleseed.svg?branch=master)](https://travis-ci.org/appleseedhq/appleseed) [![Build status](https://ci.appveyor.com/api/projects/status/7550aaymiusjpk20?svg=true)](https://ci.appveyor.com/project/appleseedhq/appleseed)
 
 ![Interior Scene by Juan Carlos Gutiérrez](https://github.com/appleseedhq/appleseedhq.github.io/raw/master/img/renders/jc-interior.jpg)
 
@@ -19,14 +19,14 @@ appleseed is available as a portable C++ library with C++ and Python APIs, as a 
 * Home: [appleseedhq.net](https://appleseedhq.net/)
 * Twitter: [twitter.com/appleseedhq](https://twitter.com/appleseedhq)
 * Vimeo: [vimeo.com/appleseedhq](https://vimeo.com/appleseedhq)
-* Discord: [discord.gg/Vcu5A7h](https://discord.gg/Vcu5A7h)
+* Discord: [discord.gg/dNCE5J8](https://discord.gg/dNCE5J8)
 * Forum: [forum.appleseedhq.net](https://forum.appleseedhq.net/)
 
 ## Contributing
 
 * [How to build appleseed from source](https://github.com/appleseedhq/appleseed/wiki/Building-appleseed)
 * [Coding philosophy and guidelines](https://github.com/appleseedhq/appleseed/wiki/Coding-Philosophy-and-Guidelines)
-* [Detailed projects ideas](https://github.com/appleseedhq/appleseed/wiki/List-of-Project-ideas-for-GSoC-2018)
+* [Detailed projects ideas](https://github.com/appleseedhq/appleseed/wiki/List-of-Project-ideas-for-GSoC-2019)
 * [Developer and contributor wiki](https://github.com/appleseedhq/appleseed/wiki)
 
 ## Related Projects
@@ -34,9 +34,10 @@ appleseed is available as a portable C++ library with C++ and Python APIs, as a 
 * [appleseed for Autodesk® Maya®](https://github.com/appleseedhq/appleseed-maya)
 * [appleseed for Autodesk® 3ds Max®](https://github.com/appleseedhq/appleseed-max)
 * [appleseed for Blender](https://github.com/appleseedhq/blenderseed)
+* Image Engine's [Gaffer](http://www.gafferhq.org/) (into which appleseed is built-in)
 
 ## License
 
 appleseed and its accompanying software is released under the [MIT license](https://en.wikipedia.org/wiki/MIT_License).
 
-© 2010-2018 The appleseedhq Organization
+© 2010-2019 The appleseedhq Organization

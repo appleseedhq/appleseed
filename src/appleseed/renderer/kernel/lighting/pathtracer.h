@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_PATHTRACER_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_PATHTRACER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
@@ -239,9 +238,8 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
     while (true)
     {
         if (clear_arena)
-        {
             shading_context.get_arena().clear();
-        }
+
         ShadingPoint* next_shading_point = m_shading_point_arena.allocate<ShadingPoint>();
 
 #ifndef NDEBUG
@@ -255,9 +253,12 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         // Put a hard limit on the number of iterations.
         if (m_iterations++ == m_max_iterations)
         {
-            RENDERER_LOG_WARNING(
-                "reached hard iteration limit (%s), breaking path tracing loop.",
-                foundation::pretty_int(m_max_iterations).c_str());
+            if (m_max_bounces < m_max_iterations)
+            {
+                RENDERER_LOG_WARNING(
+                    "reached hard iteration limit (%s), breaking path tracing loop.",
+                    foundation::pretty_int(m_max_iterations).c_str());
+            }
             break;
         }
 
@@ -303,8 +304,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
         // Handle false intersections.
         if (ray.get_current_medium() &&
-            ray.get_current_medium()->m_object_instance->get_medium_priority() >
-                object_instance.get_medium_priority() &&
+            ray.get_current_medium()->m_object_instance->get_medium_priority() > object_instance.get_medium_priority() &&
             material_data.m_bsdf != nullptr)
         {
             // Construct a ray that continues in the same direction as the incoming ray.
@@ -433,17 +433,15 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         // Evaluate the inputs of the BSDF.
         if (vertex.m_bsdf)
         {
-            vertex.m_bsdf_data = vertex.m_bsdf->evaluate_inputs(
-                shading_context,
-                *vertex.m_shading_point);
+            vertex.m_bsdf_data =
+                vertex.m_bsdf->evaluate_inputs(shading_context, *vertex.m_shading_point);
         }
 
         // Evaluate the inputs of the BSSRDF.
         if (vertex.m_bssrdf)
         {
-            vertex.m_bssrdf_data = vertex.m_bssrdf->evaluate_inputs(
-                shading_context,
-                *vertex.m_shading_point);
+            vertex.m_bssrdf_data =
+                vertex.m_bssrdf->evaluate_inputs(shading_context, *vertex.m_shading_point);
         }
 
         // Let the path visitor handle a hit.
@@ -488,13 +486,13 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         {
             // Sample the BSSRDF and terminate the path if no incoming point is found.
             if (!vertex.m_bssrdf->sample(
-                shading_context,
-                sampling_context,
-                vertex.m_bssrdf_data,
-                *vertex.m_shading_point,
-                foundation::Vector3f(vertex.m_outgoing.get_value()),
-                bssrdf_sample,
-                bsdf_sample))
+                    shading_context,
+                    sampling_context,
+                    vertex.m_bssrdf_data,
+                    *vertex.m_shading_point,
+                    foundation::Vector3f(vertex.m_outgoing.get_value()),
+                    bssrdf_sample,
+                    bsdf_sample))
                 break;
 
             // Update the path throughput.
@@ -542,9 +540,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
             if (entering)
             {
                 const float ior = vertex.m_bsdf == nullptr ? 1.0f :
-                    vertex.m_bsdf->sample_ior(
-                        sampling_context,
-                        vertex.m_bsdf_data);
+                    vertex.m_bsdf->sample_ior(sampling_context, vertex.m_bsdf_data);
                 next_ray.add_medium(ray, &object_instance, vertex.get_material(), ior);
             }
             else
@@ -575,9 +571,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                         *vertex.m_shading_point);
                 }
 
-                const void* data = render_data.m_bsdf->evaluate_inputs(
-                    shading_context,
-                    *vertex.m_shading_point);
+                const void* data = render_data.m_bsdf->evaluate_inputs(shading_context, *vertex.m_shading_point);
                 const float distance = static_cast<float>(norm(vertex.get_point() - medium_start));
                 Spectrum absorption;
                 render_data.m_bsdf->compute_absorption(data, distance, absorption);
@@ -690,9 +684,9 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
             vertex.m_scattering_modes,
             sample);
 
-        next_ray.m_max_roughness = m_clamp_roughness ? sample.m_max_roughness : 0.0f;
+        next_ray.m_min_roughness = m_clamp_roughness ? sample.m_min_roughness : 0.0f;
 
-        if (sample.m_mode == ScatteringMode::Diffuse && !vertex.m_albedo_saved)
+        if (sample.get_mode() == ScatteringMode::Diffuse && !vertex.m_albedo_saved)
         {
             vertex.m_albedo = sample.m_aov_components.m_albedo;
             vertex.m_albedo_saved = true;
@@ -703,36 +697,36 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     {
         // Since the BSDF is already sampled during BSSRDF sampling, it is not sampled here.
         // However, we need to check if the corresponding mode is still enabled.
-        if ((sample.m_mode & vertex.m_scattering_modes) == 0)
-            sample.m_mode = ScatteringMode::None;
+        if ((sample.get_mode() & vertex.m_scattering_modes) == 0)
+            sample.set_to_absorption();
     }
 
     // Terminate the path if it gets absorbed.
-    if (sample.m_mode == ScatteringMode::None)
+    if (sample.get_mode() == ScatteringMode::None)
         return false;
 
     // Terminate the path if this scattering event is not accepted.
-    if (!m_path_visitor.accept_scattering(vertex.m_prev_mode, sample.m_mode))
+    if (!m_path_visitor.accept_scattering(vertex.m_prev_mode, sample.get_mode()))
         return false;
 
     // Save the scattering properties for MIS at light-emitting vertices.
-    vertex.m_prev_mode = sample.m_mode;
-    vertex.m_prev_prob = sample.m_probability;
+    vertex.m_prev_mode = sample.get_mode();
+    vertex.m_prev_prob = sample.get_probability();
 
     // Update the AOV scattering mode only for the first bounce.
     if (vertex.m_path_length == 1)
-        vertex.m_aov_mode = sample.m_mode;
+        vertex.m_aov_mode = sample.get_mode();
 
     // Update path throughput.
-    if (sample.m_probability != BSDF::DiracDelta)
-        sample.m_value /= sample.m_probability;
+    if (sample.get_probability() != BSDF::DiracDelta)
+        sample.m_value /= sample.get_probability();
     vertex.m_throughput *= sample.m_value.m_beauty;
 
     // Update bounce counters.
     ++vertex.m_path_length;
-    m_diffuse_bounces +=  (sample.m_mode >> ScatteringMode::DiffuseBitShift)  & 1;
-    m_glossy_bounces +=   (sample.m_mode >> ScatteringMode::GlossyBitShift)   & 1;
-    m_specular_bounces += (sample.m_mode >> ScatteringMode::SpecularBitShift) & 1;
+    m_diffuse_bounces +=  (sample.get_mode() >> ScatteringMode::DiffuseBitShift)  & 1;
+    m_glossy_bounces +=   (sample.get_mode() >> ScatteringMode::GlossyBitShift)   & 1;
+    m_specular_bounces += (sample.get_mode() >> ScatteringMode::SpecularBitShift) & 1;
 
     // Construct the scattered ray.
     const ShadingRay& ray = vertex.get_ray();
@@ -740,7 +734,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     next_ray.m_org = vertex.m_shading_point->get_biased_point(incoming);
     next_ray.m_dir = foundation::improve_normalization<2>(incoming);
     next_ray.m_time = ray.m_time;
-    next_ray.m_flags = ScatteringMode::get_vis_flags(sample.m_mode),
+    next_ray.m_flags = ScatteringMode::get_vis_flags(sample.get_mode()),
     next_ray.m_depth = ray.m_depth + 1;
 
     // Compute scattered ray differentials.
@@ -912,7 +906,6 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
                     foundation::exponential_distribution_pdf(
                         distance_sample,
                         extinction_coef[i]);
-
                 mis_weights_sum += foundation::square(probability);
             }
         }
@@ -973,6 +966,4 @@ inline const ShadingPoint& PathTracer<PathVisitor, VolumeVisitor, Adjoint>::get_
     return reinterpret_cast<const ShadingPoint*>(m_shading_point_arena.get_storage())[i];
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_PATHTRACER_H
+}   // namespace renderer

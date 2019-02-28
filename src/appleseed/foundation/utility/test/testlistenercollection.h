@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_TEST_TESTLISTENERCOLLECTION_H
-#define APPLESEED_FOUNDATION_UTILITY_TEST_TESTLISTENERCOLLECTION_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/test/itestlistener.h"
@@ -102,6 +101,4 @@ class APPLESEED_DLLSYMBOL TestListenerCollection
     Impl* impl;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_TEST_TESTLISTENERCOLLECTION_H
+}   // namespace foundation

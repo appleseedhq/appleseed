@@ -125,7 +125,7 @@ void CurveTree::collect_curves(vector<GAABB3>& curve_bboxes)
         const Object& object = object_instance->get_object();
 
         // Process only curve objects.
-        if (strcmp(object.get_model(), CurveObjectFactory().get_model()))
+        if (strcmp(object.get_model(), CurveObjectFactory().get_model()) != 0)
             continue;
 
         const CurveObject& curve_object = static_cast<const CurveObject&>(object);

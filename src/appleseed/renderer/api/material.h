@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_MATERIAL_H
-#define APPLESEED_RENDERER_API_MATERIAL_H
+#pragma once
 
 // API headers.
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
@@ -40,5 +39,3 @@
 #include "renderer/modeling/material/materialfactoryregistrar.h"
 #include "renderer/modeling/material/materialtraits.h"
 #include "renderer/modeling/material/oslmaterial.h"
-
-#endif  // !APPLESEED_RENDERER_API_MATERIAL_H

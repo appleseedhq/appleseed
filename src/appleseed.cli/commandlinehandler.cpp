@@ -94,6 +94,13 @@ CommandLineHandler::CommandLineHandler()
             .set_exact_value_count(4));
 
     parser().add_option_handler(
+        &m_noise_seed
+            .add_name("--noise-seed")
+            .set_description("set the noise seed")
+            .set_syntax("seed")
+            .set_exact_value_count(1));
+
+    parser().add_option_handler(
         &m_samples
             .add_name("--samples")
             .add_name("-s")
@@ -144,16 +151,20 @@ CommandLineHandler::CommandLineHandler()
 #endif
 
     parser().add_option_handler(
-        &m_send_to_mplay
-            .add_name("--to-mplay")
-            .set_description("send render to Houdini's mplay"));
+        &m_checkpoint_create
+            .add_name("--checkpoint-create")
+            .set_description("write a rendering checkpoint after each pass")
+            .set_syntax("filename")
+            .set_min_value_count(0)
+            .set_max_value_count(1));
 
     parser().add_option_handler(
-        &m_send_to_hrmanpipe
-            .add_name("--to-hrmanpipe")
-            .set_description("send render to Houdini's hrmanpipe; the argument is the socket number to pass to hrmanpipe")
-            .set_syntax("socket")
-            .set_exact_value_count(1));
+        &m_checkpoint_resume
+            .add_name("--checkpoint-resume")
+            .set_description("resume rendering from a checkpoint")
+            .set_syntax("filename")
+            .set_min_value_count(0)
+            .set_max_value_count(1));
 
     parser().add_option_handler(
         &m_send_to_stdout

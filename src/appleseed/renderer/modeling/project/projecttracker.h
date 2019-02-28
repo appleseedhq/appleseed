@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECTTRACKER_H
-#define APPLESEED_RENDERER_MODELING_PROJECT_PROJECTTRACKER_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -67,6 +66,4 @@ class APPLESEED_DLLSYMBOL ProjectTracker
     Impl* impl;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_PROJECTTRACKER_H
+}   // namespace renderer

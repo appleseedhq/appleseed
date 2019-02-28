@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_INDENTER_H
-#define APPLESEED_FOUNDATION_UTILITY_INDENTER_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -68,6 +67,4 @@ class APPLESEED_DLLSYMBOL Indenter
     Impl* impl;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_INDENTER_H
+}   // namespace foundation

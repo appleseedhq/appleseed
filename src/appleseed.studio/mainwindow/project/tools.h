@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_TOOLS_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_TOOLS_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditor.h"
@@ -209,7 +208,5 @@ class ForwardColorChangedSignal
     QColor        m_current_color;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_TOOLS_H
+}   // namespace studio
+}   // namespace appleseed

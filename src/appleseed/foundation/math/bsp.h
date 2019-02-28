@@ -27,13 +27,10 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BSP_H
-#define APPLESEED_FOUNDATION_MATH_BSP_H
+#pragma once
 
 // Interface headers.
 #include "foundation/math/bsp/bsp_builder.h"
 #include "foundation/math/bsp/bsp_intersector.h"
 #include "foundation/math/bsp/bsp_statistics.h"
 #include "foundation/math/bsp/bsp_tree.h"
-
-#endif  // !APPLESEED_FOUNDATION_MATH_BSP_H

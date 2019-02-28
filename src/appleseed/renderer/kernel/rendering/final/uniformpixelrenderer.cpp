@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/rendering/final/pixelsampler.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
@@ -40,6 +41,8 @@
 #include "renderer/kernel/rendering/pixelrendererbase.h"
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/kernel/shading/shadingresult.h"
+#include "renderer/modeling/aov/aov.h"
+#include "renderer/modeling/aov/pixelsamplecountaov.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/utility/settingsparsing.h"
 
@@ -99,6 +102,19 @@ namespace
                         m_sqrt_sample_count);
                 }
             }
+
+            const size_t sample_aov_index = frame.aovs().get_index("pixel_sample_count");
+
+            // If the sample count AOV is enabled, we need to reset its normalization
+            // range in case an adaptive render was done previously.
+            if (sample_aov_index != ~size_t(0))
+            {
+                PixelSampleCountAOV* sample_aov =
+                    static_cast<PixelSampleCountAOV*>(
+                        frame.aovs().get_by_index(sample_aov_index));
+
+                sample_aov->set_normalization_range(0, 0);
+            }
         }
 
         void release() override
@@ -111,7 +127,7 @@ namespace
             RENDERER_LOG_INFO(
                 "uniform pixel renderer settings:\n"
                 "  samples                       %s\n"
-                "  force antialiasing            %s\n"
+                "  force anti-aliasing           %s\n"
                 "  decorrelate pixels            %s",
                 pretty_uint(m_params.m_samples).c_str(),
                 m_params.m_force_aa ? "on" : "off",
@@ -125,7 +141,7 @@ namespace
             Tile&                       tile,
             TileStack&                  aov_tiles,
             const AABB2i&               tile_bbox,
-            const size_t                pass_hash,
+            const uint32                pass_hash,
             const Vector2i&             pi,
             const Vector2i&             pt,
             AOVAccumulatorContainer&    aov_accumulators,
@@ -298,27 +314,6 @@ namespace
 // UniformPixelRendererFactory class implementation.
 //
 
-UniformPixelRendererFactory::UniformPixelRendererFactory(
-    const Frame&                frame,
-    ISampleRendererFactory*     factory,
-    const ParamArray&           params)
-  : m_frame(frame)
-  , m_factory(factory)
-  , m_params(params)
-{
-}
-
-void UniformPixelRendererFactory::release()
-{
-    delete this;
-}
-
-IPixelRenderer* UniformPixelRendererFactory::create(
-    const size_t                thread_index)
-{
-    return new UniformPixelRenderer(m_frame, m_factory, m_params, thread_index);
-}
-
 Dictionary UniformPixelRendererFactory::get_params_metadata()
 {
     Dictionary metadata;
@@ -352,6 +347,27 @@ Dictionary UniformPixelRendererFactory::get_params_metadata()
                 "Avoid correlation patterns at the expense of slightly more sampling noise"));
 
     return metadata;
+}
+
+UniformPixelRendererFactory::UniformPixelRendererFactory(
+    const Frame&                frame,
+    ISampleRendererFactory*     factory,
+    const ParamArray&           params)
+  : m_frame(frame)
+  , m_factory(factory)
+  , m_params(params)
+{
+}
+
+void UniformPixelRendererFactory::release()
+{
+    delete this;
+}
+
+IPixelRenderer* UniformPixelRendererFactory::create(
+    const size_t                thread_index)
+{
+    return new UniformPixelRenderer(m_frame, m_factory, m_params, thread_index);
 }
 
 }   // namespace renderer

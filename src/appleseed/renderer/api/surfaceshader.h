@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_SURFACESHADER_H
-#define APPLESEED_RENDERER_API_SURFACESHADER_H
+#pragma once
 
 // API headers.
 #include "renderer/modeling/surfaceshader/aosurfaceshader.h"
@@ -39,5 +38,3 @@
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.h"
 #include "renderer/modeling/surfaceshader/surfaceshadertraits.h"
-
-#endif  // !APPLESEED_RENDERER_API_SURFACESHADER_H

@@ -35,6 +35,7 @@
 // appleseed.foundation headers.
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/otherwise.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -59,8 +60,6 @@ namespace
 
 struct CurveObject::Impl
 {
-    RegionKit           m_region_kit;
-    Lazy<RegionKit>     m_lazy_region_kit;
     CurveBasis          m_basis;
     size_t              m_curve_count;
     vector<Curve1Type>  m_curves1;
@@ -68,7 +67,6 @@ struct CurveObject::Impl
     vector<string>      m_material_slots;
 
     Impl()
-      : m_lazy_region_kit(&m_region_kit)
     {
     }
 
@@ -118,9 +116,9 @@ GAABB3 CurveObject::compute_local_bbox() const
     return impl->compute_bounds();
 }
 
-Lazy<RegionKit>& CurveObject::get_region_kit()
+void CurveObject::push_basis(const CurveBasis basis)
 {
-    return impl->m_lazy_region_kit;
+    impl->m_basis = basis;
 }
 
 CurveBasis CurveObject::get_basis() const
@@ -128,11 +126,9 @@ CurveBasis CurveObject::get_basis() const
     return impl->m_basis;
 }
 
-void CurveObject::push_basis(unsigned char b)
+void CurveObject::push_curve_count(const size_t count)
 {
-    assert(static_cast<CurveBasis>(b) <= CurveBasis::Catmullrom);
-
-    impl->m_basis = static_cast<CurveBasis>(b);
+    impl->m_curve_count = count;
 }
 
 size_t CurveObject::get_curve_count() const
@@ -143,18 +139,14 @@ size_t CurveObject::get_curve_count() const
         return get_curve1_count();
 
       case CurveBasis::Bezier:
-      case CurveBasis::Bspline:
-      case CurveBasis::Catmullrom:
+      case CurveBasis::BSpline:
+      case CurveBasis::CatmullRom:
         return get_curve3_count();
 
       default:
+        assert(!"Invalid curve basis.");
         return 0;
     }
-}
-
-void CurveObject::push_curve_count(const size_t c)
-{
-    impl->m_curve_count = c;
 }
 
 void CurveObject::reserve_curves1(const size_t count)
@@ -181,17 +173,25 @@ size_t CurveObject::push_curve3(const Curve3Type& curve)
 
     switch (get_basis())
     {
-      case CurveBasis::Bspline:
+      case CurveBasis::Bezier:
+        // Do nothing.
+        break;
+
+      case CurveBasis::BSpline:
         t_curve.transform_basis(
             CurveMatrixType::from_array(BezierInverseBasisArray) * CurveMatrixType::from_array(BSplineBasisArray));
         break;
 
-      case CurveBasis::Catmullrom:
+      case CurveBasis::CatmullRom:
         t_curve.transform_basis(
             CurveMatrixType::from_array(BezierInverseBasisArray) * CurveMatrixType::from_array(CatmullRomBasisArray));
         break;
+
+      assert_otherwise;
     }
+
     impl->m_curves3.push_back(t_curve);
+
     return index;
 }
 
@@ -240,7 +240,11 @@ void CurveObject::collect_asset_paths(StringArray& paths) const
 void CurveObject::update_asset_paths(const StringDictionary& mappings)
 {
     if (m_params.strings().exist("filepath"))
-        m_params.set("filepath", mappings.get(m_params.get("filepath")));
+    {
+        const string filepath = m_params.get<string>("filepath");
+        if (!starts_with(filepath, "builtin:"))
+            m_params.set("filepath", mappings.get(filepath.c_str()));
+    }
 }
 
 

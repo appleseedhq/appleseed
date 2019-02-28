@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_ADAPTIVETILERENDERER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_ADAPTIVETILERENDERER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/itilerenderer.h"
@@ -52,6 +51,9 @@ class AdaptiveTileRendererFactory
   : public ITileRendererFactory
 {
   public:
+    // Return parameters metadata.
+    static foundation::Dictionary get_params_metadata();
+
     // Constructor.
     AdaptiveTileRendererFactory(
         const Frame&                        frame,
@@ -66,9 +68,6 @@ class AdaptiveTileRendererFactory
     ITileRenderer* create(
         const size_t                        thread_index) override;
 
-    // Return the metadata of the adaptive pixel renderer parameters.
-    static foundation::Dictionary get_params_metadata();
-
   private:
     const Frame&                            m_frame;
     ISampleRendererFactory*                 m_sample_renderer_factory;
@@ -76,6 +75,4 @@ class AdaptiveTileRendererFactory
     const ParamArray                        m_params;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_ADAPTIVETILERENDERER_H
+}   // namespace renderer

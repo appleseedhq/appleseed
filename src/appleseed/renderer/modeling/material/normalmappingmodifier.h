@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_MATERIAL_NORMALMAPPINGMODIFIER_H
-#define APPLESEED_RENDERER_MODELING_MATERIAL_NORMALMAPPINGMODIFIER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/material/ibasismodifier.h"
@@ -67,6 +66,4 @@ class NormalMappingModifier
     const size_t                    m_y;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_NORMALMAPPINGMODIFIER_H
+}   // namespace renderer

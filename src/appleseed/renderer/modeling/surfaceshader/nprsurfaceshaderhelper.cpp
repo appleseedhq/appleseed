@@ -41,7 +41,7 @@
 #include "renderer/modeling/shadergroup/shadergroup.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/sampling/mappings.h"
+#include "foundation/math/scalar.h"
 #include "foundation/utility/arena.h"
 
 // Standard headers.
@@ -59,22 +59,11 @@ void NPRSurfaceShaderHelper::evaluate(
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point,
     AOVComponents&              components,
-    ShadingComponents&          radiance) const
+    ShadingComponents&          radiance)
 {
     const Material* material = shading_point.get_material();
     const ShaderGroup* sg = material->get_render_data().m_shader_group;
 
-    evaluate_npr(sampling_context, shading_context, shading_point, sg, radiance, components);
-}
-
-void NPRSurfaceShaderHelper::evaluate_npr(
-    SamplingContext&            sampling_context,
-    const ShadingContext&       shading_context,
-    const ShadingPoint&         shading_point,
-    const ShaderGroup*          sg,
-    ShadingComponents&          radiance,
-    AOVComponents&              components) const
-{
     // For now, we only work in RGB mode.
     if (radiance.m_beauty.get_mode() == Spectrum::Spectral)
         return;
@@ -156,8 +145,8 @@ void NPRSurfaceShaderHelper::evaluate_npr(
         // Composite the contour over beauty.
         if (contour.a != 0.0f)
         {
-            contour.premultiply();
-            beauty *= (1.0f - contour.a);
+            contour.premultiply_in_place();
+            beauty *= 1.0f - contour.a;
             beauty += contour.rgb();
         }
     }
@@ -173,13 +162,17 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point,
     const CompositeNPRClosure&  c,
-    const size_t                closure_index) const
+    const size_t                closure_index)
 {
     const Intersector& intersector = shading_context.get_intersector();
 
     const Vector3d& p = shading_point.get_point();
     const Vector3d& n = shading_point.get_shading_normal();
     const ShadingRay& original_ray = shading_point.get_ray();
+
+    const Vector3d& I = original_ray.m_dir;
+    const Vector3d dIdx = normalize(original_ray.m_rx.m_dir - I);
+    const Basis3d basis(-I, dIdx);
 
     // Construct the contour ray.
     ShadingRay ray;
@@ -190,66 +183,129 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
     ray.m_flags = VisibilityFlags::ProbeRay;
     ray.m_depth = original_ray.m_depth;
 
-    ShadingPoint contour_shading_point;
+    ShadingPoint other_shading_point;
 
     // Sample radius. Use the average of the norm of dpdx and dpdy
     // and compensate for the fact that our differentials are 1/4 of a pixel.
     const Vector3d& dpdx = shading_point.get_dpdx();
     const Vector3d& dpdy = shading_point.get_dpdy();
-    const float diff_radius = static_cast<float>(norm(dpdx) + norm(dpdy)) * 2.0f;
+    const double pixel_radius = (norm(dpdx) + norm(dpdy)) * 2.0;
 
     const NPRContourInputValues* values =
         reinterpret_cast<const NPRContourInputValues*>(c.get_closure_input_values(closure_index));
 
-    const float edge_width = values->m_width * diff_radius;
-    Color4f edge_col(values->m_color, values->m_opacity);
+    const double contour_radius = static_cast<double>(values->m_width) * pixel_radius;
 
-    contour_shading_point.clear();
+    int discontinuity_samples = 0;
+    int total_samples = 0;
+    bool diff_contour_found = false;
 
-    sampling_context.split_in_place(2, 1);
-    const Vector3f s = sample_sphere_uniform(sampling_context.next2<Vector2f>()) * edge_width;
+    // Trace the stencil rays.
 
-    const Vector3d q = p + Vector3d(s);
-    ray.m_dir = normalize(q - ray.m_org);
-
-    if (intersector.trace(ray, contour_shading_point))
+    for (size_t q = 1, quality = values->m_quality; q <= quality; ++q)
     {
-        if (values->m_features & NPRContourFeatures::ObjectInstanceID)
+        const double radius = (q * contour_radius) / static_cast<double>(quality);
+
+        const double angle_step = 45.0 / static_cast<double>(q);
+        const double rad_angle_step = deg_to_rad(angle_step);
+
+        const size_t num_samples = static_cast<size_t>(360.0 / angle_step);
+
+        for (size_t i = 0; i < num_samples; ++i)
         {
-            if (&shading_point.get_object_instance() != &contour_shading_point.get_object_instance())
-                return edge_col;
+            const double angle = static_cast<double>(i) * rad_angle_step;
+            const double x = sin(angle);
+            const double y = cos(angle);
+
+            const Vector3d pp =
+                (radius * x * basis.get_tangent_u()) +
+                (radius * y * basis.get_tangent_v()) + p;
+            ray.m_dir = normalize(pp - ray.m_org);
+
+            other_shading_point.clear();
+            intersector.trace(ray, other_shading_point);
+
+            if (!is_same_object(values->m_features, shading_point, other_shading_point))
+                ++discontinuity_samples;
+
+            // Handle forward difference rays.
+            if (discontinuity_samples == 0 && !diff_contour_found && q == quality)
+            {
+                if (other_shading_point.hit_surface() && values->m_features & NPRContourFeatures::AllDifferenceFeatures)
+                {
+                    const double abs_x = abs(x);
+                    const double Eps = 1e-10;
+
+                    if (feq(abs_x, 0.0, Eps) || feq(abs_x, 1.0, Eps))
+                    {
+                        if (values->m_features & NPRContourFeatures::OcclusionEdges)
+                        {
+                            const float d = static_cast<float>(abs(shading_point.get_distance() - other_shading_point.get_distance()));
+
+                            if (d > values->m_occlusion_threshold)
+                                diff_contour_found = true;
+                        }
+
+                        if (values->m_features & NPRContourFeatures::CreaseEdges)
+                        {
+                            const Vector3d& nc = other_shading_point.get_shading_normal();
+                            const float cos_nnc = static_cast<float>(dot(n, nc));
+
+                            if (cos_nnc < values->m_cos_crease_threshold)
+                                diff_contour_found = true;
+                        }
+                    }
+                }
+            }
+
+            ++total_samples;
+        }
+    }
+
+    if (discontinuity_samples == 0)
+        return Color4f(values->m_color, diff_contour_found ? values->m_opacity : 0.0f);
+    else
+    {
+        // Compute the edge strength.
+        const float half_samples = total_samples * 0.5f;
+        const float alpha = 1.0f - (fabs(discontinuity_samples - half_samples) / half_samples);
+
+        return Color4f(values->m_color, alpha * values->m_opacity);
+    }
+}
+
+bool NPRSurfaceShaderHelper::is_same_object(
+    const int                   features,
+    const ShadingPoint&         shading_point,
+    const ShadingPoint&         other_shading_point)
+{
+    if (other_shading_point.hit_surface())
+    {
+        if (features & NPRContourFeatures::ObjectInstanceID)
+        {
+            if (&shading_point.get_object_instance() != &other_shading_point.get_object_instance())
+                return false;
+            else
+            {
+                // Do not consider instances the same object.
+                if (&shading_point.get_assembly_instance() != &other_shading_point.get_assembly_instance())
+                    return false;
+            }
         }
 
-        if (values->m_features & NPRContourFeatures::MaterialID)
+        if (features & NPRContourFeatures::MaterialID)
         {
-            if (shading_point.get_material() != contour_shading_point.get_material())
-                return edge_col;
-        }
-
-        if (values->m_features & NPRContourFeatures::OcclusionEdges)
-        {
-            const float d = static_cast<float>(abs(shading_point.get_distance() - contour_shading_point.get_distance()));
-
-            if (d > values->m_occlusion_threshold)
-                return edge_col;
-        }
-
-        if (values->m_features & NPRContourFeatures::CreaseEdges)
-        {
-            const Vector3d& nc = contour_shading_point.get_shading_normal();
-            const float cos_nnc = static_cast<float>(dot(n, nc));
-
-            if (cos_nnc < values->m_cos_crease_threshold)
-                return edge_col;
+            if (shading_point.get_material() != other_shading_point.get_material())
+                return false;
         }
     }
     else
     {
-        if (values->m_features & NPRContourFeatures::AllIDFeatures)
-            return edge_col;
+        if (features & NPRContourFeatures::AllIDFeatures)
+            return false;
     }
 
-    return Color4f(values->m_color.r, values->m_color.g, values->m_color.b, 0.0f);
+    return true;
 }
 
 }   // namespace renderer

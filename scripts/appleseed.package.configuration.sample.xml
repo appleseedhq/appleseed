@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <!-- The name of the target platform. This parameter is only used to name the final archive.
-         Example values: win64-vs140, linux64-gcc4, mac64-gcc4, etc. -->
+         Example values: win64-vs140, linux64-gcc4, mac64-clang, etc. -->
     <platform>win64-vs140</platform>
 
     <!-- The name of the configuration. Binary files will be taken from sandbox/bin/<configuration>/. -->

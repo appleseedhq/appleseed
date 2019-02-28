@@ -31,7 +31,6 @@
 #include "shadingcontext.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/texturing/oiiotexturesystem.h"
@@ -107,14 +106,12 @@ void ShadingContext::execute_osl_subsurface(
 void ShadingContext::execute_osl_transparency(
     const ShaderGroup&      shader_group,
     const ShadingPoint&     shading_point,
-    Alpha&                  alpha,
-    float*                  holdout) const
+    Alpha&                  alpha) const
 {
     m_shadergroup_exec.execute_transparency(
         shader_group,
         shading_point,
-        alpha,
-        holdout);
+        alpha);
 }
 
 void ShadingContext::execute_osl_emission(
@@ -155,6 +152,15 @@ void ShadingContext::execute_osl_npr(
     const ShadingPoint&     shading_point) const
 {
     m_shadergroup_exec.execute_npr(
+        shader_group,
+        shading_point);
+}
+
+void ShadingContext::execute_osl_transparency_and_matte(
+    const ShaderGroup&      shader_group,
+    const ShadingPoint&     shading_point) const
+{
+    m_shadergroup_exec.execute_transparency_and_matte(
         shader_group,
         shading_point);
 }

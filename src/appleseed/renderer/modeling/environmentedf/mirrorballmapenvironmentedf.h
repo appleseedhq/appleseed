@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_MIRRORBALLMAPENVIRONMENTEDF_H
-#define APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_MIRRORBALLMAPENVIRONMENTEDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/environmentedf/ienvironmentedffactory.h"
@@ -75,6 +74,4 @@ class APPLESEED_DLLSYMBOL MirrorBallMapEnvironmentEDFFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_MIRRORBALLMAPENVIRONMENTEDF_H
+}   // namespace renderer

@@ -48,19 +48,12 @@
 #include "renderer/modeling/bsdf/sheenbrdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
-#include "renderer/modeling/entity/registerentityfactories.h"
+#include "renderer/modeling/entity/entityfactoryregistrar.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
-#include "foundation/utility/registrar.h"
-
-// Standard headers.
-#include <cassert>
-#include <string>
-#include <utility>
+#include "foundation/utility/autoreleaseptr.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -68,14 +61,34 @@ namespace renderer
 APPLESEED_DEFINE_APIARRAY(BSDFFactoryArray);
 
 struct BSDFFactoryRegistrar::Impl
+  : public EntityFactoryRegistrarImpl<
+        BSDFFactoryRegistrar::EntityType,
+        BSDFFactoryRegistrar::FactoryType,
+        BSDFFactoryRegistrar::FactoryArrayType
+    >
 {
-    Registrar<IBSDFFactory> m_registrar;
 };
 
 BSDFFactoryRegistrar::BSDFFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
-    reinitialize(search_paths);
+    // Register built-in factories.
+    impl->register_factory(auto_release_ptr<FactoryType>(new AshikhminBRDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new BlinnBRDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new BSDFBlendFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new BSDFMixFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new DiffuseBTDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new DisneyBRDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new GlassBSDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new GlossyBRDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new KelemenBRDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new LambertianBRDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new MetalBRDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new OrenNayarBRDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new PlasticBRDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new SheenBRDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new SpecularBRDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new SpecularBTDFFactory()));
 }
 
 BSDFFactoryRegistrar::~BSDFFactoryRegistrar()
@@ -83,60 +96,19 @@ BSDFFactoryRegistrar::~BSDFFactoryRegistrar()
     delete impl;
 }
 
-void BSDFFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
+void BSDFFactoryRegistrar::register_factory_plugin(Plugin* plugin, void* plugin_entry_point)
 {
-    // The registrar must be cleared before the plugins are unloaded.
-    impl->m_registrar.clear();
-    unload_all_plugins();
-
-    // Register built-in factories.
-    register_factory(auto_release_ptr<FactoryType>(new AshikhminBRDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new BlinnBRDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new BSDFBlendFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new BSDFMixFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new DiffuseBTDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new DisneyBRDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new GlassBSDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new GlossyBRDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new KelemenBRDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new LambertianBRDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new MetalBRDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new OrenNayarBRDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new PlasticBRDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new SheenBRDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new SpecularBRDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new SpecularBTDFFactory()));
-
-    // Register factories defined in plugins.
-    register_factories_from_plugins<BSDF>(
-        search_paths,
-        [this](void* plugin_entry_point)
-        {
-            auto create_fn = reinterpret_cast<IBSDFFactory* (*)()>(plugin_entry_point);
-            register_factory(foundation::auto_release_ptr<IBSDFFactory>(create_fn()));
-        });
+    impl->register_factory_plugin(plugin, plugin_entry_point);
 }
 
 BSDFFactoryArray BSDFFactoryRegistrar::get_factories() const
 {
-    FactoryArrayType factories;
-
-    for (const_each<Registrar<FactoryType>::Items> i = impl->m_registrar.items(); i; ++i)
-        factories.push_back(i->second);
-
-    return factories;
+    return impl->get_factories();
 }
 
 const BSDFFactoryRegistrar::FactoryType* BSDFFactoryRegistrar::lookup(const char* name) const
 {
-    assert(name);
-    return impl->m_registrar.lookup(name);
-}
-
-void BSDFFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
-{
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, move(factory));
+    return impl->lookup(name);
 }
 
 }   // namespace renderer

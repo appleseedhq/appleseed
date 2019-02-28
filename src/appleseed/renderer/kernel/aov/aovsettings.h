@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_AOV_AOVSETTINGS_H
-#define APPLESEED_RENDERER_KERNEL_AOV_AOVSETTINGS_H
+#pragma once
 
 // Standard headers.
 #include <cstddef>
@@ -39,6 +38,4 @@ namespace renderer
 // The maximum number of AOVs that can be handled at once.
 const size_t MaxAOVCount = 16;
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_AOV_AOVSETTINGS_H
+}   // namespace renderer

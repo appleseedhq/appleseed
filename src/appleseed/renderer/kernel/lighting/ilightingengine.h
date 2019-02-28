@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_ILIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_ILIGHTINGENGINE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -37,7 +36,6 @@
 #include "foundation/core/concepts/iunknown.h"
 
 // Forward declarations.
-namespace foundation    { class Dictionary; }
 namespace foundation    { class StatisticsVector; }
 namespace renderer      { class AOVComponents; }
 namespace renderer      { class PixelContext; }
@@ -83,13 +81,6 @@ class ILightingEngineFactory
   public:
     // Return a new sample lighting engine instance.
     virtual ILightingEngine* create() = 0;
-
-  protected:
-    static void add_common_params_metadata(
-        foundation::Dictionary&   metadata,
-        const bool                add_lighting_samples);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_ILIGHTINGENGINE_H
+}   // namespace renderer

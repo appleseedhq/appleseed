@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENTITY_ENTITYVECTOR_H
-#define APPLESEED_RENDERER_MODELING_ENTITY_ENTITYVECTOR_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
@@ -387,6 +386,4 @@ inline typename TypedEntityVector<T>::const_iterator TypedEntityVector<T>::end()
     return EntityVector::end();
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_ENTITY_ENTITYVECTOR_H
+}   // namespace renderer

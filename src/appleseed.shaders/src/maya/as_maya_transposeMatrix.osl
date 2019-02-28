@@ -28,7 +28,7 @@
 
 shader as_maya_transposeMatrix
 [[
-    string as_maya_node_name = "transposeMatrix"
+    string as_node_name = "transposeMatrix"
 ]]
 (
     matrix in_inputMatrix = matrix(1)

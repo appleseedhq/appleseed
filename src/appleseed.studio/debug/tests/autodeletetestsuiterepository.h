@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_DEBUG_TESTS_AUTODELETETESTSUITEREPOSITORY_H
-#define APPLESEED_STUDIO_DEBUG_TESTS_AUTODELETETESTSUITEREPOSITORY_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/test.h"
@@ -63,7 +62,5 @@ class AutoDeleteTestSuiteRepository
     }
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_DEBUG_TESTS_AUTODELETETESTSUITEREPOSITORY_H
+}   // namespace studio
+}   // namespace appleseed

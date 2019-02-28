@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_KNN_KNN_BUILDER_H
-#define APPLESEED_FOUNDATION_MATH_KNN_KNN_BUILDER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -280,7 +279,5 @@ inline typename Builder<T, N>::BboxType Builder<T, N>::compute_bbox(
     return bbox;
 }
 
-}       // namespace knn
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_KNN_KNN_BUILDER_H
+}   // namespace knn
+}   // namespace foundation

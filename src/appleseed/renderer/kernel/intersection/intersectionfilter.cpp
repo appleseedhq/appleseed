@@ -36,16 +36,15 @@
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/sourceinputs.h"
 #include "renderer/modeling/material/material.h"
-#include "renderer/modeling/object/iregion.h"
+#include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/object.h"
-#include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/scene/objectinstance.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/lazy.h"
 
 // Standard headers.
+#include <cassert>
 #include <memory>
 
 using namespace foundation;
@@ -58,19 +57,9 @@ namespace
 {
     size_t get_triangle_count(Object& object)
     {
-        size_t triangle_count = 0;
-
-        Access<RegionKit> region_kit(&object.get_region_kit());
-
-        for (const_each<RegionKit> i = *region_kit; i; ++i)
-        {
-            const IRegion* region = *i;
-            Access<StaticTriangleTess> tess(&region->get_static_triangle_tess());
-
-            triangle_count += tess->m_primitives.size();
-        }
-
-        return triangle_count;
+        const MeshObject& mesh = static_cast<const MeshObject&>(object);
+        const StaticTriangleTess& tess = mesh.get_static_triangle_tess();
+        return tess.m_primitives.size();
     }
 
     void copy_uv_coordinates(const StaticTriangleTess& tess, vector<Vector2f>& uv)
@@ -98,15 +87,9 @@ namespace
 
     void copy_uv_coordinates(Object& object, vector<Vector2f>& uv)
     {
-        Access<RegionKit> region_kit(&object.get_region_kit());
-
-        for (const_each<RegionKit> i = *region_kit; i; ++i)
-        {
-            const IRegion* region = *i;
-            Access<StaticTriangleTess> tess(&region->get_static_triangle_tess());
-
-            copy_uv_coordinates(*tess, uv);
-        }
+        const MeshObject& mesh = static_cast<const MeshObject&>(object);
+        const StaticTriangleTess& tess = mesh.get_static_triangle_tess();
+        copy_uv_coordinates(tess, uv);
     }
 }
 

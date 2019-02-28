@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_BITMASK_H
-#define APPLESEED_FOUNDATION_UTILITY_BITMASK_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -138,7 +137,7 @@ inline void BitMask2::clear(
     assert(x < m_width);
     assert(y < m_height);
 
-    m_bits[y * m_block_width + x / 8] &= ~(1u << (x & 7));
+    m_bits[y * m_block_width + x / 8] &= ~(1UL << (x & 7));
 }
 
 inline void BitMask2::set(
@@ -148,7 +147,7 @@ inline void BitMask2::set(
     assert(x < m_width);
     assert(y < m_height);
 
-    m_bits[y * m_block_width + x / 8] |= 1u << (x & 7);
+    m_bits[y * m_block_width + x / 8] |= 1UL << (x & 7);
 }
 
 inline void BitMask2::set(
@@ -166,7 +165,7 @@ inline bool BitMask2::get(
     assert(x < m_width);
     assert(y < m_height);
 
-    return (m_bits[y * m_block_width + x / 8] & (1u << (x & 7))) != 0;
+    return (m_bits[y * m_block_width + x / 8] & (1UL << (x & 7))) != 0;
 }
 
 inline bool BitMask2::is_clear(
@@ -188,6 +187,4 @@ inline size_t BitMask2::get_memory_size() const
     return sizeof(*this) + m_size;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_BITMASK_H
+}   // namespace foundation

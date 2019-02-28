@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICFRAMERENDERER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICFRAMERENDERER_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/iframerenderer.h"
@@ -41,6 +40,7 @@
 namespace foundation    { class Dictionary; }
 namespace renderer      { class Frame; }
 namespace renderer      { class IPassCallback; }
+namespace renderer      { class IShadingResultFrameBufferFactory; }
 namespace renderer      { class ITileCallbackFactory; }
 namespace renderer      { class ITileRendererFactory; }
 
@@ -55,13 +55,17 @@ class GenericFrameRendererFactory
   : public IFrameRendererFactory
 {
   public:
+    // Return parameters metadata.
+    static foundation::Dictionary get_params_metadata();
+
     // Constructor.
     GenericFrameRendererFactory(
-        const Frame&            frame,
-        ITileRendererFactory*   tile_renderer_factory,
-        ITileCallbackFactory*   tile_callback_factory,      // may be 0
-        IPassCallback*          pass_callback,              // may be 0
-        const ParamArray&       params);
+        const Frame&                        frame,
+        IShadingResultFrameBufferFactory*   framebuffer_factory,
+        ITileRendererFactory*               tile_renderer_factory,
+        ITileCallbackFactory*               tile_callback_factory,      // may be nullptr
+        IPassCallback*                      pass_callback,              // may be nullptr
+        const ParamArray&                   params);
 
     // Delete this instance.
     void release() override;
@@ -71,23 +75,20 @@ class GenericFrameRendererFactory
 
     // Return a new generic frame renderer instance.
     static IFrameRenderer* create(
-        const Frame&            frame,
-        ITileRendererFactory*   tile_renderer_factory,
-        ITileCallbackFactory*   tile_callback_factory,      // may be 0
-        IPassCallback*          pass_callback,              // may be 0
-        const ParamArray&       params);
-
-    // Return the metadata of the generic frame renderer parameters.
-    static foundation::Dictionary get_params_metadata();
+        const Frame&                        frame,
+        IShadingResultFrameBufferFactory*   framebuffer_factory,
+        ITileRendererFactory*               tile_renderer_factory,
+        ITileCallbackFactory*               tile_callback_factory,      // may be nullptr
+        IPassCallback*                      pass_callback,              // may be nullptr
+        const ParamArray&                   params);
 
   private:
-    const Frame&                m_frame;
-    ITileRendererFactory*       m_tile_renderer_factory;
-    ITileCallbackFactory*       m_tile_callback_factory;    // may be 0
-    IPassCallback*              m_pass_callback;            // may be 0
-    const ParamArray            m_params;
+    const Frame&                            m_frame;
+    IShadingResultFrameBufferFactory*       m_framebuffer_factory;
+    ITileRendererFactory*                   m_tile_renderer_factory;
+    ITileCallbackFactory*                   m_tile_callback_factory;    // may be nullptr
+    IPassCallback*                          m_pass_callback;            // may be nullptr
+    const ParamArray                        m_params;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICFRAMERENDERER_H
+}   // namespace renderer

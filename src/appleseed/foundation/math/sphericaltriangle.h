@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_SPHERICALTRIANGLE_H
-#define APPLESEED_FOUNDATION_MATH_SPHERICALTRIANGLE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
@@ -124,6 +123,4 @@ T compute_spherical_triangle_area(
     return alpha + beta + gamma - Pi<T>();
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_SPHERICALTRIANGLE_H
+}   // namespace foundation

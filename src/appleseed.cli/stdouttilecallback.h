@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_CLI_STDOUTTILECALLBACK_H
-#define APPLESEED_CLI_STDOUTTILECALLBACK_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
@@ -58,7 +57,5 @@ class StdOutTileCallbackFactory
     std::unique_ptr<renderer::ITileCallback> m_callback;
 };
 
-}       // namespace cli
-}       // namespace appleseed
-
-#endif  // !APPLESEED_CLI_STDOUTTILECALLBACK_H
+}   // namespace cli
+}   // namespace appleseed

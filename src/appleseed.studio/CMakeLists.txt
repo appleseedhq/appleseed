@@ -282,6 +282,9 @@ source_group ("mainwindow\\rendering" FILES
 )
 
 set (mainwindow_sources
+    mainwindow/applicationsettingswindow.cpp
+    mainwindow/applicationsettingswindow.h
+    mainwindow/applicationsettingswindow.ui
     mainwindow/configurationmanagerwindow.cpp
     mainwindow/configurationmanagerwindow.h
     mainwindow/configurationmanagerwindow.ui
@@ -300,9 +303,6 @@ set (mainwindow_sources
     mainwindow/renderingsettingswindow.cpp
     mainwindow/renderingsettingswindow.h
     mainwindow/renderingsettingswindow.ui
-    mainwindow/settingswindow.cpp
-    mainwindow/settingswindow.h
-    mainwindow/settingswindow.ui
     mainwindow/statusbar.cpp
     mainwindow/statusbar.h
 )
@@ -371,6 +371,8 @@ set (utility_sources
     utility/treewidget.h
     utility/widgetzoomhandler.cpp
     utility/widgetzoomhandler.h
+    utility/windowbase.cpp
+    utility/windowbase.h
 )
 list (APPEND appleseed.studio_sources
     ${utility_sources}
@@ -405,6 +407,7 @@ endif ()
 set (appleseedpython_sources
     ../appleseed.python/__init__.py
     ../appleseed.python/bindaov.cpp
+    ../appleseed.python/bindappleseed.cpp
     ../appleseed.python/bindassembly.cpp
     ../appleseed.python/bindbasis.cpp
     ../appleseed.python/bindbbox.cpp
@@ -434,7 +437,9 @@ set (appleseedpython_sources
     ../appleseed.python/bindquaternion.cpp
     ../appleseed.python/bindrenderercontroller.cpp
     ../appleseed.python/bindscene.cpp
+    ../appleseed.python/bindshadercompiler.cpp
     ../appleseed.python/bindshadergroup.cpp
+    ../appleseed.python/bindshaderquery.cpp
     ../appleseed.python/bindsurfaceshader.cpp
     ../appleseed.python/bindtexture.cpp
     ../appleseed.python/bindtilecallback.cpp
@@ -588,6 +593,8 @@ add_executable (appleseed.studio
     ${appleseed.studio_resource_files}
 )
 
+set_target_properties (appleseed.studio PROPERTIES FOLDER "Applications")
+
 if (WIN32)
     set_target_properties (appleseed.studio PROPERTIES
         # Build a GUI application instead of a console application on Windows.
@@ -654,7 +661,13 @@ endif ()
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
-add_custom_target (appleseed.studio.python.copy_py_files ALL)
+add_custom_target (
+    appleseed.studio.copy_py_files ALL
+    VERBATIM
+)
+
+set_target_properties (appleseed.studio.copy_py_files PROPERTIES FOLDER "Contents")
+set_target_progress_message (appleseed.studio.copy_py_files "Copying appleseed.studio Python files...")
 
 add_copy_studio_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.studio/python/studio/__init__.py appleseed.studio)
 add_copy_studio_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.studio/python/studio/ui.py appleseed.studio)
@@ -691,5 +704,5 @@ install (DIRECTORY ../../sandbox/studio
     DESTINATION .
 )
 
-install (DIRECTORY ../../sandbox/lib/python2.7/site-packages DESTINATION "lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}")
+install (DIRECTORY ../../sandbox/lib/python/site-packages DESTINATION "lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}")
 install (DIRECTORY python/studio DESTINATION "lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/appleseed")

@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_PLASTICBRDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_PLASTICBRDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -103,6 +102,4 @@ class APPLESEED_DLLSYMBOL PlasticBRDFFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_PLASTICBRDF_H
+}   // namespace renderer

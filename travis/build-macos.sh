@@ -54,10 +54,6 @@ mkdir build
 cd build
 cmake -DWITH_DISNEY_MATERIAL=ON -DUSE_STATIC_BOOST=OFF \
      -DWITH_STUDIO=OFF -DWITH_PYTHON2_BINDINGS=OFF -DWITH_EMBREE=OFF \
-     -DUSE_EXTERNAL_ZLIB=ON -DUSE_EXTERNAL_PNG=ON \
-     -DUSE_EXTERNAL_EXR=ON -DUSE_EXTERNAL_XERCES=ON\
-     -DUSE_EXTERNAL_SEEXPR=ON -DUSE_EXTERNAL_OIIO=ON \
-     -DUSE_EXTERNAL_OCIO=ON -DUSE_EXTERNAL_OSL=ON \
      -DZLIB_INCLUDE_DIR=/usr/local/opt/zlib/include \
      -DZLIB_LIBRARY=/usr/local/opt/zlib/lib/libz.dylib\
      -DPYTHON_INCLUDE_DIR=/usr/local/Cellar/python@2/2.7.15/Frameworks/Python.framework/Versions/2.7/include/python2.7/ \
@@ -85,7 +81,7 @@ echo "------------------------"
 
 #echo "Running appleseed.python tests:"
 #echo "-------------------------------"
-#export PYTHONPATH=$PYTHONPATH:../sandbox/lib/Debug/python2.7
-#python ../sandbox/lib/Debug/python2.7/appleseed/test/runtests.py
+#export PYTHONPATH=$PYTHONPATH:../sandbox/lib/Debug/python
+#python ../sandbox/lib/Debug/python/appleseed/test/runtests.py
 
 set +e

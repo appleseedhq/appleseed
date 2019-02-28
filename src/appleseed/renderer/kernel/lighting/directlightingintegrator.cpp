@@ -134,8 +134,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
     if (!m_light_sampler.has_lights())
         return;
 
-    // Check if PDF of the sampler is Dirac delta and therefore
-    // cannot contribute to the light sampling.
+    // Check if PDF of the sampler is Dirac delta and therefore cannot contribute to the light sampling.
     if (!m_material_sampler.contributes_to_light_sampling())
         return;
 
@@ -144,9 +143,11 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
         // Add contributions from non-physical light sources that don't belong to the lightset.
         for (size_t i = 0, e = m_light_sampler.get_non_physical_light_count(); i < e; ++i)
         {
+            // Sample the set of non-physical lights.
             LightSample sample;
             m_light_sampler.sample_non_physical_light(m_time, i, sample);
 
+            // Add the contribution of the chosen light.
             add_non_physical_light_sample_contribution(
                 sampling_context,
                 sample,
@@ -248,7 +249,7 @@ void DirectLightingIntegrator::take_single_material_sample(
     // Trace a ray in the direction of the reflection.
     Spectrum weight;
     const ShadingPoint& light_shading_point =
-        m_material_sampler.trace(
+        m_material_sampler.trace_full(
             m_shading_context,
             incoming.get_value(),
             weight);
@@ -408,7 +409,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         transmission);
 
     // Discard occluded samples.
-    if (max_value(transmission) == 0.0f)
+    if (is_zero(transmission))
         return;
 
     // Evaluate the BSDF (or volume).
@@ -419,6 +420,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
             Vector3f(outgoing.get_value()),
             Vector3f(incoming),
             material_value);
+    assert(material_probability >= 0.0f);
     if (material_probability == 0.0f)
         return;
 
@@ -463,7 +465,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     if (light_path_stream)
     {
         light_path_stream->sampled_emitting_triangle(
-            sample.m_triangle,
+            *sample.m_triangle,
             sample.m_point,
             material_value.m_beauty,
             edf_value);
@@ -512,7 +514,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
         transmission);
 
     // Discard occluded samples.
-    if (max_value(transmission) == 0.0f)
+    if (is_zero(transmission))
         return;
 
     // Evaluate the BSDF (or volume).
@@ -523,6 +525,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
             Vector3f(outgoing.get_value()),
             Vector3f(incoming),
             material_value);
+    assert(material_probability >= 0.0f);
     if (material_probability == 0.0f)
         return;
 
@@ -537,7 +540,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     if (light_path_stream)
     {
         light_path_stream->sampled_non_physical_light(
-            light,
+            *light,
             emission_position,
             material_value.m_beauty,
             light_value);

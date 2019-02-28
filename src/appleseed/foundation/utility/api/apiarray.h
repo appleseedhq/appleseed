@@ -27,16 +27,17 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_API_APIARRAY_H
-#define APPLESEED_FOUNDATION_UTILITY_API_APIARRAY_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstring>
+#include <iterator>
 #include <vector>
 
 namespace foundation
@@ -127,11 +128,8 @@ namespace foundation
     {                                                                   \
         assert(size > 0);                                               \
         assert(values);                                                 \
-        impl->resize(size);                                             \
-        std::memcpy(                                                    \
-            &impl->front(),                                             \
-            values,                                                     \
-            size * sizeof(value_type));                                 \
+        impl->reserve(size);                                            \
+        std::copy(values, values + size, std::back_inserter(*impl));    \
     }                                                                   \
                                                                         \
     ArrayName::~ArrayName()                                             \
@@ -221,6 +219,4 @@ U array_vector(const V& v)
     return u;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_API_APIARRAY_H
+}   // namespace foundation

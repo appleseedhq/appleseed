@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_FILTER_REJECTALLFILTER_H
-#define APPLESEED_FOUNDATION_UTILITY_FILTER_REJECTALLFILTER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/utility/filter/ifilter.h"
@@ -50,6 +49,4 @@ class RejectAllFilter
     }
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_FILTER_REJECTALLFILTER_H
+}   // namespace foundation

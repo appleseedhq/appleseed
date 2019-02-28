@@ -33,7 +33,7 @@
 
 shader as_maya_ramp
 [[
-    string as_maya_node_name = "ramp"
+    string as_node_name = "ramp"
 ]]
 (
     int in_type = 0

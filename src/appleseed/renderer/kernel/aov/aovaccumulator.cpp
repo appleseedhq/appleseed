@@ -30,8 +30,8 @@
 #include "aovaccumulator.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
-#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/color/colorspace.h"
@@ -110,39 +110,14 @@ void AOVAccumulator::write(
 {
 }
 
-namespace
-{
-    //
-    // BeautyAOVAccumulator class.
-    //
-
-    class BeautyAOVAccumulator
-      : public AOVAccumulator
-    {
-      public:
-        void write(
-            const PixelContext&         pixel_context,
-            const ShadingPoint&         shading_point,
-            const ShadingComponents&    shading_components,
-            const AOVComponents&        aov_components,
-            ShadingResult&              shading_result) override
-        {
-            shading_result.m_main.rgb() =
-                shading_components.m_beauty.to_rgb(g_std_lighting_conditions);
-        }
-    };
-}
-
 
 //
 // UnfilteredAOVAccumulator class implementation.
 //
 
-UnfilteredAOVAccumulator::UnfilteredAOVAccumulator(
-    Image& image,
-    Image& filter_image)
+UnfilteredAOVAccumulator::UnfilteredAOVAccumulator(Image& image)
   : m_image(image)
-  , m_filter_image(filter_image)
+  , m_tile(nullptr)
 {
 }
 
@@ -153,15 +128,29 @@ void UnfilteredAOVAccumulator::on_tile_begin(
     const size_t                max_spp)
 {
     // Fetch the destination tile.
-    const CanvasProperties& props = frame.image().properties();
     m_tile = &m_image.tile(tile_x, tile_y);
-    m_filter_tile = &m_filter_image.tile(tile_x, tile_y);
 
-    // Fetch the tile bounds (inclusive).
-    m_tile_origin_x = static_cast<int>(tile_x * props.m_tile_width);
-    m_tile_origin_y = static_cast<int>(tile_y * props.m_tile_height);
-    m_tile_end_x = static_cast<int>(m_tile_origin_x + m_tile->get_width() - 1);
-    m_tile_end_y = static_cast<int>(m_tile_origin_y + m_tile->get_height() - 1);
+    // Compute the tile's origin and cropped bounding box (inclusive on all sides).
+    const CanvasProperties& props = frame.image().properties();
+    m_tile_origin_x = tile_x * props.m_tile_width;
+    m_tile_origin_y = tile_y * props.m_tile_height;
+    m_cropped_tile_bbox.min.x = static_cast<int>(m_tile_origin_x);
+    m_cropped_tile_bbox.min.y = static_cast<int>(m_tile_origin_y);
+    m_cropped_tile_bbox.max.x = static_cast<int>(m_tile_origin_x + m_tile->get_width() - 1);
+    m_cropped_tile_bbox.max.y = static_cast<int>(m_tile_origin_y + m_tile->get_height() - 1);
+    assert(m_cropped_tile_bbox.is_valid());
+
+    // Clip the tile's bounding box against the crop window.
+    m_cropped_tile_bbox = AABB2i::intersect(m_cropped_tile_bbox, frame.get_crop_window());
+    assert(m_cropped_tile_bbox.is_valid());
+}
+
+void UnfilteredAOVAccumulator::on_tile_end(
+    const Frame&                frame,
+    const size_t                tile_x,
+    const size_t                tile_y)
+{
+    m_tile = nullptr;
 }
 
 
@@ -193,10 +182,29 @@ AOVAccumulatorContainer::AOVAccumulatorContainer(const Frame& frame)
     }
 }
 
+namespace
+{
+    class BeautyAOVAccumulator
+      : public AOVAccumulator
+    {
+      public:
+        void write(
+            const PixelContext&         pixel_context,
+            const ShadingPoint&         shading_point,
+            const ShadingComponents&    shading_components,
+            const AOVComponents&        aov_components,
+            ShadingResult&              shading_result) override
+        {
+            shading_result.m_main.rgb() =
+                shading_components.m_beauty.to_rgb(g_std_lighting_conditions);
+        }
+    };
+}
+
 void AOVAccumulatorContainer::init()
 {
     m_size = 0;
-    memset(m_accumulators, 0, MaxAovAccumulators * sizeof(AOVAccumulator*));
+    memset(m_accumulators, 0, MaxAOVAccumulatorCount * sizeof(AOVAccumulator*));
 
     // Create beauty accumulator.
     insert(auto_release_ptr<AOVAccumulator>(new BeautyAOVAccumulator()));
@@ -277,7 +285,7 @@ bool AOVAccumulatorContainer::insert(auto_release_ptr<AOVAccumulator> aov_accum)
 {
     assert(aov_accum.get());
 
-    if (m_size == MaxAovAccumulators - 1)
+    if (m_size + 1 == MaxAOVAccumulatorCount)
         return false;
 
     m_accumulators[m_size++] = aov_accum.release();

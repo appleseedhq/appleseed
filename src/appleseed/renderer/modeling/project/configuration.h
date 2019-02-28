@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECT_CONFIGURATION_H
-#define APPLESEED_RENDERER_MODELING_PROJECT_CONFIGURATION_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
@@ -60,6 +59,9 @@ class APPLESEED_DLLSYMBOL Configuration
     // Return the unique ID of this class of entities.
     static foundation::UniqueID get_class_uid();
 
+    // Return configuration metadata.
+    static foundation::Dictionary get_metadata();
+
     // Delete this instance.
     void release() override;
 
@@ -74,9 +76,6 @@ class APPLESEED_DLLSYMBOL Configuration
     // Construct a set of parameters from the parameters inherited
     // from the base configuration and the ones of this configuration.
     ParamArray get_inherited_parameters() const;
-
-    // Return the metadata of the configuration settings.
-    static foundation::Dictionary get_metadata();
 
   private:
     friend class BaseConfigurationFactory;
@@ -123,6 +122,4 @@ class APPLESEED_DLLSYMBOL BaseConfigurationFactory
     static bool is_base_configuration(const char* name);
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_CONFIGURATION_H
+}   // namespace renderer

@@ -53,7 +53,6 @@
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
-#include "foundation/utility/otherwise.h"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
@@ -155,11 +154,6 @@ namespace
             return Model;
         }
 
-        size_t compute_input_data_size() const override
-        {
-            return sizeof(InputValues);
-        }
-
         bool on_frame_begin(
             const Project&              project,
             const BaseGroup*            parent,
@@ -202,6 +196,11 @@ namespace
             return true;
         }
 
+        size_t compute_input_data_size() const override
+        {
+            return sizeof(InputValues);
+        }
+
         void prepare_inputs(
             Arena&                      arena,
             const ShadingPoint&         shading_point,
@@ -211,7 +210,7 @@ namespace
 
             new (&values->m_precomputed) InputValues::Precomputed();
 
-            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_max_roughness);
+            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_min_roughness);
 
             if (shading_point.is_entering())
             {
@@ -249,8 +248,6 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            sample.m_max_roughness = values->m_roughness;
-
             if (!ScatteringMode::has_glossy(modes))
                 return;
 
@@ -283,6 +280,7 @@ namespace
             const Vector3f s = sampling_context.next2<Vector3f>();
 
             Vector3f wi;
+            float probability;
             bool is_refraction;
 
             switch (m_mdf_type)
@@ -306,7 +304,7 @@ namespace
                         wo,
                         wi,
                         sample.m_value.m_glossy,
-                        sample.m_probability);
+                        probability);
 
                     add_energy_compensation_term(
                         mdf,
@@ -337,7 +335,7 @@ namespace
                         wo,
                         wi,
                         sample.m_value.m_glossy,
-                        sample.m_probability);
+                        probability);
 
                     add_energy_compensation_term(
                         mdf,
@@ -368,25 +366,31 @@ namespace
                         wo,
                         wi,
                         sample.m_value.m_glossy,
-                        sample.m_probability);
+                        probability);
                 }
                 break;
 
-              assert_otherwise;
+              default:
+                assert(!"Unexpected MDF type.");
+                wi = Vector3f(0.0f);
+                probability = 0.0f;
+                is_refraction = false;
+                break;
             }
 
-            if (sample.m_probability < 1.0e-6f)
-                return;
+            assert(probability >= 0.0f);
 
-            sample.m_value.m_beauty = sample.m_value.m_glossy;
+            if (probability > 1.0e-6f)
+            {
+                sample.set_to_scattering(ScatteringMode::Glossy, probability);
+                sample.m_value.m_beauty = sample.m_value.m_glossy;
+                sample.m_incoming = Dual3f(basis.transform_to_parent(wi));
+                sample.m_min_roughness = values->m_roughness;
 
-            sample.m_mode = ScatteringMode::Glossy;
-
-            sample.m_incoming = Dual3f(basis.transform_to_parent(wi));
-
-            if (is_refraction)
-                sample.compute_transmitted_differentials(1.0f / eta);
-            else sample.compute_reflected_differentials();
+                if (is_refraction)
+                    sample.compute_transmitted_differentials(1.0f / eta);
+                else sample.compute_reflected_differentials();
+            }
         }
 
         template <typename MDF, typename SpectrumType>
@@ -409,7 +413,7 @@ namespace
             float&                      probability)
         {
             // Compute the microfacet normal by sampling the MDF.
-            Vector3f m = mdf.sample(wo, Vector2f(s[0], s[1]), alpha_x, alpha_y, gamma);
+            const Vector3f m = mdf.sample(wo, Vector2f(s[0], s[1]), alpha_x, alpha_y, gamma);
             assert(m.y > 0.0f);
 
             const float rcp_eta = 1.0f / eta;
@@ -418,10 +422,11 @@ namespace
 
             float cos_theta_t;
             const float F = fresnel_reflectance(cos_wom, rcp_eta, cos_theta_t);
-            const float r_probability = choose_reflection_probability(
-                reflection_weight,
-                refraction_weight,
-                F);
+            const float r_probability =
+                choose_reflection_probability(
+                    reflection_weight,
+                    refraction_weight,
+                    F);
 
             bool is_refraction;
 
@@ -505,6 +510,8 @@ namespace
                         eta);
             }
 
+            assert(probability > 0.0f);
+
             return is_refraction;
         }
 
@@ -524,12 +531,14 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
 
+            float pdf;
+
             switch (m_mdf_type)
             {
               case GGX:
                 {
                     const GGXMDF mdf;
-                    const float pdf = do_evaluate(
+                    pdf = do_evaluate(
                         mdf,
                         values,
                         adjoint,
@@ -544,15 +553,13 @@ namespace
                         outgoing,
                         incoming,
                         value.m_glossy);
-
-                    return pdf;
                 }
                 break;
 
               case Beckmann:
                 {
                     const BeckmannMDF mdf;
-                    const float pdf = do_evaluate(
+                    pdf = do_evaluate(
                         mdf,
                         values,
                         adjoint,
@@ -567,15 +574,13 @@ namespace
                         outgoing,
                         incoming,
                         value.m_glossy);
-
-                    return pdf;
                 }
                 break;
 
               case Std:
                 {
                     const StdMDF mdf;
-                    return do_evaluate(
+                    pdf = do_evaluate(
                         mdf,
                         values,
                         adjoint,
@@ -588,8 +593,12 @@ namespace
 
               default:
                 assert(!"Unexpected MDF type.");
-                return 0.0f;
+                pdf = 0.0f;
+                break;
             }
+
+            assert(pdf >= 0.0f);
+            return pdf;
         }
 
         template <typename MDF>
@@ -631,6 +640,7 @@ namespace
             const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             const Vector3f wi = basis.transform_to_local(incoming);
+            float pdf;
 
             if (wi.y * wo.y >= 0.0f)
             {
@@ -653,13 +663,15 @@ namespace
                     value.m_glossy);
                 value.m_beauty = value.m_glossy;
 
-                const float r_probability = choose_reflection_probability(
-                    values->m_precomputed.m_reflection_weight,
-                    values->m_precomputed.m_refraction_weight,
-                    F);
+                const float r_probability =
+                    choose_reflection_probability(
+                        values->m_precomputed.m_reflection_weight,
+                        values->m_precomputed.m_refraction_weight,
+                        F);
 
-                return
-                    r_probability * reflection_pdf(mdf, wo, m, cos_wom, alpha_x, alpha_y, gamma);
+                pdf =
+                    r_probability *
+                    reflection_pdf(mdf, wo, m, cos_wom, alpha_x, alpha_y, gamma);
             }
             else
             {
@@ -684,15 +696,19 @@ namespace
                     value.m_glossy);
                 value.m_beauty = value.m_glossy;
 
-                const float r_probability = choose_reflection_probability(
-                    values->m_precomputed.m_reflection_weight,
-                    values->m_precomputed.m_refraction_weight,
-                    F);
+                const float r_probability =
+                    choose_reflection_probability(
+                        values->m_precomputed.m_reflection_weight,
+                        values->m_precomputed.m_refraction_weight,
+                        F);
 
-                return
+                pdf =
                     (1.0f - r_probability) *
                     refraction_pdf(mdf, wo, wi, m, alpha_x, alpha_y, gamma, eta);
             }
+
+            assert(pdf >= 0.0f);
+            return pdf;
         }
 
         float evaluate_pdf(
@@ -709,12 +725,14 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
 
+            float pdf;
+
             switch (m_mdf_type)
             {
               case GGX:
                 {
                     const GGXMDF mdf;
-                    return do_evaluate_pdf(
+                    pdf = do_evaluate_pdf(
                         mdf,
                         values,
                         shading_basis,
@@ -726,7 +744,7 @@ namespace
               case Beckmann:
                 {
                     const BeckmannMDF mdf;
-                    return do_evaluate_pdf(
+                    pdf = do_evaluate_pdf(
                         mdf,
                         values,
                         shading_basis,
@@ -738,7 +756,7 @@ namespace
               case Std:
                 {
                     const StdMDF mdf;
-                    return do_evaluate_pdf(
+                    pdf = do_evaluate_pdf(
                         mdf,
                         values,
                         shading_basis,
@@ -749,8 +767,12 @@ namespace
 
               default:
                 assert(!"Unexpected MDF type.");
-                return 0.0f;
+                pdf = 0.0f;
+                break;
             }
+
+            assert(pdf >= 0.0f);
+            return pdf;
         }
 
         template <typename MDF>
@@ -784,9 +806,11 @@ namespace
                 values->m_anisotropy,
                 alpha_x,
                 alpha_y);
+
             const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             const Vector3f wi = basis.transform_to_local(incoming);
+            float pdf;
 
             if (wi.y * wo.y >= 0.0f)
             {
@@ -796,12 +820,13 @@ namespace
 
                 const float F = fresnel_reflectance(cos_wom, rcp_eta);
 
-                const float r_probability = choose_reflection_probability(
-                    values->m_precomputed.m_reflection_weight,
-                    values->m_precomputed.m_refraction_weight,
-                    F);
+                const float r_probability =
+                    choose_reflection_probability(
+                        values->m_precomputed.m_reflection_weight,
+                        values->m_precomputed.m_refraction_weight,
+                        F);
 
-                return
+                pdf =
                     r_probability *
                     reflection_pdf(mdf, wo, m, cos_wom, alpha_x, alpha_y, gamma);
             }
@@ -818,10 +843,13 @@ namespace
                     values->m_precomputed.m_refraction_weight,
                     F);
 
-                return
+                pdf =
                     (1.0f - r_probability) *
                     refraction_pdf(mdf, wo, wi, m, alpha_x, alpha_y, gamma, eta);
             }
+
+            assert(pdf >= 0.0f);
+            return pdf;
         }
 
         float sample_ior(
@@ -899,11 +927,7 @@ namespace
             const float r_probability = F * reflection_weight;
             const float t_probability = (1.0f - F) * refraction_weight;
             const float sum_probabilities = r_probability + t_probability;
-
-            if (sum_probabilities != 0.0f)
-                return r_probability / sum_probabilities;
-
-            return 1.0f;
+            return sum_probabilities != 0.0f ? r_probability / sum_probabilities : 1.0f;
         }
 
         static float fresnel_reflectance(
@@ -912,7 +936,6 @@ namespace
             float&                      cos_theta_t)
         {
             const float sin_theta_t2 = (1.0f - square(cos_theta_i)) * square(eta);
-
             if (sin_theta_t2 > 1.0f)
             {
                 cos_theta_t = 0.0f;
@@ -927,6 +950,7 @@ namespace
                 eta,
                 abs(cos_theta_i),
                 cos_theta_t);
+
             return F;
         }
 
@@ -1342,6 +1366,7 @@ namespace
                     wi,
                     value,
                     probability);
+                assert(probability >= 0.0f);
 
                 if (probability < 1.0e-6f)
                     continue;
@@ -1513,7 +1538,7 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "0.85"));
 
@@ -1523,7 +1548,7 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
             .insert("label", "Surface Transmittance Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -1535,7 +1560,7 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -1547,7 +1572,7 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -1575,7 +1600,7 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("min",
                 Dictionary()
@@ -1612,7 +1637,7 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("min",
                 Dictionary()
@@ -1645,7 +1670,7 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("visible_if",
@@ -1660,7 +1685,7 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("min",
                 Dictionary()
@@ -1683,7 +1708,7 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "0.0")
             .insert("visible_if",

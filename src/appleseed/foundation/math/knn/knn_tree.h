@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_KNN_KNN_TREE_H
-#define APPLESEED_FOUNDATION_MATH_KNN_KNN_TREE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -125,7 +124,5 @@ inline size_t Tree<T, N>::get_memory_size() const
     return mem_size;
 }
 
-}       // namespace knn
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_KNN_KNN_TREE_H
+}   // namespace knn
+}   // namespace foundation

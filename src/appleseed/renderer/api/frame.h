@@ -27,10 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_FRAME_H
-#define APPLESEED_RENDERER_API_FRAME_H
+#pragma once
 
 // API headers.
 #include "renderer/modeling/frame/frame.h"
-
-#endif  // !APPLESEED_RENDERER_API_FRAME_H

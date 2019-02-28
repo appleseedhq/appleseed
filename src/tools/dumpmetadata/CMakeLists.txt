@@ -52,6 +52,8 @@ add_executable (dumpmetadata
     ${dumpmetadata_sources}
 )
 
+set_target_properties (dumpmetadata PROPERTIES FOLDER "Tools")
+
 if (USE_RPATH_ORIGIN)
     set_target_properties (dumpmetadata PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"

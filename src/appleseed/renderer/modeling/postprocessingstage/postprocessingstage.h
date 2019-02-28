@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_POSTPROCESSINGSTAGE_H
-#define APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_POSTPROCESSINGSTAGE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/connectableentity.h"
@@ -110,6 +109,7 @@ void PostProcessingStage::for_each_pixel(const Frame& frame, const Func& func)
         for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
         {
             foundation::Tile& tile = image.tile(tx, ty);
+
             for (size_t y = 0, th = tile.get_height(); y < th; ++y)
             {
                 for (size_t x = 0, tw = tile.get_width(); x < tw; ++x)
@@ -124,6 +124,4 @@ void PostProcessingStage::for_each_pixel(const Frame& frame, const Func& func)
     }
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_POSTPROCESSINGSTAGE_POSTPROCESSINGSTAGE_H
+}   // namespace renderer

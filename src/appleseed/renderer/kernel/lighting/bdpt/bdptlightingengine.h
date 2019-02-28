@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_BDPT_BDPTLIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_BDPT_BDPTLIGHTINGENGINE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/ilightingengine.h"
@@ -49,6 +48,9 @@ class BDPTLightingEngineFactory
   : public ILightingEngineFactory
 {
   public:
+    // Return parameters metadata.
+    static foundation::Dictionary get_params_metadata();
+
     // Constructor.
     BDPTLightingEngineFactory(
         const Project&              project,
@@ -61,15 +63,10 @@ class BDPTLightingEngineFactory
     // Return a new path tracing lighting engine instance.
     ILightingEngine* create() override;
 
-    // Return the metadata of the BDPT lighting engine parameters.
-    static foundation::Dictionary get_params_metadata();
-
   private:
     const Project&                  m_project;
     const ForwardLightSampler&      m_light_sampler;
     ParamArray                      m_params;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_BDPT_BDPTLIGHTINGENGINE_H
+}   // namespace renderer

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_INTERSECTION_RAYAABB_H
-#define APPLESEED_FOUNDATION_MATH_INTERSECTION_RAYAABB_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
@@ -46,12 +45,28 @@
 namespace foundation
 {
 
+//
+// 3D ray-AABB intersection and clipping functions.
+//
+// References:
+//
+//   An Efficient and Robust Ray-Box Intersection Algorithm
+//   Amy Williams, Steve Barrus, R. Keith Morley, Peter Shirley
+//   jgt vol. 10 number 1, pp. 49-54, 2005.
+//   http://www.cs.utah.edu/~awilliam/box/box.pdf
+//
+//   Scalar ray/AABB intersection code on Flipcode, by Thierry Berger-Perrin:
+//   http://www.flipcode.com/archives/SSE_RayBox_Intersection_Test.shtml
+//
+//   Packet ray/AABB intersection code in Radius, by Thierry Berger-Perrin:
+//   http://cvs.gna.org/cvsweb/radius/src/rt_render_packet.cc?rev=1.3;cvsroot=radius#l382
+//
+//   Robust BVH Ray Traversal
+//   Thiago Ize, Solid Angle
+//   http://jcgt.org/published/0002/02/02/paper.pdf
+//
 // todo: experiment with intersection predicates based on Plucker coordinates
 // (reference: http://jgt.akpeters.com/papers/MahovskyWyvill04/).
-
-
-//
-// 3D ray-AABB intersection and clipping.
 //
 
 // Test the intersection between a ray and a bounding box.
@@ -84,6 +99,19 @@ bool intersect(
     T&                      tmin,
     T&                      tmax);
 
+// Test the intersection between a ray and a bounding box.
+// If the ray and the bounding box intersect, the distance
+// to the closest intersection is returned in 'tmin' and
+// the normal is returned in `normal`. Otherwise, 'tmin'
+// and `normal` are left unchanged.
+template <typename T>
+bool intersect(
+    const Ray<T, 3>&        ray,
+    const RayInfo<T, 3>&    ray_info,
+    const AABB<T, 3>&       bbox,
+    T&                      tmin,
+    Vector<T, 3>&           normal);
+
 // Clip a ray to its intersection with a bounding box.
 // If the ray and the bounding box intersect, the ray is
 // clipped against the bounding box and true is returned.
@@ -97,23 +125,6 @@ bool clip(
 
 //
 // 3D ray-AABB intersection and clipping functions implementation.
-//
-// References:
-//
-//   An Efficient and Robust Ray-Box Intersection Algorithm
-//   Amy Williams, Steve Barrus, R. Keith Morley, Peter Shirley
-//   jgt vol. 10 number 1, pp. 49-54, 2005.
-//   http://www.cs.utah.edu/~awilliam/box/box.pdf
-//
-//   Scalar ray/AABB intersection code on Flipcode, by Thierry Berger-Perrin:
-//   http://www.flipcode.com/archives/SSE_RayBox_Intersection_Test.shtml
-//
-//   Packet ray/AABB intersection code in Radius, by Thierry Berger-Perrin:
-//   http://cvs.gna.org/cvsweb/radius/src/rt_render_packet.cc?rev=1.3;cvsroot=radius#l382
-//
-//   Robust BVH Ray Traversal
-//   Thiago Ize, Solid Angle
-//   http://jcgt.org/published/0002/02/02/paper.pdf
 //
 
 template <typename T>
@@ -269,6 +280,37 @@ inline bool intersect(
 }
 
 template <typename T>
+inline bool intersect(
+    const Ray<T, 3>&        ray,
+    const RayInfo<T, 3>&    ray_info,
+    const AABB<T, 3>&       bbox,
+    T&                      tmin_out,
+    Vector<T, 3>&           normal_out)
+{
+    const T xl1 = ray_info.m_rcp_dir.x * (bbox[1 - ray_info.m_sgn_dir.x].x - ray.m_org.x);
+    const T yl1 = ray_info.m_rcp_dir.y * (bbox[1 - ray_info.m_sgn_dir.y].y - ray.m_org.y);
+    const T zl1 = ray_info.m_rcp_dir.z * (bbox[1 - ray_info.m_sgn_dir.z].z - ray.m_org.z);
+
+    const T xl2 = ray_info.m_rcp_dir.x * (bbox[    ray_info.m_sgn_dir.x].x - ray.m_org.x);
+    const T yl2 = ray_info.m_rcp_dir.y * (bbox[    ray_info.m_sgn_dir.y].y - ray.m_org.y);
+    const T zl2 = ray_info.m_rcp_dir.z * (bbox[    ray_info.m_sgn_dir.z].z - ray.m_org.z);
+
+    const T tmin = ssemax(zl1, ssemax(yl1, ssemax(xl1, ray.m_tmin)));
+    const T tmax = ssemin(zl2, ssemin(yl2, ssemin(xl2, ray.m_tmax)));
+
+    if (tmin > tmax || tmax < ray.m_tmin || tmin >= ray.m_tmax)
+        return false;
+
+    tmin_out = ssemax(ray.m_tmin, tmin);
+
+    const size_t i = max_index(xl1, yl1, zl1);
+    normal_out[0] = normal_out[1] = normal_out[2] = T(0.0);
+    normal_out[i] = ray_info.m_sgn_dir[i] > 0 ? T(-1.0) : T(1.0);
+
+    return true;
+}
+
+template <typename T>
 inline bool clip(
     Ray<T, 3>&              ray,
     const RayInfo<T, 3>&    ray_info,
@@ -388,6 +430,4 @@ inline bool clip<double>(
 
 #endif  // APPLESEED_USE_SSE
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_INTERSECTION_RAYAABB_H
+}   // namespace foundation

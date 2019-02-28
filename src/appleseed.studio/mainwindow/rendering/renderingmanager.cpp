@@ -97,16 +97,20 @@ namespace
       private:
         MasterRenderer* m_master_renderer;
 
-        // The starting point for the thread.
+        // The entry point for the thread.
         void run() override
         {
+            RENDERER_LOG_DEBUG("master renderer thread has started.");
+
             set_current_thread_name("master_renderer");
 
             const MasterRenderer::RenderingResult rendering_result =
                 m_master_renderer->render();
 
-            if (rendering_result.m_status == MasterRenderer::RenderingResult::Failed)
+            if (rendering_result.m_status != MasterRenderer::RenderingResult::Succeeded)
                 emit signal_rendering_failed();
+
+            RENDERER_LOG_DEBUG("master renderer thread is ending...");
         }
     };
 }
@@ -116,6 +120,8 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
   , m_project(nullptr)
   , m_render_tab(nullptr)
 {
+    Application::initialize_resource_search_paths(m_resource_search_paths);
+
     //
     // The connections below are using the Qt::BlockingQueuedConnection connection type.
     //
@@ -200,6 +206,7 @@ void RenderingManager::start_rendering(
         new MasterRenderer(
             *m_project,
             m_params,
+            m_resource_search_paths,
             &m_renderer_controller,
             m_tile_callback_factory.get()));
 

@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTPATHSTREAM_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTPATHSTREAM_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -45,9 +44,13 @@
 namespace renderer  { class Camera; }
 namespace renderer  { class EmittingTriangle; }
 namespace renderer  { class Entity; }
+namespace renderer  { class EnvironmentEDF; }
 namespace renderer  { class Light; }
+namespace renderer  { class ObjectInstance; }
 namespace renderer  { class PathVertex; }
 namespace renderer  { class PixelContext; }
+namespace renderer  { class Project; }
+namespace renderer  { class Scene; }
 
 namespace renderer
 {
@@ -74,14 +77,20 @@ class LightPathStream
         const Spectrum&                 emitted_radiance);
 
     void sampled_emitting_triangle(
-        const EmittingTriangle*         triangle,
+        const EmittingTriangle&         triangle,
         const foundation::Vector3d&     emission_position,
         const Spectrum&                 material_value,
         const Spectrum&                 emitted_radiance);
 
     void sampled_non_physical_light(
-        const Light*                    light,
+        const Light&                    light,
         const foundation::Vector3d&     emission_position,
+        const Spectrum&                 material_value,
+        const Spectrum&                 emitted_radiance);
+
+    void sampled_environment(
+        const EnvironmentEDF&           environment_edf,
+        const foundation::Vector3f&     emission_direction,
         const Spectrum&                 material_value,
         const Spectrum&                 emitted_radiance);
 
@@ -94,7 +103,8 @@ class LightPathStream
     {
         HitReflector,
         HitEmitter,
-        SampledEmitter
+        SampledEmitter,
+        SampledEnvironment
     };
 
     struct Event
@@ -105,7 +115,7 @@ class LightPathStream
 
     struct HitReflectorData
     {
-        const Entity*               m_entity;                   // object instance that was hit
+        const ObjectInstance*       m_object_instance;          // object instance that was hit
         foundation::Vector3f        m_vertex_position;          // world space position of the hit point on the reflector
         foundation::Color3f         m_path_throughput;          // cumulative path throughput up to but excluding this vertex
     };
@@ -120,6 +130,14 @@ class LightPathStream
     {
         const Entity*               m_entity;                   // object instance or non-physical light that was sampled
         foundation::Vector3f        m_vertex_position;          // world space position of the emitting point on the emitter
+        foundation::Color3f         m_material_value;           // BSDF value at the previous vertex
+        foundation::Color3f         m_emitted_radiance;         // emitted radiance in W.sr^-1.m^-2
+    };
+
+    struct SampledEnvData
+    {
+        const EnvironmentEDF*       m_environment_edf;          // environment EDF that was sampled
+        foundation::Vector3f        m_emission_direction;       // world space emission direction pointing toward the environment
         foundation::Color3f         m_material_value;           // BSDF value at the previous vertex
         foundation::Color3f         m_emitted_radiance;         // emitted radiance in W.sr^-1.m^-2
     };
@@ -141,28 +159,35 @@ class LightPathStream
         foundation::Color3f         m_radiance;                 // radiance arriving at this vertex, in W.sr^-1.m^-2
     };
 
+    // Scene.
+    const Scene&                    m_scene;
+    float                           m_scene_diameter;
+
     // Camera event (transient).
     const Camera*                   m_camera;
     foundation::Vector2i            m_pixel_coords;
     foundation::Vector2f            m_sample_position;
     foundation::Vector3f            m_camera_vertex_position;
 
-    // Scattering events (transient)
+    // Scattering events (transient).
     std::vector<Event>              m_events;
     std::vector<HitReflectorData>   m_hit_reflector_data;
     std::vector<HitEmitterData>     m_hit_emitter_data;
     std::vector<SampledEmitterData> m_sampled_emitter_data;
+    std::vector<SampledEnvData>     m_sampled_env_data;
 
     // Final representation as paths and path vertices (persistent).
     std::vector<StoredPath>         m_paths;
     std::vector<StoredPathVertex>   m_vertices;
 
-    void create_path_from_hit_emitter(const size_t event_index);
-    void create_path_from_sampled_emitter(const size_t event_index);
+    // Constructor.
+    explicit LightPathStream(const Project& project);
+
+    void create_path_from_hit_emitter(const size_t emitter_event_index);
+    void create_path_from_sampled_emitter(const size_t emitter_event_index);
+    void create_path_from_sampled_environment(const size_t env_event_index);
 
     const HitReflectorData& get_reflector_data(const size_t event_index) const;
 };
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTPATHSTREAM_H
+}   // namespace renderer

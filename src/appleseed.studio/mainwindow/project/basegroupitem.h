@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_BASEGROUPITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_BASEGROUPITEM_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/itembase.h"
@@ -102,7 +101,5 @@ class BaseGroupItem
     void add_items(renderer::BaseGroup& base_group);
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_BASEGROUPITEM_H
+}   // namespace studio
+}   // namespace appleseed

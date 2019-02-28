@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_MAKEVECTOR_H
-#define APPLESEED_FOUNDATION_UTILITY_MAKEVECTOR_H
+#pragma once
 
 // Standard headers.
 #include <cassert>
@@ -225,6 +224,4 @@ std::vector<T> make_vector_n(const size_t n, const T& val, ...)
     return vec;
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_UTILITY_MAKEVECTOR_H
+}   // namespace foundation

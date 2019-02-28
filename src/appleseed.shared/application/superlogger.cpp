@@ -87,13 +87,14 @@ void SuperLogger::enable_message_coloring()
     set_log_target(create_console_log_target(stderr));
 }
 
-void SuperLogger::set_verbosity_level_from_string(const char* level_name)
+void SuperLogger::set_verbosity_level_from_string(const char* level_name, const bool warn_if_invalid)
 {
     const LogMessage::Category level = LogMessage::get_category_value(level_name);
 
     if (level < LogMessage::NumMessageCategories)
         set_verbosity_level(level);
-    else LOG_ERROR(*this, "invalid message verbosity level \"%s\".", level_name);
+    else if (warn_if_invalid)
+        LOG_ERROR(*this, "invalid message verbosity level \"%s\".", level_name);
 }
 
 void SuperLogger::configure_from_settings(const Dictionary& settings)

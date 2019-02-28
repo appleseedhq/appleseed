@@ -105,12 +105,12 @@ RendererComponents::RendererComponents(
   , m_scene(*project.get_scene())
   , m_frame(*project.get_frame())
   , m_trace_context(project.get_trace_context())
+  , m_forward_light_sampler(nullptr)
+  , m_backward_light_sampler(nullptr)
   , m_shading_engine(get_child_and_inherit_globals(params, "shading_engine"))
   , m_texture_store(texture_store)
   , m_texture_system(texture_system)
   , m_shading_system(shading_system)
-  , m_forward_light_sampler(nullptr)
-  , m_backward_light_sampler(nullptr)
 {
 }
 
@@ -485,6 +485,12 @@ bool RendererComponents::create_frame_renderer_factory()
     }
     else if (name == "generic")
     {
+        if (m_shading_result_framebuffer_factory.get() == nullptr)
+        {
+            RENDERER_LOG_ERROR("cannot use the generic frame renderer without a shading result framebuffer.");
+            return false;
+        }
+
         if (m_tile_renderer_factory.get() == nullptr)
         {
             RENDERER_LOG_ERROR("cannot use the generic frame renderer without a tile renderer.");
@@ -494,6 +500,7 @@ bool RendererComponents::create_frame_renderer_factory()
         m_frame_renderer.reset(
             GenericFrameRendererFactory::create(
                 m_frame,
+                m_shading_result_framebuffer_factory.get(),
                 m_tile_renderer_factory.get(),
                 m_tile_callback_factory,
                 m_pass_callback.get(),
@@ -506,6 +513,12 @@ bool RendererComponents::create_frame_renderer_factory()
         if (m_sample_generator_factory.get() == nullptr)
         {
             RENDERER_LOG_ERROR("cannot use the progressive frame renderer without a sample generator.");
+            return false;
+        }
+
+        if (dynamic_cast<SPPMLightingEngineFactory*>(m_lighting_engine_factory.get()) != nullptr)
+        {
+            RENDERER_LOG_ERROR("cannot use the progressive frame renderer together with the sppm lighting engine.");
             return false;
         }
 

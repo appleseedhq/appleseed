@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_INPUTWIDGETPROXIES_H
-#define APPLESEED_STUDIO_UTILITY_INPUTWIDGETPROXIES_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -283,7 +282,5 @@ class InputWidgetProxyCollection
     ProxyCollection m_proxies;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_UTILITY_INPUTWIDGETPROXIES_H
+}   // namespace studio
+}   // namespace appleseed

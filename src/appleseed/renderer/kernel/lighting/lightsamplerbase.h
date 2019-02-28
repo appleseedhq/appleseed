@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTSAMPLERBASE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTSAMPLERBASE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/lightsample.h"
@@ -43,10 +42,11 @@
 #include <functional>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
-namespace renderer  { class AssemblyInstance; }
-namespace renderer  { class Material; }
-namespace renderer  { class MaterialArray; }
+namespace foundation    { class Dictionary; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class AssemblyInstance; }
+namespace renderer      { class Material; }
+namespace renderer      { class MaterialArray; }
 
 namespace renderer
 {
@@ -102,7 +102,10 @@ class LightSamplerBase
 
     EmittingTriangleKeyHasher               m_triangle_key_hasher;
     EmittingTriangleHashTable               m_emitting_triangle_hash_table;
- 
+
+    // Return metadata for parameters common to all light samplers.
+    static foundation::Dictionary get_params_metadata();
+
     // Build a hash table that allows to find the emitting triangle at a given shading point.
     void build_emitting_triangle_hash_table();
 
@@ -162,7 +165,4 @@ inline size_t LightSamplerBase::get_non_physical_light_count() const
     return m_non_physical_light_count;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTSAMPLERBASE_H
-
+}   // namespace renderer

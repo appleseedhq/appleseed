@@ -34,15 +34,12 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
-#include "renderer/kernel/intersection/regioninfo.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/entity/entityvector.h"
 #include "renderer/modeling/object/curveobject.h"
-#include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/proceduralobject.h"
-#include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
@@ -213,15 +210,6 @@ void AssemblyTree::rebuild_assembly_tree()
         StatisticsVector::make(
             "assembly tree statistics",
             statistics).to_string().c_str());
-
-#ifdef APPLESEED_WITH_EMBREE
-
-    if (use_embree())
-    {
-        RENDERER_LOG_INFO("using Embree for assembly tree leaf intersection");
-    }
-
-#endif
 }
 
 void AssemblyTree::store_items_in_leaves(Statistics& statistics)
@@ -303,7 +291,6 @@ void AssemblyTree::update_tree_hierarchy()
     }
 
     // Update child trees.
-    update_region_trees();
     update_triangle_trees();
 
 #ifdef APPLESEED_WITH_EMBREE
@@ -381,45 +368,6 @@ namespace
 
         return hash;
     }
-
-    void collect_regions(const Assembly& assembly, RegionInfoVector& regions)
-    {
-        assert(regions.empty());
-
-        const ObjectInstanceContainer& object_instances = assembly.object_instances();
-        const size_t object_instance_count = object_instances.size();
-
-        // Collect all regions of all object instances of this assembly.
-        for (size_t obj_inst_index = 0; obj_inst_index < object_instance_count; ++obj_inst_index)
-        {
-            // Retrieve the object instance and its transformation.
-            const ObjectInstance* object_instance = object_instances.get_by_index(obj_inst_index);
-            assert(object_instance);
-            const Transformd& transform = object_instance->get_transform();
-
-            // Retrieve the object.
-            Object& object = object_instance->get_object();
-
-            // Retrieve the region kit of the object.
-            Access<RegionKit> region_kit(&object.get_region_kit());
-
-            // Collect all regions of the object.
-            for (size_t region_index = 0; region_index < region_kit->size(); ++region_index)
-            {
-                // Retrieve the region.
-                const IRegion* region = (*region_kit)[region_index];
-
-                // Compute the assembly space bounding box of the region.
-                const GAABB3 region_bbox =
-                    transform.to_parent(region->compute_local_bbox());
-
-                regions.emplace_back(
-                    obj_inst_index,
-                    region_index,
-                    region_bbox);
-            }
-        }
-    }
 }
 
 void AssemblyTree::create_child_trees(const Assembly& assembly)
@@ -434,39 +382,14 @@ void AssemblyTree::create_child_trees(const Assembly& assembly)
 
 #endif
     {
-        // Create a region or a triangle tree if there are mesh objects.
+        // Create a triangle tree if there are mesh objects.
         if (has_object_instances_of_type(assembly, MeshObjectFactory().get_model()))
-        {
-            assembly.is_flushable()
-                ? create_region_tree(assembly)
-                : create_triangle_tree(assembly);
-        }
+            create_triangle_tree(assembly);
 
         // Create a curve tree if there are curve objects.
         if (has_object_instances_of_type(assembly, CurveObjectFactory().get_model()))
             create_curve_tree(assembly);
     }
-}
-
-void AssemblyTree::create_region_tree(const Assembly& assembly)
-{
-    const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory().get_model());
-    Lazy<RegionTree>* tree = m_region_tree_repository.acquire(hash);
-
-    if (tree == nullptr)
-    {
-        unique_ptr<ILazyFactory<RegionTree>> region_tree_factory(
-            new RegionTreeFactory(
-                RegionTree::Arguments(
-                    m_scene,
-                    assembly.get_uid(),
-                    assembly)));
-
-        tree = new Lazy<RegionTree>(move(region_tree_factory));
-        m_region_tree_repository.insert(hash, tree);
-    }
-
-    m_region_trees.insert(make_pair(assembly.get_uid(), tree));
 }
 
 void AssemblyTree::create_triangle_tree(const Assembly& assembly)
@@ -482,17 +405,13 @@ void AssemblyTree::create_triangle_tree(const Assembly& assembly)
                 assembly.object_instances().begin(),
                 assembly.object_instances().end());
 
-        RegionInfoVector regions;
-        collect_regions(assembly, regions);
-
         unique_ptr<ILazyFactory<TriangleTree>> triangle_tree_factory(
             new TriangleTreeFactory(
                 TriangleTree::Arguments(
                     m_scene,
                     assembly.get_uid(),
                     assembly_bbox,
-                    assembly,
-                    regions)));
+                    assembly)));
 
         tree = new Lazy<TriangleTree>(move(triangle_tree_factory));
         m_triangle_tree_repository.insert(hash, tree);
@@ -558,7 +477,7 @@ void AssemblyTree::create_embree_scene(const Assembly& assembly)
                     m_scene.get_embree_device(),
                     assembly
                 )));
-        
+
         scene = new Lazy<EmbreeScene>(move(embree_scene_factory));
         m_embree_scene_repository.insert(hash, scene);
     }
@@ -580,22 +499,11 @@ void AssemblyTree::delete_embree_scene(const UniqueID assembly_id)
 
 void AssemblyTree::delete_child_trees(const UniqueID assembly_id)
 {
-    delete_region_tree(assembly_id);
     delete_triangle_tree(assembly_id);
     delete_curve_tree(assembly_id);
 #ifdef APPLESEED_WITH_EMBREE
     delete_embree_scene(assembly_id);
 #endif
-}
-
-void AssemblyTree::delete_region_tree(const UniqueID assembly_id)
-{
-    const RegionTreeContainer::iterator it = m_region_trees.find(assembly_id);
-    if (it != m_region_trees.end())
-    {
-        m_region_tree_repository.release(it->second);
-        m_region_trees.erase(it);
-    }
 }
 
 void AssemblyTree::delete_triangle_tree(const UniqueID assembly_id)
@@ -631,12 +539,6 @@ namespace
             update->update_non_geometry(enable_intersection_filters);
         }
     };
-}
-
-void AssemblyTree::update_region_trees()
-{
-    UpdateTrees<RegionTree> update_trees;
-    m_region_tree_repository.for_each(update_trees);
 }
 
 void AssemblyTree::update_triangle_trees()
@@ -746,7 +648,7 @@ bool AssemblyLeafVisitor::visit(
             ray,
             local_shading_point.m_ray);
         const RayInfo3d local_ray_info(local_shading_point.m_ray);
-        
+
 #ifdef APPLESEED_WITH_EMBREE
 
         if (m_tree.use_embree())
@@ -755,36 +657,12 @@ bool AssemblyLeafVisitor::visit(
                 *m_embree_scene_cache.access(
                     item.m_assembly_uid,
                     m_tree.m_embree_scenes);
-            
+
             embree_scene.intersect(local_shading_point);
         }
         else
 
 #endif
-        if (item.m_assembly->is_flushable())
-        {
-            // Retrieve the region tree of this assembly.
-            const RegionTree& region_tree =
-                *m_region_tree_cache.access(
-                    item.m_assembly_uid,
-                    m_tree.m_region_trees);
-
-            // Check the intersection between the ray and the region tree.
-            RegionLeafVisitor visitor(
-                local_shading_point,
-                m_triangle_tree_cache
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-                , m_triangle_tree_stats
-#endif
-                );
-            RegionLeafIntersector intersector;
-            intersector.intersect(
-                region_tree,
-                local_shading_point.m_ray,
-                local_ray_info,
-                visitor);
-        }
-        else
         {
             // Retrieve the triangle tree of this assembly.
             const TriangleTree* triangle_tree =
@@ -862,7 +740,6 @@ bool AssemblyLeafVisitor::visit(
             m_shading_point.m_assembly_instance_transform = assembly_instance_transform;
             m_shading_point.m_assembly_instance_transform_seq = assembly_instance_transform_seq;
             m_shading_point.m_object_instance_index = local_shading_point.m_object_instance_index;
-            m_shading_point.m_region_index = local_shading_point.m_region_index;
             m_shading_point.m_primitive_index = local_shading_point.m_primitive_index;
             m_shading_point.m_triangle_support_plane = local_shading_point.m_triangle_support_plane;
         }
@@ -870,16 +747,22 @@ bool AssemblyLeafVisitor::visit(
         // Check the intersection between the ray and procedural objects.
         if (item.m_assembly->has_render_data())
         {
-            const ObjectInstanceArray& procedural_instances = item.m_assembly->get_render_data().m_procedural_objects;
-            for (size_t j = 0, e = procedural_instances.size(); j < e; ++j)
+            const IndexedObjectInstanceArray& procedural_object_instances =
+                item.m_assembly->get_render_data().m_procedural_object_instances;
+
+            for (size_t j = 0, e = procedural_object_instances.size(); j < e; ++j)
             {
-                // Retrieve the object and object instance.
-                const ObjectInstance* object_instance = procedural_instances[j];
-                const Transformd& object_instance_transform = object_instance->get_transform();
-                const ProceduralObject& object = static_cast<const ProceduralObject&>(object_instance->get_object());
+                // Retrieve the object instance.
+                const IndexedObjectInstance& object_instance_index_pair = procedural_object_instances[j];
+                const ObjectInstance* object_instance = object_instance_index_pair.first;
+
+                // Skip this object instance if it isn't visible for this ray.
+                if (!(object_instance->get_vis_flags() & ray.m_flags))
+                    continue;
 
                 // Transform the ray to object instance space.
                 // todo: transform ray differentials.
+                const Transformd& object_instance_transform = object_instance->get_transform();
                 ShadingRay instance_local_ray;
                 instance_local_ray.m_org = object_instance_transform.point_to_local(local_shading_point.m_ray.m_org);
                 instance_local_ray.m_dir = object_instance_transform.vector_to_local(local_shading_point.m_ray.m_dir);
@@ -892,6 +775,7 @@ bool AssemblyLeafVisitor::visit(
                 instance_local_ray.m_medium_count = local_shading_point.m_ray.m_medium_count;
 
                 // Ask the procedural object to intersect itself against the ray.
+                const ProceduralObject& object = static_cast<const ProceduralObject&>(object_instance->get_object());
                 ProceduralObject::IntersectionResult result;
                 object.intersect(instance_local_ray, result);
 
@@ -904,8 +788,7 @@ bool AssemblyLeafVisitor::visit(
                     m_shading_point.m_assembly_instance = item.m_assembly_instance;
                     m_shading_point.m_assembly_instance_transform = assembly_instance_transform;
                     m_shading_point.m_assembly_instance_transform_seq = assembly_instance_transform_seq;
-                    m_shading_point.m_object_instance_index = j;
-                    m_shading_point.m_region_index = 0;
+                    m_shading_point.m_object_instance_index = object_instance_index_pair.second;
                     m_shading_point.m_primitive_index = 0;
                     m_shading_point.m_primitive_pa = result.m_material_slot;
                     m_shading_point.m_geometric_normal = object_instance_transform.normal_to_parent(result.m_geometric_normal);
@@ -978,7 +861,7 @@ bool AssemblyLeafProbeVisitor::visit(
                 *m_embree_scene_cache.access(
                     item.m_assembly_uid,
                     m_tree.m_embree_scenes);
-            
+
             if (embree_scene.occlude(local_ray))
             {
                 m_hit = true;
@@ -988,37 +871,6 @@ bool AssemblyLeafProbeVisitor::visit(
         else
 
 #endif
-
-        if (item.m_assembly->is_flushable())
-        {
-            // Retrieve the region tree of this assembly.
-            const RegionTree& region_tree =
-                *m_region_tree_cache.access(
-                    item.m_assembly_uid,
-                    m_tree.m_region_trees);
-
-            // Check the intersection between the ray and the region tree.
-            RegionLeafProbeVisitor visitor(
-                m_triangle_tree_cache
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-                , m_triangle_tree_stats
-#endif
-                );
-            RegionLeafProbeIntersector intersector;
-            intersector.intersect(
-                region_tree,
-                local_ray,
-                local_ray_info,
-                visitor);
-
-            // Terminate traversal if there was a hit.
-            if (visitor.hit())
-            {
-                m_hit = true;
-                return false;
-            }
-        }
-        else
         {
             // Retrieve the triangle tree of this assembly.
             const TriangleTree* triangle_tree =
@@ -1102,16 +954,22 @@ bool AssemblyLeafProbeVisitor::visit(
         // Check the intersection between the ray and procedural objects.
         if (item.m_assembly->has_render_data())
         {
-            const ObjectInstanceArray& procedural_instances = item.m_assembly->get_render_data().m_procedural_objects;
-            for (size_t j = 0, e = procedural_instances.size(); j < e; ++j)
+            const IndexedObjectInstanceArray& procedural_object_instances =
+                item.m_assembly->get_render_data().m_procedural_object_instances;
+
+            for (size_t j = 0, e = procedural_object_instances.size(); j < e; ++j)
             {
                 // Retrieve the object and object instance.
-                const ObjectInstance* object_instance = procedural_instances[j];
-                const Transformd& object_instance_transform = object_instance->get_transform();
-                const ProceduralObject& object = static_cast<const ProceduralObject&>(object_instance->get_object());
+                const IndexedObjectInstance& object_instance_index_pair = procedural_object_instances[j];
+                const ObjectInstance* object_instance = object_instance_index_pair.first;
+
+                // Skip this object instance if it isn't visible for this ray.
+                if (!(object_instance->get_vis_flags() & ray.m_flags))
+                    continue;
 
                 // Transform the ray to object instance space.
                 // todo: transform ray differentials.
+                const Transformd& object_instance_transform = object_instance->get_transform();
                 ShadingRay instance_local_ray;
                 instance_local_ray.m_org = object_instance_transform.point_to_local(local_ray.m_org);
                 instance_local_ray.m_dir = object_instance_transform.vector_to_local(local_ray.m_dir);
@@ -1124,6 +982,7 @@ bool AssemblyLeafProbeVisitor::visit(
                 instance_local_ray.m_medium_count = local_ray.m_medium_count;
 
                 // Ask the procedural object to intersect itself against the ray.
+                const ProceduralObject& object = static_cast<const ProceduralObject&>(object_instance->get_object());
                 if (object.intersect(instance_local_ray))
                 {
                     m_hit = true;

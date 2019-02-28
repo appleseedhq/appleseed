@@ -864,10 +864,15 @@ namespace
                         // Extract mat1 from the assembly.
                         auto_release_ptr<Material> mat1_owner = assembly.materials().remove(mat1.m_material);
 
+                        // Extract mat1's BSDF from the assembly.
+                        auto_release_ptr<BSDF> bsdf_owner = assembly.bsdfs().remove(mat1.m_bsdf);
+
                         // Update mat1's BSDF.
                         // todo: make sure the BSDF is not used in another material.
-                        auto_release_ptr<BSDF> bsdf_owner = assembly.bsdfs().remove(mat1.m_bsdf);
                         update_bsdf(mat1);
+                        assert(assembly.bsdfs().get_by_name(bsdf_owner->get_name()) == nullptr);
+
+                        // Insert mat1's BSDF back into the assembly.
                         assembly.bsdfs().insert(bsdf_owner);
 
                         // Rename mat1.
@@ -897,11 +902,16 @@ namespace
 
                 if (!i->m_updated)
                 {
+                    // Extract the material's BSDF from the assembly.
+                    auto_release_ptr<BSDF> bsdf_owner = assembly.bsdfs().remove(i->m_bsdf);
+
                     // Update the material's BSDF.
                     // todo: make sure the BSDF is not used in another material.
-                    auto_release_ptr<BSDF> bsdf_owner = assembly.bsdfs().remove(i->m_bsdf);
                     update_bsdf(*i);
-                    assembly.bsdfs().insert(bsdf_owner);
+
+                    // Insert the material's BSDF back into the assembly.
+                    if (assembly.bsdfs().get_by_name(bsdf_owner->get_name()) == nullptr)
+                        assembly.bsdfs().insert(bsdf_owner);
 
                     i->m_updated = true;
                 }
@@ -1037,6 +1047,7 @@ namespace
         }
     };
 
+
     //
     // Update from revision 10 to revision 11.
     //
@@ -1079,6 +1090,7 @@ namespace
         }
     };
 
+
     //
     // Update from revision 11 to revision 12.
     //
@@ -1120,6 +1132,7 @@ namespace
             move_if_exist(bssrdf, "mfp_multiplier", "dmfp_multiplier");
         }
     };
+
 
     //
     // Update from revision 12 to revision 13.
@@ -1164,6 +1177,7 @@ namespace
             }
         }
     };
+
 
     //
     // Update from revision 13 to revision 14.
@@ -1260,6 +1274,7 @@ namespace
         }
     };
 
+
     //
     // Update from revision 14 to revision 15.
     //
@@ -1330,6 +1345,7 @@ namespace
         }
     };
 
+
     //
     // Update from revision 15 to revision 16.
     //
@@ -1382,6 +1398,7 @@ namespace
         }
     };
 
+
     //
     // Update from revision 16 to revision 17.
     //
@@ -1424,6 +1441,7 @@ namespace
                 params.dictionaries().remove("drt");
         }
     };
+
 
     //
     // Update from revision 17 to revision 18.
@@ -1488,6 +1506,7 @@ namespace
         }
     };
 
+
     //
     // Update from revision 18 to revision 19.
     //
@@ -1518,6 +1537,7 @@ namespace
             params.remove_path("premultiplied_alpha");
         }
     };
+
 
     //
     // Update from revision 19 to revision 20.
@@ -1565,6 +1585,7 @@ namespace
         }
     };
 
+
     //
     // Update from revision 20 to revision 21.
     //
@@ -1611,6 +1632,7 @@ namespace
         }
     };
 
+
     //
     // Update from revision 21 to revision 22.
     //
@@ -1646,6 +1668,7 @@ namespace
         }
     };
 
+
     //
     // Update from revision 22 to revision 23.
     //
@@ -1678,6 +1701,7 @@ namespace
             }
         }
     };
+
 
     //
     // Update from revision 23 to revision 24.
@@ -1730,6 +1754,7 @@ namespace
         }
     };
 
+
     //
     // Update from revision 24 to revision 25.
     //
@@ -1757,6 +1782,7 @@ namespace
             }
         }
     };
+
 
     //
     // Update from revision 25 to revision 26.
@@ -1800,6 +1826,7 @@ namespace
             params.remove_path("render_stamp_format");
         }
     };
+
 
     //
     // Update from revision 26 to revision 27.
@@ -1870,6 +1897,81 @@ namespace
             }
         }
     };
+
+
+    //
+    // Update from revision 27 to revision 28.
+    //
+
+    class UpdateFromRevision_27
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_27(Project& project)
+          : Updater(project, 27)
+        {
+        }
+
+        void update() override
+        {
+            if (Scene* scene = m_project.get_scene())
+                update_assembly_inputs(scene->assemblies());
+        }
+
+      private:
+        static void update_assembly_inputs(AssemblyContainer& assemblies)
+        {
+            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            {
+                update_assembly_inputs(*i);
+                update_assembly_inputs(i->assemblies());
+            }
+        }
+
+        static void update_assembly_inputs(Assembly& assembly)
+        {
+            assembly.get_parameters().remove_path("flushable");
+        }
+    };
+
+
+    //
+    // Update from revision 28 to revision 29.
+    //
+
+    class UpdateFromRevision_28
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_28(Project& project)
+          : Updater(project, 28)
+        {
+        }
+
+        void update() override
+        {
+            if (m_project.get_frame())
+                update_frame(*m_project.get_frame());
+        }
+
+      private:
+        static void update_frame(Frame& frame)
+        {
+            for (PostProcessingStage& stage : frame.post_processing_stages())
+            {
+                if (strcmp(stage.get_model(), RenderStampPostProcessingStageFactory().get_model()) == 0)
+                {
+                    ParamArray& params = stage.get_parameters();
+                    if (params.strings().exist("format_string"))
+                    {
+                        string format_string = params.get<string>("format_string");
+                        format_string = replace(format_string, "{lib-variant}", "{lib-cpu-features}");
+                        params.set("format_string", format_string);
+                    }
+                }
+            }
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(
@@ -1929,6 +2031,8 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(24);
       CASE_UPDATE_FROM_REVISION(25);
       CASE_UPDATE_FROM_REVISION(26);
+      CASE_UPDATE_FROM_REVISION(27);
+      CASE_UPDATE_FROM_REVISION(28);
 
       case ProjectFormatRevision:
         // Project is up-to-date.

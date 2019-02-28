@@ -54,9 +54,8 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
       public:
         struct Payload {};
 
-        HorizontalGradientSampler(const size_t width, const size_t height)
+        explicit HorizontalGradientSampler(const size_t width)
           : m_width(width)
-          , m_height(height)
         {
         }
 
@@ -67,7 +66,6 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
 
       private:
         const size_t m_width;
-        const size_t m_height;
     };
 
     TEST_CASE(GetPDF_ReturnsSameProbabilityAsSample)
@@ -76,7 +74,7 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
         const size_t Height = 5;
 
         ImageImportanceSampler<HorizontalGradientSampler::Payload, float> importance_sampler(Width, Height);
-        HorizontalGradientSampler sampler(Width, Height);
+        HorizontalGradientSampler sampler(Width);
         importance_sampler.rebuild(sampler);
 
         size_t x, y;
@@ -127,7 +125,6 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
         }
 
         GenericImageFileWriter writer(output_image);
-
         writer.append_image(image.get());
         writer.write();
     }

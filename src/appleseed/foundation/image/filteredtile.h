@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_FILTEREDTILE_H
-#define APPLESEED_FOUNDATION_IMAGE_FILTEREDTILE_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/tile.h"
@@ -65,6 +64,7 @@ class FilteredTile
         const Filter2f&         filter);
 
     // Tile properties.
+    size_t get_channel_count() const;   // number of channels in one pixel, excluding the weight channel
     const AABB2u& get_crop_window() const;
     const Filter2f& get_filter() const;
 
@@ -131,20 +131,6 @@ class FilteredTile
         const float             y,
         const float*            values);
 
-    // Compute the variance of a weighted pixel given the value of the same pixel with 2 different samples count.
-    // The first given pixel `main` contains N samples.
-    // The second given pixel `second` contains N/2 samples (samples included in `second` are also in `main`).
-    static float compute_weighted_pixel_variance(
-        const float*            main,
-        const float*            second);
-
-    // Compute the variance of the tile `main` for pixels in the bounding box `bb`.
-    // A second tile `second` is used which contains half of the samples of `main`.
-    static float compute_tile_variance(
-        const AABB2u&           bb,
-        const FilteredTile*     main,
-        const FilteredTile*     second);
-
   protected:
     const AABB2u            m_crop_window;
     const Filter2f&         m_filter;
@@ -154,6 +140,11 @@ class FilteredTile
 //
 // FilteredTile class implementation.
 //
+
+inline size_t FilteredTile::get_channel_count() const
+{
+    return m_channel_count - 1;
+}
 
 inline const AABB2u& FilteredTile::get_crop_window() const
 {
@@ -225,6 +216,4 @@ inline void FilteredTile::get_pixel(
     get_pixel(x, y, &color[0]);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_FILTEREDTILE_H
+}   // namespace foundation

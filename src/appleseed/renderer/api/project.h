@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_PROJECT_H
-#define APPLESEED_RENDERER_API_PROJECT_H
+#pragma once
 
 // API headers.
 #include "renderer/modeling/project-builtin/cornellboxproject.h"
@@ -40,5 +39,3 @@
 #include "renderer/modeling/project/projectfileupdater.h"
 #include "renderer/modeling/project/projectfilewriter.h"
 #include "renderer/modeling/project/projecttracker.h"
-
-#endif  // !APPLESEED_RENDERER_API_PROJECT_H

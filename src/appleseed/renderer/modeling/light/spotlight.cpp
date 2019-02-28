@@ -159,6 +159,7 @@ namespace
                     rotate_minus_pi_around_x(
                         sample_cone_uniform(s, m_cos_outer_half_angle)));
             probability = sample_cone_uniform_pdf(static_cast<float>(m_cos_outer_half_angle));
+            assert(probability > 0.0f);
 
             const Vector3d axis = -normalize(light_transform.get_parent_z());
 
@@ -269,7 +270,7 @@ DictionaryArray SpotLightFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                    .insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "1.0")
             .insert("help", "Light intensity"));
@@ -280,7 +281,7 @@ DictionaryArray SpotLightFactory::get_input_metadata() const
             .insert("label", "Intensity Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "Light intensity multiplier"));
@@ -291,7 +292,7 @@ DictionaryArray SpotLightFactory::get_input_metadata() const
             .insert("label", "Exposure")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary().insert("texture_instance", "Texture Instances"))
             .insert("use", "optional")
             .insert("default", "0.0")
             .insert("help", "Light exposure"));

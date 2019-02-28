@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SCENE_SCENE_H
-#define APPLESEED_RENDERER_MODELING_SCENE_SCENE_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -79,7 +78,7 @@ class APPLESEED_DLLSYMBOL Scene
     void release() override;
 
     // Access the active camera.
-    // Return 0 if the camera does not exist.
+    // Return nullptr if the camera does not exist.
     Camera* get_active_camera() const;
 
     // Access the cameras.
@@ -89,7 +88,7 @@ class APPLESEED_DLLSYMBOL Scene
     void set_environment(foundation::auto_release_ptr<Environment> environment);
 
     // Access the environment.
-    // Return 0 if the environment does not exist.
+    // Return nullptr if the environment does not exist.
     Environment* get_environment() const;
 
     // Access the environment EDFs.
@@ -115,7 +114,7 @@ class APPLESEED_DLLSYMBOL Scene
     void update_asset_paths(const foundation::StringDictionary& mappings) override;
 
     // Expand all procedural assemblies in the scene.
-    virtual bool expand_procedural_assemblies(
+    bool expand_procedural_assemblies(
         const Project&              project,
         foundation::IAbortSwitch*   abort_switch = nullptr);
 
@@ -204,6 +203,4 @@ inline const Scene::RenderData& Scene::get_render_data() const
     return m_render_data;
 }
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_SCENE_SCENE_H
+}   // namespace renderer

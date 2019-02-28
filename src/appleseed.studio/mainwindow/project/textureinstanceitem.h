@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREINSTANCEITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREINSTANCEITEM_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/instancecollectionitem.h"
@@ -69,7 +68,5 @@ class TextureInstanceItem
     typedef SingleModelEntityItem<renderer::TextureInstance, renderer::BaseGroup, TextureInstanceCollectionItem> Base;
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREINSTANCEITEM_H
+}   // namespace studio
+}   // namespace appleseed

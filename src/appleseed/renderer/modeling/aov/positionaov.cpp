@@ -63,8 +63,8 @@ namespace
       : public UnfilteredAOVAccumulator
     {
       public:
-        PositionAOVAccumulator(Image& image, Image& filter_image)
-          : UnfilteredAOVAccumulator(image, filter_image)
+        explicit PositionAOVAccumulator(Image& image)
+          : UnfilteredAOVAccumulator(image)
         {
         }
 
@@ -78,36 +78,27 @@ namespace
             const Vector2i& pi = pixel_context.get_pixel_coords();
 
             // Ignore samples outside the tile.
-            if (outside_tile(pi))
+            if (!m_cropped_tile_bbox.contains(pi))
                 return;
 
-            float* p = reinterpret_cast<float*>(
-                get_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
+            float* out =
+                reinterpret_cast<float*>(
+                    m_tile->pixel(
+                        pi.x - m_tile_origin_x,
+                        pi.y - m_tile_origin_y));
 
-            float* f = reinterpret_cast<float*>(
-                get_filter_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
-
-            const float min_sample_square_distance = *f;
-            const float sample_square_distance =
-                square_distance_to_pixel_center(pixel_context.get_sample_position());
-
-            if (sample_square_distance < min_sample_square_distance)
+            if (shading_point.hit_surface())
             {
-                if (shading_point.hit_surface())
-                {
-                    const Vector3d& q = shading_point.get_point();
-                    p[0] = static_cast<float>(q[0]);
-                    p[1] = static_cast<float>(q[1]);
-                    p[2] = static_cast<float>(q[2]);
-                    *f = sample_square_distance;
-                }
-                else
-                {
-                    p[0] = 0.5f;
-                    p[1] = 0.5f;
-                    p[2] = 0.5f;
-                    *f = sample_square_distance;
-                }
+                const Vector3d& p = shading_point.get_point();
+                out[0] = static_cast<float>(p[0]);
+                out[1] = static_cast<float>(p[1]);
+                out[2] = static_cast<float>(p[2]);
+            }
+            else
+            {
+                out[0] = 0.0f;
+                out[1] = 0.0f;
+                out[2] = 0.0f;
             }
         }
     };
@@ -117,7 +108,7 @@ namespace
     // Position AOV.
     //
 
-    const char* Model = "position_aov";
+    const char* PositionAOVModel = "position_aov";
 
     class PositionAOV
       : public UnfilteredAOV
@@ -135,30 +126,19 @@ namespace
 
         const char* get_model() const override
         {
-            return Model;
-        }
-
-        size_t get_channel_count() const override
-        {
-            return 3;
-        }
-
-        const char** get_channel_names() const override
-        {
-            static const char* ChannelNames[] = {"R", "G", "B"};
-            return ChannelNames;
+            return PositionAOVModel;
         }
 
         void clear_image() override
         {
-            m_image->clear(Color3f(0.5f, 0.5f, 0.5f));
-            m_filter_image->clear(Color<float, 1>(numeric_limits<float>::max()));
+            m_image->clear(Color3f(0.0f));
         }
 
+      protected:
         auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(
-                new PositionAOVAccumulator(get_image(), *m_filter_image));
+                new PositionAOVAccumulator(get_image()));
         }
     };
 }
@@ -175,14 +155,14 @@ void PositionAOVFactory::release()
 
 const char* PositionAOVFactory::get_model() const
 {
-    return Model;
+    return PositionAOVModel;
 }
 
 Dictionary PositionAOVFactory::get_model_metadata() const
 {
     return
         Dictionary()
-            .insert("name", Model)
+            .insert("name", get_model())
             .insert("label", "Position");
 }
 

@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRAY_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRAY_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/scene/objectinstance.h"
@@ -107,7 +106,7 @@ class ShadingRay
     DepthType                       m_depth;
     foundation::uint8               m_medium_count;
     bool                            m_has_differentials;
-    float                           m_max_roughness;
+    float                           m_min_roughness;
 
     // Constructors.
     ShadingRay();                   // only partially initialize the object
@@ -162,7 +161,7 @@ class ShadingRay
 inline ShadingRay::ShadingRay()
   : m_medium_count(0)
   , m_has_differentials(false)
-  , m_max_roughness(0.0f)
+  , m_min_roughness(0.0f)
 {
 }
 
@@ -178,7 +177,7 @@ inline ShadingRay::ShadingRay(
   , m_depth(depth)
   , m_medium_count(0)
   , m_has_differentials(false)
-  , m_max_roughness(0.0f)
+  , m_min_roughness(0.0f)
 {
 }
 
@@ -196,7 +195,7 @@ inline ShadingRay::ShadingRay(
   , m_depth(depth)
   , m_medium_count(0)
   , m_has_differentials(false)
-  , m_max_roughness(0.0f)
+  , m_min_roughness(0.0f)
 {
 }
 
@@ -279,6 +278,4 @@ namespace foundation
             // they are properly initialized by the default constructor.
         }
     };
-}       // namespace foundation
-
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRAY_H
+}   // namespace foundation

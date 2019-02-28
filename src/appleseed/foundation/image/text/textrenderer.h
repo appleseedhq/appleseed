@@ -26,12 +26,10 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_TEXT_TEXTRENDERER_H
-#define APPLESEED_FOUNDATION_IMAGE_TEXT_TEXTRENDERER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
-#include "foundation/image/colorspace.h"
 
 // Forward declarations.
 namespace foundation { class Image; }
@@ -41,18 +39,21 @@ namespace foundation
 {
 
 //
-// High quality, unoptimized text rendering routines.
+// Unoptimized, high quality text rendering routines.
+//
+// Requirements:
+//   - Target images must be RGBA, linear space, premultiplied alpha
+//   - Color arguments should be RGBA, linear space, straight alpha
 //
 // Supported:
 //   - Paragraphs
 //   - Subpixel positioning
 //   - Kerning
-//   - Linear space alpha blending
-//   - sRGB target
 //
 // Not supported:
 //   - Glyph caching (thus very slow)
 //   - Text rotation
+//   - Color space conversions
 //
 
 class TextRenderer
@@ -85,48 +86,42 @@ class TextRenderer
         const char*             string);
 
     static void draw_string(
-        Image&                  image,
-        const ColorSpace        image_color_space,
+        Image&                  image,              // RGBA, linear space, premultiplied alpha
         const Font              font,
         const float             font_height,
         const float             line_spacing,
-        const Color4f&          color_srgb,
+        const Color4f&          color,              // RGBA, linear space, straight alpha
         const float             origin_x,
         const float             origin_y,
         const char*             string);
 
     static void draw_string(
-        Image&                  image,
-        const ColorSpace        image_color_space,
+        Image&                  image,              // RGBA, linear space, premultiplied alpha
         const Font              font,
         const float             font_height,
-        const Color4f&          color_srgb,
+        const Color4f&          color,              // RGBA, linear space, straight alpha
         const float             origin_x,
         const float             origin_y,
         const char*             string);
 
     static void draw_string(
-        Image&                  image,
-        const ColorSpace        image_color_space,
+        Image&                  image,              // RGBA, linear space, premultiplied alpha
         const stbtt_fontinfo&   font_info,
         const float             font_height,
-        const Color4f&          color_srgb,
+        const Color4f&          color,              // RGBA, linear space, straight alpha
         const float             origin_x,
         const float             origin_y,
         const char*             string);
 
     static void draw_string(
-        Image&                  image,
-        const ColorSpace        image_color_space,
+        Image&                  image,              // RGBA, linear space, premultiplied alpha
         const stbtt_fontinfo&   font_info,
         const float             font_height,
         const float             line_spacing,
-        const Color4f&          color_srgb,
+        const Color4f&          color,              // RGBA, linear space, straight alpha
         const float             origin_x,
         const float             origin_y,
         const char*             string);
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_IMAGE_TEXT_TEXTRENDERER_H
+}   // namespace foundation

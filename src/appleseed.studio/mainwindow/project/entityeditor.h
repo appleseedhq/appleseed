@@ -27,8 +27,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITOR_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITOR_H
+#pragma once
 
 // appleseed.studio headers.
 #include "mainwindow/project/customentityui.h"
@@ -169,7 +168,5 @@ class EntityEditor
     void slot_apply();
 };
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITOR_H
+}   // namespace studio
+}   // namespace appleseed

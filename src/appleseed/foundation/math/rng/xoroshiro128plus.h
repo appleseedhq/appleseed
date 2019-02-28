@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_RNG_XOROSHIRO128PLUS_H
-#define APPLESEED_FOUNDATION_MATH_RNG_XOROSHIRO128PLUS_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
@@ -98,6 +97,4 @@ inline uint32 Xoroshiro128plus::rand_uint32()
     return static_cast<uint32>(result >> 32);
 }
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_RNG_XOROSHIRO128PLUS_H
+}   // namespace foundation

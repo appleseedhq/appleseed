@@ -34,7 +34,7 @@
 
 shader as_maya_marble
 [[
-    string as_maya_node_name = "marble"
+    string as_node_name = "marble"
 ]]
 (
     color in_fillerColor = color(1)

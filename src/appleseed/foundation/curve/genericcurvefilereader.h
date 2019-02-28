@@ -26,14 +26,16 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEREADER_H
-#define APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEREADER_H
+#pragma once
 
 // appleseed.foundation headers.
 #include "foundation/curve/icurvefilereader.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class ICurveBuilder; }
@@ -50,7 +52,7 @@ class APPLESEED_DLLSYMBOL GenericCurveFileReader
 {
   public:
     // Constructor.
-    GenericCurveFileReader(const char* filename, const float radius, const size_t basis);
+    GenericCurveFileReader(const char* filename, const float radius, const size_t degree);
 
     // Destructor.
     ~GenericCurveFileReader() override;
@@ -63,6 +65,4 @@ class APPLESEED_DLLSYMBOL GenericCurveFileReader
     Impl* impl;
 };
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_CURVE_GENERICCURVEFILEREADER_H
+}   // namespace foundation
