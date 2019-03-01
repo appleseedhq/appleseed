@@ -44,9 +44,9 @@
 
 // Qt headers.
 #include <QColor>
+#include <QMimeData>
 #include <QMutexLocker>
 #include <Qt>
-#include <QMimeData>
 
 // Standard headers.
 #include <algorithm>

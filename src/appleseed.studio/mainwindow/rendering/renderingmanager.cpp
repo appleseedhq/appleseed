@@ -31,10 +31,10 @@
 #include "renderingmanager.h"
 
 // appleseed.studio headers.
+#include "mainwindow/droppedmaterialmenu.h"
 #include "mainwindow/rendering/cameracontroller.h"
 #include "mainwindow/rendering/rendertab.h"
 #include "mainwindow/rendering/renderwidget.h"
-#include "mainwindow/droppedmaterialmenu.h"
 #include "mainwindow/statusbar.h"
 
 // appleseed.shared headers.
