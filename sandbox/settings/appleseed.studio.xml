@@ -10,6 +10,12 @@
         <parameter name="tile_ordering" value="spiral" />
     </parameters>
     <parameters name="ui">
+        <parameters name="file_dialog">
+            <parameters name="frames">
+                <parameter name="last_directory" value="F:\Document\Graphics\code\appleseed\sandbox\images" />
+                <parameter name="selected_filter" value="Bitmap Files (*.bmp *.jpg *.png *.tif)" />
+            </parameters>
+        </parameters>
         <parameters name="render_region">
             <parameter name="triggers_rendering" value="true" />
         </parameters>
