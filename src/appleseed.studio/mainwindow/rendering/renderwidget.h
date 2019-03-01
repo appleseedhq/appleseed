@@ -42,13 +42,12 @@
 namespace OCIO = OCIO_NAMESPACE;
 
 // Qt headers.
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QImage>
 #include <QMutex>
 #include <QPainter>
 #include <QWidget>
-#include <QDropEvent>
-#include <QDragEnterEvent>
-#include <QDragLeaveEvent>
 
 // Standard headers.
 #include <cstddef>
