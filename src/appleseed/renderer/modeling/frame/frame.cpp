@@ -966,24 +966,6 @@ namespace
         image_attributes.insert("blue_xy_chromaticity",  Vector2f(0.15f, 0.06f));
     }
 
-    void write_exr_image(
-        const bf::path&         file_path,
-        const Image&            image,
-        ImageAttributes         image_attributes)
-    {
-        create_parent_directories(file_path);
-
-        const std::string filename = file_path.string();
-        GenericImageFileWriter writer(filename.c_str());
-
-        writer.append_image(&image);
-
-        image_attributes.insert("color_space", "linear");
-        writer.set_image_attributes(image_attributes);
-
-        writer.write();
-    }
-
     void transform_to_srgb(Tile& tile)
     {
         assert(tile.get_channel_count() == 4);
@@ -1020,33 +1002,7 @@ namespace
                 transform_to_srgb(image.tile(tx, ty));
         }
     }
-
-    void write_png_image(
-        const bf::path&         file_path,
-        const Image&            image,
-        ImageAttributes         image_attributes)
-    {
-        Image transformed_image(image);
-
-        // todo: we may want to be more specific here.
-        if (image.properties().m_channel_count == 4)
-            transform_to_srgb(transformed_image);
-
-        create_parent_directories(file_path);
-
-        const std::string filename = file_path.string();
-        GenericImageFileWriter writer(filename.c_str());
-
-        writer.append_image(&transformed_image);
-
-        writer.set_image_output_format(PixelFormat::PixelFormatUInt8);
-
-        image_attributes.insert("color_space", "sRGB");
-        writer.set_image_attributes(image_attributes);
-
-        writer.write();
-    }
-
+    
     bool write_image(
         const Frame&            frame,
         const char*             file_path,
@@ -1071,29 +1027,31 @@ namespace
 
         try
         {
-            if (extension == ".exr")
-            {
-                write_exr_image(
-                    bf_file_path,
-                    image,
-                    image_attributes);
-            }
-            else if (extension == ".png")
-            {
-                write_png_image(
-                    bf_file_path,
-                    image,
-                    image_attributes);
-            }
-            else
-            {
-                RENDERER_LOG_ERROR(
-                    "failed to write image file %s for frame \"%s\": unsupported image format.",
-                    bf_file_path.string().c_str(),
-                    frame.get_path().c_str());
+            Image transformed_image(image);
 
-                return false;
+            // todo: we may want to be more specific here.
+            if (image.properties().m_channel_count == 4)
+                transform_to_srgb(transformed_image);
+
+            create_parent_directories(file_path);
+
+            const std::string filename = file_path;
+            GenericImageFileWriter writer(filename.c_str());
+
+            writer.append_image(&transformed_image);
+
+            writer.set_image_output_format(PixelFormat::PixelFormatUInt8);
+
+            if (extension == ".exr") {                
+                image_attributes.insert("color_space", "linear");
             }
+            else {
+                image_attributes.insert("color_space", "sRGB");                
+            }
+
+            writer.set_image_attributes(image_attributes);
+
+            writer.write();
         }
         catch (const exception& e)
         {
