@@ -421,11 +421,11 @@ void GenericImageFileWriter::write_scanlines(const size_t image_index)
         }
 
         // Compute y dimensional scanline border.
-        const size_t y_begin = tile_y;
+        const size_t y_begin = tile_y * props.m_tile_height;
         const size_t y_end = y_begin + props.m_tile_height;
 
         // Write scanline into the file.
-        if (!m_writer->write_scanlines(
+        if (!impl->m_writer->write_scanlines(
                 static_cast<int>(y_begin),
                 static_cast<int>(y_end),
                 0,

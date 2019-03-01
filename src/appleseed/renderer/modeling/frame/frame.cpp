@@ -550,85 +550,7 @@ namespace
         }
     }
 
-    void write_png_image(
-        const bf::path&         file_path,
-        const Image&            image,
-        ImageAttributes         image_attributes)
-    {
-        Image transformed_image(image);
-
-        // todo: we may want to be more specific here.
-        if (image.properties().m_channel_count == 4)
-            transform_to_srgb(transformed_image);
-
-        create_parent_directories(file_path);
-
-        const std::string filename = file_path.string();
-        GenericImageFileWriter writer(filename.c_str());
-
-        writer.append_image(&transformed_image);
-
-        writer.set_image_output_format(PixelFormat::PixelFormatUInt8);
-
-        image_attributes.insert("color_space", "sRGB");
-        writer.set_image_attributes(image_attributes);
-
-        writer.write();
-    }
-
-    void write_tif_image(
-        const bf::path&         file_path,
-        const Image&            image,
-        ImageAttributes         image_attributes)
-    {
-        Image transformed_image(image);
-
-        // todo: we may want to be more specific here.
-        if (image.properties().m_channel_count == 4)
-            transform_to_srgb(transformed_image);
-
-        create_parent_directories(file_path);
-
-        const std::string filename = file_path.string();
-        GenericImageFileWriter writer(filename.c_str());
-
-        writer.append_image(&transformed_image);
-
-        writer.set_image_output_format(PixelFormat::PixelFormatUInt16);
-
-        image_attributes.insert("color_space", "sRGB");
-        writer.set_image_attributes(image_attributes);
-
-        writer.write();
-    }
-
-    void write_bmp_image(
-        const bf::path&         file_path,
-        const Image&            image,
-        ImageAttributes         image_attributes)
-    {
-        Image transformed_image(image);
-
-        // todo: we may want to be more specific here.
-        if (image.properties().m_channel_count == 4)
-            transform_to_srgb(transformed_image);
-
-        create_parent_directories(file_path);
-
-        const std::string filename = file_path.string();
-        GenericImageFileWriter writer(filename.c_str());
-
-        writer.append_image(&transformed_image);
-
-        writer.set_image_output_format(PixelFormat::PixelFormatUInt8);
-
-        image_attributes.insert("color_space", "sRGB");
-        writer.set_image_attributes(image_attributes);
-
-        writer.write();
-    }
-
-    void write_jpg_image(
+    void write_format_image(
       const bf::path&         file_path,
       const Image&            image,
       ImageAttributes         image_attributes)
@@ -674,50 +596,11 @@ namespace
 
         try
         {
-            if (extension == ".exr")
-            {
-                write_exr_image(
-                    bf_file_path,
-                    image,
-                    image_attributes);
-            }
-            else if (extension == ".png")
-            {
-                write_png_image(
-                    bf_file_path,
-                    image,
-                    image_attributes);
-            }
-            else if (extension == ".jpg")
-            {
-                write_jpg_image(
-                    bf_file_path,
-                    image,
-                    image_attributes);
-            }
-            else if (extension == ".tif")
-            {
-                write_tif_image(
-                    bf_file_path,
-                    image,
-                    image_attributes);
-            }
-            else if (extension == ".bmp")
-            {
-                write_bmp_image(
-                    bf_file_path,
-                    image,
-                    image_attributes);
-            }
-            else
-            {
-                RENDERER_LOG_ERROR(
-                    "failed to write image file %s for frame \"%s\": unsupported image format.",
-                    bf_file_path.string().c_str(),
-                    frame.get_path().c_str());
-
-                return false;
-            }
+            Image transformed_image(image);
+            write_format_image(
+                bf_file_path,
+                image,
+                image_attributes);
         }
         catch (const exception& e)
         {
