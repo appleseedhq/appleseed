@@ -43,6 +43,7 @@
 #include "renderer/modeling/aov/pixeltimeaov.h"
 #include "renderer/modeling/aov/pixelvariationaov.h"
 #include "renderer/modeling/aov/positionaov.h"
+#include "renderer/modeling/aov/screenspacevelocityaov.h"
 #include "renderer/modeling/aov/uvaov.h"
 #include "renderer/modeling/entity/entityfactoryregistrar.h"
 
@@ -86,6 +87,7 @@ AOVFactoryRegistrar::AOVFactoryRegistrar(const SearchPaths& search_paths)
     impl->register_factory(auto_release_ptr<FactoryType>(new PixelTimeAOVFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new PixelVariationAOVFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new PositionAOVFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new ScreenSpaceVelocityAOVFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new UVAOVFactory()));
 }
 
