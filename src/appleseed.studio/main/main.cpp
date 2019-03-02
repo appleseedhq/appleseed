@@ -76,7 +76,7 @@ using namespace foundation;
 using namespace std;
 namespace bf = boost::filesystem;
 
-namespace
+namespace 
 {
     // On Windows, messages emitted through this logger won't be visible unless appleseed.studio's subsystem
     // is set to Console (in appleseed.studio properties under Linker / System / SubSystem).
