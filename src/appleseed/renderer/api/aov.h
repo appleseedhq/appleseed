@@ -48,4 +48,5 @@
 #include "renderer/modeling/aov/pixeltimeaov.h"
 #include "renderer/modeling/aov/pixelvariationaov.h"
 #include "renderer/modeling/aov/positionaov.h"
+#include "renderer/modeling/aov/screenspacevelocityaov.h"
 #include "renderer/modeling/aov/uvaov.h"

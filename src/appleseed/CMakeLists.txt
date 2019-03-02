@@ -1466,6 +1466,8 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/pixelvariationaov.h
     renderer/modeling/aov/positionaov.cpp
     renderer/modeling/aov/positionaov.h
+    renderer/modeling/aov/screenspacevelocityaov.cpp
+    renderer/modeling/aov/screenspacevelocityaov.h
     renderer/modeling/aov/uvaov.cpp
     renderer/modeling/aov/uvaov.h
 )

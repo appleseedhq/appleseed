@@ -67,8 +67,9 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
     // Available shading modes.
     enum ShadingMode
     {
-        Albedo,                     // surface BSDF's albedo component
         Coverage,                   // shade according to pixel coverage
+        FacingRatio,                // shade according to the facing ratio
+        Albedo,                     // surface BSDF's albedo component
         Barycentric,                // shade according to barycentric coordinates
         UV,                         // shade according to UV coordinates
         Tangent,                    // shade according to the tangent vector
@@ -78,17 +79,17 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
         OriginalShadingNormal,      // shade according to the original shading normal
         WorldSpacePosition,         // shade according to the world space position
         WorldSpaceVelocity,         // shade according to the world space point velocity
+        ScreenSpaceVelocity,        // shade according to the screen space point velocity
         Sides,                      // shade according to the surface side
         Depth,                      // shade according to distance from camera
-        ScreenSpaceWireframe,       // screen-space wireframe
         WorldSpaceWireframe,        // world-space wireframe
+        ScreenSpaceWireframe,       // screen-space wireframe
         AmbientOcclusion,           // ambient occlusion
         AssemblyInstances,          // assign a unique color to each assembly instance
         ObjectInstances,            // assign a unique color to each object instance
         Primitives,                 // assign a unique color to each primitive
         Materials,                  // assign a unique color to each material
         RaySpread,                  // shade according to the reflected ray spread
-        FacingRatio,                // shade according to the facing ratio
         ShadingModeCount            // number of shading modes -- keep last
     };
 

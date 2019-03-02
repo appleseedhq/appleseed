@@ -202,6 +202,10 @@ void ShadingPoint::fetch_triangle_source_geometry() const
 
     // Retrieve the triangle.
     const Triangle& triangle = tess.m_primitives[m_primitive_index];
+    assert(triangle.m_v0 != Triangle::None);
+    assert(triangle.m_v1 != Triangle::None);
+    assert(triangle.m_v2 != Triangle::None);
+
     const bool triangle_has_vertex_attributes = triangle.has_vertex_attributes();
 
     // Copy the index of the triangle attribute.
@@ -224,9 +228,6 @@ void ShadingPoint::fetch_triangle_source_geometry() const
     }
 
     // Copy or compute triangle vertices (in object instance space).
-    assert(triangle.m_v0 != Triangle::None);
-    assert(triangle.m_v1 != Triangle::None);
-    assert(triangle.m_v2 != Triangle::None);
     if (motion_segment_count > 0)
     {
         // Fetch vertices from previous pose.
@@ -856,14 +857,11 @@ void ShadingPoint::compute_world_space_point_velocity() const
 
         // Retrieve the triangle.
         const Triangle& triangle = tess.m_primitives[m_primitive_index];
-
-        // Copy the object instance space triangle vertices.
         assert(triangle.m_v0 != Triangle::None);
         assert(triangle.m_v1 != Triangle::None);
         assert(triangle.m_v2 != Triangle::None);
 
         const size_t motion_segment_count = tess.get_motion_segment_count();
-
         if (motion_segment_count > 0)
         {
             // Fetch triangle vertices from the first pose.
