@@ -204,8 +204,12 @@ bool DiagnosticSurfaceShader::on_render_begin(
         return false;
 
     const AABB3d scene_aabb(project.get_scene()->get_render_data().m_bbox);
+    const Vector3d scene_extent = scene_aabb.extent();
+
     impl->m_scene_aabb_min = scene_aabb.min;
-    impl->m_rcp_scene_aabb_extent = Vector3d(1.0) / scene_aabb.extent();
+    impl->m_rcp_scene_aabb_extent[0] = scene_extent[0] != 0.0 ? 1.0 / scene_extent[0] : 0.0;
+    impl->m_rcp_scene_aabb_extent[1] = scene_extent[1] != 0.0 ? 1.0 / scene_extent[1] : 0.0;
+    impl->m_rcp_scene_aabb_extent[2] = scene_extent[2] != 0.0 ? 1.0 / scene_extent[2] : 0.0;
 
     return true;
 }
