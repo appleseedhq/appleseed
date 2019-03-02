@@ -1033,9 +1033,9 @@ namespace
             if (image.properties().m_channel_count == 4)
                 transform_to_srgb(transformed_image);
 
-            create_parent_directories(file_path);
+            create_parent_directories(bf_file_path);
 
-            const std::string filename = file_path;
+            const std::string filename = bf_file_path.string();
             GenericImageFileWriter writer(filename.c_str());
 
             writer.append_image(&transformed_image);
@@ -1078,7 +1078,7 @@ namespace
 
 bool Frame::write_main_image(const char* file_path) const
 {
-    assert(file_path);
+    assert(file_path);    
 
     // Convert main image to half floats.
     const Image& image = *impl->m_image;
