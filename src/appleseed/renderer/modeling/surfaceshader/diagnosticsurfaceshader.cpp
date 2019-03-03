@@ -35,7 +35,6 @@
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/shading/ambientocclusion.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
@@ -279,8 +278,9 @@ void DiagnosticSurfaceShader::evaluate(
     const PixelContext&         pixel_context,
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point,
-    AOVAccumulatorContainer&    aov_accumulators,
-    ShadingResult&              shading_result) const
+    ShadingResult&              shading_result,
+    ShadingComponents&          shading_components,
+    AOVComponents&              aov_components) const
 {
     switch (impl->m_shading_mode)
     {

@@ -32,7 +32,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/ambientocclusion.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/input/inputarray.h"
@@ -46,7 +45,9 @@
 #include "foundation/utility/containers/dictionary.h"
 
 // Forward declarations.
+namespace renderer  { class AOVComponents; }
 namespace renderer  { class PixelContext; }
+namespace renderer  { class ShadingComponents; }
 namespace renderer  { class ShadingPoint; }
 
 using namespace foundation;
@@ -105,8 +106,9 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
-            AOVAccumulatorContainer&    aov_accumulators,
-            ShadingResult&              shading_result) const override
+            ShadingResult&              shading_result,
+            ShadingComponents&          shading_components,
+            AOVComponents&              aov_components) const override
         {
             double occlusion;
 
