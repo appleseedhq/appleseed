@@ -68,8 +68,8 @@ class NPRSurfaceShaderHelper
         SamplingContext&            sampling_context,
         const ShadingContext&       shading_context,
         const ShadingPoint&         shading_point,
-        AOVComponents&              components,
-        ShadingComponents&          radiance);
+        ShadingComponents&          shading_components,
+        AOVComponents&              aov_components);
 
   private:
     static foundation::Color4f evaluate_npr_contour(

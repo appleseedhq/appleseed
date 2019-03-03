@@ -31,12 +31,12 @@
 #include "physicalsurfaceshader.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/aov/aovaccumulator.h"
-#include "renderer/kernel/aov/aovcomponents.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingresult.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
@@ -52,6 +52,7 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace renderer  { class AOVComponents; }
 namespace renderer  { class PixelContext; }
 namespace renderer  { class Project; }
 
@@ -107,26 +108,21 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
-            AOVAccumulatorContainer&    aov_accumulators,
-            ShadingResult&              shading_result) const override
+            ShadingResult&              shading_result,
+            ShadingComponents&          shading_components,
+            AOVComponents&              aov_components) const override
         {
-            // Compute lighting.
-            AOVComponents components;
-            ShadingComponents radiance;
-
-            // OSL shaders can modify the shading basis
-            // in the shading point when using bump, normal maps or anisotropy.
-            // When using more than 1 lighting sample, we need to save and restore
-            // the basis for each sample.
-
+            // OSL shaders can modify the shading basis in the shading point when using bump,
+            // normal maps or anisotropy. When using more than 1 lighting sample, we need to
+            // save and restore the basis for each sample.
             const Basis3d basis = shading_point.get_shading_basis();
             shading_context.get_lighting_engine()->compute_lighting(
                 sampling_context,
                 pixel_context,
                 shading_context,
                 shading_point,
-                radiance,
-                components);
+                shading_components,
+                aov_components);
 
             if (m_lighting_samples > 1)
             {
@@ -138,11 +134,11 @@ namespace
                         pixel_context,
                         shading_context,
                         shading_point,
-                        radiance,
-                        components);
+                        shading_components,
+                        aov_components);
                 }
 
-                radiance /= static_cast<float>(m_lighting_samples);
+                shading_components /= static_cast<float>(m_lighting_samples);
             }
 
             // Run NPR surface shader if any.
@@ -156,19 +152,14 @@ namespace
                             sampling_context,
                             shading_context,
                             shading_point,
-                            components,
-                            radiance);
+                            shading_components,
+                            aov_components);
                     }
                 }
             }
 
-            // Accumulate into AOVs.
-            aov_accumulators.write(
-                pixel_context,
-                shading_point,
-                radiance,
-                components,
-                shading_result);
+            shading_result.m_main.rgb() =
+                shading_components.m_beauty.to_rgb(g_std_lighting_conditions);
         }
 
       private:

@@ -183,12 +183,23 @@ bool ShadingEngine::shade_hit_point(
         }
 
         // Execute the surface shader.
+        ShadingComponents shading_components;
+        AOVComponents aov_components;
         surface_shader->evaluate(
             sampling_context,
             pixel_context,
             shading_context,
             shading_point,
-            aov_accumulators,
+            shading_result,
+            shading_components,
+            aov_components);
+
+        // Accumulate shading components and AOV components into the shading result and AOVs.
+        aov_accumulators.write(
+            pixel_context,
+            shading_point,
+            shading_components,
+            aov_components,
             shading_result);
 
         // Apply alpha premultiplication.
@@ -213,25 +224,24 @@ void ShadingEngine::shade_environment(
     if (environment_shader != nullptr)
     {
         // There is an environment shader: execute it.
-        const ShadingRay& ray = shading_point.get_ray();
-        const Vector3d direction = normalize(ray.m_dir);
-        AOVComponents aov_value;
-        ShadingComponents value;
+        ShadingComponents shading_components;
         Alpha alpha;
         environment_shader->evaluate(
             shading_context,
             pixel_context,
-            direction,
-            value.m_emission,
+            normalize(shading_point.get_ray().m_dir),
+            shading_components.m_emission,
             alpha);
-
+        shading_components.m_beauty = shading_components.m_emission;
         shading_result.m_main.a = alpha[0];
-        value.m_beauty = value.m_emission;
+
+        // Accumulate shading components into the shading result and AOVs.
+        AOVComponents aov_components;
         aov_accumulators.write(
             pixel_context,
             shading_point,
-            value,
-            aov_value,
+            shading_components,
+            aov_components,
             shading_result);
 
         // Apply alpha premultiplication.

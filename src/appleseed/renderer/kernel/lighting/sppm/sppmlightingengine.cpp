@@ -155,7 +155,7 @@ namespace
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
             ShadingComponents&          radiance,               // output radiance, in W.sr^-1.m^-2
-            AOVComponents&              components) override
+            AOVComponents&              aov_components) override
         {
             if (m_params.m_view_photons)
             {

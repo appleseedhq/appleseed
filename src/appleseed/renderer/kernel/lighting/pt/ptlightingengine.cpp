@@ -162,7 +162,7 @@ namespace
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             ShadingComponents&      radiance,               // output radiance, in W.sr^-1.m^-2
-            AOVComponents&          components) override
+            AOVComponents&          aov_components) override
         {
             if (m_light_path_stream)
             {
@@ -179,7 +179,7 @@ namespace
                     shading_context,
                     shading_point,
                     radiance,
-                    components);
+                    aov_components);
             }
             else
             {
@@ -188,7 +188,7 @@ namespace
                     shading_context,
                     shading_point,
                     radiance,
-                    components);
+                    aov_components);
             }
 
             if (m_light_path_stream)
@@ -201,7 +201,7 @@ namespace
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             ShadingComponents&      radiance,               // output radiance, in W.sr^-1.m^-2
-            AOVComponents&          components)
+            AOVComponents&          aov_components)
         {
             PathVisitor path_visitor(
                 m_params,
@@ -210,7 +210,7 @@ namespace
                 shading_context,
                 shading_point.get_scene(),
                 radiance,
-                components,
+                aov_components,
                 m_light_path_stream);
 
             VolumeVisitor volume_visitor(
@@ -393,7 +393,7 @@ namespace
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
                 ShadingComponents&              path_radiance,
-                AOVComponents&                  components,
+                AOVComponents&                  aov_components,
                 LightPathStream*                light_path_stream)
               : m_params(params)
               , m_light_sampler(light_sampler)
@@ -401,7 +401,7 @@ namespace
               , m_shading_context(shading_context)
               , m_env_edf(scene.get_environment()->get_environment_edf())
               , m_path_radiance(path_radiance)
-              , m_aov_components(components)
+              , m_aov_components(aov_components)
               , m_light_path_stream(light_path_stream)
               , m_omit_emitted_light(false)
             {
@@ -423,7 +423,7 @@ namespace
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
                 ShadingComponents&              path_radiance,
-                AOVComponents&                  components,
+                AOVComponents&                  aov_components,
                 LightPathStream*                light_path_stream)
               : PathVisitorBase(
                     params,
@@ -432,7 +432,7 @@ namespace
                     shading_context,
                     scene,
                     path_radiance,
-                    components,
+                    aov_components,
                     light_path_stream)
             {
             }
@@ -531,7 +531,7 @@ namespace
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
                 ShadingComponents&              path_radiance,
-                AOVComponents&                  components,
+                AOVComponents&                  aov_components,
                 LightPathStream*                light_path_stream)
               : PathVisitorBase(
                     params,
@@ -540,7 +540,7 @@ namespace
                     shading_context,
                     scene,
                     path_radiance,
-                    components,
+                    aov_components,
                     light_path_stream)
               , m_is_indirect_lighting(false)
             {

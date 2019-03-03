@@ -64,7 +64,7 @@ class ILightingEngine
         const ShadingContext&     shading_context,
         const ShadingPoint&       shading_point,
         ShadingComponents&        radiance,           // output radiance, in W.sr^-1.m^-2
-        AOVComponents&            components) = 0;
+        AOVComponents&            aov_components) = 0;
 
     // Retrieve performance statistics.
     virtual foundation::StatisticsVector get_statistics() const = 0;
