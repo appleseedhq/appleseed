@@ -80,7 +80,7 @@ class NPRSurfaceShaderHelper
         const size_t                closure_index);
 
     static bool is_same_object(
-        const int                   features,
+        const unsigned int          features,
         const ShadingPoint&         shading_point,
         const ShadingPoint&         other_shading_point);
 };

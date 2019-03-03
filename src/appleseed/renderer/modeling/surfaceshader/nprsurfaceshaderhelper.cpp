@@ -231,14 +231,15 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
             // Handle forward difference rays.
             if (discontinuity_samples == 0 && !diff_contour_found && q == quality)
             {
-                if (other_shading_point.hit_surface() && values->m_features & NPRContourFeatures::AllDifferenceFeatures)
+                if (other_shading_point.hit_surface() &&
+                    values->m_features & static_cast<unsigned int>(NPRContourFeatures::AllDifferenceFeatures))
                 {
                     const double abs_x = abs(x);
                     const double Eps = 1e-10;
 
                     if (feq(abs_x, 0.0, Eps) || feq(abs_x, 1.0, Eps))
                     {
-                        if (values->m_features & NPRContourFeatures::OcclusionEdges)
+                        if (values->m_features & static_cast<unsigned int>(NPRContourFeatures::OcclusionEdges))
                         {
                             const float d = static_cast<float>(abs(shading_point.get_distance() - other_shading_point.get_distance()));
 
@@ -246,7 +247,7 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
                                 diff_contour_found = true;
                         }
 
-                        if (values->m_features & NPRContourFeatures::CreaseEdges)
+                        if (values->m_features & static_cast<unsigned int>(NPRContourFeatures::CreaseEdges))
                         {
                             const Vector3d& nc = other_shading_point.get_shading_normal();
                             const float cos_nnc = static_cast<float>(dot(n, nc));
@@ -275,13 +276,13 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
 }
 
 bool NPRSurfaceShaderHelper::is_same_object(
-    const int                   features,
+    const unsigned int          features,
     const ShadingPoint&         shading_point,
     const ShadingPoint&         other_shading_point)
 {
     if (other_shading_point.hit_surface())
     {
-        if (features & NPRContourFeatures::ObjectInstanceID)
+        if (features & static_cast<unsigned int>(NPRContourFeatures::ObjectInstanceID))
         {
             if (&shading_point.get_object_instance() != &other_shading_point.get_object_instance())
                 return false;
@@ -293,7 +294,7 @@ bool NPRSurfaceShaderHelper::is_same_object(
             }
         }
 
-        if (features & NPRContourFeatures::MaterialID)
+        if (features & static_cast<unsigned int>(NPRContourFeatures::MaterialID))
         {
             if (shading_point.get_material() != other_shading_point.get_material())
                 return false;
@@ -301,7 +302,7 @@ bool NPRSurfaceShaderHelper::is_same_object(
     }
     else
     {
-        if (features & NPRContourFeatures::AllIDFeatures)
+        if (features & static_cast<unsigned int>(NPRContourFeatures::AllIDFeatures))
             return false;
     }
 

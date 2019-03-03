@@ -125,7 +125,6 @@ bool ShadingEngine::shade_hit_point(
         material->get_render_data().m_shader_group != nullptr)
     {
         const ShaderGroup* sg = material->get_render_data().m_shader_group;
-
         const bool has_matte = sg->has_matte();
 
         if (sg->has_transparency() || has_matte)
@@ -135,10 +134,11 @@ bool ShadingEngine::shade_hit_point(
             if (has_matte)
             {
                 Color4f matte;
-                const bool any_matte_closure = process_matte_tree(
-                    shading_point.get_osl_shader_globals().Ci,
-                    matte.rgb(),
-                    matte.a);
+                const bool any_matte_closure =
+                    process_matte_tree(
+                        shading_point.get_osl_shader_globals().Ci,
+                        matte.rgb(),
+                        matte.a);
 
                 if (any_matte_closure)
                 {
@@ -210,7 +210,7 @@ void ShadingEngine::shade_environment(
     const EnvironmentShader* environment_shader =
         shading_point.get_scene().get_environment()->get_environment_shader();
 
-    if (environment_shader)
+    if (environment_shader != nullptr)
     {
         // There is an environment shader: execute it.
         const ShadingRay& ray = shading_point.get_ray();

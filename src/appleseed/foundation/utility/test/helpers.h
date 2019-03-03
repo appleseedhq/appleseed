@@ -88,25 +88,25 @@ namespace foundation
     struct TestCase##Name                                                                   \
       : public foundation::ITestCase                                                        \
     {                                                                                       \
-        virtual const char* get_name() const                                                \
+        const char* get_name() const override                                               \
         {                                                                                   \
             return #Name;                                                                   \
         }                                                                                   \
                                                                                             \
-        virtual void run(                                                                   \
+        void run(                                                                           \
             foundation::ITestListener&  test_listener,                                      \
-            foundation::TestResult&     case_result);                                       \
+            foundation::TestResult&     case_result) override;                              \
     };                                                                                      \
                                                                                             \
     struct TestCase##Name##Factory                                                          \
       : public foundation::ITestCaseFactory                                                 \
     {                                                                                       \
-        virtual const char* get_name() const                                                \
+        const char* get_name() const override                                               \
         {                                                                                   \
             return #Name;                                                                   \
         }                                                                                   \
                                                                                             \
-        virtual foundation::ITestCase* create()                                             \
+        foundation::ITestCase* create() override                                            \
         {                                                                                   \
             return new TestCase##Name();                                                    \
         }                                                                                   \
@@ -138,25 +138,25 @@ namespace foundation
       : public foundation::ITestCase                                                        \
       , public FixtureName                                                                  \
     {                                                                                       \
-        virtual const char* get_name() const                                                \
+        const char* get_name() const override                                               \
         {                                                                                   \
             return #Name;                                                                   \
         }                                                                                   \
                                                                                             \
-        virtual void run(                                                                   \
+        void run(                                                                           \
             foundation::ITestListener&  test_listener,                                      \
-            foundation::TestResult&     case_result);                                       \
+            foundation::TestResult&     case_result) override;                              \
     };                                                                                      \
                                                                                             \
     struct TestCase##Name##Factory                                                          \
       : public foundation::ITestCaseFactory                                                 \
     {                                                                                       \
-        virtual const char* get_name() const                                                \
+        const char* get_name() const override                                               \
         {                                                                                   \
             return #Name;                                                                   \
         }                                                                                   \
                                                                                             \
-        virtual foundation::ITestCase* create()                                             \
+        foundation::ITestCase* create() override                                            \
         {                                                                                   \
             return new TestCase##Name();                                                    \
         }                                                                                   \
