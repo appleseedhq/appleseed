@@ -34,6 +34,8 @@
 
 using namespace foundation;
 
+#ifdef DEBUG
+
 TEST_SUITE(Foundation_Utility_Poison)
 {
     TEST_CASE(Poison_Int8)
@@ -139,3 +141,5 @@ TEST_SUITE(Foundation_Utility_Poison)
         EXPECT_EQ(expected, actual);
     }
 }
+
+#endif
