@@ -121,7 +121,7 @@ inline int32 rand_int31(RNG& rng)
     const int32 result = static_cast<int32>(rng.rand_uint32() >> 1);
 
     assert(result >= 0);
-    assert(result <= 0x7FFFFFFFUL);
+    assert(result <= 0x7FFFFFFFu);
 
     return result;
 }
@@ -148,7 +148,7 @@ inline int32 rand_int1(RNG& rng, const int32 min, const int32 max)
 template <typename RNG>
 inline float rand_float1(RNG& rng)
 {
-    const float result = rng.rand_uint32() * (1.0f / 0xFFFFFFFFUL);
+    const float result = rng.rand_uint32() * (1.0f / 0xFFFFFFFFu);
 
     assert(result >= 0.0f);
     assert(result <= 1.0f);
@@ -159,7 +159,7 @@ inline float rand_float1(RNG& rng)
 template <typename RNG>
 inline double rand_double1(RNG& rng)
 {
-    const double result = rng.rand_uint32() * (1.0 / 0xFFFFFFFFUL);
+    const double result = rng.rand_uint32() * (1.0 / 0xFFFFFFFFu);
 
     assert(result >= 0.0);
     assert(result <= 1.0);

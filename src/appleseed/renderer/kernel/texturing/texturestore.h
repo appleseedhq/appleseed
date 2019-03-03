@@ -248,7 +248,7 @@ inline TextureStore::TileKey::TileKey(const TileKey& rhs)
 
 inline size_t TextureStore::TileKey::get_tile_x() const
 {
-    return static_cast<size_t>(m_tile_xy & 0x0000FFFFUL);
+    return static_cast<size_t>(m_tile_xy & 0x0000FFFFu);
 }
 
 inline size_t TextureStore::TileKey::get_tile_y() const

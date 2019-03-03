@@ -219,10 +219,10 @@ inline T radical_inverse_base2_32(
     uint32              value)
 {
     value = (value >> 16) | (value << 16);                                                      // 16-bit swap
-    value = ((value & 0xFF00FF00UL) >> 8) | ((value & 0x00FF00FFUL) << 8);                      // 8-bit swap
-    value = ((value & 0xF0F0F0F0UL) >> 4) | ((value & 0x0F0F0F0FUL) << 4);                      // 4-bit swap
-    value = ((value & 0xCCCCCCCCUL) >> 2) | ((value & 0x33333333UL) << 2);                      // 2-bit swap
-    value = ((value & 0xAAAAAAAAUL) >> 1) | ((value & 0x55555555UL) << 1);                      // 1-bit swap
+    value = ((value & 0xFF00FF00u) >> 8) | ((value & 0x00FF00FFu) << 8);                        // 8-bit swap
+    value = ((value & 0xF0F0F0F0u) >> 4) | ((value & 0x0F0F0F0Fu) << 4);                        // 4-bit swap
+    value = ((value & 0xCCCCCCCCu) >> 2) | ((value & 0x33333333u) << 2);                        // 2-bit swap
+    value = ((value & 0xAAAAAAAAu) >> 1) | ((value & 0x55555555u) << 1);                        // 1-bit swap
     return static_cast<T>(value / 4294967296.0f);
 }
 
@@ -231,11 +231,11 @@ inline T radical_inverse_base2_64(
     uint64              value)
 {
     value = (value >> 32) | (value << 32);                                                      // 32-bit swap
-    value = ((value & 0xFFFF0000FFFF0000ULL) >> 16) | ((value & 0x0000FFFF0000FFFFULL) << 16);  // 16-bit swap
-    value = ((value & 0xFF00FF00FF00FF00ULL) >> 8)  | ((value & 0x00FF00FF00FF00FFULL) << 8);   // 8-bit swap
-    value = ((value & 0xF0F0F0F0F0F0F0F0ULL) >> 4)  | ((value & 0x0F0F0F0F0F0F0F0FULL) << 4);   // 4-bit swap
-    value = ((value & 0xCCCCCCCCCCCCCCCCULL) >> 2)  | ((value & 0x3333333333333333ULL) << 2);   // 2-bit swap
-    value = ((value & 0xAAAAAAAAAAAAAAAAULL) >> 1)  | ((value & 0x5555555555555555ULL) << 1);   // 1-bit swap
+    value = ((value & 0xFFFF0000FFFF0000ull) >> 16) | ((value & 0x0000FFFF0000FFFFull) << 16);  // 16-bit swap
+    value = ((value & 0xFF00FF00FF00FF00ull) >> 8)  | ((value & 0x00FF00FF00FF00FFull) << 8);   // 8-bit swap
+    value = ((value & 0xF0F0F0F0F0F0F0F0ull) >> 4)  | ((value & 0x0F0F0F0F0F0F0F0Full) << 4);   // 4-bit swap
+    value = ((value & 0xCCCCCCCCCCCCCCCCull) >> 2)  | ((value & 0x3333333333333333ull) << 2);   // 2-bit swap
+    value = ((value & 0xAAAAAAAAAAAAAAAAull) >> 1)  | ((value & 0x5555555555555555ull) << 1);   // 1-bit swap
     return static_cast<T>(value / 18446744073709551616.0);
 }
 

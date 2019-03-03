@@ -227,7 +227,7 @@ inline void Pixel::convert_to_format<uint8>(
             uint32* typed_dest = reinterpret_cast<uint32*>(dest);
             for (const uint8* it = src_begin; it < src_end; it += src_stride)
             {
-                *typed_dest = static_cast<uint32>(*it) * (4294967295UL / 255);
+                *typed_dest = static_cast<uint32>(*it) * (4294967295u / 255);
                 typed_dest += dest_stride;
             }
         }
@@ -312,7 +312,7 @@ inline void Pixel::convert_to_format<uint16>(
             uint32* typed_dest = reinterpret_cast<uint32*>(dest);
             for (const uint16* it = src_begin; it < src_end; it += src_stride)
             {
-                *typed_dest = static_cast<uint32>(*it) * (4294967295UL / 65535);
+                *typed_dest = static_cast<uint32>(*it) * (4294967295u / 65535);
                 typed_dest += dest_stride;
             }
         }
@@ -408,7 +408,7 @@ inline void Pixel::convert_to_format<uint32>(
             Half* typed_dest = reinterpret_cast<Half*>(dest);
             for (const uint32* it = src_begin; it < src_end; it += src_stride)
             {
-                *typed_dest = static_cast<Half>(static_cast<float>(*it) * (1.0f / 4294967295UL));
+                *typed_dest = static_cast<Half>(static_cast<float>(*it) * (1.0f / 4294967295u));
                 typed_dest += dest_stride;
             }
         }
@@ -419,7 +419,7 @@ inline void Pixel::convert_to_format<uint32>(
             float* typed_dest = reinterpret_cast<float*>(dest);
             for (const uint32* it = src_begin; it < src_end; it += src_stride)
             {
-                *typed_dest = static_cast<float>(*it) * (1.0f / 4294967295UL);
+                *typed_dest = static_cast<float>(*it) * (1.0f / 4294967295u);
                 typed_dest += dest_stride;
             }
         }
@@ -430,7 +430,7 @@ inline void Pixel::convert_to_format<uint32>(
             double* typed_dest = reinterpret_cast<double*>(dest);
             for (const uint32* it = src_begin; it < src_end; it += src_stride)
             {
-                *typed_dest = static_cast<double>(*it) * (1.0 / 4294967295UL);
+                *typed_dest = static_cast<double>(*it) * (1.0 / 4294967295u);
                 typed_dest += dest_stride;
             }
         }
@@ -901,7 +901,7 @@ inline void Pixel::convert_from_format<uint32>(
             const uint8* it = reinterpret_cast<const uint8*>(src_begin);
             for (; it < reinterpret_cast<const uint8*>(src_end); it += src_stride)
             {
-                *dest = static_cast<uint32>(*it) * (4294967295UL / 255);
+                *dest = static_cast<uint32>(*it) * (4294967295u / 255);
                 dest += dest_stride;
             }
         }
@@ -912,7 +912,7 @@ inline void Pixel::convert_from_format<uint32>(
             const uint16* it = reinterpret_cast<const uint16*>(src_begin);
             for (; it < reinterpret_cast<const uint16*>(src_end); it += src_stride)
             {
-                *dest = static_cast<uint32>(*it) * (4294967295UL / 65535);
+                *dest = static_cast<uint32>(*it) * (4294967295u / 65535);
                 dest += dest_stride;
             }
         }
@@ -1011,7 +1011,7 @@ inline void Pixel::convert_from_format<float>(
             const uint32* it = reinterpret_cast<const uint32*>(src_begin);
             for (; it < reinterpret_cast<const uint32*>(src_end); it += src_stride)
             {
-                *dest = static_cast<float>(*it) * (1.0f / 4294967295UL);
+                *dest = static_cast<float>(*it) * (1.0f / 4294967295u);
                 dest += dest_stride;
             }
         }
@@ -1096,7 +1096,7 @@ inline void Pixel::convert_from_format<double>(
             const uint32* it = reinterpret_cast<const uint32*>(src_begin);
             for (; it < reinterpret_cast<const uint32*>(src_end); it += src_stride)
             {
-                *dest = static_cast<double>(*it) * (1.0 / 4294967295UL);
+                *dest = static_cast<double>(*it) * (1.0 / 4294967295u);
                 dest += dest_stride;
             }
         }

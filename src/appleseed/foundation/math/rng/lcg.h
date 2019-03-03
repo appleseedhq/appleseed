@@ -80,7 +80,7 @@ inline LCG::LCG(const uint32 seed)
 
 inline uint32 LCG::rand_uint32()
 {
-    m_s = 2147001325UL * m_s + 715136305UL;
+    m_s = 2147001325u * m_s + 715136305u;
     return m_s;
 }
 
