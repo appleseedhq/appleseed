@@ -103,53 +103,53 @@ class Node
 template <typename T>
 inline void Node<T>::make_interior()
 {
-    m_info |= 0x80000000UL;
+    m_info |= 0x80000000u;
 }
 
 template <typename T>
 inline void Node<T>::make_leaf()
 {
-    m_info &= 0x7FFFFFFFUL;
+    m_info &= 0x7FFFFFFFu;
 }
 
 template <typename T>
 inline bool Node<T>::is_interior() const
 {
-    return (m_info & 0x80000000UL) != 0;
+    return (m_info & 0x80000000u) != 0;
 }
 
 template <typename T>
 inline bool Node<T>::is_leaf() const
 {
-    return (m_info & 0x80000000UL) == 0;
+    return (m_info & 0x80000000u) == 0;
 }
 
 template <typename T>
 inline void Node<T>::set_child_node_index(const size_t index)
 {
-    assert(index < (1UL << 29));
-    m_info &= 0x80000003UL;
+    assert(index < (1u << 29));
+    m_info &= 0x80000003u;
     m_info |= static_cast<uint32>(index) << 2;
 }
 
 template <typename T>
 inline size_t Node<T>::get_child_node_index() const
 {
-    return static_cast<size_t>((m_info & 0x7FFFFFFFUL) >> 2);
+    return static_cast<size_t>((m_info & 0x7FFFFFFFu) >> 2);
 }
 
 template <typename T>
 inline void Node<T>::set_split_dim(const size_t dim)
 {
     assert(dim < 4);
-    m_info &= 0xFFFFFFFCUL;
+    m_info &= 0xFFFFFFFCu;
     m_info |= static_cast<uint32>(dim);
 }
 
 template <typename T>
 inline size_t Node<T>::get_split_dim() const
 {
-    return static_cast<size_t>(m_info & 0x00000003UL);
+    return static_cast<size_t>(m_info & 0x00000003u);
 }
 
 template <typename T>

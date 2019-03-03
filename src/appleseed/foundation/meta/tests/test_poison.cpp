@@ -81,9 +81,9 @@ TEST_SUITE(Foundation_Utility_Poison)
         poison(p);
 
 #ifdef APPLESEED_ARCH32
-        EXPECT_EQ(reinterpret_cast<void*>(0xDEADBEEFUL), p);
+        EXPECT_EQ(reinterpret_cast<void*>(0xDEADBEEFu), p);
 #else
-        EXPECT_EQ(reinterpret_cast<void*>(0xDEADBEEFDEADBEEFULL), p);
+        EXPECT_EQ(reinterpret_cast<void*>(0xDEADBEEFDEADBEEFull), p);
 #endif
     }
 
@@ -94,9 +94,9 @@ TEST_SUITE(Foundation_Utility_Poison)
         poison(p);
 
 #ifdef APPLESEED_ARCH32
-        EXPECT_EQ(reinterpret_cast<void*>(0xDEADBEEFUL), p);
+        EXPECT_EQ(reinterpret_cast<void*>(0xDEADBEEFu), p);
 #else
-        EXPECT_EQ(reinterpret_cast<void*>(0xDEADBEEFDEADBEEFULL), p);
+        EXPECT_EQ(reinterpret_cast<void*>(0xDEADBEEFDEADBEEFull), p);
 #endif
     }
 

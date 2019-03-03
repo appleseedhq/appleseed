@@ -47,8 +47,8 @@ class PCG
   public:
     // Constructor, seeds the generator.
     PCG(
-        const uint64 init_state = 0x853C49E6748FEA9BULL,
-        const uint64 init_seq = 0xDA3E39CB94B95BDBULL);
+        const uint64 init_state = 0x853C49E6748FEA9Bull,
+        const uint64 init_seq = 0xDA3E39CB94B95BDBull);
 
     // Generate a 32-bit random number.
     uint32 rand_uint32();
@@ -79,7 +79,7 @@ inline PCG::PCG(const uint64 init_state, const uint64 init_seq)
 inline uint32 PCG::rand_uint32()
 {
     const uint64 old_state = m_state;
-    m_state = old_state * 6364136223846793005ULL + m_inc;
+    m_state = old_state * 6364136223846793005ull + m_inc;
 
     const uint32 xorshifted = static_cast<uint32>(((old_state >> 18) ^ old_state) >> 27);
     const uint32 rot = static_cast<uint32>(old_state >> 59);
