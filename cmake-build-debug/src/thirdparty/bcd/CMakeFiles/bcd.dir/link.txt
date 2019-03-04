@@ -1,0 +1,2 @@
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar qc libbcd.a  CMakeFiles/bcd.dir/bcd/CovarianceMatrix.cpp.o CMakeFiles/bcd.dir/bcd/Denoiser.cpp.o CMakeFiles/bcd.dir/bcd/DenoisingUnit.cpp.o CMakeFiles/bcd.dir/bcd/IDenoiser.cpp.o CMakeFiles/bcd.dir/bcd/ImageIO.cpp.o CMakeFiles/bcd.dir/bcd/MultiscaleDenoiser.cpp.o CMakeFiles/bcd.dir/bcd/SpikeRemovalFilter.cpp.o CMakeFiles/bcd.dir/bcd/Utils.cpp.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib libbcd.a

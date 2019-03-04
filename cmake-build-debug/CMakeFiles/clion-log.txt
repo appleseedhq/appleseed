@@ -1,0 +1,93 @@
+/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /Users/work/Projects/appleseed-build/appleseed
+CMake Deprecation Warning at CMakeLists.txt:40 (cmake_policy):
+  The OLD behavior for policy CMP0026 will be removed from a future version
+  of CMake.
+
+  The cmake-policies(7) manual explains that the OLD behaviors of all
+  policies are deprecated and that a policy should be set to OLD only under
+  specific short-term circumstances.  Projects should be ported to the NEW
+  behavior and not rely on setting a policy to OLD.
+
+
+CMake Deprecation Warning at CMakeLists.txt:44 (cmake_policy):
+  The OLD behavior for policy CMP0042 will be removed from a future version
+  of CMake.
+
+  The cmake-policies(7) manual explains that the OLD behaviors of all
+  policies are deprecated and that a policy should be set to OLD only under
+  specific short-term circumstances.  Projects should be ported to the NEW
+  behavior and not rely on setting a policy to OLD.
+
+
+CMake Deprecation Warning at CMakeLists.txt:48 (cmake_policy):
+  The OLD behavior for policy CMP0043 will be removed from a future version
+  of CMake.
+
+  The cmake-policies(7) manual explains that the OLD behaviors of all
+  policies are deprecated and that a policy should be set to OLD only under
+  specific short-term circumstances.  Projects should be ported to the NEW
+  behavior and not rely on setting a policy to OLD.
+
+
+-- The C compiler identification is AppleClang 10.0.0.10001145
+-- The CXX compiler identification is AppleClang 10.0.0.10001145
+-- Check for working C compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc
+-- Check for working C compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Check for working CXX compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++
+-- Check for working CXX compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+Target architecture: x86_64
+-- Looking for pthread.h
+-- Looking for pthread.h - found
+-- Looking for pthread_create
+-- Looking for pthread_create - found
+-- Found Threads: TRUE  
+-- Boost version: 1.68.0
+-- Found the following Boost libraries:
+--   atomic
+--   chrono
+--   date_time
+--   filesystem
+--   regex
+--   system
+--   thread
+--   wave
+--   serialization
+-- Found IMATH: /usr/local/include/OpenEXR  
+-- Found OPENEXR: /usr/local/include/OpenEXR  
+-- Performing Test LZ4_GOOD_VERSION
+-- Performing Test LZ4_GOOD_VERSION - Success
+-- Found LZ4: /usr/local/lib/liblz4.dylib  
+-- Found LZ4: /usr/local/lib/liblz4.dylib
+-- Found OPENCOLORIO: /usr/local/lib/libOpenColorIO.dylib  
+-- Found OPENIMAGEIO: /usr/local/include  
+-- Found OSL: /usr/local/include  
+-- Found ZLIB: /usr/lib/libz.dylib (found version "1.2.11") 
+-- Found PNG: /usr/local/lib/libpng.dylib (found version "1.4.12") 
+-- Found XERCES: /usr/local/include  
+-- Found PythonLibs: /usr/lib/libpython2.7.dylib (found version "2.7.10") 
+-- Could NOT find Boost
+-- Could NOT find Boost
+-- Found OpenGL: /System/Library/Frameworks/OpenGL.framework   
+-- Looking for Q_WS_X11
+-- Looking for Q_WS_X11 - not found
+-- Looking for Q_WS_WIN
+-- Looking for Q_WS_WIN - not found
+-- Looking for Q_WS_QWS
+-- Looking for Q_WS_QWS - not found
+-- Looking for Q_WS_MAC
+-- Looking for Q_WS_MAC - found
+-- Looking for QT_MAC_USE_COCOA
+-- Looking for QT_MAC_USE_COCOA - found
+-- Found Qt4: /usr/local/bin/qmake (found version "4.8.7") 
+-- Found Doxygen: /usr/local/bin/doxygen (found version "1.8.15") found components:  doxygen missing components:  dot
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /Users/work/Projects/appleseed-build/appleseed/cmake-build-debug

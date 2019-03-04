@@ -50,6 +50,7 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
+
 namespace appleseed {
 namespace cli {
 
