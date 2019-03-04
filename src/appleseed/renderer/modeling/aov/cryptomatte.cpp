@@ -266,11 +266,11 @@ namespace
         };
 
         explicit WeightMap(const size_t size)
-          : m_size(size)
+          : m_size(static_cast<uint32>(size))
           , m_index(0)
         {
             assert(size > 0);
-            m_map = new Entry[size];
+            m_map = new Entry[static_cast<uint32>(size)];
         }
 
         WeightMap(const WeightMap& other)
@@ -394,13 +394,13 @@ namespace
         CryptomatteAOVAccumulator(
             Image&                              aov_image,
             vector<WeightMap>&                  pixel_samples,
-            map<pair<int, int>, NameMap>&       tile_name_map,
+            NameMap*                            tile_name_array,
             size_t                              num_layers,
             CryptomatteAOV::CryptomatteType     layer_type)
               : m_aov_image(aov_image)
               , m_pixel_samples(pixel_samples)
               , m_num_layers(num_layers)
-              , m_tile_name_map(tile_name_map)
+              , m_tile_name_array(tile_name_array)
               , m_layer_type(layer_type)
         {
         }
@@ -419,6 +419,7 @@ namespace
             m_rcp_canvas_width = props.m_rcp_canvas_width;
             m_rcp_canvas_height = props.m_rcp_canvas_height;
             m_renderer_filter = &(frame.get_filter());
+            m_tile_index = tile_y * props.m_tile_count_y + tile_x;
 
             // Fetch the tile bounds (inclusive).
             m_tile_origin_x = static_cast<int>(tile_x * props.m_tile_width);
@@ -570,7 +571,7 @@ namespace
             const int tile_pixel_x = pixel_pos.x - m_tile_origin_x;
             const int tile_pixel_y = pixel_pos.y - m_tile_origin_y;
 
-            m_tile_name_map[make_pair(m_tile_origin_x, m_tile_origin_y)][m3hash] = obj_name;    //tile_origin indexing of the map should help avoiding the race condition
+            m_tile_name_array[m_tile_index][m3hash] = obj_name;
 
             const double sample_pos_x = (sample_pos.x / m_rcp_canvas_width) - pixel_pos.x;
             const double sample_pos_y = (sample_pos.y / m_rcp_canvas_height) - pixel_pos.y;
@@ -593,6 +594,7 @@ namespace
         int                             m_tile_origin_y;
         int                             m_tile_end_x;
         int                             m_tile_end_y;
+        size_t                          m_tile_index;
         size_t                          m_frame_width;
         double                          m_rcp_canvas_width;
         double                          m_rcp_canvas_height;
@@ -600,10 +602,10 @@ namespace
         Image&                          m_aov_image;
         size_t                          m_num_layers;
         vector<WeightMap>&              m_pixel_samples;
-        map<pair<int, int>, NameMap>&   m_tile_name_map;
+        NameMap*                        m_tile_name_array;
         CryptomatteAOV::CryptomatteType m_layer_type;
 
-        // Inspired by FilteredTile::add() method.
+        // Inspired by FilteredTile::add().
         void filter(
             const float                 x,
             const float                 y,
@@ -656,10 +658,15 @@ namespace
 struct CryptomatteAOV::Impl
 {
     vector<WeightMap>                   m_pixel_samples;
-    map<pair<int, int>, NameMap>        m_tile_name_map;
+    NameMap*                            m_tile_name_array;
     unique_ptr<Image>                   m_image;
     size_t                              m_num_layers;
     CryptomatteAOV::CryptomatteType     m_layer_type;
+
+    Impl() :
+      m_tile_name_array(nullptr)
+    {
+    }
 };
 
 CryptomatteAOV::CryptomatteAOV(const ParamArray& params)
@@ -684,6 +691,8 @@ CryptomatteAOV::CryptomatteAOV(const ParamArray& params)
 
 CryptomatteAOV::~CryptomatteAOV()
 {
+    if (impl->m_tile_name_array != nullptr)
+        delete[] impl->m_tile_name_array;
     delete impl;
 }
 
@@ -728,6 +737,8 @@ void CryptomatteAOV::create_image(
             num_channels,
             PixelFormatFloat));
     impl->m_pixel_samples.resize(canvas_width * canvas_height, WeightMap(impl->m_num_layers));
+    const auto& image_props = impl->m_image->properties();
+    impl->m_tile_name_array = new NameMap[image_props.m_tile_count];
     clear_image();
 }
 
@@ -743,7 +754,8 @@ void CryptomatteAOV::clear_image()
             impl->m_image->set_pixel(rx, ry, pixel_values.data());
         }
     }
-    impl->m_tile_name_map.clear();
+    for (size_t i = 0, e = image_props.m_tile_count; i < e; ++i)
+        impl->m_tile_name_array[i].clear();
 }
 
 auto_release_ptr<AOVAccumulator> CryptomatteAOV::create_accumulator() const
@@ -752,7 +764,7 @@ auto_release_ptr<AOVAccumulator> CryptomatteAOV::create_accumulator() const
         new CryptomatteAOVAccumulator(
             *impl->m_image,
             impl->m_pixel_samples,
-            impl->m_tile_name_map,
+            impl->m_tile_name_array,
             impl->m_num_layers,
             impl->m_layer_type));
 }
@@ -800,9 +812,12 @@ bool CryptomatteAOV::write_images(
     image_attributes_copy.insert(layer_prefix + "/name", layer_name);
 
     NameMap name_map;
-    for (const auto& pair : impl->m_tile_name_map)
+    const auto& image_props = impl->m_image->properties();
+    for (size_t i = 0, e = image_props.m_tile_count; i < e; ++i)
     {
-        for (const auto& hash : pair.second)
+        const NameMap& tile_name_map = impl->m_tile_name_array[i];
+
+        for (const auto& hash : tile_name_map)
         {
             if (hash.first == 0)
                 continue;
@@ -811,18 +826,20 @@ bool CryptomatteAOV::write_images(
     }
 
     std::stringstream manifest_str;
+    manifest_str << "{";
+    
     for (const auto& hash : name_map)
     {
         char hash_hex[9];
         sprintf(hash_hex, "%08x", hash.first);
-        manifest_str.write(format("\"{0}\":\"{1}\",", hash.second, string(hash_hex)));
+        manifest_str << "\"" << hash.second << "\":\"" << hash_hex << "\",";
     }
-    if (!manifest_str.empty())
-        manifest_str.pop_back();
+    if (!name_map.empty())
+        manifest_str.seekp(-1, manifest_str.end);
 
-    const string manifest_string = format("{{0}}", manifest_str);
+    manifest_str << "}";
 
-    image_attributes_copy.insert(layer_prefix + "/manifest", manifest_string.c_str());
+    image_attributes_copy.insert(layer_prefix + "/manifest", manifest_str.str());
 
     vector<string> channel_names;
     channel_names.push_back("R");
