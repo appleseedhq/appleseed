@@ -38,6 +38,7 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
+#include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/thread.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
@@ -123,10 +124,10 @@ namespace
         }
 
       private:
-        Logger&             m_logger;
-        boost::mutex        m_mutex;
-        size_t              m_rendered_pixels;
-        size_t              m_rendered_tiles;
+        Logger&                             m_logger;
+        boost::mutex                        m_mutex;
+        size_t                              m_rendered_pixels;
+        size_t                              m_rendered_tiles;
         Stopwatch<DefaultWallclockTimer>    m_stopwatch;
     };
 }
