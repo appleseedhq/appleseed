@@ -45,6 +45,7 @@
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/image/imageattributes.h"
+#include "foundation/platform/atomic.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
@@ -332,6 +333,27 @@ namespace
             }
 
             return 0.0f;
+        }
+
+        float* get_value_ptr(const uint32 key)
+        {
+            assert(m_map);
+            for (size_t i = 0; i < m_index; ++i)
+            {
+                if (m_map[i].key == key)
+                    return &(m_map[i].value);
+            }
+
+            if (m_index < m_size)
+            {
+                uint32 index = m_index;
+                ++m_index;
+                m_map[index].key = key;
+                m_map[index].value = 0.0f;
+                return &(m_map[index].value);
+            }
+
+            return nullptr;
         }
 
         void clear()
@@ -639,8 +661,8 @@ namespace
                 {
                     const float weight = m_renderer_filter->evaluate(rx - dx, ry - dy);
                     WeightMap& weight_map = m_pixel_samples[(m_tile_origin_y + ry) * m_frame_width + (m_tile_origin_x + rx)];
-                    const float old_value = weight_map.get(m3hash);
-                    weight_map.insert(m3hash, old_value + weight); // possible race conditions writing to pixels on the tile edges
+                    float* APPLESEED_RESTRICT ptr = weight_map.get_value_ptr(m3hash);
+                    foundation::atomic_add(ptr, weight);
                 }
             }
         }
@@ -727,6 +749,8 @@ void CryptomatteAOV::create_image(
     ImageStack&     aov_images)
 {
     // Create underlying images.
+    // Each object layer (rank per Cryptomatte specification) requires two image channels - ID and Coverage.
+    // Total number of image channels equals to three preview channels (R, G, B) plus Id and Coverage channel for each object layer.
     const size_t num_channels = (impl->m_num_layers * 2) + 3;
     impl->m_image.reset(
         new Image(
@@ -841,7 +865,9 @@ bool CryptomatteAOV::write_images(
 
     image_attributes_copy.insert(layer_prefix + "/manifest", manifest_str.str());
 
+    const size_t num_channels = (impl->m_num_layers * 2) + 3;
     vector<string> channel_names;
+    channel_names.reserve(num_channels);
     channel_names.push_back("R");
     channel_names.push_back("G");
     channel_names.push_back("B");
@@ -860,7 +886,6 @@ bool CryptomatteAOV::write_images(
 
     try
     {
-        const size_t num_channels = (impl->m_num_layers * 2) + 3;
         MultiChannelExrFileWriter writer(exr_file_path.c_str(), &image);
         writer.set_image_channels(num_channels, channel_names);
         writer.set_image_attributes(image_attributes_copy);
