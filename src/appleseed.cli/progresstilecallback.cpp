@@ -101,7 +101,7 @@ namespace
             const size_t total_pixels = frame->image().properties().m_pixel_count;
 
             // Print a progress message.
-            LOG_INFO(m_logger, "rendering, %s done", pretty_percent(m_rendered_pixels, total_pixels).c_str());
+            //LOG_INFO(m_logger, "rendering, %s done", pretty_percent(m_rendered_pixels, total_pixels).c_str());
 
             // Keep track of the total number of rendered tiles.
             m_rendered_tiles++;
@@ -112,10 +112,14 @@ namespace
             // Estimate remaining render time.
             m_stopwatch.measure();
             const double elapsed_time = m_stopwatch.get_seconds();
-            const double estimated_time = (elapsed_time / m_rendered_tiles) * (total_tiles - m_rendered_tiles);
+            const double remaining_time = (elapsed_time / m_rendered_tiles) * (total_tiles - m_rendered_tiles);
 
-            // Print estimated time.
-            LOG_INFO(m_logger, "remaining time %.3lf seconds", estimated_time);
+            // Print a progress message.
+            LOG_INFO(
+                m_logger,
+                "rendering, %s done; about %s remaining...",
+                pretty_percent(m_rendered_pixels, total_pixels).c_str(),
+                pretty_time(remaining_time).c_str());
         }
 
       private:
