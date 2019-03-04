@@ -39,6 +39,7 @@
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
 #include "foundation/platform/thread.h"
+#include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -65,6 +66,7 @@ namespace
         explicit ProgressTileCallback(Logger& logger)
           : m_logger(logger)
           , m_rendered_pixels(0)
+          , m_rendered_tiles(0)
         {
         }
 
@@ -72,6 +74,16 @@ namespace
         {
             // The factory always return the same tile callback instance.
             // Prevent this instance from being destroyed by doing nothing here.
+        }
+
+        void on_tiled_frame_begin(const Frame* frame) override
+        {
+            m_stopwatch.start();
+        }
+
+        void on_tiled_frame_end(const Frame* frame) override
+        {
+            m_stopwatch.clear();
         }
 
         void on_tile_end(
@@ -90,12 +102,28 @@ namespace
 
             // Print a progress message.
             LOG_INFO(m_logger, "rendering, %s done", pretty_percent(m_rendered_pixels, total_pixels).c_str());
+
+            // Keep track of the total number of rendered tiles.
+            m_rendered_tiles++;
+
+            // Retrieve the total number of tiles in the frame.
+            const size_t total_tiles = frame->image().properties().m_tile_count;
+
+            // Estimate remaining render time.
+            m_stopwatch.measure();
+            const double elapsed_time = m_stopwatch.get_seconds();
+            const double estimated_time = (elapsed_time / m_rendered_tiles) * (total_tiles - m_rendered_tiles);
+
+            // Print estimated time.
+            LOG_INFO(m_logger, "remaining time %.3lf seconds", estimated_time);
         }
 
       private:
         Logger&             m_logger;
         boost::mutex        m_mutex;
         size_t              m_rendered_pixels;
+        size_t              m_rendered_tiles;
+        Stopwatch<DefaultWallclockTimer>    m_stopwatch;
     };
 }
 
