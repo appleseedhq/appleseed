@@ -153,6 +153,62 @@ Image::Image(
     }
 }
 
+Image::Image(
+    const Image& source,
+    const size_t channel_count)
+    : m_props(
+        source.properties().m_canvas_width,
+        source.properties().m_canvas_height,
+        source.properties().m_tile_width,
+        source.properties().m_tile_height,
+        channel_count,
+        source.properties().m_pixel_format)
+
+{
+    // the construction only used for transforming from RGBA to RGB (4 channels to 3 channels)
+    assert(channel_count == 3);
+    assert(source.properties().m_channel_count == 4);
+
+    m_tiles = new Tile*[m_props.m_tile_count];
+
+    for (size_t ty = 0; ty < m_props.m_tile_count_y; ++ty)
+    {
+        for(size_t tx = 0; tx < m_props.m_tile_count_x; ++tx)
+        {
+            const size_t tw = m_props.get_tile_width(tx);
+            const size_t th = m_props.get_tile_height(ty);
+
+            Tile* tile =
+                new Tile(
+                    tw,
+                    th,
+                    m_props.m_channel_count,
+                    m_props.m_pixel_format);
+
+            m_tiles[ty * m_props.m_tile_count_x + tx] = tile;
+
+            for (size_t py = 0; py < th; ++py)
+            {
+                for (size_t px = 0; px < tw; ++px)
+                {
+                    const size_t ix = tx * m_props.m_tile_width + px;
+                    const size_t iy = ty * m_props.m_tile_height + py;
+                    const uint8* source_pixel = source.pixel(ix, iy);
+
+                    Pixel::convert(
+                        source.m_props.m_pixel_format,
+                        source_pixel,
+                        source_pixel + m_props.m_pixel_size,
+                        1,
+                        m_props.m_pixel_format,
+                        tile->pixel(px, py),
+                        1);
+                }
+            }
+        }
+    }
+}
+
 Image::~Image()
 {
     for (size_t i = 0; i < m_props.m_tile_count; ++i)

@@ -992,17 +992,28 @@ namespace
         }
     }
 
-    void transform_to_srgb(Image& image)
+    void transform_to_srgb(Image *image)
     {
-        const CanvasProperties& image_props = image.properties();
+        const CanvasProperties& image_props = image->properties();
 
         for (size_t ty = 0; ty < image_props.m_tile_count_y; ++ty)
         {
             for (size_t tx = 0; tx < image_props.m_tile_count_x; ++tx)
-                transform_to_srgb(image.tile(tx, ty));
+                transform_to_srgb(image->tile(tx, ty));
         }
     }
-    
+
+
+    /*
+     * Export bit depth
+     * OpenEXR .exr        32-bit
+     * TIFF    .tiff/.tif  32-bit
+     * RGBE    .hdr        32-bit
+     * BMP     .bmp         8-bit
+     * JPEG    .jpg/.jpe/   8-bit
+     *         .jpeg/.jif/
+     *         .jfif/.jfi
+     */
     bool write_image(
         const Frame&            frame,
         const char*             file_path,
@@ -1027,22 +1038,39 @@ namespace
 
         try
         {
-            Image transformed_image(image);
-
-            // todo: we may want to be more specific here.
-            if (image.properties().m_channel_count == 4)
-                transform_to_srgb(transformed_image);
+            bool high_dynamic_range_format = false;
+            if (extension == ".exr" || extension == ".tiff" || extension == ".tif" || extension == ".hdr")
+                high_dynamic_range_format = true;            
 
             create_parent_directories(bf_file_path);
 
             const std::string filename = bf_file_path.string();
             GenericImageFileWriter writer(filename.c_str());
 
-            writer.append_image(&transformed_image);
+            // Add image to writer
+            Image *transformed_image;
+            if (!high_dynamic_range_format && image.properties().m_channel_count == 4) {
+                transformed_image = new Image(image);
+                transform_to_srgb(transformed_image);
+                writer.append_image(transformed_image);
+            }
+            else if (extension == ".hdr") {
+                // .hdr file only support 3 channel
+                transformed_image = new Image(image, 3);
+                writer.append_image(transformed_image);
+            }
+            else if (high_dynamic_range_format){
+                transformed_image = new Image(image);
+                writer.append_image(transformed_image);
+            }
+            else {
+                RENDERER_LOG_ERROR(
+                    "failed to write image file %s: unsupport image format.",
+                    bf_file_path.string().c_str());
+                return false;
+            }            
 
-            writer.set_image_output_format(PixelFormat::PixelFormatUInt8);
-
-            if (extension == ".exr") {                
+            if (high_dynamic_range_format) {
                 image_attributes.insert("color_space", "linear");
             }
             else {
@@ -1078,7 +1106,7 @@ namespace
 
 bool Frame::write_main_image(const char* file_path) const
 {
-    assert(file_path);    
+    assert(file_path);
 
     // Convert main image to half floats.
     const Image& image = *impl->m_image;

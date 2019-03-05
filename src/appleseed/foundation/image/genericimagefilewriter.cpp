@@ -385,7 +385,7 @@ void GenericImageFileWriter::write_scanlines(const size_t image_index)
     const CanvasProperties& props = canvas->properties();
 
     // Construct the temporary buffer holding one row of tiles in target format.
-    std::unique_ptr<uint8> buffer(new uint8[props.m_canvas_width * props.m_tile_height * props.m_pixel_size]);
+    std::unique_ptr<uint8[]> buffer(new uint8[props.m_canvas_width * props.m_tile_height * props.m_pixel_size]);
     uint8* APPLESEED_RESTRICT buffer_ptr = buffer.get();
 
     // Loop over the rows of tiles.

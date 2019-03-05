@@ -80,6 +80,11 @@ class APPLESEED_DLLSYMBOL Image
         const size_t        tile_height,        // tile height, in pixels
         const PixelFormat   pixel_format);
 
+    // Copy image data but allow to tweak the channel_count    
+    Image(
+        const Image&        source,
+        const size_t        channel_count);
+
     // Destructor.
     ~Image() override;
 
