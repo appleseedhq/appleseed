@@ -644,6 +644,7 @@ target_link_libraries (appleseed.studio
     ${QT_LIBRARIES}
     ${OPENGL_LIBRARY}
     ${PYTHON_LIBRARIES}
+    uuid
 )
 
 if (WITH_DISNEY_MATERIAL)
