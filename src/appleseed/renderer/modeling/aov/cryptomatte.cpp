@@ -271,7 +271,7 @@ namespace
           , m_index(0)
         {
             assert(size > 0);
-            m_map = new Entry[static_cast<uint32>(size)];
+            m_map = new Entry[size];
         }
 
         WeightMap(const WeightMap& other)
@@ -713,8 +713,7 @@ CryptomatteAOV::CryptomatteAOV(const ParamArray& params)
 
 CryptomatteAOV::~CryptomatteAOV()
 {
-    if (impl->m_tile_name_array != nullptr)
-        delete[] impl->m_tile_name_array;
+    delete[] impl->m_tile_name_array;
     delete impl;
 }
 
