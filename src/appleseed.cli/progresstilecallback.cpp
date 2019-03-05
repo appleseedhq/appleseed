@@ -101,9 +101,6 @@ namespace
             // Retrieve the total number of pixels in the frame.
             const size_t total_pixels = frame->image().properties().m_pixel_count;
 
-            // Print a progress message.
-            //LOG_INFO(m_logger, "rendering, %s done", pretty_percent(m_rendered_pixels, total_pixels).c_str());
-
             // Keep track of the total number of rendered tiles.
             m_rendered_tiles++;
 
