@@ -34,7 +34,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/hash.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/cache.h"
 #include "foundation/utility/statistics.h"
@@ -74,15 +73,9 @@ class TextureCache
 
   private:
     typedef TextureStore::TileKey TileKey;
+    typedef TextureStore::TileKeyHasher TileKeyHasher;
     typedef TextureStore::TileRecord TileRecord;
     typedef TileRecord* TileRecordPtr;
-
-    struct TileKeyHasher
-      : public foundation::NonCopyable
-    {
-        // Hash a key into an integer.
-        size_t operator()(const TileKey& key) const;
-    };
 
     class TileRecordSwapper
       : public foundation::NonCopyable
@@ -152,20 +145,6 @@ inline foundation::uint64 TextureCache::get_hit_count() const
 inline foundation::uint64 TextureCache::get_miss_count() const
 {
     return m_tile_cache.get_miss_count();
-}
-
-
-//
-// TextureCache::TileKeyHasher class implementation.
-//
-
-inline size_t TextureCache::TileKeyHasher::operator()(const TileKey& key) const
-{
-    return
-        foundation::mix_uint32(
-            static_cast<foundation::uint32>(key.m_assembly_uid),
-            static_cast<foundation::uint32>(key.m_texture_uid),
-            static_cast<foundation::uint32>(key.m_tile_xy));
 }
 
 
