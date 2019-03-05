@@ -29,42 +29,42 @@
 
 #pragma once
 
-// appleseed.foundation headers.
-#include "foundation/math/vector.h"
-
 // appleseed.renderer headers.
 #include "renderer/modeling/scene/objectinstance.h"
+
+// appleseed.foundation headers.
+#include "foundation/math/vector.h"
 
 // Qt headers.
 #include <QMenu>
 #include <QObject>
 
+// Standard headers.
+#include <string>
+
 namespace appleseed {
 namespace studio {
 
 class DroppedMaterialMenu
-    : public QMenu
+  : public QMenu
 {
-    Q_OBJECT
+  Q_OBJECT
 
-public:
-    // constructor
+  public:
+    // Constructor.
     DroppedMaterialMenu(const foundation::Vector2d& drop_pos, const std::string& material_name);
 
-    // destructor
-    ~DroppedMaterialMenu() override = default;
-
-signals:
+  signals:
     void signal_apply_material(
-        const foundation::Vector2d& drop_pos,
-        const std::string& material_name,
-        renderer::ObjectInstance::Side side);
+        const foundation::Vector2d&             drop_pos,
+        const std::string&                      material_name,
+        const renderer::ObjectInstance::Side    side);
 
-private:
-    const foundation::Vector2d& m_drop_pos;
-    const std::string& m_material_name;
+  private:
+    const foundation::Vector2d  m_drop_pos;
+    const std::string           m_material_name;
 
-private slots:
+  private slots:
     void slot_apply_to_front();
     void slot_apply_to_back();
     void slot_apply_to_both();

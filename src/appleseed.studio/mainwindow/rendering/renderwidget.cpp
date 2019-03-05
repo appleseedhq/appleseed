@@ -44,6 +44,8 @@
 
 // Qt headers.
 #include <QColor>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QMimeData>
 #include <QMutexLocker>
 #include <Qt>
@@ -436,10 +438,14 @@ void RenderWidget::dragEnterEvent(QDragEnterEvent* event)
 
 void RenderWidget::dragMoveEvent(QDragMoveEvent* event)
 {
-    if (event->pos().x() > pos().x() + width() || event->pos().y() > pos().y() + height())
-        event->ignore();
-    else
+    if (pos().x() <= event->pos().x() && pos().y() <= event->pos().y()
+        && event->pos().x() < pos().x() + width() && event->pos().y() < pos().y() + height())
+    {
+        //RENDERER_LOG_INFO(std::to_string(event->pos().x()).c_str());
         event->accept();
+    }
+    else
+        event->ignore();
 }
 
 void RenderWidget::dropEvent(QDropEvent* event)
@@ -447,7 +453,7 @@ void RenderWidget::dropEvent(QDropEvent* event)
     const Vector2d drop_pos = Vector2d(
         static_cast<double>(event->pos().x()) / width(),
         static_cast<double>(event->pos().y()) / height());
-    std::string material_name = event->mimeData()->text().toUtf8().constData();
+    std::string material_name = event->mimeData()->text().toStdString();
 
     emit signal_material_dropped(drop_pos, material_name);
 }

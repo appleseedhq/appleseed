@@ -499,7 +499,7 @@ void RenderingManager::slot_material_dropped(const foundation::Vector2d& drop_po
 {
     if (!m_project->has_trace_context())
     {
-        RENDERER_LOG_INFO("the scene must be rendering or must have been rendered at least once for drag&drop to be available.");
+        RENDERER_LOG_INFO("the scene must be rendering or must have been rendered at least once for drag and drop to be available.");
         return;
     }
 
@@ -509,11 +509,11 @@ void RenderingManager::slot_material_dropped(const foundation::Vector2d& drop_po
         SIGNAL(signal_apply_material(
             const foundation::Vector2d&,
             const std::string&,
-            renderer::ObjectInstance::Side)),
+            const renderer::ObjectInstance::Side)),
         SLOT(slot_change_material(
             const foundation::Vector2d&,
             const std::string&,
-            renderer::ObjectInstance::Side)));
+            const renderer::ObjectInstance::Side)));
 
     menu->exec(QCursor::pos());
 }
@@ -522,18 +522,18 @@ namespace
 {
     struct MaterialSlot
     {
-        std::string name;
-        ObjectInstance::Side side;
+        std::string             m_name;
+        ObjectInstance::Side    m_side;
     };
 
     class ApplyDroppedMaterial
-        : public RenderingManager::IScheduledAction
+      : public RenderingManager::IScheduledAction
     {
-    public:
-        explicit ApplyDroppedMaterial(
-            ObjectInstance& instance,
-            const std::vector<MaterialSlot>& material_slots,
-            const std::string& material_name)
+      public:
+        ApplyDroppedMaterial(
+            ObjectInstance&                     instance,
+            const std::vector<MaterialSlot>&    material_slots,
+            const std::string&                  material_name)
             : m_instance(instance),
             m_material_slots(material_slots),
             m_material_name(material_name)
@@ -542,23 +542,23 @@ namespace
 
         void operator()(Project& project) override
         {
-            for (const_each<std::vector<MaterialSlot>> slot = m_material_slots; slot; ++slot)
+            for (const MaterialSlot &slot : m_material_slots)
             {
-                m_instance.assign_material(slot->name.c_str(), slot->side, m_material_name.c_str());
+                m_instance.assign_material(slot.m_name.c_str(), slot.m_side, m_material_name.c_str());
             }
         }
 
-    private:
-        ObjectInstance& m_instance;
+      private:
+        ObjectInstance&                 m_instance;
         const std::vector<MaterialSlot> m_material_slots;
-        const std::string m_material_name;
+        const std::string               m_material_name;
     };
 }
 
 void RenderingManager::slot_change_material(
-    const foundation::Vector2d& drop_pos,
-    const std::string& material_name,
-    renderer::ObjectInstance::Side side)
+    const foundation::Vector2d&             drop_pos,
+    const std::string&                      material_name,
+    const renderer::ObjectInstance::Side    side)
 {
     const ScenePicker scene_picker(*m_project);
     const ScenePicker::PickingResult result = scene_picker.pick(drop_pos);
@@ -584,14 +584,12 @@ void RenderingManager::slot_change_material(
         }
     }
 
-    schedule_or_execute(unique_ptr<RenderingManager::IScheduledAction>(
-        new ApplyDroppedMaterial(
-            *instance,
-            material_slots,
-            material_name)));
-
-    if (is_rendering())
-        reinitialize_rendering();
+    schedule_or_execute(
+        unique_ptr<RenderingManager::IScheduledAction>(
+            new ApplyDroppedMaterial(
+                *instance,
+                material_slots,
+                material_name)));
 }
 
 void RenderingManager::slot_master_renderer_thread_finished()

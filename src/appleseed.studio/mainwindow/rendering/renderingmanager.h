@@ -41,6 +41,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/thread.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/job/abortswitch.h"
@@ -204,11 +205,11 @@ class RenderingManager
     void slot_camera_change_end();
     void slot_material_dropped(
         const foundation::Vector2d& drop_pos,
-        const std::string& material_name);
+        const std::string&          material_name);
     void slot_change_material(
-        const foundation::Vector2d& drop_pos,
-        const std::string& material_name,
-        renderer::ObjectInstance::Side side);
+        const foundation::Vector2d&             drop_pos,
+        const std::string&                      material_name,
+        const renderer::ObjectInstance::Side    side);
     void slot_master_renderer_thread_finished();
 };
 

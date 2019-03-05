@@ -33,17 +33,16 @@
 #include "mainwindow/rendering/renderclipboardhandler.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 
 // OpenColorIO headers.
 #include <OpenColorIO/OpenColorIO.h>
 namespace OCIO = OCIO_NAMESPACE;
 
 // Qt headers.
-#include <QDragEnterEvent>
-#include <QDropEvent>
 #include <QImage>
 #include <QMutex>
 #include <QPainter>
@@ -52,12 +51,15 @@ namespace OCIO = OCIO_NAMESPACE;
 // Standard headers.
 #include <cstddef>
 #include <memory>
+#include <string>
 
 // Forward declarations.
 namespace foundation    { class CanvasProperties; }
 namespace renderer      { class Frame; }
 namespace renderer      { class Project; }
 
+class QDragEnterEvent;
+class QDropEvent;
 class QPaintEvent;
 
 namespace appleseed {
@@ -118,6 +120,11 @@ class RenderWidget
     QMutex& mutex();
     QImage& image();
 
+  signals:
+    void signal_material_dropped(
+        const foundation::Vector2d& drop_pos,
+        const std::string& material_name);
+
   public slots:
     void slot_display_transform_changed(const QString& transform);
 
@@ -149,11 +156,6 @@ class RenderWidget
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dragMoveEvent(QDragMoveEvent* event) override;
     void dropEvent(QDropEvent* event) override;
-
-signals:
-    void signal_material_dropped(
-        const foundation::Vector2d& drop_pos,
-        const std::string& material_name);
 };
 
 

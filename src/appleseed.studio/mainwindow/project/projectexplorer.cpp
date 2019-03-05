@@ -37,8 +37,10 @@
 #include "utility/miscellaneous.h"
 
 // Qt headers.
+#include <QDrag>
 #include <QKeySequence>
 #include <QMenu>
+#include <QMimeData>
 #include <QPoint>
 #include <QRect>
 #include <QRegExp>
@@ -47,8 +49,6 @@
 #include <Qt>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
-#include <QDrag>
-#include <QMimeData>
 
 // Standard headers.
 #include <cassert>
@@ -258,7 +258,7 @@ void ProjectExplorer::slot_drag_item(QTreeWidgetItem* item, int column)
     if (item && item->flags() & Qt::ItemIsDragEnabled)
     {
         QDrag* drag = new QDrag(m_tree_widget);
-        QMimeData* mimeData = new QMimeData;
+        QMimeData* mimeData = new QMimeData();
 
         mimeData->setText(item->text(column));
         drag->setMimeData(mimeData);

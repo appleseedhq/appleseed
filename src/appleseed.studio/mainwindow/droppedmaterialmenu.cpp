@@ -35,21 +35,15 @@ namespace studio {
 
 DroppedMaterialMenu::DroppedMaterialMenu(
     const foundation::Vector2d& drop_pos,
-    const std::string& material_name)
-    : m_drop_pos(drop_pos)
-    , m_material_name(material_name)
+    const std::string&          material_name)
+  : m_drop_pos(drop_pos)
+  , m_material_name(material_name)
 {
-    QAction* front = addAction("Front side");
-    QAction* back = addAction("Back side");
-    QAction* both = addAction("Both sides");
-
-    connect(front, SIGNAL(triggered()),
+    connect(addAction("Front Side"), SIGNAL(triggered()),
         SLOT(slot_apply_to_front()));
-
-    connect(back, SIGNAL(triggered()),
+    connect(addAction("Back Side"), SIGNAL(triggered()),
         SLOT(slot_apply_to_back()));
-
-    connect(both, SIGNAL(triggered()),
+    connect(addAction("Both Sides"), SIGNAL(triggered()),
         SLOT(slot_apply_to_both()));
 }
 
