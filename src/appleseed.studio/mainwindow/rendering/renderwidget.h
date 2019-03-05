@@ -55,7 +55,8 @@ namespace OCIO = OCIO_NAMESPACE;
 
 // Forward declarations.
 namespace foundation    { class CanvasProperties; }
-namespace renderer      { class Frame; class Project; }
+namespace renderer      { class Frame; }
+namespace renderer      { class Project; }
 
 class QPaintEvent;
 
