@@ -80,10 +80,13 @@ class APPLESEED_DLLSYMBOL Image
         const size_t        tile_height,        // tile height, in pixels
         const PixelFormat   pixel_format);
 
-    // Copy image data but allow to tweak the channel_count    
+    // Construct a image by converting an existing image to a given pixel format,
+    // and allowing reordering, replication and deletion of channels.
     Image(
-        const Image&        source,
-        const size_t        channel_count);
+        const Image&        source,             // source image
+        const PixelFormat   pixel_format,       // new pixel format
+        const size_t*       shuffle_table,      // channel shuffling table
+        Tile**              storage = nullptr); // if provided, use this memory for tile storage
 
     // Destructor.
     ~Image() override;

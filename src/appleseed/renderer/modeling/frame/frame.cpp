@@ -992,7 +992,7 @@ namespace
         }
     }
 
-    void transform_to_srgb(Image *image)
+    void transform_to_srgb(Image* image)
     {
         const CanvasProperties& image_props = image->properties();
 
@@ -1038,9 +1038,11 @@ namespace
 
         try
         {
-            bool high_dynamic_range_format = false;
-            if (extension == ".exr" || extension == ".tiff" || extension == ".tif" || extension == ".hdr")
-                high_dynamic_range_format = true;            
+            const bool high_dynamic_range_format =
+                extension == ".exr"  ||
+                extension == ".tiff" ||
+                extension == ".tif"  ||
+                extension == ".hdr";
 
             create_parent_directories(bf_file_path);
 
@@ -1048,32 +1050,41 @@ namespace
             GenericImageFileWriter writer(filename.c_str());
 
             // Add image to writer
-            Image *transformed_image;
-            if (!high_dynamic_range_format && image.properties().m_channel_count == 4) {
-                transformed_image = new Image(image);
-                transform_to_srgb(transformed_image);
-                writer.append_image(transformed_image);
+            std::unique_ptr<Image> transformed_image;
+            if (
+                !high_dynamic_range_format &&
+                image.properties().m_channel_count == 4)
+            {
+                transformed_image.reset(new Image(image));
+                transform_to_srgb(transformed_image.get());
+                writer.append_image(transformed_image.get());
             }
-            else if (extension == ".hdr") {
+            else if (extension == ".hdr")
+            {
                 // .hdr file only support 3 channel
-                transformed_image = new Image(image, 3);
-                writer.append_image(transformed_image);
+                const size_t shuffle_table[4] = { 0, 1, 2, Pixel::SkipChannel };
+                transformed_image.reset(new Image(image, image.properties().m_pixel_format, shuffle_table));
+                writer.append_image(transformed_image.get());
             }
-            else if (high_dynamic_range_format){
-                transformed_image = new Image(image);
-                writer.append_image(transformed_image);
+            else if (high_dynamic_range_format)
+            {
+                transformed_image.reset(new Image(image));
+                writer.append_image(transformed_image.get());
             }
-            else {
+            else
+            {
                 RENDERER_LOG_ERROR(
                     "failed to write image file %s: unsupport image format.",
                     bf_file_path.string().c_str());
                 return false;
             }            
 
-            if (high_dynamic_range_format) {
+            if (high_dynamic_range_format)
+            {
                 image_attributes.insert("color_space", "linear");
             }
-            else {
+            else
+            {
                 image_attributes.insert("color_space", "sRGB");                
             }
 
