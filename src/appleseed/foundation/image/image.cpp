@@ -180,9 +180,6 @@ Image::Image(
     {
         for (size_t tx = 0; tx < m_props.m_tile_count_x; ++tx)
         {
-            const size_t tw = m_props.get_tile_width(tx);
-            const size_t th = m_props.get_tile_height(ty);
-
             Tile* tile =
                 new Tile(
                     source.tile(tx, ty),
