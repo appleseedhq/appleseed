@@ -1003,17 +1003,17 @@ namespace
         }
     }
 
-
     /*
-     * Export bit depth
-     * OpenEXR .exr        32-bit
-     * TIFF    .tiff/.tif  32-bit
-     * RGBE    .hdr        32-bit
-     * BMP     .bmp         8-bit
-     * JPEG    .jpg/.jpe/   8-bit
-     *         .jpeg/.jif/
-     *         .jfif/.jfi
-     */
+     * Export Format
+     * OpenEXR   .exr          4-channel   16-bit (half)    Linear  
+     * TIFF      .tiff/.tif    4-channel   32-bit (float)   Linear
+     * RGBE      .hdr          3-channel   32-bit (float)   Linear
+     * BMP       .bmp          4-channel    8-bit (uint8)     sRGB
+     * PNG       .png          4-channel    8-bit (uint8)     sRGB    
+     * JPEG      .jpg/.jpe/    3-channel    8-bit (uint8)     sRGB
+     *           .jpeg/.jif/          
+     *           .jfif/.jfi           
+     */    
     bool write_image(
         const Frame&            frame,
         const char*             file_path,
@@ -1048,8 +1048,7 @@ namespace
 
             const std::string filename = bf_file_path.string();
             GenericImageFileWriter writer(filename.c_str());
-
-            // Add image to writer
+            
             std::unique_ptr<Image> transformed_image;
             if (
                 !high_dynamic_range_format &&
@@ -1057,19 +1056,16 @@ namespace
             {
                 transformed_image.reset(new Image(image));
                 transform_to_srgb(transformed_image.get());
-                writer.append_image(transformed_image.get());
             }
             else if (extension == ".hdr")
             {
                 // .hdr file only support 3 channel
                 const size_t shuffle_table[4] = { 0, 1, 2, Pixel::SkipChannel };
                 transformed_image.reset(new Image(image, image.properties().m_pixel_format, shuffle_table));
-                writer.append_image(transformed_image.get());
             }
             else if (high_dynamic_range_format)
             {
                 transformed_image.reset(new Image(image));
-                writer.append_image(transformed_image.get());
             }
             else
             {
@@ -1077,7 +1073,7 @@ namespace
                     "failed to write image file %s: unsupport image format.",
                     bf_file_path.string().c_str());
                 return false;
-            }            
+            }
 
             if (high_dynamic_range_format)
             {
@@ -1085,8 +1081,10 @@ namespace
             }
             else
             {
-                image_attributes.insert("color_space", "sRGB");                
+                image_attributes.insert("color_space", "sRGB");
             }
+
+            writer.append_image(transformed_image.get());
 
             writer.set_image_attributes(image_attributes);
 
