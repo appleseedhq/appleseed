@@ -1972,6 +1972,50 @@ namespace
             }
         }
     };
+
+    //
+    // Update from revision 29 to revision 30.
+    //
+
+    class UpdateFromRevision_29
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_29(Project& project)
+          : Updater(project, 29)
+        {
+        }
+
+        void update() override
+        {
+            remove_adaptive_pixel_renderer_settings();
+        }
+
+      private:
+        void remove_adaptive_pixel_renderer_settings()
+        {
+            for (Configuration& config : m_project.configurations())
+            {
+                Dictionary& root = config.get_parameters();
+
+                if (root.dictionaries().exist("adaptive_pixel_renderer"))
+                    root.dictionaries().remove("adaptive_pixel_renderer");
+
+                if (root.strings().exist("pixel_renderer"))
+                {
+                    const char* pixel_renderer = root.strings().get("pixel_renderer");
+                    if (strcmp(pixel_renderer, "adaptive") == 0)
+                    {
+                        RENDERER_LOG_WARNING(
+                            "with the introduction of a new adaptive tile renderer, the adaptive pixel renderer was removed;"
+                            "migrating this project to use the uniform pixel renderer instead.");
+
+                        root.strings().set("pixel_renderer", "uniform");
+                    }
+                }
+            }
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(
@@ -2033,6 +2077,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(26);
       CASE_UPDATE_FROM_REVISION(27);
       CASE_UPDATE_FROM_REVISION(28);
+      CASE_UPDATE_FROM_REVISION(29);
 
       case ProjectFormatRevision:
         // Project is up-to-date.
