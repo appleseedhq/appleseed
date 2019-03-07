@@ -363,9 +363,6 @@ void MaterialAssignmentEditorWindow::assign_materials(const SlotValueCollection&
     if (old_front_mappings != m_object_instance.get_front_material_mappings() ||
         old_back_mappings != m_object_instance.get_back_material_mappings())
         m_editor_context.m_project_builder.slot_notify_project_modification();
-
-    if (m_editor_context.m_rendering_manager.is_rendering())
-        m_editor_context.m_rendering_manager.reinitialize_rendering();
 }
 
 void MaterialAssignmentEditorWindow::slot_change_back_material_mode(int index)
