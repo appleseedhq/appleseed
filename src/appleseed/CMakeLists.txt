@@ -1299,6 +1299,8 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/tilecallbackbase.h
     renderer/kernel/rendering/timedrenderercontroller.cpp
     renderer/kernel/rendering/timedrenderercontroller.h
+    renderer/kernel/rendering/tilecallbackcollection.cpp
+    renderer/kernel/rendering/tilecallbackcollection.h
 )
 list (APPEND appleseed_sources
     ${renderer_kernel_rendering_sources}

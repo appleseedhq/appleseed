@@ -29,21 +29,28 @@
 
 #pragma once
 
-// API headers.
-#include "renderer/kernel/rendering/debug/blanktilerenderer.h"
-#include "renderer/kernel/rendering/debug/debugtilerenderer.h"
-#include "renderer/kernel/rendering/defaultrenderercontroller.h"
-#include "renderer/kernel/rendering/generic/genericframerenderer.h"
-#include "renderer/kernel/rendering/generic/genericsamplerenderer.h"
-#include "renderer/kernel/rendering/generic/generictilerenderer.h"
-#include "renderer/kernel/rendering/iframerenderer.h"
-#include "renderer/kernel/rendering/irenderercontroller.h"
-#include "renderer/kernel/rendering/isamplerenderer.h"
-#include "renderer/kernel/rendering/itilecallback.h"
-#include "renderer/kernel/rendering/itilerenderer.h"
-#include "renderer/kernel/rendering/masterrenderer.h"
-#include "renderer/kernel/rendering/nulltilecallback.h"
-#include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
-#include "renderer/kernel/rendering/tilecallbackbase.h"
-#include "renderer/kernel/rendering/timedrenderercontroller.h"
-#include "renderer/kernel/rendering/tilecallbackcollection.h"
+// appleseed.renderer headers.
+#include "renderer/api/rendering.h"
+
+// Standard headers.
+#include <memory>
+
+namespace appleseed {
+namespace shared {
+
+class ProgressTileCallbackFactory
+  : public renderer::ITileCallbackFactory
+{
+  public:
+    explicit ProgressTileCallbackFactory();
+
+    void release() override;
+
+    renderer::ITileCallback* create() override;
+
+  private:
+    std::unique_ptr<renderer::ITileCallback> m_callback;
+};
+
+}   // namespace shared
+}   // namespace appleseed

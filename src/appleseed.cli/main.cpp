@@ -29,12 +29,12 @@
 
 // appleseed.cli headers.
 #include "commandlinehandler.h"
-#include "progresstilecallback.h"
 #include "stdouttilecallback.h"
 
 // appleseed.shared headers.
 #include "application/application.h"
 #include "application/superlogger.h"
+#include "application/progresstilecallback.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
@@ -539,7 +539,7 @@ namespace
             if (params.get_optional<string>("frame_renderer", "") != "progressive")
             {
                 tile_callback_factory.reset(
-                    new ProgressTileCallbackFactory(g_logger));
+                    new ProgressTileCallbackFactory());
             }
         }
 

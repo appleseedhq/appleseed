@@ -31,7 +31,6 @@
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/qtrenderercontroller.h"
-#include "mainwindow/rendering/qttilecallback.h"
 #include "mainwindow/rendering/renderingtimer.h"
 
 // appleseed.renderer headers.
@@ -162,7 +161,7 @@ class RenderingManager
 
   private:
     StatusBar&                                  m_status_bar;
-    QtRendererController                        m_renderer_controller;
+    QtRendererController                        m_renderer_controller; 
 
     renderer::Project*                          m_project;
     renderer::ParamArray                        m_params;
@@ -170,7 +169,8 @@ class RenderingManager
     RenderingMode                               m_rendering_mode;
     RenderTab*                                  m_render_tab;
 
-    std::unique_ptr<QtTileCallbackFactory>      m_tile_callback_factory;
+    std::unique_ptr<renderer::TileCallbackCollectionFactory>      
+                                                m_tile_callback_factory;
     std::unique_ptr<renderer::MasterRenderer>   m_master_renderer;
     std::unique_ptr<QThread>                    m_master_renderer_thread;
 

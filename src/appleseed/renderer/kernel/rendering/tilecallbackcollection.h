@@ -29,21 +29,38 @@
 
 #pragma once
 
-// API headers.
-#include "renderer/kernel/rendering/debug/blanktilerenderer.h"
-#include "renderer/kernel/rendering/debug/debugtilerenderer.h"
-#include "renderer/kernel/rendering/defaultrenderercontroller.h"
-#include "renderer/kernel/rendering/generic/genericframerenderer.h"
-#include "renderer/kernel/rendering/generic/genericsamplerenderer.h"
-#include "renderer/kernel/rendering/generic/generictilerenderer.h"
-#include "renderer/kernel/rendering/iframerenderer.h"
-#include "renderer/kernel/rendering/irenderercontroller.h"
-#include "renderer/kernel/rendering/isamplerenderer.h"
-#include "renderer/kernel/rendering/itilecallback.h"
-#include "renderer/kernel/rendering/itilerenderer.h"
-#include "renderer/kernel/rendering/masterrenderer.h"
-#include "renderer/kernel/rendering/nulltilecallback.h"
-#include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
-#include "renderer/kernel/rendering/tilecallbackbase.h"
-#include "renderer/kernel/rendering/timedrenderercontroller.h"
-#include "renderer/kernel/rendering/tilecallbackcollection.h"
+// appleseed.renderer headers.
+#include "itilecallback.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+namespace renderer
+{
+
+//
+// A collection of tile callback factories.
+//
+
+class APPLESEED_DLLSYMBOL TileCallbackCollectionFactory
+  : public ITileCallbackFactory
+{
+  public:
+    // Constructor.
+    TileCallbackCollectionFactory();
+
+    // Delete this instance.
+    void release() override;
+
+    // Return a new instance.
+    ITileCallback* create() override;
+
+    // Insert a factory into the collection.
+    void insert(ITileCallbackFactory* factory);
+
+  private:
+    struct Impl;
+    Impl* impl;
+};
+
+}   // namespace renderer

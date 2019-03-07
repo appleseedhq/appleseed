@@ -36,8 +36,6 @@ set (sources
     commandlinehandler.cpp
     commandlinehandler.h
     main.cpp
-    progresstilecallback.cpp
-    progresstilecallback.h
     stdouttilecallback.cpp
     stdouttilecallback.h
 )
