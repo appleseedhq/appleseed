@@ -42,7 +42,6 @@
 #include "renderer/kernel/rendering/debug/debugsamplerenderer.h"
 #include "renderer/kernel/rendering/debug/debugtilerenderer.h"
 #include "renderer/kernel/rendering/ephemeralshadingresultframebufferfactory.h"
-#include "renderer/kernel/rendering/final/adaptivepixelrenderer.h"
 #include "renderer/kernel/rendering/final/adaptivetilerenderer.h"
 #include "renderer/kernel/rendering/final/uniformpixelrenderer.h"
 #include "renderer/kernel/rendering/generic/genericframerenderer.h"
@@ -345,22 +344,6 @@ bool RendererComponents::create_pixel_renderer_factory()
                 m_frame,
                 m_sample_renderer_factory.get(),
                 get_child_and_inherit_globals(m_params, "uniform_pixel_renderer")));
-
-        return true;
-    }
-    else if (name == "adaptive")
-    {
-        if (m_sample_renderer_factory.get() == nullptr)
-        {
-            RENDERER_LOG_ERROR("cannot use the adaptive pixel renderer without a sample renderer.");
-            return false;
-        }
-
-        m_pixel_renderer_factory.reset(
-            new AdaptivePixelRendererFactory(
-                m_frame,
-                m_sample_renderer_factory.get(),
-                get_child_and_inherit_globals(m_params, "adaptive_pixel_renderer")));
 
         return true;
     }

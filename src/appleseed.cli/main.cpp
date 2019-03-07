@@ -254,14 +254,6 @@ namespace
             params.insert_path(
                 "uniform_pixel_renderer.samples",
                 g_cl.m_samples.values()[1]);
-
-            params.insert_path(
-                "adaptive_pixel_renderer.min_samples",
-                g_cl.m_samples.values()[0]);
-
-            params.insert_path(
-                "adaptive_pixel_renderer.max_samples",
-                g_cl.m_samples.values()[1]);
         }
 
         if (g_cl.m_passes.is_set())
