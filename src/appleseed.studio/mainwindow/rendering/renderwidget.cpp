@@ -432,7 +432,7 @@ void RenderWidget::paintEvent(QPaintEvent* event)
 
 void RenderWidget::dragEnterEvent(QDragEnterEvent* event)
 {
-    if (event->mimeData()->hasFormat("text/plain") && m_project.has_trace_context())
+    if (event->mimeData()->hasFormat("text/plain"))
         event->acceptProposedAction();
 }
 
@@ -441,7 +441,6 @@ void RenderWidget::dragMoveEvent(QDragMoveEvent* event)
     if (pos().x() <= event->pos().x() && pos().y() <= event->pos().y()
         && event->pos().x() < pos().x() + width() && event->pos().y() < pos().y() + height())
     {
-        //RENDERER_LOG_INFO(std::to_string(event->pos().x()).c_str());
         event->accept();
     }
     else
@@ -450,12 +449,11 @@ void RenderWidget::dragMoveEvent(QDragMoveEvent* event)
 
 void RenderWidget::dropEvent(QDropEvent* event)
 {
-    const Vector2d drop_pos = Vector2d(
-        static_cast<double>(event->pos().x()) / width(),
-        static_cast<double>(event->pos().y()) / height());
-    std::string material_name = event->mimeData()->text().toStdString();
-
-    emit signal_material_dropped(drop_pos, material_name);
+    emit signal_material_dropped(
+        Vector2d(
+            static_cast<double>(event->pos().x()) / width(),
+            static_cast<double>(event->pos().y()) / height()),
+        event->mimeData()->text().toStdString());
 }
 
 }   // namespace studio
