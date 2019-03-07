@@ -992,46 +992,30 @@ namespace
         }
     }
 
-    void transform_to_srgb(Image* image)
+    void transform_to_srgb(Image& image)
     {
-        const CanvasProperties& image_props = image->properties();
+        const CanvasProperties& image_props = image.properties();
 
         for (size_t ty = 0; ty < image_props.m_tile_count_y; ++ty)
         {
             for (size_t tx = 0; tx < image_props.m_tile_count_x; ++tx)
-                transform_to_srgb(image->tile(tx, ty));
+                transform_to_srgb(image.tile(tx, ty));
         }
     }
 
     /*
      * Default Export Format
-     * OpenEXR   .exr          4-channel   16-bit (half)    Linear  
-     * TIFF      .tiff/.tif    4-channel   32-bit (float)   Linear
-     * RGBE      .hdr          3-channel   32-bit (float)   Linear
-     * BMP       .bmp          4-channel    8-bit (uint8)     sRGB
-     * PNG       .png          4-channel    8-bit (uint8)     sRGB    
-     * JPEG      .jpg/.jpe/    3-channel    8-bit (uint8)     sRGB
+     * OpenEXR   .exr          4-channel   16-bit (half)       Linear  
+     * RGBE      .hdr          3-channel   32-bit (8-bit * 3   Linear 
+     *                                     + a shared 8-bit 
+     *                                     exponent)   
+     * TIFF      .tiff/.tif    4-channel   16-bit (uint16)     Linear
+     * BMP       .bmp          4-channel    8-bit (uint8)        sRGB
+     * PNG       .png          4-channel    8-bit (uint8)        sRGB    
+     * JPEG      .jpg/.jpe/    3-channel    8-bit (uint8)        sRGB
      *           .jpeg/.jif/          
      *           .jfif/.jfi           
      */
-    void write_image(
-        const std::string&         filename,
-        std::unique_ptr<Image>&    image,
-        ImageAttributes            image_attributes,
-        PixelFormat                image_output_format = PixelFormat::PixelFormatDefault)
-    {
-        GenericImageFileWriter writer(filename.c_str());
-
-        writer.append_image(image.get());
-
-        writer.set_image_attributes(image_attributes);
-
-        if (image_output_format != PixelFormat::PixelFormatDefault)
-            writer.set_image_output_format(image_output_format);
-
-        writer.write();
-    }
-
     bool write_image(
         const Frame&            frame,
         const char*             file_path,
@@ -1061,14 +1045,14 @@ namespace
                 extension == ".tiff" ||
                 extension == ".tif"  ||
                 extension == ".hdr";            
-            
+
             std::unique_ptr<Image> transformed_image;
             if (
                 !high_dynamic_range_format &&
                 image.properties().m_channel_count == 4)
             {
                 transformed_image.reset(new Image(image));
-                transform_to_srgb(transformed_image.get());
+                transform_to_srgb(*transformed_image);
             }
             else if (extension == ".hdr")
             {
@@ -1100,8 +1084,20 @@ namespace
             create_parent_directories(bf_file_path);
 
             const std::string filename = bf_file_path.string();
+
+            GenericImageFileWriter writer(filename.c_str());
+
+            writer.append_image(transformed_image.get());
+
+            writer.set_image_attributes(image_attributes);
             
-            write_image(filename, transformed_image, image_attributes);            
+            if (extension == ".tiff" ||
+                extension == ".tif")
+            {
+                writer.set_image_output_format(PixelFormat::PixelFormatUInt16);                
+            }
+
+            writer.write();
         }
         catch (const exception& e)
         {

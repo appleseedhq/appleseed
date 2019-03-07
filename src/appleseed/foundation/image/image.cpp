@@ -156,8 +156,7 @@ Image::Image(
 Image::Image(
     const Image&        source,
     const PixelFormat   pixel_format,
-    const size_t*       shuffle_table,
-    Tile**              storage)
+    const size_t*       shuffle_table)
   : m_props(
         source.properties().m_canvas_width,
         source.properties().m_canvas_height,
@@ -167,14 +166,7 @@ Image::Image(
         pixel_format
   )
 {
-    if (storage)
-    {
-        m_tiles = storage;
-    }
-    else
-    {
-        m_tiles = new Tile*[m_props.m_tile_count];        
-    }
+    m_tiles = new Tile*[m_props.m_tile_count];
 
     for (size_t ty = 0; ty < m_props.m_tile_count_y; ++ty)
     {
@@ -184,9 +176,8 @@ Image::Image(
                 new Tile(
                     source.tile(tx, ty),
                     source.properties().m_pixel_format,
-                    shuffle_table
-                );
-                    
+                    shuffle_table);
+
             m_tiles[ty * m_props.m_tile_count_x + tx] = tile;
         }
     }

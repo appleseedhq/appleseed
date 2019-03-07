@@ -60,8 +60,7 @@ enum PixelFormat
     PixelFormatUInt32,
     PixelFormatHalf,
     PixelFormatFloat,
-    PixelFormatDouble,
-    PixelFormatDefault
+    PixelFormatDouble
 };
 
 // Return a string identifying a pixel format.
