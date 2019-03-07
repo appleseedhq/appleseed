@@ -1004,7 +1004,7 @@ namespace
     }
 
     /*
-     * Export Format
+     * Default Export Format
      * OpenEXR   .exr          4-channel   16-bit (half)    Linear  
      * TIFF      .tiff/.tif    4-channel   32-bit (float)   Linear
      * RGBE      .hdr          3-channel   32-bit (float)   Linear
@@ -1013,7 +1013,25 @@ namespace
      * JPEG      .jpg/.jpe/    3-channel    8-bit (uint8)     sRGB
      *           .jpeg/.jif/          
      *           .jfif/.jfi           
-     */    
+     */
+    void write_image(
+        const std::string&         filename,
+        std::unique_ptr<Image>&    image,
+        ImageAttributes            image_attributes,
+        PixelFormat                image_output_format = PixelFormat::PixelFormatDefault)
+    {
+        GenericImageFileWriter writer(filename.c_str());
+
+        writer.append_image(image.get());
+
+        writer.set_image_attributes(image_attributes);
+
+        if (image_output_format != PixelFormat::PixelFormatDefault)
+            writer.set_image_output_format(image_output_format);
+
+        writer.write();
+    }
+
     bool write_image(
         const Frame&            frame,
         const char*             file_path,
@@ -1042,12 +1060,7 @@ namespace
                 extension == ".exr"  ||
                 extension == ".tiff" ||
                 extension == ".tif"  ||
-                extension == ".hdr";
-
-            create_parent_directories(bf_file_path);
-
-            const std::string filename = bf_file_path.string();
-            GenericImageFileWriter writer(filename.c_str());
+                extension == ".hdr";            
             
             std::unique_ptr<Image> transformed_image;
             if (
@@ -1084,11 +1097,11 @@ namespace
                 image_attributes.insert("color_space", "sRGB");
             }
 
-            writer.append_image(transformed_image.get());
+            create_parent_directories(bf_file_path);
 
-            writer.set_image_attributes(image_attributes);
-
-            writer.write();
+            const std::string filename = bf_file_path.string();
+            
+            write_image(filename, transformed_image, image_attributes);            
         }
         catch (const exception& e)
         {
