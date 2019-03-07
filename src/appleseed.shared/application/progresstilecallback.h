@@ -29,6 +29,9 @@
 
 #pragma once
 
+// appleseed.shared headers
+#include "dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
 
@@ -38,7 +41,7 @@
 namespace appleseed {
 namespace shared {
 
-class ProgressTileCallbackFactory
+class SHAREDDLL ProgressTileCallbackFactory
   : public renderer::ITileCallbackFactory
 {
   public:
