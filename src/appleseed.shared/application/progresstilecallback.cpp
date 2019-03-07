@@ -45,6 +45,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <memory>
 #include <string>
 
 using namespace foundation;
@@ -64,8 +65,9 @@ namespace
       : public TileCallbackBase
     {
       public:
-        explicit ProgressTileCallback()
-          : m_rendered_pixels(0)
+        explicit ProgressTileCallback(Logger& logger)
+          : g_logger(logger)
+          , m_rendered_pixels(0)
           , m_rendered_tiles(0)
         {
         }
@@ -112,13 +114,15 @@ namespace
             const double remaining_time = (elapsed_time / m_rendered_tiles) * (total_tiles - m_rendered_tiles);
 
             // Print a progress message.
-            RENDERER_LOG_INFO(
+            LOG_INFO(
+                g_logger,
                 "rendering, %s done; about %s remaining...",
                 pretty_percent(m_rendered_pixels, total_pixels).c_str(),
                 pretty_time(remaining_time).c_str());
         }
 
       private:
+        Logger&                             g_logger;
         boost::mutex                        m_mutex;
         size_t                              m_rendered_pixels;
         size_t                              m_rendered_tiles;
@@ -131,19 +135,27 @@ namespace
 // ProgressTileCallbackFactory class implementation.
 //
 
-ProgressTileCallbackFactory::ProgressTileCallbackFactory()
-  : m_callback(new ProgressTileCallback())
+struct ProgressTileCallbackFactory::Impl
 {
+    std::unique_ptr<renderer::ITileCallback> m_callback;
+};
+
+ProgressTileCallbackFactory::ProgressTileCallbackFactory(Logger& logger)
+  : impl(new Impl())
+{
+    impl->m_callback = std::unique_ptr<renderer::ITileCallback>(
+        new ProgressTileCallback(logger));
 }
 
 void ProgressTileCallbackFactory::release()
 {
+    delete impl;
     delete this;
 }
 
 ITileCallback* ProgressTileCallbackFactory::create()
 {
-    return m_callback.get();
+    return impl->m_callback.get();
 }
 
 }   // namespace shared

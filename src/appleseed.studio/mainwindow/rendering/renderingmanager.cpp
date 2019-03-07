@@ -44,6 +44,7 @@
 // appleseed.renderer headers.
 #include "renderer/api/camera.h"
 #include "renderer/api/frame.h"
+#include "renderer/api/log.h"
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
 #include "renderer/api/utility.h"
@@ -208,7 +209,7 @@ void RenderingManager::start_rendering(
             m_render_tab->get_render_widget()));
 
     tile_callback_collection_factory->insert(
-        new ProgressTileCallbackFactory());
+        new ProgressTileCallbackFactory(global_logger()));
 
     m_tile_callback_factory.reset(tile_callback_collection_factory);
 
