@@ -10,6 +10,12 @@
         <parameter name="tile_ordering" value="spiral" />
     </parameters>
     <parameters name="ui">
+        <parameters name="file_dialog">
+            <parameters name="projects">
+                <parameter name="last_directory" value="D:\Uedaki\Documents" />
+                <parameter name="selected_filter" value="Geometry Files (*.binarymesh *.obj)" />
+            </parameters>
+        </parameters>
         <parameters name="render_region">
             <parameter name="triggers_rendering" value="true" />
         </parameters>

@@ -50,16 +50,22 @@ DroppedMaterialMenu::DroppedMaterialMenu(
 void DroppedMaterialMenu::slot_apply_to_front()
 {
     emit signal_apply_material(m_drop_pos, m_material_name, renderer::ObjectInstance::Side::FrontSide);
+    destroy();
+    delete this;
 }
 
 void DroppedMaterialMenu::slot_apply_to_back()
 {
     emit signal_apply_material(m_drop_pos, m_material_name, renderer::ObjectInstance::Side::BackSide);
+    destroy();
+    delete this;
 }
 
 void DroppedMaterialMenu::slot_apply_to_both()
 {
     emit signal_apply_material(m_drop_pos, m_material_name, renderer::ObjectInstance::Side::BothSides);
+    destroy();
+    delete this;
 }
 
 }   // namespace studio
