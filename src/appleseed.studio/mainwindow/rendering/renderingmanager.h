@@ -161,7 +161,7 @@ class RenderingManager
 
   private:
     StatusBar&                                  m_status_bar;
-    QtRendererController                        m_renderer_controller; 
+    QtRendererController                        m_renderer_controller;
 
     renderer::Project*                          m_project;
     renderer::ParamArray                        m_params;
