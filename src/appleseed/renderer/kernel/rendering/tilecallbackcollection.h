@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Achal Pandey, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,30 +29,37 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/api/rendering.h"
+#include "itilecallback.h"
 
-// Standard headers.
-#include <memory>
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
-// Forward declarations.
-namespace foundation    { class Logger; }
+namespace renderer
+{
 
-namespace appleseed {
-namespace cli {
+//
+// A collection of tile callback factories.
+//
 
-class ProgressTileCallbackFactory
-  : public renderer::ITileCallbackFactory
+class APPLESEED_DLLSYMBOL TileCallbackCollectionFactory
+  : public ITileCallbackFactory
 {
   public:
-    explicit ProgressTileCallbackFactory(foundation::Logger& logger);
+    // Constructor.
+    TileCallbackCollectionFactory();
 
+    // Delete this instance.
     void release() override;
 
-    renderer::ITileCallback* create() override;
+    // Return a new instance.
+    ITileCallback* create() override;
+
+    // Insert a factory into the collection.
+    void insert(ITileCallbackFactory* factory);
 
   private:
-    std::unique_ptr<renderer::ITileCallback> m_callback;
+    struct Impl;
+    Impl* impl;
 };
 
-}   // namespace cli
-}   // namespace appleseed
+}   // namespace renderer

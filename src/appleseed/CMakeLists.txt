@@ -1295,6 +1295,8 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/shadingresultframebuffer.cpp
     renderer/kernel/rendering/shadingresultframebuffer.h
     renderer/kernel/rendering/tilecallbackbase.h
+    renderer/kernel/rendering/tilecallbackcollection.cpp
+    renderer/kernel/rendering/tilecallbackcollection.h
     renderer/kernel/rendering/timedrenderercontroller.cpp
     renderer/kernel/rendering/timedrenderercontroller.h
 )

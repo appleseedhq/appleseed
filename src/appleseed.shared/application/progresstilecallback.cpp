@@ -45,6 +45,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <memory>
 #include <string>
 
 using namespace foundation;
@@ -52,7 +53,7 @@ using namespace renderer;
 using namespace std;
 
 namespace appleseed {
-namespace cli {
+namespace shared {
 
 namespace
 {
@@ -134,20 +135,28 @@ namespace
 // ProgressTileCallbackFactory class implementation.
 //
 
-ProgressTileCallbackFactory::ProgressTileCallbackFactory(Logger& logger)
-  : m_callback(new ProgressTileCallback(logger))
+struct ProgressTileCallbackFactory::Impl
 {
+    unique_ptr<ITileCallback> m_callback;
+};
+
+ProgressTileCallbackFactory::ProgressTileCallbackFactory(Logger& logger)
+  : impl(new Impl())
+{
+    impl->m_callback = unique_ptr<ITileCallback>(
+        new ProgressTileCallback(logger));
 }
 
 void ProgressTileCallbackFactory::release()
 {
+    delete impl;
     delete this;
 }
 
 ITileCallback* ProgressTileCallbackFactory::create()
 {
-    return m_callback.get();
+    return impl->m_callback.get();
 }
 
-}   // namespace cli
+}   // namespace shared
 }   // namespace appleseed
