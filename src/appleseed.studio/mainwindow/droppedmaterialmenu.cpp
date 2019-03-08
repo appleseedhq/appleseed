@@ -6,7 +6,6 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2019 Thibault Vergne, The appleseedhq Organization
-// Copyright (c) 2014-2018 Thibault Vergne, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,12 +38,9 @@ DroppedMaterialMenu::DroppedMaterialMenu(
   : m_drop_pos(drop_pos)
   , m_material_name(material_name)
 {
-    connect(addAction("Front Side"), SIGNAL(triggered()),
-        SLOT(slot_apply_to_front()));
-    connect(addAction("Back Side"), SIGNAL(triggered()),
-        SLOT(slot_apply_to_back()));
-    connect(addAction("Both Sides"), SIGNAL(triggered()),
-        SLOT(slot_apply_to_both()));
+    connect(addAction("Front Side"), SIGNAL(triggered()), SLOT(slot_apply_to_front()));
+    connect(addAction("Back Side"), SIGNAL(triggered()), SLOT(slot_apply_to_back()));
+    connect(addAction("Both Sides"), SIGNAL(triggered()), SLOT(slot_apply_to_both()));
 }
 
 void DroppedMaterialMenu::slot_apply_to_front()
