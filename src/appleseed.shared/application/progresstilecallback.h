@@ -29,11 +29,11 @@
 
 #pragma once
 
-// appleseed.shared headers
-#include "dllsymbol.h"
-
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
+
+// appleseed.shared headers
+#include "dllsymbol.h"
 
 namespace appleseed {
 namespace shared {

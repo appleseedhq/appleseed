@@ -47,4 +47,3 @@
 #include "renderer/kernel/rendering/tilecallbackbase.h"
 #include "renderer/kernel/rendering/tilecallbackcollection.h"
 #include "renderer/kernel/rendering/timedrenderercontroller.h"
-

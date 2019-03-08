@@ -37,7 +37,6 @@
 #include "renderer/api/rendering.h"
 #include "renderer/api/types.h"
 #include "renderer/api/utility.h"
-#include "renderer/kernel/rendering/tilecallbackcollection.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"

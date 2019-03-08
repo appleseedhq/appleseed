@@ -66,7 +66,7 @@ namespace
     {
       public:
         explicit ProgressTileCallback(Logger& logger)
-          : g_logger(logger)
+          : m_logger(logger)
           , m_rendered_pixels(0)
           , m_rendered_tiles(0)
         {
@@ -115,14 +115,14 @@ namespace
 
             // Print a progress message.
             LOG_INFO(
-                g_logger,
+                m_logger,
                 "rendering, %s done; about %s remaining...",
                 pretty_percent(m_rendered_pixels, total_pixels).c_str(),
                 pretty_time(remaining_time).c_str());
         }
 
       private:
-        Logger&                             g_logger;
+        Logger&                             m_logger;
         boost::mutex                        m_mutex;
         size_t                              m_rendered_pixels;
         size_t                              m_rendered_tiles;
@@ -137,13 +137,13 @@ namespace
 
 struct ProgressTileCallbackFactory::Impl
 {
-    std::unique_ptr<renderer::ITileCallback> m_callback;
+    unique_ptr<ITileCallback> m_callback;
 };
 
 ProgressTileCallbackFactory::ProgressTileCallbackFactory(Logger& logger)
   : impl(new Impl())
 {
-    impl->m_callback = std::unique_ptr<renderer::ITileCallback>(
+    impl->m_callback = unique_ptr<ITileCallback>(
         new ProgressTileCallback(logger));
 }
 
