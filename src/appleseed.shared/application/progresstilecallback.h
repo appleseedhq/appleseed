@@ -55,4 +55,3 @@ class SHAREDDLL ProgressTileCallbackFactory
 
 }   // namespace shared
 }   // namespace appleseed
-
