@@ -28,6 +28,9 @@
 
 #pragma once
 
+// Standard headers.
+#include <cstddef>
+
 namespace renderer
 {
 
@@ -38,6 +41,6 @@ namespace renderer
 // when you increment this value.
 //
 
-const size_t ProjectFormatRevision = 29;
+const size_t ProjectFormatRevision = 30;
 
 }   // namespace renderer
