@@ -48,6 +48,9 @@ class APPLESEED_DLLSYMBOL TileCallbackCollectionFactory
     // Constructor.
     TileCallbackCollectionFactory();
 
+    // Destructor.
+    ~TileCallbackCollectionFactory();
+
     // Delete this instance.
     void release() override;
 
