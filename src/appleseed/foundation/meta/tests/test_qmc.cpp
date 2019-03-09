@@ -311,7 +311,7 @@ TEST_SUITE(Foundation_Math_QMC)
         vector<Vector2d> points;
 
         for (size_t i = 0; i < PointCount; ++i)
-            points.push_back(hammersley_zaremba_sequence<double, 2>(bases, i, PointCount));
+            points.push_back(hammersley_zaremba_sequence<double, 2>(bases, PointCount, i));
 
         write_point_cloud_image(
             "unit tests/outputs/test_qmc_hammersley_zaremba_" + to_string(b) + ".png",
