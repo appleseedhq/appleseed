@@ -1067,7 +1067,7 @@ namespace
             else
             {
                 RENDERER_LOG_ERROR(
-                    "failed to write image file %s: unsupport image format.",
+                    "failed to write image file %s: unsupported image format.",
                     bf_file_path.string().c_str());
                 return false;
             }
