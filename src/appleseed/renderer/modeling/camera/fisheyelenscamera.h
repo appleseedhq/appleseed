@@ -26,14 +26,12 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_CAMERA_FISHEYELENSCAMERA_H
-#define APPLESEED_RENDERER_MODELING_CAMERA_FISHEYELENSCAMERA_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/camera/icamerafactory.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
@@ -75,5 +73,3 @@ class APPLESEED_DLLSYMBOL FisheyeLensCameraFactory
 };
 
 }       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_CAMERA_FISHEYELENSCAMERA_H

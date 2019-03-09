@@ -246,39 +246,39 @@ namespace
         Projection m_projection_type;
 
 
-//
-//                    |  axis 
-//                    |
-//        #-----------------------------------  _
-//       # \                                ^ \  \.
-//      #   \                             ^    \  \ radius_2
-//     #     \        |                 ^       \  \. 
-//    #       \                       ^          \  \. 
-//    #        \                    ^             \  \. 
-//   #         *------------------^----------------\  \. _
-//   #        *  \    |         ^   )           ""  \  \  \. 
-//   #       *    \           ^       )    ""        \  \  \ radius_1
-//   #      *      \        ^        "")              \  \  \. 
-//   #      *       \     ^   ""       ) theta_2       \  \  \. 
-//   #      *        \| ^"  ) theta_1 )                 \  _  _
-//   #      *         o--------------------------------------------------> axis
-//    #      *       /                                   |
-//     #      *     /                               m_focal_length
-//      #      *   / 
-//       #      * / radius_1                                """""""" : Direction 1.
-//        #      /                                          ^^^^^^^^ : Direction 2.
-//          #   /   
-//            #/ radius_2
-//            /
-//           /
-//          /  axis
-//
-//
-// Fisheye lens is implemented in a way to distort ray direction in pinhole 
-// camera. Direction 1 is same as ray direction in perspective camera. It 
-// represents direction to NDC. Direction 2 is distorted ray direction to render 
-// in fisheye lens camera. It represents actual ray direction in camera space.
-//
+        //
+        //                    |  axis 
+        //                    |
+        //        #-----------------------------------  _
+        //       # \                                ^ \  \.
+        //      #   \                             ^    \  \ radius_2
+        //     #     \        |                 ^       \  \. 
+        //    #       \                       ^          \  \. 
+        //    #        \                    ^             \  \. 
+        //   #         *------------------^----------------\  \. _
+        //   #        *  \    |         ^   )           ""  \  \  \. 
+        //   #       *    \           ^       )    ""        \  \  \ radius_1
+        //   #      *      \        ^        "")              \  \  \. 
+        //   #      *       \     ^   ""       ) theta_2       \  \  \. 
+        //   #      *        \| ^"  ) theta_1 )                 \  _  _
+        //   #      *         o--------------------------------------------------> axis
+        //    #      *       /                                   |
+        //     #      *     /                               m_focal_length
+        //      #      *   / 
+        //       #      * / radius_1                                """""""" : Direction 1.
+        //        #      /                                          ^^^^^^^^ : Direction 2.
+        //          #   /   
+        //            #/ radius_2
+        //            /
+        //           /
+        //          /  axis
+        //
+        //
+        // Fisheye lens is implemented in a way to distort ray direction in pinhole 
+        // camera. Direction 1 is same as ray direction in perspective camera. It 
+        // represents direction to NDC. Direction 2 is distorted ray direction to render 
+        // in fisheye lens camera. It represents actual ray direction in camera space.
+        //
 
         // It transforms ray direction from 1 to 2. 
         Vector3d ndc_to_camera(const Vector2d& point) const
@@ -369,6 +369,7 @@ namespace
     };
 }
 
+
 //
 // FisheyeLensCameraFactory class implementation.
 //
@@ -408,7 +409,7 @@ DictionaryArray FisheyeLensCameraFactory::get_input_metadata() const
         .insert("type", "enumeration")
         .insert("items",
             Dictionary()
-                .insert("Equisolid angle", "equisolid_angle")
+                .insert("Equisolid Angle", "equisolid_angle")
                 .insert("Equidistant", "equidistant")
                 .insert("Stereographic", "stereographic")
                 .insert("Thoby", "thoby"))
