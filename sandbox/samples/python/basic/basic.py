@@ -282,9 +282,11 @@ def main():
     # Catch Control-C.
     signal.signal(signal.SIGINT, lambda signal, frame: renderer_controller.abort_rendering())
 
+    resource_search_paths = []
     tile_callback = TileCallback()
     renderer = asr.MasterRenderer(project,
                                   project.configurations()['final'].get_inherited_parameters(),
+                                  resource_search_paths,
                                   renderer_controller,
                                   tile_callback)
 

@@ -294,10 +294,12 @@ int main()
 
     // Create the master renderer.
     asr::DefaultRendererController renderer_controller;
+    asf::SearchPaths resource_search_paths;
     std::unique_ptr<asr::MasterRenderer> renderer(
         new asr::MasterRenderer(
             project.ref(),
             project->configurations().get_by_name("final")->get_inherited_parameters(),
+            resource_search_paths,
             &renderer_controller));
 
     // Render the frame.
