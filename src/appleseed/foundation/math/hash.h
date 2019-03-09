@@ -61,6 +61,11 @@ uint64 hash_uint64(uint64 key);
 // Hash a 64-bit integer into a 32-bit integer.
 uint32 hash_uint64_to_uint32(uint64 key);
 
+
+//
+// Mixing functions.
+//
+
 // Mix multiple 32-bit integers into one 32-bit integer.
 uint32 mix_uint32(
     const uint32 a,

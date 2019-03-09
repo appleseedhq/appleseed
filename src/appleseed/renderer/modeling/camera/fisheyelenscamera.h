@@ -72,4 +72,4 @@ class APPLESEED_DLLSYMBOL FisheyeLensCameraFactory
         const ParamArray&   params) const override;
 };
 
-}       // namespace renderer
+}   // namespace renderer

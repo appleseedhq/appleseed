@@ -245,7 +245,6 @@ namespace
 
         Projection m_projection_type;
 
-
         //
         //                    |  axis 
         //                    |
@@ -280,7 +279,7 @@ namespace
         // in fisheye lens camera. It represents actual ray direction in camera space.
         //
 
-        // It transforms ray direction from 1 to 2. 
+        // Transforms ray direction from 1 to 2. 
         Vector3d ndc_to_camera(const Vector2d& point) const
         {
             const double x = (0.5 - point.x) * m_film_dimensions[0];
@@ -323,7 +322,7 @@ namespace
                     m_focal_length);
         }
 
-        // It transforms ray direction from 2 to 1. 
+        // Transforms ray direction from 2 to 1. 
         Vector2d camera_to_ndc(const Vector3d& point) const
         {
             const double k = m_focal_length / point.z;

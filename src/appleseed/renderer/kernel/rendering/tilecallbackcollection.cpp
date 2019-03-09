@@ -115,9 +115,13 @@ TileCallbackCollectionFactory::TileCallbackCollectionFactory()
 {
 }
 
-void TileCallbackCollectionFactory::release()
+TileCallbackCollectionFactory::~TileCallbackCollectionFactory()
 {
     delete impl;
+}
+
+void TileCallbackCollectionFactory::release()
+{
     delete this;
 }
 

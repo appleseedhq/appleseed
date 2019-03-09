@@ -329,7 +329,7 @@ TEST_SUITE(Foundation_Math_QMC)
 
     // 2D scrambled Hammersley sequence.
     template <typename T>
-    inline Vector<T, 2> hammersley_sequence(
+    inline Vector<T, 2> scrambled_hammersley_sequence(
         const size_t    r,
         size_t          count,
         size_t          n)
@@ -352,7 +352,7 @@ TEST_SUITE(Foundation_Math_QMC)
         for (size_t i = 0; i < PointCount; ++i)
         {
             const size_t r = rand_int31(rng);
-            points.push_back(hammersley_sequence<double>(r, PointCount, i));
+            points.push_back(scrambled_hammersley_sequence<double>(r, PointCount, i));
         }
 
         write_point_cloud_image(
