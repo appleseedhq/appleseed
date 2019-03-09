@@ -225,9 +225,9 @@ Frame::Frame(
         impl->m_internal_aovs.insert(auto_release_ptr<AOV>(aov));
     }
     else impl->m_denoiser_aov = nullptr;
+
     impl->m_initial_pass = 0;
     impl->m_pass_count = params.get_optional<size_t>("passes", 1);
-
 }
 
 Frame::~Frame()
