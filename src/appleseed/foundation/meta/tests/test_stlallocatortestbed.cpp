@@ -63,7 +63,7 @@ TEST_SUITE(StlAllocatorTestbed)
     //
     // StlAllocatorTestOutput.h
     //
-    // Copyright � 2003 Pete Isensee (PKIsensee@msn.com).
+    // Copyright (c) 2003 Pete Isensee (PKIsensee@msn.com).
     // All rights reserved worldwide.
     //
     // Permission to copy, modify, reproduce or redistribute this source code is
@@ -104,7 +104,7 @@ TEST_SUITE(StlAllocatorTestbed)
     //
     // StlAllocatorTestPolicy.h
     //
-    // Copyright � 2003 Pete Isensee (PKIsensee@msn.com).
+    // Copyright (c) 2003 Pete Isensee (PKIsensee@msn.com).
     // All rights reserved worldwide.
     //
     // Permission to copy, modify, reproduce or redistribute this source code is
@@ -305,7 +305,7 @@ TEST_SUITE(StlAllocatorTestbed)
     //
     // StlAllocatorTestTypes.h
     //
-    // Copyright � 2003 Pete Isensee (PKIsensee@msn.com).
+    // Copyright (c) 2003 Pete Isensee (PKIsensee@msn.com).
     // All rights reserved worldwide.
     //
     // Permission to copy, modify, reproduce or redistribute this source code is
@@ -606,7 +606,7 @@ TEST_SUITE(StlAllocatorTestbed)
     //
     // StlAllocatorTestMembers.h
     //
-    // Copyright � 2003 Pete Isensee (PKIsensee@msn.com).
+    // Copyright (c) 2003 Pete Isensee (PKIsensee@msn.com).
     // All rights reserved worldwide.
     //
     // Permission to copy, modify, reproduce or redistribute this source code is
@@ -849,7 +849,7 @@ TEST_SUITE(StlAllocatorTestbed)
     //
     // StlAllocatorTestContainer.h
     //
-    // Copyright � 2003 Pete Isensee (PKIsensee@msn.com).
+    // Copyright (c) 2003 Pete Isensee (PKIsensee@msn.com).
     // All rights reserved worldwide.
     //
     // Permission to copy, modify, reproduce or redistribute this source code is
