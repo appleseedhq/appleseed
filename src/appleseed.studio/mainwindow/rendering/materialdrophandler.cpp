@@ -36,9 +36,6 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/scenepicker.h"
 
-// Qt headers.
-#include <QMenu>
-
 // Standard headers.
 #include <string>
 

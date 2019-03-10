@@ -36,6 +36,7 @@
 #include "foundation/math/vector.h"
 
 // Qt headers.
+#include <QMenu>
 #include <QObject>
 
 // Standard headers.
