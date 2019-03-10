@@ -38,6 +38,9 @@
 // Qt headers.
 #include <QObject>
 
+// Standard headers.
+#include <memory>
+
 class QMenu;
 namespace appleseed { namespace studio { class RenderingManager; } }
 
