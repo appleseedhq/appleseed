@@ -966,24 +966,6 @@ namespace
         image_attributes.insert("blue_xy_chromaticity",  Vector2f(0.15f, 0.06f));
     }
 
-    void write_exr_image(
-        const bf::path&         file_path,
-        const Image&            image,
-        ImageAttributes         image_attributes)
-    {
-        create_parent_directories(file_path);
-
-        const std::string filename = file_path.string();
-        GenericImageFileWriter writer(filename.c_str());
-
-        writer.append_image(&image);
-
-        image_attributes.insert("color_space", "linear");
-        writer.set_image_attributes(image_attributes);
-
-        writer.write();
-    }
-
     void transform_to_srgb(Tile& tile)
     {
         assert(tile.get_channel_count() == 4);
@@ -1021,32 +1003,19 @@ namespace
         }
     }
 
-    void write_png_image(
-        const bf::path&         file_path,
-        const Image&            image,
-        ImageAttributes         image_attributes)
-    {
-        Image transformed_image(image);
-
-        // todo: we may want to be more specific here.
-        if (image.properties().m_channel_count == 4)
-            transform_to_srgb(transformed_image);
-
-        create_parent_directories(file_path);
-
-        const std::string filename = file_path.string();
-        GenericImageFileWriter writer(filename.c_str());
-
-        writer.append_image(&transformed_image);
-
-        writer.set_image_output_format(PixelFormat::PixelFormatUInt8);
-
-        image_attributes.insert("color_space", "sRGB");
-        writer.set_image_attributes(image_attributes);
-
-        writer.write();
-    }
-
+    /*
+     * Default Export Format
+     * OpenEXR   .exr          4-channel   16-bit (half)       Linear  
+     * RGBE      .hdr          3-channel   32-bit (8-bit * 3   Linear 
+     *                                     + a shared 8-bit 
+     *                                     exponent)   
+     * TIFF      .tiff/.tif    4-channel   16-bit (uint16)     Linear
+     * BMP       .bmp          4-channel    8-bit (uint8)        sRGB
+     * PNG       .png          4-channel    8-bit (uint8)        sRGB    
+     * JPEG      .jpg/.jpe/    3-channel    8-bit (uint8)        sRGB
+     *           .jpeg/.jif/          
+     *           .jfif/.jfi           
+     */
     bool write_image(
         const Frame&            frame,
         const char*             file_path,
@@ -1071,29 +1040,64 @@ namespace
 
         try
         {
-            if (extension == ".exr")
+            const bool high_dynamic_range_format =
+                extension == ".exr"  ||
+                extension == ".tiff" ||
+                extension == ".tif"  ||
+                extension == ".hdr";            
+
+            std::unique_ptr<Image> transformed_image;
+            if (
+                !high_dynamic_range_format &&
+                image.properties().m_channel_count == 4)
             {
-                write_exr_image(
-                    bf_file_path,
-                    image,
-                    image_attributes);
+                transformed_image.reset(new Image(image));
+                transform_to_srgb(*transformed_image);
             }
-            else if (extension == ".png")
+            else if (extension == ".hdr")
             {
-                write_png_image(
-                    bf_file_path,
-                    image,
-                    image_attributes);
+                // .hdr file only support 3 channel
+                const size_t shuffle_table[4] = { 0, 1, 2, Pixel::SkipChannel };
+                transformed_image.reset(new Image(image, image.properties().m_pixel_format, shuffle_table));
+            }
+            else if (high_dynamic_range_format)
+            {
+                transformed_image.reset(new Image(image));
             }
             else
             {
                 RENDERER_LOG_ERROR(
-                    "failed to write image file %s for frame \"%s\": unsupported image format.",
-                    bf_file_path.string().c_str(),
-                    frame.get_path().c_str());
-
+                    "failed to write image file %s: unsupported image format.",
+                    bf_file_path.string().c_str());
                 return false;
             }
+
+            if (high_dynamic_range_format)
+            {
+                image_attributes.insert("color_space", "linear");
+            }
+            else
+            {
+                image_attributes.insert("color_space", "sRGB");
+            }
+
+            create_parent_directories(bf_file_path);
+
+            const std::string filename = bf_file_path.string();
+
+            GenericImageFileWriter writer(filename.c_str());
+
+            writer.append_image(transformed_image.get());
+
+            writer.set_image_attributes(image_attributes);
+            
+            if (extension == ".tiff" ||
+                extension == ".tif")
+            {
+                writer.set_image_output_format(PixelFormat::PixelFormatUInt16);                
+            }
+
+            writer.write();
         }
         catch (const exception& e)
         {

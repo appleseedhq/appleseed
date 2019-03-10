@@ -153,6 +153,36 @@ Image::Image(
     }
 }
 
+Image::Image(
+    const Image&        source,
+    const PixelFormat   pixel_format,
+    const size_t*       shuffle_table)
+  : m_props(
+        source.properties().m_canvas_width,
+        source.properties().m_canvas_height,
+        source.properties().m_tile_width,
+        source.properties().m_tile_height,
+        Pixel::get_dest_channel_count(source.properties().m_channel_count, shuffle_table),
+        pixel_format
+  )
+{
+    m_tiles = new Tile*[m_props.m_tile_count];
+
+    for (size_t ty = 0; ty < m_props.m_tile_count_y; ++ty)
+    {
+        for (size_t tx = 0; tx < m_props.m_tile_count_x; ++tx)
+        {
+            Tile* tile =
+                new Tile(
+                    source.tile(tx, ty),
+                    source.properties().m_pixel_format,
+                    shuffle_table);
+
+            m_tiles[ty * m_props.m_tile_count_x + tx] = tile;
+        }
+    }
+}
+
 Image::~Image()
 {
     for (size_t i = 0; i < m_props.m_tile_count; ++i)
