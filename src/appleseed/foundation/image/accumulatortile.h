@@ -32,7 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/tile.h"
 #include "foundation/math/aabb.h"
-#include "foundation/math/filter.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 
 // Standard headers.
@@ -43,126 +43,113 @@ namespace foundation
 {
 
 //
-// A 2D tile that supports filtered accumulation of values.
+// A 2D tile that supports accumulation of values.
 //
 
-class FilteredTile
+class AccumulatorTile
   : public Tile
 {
   public:
-    FilteredTile(
-        const size_t            width,
-        const size_t            height,
-        const size_t            channel_count,
-        const Filter2f&         filter);
+    AccumulatorTile(
+        const size_t        width,
+        const size_t        height,
+        const size_t        channel_count);
 
-    FilteredTile(
-        const size_t            width,
-        const size_t            height,
-        const size_t            channel_count,
-        const AABB2u&           crop_window,
-        const Filter2f&         filter);
+    AccumulatorTile(
+        const size_t        width,
+        const size_t        height,
+        const size_t        channel_count,
+        const AABB2u&       crop_window);
 
     // Tile properties.
     size_t get_channel_count() const;   // number of channels in one pixel, excluding the weight channel
     const AABB2u& get_crop_window() const;
-    const Filter2f& get_filter() const;
 
     // Direct access to a given pixel.
     float* pixel(
-        const size_t            i) const;
+        const size_t        i) const;
     float* pixel(
-        const size_t            x,
-        const size_t            y) const;
+        const size_t        x,
+        const size_t        y) const;
 
     // Structured write access to a given pixel is not available.
     template <typename T>
     void set_pixel(
-        const size_t            i,
-        const T                 components[]);
+        const size_t        i,
+        const T             components[]);
     template <typename T>
     void set_pixel(
-        const size_t            x,
-        const size_t            y,
-        const T                 components[]);
+        const size_t        x,
+        const size_t        y,
+        const T             components[]);
     template <typename Color>
     void set_pixel(
-        const size_t            i,
-        const Color&            color);
+        const size_t        i,
+        const Color&        color);
     template <typename Color>
     void set_pixel(
-        const size_t            x,
-        const size_t            y,
-        const Color&            color);
+        const size_t        x,
+        const size_t        y,
+        const Color&        color);
 
     // Structured read access to a given pixel.
     template <typename T>
     void get_pixel(
-        const size_t            i,
-        T                       components[]) const;
+        const size_t        i,
+        T                   components[]) const;
     template <typename T>
     void get_pixel(
-        const size_t            x,
-        const size_t            y,
-        T                       components[]) const;
+        const size_t        x,
+        const size_t        y,
+        T                   components[]) const;
     template <typename Color>
     void get_pixel(
-        const size_t            i,
-        Color&                  color) const;
+        const size_t        i,
+        Color&              color) const;
     template <typename Color>
     void get_pixel(
-        const size_t            x,
-        const size_t            y,
-        Color&                  color) const;
+        const size_t        x,
+        const size_t        y,
+        Color&              color) const;
 
     // Set all pixels to black and all weights to zero.
     void clear();
 
-    // The point (x, y) is expressed in continuous image space
-    // (https://github.com/appleseedhq/appleseed/wiki/Terminology).
     void add(
-        const float             x,
-        const float             y,
-        const float*            values);
+        const Vector2u&     pi,
+        const float*        values);
 
     // Thread-safe variant of add().
     void atomic_add(
-        const float             x,
-        const float             y,
-        const float*            values);
+        const Vector2u&     pi,
+        const float*        values);
 
   protected:
-    const AABB2u            m_crop_window;
-    const Filter2f&         m_filter;
+    const AABB2u m_crop_window;
 };
 
 
 //
-// FilteredTile class implementation.
+// AccumulatorTile class implementation.
 //
 
-inline size_t FilteredTile::get_channel_count() const
+inline size_t AccumulatorTile::get_channel_count() const
 {
     return m_channel_count - 1;
 }
 
-inline const AABB2u& FilteredTile::get_crop_window() const
+inline const AABB2u& AccumulatorTile::get_crop_window() const
 {
     return m_crop_window;
 }
 
-inline const Filter2f& FilteredTile::get_filter() const
-{
-    return m_filter;
-}
-
-inline float* FilteredTile::pixel(
+inline float* AccumulatorTile::pixel(
     const size_t            i) const
 {
     return reinterpret_cast<float*>(Tile::pixel(i));
 }
 
-inline float* FilteredTile::pixel(
+inline float* AccumulatorTile::pixel(
     const size_t            x,
     const size_t            y) const
 {
@@ -170,7 +157,7 @@ inline float* FilteredTile::pixel(
 }
 
 template <typename T>
-inline void FilteredTile::get_pixel(
+inline void AccumulatorTile::get_pixel(
     const size_t            i,
     T                       components[]) const
 {
@@ -184,7 +171,7 @@ inline void FilteredTile::get_pixel(
 }
 
 template <typename T>
-inline void FilteredTile::get_pixel(
+inline void AccumulatorTile::get_pixel(
     const size_t            x,
     const size_t            y,
     T                       components[]) const
@@ -196,7 +183,7 @@ inline void FilteredTile::get_pixel(
 }
 
 template <typename Color>
-inline void FilteredTile::get_pixel(
+inline void AccumulatorTile::get_pixel(
     const size_t            i,
     Color&                  color) const
 {
@@ -206,7 +193,7 @@ inline void FilteredTile::get_pixel(
 }
 
 template <typename Color>
-inline void FilteredTile::get_pixel(
+inline void AccumulatorTile::get_pixel(
     const size_t            x,
     const size_t            y,
     Color&                  color) const

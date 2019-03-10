@@ -56,6 +56,7 @@
 #include "foundation/image/imageattributes.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
+#include "foundation/math/filtersamplingtable.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/path.h"
@@ -142,6 +143,7 @@ struct Frame::Impl
 
     // Internal state.
     unique_ptr<Filter2f>            m_filter;
+    unique_ptr<FilterSamplingTable> m_filter_sampling_table;
     ParamArray                      m_render_info;
 
     explicit Impl(Frame* parent)
@@ -354,6 +356,11 @@ ImageStack& Frame::aov_images() const
 const Filter2f& Frame::get_filter() const
 {
     return *impl->m_filter.get();
+}
+
+const FilterSamplingTable& Frame::get_filter_sampling_table() const
+{
+    return *impl->m_filter_sampling_table;
 }
 
 size_t Frame::get_initial_pass() const
@@ -1396,21 +1403,29 @@ void Frame::extract_parameters()
         impl->m_filter_radius = m_params.get_optional<float>("filter_size", 1.5f);
 
         if (impl->m_filter_name == "box")
+        {
             impl->m_filter.reset(new BoxFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
+            impl->m_filter_sampling_table.reset(
+                new FilterSamplingTable(BoxFilter1<float>(impl->m_filter_radius)));
+        }
         else if (impl->m_filter_name == "triangle")
+        {
             impl->m_filter.reset(new TriangleFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
+            impl->m_filter_sampling_table.reset(
+                new FilterSamplingTable(TriangleFilter1<float>(impl->m_filter_radius)));
+        }
         else if (impl->m_filter_name == "gaussian")
+        {
             impl->m_filter.reset(new FastGaussianFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 8.0f));
-        else if (impl->m_filter_name == "mitchell")
-            impl->m_filter.reset(new MitchellFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 1.0f/3, 1.0f/3));
-        else if (impl->m_filter_name == "bspline")
-            impl->m_filter.reset(new MitchellFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 1.0f, 0.0f));
-        else if (impl->m_filter_name == "catmull")
-            impl->m_filter.reset(new MitchellFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 0.0f, 0.5f));
-        else if (impl->m_filter_name == "lanczos")
-            impl->m_filter.reset(new LanczosFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 3.0f));
+            impl->m_filter_sampling_table.reset(
+                new FilterSamplingTable(GaussianFilter1<float>(impl->m_filter_radius, 8.0f)));
+        }
         else if (impl->m_filter_name == "blackman-harris")
+        {
             impl->m_filter.reset(new FastBlackmanHarrisFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
+            impl->m_filter_sampling_table.reset(
+                new FilterSamplingTable(BlackmanHarrisFilter1<float>(impl->m_filter_radius)));
+        }
         else
         {
             RENDERER_LOG_ERROR(
@@ -1420,6 +1435,8 @@ void Frame::extract_parameters()
                 DefaultFilterName);
             impl->m_filter_name = DefaultFilterName;
             impl->m_filter.reset(new FastBlackmanHarrisFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
+            impl->m_filter_sampling_table.reset(
+                new FilterSamplingTable(BlackmanHarrisFilter1<float>(impl->m_filter_radius)));
         }
     }
 
@@ -1589,10 +1606,6 @@ DictionaryArray FrameFactory::get_input_metadata()
                     .insert("Box", "box")
                     .insert("Triangle", "triangle")
                     .insert("Gaussian", "gaussian")
-                    .insert("Mitchell-Netravali", "mitchell")
-                    .insert("Cubic B-spline", "bspline")
-                    .insert("Catmull-Rom Spline", "catmull")
-                    .insert("Lanczos", "lanczos")
                     .insert("Blackman-Harris", "blackman-harris"))
             .insert("use", "optional")
             .insert("default", "blackman-harris"));

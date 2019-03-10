@@ -53,6 +53,7 @@
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
+namespace foundation    { class FilterSamplingTable; }
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class Image; }
 namespace foundation    { class ImageAttributes; }
@@ -118,6 +119,9 @@ class APPLESEED_DLLSYMBOL Frame
     // Return the reconstruction filter used by the main image and the AOV images.
     const foundation::Filter2f& get_filter() const;
 
+    // Return the sampling table for the reconstruction filter used by the main image and the AOV images.
+    const foundation::FilterSamplingTable& get_filter_sampling_table() const;
+
     // Return the number of the first pass to be rendered.
     // 0 by default but can be different if a checkpoint was loaded.
     size_t get_initial_pass() const;
@@ -159,6 +163,9 @@ class APPLESEED_DLLSYMBOL Frame
         const size_t                                    pixel_y,            // y coordinate of the pixel in the tile
         const double                                    sample_x,           // x coordinate of the sample in the pixel, in [0,1)
         const double                                    sample_y) const;    // y coordinate of the sample in the pixel, in [0,1)
+
+    // Return the image space coordinates of a given point in NDC coordinates.
+    foundation::Vector2i get_pixel_position(const foundation::Vector2d& ndc) const;
 
     // Do any post-process needed by AOV images.
     void post_process_aov_images() const;
@@ -315,6 +322,13 @@ inline foundation::Vector2d Frame::get_sample_position(
             tile_y * m_props.m_tile_height + pixel_y,
             sample_x,
             sample_y);
+}
+
+inline foundation::Vector2i Frame::get_pixel_position(const foundation::Vector2d& ndc) const
+{
+    return foundation::Vector2i(
+        static_cast<int>((ndc.x * m_props.m_canvas_width) + 0.5),
+        static_cast<int>((ndc.y * m_props.m_canvas_height) + 0.5));
 }
 
 }   // namespace renderer
