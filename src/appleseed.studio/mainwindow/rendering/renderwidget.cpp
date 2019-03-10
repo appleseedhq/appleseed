@@ -32,7 +32,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
-#include "renderer/api/project.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -66,13 +65,11 @@ namespace studio {
 //
 
 RenderWidget::RenderWidget(
-    const Project&          project,
     const size_t            width,
     const size_t            height,
     OCIO::ConstConfigRcPtr  ocio_config,
     QWidget*                parent)
   : QWidget(parent)
-  , m_project(project)
   , m_mutex(QMutex::Recursive)
   , m_ocio_config(ocio_config)
 {

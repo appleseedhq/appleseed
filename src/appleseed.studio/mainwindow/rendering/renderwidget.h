@@ -55,7 +55,6 @@ namespace OCIO = OCIO_NAMESPACE;
 // Forward declarations.
 namespace foundation    { class CanvasProperties; }
 namespace renderer      { class Frame; }
-namespace renderer      { class Project; }
 
 class QDragEnterEvent;
 class QDropEvent;
@@ -77,7 +76,6 @@ class RenderWidget
   public:
     // Constructor.
     RenderWidget(
-        const renderer::Project&    project,
         const size_t                width,
         const size_t                height,
         OCIO::ConstConfigRcPtr      ocio_config,
@@ -128,8 +126,6 @@ class RenderWidget
     void slot_display_transform_changed(const QString& transform);
 
   private:
-    const renderer::Project&            m_project;
-
     mutable QMutex                      m_mutex;
     QImage                              m_image;
     QPainter                            m_painter;
