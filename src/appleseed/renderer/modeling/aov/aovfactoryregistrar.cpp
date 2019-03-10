@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/aov/aovtraits.h"
 #include "renderer/modeling/aov/albedoaov.h"
+#include "renderer/modeling/aov/cryptomatteaov.h"
 #include "renderer/modeling/aov/depthaov.h"
 #include "renderer/modeling/aov/diffuseaov.h"
 #include "renderer/modeling/aov/emissionaov.h"
@@ -89,6 +90,8 @@ AOVFactoryRegistrar::AOVFactoryRegistrar(const SearchPaths& search_paths)
     impl->register_factory(auto_release_ptr<FactoryType>(new PositionAOVFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new ScreenSpaceVelocityAOVFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new UVAOVFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new CryptomatteAOVFactory(CryptomatteAOV::CryptomatteType::ObjectNames)));
+    impl->register_factory(auto_release_ptr<FactoryType>(new CryptomatteAOVFactory(CryptomatteAOV::CryptomatteType::MaterialNames)));
 }
 
 AOVFactoryRegistrar::~AOVFactoryRegistrar()
