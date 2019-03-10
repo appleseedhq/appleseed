@@ -32,7 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/aov/aovtraits.h"
 #include "renderer/modeling/aov/albedoaov.h"
-#include "renderer/modeling/aov/cryptomatte.h"
+#include "renderer/modeling/aov/cryptomatteaov.h"
 #include "renderer/modeling/aov/depthaov.h"
 #include "renderer/modeling/aov/diffuseaov.h"
 #include "renderer/modeling/aov/emissionaov.h"

@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "cryptomatte.h"
+#include "cryptomatteaov.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
@@ -286,6 +286,12 @@ namespace
 
         WeightMap& operator=(const WeightMap& rhs)
         {
+            if (m_size != rhs.m_size)
+            {
+                delete[] m_map;
+                m_map = new Entry[rhs.m_size];
+            }
+
             m_size = rhs.m_size;
             m_index = rhs.m_size;
             for (size_t i = 0; i < m_index; ++i)
@@ -640,7 +646,7 @@ namespace
                     const float weight = m_renderer_filter->evaluate(rx - dx, ry - dy);
                     WeightMap& weight_map = m_pixel_samples[(m_tile_origin_y + ry) * m_frame_width + (m_tile_origin_x + rx)];
                     const float old_value = weight_map.get(m3hash);
-                    weight_map.insert(m3hash, old_value + weight); // possible race conditions writing to pixels on the tile edges
+                    weight_map.insert(m3hash, old_value + weight);
                 }
             }
         }
