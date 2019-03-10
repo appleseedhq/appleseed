@@ -252,6 +252,8 @@ set (mainwindow_rendering_sources
     mainwindow/rendering/lightpathstab.h
     mainwindow/rendering/lightpathswidget.cpp
     mainwindow/rendering/lightpathswidget.h
+    mainwindow/rendering/materialdrophandler.cpp
+    mainwindow/rendering/materialdrophandler.h
     mainwindow/rendering/pixelcolortracker.cpp
     mainwindow/rendering/pixelcolortracker.h
     mainwindow/rendering/pixelinspectorhandler.cpp

@@ -36,7 +36,6 @@
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
 
 // OpenColorIO headers.
 #include <OpenColorIO/OpenColorIO.h>
@@ -123,7 +122,7 @@ class RenderWidget
   signals:
     void signal_material_dropped(
         const foundation::Vector2d& drop_pos,
-        const std::string& material_name);
+        const std::string&          material_name);
 
   public slots:
     void slot_display_transform_changed(const QString& transform);

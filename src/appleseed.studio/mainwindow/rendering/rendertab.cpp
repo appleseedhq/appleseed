@@ -32,6 +32,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/projectexplorer.h"
+#include "mainwindow/rendering/materialdrophandler.h"
 #include "mainwindow/rendering/renderwidget.h"
 #include "utility/miscellaneous.h"
 
@@ -213,6 +214,16 @@ void RenderTab::create_render_widget()
     connect(
         m_render_widget, SIGNAL(customContextMenuRequested(const QPoint&)),
         SLOT(slot_render_widget_context_menu(const QPoint&)));
+
+    connect(
+        m_render_widget,
+        SIGNAL(signal_material_dropped(
+            const foundation::Vector2d&,
+            const std::string&)),
+        m_project_explorer.get_material_drop_handler(),
+        SLOT(slot_material_dropped(
+            const foundation::Vector2d&,
+            const std::string&)));
 
     m_render_widget->setMouseTracking(true);
 }

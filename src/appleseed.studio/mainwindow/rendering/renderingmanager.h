@@ -203,13 +203,6 @@ class RenderingManager
     void slot_camera_change_begin();
     void slot_camera_changed();
     void slot_camera_change_end();
-    void slot_material_dropped(
-        const foundation::Vector2d& drop_pos,
-        const std::string&          material_name);
-    void slot_change_material(
-        const foundation::Vector2d&             drop_pos,
-        const std::string&                      material_name,
-        const renderer::ObjectInstance::Side    side);
     void slot_master_renderer_thread_finished();
 };
 

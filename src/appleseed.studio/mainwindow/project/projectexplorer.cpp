@@ -115,6 +115,8 @@ ProjectExplorer::ProjectExplorer(
     connect(
         &m_project_builder, SIGNAL(signal_frame_modified()),
         SIGNAL(signal_frame_modified()));
+
+    m_material_drop_handler.reset(new MaterialDropHandler(project, rendering_manager));
 }
 
 ProjectExplorer::~ProjectExplorer()
@@ -283,6 +285,11 @@ void ProjectExplorer::slot_delete_items()
         return;
 
     items.first()->delete_multiple(items);
+}
+
+const MaterialDropHandler* ProjectExplorer::get_material_drop_handler() const
+{
+    return (&*m_material_drop_handler);
 }
 
 }   // namespace studio
