@@ -437,7 +437,7 @@ namespace
         const size_t                res_u,
         const size_t                res_v)
     {
-        mesh.reserve_triangles(2 * (res_u - 1) * (res_v - 1));
+        mesh.reserve_triangles(2 * res_u * res_v);
 
         for (size_t j = 0; j < res_v; ++j)
         {
