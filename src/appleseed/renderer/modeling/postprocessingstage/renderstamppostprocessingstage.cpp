@@ -45,17 +45,19 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/system.h"
-#include "foundation/resources/logo/appleseed-seeds-64.h"
+#include "foundation/resources/logo/appleseed-seeds-256.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/string.h"
 
 // OpenImageIO headers.
+#include "OpenImageIO/imagebuf.h"
 #include "OpenImageIO/imagebufalgo.h"
+#include "OpenImageIO/typedesc.h"
 
 // Standard headers.
-#include <string>
 #include <memory>
+#include <string>
 
 using namespace foundation;
 using namespace OIIO;
@@ -103,8 +105,8 @@ namespace
 
             m_format_string = m_params.get_optional("format_string", DefaultFormatString, context);
             m_scale_factor = m_params.get_optional("scale_factor", DefaultScaleFactor, context);
-            m_icon.reset(ImageSpec(appleseed_seeds_64_width, appleseed_seeds_64_height, 4, TypeFloat));
-            m_icon.set_pixels(ROI(0, appleseed_seeds_64_width, 0, appleseed_seeds_64_height), TypeFloat, appleseed_seeds_64);
+            m_icon.reset(ImageSpec(appleseed_seeds_256_width, appleseed_seeds_256_height, 4, TypeFloat));
+            m_icon.set_pixels(ROI(0, appleseed_seeds_256_width, 0, appleseed_seeds_256_height), TypeFloat, appleseed_seeds_256);
 
             return true;
         }
@@ -154,10 +156,19 @@ namespace
 
             // Calculate final icon size and scale the icon
             ImageSpec icon_spec = m_icon.spec();
-            float aspect = static_cast<float>(icon_spec.width) / icon_spec.height;
-            ROI roi(0, m_scale_factor * aspect * DefaultIconHeight, 0, m_scale_factor * DefaultIconHeight, 0, 1, 0, m_icon.nchannels());
+            float aspect = static_cast<float>(icon_spec.width) / static_cast<float>(icon_spec.height);
+            ROI roi(
+                0,
+                static_cast<int>(m_scale_factor * aspect * DefaultIconHeight),
+                0,
+                static_cast<int>(m_scale_factor * DefaultIconHeight),
+                0,
+                1,
+                0,
+                m_icon.nchannels());
+                
             ImageBuf scaled_logo;
-            ImageBufAlgo::resize(scaled_logo, m_icon, "mitchell", m_scale_factor, roi);
+            ImageBufAlgo::resize(scaled_logo, m_icon, "sharp-gaussian", 1.2f, roi);
             unique_ptr<float[]> pixels(new float[roi.width() * roi.height() * roi.nchannels()]);
             scaled_logo.get_pixels(ROI::All(), TypeFloat, pixels.get());
 
@@ -182,12 +193,11 @@ namespace
                 MarginH + roi.width() + MarginH,
                 origin_y,
                 text.c_str());
-            
         }
 
       private:
-        string m_format_string;
-        float m_scale_factor;
+        string   m_format_string;
+        float    m_scale_factor;
         ImageBuf m_icon;
     };
 }
@@ -237,11 +247,11 @@ DictionaryArray RenderStampPostProcessingStageFactory::get_input_metadata() cons
             .insert("min",
                     Dictionary()
                         .insert("value", "0.1")
-                        .insert("type", "soft"))
+                        .insert("type", "hard"))
             .insert("max",
                     Dictionary()
                         .insert("value", "20.0")
-                        .insert("type", "soft"))
+                        .insert("type", "hard"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
