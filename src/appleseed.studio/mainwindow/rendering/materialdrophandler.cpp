@@ -109,8 +109,7 @@ void MaterialDropHandler::assign_material(const renderer::ObjectInstance::Side s
     renderer::ObjectInstance* instance = const_cast<renderer::ObjectInstance*>(result.m_object_instance);
 
     std::vector<MaterialSlot> material_slots;
-    if (side == renderer::ObjectInstance::Side::FrontSide
-        || side == renderer::ObjectInstance::Side::BothSides)
+    if (side & renderer::ObjectInstance::Side::FrontSide)
     {
         for (auto item = instance->get_front_material_mappings().begin();
             item != instance->get_front_material_mappings().end();
@@ -119,8 +118,7 @@ void MaterialDropHandler::assign_material(const renderer::ObjectInstance::Side s
             material_slots.push_back({ item.key(), renderer::ObjectInstance::Side::FrontSide });
         }
     }
-    if (side == renderer::ObjectInstance::Side::BackSide
-        || side == renderer::ObjectInstance::Side::BothSides)
+    if (side & renderer::ObjectInstance::Side::BackSide)
     {
         for (auto item = instance->get_back_material_mappings().begin();
             item != instance->get_back_material_mappings().end();
