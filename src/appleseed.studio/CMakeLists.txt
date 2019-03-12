@@ -290,8 +290,6 @@ set (mainwindow_sources
     mainwindow/configurationmanagerwindow.cpp
     mainwindow/configurationmanagerwindow.h
     mainwindow/configurationmanagerwindow.ui
-    mainwindow/droppedmaterialmenu.cpp
-    mainwindow/droppedmaterialmenu.h
     mainwindow/falsecolorswindow.cpp
     mainwindow/falsecolorswindow.h
     mainwindow/falsecolorswindow.ui
