@@ -763,6 +763,8 @@ Dictionary ProgressiveFrameRendererFactory::get_params_metadata()
         "max_samples",
         Dictionary()
             .insert("type", "int")
+            .insert("default", "100000")
+            .insert("unlimited", "true")
             .insert("label", "Max Samples")
             .insert("help", "Maximum number of samples per pixel"));
 

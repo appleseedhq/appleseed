@@ -444,17 +444,27 @@ namespace
     };
 
     //
-    // Image Plane Sampling panel.
+    // Image Plane Sampling panels.
     //
 
     class ImagePlaneSamplingPanel
       : public RenderSettingsPanel
     {
+      public:
+        ImagePlaneSamplingPanel(QWidget* parent = nullptr)
+          : RenderSettingsPanel("Image Plane Sampling", parent)
+        {   
+        }
+    };
+
+    class FinalImagePlaneSamplingPanel
+      : public ImagePlaneSamplingPanel
+    {
         Q_OBJECT
 
       public:
-        ImagePlaneSamplingPanel(const Configuration& config, QWidget* parent = nullptr)
-          : RenderSettingsPanel("Image Plane Sampling", parent)
+        FinalImagePlaneSamplingPanel(const Configuration& config, QWidget* parent = nullptr)
+          : ImagePlaneSamplingPanel(parent)
         {
             QVBoxLayout* layout = new QVBoxLayout();
             container()->setLayout(layout);
@@ -649,6 +659,59 @@ namespace
         void slot_changed_uniform_sampler_samples(const int samples)
         {
             m_uniform_sampler_force_aa->setDisabled(samples > 1);
+        }
+    };
+
+    class InteractiveImagePlaneSamplingPanel
+      : public ImagePlaneSamplingPanel
+    {
+        Q_OBJECT
+
+      public:
+        InteractiveImagePlaneSamplingPanel(const Configuration& config, QWidget* parent = nullptr)
+          : ImagePlaneSamplingPanel(parent)
+        {
+            QVBoxLayout* layout = new QVBoxLayout();
+            container()->setLayout(layout);
+
+            create_image_plane_sampling_general_settings(layout);
+
+            load_general_sampler(config);
+        }
+
+        void save_config(Configuration& config) const override
+        {            
+            if (get_widget<bool>("general.unlimited_samples"))
+                config.get_parameters().remove_path("progressive_frame_renderer.max_samples");
+            else set_config(config, "progressive_frame_renderer.max_samples", get_widget<int>("general.max_samples"));
+        }
+
+      private:
+        void create_image_plane_sampling_general_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = new QGroupBox("General");
+            parent->addWidget(groupbox);
+
+            QVBoxLayout* layout = new QVBoxLayout();
+            groupbox->setLayout(layout);
+
+            QFormLayout* sublayout = create_form_layout();
+            layout->addLayout(sublayout);
+
+            QSpinBox* max_samples = create_integer_input("general.max_samples", 1, 1000000, 10000);
+            QCheckBox* unlimited_samples = create_checkbox("general.unlimited_samples", "Unlimited");
+            sublayout->addRow("Max Samples:", create_horizontal_group(max_samples, unlimited_samples));
+            connect(unlimited_samples, SIGNAL(toggled(bool)), max_samples, SLOT(setDisabled(bool)));
+        }
+
+        void load_general_sampler(const Configuration& config)
+        {
+            const int DefaultMaxSamples = 100000;
+
+            const int max_samples = get_config<int>(config, "progressive_frame_renderer.max_samples", -1);
+
+            set_widget("general.unlimited_samples", max_samples == -1);
+            set_widget("general.max_samples", max_samples == -1 ? DefaultMaxSamples : max_samples);
         }
     };
 
@@ -1522,12 +1585,13 @@ void RenderingSettingsWindow::create_panels(const Configuration& config)
 
     m_panels.push_back(new GeneralSettingsPanel(config));
 
-    if (!interactive)
-        m_panels.push_back(new ImagePlaneSamplingPanel(config));
-
-    if (interactive)
+    if (interactive) {
+        m_panels.push_back(new InteractiveImagePlaneSamplingPanel(config));
         m_panels.push_back(new InteractiveConfigurationLightingPanel(config));
-    else m_panels.push_back(new FinalConfigurationLightingPanel(config));
+    } else {
+        m_panels.push_back(new FinalImagePlaneSamplingPanel(config));
+        m_panels.push_back(new FinalConfigurationLightingPanel(config));
+    }
 
     m_panels.push_back(new UnidirectionalPathTracerPanel(config));
 
