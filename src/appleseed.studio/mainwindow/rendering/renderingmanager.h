@@ -41,7 +41,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
-#include "foundation/math/vector.h"
 #include "foundation/platform/thread.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/job/abortswitch.h"
