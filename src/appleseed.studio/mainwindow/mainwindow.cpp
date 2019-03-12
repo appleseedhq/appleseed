@@ -41,6 +41,7 @@
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/pythonconsole/pythonconsolewidget.h"
 #include "mainwindow/rendering/lightpathstab.h"
+#include "mainwindow/rendering/materialdrophandler.h"
 #include "mainwindow/rendering/renderwidget.h"
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
@@ -978,6 +979,12 @@ void MainWindow::add_render_tab(const QString& label)
             *m_project_explorer,
             *m_project_manager.get_project(),
             m_ocio_config);
+
+    // Set material drop handler
+    render_tab->set_material_drop_handler(
+        new MaterialDropHandler(
+            *m_project_manager.get_project(),
+            m_rendering_manager));
 
     // Connect the render tab to the main window and the rendering manager.
     connect(

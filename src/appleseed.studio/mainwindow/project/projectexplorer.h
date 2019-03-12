@@ -33,7 +33,6 @@
 #include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
-#include "mainwindow/rendering/materialdrophandler.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -85,8 +84,6 @@ class ProjectExplorer
     void clear_selection() const;
     ItemBase* select_entity(const foundation::UniqueID uid) const;
 
-    const MaterialDropHandler* get_material_drop_handler() const;
-
   signals:
     void signal_project_modified() const;
     void signal_frame_modified() const;
@@ -98,7 +95,6 @@ class ProjectExplorer
     ItemRegistry                            m_item_registry;
     EntityEditorContext                     m_editor_context;
     std::unique_ptr<QShortcut>              m_delete_shortcut;
-    std::shared_ptr<MaterialDropHandler>    m_material_drop_handler;
 
     QMenu* build_single_item_context_menu(QTreeWidgetItem* item) const;
     QMenu* build_multiple_items_context_menu(const QList<QTreeWidgetItem*>& item_widgets) const;

@@ -31,6 +31,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/cameracontroller.h"
+#include "mainwindow/rendering/materialdrophandler.h"
 #include "mainwindow/rendering/pixelcolortracker.h"
 #include "mainwindow/rendering/pixelinspectorhandler.h"
 #include "mainwindow/rendering/renderclipboardhandler.h"
@@ -85,6 +86,8 @@ class RenderTab
     RenderWidget* get_render_widget() const;
     CameraController* get_camera_controller() const;
     ScenePickingHandler* get_scene_picking_handler() const;
+
+    void set_material_drop_handler(MaterialDropHandler *material_drop_handler);
 
     void set_clear_frame_button_enabled(const bool enabled);
     void set_render_region_buttons_enabled(const bool enabled);
@@ -146,6 +149,7 @@ class RenderTab
 
     std::unique_ptr<WidgetZoomHandler>          m_zoom_handler;
     std::unique_ptr<ScrollAreaPanHandler>       m_pan_handler;
+    std::unique_ptr<MaterialDropHandler>        m_material_drop_handler;
     std::unique_ptr<MouseCoordinatesTracker>    m_mouse_tracker;
     std::unique_ptr<PixelColorTracker>          m_pixel_color_tracker;
     std::unique_ptr<PixelInspectorHandler>      m_pixel_inspector_handler;

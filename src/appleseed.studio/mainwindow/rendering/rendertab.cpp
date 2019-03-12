@@ -112,6 +112,21 @@ ScenePickingHandler* RenderTab::get_scene_picking_handler() const
     return m_scene_picking_handler.get();
 }
 
+void RenderTab::set_material_drop_handler(MaterialDropHandler *handler)
+{
+    m_material_drop_handler.reset(handler);
+    if (handler && m_render_widget)
+        connect(
+            m_render_widget,
+            SIGNAL(signal_material_dropped(
+                const foundation::Vector2d&,
+                const std::string&)),
+            m_material_drop_handler.get(),
+            SLOT(slot_material_dropped(
+                const foundation::Vector2d&,
+                const std::string&)));
+}
+
 void RenderTab::set_clear_frame_button_enabled(const bool enabled)
 {
     m_clear_frame_button->setEnabled(enabled);
@@ -213,16 +228,6 @@ void RenderTab::create_render_widget()
     connect(
         m_render_widget, SIGNAL(customContextMenuRequested(const QPoint&)),
         SLOT(slot_render_widget_context_menu(const QPoint&)));
-
-    connect(
-        m_render_widget,
-        SIGNAL(signal_material_dropped(
-            const foundation::Vector2d&,
-            const std::string&)),
-        m_project_explorer.get_material_drop_handler(),
-        SLOT(slot_material_dropped(
-            const foundation::Vector2d&,
-            const std::string&)));
 
     m_render_widget->setMouseTracking(true);
 }
