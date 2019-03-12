@@ -42,7 +42,6 @@
 // Standard headers.
 #include <memory>
 
-class QMenu;
 namespace appleseed { namespace studio { class RenderingManager; } }
 
 namespace appleseed {
@@ -68,8 +67,6 @@ class MaterialDropHandler
     RenderingManager&         m_rendering_manager;
     foundation::Vector2d      m_drop_pos;
     std::string               m_material_name;
-
-    std::unique_ptr<QMenu>    m_selection_menu;
 
     void assign_material(const renderer::ObjectInstance::Side side);
 

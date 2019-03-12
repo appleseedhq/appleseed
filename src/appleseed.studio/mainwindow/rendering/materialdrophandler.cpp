@@ -46,10 +46,6 @@ MaterialDropHandler::MaterialDropHandler(
     RenderingManager&           rendering_manager)
   : m_project(project), m_rendering_manager(rendering_manager)
 {
-    m_selection_menu.reset(new QMenu());
-    connect(m_selection_menu->addAction("Front Side"), SIGNAL(triggered()), SLOT(slot_apply_to_front()));
-    connect(m_selection_menu->addAction("Back Side"), SIGNAL(triggered()), SLOT(slot_apply_to_back()));
-    connect(m_selection_menu->addAction("Both Sides"), SIGNAL(triggered()), SLOT(slot_apply_to_both()));
 }
 
 void MaterialDropHandler::slot_material_dropped(
@@ -58,7 +54,15 @@ void MaterialDropHandler::slot_material_dropped(
 {
     m_drop_pos = drop_pos;
     m_material_name = material_name;
-    m_selection_menu->exec(QCursor::pos());
+
+    QMenu* selection_menu = new QMenu();
+    connect(selection_menu->addAction("Front Side"), SIGNAL(triggered()), SLOT(slot_apply_to_front()));
+    connect(selection_menu->addAction("Back Side"), SIGNAL(triggered()), SLOT(slot_apply_to_back()));
+    connect(selection_menu->addAction("Both Sides"), SIGNAL(triggered()), SLOT(slot_apply_to_both()));
+
+    connect(selection_menu, SIGNAL(aboutToHide()), selection_menu, SLOT(deleteLater()));
+
+    selection_menu->exec(QCursor::pos());
 }
 
 namespace
