@@ -107,8 +107,8 @@ namespace
 
             m_format_string = m_params.get_optional("format_string", DefaultFormatString, context);
             m_scale_factor = m_params.get_optional("scale_factor", DefaultScaleFactor, context);
-            m_icon.reset(ImageSpec(appleseed_seeds_256_width, appleseed_seeds_256_height, 4, TypeFloat));
-            m_icon.set_pixels(ROI(0, appleseed_seeds_256_width, 0, appleseed_seeds_256_height), TypeFloat, appleseed_seeds_256);
+            m_icon.reset(ImageSpec(appleseed_seeds_256_width, appleseed_seeds_256_height, 4, TypeDesc::TypeFloat));
+            m_icon.set_pixels(ROI(0, appleseed_seeds_256_width, 0, appleseed_seeds_256_height), TypeDesc::TypeFloat, appleseed_seeds_256);
 
             return true;
         }
@@ -173,7 +173,7 @@ namespace
             const float scale_factor = OIIO::lerp(1.0f, 2.8f, (m_scale_factor - MinScaleFactor) / (MaxScaleFactor - MinScaleFactor));
             ImageBufAlgo::resize(scaled_logo, m_icon, "sharp-gaussian", scale_factor, roi);
             unique_ptr<float[]> pixels(new float[roi.width() * roi.height() * roi.nchannels()]);
-            scaled_logo.get_pixels(ROI::All(), TypeFloat, pixels.get());
+            scaled_logo.get_pixels(ROI::All(), TypeDesc::TypeFloat, pixels.get());
 
             // Blit the appleseed logo.
             Drawing::blit_bitmap(
