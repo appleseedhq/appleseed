@@ -64,6 +64,10 @@ bool are_images_feq(
     const Image&                    image2,
     const float                     eps);
 
+// Rescale a 2D point cloud to fit into an image.
+void fit_point_cloud_to_image(
+    std::vector<Vector2d>&          points);
+
 // Write a 2D point cloud to an image file.
 void write_point_cloud_image(
     const std::string&              image_path,

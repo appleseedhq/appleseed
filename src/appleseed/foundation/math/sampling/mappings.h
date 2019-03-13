@@ -140,6 +140,12 @@ Vector<T, 2> sample_circle_uniform(const T s);
 template <typename T>
 Vector<T, 3> sample_triangle_uniform(const Vector<T, 2>& s);
 
+// An alternate implementation of sample_triangle_uniform() due to Eric Heitz.
+// See https://drive.google.com/file/d/1J-183vt4BrN9wmqItECIjjLIKwm29qSg/view
+// for details.
+template <typename T>
+Vector<T, 3> sample_triangle_uniform_heitz(const Vector<T, 2>& s);
+
 // Build a regular N-sided polygon to use with sample_regular_polygon_uniform().
 template <typename T>
 void build_regular_polygon(
@@ -152,6 +158,14 @@ void build_regular_polygon(
 template <typename T>
 Vector<T, 2> sample_regular_polygon_uniform(
     const Vector<T, 3>& s,
+    const size_t        vertex_count,
+    const Vector<T, 2>  vertices[]);
+
+// Map a uniform sample in [0,1)^2 to a point on the surface of a regular
+// N-sided polygon with a uniform probability density p(x) = 1/A.
+template <typename T>
+Vector<T, 2> sample_regular_polygon_uniform(
+    const Vector<T, 2>& s,
     const size_t        vertex_count,
     const Vector<T, 2>  vertices[]);
 
@@ -438,7 +452,32 @@ inline Vector<T, 3> sample_triangle_uniform(const Vector<T, 2>& s)
     Vector<T, 3> b;
     b[0] = T(1.0) - sqrt_s0;
     b[1] = (T(1.0) - s[1]) * sqrt_s0;
-    b[2] = s[1] * sqrt_s0;
+    b[2] = T(1.0) - b[0] - b[1];
+
+    assert(feq(b[0] + b[1] + b[2], T(1.0)));
+
+    return b;
+}
+
+template <typename T>
+inline Vector<T, 3> sample_triangle_uniform_heitz(const Vector<T, 2>& s)
+{
+    assert(s[0] >= T(0.0) && s[0] < T(1.0));
+    assert(s[1] >= T(0.0) && s[1] < T(1.0));
+
+    T t0 = T(0.5) * s[0];
+    T t1 = T(0.5) * s[1];
+
+    const T offset = t1 - t0;
+
+    if (offset > T(0.0))
+        t1 += offset;
+    else t0 -= offset;
+
+    Vector<T, 3> b;
+    b[0] = t0;
+    b[1] = t1;
+    b[2] = T(1.0) - b[0] - b[1];
 
     assert(feq(b[0] + b[1] + b[2], T(1.0)));
 
@@ -472,19 +511,57 @@ inline Vector<T, 2> sample_regular_polygon_uniform(
     assert(vertex_count >= 3);
 
     const size_t v0_index = truncate<size_t>(s[0] * vertex_count);
-    size_t v1_index = v0_index + 1;
 
+    size_t v1_index = v0_index + 1;
     if (v1_index == vertex_count)
         v1_index = 0;
 
     const Vector<T, 2>& v0 = vertices[v0_index];
     const Vector<T, 2>& v1 = vertices[v1_index];
 
-    const T sqrt_s1 = std::sqrt(s[1]);
-    const T b0 = T(1.0) - sqrt_s1;
-    const T b1 = s[2] * sqrt_s1;
+    T t0 = T(0.5) * s[1];
+    T t1 = T(0.5) * s[2];
 
-    return b0 * v0 + b1 * v1;
+    const T offset = t1 - t0;
+
+    if (offset > T(0.0))
+        t1 += offset;
+    else t0 -= offset;
+
+    return t0 * v0 + t1 * v1;
+}
+
+template <typename T>
+inline Vector<T, 2> sample_regular_polygon_uniform(
+    const Vector<T, 2>& s,
+    const size_t        vertex_count,
+    const Vector<T, 2>  vertices[])
+{
+    assert(s[0] >= T(0.0) && s[0] < T(1.0));
+    assert(s[1] >= T(0.0) && s[1] < T(1.0));
+    assert(vertex_count >= 3);
+
+    const size_t v0_index = truncate<size_t>(s[0] * vertex_count);
+    const T rescaled_s0 = s[0] * vertex_count - v0_index;
+    assert(rescaled_s0 >= T(0.0) && rescaled_s0 < T(1.0));
+
+    size_t v1_index = v0_index + 1;
+    if (v1_index == vertex_count)
+        v1_index = 0;
+
+    const Vector<T, 2>& v0 = vertices[v0_index];
+    const Vector<T, 2>& v1 = vertices[v1_index];
+
+    T t0 = T(0.5) * rescaled_s0;
+    T t1 = T(0.5) * s[1];
+
+    const T offset = t1 - t0;
+
+    if (offset > T(0.0))
+        t1 += offset;
+    else t0 -= offset;
+
+    return t0 * v0 + t1 * v1;
 }
 
 template <typename T>
