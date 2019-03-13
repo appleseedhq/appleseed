@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_RESOURCES_LOGO_APPLESEED_SEEDS_256_H
-#define APPLESEED_FOUNDATION_RESOURCES_LOGO_APPLESEED_SEEDS_256_H
+#pragma once
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -41,7 +40,7 @@ namespace foundation
 //
 // appleseed "seeds" logo:
 //
-//   256x61 pixels
+//   256x243 pixels
 //   32-bit floating point RGBA
 //   linear RGB
 //   premultiplied alpha
@@ -53,5 +52,3 @@ const size_t appleseed_seeds_256_height = 243;
 APPLESEED_DLLSYMBOL extern const float appleseed_seeds_256[];
 
 }       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_RESOURCES_LOGO_APPLESEED_SEEDS_256_H

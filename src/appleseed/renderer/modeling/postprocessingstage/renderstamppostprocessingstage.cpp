@@ -71,8 +71,10 @@ namespace
     const char* Model = "render_stamp_post_processing_stage";
 
     const string DefaultFormatString = "appleseed {lib-version} | Time: {render-time}";
-    const float DefaultScaleFactor = 1.0f;
     const int DefaultIconHeight = 14;
+    const float DefaultScaleFactor = 1.0f;
+    const float MinScaleFactor = 0.1f;
+    const float MaxScaleFactor = 20.0f;
 
     class RenderStampPostProcessingStage
       : public PostProcessingStage
@@ -115,7 +117,7 @@ namespace
         {
             // Render stamp settings.
             const auto Font = TextRenderer::Font::UbuntuL;
-            const float FontHeight = 14.0f * m_scale_factor;
+            const float font_height = 14.0f * m_scale_factor;
             const Color4f FontColor(srgb_to_linear_rgb(Color3f(0.9f, 0.9f, 0.9f)), 1.0f);   // linear RGB
             const Color4f BackgroundColor(0.0f, 0.0f, 0.0f, 0.95f);                         // linear RGB
             const Color4f LogoTint(1.0f, 1.0f, 1.0f, 0.8f);                                 // linear RGB
@@ -140,7 +142,7 @@ namespace
             // Compute the height in pixels of the string.
             const CanvasProperties& props = frame.image().properties();
             const float image_height = static_cast<float>(props.m_canvas_height);
-            const float text_height = TextRenderer::compute_string_height(FontHeight, text.c_str());
+            const float text_height = TextRenderer::compute_string_height(font_height, text.c_str());
             const float origin_y = image_height - text_height - MarginV;
 
             // Draw the background rectangle.
@@ -155,9 +157,9 @@ namespace
                 BackgroundColor);
 
             // Calculate final icon size and scale the icon
-            ImageSpec icon_spec = m_icon.spec();
-            float aspect = static_cast<float>(icon_spec.width) / static_cast<float>(icon_spec.height);
-            ROI roi(
+            const ImageSpec icon_spec = m_icon.spec();
+            const float aspect = static_cast<float>(icon_spec.width) / static_cast<float>(icon_spec.height);
+            const ROI roi(
                 0,
                 static_cast<int>(m_scale_factor * aspect * DefaultIconHeight),
                 0,
@@ -168,7 +170,8 @@ namespace
                 m_icon.nchannels());
                 
             ImageBuf scaled_logo;
-            ImageBufAlgo::resize(scaled_logo, m_icon, "sharp-gaussian", 1.2f, roi);
+            const float scale_factor = OIIO::lerp(1.0f, 2.8f, (m_scale_factor - MinScaleFactor) / (MaxScaleFactor - MinScaleFactor));
+            ImageBufAlgo::resize(scaled_logo, m_icon, "sharp-gaussian", scale_factor, roi);
             unique_ptr<float[]> pixels(new float[roi.width() * roi.height() * roi.nchannels()]);
             scaled_logo.get_pixels(ROI::All(), TypeFloat, pixels.get());
 
@@ -188,7 +191,7 @@ namespace
             TextRenderer::draw_string(
                 frame.image(),
                 Font,
-                FontHeight,
+                font_height,
                 FontColor,
                 MarginH + roi.width() + MarginH,
                 origin_y,
