@@ -54,17 +54,22 @@
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/string.h"
 
+// Boost headers.
+#include "boost/filesystem.hpp"
+
 // Murmurhash3 headers.
 #include "MurmurHash3.h"
 
-// Boost headers.
-#include "boost/filesystem.hpp"
+// OIIO headers.
+#include "OpenImageIO/imageio.h"
+#include "OpenImageIO/version.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -84,6 +89,7 @@ namespace
           , m_filename(filename)
         {
             m_writer = OIIO::ImageOutput::create(m_filename);
+
             if (m_writer == nullptr)
             {
                 const string msg = OIIO::geterror();
@@ -96,9 +102,11 @@ namespace
 
         ~MultiChannelExrFileWriter() override
         {
+#if OIIO_VERSION < 20000
             // Destroy the ImageOutput stucture.
             if (m_writer != nullptr)
                 OIIO::ImageOutput::destroy(m_writer);
+#endif
         }
 
         void write()
@@ -244,10 +252,14 @@ namespace
         }
 
     private:
-        const ICanvas*      m_canvas;
-        OIIO::ImageSpec     m_spec;
-        OIIO::ImageOutput*  m_writer;
-        const char*         m_filename;
+        const ICanvas*                      m_canvas;
+        OIIO::ImageSpec                     m_spec;
+#if OIIO_VERSION >= 20000
+        std::unique_ptr<OIIO::ImageOutput>  m_writer;
+#else
+        OIIO::ImageOutput*                  m_writer;
+#endif
+        const char*                         m_filename;
     };
 
     class WeightMap
