@@ -36,13 +36,14 @@
 #include "foundation/math/vector.h"
 
 // Qt headers.
-#include <QMenu>
 #include <QObject>
 
 // Standard headers.
 #include <memory>
 
 namespace appleseed { namespace studio { class RenderingManager; } }
+
+class QString;
 
 namespace appleseed {
 namespace studio {
@@ -60,7 +61,7 @@ class MaterialDropHandler
   public slots:
     void slot_material_dropped(
         const foundation::Vector2d& drop_pos,
-        const std::string&          material_name);
+        const QString&          material_name);
 
   private:
     const renderer::Project&  m_project;

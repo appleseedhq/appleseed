@@ -120,11 +120,11 @@ void RenderTab::set_material_drop_handler(MaterialDropHandler *handler)
             m_render_widget,
             SIGNAL(signal_material_dropped(
                 const foundation::Vector2d&,
-                const std::string&)),
+                const QString&)),
             m_material_drop_handler.get(),
             SLOT(slot_material_dropped(
                 const foundation::Vector2d&,
-                const std::string&)));
+                const QString&)));
 }
 
 void RenderTab::set_clear_frame_button_enabled(const bool enabled)

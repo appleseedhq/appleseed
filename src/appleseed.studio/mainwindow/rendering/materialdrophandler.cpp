@@ -35,8 +35,9 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/scenepicker.h"
 
-// Standard headers.
-#include <string>
+// Qt headers.
+#include <QMenu>
+#include <QString>
 
 namespace appleseed {
 namespace studio {
@@ -50,10 +51,10 @@ MaterialDropHandler::MaterialDropHandler(
 
 void MaterialDropHandler::slot_material_dropped(
     const foundation::Vector2d& drop_pos,
-    const std::string&          material_name)
+    const QString&          material_name)
 {
     m_drop_pos = drop_pos;
-    m_material_name = material_name;
+    m_material_name = material_name.toStdString();
 
     QMenu* selection_menu = new QMenu();
     connect(selection_menu->addAction("Front Side"), SIGNAL(triggered()), SLOT(slot_apply_to_front()));

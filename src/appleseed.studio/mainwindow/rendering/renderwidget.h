@@ -120,7 +120,7 @@ class RenderWidget
   signals:
     void signal_material_dropped(
         const foundation::Vector2d& drop_pos,
-        const std::string&          material_name);
+        const QString&          material_name);
 
   public slots:
     void slot_display_transform_changed(const QString& transform);

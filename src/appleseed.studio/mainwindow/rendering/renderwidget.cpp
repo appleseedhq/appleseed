@@ -450,7 +450,7 @@ void RenderWidget::dropEvent(QDropEvent* event)
         Vector2d(
             static_cast<double>(event->pos().x()) / width(),
             static_cast<double>(event->pos().y()) / height()),
-        event->mimeData()->text().toStdString());
+        event->mimeData()->text());
 }
 
 }   // namespace studio
