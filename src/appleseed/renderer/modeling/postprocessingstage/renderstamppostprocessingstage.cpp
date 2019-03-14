@@ -45,15 +45,22 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/system.h"
-#include "foundation/resources/logo/appleseed-seeds-16.h"
+#include "foundation/resources/logo/appleseed-seeds-256.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/string.h"
 
+// OpenImageIO headers.
+#include "OpenImageIO/imagebuf.h"
+#include "OpenImageIO/imagebufalgo.h"
+#include "OpenImageIO/typedesc.h"
+
 // Standard headers.
+#include <memory>
 #include <string>
 
 using namespace foundation;
+using namespace OIIO;
 using namespace std;
 
 namespace renderer
@@ -64,6 +71,10 @@ namespace
     const char* Model = "render_stamp_post_processing_stage";
 
     const string DefaultFormatString = "appleseed {lib-version} | Time: {render-time}";
+    const int DefaultIconHeight = 14;
+    const float DefaultScaleFactor = 1.0f;
+    const float MinScaleFactor = 0.1f;
+    const float MaxScaleFactor = 20.0f;
 
     class RenderStampPostProcessingStage
       : public PostProcessingStage
@@ -95,6 +106,9 @@ namespace
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
             m_format_string = m_params.get_optional("format_string", DefaultFormatString, context);
+            m_scale_factor = m_params.get_optional("scale_factor", DefaultScaleFactor, context);
+            m_icon.reset(ImageSpec(appleseed_seeds_256_width, appleseed_seeds_256_height, 4, TypeDesc::TypeFloat));
+            m_icon.set_pixels(ROI(0, appleseed_seeds_256_width, 0, appleseed_seeds_256_height), TypeDesc::TypeFloat, appleseed_seeds_256);
 
             return true;
         }
@@ -103,7 +117,7 @@ namespace
         {
             // Render stamp settings.
             const auto Font = TextRenderer::Font::UbuntuL;
-            const float FontHeight = 14.0f;
+            const float font_height = 14.0f * m_scale_factor;
             const Color4f FontColor(srgb_to_linear_rgb(Color3f(0.9f, 0.9f, 0.9f)), 1.0f);   // linear RGB
             const Color4f BackgroundColor(0.0f, 0.0f, 0.0f, 0.95f);                         // linear RGB
             const Color4f LogoTint(1.0f, 1.0f, 1.0f, 0.8f);                                 // linear RGB
@@ -128,7 +142,7 @@ namespace
             // Compute the height in pixels of the string.
             const CanvasProperties& props = frame.image().properties();
             const float image_height = static_cast<float>(props.m_canvas_height);
-            const float text_height = TextRenderer::compute_string_height(FontHeight, text.c_str());
+            const float text_height = TextRenderer::compute_string_height(font_height, text.c_str());
             const float origin_y = image_height - text_height - MarginV;
 
             // Draw the background rectangle.
@@ -142,31 +156,52 @@ namespace
                     static_cast<int>(props.m_canvas_height - 1)),
                 BackgroundColor);
 
-            // Draw the string into the image.
-            TextRenderer::draw_string(
-                frame.image(),
-                Font,
-                FontHeight,
-                FontColor,
-                MarginH + appleseed_seeds_16_width + MarginH,
-                origin_y,
-                text.c_str());
+            // Calculate final icon size and scale the icon
+            const ImageSpec icon_spec = m_icon.spec();
+            const float aspect = static_cast<float>(icon_spec.width) / static_cast<float>(icon_spec.height);
+            const ROI roi(
+                0,
+                static_cast<int>(m_scale_factor * aspect * DefaultIconHeight),
+                0,
+                static_cast<int>(m_scale_factor * DefaultIconHeight),
+                0,
+                1,
+                0,
+                m_icon.nchannels());
+                
+            ImageBuf scaled_logo;
+            const float filter_width = OIIO::lerp(1.0f, 2.8f, (m_scale_factor - MinScaleFactor) / (MaxScaleFactor - MinScaleFactor));
+            ImageBufAlgo::resize(scaled_logo, m_icon, "sharp-gaussian", filter_width, roi);
+            unique_ptr<float[]> pixels(new float[roi.width() * roi.height() * roi.nchannels()]);
+            scaled_logo.get_pixels(ROI::All(), TypeDesc::TypeFloat, pixels.get());
 
             // Blit the appleseed logo.
             Drawing::blit_bitmap(
                 frame.image(),
                 Vector2i(
                     static_cast<int>(MarginH),
-                    static_cast<int>(props.m_canvas_height - appleseed_seeds_16_height - MarginV)),
-                appleseed_seeds_16,
-                appleseed_seeds_16_width,
-                appleseed_seeds_16_height,
+                    static_cast<int>(props.m_canvas_height - roi.height() - MarginV)),
+                pixels.get(),
+                roi.width(),
+                roi.height(),
                 PixelFormatFloat,
                 LogoTint);
+
+            // Draw the string into the image.
+            TextRenderer::draw_string(
+                frame.image(),
+                Font,
+                font_height,
+                FontColor,
+                MarginH + roi.width() + MarginH,
+                origin_y,
+                text.c_str());
         }
 
       private:
-        string m_format_string;
+        string   m_format_string;
+        float    m_scale_factor;
+        ImageBuf m_icon;
     };
 }
 
@@ -206,6 +241,22 @@ DictionaryArray RenderStampPostProcessingStageFactory::get_input_metadata() cons
             .insert("type", "text")
             .insert("use", "optional")
             .insert("default", DefaultFormatString));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "scale_factor")
+            .insert("label", "Scale Factor")
+            .insert("type", "numeric")
+            .insert("min",
+                    Dictionary()
+                        .insert("value", "0.1")
+                        .insert("type", "hard"))
+            .insert("max",
+                    Dictionary()
+                        .insert("value", "20.0")
+                        .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     return metadata;
 }
