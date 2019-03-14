@@ -94,6 +94,7 @@ namespace
             // Normalize if a maximum was found.
             if (max_variation != 0.0f)
             {
+                max_variation = max_variation / m_params.get_required<float>("noise_threshold", 1.0f);
                 for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
                 {
                     for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
