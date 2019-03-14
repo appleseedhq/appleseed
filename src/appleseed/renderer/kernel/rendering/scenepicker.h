@@ -89,7 +89,7 @@ class APPLESEED_DLLSYMBOL ScenePicker
         const AssemblyInstance*         m_assembly_instance;
         foundation::Transformd          m_assembly_instance_transform;
         const Assembly*                 m_assembly;
-        const ObjectInstance*           m_object_instance;
+        ObjectInstance*                 m_object_instance;
         const Object*                   m_object;
         const Material*                 m_material;
         const SurfaceShader*            m_surface_shader;

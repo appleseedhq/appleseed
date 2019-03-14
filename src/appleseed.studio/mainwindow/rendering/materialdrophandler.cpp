@@ -106,7 +106,7 @@ void MaterialDropHandler::assign_material(const renderer::ObjectInstance::Side s
 {
     const renderer::ScenePicker scene_picker(m_project);
     const renderer::ScenePicker::PickingResult result = scene_picker.pick(m_drop_pos);
-    renderer::ObjectInstance* instance = const_cast<renderer::ObjectInstance*>(result.m_object_instance);
+    renderer::ObjectInstance* instance = result.m_object_instance;
 
     std::vector<MaterialSlot> material_slots;
     if (side & renderer::ObjectInstance::Side::FrontSide)
