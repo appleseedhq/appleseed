@@ -170,8 +170,8 @@ namespace
                 m_icon.nchannels());
                 
             ImageBuf scaled_logo;
-            const float scale_factor = OIIO::lerp(1.0f, 2.8f, (m_scale_factor - MinScaleFactor) / (MaxScaleFactor - MinScaleFactor));
-            ImageBufAlgo::resize(scaled_logo, m_icon, "sharp-gaussian", scale_factor, roi);
+            const float filter_width = OIIO::lerp(1.0f, 2.8f, (m_scale_factor - MinScaleFactor) / (MaxScaleFactor - MinScaleFactor));
+            ImageBufAlgo::resize(scaled_logo, m_icon, "sharp-gaussian", filter_width, roi);
             unique_ptr<float[]> pixels(new float[roi.width() * roi.height() * roi.nchannels()]);
             scaled_logo.get_pixels(ROI::All(), TypeDesc::TypeFloat, pixels.get());
 
