@@ -61,34 +61,22 @@ shader as_max_uv_transform
 {
     float out_u = in_coordU;
     float out_v = in_coordV;
-    float u_center = 0.5;
-    float v_center = 0.5;
 
-    // Apply rotation before tiling/offset which is different from 3ds Max native bitmap transforms.
     if (in_rotateW != 0.0)
     {
         point rot = rotate(
             point(out_u, out_v, 0.0),
             radians(in_rotateW),
-            point(0.5, 0.5, 0.0),
-            point(0.5, 0.5, 1.0));
+            point(0.0, 0.0, 0.0),
+            point(0.0, 0.0, 1.0));
 
         out_u = rot[0];
         out_v = rot[1];
     }
 
-    // Don't center transforms when mirrored (3ds Max behaviour).
-    if (in_mirrorU)
-        u_center = 0.0;
-    if (in_mirrorV)
-        v_center = 0.0;
-
     // Apply tiling and offset without considering cropping
-    out_u = (out_u - u_center) * in_tilingU;
-    out_u = (out_u + u_center) - (in_offsetU * in_tilingU);
-
-    out_v = (out_v - v_center) * in_tilingV;
-    out_v = (out_v + v_center) - (in_offsetV * in_tilingV);
+    out_u = (out_u * in_tilingU) - (in_offsetU * in_tilingU);
+    out_v = (out_v * in_tilingV) - (in_offsetV * in_tilingV);
 
     // Apply mirroring.
     if (in_mirrorU)
