@@ -73,7 +73,7 @@ shader as_maya_setRange
     ]]
 )
 {
-    vector old_range = in_oldMax - in_oldMin ;
+    vector old_range = in_oldMax - in_oldMin;
 
     if (old_range != 0)
     {

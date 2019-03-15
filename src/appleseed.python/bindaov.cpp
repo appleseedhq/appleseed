@@ -86,7 +86,7 @@ namespace
 
         const char** names = aov->get_channel_names();
 
-        for (size_t i = 0, e = aov->get_channel_count(); i < e ; ++i)
+        for (size_t i = 0, e = aov->get_channel_count(); i < e; ++i)
             channels.append(names[i]);
 
         return channels;
