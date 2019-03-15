@@ -35,6 +35,7 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/postprocessingstage/colormap.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
@@ -180,39 +181,8 @@ namespace
 
         void post_process_image(const Frame& frame) override
         {
-            const AABB2u& crop_window = frame.get_crop_window();
-
-            // Find the maximum value.
-            float max_time = 0.0f;
-
-            for (size_t j = crop_window.min.y; j <= crop_window.max.y; ++j)
-            {
-                for (size_t i = crop_window.min.x; i <= crop_window.max.x; ++i)
-                {
-                    float val;
-                    m_image->get_pixel(i, j, &val);
-                    max_time = max(val, max_time);
-                }
-            }
-
-            if (max_time == 0.0f)
-                return;
-
-            const float rcp_max_time = 1.0f / max_time;
-
-            // Normalize.
-            for (size_t j = crop_window.min.y; j <= crop_window.max.y; ++j)
-            {
-                for (size_t i = crop_window.min.x; i <= crop_window.max.x; ++i)
-                {
-                    float c;
-                    m_image->get_pixel(i, j, &c);
-
-                    c *= rcp_max_time;
-
-                    m_image->set_pixel(i, j, &c);
-                }
-            }
+            ColorMap color_map;
+            color_map.remap_colors(frame, m_image, 0.0f, 0.0f);
         }
 
       private:

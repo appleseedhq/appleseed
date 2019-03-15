@@ -33,6 +33,7 @@
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/postprocessingstage/colormap.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -72,90 +73,14 @@ const char* PixelSampleCountAOV::get_model() const
     return PixelSampleCountAOVModel;
 }
 
-namespace
-{
-    // Return the maximum sample/pixel count from `image`'s pixels inside of `crop_window`.
-    float get_max_spp_count(
-        const Image*    image,
-        const AABB2u&   crop_window)
-    {
-        float max_spp = 0.0f;
-
-        for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
-        {
-            for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
-            {
-                Color3f color;
-                image->get_pixel(x, y, color);
-                max_spp = max(color[0], max_spp);
-            }
-        }
-
-        return max_spp;
-    }
-
-    void fill_aov(
-        Image*          image,
-        const AABB2u&   crop_window,
-        const Color3f&  color)
-    {
-        for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
-        {
-            for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
-                image->set_pixel(x, y, color);
-        }
-    }
-}
-
 void PixelSampleCountAOV::post_process_image(const Frame& frame)
 {
     static const Color3f Blue(0.0f, 0.0f, 1.0f);
     static const Color3f Red(1.0f, 0.0f, 0.0f);
 
-    const AABB2u& crop_window = frame.get_crop_window();
-
-    //
-    // At this point, the AOV is filled with real sample/pixel count values.
-    //
-    // We want to normalize it so that high sample/pixel counts are red and
-    // low sample/pixel counts are blue.
-    //
-    // If the Uniform Pixel Renderer is used, the AOV should be empty and
-    // the exported AOV will be completely red.
-    //
-    // Otherwise, if the Adaptive Tile Renderer is used, we use the user's
-    // min and max sample/pixel counts to determine the final color. If the
-    // user's max sample/pixel count is 0 (infinite) then we use the actual
-    // max sample/pixel count found in the image.
-    //
-
-    const float min_spp = static_cast<float>(m_min_spp);
-    const float max_spp =
-        m_max_spp == 0
-            ? get_max_spp_count(m_image, crop_window)
-            : static_cast<float>(m_max_spp);
-
-    if (max_spp == 0.0f)
-    {
-        fill_aov(m_image, crop_window, Red);
-        return;
-    }
-
-    assert(max_spp > min_spp);
-
-    // Normalize.
-    for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
-    {
-        for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
-        {
-            Color3f color;
-            m_image->get_pixel(x, y, color);
-
-            const float c = saturate(fit(color[0], min_spp, max_spp, 0.0f, 1.0f));
-
-            m_image->set_pixel(x, y, lerp(Blue, Red, c));
-        }
-    }
+    ColorMap color_map;
+    color_map.set_palette(vector<Color3f>{Red, Blue});
+    color_map.remap_colors(frame, m_image, m_min_spp, m_max_spp);
 }
 
 void PixelSampleCountAOV::set_normalization_range(

@@ -35,6 +35,7 @@
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/postprocessingstage/colormap.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -76,47 +77,9 @@ namespace
             static const Color3f Blue(0.0f, 0.0f, 1.0f);
             static const Color3f Red(1.0f, 0.0f, 0.0f);
 
-            const AABB2u& crop_window = frame.get_crop_window();
-
-            // Find the maximum variation.
-            float max_variation = 0.0f;
-
-            for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
-            {
-                for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
-                {
-                    Color3f color;
-                    m_image->get_pixel(x, y, color);
-                    max_variation = max(color[0], max_variation);
-                }
-            }
-
-            // Normalize if a maximum was found.
-            if (max_variation != 0.0f)
-            {
-                for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
-                {
-                    for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
-                    {
-                        Color3f color;
-                        m_image->get_pixel(x, y, color);
-
-                        const float c = fit(color[0], 0.0f, max_variation, 0.0f, 1.0f);
-                        assert(c >= 0.0f && c <= 1.0f);
-                        m_image->set_pixel(x, y, lerp(Blue, Red, c));
-                    }
-                }
-            }
-            else
-            {
-                for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
-                {
-                    for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
-                    {
-                        m_image->set_pixel(x, y, Blue);
-                    }
-                }
-            }
+            ColorMap color_map;
+            color_map.set_palette(vector<Color3f>{Blue, Red});
+            color_map.remap_colors(frame, m_image, 0.0f, 0.0f);
         }
 
         const char* get_model() const override

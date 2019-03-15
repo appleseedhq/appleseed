@@ -1884,6 +1884,8 @@ source_group ("renderer\\modeling\\object" FILES
 )
 
 set (renderer_modeling_postprocessingstage_sources
+    renderer/modeling/postprocessingstage/colormap.cpp
+    renderer/modeling/postprocessingstage/colormap.h
     renderer/modeling/postprocessingstage/colormapdata.cpp
     renderer/modeling/postprocessingstage/colormapdata.h
     renderer/modeling/postprocessingstage/colormappostprocessingstage.cpp
