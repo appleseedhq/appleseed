@@ -87,18 +87,15 @@ void bind_entity()
         .def("set_name", &Entity::set_name)
 
         .def("get_parameters", entity_get_parameters)
-        .def("set_parameters", entity_set_parameters)
-        ;
+        .def("set_parameters", entity_set_parameters);
 
     bpy::class_<ConnectableEntity, auto_release_ptr<ConnectableEntity>, bpy::bases<Entity>, boost::noncopyable>("ConnectableEntity", bpy::no_init);
 
     bpy::class_<EntityVector, boost::noncopyable>("EntityVector")
         .def("clear", &EntityVector::clear)
-        .def("__len__", &EntityVector::size)
-        ;
+        .def("__len__", &EntityVector::size);
 
     bpy::class_<EntityMap, boost::noncopyable>("EntityMap")
         .def("clear", &EntityMap::clear)
-        .def("__len__", &EntityMap::size)
-        ;
+        .def("__len__", &EntityMap::size);
 }

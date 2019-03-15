@@ -65,6 +65,5 @@ namespace
 void bind_display()
 {
     bpy::class_<Display, auto_release_ptr<Display>, bpy::bases<Entity>, boost::noncopyable>("Display", bpy::no_init)
-        .def("__init__", bpy::make_constructor(create_display))
-        ;
+        .def("__init__", bpy::make_constructor(create_display));
 }

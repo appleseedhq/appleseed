@@ -48,15 +48,13 @@ void bind_utility()
         .def("signal_errors", &EventCounters::signal_errors)
         .def("get_warning_count", &EventCounters::get_warning_count)
         .def("get_error_count", &EventCounters::get_error_count)
-        .def("has_errors", &EventCounters::has_errors)
-        ;
+        .def("has_errors", &EventCounters::has_errors);
 
     bpy::class_<ILogTarget, boost::noncopyable>("ILogTarget", bpy::no_init);
 
     bpy::class_<Logger, boost::noncopyable>("Logger", bpy::no_init)
         .def("set_enabled", &Logger::set_enabled)
-        .def("add_target", &Logger::add_target)
-        ;
+        .def("add_target", &Logger::add_target);
 
     bpy::def("global_logger", global_logger, bpy::return_value_policy<bpy::reference_existing_object>());
 }

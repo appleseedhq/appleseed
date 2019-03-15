@@ -128,16 +128,14 @@ namespace
 void bind_logger()
 {
     bpy::class_<ILogTargetWrap, boost::shared_ptr<ILogTargetWrap>, boost::noncopyable>("ILogTarget")
-        .def("write", bpy::pure_virtual(&ILogTarget::write))
-        ;
+        .def("write", bpy::pure_virtual(&ILogTarget::write));
 
     bpy::enum_<LogMessage::Category>("LogMessageCategory")
         .value("Info", LogMessage::Info)
         .value("Debug", LogMessage::Debug)
         .value("Warning", LogMessage::Warning)
         .value("Error", LogMessage::Error)
-        .value("Fatal", LogMessage::Fatal)
-        ;
+        .value("Fatal", LogMessage::Fatal);
 
     bpy::class_<Logger, boost::noncopyable>("Logger", bpy::no_init)
         .def("set_enabled", &Logger::set_enabled)
@@ -149,8 +147,7 @@ void bind_logger()
         .def("set_format", logger_set_format)
         .def("get_format", &Logger::get_format)
         .def("add_target", logger_add_target)
-        .def("remove_target", logger_remove_target)
-        ;
+        .def("remove_target", logger_remove_target);
 
     bpy::def("global_logger", &get_global_logger, bpy::return_value_policy<bpy::reference_existing_object>());
 }

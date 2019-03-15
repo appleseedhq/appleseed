@@ -37,13 +37,12 @@
 #define REC1886_GAMMA           2.4
 #define DCIP3_GAMMA             2.6
 
+
 //
 // Reference:
 //
-//      sRGB
-//
-//      https://en.wikipedia.org/wiki/SRGB
-//
+//   sRGB
+//   https://en.wikipedia.org/wiki/SRGB
 //
 
 float sRGB_EOTF(float value)
@@ -100,13 +99,13 @@ color sRGB_OETF(color value)
         sRGB_OETF(value[2]));
 }
 
+
 //
 // Reference:
 //
-//      BT.709: Parameter Values For The HDTV Standards For Production And
-//      International Programme Exchange
-//
-//      http://www.itu.int/rec/R-REC-BT.709-6-201506-I/en
+//   BT.709: Parameter Values For The HDTV Standards For Production And
+//   International Programme Exchange
+//   http://www.itu.int/rec/R-REC-BT.709-6-201506-I/en
 //
 
 float Rec709_EOTF(float value)
@@ -125,12 +124,13 @@ float Rec709_EOTF(float value)
     {
         linear_out = 0;
     }
+
     return linear_out;
 }
 
 float Rec709_OETF(float value)
 {
-    float prime_out ;
+    float prime_out;
 
     if (value > 0.081)
     {
@@ -144,6 +144,7 @@ float Rec709_OETF(float value)
     {
         prime_out = 0;
     }
+
     return prime_out;
 }
 
@@ -163,13 +164,13 @@ color Rec709_OETF(color value)
         Rec709_OETF(value[2]));
 }
 
+
 //
 // Reference:
 //
-//      BT.2020: Parameter Values for Ultra High Definition Television
-//      Systems For Production And International Programme Exchange
-//
-//      https://www.itu.int/rec/R-REC-BT.2020/en
+//   BT.2020: Parameter Values for Ultra High Definition Television
+//   Systems For Production And International Programme Exchange
+//   https://www.itu.int/rec/R-REC-BT.2020/en
 //
 
 float Rec2020_EOTF(float value, int bitdepth)
@@ -204,12 +205,13 @@ float Rec2020_EOTF(float value, int bitdepth)
     {
         linear_out = 0;
     }
-    return linear_out ;
+
+    return linear_out;
 }
 
 float Rec2020_OETF(float value, int bitdepth)
 {
-    float prime_out ;
+    float prime_out;
 
     if (value > 0)
     {
@@ -239,6 +241,7 @@ float Rec2020_OETF(float value, int bitdepth)
     {
         prime_out = 0;
     }
+
     return prime_out;
 }
 
@@ -268,27 +271,26 @@ color Rec2020_OETF(color value)
     return Rec2020_OETF(value, 12);
 }
 
+
 //
 // Reference:
 //
-//      BT.1886: Reference Electro-Optical Transfer Function For Flat Panel
-//      Displays Used In HDTV Studion Production
-//
-//      http://www.itu.int/rec/R-REC-BT.1886-0-201103-I
+//   BT.1886: Reference Electro-Optical Transfer Function For Flat Panel
+//   Displays Used In HDTV Studion Production
+//   http://www.itu.int/rec/R-REC-BT.1886-0-201103-I
 //
 // Note:
 //
-//      The standard specifies black and white luminance levels for the code
-//      values 64, 940 (in a 10bit system), but they can be the luminance values
-//      in nits (cd/m^2), or 0.0 and 1.0 for a normalized system. For our use,
-//      we expect the luminance domain to be [0,1].
+//   The standard specifies black and white luminance levels for the code
+//   values 64, 940 (in a 10-bit system), but they can be the luminance values
+//   in nits (cd/m^2), or 0.0 and 1.0 for a normalized system. For our use,
+//   we expect the luminance domain to be [0,1].
 //
 // See also:
 //
-//      EBU Tech.3320: User Requirements For Video Monitors In Television
-//      Production, section 5.1.
-//
-//      https://tech.ebu.ch/docs/tech/tech3320.pdf
+//   EBU Tech.3320: User Requirements For Video Monitors In Television
+//   Production, section 5.1.
+//   https://tech.ebu.ch/docs/tech/tech3320.pdf
 //
 
 float Rec1886_EOTF(float value)
@@ -317,11 +319,12 @@ color Rec1886_OETF(color value)
         Rec1886_OETF(value[2]));
 }
 
+
 //
 // Reference:
 //
-//      Gamma function
-//      https://en.wikipedia.org/wiki/Gamma_correction
+//   Gamma function
+//   https://en.wikipedia.org/wiki/Gamma_correction
 //
 
 float gamma_CCTF(float value, float gamma)
@@ -344,12 +347,12 @@ color gamma_CCTF(color value, float gamma)
         gamma_CCTF(value[2], gamma));
 }
 
+
 //
 // Reference:
 //
-//      Adobe RGB (1998) Color Image Encoding, version 2005-05, May 2005
-//
-//      https://www.adobe.com/digitalimag/adobergb.html
+//   Adobe RGB (1998) Color Image Encoding, version 2005-05, May 2005
+//   https://www.adobe.com/digitalimag/adobergb.html
 //
 
 float AdobeRGB_EOTF(float value)
@@ -378,12 +381,12 @@ color AdobeRGB_OETF(color value)
         AdobeRGB_OETF(value[2]));
 }
 
+
 //
 // Reference:
 //
-//      Digital Cinema System Specification Version 1.1, page 13, colorimetry
-//
-//      http://www.dcimovies.com/archives/spec_v1_1//DCI_DCinema_System_Spec_v1_1.pdf
+//   Digital Cinema System Specification Version 1.1, page 13, colorimetry
+//   http://www.dcimovies.com/archives/spec_v1_1//DCI_DCinema_System_Spec_v1_1.pdf
 //
 
 color DCIP3_EOTF(color XYZ)

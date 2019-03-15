@@ -108,7 +108,7 @@ shader as_maya_condition
     {
         out_outColor = (in_firstTerm <= in_secondTerm)
             ? in_colorIfTrue
-            : in_colorIfFalse ;
+            : in_colorIfFalse;
     }
     else
     {

@@ -103,12 +103,11 @@ void NPRSurfaceShaderHelper::evaluate(
     Color3f beauty(0.0f);
     size_t num_contour_closures = 0;
 
-    for (size_t i = 0 , e = c.get_closure_count(); i < e ; ++i)
+    for (size_t i = 0, e = c.get_closure_count(); i < e; ++i)
     {
         if (c.get_closure_type(i) == NPRShadingID)
         {
             const Spectrum& col = c.get_closure_weight(i);
-
             beauty.r += col[0];
             beauty.g += col[1];
             beauty.b += col[2];

@@ -2321,7 +2321,7 @@ size_t CompositeNPRClosure::get_nth_contour_closure_index(const size_t i) const
 {
     size_t n = 0;
 
-    for (size_t j = 0 , e = get_closure_count(); j < e ; ++j)
+    for (size_t j = 0 , e = get_closure_count(); j < e; ++j)
     {
         if (get_closure_type(j) == NPRContourID)
         {

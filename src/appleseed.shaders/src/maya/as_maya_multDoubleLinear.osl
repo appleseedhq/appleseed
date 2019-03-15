@@ -52,5 +52,5 @@ shader as_maya_multDoubleLinear
     ]]
 )
 {
-    out_output = in_input1 * in_input2 ;
+    out_output = in_input1 * in_input2;
 }

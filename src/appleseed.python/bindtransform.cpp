@@ -80,8 +80,7 @@ namespace
 
             // Because of a bug in Boost.Python, this needs the extra self_ns qualification.
             .def(bpy::self_ns::str(bpy::self))
-            .def(bpy::self_ns::repr(bpy::self))
-            ;
+            .def(bpy::self_ns::repr(bpy::self));
 
         bind_typed_transform_extra(X);
     }
@@ -150,6 +149,5 @@ void bind_transform()
 
         .def("transforms", &transform_seq_as_list)
 
-        .def(bpy::self * bpy::self)
-        ;
+        .def(bpy::self * bpy::self);
 }
