@@ -77,9 +77,10 @@ void PixelSampleCountAOV::post_process_image(const Frame& frame)
 {
     static const Color3f Blue(0.0f, 0.0f, 1.0f);
     static const Color3f Red(1.0f, 0.0f, 0.0f);
+    vector<Color3f> palette{Red, Blue};
 
     ColorMap color_map;
-    color_map.set_palette(vector<Color3f>{Red, Blue});
+    color_map.set_palette(palette);
     color_map.remap_colors(frame, m_image, m_min_spp, m_max_spp);
 }
 

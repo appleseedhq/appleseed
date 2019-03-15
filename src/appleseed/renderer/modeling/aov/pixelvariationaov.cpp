@@ -76,9 +76,10 @@ namespace
         {
             static const Color3f Blue(0.0f, 0.0f, 1.0f);
             static const Color3f Red(1.0f, 0.0f, 0.0f);
+            vector<Color3f> palette{Blue, Red};
 
             ColorMap color_map;
-            color_map.set_palette(vector<Color3f>{Blue, Red});
+            color_map.set_palette(palette);
             color_map.remap_colors(frame, m_image, 0.0f, 0.0f);
         }
 
