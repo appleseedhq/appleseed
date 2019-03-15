@@ -147,7 +147,7 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
             BufferedFile::WriteMode,
             BufferSize);
 
-        const uint32 Value = 0xDEADBEEFUL;
+        const uint32 Value = 0xDEADBEEFu;
         EXPECT_EQ(4, file.write(Value));
         EXPECT_EQ(4, file.tell());
 
@@ -256,12 +256,12 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
             BufferedFile::WriteMode,
             BufferSize);
 
-        const uint32 Value1 = 0xDEADBEEFUL;
+        const uint32 Value1 = 0xDEADBEEFu;
         file.write(Value1);
 
         EXPECT_TRUE(file.seek(-4, BufferedFile::SeekFromCurrent));
 
-        const uint32 Value2 = 0xFADEBABEUL;
+        const uint32 Value2 = 0xFADEBABEu;
         file.write(Value2);
 
         file.close();
@@ -286,15 +286,15 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
             BufferedFile::WriteMode,
             BufferSize);
 
-        const uint32 Value1 = 0xDEADBEEFUL;
+        const uint32 Value1 = 0xDEADBEEFu;
         file.write(Value1);
 
-        const uint32 Value2 = 0xFADEBABEUL;
+        const uint32 Value2 = 0xFADEBABEu;
         file.write(Value2);
 
         EXPECT_TRUE(file.seek(0, BufferedFile::SeekFromBeginning));
 
-        const uint32 Value3 = 0x12345678UL;
+        const uint32 Value3 = 0x12345678u;
         file.write(Value3);
 
         file.close();

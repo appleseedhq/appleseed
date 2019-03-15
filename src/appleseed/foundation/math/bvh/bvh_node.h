@@ -197,7 +197,7 @@ template <typename AABB>
 inline void Node<AABB>::set_left_bbox_index(const size_t index)
 {
     assert(is_interior());
-    assert(index <= 0xFFFFFFFFUL);
+    assert(index <= 0xFFFFFFFFu);
     m_left_bbox_index = static_cast<uint32>(index);
 }
 
@@ -205,7 +205,7 @@ template <typename AABB>
 inline void Node<AABB>::set_left_bbox_count(const size_t count)
 {
     assert(is_interior());
-    assert(count <= 0xFFFFFFFFUL);
+    assert(count <= 0xFFFFFFFFu);
     m_left_bbox_count = static_cast<uint32>(count);
 }
 
@@ -213,7 +213,7 @@ template <typename AABB>
 inline void Node<AABB>::set_right_bbox_index(const size_t index)
 {
     assert(is_interior());
-    assert(index <= 0xFFFFFFFFUL);
+    assert(index <= 0xFFFFFFFFu);
     m_right_bbox_index = static_cast<uint32>(index);
 }
 
@@ -221,7 +221,7 @@ template <typename AABB>
 inline void Node<AABB>::set_right_bbox_count(const size_t count)
 {
     assert(is_interior());
-    assert(count <= 0xFFFFFFFFUL);
+    assert(count <= 0xFFFFFFFFu);
     m_right_bbox_count = static_cast<uint32>(count);
 }
 
@@ -290,7 +290,7 @@ template <typename AABB>
 inline void Node<AABB>::set_child_node_index(const size_t index)
 {
     assert(is_interior());
-    assert(index <= 0xFFFFFFFFUL);
+    assert(index <= 0xFFFFFFFFu);
     m_index = static_cast<uint32>(index);
 }
 
@@ -305,7 +305,7 @@ template <typename AABB>
 inline void Node<AABB>::set_item_index(const size_t index)
 {
     assert(is_leaf());
-    assert(index <= 0xFFFFFFFFUL);
+    assert(index <= 0xFFFFFFFFu);
     m_index = static_cast<uint32>(index);
 }
 
@@ -320,7 +320,7 @@ template <typename AABB>
 inline void Node<AABB>::set_item_count(const size_t count)
 {
     assert(is_leaf());
-    assert(count < 0xFFFFFFFFUL);
+    assert(count < 0xFFFFFFFFu);
     m_item_count = static_cast<uint32>(count);
 }
 

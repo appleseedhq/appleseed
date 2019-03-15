@@ -31,7 +31,6 @@
     #include <OpenEXR/ImfInputFile.h>
     #include <OpenEXR/ImfOutputFile.h>
 
-
 #if __GNUC__ >= 7
     #pragma GCC diagnostic pop
 #endif

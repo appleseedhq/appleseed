@@ -97,9 +97,9 @@ class PoisonImpl<T*>
     static void do_poison(T*& p)
     {
 #ifdef APPLESEED_ARCH32
-        p = reinterpret_cast<T*>(0xDEADBEEFUL);
+        p = reinterpret_cast<T*>(0xDEADBEEFu);
 #else
-        p = reinterpret_cast<T*>(0xDEADBEEFDEADBEEFULL);
+        p = reinterpret_cast<T*>(0xDEADBEEFDEADBEEFull);
 #endif
     }
 };

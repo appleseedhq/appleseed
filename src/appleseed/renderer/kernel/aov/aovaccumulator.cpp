@@ -31,10 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
-#include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
-#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
@@ -44,7 +41,6 @@
 
 // Standard headers.
 #include <cassert>
-#include <cstdlib>
 #include <cstring>
 
 using namespace foundation;
@@ -182,32 +178,10 @@ AOVAccumulatorContainer::AOVAccumulatorContainer(const Frame& frame)
     }
 }
 
-namespace
-{
-    class BeautyAOVAccumulator
-      : public AOVAccumulator
-    {
-      public:
-        void write(
-            const PixelContext&         pixel_context,
-            const ShadingPoint&         shading_point,
-            const ShadingComponents&    shading_components,
-            const AOVComponents&        aov_components,
-            ShadingResult&              shading_result) override
-        {
-            shading_result.m_main.rgb() =
-                shading_components.m_beauty.to_rgb(g_std_lighting_conditions);
-        }
-    };
-}
-
 void AOVAccumulatorContainer::init()
 {
     m_size = 0;
     memset(m_accumulators, 0, MaxAOVAccumulatorCount * sizeof(AOVAccumulator*));
-
-    // Create beauty accumulator.
-    insert(auto_release_ptr<AOVAccumulator>(new BeautyAOVAccumulator()));
 }
 
 AOVAccumulatorContainer::~AOVAccumulatorContainer()

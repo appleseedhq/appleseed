@@ -69,6 +69,7 @@
 
 // Standard headers.
 #include <algorithm>
+#include <cmath>
 
 using namespace foundation;
 using namespace renderer;
@@ -1776,11 +1777,11 @@ namespace
         {
             const Params* p = static_cast<const Params*>(osl_params);
 
-            int features = 0;
-            if (p->object_id != 0) features |= NPRContourFeatures::ObjectInstanceID;
-            if (p->material_id != 0) features |= NPRContourFeatures::MaterialID;
-            if (p->occlusion != 0) features |= NPRContourFeatures::OcclusionEdges;
-            if (p->creases != 0) features |= NPRContourFeatures::CreaseEdges;
+            unsigned int features = 0;
+            if (p->object_id != 0) features |= static_cast<unsigned int>(NPRContourFeatures::ObjectInstanceID);
+            if (p->material_id != 0) features |= static_cast<unsigned int>(NPRContourFeatures::MaterialID);
+            if (p->occlusion != 0) features |= static_cast<unsigned int>(NPRContourFeatures::OcclusionEdges);
+            if (p->creases != 0) features |= static_cast<unsigned int>(NPRContourFeatures::CreaseEdges);
 
             if (features == 0 || p->contour_opacity == 0.0f || p->contour_width == 0.0f)
                 return;

@@ -57,7 +57,6 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"

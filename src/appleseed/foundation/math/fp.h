@@ -60,18 +60,18 @@ template <>
 struct FP<float>
 {
     // Binary representation of special 32-bit floating-point values.
-    static const uint32 PosZero = 0x00000000UL;             // +0.0
-    static const uint32 NegZero = 0x80000000UL;             // -0.0
-    static const uint32 PosMin  = 0x00800000UL;             // +1.175494351e-38f
-    static const uint32 NegMin  = 0x80800000UL;             // -1.175494351e-38f
-    static const uint32 PosInf  = 0x7F800000UL;             // +infinity
-    static const uint32 NegInf  = 0xFF800000UL;             // -infinity
-    static const uint32 SNaN    = 0x7FFFFFFFUL;             // signaling NaN
-    static const uint32 QNaN    = 0xFFFFFFFFUL;             // quiet NaN (indefinite)
+    static const uint32 PosZero = 0x00000000u;              // +0.0
+    static const uint32 NegZero = 0x80000000u;              // -0.0
+    static const uint32 PosMin  = 0x00800000u;              // +1.175494351e-38f
+    static const uint32 NegMin  = 0x80800000u;              // -1.175494351e-38f
+    static const uint32 PosInf  = 0x7F800000u;              // +infinity
+    static const uint32 NegInf  = 0xFF800000u;              // -infinity
+    static const uint32 SNaN    = 0x7FFFFFFFu;              // signaling NaN
+    static const uint32 QNaN    = 0xFFFFFFFFu;              // quiet NaN (indefinite)
     static const uint32 Ind     = QNaN;                     // synonym for QNaN
 
     // Useful bitmasks.
-    static const uint32 AbsMask = 0x7FFFFFFFUL;             // absolute value bitmask
+    static const uint32 AbsMask = 0x7FFFFFFFu;              // absolute value bitmask
 
     // Return special 32-bit floating-point values.
     static float pos_zero();                                // +0.0
@@ -140,18 +140,18 @@ template <>
 struct FP<double>
 {
     // Binary representation of special 64-bit floating-point values.
-    static const uint64 PosZero = 0x0000000000000000ULL;    // +0.0
-    static const uint64 NegZero = 0x8000000000000000ULL;    // -0.0
-    static const uint64 PosMin  = 0x0080000000000000ULL;    // +1.175494351e-38f
-    static const uint64 NegMin  = 0x8080000000000000ULL;    // -1.175494351e-38f
-    static const uint64 PosInf  = 0x7FF0000000000000ULL;    // +infinity
-    static const uint64 NegInf  = 0xFFF0000000000000ULL;    // -infinity
-    static const uint64 SNaN    = 0x7FFFFFFFFFFFFFFFULL;    // signaling NaN
-    static const uint64 QNaN    = 0xFFFFFFFFFFFFFFFFULL;    // quiet NaN (indefinite)
+    static const uint64 PosZero = 0x0000000000000000ull;    // +0.0
+    static const uint64 NegZero = 0x8000000000000000ull;    // -0.0
+    static const uint64 PosMin  = 0x0080000000000000ull;    // +1.175494351e-38f
+    static const uint64 NegMin  = 0x8080000000000000ull;    // -1.175494351e-38f
+    static const uint64 PosInf  = 0x7FF0000000000000ull;    // +infinity
+    static const uint64 NegInf  = 0xFFF0000000000000ull;    // -infinity
+    static const uint64 SNaN    = 0x7FFFFFFFFFFFFFFFull;    // signaling NaN
+    static const uint64 QNaN    = 0xFFFFFFFFFFFFFFFFull;    // quiet NaN (indefinite)
     static const uint64 Ind     = QNaN;                     // synonym for QNaN
 
     // Useful bitmasks.
-    static const uint64 AbsMask = 0x7FFFFFFFFFFFFFFFULL;    // absolute value bitmask
+    static const uint64 AbsMask = 0x7FFFFFFFFFFFFFFFull;    // absolute value bitmask
 
     // Return special 64-bit floating-point values.
     static double pos_zero();                               // +0.0
@@ -281,7 +281,7 @@ inline float FP<float>::indefinite()
 
 inline uint32 FP<float>::sign(float x)
 {
-    return (binary_cast<uint32>(x) & 0x80000000UL) >> 31;
+    return (binary_cast<uint32>(x) & 0x80000000u) >> 31;
 }
 
 inline uint32 FP<float>::exponent(float x)
@@ -291,7 +291,7 @@ inline uint32 FP<float>::exponent(float x)
 
 inline uint32 FP<float>::mantissa(float x)
 {
-    return binary_cast<uint32>(x) & 0x007FFFFFUL;
+    return binary_cast<uint32>(x) & 0x007FFFFFu;
 }
 
 inline bool FP<float>::is_normal(float x)
@@ -306,7 +306,7 @@ inline bool FP<float>::is_subnormal(float x)
 
 inline bool FP<float>::is_zero(float x)
 {
-    return (binary_cast<uint32>(x) & 0x7FFFFFFFUL) == 0;
+    return (binary_cast<uint32>(x) & 0x7FFFFFFFu) == 0;
 }
 
 inline bool FP<float>::is_pos_zero(float x)
@@ -321,7 +321,7 @@ inline bool FP<float>::is_neg_zero(float x)
 
 inline bool FP<float>::is_inf(float x)
 {
-    return (binary_cast<uint32>(x) & 0x7FFFFFFFUL) == PosInf;
+    return (binary_cast<uint32>(x) & 0x7FFFFFFFu) == PosInf;
 }
 
 inline bool FP<float>::is_pos_inf(float x)
@@ -423,7 +423,7 @@ inline double FP<double>::indefinite()
 
 inline uint64 FP<double>::sign(double x)
 {
-    return (binary_cast<uint64>(x) & 0x8000000000000000ULL) >> 63;
+    return (binary_cast<uint64>(x) & 0x8000000000000000ull) >> 63;
 }
 
 inline uint64 FP<double>::exponent(double x)
@@ -433,7 +433,7 @@ inline uint64 FP<double>::exponent(double x)
 
 inline uint64 FP<double>::mantissa(double x)
 {
-    return binary_cast<uint64>(x) & 0x000FFFFFFFFFFFFFULL;
+    return binary_cast<uint64>(x) & 0x000FFFFFFFFFFFFFull;
 }
 
 inline bool FP<double>::is_normal(double x)
@@ -448,7 +448,7 @@ inline bool FP<double>::is_subnormal(double x)
 
 inline bool FP<double>::is_zero(double x)
 {
-    return (binary_cast<uint64>(x) & 0x7FFFFFFFFFFFFFFFULL) == 0;
+    return (binary_cast<uint64>(x) & 0x7FFFFFFFFFFFFFFFull) == 0;
 }
 
 inline bool FP<double>::is_pos_zero(double x)
@@ -463,7 +463,7 @@ inline bool FP<double>::is_neg_zero(double x)
 
 inline bool FP<double>::is_inf(double x)
 {
-    return (binary_cast<uint64>(x) & 0x7FFFFFFFFFFFFFFFULL) == PosInf;
+    return (binary_cast<uint64>(x) & 0x7FFFFFFFFFFFFFFFull) == PosInf;
 }
 
 inline bool FP<double>::is_pos_inf(double x)

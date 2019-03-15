@@ -72,8 +72,8 @@ class Xoroshiro128plus
 
 inline Xoroshiro128plus::Xoroshiro128plus()
 {
-    m_s[0] = 0x46961B5E381BCE6EULL;
-    m_s[1] = 0x55897310023CAE21ULL;
+    m_s[0] = 0x46961B5E381BCE6Eull;
+    m_s[1] = 0x55897310023CAE21ull;
 }
 
 inline Xoroshiro128plus::Xoroshiro128plus(const uint64 s0, const uint64 s1)

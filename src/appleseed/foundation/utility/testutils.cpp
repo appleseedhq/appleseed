@@ -37,6 +37,7 @@
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
+#include "foundation/math/aabb.h"
 #include "foundation/math/scalar.h"
 
 // Standard headers.
@@ -96,8 +97,6 @@ bool are_images_feq(
 
     assert(channel_count <= 4);
 
-    size_t differing_pixels = 0;
-
     for (size_t y = 0; y < height; ++y)
     {
         for (size_t x = 0; x < width; ++x)
@@ -111,15 +110,32 @@ bool are_images_feq(
             for (size_t c = 0; c < channel_count; ++c)
             {
                 if (!feq(color1[c], color2[c], eps))
-                {
-                    ++differing_pixels;
-                    break;
-                }
+                    return false;
             }
         }
     }
 
-    return differing_pixels == 0;
+    return true;
+}
+
+void fit_point_cloud_to_image(
+    vector<Vector2d>&           points)
+{
+    AABB2d aabb;
+    aabb.invalidate();
+
+    for (const Vector2d& p : points)
+        aabb.insert(p);
+
+    const Vector2d aabb_extent = aabb.extent();
+    const double scale = 0.8 / max_value(aabb_extent);
+
+    for (Vector2d& p : points)
+    {
+        p -= aabb.min;
+        p *= scale;
+        p += (Vector2d(1.0) - aabb_extent * scale) * 0.5;
+    }
 }
 
 void write_point_cloud_image(

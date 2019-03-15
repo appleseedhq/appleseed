@@ -44,12 +44,13 @@
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class AOVAccumulatorContainer; }
+namespace renderer      { class AOVComponents; }
 namespace renderer      { class BaseGroup; }
 namespace renderer      { class OnRenderBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class PixelContext; }
 namespace renderer      { class Project; }
+namespace renderer      { class ShadingComponents; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 
@@ -117,8 +118,9 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
         const PixelContext&         pixel_context,
         const ShadingContext&       shading_context,
         const ShadingPoint&         shading_point,
-        AOVAccumulatorContainer&    aov_accumulators,
-        ShadingResult&              shading_result) const override;
+        ShadingResult&              shading_result,
+        ShadingComponents&          shading_components,
+        AOVComponents&              aov_components) const override;
 
   private:
     friend class DiagnosticSurfaceShaderFactory;
