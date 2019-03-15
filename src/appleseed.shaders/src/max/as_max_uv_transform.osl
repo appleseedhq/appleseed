@@ -62,6 +62,10 @@ shader as_max_uv_transform
     float out_u = in_coordU;
     float out_v = in_coordV;
 
+    // Apply offset before rotation
+    out_u -= in_offsetU;
+    out_v -= in_offsetV;
+
     if (in_rotateW != 0.0)
     {
         point rot = rotate(
@@ -74,9 +78,9 @@ shader as_max_uv_transform
         out_v = rot[1];
     }
 
-    // Apply tiling and offset without considering cropping
-    out_u = (out_u * in_tilingU) - (in_offsetU * in_tilingU);
-    out_v = (out_v * in_tilingV) - (in_offsetV * in_tilingV);
+    // Apply tiling without considering cropping
+    out_u = (out_u * in_tilingU);
+    out_v = (out_v * in_tilingV);
 
     // Apply mirroring.
     if (in_mirrorU)
