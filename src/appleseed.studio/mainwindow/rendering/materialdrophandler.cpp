@@ -56,6 +56,12 @@ void MaterialDropHandler::slot_material_dropped(
     m_drop_pos = drop_pos;
     m_material_name = material_name.toStdString();
 
+    if (!m_project.has_trace_context())
+    {
+        RENDERER_LOG_INFO("the scene must be rendering or must have been rendered at least once for drag and drop to be available.");
+        return;
+    }
+
     QMenu* selection_menu = new QMenu();
     connect(selection_menu->addAction("Front Side"), SIGNAL(triggered()), SLOT(slot_apply_to_front()));
     connect(selection_menu->addAction("Back Side"), SIGNAL(triggered()), SLOT(slot_apply_to_back()));
