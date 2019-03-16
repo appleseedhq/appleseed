@@ -234,7 +234,7 @@ namespace
             bssrdf_sample.m_probability = 1.0f;
 
             Vector3d scattering_point;
-            Vector3f slab_normal;
+            Vector3f slab_normal(0.f, 0.f, 0.f);
             Vector3f direction;
             bool transmitted = false;
 
