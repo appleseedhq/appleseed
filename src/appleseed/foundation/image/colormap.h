@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Achal Pandey, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,36 +28,39 @@
 
 #pragma once
 
-namespace renderer
+// appleseed.foundation headers.
+#include "foundation/image/color.h"
+#include "foundation/image/image.h"
+#include "foundation/math/aabb.h"
+
+// Standard headers.
+#include <vector>
+
+namespace foundation
 {
 
-//
-// Perceptually uniform sequential color maps from Matplotlib in sRGB color space.
-//
-// References:
-//
-//   http://bids.github.io/colormap/
-//   https://github.com/BIDS/colormap/blob/master/colormaps.py
-//   http://medvis.org/2016/02/23/better-than-the-rainbow-the-matplotlib-alternative-colormaps/
-//
+class ColorMap
+{
+  public:
+    void set_palette(const float* values, const size_t entry_count);
 
-extern const float MagmaColorMap[3 * 256];
-extern const float InfernoColorMap[3 * 256];
-extern const float PlasmaColorMap[3 * 256];
-extern const float ViridisColorMap[3 * 256];
+    void remap_colors(
+      const AABB2u&     crop_window,
+      Image*            image,
+      const float       max_val,
+      const float       min_val);
 
+  private:
+    Color3f evaluate_palette(float x) const;
 
-//
-// For completeness, the Jet color map popularized by MATLAB, in sRGB color space.
-//
-// References:
-//
-//   https://blogs.mathworks.com/cleve/2015/02/02/origins-of-colormaps/
-//   https://www.mathworks.com/content/dam/mathworks/tag-team/Objects/r/81137_92238v00_RainbowColorMap_57312.pdf
-//   https://blogs.mathworks.com/steve/2014/10/20/a-new-colormap-for-matlab-part-2-troubles-with-rainbows/
-//   https://www.youtube.com/watch?v=xAoljeRJ3lU
-//
+    static float get_max_value(const Image* image, const AABB2u& crop_window);
 
-extern const float JetColorMap[3 * 9];
+    static void fill_aov(
+      Image*          image,
+      const AABB2u&   crop_window,
+      const Color3f&  color);
 
-}   // namespace renderer
+    std::vector<Color3f> m_palette;
+};
+
+}   // namespace foundation

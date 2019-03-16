@@ -27,34 +27,35 @@
 //
 
 // Interface header.
-#include "renderer/modeling/postprocessingstage/colormap.h"
+#include "colormap.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
 
-using namespace foundation;
-
-namespace renderer
+namespace foundation
 {
 
-ColorMap::ColorMap()
+void ColorMap::set_palette(const float* values, const size_t entry_count)
 {
-}
+    m_palette.resize(entry_count);
 
-void ColorMap::set_palette(std::vector<Color3f> palette)
-{
-    m_palette = palette;
+    for (size_t i = 0; i < entry_count; ++i)
+    {
+        m_palette[i] =
+            Color3f(
+                values[i * 3 + 0],
+                values[i * 3 + 1],
+                values[i * 3 + 2]);
+    }
 }
 
 void ColorMap::remap_colors(
-    const Frame&        frame,
+    const AABB2u&       crop_window,
     Image*              image,
     const float         max_val,
     const float         min_val)
 {
-    const AABB2u& crop_window = frame.get_crop_window();
-
     const float min_value = static_cast<float>(min_val);
     const float max_value = 
         max_val == 0
@@ -63,9 +64,7 @@ void ColorMap::remap_colors(
 
     if (max_value == 0.0f)
     {
-        if (!m_palette.empty())
-            fill_aov(image, crop_window, evaluate_palette(0.0f));
-        
+        fill_aov(image, crop_window, evaluate_palette(0.0f));
         return;
     }
 
@@ -75,31 +74,21 @@ void ColorMap::remap_colors(
     {
         for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
         {
-            if (!m_palette.empty())
-            {
-                Color3f color;
-                image->get_pixel(x, y, color);
+            Color3f value;
+            image->get_pixel(x, y, value);
 
-                const float c = saturate(fit(color[0], min_value, max_value, 0.0f, 1.0f));
+            const float c = saturate(fit(value[0], min_value, max_value, 0.0f, 1.0f));
 
-                image->set_pixel(x, y, evaluate_palette(c));
-            }
-            else
-            {
-                float val;
-                image->get_pixel(x, y, &val);
-
-                val = saturate(fit(val, min_value, max_value, 0.0f, 1.0f));
-
-                image->set_pixel(x, y, &val);
-            }
+            image->set_pixel(x, y, evaluate_palette(c));
         }
     }
 }
 
-Color3f ColorMap::evaluate_palette(float x)
+Color3f ColorMap::evaluate_palette(float x) const
 {
-    assert(m_palette.size() > 1);
+    // When AOV contains a single channel we do not set the color palette.
+    if (m_palette.empty())
+        return Color3f(x);
 
     x *= m_palette.size() - 1;
 
@@ -113,24 +102,15 @@ float ColorMap::get_max_value(const Image* image, const AABB2u& crop_window)
 {
     float max_value = 0.0f;
 
-        for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
+    for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
+    {
+        for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
         {
-            for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
-            {
-                if (!m_palette.empty())
-                {
-                    Color3f color;
-                    image->get_pixel(x, y, color);
-                    max_value = max(color[0], max_value);
-                }
-                else
-                {
-                    float value;
-                    image->get_pixel(x, y, &value);
-                    max_value = max(value, max_value);
-                }
-            }
+            Color3f value;
+            image->get_pixel(x, y, value);
+            max_value = max(value[0], max_value);
         }
+    }
 
     return max_value;
 }
@@ -147,4 +127,4 @@ void ColorMap::fill_aov(
     }
 }
 
-}   // namespace renderer
+}   // namespace foundation

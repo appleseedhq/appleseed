@@ -35,11 +35,12 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/frame/frame.h"
-#include "renderer/modeling/postprocessingstage/colormap.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/image/color.h"
+#include "foundation/image/colormap.h"
+#include "foundation/image/colormapdata.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
 #include "foundation/platform/timers.h"
@@ -181,8 +182,9 @@ namespace
 
         void post_process_image(const Frame& frame) override
         {
+            const AABB2u& crop_window = frame.get_crop_window();
             ColorMap color_map;
-            color_map.remap_colors(frame, m_image, 0.0f, 0.0f);
+            color_map.remap_colors(crop_window, m_image, 0.0f, 0.0f);
         }
 
       private:

@@ -29,7 +29,7 @@
 // Interface header.
 #include "colormapdata.h"
 
-namespace renderer
+namespace foundation
 {
 
 const float MagmaColorMap[3 * 256] =
@@ -1085,4 +1085,4 @@ const float JetColorMap[3 * 9] =
     0.5f, 0.0f, 0.0f
 };
 
-}   // namespace renderer
+}   // namespace foundation

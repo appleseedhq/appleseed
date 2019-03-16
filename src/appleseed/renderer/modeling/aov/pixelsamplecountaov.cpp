@@ -33,10 +33,11 @@
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/frame/frame.h"
-#include "renderer/modeling/postprocessingstage/colormap.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+#include "foundation/image/colormap.h"
+#include "foundation/image/colormapdata.h"
 #include "foundation/image/image.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
@@ -75,15 +76,10 @@ const char* PixelSampleCountAOV::get_model() const
 
 void PixelSampleCountAOV::post_process_image(const Frame& frame)
 {
-    static const Color3f Blue(0.0f, 0.0f, 1.0f);
-    static const Color3f Red(1.0f, 0.0f, 0.0f);
-    vector<Color3f> palette;
-    palette.push_back(Red);
-    palette.push_back(Blue);
-
+    const AABB2u& crop_window = frame.get_crop_window();
     ColorMap color_map;
-    color_map.set_palette(palette);
-    color_map.remap_colors(frame, m_image, m_min_spp, m_max_spp);
+    color_map.set_palette(InfernoColorMap, countof(InfernoColorMap) / 3);
+    color_map.remap_colors(crop_window, m_image, m_min_spp, m_max_spp);
 }
 
 void PixelSampleCountAOV::set_normalization_range(

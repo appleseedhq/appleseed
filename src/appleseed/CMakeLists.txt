@@ -136,6 +136,10 @@ set (foundation_image_sources
     foundation/image/analysis.h
     foundation/image/canvasproperties.h
     foundation/image/color.h
+    foundation/image/colormap.cpp
+    foundation/image/colormap.h
+    foundation/image/colormapdata.cpp
+    foundation/image/colormapdata.h
     foundation/image/colorspace.cpp
     foundation/image/colorspace.h
     foundation/image/drawing.cpp
@@ -1884,10 +1888,6 @@ source_group ("renderer\\modeling\\object" FILES
 )
 
 set (renderer_modeling_postprocessingstage_sources
-    renderer/modeling/postprocessingstage/colormap.cpp
-    renderer/modeling/postprocessingstage/colormap.h
-    renderer/modeling/postprocessingstage/colormapdata.cpp
-    renderer/modeling/postprocessingstage/colormapdata.h
     renderer/modeling/postprocessingstage/colormappostprocessingstage.cpp
     renderer/modeling/postprocessingstage/colormappostprocessingstage.h
     renderer/modeling/postprocessingstage/ipostprocessingstagefactory.cpp
