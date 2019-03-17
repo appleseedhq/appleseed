@@ -125,27 +125,15 @@ bool are_images_compatible(const Image& image1, const Image& image2)
 
     return
         props1.m_canvas_width == props2.m_canvas_width &&
-        props1.m_canvas_height == props2.m_canvas_height &&
-        props1.m_tile_width == props2.m_tile_width &&
-        props1.m_tile_height == props2.m_tile_height &&
-        props1.m_channel_count == props2.m_channel_count;
+        props1.m_canvas_height == props2.m_canvas_height;
 }
 
-namespace
+double compute_error_squared(const Color3f& c1, const Color3f& c2)
 {
-    double sum_pixel_components(
-        const Tile&     tile,
-        const size_t    i)
-    {
-        double sum = 0.0;
-
-        const size_t channel_count = tile.get_channel_count();
-
-        for (size_t c = 0; c < channel_count; ++c)
-            sum += tile.get_component<double>(i, c);
-
-        return sum;
-    }
+    return
+        square(c1.r - c2.r) +
+        square(c1.g - c2.g) +
+        square(c1.b - c2.b);
 }
 
 double compute_rms_deviation(const Image& image1, const Image& image2)
@@ -157,28 +145,23 @@ double compute_rms_deviation(const Image& image1, const Image& image2)
 
     double mse = 0.0;   // mean square error
 
-    for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
+    for (size_t y = 0; y < props.m_canvas_height; ++y)
     {
-        for (size_t tx = 0; tx < props.m_tile_count_x; ++tx)
+        for (size_t x = 0; x < props.m_canvas_width; ++x)
         {
-            const Tile& tile1 = image1.tile(tx, ty);
-            const size_t tile_width = tile1.get_width();
-            const size_t tile_height = tile1.get_height();
+            float image_color[4];
+            image1.get_pixel(x, y, image_color);
 
-            const Tile& tile2 = image2.tile(tx, ty);
-            assert(tile2.get_width() == tile_width);
-            assert(tile2.get_height() == tile_height);
+            float ref_color[4];
+            image2.get_pixel(x, y, ref_color);
 
-            for (size_t i = 0; i < tile_width * tile_height; ++i)
-            {
-                const double sum1 = sum_pixel_components(tile1, i);
-                const double sum2 = sum_pixel_components(tile2, i);
-                mse += square(sum1 - sum2);
-            }
+            mse += compute_error_squared(
+                Color3f::from_array(image_color),
+                Color3f::from_array(ref_color));
         }
     }
 
-    mse /= props.m_pixel_count * square(props.m_channel_count);
+    mse /= props.m_pixel_count * 3.0f;
 
     return sqrt(mse);
 }

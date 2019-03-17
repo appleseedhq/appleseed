@@ -119,4 +119,44 @@ TEST_SUITE(Foundation_Image_Analysis)
 
         EXPECT_FEQ(1.0, rmsd);
     }
+
+    TEST_CASE(ComputeRMSDeviation_GivenImagesOfDifferentChannelSizes_ReturnsOne)
+    {
+        Image image1(4, 4, 2, 2, 3, PixelFormatFloat);
+        Image image2(4, 4, 2, 2, 4, PixelFormatFloat);
+
+        image1.clear(Color3f(0.0f));
+        image2.clear(Color4f(1.0f));
+
+        const double rmsd = compute_rms_deviation(image1, image2);
+
+        EXPECT_FEQ(1.0, rmsd);
+    }
+
+    TEST_CASE(ComputeRMSDeviation_GivenImagesOfDifferentTileSizes_ReturnsOne)
+    {
+        Image image1(4, 4, 1, 1, 4, PixelFormatFloat);
+        Image image2(4, 4, 2, 2, 4, PixelFormatFloat);
+
+        image1.clear(Color4f(0.0f));
+        image2.clear(Color4f(1.0f));
+
+        const double rmsd = compute_rms_deviation(image1, image2);
+
+        EXPECT_FEQ(1.0, rmsd);
+    }
+
+    TEST_CASE(ComputeRMSDeviation_GivenRedImageAndBlueImage_ReturnsAlmostRootTwoThirds)
+    {
+        Image image1(4, 4, 2, 2, 4, PixelFormatFloat);
+        Image image2(4, 4, 2, 2, 4, PixelFormatFloat);
+
+        image1.clear(Color4f(1.0f, 0.0f, 0.0f, 0.0f));
+        image2.clear(Color4f(0.0f, 1.0f, 0.0f, 0.0f));
+
+        const double rmsd = compute_rms_deviation(image1, image2);
+
+        EXPECT_LT(0.82f, rmsd);
+        EXPECT_GT(0.81f, rmsd);
+    }
 }

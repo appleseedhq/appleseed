@@ -30,6 +30,7 @@
 #pragma once
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
 #include "foundation/core/exceptions/exception.h"
 
 // appleseed.main headers.
@@ -56,6 +57,9 @@ APPLESEED_DLLSYMBOL double compute_average_luminance(const Image& image);
 
 // Return whether two images are compatible and thus can be compared.
 APPLESEED_DLLSYMBOL bool are_images_compatible(const Image& image1, const Image& image2);
+
+// Compute the squared error between two linear rgb colors.
+double compute_error_squared(const Color3f& c1, const Color3f& c2);
 
 // Exception thrown by comparison functions when two images are incompatible.
 struct ExceptionIncompatibleImages
