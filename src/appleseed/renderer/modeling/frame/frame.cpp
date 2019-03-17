@@ -47,7 +47,9 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/analysis.h"
 #include "foundation/image/color.h"
+#include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/genericprogressiveimagefilereader.h"
 #include "foundation/image/image.h"
@@ -134,6 +136,8 @@ struct Frame::Impl
 
     // Images.
     unique_ptr<Image>               m_image;
+    string                          m_ref_image_path;
+    unique_ptr<Image>               m_ref_image;
     unique_ptr<ImageStack>          m_aov_images;
 
     // Internal state.
@@ -151,7 +155,8 @@ struct Frame::Impl
 Frame::Frame(
     const char*         name,
     const ParamArray&   params,
-    const AOVContainer& aovs)
+    const AOVContainer& aovs,
+    const SearchPaths&  search_paths)
   : Entity(g_class_uid, params)
   , impl(new Impl(this))
 {
@@ -171,6 +176,18 @@ Frame::Frame(
 
     // Retrieve the image properties.
     m_props = impl->m_image->properties();
+
+    // Load the reference image.
+    if (!impl->m_ref_image_path.empty())
+    {
+        RENDERER_LOG_DEBUG("loading reference image %s...", impl->m_ref_image_path.c_str());
+
+        GenericImageFileReader reader;
+        impl->m_ref_image.reset(reader.read(
+            search_paths.qualify(impl->m_ref_image_path).c_str()));
+
+        validate_ref_image();
+    }
 
     // Create the image stack for AOVs.
     impl->m_aov_images.reset(
@@ -256,7 +273,8 @@ void Frame::print_settings()
         "  noise seed                    %s\n"
         "  denoising mode                %s\n"
         "  create checkpoint             %s\n"
-        "  resume checkpoint             %s\n",
+        "  resume checkpoint             %s\n"
+        "  reference image path          %s",
         get_path().c_str(),
         get_uid(),
         camera_name != nullptr ? camera_name : "none",
@@ -275,7 +293,8 @@ void Frame::print_settings()
         impl->m_denoising_mode == DenoisingMode::Off ? "off" :
         impl->m_denoising_mode == DenoisingMode::WriteOutputs ? "write outputs" : "denoise",
         impl->m_checkpoint_create ? impl->m_checkpoint_create_path.c_str() : "off",
-        impl->m_checkpoint_resume ? impl->m_checkpoint_resume_path.c_str() : "off");
+        impl->m_checkpoint_resume ? impl->m_checkpoint_resume_path.c_str() : "off",
+        impl->m_ref_image_path.empty() ? "n/a" : impl->m_ref_image_path.c_str());
 }
 
 const AOVContainer& Frame::aovs() const
@@ -299,6 +318,28 @@ const char* Frame::get_active_camera_name() const
 Image& Frame::image() const
 {
     return *impl->m_image.get();
+}
+
+Image& Frame::ref_image() const
+{
+    return *impl->m_ref_image.get();
+}
+
+bool Frame::validate_ref_image() const
+{
+    if (!impl->m_ref_image)
+        return false;
+
+    bool is_compatible = are_images_compatible(*impl->m_image.get(), *impl->m_ref_image.get());
+    if (!is_compatible)
+    {
+        RENDERER_LOG_ERROR(
+            "the reference image is not compatible with the output frame "
+            "(different dimensions, tile size or number of channels).");
+
+        impl->m_ref_image.reset();
+    }
+    return is_compatible;
 }
 
 void Frame::clear_main_and_aov_images()
@@ -1492,6 +1533,9 @@ void Frame::extract_parameters()
             }
         }
     }
+
+    // Retrieve reference image path parameters.
+    impl->m_ref_image_path = m_params.get_optional<string>("reference_image", "");
 }
 
 AOVContainer& Frame::internal_aovs() const
@@ -1712,7 +1756,7 @@ auto_release_ptr<Frame> FrameFactory::create(
 {
     return
         auto_release_ptr<Frame>(
-            new Frame(name, params, AOVContainer()));
+            new Frame(name, params, AOVContainer(), SearchPaths()));
 }
 
 auto_release_ptr<Frame> FrameFactory::create(
@@ -1722,7 +1766,18 @@ auto_release_ptr<Frame> FrameFactory::create(
 {
     return
         auto_release_ptr<Frame>(
-            new Frame(name, params, aovs));
+            new Frame(name, params, aovs, SearchPaths()));
+}
+
+auto_release_ptr<Frame> FrameFactory::create(
+        const char*         name,
+        const ParamArray&   params,
+        const AOVContainer& aovs,
+        const SearchPaths&  search_paths)
+{
+    return
+        auto_release_ptr<Frame>(
+            new Frame(name, params, aovs, search_paths));
 }
 
 }   // namespace renderer

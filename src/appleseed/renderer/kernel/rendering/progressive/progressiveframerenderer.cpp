@@ -47,7 +47,6 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/analysis.h"
 #include "foundation/image/canvasproperties.h"
-#include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/image.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/scalar.h"
@@ -148,33 +147,12 @@ namespace
             if (callback_factory)
                 m_tile_callback.reset(callback_factory->create());
 
-            // Load the reference image if one is specified.
-            if (!m_params.m_ref_image_path.empty())
-            {
-                const string ref_image_path =
-                    to_string(project.search_paths().qualify(m_params.m_ref_image_path));
+            if (m_project.get_frame()->validate_ref_image()) {
+                m_ref_image_avg_lum = compute_average_luminance(m_project.get_frame()->ref_image());
 
-                RENDERER_LOG_DEBUG("loading reference image %s...", ref_image_path.c_str());
-
-                GenericImageFileReader reader;
-                m_ref_image.reset(reader.read(ref_image_path.c_str()));
-
-                if (are_images_compatible(m_project.get_frame()->image(), *m_ref_image))
-                {
-                    m_ref_image_avg_lum = compute_average_luminance(*m_ref_image.get());
-
-                    RENDERER_LOG_DEBUG(
-                        "reference image average luminance is %s.",
-                        pretty_scalar(m_ref_image_avg_lum, 6).c_str());
-                }
-                else
-                {
-                    RENDERER_LOG_ERROR(
-                        "the reference image is not compatible with the output frame "
-                        "(different dimensions, tile size or number of channels).");
-
-                    m_ref_image.reset();
-                }
+                RENDERER_LOG_DEBUG(
+                    "reference image average luminance is %s.",
+                    pretty_scalar(m_ref_image_avg_lum, 6).c_str());
             }
         }
 
@@ -217,8 +195,7 @@ namespace
                 "  max samples                   %s\n"
                 "  max fps                       %f\n"
                 "  collect performance stats     %s\n"
-                "  collect luminance stats       %s\n"
-                "  reference image path          %s",
+                "  collect luminance stats       %s\n",
                 get_spectrum_mode_name(m_params.m_spectrum_mode).c_str(),
                 get_sampling_context_mode_name(m_params.m_sampling_mode).c_str(),
                 pretty_uint(m_params.m_thread_count).c_str(),
@@ -227,8 +204,7 @@ namespace
                     : pretty_uint(m_params.m_max_sample_count).c_str(),
                 m_params.m_max_fps,
                 m_params.m_perf_stats ? "on" : "off",
-                m_params.m_luminance_stats ? "on" : "off",
-                m_params.m_ref_image_path.empty() ? "n/a" : m_params.m_ref_image_path.c_str());
+                m_params.m_luminance_stats ? "on" : "off");
 
             m_sample_generators.front()->print_settings();
         }
@@ -276,7 +252,7 @@ namespace
                     *m_buffer.get(),
                     m_params.m_perf_stats,
                     m_params.m_luminance_stats,
-                    m_ref_image.get(),
+                    &m_project.get_frame()->ref_image(),
                     m_ref_image_avg_lum,
                     m_abort_switch));
             m_statistics_thread.reset(
@@ -390,7 +366,6 @@ namespace
             const double                m_max_fps;              // maximum display frequency in frames/second
             const bool                  m_perf_stats;           // collect and print performance statistics?
             const bool                  m_luminance_stats;      // collect and print luminance statistics?
-            const string                m_ref_image_path;       // path to the reference image
 
             explicit Parameters(const ParamArray& params)
               : m_spectrum_mode(get_spectrum_mode(params))
@@ -400,7 +375,6 @@ namespace
               , m_max_fps(params.get_optional<double>("max_fps", 30.0))
               , m_perf_stats(params.get_optional<bool>("performance_statistics", false))
               , m_luminance_stats(params.get_optional<bool>("luminance_statistics", false))
-              , m_ref_image_path(params.get_optional<string>("reference_image", ""))
             {
             }
         };
@@ -718,7 +692,6 @@ namespace
 
         auto_release_ptr<ITileCallback>         m_tile_callback;
 
-        unique_ptr<Image>                       m_ref_image;
         double                                  m_ref_image_avg_lum;
 
         unique_ptr<DisplayFunc>                 m_display_func;
