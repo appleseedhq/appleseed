@@ -37,6 +37,7 @@
 #include <cassert>
 #include <cstddef>
 #include <limits>
+#include <memory>
 #include <string>
 
 namespace foundation
