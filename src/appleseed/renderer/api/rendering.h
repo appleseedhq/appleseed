@@ -45,4 +45,5 @@
 #include "renderer/kernel/rendering/nulltilecallback.h"
 #include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
 #include "renderer/kernel/rendering/tilecallbackbase.h"
+#include "renderer/kernel/rendering/tilecallbackcollection.h"
 #include "renderer/kernel/rendering/timedrenderercontroller.h"

@@ -202,7 +202,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
     DirectShadingComponents&    radiance,
     const bool                  sample_phase_function) const
 {
-    assert (light_sample != nullptr);
+    assert(light_sample != nullptr);
 
     // Sample channel uniformly at random.
     sampling_context.split_in_place(1, 1);

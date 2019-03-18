@@ -34,8 +34,11 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
 
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
-namespace renderer    { class DirectShadingComponents; }
+namespace renderer  { class DirectShadingComponents; }
 
 namespace renderer
 {
@@ -59,9 +62,9 @@ class ShadingComponents
     ShadingComponents();
 
     void add_emission(
-        const size_t                path_length,
-        const ScatteringMode::Mode  scattering_mode,
-        const Spectrum&             value);
+        const size_t                    path_length,
+        const ScatteringMode::Mode      scattering_mode,
+        const Spectrum&                 value);
 
     void add(
         const size_t                    path_length,

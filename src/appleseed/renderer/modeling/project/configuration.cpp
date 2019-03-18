@@ -34,7 +34,6 @@
 #include "renderer/kernel/lighting/backwardlightsampler.h"
 #include "renderer/kernel/lighting/pt/ptlightingengine.h"
 #include "renderer/kernel/lighting/sppm/sppmlightingengine.h"
-#include "renderer/kernel/rendering/final/adaptivepixelrenderer.h"
 #include "renderer/kernel/rendering/final/adaptivetilerenderer.h"
 #include "renderer/kernel/rendering/final/uniformpixelrenderer.h"
 #include "renderer/kernel/rendering/generic/genericframerenderer.h"
@@ -164,7 +163,7 @@ Dictionary Configuration::get_metadata()
             .insert("help", "Whether to use Embree ray tracing kernels or appleseed internal ones"));
 
 #endif
-    
+
     metadata.dictionaries().insert(
         "light_sampler",
         BackwardLightSampler::get_params_metadata());
@@ -176,10 +175,6 @@ Dictionary Configuration::get_metadata()
     metadata.dictionaries().insert(
         "uniform_pixel_renderer",
         UniformPixelRendererFactory::get_params_metadata());
-
-    metadata.dictionaries().insert(
-        "adaptive_pixel_renderer",
-        AdaptivePixelRendererFactory::get_params_metadata());
 
     metadata.dictionaries().insert(
         "adaptive_tile_renderer",

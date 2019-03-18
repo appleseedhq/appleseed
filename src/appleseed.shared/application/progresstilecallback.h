@@ -32,16 +32,13 @@
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
 
-// Standard headers.
-#include <memory>
-
-// Forward declarations.
-namespace foundation    { class Logger; }
+// appleseed.shared headers
+#include "dllsymbol.h"
 
 namespace appleseed {
-namespace cli {
+namespace shared {
 
-class ProgressTileCallbackFactory
+class SHAREDDLL ProgressTileCallbackFactory
   : public renderer::ITileCallbackFactory
 {
   public:
@@ -52,8 +49,9 @@ class ProgressTileCallbackFactory
     renderer::ITileCallback* create() override;
 
   private:
-    std::unique_ptr<renderer::ITileCallback> m_callback;
+    struct Impl;
+    Impl*  impl;
 };
 
-}   // namespace cli
+}   // namespace shared
 }   // namespace appleseed

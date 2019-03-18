@@ -35,10 +35,10 @@
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/shading/ambientocclusion.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
+#include "renderer/modeling/aov/screenspacevelocityaov.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/camera/camera.h"
@@ -87,8 +87,9 @@ namespace
 const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
     DiagnosticSurfaceShader::ShadingModeValues[] =
 {
-    { "albedo",                     Albedo },
     { "coverage",                   Coverage },
+    { "facing_ratio",               FacingRatio },
+    { "albedo",                     Albedo },
     { "barycentric",                Barycentric },
     { "uv",                         UV },
     { "tangent",                    Tangent },
@@ -98,23 +99,24 @@ const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
     { "original_shading_normal",    OriginalShadingNormal },
     { "world_space_position",       WorldSpacePosition },
     { "world_space_velocity",       WorldSpaceVelocity },
+    { "screen_space_velocity",      ScreenSpaceVelocity },
     { "sides",                      Sides },
     { "depth",                      Depth },
-    { "screen_space_wireframe" ,    ScreenSpaceWireframe },
     { "world_space_wireframe" ,     WorldSpaceWireframe },
+    { "screen_space_wireframe" ,    ScreenSpaceWireframe },
     { "ambient_occlusion",          AmbientOcclusion },
     { "assembly_instances",         AssemblyInstances },
     { "object_instances",           ObjectInstances },
     { "primitives",                 Primitives },
     { "materials",                  Materials },
-    { "ray_spread",                 RaySpread },
-    { "facing_ratio",               FacingRatio }
+    { "ray_spread",                 RaySpread }
 };
 
 const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingModeNames[] =
 {
-    { "albedo",                     "Albedo" },
     { "coverage",                   "Coverage" },
+    { "facing_ratio",               "Facing Ratio" },
+    { "albedo",                     "Albedo" },
     { "barycentric",                "Barycentric Coordinates" },
     { "uv",                         "UV Coordinates" },
     { "tangent",                    "Tangents" },
@@ -124,17 +126,17 @@ const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingMod
     { "original_shading_normal",    "Original Shading Normals" },
     { "world_space_position",       "World-Space Position" },
     { "world_space_velocity",       "World-Space Velocity" },
+    { "screen_space_velocity",      "Screen-Space Velocity" },
     { "sides",                      "Sides" },
     { "depth",                      "Depth" },
-    { "screen_space_wireframe",     "Screen-space Wireframe" },
-    { "world_space_wireframe",      "World-space Wireframe" },
+    { "world_space_wireframe",      "World-Space Wireframe" },
+    { "screen_space_wireframe",     "Screen-Space Wireframe" },
     { "ambient_occlusion",          "Ambient Occlusion" },
     { "assembly_instances",         "Assembly Instances" },
     { "object_instances",           "Object Instances" },
     { "primitives",                 "Primitives" },
     { "materials",                  "Materials" },
-    { "ray_spread",                 "Ray Spread" },
-    { "facing_ratio",               "Facing Ratio" }
+    { "ray_spread",                 "Ray Spread" }
 };
 
 struct DiagnosticSurfaceShader::Impl
@@ -204,8 +206,12 @@ bool DiagnosticSurfaceShader::on_render_begin(
         return false;
 
     const AABB3d scene_aabb(project.get_scene()->get_render_data().m_bbox);
+    const Vector3d scene_extent = scene_aabb.extent();
+
     impl->m_scene_aabb_min = scene_aabb.min;
-    impl->m_rcp_scene_aabb_extent = Vector3d(1.0) / scene_aabb.extent();
+    impl->m_rcp_scene_aabb_extent[0] = scene_extent[0] != 0.0 ? 1.0 / scene_extent[0] : 0.0;
+    impl->m_rcp_scene_aabb_extent[1] = scene_extent[1] != 0.0 ? 1.0 / scene_extent[1] : 0.0;
+    impl->m_rcp_scene_aabb_extent[2] = scene_extent[2] != 0.0 ? 1.0 / scene_extent[2] : 0.0;
 
     return true;
 }
@@ -224,28 +230,9 @@ namespace
         else return x;
     }
 
-    // Compute a color from a given 2D vector.
-    template <typename T>
-    inline Color3f vector2_to_color(const Vector<T, 2>& vec)
-    {
-        const float u = wrap1(static_cast<float>(vec[0]));
-        const float v = wrap1(static_cast<float>(vec[1]));
-        const float w = wrap1(1.0f - u - v);
-        return Color3f(u, v, w);
-    }
-
-    // Compute a color from uv coordinates.
-    template <typename T>
-    inline Color3f uvs_to_color(const Vector<T, 2>& vec)
-    {
-        const float u = wrap1(static_cast<float>(vec[0]));
-        const float v = wrap1(static_cast<float>(vec[1]));
-        return Color3f(u, v, 0.0f);
-    }
-
     // Compute a color from a given unit-length 3D vector.
     template <typename T>
-    inline Color3f vector3_to_color(const Vector<T, 3>& vec)
+    inline Color3f unit_vector3_to_color(const Vector<T, 3>& vec)
     {
         assert(is_normalized(vec));
 
@@ -264,17 +251,17 @@ namespace
 
     inline void set_shading_result(
         ShadingResult&  shading_result,
-        const Color3f&  color)
+        const Color4f&  color)
     {
-        shading_result.m_main.rgb() = color;
-        shading_result.m_main.a = 1.0f;
+        shading_result.m_main = color;
     }
 
     inline void set_shading_result(
         ShadingResult&  shading_result,
-        const Color4f&  color)
+        const Color3f&  color)
     {
-        shading_result.m_main = color;
+        shading_result.m_main.rgb() = color;
+        shading_result.m_main.a = 1.0f;
     }
 
     inline void set_shading_result(
@@ -291,11 +278,27 @@ void DiagnosticSurfaceShader::evaluate(
     const PixelContext&         pixel_context,
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point,
-    AOVAccumulatorContainer&    aov_accumulators,
-    ShadingResult&              shading_result) const
+    ShadingResult&              shading_result,
+    ShadingComponents&          shading_components,
+    AOVComponents&              aov_components) const
 {
     switch (impl->m_shading_mode)
     {
+      case Coverage:
+        set_shading_result(shading_result, Color3f(1.0f));
+        break;
+
+      case FacingRatio:
+        {
+            const Vector3d& normal = shading_point.get_shading_normal();
+            const Vector3d& view = shading_point.get_ray().m_dir;
+            const double facing = abs(dot(normal, view));
+            set_shading_result(
+                shading_result,
+                Color3f(static_cast<float>(facing)));
+        }
+        break;
+
       case Albedo:
         {
             shading_result.set_main_to_opaque_pink();
@@ -336,20 +339,23 @@ void DiagnosticSurfaceShader::evaluate(
         }
         break;
 
-      case Coverage:
-        set_shading_result(shading_result, Color3f(1.0f));
-        break;
-
       case Barycentric:
-        set_shading_result(
-            shading_result,
-            vector2_to_color(shading_point.get_bary()));
+        {
+            const Vector2f& bary = shading_point.get_bary();
+            const float r = wrap1(static_cast<float>(bary[0]));
+            const float g = wrap1(static_cast<float>(bary[1]));
+            const float b = wrap1(1.0f - r - g);
+            set_shading_result(shading_result, Color3f(r, g, b));
+        }
         break;
 
       case UV:
-        set_shading_result(
-            shading_result,
-            uvs_to_color(shading_point.get_uv(0)));
+        {
+            const Vector2f& uv = shading_point.get_uv(0);
+            const float r = wrap1(static_cast<float>(uv[0]));
+            const float g = wrap1(static_cast<float>(uv[1]));
+            set_shading_result(shading_result, Color3f(r, g, 0.0f));
+        }
         break;
 
       case Tangent:
@@ -377,27 +383,26 @@ void DiagnosticSurfaceShader::evaluate(
                 impl->m_shading_mode == Tangent ? shading_point.get_shading_basis().get_tangent_u() :
                 shading_point.get_shading_basis().get_tangent_v();
 
-            set_shading_result(shading_result, vector3_to_color(v));
+            set_shading_result(shading_result, unit_vector3_to_color(v));
         }
         break;
 
       case GeometricNormal:
         set_shading_result(
             shading_result,
-            vector3_to_color(shading_point.get_geometric_normal()));
+            unit_vector3_to_color(shading_point.get_geometric_normal()));
         break;
 
       case OriginalShadingNormal:
         set_shading_result(
             shading_result,
-            vector3_to_color(shading_point.get_original_shading_normal()));
+            unit_vector3_to_color(shading_point.get_original_shading_normal()));
         break;
 
       case WorldSpacePosition:
         {
-            const Vector3d p =
-                saturate(
-                    (shading_point.get_point() - impl->m_scene_aabb_min) * impl->m_rcp_scene_aabb_extent);
+            const Vector3d d = shading_point.get_point() - impl->m_scene_aabb_min;
+            const Vector3d p = saturate(d * impl->m_rcp_scene_aabb_extent);
             set_shading_result(
                 shading_result,
                 Color3f(Color3d(p.x, p.y, p.z)));
@@ -406,14 +411,26 @@ void DiagnosticSurfaceShader::evaluate(
 
       case WorldSpaceVelocity:
         {
-            const Vector3d& v = shading_point.get_world_space_point_velocity();
+            Vector3d v = shading_point.get_world_space_point_velocity();
             const double vn = norm(v);
-            set_shading_result(
-                shading_result,
-                vn > 0.0
-                    ? vector3_to_color(v / vn) * static_cast<float>(vn)
-                    : Color3f(0.0f));
+            if (vn > 0.0)
+            {
+                v /= vn;
+                set_shading_result(
+                    shading_result,
+                    Color3f(
+                        static_cast<float>((v[0] + 1.0) * 0.5),
+                        static_cast<float>((v[1] + 1.0) * 0.5),
+                        static_cast<float>(vn)));
+            }
+            else set_shading_result(shading_result, Color3f(0.0f));
         }
+        break;
+
+      case ScreenSpaceVelocity:
+        set_shading_result(
+            shading_result,
+            compute_screen_space_velocity_color(shading_point, 0.0));
         break;
 
       case Sides:
@@ -428,6 +445,56 @@ void DiagnosticSurfaceShader::evaluate(
         set_shading_result(
             shading_result,
             Color3f(static_cast<float>(shading_point.get_distance())));
+        break;
+
+      case WorldSpaceWireframe:
+        {
+            // Initialize the shading result to the background color.
+            set_shading_result(shading_result, Color4f(0.0f, 0.0f, 0.8f, 0.5f));
+
+            switch (shading_point.get_primitive_type())
+            {
+              case ShadingPoint::PrimitiveTriangle:
+                {
+                    // World space thickness of the wires.
+                    const double SquareWireThickness = square(0.0015);
+
+                    // Retrieve the world space intersection point.
+                    const Vector3d& point = shading_point.get_point();
+
+                    // Loop over the triangle edges.
+                    for (size_t i = 0; i < 3; ++i)
+                    {
+                        // Retrieve the end points of this edge.
+                        const size_t j = (i + 1) % 3;
+                        const Vector3d& vi = shading_point.get_vertex(i);
+                        const Vector3d& vj = shading_point.get_vertex(j);
+
+                        // Compute the world space distance from the intersection point to the edge.
+                        const double d = square_distance_point_segment(point, vi, vj);
+
+                        // Shade with the wire's color if the hit point is close enough to the edge.
+                        if (d < SquareWireThickness)
+                        {
+                            set_shading_result(shading_result, Color4f(1.0f));
+                            break;
+                        }
+                    }
+                }
+                break;
+
+              case ShadingPoint::PrimitiveProceduralSurface:
+                // todo: implement.
+                break;
+
+              case ShadingPoint::PrimitiveCurve1:
+              case ShadingPoint::PrimitiveCurve3:
+                // todo: implement.
+                break;
+
+              assert_otherwise;
+            }
+        }
         break;
 
       case ScreenSpaceWireframe:
@@ -466,56 +533,6 @@ void DiagnosticSurfaceShader::evaluate(
 
                         // Compute the film space distance from the intersection point to the edge.
                         const double d = square_distance_point_segment(point_ndc, vi_ndc, vj_ndc);
-
-                        // Shade with the wire's color if the hit point is close enough to the edge.
-                        if (d < SquareWireThickness)
-                        {
-                            set_shading_result(shading_result, Color4f(1.0f));
-                            break;
-                        }
-                    }
-                }
-                break;
-
-              case ShadingPoint::PrimitiveProceduralSurface:
-                // todo: implement.
-                break;
-
-              case ShadingPoint::PrimitiveCurve1:
-              case ShadingPoint::PrimitiveCurve3:
-                // todo: implement.
-                break;
-
-              assert_otherwise;
-            }
-        }
-        break;
-
-      case WorldSpaceWireframe:
-        {
-            // Initialize the shading result to the background color.
-            set_shading_result(shading_result, Color4f(0.0f, 0.0f, 0.8f, 0.5f));
-
-            switch (shading_point.get_primitive_type())
-            {
-              case ShadingPoint::PrimitiveTriangle:
-                {
-                    // World space thickness of the wires.
-                    const double SquareWireThickness = square(0.0015);
-
-                    // Retrieve the world space intersection point.
-                    const Vector3d& point = shading_point.get_point();
-
-                    // Loop over the triangle edges.
-                    for (size_t i = 0; i < 3; ++i)
-                    {
-                        // Retrieve the end points of this edge.
-                        const size_t j = (i + 1) % 3;
-                        const Vector3d& vi = shading_point.get_vertex(i);
-                        const Vector3d& vj = shading_point.get_vertex(j);
-
-                        // Compute the world space distance from the intersection point to the edge.
-                        const double d = square_distance_point_segment(point, vi, vj);
 
                         // Shade with the wire's color if the hit point is close enough to the edge.
                         if (d < SquareWireThickness)
@@ -639,17 +656,6 @@ void DiagnosticSurfaceShader::evaluate(
 
                 }
             }
-        }
-        break;
-
-      case FacingRatio:
-        {
-            const Vector3d& normal = shading_point.get_shading_normal();
-            const Vector3d& view = shading_point.get_ray().m_dir;
-            const double facing = abs(dot(normal, view));
-            set_shading_result(
-                shading_result,
-                Color3f(static_cast<float>(facing)));
         }
         break;
 

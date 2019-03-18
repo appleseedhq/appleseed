@@ -29,11 +29,13 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+
+// Standard headers.
+#include <cstddef>
 
 namespace renderer
 {
@@ -46,33 +48,34 @@ APPLESEED_DECLARE_INPUT_VALUES(NPRShadingInputValues)
 {
 };
 
-enum NPRContourFeatures
-{
-    ObjectInstanceID        = 1UL << 0,
-    MaterialID              = 1UL << 1,
-    AllIDFeatures           = ObjectInstanceID | MaterialID,
-
-    OcclusionEdges          = 1UL << 2,
-    CreaseEdges             = 1UL << 3,
-    AllDifferenceFeatures   = OcclusionEdges | CreaseEdges,
-
-    AllFeatures             = ~0
-};
-
 
 //
 // NPRContour closure input values.
 //
 
+enum class NPRContourFeatures : unsigned int
+{
+    None                    = 0u,
+    All                     = ~0u,
+
+    ObjectInstanceID        = 1u << 1,
+    MaterialID              = 1u << 2,
+    AllIDFeatures           = ObjectInstanceID | MaterialID,
+
+    OcclusionEdges          = 1u << 3,
+    CreaseEdges             = 1u << 4,
+    AllDifferenceFeatures   = OcclusionEdges | CreaseEdges,
+};
+
 APPLESEED_DECLARE_INPUT_VALUES(NPRContourInputValues)
 {
-    foundation::Color3f m_color;
-    float               m_opacity;
-    float               m_width;
-    float               m_occlusion_threshold;
-    float               m_cos_crease_threshold;
-    int                 m_features;
-    size_t              m_quality;
+    foundation::Color3f     m_color;
+    float                   m_opacity;
+    float                   m_width;
+    float                   m_occlusion_threshold;
+    float                   m_cos_crease_threshold;
+    unsigned int            m_features;
+    size_t                  m_quality;
 };
 
 }   // namespace renderer

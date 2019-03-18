@@ -46,7 +46,7 @@ class APPLESEED_DLLSYMBOL SerialMersenneTwister
 {
   public:
     // Constructors, seed the generator.
-    explicit SerialMersenneTwister(const uint32 seed = 5489UL);
+    explicit SerialMersenneTwister(const uint32 seed = 5489u);
     SerialMersenneTwister(const uint32 init_key[], const int key_length);
 
     // Generate a 32-bit random number.
@@ -83,8 +83,8 @@ inline uint32 SerialMersenneTwister::rand_uint32()
 
     // Tempering.
     y ^= (y >> 11);
-    y ^= (y << 7)  & 0x9d2c5680UL;
-    y ^= (y << 15) & 0xefc60000UL;
+    y ^= (y << 7)  & 0x9d2c5680u;
+    y ^= (y << 15) & 0xefc60000u;
     y ^= (y >> 18);
 
     return y;

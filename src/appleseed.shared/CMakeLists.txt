@@ -47,6 +47,8 @@ set (application_sources
     application/commandlinehandlerbase.cpp
     application/commandlinehandlerbase.h
     application/dllsymbol.h
+    application/progresstilecallback.cpp
+    application/progresstilecallback.h
     application/superlogger.cpp
     application/superlogger.h
 )

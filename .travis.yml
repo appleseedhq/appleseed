@@ -57,5 +57,5 @@ matrix:
     fast_finish: true
 
 script:
-  - if [ $TRAVIS_OS_NAME == linux ]; then ./travis/build-linux.sh ; fi
-  - if [ $TRAVIS_OS_NAME == osx ]; then ./travis/build-macos.sh ; fi
+  - if [ $TRAVIS_OS_NAME == linux ]; then chmod +x ./scripts/travis/build-linux.sh ; ./scripts/travis/build-linux.sh ; fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then chmod +x ./scripts/travis/build-macos.sh ; ./scripts/travis/build-macos.sh ; fi

@@ -140,6 +140,12 @@ Vector<T, 2> sample_circle_uniform(const T s);
 template <typename T>
 Vector<T, 3> sample_triangle_uniform(const Vector<T, 2>& s);
 
+// An alternate implementation of sample_triangle_uniform() due to Eric Heitz.
+// See https://drive.google.com/file/d/1J-183vt4BrN9wmqItECIjjLIKwm29qSg/view
+// for details.
+template <typename T>
+Vector<T, 3> sample_triangle_uniform_heitz(const Vector<T, 2>& s);
+
 // Build a regular N-sided polygon to use with sample_regular_polygon_uniform().
 template <typename T>
 void build_regular_polygon(
@@ -147,11 +153,19 @@ void build_regular_polygon(
     const T             tilt_angle,
     Vector<T, 2>        vertices[]);
 
-// Map a uniform sample in [0,1)^2 to a point on the surface of a regular
+// Map a uniform sample in [0,1)^3 to a point on the surface of a regular
 // N-sided polygon with a uniform probability density p(x) = 1/A.
 template <typename T>
 Vector<T, 2> sample_regular_polygon_uniform(
     const Vector<T, 3>& s,
+    const size_t        vertex_count,
+    const Vector<T, 2>  vertices[]);
+
+// Map a uniform sample in [0,1)^2 to a point on the surface of a regular
+// N-sided polygon with a uniform probability density p(x) = 1/A.
+template <typename T>
+Vector<T, 2> sample_regular_polygon_uniform(
+    const Vector<T, 2>& s,
     const size_t        vertex_count,
     const Vector<T, 2>  vertices[]);
 
@@ -223,9 +237,10 @@ T equiangular_distribution_pdf(
     const T theta_b,                // end angle
     const T distance);              // distance from point to the ray
 
+
 //
-// Reciprocal distribution.
-// p(X) ~ 1 / X, where X belongs to [l,r).
+// Reciprocal distribution:
+// p(X) ~ 1 / X, where X belongs to [l, r).
 //
 
 template <typename T>
@@ -238,6 +253,7 @@ T rcp_distribution_pdf(
     const T x,
     const T l,
     const T r);
+
 
 //
 // Implementation.
@@ -436,7 +452,32 @@ inline Vector<T, 3> sample_triangle_uniform(const Vector<T, 2>& s)
     Vector<T, 3> b;
     b[0] = T(1.0) - sqrt_s0;
     b[1] = (T(1.0) - s[1]) * sqrt_s0;
-    b[2] = s[1] * sqrt_s0;
+    b[2] = T(1.0) - b[0] - b[1];
+
+    assert(feq(b[0] + b[1] + b[2], T(1.0)));
+
+    return b;
+}
+
+template <typename T>
+inline Vector<T, 3> sample_triangle_uniform_heitz(const Vector<T, 2>& s)
+{
+    assert(s[0] >= T(0.0) && s[0] < T(1.0));
+    assert(s[1] >= T(0.0) && s[1] < T(1.0));
+
+    T t0 = T(0.5) * s[0];
+    T t1 = T(0.5) * s[1];
+
+    const T offset = t1 - t0;
+
+    if (offset > T(0.0))
+        t1 += offset;
+    else t0 -= offset;
+
+    Vector<T, 3> b;
+    b[0] = t0;
+    b[1] = t1;
+    b[2] = T(1.0) - b[0] - b[1];
 
     assert(feq(b[0] + b[1] + b[2], T(1.0)));
 
@@ -470,19 +511,57 @@ inline Vector<T, 2> sample_regular_polygon_uniform(
     assert(vertex_count >= 3);
 
     const size_t v0_index = truncate<size_t>(s[0] * vertex_count);
-    size_t v1_index = v0_index + 1;
 
+    size_t v1_index = v0_index + 1;
     if (v1_index == vertex_count)
         v1_index = 0;
 
     const Vector<T, 2>& v0 = vertices[v0_index];
     const Vector<T, 2>& v1 = vertices[v1_index];
 
-    const T sqrt_s1 = std::sqrt(s[1]);
-    const T b0 = T(1.0) - sqrt_s1;
-    const T b1 = s[2] * sqrt_s1;
+    T t0 = T(0.5) * s[1];
+    T t1 = T(0.5) * s[2];
 
-    return b0 * v0 + b1 * v1;
+    const T offset = t1 - t0;
+
+    if (offset > T(0.0))
+        t1 += offset;
+    else t0 -= offset;
+
+    return t0 * v0 + t1 * v1;
+}
+
+template <typename T>
+inline Vector<T, 2> sample_regular_polygon_uniform(
+    const Vector<T, 2>& s,
+    const size_t        vertex_count,
+    const Vector<T, 2>  vertices[])
+{
+    assert(s[0] >= T(0.0) && s[0] < T(1.0));
+    assert(s[1] >= T(0.0) && s[1] < T(1.0));
+    assert(vertex_count >= 3);
+
+    const size_t v0_index = truncate<size_t>(s[0] * vertex_count);
+    const T rescaled_s0 = s[0] * vertex_count - v0_index;
+    assert(rescaled_s0 >= T(0.0) && rescaled_s0 < T(1.0));
+
+    size_t v1_index = v0_index + 1;
+    if (v1_index == vertex_count)
+        v1_index = 0;
+
+    const Vector<T, 2>& v0 = vertices[v0_index];
+    const Vector<T, 2>& v1 = vertices[v1_index];
+
+    T t0 = T(0.5) * rescaled_s0;
+    T t1 = T(0.5) * s[1];
+
+    const T offset = t1 - t0;
+
+    if (offset > T(0.0))
+        t1 += offset;
+    else t0 -= offset;
+
+    return t0 * v0 + t1 * v1;
 }
 
 template <typename T>
@@ -499,6 +578,8 @@ Vector<T, 3> sample_spherical_triangle_uniform(
     // Compute the interior angles of the spherical triangle.
     T alpha, beta, gamma;
     compute_spherical_triangle_interior_angles(a, b, c, alpha, beta, gamma);
+    const T cos_alpha = std::cos(alpha);
+    const T sin_alpha = std::sin(alpha);
 
     // Compute the area of the spherical triangle.
     const T area = compute_spherical_triangle_area(alpha, beta, gamma);
@@ -511,22 +592,23 @@ Vector<T, 3> sample_spherical_triangle_uniform(
     const T t = std::cos(area_hat - alpha);
 
     // Compute the pair (u, v) that determines beta_hat.
-    const T u = t - std::cos(alpha);
-    const T v = s + std::sin(alpha) * std::cos(c);
+    const T u = t - cos_alpha;
+    const T v = s + sin_alpha * std::cos(c);
 
     // Let q be the cosine of the new edge length b_hat.
-    const T q_num = (v * t - u * s) * std::cos(alpha) - v;
-    const T q_den = (v * s + u * t) * std::sin(alpha);
+    const T q_num = (v * t - u * s) * cos_alpha - v;
+    const T q_den = (v * s + u * t) * sin_alpha;
     const T q = clamp(q_num / q_den, T(-1.0), T(1.0));
 
     // Compute the third vertex of the sub-triangle.
-    const Vector3d C_hat = q * A + std::sqrt(T(1.0) - q * q) * normalize(C - dot(C, A) * A);
+    const Vector<T, 3> C_hat = q * A + std::sqrt(T(1.0) - q * q) * normalize(C - dot(C, A) * A);
+    const T dot_C_hat_B = dot(C_hat, B);
 
     // Use the other random variable to select cos(theta).
-    const T z = T(1.0) - eta[1] * (T(1.0) - dot(C_hat, B));
+    const T z = T(1.0) - eta[1] * (T(1.0) - dot_C_hat_B);
 
     // Construct the corresponding point on the sphere.
-    return z * B + std::sqrt(T(1.0) - z * z) * normalize(C_hat - dot(C_hat, B) * B);
+    return z * B + std::sqrt(T(1.0) - z * z) * normalize(C_hat - dot_C_hat_B * B);
 }
 
 template <typename T>
@@ -572,7 +654,9 @@ inline T exponential_distribution_on_segment_pdf(
     const T l,
     const T r)
 {
-    assert (x >= l && x <= r);
+    assert(x >= l);
+    assert(x <= r);
+
     const T left = std::exp(a * (x - l));
     const T right = std::exp(a * (x - r));
     return a / (left - right);
@@ -602,7 +686,7 @@ inline T equiangular_distribution_pdf(
 }
 
 template <typename T>
-T sample_rcp_distribution(
+inline T sample_rcp_distribution(
     const T s,
     const T l,
     const T r)
@@ -610,24 +694,30 @@ T sample_rcp_distribution(
     assert(l > T(0.0));
     assert(r > l);
 
-    const float d = r / l;
-    if (d < T(1.01)) return l + s * (r - l);
-    return clamp(l * std::pow(d, s), l, r);
+    const T d = r / l;
+
+    return
+        d < T(1.01)
+            ? l + s * (r - l)
+            : clamp(l * std::pow(d, s), l, r);
 }
 
 template <typename T>
-T rcp_distribution_pdf(
+inline T rcp_distribution_pdf(
     const T x,
     const T l,
     const T r)
 {
-    assert(x < r);
-    assert(x >= l);
     assert(l > T(0.0));
+    assert(x >= l);
+    assert(x < r);
 
-    const float d = r / l;
-    if (d < T(1.01)) return rcp(r - l);
-    return rcp(x * (std::log(d)));
+    const T d = r / l;
+
+    return
+        d < T(1.01)
+            ? rcp(r - l)
+            : rcp(x * (std::log(d)));
 }
 
 }   // namespace foundation

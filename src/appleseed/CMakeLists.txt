@@ -627,6 +627,8 @@ set (foundation_resources_logo_sources
     foundation/resources/logo/appleseed-seeds-32.h
     foundation/resources/logo/appleseed-seeds-64.cpp
     foundation/resources/logo/appleseed-seeds-64.h
+    foundation/resources/logo/appleseed-seeds-256.cpp
+    foundation/resources/logo/appleseed-seeds-256.h
     foundation/resources/logo/generatelogofiles.cpp
 )
 list (APPEND appleseed_sources
@@ -1197,8 +1199,6 @@ source_group ("renderer\\kernel\\rendering\\debug" FILES
 )
 
 set (renderer_kernel_rendering_final_sources
-    renderer/kernel/rendering/final/adaptivepixelrenderer.cpp
-    renderer/kernel/rendering/final/adaptivepixelrenderer.h
     renderer/kernel/rendering/final/adaptivetilerenderer.cpp
     renderer/kernel/rendering/final/adaptivetilerenderer.h
     renderer/kernel/rendering/final/pixelsampler.cpp
@@ -1297,6 +1297,8 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/shadingresultframebuffer.cpp
     renderer/kernel/rendering/shadingresultframebuffer.h
     renderer/kernel/rendering/tilecallbackbase.h
+    renderer/kernel/rendering/tilecallbackcollection.cpp
+    renderer/kernel/rendering/tilecallbackcollection.h
     renderer/kernel/rendering/timedrenderercontroller.cpp
     renderer/kernel/rendering/timedrenderercontroller.h
 )
@@ -1441,6 +1443,8 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/aovfactoryregistrar.cpp
     renderer/modeling/aov/aovfactoryregistrar.h
     renderer/modeling/aov/aovtraits.h
+    renderer/modeling/aov/cryptomatteaov.cpp
+    renderer/modeling/aov/cryptomatteaov.h
     renderer/modeling/aov/denoiseraov.cpp
     renderer/modeling/aov/denoiseraov.h
     renderer/modeling/aov/depthaov.cpp
@@ -1466,6 +1470,8 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/pixelvariationaov.h
     renderer/modeling/aov/positionaov.cpp
     renderer/modeling/aov/positionaov.h
+    renderer/modeling/aov/screenspacevelocityaov.cpp
+    renderer/modeling/aov/screenspacevelocityaov.h
     renderer/modeling/aov/uvaov.cpp
     renderer/modeling/aov/uvaov.h
 )
@@ -1586,6 +1592,8 @@ set (renderer_modeling_camera_sources
     renderer/modeling/camera/camerafactoryregistrar.cpp
     renderer/modeling/camera/camerafactoryregistrar.h
     renderer/modeling/camera/cameratraits.h
+    renderer/modeling/camera/fisheyelenscamera.cpp
+    renderer/modeling/camera/fisheyelenscamera.h
     renderer/modeling/camera/icamerafactory.h
     renderer/modeling/camera/orthographiccamera.cpp
     renderer/modeling/camera/orthographiccamera.h
@@ -2158,6 +2166,7 @@ endif ()
 target_link_libraries (appleseed
     bcd
     ${Boost_LIBRARIES}
+    murmurhash3
     ${CMAKE_DL_LIBS}
     "${APPLESEED_LINK_EXTRA_LIBRARIES}"
 )

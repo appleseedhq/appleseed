@@ -58,41 +58,41 @@ void NPRSurfaceShaderHelper::evaluate(
     SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point,
-    AOVComponents&              components,
-    ShadingComponents&          radiance)
+    ShadingComponents&          shading_components,
+    AOVComponents&              aov_components)
 {
     const Material* material = shading_point.get_material();
     const ShaderGroup* sg = material->get_render_data().m_shader_group;
 
     // For now, we only work in RGB mode.
-    if (radiance.m_beauty.get_mode() == Spectrum::Spectral)
+    if (shading_components.m_beauty.get_mode() == Spectrum::Spectral)
         return;
 
     // Make the shading results available to OSL.
     shading_point.m_surface_shader_diffuse = Color3f(
-        radiance.m_diffuse[0],
-        radiance.m_diffuse[1],
-        radiance.m_diffuse[2]);
+        shading_components.m_diffuse[0],
+        shading_components.m_diffuse[1],
+        shading_components.m_diffuse[2]);
 
     shading_point.m_surface_shader_diffuse += Color3f(
-        radiance.m_indirect_diffuse[0],
-        radiance.m_indirect_diffuse[1],
-        radiance.m_indirect_diffuse[2]);
+        shading_components.m_indirect_diffuse[0],
+        shading_components.m_indirect_diffuse[1],
+        shading_components.m_indirect_diffuse[2]);
 
     shading_point.m_surface_shader_glossy = Color3f(
-        radiance.m_glossy[0],
-        radiance.m_glossy[1],
-        radiance.m_glossy[2]);
+        shading_components.m_glossy[0],
+        shading_components.m_glossy[1],
+        shading_components.m_glossy[2]);
 
     shading_point.m_surface_shader_glossy += Color3f(
-        radiance.m_indirect_glossy[0],
-        radiance.m_indirect_glossy[1],
-        radiance.m_indirect_glossy[2]);
+        shading_components.m_indirect_glossy[0],
+        shading_components.m_indirect_glossy[1],
+        shading_components.m_indirect_glossy[2]);
 
     shading_point.m_surface_shader_emission = Color3f(
-        radiance.m_emission[0],
-        radiance.m_emission[1],
-        radiance.m_emission[2]);
+        shading_components.m_emission[0],
+        shading_components.m_emission[1],
+        shading_components.m_emission[2]);
 
     // Execute the OSL shader.
     shading_context.execute_osl_npr(*sg, shading_point);
@@ -117,7 +117,7 @@ void NPRSurfaceShaderHelper::evaluate(
             ++num_contour_closures;
     }
 
-    components.m_npr_shading = beauty;
+    aov_components.m_npr_shading = beauty;
 
     if (num_contour_closures != 0)
     {
@@ -140,7 +140,7 @@ void NPRSurfaceShaderHelper::evaluate(
             closure_index);
 
         // Save contour AOV (unpremultiplied).
-        components.m_npr_contour = contour;
+        aov_components.m_npr_contour = contour;
 
         // Composite the contour over beauty.
         if (contour.a != 0.0f)
@@ -152,9 +152,9 @@ void NPRSurfaceShaderHelper::evaluate(
     }
 
     // Replace the beauty sample.
-    radiance.m_beauty[0] = beauty.r;
-    radiance.m_beauty[1] = beauty.g;
-    radiance.m_beauty[2] = beauty.b;
+    shading_components.m_beauty[0] = beauty.r;
+    shading_components.m_beauty[1] = beauty.g;
+    shading_components.m_beauty[2] = beauty.b;
 }
 
 Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
@@ -231,14 +231,15 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
             // Handle forward difference rays.
             if (discontinuity_samples == 0 && !diff_contour_found && q == quality)
             {
-                if (other_shading_point.hit_surface() && values->m_features & NPRContourFeatures::AllDifferenceFeatures)
+                if (other_shading_point.hit_surface() &&
+                    values->m_features & static_cast<unsigned int>(NPRContourFeatures::AllDifferenceFeatures))
                 {
                     const double abs_x = abs(x);
                     const double Eps = 1e-10;
 
                     if (feq(abs_x, 0.0, Eps) || feq(abs_x, 1.0, Eps))
                     {
-                        if (values->m_features & NPRContourFeatures::OcclusionEdges)
+                        if (values->m_features & static_cast<unsigned int>(NPRContourFeatures::OcclusionEdges))
                         {
                             const float d = static_cast<float>(abs(shading_point.get_distance() - other_shading_point.get_distance()));
 
@@ -246,7 +247,7 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
                                 diff_contour_found = true;
                         }
 
-                        if (values->m_features & NPRContourFeatures::CreaseEdges)
+                        if (values->m_features & static_cast<unsigned int>(NPRContourFeatures::CreaseEdges))
                         {
                             const Vector3d& nc = other_shading_point.get_shading_normal();
                             const float cos_nnc = static_cast<float>(dot(n, nc));
@@ -275,13 +276,13 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
 }
 
 bool NPRSurfaceShaderHelper::is_same_object(
-    const int                   features,
+    const unsigned int          features,
     const ShadingPoint&         shading_point,
     const ShadingPoint&         other_shading_point)
 {
     if (other_shading_point.hit_surface())
     {
-        if (features & NPRContourFeatures::ObjectInstanceID)
+        if (features & static_cast<unsigned int>(NPRContourFeatures::ObjectInstanceID))
         {
             if (&shading_point.get_object_instance() != &other_shading_point.get_object_instance())
                 return false;
@@ -293,7 +294,7 @@ bool NPRSurfaceShaderHelper::is_same_object(
             }
         }
 
-        if (features & NPRContourFeatures::MaterialID)
+        if (features & static_cast<unsigned int>(NPRContourFeatures::MaterialID))
         {
             if (shading_point.get_material() != other_shading_point.get_material())
                 return false;
@@ -301,7 +302,7 @@ bool NPRSurfaceShaderHelper::is_same_object(
     }
     else
     {
-        if (features & NPRContourFeatures::AllIDFeatures)
+        if (features & static_cast<unsigned int>(NPRContourFeatures::AllIDFeatures))
             return false;
     }
 
