@@ -186,6 +186,7 @@ class RenderingManager
 
     void print_final_rendering_time();
     void print_average_luminance();
+    void print_rmse();
     void archive_frame_to_disk();
 
     void run_scheduled_actions();

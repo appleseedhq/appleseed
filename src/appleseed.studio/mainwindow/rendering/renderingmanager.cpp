@@ -374,6 +374,17 @@ void RenderingManager::print_average_luminance()
         pretty_scalar(average_luminance, 6).c_str());
 }
 
+void RenderingManager::print_rmse()
+{
+    const double rmse = compute_rms_deviation(
+        m_project->get_frame()->image(),
+        m_project->get_frame()->ref_image());
+
+    RENDERER_LOG_INFO(
+        "final rmse is %s.",
+        pretty_scalar(rmse, 6).c_str());
+}
+
 void RenderingManager::archive_frame_to_disk()
 {
     RENDERER_LOG_INFO("archiving frame to disk...");
@@ -449,6 +460,9 @@ void RenderingManager::slot_rendering_end()
 
     if (m_params.get_optional<bool>("print_final_average_luminance", false))
         print_average_luminance();
+
+    if (m_project->get_frame()->validate_ref_image())
+        print_rmse();
 
     if (m_params.get_optional<bool>("autosave", true))
         archive_frame_to_disk();
