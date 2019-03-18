@@ -33,9 +33,6 @@
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
-// Standard headers.
-#include <limits>
-
 using namespace foundation;
 using namespace std;
 
@@ -66,18 +63,6 @@ PostProcessingStage::PostProcessingStage(
     const EntityDefMessageContext context("post-processing stage", this);
 
     m_order = m_params.get_required<int>("order", 0, context);
-}
-
-void PostProcessingStage::find_min_max(const Frame& frame, Color4f& min, Color4f& max)
-{
-    min = Color4f(+numeric_limits<float>::max());
-    max = Color4f(-numeric_limits<float>::max());
-
-    for_each_pixel(frame, [&min, &max](Color4f& color)
-    {
-        min = component_wise_min(min, color);
-        max = component_wise_max(max, color);
-    });
 }
 
 }   // namespace renderer

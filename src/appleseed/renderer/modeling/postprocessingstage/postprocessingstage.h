@@ -33,17 +33,10 @@
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/canvasproperties.h"
-#include "foundation/image/color.h"
-#include "foundation/image/image.h"
-#include "foundation/image/tile.h"
 #include "foundation/utility/uid.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
-
-// Standard headers.
-#include <cstddef>
 
 // Forward declarations.
 namespace renderer  { class ParamArray; }
@@ -73,21 +66,9 @@ class APPLESEED_DLLSYMBOL PostProcessingStage
     virtual void execute(
         Frame&                  frame) const = 0;
 
-  protected:
-    template <typename Func>
-    static void for_each_pixel(
-        const Frame&            frame,
-        const Func&             func);
-
-    static void find_min_max(
-        const Frame&            frame,
-        foundation::Color4f&    min,
-        foundation::Color4f&    max);
-
   private:
     int m_order;
 };
-
 
 //
 // PostProcessingStage class implementation.
@@ -96,32 +77,6 @@ class APPLESEED_DLLSYMBOL PostProcessingStage
 inline int PostProcessingStage::get_order() const
 {
     return m_order;
-}
-
-template <typename Func>
-void PostProcessingStage::for_each_pixel(const Frame& frame, const Func& func)
-{
-    foundation::Image& image = frame.image();
-    const foundation::CanvasProperties& frame_props = image.properties();
-
-    for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
-    {
-        for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
-        {
-            foundation::Tile& tile = image.tile(tx, ty);
-
-            for (size_t y = 0, th = tile.get_height(); y < th; ++y)
-            {
-                for (size_t x = 0, tw = tile.get_width(); x < tw; ++x)
-                {
-                    foundation::Color4f color;
-                    tile.get_pixel(x, y, color);
-                    func(color);
-                    tile.set_pixel(x, y, color);
-                }
-            }
-        }
-    }
 }
 
 }   // namespace renderer

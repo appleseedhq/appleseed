@@ -39,8 +39,8 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
+#include "foundation/image/colormap.h"
 #include "foundation/image/colormapdata.h"
-#include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/image.h"
 #include "foundation/image/text/textrenderer.h"
 #include "foundation/math/aabb.h"
@@ -138,15 +138,15 @@ namespace
                     context);
 
             if (color_map == "inferno")
-                set_palette_from_array(InfernoColorMap, countof(InfernoColorMap) / 3);
+                m_color_map.set_palette_from_array(InfernoColorMap, countof(InfernoColorMap) / 3);
             else if (color_map == "jet")
-                set_palette_from_array(JetColorMap, countof(JetColorMap) / 3);
+                m_color_map.set_palette_from_array(JetColorMap, countof(JetColorMap) / 3);
             else if (color_map == "magma")
-                set_palette_from_array(MagmaColorMap, countof(MagmaColorMap) / 3);
+                m_color_map.set_palette_from_array(MagmaColorMap, countof(MagmaColorMap) / 3);
             else if (color_map == "plasma")
-                set_palette_from_array(PlasmaColorMap, countof(PlasmaColorMap) / 3);
+                m_color_map.set_palette_from_array(PlasmaColorMap, countof(PlasmaColorMap) / 3);
             else if (color_map == "viridis")
-                set_palette_from_array(ViridisColorMap, countof(ViridisColorMap) / 3);
+                m_color_map.set_palette_from_array(ViridisColorMap, countof(ViridisColorMap) / 3);
             else
             {
                 assert(color_map == "custom");
@@ -162,7 +162,7 @@ namespace
 
                 try
                 {
-                    set_palette_from_image_file(
+                    m_color_map.set_palette_from_image_file(
                         to_string(
                             project.search_paths().qualify(color_map_filepath)));
                 }
@@ -200,13 +200,7 @@ namespace
             float min_luminance, max_luminance;
 
             if (m_auto_range)
-            {
-                Color4f min_color, max_color;
-                find_min_max(frame, min_color, max_color);
-
-                min_luminance = luminance(min_color.rgb());
-                max_luminance = luminance(max_color.rgb());
-            }
+                m_color_map.find_min_max_relative_luminance(&frame.image(), min_luminance, max_luminance);
             else
             {
                 min_luminance = m_range_min;
@@ -226,7 +220,7 @@ namespace
             if (m_render_isolines)
                 collect_isoline_segments(isoline_segments, frame, min_luminance, max_luminance);
 
-            remap_colors(frame, min_luminance, max_luminance);
+            m_color_map.remap_relative_luminance(&frame.image(), min_luminance, max_luminance);
 
             if (m_render_isolines)
                 render_isoline_segments(frame, isoline_segments);
@@ -262,7 +256,7 @@ namespace
 
         typedef vector<Segment> SegmentVector;
 
-        vector<Color3f>     m_palette;
+        ColorMap            m_color_map;
         bool                m_auto_range;
         float               m_range_min;
         float               m_range_max;
@@ -270,75 +264,6 @@ namespace
         size_t              m_legend_bar_ticks;
         bool                m_render_isolines;
         float               m_line_thickness;
-
-        //
-        // Color mapping.
-        //
-
-        void set_palette_from_array(const float* values, const size_t entry_count)
-        {
-            m_palette.resize(entry_count);
-
-            for (size_t i = 0; i < entry_count; ++i)
-            {
-                m_palette[i] =
-                    Color3f(
-                        values[i * 3 + 0],
-                        values[i * 3 + 1],
-                        values[i * 3 + 2]);
-            }
-        }
-
-        void set_palette_from_image_file(const string& filepath)
-        {
-            GenericImageFileReader reader;
-            unique_ptr<Image> image(reader.read(filepath.c_str()));
-
-            const size_t image_width = image->properties().m_canvas_width;
-            m_palette.resize(image_width);
-
-            for (size_t i = 0; i < image_width; ++i)
-                image->get_pixel(i, 0, m_palette[i]);
-        }
-
-        Color3f evaluate_palette(float x) const
-        {
-            assert(m_palette.size() > 1);
-
-            x *= m_palette.size() - 1;
-
-            const size_t ix = min(truncate<size_t>(x), m_palette.size() - 2);
-            const float w = x - ix;
-
-            return lerp(m_palette[ix], m_palette[ix + 1], w);
-        }
-
-        void remap_colors(Frame& frame, const float min_luminance, const float max_luminance) const
-        {
-            if (min_luminance == max_luminance)
-            {
-                for_each_pixel(frame, [this](Color4f& color)
-                {
-                    color.rgb() = evaluate_palette(0.0f);
-                });
-            }
-            else
-            {
-                for_each_pixel(frame, [this, min_luminance, max_luminance](Color4f& color)
-                {
-                    const float col_luminance = luminance(color.rgb());
-
-                    const float x =
-                        saturate(
-                            inverse_lerp(
-                                min_luminance,
-                                max_luminance,
-                                col_luminance));
-
-                    color.rgb() = evaluate_palette(x);
-                });
-            }
-        }
 
         void add_legend_bar(Frame& frame, const float min_luminance, const float max_luminance) const
         {
@@ -391,7 +316,7 @@ namespace
                     image.set_pixel(
                         x, y,
                         Color4f(
-                            evaluate_palette(val),
+                            m_color_map.evaluate_palette(val),
                             1.0f));
                 }
             }

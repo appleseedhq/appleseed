@@ -31,6 +31,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
+#include "foundation/image/tile.h"
 #include "foundation/math/aabb.h"
 
 // Standard headers.
@@ -42,25 +43,68 @@ namespace foundation
 class ColorMap
 {
   public:
-    void set_palette(const float* values, const size_t entry_count);
+  	static void find_min_max_red_channel(
+		const Image*    image,
+		const AABB2u&   crop_window,
+		float&          min_val,
+		float&          max_val);
 
-    void remap_colors(
-      const AABB2u&     crop_window,
-      Image*            image,
-      const float       max_val,
-      const float       min_val);
+	static void find_min_max_relative_luminance(
+		Image*    	image,
+		float&  	min_luminance,
+		float&    	max_luminance);
+
+    void set_palette_from_array(const float* values, const size_t entry_count);
+
+    void set_palette_from_image_file(const std::string& filepath);
+
+    void remap_red_channel(
+		Image*            image,
+		const AABB2u&     crop_window,
+		const float       min_val,
+		const float       max_val) const;
+    
+    void remap_relative_luminance(
+		Image* 			image,
+		const float 	min_luminance,
+		const float 	max_luminance) const;
+
+	Color3f evaluate_palette(float x) const;
 
   private:
-    Color3f evaluate_palette(float x) const;
-
-    static float get_max_value(const Image* image, const AABB2u& crop_window);
-
-    static void fill_aov(
-      Image*          image,
-      const AABB2u&   crop_window,
-      const Color3f&  color);
+    template <typename Func>
+    static void for_each_pixel(Image* image, const Func& func);
 
     std::vector<Color3f> m_palette;
 };
+
+//
+// ColorMap class implementation.
+//
+
+template <typename Func>
+void ColorMap::for_each_pixel(Image* image, const Func& func)
+{
+	const foundation::CanvasProperties& image_props = image->properties();
+
+	for (size_t ty = 0; ty < image_props.m_tile_count_y; ++ty)
+	{
+    	for (size_t tx = 0; tx < image_props.m_tile_count_x; ++tx)
+    	{
+        	foundation::Tile& tile = image->tile(tx, ty);
+
+        	for (size_t y = 0, th = tile.get_height(); y < th; ++y)
+        	{
+                for (size_t x = 0, tw = tile.get_width(); x < tw; ++x)
+                {
+                	foundation::Color4f color;
+                    tile.get_pixel(x, y, color);
+                    func(color);
+                    tile.set_pixel(x, y, color);
+                }
+            }
+        }
+    }
+}
 
 }   // namespace foundation

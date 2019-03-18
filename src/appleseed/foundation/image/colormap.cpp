@@ -29,14 +29,20 @@
 // Interface header.
 #include "colormap.h"
 
+// appleseed.foundation headers.
+#include "foundation/image/colorspace.h"
+#include "foundation/image/genericimagefilereader.h"
+
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <limits>
+#include <string>
 
 namespace foundation
 {
 
-void ColorMap::set_palette(const float* values, const size_t entry_count)
+void ColorMap::set_palette_from_array(const float* values, const size_t entry_count)
 {
     m_palette.resize(entry_count);
 
@@ -50,21 +56,31 @@ void ColorMap::set_palette(const float* values, const size_t entry_count)
     }
 }
 
-void ColorMap::remap_colors(
-    const AABB2u&       crop_window,
-    Image*              image,
-    const float         max_val,
-    const float         min_val)
+void ColorMap::set_palette_from_image_file(const std::string& filepath)
 {
-    const float min_value = static_cast<float>(min_val);
-    const float max_value = 
-        max_val == 0
-            ? get_max_value(image, crop_window)
-            : static_cast<float>(max_val);
+    GenericImageFileReader reader;
+    std::unique_ptr<Image> image(reader.read(filepath.c_str()));
 
+    const size_t image_width = image->properties().m_canvas_width;
+    m_palette.resize(image_width);
+
+    for (size_t i = 0; i < image_width; ++i)
+        image->get_pixel(i, 0, m_palette[i]);
+}
+
+void ColorMap::remap_red_channel(
+    Image*              image,
+    const AABB2u&       crop_window,
+    const float         min_value,
+    const float         max_value) const
+{
     if (max_value == 0.0f)
     {
-        fill_aov(image, crop_window, evaluate_palette(0.0f));
+        for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
+        {
+            for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
+                image->set_pixel(x, y, evaluate_palette(0.0f));
+        }
         return;
     }
 
@@ -84,9 +100,40 @@ void ColorMap::remap_colors(
     }
 }
 
+void ColorMap::remap_relative_luminance(
+    Image*          image,
+    const float     min_luminance, 
+    const float     max_luminance) const
+{
+    if (min_luminance == max_luminance)
+    {
+        for_each_pixel(image, [this](Color4f& color)
+        {
+            color.rgb() = evaluate_palette(0.0f);
+        });
+    }
+
+    else
+    {
+        for_each_pixel(image, [this, min_luminance, max_luminance](Color4f& color)
+        {
+            const float col_luminance = luminance(color.rgb());
+
+            const float x =
+                saturate(
+                    inverse_lerp(
+                        min_luminance,
+                        max_luminance,
+                        col_luminance));
+
+                color.rgb() = evaluate_palette(x);
+        });
+    }
+}
+
 Color3f ColorMap::evaluate_palette(float x) const
 {
-    // When AOV contains a single channel we do not set the color palette.
+    // When image contains a single channel we do not set the color palette.
     if (m_palette.empty())
         return Color3f(x);
 
@@ -98,33 +145,42 @@ Color3f ColorMap::evaluate_palette(float x) const
     return lerp(m_palette[ix], m_palette[ix + 1], w);
 }
 
-float ColorMap::get_max_value(const Image* image, const AABB2u& crop_window)
+void ColorMap::find_min_max_red_channel(
+    const Image*    image,
+    const AABB2u&   crop_window,
+    float&          min_val,
+    float&          max_val)
 {
-    float max_value = 0.0f;
+    max_val = 0.0f;
+    min_val = 0.0f;
 
     for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
     {
         for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
         {
-            Color3f value;
-            image->get_pixel(x, y, value);
-            max_value = max(value[0], max_value);
+            Color3f val;
+            image->get_pixel(x, y, val);
+            max_val = max(val[0], max_val);
         }
     }
-
-    return max_value;
 }
 
-void ColorMap::fill_aov(
-    Image*          image,
-    const AABB2u&   crop_window,
-    const Color3f&  color)
+void ColorMap::find_min_max_relative_luminance(
+    Image*      image,
+    float&      min_luminance,
+    float&      max_luminance)
 {
-    for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
+    Color4f min_color = Color4f(+std::numeric_limits<float>::max());
+    Color4f max_color = Color4f(-std::numeric_limits<float>::max());
+
+    for_each_pixel(image, [&min_color, &max_color](Color4f& color)
     {
-        for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
-            image->set_pixel(x, y, color);
-    }
+        min_color = component_wise_min(min_color, color);
+        max_color = component_wise_max(max_color, color);
+    });
+
+    min_luminance = luminance(min_color.rgb());
+    max_luminance = luminance(max_color.rgb());
 }
 
 }   // namespace foundation

@@ -184,7 +184,10 @@ namespace
         {
             const AABB2u& crop_window = frame.get_crop_window();
             ColorMap color_map;
-            color_map.remap_colors(crop_window, m_image, 0.0f, 0.0f);
+
+            float min_time, max_time;
+            color_map.find_min_max_red_channel(m_image, crop_window, min_time, max_time);
+            color_map.remap_red_channel(m_image, crop_window, min_time, max_time);
         }
 
       private:
