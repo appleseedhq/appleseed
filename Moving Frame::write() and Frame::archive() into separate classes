@@ -1,0 +1,1709 @@
+```
+#
+# This source file is part of appleseed.
+# Visit http://appleseedhq.net/ for additional information and resources.
+#
+# This software is released under the MIT license.
+#
+# Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
+# Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+
+
+#--------------------------------------------------------------------------------------------------
+# Source files.
+#--------------------------------------------------------------------------------------------------
+
+set (foundation_core_concepts_sources
+    foundation/core/concepts/iunknown.h
+    foundation/core/concepts/noncopyable.h
+    foundation/core/concepts/singleton.h
+)
+list (APPEND appleseed_sources
+    ${foundation_core_concepts_sources}
+)
+source_group ("foundation\\core\\concepts" FILES
+    ${foundation_core_concepts_sources}
+)
+
+set (foundation_core_exceptions_sources
+    foundation/core/exceptions/exception.h
+    foundation/core/exceptions/exceptionioerror.h
+    foundation/core/exceptions/exceptionnotimplemented.h
+    foundation/core/exceptions/exceptionunsupportedfileformat.h
+    foundation/core/exceptions/stringexception.h
+)
+list (APPEND appleseed_sources
+    ${foundation_core_exceptions_sources}
+)
+source_group ("foundation\\core\\exceptions" FILES
+    ${foundation_core_exceptions_sources}
+)
+
+set (foundation_core_sources
+    foundation/core/appleseed.cpp
+    foundation/core/appleseed.h
+)
+list (APPEND appleseed_sources
+    ${foundation_core_sources}
+)
+source_group ("foundation\\core" FILES
+    ${foundation_core_sources}
+)
+
+set (foundation_image_sources
+    foundation/image/analysis.cpp
+    foundation/image/analysis.h
+    foundation/image/canvasproperties.h
+    foundation/image/color.h
+    foundation/image/colorspace.cpp
+    foundation/image/colorspace.h
+    foundation/image/drawing.h
+    foundation/image/exceptionunsupportedimageformat.h
+    foundation/image/exrimagefilereader.cpp
+    foundation/image/exrimagefilereader.h
+    foundation/image/exrimagefilewriter.cpp
+    foundation/image/exrimagefilewriter.h
+    foundation/image/exrutils.cpp
+    foundation/image/exrutils.h
+    foundation/image/filteredtile.cpp
+    foundation/image/filteredtile.h
+    foundation/image/genericimagefilereader.cpp
+    foundation/image/genericimagefilereader.h
+    foundation/image/genericimagefilewriter.cpp
+    foundation/image/genericimagefilewriter.h
+    foundation/image/genericprogressiveimagefilereader.cpp
+    foundation/image/genericprogressiveimagefilereader.h
+    foundation/image/icanvas.h
+    foundation/image/iimagefilereader.h
+    foundation/image/iimagefilewriter.h
+    foundation/image/image.cpp
+    foundation/image/image.h
+    foundation/image/imageattributes.cpp
+    foundation/image/imageattributes.h
+    foundation/image/iprogressiveimagefilereader.h
+    foundation/image/iprogressiveimagefilewriter.h
+    foundation/image/nativedrawing.cpp
+    foundation/image/nativedrawing.h
+    foundation/image/pixel.cpp
+    foundation/image/pixel.h
+    foundation/image/pngimagefilereader.cpp
+    foundation/image/pngimagefilereader.h
+    foundation/image/pngimagefilewriter.cpp
+    foundation/image/pngimagefilewriter.h
+    foundation/image/progressiveexrimagefilereader.cpp
+    foundation/image/progressiveexrimagefilereader.h
+    foundation/image/progressiveexrimagefilewriter.cpp
+    foundation/image/progressiveexrimagefilewriter.h
+    foundation/image/progressivepngimagefilereader.cpp
+    foundation/image/progressivepngimagefilereader.h
+    foundation/image/spectrum.h
+    foundation/image/tile.cpp
+    foundation/image/tile.h
+)
+list (APPEND appleseed_sources
+    ${foundation_image_sources}
+)
+source_group ("foundation\\image" FILES
+    ${foundation_image_sources}
+)
+
+set (foundation_math_bsp_sources
+    foundation/math/bsp/bsp_builder.h
+    foundation/math/bsp/bsp_intersector.h
+    foundation/math/bsp/bsp_node.h
+    foundation/math/bsp/bsp_statistics.cpp
+    foundation/math/bsp/bsp_statistics.h
+    foundation/math/bsp/bsp_tree.h
+)
+list (APPEND appleseed_sources
+    ${foundation_math_bsp_sources}
+)
+source_group ("foundation\\math\\bsp" FILES
+    ${foundation_math_bsp_sources}
+)
+
+set (foundation_math_bvh_sources
+    foundation/math/bvh/bvh_bboxsortpredicate.h
+    foundation/math/bvh/bvh_builder.h
+    foundation/math/bvh/bvh_intersector.h
+    foundation/math/bvh/bvh_medianpartitioner.h
+    foundation/math/bvh/bvh_node.h
+    foundation/math/bvh/bvh_partitionerbase.h
+    foundation/math/bvh/bvh_sahpartitioner.h
+    foundation/math/bvh/bvh_sbvhpartitioner.h
+    foundation/math/bvh/bvh_spatialbuilder.h
+    foundation/math/bvh/bvh_statistics.cpp
+    foundation/math/bvh/bvh_statistics.h
+    foundation/math/bvh/bvh_tree.h
+)
+list (APPEND appleseed_sources
+    ${foundation_math_bvh_sources}
+)
+source_group ("foundation\\math\\bvh" FILES
+    ${foundation_math_bvh_sources}
+)
+
+set (foundation_math_intersection_sources
+    foundation/math/intersection/aabbtriangle.h
+    foundation/math/intersection/rayaabb.h
+    foundation/math/intersection/rayplane.h
+    foundation/math/intersection/raysphere.h
+    foundation/math/intersection/raytrianglehh.h
+    foundation/math/intersection/raytrianglemt.h
+    foundation/math/intersection/raytrianglessk.h
+)
+list (APPEND appleseed_sources
+    ${foundation_math_intersection_sources}
+)
+source_group ("foundation\\math\\intersection" FILES
+    ${foundation_math_intersection_sources}
+)
+
+set (foundation_math_knn_sources
+    foundation/math/knn/knn_answer.h
+    foundation/math/knn/knn_builder.h
+    foundation/math/knn/knn_node.h
+    foundation/math/knn/knn_query.h
+    foundation/math/knn/knn_statistics.cpp
+    foundation/math/knn/knn_statistics.h
+    foundation/math/knn/knn_tree.h
+)
+list (APPEND appleseed_sources
+    ${foundation_math_knn_sources}
+)
+source_group ("foundation\\math\\knn" FILES
+    ${foundation_math_knn_sources}
+)
+
+set (foundation_math_rng_sources
+    foundation/math/rng/distribution.h
+    foundation/math/rng/lcg.h
+    foundation/math/rng/mersennetwister.cpp
+    foundation/math/rng/mersennetwister.h
+    foundation/math/rng/xorshift.h
+)
+list (APPEND appleseed_sources
+    ${foundation_math_rng_sources}
+)
+source_group ("foundation\\math\\rng" FILES
+    ${foundation_math_rng_sources}
+)
+
+set (foundation_math_sampling_sources
+    foundation/math/sampling/mappings.h
+    foundation/math/sampling/qmcsamplingcontext.h
+    foundation/math/sampling/rngsamplingcontext.h
+)
+list (APPEND appleseed_sources
+    ${foundation_math_sampling_sources}
+)
+source_group ("foundation\\math\\sampling" FILES
+    ${foundation_math_sampling_sources}
+)
+
+set (foundation_math_voxel_sources
+    foundation/math/voxel/voxel_builder.h
+    foundation/math/voxel/voxel_intersector.h
+    foundation/math/voxel/voxel_node.h
+    foundation/math/voxel/voxel_statistics.cpp
+    foundation/math/voxel/voxel_statistics.h
+    foundation/math/voxel/voxel_tree.h
+)
+list (APPEND appleseed_sources
+    ${foundation_math_voxel_sources}
+)
+source_group ("foundation\\math\\voxel" FILES
+    ${foundation_math_voxel_sources}
+)
+
+set (foundation_math_sources
+    foundation/math/aabb.h
+    foundation/math/area.h
+    foundation/math/basis.h
+    foundation/math/bestcandidate.h
+    foundation/math/bsp.h
+    foundation/math/bvh.h
+    foundation/math/cdf.h
+    foundation/math/combination.h
+    foundation/math/distance.h
+    foundation/math/fastmath.h
+    foundation/math/filter.h
+    foundation/math/fixedsizehistory.h
+    foundation/math/fp.h
+    foundation/math/fresnel.h
+    foundation/math/frustum.h
+    foundation/math/hash.h
+    foundation/math/intersection.h
+    foundation/math/knn.h
+    foundation/math/matrix.h
+    foundation/math/microfacet.h
+    foundation/math/minmax.h
+    foundation/math/mis.h
+    foundation/math/noise.cpp
+    foundation/math/noise.h
+    foundation/math/ordering.cpp
+    foundation/math/ordering.h
+    foundation/math/particlemap.h
+    foundation/math/permutation.cpp
+    foundation/math/permutation.h
+    foundation/math/population.h
+    foundation/math/primes.cpp
+    foundation/math/primes.h
+    foundation/math/qmc.cpp
+    foundation/math/qmc.h
+    foundation/math/quaternion.h
+    foundation/math/ray.h
+    foundation/math/rng.h
+    foundation/math/root.h
+    foundation/math/rr.h
+    foundation/math/sah.h
+    foundation/math/sampling.h
+    foundation/math/scalar.h
+    foundation/math/spline.h
+    foundation/math/split.h
+    foundation/math/transform.h
+    foundation/math/treeoptimizer.h
+    foundation/math/triangulator.h
+    foundation/math/vector.h
+    foundation/math/voxel.h
+    foundation/math/voxelgrid.h
+)
+list (APPEND appleseed_sources
+    ${foundation_math_sources}
+)
+source_group ("foundation\\math" FILES
+    ${foundation_math_sources}
+)
+
+set (foundation_mesh_sources
+    foundation/mesh/binarymeshfilereader.cpp
+    foundation/mesh/binarymeshfilereader.h
+    foundation/mesh/binarymeshfilewriter.cpp
+    foundation/mesh/binarymeshfilewriter.h
+    foundation/mesh/genericmeshfilereader.cpp
+    foundation/mesh/genericmeshfilereader.h
+    foundation/mesh/genericmeshfilewriter.cpp
+    foundation/mesh/genericmeshfilewriter.h
+    foundation/mesh/imeshbuilder.h
+    foundation/mesh/imeshfilereader.h
+    foundation/mesh/imeshfilewriter.h
+    foundation/mesh/imeshwalker.h
+    foundation/mesh/meshbuilderbase.h
+    foundation/mesh/objmeshfilelexer.h
+    foundation/mesh/objmeshfilereader.cpp
+    foundation/mesh/objmeshfilereader.h
+    foundation/mesh/objmeshfilewriter.cpp
+    foundation/mesh/objmeshfilewriter.h
+)
+if (WITH_ALEMBIC)
+    list (APPEND foundation_mesh_sources
+        foundation/mesh/alembicmeshfilereader.cpp
+        foundation/mesh/alembicmeshfilereader.h
+    )
+endif ()
+list (APPEND appleseed_sources
+    ${foundation_mesh_sources}
+)
+source_group ("foundation\\mesh" FILES
+    ${foundation_mesh_sources}
+)
+
+set (foundation_meta_benchmarks_sources
+    foundation/meta/benchmarks/benchmark_cache.cpp
+    foundation/meta/benchmarks/benchmark_cdf.cpp
+    foundation/meta/benchmarks/benchmark_colorspace.cpp
+    foundation/meta/benchmarks/benchmark_distance.cpp
+    foundation/meta/benchmarks/benchmark_fastmath.cpp
+    foundation/meta/benchmarks/benchmark_integerdivision.cpp
+    foundation/meta/benchmarks/benchmark_intersection.cpp
+    foundation/meta/benchmarks/benchmark_job.cpp
+    foundation/meta/benchmarks/benchmark_knn.cpp
+    foundation/meta/benchmarks/benchmark_math_filter.cpp
+    foundation/meta/benchmarks/benchmark_matrix.cpp
+    foundation/meta/benchmarks/benchmark_microfacet.cpp
+    foundation/meta/benchmarks/benchmark_permutation.cpp
+    foundation/meta/benchmarks/benchmark_poolallocator.cpp
+    foundation/meta/benchmarks/benchmark_qmc.cpp
+    foundation/meta/benchmarks/benchmark_ray.cpp
+    foundation/meta/benchmarks/benchmark_samesign.cpp
+    foundation/meta/benchmarks/benchmark_sampling.cpp
+    foundation/meta/benchmarks/benchmark_spectrum.cpp
+    foundation/meta/benchmarks/benchmark_string.cpp
+    foundation/meta/benchmarks/benchmark_transform.cpp
+    foundation/meta/benchmarks/benchmark_voxelgrid.cpp
+)
+list (APPEND appleseed_sources
+    ${foundation_meta_benchmarks_sources}
+)
+source_group ("foundation\\meta\\benchmarks" FILES
+    ${foundation_meta_benchmarks_sources}
+)
+
+set (foundation_meta_tests_sources
+    foundation/meta/tests/test_aabb.cpp
+    foundation/meta/tests/test_analysis.cpp
+    foundation/meta/tests/test_attributeset.cpp
+    foundation/meta/tests/test_autoreleaseptr.cpp
+    foundation/meta/tests/test_benchmarkaggregator.cpp
+    foundation/meta/tests/test_bitmask.cpp
+    foundation/meta/tests/test_boost_datetime.cpp
+    foundation/meta/tests/test_boost_path.cpp
+    foundation/meta/tests/test_boost_regex.cpp
+    foundation/meta/tests/test_bsp.cpp
+    foundation/meta/tests/test_bufferedfile.cpp
+    foundation/meta/tests/test_bvh.cpp
+    foundation/meta/tests/test_cache.cpp
+    foundation/meta/tests/test_cameracontroller.cpp
+    foundation/meta/tests/test_casts.cpp
+    foundation/meta/tests/test_cdf.cpp
+    foundation/meta/tests/test_color.cpp
+    foundation/meta/tests/test_colorspace.cpp
+    foundation/meta/tests/test_commandlineparser.cpp
+    foundation/meta/tests/test_concepts.cpp
+    foundation/meta/tests/test_countof.cpp
+    foundation/meta/tests/test_datetime.cpp
+    foundation/meta/tests/test_dictionary.cpp
+    foundation/meta/tests/test_distance.cpp
+    foundation/meta/tests/test_exrimagefilewriter.cpp
+    foundation/meta/tests/test_fastmath.cpp
+    foundation/meta/tests/test_filteredtile.cpp
+    foundation/meta/tests/test_fixedsizehistory.cpp
+    foundation/meta/tests/test_fp.cpp
+    foundation/meta/tests/test_fresnel.cpp
+    foundation/meta/tests/test_frustum.cpp
+    foundation/meta/tests/test_image.cpp
+    foundation/meta/tests/test_intersection.cpp
+    foundation/meta/tests/test_iostreamop.cpp
+    foundation/meta/tests/test_job.cpp
+    foundation/meta/tests/test_knn.cpp
+    foundation/meta/tests/test_kvpair.cpp
+    foundation/meta/tests/test_lazy.cpp
+    foundation/meta/tests/test_makevector.cpp
+    foundation/meta/tests/test_math_filter.cpp
+    foundation/meta/tests/test_matrix.cpp
+    foundation/meta/tests/test_memory.cpp
+    foundation/meta/tests/test_microfacet.cpp
+    foundation/meta/tests/test_minmax.cpp
+    foundation/meta/tests/test_noise.cpp
+    foundation/meta/tests/test_objmeshfilereader.cpp
+    foundation/meta/tests/test_objmeshfilewriter.cpp
+    foundation/meta/tests/test_otherwise.cpp
+    foundation/meta/tests/test_path.cpp
+    foundation/meta/tests/test_permutation.cpp
+    foundation/meta/tests/test_pixel.cpp
+    foundation/meta/tests/test_poolallocator.cpp
+    foundation/meta/tests/test_population.cpp
+    foundation/meta/tests/test_preprocessor.cpp
+    foundation/meta/tests/test_qmc.cpp
+    foundation/meta/tests/test_quaternion.cpp
+    foundation/meta/tests/test_ray.cpp
+    foundation/meta/tests/test_registrar.cpp
+    foundation/meta/tests/test_rng.cpp
+    foundation/meta/tests/test_sampling.cpp
+    foundation/meta/tests/test_scalar.cpp
+    foundation/meta/tests/test_settings.cpp
+    foundation/meta/tests/test_snprintf.cpp
+    foundation/meta/tests/test_spectrum.cpp
+    foundation/meta/tests/test_spline.cpp
+    foundation/meta/tests/test_statistics.cpp
+    foundation/meta/tests/test_stlallocatortestbed.cpp
+    foundation/meta/tests/test_string.cpp
+    foundation/meta/tests/test_test.cpp
+    foundation/meta/tests/test_tile.cpp
+    foundation/meta/tests/test_timer.cpp
+    foundation/meta/tests/test_transform.cpp
+    foundation/meta/tests/test_triangulator.cpp
+    foundation/meta/tests/test_typetraits.cpp
+    foundation/meta/tests/test_utility_filter.cpp
+    foundation/meta/tests/test_vector.cpp
+    foundation/meta/tests/test_voxelgrid.cpp
+)
+list (APPEND appleseed_sources
+    ${foundation_meta_tests_sources}
+)
+source_group ("foundation\\meta\\tests" FILES
+    ${foundation_meta_tests_sources}
+)
+
+set (foundation_platform_snprintf_sources
+    foundation/platform/snprintf/snprintf.cpp
+)
+list (APPEND appleseed_sources
+    ${foundation_platform_snprintf_sources}
+)
+source_group ("foundation\\platform\\snprintf" FILES
+    ${foundation_platform_snprintf_sources}
+)
+
+set (foundation_platform_sources
+    foundation/platform/breakpoint.h
+    compiler.cpp/foundation/platform
+    compiler.h/foundation/platform
+    foundation/platform/console.cpp
+    foundation/platform/console.h
+    foundation/platform/datetime.h
+    foundation/platform/defaulttimers.cpp
+    foundation/platform/defaulttimers.h
+    foundation/platform/opengl.h
+    foundation/platform/path.cpp
+    foundation/platform/path.h
+    foundation/platform/python.h
+    foundation/platform/snprintf.h
+    foundation/platform/sse.h
+    foundation/platform/system.cpp
+    foundation/platform/system.h
+    foundation/platform/thread.cpp
+    foundation/platform/thread.h
+    foundation/platform/timer.h
+    foundation/platform/types.h
+    foundation/platform/win32stackwalker.cpp
+    foundation/platform/win32stackwalker.h
+    foundation/platform/windows.h
+    foundation/platform/x86timer.cpp
+    foundation/platform/x86timer.h
+)
+list (APPEND appleseed_sources
+    ${foundation_platform_sources}
+)
+source_group ("foundation\\platform" FILES
+    ${foundation_platform_sources}
+)
+
+set (foundation_utility_benchmark_sources
+    foundation/utility/benchmark/benchmarkaggregator.cpp
+    foundation/utility/benchmark/benchmarkaggregator.h
+    foundation/utility/benchmark/benchmarkdatapoint.h
+    foundation/utility/benchmark/benchmarklistenerbase.h
+    foundation/utility/benchmark/benchmarkresult.cpp
+    foundation/utility/benchmark/benchmarkresult.h
+    foundation/utility/benchmark/benchmarkserie.cpp
+    foundation/utility/benchmark/benchmarkserie.h
+    foundation/utility/benchmark/benchmarksuite.cpp
+    foundation/utility/benchmark/benchmarksuite.h
+    foundation/utility/benchmark/benchmarksuiterepository.cpp
+    foundation/utility/benchmark/benchmarksuiterepository.h
+    foundation/utility/benchmark/helpers.h
+    foundation/utility/benchmark/ibenchmarkcase.h
+    foundation/utility/benchmark/ibenchmarkcasefactory.h
+    foundation/utility/benchmark/ibenchmarklistener.h
+    foundation/utility/benchmark/loggerbenchmarklistener.cpp
+    foundation/utility/benchmark/loggerbenchmarklistener.h
+    foundation/utility/benchmark/timingresult.h
+    foundation/utility/benchmark/xmlfilebenchmarklistener.cpp
+    foundation/utility/benchmark/xmlfilebenchmarklistener.h
+)
+list (APPEND appleseed_sources
+    ${foundation_utility_benchmark_sources}
+)
+source_group ("foundation\\utility\\benchmark" FILES
+    ${foundation_utility_benchmark_sources}
+)
+
+set (foundation_utility_commandlineparser_sources
+    foundation/utility/commandlineparser/commandlineparser.h
+    foundation/utility/commandlineparser/flagoptionhandler.h
+    foundation/utility/commandlineparser/messagelist.cpp
+    foundation/utility/commandlineparser/messagelist.h
+    foundation/utility/commandlineparser/optionhandler.h
+    foundation/utility/commandlineparser/valueoptionhandler.h
+)
+list (APPEND appleseed_sources
+    ${foundation_utility_commandlineparser_sources}
+)
+source_group ("foundation\\utility\\commandlineparser" FILES
+    ${foundation_utility_commandlineparser_sources}
+)
+
+set (foundation_utility_containers_sources
+    foundation/utility/containers/array.h
+    foundation/utility/containers/dictionary.cpp
+    foundation/utility/containers/dictionary.h
+    foundation/utility/containers/hashtable.h
+    foundation/utility/containers/specializedarrays.cpp
+    foundation/utility/containers/specializedarrays.h
+)
+list (APPEND appleseed_sources
+    ${foundation_utility_containers_sources}
+)
+source_group ("foundation\\utility\\containers" FILES
+    ${foundation_utility_containers_sources}
+)
+
+set (foundation_utility_filter_sources
+    foundation/utility/filter/ifilter.h
+    foundation/utility/filter/passthroughfilter.h
+    foundation/utility/filter/regexfilter.cpp
+    foundation/utility/filter/regexfilter.h
+    foundation/utility/filter/rejectallfilter.h
+)
+list (APPEND appleseed_sources
+    ${foundation_utility_filter_sources}
+)
+source_group ("foundation\\utility\\filter" FILES
+    ${foundation_utility_filter_sources}
+)
+
+set (foundation_utility_job_sources
+    foundation/utility/job/abortswitch.h
+    foundation/utility/job/ijob.h
+    foundation/utility/job/jobmanager.cpp
+    foundation/utility/job/jobmanager.h
+    foundation/utility/job/jobqueue.cpp
+    foundation/utility/job/jobqueue.h
+    foundation/utility/job/workerthread.cpp
+    foundation/utility/job/workerthread.h
+)
+list (APPEND appleseed_sources
+    ${foundation_utility_job_sources}
+)
+source_group ("foundation\\utility\\job" FILES
+    ${foundation_utility_job_sources}
+)
+
+set (foundation_utility_log_sources
+    foundation/utility/log/consolelogtarget.cpp
+    foundation/utility/log/consolelogtarget.h
+    foundation/utility/log/filelogtarget.cpp
+    foundation/utility/log/filelogtarget.h
+    foundation/utility/log/filelogtargetbase.cpp
+    foundation/utility/log/filelogtargetbase.h
+    foundation/utility/log/helpers.h
+    foundation/utility/log/ilogtarget.h
+    foundation/utility/log/logformatter.cpp
+    foundation/utility/log/logformatter.h
+    foundation/utility/log/logger.cpp
+    foundation/utility/log/logger.h
+    foundation/utility/log/logmessage.cpp
+    foundation/utility/log/logmessage.h
+    foundation/utility/log/openfilelogtarget.cpp
+    foundation/utility/log/openfilelogtarget.h
+    foundation/utility/log/stringlogtarget.cpp
+    foundation/utility/log/stringlogtarget.h
+)
+list (APPEND appleseed_sources
+    ${foundation_utility_log_sources}
+)
+source_group ("foundation\\utility\\log" FILES
+    ${foundation_utility_log_sources}
+)
+
+set (foundation_utility_settings_sources
+    foundation/utility/settings/settings.xsd
+    foundation/utility/settings/settingsfilereader.cpp
+    foundation/utility/settings/settingsfilereader.h
+    foundation/utility/settings/settingsfilewriter.cpp
+    foundation/utility/settings/settingsfilewriter.h
+)
+list (APPEND appleseed_sources
+    ${foundation_utility_settings_sources}
+)
+source_group ("foundation\\utility\\settings" FILES
+    ${foundation_utility_settings_sources}
+)
+
+set (foundation_utility_test_sources
+    foundation/utility/test/assertions.h
+    foundation/utility/test/exceptionassertionfailure.h
+    foundation/utility/test/globaltestsuite.h
+    foundation/utility/test/helpers.h
+    foundation/utility/test/itestcase.h
+    foundation/utility/test/itestcasefactory.h
+    foundation/utility/test/itestlistener.h
+    foundation/utility/test/loggertestlistener.cpp
+    foundation/utility/test/loggertestlistener.h
+    foundation/utility/test/testlistenerbase.h
+    foundation/utility/test/testlistenercollection.cpp
+    foundation/utility/test/testlistenercollection.h
+    foundation/utility/test/testlistenerhelper.cpp
+    foundation/utility/test/testlistenerhelper.h
+    foundation/utility/test/testmessage.h
+    foundation/utility/test/testresult.cpp
+    foundation/utility/test/testresult.h
+    foundation/utility/test/testsuite.cpp
+    foundation/utility/test/testsuite.h
+    foundation/utility/test/testsuiterepository.cpp
+    foundation/utility/test/testsuiterepository.h
+)
+list (APPEND appleseed_sources
+    ${foundation_utility_test_sources}
+)
+source_group ("foundation\\utility\\test" FILES
+    ${foundation_utility_test_sources}
+)
+
+set (foundation_utility_sources
+    foundation/utility/alignedallocator.h
+    foundation/utility/alignedvector.h
+    foundation/utility/attributeset.cpp
+    foundation/utility/attributeset.h
+    foundation/utility/autoreleaseptr.h
+    foundation/utility/benchmark.h
+    foundation/utility/bitmask.h
+    foundation/utility/bufferedfile.cpp
+    foundation/utility/bufferedfile.h
+    foundation/utility/cache.cpp
+    foundation/utility/cache.h
+    foundation/utility/casts.h
+    foundation/utility/cc.h
+    foundation/utility/commandlineparser.h
+    foundation/utility/countof.h
+    foundation/utility/filter.h
+    foundation/utility/foreach.h
+    foundation/utility/indenter.cpp
+    foundation/utility/indenter.h
+    foundation/utility/iostreamop.h
+    foundation/utility/iterators.h
+    foundation/utility/job.h
+    foundation/utility/kvpair.h
+    foundation/utility/lazy.h
+    foundation/utility/log.h
+    foundation/utility/makevector.h
+    foundation/utility/maplefile.cpp
+    foundation/utility/maplefile.h
+    foundation/utility/memory.cpp
+    foundation/utility/memory.h
+    foundation/utility/numerictype.h
+    foundation/utility/otherwise.h
+    foundation/utility/path.h
+    foundation/utility/poolallocator.h
+    foundation/utility/preprocessor.cpp
+    foundation/utility/preprocessor.h
+    foundation/utility/registrar.h
+    foundation/utility/searchpaths.cpp
+    foundation/utility/searchpaths.h
+    foundation/utility/settings.h
+    foundation/utility/statistics.cpp
+    foundation/utility/statistics.h
+    foundation/utility/stopwatch.h
+    foundation/utility/string.cpp
+    foundation/utility/string.h
+    foundation/utility/test.h
+    foundation/utility/testutils.cpp
+    foundation/utility/testutils.h
+    foundation/utility/tls.h
+    foundation/utility/typetraits.h
+    foundation/utility/uid.cpp
+    foundation/utility/uid.h
+    foundation/utility/version.h
+    foundation/utility/vpythonfile.cpp
+    foundation/utility/vpythonfile.h
+    foundation/utility/xercesc.cpp
+    foundation/utility/xercesc.h
+    foundation/utility/xmlelement.h
+)
+list (APPEND appleseed_sources
+    ${foundation_utility_sources}
+)
+source_group ("foundation\\utility" FILES
+    ${foundation_utility_sources}
+)
+
+set (foundation_ui_sources
+    foundation/ui/cameracontroller.h
+)
+list (APPEND appleseed_sources
+    ${foundation_ui_sources}
+)
+source_group ("foundation\\ui" FILES
+    ${foundation_ui_sources}
+)
+
+set (main_sources
+    main/allocator.cpp
+    main/allocator.h
+    main/dllmain.cpp
+    main/dllsymbol.h
+    main/dllvisibility.h
+)
+list (APPEND appleseed_sources
+    ${main_sources}
+)
+source_group ("main" FILES
+    ${main_sources}
+)
+
+set (renderer_api_sources
+    renderer/api/aov.h
+    renderer/api/bsdf.h
+    renderer/api/camera.h
+    renderer/api/color.h
+    renderer/api/edf.h
+    renderer/api/entity.h
+    renderer/api/environment.h
+    renderer/api/environmentedf.h
+    renderer/api/environmentshader.h
+    renderer/api/framearchiver.h
+    renderer/api/frame.h
+    renderer/api/light.h
+    renderer/api/lighting.h
+    renderer/api/log.h
+    renderer/api/material.h
+    renderer/api/object.h
+    renderer/api/project.h
+    renderer/api/rendering.h
+    renderer/api/scene.h
+    renderer/api/surfaceshader.h
+    renderer/api/texture.h
+    renderer/api/tracecontext.h
+    renderer/api/utility.h
+)
+list (APPEND appleseed_sources
+    ${renderer_api_sources}
+)
+source_group ("renderer\\api" FILES
+    ${renderer_api_sources}
+)
+
+set (renderer_global_sources
+    renderer/global/global.h
+    renderer/global/globallogger.cpp
+    renderer/global/globallogger.h
+    renderer/global/globaltypes.h
+)
+list (APPEND appleseed_sources
+    ${renderer_global_sources}
+)
+source_group ("renderer\\global" FILES
+    ${renderer_global_sources}
+)
+
+set (renderer_kernel_aov_sources
+    renderer/kernel/aov/aovsettings.h
+    renderer/kernel/aov/imagestack.cpp
+    renderer/kernel/aov/imagestack.h
+    renderer/kernel/aov/shadingfragmentstack.h
+    renderer/kernel/aov/spectrumstack.h
+    renderer/kernel/aov/tilestack.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_aov_sources}
+)
+source_group ("renderer\\kernel\\aov" FILES
+    ${renderer_kernel_aov_sources}
+)
+
+set (renderer_kernel_intersection_sources
+    renderer/kernel/intersection/assemblytree.cpp
+    renderer/kernel/intersection/assemblytree.h
+    renderer/kernel/intersection/intersectionfilter.cpp
+    renderer/kernel/intersection/intersectionfilter.h
+    renderer/kernel/intersection/intersectionsettings.h
+    renderer/kernel/intersection/intersector.cpp
+    renderer/kernel/intersection/intersector.h
+    renderer/kernel/intersection/probevisitorbase.h
+    renderer/kernel/intersection/regioninfo.h
+    renderer/kernel/intersection/regiontree.cpp
+    renderer/kernel/intersection/regiontree.h
+    renderer/kernel/intersection/tracecontext.cpp
+    renderer/kernel/intersection/tracecontext.h
+    renderer/kernel/intersection/triangleencoder.cpp
+    renderer/kernel/intersection/triangleencoder.h
+    renderer/kernel/intersection/triangleitemhandler.cpp
+    renderer/kernel/intersection/triangleitemhandler.h
+    renderer/kernel/intersection/trianglekey.h
+    renderer/kernel/intersection/triangletree.cpp
+    renderer/kernel/intersection/triangletree.h
+    renderer/kernel/intersection/trianglevertexinfo.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_intersection_sources}
+)
+source_group ("renderer\\kernel\\intersection" FILES
+    ${renderer_kernel_intersection_sources}
+)
+
+set (renderer_kernel_lighting_drt_sources
+    renderer/kernel/lighting/drt/drtlightingengine.cpp
+    renderer/kernel/lighting/drt/drtlightingengine.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_lighting_drt_sources}
+)
+source_group ("renderer\\kernel\\lighting\\drt" FILES
+    ${renderer_kernel_lighting_drt_sources}
+)
+
+set (renderer_kernel_lighting_lighttracing_sources
+    renderer/kernel/lighting/lighttracing/lighttracingsamplegenerator.cpp
+    renderer/kernel/lighting/lighttracing/lighttracingsamplegenerator.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_lighting_lighttracing_sources}
+)
+source_group ("renderer\\kernel\\lighting\\lighttracing" FILES
+    ${renderer_kernel_lighting_lighttracing_sources}
+)
+
+set (renderer_kernel_lighting_null_sources
+    renderer/kernel/lighting/null/nulllightingengine.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_lighting_null_sources}
+)
+source_group ("renderer\\kernel\\lighting\\null" FILES
+    ${renderer_kernel_lighting_null_sources}
+)
+
+set (renderer_kernel_lighting_pt_sources
+    renderer/kernel/lighting/pt/ptlightingengine.cpp
+    renderer/kernel/lighting/pt/ptlightingengine.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_lighting_pt_sources}
+)
+source_group ("renderer\\kernel\\lighting\\pt" FILES
+    ${renderer_kernel_lighting_pt_sources}
+)
+
+set (renderer_kernel_lighting_sppm_sources
+    renderer/kernel/lighting/sppm/sppmlightingengine.cpp
+    renderer/kernel/lighting/sppm/sppmlightingengine.h
+    renderer/kernel/lighting/sppm/sppmparameters.cpp
+    renderer/kernel/lighting/sppm/sppmparameters.h
+    renderer/kernel/lighting/sppm/sppmpasscallback.cpp
+    renderer/kernel/lighting/sppm/sppmpasscallback.h
+    renderer/kernel/lighting/sppm/sppmphoton.cpp
+    renderer/kernel/lighting/sppm/sppmphoton.h
+    renderer/kernel/lighting/sppm/sppmphotonmap.cpp
+    renderer/kernel/lighting/sppm/sppmphotonmap.h
+    renderer/kernel/lighting/sppm/sppmphotontracer.cpp
+    renderer/kernel/lighting/sppm/sppmphotontracer.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_lighting_sppm_sources}
+)
+source_group ("renderer\\kernel\\lighting\\sppm" FILES
+    ${renderer_kernel_lighting_sppm_sources}
+)
+
+set (renderer_kernel_lighting_sources
+    renderer/kernel/lighting/directlightingintegrator.cpp
+    renderer/kernel/lighting/directlightingintegrator.h
+    renderer/kernel/lighting/ilightingengine.h
+    renderer/kernel/lighting/imagebasedlighting.cpp
+    renderer/kernel/lighting/imagebasedlighting.h
+    renderer/kernel/lighting/imageimportancesampler.h
+    renderer/kernel/lighting/lightsampler.cpp
+    renderer/kernel/lighting/lightsampler.h
+    renderer/kernel/lighting/pathtracer.h
+    renderer/kernel/lighting/pathvertex.cpp
+    renderer/kernel/lighting/pathvertex.h
+    renderer/kernel/lighting/tracer.cpp
+    renderer/kernel/lighting/tracer.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_lighting_sources}
+)
+source_group ("renderer\\kernel\\lighting" FILES
+    ${renderer_kernel_lighting_sources}
+)
+
+set (renderer_kernel_rendering_debug_sources
+    renderer/kernel/rendering/debug/blanksamplerenderer.cpp
+    renderer/kernel/rendering/debug/blanksamplerenderer.h
+    renderer/kernel/rendering/debug/blanktilerenderer.cpp
+    renderer/kernel/rendering/debug/blanktilerenderer.h
+    renderer/kernel/rendering/debug/debugsamplerenderer.cpp
+    renderer/kernel/rendering/debug/debugsamplerenderer.h
+    renderer/kernel/rendering/debug/debugtilerenderer.cpp
+    renderer/kernel/rendering/debug/debugtilerenderer.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_rendering_debug_sources}
+)
+source_group ("renderer\\kernel\\rendering\\debug" FILES
+    ${renderer_kernel_rendering_debug_sources}
+)
+
+set (renderer_kernel_rendering_final_sources
+    renderer/kernel/rendering/final/adaptivepixelrenderer.cpp
+    renderer/kernel/rendering/final/adaptivepixelrenderer.h
+    renderer/kernel/rendering/final/pixelsampler.cpp
+    renderer/kernel/rendering/final/pixelsampler.h
+    renderer/kernel/rendering/final/uniformpixelrenderer.cpp
+    renderer/kernel/rendering/final/uniformpixelrenderer.h
+    renderer/kernel/rendering/final/variationtracker.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_rendering_final_sources}
+)
+source_group ("renderer\\kernel\\rendering\\final" FILES
+    ${renderer_kernel_rendering_final_sources}
+)
+
+set (renderer_kernel_rendering_generic_sources
+    renderer/kernel/rendering/generic/genericframerenderer.cpp
+    renderer/kernel/rendering/generic/genericframerenderer.h
+    renderer/kernel/rendering/generic/genericsamplegenerator.cpp
+    renderer/kernel/rendering/generic/genericsamplegenerator.h
+    renderer/kernel/rendering/generic/genericsamplerenderer.cpp
+    renderer/kernel/rendering/generic/genericsamplerenderer.h
+    renderer/kernel/rendering/generic/generictilerenderer.cpp
+    renderer/kernel/rendering/generic/generictilerenderer.h
+    renderer/kernel/rendering/generic/tilejob.cpp
+    renderer/kernel/rendering/generic/tilejob.h
+    renderer/kernel/rendering/generic/tilejobfactory.cpp
+    renderer/kernel/rendering/generic/tilejobfactory.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_rendering_generic_sources}
+)
+source_group ("renderer\\kernel\\rendering\\generic" FILES
+    ${renderer_kernel_rendering_generic_sources}
+)
+
+set (renderer_kernel_rendering_progressive_sources
+    renderer/kernel/rendering/progressive/progressiveframerenderer.cpp
+    renderer/kernel/rendering/progressive/progressiveframerenderer.h
+    renderer/kernel/rendering/progressive/samplecounter.cpp
+    renderer/kernel/rendering/progressive/samplecounter.h
+    renderer/kernel/rendering/progressive/samplegeneratorjob.cpp
+    renderer/kernel/rendering/progressive/samplegeneratorjob.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_rendering_progressive_sources}
+)
+source_group ("renderer\\kernel\\rendering\\progressive" FILES
+    ${renderer_kernel_rendering_progressive_sources}
+)
+
+set (renderer_kernel_rendering_sources
+    renderer/kernel/rendering/defaultrenderercontroller.cpp
+    renderer/kernel/rendering/defaultrenderercontroller.h
+    renderer/kernel/rendering/ephemeralshadingresultframebufferfactory.cpp
+    renderer/kernel/rendering/ephemeralshadingresultframebufferfactory.h
+    renderer/kernel/rendering/framerendererbase.cpp
+    renderer/kernel/rendering/framerendererbase.h
+    renderer/kernel/rendering/globalsampleaccumulationbuffer.cpp
+    renderer/kernel/rendering/globalsampleaccumulationbuffer.h
+    renderer/kernel/rendering/iframerenderer.h
+    renderer/kernel/rendering/ipasscallback.h
+    renderer/kernel/rendering/ipixelrenderer.h
+    renderer/kernel/rendering/irenderercontroller.h
+    renderer/kernel/rendering/isamplegenerator.h
+    renderer/kernel/rendering/isamplerenderer.h
+    renderer/kernel/rendering/ishadingresultframebufferfactory.h
+    renderer/kernel/rendering/itilecallback.h
+    renderer/kernel/rendering/itilerenderer.h
+    renderer/kernel/rendering/localsampleaccumulationbuffer.cpp
+    renderer/kernel/rendering/localsampleaccumulationbuffer.h
+    renderer/kernel/rendering/masterrenderer.cpp
+    renderer/kernel/rendering/masterrenderer.h
+    renderer/kernel/rendering/nulltilecallback.cpp
+    renderer/kernel/rendering/nulltilecallback.h
+    renderer/kernel/rendering/permanentshadingresultframebufferfactory.cpp
+    renderer/kernel/rendering/permanentshadingresultframebufferfactory.h
+    renderer/kernel/rendering/pixelcontext.h
+    renderer/kernel/rendering/pixelrendererbase.cpp
+    renderer/kernel/rendering/pixelrendererbase.h
+    renderer/kernel/rendering/sample.h
+    renderer/kernel/rendering/sampleaccumulationbuffer.h
+    renderer/kernel/rendering/samplegeneratorbase.cpp
+    renderer/kernel/rendering/samplegeneratorbase.h
+    renderer/kernel/rendering/scenepicker.cpp
+    renderer/kernel/rendering/scenepicker.h
+    renderer/kernel/rendering/serialrenderercontroller.cpp
+    renderer/kernel/rendering/serialrenderercontroller.h
+    renderer/kernel/rendering/serialtilecallback.cpp
+    renderer/kernel/rendering/serialtilecallback.h
+    renderer/kernel/rendering/shadingresultframebuffer.cpp
+    renderer/kernel/rendering/shadingresultframebuffer.h
+    renderer/kernel/rendering/tilecallbackbase.h
+    renderer/kernel/rendering/timedrenderercontroller.cpp
+    renderer/kernel/rendering/timedrenderercontroller.h
+)
+if (WITH_OSL)
+    list (APPEND renderer_kernel_rendering_sources
+        renderer/kernel/rendering/oiioerrorhandler.cpp
+        renderer/kernel/rendering/oiioerrorhandler.h
+        renderer/kernel/rendering/rendererservices.cpp
+        renderer/kernel/rendering/rendererservices.h
+    )
+endif ()
+list (APPEND appleseed_sources
+    ${renderer_kernel_rendering_sources}
+)
+source_group ("renderer\\kernel\\rendering" FILES
+    ${renderer_kernel_rendering_sources}
+)
+
+set (renderer_kernel_shading_sources
+    renderer/kernel/shading/ambientocclusion.h
+    renderer/kernel/shading/fastambientocclusion.cpp
+    renderer/kernel/shading/fastambientocclusion.h
+    renderer/kernel/shading/shadingcontext.cpp
+    renderer/kernel/shading/shadingcontext.h
+    renderer/kernel/shading/shadingengine.cpp
+    renderer/kernel/shading/shadingengine.h
+    renderer/kernel/shading/shadingfragment.h
+    renderer/kernel/shading/shadingpoint.cpp
+    renderer/kernel/shading/shadingpoint.h
+    renderer/kernel/shading/shadingpointbuilder.cpp
+    renderer/kernel/shading/shadingpointbuilder.h
+    renderer/kernel/shading/shadingray.h
+    renderer/kernel/shading/shadingresult.cpp
+    renderer/kernel/shading/shadingresult.h
+)
+if (WITH_OSL)
+    list (APPEND renderer_kernel_shading_sources
+        renderer/kernel/shading/closures.cpp
+        renderer/kernel/shading/closures.h
+        renderer/kernel/shading/oslshadergroupexec.cpp
+        renderer/kernel/shading/oslshadergroupexec.h
+        renderer/kernel/shading/oslutil.h
+        renderer/kernel/shading/stdosl.h
+    )
+endif ()
+list (APPEND appleseed_sources
+    ${renderer_kernel_shading_sources}
+)
+source_group ("renderer\\kernel\\shading" FILES
+    ${renderer_kernel_shading_sources}
+)
+
+set (renderer_kernel_tessellation_sources
+    renderer/kernel/tessellation/statictessellation.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_tessellation_sources}
+)
+source_group ("renderer\\kernel\\tessellation" FILES
+    ${renderer_kernel_tessellation_sources}
+)
+
+set (renderer_kernel_texturing_sources
+    renderer/kernel/texturing/texturecache.h
+    renderer/kernel/texturing/texturestore.cpp
+    renderer/kernel/texturing/texturestore.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_texturing_sources}
+)
+source_group ("renderer\\kernel\\texturing" FILES
+    ${renderer_kernel_texturing_sources}
+)
+
+set (renderer_kernel_volume_sources
+    renderer/kernel/volume/occupancygrid.cpp
+    renderer/kernel/volume/occupancygrid.h
+    renderer/kernel/volume/volume.cpp
+    renderer/kernel/volume/volume.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_volume_sources}
+)
+source_group ("renderer\\kernel\\volume" FILES
+    ${renderer_kernel_volume_sources}
+)
+
+set (renderer_meta_benchmarks_sources
+    renderer/meta/benchmarks/benchmark_frame.cpp
+    renderer/meta/benchmarks/benchmark_transformsequence.cpp
+)
+list (APPEND appleseed_sources
+    ${renderer_meta_benchmarks_sources}
+)
+source_group ("renderer\\meta\\benchmarks" FILES
+    ${renderer_meta_benchmarks_sources}
+)
+
+set (renderer_meta_tests_sources
+    renderer/meta/tests/test_assembly.cpp
+    renderer/meta/tests/test_bsdfmix.cpp
+    renderer/meta/tests/test_entitymap.cpp
+    renderer/meta/tests/test_entityvector.cpp
+    renderer/meta/tests/test_environmentedf.cpp
+    renderer/meta/tests/test_frame.cpp
+    renderer/meta/tests/test_imageimportancesampler.cpp
+    renderer/meta/tests/test_imagetools.cpp
+    renderer/meta/tests/test_inputarray.cpp
+    renderer/meta/tests/test_intersector.cpp
+    renderer/meta/tests/test_lightsampler.cpp
+    renderer/meta/tests/test_paramarray.cpp
+    renderer/meta/tests/test_pinholecamera.cpp
+    renderer/meta/tests/test_pixelsampler.cpp
+    renderer/meta/tests/test_projectfilereader.cpp
+    renderer/meta/tests/test_projectfilewriter.cpp
+    renderer/meta/tests/test_samplecounter.cpp
+    renderer/meta/tests/test_scene.cpp
+    renderer/meta/tests/test_shadingresult.cpp
+    renderer/meta/tests/test_sphericalcamera.cpp
+    renderer/meta/tests/test_texturestore.cpp
+    renderer/meta/tests/test_tracer.cpp
+    renderer/meta/tests/test_transformsequence.cpp
+    renderer/meta/tests/test_variationtracker.cpp
+)
+if (WITH_OSL)
+    list (APPEND renderer_meta_tests_sources
+        renderer/meta/tests/test_shaderparamparser.cpp
+    )
+endif ()
+list (APPEND appleseed_sources
+    ${renderer_meta_tests_sources}
+)
+source_group ("renderer\\meta\\tests" FILES
+    ${renderer_meta_tests_sources}
+)
+
+set (renderer_modeling_bsdf_sources
+    renderer/modeling/bsdf/ashikhminbrdf.cpp
+    renderer/modeling/bsdf/ashikhminbrdf.h
+    renderer/modeling/bsdf/bsdf.cpp
+    renderer/modeling/bsdf/bsdf.h
+    renderer/modeling/bsdf/bsdfblend.cpp
+    renderer/modeling/bsdf/bsdfblend.h
+    renderer/modeling/bsdf/bsdffactoryregistrar.cpp
+    renderer/modeling/bsdf/bsdffactoryregistrar.h
+    renderer/modeling/bsdf/bsdfmix.cpp
+    renderer/modeling/bsdf/bsdfmix.h
+    renderer/modeling/bsdf/bsdftraits.h
+    renderer/modeling/bsdf/bsdfwrapper.h
+    renderer/modeling/bsdf/diffusebtdf.cpp
+    renderer/modeling/bsdf/diffusebtdf.h
+    renderer/modeling/bsdf/ibsdffactory.h
+    renderer/modeling/bsdf/kelemenbrdf.cpp
+    renderer/modeling/bsdf/kelemenbrdf.h
+    renderer/modeling/bsdf/lambertianbrdf.cpp
+    renderer/modeling/bsdf/lambertianbrdf.h
+    renderer/modeling/bsdf/microfacetbrdf.cpp
+    renderer/modeling/bsdf/microfacetbrdf.h
+    renderer/modeling/bsdf/nullbsdf.h
+    renderer/modeling/bsdf/specularbrdf.cpp
+    renderer/modeling/bsdf/specularbrdf.h
+    renderer/modeling/bsdf/specularbtdf.cpp
+    renderer/modeling/bsdf/specularbtdf.h
+)
+if (WITH_OSL)
+    list (APPEND renderer_modeling_bsdf_sources
+        renderer/modeling/bsdf/oslbsdf.cpp
+        renderer/modeling/bsdf/oslbsdf.h
+    )
+endif ()
+list (APPEND appleseed_sources
+    ${renderer_modeling_bsdf_sources}
+)
+source_group ("renderer\\modeling\\bsdf" FILES
+    ${renderer_modeling_bsdf_sources}
+)
+
+set (renderer_modeling_camera_sources
+    renderer/modeling/camera/camera.cpp
+    renderer/modeling/camera/camera.h
+    renderer/modeling/camera/camerafactoryregistrar.cpp
+    renderer/modeling/camera/camerafactoryregistrar.h
+    renderer/modeling/camera/cameratraits.h
+    renderer/modeling/camera/icamerafactory.h
+    renderer/modeling/camera/pinholecamera.cpp
+    renderer/modeling/camera/pinholecamera.h
+    renderer/modeling/camera/sphericalcamera.cpp
+    renderer/modeling/camera/sphericalcamera.h
+    renderer/modeling/camera/thinlenscamera.cpp
+    renderer/modeling/camera/thinlenscamera.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_camera_sources}
+)
+source_group ("renderer\\modeling\\camera" FILES
+    ${renderer_modeling_camera_sources}
+)
+
+set (renderer_modeling_color_sources
+    renderer/modeling/color/colorentity.cpp
+    renderer/modeling/color/colorentity.h
+    renderer/modeling/color/colortraits.h
+    renderer/modeling/color/wavelengths.cpp
+    renderer/modeling/color/wavelengths.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_color_sources}
+)
+source_group ("renderer\\modeling\\color" FILES
+    ${renderer_modeling_color_sources}
+)
+
+set (renderer_modeling_edf_sources
+    renderer/modeling/edf/coneedf.cpp
+    renderer/modeling/edf/coneedf.h
+    renderer/modeling/edf/diffuseedf.cpp
+    renderer/modeling/edf/diffuseedf.h
+    renderer/modeling/edf/edf.cpp
+    renderer/modeling/edf/edf.h
+    renderer/modeling/edf/edffactoryregistrar.cpp
+    renderer/modeling/edf/edffactoryregistrar.h
+    renderer/modeling/edf/edftraits.h
+    renderer/modeling/edf/iedffactory.cpp
+    renderer/modeling/edf/iedffactory.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_edf_sources}
+)
+source_group ("renderer\\modeling\\edf" FILES
+    ${renderer_modeling_edf_sources}
+)
+
+set (renderer_modeling_entity_sources
+    renderer/modeling/entity/connectableentity.cpp
+    renderer/modeling/entity/connectableentity.h
+    renderer/modeling/entity/entity.cpp
+    renderer/modeling/entity/entity.h
+    renderer/modeling/entity/entitymap.cpp
+    renderer/modeling/entity/entitymap.h
+    renderer/modeling/entity/entitytraits.h
+    renderer/modeling/entity/entityvector.cpp
+    renderer/modeling/entity/entityvector.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_entity_sources}
+)
+source_group ("renderer\\modeling\\entity" FILES
+    ${renderer_modeling_entity_sources}
+)
+
+set (renderer_modeling_environment_sources
+    renderer/modeling/environment/environment.cpp
+    renderer/modeling/environment/environment.h
+    renderer/modeling/environment/environmenttraits.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_environment_sources}
+)
+source_group ("renderer\\modeling\\environment" FILES
+    ${renderer_modeling_environment_sources}
+)
+
+set (renderer_modeling_environmentedf_sources
+    renderer/modeling/environmentedf/ArHosekSkyModelData.h
+    renderer/modeling/environmentedf/constantenvironmentedf.cpp
+    renderer/modeling/environmentedf/constantenvironmentedf.h
+    renderer/modeling/environmentedf/constanthemisphereenvironmentedf.cpp
+    renderer/modeling/environmentedf/constanthemisphereenvironmentedf.h
+    renderer/modeling/environmentedf/environmentedf.cpp
+    renderer/modeling/environmentedf/environmentedf.h
+    renderer/modeling/environmentedf/environmentedffactoryregistrar.cpp
+    renderer/modeling/environmentedf/environmentedffactoryregistrar.h
+    renderer/modeling/environmentedf/environmentedftraits.h
+    renderer/modeling/environmentedf/gradientenvironmentedf.cpp
+    renderer/modeling/environmentedf/gradientenvironmentedf.h
+    renderer/modeling/environmentedf/hosekenvironmentedf.cpp
+    renderer/modeling/environmentedf/hosekenvironmentedf.h
+    renderer/modeling/environmentedf/ienvironmentedffactory.h
+    renderer/modeling/environmentedf/latlongmapenvironmentedf.cpp
+    renderer/modeling/environmentedf/latlongmapenvironmentedf.h
+    renderer/modeling/environmentedf/mirrorballmapenvironmentedf.cpp
+    renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h
+    renderer/modeling/environmentedf/preethamenvironmentedf.cpp
+    renderer/modeling/environmentedf/preethamenvironmentedf.h
+    renderer/modeling/environmentedf/sphericalcoordinates.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_environmentedf_sources}
+)
+source_group ("renderer\\modeling\\environmentedf" FILES
+    ${renderer_modeling_environmentedf_sources}
+)
+
+set (renderer_modeling_environmentshader_sources
+    renderer/modeling/environmentshader/edfenvironmentshader.cpp
+    renderer/modeling/environmentshader/edfenvironmentshader.h
+    renderer/modeling/environmentshader/environmentshader.cpp
+    renderer/modeling/environmentshader/environmentshader.h
+    renderer/modeling/environmentshader/environmentshaderfactoryregistrar.cpp
+    renderer/modeling/environmentshader/environmentshaderfactoryregistrar.h
+    renderer/modeling/environmentshader/environmentshadertraits.h
+    renderer/modeling/environmentshader/ienvironmentshaderfactory.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_environmentshader_sources}
+)
+source_group ("renderer\\modeling\\environmentshader" FILES
+    ${renderer_modeling_environmentshader_sources}
+)
+
+set (renderer_modeling_frame_sources
+    frame.cpp/frame/modeling/renderer
+    frame.h/frame/modeling/renderer
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_frame_sources}
+)
+source_group ("renderer\\modeling\\frame" FILES
+    ${renderer_modeling_frame_sources}
+)
+
+set (renderer_modeling_input_sources
+    renderer/modeling/input/colorsource.cpp
+    renderer/modeling/input/colorsource.h
+    renderer/modeling/input/inputarray.cpp
+    renderer/modeling/input/inputarray.h
+    renderer/modeling/input/inputbinder.cpp
+    renderer/modeling/input/inputbinder.h
+    renderer/modeling/input/inputevaluator.h
+    renderer/modeling/input/inputformat.h
+    renderer/modeling/input/scalarsource.h
+    renderer/modeling/input/source.h
+    renderer/modeling/input/symbol.h
+    renderer/modeling/input/texturesource.cpp
+    renderer/modeling/input/texturesource.h
+    renderer/modeling/input/uniforminputevaluator.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_input_sources}
+)
+source_group ("renderer\\modeling\\input" FILES
+    ${renderer_modeling_input_sources}
+)
+
+set (renderer_modeling_light_sources
+    renderer/modeling/light/directionallight.cpp
+    renderer/modeling/light/directionallight.h
+    renderer/modeling/light/ilightfactory.cpp
+    renderer/modeling/light/ilightfactory.h
+    renderer/modeling/light/light.cpp
+    renderer/modeling/light/light.h
+    renderer/modeling/light/lightfactoryregistrar.cpp
+    renderer/modeling/light/lightfactoryregistrar.h
+    renderer/modeling/light/lighttraits.h
+    renderer/modeling/light/pointlight.cpp
+    renderer/modeling/light/pointlight.h
+    renderer/modeling/light/spotlight.cpp
+    renderer/modeling/light/spotlight.h
+    renderer/modeling/light/sunlight.cpp
+    renderer/modeling/light/sunlight.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_light_sources}
+)
+source_group ("renderer\\modeling\\light" FILES
+    ${renderer_modeling_light_sources}
+)
+
+set (renderer_modeling_material_sources
+    renderer/modeling/material/bumpmappingmodifier.cpp
+    renderer/modeling/material/bumpmappingmodifier.h
+    renderer/modeling/material/genericmaterial.cpp
+    renderer/modeling/material/genericmaterial.h
+    renderer/modeling/material/imaterialfactory.cpp
+    renderer/modeling/material/imaterialfactory.h
+    renderer/modeling/material/inormalmodifier.h
+    renderer/modeling/material/material.cpp
+    renderer/modeling/material/material.h
+    renderer/modeling/material/materialfactoryregistrar.cpp
+    renderer/modeling/material/materialfactoryregistrar.h
+    renderer/modeling/material/materialtraits.h
+    renderer/modeling/material/normalmappingmodifier.cpp
+    renderer/modeling/material/normalmappingmodifier.h
+)
+if (WITH_OSL)
+    list (APPEND renderer_modeling_material_sources
+        renderer/modeling/material/oslmaterial.cpp
+        renderer/modeling/material/oslmaterial.h
+    )
+endif ()
+list (APPEND appleseed_sources
+    ${renderer_modeling_material_sources}
+)
+source_group ("renderer\\modeling\\material" FILES
+    ${renderer_modeling_material_sources}
+)
+
+set (renderer_modeling_object_sources
+    renderer/modeling/object/iregion.h
+    renderer/modeling/object/meshobject.cpp
+    renderer/modeling/object/meshobject.h
+    renderer/modeling/object/meshobjectreader.cpp
+    renderer/modeling/object/meshobjectreader.h
+    renderer/modeling/object/meshobjectwriter.cpp
+    renderer/modeling/object/meshobjectwriter.h
+    renderer/modeling/object/object.cpp
+    renderer/modeling/object/object.h
+    renderer/modeling/object/regionkit.h
+    renderer/modeling/object/triangle.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_object_sources}
+)
+source_group ("renderer\\modeling\\object" FILES
+    ${renderer_modeling_object_sources}
+)
+
+set (renderer_modeling_project_sources
+    renderer/modeling/project/configuration.cpp
+    renderer/modeling/project/configuration.h
+    renderer/modeling/project/configurationcontainer.h
+    renderer/modeling/project/eventcounters.h
+    renderer/modeling/project/irenderlayerrulefactory.h
+    renderer/modeling/project/project.cpp
+    renderer/modeling/project/project.h
+    renderer/modeling/project/project.xsd
+    renderer/modeling/project/projectfilereader.cpp
+    renderer/modeling/project/projectfilereader.h
+    renderer/modeling/project/projectfileupdater.cpp
+    renderer/modeling/project/projectfileupdater.h
+    renderer/modeling/project/projectfilewriter.cpp
+    renderer/modeling/project/projectfilewriter.h
+    renderer/modeling/project/regexrenderlayerrule.cpp
+    renderer/modeling/project/regexrenderlayerrule.h
+    renderer/modeling/project/renderlayerrule.cpp
+    renderer/modeling/project/renderlayerrule.h
+    renderer/modeling/project/renderlayerrulecontainer.h
+    renderer/modeling/project/renderlayerrulefactoryregistrar.cpp
+    renderer/modeling/project/renderlayerrulefactoryregistrar.h
+    renderer/modeling/project/renderlayerruletraits.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_project_sources}
+)
+source_group ("renderer\\modeling\\project" FILES
+    ${renderer_modeling_project_sources}
+)
+
+set (renderer_modeling_project-builtin_sources
+    renderer/modeling/project-builtin/cornellboxproject.cpp
+    renderer/modeling/project-builtin/cornellboxproject.h
+    renderer/modeling/project-builtin/defaultproject.cpp
+    renderer/modeling/project-builtin/defaultproject.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_project-builtin_sources}
+)
+source_group ("renderer\\modeling\\project-builtin" FILES
+    ${renderer_modeling_project-builtin_sources}
+)
+
+set (renderer_modeling_scene_sources
+    renderer/modeling/scene/assembly.cpp
+    renderer/modeling/scene/assembly.h
+    renderer/modeling/scene/assemblyinstance.cpp
+    renderer/modeling/scene/assemblyinstance.h
+    renderer/modeling/scene/assemblyinstancetraits.h
+    renderer/modeling/scene/basegroup.cpp
+    renderer/modeling/scene/basegroup.h
+    renderer/modeling/scene/containers.cpp
+    renderer/modeling/scene/containers.h
+    renderer/modeling/scene/objectinstance.cpp
+    renderer/modeling/scene/objectinstance.h
+    renderer/modeling/scene/objectinstancetraits.h
+    renderer/modeling/scene/scene.cpp
+    renderer/modeling/scene/scene.h
+    renderer/modeling/scene/textureinstance.cpp
+    renderer/modeling/scene/textureinstance.h
+    renderer/modeling/scene/textureinstancetraits.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_scene_sources}
+)
+source_group ("renderer\\modeling\\scene" FILES
+    ${renderer_modeling_scene_sources}
+)
+
+if (WITH_OSL)
+    set (renderer_modeling_shadergroup
+        renderer/modeling/shadergroup/shader.cpp
+        renderer/modeling/shadergroup/shader.h
+        renderer/modeling/shadergroup/shaderconnection.cpp
+        renderer/modeling/shadergroup/shaderconnection.h
+        renderer/modeling/shadergroup/shadergroup.cpp
+        renderer/modeling/shadergroup/shadergroup.h
+        renderer/modeling/shadergroup/shaderparam.cpp
+        renderer/modeling/shadergroup/shaderparam.h
+        renderer/modeling/shadergroup/shaderparamparser.cpp
+        renderer/modeling/shadergroup/shaderparamparser.h
+    )
+    list (APPEND appleseed_sources
+        ${renderer_modeling_shadergroup}
+    )
+    source_group ("renderer\\modeling\\shadergroup" FILES
+        ${renderer_modeling_shadergroup}
+    )
+endif ()
+
+set (renderer_modeling_surfaceshader_sources
+    renderer/modeling/surfaceshader/aosurfaceshader.cpp
+    renderer/modeling/surfaceshader/aosurfaceshader.h
+    renderer/modeling/surfaceshader/constantsurfaceshader.cpp
+    renderer/modeling/surfaceshader/constantsurfaceshader.h
+    renderer/modeling/surfaceshader/diagnosticsurfaceshader.cpp
+    renderer/modeling/surfaceshader/diagnosticsurfaceshader.h
+    renderer/modeling/surfaceshader/isurfaceshaderfactory.h
+    renderer/modeling/surfaceshader/physicalsurfaceshader.cpp
+    renderer/modeling/surfaceshader/physicalsurfaceshader.h
+    renderer/modeling/surfaceshader/surfaceshader.cpp
+    renderer/modeling/surfaceshader/surfaceshader.h
+    renderer/modeling/surfaceshader/surfaceshadercollection.cpp
+    renderer/modeling/surfaceshader/surfaceshadercollection.h
+    renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.cpp
+    renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.h
+    renderer/modeling/surfaceshader/surfaceshadertraits.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_surfaceshader_sources}
+)
+source_group ("renderer\\modeling\\surfaceshader" FILES
+    ${renderer_modeling_surfaceshader_sources}
+)
+
+set (renderer_modeling_texture_sources
+    renderer/modeling/texture/disktexture2d.cpp
+    renderer/modeling/texture/disktexture2d.h
+    renderer/modeling/texture/itexturefactory.h
+    renderer/modeling/texture/texture.cpp
+    renderer/modeling/texture/texture.h
+    renderer/modeling/texture/texturefactoryregistrar.cpp
+    renderer/modeling/texture/texturefactoryregistrar.h
+    renderer/modeling/texture/texturetraits.h
+    renderer/modeling/texture/writabletexture2d.cpp
+    renderer/modeling/texture/writabletexture2d.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_texture_sources}
+)
+source_group ("renderer\\modeling\\texture" FILES
+    ${renderer_modeling_texture_sources}
+)
+
+set (renderer_utility_sources
+    renderer/utility/bbox.h
+    renderer/utility/messagecontext.cpp
+    renderer/utility/messagecontext.h
+    renderer/utility/paramarray.cpp
+    renderer/utility/paramarray.h
+    renderer/utility/stochasticcast.h
+    renderer/utility/testutils.cpp
+    renderer/utility/testutils.h
+    renderer/utility/transformsequence.cpp
+    renderer/utility/transformsequence.h
+)
+list (APPEND appleseed_sources
+    ${renderer_utility_sources}
+)
+source_group ("renderer\\utility" FILES
+    ${renderer_utility_sources}
+)
+
+# Collect all XML Schema files amongst the source files.
+filter_list (
+    appleseed_schema_files
+    "${appleseed_sources}"
+    ".*\\\\.xsd"
+)
+
+# Exclude all XML Schema files from the build.
+set_source_files_properties (${appleseed_schema_files} PROPERTIES
+    HEADER_FILE_ONLY TRUE
+)
+
+# Collect all OSL headers.
+if (WITH_OSL)
+    set (appleseed_osl_headers
+        renderer/kernel/shading/oslutil.h
+        renderer/kernel/shading/stdosl.h
+    )
+endif ()
+
+
+#--------------------------------------------------------------------------------------------------
+# Target.
+#--------------------------------------------------------------------------------------------------
+
+add_library (appleseed SHARED
+    ${appleseed_sources}
+)
+
+set_target_properties (appleseed PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed
+)
+
+
+#--------------------------------------------------------------------------------------------------
+# Preprocessor definitions.
+#--------------------------------------------------------------------------------------------------
+
+apply_preprocessor_definitions (appleseed)
+
+append_custom_preprocessor_definitions (appleseed
+    APPLESEED_ENABLE_IMATH_INTEROP
+)
+
+
+#--------------------------------------------------------------------------------------------------
+# Static libraries.
+#--------------------------------------------------------------------------------------------------
+
+# Static libraries must be specified in order of reverse-dependency.
+link_against_platform (appleseed)
+link_against_libpng (appleseed)
+link_against_xercesc (appleseed)
+
+if (WITH_ALEMBIC)
+    link_against_alembic (appleseed)
+    link_against_hdf5 (appleseed)
+endif ()
+
+link_against_openexr (appleseed)
+link_against_zlib (appleseed)
+
+if (WITH_OSL)
+    link_against_oiio (appleseed)
+    link_against_oslexec (appleseed)
+endif ()
+
+target_link_libraries (appleseed ${Boost_LIBRARIES})
+target_link_libraries (appleseed lz4 minilzo)
+
+
+#--------------------------------------------------------------------------------------------------
+# Post-build commands.
+#--------------------------------------------------------------------------------------------------
+
+add_copy_target_to_sandbox_command (appleseed)
+
+# Copy all XML schema files to the sandbox.
+foreach (schema_file ${appleseed_schema_files})
+    add_custom_command (TARGET appleseed POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${schema_file} ${PROJECT_SOURCE_DIR}/sandbox/schemas/
+    )
+endforeach ()
+
+# Copy all OSL headers to the sandbox.
+if (WITH_OSL)
+    foreach (osl_header ${appleseed_osl_headers})
+        add_custom_command (TARGET appleseed POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${osl_header} ${PROJECT_SOURCE_DIR}/sandbox/shaders/
+        )
+    endforeach ()
+endif ()
+
+
+#--------------------------------------------------------------------------------------------------
+# Installation.
+#--------------------------------------------------------------------------------------------------
+
+install (TARGETS appleseed
+    DESTINATION bin
+)
+
+install (TARGETS appleseed
+    DESTINATION extras/devkit/lib
+)
+```
