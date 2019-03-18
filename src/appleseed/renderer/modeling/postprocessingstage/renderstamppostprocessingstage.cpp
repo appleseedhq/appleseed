@@ -121,7 +121,7 @@ namespace
             const float font_height = 14.0f * m_scale_factor;
             const Color4f FontColor(srgb_to_linear_rgb(Color3f(0.9f, 0.9f, 0.9f)), 1.0f);   // linear RGB
             const Color4f BackgroundColor(0.0f, 0.0f, 0.0f, 0.95f);                         // linear RGB
-            const Color4f LogoTint(0.85f, 0.85f, 0.85f, 0.8f);                              // linear RGB
+            const Color4f LogoTint(1.0f, 1.0f, 1.0f, 0.8f);                                 // linear RGB
             const float margin_h = 6.0f * m_scale_factor;
             const float margin_v = 4.0f * m_scale_factor;
 
@@ -164,9 +164,9 @@ namespace
             const float aspect = static_cast<float>(icon_spec.width) / static_cast<float>(icon_spec.height);
             const ROI roi(
                 0,
-                static_cast<int>(round(icon_height * aspect)),
+                round<int>(icon_height * aspect),
                 0,
-                static_cast<int>(round(icon_height)),
+                round<int>(icon_height),
                 0,
                 1,
                 0,
@@ -174,8 +174,8 @@ namespace
                 
             ImageBuf unpremult_icon, scaled_unpremult_icon, scaled_premult_icon;
             ImageBufAlgo::unpremult(unpremult_icon, m_icon, ROI::All());
-            const float filter_width = fit(m_scale_factor, MinScaleFactor, MaxScaleFactor, 2.0f, 3.25f);
-            ImageBufAlgo::resize(scaled_unpremult_icon, unpremult_icon, "sharp-gaussian", filter_width, roi);
+            const float filter_width = fit(m_scale_factor, MinScaleFactor, MaxScaleFactor, 2.75f, 4.5f);
+            ImageBufAlgo::resize(scaled_unpremult_icon, unpremult_icon, "mitchell", filter_width, roi);
             ImageBufAlgo::premult(scaled_premult_icon, scaled_unpremult_icon, ROI::All());
             unique_ptr<float[]> pixels(new float[roi.width() * roi.height() * roi.nchannels()]);
             scaled_premult_icon.get_pixels(ROI::All(), TypeDesc::TypeFloat, pixels.get());
