@@ -1,2 +1,11 @@
-Using bpy::object archive_frame(const FrameArchiver* frameArchiver, const char* directory) function or int addDir(const char* name)
-and subsquent functions 
+bpy::object archive_frame(const FrameArchiver* frameArchiver, const char* directory)
+    {
+        char* output = 0;
+        if (frameArchiver.archive(directory, &output))
+        {
+            const bpy::str path(output);
+            foundation::free_string(output);
+            return path;
+        }
+        return bpy::object();
+    }
