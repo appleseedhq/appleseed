@@ -39,6 +39,8 @@ shader as_max_uv_transform
 
     float in_rotateW = 0.0,
 
+    int in_real_world_mode = 1,
+
     int in_mirrorU = 0,
     int in_mirrorV = 0,
 
@@ -62,9 +64,15 @@ shader as_max_uv_transform
     float out_u = in_coordU;
     float out_v = in_coordV;
 
-    // Apply offset before rotation
     out_u -= in_offsetU;
     out_v -= in_offsetV;
+
+    // Max applies an offset when non real world sizes are used.
+    if (!in_real_world_mode)
+    {
+        out_u -= 0.5;
+        out_v -= 0.5;
+    }
 
     if (in_rotateW != 0.0)
     {
@@ -78,9 +86,16 @@ shader as_max_uv_transform
         out_v = rot[1];
     }
 
-    // Apply tiling without considering cropping
+    // Apply tiling and offset without considering cropping.
     out_u = (out_u * in_tilingU);
     out_v = (out_v * in_tilingV);
+
+    // Undo the non real world size offset.
+    if (!in_real_world_mode)
+    {
+        out_u += 0.5;
+        out_v += 0.5;
+    }
 
     // Apply mirroring.
     if (in_mirrorU)
@@ -104,7 +119,7 @@ shader as_max_uv_transform
     out_u = fmod(out_u, 1.0);
     out_v = fmod(out_v, 1.0);
 
-    // Avoid negative values
+    // Avoid negative values.
     if (out_u < 0)
         out_u = 1 + out_u;
     if (out_v < 0)
@@ -118,7 +133,7 @@ shader as_max_uv_transform
 
         out_v *= in_cropH;
         out_v -= in_cropV;
-        out_v = out_v + (1 - in_cropH); // Looks like V=0 is bottom left corner, so had to move it to the top to match 3ds max coords
+        out_v = out_v + (1 - in_cropH); // Looks like V=0 is bottom left corner, so had to move it to the top to match 3ds max coords.
     }
 
     out_outUvFilterSize[0] = filterwidth(out_u);
