@@ -196,7 +196,7 @@ namespace
                 "  max samples                   %s\n"
                 "  max fps                       %f\n"
                 "  collect performance stats     %s\n"
-                "  collect luminance stats       %s\n",
+                "  collect luminance stats       %s",
                 get_spectrum_mode_name(m_params.m_spectrum_mode).c_str(),
                 get_sampling_context_mode_name(m_params.m_sampling_mode).c_str(),
                 pretty_uint(m_params.m_thread_count).c_str(),
