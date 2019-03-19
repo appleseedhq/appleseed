@@ -682,8 +682,11 @@ namespace
         void save_config(Configuration& config) const override
         {            
             if (get_widget<bool>("general.unlimited_samples"))
-                config.get_parameters().remove_path("progressive_frame_renderer.max_samples");
-            else set_config(config, "progressive_frame_renderer.max_samples", get_widget<int>("general.max_samples"));
+                config.get_parameters().remove_path("progressive_frame_renderer.max_average_samples_per_pixel");
+            else set_config(
+                    config,
+                    "progressive_frame_renderer.max_average_samples_per_pixel",
+                    get_widget<int>("general.max_average_samples_per_pixel"));
         }
 
       private:
@@ -698,20 +701,23 @@ namespace
             QFormLayout* sublayout = create_form_layout();
             layout->addLayout(sublayout);
 
-            QSpinBox* max_samples = create_integer_input("general.max_samples", 1, 1000000, 10000);
+            QSpinBox* max_average_samples_per_pixel = create_integer_input("general.max_average_samples_per_pixel", 1, 1000000, 10000);
             QCheckBox* unlimited_samples = create_checkbox("general.unlimited_samples", "Unlimited");
-            sublayout->addRow("Max Samples:", create_horizontal_group(max_samples, unlimited_samples));
-            connect(unlimited_samples, SIGNAL(toggled(bool)), max_samples, SLOT(setDisabled(bool)));
+            sublayout->addRow("Max Average Samples Per Pixel:", create_horizontal_group(max_average_samples_per_pixel, unlimited_samples));
+            connect(unlimited_samples, SIGNAL(toggled(bool)), max_average_samples_per_pixel, SLOT(setDisabled(bool)));
         }
 
         void load_general_sampler(const Configuration& config)
         {
             const int DefaultMaxSamples = 100000;
 
-            const int max_samples = get_config<int>(config, "progressive_frame_renderer.max_samples", -1);
+            const int max_average_samples_per_pixel = get_config<int>(
+                config, "progressive_frame_renderer.max_average_samples_per_pixel", -1);
 
-            set_widget("general.unlimited_samples", max_samples == -1);
-            set_widget("general.max_samples", max_samples == -1 ? DefaultMaxSamples : max_samples);
+            set_widget("general.unlimited_samples", max_average_samples_per_pixel == -1);
+            set_widget(
+                "general.max_average_samples_per_pixel",
+                max_average_samples_per_pixel == -1 ? DefaultMaxSamples : max_average_samples_per_pixel);
         }
     };
 

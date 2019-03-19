@@ -104,7 +104,10 @@ namespace
             const ParamArray&               params)
           : m_project(project)
           , m_params(params)
-          , m_sample_counter(m_params.m_max_sample_count)
+          , m_sample_counter(
+              m_params.m_max_average_samples_per_pixel *
+              project.get_frame()->image().properties().m_canvas_height *
+              project.get_frame()->image().properties().m_canvas_width)
           , m_ref_image_avg_lum(0.0)
         {
             // We must have a generator factory, but it's OK not to have a callback factory.
@@ -214,7 +217,7 @@ namespace
                 "  spectrum mode                 %s\n"
                 "  sampling mode                 %s\n"
                 "  rendering threads             %s\n"
-                "  max samples                   %s\n"
+                "  max average samples per pixel %s\n"
                 "  max fps                       %f\n"
                 "  collect performance stats     %s\n"
                 "  collect luminance stats       %s\n"
@@ -222,9 +225,9 @@ namespace
                 get_spectrum_mode_name(m_params.m_spectrum_mode).c_str(),
                 get_sampling_context_mode_name(m_params.m_sampling_mode).c_str(),
                 pretty_uint(m_params.m_thread_count).c_str(),
-                m_params.m_max_sample_count == numeric_limits<uint64>::max()
+                m_params.m_max_average_samples_per_pixel== numeric_limits<uint64>::max()
                     ? "unlimited"
-                    : pretty_uint(m_params.m_max_sample_count).c_str(),
+                    : pretty_uint(m_params.m_max_average_samples_per_pixel).c_str(),
                 m_params.m_max_fps,
                 m_params.m_perf_stats ? "on" : "off",
                 m_params.m_luminance_stats ? "on" : "off",
@@ -291,7 +294,6 @@ namespace
                         *m_project.get_frame(),
                         *m_buffer.get(),
                         m_tile_callback.get(),
-                        m_params.m_max_sample_count,
                         m_params.m_max_fps,
                         m_display_thread_abort_switch));
                 m_display_thread.reset(
@@ -385,18 +387,19 @@ namespace
         {
             const Spectrum::Mode        m_spectrum_mode;
             const SamplingContext::Mode m_sampling_mode;
-            const size_t                m_thread_count;         // number of rendering threads
-            const uint64                m_max_sample_count;     // maximum total number of samples to compute
-            const double                m_max_fps;              // maximum display frequency in frames/second
-            const bool                  m_perf_stats;           // collect and print performance statistics?
-            const bool                  m_luminance_stats;      // collect and print luminance statistics?
-            const string                m_ref_image_path;       // path to the reference image
+            const size_t                m_thread_count;                     // number of rendering threads
+            const uint64                m_max_average_samples_per_pixel;    // maximum average number of samples to compute per pixel
+            const double                m_max_fps;                          // maximum display frequency in frames/second
+            const bool                  m_perf_stats;                       // collect and print performance statistics?
+            const bool                  m_luminance_stats;                  // collect and print luminance statistics?
+            const string                m_ref_image_path;                   // path to the reference image
 
             explicit Parameters(const ParamArray& params)
               : m_spectrum_mode(get_spectrum_mode(params))
               , m_sampling_mode(get_sampling_context_mode(params))
               , m_thread_count(get_rendering_thread_count(params))
-              , m_max_sample_count(params.get_optional<uint64>("max_samples", numeric_limits<uint64>::max()))
+              , m_max_average_samples_per_pixel(params.get_optional<uint64>(
+                    "max_average_samples_per_pixel", numeric_limits<uint64>::max()))
               , m_max_fps(params.get_optional<double>("max_fps", 30.0))
               , m_perf_stats(params.get_optional<bool>("performance_statistics", false))
               , m_luminance_stats(params.get_optional<bool>("luminance_statistics", false))
@@ -417,13 +420,14 @@ namespace
                 Frame&                      frame,
                 SampleAccumulationBuffer&   buffer,
                 ITileCallback*              tile_callback,
-                const uint64                max_sample_count,
                 const double                max_fps,
                 IAbortSwitch&               abort_switch)
               : m_frame(frame)
               , m_buffer(buffer)
               , m_tile_callback(tile_callback)
-              , m_min_sample_count(min<uint64>(max_sample_count, 32 * 32 * 2))
+              , m_min_sample_count(min<uint64>(
+                    frame.image().properties().m_canvas_height * frame.image().properties().m_canvas_width,
+                    32 * 32 * 2))
               , m_target_elapsed(1.0 / max_fps)
               , m_abort_switch(abort_switch)
             {
@@ -760,13 +764,13 @@ Dictionary ProgressiveFrameRendererFactory::get_params_metadata()
             .insert("help", "Maximum progressive rendering update rate in frames per second"));
 
     metadata.dictionaries().insert(
-        "max_samples",
+        "max_average_samples_per_pixel",
         Dictionary()
             .insert("type", "int")
             .insert("default", "100000")
             .insert("unlimited", "true")
-            .insert("label", "Max Samples")
-            .insert("help", "Maximum number of samples per pixel"));
+            .insert("label", "Max Average Samples Per Pixel")
+            .insert("help", "Maximum number of average samples per pixel"));
 
     return metadata;
 }
