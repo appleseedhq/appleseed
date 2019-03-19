@@ -57,6 +57,7 @@ namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace appleseed { namespace studio { class RenderWidget; } }
 namespace renderer  { class Entity; }
 namespace renderer  { class Project; }
+namespace renderer  { class RenderingManager; }
 class QComboBox;
 class QLabel;
 class QPoint;
