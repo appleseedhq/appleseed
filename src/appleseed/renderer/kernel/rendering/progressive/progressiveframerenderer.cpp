@@ -147,7 +147,8 @@ namespace
             if (callback_factory)
                 m_tile_callback.reset(callback_factory->create());
 
-            if (m_project.get_frame()->validate_ref_image()) {
+            if (m_project.get_frame()->validate_ref_image())
+            {
                 m_ref_image_avg_lum = compute_average_luminance(m_project.get_frame()->ref_image());
 
                 RENDERER_LOG_DEBUG(
