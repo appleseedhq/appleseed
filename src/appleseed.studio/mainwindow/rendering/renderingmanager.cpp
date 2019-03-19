@@ -199,9 +199,6 @@ void RenderingManager::start_rendering(
     m_rendering_mode = rendering_mode;
     m_render_tab = render_tab;
 
-    //const size_t passes = m_params.get_optional<size_t>("passes", 1);
-    //RENDERER_LOG_INFO("PASSES: %zu", passes);
-
     m_render_tab->get_render_widget()->start_render();
 
     TileCallbackCollectionFactory* tile_callback_collection_factory = 
