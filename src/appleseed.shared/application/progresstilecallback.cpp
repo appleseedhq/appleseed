@@ -65,10 +65,11 @@ namespace
       : public TileCallbackBase
     {
       public:
-        explicit ProgressTileCallback(Logger& logger)
+        ProgressTileCallback(Logger& logger, const size_t pass_count)
           : m_logger(logger)
           , m_rendered_pixels(0)
           , m_rendered_tiles(0)
+          , m_pass_count(pass_count)
         {
         }
 
@@ -80,12 +81,19 @@ namespace
 
         void on_tiled_frame_begin(const Frame* frame) override
         {
-            m_stopwatch.start();
+            // Do not restart the stopwatch if it is already running.
+            if (m_stopwatch.get_seconds() <= 0.0)
+                m_stopwatch.start();
         }
 
         void on_tiled_frame_end(const Frame* frame) override
         {
-            m_stopwatch.clear();
+            const size_t total_tiles = frame->image().properties().m_tile_count * m_pass_count;
+
+            // Clear the stopwatch only when rendered tiles exceeds total tiles.
+            // This makes sure that we don't clear the stopwatch in between passes.
+            if (m_rendered_tiles > total_tiles)
+                m_stopwatch.clear();
         }
 
         void on_tile_end(
@@ -100,13 +108,13 @@ namespace
             m_rendered_pixels += tile.get_pixel_count();
 
             // Retrieve the total number of pixels in the frame.
-            const size_t total_pixels = frame->image().properties().m_pixel_count;
+            const size_t total_pixels = frame->image().properties().m_pixel_count * m_pass_count;
 
             // Keep track of the total number of rendered tiles.
             ++m_rendered_tiles;
 
             // Retrieve the total number of tiles in the frame.
-            const size_t total_tiles = frame->image().properties().m_tile_count;
+            const size_t total_tiles = frame->image().properties().m_tile_count * m_pass_count;
 
             // Estimate remaining render time.
             m_stopwatch.measure();
@@ -127,6 +135,7 @@ namespace
         boost::mutex                        m_mutex;
         size_t                              m_rendered_pixels;
         size_t                              m_rendered_tiles;
+        size_t                              m_pass_count;
         Stopwatch<DefaultWallclockTimer>    m_stopwatch;
     };
 }
@@ -141,10 +150,13 @@ struct ProgressTileCallbackFactory::Impl
     unique_ptr<ITileCallback> m_callback;
 };
 
-ProgressTileCallbackFactory::ProgressTileCallbackFactory(Logger& logger)
+ProgressTileCallbackFactory::ProgressTileCallbackFactory(
+    Logger&         logger,
+    const size_t    pass_count)
   : impl(new Impl())
 {
-    impl->m_callback.reset(new ProgressTileCallback(logger));
+    impl->m_callback = unique_ptr<ITileCallback>(
+        new ProgressTileCallback(logger, pass_count));
 }
 
 ProgressTileCallbackFactory::~ProgressTileCallbackFactory()

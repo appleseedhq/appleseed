@@ -199,6 +199,9 @@ void RenderingManager::start_rendering(
     m_rendering_mode = rendering_mode;
     m_render_tab = render_tab;
 
+    //const size_t passes = m_params.get_optional<size_t>("passes", 1);
+    //RENDERER_LOG_INFO("PASSES: %zu", passes);
+
     m_render_tab->get_render_widget()->start_render();
 
     TileCallbackCollectionFactory* tile_callback_collection_factory = 
@@ -209,7 +212,9 @@ void RenderingManager::start_rendering(
             m_render_tab->get_render_widget()));
 
     tile_callback_collection_factory->insert(
-        new ProgressTileCallbackFactory(global_logger()));
+        new ProgressTileCallbackFactory(
+            global_logger(),
+            m_params.get_optional<size_t>("passes", 1)));
 
     m_tile_callback_factory.reset(tile_callback_collection_factory);
 
