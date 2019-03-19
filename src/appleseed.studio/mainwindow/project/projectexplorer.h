@@ -89,12 +89,12 @@ class ProjectExplorer
     void signal_frame_modified() const;
 
   private:
-    QTreeWidget*                            m_tree_widget;
-    AttributeEditor*                        m_attribute_editor;
-    ProjectBuilder                          m_project_builder;
-    ItemRegistry                            m_item_registry;
-    EntityEditorContext                     m_editor_context;
-    std::unique_ptr<QShortcut>              m_delete_shortcut;
+    QTreeWidget*                m_tree_widget;
+    AttributeEditor*            m_attribute_editor;
+    ProjectBuilder              m_project_builder;
+    ItemRegistry                m_item_registry;
+    EntityEditorContext         m_editor_context;
+    std::unique_ptr<QShortcut>  m_delete_shortcut;
 
     QMenu* build_single_item_context_menu(QTreeWidgetItem* item) const;
     QMenu* build_multiple_items_context_menu(const QList<QTreeWidgetItem*>& item_widgets) const;
