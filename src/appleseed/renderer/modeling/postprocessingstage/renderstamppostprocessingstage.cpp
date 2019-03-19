@@ -51,9 +51,11 @@
 #include "foundation/utility/string.h"
 
 // OpenImageIO headers.
+#include "foundation/platform/_beginoiioheaders.h"
 #include "OpenImageIO/imagebuf.h"
 #include "OpenImageIO/imagebufalgo.h"
 #include "OpenImageIO/typedesc.h"
+#include "foundation/platform/_endoiioheaders.h"
 
 // Standard headers.
 #include <memory>
@@ -71,7 +73,6 @@ namespace
     const char* Model = "render_stamp_post_processing_stage";
 
     const string DefaultFormatString = "appleseed {lib-version} | Time: {render-time}";
-    const int DefaultIconHeight = 14;
     const float DefaultScaleFactor = 1.0f;
     const float MinScaleFactor = 0.1f;
     const float MaxScaleFactor = 20.0f;
@@ -121,8 +122,8 @@ namespace
             const Color4f FontColor(srgb_to_linear_rgb(Color3f(0.9f, 0.9f, 0.9f)), 1.0f);   // linear RGB
             const Color4f BackgroundColor(0.0f, 0.0f, 0.0f, 0.95f);                         // linear RGB
             const Color4f LogoTint(1.0f, 1.0f, 1.0f, 0.8f);                                 // linear RGB
-            const float MarginH = 6.0f;
-            const float MarginV = 4.0f;
+            const float margin_h = 6.0f * m_scale_factor;
+            const float margin_v = 4.0f * m_scale_factor;
 
             // Retrieve additional render info from the frame.
             const ParamArray& render_info = frame.render_info();
@@ -143,14 +144,14 @@ namespace
             const CanvasProperties& props = frame.image().properties();
             const float image_height = static_cast<float>(props.m_canvas_height);
             const float text_height = TextRenderer::compute_string_height(font_height, text.c_str());
-            const float origin_y = image_height - text_height - MarginV;
+            const float origin_y = image_height - text_height - margin_v;
 
             // Draw the background rectangle.
             Drawing::draw_filled_rect(
                 frame.image(),
                 Vector2i(
                     0,
-                    truncate<int>(origin_y - MarginV)),
+                    truncate<int>(origin_y - margin_v)),
                 Vector2i(
                     static_cast<int>(props.m_canvas_width - 1),
                     static_cast<int>(props.m_canvas_height - 1)),
@@ -158,29 +159,33 @@ namespace
 
             // Calculate final icon size and scale the icon
             const ImageSpec icon_spec = m_icon.spec();
+            const float stamp_height = text_height + 2 * margin_v;
+            const float icon_height = 0.68f * stamp_height;
             const float aspect = static_cast<float>(icon_spec.width) / static_cast<float>(icon_spec.height);
             const ROI roi(
                 0,
-                static_cast<int>(m_scale_factor * aspect * DefaultIconHeight),
+                round<int>(icon_height * aspect),
                 0,
-                static_cast<int>(m_scale_factor * DefaultIconHeight),
+                round<int>(icon_height),
                 0,
                 1,
                 0,
                 m_icon.nchannels());
                 
-            ImageBuf scaled_logo;
-            const float filter_width = OIIO::lerp(1.0f, 2.8f, (m_scale_factor - MinScaleFactor) / (MaxScaleFactor - MinScaleFactor));
-            ImageBufAlgo::resize(scaled_logo, m_icon, "sharp-gaussian", filter_width, roi);
+            ImageBuf unpremult_icon, scaled_unpremult_icon, scaled_premult_icon;
+            ImageBufAlgo::unpremult(unpremult_icon, m_icon, ROI::All());
+            const float filter_width = fit(m_scale_factor, MinScaleFactor, MaxScaleFactor, 2.75f, 4.5f);
+            ImageBufAlgo::resize(scaled_unpremult_icon, unpremult_icon, "mitchell", filter_width, roi);
+            ImageBufAlgo::premult(scaled_premult_icon, scaled_unpremult_icon, ROI::All());
             unique_ptr<float[]> pixels(new float[roi.width() * roi.height() * roi.nchannels()]);
-            scaled_logo.get_pixels(ROI::All(), TypeDesc::TypeFloat, pixels.get());
+            scaled_premult_icon.get_pixels(ROI::All(), TypeDesc::TypeFloat, pixels.get());
 
             // Blit the appleseed logo.
             Drawing::blit_bitmap(
                 frame.image(),
                 Vector2i(
-                    static_cast<int>(MarginH),
-                    static_cast<int>(props.m_canvas_height - roi.height() - MarginV)),
+                    static_cast<int>(margin_h),
+                    static_cast<int>(props.m_canvas_height - icon_height - margin_v)),
                 pixels.get(),
                 roi.width(),
                 roi.height(),
@@ -193,7 +198,7 @@ namespace
                 Font,
                 font_height,
                 FontColor,
-                MarginH + roi.width() + MarginH,
+                margin_h + roi.width() + margin_h,
                 origin_y,
                 text.c_str());
         }
