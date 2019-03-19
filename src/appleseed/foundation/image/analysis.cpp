@@ -141,15 +141,15 @@ double compute_rms_deviation(const Image& image1, const Image& image2)
     {
         for (size_t x = 0; x < props.m_canvas_width; ++x)
         {
-            float image_color[4];
-            image1.get_pixel(x, y, image_color);
+            float color1[4];
+            image1.get_pixel(x, y, color1);
 
-            float ref_color[4];
-            image2.get_pixel(x, y, ref_color);
+            float color2[4];
+            image2.get_pixel(x, y, color2);
 
             mse += compute_error_squared(
-                Color3f::from_array(image_color),
-                Color3f::from_array(ref_color));
+                Color3f::from_array(color1),
+                Color3f::from_array(color2));
         }
     }
 
