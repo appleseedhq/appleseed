@@ -186,7 +186,12 @@ Frame::Frame(
         impl->m_ref_image.reset(reader.read(
             search_paths.qualify(impl->m_ref_image_path).c_str()));
 
-        validate_ref_image();
+        if (!has_valid_ref_image())
+        {
+            RENDERER_LOG_ERROR(
+                "the reference image is not compatible with the output frame "
+                "(different dimensions, tile size or number of channels).");
+        }
     }
 
     // Create the image stack for AOVs.
@@ -325,21 +330,10 @@ Image& Frame::ref_image() const
     return *impl->m_ref_image.get();
 }
 
-bool Frame::validate_ref_image() const
+bool Frame::has_valid_ref_image() const
 {
-    if (!impl->m_ref_image)
-        return false;
-
-    bool is_compatible = are_images_compatible(*impl->m_image.get(), *impl->m_ref_image.get());
-    if (!is_compatible)
-    {
-        RENDERER_LOG_ERROR(
-            "the reference image is not compatible with the output frame "
-            "(different dimensions, tile size or number of channels).");
-
-        impl->m_ref_image.reset();
-    }
-    return is_compatible;
+    return impl->m_ref_image &&
+        are_images_compatible(*impl->m_image.get(), *impl->m_ref_image.get());
 }
 
 void Frame::clear_main_and_aov_images()

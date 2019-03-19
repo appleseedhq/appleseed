@@ -107,7 +107,7 @@ class APPLESEED_DLLSYMBOL Frame
     foundation::Image& ref_image() const;
 
     // Returns whether the reference image is compatible with the frame.
-    bool validate_ref_image() const;
+    bool has_valid_ref_image() const;
 
     // Clear the main and AOV images to transparent black.
     void clear_main_and_aov_images();

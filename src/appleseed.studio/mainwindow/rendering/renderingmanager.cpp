@@ -461,7 +461,7 @@ void RenderingManager::slot_rendering_end()
     if (m_params.get_optional<bool>("print_final_average_luminance", false))
         print_average_luminance();
 
-    if (m_project->get_frame()->validate_ref_image())
+    if (m_project->get_frame()->has_valid_ref_image())
         print_rms_deviation();
 
     if (m_params.get_optional<bool>("autosave", true))

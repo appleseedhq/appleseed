@@ -76,7 +76,7 @@ namespace
 
         void post_process_image(const Frame& frame) override
         {
-            if (!frame.validate_ref_image())
+            if (!frame.has_valid_ref_image())
                 return;
 
             // TODO: Convert to inferno color map.
