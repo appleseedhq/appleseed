@@ -978,13 +978,8 @@ void MainWindow::add_render_tab(const QString& label)
         new RenderTab(
             *m_project_explorer,
             *m_project_manager.get_project(),
+            m_rendering_manager,
             m_ocio_config);
-
-    // Set material drop handler
-    render_tab->set_material_drop_handler(
-        new MaterialDropHandler(
-            *m_project_manager.get_project(),
-            m_rendering_manager));
 
     // Connect the render tab to the main window and the rendering manager.
     connect(
@@ -1212,7 +1207,7 @@ void MainWindow::stop_monitoring_project_file()
 void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 {
     if (event->mimeData()->hasFormat("text/uri-list"))
-         event->acceptProposedAction();
+        event->acceptProposedAction();
 }
 
 void MainWindow::dropEvent(QDropEvent* event)

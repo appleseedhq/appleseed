@@ -55,8 +55,8 @@ namespace OCIO = OCIO_NAMESPACE;
 // Forward declarations.
 namespace foundation    { class CanvasProperties; }
 namespace renderer      { class Frame; }
-
 class QDragEnterEvent;
+class QDragMoveEvent;
 class QDropEvent;
 class QPaintEvent;
 

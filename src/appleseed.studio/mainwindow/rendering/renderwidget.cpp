@@ -44,6 +44,7 @@
 // Qt headers.
 #include <QColor>
 #include <QDragEnterEvent>
+#include <QDragMoveEvent>
 #include <QDropEvent>
 #include <QMimeData>
 #include <QMutexLocker>

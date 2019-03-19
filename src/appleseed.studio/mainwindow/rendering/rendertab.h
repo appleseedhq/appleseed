@@ -79,15 +79,14 @@ class RenderTab
 
   public:
     RenderTab(
-        ProjectExplorer&                project_explorer,
-        renderer::Project&              project,
-        OCIO::ConstConfigRcPtr          ocio_config);
+        ProjectExplorer&        project_explorer,
+        renderer::Project&      project,
+        RenderingManager&       rendering_manager,
+        OCIO::ConstConfigRcPtr  ocio_config);
 
     RenderWidget* get_render_widget() const;
     CameraController* get_camera_controller() const;
     ScenePickingHandler* get_scene_picking_handler() const;
-
-    void set_material_drop_handler(MaterialDropHandler *material_drop_handler);
 
     void set_clear_frame_button_enabled(const bool enabled);
     void set_render_region_buttons_enabled(const bool enabled);
@@ -146,6 +145,7 @@ class RenderTab
 
     ProjectExplorer&                            m_project_explorer;
     renderer::Project&                          m_project;
+    RenderingManager&                           m_rendering_manager;
 
     std::unique_ptr<WidgetZoomHandler>          m_zoom_handler;
     std::unique_ptr<ScrollAreaPanHandler>       m_pan_handler;
