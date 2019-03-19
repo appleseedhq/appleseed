@@ -1770,10 +1770,10 @@ auto_release_ptr<Frame> FrameFactory::create(
 }
 
 auto_release_ptr<Frame> FrameFactory::create(
-        const char*         name,
-        const ParamArray&   params,
-        const AOVContainer& aovs,
-        const SearchPaths&  search_paths)
+    const char*         name,
+    const ParamArray&   params,
+    const AOVContainer& aovs,
+    const SearchPaths&  search_paths)
 {
     return
         auto_release_ptr<Frame>(
