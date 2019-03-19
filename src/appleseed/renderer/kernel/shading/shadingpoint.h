@@ -221,8 +221,7 @@ class ShadingPoint
     const Assembly& get_assembly() const;
 
     // Return the object instance that was hit.
-    ObjectInstance& get_object_instance();
-    const ObjectInstance& get_object_instance() const;
+    ObjectInstance& get_object_instance() const;
 
     // Return the object that was hit.
     const Object& get_object() const;
@@ -865,14 +864,7 @@ inline const Assembly& ShadingPoint::get_assembly() const
     return *m_assembly;
 }
 
-inline ObjectInstance& ShadingPoint::get_object_instance()
-{
-    assert(hit_surface());
-    cache_source_geometry();
-    return *m_object_instance;
-}
-
-inline const ObjectInstance& ShadingPoint::get_object_instance() const
+inline ObjectInstance& ShadingPoint::get_object_instance() const
 {
     assert(hit_surface());
     cache_source_geometry();
