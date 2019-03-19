@@ -719,6 +719,7 @@ install (
         ${OSL_QUERY_INFO}
         ${OSL_MAKETX}
         ${OPENIMAGEIO_OIIOTOOL}
+        ${OPENIMAGEIO_IDIFF}
     DESTINATION bin
 )
 
