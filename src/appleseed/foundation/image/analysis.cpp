@@ -128,14 +128,6 @@ bool are_images_compatible(const Image& image1, const Image& image2)
         props1.m_canvas_height == props2.m_canvas_height;
 }
 
-double compute_error_squared(const Color3f& c1, const Color3f& c2)
-{
-    return
-        square(c1.r - c2.r) +
-        square(c1.g - c2.g) +
-        square(c1.b - c2.b);
-}
-
 double compute_rms_deviation(const Image& image1, const Image& image2)
 {
     if (!are_images_compatible(image1, image2))
