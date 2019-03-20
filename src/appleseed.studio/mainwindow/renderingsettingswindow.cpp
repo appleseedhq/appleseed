@@ -704,7 +704,7 @@ namespace
             QFormLayout* sublayout = create_form_layout();
             layout->addLayout(sublayout);
 
-            QSpinBox* max_average_samples_per_pixel = create_integer_input("general.max_average_samples_per_pixel", 1, 1000000, 10000);
+            QSpinBox* max_average_samples_per_pixel = create_integer_input("general.max_average_samples_per_pixel", 1, 1000000, 10);
             QCheckBox* unlimited_samples = create_checkbox("general.unlimited_samples", "Unlimited");
             sublayout->addRow("Max Average Samples Per Pixel:", create_horizontal_group(max_average_samples_per_pixel, unlimited_samples));
             connect(unlimited_samples, SIGNAL(toggled(bool)), max_average_samples_per_pixel, SLOT(setDisabled(bool)));
