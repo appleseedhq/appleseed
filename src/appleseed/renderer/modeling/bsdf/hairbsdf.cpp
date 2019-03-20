@@ -272,8 +272,8 @@ namespace
           : BSDF(name, AllBSDFTypes, ScatteringMode::Glossy, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("eumelanin", InputFormatFloat, "1.3");
-            m_inputs.declare("pheomelanin", InputFormatFloat, "0.0");
+            m_inputs.declare("melanin", InputFormatFloat, "0.3");
+            m_inputs.declare("melanin_redness", InputFormatFloat, "0.0");
             m_inputs.declare("eta", InputFormatFloat, "1,55");
             m_inputs.declare("beta_M", InputFormatFloat, "0.3");
             m_inputs.declare("beta_N", InputFormatFloat, "0.3");
@@ -307,7 +307,7 @@ namespace
             values->m_precomputed.m_h = -1.f + 2.f * shading_point.get_bary()[0];
             if (is_zero(values->m_reflectance))
                 values->m_precomputed.m_sigma_a =
-                sigma_a_from_melanin(values->m_eumelanin, values->m_pheomelanin);
+                sigma_a_from_melanin(values->m_melanin, values->m_melanin_redness);
             else
                 values->m_precomputed.m_sigma_a =
                 sigma_a_from_rgb(values->m_reflectance, values->m_beta_N);
@@ -620,7 +620,6 @@ namespace
             Spectrum T = exp(-values->m_precomputed.m_sigma_a * ((2.f * cos_gamma_t) / cos_theta_t));
 
             float phi = phi_i - phi_o;
-            std::array<Spectrum, 4> ap = attenuation(cos_theta_o, values->m_eta, values->m_precomputed.m_h, T);
             std::array<float, 4> ap_pdf = attenuation_pdf(cos_theta_o, values->m_eta, values->m_precomputed.m_h, T);
 
             float bsdf_pdf = 0.f;
@@ -653,10 +652,13 @@ namespace
         // Computes absorption coefficient based on eumelanin and pheomelanin concentrations.
         //
 
-        Spectrum sigma_a_from_melanin(float ce, float cp) const
+        Spectrum sigma_a_from_melanin(float melanin_conc, float melanin_ratio) const
         {
-            Vector3f eumelanin_sigma_a = { 0.419f, 0.697f, 1.37f };
-            Vector3f pheomelanin_sigma_a = { 0.187f, 0.4f, 1.05f };
+            float melanin = -std::log(std::max(1.f - melanin_conc, 0.0001f));
+            float ce = melanin * (1.f - melanin_ratio);
+            float cp = melanin * melanin_ratio;
+            Vector3f eumelanin_sigma_a = Vector3f(0.506f, 0.841f, 1.653f);
+            Vector3f pheomelanin_sigma_a = Vector3f(0.343f, 0.733f, 1.924f);
             Vector3f sigma_a = (ce * eumelanin_sigma_a + cp * pheomelanin_sigma_a);
             Spectrum ret(0.f);
             ret.set(Color3f(sigma_a[0], sigma_a[1], sigma_a[2]), g_std_lighting_conditions, Spectrum::Intent::Reflectance);
@@ -730,8 +732,8 @@ DictionaryArray HairBSDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "eumelanin")
-            .insert("label", "Eumelanin")
+            .insert("name", "melanin")
+            .insert("label", "Melanin concentration")
             .insert("type", "numeric")
             .insert("min",
                     Dictionary()
@@ -742,12 +744,12 @@ DictionaryArray HairBSDFFactory::get_input_metadata() const
                         .insert("value", "1.0")
                         .insert("type", "hard"))
             .insert("use", "optional")
-            .insert("default", "1.3"));
+            .insert("default", "0.0"));
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "pheomelanin")
-            .insert("label", "Pheomelanin")
+            .insert("name", "melanin_redness")
+            .insert("label", "Melanin Redness")
             .insert("type", "numeric")
             .insert("min",
                     Dictionary()
