@@ -451,7 +451,7 @@ namespace
       : public RenderSettingsPanel
     {
       public:
-        ImagePlaneSamplingPanel(QWidget* parent = nullptr)
+        explicit ImagePlaneSamplingPanel(QWidget* parent = nullptr)
           : RenderSettingsPanel("Image Plane Sampling", parent)
         {   
         }
