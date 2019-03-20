@@ -189,8 +189,7 @@ Frame::Frame(
         if (!has_valid_ref_image())
         {
             RENDERER_LOG_ERROR(
-                "the reference image is not compatible with the output frame "
-                "(different dimensions, tile size or number of channels).");
+                "the reference image is not compatible with the output frame (different dimensions).");
         }
     }
 
