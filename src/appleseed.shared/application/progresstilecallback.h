@@ -32,8 +32,11 @@
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
 
-// appleseed.shared headers
+// appleseed.shared headers.
 #include "dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace foundation { class Logger; }
