@@ -767,7 +767,7 @@ Dictionary ProgressiveFrameRendererFactory::get_params_metadata()
         "max_average_samples_per_pixel",
         Dictionary()
             .insert("type", "int")
-            .insert("default", "100000")
+            .insert("default", "64")
             .insert("unlimited", "true")
             .insert("label", "Max Average Samples Per Pixel")
             .insert("help", "Maximum number of average samples per pixel"));

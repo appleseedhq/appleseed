@@ -712,7 +712,7 @@ namespace
 
         void load_general_sampler(const Configuration& config)
         {
-            const int DefaultMaxSamples = 100000;
+            const int DefaultMaxSamples = 64;
 
             const int max_average_samples_per_pixel = get_config<int>(
                 config, "progressive_frame_renderer.max_average_samples_per_pixel", -1);
