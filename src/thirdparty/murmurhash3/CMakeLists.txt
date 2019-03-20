@@ -51,6 +51,8 @@ add_library (murmurhash3 STATIC
     ${murmurhash3_sources}
 )
 
+set_target_properties (murmurhash3 PROPERTIES FOLDER "Third Parties")
+
 apply_static_lib_linker_flags (murmurhash3)
 
 
