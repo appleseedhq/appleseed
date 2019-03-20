@@ -57,8 +57,8 @@ namespace renderer
 APPLESEED_DECLARE_INPUT_VALUES(HairBSDFInputValues)
 {
     Spectrum        m_reflectance;
-    float           m_eumelanin;
-    float           m_pheomelanin;
+    float           m_melanin;
+    float           m_melanin_redness;
     float           m_eta;
     float           m_beta_M;
     float           m_beta_N;
