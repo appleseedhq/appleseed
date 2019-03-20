@@ -98,7 +98,7 @@ namespace
                     float ref_color[4];
                     frame.ref_image().get_pixel(x, y, ref_color);
 
-                    float error = sqrt(compute_error_squared(
+                    const float error = sqrt(compute_error_squared(
                         Color3f::from_array(image_color),
                         Color3f::from_array(ref_color)));
                     max_error = max(max_error, error);
