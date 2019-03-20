@@ -103,8 +103,8 @@ class APPLESEED_DLLSYMBOL Frame
     // Access the main underlying image.
     foundation::Image& image() const;
 
-    // Access the reference image.
-    foundation::Image& ref_image() const;
+    // Access the reference image. Returns nullptr if there is no reference image.
+    foundation::Image* ref_image() const;
 
     // Returns whether the reference image is compatible with the frame.
     bool has_valid_ref_image() const;

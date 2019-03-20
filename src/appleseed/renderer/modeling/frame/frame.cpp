@@ -324,9 +324,9 @@ Image& Frame::image() const
     return *impl->m_image.get();
 }
 
-Image& Frame::ref_image() const
+Image* Frame::ref_image() const
 {
-    return *impl->m_ref_image.get();
+    return impl->m_ref_image.get();
 }
 
 bool Frame::has_valid_ref_image() const

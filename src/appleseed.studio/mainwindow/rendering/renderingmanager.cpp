@@ -376,13 +376,16 @@ void RenderingManager::print_average_luminance()
 
 void RenderingManager::print_rms_deviation()
 {
-    const double rmse = compute_rms_deviation(
+    if (!m_project->get_frame()->has_valid_ref_image())
+        return;
+
+    const double rmsd = compute_rms_deviation(
         m_project->get_frame()->image(),
-        m_project->get_frame()->ref_image());
+        *m_project->get_frame()->ref_image());
 
     RENDERER_LOG_INFO(
         "final rms deviation is %s.",
-        pretty_scalar(rmse, 6).c_str());
+        pretty_scalar(rmsd, 6).c_str());
 }
 
 void RenderingManager::archive_frame_to_disk()
@@ -461,8 +464,7 @@ void RenderingManager::slot_rendering_end()
     if (m_params.get_optional<bool>("print_final_average_luminance", false))
         print_average_luminance();
 
-    if (m_project->get_frame()->has_valid_ref_image())
-        print_rms_deviation();
+    print_rms_deviation();
 
     if (m_params.get_optional<bool>("autosave", true))
         archive_frame_to_disk();

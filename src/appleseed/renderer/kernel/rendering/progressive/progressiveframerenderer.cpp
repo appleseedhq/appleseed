@@ -149,7 +149,7 @@ namespace
 
             if (m_project.get_frame()->has_valid_ref_image())
             {
-                m_ref_image_avg_lum = compute_average_luminance(m_project.get_frame()->ref_image());
+                m_ref_image_avg_lum = compute_average_luminance(*m_project.get_frame()->ref_image());
 
                 RENDERER_LOG_DEBUG(
                     "reference image average luminance is %s.",
@@ -253,7 +253,7 @@ namespace
                     *m_buffer.get(),
                     m_params.m_perf_stats,
                     m_params.m_luminance_stats,
-                    &m_project.get_frame()->ref_image(),
+                    m_project.get_frame()->ref_image(),
                     m_ref_image_avg_lum,
                     m_abort_switch));
             m_statistics_thread.reset(
