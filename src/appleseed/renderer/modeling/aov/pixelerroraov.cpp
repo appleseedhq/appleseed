@@ -103,7 +103,7 @@ namespace
                         Color3f::from_array(ref_color)));
                     max_error = max(max_error, error);
 
-                    const Color3f color(error, 0, 0);
+                    const Color3f color(error, 0.0f, 0.0f);
                     m_image->set_pixel(x, y, color);
                 }
             }
