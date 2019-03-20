@@ -683,10 +683,13 @@ namespace
         {            
             if (get_widget<bool>("general.unlimited_samples"))
                 config.get_parameters().remove_path("progressive_frame_renderer.max_average_samples_per_pixel");
-            else set_config(
+            else
+            {
+                set_config(
                     config,
                     "progressive_frame_renderer.max_average_samples_per_pixel",
                     get_widget<int>("general.max_average_samples_per_pixel"));
+            }
         }
 
       private:
