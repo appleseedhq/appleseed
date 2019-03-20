@@ -347,6 +347,7 @@ Color<T, 3> integer_to_color3(const Int i);
 template <typename T>
 T compute_error_squared(const Color<T, 3>& c1, const Color<T, 3>& c2);
 
+
 //
 // N-dimensional color implementation.
 //
