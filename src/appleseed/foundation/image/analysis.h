@@ -30,8 +30,8 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/image/color.h"
 #include "foundation/core/exceptions/exception.h"
+#include "foundation/image/color.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
