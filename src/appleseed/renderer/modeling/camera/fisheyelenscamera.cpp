@@ -34,6 +34,8 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/camera/perspectivecamera.h"
+#include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -43,6 +45,7 @@
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
+#include "foundation/math/intersection/planesegment.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
@@ -164,6 +167,10 @@ namespace
                  m_projection_type = Projection::EquisolidAngle;
              }
 
+            const CanvasProperties& props = project.get_frame()->image().properties();
+            m_half_pixel_width = 0.5 * props.m_rcp_canvas_width;
+            m_half_pixel_height = 0.5 * props.m_rcp_canvas_height;
+
             return true;
         }
 
@@ -205,8 +212,15 @@ namespace
             Vector3d&               outgoing,
             float&                  importance) const override
         {
+            // Retrieve the camera transform.
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
+
+            // Transform the input point to camera space.
+            const Vector3d point_camera = transform.point_to_local(point);
+
             // Project the point onto the film plane.
-            if (!project_point(time, point, ndc))
+            if (!project_camera_space_point(point_camera, ndc))
                 return false;
 
             // The connection is impossible if the projected point lies outside the film.
@@ -214,22 +228,66 @@ namespace
                 ndc[1] < 0.0 || ndc[1] >= 1.0)
                 return false;
 
-            // Retrieve the camera transform.
-            Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
-
             // Compute the outgoing direction vector in world space.
             outgoing = point - transform.get_local_to_parent().extract_translation();
 
-            // Compute the emitted importance.
+            // Project one pixel patch onto lens.
+            const Vector3d q0 = ndc_to_camera(Vector2d(ndc.x - m_half_pixel_width, ndc.y - m_half_pixel_height));
+            const Vector3d q1 = ndc_to_camera(Vector2d(ndc.x + m_half_pixel_width, ndc.y - m_half_pixel_height));
+            const Vector3d q2 = ndc_to_camera(Vector2d(ndc.x + m_half_pixel_width, ndc.y + m_half_pixel_height));
+            const Vector3d q3 = ndc_to_camera(Vector2d(ndc.x - m_half_pixel_width, ndc.y + m_half_pixel_height));
+
+            // Compute the solid angle.
             const Vector3d film_point = ndc_to_camera(ndc);
             const double square_dist_film_lens = square_norm(film_point);
             const double dist_film_lens = sqrt(square_dist_film_lens);
             const double cos_theta = m_focal_length / dist_film_lens;
-            const double solid_angle = m_pixel_area * cos_theta / square_dist_film_lens;
+            const double solid_angle = 0.5 * norm(cross(q2 - q0, q3 - q1)) * cos_theta / square_dist_film_lens;
+
+            // Compute the emitted importance.
             importance = 1.0f / static_cast<float>(square_norm(outgoing) * solid_angle);
 
             // The connection was possible.
+            return true;
+        }
+
+        bool project_camera_space_point(
+            const Vector3d &point,
+            Vector2d &ndc) const override
+        {
+            // Cannot project the point if it is behind the near plane.
+            if (point.z > m_near_z)
+                return false;
+
+            // Project the point onto the film plane.
+            ndc = camera_to_ndc(point);
+            return true;
+        }
+
+        bool project_segment(
+            const float     time,
+            const Vector3d& a,
+            const Vector3d& b,
+            Vector2d&       a_ndc,
+            Vector2d&       b_ndc) const override
+        {
+            // Retrieve the camera transform.
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
+
+            // Transform the segment to camera space.
+            Vector3d local_a = transform.point_to_local(a);
+            Vector3d local_b = transform.point_to_local(b);
+
+            // Clip the segment against the near plane.
+            if (!clip(Vector4d(0.0, 0.0, 1.0, -m_near_z), local_a, local_b))
+                return false;
+
+            // Project the segment onto the film plane.
+            a_ndc = camera_to_ndc(local_a);
+            b_ndc = camera_to_ndc(local_b);
+
+            // Projection was successful.
             return true;
         }
 
@@ -243,6 +301,10 @@ namespace
         };
 
         Projection m_projection_type;
+
+        double m_half_pixel_width;
+        double m_half_pixel_height;
+
 
         //
         //                    |  axis 
@@ -326,8 +388,8 @@ namespace
         {
             const double k = m_focal_length / point.z;
             
-            const double x = 0.5 - (point.x * k * m_rcp_film_width);
-            const double y = 0.5 + (point.y * k * m_rcp_film_height);
+            const double x = point.x * k + m_shift.x;
+            const double y = point.y * k + m_shift.y;
             
             const double radius_2 = sqrt(x * x + y * y);
             const double rcp_radius_2 = 1.0 / radius_2;
@@ -361,8 +423,8 @@ namespace
 
             return
                 Vector2d(
-                    radius_1 * x * rcp_radius_2 - m_shift.x,
-                    radius_1 * y * rcp_radius_2 - m_shift.y);
+                    0.5 - radius_1 * x * rcp_radius_2 * m_rcp_film_width,
+                    0.5 + radius_1 * y * rcp_radius_2 * m_rcp_film_height);
         }
     };
 }
