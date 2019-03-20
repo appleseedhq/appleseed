@@ -41,7 +41,6 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
-namespace renderer      { class AOV; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
