@@ -71,6 +71,8 @@ class APPLESEED_DLLSYMBOL Object
         const ParamArray&   params);
 
     // Return a string identifying the model of this entity.
+    // Model here is synonymous with which "kind" of Object this entity is,
+    // not an identifier for its actual mesh or curve representation.
     virtual const char* get_model() const = 0;
 
     // Compute the local space bounding box of the object over the shutter interval.

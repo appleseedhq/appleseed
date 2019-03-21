@@ -1,11 +1,10 @@
-
 //
 // This source file is part of appleseed.
 // Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Gray Olson, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,36 +25,23 @@
 // THE SOFTWARE.
 //
 
-#pragma once
+#version 330
+#extension GL_ARB_separate_shader_objects : enable
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+layout(location = 0) in vec3 a_pos;
+layout(location = 1) in vec3 a_norm;
+layout(location = 2) in mat4 i_model;
 
-// Standard headers.
-#include <cstddef>
+uniform mat4 u_view;
+uniform mat4 u_proj;
 
-namespace renderer
+layout(location = 1) out vec3 v_world_pos;
+layout(location = 0) out vec3 v_norm;
+
+void main()
 {
-
-class APPLESEED_DLLSYMBOL ObjectRasterizer
-{
-  public:
-    virtual ~ObjectRasterizer() {}
-
-    virtual void begin_object(const size_t triangle_count_hint) = 0;
-    virtual void end_object() = 0;
-
-    struct Triangle
-    {
-        double m_v0[3];
-        double m_v1[3];
-        double m_v2[3];
-        double m_n0[3];
-        double m_n1[3];
-        double m_n2[3];
-    };
-
-    virtual void rasterize(const Triangle& triangle) = 0;
-};
-
-}   // namespace renderer
+    vec4 world_pos = i_model * vec4(a_pos, 1.0);
+    v_world_pos = world_pos.xyz;
+    v_norm = a_norm;
+    gl_Position = u_proj * u_view * world_pos;
+}

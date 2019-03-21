@@ -52,6 +52,7 @@
 #include <QLocale>
 #include <QMessageBox>
 #include <QString>
+#include <QSurfaceFormat>
 #include <QTextStream>
 
 // Boost headers.
@@ -324,6 +325,13 @@ int main(int argc, char* argv[])
 {
     // Enable memory tracking immediately as to catch as many leaks as possible.
     start_memory_tracking();
+
+    // Set default surface format before creating application instance. This is
+    // required on macOS in order to use an OpenGL Core profile context.
+    QSurfaceFormat default_format;
+    default_format.setVersion(3, 3);
+    default_format.setProfile(QSurfaceFormat::CoreProfile);
+    QSurfaceFormat::setDefaultFormat(default_format);
 
     // Our message handler must be set before the construction of QApplication.
     g_previous_message_handler = qInstallMessageHandler(message_handler);

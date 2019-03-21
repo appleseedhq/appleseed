@@ -35,6 +35,7 @@
 
 // Forward declarations.
 namespace renderer  { class ParamArray; }
+class QByteArray;
 class QIcon;
 class QLayout;
 class QMessageBox;
@@ -78,6 +79,9 @@ QString combine_name_and_shortcut(const QString& name, const QKeySequence& short
 
 // Check whether a file exists.
 bool file_exists(const QString& path);
+
+// Load a GLSL shader from file into a QByteArray.
+QByteArray load_gl_shader(const QString& base_name);
 
 // Load an icon and its variants (hover, disabled...) from the application's icons directory.
 QIcon load_icons(const QString& base_name);
