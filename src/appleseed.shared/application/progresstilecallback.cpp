@@ -81,18 +81,8 @@ namespace
         void on_tiled_frame_begin(const Frame* frame) override
         {
             // Do not restart the stopwatch if it is already running.
-            if (m_rendered_pixels == 0.0)
+            if (m_rendered_pixels == 0)
                 m_stopwatch.start();
-        }
-
-        void on_tiled_frame_end(const Frame* frame) override
-        {
-            const size_t total_tiles = frame->image().properties().m_tile_count * m_pass_count;
-
-            // Clear the stopwatch only when the number of rendered tiles becomes equal to total tiles.
-            // This makes sure that we don't clear the stopwatch in between passes.
-            if (m_rendered_tiles == total_tiles)
-                m_stopwatch.clear();
         }
 
         void on_tile_end(
