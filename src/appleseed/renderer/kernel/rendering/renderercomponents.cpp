@@ -58,6 +58,7 @@
 // Standard headers.
 #include <string>
 
+using namespace foundation;
 using namespace std;
 
 namespace renderer
@@ -143,6 +144,26 @@ void RendererComponents::print_settings() const
 {
     if (m_frame_renderer.get() != nullptr)
         m_frame_renderer->print_settings();
+}
+
+bool RendererComponents::on_render_begin(
+    OnRenderBeginRecorder&  recorder,
+    IAbortSwitch*           abort_switch)
+{
+    if (!m_shading_engine.on_render_begin(m_project, recorder, abort_switch))
+        return false;
+
+    return true;
+}
+
+bool RendererComponents::on_frame_begin(
+    OnFrameBeginRecorder&   recorder,
+    IAbortSwitch*           abort_switch)
+{
+    if (!m_shading_engine.on_frame_begin(m_project, recorder, abort_switch))
+        return false;
+
+    return true;
 }
 
 bool RendererComponents::create_lighting_engine_factory()
