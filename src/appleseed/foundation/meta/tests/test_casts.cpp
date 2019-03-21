@@ -36,7 +36,7 @@ using namespace foundation;
 
 TEST_SUITE(Foundation_Utility_Casts)
 {
-    const uint32 OnePattern = 0x3F800000UL;
+    const uint32 OnePattern = 0x3F800000u;
 
     TEST_CASE(TestBinaryCastFloatToUInt32)
     {

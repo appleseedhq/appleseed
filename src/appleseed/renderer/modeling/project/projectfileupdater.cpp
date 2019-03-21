@@ -1973,6 +1973,7 @@ namespace
         }
     };
 
+
     //
     // Update from revision 29 to revision 30.
     //
@@ -2007,7 +2008,7 @@ namespace
                     if (strcmp(pixel_renderer, "adaptive") == 0)
                     {
                         RENDERER_LOG_WARNING(
-                            "with the introduction of a new adaptive tile renderer, the adaptive pixel renderer was removed;"
+                            "with the introduction of a new adaptive tile renderer, the adaptive pixel renderer was removed; "
                             "migrating this project to use the uniform pixel renderer instead.");
 
                         root.strings().set("pixel_renderer", "uniform");

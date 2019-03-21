@@ -52,9 +52,9 @@ ShadingComponents::ShadingComponents()
 }
 
 void ShadingComponents::add_emission(
-    const size_t                path_length,
-    const ScatteringMode::Mode  scattering_mode,
-    const Spectrum&             value)
+    const size_t                    path_length,
+    const ScatteringMode::Mode      scattering_mode,
+    const Spectrum&                 value)
 {
     m_beauty += value;
 
@@ -117,7 +117,6 @@ void ShadingComponents::add(
         }
     }
 }
-
 
 ShadingComponents& operator*=(ShadingComponents& lhs, const float rhs)
 {

@@ -47,7 +47,9 @@
 #include "foundation/utility/containers/dictionary.h"
 
 // Forward declarations.
+namespace renderer  { class AOVComponents; }
 namespace renderer  { class PixelContext; }
+namespace renderer  { class ShadingComponents; }
 
 using namespace foundation;
 using namespace std;
@@ -106,8 +108,9 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
-            AOVAccumulatorContainer&    aov_accumulators,
-            ShadingResult&              shading_result) const override
+            ShadingResult&              shading_result,
+            ShadingComponents&          shading_components,
+            AOVComponents&              aov_components) const override
         {
             // Evaluate the shader inputs.
             InputValues values;

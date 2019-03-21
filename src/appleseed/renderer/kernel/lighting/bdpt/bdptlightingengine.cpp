@@ -154,7 +154,7 @@ namespace
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
             ShadingComponents&          radiance,               // output radiance, in W.sr^-1.m^-2
-            AOVComponents&              components) override
+            AOVComponents&              aov_components) override
         {
             /// TODO:: use arena to alloc BDPTVertices instead
             BDPTVertex* camera_vertices = new BDPTVertex[m_num_max_vertices - 1];

@@ -324,6 +324,7 @@ endif ()
 # Common include paths.
 include_directories (
     src/thirdparty/bcd
+    src/thirdparty/murmurhash3
     src/appleseed
 )
 
@@ -618,6 +619,7 @@ endmacro ()
 #--------------------------------------------------------------------------------------------------
 
 add_subdirectory (src/thirdparty/bcd)
+add_subdirectory (src/thirdparty/murmurhash3)
 
 add_subdirectory (src/appleseed)
 add_subdirectory (src/appleseed.shaders)
@@ -717,6 +719,7 @@ install (
         ${OSL_QUERY_INFO}
         ${OSL_MAKETX}
         ${OPENIMAGEIO_OIIOTOOL}
+        ${OPENIMAGEIO_IDIFF}
     DESTINATION bin
 )
 

@@ -121,10 +121,12 @@ BENCHMARK_SUITE(Foundation_Math_Sampling_Mappings)
     struct Fixture
     {
         Vector2d    m_samples[SampleCount];
-        Vector2d    m_dummy;
+        Vector2d    m_dummy2d;
+        Vector3d    m_dummy3d;
 
         Fixture()
-          : m_dummy(0.0)
+          : m_dummy2d(0.0)
+          , m_dummy3d(0.0)
         {
             MersenneTwister rng;
 
@@ -139,12 +141,24 @@ BENCHMARK_SUITE(Foundation_Math_Sampling_Mappings)
     BENCHMARK_CASE_F(Benchmark_SampleDiskUniform, Fixture)
     {
         for (size_t i = 0; i < SampleCount; ++i)
-            m_dummy += sample_disk_uniform(m_samples[i]);
+            m_dummy2d += sample_disk_uniform(m_samples[i]);
     }
 
     BENCHMARK_CASE_F(Benchmark_SampleDiskUniformAlt, Fixture)
     {
         for (size_t i = 0; i < SampleCount; ++i)
-            m_dummy += sample_disk_uniform_alt(m_samples[i]);
+            m_dummy2d += sample_disk_uniform_alt(m_samples[i]);
+    }
+
+    BENCHMARK_CASE_F(Benchmark_SampleTriangleUniform, Fixture)
+    {
+        for (size_t i = 0; i < SampleCount; ++i)
+            m_dummy3d += sample_triangle_uniform(m_samples[i]);
+    }
+
+    BENCHMARK_CASE_F(Benchmark_SampleTriangleUniformHeitz, Fixture)
+    {
+        for (size_t i = 0; i < SampleCount; ++i)
+            m_dummy3d += sample_triangle_uniform_heitz(m_samples[i]);
     }
 }

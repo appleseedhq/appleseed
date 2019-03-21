@@ -119,10 +119,12 @@ namespace
                 // Compute the BRDF value.
                 const LambertianBRDFInputValues* values = static_cast<const LambertianBRDFInputValues*>(data);
                 sample.m_value.m_diffuse = values->m_reflectance;
-                sample.m_value.m_diffuse *= values->m_reflectance_multiplier * RcpPi<float>();
+                sample.m_value.m_diffuse *= values->m_reflectance_multiplier;
+                sample.m_aov_components.m_albedo = sample.m_value.m_diffuse;
+
+                sample.m_value.m_diffuse *= RcpPi<float>();
                 sample.m_value.m_beauty = sample.m_value.m_diffuse;
 
-                sample.m_aov_components.m_albedo = values->m_reflectance;
                 sample.m_min_roughness = 1.0f;
 
                 sample.compute_reflected_differentials();

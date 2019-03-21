@@ -32,7 +32,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
-#include "renderer/api/log.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -40,6 +39,7 @@
 #include "foundation/image/tile.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/thread.h"
+#include "foundation/utility/log.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 
@@ -103,7 +103,7 @@ namespace
             const size_t total_pixels = frame->image().properties().m_pixel_count;
 
             // Keep track of the total number of rendered tiles.
-            m_rendered_tiles++;
+            ++m_rendered_tiles;
 
             // Retrieve the total number of tiles in the frame.
             const size_t total_tiles = frame->image().properties().m_tile_count;
@@ -143,13 +143,16 @@ struct ProgressTileCallbackFactory::Impl
 ProgressTileCallbackFactory::ProgressTileCallbackFactory(Logger& logger)
   : impl(new Impl())
 {
-    impl->m_callback = unique_ptr<ITileCallback>(
-        new ProgressTileCallback(logger));
+    impl->m_callback.reset(new ProgressTileCallback(logger));
+}
+
+ProgressTileCallbackFactory::~ProgressTileCallbackFactory()
+{
+    delete impl;
 }
 
 void ProgressTileCallbackFactory::release()
 {
-    delete impl;
     delete this;
 }
 

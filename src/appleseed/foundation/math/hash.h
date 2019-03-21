@@ -61,6 +61,11 @@ uint64 hash_uint64(uint64 key);
 // Hash a 64-bit integer into a 32-bit integer.
 uint32 hash_uint64_to_uint32(uint64 key);
 
+
+//
+// Mixing functions.
+//
+
 // Mix multiple 32-bit integers into one 32-bit integer.
 uint32 mix_uint32(
     const uint32 a,
@@ -113,7 +118,7 @@ inline uint32 hash_uint32(uint32 key)
     key = (key ^ 61) ^ (key >> 16);
     key = key + (key << 3);
     key = key ^ (key >> 4);
-    key = key * 0x27D4EB2DUL;                   // a prime or an odd constant
+    key = key * 0x27D4EB2Du;                    // a prime or an odd constant
     key = key ^ (key >> 15);
     return key;
 }

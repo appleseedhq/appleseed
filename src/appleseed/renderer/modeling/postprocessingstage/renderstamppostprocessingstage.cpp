@@ -45,15 +45,24 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/system.h"
-#include "foundation/resources/logo/appleseed-seeds-16.h"
+#include "foundation/resources/logo/appleseed-seeds-256.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/string.h"
 
+// OpenImageIO headers.
+#include "foundation/platform/_beginoiioheaders.h"
+#include "OpenImageIO/imagebuf.h"
+#include "OpenImageIO/imagebufalgo.h"
+#include "OpenImageIO/typedesc.h"
+#include "foundation/platform/_endoiioheaders.h"
+
 // Standard headers.
+#include <memory>
 #include <string>
 
 using namespace foundation;
+using namespace OIIO;
 using namespace std;
 
 namespace renderer
@@ -64,6 +73,9 @@ namespace
     const char* Model = "render_stamp_post_processing_stage";
 
     const string DefaultFormatString = "appleseed {lib-version} | Time: {render-time}";
+    const float DefaultScaleFactor = 1.0f;
+    const float MinScaleFactor = 0.1f;
+    const float MaxScaleFactor = 20.0f;
 
     class RenderStampPostProcessingStage
       : public PostProcessingStage
@@ -95,6 +107,9 @@ namespace
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
             m_format_string = m_params.get_optional("format_string", DefaultFormatString, context);
+            m_scale_factor = m_params.get_optional("scale_factor", DefaultScaleFactor, context);
+            m_icon.reset(ImageSpec(appleseed_seeds_256_width, appleseed_seeds_256_height, 4, TypeDesc::TypeFloat));
+            m_icon.set_pixels(ROI(0, appleseed_seeds_256_width, 0, appleseed_seeds_256_height), TypeDesc::TypeFloat, appleseed_seeds_256);
 
             return true;
         }
@@ -103,12 +118,12 @@ namespace
         {
             // Render stamp settings.
             const auto Font = TextRenderer::Font::UbuntuL;
-            const float FontHeight = 14.0f;
+            const float font_height = 14.0f * m_scale_factor;
             const Color4f FontColor(srgb_to_linear_rgb(Color3f(0.9f, 0.9f, 0.9f)), 1.0f);   // linear RGB
             const Color4f BackgroundColor(0.0f, 0.0f, 0.0f, 0.95f);                         // linear RGB
             const Color4f LogoTint(1.0f, 1.0f, 1.0f, 0.8f);                                 // linear RGB
-            const float MarginH = 6.0f;
-            const float MarginV = 4.0f;
+            const float margin_h = 6.0f * m_scale_factor;
+            const float margin_v = 4.0f * m_scale_factor;
 
             // Retrieve additional render info from the frame.
             const ParamArray& render_info = frame.render_info();
@@ -128,45 +143,70 @@ namespace
             // Compute the height in pixels of the string.
             const CanvasProperties& props = frame.image().properties();
             const float image_height = static_cast<float>(props.m_canvas_height);
-            const float text_height = TextRenderer::compute_string_height(FontHeight, text.c_str());
-            const float origin_y = image_height - text_height - MarginV;
+            const float text_height = TextRenderer::compute_string_height(font_height, text.c_str());
+            const float origin_y = image_height - text_height - margin_v;
 
             // Draw the background rectangle.
             Drawing::draw_filled_rect(
                 frame.image(),
                 Vector2i(
                     0,
-                    truncate<int>(origin_y - MarginV)),
+                    truncate<int>(origin_y - margin_v)),
                 Vector2i(
                     static_cast<int>(props.m_canvas_width - 1),
                     static_cast<int>(props.m_canvas_height - 1)),
                 BackgroundColor);
 
-            // Draw the string into the image.
-            TextRenderer::draw_string(
-                frame.image(),
-                Font,
-                FontHeight,
-                FontColor,
-                MarginH + appleseed_seeds_16_width + MarginH,
-                origin_y,
-                text.c_str());
+            // Calculate final icon size and scale the icon
+            const ImageSpec icon_spec = m_icon.spec();
+            const float stamp_height = text_height + 2 * margin_v;
+            const float icon_height = 0.68f * stamp_height;
+            const float aspect = static_cast<float>(icon_spec.width) / static_cast<float>(icon_spec.height);
+            const ROI roi(
+                0,
+                round<int>(icon_height * aspect),
+                0,
+                round<int>(icon_height),
+                0,
+                1,
+                0,
+                m_icon.nchannels());
+                
+            ImageBuf unpremult_icon, scaled_unpremult_icon, scaled_premult_icon;
+            ImageBufAlgo::unpremult(unpremult_icon, m_icon, ROI::All());
+            const float filter_width = fit(m_scale_factor, MinScaleFactor, MaxScaleFactor, 2.75f, 4.5f);
+            ImageBufAlgo::resize(scaled_unpremult_icon, unpremult_icon, "mitchell", filter_width, roi);
+            ImageBufAlgo::premult(scaled_premult_icon, scaled_unpremult_icon, ROI::All());
+            unique_ptr<float[]> pixels(new float[roi.width() * roi.height() * roi.nchannels()]);
+            scaled_premult_icon.get_pixels(ROI::All(), TypeDesc::TypeFloat, pixels.get());
 
             // Blit the appleseed logo.
             Drawing::blit_bitmap(
                 frame.image(),
                 Vector2i(
-                    static_cast<int>(MarginH),
-                    static_cast<int>(props.m_canvas_height - appleseed_seeds_16_height - MarginV)),
-                appleseed_seeds_16,
-                appleseed_seeds_16_width,
-                appleseed_seeds_16_height,
+                    static_cast<int>(margin_h),
+                    static_cast<int>(props.m_canvas_height - icon_height - margin_v)),
+                pixels.get(),
+                roi.width(),
+                roi.height(),
                 PixelFormatFloat,
                 LogoTint);
+
+            // Draw the string into the image.
+            TextRenderer::draw_string(
+                frame.image(),
+                Font,
+                font_height,
+                FontColor,
+                margin_h + roi.width() + margin_h,
+                origin_y,
+                text.c_str());
         }
 
       private:
-        string m_format_string;
+        string   m_format_string;
+        float    m_scale_factor;
+        ImageBuf m_icon;
     };
 }
 
@@ -206,6 +246,22 @@ DictionaryArray RenderStampPostProcessingStageFactory::get_input_metadata() cons
             .insert("type", "text")
             .insert("use", "optional")
             .insert("default", DefaultFormatString));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "scale_factor")
+            .insert("label", "Scale Factor")
+            .insert("type", "numeric")
+            .insert("min",
+                    Dictionary()
+                        .insert("value", "0.1")
+                        .insert("type", "hard"))
+            .insert("max",
+                    Dictionary()
+                        .insert("value", "20.0")
+                        .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     return metadata;
 }

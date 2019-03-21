@@ -73,10 +73,12 @@
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
 #include "foundation/math/transform.h"
+#include "foundation/platform/defaulttimers.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/indenter.h"
 #include "foundation/utility/searchpaths.h"
+#include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/xmlelement.h"
 #include "foundation/utility/zip.h"
@@ -936,6 +938,9 @@ bool ProjectFileWriter::write_plain_project_file(
     const int       options,
     const char*     extra_comments)
 {
+    Stopwatch<DefaultWallclockTimer> stopwatch;
+    stopwatch.start();
+
     RENDERER_LOG_INFO("writing project file %s...", filepath);
 
     if (!(options & OmitHandlingAssetFiles))
@@ -994,7 +999,13 @@ bool ProjectFileWriter::write_plain_project_file(
     // Close the file.
     fclose(file);
 
-    RENDERER_LOG_INFO("wrote project file %s.", filepath);
+    stopwatch.measure();
+
+    RENDERER_LOG_INFO(
+        "wrote project file %s in %s.",
+        filepath,
+        pretty_time(stopwatch.get_seconds()).c_str());
+
     return true;
 }
 
@@ -1033,9 +1044,19 @@ bool ProjectFileWriter::write_packed_project_file(
 
         if (success)
         {
+            Stopwatch<DefaultWallclockTimer> stopwatch;
+            stopwatch.start();
+
             RENDERER_LOG_INFO("packing project to %s...", filepath);
+
             zip(filepath, temp_directory.string());
-            RENDERER_LOG_INFO("packed project to %s.", filepath);
+
+            stopwatch.measure();
+
+            RENDERER_LOG_INFO(
+                "packed project to %s in %s.",
+                filepath,
+                pretty_time(stopwatch.get_seconds()).c_str());
         }
     }
     catch (const std::exception&)   // namespace qualification required
