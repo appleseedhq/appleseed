@@ -443,6 +443,17 @@ struct MasterRenderer::Impl
             return m_renderer_controller->get_status();
         }
 
+        // Let scene entities perform their pre-render actions. Don't proceed if that failed.
+        // This is done before creating renderer components because renderer components need
+        // to access the scene's render data such as the scene's bounding box.
+        OnRenderBeginRecorder recorder;
+        if (!m_project.get_scene()->on_render_begin(m_project, nullptr, recorder, &abort_switch) ||
+            abort_switch.is_aborted())
+        {
+            recorder.on_render_end(m_project);
+            return m_renderer_controller->get_status();
+        }
+
         // Create renderer components.
         RendererComponents components(
             m_project,
@@ -453,6 +464,9 @@ struct MasterRenderer::Impl
             *m_shading_system);
         if (!components.create())
             return IRendererController::AbortRendering;
+
+        // Print renderer component settings.
+        components.print_settings();
 
         // Report whether Embree is used or not.
 #ifdef APPLESEED_WITH_EMBREE
@@ -473,15 +487,8 @@ struct MasterRenderer::Impl
         if (!frame.load_checkpoint(&(components.get_shading_result_framebuffer_factory())))
             return IRendererController::AbortRendering;
 
-        // Print renderer component settings.
-        components.print_settings();
-
-        // Perform pre-render actions. Don't proceed if that failed.
-        // Call on_render_begin() on the shading engine after calling it on the scene because
-        // it needs to access the scene's render data (to access the scene's bounding box).
-        OnRenderBeginRecorder recorder;
-        if (!m_project.get_scene()->on_render_begin(m_project, nullptr, recorder, &abort_switch) ||
-            !components.get_shading_engine().on_render_begin(m_project, recorder, &abort_switch) ||
+        // Let renderer components perform their pre-render actions. Don't proceed if that failed.
+        if (!components.on_render_begin(recorder, &abort_switch) ||
             abort_switch.is_aborted())
         {
             recorder.on_render_end(m_project);
@@ -522,7 +529,7 @@ struct MasterRenderer::Impl
 
             // Perform pre-frame actions. Don't proceed if that failed.
             OnFrameBeginRecorder recorder;
-            if (!components.get_shading_engine().on_frame_begin(m_project, recorder, &abort_switch) ||
+            if (!components.on_frame_begin(recorder, &abort_switch) ||
                 !m_project.on_frame_begin(m_project, nullptr, recorder, &abort_switch) ||
                 abort_switch.is_aborted())
             {
