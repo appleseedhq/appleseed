@@ -80,8 +80,8 @@ namespace
             color_map.set_palette_from_array(InfernoColorMap, countof(InfernoColorMap) / 3);
 
             float min_var, max_var;
-            color_map.find_min_max_red_channel(&frame.image(), crop_window, min_var, max_var);
-            color_map.remap_red_channel(m_image, crop_window, min_var, max_var);
+            color_map.find_min_max_red_channel(*m_image, crop_window, min_var, max_var);
+            color_map.remap_red_channel(*m_image, crop_window, min_var, max_var);
         }
 
         const char* get_model() const override

@@ -81,8 +81,8 @@ void PixelSampleCountAOV::post_process_image(const Frame& frame)
     color_map.set_palette_from_array(InfernoColorMap, countof(InfernoColorMap) / 3);
 
     float min_spp, max_spp;
-    color_map.find_min_max_red_channel(m_image, crop_window, min_spp, max_spp);
-    color_map.remap_red_channel(m_image, crop_window, min_spp, max_spp);
+    color_map.find_min_max_red_channel(*m_image, crop_window, min_spp, max_spp);
+    color_map.remap_red_channel(*m_image, crop_window, min_spp, max_spp);
 }
 
 void PixelSampleCountAOV::set_normalization_range(

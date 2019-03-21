@@ -41,6 +41,7 @@
 #include "foundation/image/color.h"
 #include "foundation/image/colormap.h"
 #include "foundation/image/colormapdata.h"
+#include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/image.h"
 #include "foundation/image/text/textrenderer.h"
 #include "foundation/math/aabb.h"
@@ -162,7 +163,7 @@ namespace
 
                 try
                 {
-                    m_color_map.set_palette_from_image_file(
+                    set_palette_from_image_file(
                         to_string(
                             project.search_paths().qualify(color_map_filepath)));
                 }
@@ -200,7 +201,7 @@ namespace
             float min_luminance, max_luminance;
 
             if (m_auto_range)
-                m_color_map.find_min_max_relative_luminance(&frame.image(), min_luminance, max_luminance);
+                m_color_map.find_min_max_relative_luminance(frame.image(), frame.get_crop_window(), min_luminance, max_luminance);
             else
             {
                 min_luminance = m_range_min;
@@ -220,7 +221,7 @@ namespace
             if (m_render_isolines)
                 collect_isoline_segments(isoline_segments, frame, min_luminance, max_luminance);
 
-            m_color_map.remap_relative_luminance(&frame.image(), min_luminance, max_luminance);
+            m_color_map.remap_relative_luminance(frame.image(), frame.get_crop_window(), min_luminance, max_luminance);
 
             if (m_render_isolines)
                 render_isoline_segments(frame, isoline_segments);
@@ -264,6 +265,14 @@ namespace
         size_t              m_legend_bar_ticks;
         bool                m_render_isolines;
         float               m_line_thickness;
+
+        void set_palette_from_image_file(const string& filepath)
+        {
+            GenericImageFileReader reader;
+            unique_ptr<Image> image(reader.read(filepath.c_str()));
+
+            m_color_map.set_palette_from_image_file(image);
+        }
 
         void add_legend_bar(Frame& frame, const float min_luminance, const float max_luminance) const
         {

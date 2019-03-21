@@ -186,8 +186,8 @@ namespace
             ColorMap color_map;
 
             float min_time, max_time;
-            color_map.find_min_max_red_channel(m_image, crop_window, min_time, max_time);
-            color_map.remap_red_channel(m_image, crop_window, min_time, max_time);
+            color_map.find_min_max_red_channel(*m_image, crop_window, min_time, max_time);
+            color_map.remap_red_channel(*m_image, crop_window, min_time, max_time);
         }
 
       private:

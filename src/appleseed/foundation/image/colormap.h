@@ -35,6 +35,8 @@
 #include "foundation/math/aabb.h"
 
 // Standard headers.
+#include <cstddef>
+#include <memory>
 #include <vector>
 
 namespace foundation
@@ -44,28 +46,30 @@ class ColorMap
 {
   public:
   	static void find_min_max_red_channel(
-		const Image*    image,
+		Image&    image,
 		const AABB2u&   crop_window,
 		float&          min_val,
 		float&          max_val);
 
 	static void find_min_max_relative_luminance(
-		Image*    	image,
+		Image&		image,		
+		const AABB2u&    	crop_window,
 		float&  	min_luminance,
 		float&    	max_luminance);
 
     void set_palette_from_array(const float* values, const size_t entry_count);
 
-    void set_palette_from_image_file(const std::string& filepath);
+	void set_palette_from_image_file(std::unique_ptr<Image>& image);
 
     void remap_red_channel(
-		Image*            image,
+		Image&            image,
 		const AABB2u&     crop_window,
 		const float       min_val,
 		const float       max_val) const;
     
     void remap_relative_luminance(
-		Image* 			image,
+		Image& 			image,
+		const AABB2u&			crop_window,
 		const float 	min_luminance,
 		const float 	max_luminance) const;
 
@@ -73,7 +77,7 @@ class ColorMap
 
   private:
     template <typename Func>
-    static void for_each_pixel(Image* image, const Func& func);
+    static void for_each_pixel(Image& image, const AABB2u& crop_window, const Func& func);
 
     std::vector<Color3f> m_palette;
 };
@@ -83,28 +87,43 @@ class ColorMap
 //
 
 template <typename Func>
-void ColorMap::for_each_pixel(Image* image, const Func& func)
+void ColorMap::for_each_pixel(Image& image, const AABB2u& crop_window, const Func& func)
 {
-	const foundation::CanvasProperties& image_props = image->properties();
+	//const foundation::CanvasProperties& image_props = image.properties();
 
-	for (size_t ty = 0; ty < image_props.m_tile_count_y; ++ty)
-	{
-    	for (size_t tx = 0; tx < image_props.m_tile_count_x; ++tx)
-    	{
-        	foundation::Tile& tile = image->tile(tx, ty);
+	for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
+    {
+        for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
+        {
+            //Color3f val;
+            //image.get_pixel(x, y, val);
+            //max_val = max(val[0], max_val);
 
-        	for (size_t y = 0, th = tile.get_height(); y < th; ++y)
-        	{
-                for (size_t x = 0, tw = tile.get_width(); x < tw; ++x)
-                {
-                	foundation::Color4f color;
-                    tile.get_pixel(x, y, color);
-                    func(color);
-                    tile.set_pixel(x, y, color);
-                }
-            }
+			foundation::Color4f color;
+			image.get_pixel(x, y, color);
+			func(color);
+			image.set_pixel(x, y, color);
         }
     }
+
+	//for (size_t ty = 0; ty < image_props.m_tile_count_y; ++ty)
+	//{
+    //	for (size_t tx = 0; tx < image_props.m_tile_count_x; ++tx)
+    //	{
+	//		foundation::Tile& tile = image.tile(tx, ty);
+
+			//for (size_t y = 0, th = tile.get_height(); y < th; ++y)
+			//{
+			//	for (size_t x = 0, tw = tile.get_width(); x < tw; ++x)
+			//	{
+			//		foundation::Color4f color;
+			//		tile.get_pixel(x, y, color);
+			//		func(color);
+			//		tile.set_pixel(x, y, color);
+			//	}
+			//}
+		//}
+    //}
 }
 
 }   // namespace foundation

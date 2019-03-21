@@ -30,7 +30,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/connectableentity.h"
-#include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
@@ -39,6 +38,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace renderer  { class Frame; }
 namespace renderer  { class ParamArray; }
 
 namespace renderer
