@@ -109,7 +109,7 @@ const StaticTriangleTess& MeshObject::get_static_triangle_tess() const
 
 void MeshObject::rasterize(ObjectRasterizer& rasterizer) const
 {
-    rasterizer.begin_object();
+    rasterizer.begin_object(impl->m_tess.m_primitives.size());
 
     for (const auto& prim : impl->m_tess.m_primitives)
     {

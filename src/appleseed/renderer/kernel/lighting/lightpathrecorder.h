@@ -111,6 +111,9 @@ class APPLESEED_DLLSYMBOL LightPathRecorder
     // Return the number of stored light paths.
     size_t get_light_path_count() const;
 
+    // Return the total number of stored vertices in all light paths. `finalize()` must have been called.
+    size_t get_vertex_count() const;
+
     // Retrieve all light paths falling into a region of the render.
     // All bounds are inclusive. `finalize()` must have been called.
     void query(

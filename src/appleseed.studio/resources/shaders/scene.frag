@@ -1,11 +1,10 @@
-
 //
 // This source file is part of appleseed.
 // Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Gray Olson, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,36 +25,40 @@
 // THE SOFTWARE.
 //
 
-#pragma once
+#version 330
+#extension GL_ARB_separate_shader_objects : enable
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+layout(location = 0) in vec3 v_world_pos;
+layout(location = 1) in vec3 v_norm;
 
-// Standard headers.
-#include <cstddef>
+uniform vec3 u_camera_pos;
 
-namespace renderer
+const vec3 LIGHT_POS = vec3(0.0, 0.0, 0.0);
+const vec3 LIGHT_COLOR = vec3(1.0);
+const vec3 AMBIENT_COLOR = vec3(0.05);
+
+const vec3 MATERIAL_BASE_COLOR = vec3(0.8, 0.8, 0.8);
+const float MATERIAL_DIFFUSE_FACTOR = 0.4;
+const float MATERIAL_SPECULAR_FACTOR = 0.15;
+const float MATERIAL_METALNESS_FACTOR = 0.0;
+const float MATERIAL_SHININESS = 80.0;
+
+out vec4 Target0;
+
+void main()
 {
+    vec3 acc = vec3(0.0);
 
-class APPLESEED_DLLSYMBOL ObjectRasterizer
-{
-  public:
-    virtual ~ObjectRasterizer() {}
+    vec3 N = normalize(v_norm);
+    vec3 L = normalize(LIGHT_POS - v_world_pos);
+    vec3 V = normalize(u_camera_pos - v_world_pos);
+    vec3 H = normalize(L + V);
 
-    virtual void begin_object(const size_t triangle_count_hint) = 0;
-    virtual void end_object() = 0;
+    vec3 specular_color = mix(vec3(1.0), MATERIAL_BASE_COLOR, MATERIAL_METALNESS_FACTOR);
 
-    struct Triangle
-    {
-        double m_v0[3];
-        double m_v1[3];
-        double m_v2[3];
-        double m_n0[3];
-        double m_n1[3];
-        double m_n2[3];
-    };
+    acc += AMBIENT_COLOR * MATERIAL_BASE_COLOR;
+    acc += LIGHT_COLOR * MATERIAL_DIFFUSE_FACTOR * MATERIAL_BASE_COLOR * clamp(dot(N, L), 0.0, 1.0);
+    acc += LIGHT_COLOR * specular_color * pow(clamp(dot(N, H), 0.0, 1.0), MATERIAL_SHININESS);
 
-    virtual void rasterize(const Triangle& triangle) = 0;
-};
-
-}   // namespace renderer
+    Target0 = vec4(acc, 1.0);
+}

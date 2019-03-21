@@ -116,6 +116,14 @@ size_t LightPathRecorder::get_light_path_count() const
     return count;
 }
 
+size_t LightPathRecorder::get_vertex_count() const
+{
+    assert(impl->m_streams.size() == 1);
+    const LightPathStream* stream = impl->m_streams[0].get();
+
+    return stream->m_vertices.size();
+}
+
 LightPathStream* LightPathRecorder::create_stream()
 {
     boost::mutex::scoped_lock lock(impl->m_mutex);
