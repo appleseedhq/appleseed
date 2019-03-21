@@ -56,6 +56,7 @@ namespace foundation    { class DictionaryArray; }
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class Image; }
 namespace foundation    { class ImageAttributes; }
+namespace foundation    { class SearchPaths; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
 namespace foundation    { class Tile; }
@@ -101,6 +102,12 @@ class APPLESEED_DLLSYMBOL Frame
 
     // Access the main underlying image.
     foundation::Image& image() const;
+
+    // Access the reference image. Returns nullptr if there is no reference image.
+    foundation::Image* ref_image() const;
+
+    // Returns whether the reference image is compatible with the frame.
+    bool has_valid_ref_image() const;
 
     // Clear the main and AOV images to transparent black.
     void clear_main_and_aov_images();
@@ -222,7 +229,8 @@ class APPLESEED_DLLSYMBOL Frame
     Frame(
         const char*                                 name,
         const ParamArray&                           params,
-        const AOVContainer&                         aovs);
+        const AOVContainer&                         aovs,
+        const foundation::SearchPaths&              search_paths);
 
     // Destructor.
     ~Frame() override;
@@ -254,6 +262,13 @@ class APPLESEED_DLLSYMBOL FrameFactory
         const char*                 name,
         const ParamArray&           params,
         const AOVContainer&         aovs);
+
+    // Create a new frame.
+    static foundation::auto_release_ptr<Frame> create(
+        const char*                     name,
+        const ParamArray&               params,
+        const AOVContainer&             aovs,
+        const foundation::SearchPaths&  search_paths);
 };
 
 

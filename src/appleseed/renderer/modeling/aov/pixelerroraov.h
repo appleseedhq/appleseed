@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Luke Wilimitis, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,43 +28,46 @@
 
 #pragma once
 
+// appleseed.renderer headers.
+#include "renderer/modeling/aov/aov.h"
+#include "renderer/modeling/aov/iaovfactory.h"
+
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
-#include "foundation/image/color.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation    { class Image; }
+namespace foundation    { class Dictionary; }
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class ParamArray; }
 
-namespace foundation
+namespace renderer
 {
 
 //
-// Image measurements.
+// A factory for pixel error AOVs.
 //
 
-// Compute the average Rec. 709 relative luminance of a linear RGB image.
-// Pixels containing NaN values are skipped.
-APPLESEED_DLLSYMBOL double compute_average_luminance(const Image& image);
-
-
-//
-// Image comparisons.
-//
-
-// Return whether two images are compatible and thus can be compared.
-APPLESEED_DLLSYMBOL bool are_images_compatible(const Image& image1, const Image& image2);
-
-// Exception thrown by comparison functions when two images are incompatible.
-struct ExceptionIncompatibleImages
-  : public Exception
+class APPLESEED_DLLSYMBOL PixelErrorAOVFactory
+  : public IAOVFactory
 {
+  public:
+    // Delete this instance.
+    void release() override;
+
+    // Return a string identifying this AOV model.
+    const char* get_model() const override;
+
+    // Return metadata for this AOV model.
+    foundation::Dictionary get_model_metadata() const override;
+
+    // Return metadata for the inputs of this AOV model.
+    foundation::DictionaryArray get_input_metadata() const override;
+
+    // Create a new AOV instance.
+    foundation::auto_release_ptr<AOV> create(const ParamArray& params) const override;
 };
 
-// Compute the Root-Mean-Square deviation between two images.
-// Throws a foundation::ExceptionIncompatibleImages exception if the images are not compatible.
-APPLESEED_DLLSYMBOL double compute_rms_deviation(const Image& image1, const Image& image2);
-
-}   // namespace foundation
+}   // namespace renderer

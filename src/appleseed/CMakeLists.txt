@@ -1462,6 +1462,8 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/normalaov.h
     renderer/modeling/aov/npraovs.cpp
     renderer/modeling/aov/npraovs.h
+    renderer/modeling/aov/pixelerroraov.cpp
+    renderer/modeling/aov/pixelerroraov.h
     renderer/modeling/aov/pixelsamplecountaov.cpp
     renderer/modeling/aov/pixelsamplecountaov.h
     renderer/modeling/aov/pixeltimeaov.cpp
