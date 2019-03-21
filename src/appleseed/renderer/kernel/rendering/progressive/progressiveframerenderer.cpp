@@ -105,9 +105,9 @@ namespace
           : m_project(project)
           , m_params(params)
           , m_sample_counter(
-              m_params.m_max_average_spp *
-              project.get_frame()->image().properties().m_canvas_height *
-              project.get_frame()->image().properties().m_canvas_width)
+                m_params.m_max_average_spp < numeric_limits<uint64>::max()
+                    ? m_params.m_max_average_spp * project.get_frame()->get_crop_window().volume()
+                    : m_params.m_max_average_spp)
           , m_ref_image_avg_lum(0.0)
         {
             // We must have a generator factory, but it's OK not to have a callback factory.
@@ -424,9 +424,7 @@ namespace
               : m_frame(frame)
               , m_buffer(buffer)
               , m_tile_callback(tile_callback)
-              , m_min_sample_count(min<uint64>(
-                    frame.image().properties().m_canvas_height * frame.image().properties().m_canvas_width,
-                    32 * 32 * 2))
+              , m_min_sample_count(min<uint64>(frame.get_crop_window().volume(), 32 * 32 * 2))
               , m_target_elapsed(1.0 / max_fps)
               , m_abort_switch(abort_switch)
             {
