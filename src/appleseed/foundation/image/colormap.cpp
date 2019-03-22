@@ -49,7 +49,7 @@ void ColorMap::find_min_max_red_channel(
     max_val = 0.0f;
     min_val = 0.0f;
 
-    for_each_pixel(image, crop_window, [&max_val](Color4f& val)
+    for_each_pixel(image, crop_window, [&max_val](Color3f& val)
     {
         max_val = max(val[0], max_val);
     });
@@ -61,17 +61,17 @@ void ColorMap::find_min_max_relative_luminance(
     float&              min_luminance,
     float&              max_luminance)
 {
-    Color4f min_color = Color4f(+std::numeric_limits<float>::max());
-    Color4f max_color = Color4f(-std::numeric_limits<float>::max());
+    Color3f min_color = Color3f(+std::numeric_limits<float>::max());
+    Color3f max_color = Color3f(-std::numeric_limits<float>::max());
 
-    for_each_pixel(image, crop_window, [&min_color, &max_color](Color4f& color)
+    for_each_pixel(image, crop_window, [&min_color, &max_color](Color3f& color)
     {
         min_color = component_wise_min(min_color, color);
         max_color = component_wise_max(max_color, color);
     });
 
-    min_luminance = luminance(min_color.rgb());
-    max_luminance = luminance(max_color.rgb());
+    min_luminance = luminance(min_color);
+    max_luminance = luminance(max_color);
 }
 
 void ColorMap::set_palette_from_array(const float* values, const size_t entry_count)
@@ -105,19 +105,19 @@ void ColorMap::remap_red_channel(
 {
     if (max_value == min_value)
     {
-        for_each_pixel(image, crop_window, [this](Color4f& color)
+        for_each_pixel(image, crop_window, [this](Color3f& color)
         {
-            color.rgb() = evaluate_palette(0.0f);
+            color = evaluate_palette(0.0f);
         });
     }
     else
     {
         assert(max_value > min_value);
 
-        for_each_pixel(image, crop_window, [this, min_value, max_value](Color4f& color)
+        for_each_pixel(image, crop_window, [this, min_value, max_value](Color3f& color)
         {
             const float c = saturate(fit(color[0], min_value, max_value, 0.0f, 1.0f));
-            color.rgb() = evaluate_palette(c);
+            color = evaluate_palette(c);
         });
     }
 }
@@ -130,16 +130,16 @@ void ColorMap::remap_relative_luminance(
 {
     if (min_luminance == max_luminance)
     {
-        for_each_pixel(image, crop_window, [this](Color4f& color)
+        for_each_pixel(image, crop_window, [this](Color3f& color)
         {
-            color.rgb() = evaluate_palette(0.0f);
+            color = evaluate_palette(0.0f);
         });
     }
     else
     {
-        for_each_pixel(image, crop_window, [this, min_luminance, max_luminance](Color4f& color)
+        for_each_pixel(image, crop_window, [this, min_luminance, max_luminance](Color3f& color)
         {
-            const float col_luminance = luminance(color.rgb());
+            const float col_luminance = luminance(color);
 
             const float x =
                 saturate(
@@ -148,7 +148,7 @@ void ColorMap::remap_relative_luminance(
                         max_luminance,
                         col_luminance));
 
-            color.rgb() = evaluate_palette(x);
+            color = evaluate_palette(x);
         });
     }
 }
