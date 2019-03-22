@@ -53,16 +53,6 @@ void ColorMap::find_min_max_red_channel(
     {
         max_val = max(val[0], max_val);
     });
-
-    //for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
-    //{
-    //    for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
-    //    {
-    //        Color3f val;
-    //        image.get_pixel(x, y, val);
-    //        max_val = max(val[0], max_val);
-    //    }
-    //}
 }
 
 void ColorMap::find_min_max_relative_luminance(
@@ -115,11 +105,10 @@ void ColorMap::remap_red_channel(
 {
     if (max_value == min_value)
     {
-        for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
+        for_each_pixel(image, crop_window, [this](Color4f& color)
         {
-            for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
-                image.set_pixel(x, y, evaluate_palette(0.0f));
-        }
+            color.rgb() = evaluate_palette(0.0f);
+        });
     }
     else
     {
@@ -128,21 +117,8 @@ void ColorMap::remap_red_channel(
         for_each_pixel(image, crop_window, [this, min_value, max_value](Color4f& color)
         {
             const float c = saturate(fit(color[0], min_value, max_value, 0.0f, 1.0f));
-            color = Color4f(evaluate_palette(c), color.a);
+            color.rgb() = evaluate_palette(c);
         });
-
-        //for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
-        //{
-        //    for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
-        //    {
-        //        Color3f value;
-        //        image.get_pixel(x, y, value);
-
-        //        const float c = saturate(fit(value[0], min_value, max_value, 0.0f, 1.0f));
-        //
-        //        image.set_pixel(x, y, evaluate_palette(c));
-        //    }
-        //}
     }
 }
 
@@ -172,7 +148,7 @@ void ColorMap::remap_relative_luminance(
                         max_luminance,
                         col_luminance));
 
-                color.rgb() = evaluate_palette(x);
+            color.rgb() = evaluate_palette(x);
         });
     }
 }
