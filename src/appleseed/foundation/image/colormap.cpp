@@ -41,7 +41,7 @@ namespace foundation
 {
 
 void ColorMap::find_min_max_red_channel(
-    Image&    image,
+    Image&          image,
     const AABB2u&   crop_window,
     float&          min_val,
     float&          max_val)
