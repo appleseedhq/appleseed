@@ -1462,6 +1462,8 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/normalaov.h
     renderer/modeling/aov/npraovs.cpp
     renderer/modeling/aov/npraovs.h
+    renderer/modeling/aov/pixelerroraov.cpp
+    renderer/modeling/aov/pixelerroraov.h
     renderer/modeling/aov/pixelsamplecountaov.cpp
     renderer/modeling/aov/pixelsamplecountaov.h
     renderer/modeling/aov/pixeltimeaov.cpp
@@ -2190,6 +2192,10 @@ if (USE_FIND_PACKAGE_FOR_OSL)
         PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${OPENIMAGEIO_OIIOTOOL} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
+    add_custom_command (TARGET appleseed
+        PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${OPENIMAGEIO_IDIFF} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+    )
 else ()
     add_custom_command (TARGET appleseed
         PRE_BUILD
@@ -2202,6 +2208,10 @@ else ()
     add_custom_command (TARGET appleseed
         PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/bin/oiiotool${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+    )
+    add_custom_command (TARGET appleseed
+        PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/bin/idiff${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
 endif ()
 

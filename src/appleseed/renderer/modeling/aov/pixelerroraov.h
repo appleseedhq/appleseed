@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Luke Wilimitis, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,21 +28,46 @@
 
 #pragma once
 
-// API headers.
-#include "renderer/kernel/rendering/debug/blanktilerenderer.h"
-#include "renderer/kernel/rendering/debug/debugtilerenderer.h"
-#include "renderer/kernel/rendering/defaultrenderercontroller.h"
-#include "renderer/kernel/rendering/generic/genericframerenderer.h"
-#include "renderer/kernel/rendering/generic/genericsamplerenderer.h"
-#include "renderer/kernel/rendering/generic/generictilerenderer.h"
-#include "renderer/kernel/rendering/iframerenderer.h"
-#include "renderer/kernel/rendering/irenderercontroller.h"
-#include "renderer/kernel/rendering/isamplerenderer.h"
-#include "renderer/kernel/rendering/itilecallback.h"
-#include "renderer/kernel/rendering/itilerenderer.h"
-#include "renderer/kernel/rendering/masterrenderer.h"
-#include "renderer/kernel/rendering/nulltilecallback.h"
-#include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
-#include "renderer/kernel/rendering/tilecallbackbase.h"
-#include "renderer/kernel/rendering/tilecallbackcollection.h"
-#include "renderer/kernel/rendering/timedrenderercontroller.h"
+// appleseed.renderer headers.
+#include "renderer/modeling/aov/aov.h"
+#include "renderer/modeling/aov/iaovfactory.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace foundation    { class Dictionary; }
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class ParamArray; }
+
+namespace renderer
+{
+
+//
+// A factory for pixel error AOVs.
+//
+
+class APPLESEED_DLLSYMBOL PixelErrorAOVFactory
+  : public IAOVFactory
+{
+  public:
+    // Delete this instance.
+    void release() override;
+
+    // Return a string identifying this AOV model.
+    const char* get_model() const override;
+
+    // Return metadata for this AOV model.
+    foundation::Dictionary get_model_metadata() const override;
+
+    // Return metadata for the inputs of this AOV model.
+    foundation::DictionaryArray get_input_metadata() const override;
+
+    // Create a new AOV instance.
+    foundation::auto_release_ptr<AOV> create(const ParamArray& params) const override;
+};
+
+}   // namespace renderer

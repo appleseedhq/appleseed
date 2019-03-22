@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
+#include "foundation/image/color.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"

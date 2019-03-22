@@ -436,7 +436,12 @@ struct MasterRenderer::Impl
         // Initialize OSL's shading system.
         if (!initialize_osl_shading_system(texture_store, abort_switch) ||
             abort_switch.is_aborted())
+        {
+            // todo: there is a bug here: if initialize_osl_shading_system() fails, we return
+            // the renderer controller's status which is most likely ContinueRendering, or so
+            // we start rendering again, in an infinite loop.
             return m_renderer_controller->get_status();
+        }
 
         // Create renderer components.
         RendererComponents components(

@@ -35,6 +35,9 @@
 // appleseed.shared headers
 #include "dllsymbol.h"
 
+// Forward declarations.
+namespace foundation { class Logger; }
+
 namespace appleseed {
 namespace shared {
 
@@ -42,15 +45,21 @@ class SHAREDDLL ProgressTileCallbackFactory
   : public renderer::ITileCallbackFactory
 {
   public:
+    // Constructor.
     explicit ProgressTileCallbackFactory(foundation::Logger& logger);
 
+    // Destructor.
+    ~ProgressTileCallbackFactory() override;
+
+    // Delete this instance.
     void release() override;
 
+    // Return a new tile callback instance.
     renderer::ITileCallback* create() override;
 
   private:
     struct Impl;
-    Impl*  impl;
+    Impl* impl;
 };
 
 }   // namespace shared
