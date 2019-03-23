@@ -583,7 +583,7 @@ void DiagnosticSurfaceShader::evaluate(
       case Assemblies:
         set_shading_result(
             shading_result,
-            integer_to_color3<float>(shading_point.get_assembly_instance().find_assembly()->get_uid()));
+            integer_to_color3<float>(shading_point.get_assembly_instance().get_assembly().get_uid()));
         break;
 
       case AssemblyInstances:
@@ -595,7 +595,7 @@ void DiagnosticSurfaceShader::evaluate(
       case Objects:
         set_shading_result(
             shading_result,
-            integer_to_color3<float>(shading_point.get_object_instance().find_object()->get_uid()));
+            integer_to_color3<float>(shading_point.get_object_instance().get_object().get_uid()));
         break;
 
       case ObjectInstances:
