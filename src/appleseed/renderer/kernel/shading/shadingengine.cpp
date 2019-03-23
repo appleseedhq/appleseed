@@ -225,18 +225,16 @@ void ShadingEngine::shade_environment(
     {
         // There is an environment shader: execute it.
         ShadingComponents shading_components;
-        Alpha alpha;
+        AOVComponents aov_components;
         environment_shader->evaluate(
             shading_context,
             pixel_context,
             normalize(shading_point.get_ray().m_dir),
-            shading_components.m_emission,
-            alpha);
-        shading_components.m_beauty = shading_components.m_emission;
-        shading_result.m_main.a = alpha[0];
+            shading_result,
+            shading_components,
+            aov_components);
 
-        // Accumulate shading components into the shading result and AOVs.
-        AOVComponents aov_components;
+        // Accumulate shading components and AOV components into the shading result and AOVs.
         aov_accumulators.write(
             pixel_context,
             shading_point,
