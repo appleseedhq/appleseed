@@ -121,7 +121,6 @@ namespace
                 sample.m_value.m_diffuse = values->m_reflectance;
                 sample.m_value.m_diffuse *= values->m_reflectance_multiplier;
                 sample.m_aov_components.m_albedo = sample.m_value.m_diffuse;
-
                 sample.m_value.m_diffuse *= RcpPi<float>();
                 sample.m_value.m_beauty = sample.m_value.m_diffuse;
 
