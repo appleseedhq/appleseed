@@ -165,12 +165,12 @@ namespace
 
         // Get colors and assign weights.
         Color3f main_color(main[0], main[1], main[2]);
-        main_color = linear_rgb_to_srgb(main_color);
         main_color *= rcp_main_weight;
+        main_color = linear_rgb_to_srgb(main_color);
 
         Color3f second_color(second[0], second[1], second[2]);
-        second_color = linear_rgb_to_srgb(second_color);
         second_color *= rcp_second_weight;
+        second_color = linear_rgb_to_srgb(second_color);
 
         const float rgb = abs(main_color.r) + abs(main_color.g) + abs(main_color.b);
 
