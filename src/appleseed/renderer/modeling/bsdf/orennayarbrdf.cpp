@@ -151,7 +151,7 @@ namespace
                 {
                     // Revert to Lambertian when roughness is zero.
                     sample.m_value.m_diffuse = values->m_reflectance;
-                    sample.m_value.m_diffuse *= values->m_reflectance_multiplier;
+                    sample.m_value.m_diffuse *= values->m_reflectance_multiplier * RcpPi<float>();
                 }
 
                 sample.m_aov_components.m_albedo = values->m_reflectance;
