@@ -1205,6 +1205,8 @@ set (renderer_kernel_rendering_final_sources
     renderer/kernel/rendering/final/pixelsampler.h
     renderer/kernel/rendering/final/uniformpixelrenderer.cpp
     renderer/kernel/rendering/final/uniformpixelrenderer.h
+    renderer/kernel/rendering/final/texturecontrolledpixelrenderer.cpp
+    renderer/kernel/rendering/final/texturecontrolledpixelrenderer.h
     renderer/kernel/rendering/final/variationtracker.h
 )
 list (APPEND appleseed_sources

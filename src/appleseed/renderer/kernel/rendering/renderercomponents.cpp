@@ -44,6 +44,7 @@
 #include "renderer/kernel/rendering/ephemeralshadingresultframebufferfactory.h"
 #include "renderer/kernel/rendering/final/adaptivetilerenderer.h"
 #include "renderer/kernel/rendering/final/uniformpixelrenderer.h"
+#include "renderer/kernel/rendering/final/texturecontrolledpixelrenderer.h"
 #include "renderer/kernel/rendering/generic/genericframerenderer.h"
 #include "renderer/kernel/rendering/generic/genericsamplegenerator.h"
 #include "renderer/kernel/rendering/generic/genericsamplerenderer.h"
@@ -55,9 +56,16 @@
 #include "renderer/modeling/project/project.h"
 #include "renderer/utility/paramarray.h"
 
+// OpenImageIO headers.
+#include "foundation/platform/_beginoiioheaders.h"
+#include "OpenImageIO/imagebuf.h"
+#include "foundation/platform/_endoiioheaders.h"
+
 // Standard headers.
+#include <memory>
 #include <string>
 
+using namespace OIIO;
 using namespace std;
 
 namespace renderer
@@ -344,6 +352,47 @@ bool RendererComponents::create_pixel_renderer_factory()
                 m_frame,
                 m_sample_renderer_factory.get(),
                 get_child_and_inherit_globals(m_params, "uniform_pixel_renderer")));
+
+        return true;
+    }
+    else if (name == "texture")
+    {
+        if (m_sample_renderer_factory.get() == nullptr)
+        {
+            RENDERER_LOG_ERROR("cannot use the texture controlled pixel renderer without a sample renderer.");
+            return false;
+        }
+
+        ParamArray tex_sampler_params = get_child_and_inherit_globals(m_params, "texture_controlled_pixel_renderer");
+        const string tex_path = tex_sampler_params.get_optional<string>("file_path", "");
+
+        if (tex_path.empty())
+        {
+            RENDERER_LOG_ERROR("no texture path was specified for the texture controlled pixel renderer.");
+            return false;
+        }
+
+        // Create a new dedicated ImageCache instead of using the global ImageCache.
+        // This is to prevent errors during ImageBuf access if the file behind tex_path was overwritten on disk.
+        ImageCache* image_cache = ImageCache::create();
+        std::unique_ptr<ImageBuf> texture(new ImageBuf(tex_path, 0, 0, image_cache));
+        // Force the read to immediately do the entire disk I/O for the file.
+        // We can then safely destroy the cache since the entire image data has been read into the ImageBuf.
+        const bool read_successful = texture->read(0, 0, true);
+        ImageCache::destroy(image_cache);
+
+        if (!read_successful)
+        {
+            RENDERER_LOG_ERROR("could not read the texture specified for the texture controlled pixel renderer.");
+            return false;
+        }
+
+        m_pixel_renderer_factory.reset(
+            new TextureControlledPixelRendererFactory(
+                m_frame,
+                std::move(texture),
+                m_sample_renderer_factory.get(),
+                tex_sampler_params));
 
         return true;
     }
