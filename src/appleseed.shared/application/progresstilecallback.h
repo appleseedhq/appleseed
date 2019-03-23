@@ -32,8 +32,11 @@
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
 
-// appleseed.shared headers
+// appleseed.shared headers.
 #include "dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace foundation { class Logger; }
@@ -45,8 +48,7 @@ class SHAREDDLL ProgressTileCallbackFactory
   : public renderer::ITileCallbackFactory
 {
   public:
-    // Constructor.
-    explicit ProgressTileCallbackFactory(foundation::Logger& logger);
+    ProgressTileCallbackFactory(foundation::Logger& logger, const size_t pass_count);
 
     // Destructor.
     ~ProgressTileCallbackFactory() override;

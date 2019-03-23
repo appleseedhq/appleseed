@@ -77,6 +77,7 @@ namespace
             for (auto i : m_callbacks)
                 i->on_tile_begin(frame, tile_x, tile_y);
         }
+        
         void on_tile_end(
             const Frame* frame,
             const size_t tile_x,

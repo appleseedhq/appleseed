@@ -209,7 +209,9 @@ void RenderingManager::start_rendering(
             m_render_tab->get_render_widget()));
 
     tile_callback_collection_factory->insert(
-        new ProgressTileCallbackFactory(global_logger()));
+        new ProgressTileCallbackFactory(
+            global_logger(),
+            m_params.get_optional<size_t>("passes", 1)));
 
     m_tile_callback_factory.reset(tile_callback_collection_factory);
 
