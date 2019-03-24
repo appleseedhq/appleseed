@@ -611,7 +611,7 @@ namespace
 
             if (tr_value == "adaptive")
             {
-                m_image_plane_sampler_combo->setCurrentIndex(2);
+                m_image_plane_sampler_combo->setCurrentIndex(1);
                 return;
             }
 
