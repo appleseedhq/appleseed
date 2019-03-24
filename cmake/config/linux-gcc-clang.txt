@@ -167,6 +167,7 @@ endif ()
 # Release configuration.
 set (c_compiler_flags_release
     -O3                                                 # optimization level
+    -funroll-loops                                      # not included in O3
 )
 
 
