@@ -103,6 +103,7 @@ class ProjectExplorer
     void slot_context_menu(const QPoint& point);
     void slot_item_selection_changed();
     void slot_edit_item(QTreeWidgetItem* item, int column);
+    void slot_drag_item(QTreeWidgetItem* item, int column);
     void slot_delete_items();
 };
 

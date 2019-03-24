@@ -76,9 +76,11 @@ namespace studio {
 RenderTab::RenderTab(
     ProjectExplorer&        project_explorer,
     Project&                project,
+    RenderingManager&       rendering_manager,
     OCIO::ConstConfigRcPtr  ocio_config)
   : m_project_explorer(project_explorer)
   , m_project(project)
+  , m_rendering_manager(rendering_manager)
   , m_ocio_config(ocio_config)
 {
     setObjectName("render_widget_tab");
@@ -486,6 +488,22 @@ void RenderTab::recreate_handlers()
     m_pixel_inspector_handler->set_enabled(false);
     m_camera_controller->set_enabled(false);
     m_scene_picking_handler->set_enabled(true);     // todo: should be true by default
+
+    // Material drop handler.
+    m_material_drop_handler.reset(
+        new MaterialDropHandler(
+            m_project,
+            m_rendering_manager));
+
+    connect(
+        m_render_widget,
+        SIGNAL(signal_material_dropped(
+            const foundation::Vector2d&,
+            const QString&)),
+        m_material_drop_handler.get(),
+        SLOT(slot_material_dropped(
+            const foundation::Vector2d&,
+            const QString&)));
 }
 
 }   // namespace studio

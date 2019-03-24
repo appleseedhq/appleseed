@@ -43,6 +43,10 @@
 
 // Qt headers.
 #include <QColor>
+#include <QDragEnterEvent>
+#include <QDragMoveEvent>
+#include <QDropEvent>
+#include <QMimeData>
 #include <QMutexLocker>
 #include <Qt>
 
@@ -79,6 +83,8 @@ RenderWidget::RenderWidget(
     const char* display_name = m_ocio_config->getDefaultDisplay();
     const char* default_transform = m_ocio_config->getDefaultView(display_name);
     slot_display_transform_changed(default_transform);
+
+    setAcceptDrops(true);
 }
 
 QImage RenderWidget::capture()
@@ -420,6 +426,32 @@ void RenderWidget::paintEvent(QPaintEvent* event)
     m_painter.begin(this);
     m_painter.drawImage(rect(), m_image);
     m_painter.end();
+}
+
+void RenderWidget::dragEnterEvent(QDragEnterEvent* event)
+{
+    if (event->mimeData()->hasFormat("text/plain"))
+        event->acceptProposedAction();
+}
+
+void RenderWidget::dragMoveEvent(QDragMoveEvent* event)
+{
+    if (pos().x() <= event->pos().x() && pos().y() <= event->pos().y()
+        && event->pos().x() < pos().x() + width() && event->pos().y() < pos().y() + height())
+    {
+        event->accept();
+    }
+    else
+        event->ignore();
+}
+
+void RenderWidget::dropEvent(QDropEvent* event)
+{
+    emit signal_material_dropped(
+        Vector2d(
+            static_cast<double>(event->pos().x()) / width(),
+            static_cast<double>(event->pos().y()) / height()),
+        event->mimeData()->text());
 }
 
 }   // namespace studio
