@@ -1988,7 +1988,7 @@ void MainWindow::slot_save_frame()
         ask_frame_save_file_path(
             this,
             "Save Frame As...",
-            g_qt_image_files_filter,
+            get_oiio_image_files_filter(),
             ".exr",
             m_application_settings);
 
@@ -2008,7 +2008,7 @@ void MainWindow::slot_save_frame_and_aovs()
         ask_frame_save_file_path(
             this,
             "Save Frame and AOVs As...",
-            g_qt_image_files_filter,
+            get_oiio_image_files_filter(),
             ".exr",
             m_application_settings);
 
