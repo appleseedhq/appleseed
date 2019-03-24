@@ -176,7 +176,7 @@ class RenderSettingsPanel
   : public FoldablePanelWidget
 {
   public:
-    RenderSettingsPanel(const QString& title, QWidget* parent = nullptr)
+    explicit RenderSettingsPanel(const QString& title, QWidget* parent = nullptr)
       : FoldablePanelWidget(title, parent)
       , m_params_metadata(Configuration::get_metadata())
     {
@@ -420,7 +420,7 @@ namespace
         Q_OBJECT
 
       public:
-        GeneralSettingsPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit GeneralSettingsPanel(const Configuration& config, QWidget* parent = nullptr)
           : RenderSettingsPanel("General Settings", parent)
         {
             QFormLayout* layout = create_form_layout();
@@ -463,7 +463,7 @@ namespace
         Q_OBJECT
 
       public:
-        FinalImagePlaneSamplingPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit FinalImagePlaneSamplingPanel(const Configuration& config, QWidget* parent = nullptr)
           : ImagePlaneSamplingPanel(parent)
         {
             QVBoxLayout* layout = new QVBoxLayout();
@@ -668,7 +668,7 @@ namespace
         Q_OBJECT
 
       public:
-        InteractiveImagePlaneSamplingPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit InteractiveImagePlaneSamplingPanel(const Configuration& config, QWidget* parent = nullptr)
           : ImagePlaneSamplingPanel(parent)
         {
             QVBoxLayout* layout = new QVBoxLayout();
@@ -723,7 +723,7 @@ namespace
       : public RenderSettingsPanel
     {
       public:
-        LightingPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit LightingPanel(const Configuration& config, QWidget* parent = nullptr)
           : RenderSettingsPanel("Lighting", parent)
         {
         }
@@ -751,7 +751,7 @@ namespace
       : public LightingPanel
     {
       public:
-        FinalConfigurationLightingPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit FinalConfigurationLightingPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingPanel(config, parent)
         {
             QComboBox* combobox = create_combobox("engine");
@@ -767,7 +767,7 @@ namespace
       : public LightingPanel
     {
       public:
-        InteractiveConfigurationLightingPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit InteractiveConfigurationLightingPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingPanel(config, parent)
         {
             QComboBox* combobox = create_combobox("engine");
@@ -785,7 +785,7 @@ namespace
       : public RenderSettingsPanel
     {
       public:
-        LightingEnginePanel(const QString& title, QWidget* parent = nullptr)
+        explicit LightingEnginePanel(const QString& title, QWidget* parent = nullptr)
           : RenderSettingsPanel(title, parent)
         {
         }
@@ -943,7 +943,7 @@ namespace
       : public LightingEnginePanel
     {
       public:
-        UnidirectionalPathTracerPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit UnidirectionalPathTracerPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingEnginePanel("Unidirectional Path Tracer", parent)
         {
             fold();
@@ -1161,7 +1161,7 @@ namespace
       : public LightingEnginePanel
     {
       public:
-        SPPMPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit SPPMPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingEnginePanel("Stochastic Progressive Photon Mapping", parent)
         {
             fold();
