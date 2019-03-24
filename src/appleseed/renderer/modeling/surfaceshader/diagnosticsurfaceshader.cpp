@@ -105,7 +105,9 @@ const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
     { "world_space_wireframe" ,     WorldSpaceWireframe },
     { "screen_space_wireframe" ,    ScreenSpaceWireframe },
     { "ambient_occlusion",          AmbientOcclusion },
+    { "assemblies",                 Assemblies },
     { "assembly_instances",         AssemblyInstances },
+    { "objects",                    Objects },
     { "object_instances",           ObjectInstances },
     { "primitives",                 Primitives },
     { "materials",                  Materials },
@@ -132,7 +134,9 @@ const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingMod
     { "world_space_wireframe",      "World-Space Wireframe" },
     { "screen_space_wireframe",     "Screen-Space Wireframe" },
     { "ambient_occlusion",          "Ambient Occlusion" },
+    { "assemblies",                 "Assemblies" },
     { "assembly_instances",         "Assembly Instances" },
+    { "objects",                    "Objects" },
     { "object_instances",           "Object Instances" },
     { "primitives",                 "Primitives" },
     { "materials",                  "Materials" },
@@ -576,10 +580,22 @@ void DiagnosticSurfaceShader::evaluate(
         }
         break;
 
+      case Assemblies:
+        set_shading_result(
+            shading_result,
+            integer_to_color3<float>(shading_point.get_assembly().get_uid()));
+        break;
+
       case AssemblyInstances:
         set_shading_result(
             shading_result,
             integer_to_color3<float>(shading_point.get_assembly_instance().get_uid()));
+        break;
+      
+      case Objects:
+        set_shading_result(
+            shading_result,
+            integer_to_color3<float>(shading_point.get_object().get_uid()));
         break;
 
       case ObjectInstances:
