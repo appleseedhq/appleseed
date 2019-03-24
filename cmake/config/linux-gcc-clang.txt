@@ -167,7 +167,11 @@ endif ()
 # Release configuration.
 set (c_compiler_flags_release
     -O3                                                 # optimization level
-    -funroll-loops                                      # not included in O3
+    -funroll-loops                                      # Unrolls loops
+    -fgcse-las                                          # Eliminates stores followed by a load to the same positions.
+    -fgcse-sm                                           # Moves load/save instructions out of loops, if possible.
+    -fgcse-after-reload                                 # Cleans different fgcse passes up.
+    -ftree-loop-ivcanon                                 # Supports unrolling loops by determining iteration numbers of complex loops.
 )
 
 
