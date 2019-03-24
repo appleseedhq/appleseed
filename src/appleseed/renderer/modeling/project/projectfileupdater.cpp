@@ -91,6 +91,7 @@
 // Standard headers.
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -2017,6 +2018,55 @@ namespace
             }
         }
     };
+
+
+    //
+    // Update from revision 30 to revision 31.
+    //
+
+    class UpdateFromRevision_30
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_30(Project& project)
+          : Updater(project, 30)
+        {
+        }
+
+        void update() override
+        {
+            replace_max_samples_interactive_renderer_setting();
+        }
+
+      private:
+        void replace_max_samples_interactive_renderer_setting()
+        {
+            for (Configuration& config : m_project.configurations())
+            {
+                Dictionary& root = config.get_parameters();
+
+                if (root.dictionaries().exist("progressive_frame_renderer")) {
+                    Dictionary& pfr = root.dictionaries().get("progressive_frame_renderer");
+
+                    if (pfr.strings().exist("max_samples")) {
+                        RENDERER_LOG_WARNING(
+                            "the max samples setting of the progressive frame renderer was removed; "
+                            "migrating this project to use the max average spp setting instead.");
+
+                        uint64 max_samples = pfr.strings().get<uint64>("max_samples");
+                        pfr.strings().remove("max_samples");
+
+                        Frame* frame = m_project.get_frame();
+                        if (frame) {
+                            // If max samples was previously set then preserve the nearest max average spp count.
+                            pfr.strings().insert(
+                                "max_average_spp", ceil(max_samples / frame->get_crop_window().volume()));
+                        }
+                    }
+                }
+            }
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(
@@ -2079,6 +2129,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(27);
       CASE_UPDATE_FROM_REVISION(28);
       CASE_UPDATE_FROM_REVISION(29);
+      CASE_UPDATE_FROM_REVISION(30);
 
       case ProjectFormatRevision:
         // Project is up-to-date.
