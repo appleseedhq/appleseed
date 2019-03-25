@@ -2051,7 +2051,7 @@ namespace
 
                     if (pfr.strings().exist("max_samples"))
                     {
-                        uint64 max_samples = pfr.strings().get<uint64>("max_samples");
+                        const uint64 max_samples = pfr.strings().get<uint64>("max_samples");
                         pfr.strings().remove("max_samples");
 
                         Frame* frame = m_project.get_frame();
