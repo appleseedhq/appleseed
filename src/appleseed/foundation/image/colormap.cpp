@@ -59,17 +59,14 @@ void ColorMap::find_min_max_relative_luminance(
     float&              min_luminance,
     float&              max_luminance)
 {
-    Color4f min_color = Color4f(+std::numeric_limits<float>::max());
-    Color4f max_color = Color4f(-std::numeric_limits<float>::max());
+    min_luminance = luminance(Color4f(+std::numeric_limits<float>::max()).rgb());
+    max_luminance = luminance(Color4f(-std::numeric_limits<float>::max()).rgb());
 
-    for_each_pixel(image, crop_window, [&min_color, &max_color](Color4f& color)
+    for_each_pixel(image, crop_window, [&min_luminance, &max_luminance](Color4f& color)
     {
-        min_color = component_wise_min(min_color, color);
-        max_color = component_wise_max(max_color, color);
+        min_luminance = min(luminance(color.rgb()), min_luminance);
+        max_luminance = max(luminance(color.rgb()), max_luminance);
     });
-
-    min_luminance = luminance(min_color.rgb());
-    max_luminance = luminance(max_color.rgb());
 }
 
 void ColorMap::set_palette_from_array(const float* values, const size_t entry_count)
