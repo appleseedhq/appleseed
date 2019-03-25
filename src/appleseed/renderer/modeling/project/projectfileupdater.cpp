@@ -2059,7 +2059,7 @@ namespace
                         {
                             // If max samples was previously set then preserve the nearest max average spp count.
                             pfr.strings().insert(
-                                "max_average_spp", ceil(max_samples / frame->get_crop_window().volume()));
+                                "max_average_spp", static_cast<uint64>(ceil(max_samples / frame->get_crop_window().volume())));
                         }
                     }
                 }
