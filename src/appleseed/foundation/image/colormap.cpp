@@ -46,7 +46,7 @@ void ColorMap::find_min_max_red_channel(
     float&          min_val,
     float&          max_val)
 {
-    for_each_pixel(image, crop_window, [&min_val, &max_val](Color4f& val)
+    for_each_pixel(image, crop_window, [&min_val, &max_val](const Color4f& val)
     {
         min_val = min(val[0], min_val);
         max_val = max(val[0], max_val);
@@ -62,7 +62,7 @@ void ColorMap::find_min_max_relative_luminance(
     min_luminance = luminance(Color4f(+std::numeric_limits<float>::max()).rgb());
     max_luminance = luminance(Color4f(-std::numeric_limits<float>::max()).rgb());
 
-    for_each_pixel(image, crop_window, [&min_luminance, &max_luminance](Color4f& color)
+    for_each_pixel(image, crop_window, [&min_luminance, &max_luminance](const Color4f& color)
     {
         min_luminance = min(luminance(color.rgb()), min_luminance);
         max_luminance = max(luminance(color.rgb()), max_luminance);
