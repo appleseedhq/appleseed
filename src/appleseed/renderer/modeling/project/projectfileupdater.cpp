@@ -2051,10 +2051,6 @@ namespace
 
                     if (pfr.strings().exist("max_samples"))
                     {
-                        RENDERER_LOG_WARNING(
-                            "the max samples setting of the progressive frame renderer was removed; "
-                            "migrating this project to use the max average spp setting instead.");
-
                         uint64 max_samples = pfr.strings().get<uint64>("max_samples");
                         pfr.strings().remove("max_samples");
 
