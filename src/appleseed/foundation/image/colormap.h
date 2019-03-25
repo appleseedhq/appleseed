@@ -35,7 +35,6 @@
 
 // Standard headers.
 #include <cstddef>
-#include <memory>
 #include <vector>
 
 namespace foundation
@@ -58,7 +57,7 @@ class ColorMap
 
     void set_palette_from_array(const float* values, const size_t entry_count);
 
-	void set_palette_from_image_file(std::unique_ptr<Image>& image);
+	void set_palette_from_image_file(const Image& image);
 
     void remap_red_channel(
 		Image&            image,
@@ -98,7 +97,7 @@ void ColorMap::for_each_pixel(
     {
         for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
         {
-			foundation::Color3f color;
+			foundation::Color4f color;
 			image.get_pixel(x, y, color);
 			func(color);
 			image.set_pixel(x, y, color);

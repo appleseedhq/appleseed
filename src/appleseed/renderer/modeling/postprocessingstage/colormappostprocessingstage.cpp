@@ -271,7 +271,7 @@ namespace
             GenericImageFileReader reader;
             unique_ptr<Image> image(reader.read(filepath.c_str()));
 
-            m_color_map.set_palette_from_image_file(image);
+            m_color_map.set_palette_from_image_file(*image.get());
         }
 
         void add_legend_bar(Frame& frame, const float min_luminance, const float max_luminance) const
