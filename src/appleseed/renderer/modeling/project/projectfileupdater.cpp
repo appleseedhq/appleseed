@@ -2045,10 +2045,12 @@ namespace
             {
                 Dictionary& root = config.get_parameters();
 
-                if (root.dictionaries().exist("progressive_frame_renderer")) {
+                if (root.dictionaries().exist("progressive_frame_renderer"))
+                {
                     Dictionary& pfr = root.dictionaries().get("progressive_frame_renderer");
 
-                    if (pfr.strings().exist("max_samples")) {
+                    if (pfr.strings().exist("max_samples"))
+                    {
                         RENDERER_LOG_WARNING(
                             "the max samples setting of the progressive frame renderer was removed; "
                             "migrating this project to use the max average spp setting instead.");
@@ -2057,7 +2059,8 @@ namespace
                         pfr.strings().remove("max_samples");
 
                         Frame* frame = m_project.get_frame();
-                        if (frame) {
+                        if (frame)
+                        {
                             // If max samples was previously set then preserve the nearest max average spp count.
                             pfr.strings().insert(
                                 "max_average_spp", ceil(max_samples / frame->get_crop_window().volume()));
