@@ -46,11 +46,9 @@ void ColorMap::find_min_max_red_channel(
     float&          min_val,
     float&          max_val)
 {
-    max_val = 0.0f;
-    min_val = 0.0f;
-
-    for_each_pixel(image, crop_window, [&max_val](Color4f& val)
+    for_each_pixel(image, crop_window, [&min_val, &max_val](Color4f& val)
     {
+        min_val = min(val[0], min_val);
         max_val = max(val[0], max_val);
     });
 }
