@@ -561,9 +561,11 @@ set (foundation_platform_sources
     foundation/platform/_beginexrheaders.h
     foundation/platform/_beginoiioheaders.h
     foundation/platform/_beginoslheaders.h
+    foundation/platform/_beginstbtruetypeheaders.h
     foundation/platform/_endexrheaders.h
     foundation/platform/_endoiioheaders.h
     foundation/platform/_endoslheaders.h
+    foundation/platform/_endstbtruetypeheaders.h
     foundation/platform/arch.h
     foundation/platform/atomic.h
     foundation/platform/compiler.cpp

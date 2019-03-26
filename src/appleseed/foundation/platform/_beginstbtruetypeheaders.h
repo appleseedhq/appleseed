@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Lars Zawallich, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,13 @@
 // THE SOFTWARE.
 //
 
-// Expands out the actual implementation into this file.
-#define STB_TRUETYPE_IMPLEMENTATION
+#if __GNUC__
 
-#include "foundation/platform/_beginstbtruetypeheaders.h"
-#include "stb_truetype.h"
-#include "foundation/platform/_endstbtruetypeheaders.h"
+    #ifndef __clang__
+
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+    
+    #endif
+
+#endif
