@@ -47,7 +47,6 @@
 
 // Standard headers.
 #include <cstddef>
-#include <limits>
 #include <memory>
 #include <string>
 
@@ -80,8 +79,7 @@ namespace
             ColorMap color_map;
             color_map.set_palette_from_array(InfernoColorMap, countof(InfernoColorMap) / 3);
 
-            float min_var = numeric_limits<float>::max();
-            float max_var = 0.0f;
+            float min_var, max_var;
             color_map.find_min_max_red_channel(*m_image, crop_window, min_var, max_var);
             color_map.remap_red_channel(*m_image, crop_window, min_var, max_var);
         }

@@ -51,7 +51,6 @@
 // Standard headers.
 #include <algorithm>
 #include <cstddef>
-#include <limits>
 #include <vector>
 
 using namespace foundation;
@@ -167,27 +166,27 @@ namespace
 
         size_t get_channel_count() const override
         {
-            return 1;
+            return 3;
         }
 
         const char** get_channel_names() const override
         {
-            static const char* ChannelNames[] = { "PixelTime" };
+            static const char* ChannelNames[] = { "R", "G", "B" };
             return ChannelNames;
         }
 
         void clear_image() override
         {
-            m_image->clear(Color<float, 1>(0.0f));
+            m_image->clear(Color<float, 3>(0.0f));
         }
 
         void post_process_image(const Frame& frame) override
         {
             const AABB2u& crop_window = frame.get_crop_window();
             ColorMap color_map;
+            color_map.set_palette_from_array(InfernoColorMap, countof(InfernoColorMap) / 3);
 
-            float min_time = numeric_limits<float>::max();
-            float max_time = 0.0f;
+            float min_time, max_time;
             color_map.find_min_max_red_channel(*m_image, crop_window, min_time, max_time);
             color_map.remap_red_channel(*m_image, crop_window, min_time, max_time);
         }

@@ -80,12 +80,25 @@ void PixelSampleCountAOV::post_process_image(const Frame& frame)
     ColorMap color_map;
     color_map.set_palette_from_array(InfernoColorMap, countof(InfernoColorMap) / 3);
 
-    float min_spp = static_cast<float>(m_min_spp);
-    float max_spp = 0.0f;
+    //
+    // At this point, the AOV is filled with real sample/pixel count values.
+    //
+    // If the Uniform Pixel Renderer is used, the AOV should be empty and
+    // the exported AOV will be of a solid color depending on the used 
+    // color map.
+    //
+    // Otherwise, if the Adaptive Tile Renderer is used, we use the user's
+    // min and max sample/pixel counts to determine the final color. If the
+    // user's max sample/pixel count is 0 (infinite) then we use the actual
+    // max sample/pixel count found in the image.
+    //
+
+    float min_spp, max_spp;
     if (m_max_spp == 0)
         color_map.find_min_max_red_channel(*m_image, crop_window, min_spp, max_spp);
     else
         max_spp = static_cast<float>(m_max_spp);
+    min_spp = static_cast<float>(m_min_spp);
 
     color_map.remap_red_channel(*m_image, crop_window, min_spp, max_spp);
 }
