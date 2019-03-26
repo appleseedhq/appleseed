@@ -27,7 +27,11 @@
 //
 
 #if __GNUC__
-
-    #pragma GCC diagnostic pop
+    
+    #ifndef __clang__
+    
+        #pragma GCC diagnostic pop
+    
+    #endif
 
 #endif

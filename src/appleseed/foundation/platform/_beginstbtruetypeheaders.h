@@ -28,7 +28,11 @@
 
 #if __GNUC__
 
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+    #ifndef __clang__
+
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+    
+    #endif
 
 #endif
