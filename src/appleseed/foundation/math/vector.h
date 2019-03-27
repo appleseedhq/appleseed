@@ -94,6 +94,7 @@ class PoisonImpl<Vector<T, N>>
 {
   public:
     static void do_poison(Vector<T, N>& v);
+    static void do_always_poison(Vector<T, N>& v);
 };
 
 // Exact inequality and equality tests.
@@ -500,6 +501,13 @@ void PoisonImpl<Vector<T, N>>::do_poison(Vector<T, N>& v)
 {
     for (size_t i = 0; i < N; ++i)
         poison(v[i]);
+}
+
+template <typename T, size_t N>
+void PoisonImpl<Vector<T, N>>::do_always_poison(Vector<T, N>& v)
+{
+    for (size_t i = 0; i < N; ++i)
+        always_poison(v[i]);
 }
 
 template <typename T, size_t N>

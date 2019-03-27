@@ -239,7 +239,7 @@ namespace
             bool transmitted = false;
 
             poison(scattering_point);
-            poison(slab_normal);
+            always_poison(slab_normal);
             poison(direction);
 
             if (m_use_glass_bsdf)

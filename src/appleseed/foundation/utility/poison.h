@@ -67,6 +67,9 @@ namespace foundation
 template <typename T>
 void poison(T& x);
 
+template <typename T>
+void always_poison(T& x);
+
 
 //
 // Implementation.
@@ -81,6 +84,12 @@ class PoisonImpl
         std::memset(&x, 0xADU, sizeof(x));
     }
 };
+
+template <typename T>
+inline void always_poison(T& x)
+{
+    PoisonImpl<T>::do_always_poison(x);
+}
 
 template <typename T>
 inline void poison(T& x)
@@ -112,6 +121,10 @@ class PoisonImpl<float>
     {
         x = FP<float>::snan();
     }
+    static void do_always_poison(float& x)
+    {
+        x = FP<float>::snan();
+    }
 };
 
 template <>
@@ -120,6 +133,9 @@ class PoisonImpl<double>
   public:
     static void do_poison(double& x)
     {
+        x = FP<double>::snan();
+    }
+    static void do_always_poison(double& x){
         x = FP<double>::snan();
     }
 };
