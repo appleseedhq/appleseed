@@ -280,7 +280,7 @@ namespace
         // message is repeatedly printed to the console. Disable this warning message.
         // See https://github.com/appleseedhq/appleseed/issues/254 for details.
         if (type == QtWarningMsg &&
-            strcmp(msg, "QCocoaView handleTabletEvent: This tablet device is unknown (received no proximity event for it). Discarding event.") == 0)
+            msg == "QCocoaView handleTabletEvent: This tablet device is unknown (received no proximity event for it). Discarding event.")
         {
             // Absorb the message.
             return;
