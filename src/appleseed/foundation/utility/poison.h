@@ -121,9 +121,10 @@ class PoisonImpl<float>
     {
         x = FP<float>::snan();
     }
+    
     static void do_always_poison(float& x)
     {
-        x = FP<float>::snan();
+        do_poison(x);
     }
 };
 
@@ -135,8 +136,9 @@ class PoisonImpl<double>
     {
         x = FP<double>::snan();
     }
+    
     static void do_always_poison(double& x){
-        x = FP<double>::snan();
+        do_poison(x);
     }
 };
 
