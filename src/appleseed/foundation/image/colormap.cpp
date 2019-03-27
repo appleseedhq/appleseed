@@ -153,6 +153,8 @@ void ColorMap::remap_relative_luminance(
 
 Color3f ColorMap::evaluate_palette(float x) const
 {
+    assert(m_palette.size() >= 2);
+    
     x *= m_palette.size() - 1;
 
     const size_t ix = min(truncate<size_t>(x), m_palette.size() - 2);
