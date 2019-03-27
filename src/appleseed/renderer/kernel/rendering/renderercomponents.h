@@ -48,16 +48,19 @@
 #include <memory>
 
 // Forward declarations.
-namespace renderer  { class Frame; }
-namespace renderer  { class IFrameRenderer; }
-namespace renderer  { class ITileCallbackFactory; }
-namespace renderer  { class OIIOTextureSystem; }
-namespace renderer  { class OSLShadingSystem; }
-namespace renderer  { class ParamArray; }
-namespace renderer  { class Project; }
-namespace renderer  { class Scene; }
-namespace renderer  { class TextureStore; }
-namespace renderer  { class TraceContext; }
+namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class Frame; }
+namespace renderer      { class IFrameRenderer; }
+namespace renderer      { class ITileCallbackFactory; }
+namespace renderer      { class OIIOTextureSystem; }
+namespace renderer      { class OnFrameBeginRecorder; }
+namespace renderer      { class OnRenderBeginRecorder; }
+namespace renderer      { class OSLShadingSystem; }
+namespace renderer      { class ParamArray; }
+namespace renderer      { class Project; }
+namespace renderer      { class Scene; }
+namespace renderer      { class TextureStore; }
+namespace renderer      { class TraceContext; }
 
 namespace renderer
 {
@@ -70,46 +73,62 @@ namespace renderer
 class RendererComponents
 {
   public:
+    // Constructor.
     RendererComponents(
-        const Project&          project,
-        const ParamArray&       params,
-        ITileCallbackFactory*   tile_callback_factory,
-        TextureStore&           texture_store,
-        OIIOTextureSystem&      texture_system,
-        OSLShadingSystem&       shading_system);
+        const Project&              project,
+        const ParamArray&           params,
+        ITileCallbackFactory*       tile_callback_factory,
+        TextureStore&               texture_store,
+        OIIOTextureSystem&          texture_system,
+        OSLShadingSystem&           shading_system);
 
+    // Create all components as specified by the parameters passed at construction.
     bool create();
 
+    // Ask every component to print its settings.
     void print_settings() const;
 
-    ShadingEngine& get_shading_engine();
+    // This method is called before rendering begins, and whenever rendering is reinitialized
+    // (i.e. because an entity has been edited). At this point, all entities inputs are bound.
+    // Returns true on success, or false if an error occurred or if the abort switch was triggered.
+    bool on_render_begin(
+        OnRenderBeginRecorder&      recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr);
 
+    // This method is called before rendering a frame begins, and whenever rendering is restarted
+    // (i.e. because the camera has been moved). At this point, all entities inputs are bound.
+    // Returns true on success, or false if an error occurred or if the abort switch was triggered.
+    bool on_frame_begin(
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr);
+
+    // Retrieve individual components.
+    ShadingEngine& get_shading_engine();
+    IShadingResultFrameBufferFactory& get_shading_result_framebuffer_factory();
     IFrameRenderer& get_frame_renderer();
 
-    IShadingResultFrameBufferFactory& get_shading_result_framebuffer_factory();
-
   private:
-    const Project&                                                  m_project;
-    const ParamArray&                                               m_params;
-    ITileCallbackFactory*                                           m_tile_callback_factory;
-    const Scene&                                                    m_scene;
-    const Frame&                                                    m_frame;
-    const TraceContext&                                             m_trace_context;
-    std::unique_ptr<ForwardLightSampler>                            m_forward_light_sampler;
-    std::unique_ptr<BackwardLightSampler>                           m_backward_light_sampler;
-    ShadingEngine                                                   m_shading_engine;
-    TextureStore&                                                   m_texture_store;
-    OIIOTextureSystem&                                              m_texture_system;
-    OSLShadingSystem&                                               m_shading_system;
+    const Project&                                      m_project;
+    const ParamArray&                                   m_params;
+    ITileCallbackFactory*                               m_tile_callback_factory;
+    const Scene&                                        m_scene;
+    const Frame&                                        m_frame;
+    const TraceContext&                                 m_trace_context;
+    std::unique_ptr<ForwardLightSampler>                m_forward_light_sampler;
+    std::unique_ptr<BackwardLightSampler>               m_backward_light_sampler;
+    ShadingEngine                                       m_shading_engine;
+    TextureStore&                                       m_texture_store;
+    OIIOTextureSystem&                                  m_texture_system;
+    OSLShadingSystem&                                   m_shading_system;
 
-    std::unique_ptr<ILightingEngineFactory>                         m_lighting_engine_factory;
-    std::unique_ptr<ISampleRendererFactory>                         m_sample_renderer_factory;
-    std::unique_ptr<ISampleGeneratorFactory>                        m_sample_generator_factory;
-    std::unique_ptr<IPixelRendererFactory>                          m_pixel_renderer_factory;
-    std::unique_ptr<IShadingResultFrameBufferFactory>               m_shading_result_framebuffer_factory;
-    std::unique_ptr<ITileRendererFactory>                           m_tile_renderer_factory;
-    std::unique_ptr<IPassCallback>                                  m_pass_callback;
-    foundation::auto_release_ptr<IFrameRenderer>                    m_frame_renderer;
+    std::unique_ptr<ILightingEngineFactory>             m_lighting_engine_factory;
+    std::unique_ptr<ISampleRendererFactory>             m_sample_renderer_factory;
+    std::unique_ptr<ISampleGeneratorFactory>            m_sample_generator_factory;
+    std::unique_ptr<IPixelRendererFactory>              m_pixel_renderer_factory;
+    std::unique_ptr<IShadingResultFrameBufferFactory>   m_shading_result_framebuffer_factory;
+    std::unique_ptr<ITileRendererFactory>               m_tile_renderer_factory;
+    std::unique_ptr<IPassCallback>                      m_pass_callback;
+    foundation::auto_release_ptr<IFrameRenderer>        m_frame_renderer;
 
     bool create_lighting_engine_factory();
     bool create_sample_renderer_factory();

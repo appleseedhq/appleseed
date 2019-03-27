@@ -695,7 +695,6 @@ inline T sample_rcp_distribution(
     assert(r > l);
 
     const T d = r / l;
-
     return
         d < T(1.01)
             ? l + s * (r - l)
@@ -713,11 +712,10 @@ inline T rcp_distribution_pdf(
     assert(x < r);
 
     const T d = r / l;
-
     return
         d < T(1.01)
             ? rcp(r - l)
-            : rcp(x * (std::log(d)));
+            : rcp(x * std::log(d));
 }
 
 }   // namespace foundation

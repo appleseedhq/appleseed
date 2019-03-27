@@ -55,6 +55,8 @@ namespace
         double&         accumulated_luminance,
         size_t&         relevant_pixel_count)
     {
+        assert(tile.get_channel_count() == 4);
+
         const size_t tile_width = tile.get_width();
         const size_t tile_height = tile.get_height();
 

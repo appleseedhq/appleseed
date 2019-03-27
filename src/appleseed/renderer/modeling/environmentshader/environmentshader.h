@@ -30,7 +30,6 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/connectableentity.h"
 
 // appleseed.foundation headers.
@@ -41,9 +40,12 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace renderer  { class AOVComponents; }
 namespace renderer  { class ParamArray; }
 namespace renderer  { class PixelContext; }
+namespace renderer  { class ShadingComponents; }
 namespace renderer  { class ShadingContext; }
+namespace renderer  { class ShadingResult; }
 
 namespace renderer
 {
@@ -71,9 +73,10 @@ class APPLESEED_DLLSYMBOL EnvironmentShader
     virtual void evaluate(
         const ShadingContext&           shading_context,
         const PixelContext&             pixel_context,
-        const foundation::Vector3d&     direction,                      // world space direction, pointing toward the environment
-        Spectrum&                       value,
-        Alpha&                          alpha) const = 0;
+        const foundation::Vector3d&     direction,          // world space direction, pointing toward the environment
+        ShadingResult&                  shading_result,
+        ShadingComponents&              shading_components,
+        AOVComponents&                  aov_components) const = 0;
 };
 
 }   // namespace renderer

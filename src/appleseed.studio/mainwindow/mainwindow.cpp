@@ -41,6 +41,7 @@
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/pythonconsole/pythonconsolewidget.h"
 #include "mainwindow/rendering/lightpathstab.h"
+#include "mainwindow/rendering/materialdrophandler.h"
 #include "mainwindow/rendering/renderwidget.h"
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
@@ -977,6 +978,7 @@ void MainWindow::add_render_tab(const QString& label)
         new RenderTab(
             *m_project_explorer,
             *m_project_manager.get_project(),
+            m_rendering_manager,
             m_ocio_config);
 
     // Connect the render tab to the main window and the rendering manager.
@@ -1205,7 +1207,7 @@ void MainWindow::stop_monitoring_project_file()
 void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 {
     if (event->mimeData()->hasFormat("text/uri-list"))
-         event->acceptProposedAction();
+        event->acceptProposedAction();
 }
 
 void MainWindow::dropEvent(QDropEvent* event)
@@ -1986,7 +1988,7 @@ void MainWindow::slot_save_frame()
         ask_frame_save_file_path(
             this,
             "Save Frame As...",
-            g_qt_image_files_filter,
+            get_oiio_image_files_filter(),
             ".exr",
             m_application_settings);
 
@@ -2006,7 +2008,7 @@ void MainWindow::slot_save_frame_and_aovs()
         ask_frame_save_file_path(
             this,
             "Save Frame and AOVs As...",
-            g_qt_image_files_filter,
+            get_oiio_image_files_filter(),
             ".exr",
             m_application_settings);
 

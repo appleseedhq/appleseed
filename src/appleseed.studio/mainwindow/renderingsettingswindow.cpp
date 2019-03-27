@@ -176,7 +176,7 @@ class RenderSettingsPanel
   : public FoldablePanelWidget
 {
   public:
-    RenderSettingsPanel(const QString& title, QWidget* parent = nullptr)
+    explicit RenderSettingsPanel(const QString& title, QWidget* parent = nullptr)
       : FoldablePanelWidget(title, parent)
       , m_params_metadata(Configuration::get_metadata())
     {
@@ -420,7 +420,7 @@ namespace
         Q_OBJECT
 
       public:
-        GeneralSettingsPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit GeneralSettingsPanel(const Configuration& config, QWidget* parent = nullptr)
           : RenderSettingsPanel("General Settings", parent)
         {
             QFormLayout* layout = create_form_layout();
@@ -444,17 +444,27 @@ namespace
     };
 
     //
-    // Image Plane Sampling panel.
+    // Image Plane Sampling panels.
     //
 
     class ImagePlaneSamplingPanel
       : public RenderSettingsPanel
     {
+      public:
+        explicit ImagePlaneSamplingPanel(QWidget* parent = nullptr)
+          : RenderSettingsPanel("Image Plane Sampling", parent)
+        {   
+        }
+    };
+
+    class FinalImagePlaneSamplingPanel
+      : public ImagePlaneSamplingPanel
+    {
         Q_OBJECT
 
       public:
-        ImagePlaneSamplingPanel(const Configuration& config, QWidget* parent = nullptr)
-          : RenderSettingsPanel("Image Plane Sampling", parent)
+        explicit FinalImagePlaneSamplingPanel(const Configuration& config, QWidget* parent = nullptr)
+          : ImagePlaneSamplingPanel(parent)
         {
             QVBoxLayout* layout = new QVBoxLayout();
             container()->setLayout(layout);
@@ -611,7 +621,7 @@ namespace
 
             if (tr_value == "adaptive")
             {
-                m_image_plane_sampler_combo->setCurrentIndex(2);
+                m_image_plane_sampler_combo->setCurrentIndex(1);
                 return;
             }
 
@@ -652,6 +662,59 @@ namespace
         }
     };
 
+    class InteractiveImagePlaneSamplingPanel
+      : public ImagePlaneSamplingPanel
+    {
+        Q_OBJECT
+
+      public:
+        explicit InteractiveImagePlaneSamplingPanel(const Configuration& config, QWidget* parent = nullptr)
+          : ImagePlaneSamplingPanel(parent)
+        {
+            QVBoxLayout* layout = new QVBoxLayout();
+            container()->setLayout(layout);
+
+            create_image_plane_sampling_general_settings(layout);
+
+            load_general_sampler(config);
+        }
+
+        void save_config(Configuration& config) const override
+        {            
+            if (get_widget<bool>("general.unlimited_samples"))
+                config.get_parameters().remove_path("progressive_frame_renderer.max_average_spp");
+            else set_config(config, "progressive_frame_renderer.max_average_spp", get_widget<int>("general.max_average_spp"));
+        }
+
+      private:
+        void create_image_plane_sampling_general_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = new QGroupBox("General");
+            parent->addWidget(groupbox);
+
+            QVBoxLayout* layout = new QVBoxLayout();
+            groupbox->setLayout(layout);
+
+            QFormLayout* sublayout = create_form_layout();
+            layout->addLayout(sublayout);
+
+            QSpinBox* max_average_spp = create_integer_input("general.max_average_spp", 1, 1000000, 10);
+            QCheckBox* unlimited_samples = create_checkbox("general.unlimited_samples", "Unlimited");
+            sublayout->addRow("Max Average Samples Per Pixel:", create_horizontal_group(max_average_spp, unlimited_samples));
+            connect(unlimited_samples, SIGNAL(toggled(bool)), max_average_spp, SLOT(setDisabled(bool)));
+        }
+
+        void load_general_sampler(const Configuration& config)
+        {
+            const int DefaultMaxSamples = 64;
+
+            const int max_average_spp = get_config<int>(config, "progressive_frame_renderer.max_average_spp", -1);
+
+            set_widget("general.unlimited_samples", max_average_spp == -1);
+            set_widget("general.max_average_spp", max_average_spp == -1 ? DefaultMaxSamples : max_average_spp);
+        }
+    };
+
     //
     // Lighting panels.
     //
@@ -660,7 +723,7 @@ namespace
       : public RenderSettingsPanel
     {
       public:
-        LightingPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit LightingPanel(const Configuration& config, QWidget* parent = nullptr)
           : RenderSettingsPanel("Lighting", parent)
         {
         }
@@ -688,7 +751,7 @@ namespace
       : public LightingPanel
     {
       public:
-        FinalConfigurationLightingPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit FinalConfigurationLightingPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingPanel(config, parent)
         {
             QComboBox* combobox = create_combobox("engine");
@@ -704,7 +767,7 @@ namespace
       : public LightingPanel
     {
       public:
-        InteractiveConfigurationLightingPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit InteractiveConfigurationLightingPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingPanel(config, parent)
         {
             QComboBox* combobox = create_combobox("engine");
@@ -722,7 +785,7 @@ namespace
       : public RenderSettingsPanel
     {
       public:
-        LightingEnginePanel(const QString& title, QWidget* parent = nullptr)
+        explicit LightingEnginePanel(const QString& title, QWidget* parent = nullptr)
           : RenderSettingsPanel(title, parent)
         {
         }
@@ -880,7 +943,7 @@ namespace
       : public LightingEnginePanel
     {
       public:
-        UnidirectionalPathTracerPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit UnidirectionalPathTracerPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingEnginePanel("Unidirectional Path Tracer", parent)
         {
             fold();
@@ -1098,7 +1161,7 @@ namespace
       : public LightingEnginePanel
     {
       public:
-        SPPMPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit SPPMPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingEnginePanel("Stochastic Progressive Photon Mapping", parent)
         {
             fold();
@@ -1522,12 +1585,16 @@ void RenderingSettingsWindow::create_panels(const Configuration& config)
 
     m_panels.push_back(new GeneralSettingsPanel(config));
 
-    if (!interactive)
-        m_panels.push_back(new ImagePlaneSamplingPanel(config));
-
     if (interactive)
+    {
+        m_panels.push_back(new InteractiveImagePlaneSamplingPanel(config));
         m_panels.push_back(new InteractiveConfigurationLightingPanel(config));
-    else m_panels.push_back(new FinalConfigurationLightingPanel(config));
+    }
+    else
+    {
+        m_panels.push_back(new FinalImagePlaneSamplingPanel(config));
+        m_panels.push_back(new FinalConfigurationLightingPanel(config));
+    }
 
     m_panels.push_back(new UnidirectionalPathTracerPanel(config));
 

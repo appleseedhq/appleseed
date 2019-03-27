@@ -81,7 +81,7 @@ namespace
         {
             of << "    ";
 
-            for (size_t j = 0; j < num_columns ; ++j)
+            for (size_t j = 0; j < num_columns; ++j)
             {
                 of << *p++ << "f" << ", ";
                 ++i;
@@ -100,7 +100,7 @@ namespace
         {
             of << "    ";
 
-            for (size_t j = 0; j < num_columns ; ++j)
+            for (size_t j = 0; j < num_columns; ++j)
             {
                 of << *p++ << "f";
                 if (i != last) of << ", ";

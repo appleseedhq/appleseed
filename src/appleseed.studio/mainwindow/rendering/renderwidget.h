@@ -33,9 +33,9 @@
 #include "mainwindow/rendering/renderclipboardhandler.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
+#include "foundation/math/vector.h"
 
 // OpenColorIO headers.
 #include <OpenColorIO/OpenColorIO.h>
@@ -50,10 +50,14 @@ namespace OCIO = OCIO_NAMESPACE;
 // Standard headers.
 #include <cstddef>
 #include <memory>
+#include <string>
 
 // Forward declarations.
 namespace foundation    { class CanvasProperties; }
 namespace renderer      { class Frame; }
+class QDragEnterEvent;
+class QDragMoveEvent;
+class QDropEvent;
 class QPaintEvent;
 
 namespace appleseed {
@@ -72,10 +76,10 @@ class RenderWidget
   public:
     // Constructor.
     RenderWidget(
-        const size_t            width,
-        const size_t            height,
-        OCIO::ConstConfigRcPtr  ocio_config,
-        QWidget*                parent = nullptr);
+        const size_t                width,
+        const size_t                height,
+        OCIO::ConstConfigRcPtr      ocio_config,
+        QWidget*                    parent = nullptr);
 
     // Thread-safe.
     QImage capture() override;
@@ -113,6 +117,11 @@ class RenderWidget
     QMutex& mutex();
     QImage& image();
 
+  signals:
+    void signal_material_dropped(
+        const foundation::Vector2d& drop_pos,
+        const QString&          material_name);
+
   public slots:
     void slot_display_transform_changed(const QString& transform);
 
@@ -139,6 +148,9 @@ class RenderWidget
         const size_t            tile_y);
 
     void paintEvent(QPaintEvent* event) override;
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
 };
 
 

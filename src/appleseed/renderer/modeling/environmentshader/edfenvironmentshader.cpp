@@ -32,14 +32,17 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
+#include "renderer/kernel/shading/shadingresult.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 
@@ -48,6 +51,7 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class AOVComponents; }
 namespace renderer      { class PixelContext; }
 namespace renderer      { class Project; }
 
@@ -125,12 +129,17 @@ namespace
             const ShadingContext&   shading_context,
             const PixelContext&     pixel_context,
             const Vector3d&         direction,
-            Spectrum&               value,
-            Alpha&                  alpha) const override
+            ShadingResult&          shading_result,
+            ShadingComponents&      shading_components,
+            AOVComponents&          aov_components) const override
         {
-            // Evaluate the environment EDF and store the radiance into the shading result.
+            Spectrum value;
             m_env_edf->evaluate(shading_context, Vector3f(direction), value);
-            alpha = Alpha(m_alpha_value);
+
+            shading_components.m_emission = value;
+
+            shading_result.m_main.rgb() = value.to_rgb(g_std_lighting_conditions);
+            shading_result.m_main.a = m_alpha_value;
         }
 
       private:

@@ -46,7 +46,7 @@ namespace foundation
 // Image measurements.
 //
 
-// Compute the average Rec. 709 relative luminance of a linear RGB image.
+// Compute the average Rec. 709 relative luminance of a linear RGBA image.
 // Pixels containing NaN values are skipped.
 APPLESEED_DLLSYMBOL double compute_average_luminance(const Image& image);
 

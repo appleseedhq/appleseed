@@ -161,7 +161,7 @@ float maya_cos_waves_2d(
 
     for (int i = 0; i < waves; ++i)
     {
-        vector xi = hashnoise(seed++, 50 * seed++) ;
+        vector xi = hashnoise(seed++, 50 * seed++);
 
         float h = hypot(xi[0], xi[1]);
 
@@ -871,6 +871,7 @@ float mandelbrot_interior_coloring(
     {
         mapping += binary_decomposition;
     }
+
     return mapping;
 }
 

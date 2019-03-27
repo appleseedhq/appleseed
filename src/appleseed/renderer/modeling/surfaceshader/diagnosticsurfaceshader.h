@@ -86,7 +86,9 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
         WorldSpaceWireframe,        // world-space wireframe
         ScreenSpaceWireframe,       // screen-space wireframe
         AmbientOcclusion,           // ambient occlusion
+        Assemblies,                 // assign a unique color to each assembly
         AssemblyInstances,          // assign a unique color to each assembly instance
+        Objects,                    // assign a unique color to each object
         ObjectInstances,            // assign a unique color to each object instance
         Primitives,                 // assign a unique color to each primitive
         Materials,                  // assign a unique color to each material

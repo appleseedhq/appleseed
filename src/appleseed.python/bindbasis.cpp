@@ -66,8 +66,7 @@ namespace
             .def("transform_to_parent", &transform_to_parent<T>)
             .def("get_normal", &Basis3<T>::get_normal, bpy::return_value_policy<bpy::copy_const_reference>())
             .def("get_tangent_u", &Basis3<T>::get_tangent_u, bpy::return_value_policy<bpy::copy_const_reference>())
-            .def("get_tangent_v", &Basis3<T>::get_tangent_v, bpy::return_value_policy<bpy::copy_const_reference>())
-            ;
+            .def("get_tangent_v", &Basis3<T>::get_tangent_v, bpy::return_value_policy<bpy::copy_const_reference>());
     }
 }
 

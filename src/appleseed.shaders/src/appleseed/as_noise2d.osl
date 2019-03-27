@@ -484,7 +484,7 @@ shader as_noise2d
                 signal = (float) pnoise(
                     noisetype,
                     coords,
-                    point(in_period_x, in_period_y, in_period_time)) ;
+                    point(in_period_x, in_period_y, in_period_time));
             }
             else
             {
