@@ -503,7 +503,7 @@ namespace
             set_config(
                 config,
                 "pixel_renderer",
-                sampler == "adaptive_tile" ? "" : sampler.toAscii().data());
+                sampler == "adaptive_tile" ? "" : sampler.toLocal8Bit().data());
 
             set_config(
                 config,
@@ -1638,7 +1638,7 @@ void RenderingSettingsWindow::load_configuration(const QString& name)
 
     set_panels_enabled(
         !BaseConfigurationFactory::is_base_configuration(
-            name.toAscii().constData()));
+            name.toLocal8Bit().constData()));
 
     m_current_configuration_name = name;
     m_initial_values = get_widget_values();
@@ -1649,7 +1649,7 @@ void RenderingSettingsWindow::save_current_configuration()
     if (m_current_configuration_name.isEmpty())
         return;
 
-    if (BaseConfigurationFactory::is_base_configuration(m_current_configuration_name.toAscii().constData()))
+    if (BaseConfigurationFactory::is_base_configuration(m_current_configuration_name.toLocal8Bit().constData()))
         return;
 
     Configuration& config = get_configuration(m_current_configuration_name);
@@ -1665,7 +1665,7 @@ void RenderingSettingsWindow::save_current_configuration()
 Configuration& RenderingSettingsWindow::get_configuration(const QString& name) const
 {
     Configuration* configuration =
-        m_project_manager.get_project()->configurations().get_by_name(name.toAscii().constData());
+        m_project_manager.get_project()->configurations().get_by_name(name.toLocal8Bit().constData());
 
     assert(configuration);
 

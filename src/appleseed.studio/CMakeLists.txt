@@ -42,11 +42,11 @@ endif ()
 # OpenGL.
 find_package (OpenGL REQUIRED)
 
-# Qt 4.
-find_package (Qt4 REQUIRED)
-set (QT_USE_QTOPENGL TRUE)
-include (${QT_USE_FILE})
-
+# Qt 5.
+# set(CMAKE_AUTOMOC ON)
+# set(CMAKE_AUTOUIC ON)
+find_package (Qt5 COMPONENTS Core Concurrent OpenGL Widgets REQUIRED)
+# set (QT_USE_QTOPENGL TRUE)
 
 #--------------------------------------------------------------------------------------------------
 # Source files.
@@ -478,7 +478,7 @@ filter_list (
     ".*\\\\.ui"
 )
 
-QT4_WRAP_UI (appleseed.studio_generated_ui_files
+QT5_WRAP_UI (appleseed.studio_generated_ui_files
     ${appleseed.studio_ui_files}
 )
 
@@ -558,7 +558,7 @@ filter_list (
     "${appleseed.studio_sources}"
     ".*\\\\.h"
 )
-QT4_WRAP_CPP (appleseed.studio_generated_moc_h_files
+QT5_WRAP_CPP (appleseed.studio_generated_moc_h_files
     ${appleseed.studio_h_files}
     OPTIONS ${moc_options}
 )
@@ -569,7 +569,7 @@ filter_list (
     "${appleseed.studio_sources}"
     ".*\\\\.cpp"
 )
-QT4_WRAP_CPP_CPLUSPLUS_FILES (appleseed.studio_generated_moc_cpp_files
+QT5_WRAP_CPP_CPLUSPLUS_FILES (appleseed.studio_generated_moc_cpp_files
     ${appleseed.studio_cpp_files}
     OPTIONS ${moc_options}
 )
@@ -579,7 +579,7 @@ QT4_WRAP_CPP_CPLUSPLUS_FILES (appleseed.studio_generated_moc_cpp_files
 # Compile Qt resource files.
 #--------------------------------------------------------------------------------------------------
 
-QT4_ADD_RESOURCES (appleseed.studio_resource_files
+QT5_ADD_RESOURCES (appleseed.studio_resource_files
     ${resources}
 )
 
@@ -643,7 +643,10 @@ target_link_libraries (appleseed.studio
     appleseed
     appleseed.shared
     ${Boost_LIBRARIES}
-    ${QT_LIBRARIES}
+    Qt5::Core
+    Qt5::Concurrent
+    Qt5::OpenGL
+    Qt5::Widgets
     ${OPENGL_LIBRARY}
     ${PYTHON_LIBRARIES}
 )
@@ -652,11 +655,11 @@ if (WITH_DISNEY_MATERIAL)
     link_against_seexpreditor (appleseed.studio)
 endif ()
 
-if (WIN32)
-    target_link_libraries (appleseed.studio
-        ${QT_QTMAIN_LIBRARY}
-    )
-endif ()
+# if (WIN32)
+#     target_link_libraries (appleseed.studio
+#         ${QT_QTMAIN_LIBRARY}
+#     )
+# endif ()
 
 
 #--------------------------------------------------------------------------------------------------

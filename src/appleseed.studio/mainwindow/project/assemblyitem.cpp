@@ -99,7 +99,7 @@ AssemblyItem::AssemblyItem(
   , m_parent(parent)
   , m_parent_item(parent_item)
 {
-    set_title(QString::fromAscii(assembly.get_name()));
+    set_title(QString::fromLocal8Bit(assembly.get_name()));
 
     set_allow_edition(false);
 
