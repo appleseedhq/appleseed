@@ -149,13 +149,14 @@ double compute_rms_deviation(const Image& image1, const Image& image2)
             float color2[4];
             image2.get_pixel(x, y, color2);
 
-            mse += compute_error_squared(
-                Color3f::from_array(color1),
-                Color3f::from_array(color2));
+            mse +=
+                compute_error_squared(
+                    Color3f::from_array(color1),
+                    Color3f::from_array(color2));
         }
     }
 
-    mse /= props.m_pixel_count * 3.0f;
+    mse /= props.m_pixel_count * 3.0;
 
     return sqrt(mse);
 }
