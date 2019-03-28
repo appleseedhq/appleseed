@@ -142,7 +142,6 @@ struct Frame::Impl
     unique_ptr<ImageStack>          m_aov_images;
 
     // Internal state.
-    unique_ptr<Filter2f>            m_filter;
     unique_ptr<FilterSamplingTable> m_filter_sampling_table;
     ParamArray                      m_render_info;
 
@@ -351,11 +350,6 @@ void Frame::clear_main_and_aov_images()
 ImageStack& Frame::aov_images() const
 {
     return *impl->m_aov_images;
-}
-
-const Filter2f& Frame::get_filter() const
-{
-    return *impl->m_filter.get();
 }
 
 const FilterSamplingTable& Frame::get_filter_sampling_table() const
@@ -1046,16 +1040,16 @@ namespace
 
     /*
      * Default Export Format
-     * OpenEXR   .exr          4-channel   16-bit (half)       Linear  
-     * RGBE      .hdr          3-channel   32-bit (8-bit * 3   Linear 
-     *                                     + a shared 8-bit 
-     *                                     exponent)   
+     * OpenEXR   .exr          4-channel   16-bit (half)       Linear
+     * RGBE      .hdr          3-channel   32-bit (8-bit * 3   Linear
+     *                                     + a shared 8-bit
+     *                                     exponent)
      * TIFF      .tiff/.tif    4-channel   16-bit (uint16)     Linear
      * BMP       .bmp          4-channel    8-bit (uint8)        sRGB
-     * PNG       .png          4-channel    8-bit (uint8)        sRGB    
+     * PNG       .png          4-channel    8-bit (uint8)        sRGB
      * JPEG      .jpg/.jpe/    3-channel    8-bit (uint8)        sRGB
-     *           .jpeg/.jif/          
-     *           .jfif/.jfi           
+     *           .jpeg/.jif/
+     *           .jfif/.jfi
      */
     bool write_image(
         const Frame&            frame,
@@ -1085,7 +1079,7 @@ namespace
                 extension == ".exr"  ||
                 extension == ".tiff" ||
                 extension == ".tif"  ||
-                extension == ".hdr";            
+                extension == ".hdr";
 
             std::unique_ptr<Image> transformed_image;
             if (
@@ -1131,11 +1125,11 @@ namespace
             writer.append_image(transformed_image.get());
 
             writer.set_image_attributes(image_attributes);
-            
+
             if (extension == ".tiff" ||
                 extension == ".tif")
             {
-                writer.set_image_output_format(PixelFormat::PixelFormatUInt16);                
+                writer.set_image_output_format(PixelFormat::PixelFormatUInt16);
             }
 
             writer.write();
@@ -1404,25 +1398,21 @@ void Frame::extract_parameters()
 
         if (impl->m_filter_name == "box")
         {
-            impl->m_filter.reset(new BoxFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
             impl->m_filter_sampling_table.reset(
                 new FilterSamplingTable(BoxFilter1<float>(impl->m_filter_radius)));
         }
         else if (impl->m_filter_name == "triangle")
         {
-            impl->m_filter.reset(new TriangleFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
             impl->m_filter_sampling_table.reset(
                 new FilterSamplingTable(TriangleFilter1<float>(impl->m_filter_radius)));
         }
         else if (impl->m_filter_name == "gaussian")
         {
-            impl->m_filter.reset(new FastGaussianFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 8.0f));
             impl->m_filter_sampling_table.reset(
                 new FilterSamplingTable(GaussianFilter1<float>(impl->m_filter_radius, 8.0f)));
         }
         else if (impl->m_filter_name == "blackman-harris")
         {
-            impl->m_filter.reset(new FastBlackmanHarrisFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
             impl->m_filter_sampling_table.reset(
                 new FilterSamplingTable(BlackmanHarrisFilter1<float>(impl->m_filter_radius)));
         }
@@ -1434,7 +1424,6 @@ void Frame::extract_parameters()
                 "filter",
                 DefaultFilterName);
             impl->m_filter_name = DefaultFilterName;
-            impl->m_filter.reset(new FastBlackmanHarrisFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
             impl->m_filter_sampling_table.reset(
                 new FilterSamplingTable(BlackmanHarrisFilter1<float>(impl->m_filter_radius)));
         }

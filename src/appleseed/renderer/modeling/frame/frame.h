@@ -116,9 +116,6 @@ class APPLESEED_DLLSYMBOL Frame
     // Access the AOV images.
     ImageStack& aov_images() const;
 
-    // Return the reconstruction filter used by the main image and the AOV images.
-    const foundation::Filter2f& get_filter() const;
-
     // Return the sampling table for the reconstruction filter used by the main image and the AOV images.
     const foundation::FilterSamplingTable& get_filter_sampling_table() const;
 
