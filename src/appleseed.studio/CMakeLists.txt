@@ -43,10 +43,7 @@ endif ()
 find_package (OpenGL REQUIRED)
 
 # Qt 5.
-# set(CMAKE_AUTOMOC ON)
-# set(CMAKE_AUTOUIC ON)
 find_package (Qt5 COMPONENTS Core Concurrent OpenGL Widgets REQUIRED)
-# set (QT_USE_QTOPENGL TRUE)
 
 #--------------------------------------------------------------------------------------------------
 # Source files.
@@ -654,13 +651,6 @@ target_link_libraries (appleseed.studio
 if (WITH_DISNEY_MATERIAL)
     link_against_seexpreditor (appleseed.studio)
 endif ()
-
-# if (WIN32)
-#     target_link_libraries (appleseed.studio
-#         ${QT_QTMAIN_LIBRARY}
-#     )
-# endif ()
-
 
 #--------------------------------------------------------------------------------------------------
 # Post-build commands.
