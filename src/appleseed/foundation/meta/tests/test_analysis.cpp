@@ -146,7 +146,7 @@ TEST_SUITE(Foundation_Image_Analysis)
         EXPECT_FEQ(1.0, rmsd);
     }
 
-    TEST_CASE(ComputeRMSDeviation_GivenRedImageAndBlueImage_ReturnsAlmostRootTwoThirds)
+    TEST_CASE(ComputeRMSDeviation_GivenRedImageAndBlueImage_ReturnsRootTwoThirds)
     {
         Image image1(4, 4, 2, 2, 4, PixelFormatFloat);
         Image image2(4, 4, 2, 2, 4, PixelFormatFloat);
