@@ -28,7 +28,7 @@
 
 #pragma once
 
-namespace renderer
+namespace foundation
 {
 
 //
@@ -60,4 +60,4 @@ extern const float ViridisColorMap[3 * 256];
 
 extern const float JetColorMap[3 * 9];
 
-}   // namespace renderer
+}   // namespace foundation
