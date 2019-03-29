@@ -1,0 +1,43 @@
+# Alembic test information
+
+## xform/dform_hdf5/ogawa.abc
+
+Animated sphere. Image show the animation samples. FPS is 24.
+
+`xform_` use simple transform.
+`dform_` use shape deformation (no transform animation).
+
+`_hdf5` version is exported with HDF5 compression.
+`_ogawa` version is exported with Ogawa compression.
+
+Maya store Alembic sample values in second, the industry follow this convention.
+
+Here a table of avaible samples in the Alembic file:
+
++-------+-------------+
+| Frame |   Seconds   |
++-------+-------------+
+|   1.0 | 0.041666667 |
+|   1.2 | 0.05        |
+|   2.0 | 0.083333333 |
+|   2.2 | 0.091666667 |
+|   3.0 | 0.125       |
+|   3.2 | 0.133333333 |
++-------+-------------+
+
+## rock_instances.abc
+
+Heavy geometry instancated rocks.
+
+## heavy_tree.abc
+
+A heavy tree. 663552 triangles.
+
+## heavy_tree_forest.abc
+
+A forest of 10201 heavy trees.
+
+## cam_double_cube.abc
+
+A camera with 3 frames (samples 0.0, 0.2).
+

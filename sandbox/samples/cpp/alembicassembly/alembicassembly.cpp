@@ -56,10 +56,10 @@
 #include <Alembic/AbcGeom/All.h>
 
 // Standard headers.
+#include <algorithm>
 #include <cstddef>
 #include <string>
 #include <vector>
-#include <algorithm>
 
 namespace
 {
@@ -75,27 +75,14 @@ namespace
     typedef Alembic::Abc::index_t  AbcIndex_t;
     typedef Alembic::Abc::chrono_t AbcChrono_t;
 
-    // Roll into given matrix stack and return the flatten one.
-    asf::Matrix4d flatten_xform(const std::vector<asf::Matrix4d>& mtx_stack)
-    {
-        // The matrix we will return.
-        asf::Matrix4d out_mtx = mtx_stack.front();
-
-        // Multiply the each matrix of the stack from bottom to top.
-        for (size_t i = 1; i < mtx_stack.size(); i++)
-        {
-            out_mtx = mtx_stack[i] * out_mtx;
-        }
-
-        return out_mtx;
-    }
-
     // Roll into given xform sequence stack and return the flatten one.
-    asr::TransformSequence flatten_xform_seq(const std::vector<asr::TransformSequence>& xform_seq_stack)
+    const asr::TransformSequence flatten_xform_seq(const std::vector<asr::TransformSequence>& xform_seq_stack)
     {
-        assert(!xform_seq_stack.empty());
-
-        if (xform_seq_stack.size() == 1)
+        if (xform_seq_stack.empty())
+        {
+            return asr::TransformSequence();
+        }
+        else if (xform_seq_stack.size() == 1)
         {
             // one item, we don't need to flatten anything
             return xform_seq_stack.back();
@@ -327,7 +314,7 @@ namespace
                 RENDERER_LOG_INFO("                     data type POD type: number of POD");
                 break;
             case AbcUtil::kUnknownPOD:
-                RENDERER_LOG_WARNING("                  data type POD type: unknown");
+                RENDERER_LOG_WARNING("                     data type POD type: unknown");
                 break;
             assert_otherwise;
         }
@@ -435,6 +422,9 @@ namespace
             // Time offset.
             m_time_offset = params.get_optional<float>("time_offset", 0.0f);
 
+            // Implicit instancing.
+            m_implicit_instancing = params.get_optional("implicit_instancing", true);
+
             // Verbose mode.
             m_verbose = params.get_optional<bool>("verbose", false);
 
@@ -466,10 +456,9 @@ namespace
             if (m_verbose)
                 log_archive(archive, core_type);
 
-            m_xform_seq_stack.push_back(asr::TransformSequence());
 
             // Retrieve archive root object.
-            const Abc::IObject& root = archive.getTop();
+            Abc::IObject root = archive.getTop();
 
             if (!root.valid())
             {
@@ -480,22 +469,11 @@ namespace
             if (m_verbose)
                 log_obj(root);
 
-            // Root children.
-            const size_t children_count = root.getNumChildren();
+            // Start to traverse hierarchy.
+            walk(root);
 
-            if (children_count)
-            {
-                for (size_t i = 0, e = root.getNumChildren(); i < e; i++)
-                {
-                    const Abc::IObject& child = root.getChild(i);
-                    walk(child);
-                }
-            }
-            else
-            {
-                RENDERER_LOG_WARNING("no children for root: %s",
-                                     archive.getName().c_str());
-            }
+            // We don't need tracked MeshObject now the archive parsing is over.
+            m_mesh_cache.clear();
 
             return true;
         }
@@ -504,7 +482,7 @@ namespace
 
         // The recursive method entering every children of the tree and keep a
         // xform stack.
-        void walk(const Abc::IObject& obj)
+        void walk(Abc::IObject& obj)
         {
             if (!obj.valid())
             {
@@ -515,6 +493,7 @@ namespace
             if (m_verbose)
                 log_obj(obj);
 
+            // Object path (e.g., "/root/mesh/head")
             const std::string obj_name = obj.getFullName();
 
             const Abc::ObjectHeader& h = obj.getHeader();
@@ -546,430 +525,112 @@ namespace
             }
             else if (AbcGeom::IPolyMesh::matches(h))
             {
-                const auto polymesh = AbcGeom::IPolyMesh(obj);
-
-                const AbcGeom::IPolyMeshSchema& schema = polymesh.getSchema();
+                // get the geometry hash
+                AbcUtil::Digest property_hash;
+                obj.getPropertiesHash(property_hash);
 
                 if (m_verbose)
-                    log_polymesh_schema(schema);
+                    RENDERER_LOG_INFO("Mesh property hash: %s",
+                                      property_hash.str().c_str());
 
-                /*const auto sample_times = schema_to_sample_timesOO(m_shutter_open+m_time_offset,
-                                                                   m_shutter_close+m_time_offset,
-                                                                   schema.getNumSamples(),
-                                                                   schema.getTimeSampling());*/
+                // We need to get the applesseed MeshObject name, either getting it from cache, either creating it from scratch.
+                std::string mesh_name;
 
+                bool extract_polymesh = true;
 
-                const auto sample_times = schema_to_sample_times(m_shutter_open+m_time_offset,
-                                                                 m_shutter_close+m_time_offset,
-                                                                 schema.getNumSamples(),
-                                                                 schema.getTimeSampling());
-
-                // Compute appleseed number of motion segment
-                const auto motion_segment_count = sample_times.size() - 1;
-
-                /*if (motion_segment_count &&
-                    !are_linearly_sampled(m_shutter_open,
-                                          m_shutter_close,
-                                          sample_times))
+                if (m_implicit_instancing)
                 {
-                    RENDERER_LOG_WARNING("polymesh motion samples does not match shutters: \"%s\"",
-                                         obj_name.c_str());
-                }*/
+                    // look for MeshObject name in our cache
+                    const auto pair = m_mesh_cache.find(property_hash);
 
-                // Create a new appleseed mesh object
-                auto as_obj = asf::auto_release_ptr<asr::MeshObject>(
-                    asr::MeshObjectFactory().create(
-                        obj_name.c_str(),
-                        asr::ParamArray()));
-
-                as_obj->set_motion_segment_count(motion_segment_count);
-
-                ///////////////////////////////////////////////////////////////
-                // Vertex positions.
-                ///////////////////////////////////////////////////////////////
-                size_t mb_segment_id = 0;
-
-                for (const AbcIndex_t i : sample_times)
-                {
-                    const AbcGeom::IPolyMeshSchema::Sample& sample = schema.getValue(i);
-
-                    const auto pos = sample.getPositions()->get();
-                    const auto pos_count = sample.getPositions()->size();
-
-                    // Reserve space to optimize allocation.
-                    as_obj->reserve_vertices(pos_count);
-
-                    for (auto i = 0; i < pos_count; i++)
+                    if (pair != m_mesh_cache.end())
                     {
-                        const asr::GVector3 v(pos[i][0], pos[i][1], pos[i][2]);
+                        // Alembic mesh already loaded before, take its appleseed object name.
+                        mesh_name = pair->second;
 
-                        if (mb_segment_id == 0)  // First sample.
-                        {
-                            as_obj->push_vertex(v);
-                        }
-                        else  // All other samples.
-                        {
-                            as_obj->set_vertex_pose(i, mb_segment_id-1, v);
-                        }
-                    }
-
-                    mb_segment_id++;
-                }
-
-                ///////////////////////////////////////////////////////////////
-                // UVs.
-                ///////////////////////////////////////////////////////////////
-                std::vector<size_t> uv_idxs;  // UV indices.
-
-                const auto uv_param = schema.getUVsParam();
-                if (uv_param.valid())
-                {
-                    auto uv_sample = uv_param.getIndexedValue();
-                    if (uv_sample.valid())
-                    {
-                        // Retrieve UV indices.
-                        const auto abc_uv_idxs = uv_sample.getIndices()->get();
-                        const auto uv_idxs_count = uv_sample.getIndices()->size();
-
-                        uv_idxs.reserve(uv_idxs_count);
-
-                        for (auto i = 0; i < uv_idxs_count; i++)
-                        {
-                            uv_idxs.push_back(abc_uv_idxs[i]);
-                        }
-
-                        // UV vectors.
-                        const auto uvs = uv_sample.getVals()->get();
-                        const auto uv_count = uv_sample.getVals()->size();
-
-                        // Reserve for optimization purpose.
-                        as_obj->reserve_tex_coords(uv_count);
-
-                        for (auto i = 0; i < uv_count; ++i)
-                        {
-                            const asf::Vector2f uv(uvs[i]);
-                            as_obj->push_tex_coords(uv);
-                        }
+                        // We don't need to extract polymesh.
+                        extract_polymesh = false;
                     }
                 }
 
-                ///////////////////////////////////////////////////////////////
-                // Normals.
-                ///////////////////////////////////////////////////////////////
-                std::vector<size_t> n_idxs;  // Normal indices.
-
-                const auto n_param = schema.getNormalsParam();
-
-                if (n_param.valid())
+                if (extract_polymesh)
                 {
-                    switch (n_param.getScope())
-                    {
-                        case AbcGeom::kConstantScope:
-                            std::cout << "normal kConstantScope" << std::endl;
-                            break;
-                        case AbcGeom::kUniformScope:
-                            std::cout << "normal kUniformScope" << std::endl;
-                            break;
-                        case AbcGeom::kVaryingScope:
-                            std::cout << "normal kVaryingScope" << std::endl;
-                            break;
-                        case AbcGeom::kVertexScope:
-                            // Normal indices match vertex one.
-                            std::cout << "normal kVertexScope" << std::endl;
-                            break;
-                        case AbcGeom::kFacevaryingScope:
-                            // Normals have their own indices.
-                            std::cout << "normal kFacevaryingScope" << std::endl;
-                            break;
-                        case AbcGeom::kUnknownScope:
-                            std::cout << "normal kUnknownScope" << std::endl;
-                            break;
-                        default:
-                            std::cout << "invalid scope" << std::endl;
-                            break;
-                    }
+                    // MeshObject name will be the Alembic object path.
+                    mesh_name = obj_name;
 
-                    size_t mb_segment_id = 0;
-                    for (const AbcIndex_t i : sample_times)
-                    {
-                        auto n_sample = n_param.getIndexedValue();
-                        //auto sample = n_param.getExpandedValue();  // TODO use this depending on the scope.
-                        if (n_sample.valid())
-                        {
-                            // Retrieve normal indices.
-                            const auto abc_n_idxs = n_sample.getIndices()->get();
-                            const auto n_idxs_count = n_sample.getIndices()->size();
+                    const auto polymesh = AbcGeom::IPolyMesh(obj);
 
-                            // Should be same size as vertices.
-                            n_idxs.reserve(n_idxs_count);
+                    // Create appleseed MeshObject that will be feeds with Alembic mesh datas.
+                    auto as_obj = asf::auto_release_ptr<asr::MeshObject>(
+                        asr::MeshObjectFactory().create(
+                            mesh_name.c_str(),
+                            asr::ParamArray()));
 
-                            for (auto i = 0; i < n_idxs_count; i++)
-                            {
-                                n_idxs.push_back(abc_n_idxs[i]);
-                            }
+                    do_extract_polymesh(polymesh, as_obj.ref());
 
-                            // Normal vectors.
-                            const auto normals = n_sample.getVals()->get();
-                            const auto n_count = n_sample.getVals()->size();
+                    // Insert MeshObject into main assembly to make reuse easier.
+                    this->objects().insert(
+                        asf::auto_release_ptr<asr::Object>(as_obj));
 
-                            // Reserve space to optimize allocation.
-                            as_obj->reserve_vertex_normals(n_count);
-
-                            if (mb_segment_id == 0)  // First sample.
-                            {
-                                for (auto i = 0; i < n_count; ++i)
-                                {
-                                    as_obj->push_vertex_normal(normals[i]);
-                                }
-                            }
-                            else  // Other samples are put in motion poses.
-                            {
-                                for (auto i = 0; i < n_count; ++i)
-                                {
-                                    as_obj->set_vertex_normal_pose(i, mb_segment_id-1, normals[i]);
-                                }
-                            }
-                        }
-                        mb_segment_id++;
-                    }
+                    // Only update the cache if we use implicit instancing.
+                    if(m_implicit_instancing)
+                        m_mesh_cache[property_hash] = mesh_name;
                 }
 
-                ///////////////////////////////////////////////////////////////
-                // Triangles.
-                ///////////////////////////////////////////////////////////////
-                const AbcGeom::IPolyMeshSchema::Sample& sample = schema.getValue(0);
-
-                const Abc::Int32ArraySamplePtr face_count_ptr = sample.getFaceCounts();  // [3,4,4,3,...]
-                const int32_t*                 face_sizes = face_count_ptr->get();  // Access raw pointer.
-                const size_t                   face_count = face_count_ptr->size();
-
-                const auto face_indices = sample.getFaceIndices()->get();
-                //const size_t                     face_indices_count = face_indices.size();
-
-                // Compute the number of triangles to reserve proper space.
-                size_t tri_count = 0;
-                for (size_t i = 0; i < face_count; i++)
-                {
-                    tri_count += face_sizes[i] - 2;
-                }
-
-                // Reserve for optimization purpose.
-                as_obj->reserve_triangles(tri_count);
-
-                // Iterators.
-                size_t f_i = 0;  // Face indices.
-                size_t n_i = 0;  // Normal indices.
-                size_t uv_i = 0;  // UV indices.
-
-                for (auto i = 0; i < face_count; i++)
-                {
-                    // 3 or 4, maybe more.
-                    const auto face_size = face_sizes[i];
-
-                    if (face_size < 3)
-                    {
-                        RENDERER_LOG_WARNING("face with less than 3 points "
-                                             "detected: \"%s\"",
-                                             obj_name.c_str());
-                        f_i += face_size;
-                        n_i += face_size;
-                        uv_i += face_size;
-                    }
-                    else if (face_size == 3)
-                    {
-                        const auto pt0 = face_indices[f_i++];
-                        const auto pt1 = face_indices[f_i++];
-                        const auto pt2 = face_indices[f_i++];
-
-                        asr::Triangle tri0(pt0, pt2, pt1);
-
-                        if (!n_idxs.empty())
-                        {
-                            const size_t n0 = n_idxs[n_i++];
-                            const size_t n1 = n_idxs[n_i++];
-                            const size_t n2 = n_idxs[n_i++];
-                            tri0.m_n0 = n0;
-                            tri0.m_n1 = n2;
-                            tri0.m_n2 = n1;
-                        }
-
-                        if (!uv_idxs.empty())
-                        {
-                            const size_t uv0 = uv_idxs[uv_i++];
-                            const size_t uv1 = uv_idxs[uv_i++];
-                            const size_t uv2 = uv_idxs[uv_i++];
-
-                            tri0.m_a0 = uv0;
-                            tri0.m_a1 = uv2;
-                            tri0.m_a2 = uv1;
-                        }
-
-                        as_obj->push_triangle(tri0);
-                    }
-                    else if (face_size == 4)
-                    {
-                        const auto pt0 = face_indices[f_i++];
-                        const auto pt1 = face_indices[f_i++];
-                        const auto pt2 = face_indices[f_i++];
-                        const auto pt3 = face_indices[f_i++];
-
-                        asr::Triangle tri0(pt0, pt2, pt1);
-                        asr::Triangle tri1(pt2, pt0, pt3);
-
-                        if (!n_idxs.empty())
-                        {
-                            const size_t n0 = n_idxs[n_i++];
-                            const size_t n1 = n_idxs[n_i++];
-                            const size_t n2 = n_idxs[n_i++];
-                            const size_t n3 = n_idxs[n_i++];
-
-                            tri0.m_n0 = n0;
-                            tri0.m_n1 = n2;
-                            tri0.m_n2 = n1;
-
-                            tri1.m_n0 = n2;
-                            tri1.m_n1 = n0;
-                            tri1.m_n2 = n3;
-                        }
-
-                        if (!uv_idxs.empty())
-                        {
-                            const size_t uv0 = uv_idxs[uv_i++];
-                            const size_t uv1 = uv_idxs[uv_i++];
-                            const size_t uv2 = uv_idxs[uv_i++];
-                            const size_t uv3 = uv_idxs[uv_i++];
-
-                            tri0.m_a0 = uv0;
-                            tri0.m_a1 = uv2;
-                            tri0.m_a2 = uv1;
-
-                            tri1.m_a0 = uv2;
-                            tri1.m_a1 = uv0;
-                            tri1.m_a2 = uv3;
-                        }
-
-                        as_obj->push_triangle(tri0);
-                        as_obj->push_triangle(tri1);
-                    }
-                    else  // Arbitrary sized polygon.
-                    {
-                        // We create a polygon and will store it's various
-                        // positions.
-                        asf::Triangulator<float>::Polygon3 polygon;
-
-                        for (auto j = 0; j < face_size; j++)
-                        {
-                            // Get vertex id.
-                            const auto id = face_indices[f_i++];
-
-                            // Put the vertex position to the polygon.
-                            polygon.emplace_back(as_obj->get_vertex(id));
-                        }
-
-                        asf::Triangulator<float> triangulator;
-                        asf::Triangulator<float>::IndexArray tris;
-
-                        const bool success = triangulator.triangulate(polygon, tris);
-
-                        if (success)
-                        {
-                            // Insert all triangles of the triangulation into
-                            // the mesh.
-                            for (asf::Triangulator<float>::IndexArray::size_type k = 0;
-                                 k < tris.size();
-                                 k += 3)
-                            {
-                                auto tri = asr::Triangle(tris[k+0],
-                                                         tris[k+1],
-                                                         tris[k+2]);
-
-                                if (!n_idxs.empty())
-                                {
-                                    const size_t n0 = n_idxs[k+0];
-                                    const size_t n1 = n_idxs[k+1];
-                                    const size_t n2 = n_idxs[k+2];
-
-                                    tri.m_n0 = n0;
-                                    tri.m_n1 = n2;
-                                    tri.m_n2 = n1;
-                                }
-
-                                if (!uv_idxs.empty())
-                                {
-                                    const size_t uv0 = uv_idxs[k+0];
-                                    const size_t uv1 = uv_idxs[k+1];
-                                    const size_t uv2 = uv_idxs[k+2];
-
-                                    tri.m_a0 = uv0;
-                                    tri.m_a1 = uv2;
-                                    tri.m_a2 = uv1;
-                                }
-
-                                // And finally push the triangle.
-                                as_obj->push_triangle(tri);
-                            }
-
-                            // Important step, increment iterators.
-                            if (!n_idxs.empty())
-                                n_i += face_size;
-
-                            if (!uv_idxs.empty())
-                                uv_i += face_size;
-                        }
-                        else
-                        {
-                            RENDERER_LOG_WARNING("triangulator failed, "
-                                                 "invalid polymesh: \"%s\"",
-                                                 obj_name.c_str());
-                        }
-                    }
-                }
 
                 // TODO: For now, no material are assigned...
                 auto front_material_mappings = asf::StringDictionary();
+                //front_material_mappings.insert("white_material", "white_material");
 
-                // Create an instance of the assembly.
-                asf::auto_release_ptr<asr::Assembly> xform_assembly(
-                    asr::AssemblyFactory().create(  // TODO: Do I really have to instantiate AssemblyFactory?
-                        (obj_name+"_assembly").c_str(),  // Assembly instance.
-                        asr::ParamArray()));
+                auto xform_seq = flatten_xform_seq(m_xform_seq_stack);
 
-                // Insert the object into the assembly.
-                xform_assembly->objects().insert(
-                    asf::auto_release_ptr<asr::Object>(as_obj));
-
-                // Create an instance of this object and insert it into the assembly.
-                xform_assembly->object_instances().insert(
-                    asr::ObjectInstanceFactory::create(
-                        (obj_name+"_inst").c_str(), // Instance name.
-                        asr::ParamArray(),
-                        obj_name.c_str(), // Object name.
-                        asf::Transformd::identity(),
-                        front_material_mappings));
-
-                // Create an instance of the assembly.
-                asf::auto_release_ptr<asr::AssemblyInstance> xform_assembly_inst(
-                    asr::AssemblyInstanceFactory::create(
-                        (obj_name+"_assembly_inst").c_str(),  // Assembly instance.
-                        asr::ParamArray(),
-                        (obj_name+"_assembly").c_str()));
-
-                if (m_xform_seq_stack.size())
+                if (xform_seq.empty())
                 {
-                    auto xform_seq = flatten_xform_seq(m_xform_seq_stack);
+                    // No transform sequence directly instanciate object.
+                    this->object_instances().insert(
+                        asr::ObjectInstanceFactory::create(
+                            (obj_name+"_inst").c_str(), // Instance name.
+                            asr::ParamArray(),
+                            mesh_name.c_str(), // Object name.
+                            asf::Transformd::identity(),
+                            front_material_mappings));
+                }
+                else
+                {
+                    // Create an assembly.
+                    asf::auto_release_ptr<asr::Assembly> xform_assembly(
+                        asr::AssemblyFactory().create(  // TODO: Do I really have to instantiate AssemblyFactory?
+                            (obj_name+"_assembly").c_str(),
+                            asr::ParamArray()));
+
+                    // Create an instance of this object and insert it into the assembly.
+                    xform_assembly->object_instances().insert(
+                        asr::ObjectInstanceFactory::create(
+                            (obj_name+"_inst").c_str(), // Instance name.
+                            asr::ParamArray(),
+                            mesh_name.c_str(), // Object name.
+                            asf::Transformd::identity(),
+                            front_material_mappings));
+
+                    // Create an instance of the assembly.
+                    asf::auto_release_ptr<asr::AssemblyInstance> xform_assembly_inst(
+                        asr::AssemblyInstanceFactory::create(
+                            (obj_name+"_assembly_inst").c_str(),
+                            asr::ParamArray(),
+                            (obj_name+"_assembly").c_str()));
 
                     xform_assembly_inst->transform_sequence() = xform_seq;
-                }
 
-                this->assemblies().insert(xform_assembly);
-                this->assembly_instances().insert(xform_assembly_inst);
+                    this->assemblies().insert(xform_assembly);
+                    this->assembly_instances().insert(xform_assembly_inst);
+                }
 
             }  // IPolyMesh.
 
             // Iterate over children.
             for (size_t i = 0; i < obj.getNumChildren(); i++)
             {
-                const Abc::IObject& child = obj.getChild(i);
+                Abc::IObject child = obj.getChild(i);
                 walk(child);
             }
 
@@ -980,14 +641,387 @@ namespace
             }
         }
 
+        // Put given Alembic polymesh to given appleseed MeshObject.
+        // As mesh extraction is a complex process we have a dedicated method.
+        void do_extract_polymesh(const AbcGeom::IPolyMesh& abc_mesh,
+                                 asr::MeshObject& as_obj)
+        {
+            const AbcGeom::IPolyMeshSchema& schema = abc_mesh.getSchema();
+
+            if (m_verbose)
+                log_polymesh_schema(schema);
+
+            const auto sample_times = schema_to_sample_times(m_shutter_open+m_time_offset,
+                                                             m_shutter_close+m_time_offset,
+                                                             schema.getNumSamples(),
+                                                             schema.getTimeSampling());
+
+            // Compute appleseed number of motion segment
+            const auto motion_segment_count = sample_times.size() - 1;
+
+            /*if (motion_segment_count &&
+                !are_linearly_sampled(m_shutter_open,
+                                      m_shutter_close,
+                                      sample_times))
+            {
+                RENDERER_LOG_WARNING("polymesh motion samples does not match shutters: \"%s\"",
+                                     obj_name.c_str());
+            }*/
+
+            as_obj.set_motion_segment_count(motion_segment_count);
+
+            ///////////////////////////////////////////////////////////////
+            // Vertex positions.
+            ///////////////////////////////////////////////////////////////
+            size_t mb_segment_id = 0;
+
+            for (const AbcIndex_t i : sample_times)
+            {
+                const AbcGeom::IPolyMeshSchema::Sample& sample = schema.getValue(i);
+
+                const auto pos = sample.getPositions()->get();
+                const auto pos_count = sample.getPositions()->size();
+
+                // Reserve space to optimize allocation.
+                as_obj.reserve_vertices(pos_count);
+
+                for (auto i = 0; i < pos_count; i++)
+                {
+                    const asr::GVector3 v(pos[i][0], pos[i][1], pos[i][2]);
+
+                    if (mb_segment_id == 0)  // First sample.
+                    {
+                        as_obj.push_vertex(v);
+                    }
+                    else  // All other samples.
+                    {
+                        as_obj.set_vertex_pose(i, mb_segment_id-1, v);
+                    }
+                }
+
+                mb_segment_id++;
+            }
+
+            ///////////////////////////////////////////////////////////////
+            // UVs.
+            ///////////////////////////////////////////////////////////////
+            std::vector<size_t> uv_idxs;  // UV indices.
+
+            const auto uv_param = schema.getUVsParam();
+            if (uv_param.valid())
+            {
+                auto uv_sample = uv_param.getIndexedValue();
+                if (uv_sample.valid())
+                {
+                    // Retrieve UV indices.
+                    const auto abc_uv_idxs = uv_sample.getIndices()->get();
+                    const auto uv_idxs_count = uv_sample.getIndices()->size();
+
+                    uv_idxs.reserve(uv_idxs_count);
+
+                    for (auto i = 0; i < uv_idxs_count; i++)
+                    {
+                        uv_idxs.push_back(abc_uv_idxs[i]);
+                    }
+
+                    // UV vectors.
+                    const auto uvs = uv_sample.getVals()->get();
+                    const auto uv_count = uv_sample.getVals()->size();
+
+                    // Reserve for optimization purpose.
+                    as_obj.reserve_tex_coords(uv_count);
+
+                    for (auto i = 0; i < uv_count; ++i)
+                    {
+                        const asf::Vector2f uv(uvs[i]);
+                        as_obj.push_tex_coords(uv);
+                    }
+                }
+            }
+
+            ///////////////////////////////////////////////////////////////
+            // Normals.
+            ///////////////////////////////////////////////////////////////
+            std::vector<size_t> n_idxs;  // Normal indices.
+
+            const auto n_param = schema.getNormalsParam();
+
+            if (n_param.valid())
+            {
+                switch (n_param.getScope())
+                {
+                    case AbcGeom::kConstantScope:
+                        std::cout << "normal kConstantScope" << std::endl;
+                        break;
+                    case AbcGeom::kUniformScope:
+                        std::cout << "normal kUniformScope" << std::endl;
+                        break;
+                    case AbcGeom::kVaryingScope:
+                        std::cout << "normal kVaryingScope" << std::endl;
+                        break;
+                    case AbcGeom::kVertexScope:
+                        // Normal indices match vertex one.
+                        std::cout << "normal kVertexScope" << std::endl;
+                        break;
+                    case AbcGeom::kFacevaryingScope:
+                        // Normals have their own indices.
+                        std::cout << "normal kFacevaryingScope" << std::endl;
+                        break;
+                    case AbcGeom::kUnknownScope:
+                        std::cout << "normal kUnknownScope" << std::endl;
+                        break;
+                    default:
+                        std::cout << "invalid scope" << std::endl;
+                        break;
+                }
+
+                size_t mb_segment_id = 0;
+                for (const AbcIndex_t i : sample_times)
+                {
+                    auto n_sample = n_param.getIndexedValue();
+                    //auto sample = n_param.getExpandedValue();  // TODO use this depending on the scope.
+                    if (n_sample.valid())
+                    {
+                        // Retrieve normal indices.
+                        const auto abc_n_idxs = n_sample.getIndices()->get();
+                        const auto n_idxs_count = n_sample.getIndices()->size();
+
+                        // Should be same size as vertices.
+                        n_idxs.reserve(n_idxs_count);
+
+                        for (auto i = 0; i < n_idxs_count; i++)
+                        {
+                            n_idxs.push_back(abc_n_idxs[i]);
+                        }
+
+                        // Normal vectors.
+                        const auto normals = n_sample.getVals()->get();
+                        const auto n_count = n_sample.getVals()->size();
+
+                        // Reserve space to optimize allocation.
+                        as_obj.reserve_vertex_normals(n_count);
+
+                        if (mb_segment_id == 0)  // First sample.
+                        {
+                            for (auto i = 0; i < n_count; ++i)
+                            {
+                                as_obj.push_vertex_normal(normals[i]);
+                            }
+                        }
+                        else  // Other samples are put in motion poses.
+                        {
+                            for (auto i = 0; i < n_count; ++i)
+                            {
+                                as_obj.set_vertex_normal_pose(i, mb_segment_id-1, normals[i]);
+                            }
+                        }
+                    }
+                    mb_segment_id++;
+                }
+            }
+
+            ///////////////////////////////////////////////////////////////
+            // Triangles.
+            ///////////////////////////////////////////////////////////////
+            const AbcGeom::IPolyMeshSchema::Sample& sample = schema.getValue(0);
+
+            const Abc::Int32ArraySamplePtr face_count_ptr = sample.getFaceCounts();  // [3,4,4,3,...]
+            const int32_t*                 face_sizes = face_count_ptr->get();  // Access raw pointer.
+            const size_t                   face_count = face_count_ptr->size();
+
+            const auto face_indices = sample.getFaceIndices()->get();
+            //const size_t                     face_indices_count = face_indices.size();
+
+            // Compute the number of triangles to reserve proper space.
+            size_t tri_count = 0;
+            for (size_t i = 0; i < face_count; i++)
+            {
+                tri_count += face_sizes[i] - 2;
+            }
+
+            // Reserve for optimization purpose.
+            as_obj.reserve_triangles(tri_count);
+
+            // Iterators.
+            size_t f_i = 0;  // Face indices.
+            size_t n_i = 0;  // Normal indices.
+            size_t uv_i = 0;  // UV indices.
+
+            for (auto i = 0; i < face_count; i++)
+            {
+                // 3 or 4, maybe more.
+                const auto face_size = face_sizes[i];
+
+                if (face_size < 3)
+                {
+                    RENDERER_LOG_WARNING("face with less than 3 points "
+                                         "detected: \"%s\"",
+                                         as_obj.get_name());
+                    f_i += face_size;
+                    n_i += face_size;
+                    uv_i += face_size;
+                }
+                else if (face_size == 3)
+                {
+                    const auto pt0 = face_indices[f_i++];
+                    const auto pt1 = face_indices[f_i++];
+                    const auto pt2 = face_indices[f_i++];
+
+                    asr::Triangle tri0(pt0, pt2, pt1);
+
+                    if (!n_idxs.empty())
+                    {
+                        const size_t n0 = n_idxs[n_i++];
+                        const size_t n1 = n_idxs[n_i++];
+                        const size_t n2 = n_idxs[n_i++];
+                        tri0.m_n0 = n0;
+                        tri0.m_n1 = n2;
+                        tri0.m_n2 = n1;
+                    }
+
+                    if (!uv_idxs.empty())
+                    {
+                        const size_t uv0 = uv_idxs[uv_i++];
+                        const size_t uv1 = uv_idxs[uv_i++];
+                        const size_t uv2 = uv_idxs[uv_i++];
+
+                        tri0.m_a0 = uv0;
+                        tri0.m_a1 = uv2;
+                        tri0.m_a2 = uv1;
+                    }
+
+                    as_obj.push_triangle(tri0);
+                }
+                else if (face_size == 4)
+                {
+                    const auto pt0 = face_indices[f_i++];
+                    const auto pt1 = face_indices[f_i++];
+                    const auto pt2 = face_indices[f_i++];
+                    const auto pt3 = face_indices[f_i++];
+
+                    asr::Triangle tri0(pt0, pt2, pt1);
+                    asr::Triangle tri1(pt2, pt0, pt3);
+
+                    if (!n_idxs.empty())
+                    {
+                        const size_t n0 = n_idxs[n_i++];
+                        const size_t n1 = n_idxs[n_i++];
+                        const size_t n2 = n_idxs[n_i++];
+                        const size_t n3 = n_idxs[n_i++];
+
+                        tri0.m_n0 = n0;
+                        tri0.m_n1 = n2;
+                        tri0.m_n2 = n1;
+
+                        tri1.m_n0 = n2;
+                        tri1.m_n1 = n0;
+                        tri1.m_n2 = n3;
+                    }
+
+                    if (!uv_idxs.empty())
+                    {
+                        const size_t uv0 = uv_idxs[uv_i++];
+                        const size_t uv1 = uv_idxs[uv_i++];
+                        const size_t uv2 = uv_idxs[uv_i++];
+                        const size_t uv3 = uv_idxs[uv_i++];
+
+                        tri0.m_a0 = uv0;
+                        tri0.m_a1 = uv2;
+                        tri0.m_a2 = uv1;
+
+                        tri1.m_a0 = uv2;
+                        tri1.m_a1 = uv0;
+                        tri1.m_a2 = uv3;
+                    }
+
+                    as_obj.push_triangle(tri0);
+                    as_obj.push_triangle(tri1);
+                }
+                else  // Arbitrary sized polygon.
+                {
+                    // We create a polygon and will store it's various
+                    // positions.
+                    asf::Triangulator<float>::Polygon3 polygon;
+
+                    for (auto j = 0; j < face_size; j++)
+                    {
+                        // Get vertex id.
+                        const auto id = face_indices[f_i++];
+
+                        // Put the vertex position to the polygon.
+                        polygon.emplace_back(as_obj.get_vertex(id));
+                    }
+
+                    asf::Triangulator<float> triangulator;
+                    asf::Triangulator<float>::IndexArray tris;
+
+                    const bool success = triangulator.triangulate(polygon, tris);
+
+                    if (success)
+                    {
+                        // Insert all triangles of the triangulation into
+                        // the mesh.
+                        for (asf::Triangulator<float>::IndexArray::size_type k = 0;
+                             k < tris.size();
+                             k += 3)
+                        {
+                            auto tri = asr::Triangle(tris[k+0],
+                                                     tris[k+1],
+                                                     tris[k+2]);
+
+                            if (!n_idxs.empty())
+                            {
+                                const size_t n0 = n_idxs[k+0];
+                                const size_t n1 = n_idxs[k+1];
+                                const size_t n2 = n_idxs[k+2];
+
+                                tri.m_n0 = n0;
+                                tri.m_n1 = n2;
+                                tri.m_n2 = n1;
+                            }
+
+                            if (!uv_idxs.empty())
+                            {
+                                const size_t uv0 = uv_idxs[k+0];
+                                const size_t uv1 = uv_idxs[k+1];
+                                const size_t uv2 = uv_idxs[k+2];
+
+                                tri.m_a0 = uv0;
+                                tri.m_a1 = uv2;
+                                tri.m_a2 = uv1;
+                            }
+
+                            // And finally push the triangle.
+                            as_obj.push_triangle(tri);
+                        }
+
+                        // Important step, increment iterators.
+                        if (!n_idxs.empty())
+                            n_i += face_size;
+
+                        if (!uv_idxs.empty())
+                            uv_i += face_size;
+                    }
+                    else
+                    {
+                        RENDERER_LOG_WARNING("triangulator failed, "
+                                             "invalid polymesh: \"%s\"",
+                                             as_obj.get_name());
+                    }
+                }
+            };
+        }
+
         const char* Model = "alembic_assembly";
 
         std::string m_file_path;
         float m_shutter_open;
         float m_shutter_close;
         float m_time_offset;
+        bool m_implicit_instancing;
         bool m_verbose;
         std::vector<asr::TransformSequence> m_xform_seq_stack;
+        std::map<const Abc::Digest, std::string> m_mesh_cache;
     };
 
 
@@ -1182,6 +1216,7 @@ namespace
                 asf::Dictionary()
                     .insert("name", "file_path")
                     .insert("label", "File path")
+                    .insert("help", "File path to Alembic archive.")
                     .insert("type", "text")
                     .insert("use", "required"));
 
@@ -1189,6 +1224,7 @@ namespace
                 asf::Dictionary()
                     .insert("name", "shutter_open_time")
                     .insert("label", "Shutter Open Time")
+                    .insert("help", "Absolute shutter open time used to retrieve animation samples.")
                     .insert("type", "numeric")
                     .insert("default", "0.0")
                     .insert("min",
@@ -1205,6 +1241,7 @@ namespace
                 asf::Dictionary()
                     .insert("name", "shutter_close_time")
                     .insert("label", "Shutter Close Time")
+                    .insert("help", "Absolute shutter close time used to retrieve animation samples.")
                     .insert("type", "numeric")
                     .insert("default", "0.0")
                     .insert("min",
@@ -1221,6 +1258,7 @@ namespace
                 asf::Dictionary()
                     .insert("name", "time_offset")
                     .insert("label", "Time Offset")
+                    .insert("help", "Time offset applied to shutters before gather animation samples.")
                     .insert("type", "numeric")
                     .insert("default", "0.0")
                     .insert("min",
@@ -1231,6 +1269,15 @@ namespace
                         asf::Dictionary()
                             .insert("value", "1.0")
                             .insert("type", "soft"))
+                    .insert("use", "optional"));
+
+            metadata.push_back(
+                asf::Dictionary()
+                    .insert("name", "implicit_instancing")
+                    .insert("label", "Implicit instancing")
+                    .insert("help", "Use Alembic hash properties to implictly instanciate meshes.")
+                    .insert("type", "bool")
+                    .insert("default", "true")
                     .insert("use", "optional"));
 
             metadata.push_back(
