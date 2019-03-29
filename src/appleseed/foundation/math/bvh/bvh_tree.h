@@ -29,9 +29,6 @@
 
 #pragma once
 
-// appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-
 // Standard headers.
 #include <cstddef>
 #include <vector>
@@ -45,7 +42,6 @@ namespace bvh {
 
 template <typename NodeVector>
 class Tree
-  : public NonCopyable
 {
   public:
     typedef NodeVector NodeVectorType;
