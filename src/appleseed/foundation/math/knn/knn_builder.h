@@ -203,6 +203,7 @@ template <typename T, size_t N>
 inline bool Builder<T, N>::PartitionPredicate::operator()(
     const size_t                index) const
 {
+    // Points on the split plane belong to the right child node.
     return m_points[index][m_split.m_dimension] < m_split.m_abscissa;
 }
 

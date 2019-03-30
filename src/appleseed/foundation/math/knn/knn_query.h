@@ -32,7 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/distance.h"
-#include "foundation/math/fp.h"
 #include "foundation/math/knn/knn_answer.h"
 #include "foundation/math/knn/knn_statistics.h"
 #include "foundation/math/knn/knn_tree.h"
@@ -209,7 +208,8 @@ inline void Query<T, N>::run(
 
         const NodeType* APPLESEED_RESTRICT child_node = nodes + node->get_child_node_index();
 
-        if (split_dist > ValueType(0.0))
+        // Points on the split plane belong to the right child node.
+        if (split_dist >= ValueType(0.0))
             ++child_node;
 
         FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
@@ -327,7 +327,8 @@ inline void Query<T, N>::run(
         const ValueType distance = query_point[split_dim] - split_abs;
 
         // Figure out which node to follow and which node to push.
-        const int select = static_cast<int>(FP<ValueType>::sign(distance));
+        // Points on the split plane belong to the right child node.
+        const size_t select = distance < ValueType(0.0) ? 1 : 0;
         const NodeType* APPLESEED_RESTRICT left_child_node = nodes + node->get_child_node_index();
         const NodeType* APPLESEED_RESTRICT follow_node = left_child_node + 1 - select;
         const NodeType* APPLESEED_RESTRICT queue_node = left_child_node + select;
@@ -393,7 +394,8 @@ inline void Query<T, N>::run(
             const ValueType distance = query_point[split_dim] - split_abs;
 
             // Figure out which node to follow and which node to push.
-            const int select = static_cast<int>(FP<ValueType>::sign(distance));
+            // Points on the split plane belong to the right child node.
+            const size_t select = distance < ValueType(0.0) ? 1 : 0;
             const NodeType* APPLESEED_RESTRICT left_child_node = nodes + node->get_child_node_index();
             const NodeType* APPLESEED_RESTRICT follow_node = left_child_node + 1 - select;
             const NodeType* APPLESEED_RESTRICT queue_node = left_child_node + select;
