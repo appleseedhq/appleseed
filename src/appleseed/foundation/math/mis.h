@@ -34,6 +34,7 @@
 #include "foundation/platform/compiler.h"
 
 // Standard headers.
+# define NDEBUG
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -143,7 +144,7 @@ inline T mis_power2(const T q1, const T q2)
 {
     assert(q1 >= T(0.0));
     assert(q2 >= T(0.0));
-    assert(q1 + q2 > T(0.0));
+    assert((q1 + q2) > T(0.0));
 
     const T r2 = q2 / q1;
     const T r2_pow = r2 * r2;
