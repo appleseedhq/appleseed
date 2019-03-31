@@ -108,6 +108,7 @@ cmake \
     -DOSL_QUERY_INFO=$APPLESEED_DEPENDENCIES/bin/oslinfo \
     -DSEEXPREDITOR_INCLUDE_DIR=$APPLESEED_DEPENDENCIES/include \
     -DSEEXPREDITOR_LIBRARY=$APPLESEED_DEPENDENCIES/lib/libSeExprEditor.so \
+    -DCMAKE_PREFIX_PATH=/usr/include/x86_64-linux-gnu/qt5 \
     ..
 
 make -j 2

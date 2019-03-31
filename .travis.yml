@@ -20,7 +20,8 @@ addons:
       - gcc-6
       - g++-6
       - python2.7-dev
-      - libqt4-dev
+      - qtbase5-dev
+      - libqt5opengl5-dev
 
 install:
   - if [ -n "$GCC_VERSION" ]; then export CC="${CC}-${GCC_VERSION}"; fi
