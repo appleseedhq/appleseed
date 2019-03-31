@@ -34,7 +34,7 @@
 
 cmake_minimum_required (VERSION 2.8 FATAL_ERROR)
 
-project (basic)
+project (render)
 
 set (CMAKE_MODULE_PATH
     ${PROJECT_SOURCE_DIR}/../../../share/cmake/Modules
@@ -155,9 +155,9 @@ endif ()
 # Product.
 #--------------------------------------------------------------------------------------------------
 
-add_executable (basic basic.cpp)
+add_executable (render render.cpp)
 
-target_link_libraries (basic
+target_link_libraries (render
     ${APPLESEED_LIBRARIES}
     ${Boost_LIBRARIES}
     ${IMATH_LIBRARIES}
