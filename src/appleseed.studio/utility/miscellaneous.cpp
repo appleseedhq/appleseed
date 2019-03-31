@@ -219,12 +219,12 @@ namespace
 {
     QString get_value(const ParamArray& settings, const QString& key)
     {
-        return settings.get_path_optional<QString>(key.toLocal8Bit().constData());
+        return settings.get_path_optional<QString>(key.toUtf8().constData());
     }
 
     void set_value(ParamArray& settings, const QString& key, const QString& value)
     {
-        settings.insert_path(key.toLocal8Bit().constData(), value);
+        settings.insert_path(key.toUtf8().constData(), value);
     }
 }
 

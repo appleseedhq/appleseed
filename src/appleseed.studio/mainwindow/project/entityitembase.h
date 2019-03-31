@@ -124,7 +124,7 @@ EntityItemBase<Entity>::~EntityItemBase()
 template <typename Entity>
 void EntityItemBase<Entity>::update()
 {
-    set_title(QString::fromLocal8Bit(m_entity->get_name()));
+    set_title(QString::fromUtf8(m_entity->get_name()));
 }
 
 }   // namespace studio

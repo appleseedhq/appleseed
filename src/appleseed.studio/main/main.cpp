@@ -297,19 +297,19 @@ namespace
         switch (type)
         {
           case QtDebugMsg:
-            fprintf(stderr, "Debug: %s\n", msg.toLocal8Bit().constData());
+            fprintf(stderr, "Debug: %s\n", msg.toUtf8().constData());
             break;
 
           case QtWarningMsg:
-            fprintf(stderr, "Warning: %s\n", msg.toLocal8Bit().constData());
+            fprintf(stderr, "Warning: %s\n", msg.toUtf8().constData());
             break;
 
           case QtCriticalMsg:
-            fprintf(stderr, "Critical: %s\n", msg.toLocal8Bit().constData());
+            fprintf(stderr, "Critical: %s\n", msg.toUtf8().constData());
             break;
 
           case QtFatalMsg:
-            fprintf(stderr, "Fatal: %s\n", msg.toLocal8Bit().constData());
+            fprintf(stderr, "Fatal: %s\n", msg.toUtf8().constData());
             abort();
         }
     }

@@ -45,6 +45,7 @@ find_package (OpenGL REQUIRED)
 # Qt 5.
 find_package (Qt5 COMPONENTS Core Concurrent OpenGL Widgets REQUIRED)
 
+
 #--------------------------------------------------------------------------------------------------
 # Source files.
 #--------------------------------------------------------------------------------------------------
@@ -651,6 +652,7 @@ target_link_libraries (appleseed.studio
 if (WITH_DISNEY_MATERIAL)
     link_against_seexpreditor (appleseed.studio)
 endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Post-build commands.

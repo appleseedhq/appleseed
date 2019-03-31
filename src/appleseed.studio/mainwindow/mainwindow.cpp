@@ -216,7 +216,7 @@ bool MainWindow::open_project(const QString& filepath)
     set_rendering_widgets_enabled(false, NotRendering);
     set_diagnostics_widgets_enabled(false, NotRendering);
 
-    const bool successful = m_project_manager.load_project(filepath.toLocal8Bit().constData());
+    const bool successful = m_project_manager.load_project(filepath.toUtf8().constData());
 
     if (successful)
     {
@@ -248,7 +248,7 @@ void MainWindow::open_project_async(const QString& filepath)
     set_rendering_widgets_enabled(false, NotRendering);
     set_diagnostics_widgets_enabled(false, NotRendering);
 
-    m_project_manager.load_project_async(filepath.toLocal8Bit().constData());
+    m_project_manager.load_project_async(filepath.toUtf8().constData());
 }
 
 void MainWindow::open_and_render_project(const QString& filepath, const QString& configuration)
@@ -279,7 +279,7 @@ bool MainWindow::save_project(QString filepath)
     if (m_project_file_watcher)
         stop_monitoring_project_file();
 
-    const bool successful = m_project_manager.save_project_as(filepath.toLocal8Bit().constData());
+    const bool successful = m_project_manager.save_project_as(filepath.toUtf8().constData());
 
     if (m_project_file_watcher)
         start_monitoring_project_file();
@@ -301,7 +301,7 @@ bool MainWindow::pack_project(QString filepath)
     if (QFileInfo(filepath).suffix() != Extension)
         filepath += "." + Extension;
 
-    return m_project_manager.pack_project_as(filepath.toLocal8Bit().constData());
+    return m_project_manager.pack_project_as(filepath.toUtf8().constData());
 }
 
 void MainWindow::close_project()
@@ -456,7 +456,7 @@ void MainWindow::build_override_shading_menu_item()
 
         QAction* action = new QAction(this);
         action->setObjectName(
-            QString::fromLocal8Bit("action_diagnostics_override_shading_") + shading_mode_value);
+            QString::fromUtf8("action_diagnostics_override_shading_") + shading_mode_value);
         action->setCheckable(true);
         action->setText(shading_mode_name);
 
@@ -464,7 +464,7 @@ void MainWindow::build_override_shading_menu_item()
         if (shortcut_number <= 9)
         {
             action->setShortcut(
-                QKeySequence(QString::fromLocal8Bit("Ctrl+Shift+%1").arg(shortcut_number)));
+                QKeySequence(QString::fromUtf8("Ctrl+Shift+%1").arg(shortcut_number)));
         }
 
         action->setData(shading_mode_value);
@@ -1998,7 +1998,7 @@ void MainWindow::slot_save_frame()
         return;
 
     const Frame* frame = m_project_manager.get_project()->get_frame();
-    frame->write_main_image(filepath.toLocal8Bit().constData());
+    frame->write_main_image(filepath.toUtf8().constData());
 }
 
 void MainWindow::slot_save_frame_and_aovs()
@@ -2018,8 +2018,8 @@ void MainWindow::slot_save_frame_and_aovs()
         return;
 
     const Frame* frame = m_project_manager.get_project()->get_frame();
-    frame->write_main_image(filepath.toLocal8Bit().constData());
-    frame->write_aov_images(filepath.toLocal8Bit().constData());
+    frame->write_main_image(filepath.toUtf8().constData());
+    frame->write_aov_images(filepath.toUtf8().constData());
 }
 
 namespace

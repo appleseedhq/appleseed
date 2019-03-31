@@ -162,7 +162,7 @@ void LightPathsTab::slot_save_light_paths()
     filepath = QDir::toNativeSeparators(filepath);
 
     // Write light paths to disk.
-    m_project.get_light_path_recorder().write(filepath.toLocal8Bit().constData());
+    m_project.get_light_path_recorder().write(filepath.toUtf8().constData());
 }
 
 void LightPathsTab::slot_camera_changed()
