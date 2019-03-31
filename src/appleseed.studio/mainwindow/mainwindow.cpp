@@ -388,6 +388,7 @@ void MainWindow::build_menus()
     m_ui->menu_view->addSeparator();
 
     QAction* fullscreen_action = m_ui->menu_view->addAction("Fullscreen");
+    fullscreen_action->setCheckable(true);
     fullscreen_action->setShortcut(Qt::Key_F11);
     connect(fullscreen_action, SIGNAL(triggered()), SLOT(slot_fullscreen()));
 
