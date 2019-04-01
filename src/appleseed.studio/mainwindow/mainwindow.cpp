@@ -141,14 +141,6 @@ MainWindow::MainWindow(QWidget* parent)
     build_project_explorer();
     build_connections();
 
-    const QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
-    restoreGeometry(settings.value("main_window_geometry").toByteArray());
-    restoreState(settings.value("main_window_state").toByteArray());
-    m_ui->treewidget_project_explorer_scene->header()->restoreGeometry(
-        settings.value("main_window_project_explorer_geometry").toByteArray());
-    m_ui->treewidget_project_explorer_scene->header()->restoreState(
-        settings.value("main_window_project_explorer_state").toByteArray());
-
     slot_load_application_settings();
 
     update_project_explorer();
@@ -1376,14 +1368,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
         return;
     }
 
-    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
-    settings.setValue("main_window_geometry", saveGeometry());
-    settings.setValue("main_window_state", saveState());
-    settings.setValue("main_window_project_explorer_geometry",
-        m_ui->treewidget_project_explorer_scene->header()->saveGeometry());
-    settings.setValue("main_window_project_explorer_state",
-        m_ui->treewidget_project_explorer_scene->header()->saveState());
-
     slot_save_application_settings();
 
     if (m_test_window.get())
@@ -1644,6 +1628,14 @@ void MainWindow::slot_project_file_changed(const QString& filepath)
 
 void MainWindow::slot_load_application_settings()
 {
+    const QSettings qt_settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    restoreGeometry(qt_settings.value("main_window_geometry").toByteArray());
+    restoreState(qt_settings.value("main_window_state").toByteArray());
+    m_ui->treewidget_project_explorer_scene->header()->restoreGeometry(
+        qt_settings.value("main_window_project_explorer_geometry").toByteArray());
+    m_ui->treewidget_project_explorer_scene->header()->restoreState(
+        qt_settings.value("main_window_project_explorer_state").toByteArray());
+
     Dictionary settings;
     if (Application::load_settings("appleseed.studio.xml", settings, global_logger(), LogMessage::Info))
     {
@@ -1654,6 +1646,14 @@ void MainWindow::slot_load_application_settings()
 
 void MainWindow::slot_save_application_settings()
 {
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    settings.setValue("main_window_geometry", saveGeometry());
+    settings.setValue("main_window_state", saveState());
+    settings.setValue("main_window_project_explorer_geometry",
+        m_ui->treewidget_project_explorer_scene->header()->saveGeometry());
+    settings.setValue("main_window_project_explorer_state",
+        m_ui->treewidget_project_explorer_scene->header()->saveState());
+
     Application::save_settings("appleseed.studio.xml", m_application_settings, global_logger(), LogMessage::Info);
 }
 
