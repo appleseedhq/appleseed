@@ -34,7 +34,7 @@
 
 cmake_minimum_required (VERSION 2.8 FATAL_ERROR)
 
-project (render)
+project (helloworld)
 
 set (CMAKE_MODULE_PATH
     ${PROJECT_SOURCE_DIR}/../../../share/cmake/Modules
@@ -155,9 +155,9 @@ endif ()
 # Product.
 #--------------------------------------------------------------------------------------------------
 
-add_executable (render render.cpp)
+add_executable (helloworld helloworld.cpp)
 
-target_link_libraries (render
+target_link_libraries (helloworld
     ${APPLESEED_LIBRARIES}
     ${Boost_LIBRARIES}
     ${IMATH_LIBRARIES}
