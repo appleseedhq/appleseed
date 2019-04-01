@@ -131,8 +131,8 @@ option (WITH_DISNEY_MATERIAL                "Build Disney material"             
 option (WITH_EMBREE                         "Include support for Embree intersection backend"           OFF)
 option (WITH_HEADERS                        "Install header files (to build samples)"                   ON)
 option (WITH_SAMPLES                        "Install sample files (requires headers)"                   ON)
-option (INSTALL_TESTS                       "Install unit tests and benchmarks"                         ON)
 option (WITH_DOXYGEN                        "Generate API reference with Doxygen"                       ON)
+option (INSTALL_TESTS                       "Install unit tests and benchmarks"                         ON)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     option (USE_FIND_PACKAGE_FOR_EMBREE     "Use find_package() for Embree library"                     OFF)
