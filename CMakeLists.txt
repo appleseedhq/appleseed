@@ -746,7 +746,7 @@ install (
 if (WITH_SAMPLES)
     install (
         DIRECTORY
-            sandbox/samples
+            sandbox/examples
         DESTINATION .
     )
 endif ()
