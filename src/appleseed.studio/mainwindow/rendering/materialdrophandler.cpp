@@ -78,6 +78,12 @@ namespace
     {
         std::string                     m_name;
         renderer::ObjectInstance::Side  m_side;
+
+        explicit MaterialSlot(const std::string name, const renderer::ObjectInstance::Side side)
+          : m_name(name)
+          , m_side(side)
+        {
+        }
     };
 
     class ApplyDroppedMaterial
@@ -122,7 +128,7 @@ void MaterialDropHandler::assign_material(const renderer::ObjectInstance::Side s
             item != instance->get_front_material_mappings().end();
             ++item)
         {
-            material_slots.push_back({ item.key(), renderer::ObjectInstance::Side::FrontSide });
+            material_slots.push_back(MaterialSlot(item.key(), renderer::ObjectInstance::Side::FrontSide));
         }
     }
     if (side & renderer::ObjectInstance::Side::BackSide)
@@ -131,7 +137,7 @@ void MaterialDropHandler::assign_material(const renderer::ObjectInstance::Side s
             item != instance->get_back_material_mappings().end();
             ++item)
         {
-            material_slots.push_back({ item.key(), renderer::ObjectInstance::Side::BackSide });
+            material_slots.push_back(MaterialSlot(item.key(), renderer::ObjectInstance::Side::BackSide));
         }
     }
 
