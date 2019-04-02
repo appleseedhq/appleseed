@@ -305,6 +305,8 @@ set (mainwindow_sources
     mainwindow/renderingsettingswindow.cpp
     mainwindow/renderingsettingswindow.h
     mainwindow/renderingsettingswindow.ui
+    mainwindow/spoiler.cpp
+    mainwindow/spoiler.h
     mainwindow/statusbar.cpp
     mainwindow/statusbar.h
 )

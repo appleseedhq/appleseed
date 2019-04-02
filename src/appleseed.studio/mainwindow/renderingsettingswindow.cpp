@@ -30,6 +30,9 @@
 // Interface header.
 #include "renderingsettingswindow.h"
 
+// Collapsing sections.
+#include "spoiler.h"
+
 // UI definition header.
 #include "ui_renderingsettingswindow.h"
 
@@ -1039,15 +1042,15 @@ namespace
 
         void create_pt_advanced_settings(QVBoxLayout* parent)
         {
-            QGroupBox* groupbox = new QGroupBox("Advanced");
-            parent->addWidget(groupbox);
-
+            Spoiler* spoiler = new Spoiler();
+            parent->addWidget(spoiler);
+            
             QVBoxLayout* layout = new QVBoxLayout();
-            groupbox->setLayout(layout);
-
+    
             create_pt_advanced_nee_settings(layout);
             create_pt_advanced_optimization_settings(layout);
             create_pt_advanced_diag_settings(layout);
+            spoiler->set_content_layout(*layout);
         }
 
         void create_pt_advanced_nee_settings(QVBoxLayout* parent)
@@ -1325,13 +1328,13 @@ namespace
 
         void create_advanced_settings(QVBoxLayout* parent)
         {
-            QGroupBox* groupbox = new QGroupBox("Advanced");
-            parent->addWidget(groupbox);
+            Spoiler* spoiler = new Spoiler();
+            parent->addWidget(spoiler);
 
             QVBoxLayout* layout = create_vertical_layout();
-            groupbox->setLayout(layout);
 
             create_advanced_max_ray_intensity_settings(layout);
+            spoiler->set_content_layout(*layout);
         }
 
         void create_advanced_max_ray_intensity_settings(QVBoxLayout* parent)

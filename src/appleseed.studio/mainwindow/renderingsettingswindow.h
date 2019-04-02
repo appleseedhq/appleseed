@@ -44,6 +44,7 @@
 // Forward declarations.
 namespace appleseed { namespace studio { class ProjectManager; } }
 namespace appleseed { namespace studio { class RenderSettingsPanel; } }
+namespace appleseed { namespace studio { class Spoiler; } }
 namespace renderer  { class Configuration; }
 namespace renderer  { class ParamArray; }
 namespace Ui        { class RenderingSettingsWindow; }
