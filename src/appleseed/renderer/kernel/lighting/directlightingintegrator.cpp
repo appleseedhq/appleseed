@@ -140,7 +140,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
 
     if (m_light_sample_count > 0)
     {
-        // Add contributions from non-physical light sources that don't belong to the lightset.
+        // Add contributions from all non-physical light sources that aren't part of the lightset.
         for (size_t i = 0, e = m_light_sampler.get_non_physical_light_count(); i < e; ++i)
         {
             // Sample the set of non-physical lights.

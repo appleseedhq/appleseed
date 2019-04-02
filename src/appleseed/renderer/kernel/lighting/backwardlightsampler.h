@@ -94,7 +94,6 @@ class BackwardLightSampler
 
   private:
     bool                                    m_use_light_tree;
-
     NonPhysicalLightVector                  m_light_tree_lights;
     std::unique_ptr<LightTree>              m_light_tree;
 
