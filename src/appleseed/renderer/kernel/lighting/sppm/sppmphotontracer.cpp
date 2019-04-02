@@ -193,7 +193,7 @@ namespace
             }
         }
 
-        void on_scatter(const PathVertex& vertex)
+        void on_scatter(PathVertex& vertex)
         {
         }
     };
@@ -204,13 +204,13 @@ namespace
 
     struct VolumeVisitor
     {
-        virtual bool accept_scattering(
+        bool accept_scattering(
             const ScatteringMode::Mode  prev_mode)
         {
             return true;
         }
 
-        virtual void on_scatter(PathVertex& vertex)
+        void on_scatter(PathVertex& vertex)
         {
         }
 

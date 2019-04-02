@@ -336,7 +336,7 @@ namespace
                 m_path_radiance.add(vertex.m_path_length, vertex.m_aov_mode, vertex_radiance);
             }
 
-            void on_scatter(const PathVertex& vertex)
+            void on_scatter(PathVertex& vertex)
             {
             }
 

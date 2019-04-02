@@ -266,9 +266,13 @@ namespace
                 return true;
             }
 
-            void on_scatter(PathVertex& vertex) {}
+            void on_scatter(PathVertex& vertex)
+            {
+            }
 
-            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray) {}
+            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray)
+            {
+            }
         };
 
         struct PathVisitor
@@ -495,7 +499,7 @@ namespace
                 emit_sample(sample_position, radiance);
             }
 
-            void on_scatter(const PathVertex& vertex)
+            void on_scatter(PathVertex& vertex)
             {
             }
 

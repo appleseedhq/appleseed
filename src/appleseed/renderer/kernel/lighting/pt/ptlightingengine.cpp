@@ -504,15 +504,12 @@ namespace
             {
                 // When caustics are disabled, disable glossy and specular components after a diffuse or volume bounce.
                 // Note that accept_scattering() is later going to return false in this case.
-                const bool has_diffuse_or_volume_scattering =
-                    vertex.m_prev_mode == ScatteringMode::Diffuse ||
-                    vertex.m_prev_mode == ScatteringMode::Volume;
-                if (!m_params.m_enable_caustics && has_diffuse_or_volume_scattering)
-                    vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
-
-                // Terminate the path if all scattering modes are disabled.
-                if (vertex.m_scattering_modes == ScatteringMode::None)
-                    return;
+                if (!m_params.m_enable_caustics)
+                {
+                    if (vertex.m_prev_mode == ScatteringMode::Diffuse ||
+                        vertex.m_prev_mode == ScatteringMode::Volume)
+                        vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
+                }
             }
         };
 
@@ -860,11 +857,12 @@ namespace
             {
                 // When caustics are disabled, disable glossy and specular components after a diffuse or volume bounce.
                 // Note that accept_scattering() is later going to return false in this case.
-                const bool has_diffuse_or_volume_scattering =
-                    vertex.m_prev_mode == ScatteringMode::Diffuse ||
-                    vertex.m_prev_mode == ScatteringMode::Volume;
-                if (!m_params.m_enable_caustics && has_diffuse_or_volume_scattering)
-                    vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
+                if (!m_params.m_enable_caustics)
+                {
+                    if (vertex.m_prev_mode == ScatteringMode::Diffuse ||
+                        vertex.m_prev_mode == ScatteringMode::Volume)
+                        vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
+                }
             }
 
           protected:

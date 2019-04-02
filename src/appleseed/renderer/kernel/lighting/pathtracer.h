@@ -71,6 +71,32 @@ namespace renderer
 //
 // A generic path tracer.
 //
+// The PathVisitor class must conform to the following prototype:
+//
+//   struct PathVisitor
+//   {
+//       void on_first_diffuse_bounce(const PathVertex& vertex);
+//   
+//       bool accept_scattering(
+//           const ScatteringMode::Mode  prev_mode,
+//           const ScatteringMode::Mode  next_mode) const;
+//
+//       void on_miss(const PathVertex& vertex);
+//       void on_hit(const PathVertex& vertex);
+//       void on_scatter(PathVertex& vertex);
+//   };
+//
+// The VolumeVisitor class must conform to the following prototype:
+//
+//   struct VolumeVisitor
+//   {
+//       bool accept_scattering(
+//           const ScatteringMode::Mode  prev_mode);
+//
+//       void on_scatter(PathVertex& vertex);
+//       void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray);
+//   };
+//
 
 template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
 class PathTracer
@@ -878,6 +904,10 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
 
         // Let the volume visitor handle the scattering event.
         m_volume_visitor.on_scatter(vertex);
+
+        // Terminate the path if all scattering modes are disabled.
+        if (vertex.m_scattering_modes == ScatteringMode::None)
+            return false;
 
         // Retrieve scattering spectrum.
         const Spectrum& scattering_coef =

@@ -711,7 +711,7 @@ namespace
                 (*m_num_vertices)++;
             }
 
-            void on_scatter(const PathVertex& vertex)
+            void on_scatter(PathVertex& vertex)
             {
             }
         };
