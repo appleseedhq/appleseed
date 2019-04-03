@@ -287,9 +287,9 @@ set (mainwindow_sources
     mainwindow/applicationsettingswindow.cpp
     mainwindow/applicationsettingswindow.h
     mainwindow/applicationsettingswindow.ui
-    mainwindow/configurationmanagerwindow.cpp
-    mainwindow/collapsiblesectionwidget.h
     mainwindow/collapsiblesectionwidget.cpp
+    mainwindow/collapsiblesectionwidget.h
+    mainwindow/configurationmanagerwindow.cpp
     mainwindow/configurationmanagerwindow.h
     mainwindow/configurationmanagerwindow.ui
     mainwindow/falsecolorswindow.cpp
