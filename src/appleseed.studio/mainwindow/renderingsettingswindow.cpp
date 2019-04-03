@@ -30,14 +30,12 @@
 // Interface header.
 #include "renderingsettingswindow.h"
 
-// Collapsing sections.
-#include "spoiler.h"
-
 // UI definition header.
 #include "ui_renderingsettingswindow.h"
 
 // appleseed.studio headers.
 #include "mainwindow/configurationmanagerwindow.h"
+#include "mainwindow/collapsiblesectionwidget.h"
 #include "mainwindow/project/projectmanager.h"
 #include "utility/foldablepanelwidget.h"
 #include "utility/inputwidgetproxies.h"
@@ -1042,15 +1040,15 @@ namespace
 
         void create_pt_advanced_settings(QVBoxLayout* parent)
         {
-            Spoiler* spoiler = new Spoiler();
-            parent->addWidget(spoiler);
+            CollapsibleSectionWidget* collapsible_section = new CollapsibleSectionWidget("Advanced");
+            parent->addWidget(collapsible_section);
             
             QVBoxLayout* layout = new QVBoxLayout();
     
             create_pt_advanced_nee_settings(layout);
             create_pt_advanced_optimization_settings(layout);
             create_pt_advanced_diag_settings(layout);
-            spoiler->set_content_layout(*layout);
+            collapsible_section->set_content_layout(*layout);
         }
 
         void create_pt_advanced_nee_settings(QVBoxLayout* parent)
@@ -1328,13 +1326,13 @@ namespace
 
         void create_advanced_settings(QVBoxLayout* parent)
         {
-            Spoiler* spoiler = new Spoiler();
-            parent->addWidget(spoiler);
-
+            CollapsibleSectionWidget* collapsible_section = new CollapsibleSectionWidget("Advanced");
+            parent->addWidget(collapsible_section);
+            
             QVBoxLayout* layout = create_vertical_layout();
 
             create_advanced_max_ray_intensity_settings(layout);
-            spoiler->set_content_layout(*layout);
+            collapsible_section->set_content_layout(*layout);
         }
 
         void create_advanced_max_ray_intensity_settings(QVBoxLayout* parent)

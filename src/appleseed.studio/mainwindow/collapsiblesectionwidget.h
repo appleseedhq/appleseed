@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Smolin Oleg, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +28,9 @@
 
 #pragma once
 
-// QT headers.
+// Qt headers.
 #include <QFrame>
 #include <QGridLayout>
-#include <QParallelAnimationGroup>
 #include <QScrollArea>
 #include <QToolButton>
 #include <QWidget>
@@ -44,25 +42,27 @@ namespace studio {
 // Collapsing section class.
 //
 
-class Spoiler
+class CollapsibleSectionWidget
   : public QWidget
 {
     Q_OBJECT
 
   public:
-    explicit Spoiler(const QString & title = "Advanced", const int animation_duration = 300, QWidget *parent = 0);
-    void set_content_layout(QLayout & content_layout);
+    explicit CollapsibleSectionWidget(
+            const QString&  title = "",
+            QWidget*        parent = nullptr);
+    void set_content_layout(QLayout& content_layout);
 
   private:
     QGridLayout                 m_main_layout;
     QToolButton                 m_toggle_button;
     QFrame                      m_upper_line;
-    QParallelAnimationGroup     m_toggle_animation;
     QScrollArea                 m_content_area;
-    int                         m_animation_duration;
+    int                         m_content_height;
+
   private slots:
-    void slot_spoiler_interaction(const bool);
+    void slot_on_click(const bool);
 };
 
-}
-}
+} // namespace studio
+} // namespace appleseed
