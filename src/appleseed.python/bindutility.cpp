@@ -56,7 +56,7 @@ void oiio_make_texture(
     const string&   in_colorspace,
     const string&   out_depth)
 {
-    unordered_map<string, TypeDesc> out_depth_map;
+    std::unordered_map<string, TypeDesc> out_depth_map;
     out_depth_map["sint8"] = TypeDesc::INT8;
     out_depth_map["uint8"] = TypeDesc::UINT8;
     out_depth_map["uint16"] = TypeDesc::UINT16;
