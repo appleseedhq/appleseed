@@ -32,6 +32,7 @@
 #include <QFrame>
 #include <QGridLayout>
 #include <QScrollArea>
+#include <QString>
 #include <QToolButton>
 #include <QWidget>
 
@@ -49,16 +50,16 @@ class CollapsibleSectionWidget
 
   public:
     explicit CollapsibleSectionWidget(
-            const QString&  title = "",
-            QWidget*        parent = nullptr);
-    void set_content_layout(QLayout& content_layout);
+        const QString&  title = "",
+        QWidget*        parent = nullptr);
+    void set_content_layout(QLayout* content_layout);
 
   private:
-    QGridLayout                 m_main_layout;
-    QToolButton                 m_toggle_button;
-    QFrame                      m_upper_line;
-    QScrollArea                 m_content_area;
-    int                         m_content_height;
+    QGridLayout     m_main_layout;
+    QToolButton     m_toggle_button;
+    QFrame          m_upper_line;
+    QScrollArea     m_content_area;
+    int             m_content_height;
 
   private slots:
     void slot_on_click(const bool);

@@ -40,7 +40,6 @@ CollapsibleSectionWidget::CollapsibleSectionWidget(const QString& title, QWidget
   : QWidget(parent)
   , m_content_height(0)
 {
-    m_toggle_button.setStyleSheet("QToolButton { border: none; }");
     m_toggle_button.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     m_toggle_button.setArrowType(Qt::ArrowType::RightArrow);
     m_toggle_button.setText(title);
@@ -51,7 +50,6 @@ CollapsibleSectionWidget::CollapsibleSectionWidget(const QString& title, QWidget
     m_upper_line.setFrameShadow(QFrame::Sunken);
     m_upper_line.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 
-    m_content_area.setStyleSheet("QScrollArea { border: none; }");
     m_content_area.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     m_content_area.setFixedHeight(0);
 
@@ -65,12 +63,12 @@ CollapsibleSectionWidget::CollapsibleSectionWidget(const QString& title, QWidget
     connect(&m_toggle_button, SIGNAL(toggled(bool)), SLOT(slot_on_click(const bool)));
 }
 
-void CollapsibleSectionWidget::set_content_layout(QLayout& content_layout)
+void CollapsibleSectionWidget::set_content_layout(QLayout* content_layout)
 {
     delete m_content_area.layout();
-    m_content_area.setLayout(&content_layout);
+    m_content_area.setLayout(content_layout);
 
-    m_content_height = content_layout.sizeHint().height();
+    m_content_height = content_layout->sizeHint().height();
 }
 
 void CollapsibleSectionWidget::slot_on_click(const bool checked)

@@ -1048,7 +1048,7 @@ namespace
             create_pt_advanced_nee_settings(layout);
             create_pt_advanced_optimization_settings(layout);
             create_pt_advanced_diag_settings(layout);
-            collapsible_section->set_content_layout(*layout);
+            collapsible_section->set_content_layout(layout);
         }
 
         void create_pt_advanced_nee_settings(QVBoxLayout* parent)
@@ -1332,7 +1332,7 @@ namespace
             QVBoxLayout* layout = create_vertical_layout();
 
             create_advanced_max_ray_intensity_settings(layout);
-            collapsible_section->set_content_layout(*layout);
+            collapsible_section->set_content_layout(layout);
         }
 
         void create_advanced_max_ray_intensity_settings(QVBoxLayout* parent)
