@@ -34,6 +34,7 @@
 #include "ui_renderingsettingswindow.h"
 
 // appleseed.studio headers.
+#include "mainwindow/collapsiblesectionwidget.h"
 #include "mainwindow/configurationmanagerwindow.h"
 #include "mainwindow/project/projectmanager.h"
 #include "utility/foldablepanelwidget.h"
@@ -1039,15 +1040,15 @@ namespace
 
         void create_pt_advanced_settings(QVBoxLayout* parent)
         {
-            QGroupBox* groupbox = new QGroupBox("Advanced");
-            parent->addWidget(groupbox);
-
+            CollapsibleSectionWidget* collapsible_section = new CollapsibleSectionWidget("Advanced");
+            parent->addWidget(collapsible_section);
+            
             QVBoxLayout* layout = new QVBoxLayout();
-            groupbox->setLayout(layout);
-
+    
             create_pt_advanced_nee_settings(layout);
             create_pt_advanced_optimization_settings(layout);
             create_pt_advanced_diag_settings(layout);
+            collapsible_section->set_content_layout(layout);
         }
 
         void create_pt_advanced_nee_settings(QVBoxLayout* parent)
@@ -1325,13 +1326,13 @@ namespace
 
         void create_advanced_settings(QVBoxLayout* parent)
         {
-            QGroupBox* groupbox = new QGroupBox("Advanced");
-            parent->addWidget(groupbox);
-
+            CollapsibleSectionWidget* collapsible_section = new CollapsibleSectionWidget("Advanced");
+            parent->addWidget(collapsible_section);
+            
             QVBoxLayout* layout = create_vertical_layout();
-            groupbox->setLayout(layout);
 
             create_advanced_max_ray_intensity_settings(layout);
+            collapsible_section->set_content_layout(layout);
         }
 
         void create_advanced_max_ray_intensity_settings(QVBoxLayout* parent)
