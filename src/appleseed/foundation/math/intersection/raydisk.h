@@ -66,7 +66,7 @@ inline bool intersect_disk_unit_direction(
 
 
 //
-// 3D ray-sphere intersection functions implementation.
+// 3D ray-disk intersection functions implementation.
 //
 
 template <typename T>
