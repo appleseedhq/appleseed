@@ -42,6 +42,7 @@
 // Standard headers.
 #include <sstream>
 #include <string>
+#include <unordered_map>
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -77,7 +78,7 @@ void oiio_make_texture(
     spec.attribute("maketx:outcolorspace", "linear");
     spec.attribute("maketx:fixnan", "box3");
 
-    ImageBufAlgo::MakeTextureMode mode = ImageBufAlgo::MakeTxTexture;
+    const ImageBufAlgo::MakeTextureMode mode = ImageBufAlgo::MakeTxTexture;
 
     stringstream s;
 
