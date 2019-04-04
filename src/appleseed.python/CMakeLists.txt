@@ -208,6 +208,8 @@ endif ()
 #--------------------------------------------------------------------------------------------------
 
 link_against_platform (appleseed.python)
+link_against_ocio (appleseed.python)
+link_against_oiio (appleseed.python)
 
 target_link_libraries (appleseed.python
     appleseed
@@ -217,6 +219,8 @@ target_link_libraries (appleseed.python
 
 if (WITH_PYTHON3_BINDINGS)
     link_against_platform (appleseed.python3)
+    link_against_ocio (appleseed.python3)
+    link_against_oiio (appleseed.python3)
 
     target_link_libraries (appleseed.python3
         appleseed
