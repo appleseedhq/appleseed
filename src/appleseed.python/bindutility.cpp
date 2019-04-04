@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2019 The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,9 +34,59 @@
 // appleseed.foundation headers.
 #include "foundation/platform/python.h"
 
+// OIIO headers.
+#include "foundation/platform/_beginoiioheaders.h"
+#include "OpenImageIO/imagebufalgo.h"
+#include "foundation/platform/_endoiioheaders.h"
+
+// Standard headers.
+#include <sstream>
+
 namespace bpy = boost::python;
 using namespace foundation;
+using namespace OIIO;
 using namespace renderer;
+using namespace std;
+
+void oiio_make_texture(
+    const string&   in_filename,
+    const string&   out_filename,
+    const string&   in_colorspace,
+    const string&   out_depth)
+{
+    unordered_map<string, TypeDesc> out_depth_map{
+        {"sint8", TypeDesc::INT8},
+        {"uint8", TypeDesc::UINT8},
+        {"uint16", TypeDesc::UINT16},
+        {"sint16", TypeDesc::INT16},
+        {"half", TypeDesc::HALF},
+        {"float", TypeDesc::FLOAT}};
+
+    ImageSpec spec;
+
+    if (out_depth != "default")
+    {
+        spec.format = out_depth_map[out_depth];
+    }
+
+    spec.attribute("maketx:updatemode", 1);
+    spec.attribute("maketx:constant_color_detect", 1);
+    spec.attribute("maketx:monochrome detect", 1);
+    spec.attribute("maketx:opaque detect", 1);
+    spec.attribute("maketx:unpremult", 1);
+    spec.attribute("maketx:incolorspace", in_colorspace);
+    spec.attribute("maketx:outcolorspace", "linear");
+    spec.attribute("maketx:fixnan", "box3");
+
+    ImageBufAlgo::MakeTextureMode mode = ImageBufAlgo::MakeTxTexture;
+
+    stringstream s;
+
+    if (!make_texture(mode, in_filename, out_filename, spec, &s))
+    {
+        PyErr_SetString(PyExc_RuntimeError, s.str().c_str());
+    }
+}
 
 void bind_utility()
 {
@@ -57,4 +107,6 @@ void bind_utility()
         .def("add_target", &Logger::add_target);
 
     bpy::def("global_logger", global_logger, bpy::return_value_policy<bpy::reference_existing_object>());
+
+    bpy::def("oiio_make_texture", &oiio_make_texture);
 }

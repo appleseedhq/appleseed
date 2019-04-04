@@ -213,6 +213,11 @@ target_link_libraries (appleseed.python
     appleseed
     ${Boost_PYTHON_LIBRARY}             # all Boost libraries but Boost.Python3
     ${PYTHON_LIBRARIES}
+    ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/lib/OpenImageIO.lib
+    ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/lib/OpenImageIO_Util.lib
+    ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/libyaml-cppmd.lib
+    ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/OpenColorIO.lib
+    ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/tinyxml.lib
 )
 
 if (WITH_PYTHON3_BINDINGS)
@@ -222,6 +227,11 @@ if (WITH_PYTHON3_BINDINGS)
         appleseed
         ${Boost_PYTHON3_LIBRARY}        # all Boost libraries but Boost.Python
         ${PYTHON3_LIBRARY}
+        ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/lib/OpenImageIO.lib
+        ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/lib/OpenImageIO_Util.lib
+        ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/libyaml-cppmd.lib
+        ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/OpenColorIO.lib
+        ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/tinyxml.lib
     )
 
     if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
