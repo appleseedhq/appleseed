@@ -85,10 +85,8 @@ class APPLESEED_DLLSYMBOL RectObject
   private:
     friend class RectObjectFactory;
 
-    double                  m_half_width;
-    double                  m_half_height;
-    double                  m_rcp_width;
-    double                  m_rcp_height;
+    struct Impl;
+    Impl* impl;
 
     // Constructor.
     RectObject(

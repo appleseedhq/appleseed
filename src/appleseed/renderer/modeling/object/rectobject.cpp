@@ -37,6 +37,7 @@
 #include "foundation/math/ray.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/job/iabortswitch.h"
@@ -57,10 +58,20 @@ namespace
     const char* Model = "rect_object";
 }
 
+struct RectObject::Impl
+{
+    Vector3d m_corner;
+    Vector3d m_normal;
+    Vector3d m_x;
+    Vector3d m_y;
+    bool m_skip_intersection;
+};
+
 RectObject::RectObject(
     const char*            name,
     const ParamArray&      params)
   : ProceduralObject(name, params)
+  , impl(new Impl())
 {
 }
 
@@ -86,14 +97,16 @@ bool RectObject::on_frame_begin(
     const double width  = get_uncached_width();
     const double height = get_uncached_height();
 
-    m_half_width = width * 0.5;
-    m_half_height = height * 0.5;
+    const double half_width = width * 0.5;
+    const double half_height = height * 0.5;
 
-    if (width != 0.0)
-        m_rcp_width = 1.0 / width;
+    impl->m_x = Vector3d(width, 0.0, 0.0);
+    impl->m_y = Vector3d(0.0, 0.0, -height);
 
-    if (height != 0.0)
-        m_rcp_height = 1.0 / height;
+    impl->m_corner = Vector3d(-half_width, 0.0, half_height);
+    impl->m_normal = Vector3d(0.0, 1.0, 0.0);
+
+    impl->m_skip_intersection = (half_width == 0.0f || half_height == 0.0f);
 
     return true;
 }
@@ -134,82 +147,46 @@ void RectObject::intersect(
     const ShadingRay&      ray,
     IntersectionResult&    result) const
 {
-    if (m_half_width == 0.0 || m_half_height == 0.0)
+    if APPLESEED_UNLIKELY(impl->m_skip_intersection)
     {
         result.m_hit = false;
         return;
     }
 
-    if (ray.m_dir.y == 0.0)
+    double u, v;
+
+    result.m_hit = intersect_parallelogram(
+        ray,
+        impl->m_corner,
+        impl->m_x,
+        impl->m_y,
+        impl->m_normal,
+        result.m_distance,
+        u,
+        v);
+
+    if (result.m_hit)
     {
-        result.m_hit = false;
-        return;
+        result.m_geometric_normal = impl->m_normal;
+        result.m_shading_normal = impl->m_normal;
+
+        result.m_uv[0] = static_cast<float>(u);
+        result.m_uv[1] = static_cast<float>(v);
+        result.m_material_slot = 0;
     }
-
-    const double t = -ray.m_org.y / ray.m_dir.y;
-
-    if (t < ray.m_tmin || t >= ray.m_tmax)
-    {
-        result.m_hit = false;
-        return;
-    }
-
-    const double u =
-        ((ray.m_org.x + t * ray.m_dir.x) + m_half_width) * m_rcp_width;
-
-    if (u < 0.0 || u > 1.0)
-    {
-        result.m_hit = false;
-        return;
-    }
-
-    const double v =
-        ((ray.m_org.z + t * ray.m_dir.z) + m_half_height) * m_rcp_height;
-
-    if (v < 0.0 || v > 1.0)
-    {
-        result.m_hit = false;
-        return;
-    }
-
-    result.m_hit = true;
-    result.m_distance = t;
-
-    const Vector3d n(0.0, 1.0, 0.0);
-    result.m_geometric_normal = n;
-    result.m_shading_normal = n;
-
-    result.m_uv[0] = static_cast<float>(u);
-    result.m_uv[1] = 1.0f - static_cast<float>(v);
-    result.m_material_slot = 0;
 }
 
 bool RectObject::intersect(const ShadingRay& ray) const
 {
-    if (m_half_width == 0.0 || m_half_height == 0.0)
+    if APPLESEED_UNLIKELY(impl->m_skip_intersection)
         return false;
 
-    if (ray.m_dir.y == 0.0)
-        return false;
-
-    const double t = -ray.m_org.y / ray.m_dir.y;
-
-    if (t < ray.m_tmin || t >= ray.m_tmax)
-        return false;
-
-    const double u =
-        ((ray.m_org.x + t * ray.m_dir.x) + m_half_width) * m_rcp_width;
-
-    if (u < 0.0 || u > 1.0)
-        return false;
-
-    const double v =
-        ((ray.m_org.z + t * ray.m_dir.z) + m_half_height) * m_rcp_height;
-
-    if (v < 0.0 || v > 1.0)
-        return false;
-
-    return true;
+    return intersect_parallelogram(
+        ray,
+        impl->m_corner,
+        impl->m_x,
+        impl->m_y,
+        impl->m_normal);
 }
 
 
