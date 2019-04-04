@@ -55,13 +55,13 @@ void oiio_make_texture(
     const string&   in_colorspace,
     const string&   out_depth)
 {
-    unordered_map<string, TypeDesc> out_depth_map = {
-        {"sint8", TypeDesc::INT8},
-        {"uint8", TypeDesc::UINT8},
-        {"uint16", TypeDesc::UINT16},
-        {"sint16", TypeDesc::INT16},
-        {"half", TypeDesc::HALF},
-        {"float", TypeDesc::FLOAT}};
+    unordered_map<string, TypeDesc> out_depth_map;
+    out_depth_map["sint8"] = TypeDesc::INT8;
+    out_depth_map["uint8"] = TypeDesc::UINT8;
+    out_depth_map["uint16"] = TypeDesc::UINT16;
+    out_depth_map["sint16"] = TypeDesc::INT16;
+    out_depth_map["half"] = TypeDesc::HALF;
+    out_depth_map["float"] = TypeDesc::FLOAT;
 
     ImageSpec spec;
 
@@ -81,7 +81,7 @@ void oiio_make_texture(
 
     stringstream s;
 
-    if (!make_texture(mode, in_filename, out_filename, spec, &s))
+    if (!ImageBufAlgo::make_texture(mode, in_filename, out_filename, spec, &s))
         PyErr_SetString(PyExc_RuntimeError, s.str().c_str());
 }
 
