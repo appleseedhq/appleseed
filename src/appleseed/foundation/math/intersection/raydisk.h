@@ -103,7 +103,7 @@ inline bool intersect_disk(
     T phi = std::atan2(hit.x, hit.z);
     if (phi < T(0))
         phi += TwoPi<T>();
-    u = phi / TwoPi<T>();
+    u = phi * RcpTwoPi<T>();
     v = T(1) - std::sqrt(dist_sqr) / radius;
 
     return true;
