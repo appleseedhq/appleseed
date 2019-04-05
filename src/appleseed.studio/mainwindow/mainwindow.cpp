@@ -387,7 +387,7 @@ void MainWindow::build_menus()
 
     QAction* fullscreen_action = m_ui->menu_view->addAction("Fullscreen");
     fullscreen_action->setShortcut(Qt::Key_F11);
-    connect(fullscreen_action, SIGNAL(triggered()), SLOT(slot_fullscreen()));
+    connect(fullscreen_action, SIGNAL(toggled(bool)), SLOT(slot_fullscreen(const bool)));
 
     //
     // Rendering menu.
