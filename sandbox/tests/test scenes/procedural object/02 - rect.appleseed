@@ -21,9 +21,8 @@
                 </matrix>
             </transform>
         </camera>
-        <environment_edf name="environment_edf1" model="gradient_environment_edf">
-            <parameter name="horizon_radiance" value="0.3" />
-            <parameter name="zenith_radiance" value="0.7" />
+        <environment_edf name="environment_edf1" model="constant_environment_edf">
+            <parameter name="radiance" value="1.0" />
         </environment_edf>
         <environment name="environment" model="generic_environment">
             <parameter name="environment_edf" value="environment_edf1" />

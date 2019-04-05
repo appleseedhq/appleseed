@@ -9,20 +9,20 @@
     <scene>
         <camera name="camera" model="pinhole_camera">
             <parameter name="autofocus_enabled" value="false" />
-            <parameter name="controller_target" value="-0.0177106 0.0112301 0.00217694" />
+            <parameter name="controller_target" value="0.0 0.0 0.0" />
             <parameter name="film_dimensions" value="0.024892 0.018669" />
             <parameter name="focal_length" value="0.035" />
             <transform time="0">
                 <matrix>
                     1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
-                    0.000000000000000 1.000000000000000 0.000000000000000 0.000000000000000
                     0.000000000000000 0.000000000000000 1.000000000000000 4.000000000000000
+                    0.000000000000000 -1.000000000000000 0.000000000000000 0.000000000000000
                     0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                 </matrix>
             </transform>
         </camera>
         <environment_edf name="environment_edf1" model="constant_environment_edf">
-            <parameter name="radiance" value="0.05" />
+            <parameter name="radiance" value="1.0" />
         </environment_edf>
         <environment name="environment" model="generic_environment">
             <parameter name="environment_edf" value="environment_edf1" />
@@ -36,7 +36,7 @@
                 <transform>
                     <matrix>
                         0.250000000000000 0.000000000000000 0.000000000000000 0.000000000000000
-                        0.000000000000000 0.500000000000000 0.000000000000000 0.000000000000000
+                        0.000000000000000 1.00000000000000 0.000000000000000 0.000000000000000
                         0.000000000000000 0.000000000000000 0.500000000000000 0.000000000000000
                         0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                     </matrix>
@@ -50,15 +50,8 @@
                 <parameter name="bsdf" value="bsdf1" />
                 <parameter name="bump_amplitude" value="1.0" />
                 <parameter name="displacement_method" value="bump" />
-                <parameter name="normal_map_up" value="z" />
+                <parameter name="normal_map_up" value="y" />
             </material>
-            <light name="light1" model="directional_light">
-                <parameter name="cast_indirect_light" value="true" />
-                <parameter name="exposure" value="0.0" />
-                <parameter name="importance_multiplier" value="1.0" />
-                <parameter name="irradiance" value="1" />
-                <parameter name="irradiance_multiplier" value="2" />
-            </light>
             <object name="disk" model="disk_object">
                 <parameter name="radius" value="1.0" />
             </object>
@@ -72,7 +65,7 @@
     <output>
         <frame name="beauty">
             <parameter name="camera" value="camera" />
-            <parameter name="resolution" value="640 480" />
+            <parameter name="resolution" value="640 480" />		
         </frame>
     </output>
     <configurations>

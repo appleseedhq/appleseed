@@ -46,23 +46,24 @@ namespace foundation
 //
 
 // Test the intersection between a unit-length ray segment and the surface of a disk.
-// The disk is assumed to be centered at the origin and pointing to the Z direction.
+// The disk is assumed to be centered at the origin and pointing to the Y direction.
 template <typename T>
-inline bool intersect_disk_unit_direction(
+inline bool intersect_disk(
     const Ray<T, 3>&        ray,
     const T                 radius);
 
 // Test the intersection between a unit-length ray segment and the surface of a disk.
-// The disk is assumed to be centered at the origin and pointing to the Z direction.
+// The disk is assumed to be centered at the origin and pointing to the Y direction.
 // If the ray segment and the disk intersect, the distance to the closest
 // intersection is returned in `tmin` and the parametric reprensentation of the surface
-// hit is returned in `uv`. Otherwise `tmin` and `uv` are left unchanged.
+// hit is returned in `u` and `v`. Otherwise `tmin`, `u` and `v` are left unchanged.
 template <typename T>
-inline bool intersect_disk_unit_direction(
+inline bool intersect_disk(
     const Ray<T, 3>&        ray,
     const T                 radius,
     T&                      tmin,
-    Vector<T, 2>&           uv);
+    T&                      u,
+    T&                      v);
 
 
 //
@@ -70,54 +71,40 @@ inline bool intersect_disk_unit_direction(
 //
 
 template <typename T>
-inline bool intersect_disk_unit_direction(
+inline bool intersect_disk(
     const Ray<T, 3>&        ray,
     const T                 radius)
 {
-    assert(is_normalized(ray.m_dir));
-
-    // Reject rays parallel to the disk's plane.
-    const T t = -ray.m_org[2] / ray.m_dir[2];
-    if (t <= ray.m_tmin || t >= ray.m_tmax)
-        return false;
-
-    // Check if the surface hit is inside the disk.
-    Vector<T, 3> hit = ray.point_at(t);
-    const T dist_sqr = square(hit[0]) + square(hit[1]);
-    if (dist_sqr > square(radius))
-        return false;
-
-    return true;
+    T t, u, v;
+    return intersect_disk(ray, radius, t, u, v);
 }
 
 template <typename T>
-inline bool intersect_disk_unit_direction(
+inline bool intersect_disk(
     const Ray<T, 3>&        ray,
     const T                 radius,
-    T&                      tmin,
-    Vector<T, 2>&           uv)
+    T&                      t,
+    T&                      u,
+    T&                      v)
 {
     assert(is_normalized(ray.m_dir));
 
     // Reject rays parallel to the disk's plane.
-    const T t = -ray.m_org[2] / ray.m_dir[2];
-    if (t <= ray.m_tmin || t >= ray.m_tmax)
+    const T dist_to_plane = -ray.m_org.y / ray.m_dir.y;
+    if (dist_to_plane <= ray.m_tmin || dist_to_plane >= ray.m_tmax)
         return false;
 
-    // Check if the surface hit is inside the disk.
-    Vector<T, 3> hit = ray.point_at(t);
-    const T dist_sqr = square(hit[0]) + square(hit[1]);
+    Vector<T, 3> hit = ray.point_at(dist_to_plane);
+    const T dist_sqr = square(hit.x) + square(hit.z);
     if (dist_sqr > square(radius))
         return false;
 
-    tmin = t;
-
-    // Compute disk's parametric coordinates.
-    T phi = std::atan2(hit.y, hit.x);
+    t = dist_to_plane;
+    T phi = std::atan2(hit.x, hit.z);
     if (phi < T(0))
         phi += TwoPi<T>();
-    uv[0] = phi / TwoPi<T>();
-    uv[1] = T(1) - std::sqrt(dist_sqr) / radius;
+    u = phi / TwoPi<T>();
+    v = T(1) - std::sqrt(dist_sqr) / radius;
 
     return true;
 }

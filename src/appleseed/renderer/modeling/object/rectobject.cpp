@@ -60,11 +60,11 @@ namespace
 
 struct RectObject::Impl
 {
-    Vector3d m_corner;
-    Vector3d m_normal;
-    Vector3d m_x;
-    Vector3d m_y;
-    bool m_skip_intersection;
+    Vector3d    m_corner;
+    Vector3d    m_normal;
+    Vector3d    m_x;
+    Vector3d    m_y;
+    bool        m_skip_intersection;
 };
 
 RectObject::RectObject(

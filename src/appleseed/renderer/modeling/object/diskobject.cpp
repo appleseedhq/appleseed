@@ -58,10 +58,17 @@ namespace
     const char* Model = "disk_object";
 }
 
+struct DiskObject::Impl
+{
+    double      m_radius;
+    Vector3d    m_normal;
+};
+
 DiskObject::DiskObject(
     const char*            name,
     const ParamArray&      params)
   : ProceduralObject(name, params)
+  , impl(new Impl())
 {
 }
 
@@ -84,7 +91,8 @@ bool DiskObject::on_frame_begin(
     if (!ProceduralObject::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
-    m_radius = get_uncached_radius();
+    impl->m_radius = get_uncached_radius();
+    impl->m_normal = Vector3d(0.0, 1.0, 0.0);
     return true;
 }
 
@@ -92,8 +100,8 @@ GAABB3 DiskObject::compute_local_bbox() const
 {
     const auto r = static_cast<GScalar>(get_uncached_radius());
     GAABB3 bbox(
-        GVector3(-r, -r, GScalar(0)),
-        GVector3(r, r, GScalar(0)));
+        GVector3(-r, GScalar(0), -r),
+        GVector3(r, GScalar(0), r));
     return bbox;
 }
 
@@ -116,23 +124,22 @@ void DiskObject::intersect(
     const ShadingRay&      ray,
     IntersectionResult&    result) const
 {
-    static const Vector3d n(0.0f, 0.0f, 1.0f);
+    double u, v;
 
-    Vector2d uv;
-
-    result.m_hit = intersect_disk_unit_direction(
+    result.m_hit = intersect_disk(
         ray,
-        m_radius,
+        impl->m_radius,
         result.m_distance,
-        uv);
+        u,
+        v);
 
     if (result.m_hit)
     {
-        result.m_geometric_normal = n;
-        result.m_shading_normal = n;
+        result.m_geometric_normal = impl->m_normal;
+        result.m_shading_normal = impl->m_normal;
 
-        result.m_uv[0] = static_cast<float>(uv[0]);
-        result.m_uv[1] = static_cast<float>(uv[1]);
+        result.m_uv[0] = static_cast<float>(u);
+        result.m_uv[1] = static_cast<float>(v);
 
         result.m_material_slot = 0;
     }
@@ -140,9 +147,9 @@ void DiskObject::intersect(
 
 bool DiskObject::intersect(const ShadingRay& ray) const
 {
-    return intersect_disk_unit_direction(
+    return intersect_disk(
         ray,
-        m_radius);
+        impl->m_radius);
 }
 
 

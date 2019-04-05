@@ -83,7 +83,8 @@ class APPLESEED_DLLSYMBOL DiskObject
   private:
     friend class DiskObjectFactory;
 
-    double m_radius;
+    struct Impl;
+    Impl* impl;
 
     // Constructor.
     DiskObject(
