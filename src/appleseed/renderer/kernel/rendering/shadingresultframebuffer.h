@@ -30,9 +30,9 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/image/filteredtile.h"
+#include "foundation/image/accumulatortile.h"
 #include "foundation/math/aabb.h"
-#include "foundation/math/filter.h"
+#include "foundation/math/vector.h"
 
 // Standard headers.
 #include <cstddef>
@@ -47,27 +47,24 @@ namespace renderer
 {
 
 class ShadingResultFrameBuffer
-  : public foundation::FilteredTile
+  : public foundation::AccumulatorTile
 {
   public:
     ShadingResultFrameBuffer(
         const size_t                    width,
         const size_t                    height,
-        const size_t                    aov_count,
-        const foundation::Filter2f&     filter);
+        const size_t                    aov_count);
 
     ShadingResultFrameBuffer(
         const size_t                    width,
         const size_t                    height,
         const size_t                    aov_count,
-        const foundation::AABB2u&       crop_window,
-        const foundation::Filter2f&     filter);
+        const foundation::AABB2u&       crop_window);
 
     static size_t get_total_channel_count(const size_t aov_count);
 
     void add(
-        const float                     x,
-        const float                     y,
+        const foundation::Vector2u&     pi,
         const ShadingResult&            sample);
 
     void merge(

@@ -132,6 +132,8 @@ source_group ("foundation\\image\\text" FILES
 )
 
 set (foundation_image_sources
+    foundation/image/accumulatortile.cpp
+    foundation/image/accumulatortile.h
     foundation/image/analysis.cpp
     foundation/image/analysis.h
     foundation/image/canvasproperties.h
@@ -145,8 +147,6 @@ set (foundation_image_sources
     foundation/image/drawing.cpp
     foundation/image/drawing.h
     foundation/image/exceptionunsupportedimageformat.h
-    foundation/image/filteredtile.cpp
-    foundation/image/filteredtile.h
     foundation/image/genericimagefilereader.cpp
     foundation/image/genericimagefilereader.h
     foundation/image/genericimagefilewriter.cpp
@@ -316,6 +316,8 @@ set (foundation_math_sources
     foundation/math/dual.h
     foundation/math/fastmath.h
     foundation/math/filter.h
+    foundation/math/filtersamplingtable.cpp
+    foundation/math/filtersamplingtable.h
     foundation/math/fp.h
     foundation/math/fresnel.h
     foundation/math/frustum.h
@@ -400,7 +402,6 @@ set (foundation_meta_benchmarks_sources
     foundation/meta/benchmarks/benchmark_colorspace.cpp
     foundation/meta/benchmarks/benchmark_distance.cpp
     foundation/meta/benchmarks/benchmark_fastmath.cpp
-    foundation/meta/benchmarks/benchmark_filteredtile.cpp
     foundation/meta/benchmarks/benchmark_half.cpp
     foundation/meta/benchmarks/benchmark_hash.cpp
     foundation/meta/benchmarks/benchmark_imageimportancesampler.cpp
@@ -466,7 +467,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_dictionary.cpp
     foundation/meta/tests/test_distance.cpp
     foundation/meta/tests/test_fastmath.cpp
-    foundation/meta/tests/test_filteredtile.cpp
+    foundation/meta/tests/test_filtersamplingtable.cpp
     foundation/meta/tests/test_fp.cpp
     foundation/meta/tests/test_fresnel.cpp
     foundation/meta/tests/test_genericimagefilewriter.cpp

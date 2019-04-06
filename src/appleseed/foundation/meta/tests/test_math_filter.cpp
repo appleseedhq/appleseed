@@ -44,9 +44,35 @@ using namespace std;
 
 namespace
 {
-    template <typename T>
-    bool is_zero_on_domain_border(const Filter2<T>& filter)
+    template <typename Filter1>
+    class SeparableFilter2
+      : public Filter2<typename Filter1::ValueType>
     {
+      public:
+        typedef typename Filter1::ValueType ValueType;
+
+        SeparableFilter2(const Filter1& filter_x, const Filter1& filter_y)
+          : Filter2<ValueType>(filter_x.get_radius(), filter_y.get_radius())
+          , m_filter_x(filter_x)
+          , m_filter_y(filter_y)
+        {
+        }
+
+        ValueType evaluate(const ValueType x, const ValueType y) const override
+        {
+            return m_filter_x.evaluate(x) * m_filter_y.evaluate(y);
+        }
+
+      private:
+        const Filter1 m_filter_x;
+        const Filter1 m_filter_y;
+    };
+
+    template <typename Filter2>
+    bool is_zero_on_domain_border(const Filter2& filter)
+    {
+        typedef typename Filter2::ValueType T;
+
         const T Eps = T(1.0e-6);
 
         return
@@ -60,9 +86,11 @@ namespace
             fz(filter.evaluate(-filter.get_xradius(),                T(0.0)), Eps);
     }
 
-    template <typename T>
-    vector<Vector2d> make_points(const Filter2<T>& filter)
+    template <typename Filter2>
+    vector<Vector2d> make_points(const Filter2& filter)
     {
+        typedef typename Filter2::ValueType T;
+
         const T r = filter.get_xradius();
 
         const size_t PointCount = 256;
@@ -78,11 +106,11 @@ namespace
         return points;
     }
 
-    template <typename T>
+    template <typename Filter2>
     void plot(
         const string&       filepath,
         const string&       plot_title,
-        const Filter2<T>&   filter)
+        const Filter2&      filter)
     {
         GnuplotFile plotfile;
         plotfile.set_title(plot_title + ", radius=" + pretty_scalar(filter.get_xradius(), 1));
@@ -90,20 +118,116 @@ namespace
         plotfile.write(filepath);
     }
 
-    template <typename T, typename U>
+    template <typename Filter2T, typename Filter2U>
     void plot(
         const string&       filepath,
         const string&       plot_title,
         const string&       filter1_name,
-        const Filter2<T>&   filter1,
+        const Filter2T&     filter1,
         const string&       filter2_name,
-        const Filter2<U>&   filter2)
+        const Filter2U&     filter2)
     {
         GnuplotFile plotfile;
         plotfile.set_title(plot_title + ", radius=" + pretty_scalar(filter1.get_xradius(), 1));
         plotfile.new_plot().set_title(filter1_name).set_points(make_points(filter1));
         plotfile.new_plot().set_title(filter2_name).set_points(make_points(filter2));
         plotfile.write(filepath);
+    }
+}
+
+TEST_SUITE(Foundation_Math_Filter_BoxFilter1)
+{
+    TEST_CASE(TestPropertyGetters)
+    {
+        const BoxFilter1<double> filter(2.0);
+
+        EXPECT_EQ(2.0, filter.get_radius());
+    }
+
+    TEST_CASE(Plot)
+    {
+        const SeparableFilter2<BoxFilter1<double>> filter(
+            BoxFilter1<double>(2.0),
+            BoxFilter1<double>(3.0));
+
+        plot(
+            "unit tests/outputs/test_math_filter_boxfilter1.gnuplot",
+            "Separable Box Reconstruction Filter",
+            filter);
+    }
+}
+
+TEST_SUITE(Foundation_Math_Filter_TriangleFilter1)
+{
+    TEST_CASE(Evaluate_PointsOnDomainBorder_ReturnsZero)
+    {
+        const SeparableFilter2<TriangleFilter1<double>> filter(
+            TriangleFilter1<double>(2.0),
+            TriangleFilter1<double>(3.0));
+
+        EXPECT_TRUE(is_zero_on_domain_border(filter));
+    }
+
+    TEST_CASE(Plot)
+    {
+        const SeparableFilter2<TriangleFilter1<double>> filter(
+            TriangleFilter1<double>(2.0),
+            TriangleFilter1<double>(3.0));
+
+        plot(
+            "unit tests/outputs/test_math_filter_trianglefilter1.gnuplot",
+            "Separable Triangle Reconstruction Filter",
+            filter);
+    }
+}
+
+TEST_SUITE(Foundation_Math_Filter_GaussianFilter1)
+{
+    const double Alpha = 4.0;
+
+    TEST_CASE(Evaluate_PointsOnDomainBorder_ReturnsZero)
+    {
+        const SeparableFilter2<GaussianFilter1<double>> filter(
+            GaussianFilter1<double>(2.0, Alpha),
+            GaussianFilter1<double>(3.0, Alpha));
+
+        EXPECT_TRUE(is_zero_on_domain_border(filter));
+    }
+
+    TEST_CASE(Plot)
+    {
+        const SeparableFilter2<GaussianFilter1<double>> filter(
+            GaussianFilter1<double>(2.0, Alpha),
+            GaussianFilter1<double>(3.0, Alpha));
+
+        plot(
+            "unit tests/outputs/test_math_filter_gaussianfilter1.gnuplot",
+            "Separable Gaussian Reconstruction Filter",
+            filter);
+    }
+}
+
+TEST_SUITE(Foundation_Math_Filter_BlackmanHarrisFilter1)
+{
+    TEST_CASE(Evaluate_PointsOnDomainBorder_ReturnsZero)
+    {
+        const SeparableFilter2<BlackmanHarrisFilter1<double>> filter(
+            BlackmanHarrisFilter1<double>(2.0),
+            BlackmanHarrisFilter1<double>(3.0));
+
+        EXPECT_TRUE(is_zero_on_domain_border(filter));
+    }
+
+    TEST_CASE(Plot)
+    {
+        const SeparableFilter2<BlackmanHarrisFilter1<double>> filter(
+            BlackmanHarrisFilter1<double>(2.0),
+            BlackmanHarrisFilter1<double>(3.0));
+
+        plot(
+            "unit tests/outputs/test_math_filter_blackmanfilter1.gnuplot",
+            "Separable Blackman-Harris Reconstruction Filter",
+            filter);
     }
 }
 

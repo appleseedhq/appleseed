@@ -37,9 +37,9 @@
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/accumulatortile.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
-#include "foundation/image/filteredtile.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
@@ -82,8 +82,7 @@ namespace renderer
 
 LocalSampleAccumulationBuffer::LocalSampleAccumulationBuffer(
     const size_t        width,
-    const size_t        height,
-    const Filter2f&     filter)
+    const size_t        height)
 {
     const size_t MinSize = 32;
 
@@ -92,7 +91,11 @@ LocalSampleAccumulationBuffer::LocalSampleAccumulationBuffer(
 
     while (true)
     {
-        m_levels.push_back(new FilteredTile(level_width, level_height, 4, filter));
+        m_levels.push_back(new AccumulatorTile(level_width, level_height, 4));
+        m_level_scales.push_back(
+            Vector2f(
+                static_cast<float>(level_width) / width,
+                static_cast<float>(level_height) / height));
 
         if (level_width <= MinSize && level_height <= MinSize)
             break;
@@ -143,9 +146,9 @@ void LocalSampleAccumulationBuffer::clear()
 }
 
 void LocalSampleAccumulationBuffer::store_samples(
-    const size_t        sample_count,
-    const Sample        samples[],
-    IAbortSwitch&       abort_switch)
+    const size_t            sample_count,
+    const Sample            samples[],
+    IAbortSwitch&           abort_switch)
 {
 #ifdef PRINT_DETAILED_PERF_REPORTS
     Stopwatch<DefaultWallclockTimer> sw(0);
@@ -170,9 +173,8 @@ void LocalSampleAccumulationBuffer::store_samples(
         size_t counter = 0;
         for (uint32 i = 0, e = m_active_level; i <= e; ++i)
         {
-            FilteredTile* level = m_levels[i];
-            const float level_width = static_cast<float>(level->get_width());
-            const float level_height = static_cast<float>(level->get_height());
+            AccumulatorTile* level = m_levels[i];
+            const Vector2f& level_scale = m_level_scales[i];
 
             const Sample* sample_end = samples + sample_count;
             for (const Sample* s = samples; s < sample_end; ++s)
@@ -183,9 +185,11 @@ void LocalSampleAccumulationBuffer::store_samples(
                     return;
                 }
 
-                const float fx = s->m_position.x * level_width;
-                const float fy = s->m_position.y * level_height;
-                level->atomic_add(fx, fy, &s->m_color[0]);
+                level->atomic_add(
+                    Vector2u(
+                        static_cast<size_t>(s->m_pixel_coords.x * level_scale.x),
+                        static_cast<size_t>(s->m_pixel_coords.y * level_scale.y)),
+                    &s->m_color[0]);
             }
         }
 
@@ -226,8 +230,8 @@ void LocalSampleAccumulationBuffer::store_samples(
 }
 
 void LocalSampleAccumulationBuffer::develop_to_frame(
-    Frame&              frame,
-    IAbortSwitch&       abort_switch)
+    Frame&                  frame,
+    IAbortSwitch&           abort_switch)
 {
 #ifdef PRINT_DETAILED_PERF_REPORTS
     Stopwatch<DefaultWallclockTimer> sw(0);
@@ -257,7 +261,7 @@ void LocalSampleAccumulationBuffer::develop_to_frame(
 
     const AABB2u& crop_window = frame.get_crop_window();
 
-    const FilteredTile& level = *m_levels[m_active_level];
+    const AccumulatorTile& level = *m_levels[m_active_level];
 
     for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
     {
@@ -300,13 +304,13 @@ void LocalSampleAccumulationBuffer::develop_to_frame(
 }
 
 void LocalSampleAccumulationBuffer::develop_to_tile(
-    Tile&               color_tile,
-    const size_t        image_width,
-    const size_t        image_height,
-    const FilteredTile& level,
-    const size_t        origin_x,
-    const size_t        origin_y,
-    const AABB2u&       rect)
+    Tile&                   color_tile,
+    const size_t            image_width,
+    const size_t            image_height,
+    const AccumulatorTile&  level,
+    const size_t            origin_x,
+    const size_t            origin_y,
+    const AABB2u&           rect)
 {
     assert(level.get_channel_count() == 4);
 

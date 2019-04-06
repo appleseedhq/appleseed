@@ -477,7 +477,6 @@ namespace
 
             create_direct_link("uniform_sampler.samples",                   "uniform_pixel_renderer.samples");
             create_direct_link("uniform_sampler.force_antialiasing",        "uniform_pixel_renderer.force_antialiasing");
-            create_direct_link("uniform_sampler.decorrelate_pixels",        "uniform_pixel_renderer.decorrelate_pixels");
 
             create_direct_link("adaptive_tile_sampler.batch_size",          "adaptive_tile_renderer.batch_size");
             create_direct_link("adaptive_tile_sampler.min_samples",         "adaptive_tile_renderer.min_samples");
@@ -517,7 +516,6 @@ namespace
         QSpinBox*   m_image_plane_sampler_passes;
         QGroupBox*  m_uniform_image_plane_sampler;
         QGroupBox*  m_adaptive_tile_image_plane_sampler;
-        QCheckBox*  m_uniform_sampler_decorrelate_pixels;
         QCheckBox*  m_uniform_sampler_force_aa;
 
         void create_image_plane_sampling_general_settings(QVBoxLayout* parent)
@@ -575,14 +573,6 @@ namespace
             connect(
                 samples_spinbox, SIGNAL(valueChanged(const int)),
                 SLOT(slot_changed_uniform_sampler_samples(const int)));
-
-            m_uniform_sampler_decorrelate_pixels = create_checkbox("uniform_sampler.decorrelate_pixels", "Decorrelate Pixels");
-            m_uniform_sampler_decorrelate_pixels->setToolTip(m_params_metadata.get_path("uniform_pixel_renderer.decorrelate_pixels.help"));
-            layout->addWidget(m_uniform_sampler_decorrelate_pixels);
-
-            connect(
-                m_image_plane_sampler_passes, SIGNAL(valueChanged(const int)),
-                SLOT(slot_changed_image_plane_sampler_passes(const int)));
         }
 
         void create_image_plane_sampling_adaptive_tile_sampler_settings(QHBoxLayout* parent)
@@ -642,19 +632,6 @@ namespace
 
             m_uniform_image_plane_sampler->setEnabled(sampler == "uniform");
             m_adaptive_tile_image_plane_sampler->setEnabled(sampler == "adaptive_tile");
-        }
-
-        void slot_changed_image_plane_sampler_passes(const int passes)
-        {
-            if (passes > 1)
-            {
-                m_uniform_sampler_decorrelate_pixels->setChecked(true);
-                m_uniform_sampler_decorrelate_pixels->setDisabled(true);
-            }
-            else
-            {
-                m_uniform_sampler_decorrelate_pixels->setDisabled(false);
-            }
         }
 
         void slot_changed_uniform_sampler_samples(const int samples)

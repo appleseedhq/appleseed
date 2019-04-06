@@ -30,11 +30,10 @@
 #include "renderer/kernel/rendering/localsampleaccumulationbuffer.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/filteredtile.h"
+#include "foundation/image/accumulatortile.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/aabb.h"
-#include "foundation/math/filter.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/benchmark.h"
 
@@ -46,14 +45,12 @@ BENCHMARK_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
     struct Fixture
     {
         Tile                            m_color_tile;
-        BlackmanHarrisFilter2<float>    m_filter;
-        FilteredTile                    m_level;
+        AccumulatorTile                 m_level;
         AABB2u                          m_rect;
 
         Fixture()
           : m_color_tile(64, 64, 4, PixelFormatHalf)
-          , m_filter(1.5f, 1.5f)
-          , m_level(256, 256, 4, m_filter)
+          , m_level(256, 256, 4)
           , m_rect(Vector2u(0, 0), Vector2u(63, 63))
         {
             m_level.clear();

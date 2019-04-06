@@ -45,7 +45,7 @@
 #include <vector>
 
 // Forward declarations.
-namespace foundation    { class FilteredTile; }
+namespace foundation    { class AccumulatorTile; }
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class Tile; }
 namespace renderer      { class Frame; }
@@ -61,8 +61,7 @@ class LocalSampleAccumulationBuffer
     // Constructor.
     LocalSampleAccumulationBuffer(
         const size_t                        width,
-        const size_t                        height,
-        const foundation::Filter2f&         filter);
+        const size_t                        height);
 
     // Destructor.
     ~LocalSampleAccumulationBuffer() override;
@@ -86,7 +85,7 @@ class LocalSampleAccumulationBuffer
         foundation::Tile&                   color_tile,
         const size_t                        image_width,
         const size_t                        image_height,
-        const foundation::FilteredTile&     level,
+        const foundation::AccumulatorTile&  level,
         const size_t                        origin_x,
         const size_t                        origin_y,
         const foundation::AABB2u&           rect);
@@ -96,10 +95,11 @@ class LocalSampleAccumulationBuffer
         foundation::SleepWaitPolicy<5>
     > LockType;
 
-    LockType                                m_lock;
-    std::vector<foundation::FilteredTile*>  m_levels;
-    boost::atomic<foundation::int32>*       m_remaining_pixels;
-    boost::atomic<foundation::uint32>       m_active_level;
+    LockType                                  m_lock;
+    std::vector<foundation::AccumulatorTile*> m_levels;
+    std::vector<foundation::Vector2f>         m_level_scales;
+    boost::atomic<foundation::int32>*         m_remaining_pixels;
+    boost::atomic<foundation::uint32>         m_active_level;
 };
 
 }   // namespace renderer

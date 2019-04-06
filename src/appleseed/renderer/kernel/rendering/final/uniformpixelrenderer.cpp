@@ -35,7 +35,6 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/aov/imagestack.h"
-#include "renderer/kernel/rendering/final/pixelsampler.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/rendering/pixelrendererbase.h"
@@ -50,6 +49,7 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/math/aabb.h"
+#include "foundation/math/filtersamplingtable.h"
 #include "foundation/math/hash.h"
 #include "foundation/math/population.h"
 #include "foundation/math/scalar.h"
@@ -87,22 +87,6 @@ namespace
           , m_sample_count(m_params.m_samples)
           , m_sqrt_sample_count(round<int>(sqrt(static_cast<double>(m_params.m_samples))))
         {
-            if (!m_params.m_decorrelate)
-            {
-                m_pixel_sampler.initialize(m_sqrt_sample_count);
-
-                if (thread_index == 0)
-                {
-                    if (params.get_optional<size_t>("passes", 1) > 1)
-                        RENDERER_LOG_WARNING("doing multipass rendering with pixel decorrelation off.");
-
-                    RENDERER_LOG_INFO(
-                        "effective max subpixel grid size: %d x %d",
-                        m_sqrt_sample_count,
-                        m_sqrt_sample_count);
-                }
-            }
-
             const size_t sample_aov_index = frame.aovs().get_index("pixel_sample_count");
 
             // If the sample count AOV is enabled, we need to reset its normalization
@@ -127,11 +111,9 @@ namespace
             RENDERER_LOG_INFO(
                 "uniform pixel renderer settings:\n"
                 "  samples                       %s\n"
-                "  force anti-aliasing           %s\n"
-                "  decorrelate pixels            %s",
+                "  force anti-aliasing           %s",
                 pretty_uint(m_params.m_samples).c_str(),
-                m_params.m_force_aa ? "on" : "off",
-                m_params.m_decorrelate ? "on" : "off");
+                m_params.m_force_aa ? "on" : "off");
 
             m_sample_renderer->print_settings();
         }
@@ -151,116 +133,55 @@ namespace
 
             on_pixel_begin(frame, pi, pt, tile_bbox, aov_accumulators);
 
-            if (m_params.m_decorrelate)
+            // Create a sampling context.
+            const size_t frame_width = frame.image().properties().m_canvas_width;
+            const size_t pixel_index = pi.y * frame_width + pi.x;
+            const size_t instance = hash_uint32(static_cast<uint32>(pass_hash + pixel_index));
+            SamplingContext::RNGType rng(pass_hash, instance);
+            SamplingContext sampling_context(
+                rng,
+                m_params.m_sampling_mode,
+                2,                          // number of dimensions
+                0,                          // number of samples -- unknown
+                instance);                  // initial instance number
+
+            for (size_t i = 0; i < m_sample_count; ++i)
             {
-                // Create a sampling context.
-                const size_t frame_width = frame.image().properties().m_canvas_width;
-                const size_t pixel_index = pi.y * frame_width + pi.x;
-                const size_t instance = hash_uint32(static_cast<uint32>(pass_hash + pixel_index));
-                SamplingContext::RNGType rng(pass_hash, instance);
-                SamplingContext sampling_context(
-                    rng,
-                    m_params.m_sampling_mode,
-                    2,                          // number of dimensions
-                    0,                          // number of samples -- unknown
-                    instance);                  // initial instance number
+                // Generate a uniform sample in [0,1)^2.
+                const Vector2f s =
+                    m_sample_count > 1 || m_params.m_force_aa
+                        ? sampling_context.next2<Vector2f>()
+                        : Vector2f(0.5f);
 
-                for (size_t i = 0; i < m_sample_count; ++i)
-                {
-                    // Generate a uniform sample in [0,1)^2.
-                    const Vector2d s =
-                        m_sample_count > 1 || m_params.m_force_aa
-                            ? sampling_context.next2<Vector2d>()
-                            : Vector2d(0.5);
+                // Sample the pixel filter.
+                const auto& filter_table = frame.get_filter_sampling_table();
+                const Vector2d pf(
+                    static_cast<double>(filter_table.sample(s[0]) + 0.5f),
+                    static_cast<double>(filter_table.sample(s[1]) + 0.5f));
 
-                    // Compute the sample position in NDC.
-                    const Vector2d sample_position = frame.get_sample_position(pi.x + s.x, pi.y + s.y);
+                // Compute the sample position in NDC.
+                const Vector2d sample_position = frame.get_sample_position(pi.x + pf.x, pi.y + pf.y);
 
-                    // Create a pixel context that identifies the pixel and sample currently being rendered.
-                    const PixelContext pixel_context(pi, sample_position);
+                // Create a pixel context that identifies the pixel and sample currently being rendered.
+                const PixelContext pixel_context(pi, sample_position);
 
-                    // Render the sample.
-                    ShadingResult shading_result(aov_count);
-                    SamplingContext child_sampling_context(sampling_context);
-                    m_sample_renderer->render_sample(
-                        child_sampling_context,
-                        pixel_context,
-                        sample_position,
-                        aov_accumulators,
-                        shading_result);
+                // Render the sample.
+                ShadingResult shading_result(aov_count);
+                SamplingContext child_sampling_context(sampling_context);
+                m_sample_renderer->render_sample(
+                    child_sampling_context,
+                    pixel_context,
+                    sample_position,
+                    aov_accumulators,
+                    shading_result);
 
-                    // Update sampling statistics.
-                    m_total_sampling_dim.insert(child_sampling_context.get_total_dimension());
+                // Update sampling statistics.
+                m_total_sampling_dim.insert(child_sampling_context.get_total_dimension());
 
-                    // Merge the sample into the framebuffer.
-                    if (shading_result.is_valid())
-                    {
-                        framebuffer.add(
-                            static_cast<float>(pt.x + s.x),
-                            static_cast<float>(pt.y + s.y),
-                            shading_result);
-                    }
-                    else signal_invalid_sample();
-                }
-            }
-            else
-            {
-                const size_t frame_width = frame.image().properties().m_canvas_width;
-                const size_t pixel_index = pi.y * frame_width + pi.x;
-                const size_t instance = hash_uint32(static_cast<uint32>(pass_hash + pixel_index));
-                SamplingContext::RNGType rng(pass_hash, instance);
-
-                const int base_sx = pi.x * m_sqrt_sample_count;
-                const int base_sy = pi.y * m_sqrt_sample_count;
-
-                for (int sy = 0; sy < m_sqrt_sample_count; ++sy)
-                {
-                    for (int sx = 0; sx < m_sqrt_sample_count; ++sx)
-                    {
-                        // Compute the sample position (in continuous image space) and the instance number.
-                        Vector2d s;
-                        size_t instance;
-                        m_pixel_sampler.sample(base_sx + sx, base_sy + sy, s, instance);
-
-                        // Compute the sample position in NDC.
-                        const Vector2d sample_position = frame.get_sample_position(s.x, s.y);
-
-                        // Create a pixel context that identifies the pixel and sample currently being rendered.
-                        const PixelContext pixel_context(pi, sample_position);
-
-                        // Create a sampling context. We start with an initial dimension of 1,
-                        // as this seems to give less correlation artifacts than when the
-                        // initial dimension is set to 0 or 2.
-                        SamplingContext sampling_context(
-                            rng,
-                            m_params.m_sampling_mode,
-                            1,                          // number of dimensions
-                            instance,                   // number of samples
-                            instance);                  // initial instance number -- end of sequence
-
-                        // Render the sample.
-                        ShadingResult shading_result(aov_count);
-                        m_sample_renderer->render_sample(
-                            sampling_context,
-                            pixel_context,
-                            sample_position,
-                            aov_accumulators,
-                            shading_result);
-
-                        // Update sampling statistics.
-                        m_total_sampling_dim.insert(sampling_context.get_total_dimension());
-
-                        // Merge the sample into the framebuffer.
-                        if (shading_result.is_valid())
-                        {
-                            framebuffer.add(
-                                static_cast<float>(s.x - pi.x + pt.x),
-                                static_cast<float>(s.y - pi.y + pt.y),
-                                shading_result);
-                        }
-                        else signal_invalid_sample();
-                    }
-                }
+                // Merge the sample into the framebuffer.
+                if (shading_result.is_valid())
+                    framebuffer.add(Vector2u(pt), shading_result);
+                else signal_invalid_sample();
             }
 
             on_pixel_end(frame, pi, pt, tile_bbox, aov_accumulators);
@@ -289,13 +210,11 @@ namespace
             const SamplingContext::Mode     m_sampling_mode;
             const size_t                    m_samples;
             const bool                      m_force_aa;
-            const bool                      m_decorrelate;
 
             explicit Parameters(const ParamArray& params)
               : m_sampling_mode(get_sampling_context_mode(params))
               , m_samples(params.get_required<size_t>("samples", 64))
               , m_force_aa(params.get_optional<bool>("force_antialiasing", false))
-              , m_decorrelate(params.get_optional<bool>("decorrelate_pixels", true))
             {
             }
         };
@@ -304,7 +223,6 @@ namespace
         auto_release_ptr<ISampleRenderer>   m_sample_renderer;
         const size_t                        m_sample_count;
         const int                           m_sqrt_sample_count;
-        PixelSampler                        m_pixel_sampler;
         Population<uint64>                  m_total_sampling_dim;
     };
 }
@@ -335,16 +253,6 @@ Dictionary UniformPixelRendererFactory::get_params_metadata()
             .insert(
                 "help",
                 "When using 1 sample/pixel and Force Anti-Aliasing is disabled, samples are placed at the center of pixels"));
-
-    metadata.dictionaries().insert(
-        "decorrelate_pixels",
-        Dictionary()
-            .insert("type", "bool")
-            .insert("default", "true")
-            .insert("label", "Decorrelate Pixels")
-            .insert(
-                "help",
-                "Avoid correlation patterns at the expense of slightly more sampling noise"));
 
     return metadata;
 }

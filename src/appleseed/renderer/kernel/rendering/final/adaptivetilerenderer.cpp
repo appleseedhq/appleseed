@@ -55,7 +55,7 @@
 #include "foundation/image/tile.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/fastmath.h"
-#include "foundation/math/filter.h"
+#include "foundation/math/filtersamplingtable.h"
 #include "foundation/math/ordering.h"
 #include "foundation/math/population.h"
 #include "foundation/math/scalar.h"
@@ -187,8 +187,8 @@ namespace
     // A second tile `second` is used which contains half of the samples of `main`.
     float compute_tile_variance(
         const AABB2u&           bb,
-        const FilteredTile*     main,
-        const FilteredTile*     second)
+        const AccumulatorTile*  main,
+        const AccumulatorTile*  second)
     {
         float error = 0.0f;
 
@@ -244,8 +244,6 @@ namespace
           , m_total_pixel_count(0)
           , m_total_converged_pixel_count(0)
         {
-            compute_tile_margins(frame, thread_index == 0);
-
             m_sample_aov_index = frame.aovs().get_index("pixel_sample_count");
             m_variation_aov_index = frame.aovs().get_index("pixel_variation");
 
@@ -319,13 +317,6 @@ namespace
             if (!tile_bbox.is_valid())
                 return;
 
-            // Pad the bounding box with tile margins.
-            AABB2i padded_tile_bbox;
-            padded_tile_bbox.min.x = tile_bbox.min.x - m_margin_width;
-            padded_tile_bbox.min.y = tile_bbox.min.y - m_margin_height;
-            padded_tile_bbox.max.x = tile_bbox.max.x + m_margin_width;
-            padded_tile_bbox.max.y = tile_bbox.max.y + m_margin_height;
-
             // Inform the pixel renderer that we are about to render a tile.
             on_tile_begin(frame, tile_x, tile_y, tile, aov_tiles);
 
@@ -353,8 +344,7 @@ namespace
                     tile.get_width(),
                     tile.get_height(),
                     frame.aov_images().size(),
-                    tile_bbox,
-                    frame.get_filter()));
+                    tile_bbox));
 
             if (m_params.m_passes > 1)
                 second_framebuffer->copy_from(*framebuffer);
@@ -367,7 +357,7 @@ namespace
             vector<PixelBlock> finished_blocks;
 
             // Initially split blocks so that no block is larger than `BlockMaxAllowedSize`.
-            create_rendering_blocks(rendering_blocks, padded_tile_bbox, framebuffer->get_crop_window());
+            create_rendering_blocks(rendering_blocks, tile_bbox, framebuffer->get_crop_window());
 
             // First uniform pass based on adaptiveness parameter.
             if (m_params.m_min_samples > 0)
@@ -646,8 +636,6 @@ namespace
 
         AOVAccumulatorContainer                 m_aov_accumulators;
         IShadingResultFrameBufferFactory*       m_framebuffer_factory;
-        int                                     m_margin_width;
-        int                                     m_margin_height;
         const Parameters                        m_params;
         size_t                                  m_sample_aov_index;
         size_t                                  m_variation_aov_index;
@@ -660,36 +648,6 @@ namespace
         Population<uint64>                      m_spp;
         size_t                                  m_total_pixel_count;
         size_t                                  m_total_converged_pixel_count;
-
-        // todo: factorize, this also exists in the GenericTileRenderer.
-        void compute_tile_margins(
-            const Frame&                        frame,
-            const bool                          primary)
-        {
-            m_margin_width = truncate<int>(ceil(frame.get_filter().get_xradius() - 0.5f));
-            m_margin_height = truncate<int>(ceil(frame.get_filter().get_yradius() - 0.5f));
-
-            const CanvasProperties& properties = frame.image().properties();
-            const size_t padded_tile_width = properties.m_tile_width + 2 * m_margin_width;
-            const size_t padded_tile_height = properties.m_tile_height + 2 * m_margin_height;
-            const size_t padded_pixel_count = padded_tile_width * padded_tile_height;
-            const size_t pixel_count = properties.m_tile_width * properties.m_tile_height;
-            const size_t overhead_pixel_count = padded_pixel_count - pixel_count;
-            const double wasted_effort = static_cast<double>(overhead_pixel_count) / pixel_count * 100.0;
-            const double MaxWastedEffort = 15.0;    // percents
-
-            if (primary)
-            {
-                RENDERER_LOG(
-                    wasted_effort > MaxWastedEffort ? LogMessage::Warning : LogMessage::Info,
-                    "rendering effort wasted by tile borders: %s (tile dimensions: %s x %s, tile margins: %s x %s)",
-                    pretty_percent(overhead_pixel_count, pixel_count).c_str(),
-                    pretty_uint(properties.m_tile_width).c_str(),
-                    pretty_uint(properties.m_tile_height).c_str(),
-                    pretty_uint(2 * m_margin_width).c_str(),
-                    pretty_uint(2 * m_margin_height).c_str());
-            }
-        }
 
         void on_tile_begin(
             const Frame&                        frame,
@@ -756,10 +714,10 @@ namespace
 
         void create_rendering_blocks(
             deque<PixelBlock>&                  rendering_blocks,
-            const AABB2i&                       padded_tile_bbox,
+            const AABB2i&                       tile_bbox,
             const AABB2u&                       frame_bbox)
         {
-            deque<PixelBlock> initial_blocks(1, PixelBlock(padded_tile_bbox));
+            deque<PixelBlock> initial_blocks(1, PixelBlock(tile_bbox));
 
             while (!initial_blocks.empty())
             {
@@ -818,10 +776,10 @@ namespace
                     if (abort_switch.is_aborted())
                         return;
 
-                    // Retrieve the coordinates of the pixel in the padded tile.
+                    // Retrieve the coordinates of the pixel in the tile.
                     const Vector2i pt(x, y);
 
-                    // Skip pixels outside the intersection of the padded tile and the crop window.
+                    // Skip pixels outside the intersection of the tile and the crop window.
                     if (!pb.m_surface.contains(pt))
                         continue;
 
@@ -882,10 +840,16 @@ namespace
             for (size_t i = 0; i < batch_size; ++i)
             {
                 // Generate a uniform sample in [0,1)^2.
-                const Vector2d s = sampling_context.next2<Vector2d>();
+                const Vector2f s = sampling_context.next2<Vector2f>();
+
+                // Sample the pixel filter.
+                const auto& filter_table = frame.get_filter_sampling_table();
+                const Vector2d pf(
+                    static_cast<double>(filter_table.sample(s[0]) + 0.5f),
+                    static_cast<double>(filter_table.sample(s[1]) + 0.5f));
 
                 // Compute the sample position in NDC.
-                const Vector2d sample_position = frame.get_sample_position(pi.x + s.x, pi.y + s.y);
+                const Vector2d sample_position = frame.get_sample_position(pi.x + pf.x, pi.y + pf.y);
 
                 // Create a pixel context that identifies the pixel and sample currently being rendered.
                 const PixelContext pixel_context(pi, sample_position);
@@ -908,19 +872,11 @@ namespace
                 }
 
                 // Merge the sample into the scratch framebuffer.
-                framebuffer->add(
-                    static_cast<float>(pt.x + s.x),
-                    static_cast<float>(pt.y + s.y),
-                    shading_result);
+                framebuffer->add(Vector2u(pt), shading_result);
 
                 // Only half the samples go into the second scratch framebuffer.
                 if (i & 1)
-                {
-                    second_framebuffer->add(
-                        static_cast<float>(pt.x + s.x),
-                        static_cast<float>(pt.y + s.y),
-                        shading_result);
-                }
+                    second_framebuffer->add(Vector2u(pt), shading_result);
             }
 
             on_pixel_end(frame, pi, pt);
