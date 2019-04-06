@@ -496,7 +496,8 @@ namespace
 
             size_t tile_converged_pixel_count = 0;
             float average_noise_level = 0.0f;
-
+            const float normalizing_factor = 1.0f / m_params.m_noise_threshold;
+            
             for (size_t i = 0, n = rendering_blocks.size(); i < n; ++i)
             {
                 const PixelBlock& pb = rendering_blocks[i];
@@ -542,7 +543,7 @@ namespace
                         {
                             Color3f variation;
                             m_variation_aov_tile->get_pixel(pt.x, pt.y, variation);
-                            variation[0] += pb.m_block_error;
+                            variation[0] += pb.m_block_error * normalizing_factor ;
                             m_variation_aov_tile->set_pixel(pt.x, pt.y, variation);
                         }
                     }
