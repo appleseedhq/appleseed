@@ -239,14 +239,15 @@ void CameraController::configure_controller()
     const Vector3d to_target = controller_target - camera_position;
 
     const double target_to_viewing_vector_distance =
-        square_distance_point_line(
-            controller_target,
-            camera_position,
-            camera_direction);
+        sqrt(
+            square_distance_point_line(
+                controller_target,
+                camera_position,
+                camera_direction));
 
     // Check whether the target is on the viewing vector and in front of the camera.
     const bool target_is_behind = dot(to_target, camera_direction) < 0.0;
-    const bool target_is_off = target_to_viewing_vector_distance > 1.0e-7;
+    const bool target_is_off = target_to_viewing_vector_distance > 1.0e-4;
     if (has_target && (target_is_behind || target_is_off))
         RENDERER_LOG_WARNING("camera's controller target is off the viewing direction, realigning it.");
 
