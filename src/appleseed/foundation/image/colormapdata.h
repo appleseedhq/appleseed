@@ -32,7 +32,7 @@ namespace foundation
 {
 
 //
-// Perceptually uniform sequential color maps from Matplotlib in sRGB color space.
+// Perceptually uniform sequential color maps from Matplotlib in linear RGB color space.
 //
 // References:
 //
@@ -41,14 +41,14 @@ namespace foundation
 //   http://medvis.org/2016/02/23/better-than-the-rainbow-the-matplotlib-alternative-colormaps/
 //
 
-extern const float MagmaColorMap[3 * 256];
-extern const float InfernoColorMap[3 * 256];
-extern const float PlasmaColorMap[3 * 256];
-extern const float ViridisColorMap[3 * 256];
+extern const float MagmaColorMapLinearRGB[3 * 256];
+extern const float InfernoColorMapLinearRGB[3 * 256];
+extern const float PlasmaColorMapLinearRGB[3 * 256];
+extern const float ViridisColorMapLinearRGB[3 * 256];
 
 
 //
-// For completeness, the Jet color map popularized by MATLAB, in sRGB color space.
+// For completeness, the Jet color map popularized by MATLAB, in linear RGB color space.
 //
 // References:
 //
@@ -58,6 +58,6 @@ extern const float ViridisColorMap[3 * 256];
 //   https://www.youtube.com/watch?v=xAoljeRJ3lU
 //
 
-extern const float JetColorMap[3 * 9];
+extern const float JetColorMapLinearRGB[3 * 9];
 
 }   // namespace foundation
