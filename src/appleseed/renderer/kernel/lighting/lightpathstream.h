@@ -42,7 +42,7 @@
 
 // Forward declarations.
 namespace renderer  { class Camera; }
-namespace renderer  { class EmittingTriangle; }
+namespace renderer  { class EmittingShape; }
 namespace renderer  { class Entity; }
 namespace renderer  { class EnvironmentEDF; }
 namespace renderer  { class Light; }
@@ -76,8 +76,8 @@ class LightPathStream
         const PathVertex&               vertex,
         const Spectrum&                 emitted_radiance);
 
-    void sampled_emitting_triangle(
-        const EmittingTriangle&         triangle,
+    void sampled_emitting_shape(
+        const EmittingShape&            shape,
         const foundation::Vector3d&     emission_position,
         const Spectrum&                 material_value,
         const Spectrum&                 emitted_radiance);

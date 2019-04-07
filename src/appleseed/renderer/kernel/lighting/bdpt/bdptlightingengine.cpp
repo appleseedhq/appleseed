@@ -468,8 +468,8 @@ namespace
                 light_sample);
 
             return
-                light_sample.m_triangle != nullptr
-                    ? trace_emitting_triangle(
+                light_sample.m_shape != nullptr
+                    ? trace_emitting_shape(
                         sampling_context,
                         shading_context,
                         light_sample,
@@ -480,7 +480,7 @@ namespace
                         light_sample);
         }
 
-        size_t trace_emitting_triangle(
+        size_t trace_emitting_shape(
             SamplingContext&            sampling_context,
             const ShadingContext&       shading_context,
             LightSample&                light_sample,
@@ -492,7 +492,7 @@ namespace
                     light_sample.m_geometric_normal,
                     light_sample.m_shading_normal);
 
-            const Material* material = light_sample.m_triangle->m_material;
+            const Material* material = light_sample.m_shape->m_material;
             const Material::RenderData& material_data = material->get_render_data();
 
             // Build a shading point on the light source.

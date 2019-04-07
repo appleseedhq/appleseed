@@ -63,7 +63,7 @@ class LightTree
     // Build the tree based on the lights collected by the BackwardLightSampler.
     LightTree(
         const std::vector<NonPhysicalLightInfo>&      non_physical_lights,
-        const std::vector<EmittingTriangle>&          emitting_triangles);
+        const std::vector<EmittingShape>&             emitting_shapes);
 
     std::vector<size_t> build();
 
@@ -94,11 +94,11 @@ class LightTree
         // Item contains bbox and source index of each light source.
         // source_index represents the light index in m_light_sources vector.
         // external_source_index represents the light index in light_tree_lights
-        // and emitting_triangles vectors within the BackwardLightSampler.
+        // and emitting_shapes vectors within the BackwardLightSampler.
         Item(
             const foundation::AABB3d&       bbox,
             const size_t                    light_index,
-            const LightType                 light_type) 
+            const LightType                 light_type)
             : m_bbox(bbox)
             , m_light_index(light_index)
             , m_light_type(light_type)
@@ -107,12 +107,12 @@ class LightTree
     };
 
     typedef std::vector<NonPhysicalLightInfo>       NonPhysicalLightVector;
-    typedef std::vector<EmittingTriangle>           EmittingTriangleVector;
+    typedef std::vector<EmittingShape>              EmittingShapeVector;
     typedef std::vector<Item>                       ItemVector;
     typedef std::vector<size_t>                     IndexLUT;
 
     const NonPhysicalLightVector&                   m_non_physical_lights;
-    const EmittingTriangleVector&                   m_emitting_triangles;
+    const EmittingShapeVector&                      m_emitting_shapes;
     ItemVector                                      m_items;
     size_t                                          m_tree_depth;
     bool                                            m_is_built;
@@ -122,12 +122,12 @@ class LightTree
     // represents the sum of all its child nodes importances.
     float recursive_node_update(
         const size_t                                parent_index,
-        const size_t                                node_index, 
+        const size_t                                node_index,
         const size_t                                node_level,
         IndexLUT&                                   tri_index_to_node_index);
-    
-    foundation::Vector3d emitting_triangle_centroid(
-        const size_t                                triangle_index) const;
+
+    foundation::Vector3d emitting_shape_centroid(
+        const size_t                                shape_index) const;
 
     float compute_node_probability(
         const LightTreeNode<foundation::AABB3d>&    node,

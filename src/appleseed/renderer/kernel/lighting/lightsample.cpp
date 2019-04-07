@@ -53,7 +53,7 @@ void LightSample::make_shading_point(
     const Vector3d&         direction,
     const Intersector&      intersector) const
 {
-    assert(m_triangle && !m_light);
+    assert(m_shape && !m_light);
 
     intersector.make_surface_shading_point(
         shading_point,
@@ -64,13 +64,13 @@ void LightSample::make_shading_point(
             0.0,
             ShadingRay::Time(),
             VisibilityFlags::CameraRay, 0),
-        ShadingPoint::PrimitiveTriangle,    // note: we assume light samples are always on triangles (and not on curves)
+        ShadingPoint::PrimitiveTriangle,    // note: we assume light samples are always on shapes (and not on curves)
         m_bary,
-        m_triangle->m_assembly_instance,
-        m_triangle->m_assembly_instance->transform_sequence().get_earliest_transform(),
-        m_triangle->m_object_instance_index,
-        m_triangle->m_triangle_index,
-        m_triangle->m_triangle_support_plane);
+        m_shape->m_assembly_instance,
+        m_shape->m_assembly_instance->transform_sequence().get_earliest_transform(),
+        m_shape->m_object_instance_index,
+        m_shape->m_shape_index,
+        m_shape->m_shape_support_plane);
 }
 
 } // namespace renderer
