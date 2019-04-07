@@ -2204,19 +2204,19 @@ if (USE_FIND_PACKAGE_FOR_OSL)
 else ()
     add_custom_command (TARGET appleseed
         PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/osl-release/bin/oslinfo${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+        COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/osl-release/bin/oslinfo.exe ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
     add_custom_command (TARGET appleseed
         PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/bin/maketx${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+        COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/bin/maketx.exe ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
     add_custom_command (TARGET appleseed
         PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/bin/oiiotool${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+        COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/bin/oiiotool.exe ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
     add_custom_command (TARGET appleseed
         PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/bin/idiff${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+        COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/bin/idiff.exe ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
 endif ()
 
