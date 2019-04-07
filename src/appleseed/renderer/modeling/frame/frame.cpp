@@ -86,7 +86,6 @@ using namespace bcd;
 using namespace foundation;
 using namespace std;
 namespace bf = boost::filesystem;
-namespace bsys = boost::system;
 
 namespace renderer
 {
@@ -527,13 +526,14 @@ void Frame::denoise(
 
 namespace
 {
-    inline size_t get_checkpoint_total_channel_count(const size_t aov_count)
+    size_t get_checkpoint_total_channel_count(const size_t aov_count)
     {
         // The beauty image plus the shading result framebuffer.
         return ShadingResultFrameBuffer::get_total_channel_count(aov_count) + 1;
     }
 
     typedef vector<tuple<string, CanvasProperties, ImageAttributes>> CheckpointProperties;
+
 
     //
     // Interface used to save the rendering buffer in checkpoints.
@@ -775,7 +775,6 @@ namespace
         if (!result)
             RENDERER_LOG_ERROR("could not save denoiser checkpoint.");
     }
-
 }
 
 bool Frame::load_checkpoint(IShadingResultFrameBufferFactory* buffer_factory)
@@ -991,7 +990,6 @@ void Frame::save_checkpoint(
 
 namespace
 {
-
     void add_chromaticities_attributes(ImageAttributes& image_attributes)
     {
         // Scene-linear sRGB / Rec. 709 chromaticities.
@@ -1038,19 +1036,19 @@ namespace
         }
     }
 
-    /*
-     * Default Export Format
-     * OpenEXR   .exr          4-channel   16-bit (half)       Linear
-     * RGBE      .hdr          3-channel   32-bit (8-bit * 3   Linear
-     *                                     + a shared 8-bit
-     *                                     exponent)
-     * TIFF      .tiff/.tif    4-channel   16-bit (uint16)     Linear
-     * BMP       .bmp          4-channel    8-bit (uint8)        sRGB
-     * PNG       .png          4-channel    8-bit (uint8)        sRGB
-     * JPEG      .jpg/.jpe/    3-channel    8-bit (uint8)        sRGB
-     *           .jpeg/.jif/
-     *           .jfif/.jfi
-     */
+    //
+    // Default export formats:
+    //
+    // OpenEXR   .exr          4-channel   16-bit (half)                            Linear
+    // RGBE      .hdr          3-channel   32-bit (8-bit RGB + shared exponent)     Linear
+    // TIFF      .tiff/.tif    4-channel   16-bit (uint16)                          Linear
+    // BMP       .bmp          4-channel    8-bit (uint8)                             sRGB
+    // PNG       .png          4-channel    8-bit (uint8)                             sRGB
+    // JPEG      .jpg/.jpe/    3-channel    8-bit (uint8)                             sRGB
+    //           .jpeg/.jif/
+    //           .jfif/.jfi
+    //
+
     bool write_image(
         const Frame&            frame,
         const char*             file_path,
@@ -1075,27 +1073,25 @@ namespace
 
         try
         {
-            const bool high_dynamic_range_format =
+            const bool is_hdr_format =
                 extension == ".exr"  ||
                 extension == ".tiff" ||
                 extension == ".tif"  ||
                 extension == ".hdr";
 
-            std::unique_ptr<Image> transformed_image;
-            if (
-                !high_dynamic_range_format &&
-                image.properties().m_channel_count == 4)
+            unique_ptr<Image> transformed_image;
+            if (!is_hdr_format && image.properties().m_channel_count == 4)
             {
                 transformed_image.reset(new Image(image));
                 transform_to_srgb(*transformed_image);
             }
             else if (extension == ".hdr")
             {
-                // .hdr file only support 3 channel
+                // HDR files only support 3 channel.
                 const size_t shuffle_table[4] = { 0, 1, 2, Pixel::SkipChannel };
                 transformed_image.reset(new Image(image, image.properties().m_pixel_format, shuffle_table));
             }
-            else if (high_dynamic_range_format)
+            else if (is_hdr_format)
             {
                 transformed_image.reset(new Image(image));
             }
@@ -1107,30 +1103,19 @@ namespace
                 return false;
             }
 
-            if (high_dynamic_range_format)
-            {
-                image_attributes.insert("color_space", "linear");
-            }
-            else
-            {
-                image_attributes.insert("color_space", "sRGB");
-            }
+            image_attributes.insert("color_space",
+                is_hdr_format ? "linear" : "sRGB");
 
             create_parent_directories(bf_file_path);
 
-            const std::string filename = bf_file_path.string();
-
+            const string filename = bf_file_path.string();
             GenericImageFileWriter writer(filename.c_str());
 
             writer.append_image(transformed_image.get());
-
             writer.set_image_attributes(image_attributes);
 
-            if (extension == ".tiff" ||
-                extension == ".tif")
-            {
+            if (extension == ".tiff" || extension == ".tif")
                 writer.set_image_output_format(PixelFormat::PixelFormatUInt16);
-            }
 
             writer.write();
         }
@@ -1283,7 +1268,7 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
     add_chromaticities_attributes(image_attributes);
     image_attributes.insert("color_space", "linear");
 
-    std::vector<Image> images;
+    vector<Image> images;
 
     create_parent_directories(file_path);
 

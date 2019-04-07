@@ -543,7 +543,7 @@ namespace
                         {
                             Color3f variation;
                             m_variation_aov_tile->get_pixel(pt.x, pt.y, variation);
-                            variation[0] += pb.m_block_error * normalizing_factor ;
+                            variation[0] += pb.m_block_error * normalizing_factor;
                             m_variation_aov_tile->set_pixel(pt.x, pt.y, variation);
                         }
                     }
