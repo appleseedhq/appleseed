@@ -34,8 +34,11 @@
 #include "foundation/math/scalar.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <limits>
+
+using namespace std;
 
 namespace foundation
 {
@@ -46,9 +49,9 @@ void ColorMap::find_min_max_red_channel(
     float&          min_val,
     float&          max_val)
 {
-    min_val = std::numeric_limits<float>::max();
-    max_val = -std::numeric_limits<float>::max();
-    
+    min_val = +numeric_limits<float>::max();
+    max_val = -numeric_limits<float>::max();
+
     for_each_pixel(image, crop_window, [&min_val, &max_val](const Color4f& val)
     {
         min_val = min(val[0], min_val);
@@ -57,13 +60,13 @@ void ColorMap::find_min_max_red_channel(
 }
 
 void ColorMap::find_min_max_relative_luminance(
-    Image&              image,
-    const AABB2u&       crop_window,
-    float&              min_luminance,
-    float&              max_luminance)
+    Image&          image,
+    const AABB2u&   crop_window,
+    float&          min_luminance,
+    float&          max_luminance)
 {
-    min_luminance = std::numeric_limits<float>::max();
-    max_luminance = -std::numeric_limits<float>::max();
+    min_luminance = +numeric_limits<float>::max();
+    max_luminance = -numeric_limits<float>::max();
 
     for_each_pixel(image, crop_window, [&min_luminance, &max_luminance](const Color4f& color)
     {
@@ -96,10 +99,10 @@ void ColorMap::set_palette_from_image_file(const Image& image)
 }
 
 void ColorMap::remap_red_channel(
-    Image&              image,
-    const AABB2u&       crop_window,
-    const float         min_value,
-    const float         max_value) const
+    Image&          image,
+    const AABB2u&   crop_window,
+    const float     min_value,
+    const float     max_value) const
 {
     if (max_value == min_value)
     {
@@ -110,21 +113,21 @@ void ColorMap::remap_red_channel(
     }
     else
     {
-        assert(max_value > min_value);
+        const float k = 1.0f / (max_value - min_value);
 
-        for_each_pixel(image, crop_window, [this, min_value, max_value](Color4f& color)
+        for_each_pixel(image, crop_window, [this, min_value, k](Color4f& color)
         {
-            const float c = saturate(fit(color[0], min_value, max_value, 0.0f, 1.0f));
-            color.rgb() = evaluate_palette(c);
+            const float x = saturate((color[0] - min_value) * k);
+            color.rgb() = evaluate_palette(x);
         });
     }
 }
 
 void ColorMap::remap_relative_luminance(
-    Image&                  image,
-    const AABB2u&           crop_window,
-    const float             min_luminance, 
-    const float             max_luminance) const
+    Image&          image,
+    const AABB2u&   crop_window,
+    const float     min_luminance,
+    const float     max_luminance) const
 {
     if (min_luminance == max_luminance)
     {
@@ -135,17 +138,11 @@ void ColorMap::remap_relative_luminance(
     }
     else
     {
-        for_each_pixel(image, crop_window, [this, min_luminance, max_luminance](Color4f& color)
+        const float k = 1.0f / (max_luminance - min_luminance);
+
+        for_each_pixel(image, crop_window, [this, min_luminance, k](Color4f& color)
         {
-            const float col_luminance = luminance(color.rgb());
-
-            const float x =
-                saturate(
-                    inverse_lerp(
-                        min_luminance,
-                        max_luminance,
-                        col_luminance));
-
+            const float x = saturate((luminance(color.rgb()) - min_luminance) * k);
             color.rgb() = evaluate_palette(x);
         });
     }
@@ -154,7 +151,7 @@ void ColorMap::remap_relative_luminance(
 Color3f ColorMap::evaluate_palette(float x) const
 {
     assert(m_palette.size() >= 2);
-    
+
     x *= m_palette.size() - 1;
 
     const size_t ix = min(truncate<size_t>(x), m_palette.size() - 2);
