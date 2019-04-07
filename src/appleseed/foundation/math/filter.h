@@ -44,6 +44,109 @@ namespace foundation
 {
 
 //
+// Base class for 1D reconstruction filters.
+//
+// The filters are not normalized (they don't integrate to 1 over their domain).
+// The return value of evaluate() is undefined if (x) is outside the filter's domain.
+// Filters that have a closed form sampling formula implement a sample method.
+//
+
+template <typename T>
+class Filter1
+{
+  public:
+    typedef T ValueType;
+
+    explicit Filter1(const T radius);
+
+    T get_radius() const;
+
+  protected:
+    const T m_radius;
+    const T m_rcp_radius;
+};
+
+
+//
+// 1D box filter.
+//
+
+template <typename T>
+class BoxFilter1
+  : public Filter1<T>
+{
+  public:
+    explicit BoxFilter1(const T radius);
+
+    T evaluate(const T x) const;
+
+    T sample(const T s) const;
+};
+
+
+//
+// 1D triangle filter.
+//
+
+template <typename T>
+class TriangleFilter1
+  : public Filter1<T>
+{
+  public:
+    explicit TriangleFilter1(const T radius);
+
+    T evaluate(const T x) const;
+
+    T sample(const T s) const;
+
+  private:
+    static T sample_linear(const T a, const T b, const T s);
+};
+
+
+//
+// 1D Gaussian filter.
+//
+
+template <typename T>
+class GaussianFilter1
+  : public Filter1<T>
+{
+  public:
+    GaussianFilter1(
+        const T radius,
+        const T alpha);
+
+    T evaluate(const T x) const;
+
+  private:
+    const T m_alpha;
+    const T m_shift;
+
+    static T gaussian(const T x, const T alpha);
+};
+
+
+//
+// 1D Blackman-Harris filter.
+//
+// Reference:
+//
+//   http://en.wikipedia.org/wiki/Window_function#Higher-order_generalized_cosine_windows
+//
+
+template <typename T>
+class BlackmanHarrisFilter1
+  : public Filter1<T>
+{
+  public:
+    explicit BlackmanHarrisFilter1(const T radius);
+
+    T evaluate(const T x) const;
+};
+
+
+//
 // Base class for 2D reconstruction filters.
 //
 // The filters are not normalized (they don't integrate to 1 over their domain).
@@ -238,6 +341,133 @@ class FastBlackmanHarrisFilter2
   private:
     static T blackman(const T x);
 };
+
+
+//
+// Filter1 class implementation.
+//
+
+template <typename T>
+inline Filter1<T>::Filter1(const T radius)
+  : m_radius(radius)
+  , m_rcp_radius(T(1.0) / radius)
+{
+}
+
+template <typename T>
+inline T Filter1<T>::get_radius() const
+{
+    return m_radius;
+}
+
+
+//
+// BoxFilter1 class implementation.
+//
+
+template <typename T>
+inline BoxFilter1<T>::BoxFilter1(const T radius)
+  : Filter1<T>(radius)
+{
+}
+
+template <typename T>
+inline T BoxFilter1<T>::evaluate(const T x) const
+{
+    return T(1.0);
+}
+
+template <typename T>
+inline T BoxFilter1<T>::sample(const T s) const
+{
+    const T r = Filter1<T>::m_radius;
+    return lerp(-r, r, s);
+}
+
+
+//
+// TriangleFilter1 class implementation.
+//
+
+template <typename T>
+inline TriangleFilter1<T>::TriangleFilter1(const T radius)
+  : Filter1<T>(radius)
+{
+}
+
+template <typename T>
+inline T TriangleFilter1<T>::evaluate(const T x) const
+{
+    const T nx = x * Filter1<T>::m_rcp_radius;
+    return T(1.0) - std::abs(nx);
+}
+
+template <typename T>
+inline T TriangleFilter1<T>::sample(const T s) const
+{
+    const T r = Filter1<T>::m_radius;
+    return s < T(0.5)
+        ? -r * sample_linear(T(1.0), T(0.0), T(2.0) * s)
+        :  r * sample_linear(T(1.0), T(0.0), T(2.0) * (s - T(0.5)));
+
+}
+
+template <typename T>
+inline T TriangleFilter1<T>::sample_linear(const T a, const T b, const T s)
+{
+    return saturate((a - std::sqrt(lerp(square(a), square(b), s))) / (a - b));
+}
+
+
+//
+// GaussianFilter1 class implementation.
+//
+
+template <typename T>
+inline GaussianFilter1<T>::GaussianFilter1(
+    const T radius,
+    const T alpha)
+  : Filter1<T>(radius)
+  , m_alpha(alpha)
+  , m_shift(gaussian(T(1.0), alpha))
+{
+}
+
+template <typename T>
+inline T GaussianFilter1<T>::evaluate(const T x) const
+{
+    const T nx = x * Filter1<T>::m_rcp_radius;
+    return gaussian(nx, m_alpha) - m_shift;
+}
+
+template <typename T>
+inline T GaussianFilter1<T>::gaussian(const T x, const T alpha)
+{
+    return std::exp(-alpha * x * x);
+}
+
+
+//
+// BlackmanHarrisFilter1 class implementation.
+//
+
+template <typename T>
+inline BlackmanHarrisFilter1<T>::BlackmanHarrisFilter1(const T radius)
+  : Filter1<T>(radius)
+{
+}
+
+template <typename T>
+inline T BlackmanHarrisFilter1<T>::evaluate(const T x) const
+{
+    const T nx = T(0.5) * (T(1.0) + x * Filter1<T>::m_rcp_radius);
+
+    return
+        T(0.35875)
+      - T(0.48829) * std::cos((T(2.0) * Pi<T>()) * nx)
+      + T(0.14128) * std::cos((T(4.0) * Pi<T>()) * nx)
+      - T(0.01174) * std::cos((T(6.0) * Pi<T>()) * nx); // original coefficient is 0.01168, modified to ensure 0 at borders
+}
 
 
 //

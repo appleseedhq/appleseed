@@ -34,6 +34,7 @@
 #include "ui_renderingsettingswindow.h"
 
 // appleseed.studio headers.
+#include "mainwindow/collapsiblesectionwidget.h"
 #include "mainwindow/configurationmanagerwindow.h"
 #include "mainwindow/project/projectmanager.h"
 #include "utility/foldablepanelwidget.h"
@@ -178,7 +179,7 @@ class RenderSettingsPanel
   : public FoldablePanelWidget
 {
   public:
-    RenderSettingsPanel(const QString& title, QWidget* parent = nullptr)
+    explicit RenderSettingsPanel(const QString& title, QWidget* parent = nullptr)
       : FoldablePanelWidget(title, parent)
       , m_params_metadata(Configuration::get_metadata())
     {
@@ -431,7 +432,7 @@ namespace
         Q_OBJECT
 
       public:
-        GeneralSettingsPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit GeneralSettingsPanel(const Configuration& config, QWidget* parent = nullptr)
           : RenderSettingsPanel("General Settings", parent)
         {
             QFormLayout* layout = create_form_layout();
@@ -455,17 +456,27 @@ namespace
     };
 
     //
-    // Image Plane Sampling panel.
+    // Image Plane Sampling panels.
     //
 
     class ImagePlaneSamplingPanel
       : public RenderSettingsPanel
     {
+      public:
+        explicit ImagePlaneSamplingPanel(QWidget* parent = nullptr)
+          : RenderSettingsPanel("Image Plane Sampling", parent)
+        {   
+        }
+    };
+
+    class FinalImagePlaneSamplingPanel
+      : public ImagePlaneSamplingPanel
+    {
         Q_OBJECT
 
       public:
-        ImagePlaneSamplingPanel(const Configuration& config, QWidget* parent = nullptr)
-          : RenderSettingsPanel("Image Plane Sampling", parent)
+        explicit FinalImagePlaneSamplingPanel(const Configuration& config, QWidget* parent = nullptr)
+          : ImagePlaneSamplingPanel(parent)
         {
             QVBoxLayout* layout = new QVBoxLayout();
             container()->setLayout(layout);
@@ -475,14 +486,13 @@ namespace
 
             create_direct_link("general.passes",                                   "passes");
 
-            create_direct_link("uniform_sampler.samples",                          "uniform_pixel_renderer.samples");
-            create_direct_link("uniform_sampler.force_antialiasing",               "uniform_pixel_renderer.force_antialiasing");
-            create_direct_link("uniform_sampler.decorrelate_pixels",               "uniform_pixel_renderer.decorrelate_pixels");
-
             create_direct_link("texture_controlled_sampler.min_samples",           "texture_controlled_pixel_renderer.min_samples");
             create_direct_link("texture_controlled_sampler.max_samples",           "texture_controlled_pixel_renderer.max_samples");
             create_direct_link("texture_controlled_sampler.file_path",             "texture_controlled_pixel_renderer.file_path");
             create_direct_link("texture_controlled_sampler.force_antialiasing",    "texture_controlled_pixel_renderer.force_antialiasing");
+
+            create_direct_link("uniform_sampler.samples",                          "uniform_pixel_renderer.samples");
+            create_direct_link("uniform_sampler.force_antialiasing",               "uniform_pixel_renderer.force_antialiasing");
 
             create_direct_link("adaptive_tile_sampler.batch_size",                 "adaptive_tile_renderer.batch_size");
             create_direct_link("adaptive_tile_sampler.min_samples",                "adaptive_tile_renderer.min_samples");
@@ -525,7 +535,6 @@ namespace
         QGroupBox*  m_texture_controlled_image_plane_sampler;
         QSpinBox*   m_texture_controlled_sampler_min_samples;
         QSpinBox*   m_texture_controlled_sampler_max_samples;
-        QCheckBox*  m_uniform_sampler_decorrelate_pixels;
         QCheckBox*  m_uniform_sampler_force_aa;
         QCheckBox*  m_texture_controlled_sampler_force_aa;
         QLineEdit*  m_path_line_edit;
@@ -590,14 +599,6 @@ namespace
             connect(
                 samples_spinbox, SIGNAL(valueChanged(const int)),
                 SLOT(slot_changed_uniform_sampler_samples(const int)));
-
-            m_uniform_sampler_decorrelate_pixels = create_checkbox("uniform_sampler.decorrelate_pixels", "Decorrelate Pixels");
-            m_uniform_sampler_decorrelate_pixels->setToolTip(m_params_metadata.get_path("uniform_pixel_renderer.decorrelate_pixels.help"));
-            layout->addWidget(m_uniform_sampler_decorrelate_pixels);
-
-            connect(
-                m_image_plane_sampler_passes, SIGNAL(valueChanged(const int)),
-                SLOT(slot_changed_image_plane_sampler_passes(const int)));
         }
 
         void create_image_plane_sampling_texture_controlled_sampler_settings(QVBoxLayout* parent)
@@ -684,7 +685,7 @@ namespace
 
             if (tr_value == "adaptive")
             {
-                m_image_plane_sampler_combo->setCurrentIndex(2);
+                m_image_plane_sampler_combo->setCurrentIndex(1);
                 return;
             }
 
@@ -707,19 +708,6 @@ namespace
             m_texture_controlled_image_plane_sampler->setEnabled(sampler == "texture");
         }
 
-        void slot_changed_image_plane_sampler_passes(const int passes)
-        {
-            if (passes > 1)
-            {
-                m_uniform_sampler_decorrelate_pixels->setChecked(true);
-                m_uniform_sampler_decorrelate_pixels->setDisabled(true);
-            }
-            else
-            {
-                m_uniform_sampler_decorrelate_pixels->setDisabled(false);
-            }
-        }
-
         void slot_changed_uniform_sampler_samples(const int samples)
         {
             m_uniform_sampler_force_aa->setDisabled(samples > 1);
@@ -738,7 +726,8 @@ namespace
                     SETTINGS_FILE_DIALOG_OIIO_TEXTURES,
                     options);
 
-            if(!filepath.isEmpty()) {
+            if (!filepath.isEmpty())
+            {
                 m_path_line_edit->setText(filepath);
             }
         }
@@ -755,6 +744,59 @@ namespace
         }
     };
 
+    class InteractiveImagePlaneSamplingPanel
+      : public ImagePlaneSamplingPanel
+    {
+        Q_OBJECT
+
+      public:
+        explicit InteractiveImagePlaneSamplingPanel(const Configuration& config, QWidget* parent = nullptr)
+          : ImagePlaneSamplingPanel(parent)
+        {
+            QVBoxLayout* layout = new QVBoxLayout();
+            container()->setLayout(layout);
+
+            create_image_plane_sampling_general_settings(layout);
+
+            load_general_sampler(config);
+        }
+
+        void save_config(Configuration& config) const override
+        {            
+            if (get_widget<bool>("general.unlimited_samples"))
+                config.get_parameters().remove_path("progressive_frame_renderer.max_average_spp");
+            else set_config(config, "progressive_frame_renderer.max_average_spp", get_widget<int>("general.max_average_spp"));
+        }
+
+      private:
+        void create_image_plane_sampling_general_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = new QGroupBox("General");
+            parent->addWidget(groupbox);
+
+            QVBoxLayout* layout = new QVBoxLayout();
+            groupbox->setLayout(layout);
+
+            QFormLayout* sublayout = create_form_layout();
+            layout->addLayout(sublayout);
+
+            QSpinBox* max_average_spp = create_integer_input("general.max_average_spp", 1, 1000000, 10);
+            QCheckBox* unlimited_samples = create_checkbox("general.unlimited_samples", "Unlimited");
+            sublayout->addRow("Max Average Samples Per Pixel:", create_horizontal_group(max_average_spp, unlimited_samples));
+            connect(unlimited_samples, SIGNAL(toggled(bool)), max_average_spp, SLOT(setDisabled(bool)));
+        }
+
+        void load_general_sampler(const Configuration& config)
+        {
+            const int DefaultMaxSamples = 64;
+
+            const int max_average_spp = get_config<int>(config, "progressive_frame_renderer.max_average_spp", -1);
+
+            set_widget("general.unlimited_samples", max_average_spp == -1);
+            set_widget("general.max_average_spp", max_average_spp == -1 ? DefaultMaxSamples : max_average_spp);
+        }
+    };
+
     //
     // Lighting panels.
     //
@@ -763,7 +805,7 @@ namespace
       : public RenderSettingsPanel
     {
       public:
-        LightingPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit LightingPanel(const Configuration& config, QWidget* parent = nullptr)
           : RenderSettingsPanel("Lighting", parent)
         {
         }
@@ -791,7 +833,7 @@ namespace
       : public LightingPanel
     {
       public:
-        FinalConfigurationLightingPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit FinalConfigurationLightingPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingPanel(config, parent)
         {
             QComboBox* combobox = create_combobox("engine");
@@ -807,7 +849,7 @@ namespace
       : public LightingPanel
     {
       public:
-        InteractiveConfigurationLightingPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit InteractiveConfigurationLightingPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingPanel(config, parent)
         {
             QComboBox* combobox = create_combobox("engine");
@@ -825,7 +867,7 @@ namespace
       : public RenderSettingsPanel
     {
       public:
-        LightingEnginePanel(const QString& title, QWidget* parent = nullptr)
+        explicit LightingEnginePanel(const QString& title, QWidget* parent = nullptr)
           : RenderSettingsPanel(title, parent)
         {
         }
@@ -983,7 +1025,7 @@ namespace
       : public LightingEnginePanel
     {
       public:
-        UnidirectionalPathTracerPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit UnidirectionalPathTracerPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingEnginePanel("Unidirectional Path Tracer", parent)
         {
             fold();
@@ -1079,15 +1121,15 @@ namespace
 
         void create_pt_advanced_settings(QVBoxLayout* parent)
         {
-            QGroupBox* groupbox = new QGroupBox("Advanced");
-            parent->addWidget(groupbox);
-
+            CollapsibleSectionWidget* collapsible_section = new CollapsibleSectionWidget("Advanced");
+            parent->addWidget(collapsible_section);
+            
             QVBoxLayout* layout = new QVBoxLayout();
-            groupbox->setLayout(layout);
-
+    
             create_pt_advanced_nee_settings(layout);
             create_pt_advanced_optimization_settings(layout);
             create_pt_advanced_diag_settings(layout);
+            collapsible_section->set_content_layout(layout);
         }
 
         void create_pt_advanced_nee_settings(QVBoxLayout* parent)
@@ -1201,7 +1243,7 @@ namespace
       : public LightingEnginePanel
     {
       public:
-        SPPMPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit SPPMPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingEnginePanel("Stochastic Progressive Photon Mapping", parent)
         {
             fold();
@@ -1365,13 +1407,13 @@ namespace
 
         void create_advanced_settings(QVBoxLayout* parent)
         {
-            QGroupBox* groupbox = new QGroupBox("Advanced");
-            parent->addWidget(groupbox);
-
+            CollapsibleSectionWidget* collapsible_section = new CollapsibleSectionWidget("Advanced");
+            parent->addWidget(collapsible_section);
+            
             QVBoxLayout* layout = create_vertical_layout();
-            groupbox->setLayout(layout);
 
             create_advanced_max_ray_intensity_settings(layout);
+            collapsible_section->set_content_layout(layout);
         }
 
         void create_advanced_max_ray_intensity_settings(QVBoxLayout* parent)
@@ -1625,12 +1667,16 @@ void RenderingSettingsWindow::create_panels(const Configuration& config)
 
     m_panels.push_back(new GeneralSettingsPanel(config));
 
-    if (!interactive)
-        m_panels.push_back(new ImagePlaneSamplingPanel(config));
-
     if (interactive)
+    {
+        m_panels.push_back(new InteractiveImagePlaneSamplingPanel(config));
         m_panels.push_back(new InteractiveConfigurationLightingPanel(config));
-    else m_panels.push_back(new FinalConfigurationLightingPanel(config));
+    }
+    else
+    {
+        m_panels.push_back(new FinalImagePlaneSamplingPanel(config));
+        m_panels.push_back(new FinalConfigurationLightingPanel(config));
+    }
 
     m_panels.push_back(new UnidirectionalPathTracerPanel(config));
 

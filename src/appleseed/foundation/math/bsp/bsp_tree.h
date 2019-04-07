@@ -30,7 +30,6 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/bsp/bsp_node.h"
 
@@ -66,7 +65,6 @@ namespace bsp {
 
 template <typename T, size_t N, typename Leaf>
 class Tree
-  : public NonCopyable
 {
   public:
     // Value type and dimension.

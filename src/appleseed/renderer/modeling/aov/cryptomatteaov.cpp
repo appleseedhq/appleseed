@@ -205,7 +205,7 @@ namespace
 
             m_spec.set_format(OIIO::TypeDesc::FLOAT);
         }
-        
+
         void write_tiles()
         {
             // Retrieve canvas properties.
@@ -416,8 +416,8 @@ namespace
             size_t                              num_layers,
             CryptomatteAOV::CryptomatteType     layer_type)
               : m_aov_image(aov_image)
-              , m_pixel_samples(pixel_samples)
               , m_num_layers(num_layers)
+              , m_pixel_samples(pixel_samples)
               , m_tile_name_array(tile_name_array)
               , m_layer_type(layer_type)
         {
@@ -434,23 +434,18 @@ namespace
             const Tile& tile = frame.image().tile(tile_x, tile_y);
 
             m_frame_width = props.m_canvas_width;
-            m_rcp_canvas_width = props.m_rcp_canvas_width;
-            m_rcp_canvas_height = props.m_rcp_canvas_height;
-            m_renderer_filter = &(frame.get_filter());
             m_tile_index = tile_y * props.m_tile_count_y + tile_x;
 
             // Fetch the tile bounds (inclusive).
-            m_tile_origin_x = static_cast<int>(tile_x * props.m_tile_width);
-            m_tile_origin_y = static_cast<int>(tile_y * props.m_tile_height);
-            m_tile_end_x = static_cast<int>(m_tile_origin_x + tile.get_width() - 1);
-            m_tile_end_y = static_cast<int>(m_tile_origin_y + tile.get_height() - 1);
+            m_tile_origin_x = tile_x * props.m_tile_width;
+            m_tile_origin_y = tile_y * props.m_tile_height;
+            m_tile_end_x = m_tile_origin_x + tile.get_width() - 1;
+            m_tile_end_y = m_tile_origin_y + tile.get_height() - 1;
 
-            for (int ry = m_tile_origin_y; ry <= m_tile_end_y; ++ry)
+            for (size_t ry = m_tile_origin_y; ry <= m_tile_end_y; ++ry)
             {
-                for (int rx = m_tile_origin_x; rx <= m_tile_end_x; ++rx)
-                {
+                for (size_t rx = m_tile_origin_x; rx <= m_tile_end_x; ++rx)
                     m_pixel_samples[ry * m_frame_width + rx].clear();
-                }
             }
 
             if (frame.has_crop_window())
@@ -467,9 +462,10 @@ namespace
             vector<pair<float, uint32>> ranked_vector;
             vector<float> pixel_values;
             float uint32_max_rcp = 1.0f / static_cast<float>(numeric_limits<uint32>::max());
-            for (int ry = m_tile_origin_y; ry <= m_tile_end_y; ++ry)
+
+            for (size_t ry = m_tile_origin_y; ry <= m_tile_end_y; ++ry)
             {
-                for (int rx = m_tile_origin_x; rx <= m_tile_end_x; ++rx)
+                for (size_t rx = m_tile_origin_x; rx <= m_tile_end_x; ++rx)
                 {
                     const WeightMap& weight_map = m_pixel_samples[ry * m_frame_width + rx];
 
@@ -532,23 +528,19 @@ namespace
             }
         }
 
-        void on_sample_begin(
-            const PixelContext&         pixel_context) override
+        void on_sample_begin(const PixelContext& pixel_context) override
         {
         }
 
-        void on_sample_end(
-            const PixelContext&         pixel_context) override
+        void on_sample_end(const PixelContext& pixel_context) override
         {
         }
 
-        void on_pixel_begin(
-            const Vector2i&             pi) override
+        void on_pixel_begin(const Vector2i& pi) override
         {
         }
 
-        void on_pixel_end(
-            const Vector2i&             pi) override
+        void on_pixel_end(const Vector2i& pi) override
         {
         }
 
@@ -577,91 +569,43 @@ namespace
                     }
                     break;
 
-                  default:
-                    break;
+                  assert_otherwise;
                 }
 
                 MurmurHash3_x86_32(reinterpret_cast<const unsigned char*>(obj_name.c_str()), static_cast<int>(obj_name.size()), 0, &m3hash);
             }
 
-            const Vector2i pixel_pos = pixel_context.get_pixel_coords();
-            const Vector2d sample_pos = pixel_context.get_sample_position();
-            const int tile_pixel_x = pixel_pos.x - m_tile_origin_x;
-            const int tile_pixel_y = pixel_pos.y - m_tile_origin_y;
+            const Vector2u pixel_pos(pixel_context.get_pixel_coords());
+
+            // Ignore samples outside the crop window.
+            if (!m_crop_window.contains(pixel_pos))
+                return;
 
             m_tile_name_array[m_tile_index][m3hash] = obj_name;
 
-            const double sample_pos_x = (sample_pos.x / m_rcp_canvas_width) - pixel_pos.x;
-            const double sample_pos_y = (sample_pos.y / m_rcp_canvas_height) - pixel_pos.y;
+            const size_t x = pixel_pos.x - m_tile_origin_x;
+            const size_t y = pixel_pos.y - m_tile_origin_y;
 
-            AABB2u tile_crop_window(
-                Vector2u(m_crop_window.min.x - m_tile_origin_x, m_crop_window.min.y - m_tile_origin_y),
-                Vector2u(m_crop_window.max.x - m_tile_origin_x, m_crop_window.max.y - m_tile_origin_y)
-            );
-            
-            filter(
-                static_cast<float>(tile_pixel_x + sample_pos_x),
-                static_cast<float>(tile_pixel_y + sample_pos_y),
-                tile_crop_window,
-                m3hash);
+            WeightMap& weight_map =
+                m_pixel_samples[(m_tile_origin_y + y) * m_frame_width + (m_tile_origin_x + x)];
+
+            const float old_value = weight_map.get(m3hash);
+            weight_map.insert(m3hash, old_value + 1.0f);
         }
 
       private:
-        const Filter2f*                 m_renderer_filter;
-        int                             m_tile_origin_x;
-        int                             m_tile_origin_y;
-        int                             m_tile_end_x;
-        int                             m_tile_end_y;
+        size_t                          m_tile_origin_x;
+        size_t                          m_tile_origin_y;
+        size_t                          m_tile_end_x;
+        size_t                          m_tile_end_y;
         size_t                          m_tile_index;
         size_t                          m_frame_width;
-        double                          m_rcp_canvas_width;
-        double                          m_rcp_canvas_height;
         AABB2u                          m_crop_window;
         Image&                          m_aov_image;
         size_t                          m_num_layers;
         vector<WeightMap>&              m_pixel_samples;
         NameMap*                        m_tile_name_array;
         CryptomatteAOV::CryptomatteType m_layer_type;
-
-        // Inspired by FilteredTile::add().
-        void filter(
-            const float                 x,
-            const float                 y,
-            const AABB2u&               crop_window,
-            const uint32                m3hash)
-        {
-            assert(m_renderer_filter);
-
-            // Convert (x, y) from continuous image space to discrete image space.
-            const float dx = x - 0.5f;
-            const float dy = y - 0.5f;
-
-            // Find the pixels affected by this sample.
-            AABB2i footprint;
-            footprint.min.x = truncate<int>(fast_ceil(dx - m_renderer_filter->get_xradius()));
-            footprint.min.y = truncate<int>(fast_ceil(dy - m_renderer_filter->get_yradius()));
-            footprint.max.x = truncate<int>(fast_floor(dx + m_renderer_filter->get_xradius()));
-            footprint.max.y = truncate<int>(fast_floor(dy + m_renderer_filter->get_yradius()));
-
-            // Don't affect pixels outside the crop window.
-            footprint = AABB2i::intersect(footprint, crop_window);
-
-            // Bail out if the point does not fall inside the crop window.
-            // Only check the x coordinate; the y coordinate is checked in the loop below.
-            if (footprint.min.x > footprint.max.x)
-                return;
-
-            for (int ry = footprint.min.y; ry <= footprint.max.y; ++ry)
-            {
-                for (int rx = footprint.min.x; rx <= footprint.max.x; ++rx)
-                {
-                    const float weight = m_renderer_filter->evaluate(rx - dx, ry - dy);
-                    WeightMap& weight_map = m_pixel_samples[(m_tile_origin_y + ry) * m_frame_width + (m_tile_origin_x + rx)];
-                    const float old_value = weight_map.get(m3hash);
-                    weight_map.insert(m3hash, old_value + weight);
-                }
-            }
-        }
     };
 
     const char* CryptomatteObjectAOVModel = "cryptomatte_object_aov";
@@ -692,7 +636,7 @@ CryptomatteAOV::CryptomatteAOV(const ParamArray& params)
   , impl(new Impl())
 {
     const string cryptomatte_type = params.get_optional<string>("cryptomatte_type", "object_names", make_vector("object_names" , "material_names"));
-    
+
     if (cryptomatte_type == "object_names")
     {
         impl->m_layer_type = CryptomatteType::ObjectNames;
@@ -846,7 +790,7 @@ bool CryptomatteAOV::write_images(
 
     std::stringstream manifest_str;
     manifest_str << "{";
-    
+
     for (const auto& hash : name_map)
     {
         char hash_hex[9];

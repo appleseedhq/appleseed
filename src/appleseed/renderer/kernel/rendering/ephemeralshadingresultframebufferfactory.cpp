@@ -62,8 +62,7 @@ ShadingResultFrameBuffer* EphemeralShadingResultFrameBufferFactory::create(
             tile.get_width(),
             tile.get_height(),
             frame.aov_images().size(),
-            tile_bbox,
-            frame.get_filter());
+            tile_bbox);
 
     framebuffer->clear();
 

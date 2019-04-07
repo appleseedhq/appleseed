@@ -132,17 +132,21 @@ source_group ("foundation\\image\\text" FILES
 )
 
 set (foundation_image_sources
+    foundation/image/accumulatortile.cpp
+    foundation/image/accumulatortile.h
     foundation/image/analysis.cpp
     foundation/image/analysis.h
     foundation/image/canvasproperties.h
     foundation/image/color.h
+    foundation/image/colormap.cpp
+    foundation/image/colormap.h
+    foundation/image/colormapdata.cpp
+    foundation/image/colormapdata.h
     foundation/image/colorspace.cpp
     foundation/image/colorspace.h
     foundation/image/drawing.cpp
     foundation/image/drawing.h
     foundation/image/exceptionunsupportedimageformat.h
-    foundation/image/filteredtile.cpp
-    foundation/image/filteredtile.h
     foundation/image/genericimagefilereader.cpp
     foundation/image/genericimagefilereader.h
     foundation/image/genericimagefilewriter.cpp
@@ -312,6 +316,8 @@ set (foundation_math_sources
     foundation/math/dual.h
     foundation/math/fastmath.h
     foundation/math/filter.h
+    foundation/math/filtersamplingtable.cpp
+    foundation/math/filtersamplingtable.h
     foundation/math/fp.h
     foundation/math/fresnel.h
     foundation/math/frustum.h
@@ -396,7 +402,6 @@ set (foundation_meta_benchmarks_sources
     foundation/meta/benchmarks/benchmark_colorspace.cpp
     foundation/meta/benchmarks/benchmark_distance.cpp
     foundation/meta/benchmarks/benchmark_fastmath.cpp
-    foundation/meta/benchmarks/benchmark_filteredtile.cpp
     foundation/meta/benchmarks/benchmark_half.cpp
     foundation/meta/benchmarks/benchmark_hash.cpp
     foundation/meta/benchmarks/benchmark_imageimportancesampler.cpp
@@ -462,7 +467,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_dictionary.cpp
     foundation/meta/tests/test_distance.cpp
     foundation/meta/tests/test_fastmath.cpp
-    foundation/meta/tests/test_filteredtile.cpp
+    foundation/meta/tests/test_filtersamplingtable.cpp
     foundation/meta/tests/test_fp.cpp
     foundation/meta/tests/test_fresnel.cpp
     foundation/meta/tests/test_genericimagefilewriter.cpp
@@ -561,9 +566,11 @@ set (foundation_platform_sources
     foundation/platform/_beginexrheaders.h
     foundation/platform/_beginoiioheaders.h
     foundation/platform/_beginoslheaders.h
+    foundation/platform/_beginstbtruetypeheaders.h
     foundation/platform/_endexrheaders.h
     foundation/platform/_endoiioheaders.h
     foundation/platform/_endoslheaders.h
+    foundation/platform/_endstbtruetypeheaders.h
     foundation/platform/arch.h
     foundation/platform/atomic.h
     foundation/platform/compiler.cpp
@@ -1464,6 +1471,8 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/normalaov.h
     renderer/modeling/aov/npraovs.cpp
     renderer/modeling/aov/npraovs.h
+    renderer/modeling/aov/pixelerroraov.cpp
+    renderer/modeling/aov/pixelerroraov.h
     renderer/modeling/aov/pixelsamplecountaov.cpp
     renderer/modeling/aov/pixelsamplecountaov.h
     renderer/modeling/aov/pixeltimeaov.cpp
@@ -1882,8 +1891,6 @@ source_group ("renderer\\modeling\\object" FILES
 )
 
 set (renderer_modeling_postprocessingstage_sources
-    renderer/modeling/postprocessingstage/colormapdata.cpp
-    renderer/modeling/postprocessingstage/colormapdata.h
     renderer/modeling/postprocessingstage/colormappostprocessingstage.cpp
     renderer/modeling/postprocessingstage/colormappostprocessingstage.h
     renderer/modeling/postprocessingstage/ipostprocessingstagefactory.cpp

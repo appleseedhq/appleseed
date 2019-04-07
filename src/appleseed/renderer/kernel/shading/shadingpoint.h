@@ -221,7 +221,7 @@ class ShadingPoint
     const Assembly& get_assembly() const;
 
     // Return the object instance that was hit.
-    const ObjectInstance& get_object_instance() const;
+    ObjectInstance& get_object_instance() const;
 
     // Return the object that was hit.
     const Object& get_object() const;
@@ -329,7 +329,7 @@ class ShadingPoint
 
     // Source geometry (derived from primary intersection results).
     mutable const Assembly*             m_assembly;                     // hit assembly
-    mutable const ObjectInstance*       m_object_instance;              // hit object instance
+    mutable ObjectInstance*             m_object_instance;              // hit object instance
     mutable Object*                     m_object;                       // hit object
     mutable foundation::uint32          m_primitive_pa;                 // hit primitive attribute index
     mutable GVector2                    m_v0_uv, m_v1_uv, m_v2_uv;      // texture coordinates from UV set #0 at triangle vertices
@@ -862,7 +862,7 @@ inline const Assembly& ShadingPoint::get_assembly() const
     return *m_assembly;
 }
 
-inline const ObjectInstance& ShadingPoint::get_object_instance() const
+inline ObjectInstance& ShadingPoint::get_object_instance() const
 {
     assert(hit_surface());
     cache_source_geometry();

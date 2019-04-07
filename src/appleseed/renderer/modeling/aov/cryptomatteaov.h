@@ -121,7 +121,7 @@ class APPLESEED_DLLSYMBOL CryptomatteAOVFactory
       foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new AOV instance.
-      foundation::auto_release_ptr<AOV> create(const ParamArray&           params) const override;
+      foundation::auto_release_ptr<AOV> create(const ParamArray& params) const override;
 
   private:
       CryptomatteAOV::CryptomatteType m_aov_type;

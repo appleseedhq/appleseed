@@ -30,16 +30,23 @@
 #include "backgroundenvironmentshader.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/shading/shadingcontext.h"
+#include "renderer/kernel/shading/shadingresult.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/input/sourceinputs.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/colorspace.h"
+#include "foundation/image/color.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
+
+// Forward declarations.
+namespace renderer  { class AOVComponents; }
+namespace renderer  { class ShadingComponents; }
 
 using namespace foundation;
 
@@ -81,19 +88,21 @@ namespace
             const ShadingContext&   shading_context,
             const PixelContext&     pixel_context,
             const Vector3d&         direction,
-            Spectrum&               value,
-            Alpha&                  alpha) const override
+            ShadingResult&          shading_result,
+            ShadingComponents&      shading_components,
+            AOVComponents&          aov_components) const override
         {
             const Vector2f s(pixel_context.get_sample_position());
+            const Vector2f uv(s[0], 1.0f - s[1]);
 
             InputValues values;
             m_inputs.evaluate(
                 shading_context.get_texture_cache(),
-                SourceInputs(Vector2f(s[0], 1.0f - s[1])),
+                SourceInputs(uv),
                 &values);
 
-            value = values.m_color;
-            alpha = Alpha(values.m_alpha);
+            shading_result.m_main.rgb() = values.m_color.to_rgb(g_std_lighting_conditions);
+            shading_result.m_main.a = values.m_alpha;
         }
 
       private:

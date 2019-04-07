@@ -91,6 +91,7 @@
 // Standard headers.
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -1990,9 +1991,61 @@ namespace
         void update() override
         {
             remove_adaptive_pixel_renderer_settings();
+            remove_decorrelate_pixels_setting();
+
+            if (m_project.get_frame())
+                update_frame_filter(*m_project.get_frame());
         }
 
       private:
+        static void update_frame_filter(Frame& frame)
+        {
+            const char* DefaultFilterName = "blackman-harris";
+
+            ParamArray& params = frame.get_parameters();
+            const string filter_name = params.get_optional<string>("filter", DefaultFilterName);
+
+            const bool update_filter =
+                filter_name == "mitchell" ||
+                filter_name == "bspline" ||
+                filter_name == "catmull" ||
+                filter_name == "lanczos";
+
+            if (update_filter)
+            {
+                RENDERER_LOG_WARNING(
+                    "with the introduction of filter importance sampling, some reconstruction filters were removed; "
+                    "migrating this project to use the default reconstruction filter instead.");
+
+                params.insert_path("filter", DefaultFilterName);
+            }
+        }
+
+        void remove_decorrelate_pixels_setting()
+        {
+            for (Configuration& config : m_project.configurations())
+            {
+                Dictionary& root = config.get_parameters();
+
+                if (root.dictionaries().exist("uniform_pixel_renderer"))
+                {
+                    Dictionary& d = root.dictionary("uniform_pixel_renderer");
+
+                    if (d.strings().exist("decorrelate_pixels"))
+                    {
+                        if (d.strings().get<bool>("decorrelate_pixels") == false)
+                        {
+                            RENDERER_LOG_WARNING(
+                                "with the introduction of filter importance sampling, the option to disable pixel decorrelation was removed; "
+                                "migrating this project to use pixel decorrelation instead.");
+                        }
+
+                        d.strings().remove("decorrelate_pixels");
+                    }
+                }
+            }
+        }
+
         void remove_adaptive_pixel_renderer_settings()
         {
             for (Configuration& config : m_project.configurations())
@@ -2012,6 +2065,54 @@ namespace
                             "migrating this project to use the uniform pixel renderer instead.");
 
                         root.strings().set("pixel_renderer", "uniform");
+                    }
+                }
+            }
+        }
+    };
+
+
+    //
+    // Update from revision 30 to revision 31.
+    //
+
+    class UpdateFromRevision_30
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_30(Project& project)
+          : Updater(project, 30)
+        {
+        }
+
+        void update() override
+        {
+            replace_max_samples_interactive_renderer_setting();
+        }
+
+      private:
+        void replace_max_samples_interactive_renderer_setting()
+        {
+            for (Configuration& config : m_project.configurations())
+            {
+                Dictionary& root = config.get_parameters();
+
+                if (root.dictionaries().exist("progressive_frame_renderer"))
+                {
+                    Dictionary& pfr = root.dictionaries().get("progressive_frame_renderer");
+
+                    if (pfr.strings().exist("max_samples"))
+                    {
+                        const uint64 max_samples = pfr.strings().get<uint64>("max_samples");
+                        pfr.strings().remove("max_samples");
+
+                        Frame* frame = m_project.get_frame();
+                        if (frame)
+                        {
+                            // If max samples was previously set then preserve the nearest max average spp count.
+                            pfr.strings().insert(
+                                "max_average_spp", static_cast<uint64>(ceil(max_samples / frame->get_crop_window().volume())));
+                        }
                     }
                 }
             }
@@ -2079,6 +2180,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(27);
       CASE_UPDATE_FROM_REVISION(28);
       CASE_UPDATE_FROM_REVISION(29);
+      CASE_UPDATE_FROM_REVISION(30);
 
       case ProjectFormatRevision:
         // Project is up-to-date.

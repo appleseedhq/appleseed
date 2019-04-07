@@ -32,7 +32,6 @@
 #include "renderer/modeling/environmentshader/ienvironmentshaderfactory.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
@@ -41,7 +40,6 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
-namespace renderer      { class AOVAccumulatorContainer; }
 namespace renderer      { class EnvironmentShader; }
 namespace renderer      { class ParamArray; }
 

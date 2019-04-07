@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
+#include "foundation/image/color.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -45,7 +46,7 @@ namespace foundation
 // Image measurements.
 //
 
-// Compute the average Rec. 709 relative luminance of a linear RGB image.
+// Compute the average Rec. 709 relative luminance of a linear RGBA image.
 // Pixels containing NaN values are skipped.
 APPLESEED_DLLSYMBOL double compute_average_luminance(const Image& image);
 

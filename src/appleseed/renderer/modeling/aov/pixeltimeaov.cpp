@@ -39,6 +39,8 @@
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/image/color.h"
+#include "foundation/image/colormap.h"
+#include "foundation/image/colormapdata.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
 #include "foundation/platform/timers.h"
@@ -164,55 +166,29 @@ namespace
 
         size_t get_channel_count() const override
         {
-            return 1;
+            return 3;
         }
 
         const char** get_channel_names() const override
         {
-            static const char* ChannelNames[] = { "PixelTime" };
+            static const char* ChannelNames[] = { "R", "G", "B" };
             return ChannelNames;
         }
 
         void clear_image() override
         {
-            m_image->clear(Color<float, 1>(0.0f));
+            m_image->clear(Color<float, 3>(0.0f));
         }
 
         void post_process_image(const Frame& frame) override
         {
             const AABB2u& crop_window = frame.get_crop_window();
+            ColorMap color_map;
+            color_map.set_palette_from_array(InfernoColorMap, countof(InfernoColorMap) / 3);
 
-            // Find the maximum value.
-            float max_time = 0.0f;
-
-            for (size_t j = crop_window.min.y; j <= crop_window.max.y; ++j)
-            {
-                for (size_t i = crop_window.min.x; i <= crop_window.max.x; ++i)
-                {
-                    float val;
-                    m_image->get_pixel(i, j, &val);
-                    max_time = max(val, max_time);
-                }
-            }
-
-            if (max_time == 0.0f)
-                return;
-
-            const float rcp_max_time = 1.0f / max_time;
-
-            // Normalize.
-            for (size_t j = crop_window.min.y; j <= crop_window.max.y; ++j)
-            {
-                for (size_t i = crop_window.min.x; i <= crop_window.max.x; ++i)
-                {
-                    float c;
-                    m_image->get_pixel(i, j, &c);
-
-                    c *= rcp_max_time;
-
-                    m_image->set_pixel(i, j, &c);
-                }
-            }
+            float min_time, max_time;
+            color_map.find_min_max_red_channel(*m_image, crop_window, min_time, max_time);
+            color_map.remap_red_channel(*m_image, crop_window, min_time, max_time);
         }
 
       private:

@@ -45,7 +45,7 @@ class DenoiserOptions
     size_t  m_patch_radius;                       //  patch has (1 + 2 x m_patchRadius)^2 pixels
     size_t  m_search_window_radius;               //  search windows (for neighbors) spreads across (1 + 2 x m_patchRadius)^2 pixels
     float   m_min_eigenvalue;                     //  minimum eigen value for matrix inversion
-    bool    m_use_random_pixel_order;             //  true means the pixel will be processed in a random order ; could be useful to remove some "grid" artifacts
+    bool    m_use_random_pixel_order;             //  true means the pixel will be processed in a random order; could be useful to remove some "grid" artifacts
     bool    m_prefilter_spikes;                   //  true means a spike removal prefiltering will be applied
     float   m_prefilter_threshold_stddev_factor;  //  see SpikeRemovalFilter::filter argument
     float   m_marked_pixels_skipping_probability; //  1 means the marked centers of the denoised patches will be skipped to accelerate a lot the computations

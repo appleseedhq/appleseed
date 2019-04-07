@@ -47,13 +47,16 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/analysis.h"
 #include "foundation/image/color.h"
+#include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/genericprogressiveimagefilereader.h"
 #include "foundation/image/image.h"
 #include "foundation/image/imageattributes.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
+#include "foundation/math/filtersamplingtable.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/path.h"
@@ -134,10 +137,12 @@ struct Frame::Impl
 
     // Images.
     unique_ptr<Image>               m_image;
+    string                          m_ref_image_path;
+    unique_ptr<Image>               m_ref_image;
     unique_ptr<ImageStack>          m_aov_images;
 
     // Internal state.
-    unique_ptr<Filter2f>            m_filter;
+    unique_ptr<FilterSamplingTable> m_filter_sampling_table;
     ParamArray                      m_render_info;
 
     explicit Impl(Frame* parent)
@@ -151,7 +156,8 @@ struct Frame::Impl
 Frame::Frame(
     const char*         name,
     const ParamArray&   params,
-    const AOVContainer& aovs)
+    const AOVContainer& aovs,
+    const SearchPaths&  search_paths)
   : Entity(g_class_uid, params)
   , impl(new Impl(this))
 {
@@ -171,6 +177,22 @@ Frame::Frame(
 
     // Retrieve the image properties.
     m_props = impl->m_image->properties();
+
+    // Load the reference image.
+    if (!impl->m_ref_image_path.empty())
+    {
+        RENDERER_LOG_DEBUG("loading reference image %s...", impl->m_ref_image_path.c_str());
+
+        GenericImageFileReader reader;
+        impl->m_ref_image.reset(reader.read(
+            search_paths.qualify(impl->m_ref_image_path).c_str()));
+
+        if (!has_valid_ref_image())
+        {
+            RENDERER_LOG_ERROR(
+                "the reference image is not compatible with the output frame (different dimensions).");
+        }
+    }
 
     // Create the image stack for AOVs.
     impl->m_aov_images.reset(
@@ -256,7 +278,8 @@ void Frame::print_settings()
         "  noise seed                    %s\n"
         "  denoising mode                %s\n"
         "  create checkpoint             %s\n"
-        "  resume checkpoint             %s\n",
+        "  resume checkpoint             %s\n"
+        "  reference image path          %s",
         get_path().c_str(),
         get_uid(),
         camera_name != nullptr ? camera_name : "none",
@@ -275,7 +298,8 @@ void Frame::print_settings()
         impl->m_denoising_mode == DenoisingMode::Off ? "off" :
         impl->m_denoising_mode == DenoisingMode::WriteOutputs ? "write outputs" : "denoise",
         impl->m_checkpoint_create ? impl->m_checkpoint_create_path.c_str() : "off",
-        impl->m_checkpoint_resume ? impl->m_checkpoint_resume_path.c_str() : "off");
+        impl->m_checkpoint_resume ? impl->m_checkpoint_resume_path.c_str() : "off",
+        impl->m_ref_image_path.empty() ? "n/a" : impl->m_ref_image_path.c_str());
 }
 
 const AOVContainer& Frame::aovs() const
@@ -301,6 +325,17 @@ Image& Frame::image() const
     return *impl->m_image.get();
 }
 
+Image* Frame::ref_image() const
+{
+    return impl->m_ref_image.get();
+}
+
+bool Frame::has_valid_ref_image() const
+{
+    return impl->m_ref_image &&
+        are_images_compatible(*impl->m_image.get(), *impl->m_ref_image.get());
+}
+
 void Frame::clear_main_and_aov_images()
 {
     impl->m_image->clear(Color4f(0.0));
@@ -317,9 +352,9 @@ ImageStack& Frame::aov_images() const
     return *impl->m_aov_images;
 }
 
-const Filter2f& Frame::get_filter() const
+const FilterSamplingTable& Frame::get_filter_sampling_table() const
 {
-    return *impl->m_filter.get();
+    return *impl->m_filter_sampling_table;
 }
 
 size_t Frame::get_initial_pass() const
@@ -1005,16 +1040,16 @@ namespace
 
     /*
      * Default Export Format
-     * OpenEXR   .exr          4-channel   16-bit (half)       Linear  
-     * RGBE      .hdr          3-channel   32-bit (8-bit * 3   Linear 
-     *                                     + a shared 8-bit 
-     *                                     exponent)   
+     * OpenEXR   .exr          4-channel   16-bit (half)       Linear
+     * RGBE      .hdr          3-channel   32-bit (8-bit * 3   Linear
+     *                                     + a shared 8-bit
+     *                                     exponent)
      * TIFF      .tiff/.tif    4-channel   16-bit (uint16)     Linear
      * BMP       .bmp          4-channel    8-bit (uint8)        sRGB
-     * PNG       .png          4-channel    8-bit (uint8)        sRGB    
+     * PNG       .png          4-channel    8-bit (uint8)        sRGB
      * JPEG      .jpg/.jpe/    3-channel    8-bit (uint8)        sRGB
-     *           .jpeg/.jif/          
-     *           .jfif/.jfi           
+     *           .jpeg/.jif/
+     *           .jfif/.jfi
      */
     bool write_image(
         const Frame&            frame,
@@ -1044,7 +1079,7 @@ namespace
                 extension == ".exr"  ||
                 extension == ".tiff" ||
                 extension == ".tif"  ||
-                extension == ".hdr";            
+                extension == ".hdr";
 
             std::unique_ptr<Image> transformed_image;
             if (
@@ -1090,11 +1125,11 @@ namespace
             writer.append_image(transformed_image.get());
 
             writer.set_image_attributes(image_attributes);
-            
+
             if (extension == ".tiff" ||
                 extension == ".tif")
             {
-                writer.set_image_output_format(PixelFormat::PixelFormatUInt16);                
+                writer.set_image_output_format(PixelFormat::PixelFormatUInt16);
             }
 
             writer.write();
@@ -1362,21 +1397,25 @@ void Frame::extract_parameters()
         impl->m_filter_radius = m_params.get_optional<float>("filter_size", 1.5f);
 
         if (impl->m_filter_name == "box")
-            impl->m_filter.reset(new BoxFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
+        {
+            impl->m_filter_sampling_table.reset(
+                new FilterSamplingTable(BoxFilter1<float>(impl->m_filter_radius)));
+        }
         else if (impl->m_filter_name == "triangle")
-            impl->m_filter.reset(new TriangleFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
+        {
+            impl->m_filter_sampling_table.reset(
+                new FilterSamplingTable(TriangleFilter1<float>(impl->m_filter_radius)));
+        }
         else if (impl->m_filter_name == "gaussian")
-            impl->m_filter.reset(new FastGaussianFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 8.0f));
-        else if (impl->m_filter_name == "mitchell")
-            impl->m_filter.reset(new MitchellFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 1.0f/3, 1.0f/3));
-        else if (impl->m_filter_name == "bspline")
-            impl->m_filter.reset(new MitchellFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 1.0f, 0.0f));
-        else if (impl->m_filter_name == "catmull")
-            impl->m_filter.reset(new MitchellFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 0.0f, 0.5f));
-        else if (impl->m_filter_name == "lanczos")
-            impl->m_filter.reset(new LanczosFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 3.0f));
+        {
+            impl->m_filter_sampling_table.reset(
+                new FilterSamplingTable(GaussianFilter1<float>(impl->m_filter_radius, 8.0f)));
+        }
         else if (impl->m_filter_name == "blackman-harris")
-            impl->m_filter.reset(new FastBlackmanHarrisFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
+        {
+            impl->m_filter_sampling_table.reset(
+                new FilterSamplingTable(BlackmanHarrisFilter1<float>(impl->m_filter_radius)));
+        }
         else
         {
             RENDERER_LOG_ERROR(
@@ -1385,7 +1424,8 @@ void Frame::extract_parameters()
                 "filter",
                 DefaultFilterName);
             impl->m_filter_name = DefaultFilterName;
-            impl->m_filter.reset(new FastBlackmanHarrisFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
+            impl->m_filter_sampling_table.reset(
+                new FilterSamplingTable(BlackmanHarrisFilter1<float>(impl->m_filter_radius)));
         }
     }
 
@@ -1496,6 +1536,9 @@ void Frame::extract_parameters()
             }
         }
     }
+
+    // Retrieve reference image path parameters.
+    impl->m_ref_image_path = m_params.get_optional<string>("reference_image", "");
 }
 
 AOVContainer& Frame::internal_aovs() const
@@ -1552,10 +1595,6 @@ DictionaryArray FrameFactory::get_input_metadata()
                     .insert("Box", "box")
                     .insert("Triangle", "triangle")
                     .insert("Gaussian", "gaussian")
-                    .insert("Mitchell-Netravali", "mitchell")
-                    .insert("Cubic B-spline", "bspline")
-                    .insert("Catmull-Rom Spline", "catmull")
-                    .insert("Lanczos", "lanczos")
                     .insert("Blackman-Harris", "blackman-harris"))
             .insert("use", "optional")
             .insert("default", "blackman-harris"));
@@ -1716,7 +1755,7 @@ auto_release_ptr<Frame> FrameFactory::create(
 {
     return
         auto_release_ptr<Frame>(
-            new Frame(name, params, AOVContainer()));
+            new Frame(name, params, AOVContainer(), SearchPaths()));
 }
 
 auto_release_ptr<Frame> FrameFactory::create(
@@ -1726,7 +1765,18 @@ auto_release_ptr<Frame> FrameFactory::create(
 {
     return
         auto_release_ptr<Frame>(
-            new Frame(name, params, aovs));
+            new Frame(name, params, aovs, SearchPaths()));
+}
+
+auto_release_ptr<Frame> FrameFactory::create(
+    const char*         name,
+    const ParamArray&   params,
+    const AOVContainer& aovs,
+    const SearchPaths&  search_paths)
+{
+    return
+        auto_release_ptr<Frame>(
+            new Frame(name, params, aovs, search_paths));
 }
 
 }   // namespace renderer

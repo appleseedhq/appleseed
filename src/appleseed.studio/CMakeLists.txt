@@ -252,6 +252,8 @@ set (mainwindow_rendering_sources
     mainwindow/rendering/lightpathstab.h
     mainwindow/rendering/lightpathswidget.cpp
     mainwindow/rendering/lightpathswidget.h
+    mainwindow/rendering/materialdrophandler.cpp
+    mainwindow/rendering/materialdrophandler.h
     mainwindow/rendering/pixelcolortracker.cpp
     mainwindow/rendering/pixelcolortracker.h
     mainwindow/rendering/pixelinspectorhandler.cpp
@@ -285,6 +287,8 @@ set (mainwindow_sources
     mainwindow/applicationsettingswindow.cpp
     mainwindow/applicationsettingswindow.h
     mainwindow/applicationsettingswindow.ui
+    mainwindow/collapsiblesectionwidget.cpp
+    mainwindow/collapsiblesectionwidget.h
     mainwindow/configurationmanagerwindow.cpp
     mainwindow/configurationmanagerwindow.h
     mainwindow/configurationmanagerwindow.ui

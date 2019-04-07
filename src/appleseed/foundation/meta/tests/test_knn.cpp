@@ -43,6 +43,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <functional>
 #include <vector>
 
 using namespace foundation;
@@ -377,7 +378,7 @@ TEST_SUITE(Foundation_Math_Knn_Query)
         const vector<Vector3d>&     points,
         const size_t                answer_size,
         const size_t                query_count,
-        MersenneTwister&            rng)
+        function<Vector3d()>        make_query_point)
     {
         knn::Tree3d tree;
         knn::Builder3d builder(tree);
@@ -391,7 +392,7 @@ TEST_SUITE(Foundation_Math_Knn_Query)
 
         for (size_t i = 0; i < query_count; ++i)
         {
-            const Vector3d q = rand_vector1<Vector3d>(rng);
+            const Vector3d q = make_query_point();
 
             naive_query(points, q, ref_answer);
 
@@ -422,7 +423,8 @@ TEST_SUITE(Foundation_Math_Knn_Query)
         vector<Vector3d> points;
         generate_random_points(rng, points, PointCount);
 
-        EXPECT_TRUE(do_results_match_naive_algorithm(points, AnswerSize, QueryCount, rng));
+        auto make_query_point = [&rng]() { return rand_vector1<Vector3d>(rng); };
+        EXPECT_TRUE(do_results_match_naive_algorithm(points, AnswerSize, QueryCount, make_query_point));
     }
 
     TEST_CASE(Run_SkewedPointDistribution_ReturnsIdenticalResultsAsNaiveAlgorithm)
@@ -441,6 +443,22 @@ TEST_SUITE(Foundation_Math_Knn_Query)
         for (size_t i = 1; i < points.size(); ++i)
             points[i] = Vector3d(0.55) + 0.45 * points[i];
 
-        EXPECT_TRUE(do_results_match_naive_algorithm(points, AnswerSize, QueryCount, rng));
+        auto make_query_point = [&rng]() { return rand_vector1<Vector3d>(rng); };
+        EXPECT_TRUE(do_results_match_naive_algorithm(points, AnswerSize, QueryCount, make_query_point));
+    }
+
+    TEST_CASE(Run_QueryPointsArePointsFromTheDataSet_ReturnsIdenticalResultsAsNaiveAlgorithm)
+    {
+        const size_t PointCount = 1000;
+        const size_t QueryCount = 200;
+        const size_t AnswerSize = 20;
+
+        MersenneTwister rng;
+
+        vector<Vector3d> points;
+        generate_random_points(rng, points, PointCount);
+
+        auto make_query_point = [&rng, &points]() { return points[rand_int1(rng, 0, static_cast<int32>(points.size()) - 1)]; };
+        EXPECT_TRUE(do_results_match_naive_algorithm(points, AnswerSize, QueryCount, make_query_point));
     }
 }

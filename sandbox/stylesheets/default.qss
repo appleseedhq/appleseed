@@ -1058,6 +1058,21 @@ appleseed--studio--FoldablePanelWidget > QFrame[hasFrame="true"]
 
 
 /*
+ * appleseed::studio:CollapsibleSectionWidget.
+ */
+
+appleseed--studio--CollapsibleSectionWidget > QToolButton
+{
+    border: none;
+}
+
+appleseed--studio--CollapsibleSectionWidget > QScrollArea
+{
+    border: none;
+}
+
+
+/*
  * Expression Editor.
  */
 

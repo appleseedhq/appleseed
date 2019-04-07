@@ -36,6 +36,8 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
 #include "foundation/math/intersection/planesegment.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/api/apistring.h"

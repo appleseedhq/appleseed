@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2019 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,9 +34,57 @@
 // appleseed.foundation headers.
 #include "foundation/platform/python.h"
 
+// OIIO headers.
+#include "foundation/platform/_beginoiioheaders.h"
+#include "OpenImageIO/imagebufalgo.h"
+#include "foundation/platform/_endoiioheaders.h"
+
+// Standard headers.
+#include <sstream>
+#include <string>
+#include <unordered_map>
+
 namespace bpy = boost::python;
 using namespace foundation;
+using namespace OIIO;
 using namespace renderer;
+using namespace std;
+
+void oiio_make_texture(
+    const string&   in_filename,
+    const string&   out_filename,
+    const string&   in_colorspace,
+    const string&   out_depth)
+{
+    std::unordered_map<string, TypeDesc> out_depth_map;
+    out_depth_map["sint8"] = TypeDesc::INT8;
+    out_depth_map["uint8"] = TypeDesc::UINT8;
+    out_depth_map["uint16"] = TypeDesc::UINT16;
+    out_depth_map["sint16"] = TypeDesc::INT16;
+    out_depth_map["half"] = TypeDesc::HALF;
+    out_depth_map["float"] = TypeDesc::FLOAT;
+
+    ImageSpec spec;
+
+    if (out_depth != "default")
+        spec.format = out_depth_map[out_depth];
+
+    spec.attribute("maketx:updatemode", 1);
+    spec.attribute("maketx:constant_color_detect", 1);
+    spec.attribute("maketx:monochrome detect", 1);
+    spec.attribute("maketx:opaque detect", 1);
+    spec.attribute("maketx:unpremult", 1);
+    spec.attribute("maketx:incolorspace", in_colorspace);
+    spec.attribute("maketx:outcolorspace", "linear");
+    spec.attribute("maketx:fixnan", "box3");
+
+    const ImageBufAlgo::MakeTextureMode mode = ImageBufAlgo::MakeTxTexture;
+
+    stringstream s;
+
+    if (!ImageBufAlgo::make_texture(mode, in_filename, out_filename, spec, &s))
+        PyErr_SetString(PyExc_RuntimeError, s.str().c_str());
+}
 
 void bind_utility()
 {
@@ -48,15 +96,15 @@ void bind_utility()
         .def("signal_errors", &EventCounters::signal_errors)
         .def("get_warning_count", &EventCounters::get_warning_count)
         .def("get_error_count", &EventCounters::get_error_count)
-        .def("has_errors", &EventCounters::has_errors)
-        ;
+        .def("has_errors", &EventCounters::has_errors);
 
     bpy::class_<ILogTarget, boost::noncopyable>("ILogTarget", bpy::no_init);
 
     bpy::class_<Logger, boost::noncopyable>("Logger", bpy::no_init)
         .def("set_enabled", &Logger::set_enabled)
-        .def("add_target", &Logger::add_target)
-        ;
+        .def("add_target", &Logger::add_target);
 
     bpy::def("global_logger", global_logger, bpy::return_value_policy<bpy::reference_existing_object>());
+
+    bpy::def("oiio_make_texture", &oiio_make_texture);
 }

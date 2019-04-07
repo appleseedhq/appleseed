@@ -157,21 +157,22 @@ namespace
                     static_cast<int>(props.m_canvas_height - 1)),
                 BackgroundColor);
 
-            // Calculate final icon size and scale the icon
+            // Calculate final icon size.
             const ImageSpec icon_spec = m_icon.spec();
             const float stamp_height = text_height + 2 * margin_v;
             const float icon_height = 0.68f * stamp_height;
-            const float aspect = static_cast<float>(icon_spec.width) / static_cast<float>(icon_spec.height);
+            const float aspect = static_cast<float>(icon_spec.width) / icon_spec.height;
             const ROI roi(
-                0,
-                round<int>(icon_height * aspect),
-                0,
-                round<int>(icon_height),
-                0,
-                1,
-                0,
-                m_icon.nchannels());
-                
+                0,                                  // X begin
+                round<int>(icon_height * aspect),   // X end
+                0,                                  // Y begin
+                round<int>(icon_height),            // Y end
+                0,                                  // Z begin
+                1,                                  // Z end
+                0,                                  // channel begin
+                m_icon.nchannels());                // channel end
+
+            // Scale icon.
             ImageBuf unpremult_icon, scaled_unpremult_icon, scaled_premult_icon;
             ImageBufAlgo::unpremult(unpremult_icon, m_icon, ROI::All());
             const float filter_width = fit(m_scale_factor, MinScaleFactor, MaxScaleFactor, 2.75f, 4.5f);

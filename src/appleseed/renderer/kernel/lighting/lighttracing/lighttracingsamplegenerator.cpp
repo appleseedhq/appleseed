@@ -508,6 +508,7 @@ namespace
                 const Color3f linear_rgb = radiance.to_rgb(g_std_lighting_conditions);
 
                 Sample sample;
+                sample.m_pixel_coords = m_frame.get_pixel_position(position_ndc);
                 sample.m_position = Vector2f(position_ndc);
                 sample.m_color = Color4f(linear_rgb, 1.0f);
                 m_samples.push_back(sample);
@@ -946,8 +947,7 @@ SampleAccumulationBuffer* LightTracingSampleGeneratorFactory::create_sample_accu
     return
         new GlobalSampleAccumulationBuffer(
             props.m_canvas_width,
-            props.m_canvas_height,
-            m_frame.get_filter());
+            props.m_canvas_height);
 }
 
 }   // namespace renderer

@@ -41,6 +41,7 @@
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/pythonconsole/pythonconsolewidget.h"
 #include "mainwindow/rendering/lightpathstab.h"
+#include "mainwindow/rendering/materialdrophandler.h"
 #include "mainwindow/rendering/renderwidget.h"
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
@@ -139,14 +140,6 @@ MainWindow::MainWindow(QWidget* parent)
     build_python_console_panel();
     build_project_explorer();
     build_connections();
-
-    const QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
-    restoreGeometry(settings.value("main_window_geometry").toByteArray());
-    restoreState(settings.value("main_window_state").toByteArray());
-    m_ui->treewidget_project_explorer_scene->header()->restoreGeometry(
-        settings.value("main_window_project_explorer_geometry").toByteArray());
-    m_ui->treewidget_project_explorer_scene->header()->restoreState(
-        settings.value("main_window_project_explorer_state").toByteArray());
 
     slot_load_application_settings();
 
@@ -977,6 +970,7 @@ void MainWindow::add_render_tab(const QString& label)
         new RenderTab(
             *m_project_explorer,
             *m_project_manager.get_project(),
+            m_rendering_manager,
             m_ocio_config);
 
     // Connect the render tab to the main window and the rendering manager.
@@ -1205,7 +1199,7 @@ void MainWindow::stop_monitoring_project_file()
 void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 {
     if (event->mimeData()->hasFormat("text/uri-list"))
-         event->acceptProposedAction();
+        event->acceptProposedAction();
 }
 
 void MainWindow::dropEvent(QDropEvent* event)
@@ -1373,14 +1367,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
         event->ignore();
         return;
     }
-
-    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
-    settings.setValue("main_window_geometry", saveGeometry());
-    settings.setValue("main_window_state", saveState());
-    settings.setValue("main_window_project_explorer_geometry",
-        m_ui->treewidget_project_explorer_scene->header()->saveGeometry());
-    settings.setValue("main_window_project_explorer_state",
-        m_ui->treewidget_project_explorer_scene->header()->saveState());
 
     slot_save_application_settings();
 
@@ -1642,6 +1628,14 @@ void MainWindow::slot_project_file_changed(const QString& filepath)
 
 void MainWindow::slot_load_application_settings()
 {
+    const QSettings qt_settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    restoreGeometry(qt_settings.value("main_window_geometry").toByteArray());
+    restoreState(qt_settings.value("main_window_state").toByteArray());
+    m_ui->treewidget_project_explorer_scene->header()->restoreGeometry(
+        qt_settings.value("main_window_project_explorer_geometry").toByteArray());
+    m_ui->treewidget_project_explorer_scene->header()->restoreState(
+        qt_settings.value("main_window_project_explorer_state").toByteArray());
+
     Dictionary settings;
     if (Application::load_settings("appleseed.studio.xml", settings, global_logger(), LogMessage::Info))
     {
@@ -1652,6 +1646,14 @@ void MainWindow::slot_load_application_settings()
 
 void MainWindow::slot_save_application_settings()
 {
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    settings.setValue("main_window_geometry", saveGeometry());
+    settings.setValue("main_window_state", saveState());
+    settings.setValue("main_window_project_explorer_geometry",
+        m_ui->treewidget_project_explorer_scene->header()->saveGeometry());
+    settings.setValue("main_window_project_explorer_state",
+        m_ui->treewidget_project_explorer_scene->header()->saveState());
+
     Application::save_settings("appleseed.studio.xml", m_application_settings, global_logger(), LogMessage::Info);
 }
 
@@ -1986,7 +1988,7 @@ void MainWindow::slot_save_frame()
         ask_frame_save_file_path(
             this,
             "Save Frame As...",
-            g_qt_image_files_filter,
+            get_oiio_image_files_filter(),
             ".exr",
             m_application_settings);
 
@@ -2006,7 +2008,7 @@ void MainWindow::slot_save_frame_and_aovs()
         ask_frame_save_file_path(
             this,
             "Save Frame and AOVs As...",
-            g_qt_image_files_filter,
+            get_oiio_image_files_filter(),
             ".exr",
             m_application_settings);
 

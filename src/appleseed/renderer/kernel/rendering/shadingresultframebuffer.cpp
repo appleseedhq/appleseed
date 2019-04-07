@@ -51,13 +51,11 @@ namespace renderer
 ShadingResultFrameBuffer::ShadingResultFrameBuffer(
     const size_t                    width,
     const size_t                    height,
-    const size_t                    aov_count,
-    const Filter2f&                 filter)
-  : FilteredTile(
+    const size_t                    aov_count)
+  : AccumulatorTile(
         width,
         height,
-        get_total_channel_count(aov_count),
-        filter)
+        get_total_channel_count(aov_count))
   , m_aov_count(aov_count)
   , m_scratch(get_total_channel_count(aov_count))
 {
@@ -67,22 +65,19 @@ ShadingResultFrameBuffer::ShadingResultFrameBuffer(
     const size_t                    width,
     const size_t                    height,
     const size_t                    aov_count,
-    const AABB2u&                   crop_window,
-    const Filter2f&                 filter)
-  : FilteredTile(
+    const AABB2u&                   crop_window)
+  : AccumulatorTile(
         width,
         height,
         get_total_channel_count(aov_count),
-        crop_window,
-        filter)
+        crop_window)
   , m_aov_count(aov_count)
   , m_scratch(get_total_channel_count(aov_count))
 {
 }
 
 void ShadingResultFrameBuffer::add(
-    const float                     x,
-    const float                     y,
+    const Vector2u&                 pi,
     const ShadingResult&            sample)
 {
     float* ptr = &m_scratch[0];
@@ -101,7 +96,7 @@ void ShadingResultFrameBuffer::add(
         *ptr++ = aov[3];
     }
 
-    FilteredTile::add(x, y, &m_scratch[0]);
+    AccumulatorTile::add(pi, &m_scratch[0]);
 }
 
 void ShadingResultFrameBuffer::merge(

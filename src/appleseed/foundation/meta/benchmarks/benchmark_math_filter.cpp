@@ -33,6 +33,72 @@
 
 using namespace foundation;
 
+BENCHMARK_SUITE(Foundation_Math_Filter_BoxFilter1)
+{
+    struct Fixture
+    {
+        BoxFilter1<float>       m_filter;
+        float                   m_dummy;
+
+        Fixture()
+          : m_filter(2.0f)
+        {
+        }
+    };
+
+    BENCHMARK_CASE_F(Evaluate, Fixture)
+    {
+        m_dummy = 0.0f;
+
+        for (int x = -2; x <= +2; ++x)
+            m_dummy += m_filter.evaluate(static_cast<float>(x));
+    }
+}
+
+BENCHMARK_SUITE(Foundation_Math_Filter_GaussianFilter1)
+{
+    struct Fixture
+    {
+        GaussianFilter1<float>  m_filter;
+        float                   m_dummy;
+
+        Fixture()
+          : m_filter(2.0f, 8.0f)
+        {
+        }
+    };
+
+    BENCHMARK_CASE_F(Evaluate, Fixture)
+    {
+        m_dummy = 0.0f;
+
+        for (int x = -2; x <= +2; ++x)
+            m_dummy += m_filter.evaluate(static_cast<float>(x));
+    }
+}
+
+BENCHMARK_SUITE(Foundation_Math_Filter_BlackmanHarrisFilter1)
+{
+    struct Fixture
+    {
+        BlackmanHarrisFilter1<float>    m_filter;
+        float                           m_dummy;
+
+        Fixture()
+          : m_filter(2.0f)
+        {
+        }
+    };
+
+    BENCHMARK_CASE_F(Evaluate, Fixture)
+    {
+        m_dummy = 0.0f;
+
+        for (int x = -2; x <= +2; ++x)
+            m_dummy += m_filter.evaluate(static_cast<float>(x));
+    }
+}
+
 BENCHMARK_SUITE(Foundation_Math_Filter_BoxFilter2)
 {
     struct Fixture

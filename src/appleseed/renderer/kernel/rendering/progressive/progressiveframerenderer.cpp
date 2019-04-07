@@ -47,7 +47,6 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/analysis.h"
 #include "foundation/image/canvasproperties.h"
-#include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/image.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/scalar.h"
@@ -104,7 +103,10 @@ namespace
             const ParamArray&               params)
           : m_project(project)
           , m_params(params)
-          , m_sample_counter(m_params.m_max_sample_count)
+          , m_sample_counter(
+                m_params.m_max_average_spp < numeric_limits<uint64>::max()
+                    ? m_params.m_max_average_spp * project.get_frame()->get_crop_window().volume()
+                    : m_params.m_max_average_spp)
           , m_ref_image_avg_lum(0.0)
         {
             // We must have a generator factory, but it's OK not to have a callback factory.
@@ -148,33 +150,13 @@ namespace
             if (callback_factory)
                 m_tile_callback.reset(callback_factory->create());
 
-            // Load the reference image if one is specified.
-            if (!m_params.m_ref_image_path.empty())
+            if (m_project.get_frame()->has_valid_ref_image())
             {
-                const string ref_image_path =
-                    to_string(project.search_paths().qualify(m_params.m_ref_image_path));
+                m_ref_image_avg_lum = compute_average_luminance(*m_project.get_frame()->ref_image());
 
-                RENDERER_LOG_DEBUG("loading reference image %s...", ref_image_path.c_str());
-
-                GenericImageFileReader reader;
-                m_ref_image.reset(reader.read(ref_image_path.c_str()));
-
-                if (are_images_compatible(m_project.get_frame()->image(), *m_ref_image))
-                {
-                    m_ref_image_avg_lum = compute_average_luminance(*m_ref_image.get());
-
-                    RENDERER_LOG_DEBUG(
-                        "reference image average luminance is %s.",
-                        pretty_scalar(m_ref_image_avg_lum, 6).c_str());
-                }
-                else
-                {
-                    RENDERER_LOG_ERROR(
-                        "the reference image is not compatible with the output frame "
-                        "(different dimensions, tile size or number of channels).");
-
-                    m_ref_image.reset();
-                }
+                RENDERER_LOG_DEBUG(
+                    "reference image average luminance is %s.",
+                    pretty_scalar(m_ref_image_avg_lum, 6).c_str());
             }
         }
 
@@ -214,21 +196,19 @@ namespace
                 "  spectrum mode                 %s\n"
                 "  sampling mode                 %s\n"
                 "  rendering threads             %s\n"
-                "  max samples                   %s\n"
+                "  max average samples per pixel %s\n"
                 "  max fps                       %f\n"
                 "  collect performance stats     %s\n"
-                "  collect luminance stats       %s\n"
-                "  reference image path          %s",
+                "  collect luminance stats       %s",
                 get_spectrum_mode_name(m_params.m_spectrum_mode).c_str(),
                 get_sampling_context_mode_name(m_params.m_sampling_mode).c_str(),
                 pretty_uint(m_params.m_thread_count).c_str(),
-                m_params.m_max_sample_count == numeric_limits<uint64>::max()
+                m_params.m_max_average_spp == numeric_limits<uint64>::max()
                     ? "unlimited"
-                    : pretty_uint(m_params.m_max_sample_count).c_str(),
+                    : pretty_uint(m_params.m_max_average_spp).c_str(),
                 m_params.m_max_fps,
                 m_params.m_perf_stats ? "on" : "off",
-                m_params.m_luminance_stats ? "on" : "off",
-                m_params.m_ref_image_path.empty() ? "n/a" : m_params.m_ref_image_path.c_str());
+                m_params.m_luminance_stats ? "on" : "off");
 
             m_sample_generators.front()->print_settings();
         }
@@ -276,7 +256,7 @@ namespace
                     *m_buffer.get(),
                     m_params.m_perf_stats,
                     m_params.m_luminance_stats,
-                    m_ref_image.get(),
+                    m_project.get_frame()->ref_image(),
                     m_ref_image_avg_lum,
                     m_abort_switch));
             m_statistics_thread.reset(
@@ -291,7 +271,6 @@ namespace
                         *m_project.get_frame(),
                         *m_buffer.get(),
                         m_tile_callback.get(),
-                        m_params.m_max_sample_count,
                         m_params.m_max_fps,
                         m_display_thread_abort_switch));
                 m_display_thread.reset(
@@ -385,22 +364,20 @@ namespace
         {
             const Spectrum::Mode        m_spectrum_mode;
             const SamplingContext::Mode m_sampling_mode;
-            const size_t                m_thread_count;         // number of rendering threads
-            const uint64                m_max_sample_count;     // maximum total number of samples to compute
-            const double                m_max_fps;              // maximum display frequency in frames/second
-            const bool                  m_perf_stats;           // collect and print performance statistics?
-            const bool                  m_luminance_stats;      // collect and print luminance statistics?
-            const string                m_ref_image_path;       // path to the reference image
+            const size_t                m_thread_count;       // number of rendering threads
+            const uint64                m_max_average_spp;    // maximum average number of samples to compute per pixel
+            const double                m_max_fps;            // maximum display frequency in frames/second
+            const bool                  m_perf_stats;         // collect and print performance statistics?
+            const bool                  m_luminance_stats;    // collect and print luminance statistics?
 
             explicit Parameters(const ParamArray& params)
               : m_spectrum_mode(get_spectrum_mode(params))
               , m_sampling_mode(get_sampling_context_mode(params))
               , m_thread_count(get_rendering_thread_count(params))
-              , m_max_sample_count(params.get_optional<uint64>("max_samples", numeric_limits<uint64>::max()))
+              , m_max_average_spp(params.get_optional<uint64>("max_average_spp", numeric_limits<uint64>::max()))
               , m_max_fps(params.get_optional<double>("max_fps", 30.0))
               , m_perf_stats(params.get_optional<bool>("performance_statistics", false))
               , m_luminance_stats(params.get_optional<bool>("luminance_statistics", false))
-              , m_ref_image_path(params.get_optional<string>("reference_image", ""))
             {
             }
         };
@@ -417,13 +394,12 @@ namespace
                 Frame&                      frame,
                 SampleAccumulationBuffer&   buffer,
                 ITileCallback*              tile_callback,
-                const uint64                max_sample_count,
                 const double                max_fps,
                 IAbortSwitch&               abort_switch)
               : m_frame(frame)
               , m_buffer(buffer)
               , m_tile_callback(tile_callback)
-              , m_min_sample_count(min<uint64>(max_sample_count, 32 * 32 * 2))
+              , m_min_sample_count(min<uint64>(frame.get_crop_window().volume(), 32 * 32 * 2))
               , m_target_elapsed(1.0 / max_fps)
               , m_abort_switch(abort_switch)
             {
@@ -718,7 +694,6 @@ namespace
 
         auto_release_ptr<ITileCallback>         m_tile_callback;
 
-        unique_ptr<Image>                       m_ref_image;
         double                                  m_ref_image_avg_lum;
 
         unique_ptr<DisplayFunc>                 m_display_func;
@@ -760,11 +735,13 @@ Dictionary ProgressiveFrameRendererFactory::get_params_metadata()
             .insert("help", "Maximum progressive rendering update rate in frames per second"));
 
     metadata.dictionaries().insert(
-        "max_samples",
+        "max_average_spp",
         Dictionary()
             .insert("type", "int")
-            .insert("label", "Max Samples")
-            .insert("help", "Maximum number of samples per pixel"));
+            .insert("default", "64")
+            .insert("unlimited", "true")
+            .insert("label", "Max Average Samples Per Pixel")
+            .insert("help", "Maximum number of average samples per pixel"));
 
     return metadata;
 }

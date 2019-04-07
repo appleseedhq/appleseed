@@ -29,4 +29,6 @@
 // Expands out the actual implementation into this file.
 #define STB_TRUETYPE_IMPLEMENTATION
 
+#include "foundation/platform/_beginstbtruetypeheaders.h"
 #include "stb_truetype.h"
+#include "foundation/platform/_endstbtruetypeheaders.h"

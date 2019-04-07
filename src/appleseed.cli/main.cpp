@@ -531,7 +531,9 @@ namespace
             if (params.get_optional<string>("frame_renderer", "") != "progressive")
             {
                 tile_callback_factory.reset(
-                    new ProgressTileCallbackFactory(global_logger()));
+                    new ProgressTileCallbackFactory(
+                        global_logger(),
+                        params.get_optional<size_t>("passes", 1)));
             }
         }
 

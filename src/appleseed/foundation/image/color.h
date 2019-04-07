@@ -343,6 +343,10 @@ typedef Color<double,   4> Color4d;
 template <typename T, typename Int>
 Color<T, 3> integer_to_color3(const Int i);
 
+// Compute the squared error between two linear rgb colors.
+template <typename T>
+T compute_error_squared(const Color<T, 3>& c1, const Color<T, 3>& c2);
+
 
 //
 // N-dimensional color implementation.
@@ -1181,6 +1185,15 @@ Color<T, 3> integer_to_color3(const Int i)
         static_cast<T>(x) * (1.0f / 4294967295.0f),
         static_cast<T>(y) * (1.0f / 4294967295.0f),
         static_cast<T>(z) * (1.0f / 4294967295.0f));
+}
+
+template <typename T>
+inline T compute_error_squared(const Color<T, 3>& c1, const Color<T, 3>& c2)
+{
+    return
+        square(c1.r - c2.r) +
+        square(c1.g - c2.g) +
+        square(c1.b - c2.b);
 }
 
 }   // namespace foundation
