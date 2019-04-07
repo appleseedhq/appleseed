@@ -85,7 +85,6 @@ namespace
           : m_params(params)
           , m_sample_renderer(factory->create(thread_index))
           , m_sample_count(m_params.m_samples)
-          , m_sqrt_sample_count(round<int>(sqrt(static_cast<double>(m_params.m_samples))))
         {
             const size_t sample_aov_index = frame.aovs().get_index("pixel_sample_count");
 
@@ -222,7 +221,6 @@ namespace
         const Parameters                    m_params;
         auto_release_ptr<ISampleRenderer>   m_sample_renderer;
         const size_t                        m_sample_count;
-        const int                           m_sqrt_sample_count;
         Population<uint64>                  m_total_sampling_dim;
     };
 }

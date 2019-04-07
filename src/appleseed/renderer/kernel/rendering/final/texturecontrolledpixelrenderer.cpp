@@ -168,7 +168,8 @@ namespace
                 1);
 
             m_texture->get_pixels(roi, TypeDesc::TypeFloat, &pixel_red_channel);
-            for (size_t i = 0; i < foundation::round<size_t>(foundation::lerp(m_min_sample_count, m_max_sample_count, pixel_red_channel)); ++i)
+            const size_t sample_count = foundation::round<size_t>(foundation::lerp(m_min_sample_count, m_max_sample_count, pixel_red_channel));
+            for (size_t i = 0; i < sample_count; ++i)
             {
                 // Generate a uniform sample in [0,1)^2.
                 const Vector2d s =
