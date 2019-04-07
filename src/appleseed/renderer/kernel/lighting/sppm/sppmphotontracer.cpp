@@ -339,9 +339,9 @@ namespace
                 Vector3f(light_sample_s[1], light_sample_s[2], light_sample_s[3]),
                 light_sample);
 
-            if (light_sample.m_triangle)
+            if (light_sample.m_shape)
             {
-                trace_emitting_triangle_photon(
+                trace_emitting_shape_photon(
                     shading_context,
                     sampling_context,
                     light_sample);
@@ -355,7 +355,7 @@ namespace
             }
         }
 
-        void trace_emitting_triangle_photon(
+        void trace_emitting_shape_photon(
             const ShadingContext&   shading_context,
             SamplingContext&        sampling_context,
             LightSample&            light_sample)
@@ -366,7 +366,7 @@ namespace
                     light_sample.m_geometric_normal,
                     light_sample.m_shading_normal);
 
-            const Material* material = light_sample.m_triangle->m_material;
+            const Material* material = light_sample.m_shape->m_material;
             const Material::RenderData& material_data = material->get_render_data();
             const EDF* edf = material_data.m_edf;
 

@@ -77,50 +77,50 @@ ForwardLightSampler::ForwardLightSampler(const Scene& scene, const ParamArray& p
         });
     m_non_physical_light_count = m_non_physical_lights.size();
 
-    // Collect all light-emitting triangles.
-    collect_emitting_triangles(
+    // Collect all light-emitting shapes.
+    collect_emitting_shapes(
         scene.assembly_instances(),
         TransformSequence(),
         [&](
             const Material* material,
             const float     area,
-            const size_t    emitting_triangle_index)
+            const size_t    emitting_shape_index)
         {
             // Retrieve the EDF and get the importance multiplier.
             float importance_multiplier = 1.0f;
             if (const EDF* edf = material->get_uncached_edf())
                 importance_multiplier = edf->get_uncached_importance_multiplier();
 
-            // Compute the probability density of this triangle.
-            const float triangle_importance = m_params.m_importance_sampling ? static_cast<float>(area) : 1.0f;
-            const float triangle_prob = triangle_importance * importance_multiplier;
+            // Compute the probability density of this shape.
+            const float shape_importance = m_params.m_importance_sampling ? static_cast<float>(area) : 1.0f;
+            const float shape_prob = shape_importance * importance_multiplier;
 
-            // Insert the light-emitting triangle into the CDF.
-            m_emitting_triangles_cdf.insert(emitting_triangle_index, triangle_prob);
+            // Insert the light-emitting shape into the CDF.
+            m_emitting_shapes_cdf.insert(emitting_shape_index, shape_prob);
 
-            // Accept this triangle.
+            // Accept this shape.
             return true;
         });
 
-    // Build the hash table of emitting triangles.
-    build_emitting_triangle_hash_table();
+    // Build the hash table of emitting shapes.
+    build_emitting_shape_hash_table();
 
     // Prepare the CDFs for sampling.
     if (m_non_physical_lights_cdf.valid())
         m_non_physical_lights_cdf.prepare();
-    if (m_emitting_triangles_cdf.valid())
-        m_emitting_triangles_cdf.prepare();
+    if (m_emitting_shapes_cdf.valid())
+        m_emitting_shapes_cdf.prepare();
 
-    // Store the triangle probability densities into the emitting triangles.
-    for (size_t i = 0, e = m_emitting_triangles.size(); i < e; ++i)
-        m_emitting_triangles[i].m_triangle_prob = m_emitting_triangles_cdf[i].second;
+    // Store the shape probability densities into the emitting shapes.
+    for (size_t i = 0, e = m_emitting_shapes.size(); i < e; ++i)
+        m_emitting_shapes[i].m_shape_prob = m_emitting_shapes_cdf[i].second;
 
    RENDERER_LOG_INFO(
         "found %s %s, %s emitting %s.",
         pretty_int(m_non_physical_light_count).c_str(),
         plural(m_non_physical_light_count, "non-physical light").c_str(),
-        pretty_int(m_emitting_triangles.size()).c_str(),
-        plural(m_emitting_triangles.size(), "triangle").c_str());
+        pretty_int(m_emitting_shapes.size()).c_str(),
+        plural(m_emitting_shapes.size(), "shape").c_str());
 }
 
 void ForwardLightSampler::sample(
@@ -128,11 +128,11 @@ void ForwardLightSampler::sample(
     const Vector3f&                     s,
     LightSample&                        light_sample) const
 {
-    assert(m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid());
+    assert(m_non_physical_lights_cdf.valid() || m_emitting_shapes_cdf.valid());
 
     if (m_non_physical_lights_cdf.valid())
     {
-        if (m_emitting_triangles_cdf.valid())
+        if (m_emitting_shapes_cdf.valid())
         {
             if (s[0] < 0.5f)
             {
@@ -143,7 +143,7 @@ void ForwardLightSampler::sample(
             }
             else
             {
-                sample_emitting_triangles(
+                sample_emitting_shapes(
                     time,
                     Vector3f((s[0] - 0.5f) * 2.0f, s[1], s[2]),
                     light_sample);
@@ -153,24 +153,24 @@ void ForwardLightSampler::sample(
         }
         else sample_non_physical_lights(time, s, light_sample);
     }
-    else sample_emitting_triangles(time, s, light_sample);
+    else sample_emitting_shapes(time, s, light_sample);
 }
 
 float ForwardLightSampler::evaluate_pdf(const ShadingPoint& light_shading_point) const
 {
     assert(light_shading_point.is_triangle_primitive());
-    const EmittingTriangleKey triangle_key(
+    const EmittingShapeKey shape_key(
         light_shading_point.get_assembly_instance().get_uid(),
         light_shading_point.get_object_instance_index(),
         light_shading_point.get_primitive_index());
 
-    const auto* triangle_ptr = m_emitting_triangle_hash_table.get(triangle_key);
+    const auto* shape_ptr = m_emitting_shape_hash_table.get(shape_key);
 
-    if (triangle_ptr == nullptr)
+    if (shape_ptr == nullptr)
         return 0.0f;
 
-    const EmittingTriangle* triangle = *triangle_ptr;
-    return triangle->m_triangle_prob * triangle->m_rcp_area;
+    const EmittingShape* shape = *shape_ptr;
+    return shape->m_shape_prob * shape->m_rcp_area;
 }
 
 void ForwardLightSampler::sample_non_physical_lights(
@@ -184,7 +184,7 @@ void ForwardLightSampler::sample_non_physical_lights(
     const size_t light_index = result.first;
     const float light_prob = result.second;
 
-    light_sample.m_triangle = nullptr;
+    light_sample.m_shape = nullptr;
     sample_non_physical_light(
         time,
         light_index,

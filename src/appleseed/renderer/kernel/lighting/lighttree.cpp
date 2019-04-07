@@ -64,9 +64,9 @@ namespace renderer
 
 LightTree::LightTree(
     const vector<NonPhysicalLightInfo>&      non_physical_lights,
-    const vector<EmittingTriangle>&          emitting_triangles)
+    const vector<EmittingShape>&             emitting_shapes)
   : m_non_physical_lights(non_physical_lights)
-  , m_emitting_triangles(emitting_triangles)
+  , m_emitting_shapes(emitting_shapes)
   , m_tree_depth(0)
   , m_is_built(false)
 {
@@ -100,19 +100,19 @@ vector<size_t> LightTree::build()
         m_items.emplace_back(bbox, i, NonPhysicalLightType);
     }
 
-    // Collect emitting triangles.
-    for (size_t i = 0, e = m_emitting_triangles.size(); i < e; ++i)
+    // Collect emitting shapes.
+    for (size_t i = 0, e = m_emitting_shapes.size(); i < e; ++i)
     {
-        const EmittingTriangle& triangle = m_emitting_triangles[i];
+        const EmittingShape& shape = m_emitting_shapes[i];
 
         AABB3d bbox;
         bbox.invalidate();
-        bbox.insert(triangle.m_v0);
-        bbox.insert(triangle.m_v1);
-        bbox.insert(triangle.m_v2);
+        bbox.insert(shape.m_v0);
+        bbox.insert(shape.m_v1);
+        bbox.insert(shape.m_v2);
 
         light_bboxes.push_back(bbox);
-        m_items.emplace_back(bbox, i, EmittingTriangleType);
+        m_items.emplace_back(bbox, i, EmittingShapeType);
     }
 
     // Create the partitioner.
@@ -142,7 +142,7 @@ vector<size_t> LightTree::build()
 
         // Set total node importance and level for each node of the LightTree.
         IndexLUT tri_index_to_node_index;
-        tri_index_to_node_index.resize(m_emitting_triangles.size());
+        tri_index_to_node_index.resize(m_emitting_shapes.size());
         recursive_node_update(0, 0, 0, tri_index_to_node_index);
 
         // Print light tree statistics.
@@ -154,7 +154,7 @@ vector<size_t> LightTree::build()
             StatisticsVector::make(
                 "light tree statistics",
                 statistics).to_string().c_str());
-        
+
         return tri_index_to_node_index;
     }
 
@@ -169,7 +169,7 @@ bool LightTree::is_built() const
 
 float LightTree::recursive_node_update(
     const size_t    parent_index,
-    const size_t    node_index, 
+    const size_t    node_index,
     const size_t    node_level,
     IndexLUT&       tri_index_to_node_index)
 {
@@ -194,7 +194,7 @@ float LightTree::recursive_node_update(
         if (m_items[item_index].m_light_type == NonPhysicalLightType)
         {
             const Light* light = m_non_physical_lights[light_index].m_light;
-            
+
             // Retrieve the non-physical light importance.
             Spectrum spectrum;
             light->get_inputs().find("intensity").source()->evaluate_uniform(spectrum);
@@ -202,12 +202,12 @@ float LightTree::recursive_node_update(
         }
         else
         {
-            assert(m_items[item_index].m_light_type == EmittingTriangleType);
+            assert(m_items[item_index].m_light_type == EmittingShapeType);
 
-            const EmittingTriangle& triangle = m_emitting_triangles[light_index];
+            const EmittingShape& shape = m_emitting_shapes[light_index];
 
-            // Retrieve the emitting triangle importance.
-            const EDF* edf = triangle.m_material->get_uncached_edf();
+            // Retrieve the emitting shape importance.
+            const EDF* edf = shape.m_material->get_uncached_edf();
             assert(edf != nullptr);
 
             const float max_contribution = edf->get_uncached_max_contribution();
@@ -216,11 +216,11 @@ float LightTree::recursive_node_update(
             // we can't compute the max_contribution easily (ex: textured lights)
             // In such cases, we can use a default importance value of 1.0 to avoid
             // infinite importance values in the light tree nodes.
-            if (max_contribution == numeric_limits<float>::max()) 
+            if (max_contribution == numeric_limits<float>::max())
                 importance = 1.0f;
             else
                 importance = max_contribution * edf->get_uncached_importance_multiplier();
-    
+
             // Save the index of the light tree node containing the EMT in the look up table.
             tri_index_to_node_index[light_index] = node_index;
         }
@@ -304,10 +304,10 @@ float LightTree::evaluate_node_pdf(
     return pdf;
 }
 
-Vector3d LightTree::emitting_triangle_centroid(const size_t triangle_index) const
+Vector3d LightTree::emitting_shape_centroid(const size_t shape_index) const
 {
-    const EmittingTriangle& triangle = m_emitting_triangles[triangle_index];
-    return (triangle.m_v0 + triangle.m_v1 + triangle.m_v2) * (1.0 / 3.0);
+    const EmittingShape& shape = m_emitting_shapes[shape_index];
+    return (shape.m_v0 + shape.m_v1 + shape.m_v2) * (1.0 / 3.0);
 }
 
 namespace
@@ -316,7 +316,7 @@ namespace
     float sub_hemispherical_light_source_contribution(
         const float     cos_omega,
         const float     cos_sigma)
-    {   
+    {
         assert(cos_omega >= -1.0f && cos_omega <= 1.0f);
         assert(cos_sigma >= 0.0f && cos_sigma <= 1.0f);
 
@@ -334,7 +334,7 @@ namespace
                     - asin(sin_gamma)
                     + sin_gamma * cos_gamma;
 
-        const float h = 
+        const float h =
             cos_omega * (
                 cos_gamma * sqrt(sin_sigma2 - cos_gamma2)
                 + sin_sigma2 * asin(cos_gamma / sin_sigma));
@@ -374,8 +374,8 @@ float LightTree::compute_node_probability(
     if (node.is_leaf())
     {
         const Item& item = m_items[node.get_item_index()];
-        if (item.m_light_type == EmittingTriangleType)
-            position = emitting_triangle_centroid(item.m_light_index);
+        if (item.m_light_type == EmittingShapeType)
+            position = emitting_shape_centroid(item.m_light_index);
         else position = bbox.center();
     }
     else position = bbox.center();
@@ -410,7 +410,7 @@ float LightTree::compute_node_probability(
 
     const float cos_omega = clamp(static_cast<float>(dot(N, outcoming_light_direction)), -1.0f, 1.0f);
     const float approx_contribution = sub_hemispherical_light_source_contribution(cos_omega, cos_sigma);
-    
+
     assert(approx_contribution > 0.0f);
     return node.get_importance() * rcp_surface_area * approx_contribution;
 }

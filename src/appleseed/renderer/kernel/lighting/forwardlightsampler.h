@@ -62,10 +62,10 @@ class ForwardLightSampler
         const Scene&                    scene,
         const ParamArray&               params = ParamArray());
 
-    // Return true if the scene contains at least one light or emitting triangle.
+    // Return true if the scene contains at least one light or emitting shape.
     bool has_lights() const;
 
-    // Sample the sets of non-physical lights and emitting triangles.
+    // Sample the sets of non-physical lights and emitting shapes.
     void sample(
         const ShadingRay::Time&         time,
         const foundation::Vector3f&     s,
@@ -89,7 +89,7 @@ class ForwardLightSampler
 
 inline bool ForwardLightSampler::has_lights() const
 {
-    return m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid();
+    return m_non_physical_lights_cdf.valid() || m_emitting_shapes_cdf.valid();
 }
 
 }   // namespace renderer

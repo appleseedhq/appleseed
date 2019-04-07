@@ -162,7 +162,7 @@ namespace
 //
 //   take_single_direction_sample
 //       DirectLightingIntegrator::take_single_material_sample
-//       DirectLightingIntegrator::add_emitting_triangle_sample_contribution
+//       DirectLightingIntegrator::add_emitting_shape_sample_contribution
 //       DirectLightingIntegrator::add_non_physical_light_sample_contribution
 
 VolumeLightingIntegrator::VolumeLightingIntegrator(
@@ -554,7 +554,7 @@ void VolumeLightingIntegrator::take_single_direction_sample(
             Dual3d(m_volume_ray.m_dir),
             radiance);
     }
-    else if (light_sample == nullptr || light_sample->m_triangle != nullptr)
+    else if (light_sample == nullptr || light_sample->m_shape != nullptr)
     {
         sampling_context.split_in_place(3, 1);
         LightSample light_sample;
@@ -564,7 +564,7 @@ void VolumeLightingIntegrator::take_single_direction_sample(
             m_shading_point,
             light_sample);
 
-        integrator.add_emitting_triangle_sample_contribution(
+        integrator.add_emitting_shape_sample_contribution(
             sampling_context,
             light_sample,
             mis_heuristic,
