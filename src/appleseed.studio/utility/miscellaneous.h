@@ -46,9 +46,6 @@ class QWidget;
 namespace appleseed {
 namespace studio {
 
-// File dialog filter string for bitmap files supported by appleseed's own image subsystem.
-extern const QString g_appleseed_image_files_filter;
-
 // File dialog filter string for bitmap files supported by Qt.
 extern const QString g_qt_image_files_filter;
 

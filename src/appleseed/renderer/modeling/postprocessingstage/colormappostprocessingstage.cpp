@@ -201,7 +201,13 @@ namespace
             float min_luminance, max_luminance;
 
             if (m_auto_range)
-                m_color_map.find_min_max_relative_luminance(frame.image(), frame.get_crop_window(), min_luminance, max_luminance);
+            {
+                m_color_map.find_min_max_relative_luminance(
+                    frame.image(),
+                    frame.get_crop_window(),
+                    min_luminance,
+                    max_luminance);
+            }
             else
             {
                 min_luminance = m_range_min;
@@ -221,7 +227,11 @@ namespace
             if (m_render_isolines)
                 collect_isoline_segments(isoline_segments, frame, min_luminance, max_luminance);
 
-            m_color_map.remap_relative_luminance(frame.image(), frame.get_crop_window(), min_luminance, max_luminance);
+            m_color_map.remap_relative_luminance(
+                frame.image(),
+                frame.get_crop_window(),
+                min_luminance,
+                max_luminance);
 
             if (m_render_isolines)
                 render_isoline_segments(frame, isoline_segments);
@@ -315,19 +325,15 @@ namespace
             // Draw legend bar.
             for (size_t y = y0; y < y1; ++y)
             {
-                for (size_t x = x0; x < x1; ++x)
-                {
-                    const float val =
-                        y0 == y1 - 1
-                            ? 0.0f
-                            : fit<size_t, float>(y, y0, y1 - 1, 1.0f, 0.0f);
+                const float val =
+                    y0 == y1 - 1
+                        ? 0.0f
+                        : fit<size_t, float>(y, y0, y1 - 1, 1.0f, 0.0f);
 
-                    image.set_pixel(
-                        x, y,
-                        Color4f(
-                            m_color_map.evaluate_palette(val),
-                            1.0f));
-                }
+                const Color4f color(m_color_map.evaluate_palette(val), 1.0f);
+
+                for (size_t x = x0; x < x1; ++x)
+                    image.set_pixel(x, y, color);
             }
 
             // Handle more edge cases.

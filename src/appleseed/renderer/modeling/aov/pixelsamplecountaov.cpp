@@ -77,6 +77,7 @@ const char* PixelSampleCountAOV::get_model() const
 void PixelSampleCountAOV::post_process_image(const Frame& frame)
 {
     const AABB2u& crop_window = frame.get_crop_window();
+
     ColorMap color_map;
     color_map.set_palette_from_array(InfernoColorMap, countof(InfernoColorMap) / 3);
 
