@@ -341,7 +341,7 @@ if (USE_FIND_PACKAGE_FOR_OSL)
 else ()
     add_custom_command (
         TARGET prepare_sandbox
-        COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/osl-release/bin/oslc${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+        COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/osl-release/bin/oslc.exe ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
 endif ()
 
