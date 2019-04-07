@@ -139,15 +139,15 @@ namespace
                     context);
 
             if (color_map == "inferno")
-                m_color_map.set_palette_from_array(InfernoColorMap, countof(InfernoColorMap) / 3);
+                m_color_map.set_palette_from_array(InfernoColorMapLinearRGB, countof(InfernoColorMapLinearRGB) / 3);
             else if (color_map == "jet")
-                m_color_map.set_palette_from_array(JetColorMap, countof(JetColorMap) / 3);
+                m_color_map.set_palette_from_array(JetColorMapLinearRGB, countof(JetColorMapLinearRGB) / 3);
             else if (color_map == "magma")
-                m_color_map.set_palette_from_array(MagmaColorMap, countof(MagmaColorMap) / 3);
+                m_color_map.set_palette_from_array(MagmaColorMapLinearRGB, countof(MagmaColorMapLinearRGB) / 3);
             else if (color_map == "plasma")
-                m_color_map.set_palette_from_array(PlasmaColorMap, countof(PlasmaColorMap) / 3);
+                m_color_map.set_palette_from_array(PlasmaColorMapLinearRGB, countof(PlasmaColorMapLinearRGB) / 3);
             else if (color_map == "viridis")
-                m_color_map.set_palette_from_array(ViridisColorMap, countof(ViridisColorMap) / 3);
+                m_color_map.set_palette_from_array(ViridisColorMapLinearRGB, countof(ViridisColorMapLinearRGB) / 3);
             else
             {
                 assert(color_map == "custom");
