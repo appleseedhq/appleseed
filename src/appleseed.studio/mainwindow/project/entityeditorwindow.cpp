@@ -109,7 +109,7 @@ void EntityEditorWindow::create_connections()
         SLOT(slot_accept()));
 
     connect(
-        create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
+        create_window_local_shortcut(this, QKeySequence(Qt::Key_Escape)), SIGNAL(activated()),
         SLOT(slot_cancel()));
 }
 

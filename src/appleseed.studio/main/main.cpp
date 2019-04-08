@@ -271,16 +271,16 @@ namespace
         }
     }
 
-    QtMsgHandler g_previous_message_handler = nullptr;
+    QtMessageHandler g_previous_message_handler = nullptr;
 
-    void message_handler(QtMsgType type, const char* msg)
+    void message_handler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
     {
 #ifdef __APPLE__
         // Under certain circumstances (under an macOS virtual machine?), a bogus warning
         // message is repeatedly printed to the console. Disable this warning message.
         // See https://github.com/appleseedhq/appleseed/issues/254 for details.
         if (type == QtWarningMsg &&
-            strcmp(msg, "QCocoaView handleTabletEvent: This tablet device is unknown (received no proximity event for it). Discarding event.") == 0)
+            msg == "QCocoaView handleTabletEvent: This tablet device is unknown (received no proximity event for it). Discarding event.")
         {
             // Absorb the message.
             return;
@@ -290,26 +290,26 @@ namespace
         // On Windows, there is a default message handler.
         if (g_previous_message_handler != nullptr)
         {
-            g_previous_message_handler(type, msg);
+            g_previous_message_handler(type, context, msg);
             return;
         }
 
         switch (type)
         {
           case QtDebugMsg:
-            fprintf(stderr, "Debug: %s\n", msg);
+            fprintf(stderr, "Debug: %s\n", msg.toUtf8().constData());
             break;
 
           case QtWarningMsg:
-            fprintf(stderr, "Warning: %s\n", msg);
+            fprintf(stderr, "Warning: %s\n", msg.toUtf8().constData());
             break;
 
           case QtCriticalMsg:
-            fprintf(stderr, "Critical: %s\n", msg);
+            fprintf(stderr, "Critical: %s\n", msg.toUtf8().constData());
             break;
 
           case QtFatalMsg:
-            fprintf(stderr, "Fatal: %s\n", msg);
+            fprintf(stderr, "Fatal: %s\n", msg.toUtf8().constData());
             abort();
         }
     }
@@ -326,7 +326,7 @@ int main(int argc, char* argv[])
     start_memory_tracking();
 
     // Our message handler must be set before the construction of QApplication.
-    g_previous_message_handler = qInstallMsgHandler(message_handler);
+    g_previous_message_handler = qInstallMessageHandler(message_handler);
 
     QApplication application(argc, argv);
     QApplication::setOrganizationName("appleseedhq");

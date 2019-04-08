@@ -69,7 +69,7 @@ macro (set_to_string output_variable first_arg)
 endmacro ()
 
 #
-# A variant of the QT4_WRAP_CPP macro designed to moc .cpp files.
+# A variant of the QT5_WRAP_CPP macro designed to moc .cpp files.
 #
 # It differs from the original macro in two ways:
 #
@@ -81,16 +81,27 @@ endmacro ()
 #       that the generated file gets rebuilt whenever the input file is modified. This
 #       is necessary because the generated file is to be included in the input file.
 #
-# The original QT4_WRAP_CPP macro can be found in share/cmake-2.8/Modules/Qt4Macros.cmake.
+# The original QT5_WRAP_CPP macro can be found in qt5/lib/cmake/Qt5Core/Qt5CoreMacros.cmake
 #
 
-macro (QT4_WRAP_CPP_CPLUSPLUS_FILES outfiles)
-    QT4_GET_MOC_FLAGS (moc_flags)
-    QT4_EXTRACT_OPTIONS (moc_files moc_options moc_target ${ARGN})
+macro (QT5_WRAP_CPP_CPLUSPLUS_FILES outfiles)
+    QT5_GET_MOC_FLAGS (moc_flags)
+
+    set (options)
+    set (oneValueArgs TARGET)
+    set (multiValueArgs OPTIONS DEPENDS)
+
+    cmake_parse_arguments (_WRAP_CPP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    set (moc_files ${_WRAP_CPP_UNPARSED_ARGUMENTS})
+    set (moc_options ${_WRAP_CPP_OPTIONS})
+    set (moc_target ${_WRAP_CPP_TARGET})
+    set (moc_depends ${_WRAP_CPP_DEPENDS})
+
     foreach (it ${moc_files})
         get_filename_component (it ${it} ABSOLUTE)
-        QT4_MAKE_OUTPUT_FILE (${it} moc_cpp_ cxx outfile)
-        QT4_CREATE_MOC_COMMAND (${it} ${outfile} "${moc_flags}" "${moc_options}" "${moc_target}")
+        QT5_MAKE_OUTPUT_FILE (${it} moc_cpp_ cxx outfile)
+        QT5_CREATE_MOC_COMMAND (${it} ${outfile} "${moc_flags}" "${moc_options}" "${moc_target}" "${moc_depends}")
         set (${outfiles} ${${outfiles}} ${outfile})
         set_source_files_properties (${it} PROPERTIES OBJECT_DEPENDS ${outfile})
     endforeach (it)

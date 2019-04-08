@@ -117,7 +117,7 @@ void set_minimum_width(QMessageBox& msgbox, const int minimum_width);
 
 // Create a keyboard shortcut that is active for a given window and its
 // child widgets, but not for its top-level children like subwindows.
-QShortcut* create_window_local_shortcut(QWidget* parent, const int key);
+QShortcut* create_window_local_shortcut(QWidget* parent, const QKeySequence key_sequence);
 
 // Remove all widgets and sub-layouts from a layout.
 void clear_layout(QLayout* layout);

@@ -50,11 +50,7 @@ echo "Installing Homebrew packages..."
 brew update
 brew upgrade
 
-brew install boost-python llvm@3.9 lz4 openimageio xerces-c zlib
-
-brew tap cartr/qt4
-brew tap-pin cartr/qt4
-brew install qt@4 pyqt@4
+brew install qt5 pyqt5 boost-python llvm@3.9 lz4 openimageio xerces-c zlib
 
 mkdir -p $HOME/Library/Python/2.7/lib/python/site-packages
 echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' \
@@ -101,10 +97,10 @@ echo "travis_fold:end:osl"
 echo "travis_fold:start:seexpr"
 echo "Building SeExpr..."
 
-git clone https://github.com/wdas/SeExpr
+git clone https://github.com/termhn/SeExpr
 pushd SeExpr
 
-git checkout db9610a24401fa7198c54c8768d0484175f54172
+git checkout appleseed-qt5
 
 mkdir build
 cd build
@@ -112,6 +108,7 @@ cd build
 cmake \
     -Wno-dev \
     -DCMAKE_POLICY_DEFAULT_CMP0042=OLD \
+    -DCMAKE_PREFIX_PATH=/usr/local/opt/qt \
     -DCMAKE_INSTALL_PREFIX=$THISDIR \
     ..
 
@@ -166,6 +163,7 @@ cmake \
     -DSEEXPREDITOR_LIBRARY=$THISDIR/lib/libSeExprEditor.dylib \
     -DZLIB_INCLUDE_DIR=/usr/local/opt/zlib/include \
     -DZLIB_LIBRARY=/usr/local/opt/zlib/lib/libz.dylib \
+    -DCMAKE_PREFIX_PATH=/usr/local/opt/qt \
     ..
 
 make -j 2
