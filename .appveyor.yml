@@ -55,7 +55,7 @@ for:
 
       cd build
 
-      cmake -G "Visual Studio 14 2015 Win64" -DWITH_DISNEY_MATERIAL=ON -DWITH_STUDIO=OFF -DUSE_SSE42=ON -DBOOST_ROOT=C:\projects\appleseed\boost_1_69_0_vc14 -DPYTHON_INCLUDE_DIR=C:\Python27-x64\include -DPYTHON_LIBRARY=C:\Python27-x64\libs\python27.lib -DAPPLESEED_DEPS_STAGE_DIR=C:\projects\appleseed\appleseed-deps-stage-win64-vs140-v19\stage\vc14 ..
+      cmake -G "Visual Studio 14 2015 Win64" -DWITH_DISNEY_MATERIAL=ON -DWITH_STUDIO=OFF -DUSE_SSE42=ON -DBOOST_ROOT=C:\projects\appleseed\boost_1_69_0_vc140 -DPYTHON_INCLUDE_DIR=C:\Python27-x64\include -DPYTHON_LIBRARY=C:\Python27-x64\libs\python27.lib -DAPPLESEED_DEPS_STAGE_DIR=C:\projects\appleseed\appleseed-deps-stage-win64-vs140-v19\stage\vc14 ..
 
   test_script:
   - cmd: >-
