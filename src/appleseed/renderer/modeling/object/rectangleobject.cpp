@@ -27,7 +27,7 @@
 //
 
 // interface header.
-#include "rectobject.h"
+#include "rectangleobject.h"
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingray.h"

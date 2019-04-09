@@ -35,7 +35,7 @@
 #include "renderer/modeling/object/diskobject.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/objecttraits.h"
-#include "renderer/modeling/object/rectobject.h"
+#include "renderer/modeling/object/rectangleobject.h"
 #include "renderer/modeling/object/sphereobject.h"
 
 // appleseed.foundation headers.

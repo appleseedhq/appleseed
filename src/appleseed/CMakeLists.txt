@@ -1882,8 +1882,8 @@ set (renderer_modeling_object_sources
     renderer/modeling/object/objecttraits.h
     renderer/modeling/object/proceduralobject.cpp
     renderer/modeling/object/proceduralobject.h
-    renderer/modeling/object/rectobject.cpp
-    renderer/modeling/object/rectobject.h
+    renderer/modeling/object/rectangleobject.cpp
+    renderer/modeling/object/rectangleobject.h
     renderer/modeling/object/sphereobject.cpp
     renderer/modeling/object/sphereobject.h
     renderer/modeling/object/triangle.h
