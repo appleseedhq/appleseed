@@ -49,6 +49,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/analysis.h"
 #include "foundation/image/color.h"
+#include "foundation/image/conversion.h"
 #include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/genericprogressiveimagefilereader.h"
@@ -999,43 +1000,6 @@ namespace
         image_attributes.insert("blue_xy_chromaticity",  Vector2f(0.15f, 0.06f));
     }
 
-    void transform_to_srgb(Tile& tile)
-    {
-        assert(tile.get_channel_count() == 4);
-        assert(tile.get_pixel_format() == PixelFormatHalf);
-
-        typedef Color<half, 4> Color4h;
-
-        Color4h* pixel_ptr = reinterpret_cast<Color4h*>(tile.pixel(0));
-        Color4h* pixel_end = pixel_ptr + tile.get_pixel_count();
-
-        for (; pixel_ptr < pixel_end; ++pixel_ptr)
-        {
-            // Load the pixel color.
-            Color4f color(*pixel_ptr);
-
-            // Apply color space conversion and clamping.
-            color.unpremultiply_in_place();
-            color.rgb() = fast_linear_rgb_to_srgb(color.rgb());
-            color = saturate(color);
-            color.premultiply_in_place();
-
-            // Store the pixel color.
-            *pixel_ptr = color;
-        }
-    }
-
-    void transform_to_srgb(Image& image)
-    {
-        const CanvasProperties& image_props = image.properties();
-
-        for (size_t ty = 0; ty < image_props.m_tile_count_y; ++ty)
-        {
-            for (size_t tx = 0; tx < image_props.m_tile_count_x; ++tx)
-                transform_to_srgb(image.tile(tx, ty));
-        }
-    }
-
     //
     // Default export formats:
     //
@@ -1073,17 +1037,13 @@ namespace
 
         try
         {
-            const bool is_hdr_format =
-                extension == ".exr"  ||
-                extension == ".tiff" ||
-                extension == ".tif"  ||
-                extension == ".hdr";
+            const bool is_linear_format = is_linear_image_file_format(bf_file_path);
 
             unique_ptr<Image> transformed_image;
-            if (!is_hdr_format && image.properties().m_channel_count == 4)
+            if (!is_linear_format && image.properties().m_channel_count == 4)
             {
                 transformed_image.reset(new Image(image));
-                transform_to_srgb(*transformed_image);
+                convert_linear_rgb_to_srgb(*transformed_image);
             }
             else if (extension == ".hdr")
             {
@@ -1091,7 +1051,7 @@ namespace
                 const size_t shuffle_table[4] = { 0, 1, 2, Pixel::SkipChannel };
                 transformed_image.reset(new Image(image, image.properties().m_pixel_format, shuffle_table));
             }
-            else if (is_hdr_format)
+            else if (is_linear_format)
             {
                 transformed_image.reset(new Image(image));
             }
@@ -1104,7 +1064,7 @@ namespace
             }
 
             image_attributes.insert("color_space",
-                is_hdr_format ? "linear" : "sRGB");
+                is_linear_format ? "linear" : "sRGB");
 
             create_parent_directories(bf_file_path);
 
