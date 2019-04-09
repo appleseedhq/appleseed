@@ -36,7 +36,11 @@
 if (NOT PYTHON_MAJOR_VERSION STREQUAL "2")
     message (FATAL_ERROR "Python 2.x needed")
 else ()
-    find_package (Boost 1.55 COMPONENTS python)
+    if (Boost_VERSION_STRING VERSION_GREATER_EQUAL 1.67)
+        find_package (Boost 1.55 COMPONENTS python27)
+    else()
+        find_package (Boost 1.55 COMPONENTS python)
+    endif()
 endif ()
 
 # OpenGL.
