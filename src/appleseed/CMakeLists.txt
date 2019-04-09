@@ -144,6 +144,8 @@ set (foundation_image_sources
     foundation/image/colormapdata.h
     foundation/image/colorspace.cpp
     foundation/image/colorspace.h
+    foundation/image/conversion.cpp
+    foundation/image/conversion.h
     foundation/image/drawing.cpp
     foundation/image/drawing.h
     foundation/image/exceptionunsupportedimageformat.h
