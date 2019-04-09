@@ -75,8 +75,18 @@ bool intersect_disk(
     const Ray<T, 3>&        ray,
     const T                 radius)
 {
-    T t, u, v;
-    return intersect_disk(ray, radius, t, u, v);
+    assert(is_normalized(ray.m_dir));
+
+    const T dist_to_plane = -ray.m_org.y / ray.m_dir.y;
+    if (dist_to_plane < ray.m_tmin || dist_to_plane >= ray.m_tmax)
+        return false;
+
+    const Vector<T, 3> hit = ray.point_at(dist_to_plane);
+    const T dist_sqr = square(hit.x) + square(hit.z);
+    if (dist_sqr > square(radius))
+        return false;
+
+    return true;
 }
 
 template <typename T>

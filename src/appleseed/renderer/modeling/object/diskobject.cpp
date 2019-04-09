@@ -61,7 +61,6 @@ namespace
 struct DiskObject::Impl
 {
     double      m_radius;
-    Vector3d    m_normal;
 };
 
 DiskObject::DiskObject(
@@ -92,7 +91,6 @@ bool DiskObject::on_frame_begin(
         return false;
 
     impl->m_radius = get_uncached_radius();
-    impl->m_normal = Vector3d(0.0, 1.0, 0.0);
     return true;
 }
 
@@ -135,8 +133,9 @@ void DiskObject::intersect(
 
     if (result.m_hit)
     {
-        result.m_geometric_normal = impl->m_normal;
-        result.m_shading_normal = impl->m_normal;
+        const Vector3d n(0.0, 1.0, 0.0);
+        result.m_geometric_normal = n;
+        result.m_shading_normal = n;
 
         result.m_uv[0] = static_cast<float>(u);
         result.m_uv[1] = static_cast<float>(v);
