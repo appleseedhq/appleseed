@@ -64,7 +64,7 @@ ObjectFactoryRegistrar::ObjectFactoryRegistrar(const SearchPaths& search_paths)
     impl->register_factory(auto_release_ptr<FactoryType>(new CurveObjectFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new DiskObjectFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new MeshObjectFactory()));
-    impl->register_factory(auto_release_ptr<FactoryType>(new RectObjectFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new RectangleObjectFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new SphereObjectFactory()));
 }
 

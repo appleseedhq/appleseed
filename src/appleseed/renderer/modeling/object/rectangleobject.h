@@ -47,16 +47,15 @@ namespace renderer
 {
 
 //
-// A rect object.
+// A rectangle object.
 //
-// The rect is assumed to be centered at the origin.
+// The rectangle is centered at the origin and lies in the X-Z plane.
 //
 
-class APPLESEED_DLLSYMBOL RectObject
+class APPLESEED_DLLSYMBOL RectangleObject
   : public ProceduralObject
 {
   public:
-
     void release() override;
 
     const char* get_model() const override;
@@ -83,23 +82,23 @@ class APPLESEED_DLLSYMBOL RectObject
     bool intersect(const ShadingRay& ray) const override;
 
   private:
-    friend class RectObjectFactory;
+    friend class RectangleObjectFactory;
 
     struct Impl;
     Impl* impl;
 
     // Constructor.
-    RectObject(
+    RectangleObject(
         const char*                 name,
         const ParamArray&           params);
 };
 
 
 //
-// Rect object factory.
+// Rectangle object factory.
 //
 
-class RectObjectFactory
+class RectangleObjectFactory
   : public IObjectFactory
 {
   public:

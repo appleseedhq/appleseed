@@ -47,6 +47,30 @@ namespace foundation
 //
 
 template <typename T>
+inline bool intersect_parallelogram(
+    const Ray<T, 3>&        ray,
+    const Vector<T, 3>&     corner,
+    const Vector<T, 3>&     x,
+    const Vector<T, 3>&     y,
+    const Vector<T, 3>&     n,
+    T&                      t,
+    T&                      u,
+    T&                      v);
+
+template <typename T>
+inline bool intersect_parallelogram(
+    const Ray<T, 3>&        ray,
+    const Vector<T, 3>&     corner,
+    const Vector<T, 3>&     x,
+    const Vector<T, 3>&     y,
+    const Vector<T, 3>&     n);
+
+
+//
+// 3D ray-parallelogram intersection functions implementation.
+//
+
+template <typename T>
 bool intersect_parallelogram(
     const Ray<T, 3>&        ray,
     const Vector<T, 3>&     corner,
@@ -60,7 +84,7 @@ bool intersect_parallelogram(
     if (!intersect(ray, corner, n, t))
         return false;
 
-    if (t <= ray.m_tmin || t >= ray.m_tmax)
+    if (t < ray.m_tmin || t >= ray.m_tmax)
         return false;
 
     const Vector<T, 3> vi = ray.point_at(t) - corner;

@@ -50,15 +50,15 @@ namespace renderer
 {
 
 //
-// RectObject class implementation.
+// RectangleObject class implementation.
 //
 
 namespace
 {
-    const char* Model = "rect_object";
+    const char* Model = "rectangle_object";
 }
 
-struct RectObject::Impl
+struct RectangleObject::Impl
 {
     Vector3d    m_corner;
     Vector3d    m_normal;
@@ -67,7 +67,7 @@ struct RectObject::Impl
     bool        m_skip_intersection;
 };
 
-RectObject::RectObject(
+RectangleObject::RectangleObject(
     const char*            name,
     const ParamArray&      params)
   : ProceduralObject(name, params)
@@ -75,17 +75,17 @@ RectObject::RectObject(
 {
 }
 
-void RectObject::release()
+void RectangleObject::release()
 {
     delete this;
 }
 
-const char* RectObject::get_model() const
+const char* RectangleObject::get_model() const
 {
     return Model;
 }
 
-bool RectObject::on_frame_begin(
+bool RectangleObject::on_frame_begin(
     const Project&         project,
     const BaseGroup*       parent,
     OnFrameBeginRecorder&  recorder,
@@ -111,7 +111,7 @@ bool RectObject::on_frame_begin(
     return true;
 }
 
-GAABB3 RectObject::compute_local_bbox() const
+GAABB3 RectangleObject::compute_local_bbox() const
 {
     const float width  = static_cast<float>(get_uncached_width());
     const float height = static_cast<float>(get_uncached_height());
@@ -123,27 +123,27 @@ GAABB3 RectObject::compute_local_bbox() const
     return bbox;
 }
 
-size_t RectObject::get_material_slot_count() const
+size_t RectangleObject::get_material_slot_count() const
 {
     return 1;
 }
 
-const char* RectObject::get_material_slot(const size_t index) const
+const char* RectangleObject::get_material_slot(const size_t index) const
 {
     return "default";
 }
 
-double RectObject::get_uncached_width() const
+double RectangleObject::get_uncached_width() const
 {
     return m_params.get_optional<double>("width", 1.0);
 }
 
-double RectObject::get_uncached_height() const
+double RectangleObject::get_uncached_height() const
 {
     return m_params.get_optional<double>("height", 1.0);
 }
 
-void RectObject::intersect(
+void RectangleObject::intersect(
     const ShadingRay&      ray,
     IntersectionResult&    result) const
 {
@@ -176,7 +176,7 @@ void RectObject::intersect(
     }
 }
 
-bool RectObject::intersect(const ShadingRay& ray) const
+bool RectangleObject::intersect(const ShadingRay& ray) const
 {
     if APPLESEED_UNLIKELY(impl->m_skip_intersection)
         return false;
@@ -191,28 +191,28 @@ bool RectObject::intersect(const ShadingRay& ray) const
 
 
 //
-// RectObjectFactory class implementation.
+// RectangleObjectFactory class implementation.
 //
 
-void RectObjectFactory::release()
+void RectangleObjectFactory::release()
 {
     delete this;
 }
 
-const char* RectObjectFactory::get_model() const
+const char* RectangleObjectFactory::get_model() const
 {
     return Model;
 }
 
-Dictionary RectObjectFactory::get_model_metadata() const
+Dictionary RectangleObjectFactory::get_model_metadata() const
 {
     return
         Dictionary()
             .insert("name", Model)
-            .insert("label", "Rect Object");
+            .insert("label", "Rectangle Object");
 }
 
-DictionaryArray RectObjectFactory::get_input_metadata() const
+DictionaryArray RectangleObjectFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
 
@@ -251,14 +251,14 @@ DictionaryArray RectObjectFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<Object> RectObjectFactory::create(
+auto_release_ptr<Object> RectangleObjectFactory::create(
     const char*            name,
     const ParamArray&      params) const
 {
-    return auto_release_ptr<Object>(new RectObject(name, params));
+    return auto_release_ptr<Object>(new RectangleObject(name, params));
 }
 
-bool RectObjectFactory::create(
+bool RectangleObjectFactory::create(
     const char*            name,
     const ParamArray&      params,
     const SearchPaths&     search_paths,

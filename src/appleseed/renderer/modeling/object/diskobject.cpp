@@ -99,7 +99,7 @@ bool DiskObject::on_frame_begin(
 GAABB3 DiskObject::compute_local_bbox() const
 {
     const auto r = static_cast<GScalar>(get_uncached_radius());
-    GAABB3 bbox(
+    const GAABB3 bbox(
         GVector3(-r, GScalar(0), -r),
         GVector3(r, GScalar(0), r));
     return bbox;

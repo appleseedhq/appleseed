@@ -34,13 +34,19 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
+namespace foundation    { class SearchPaths; }
+namespace renderer      { class BaseGroup; }
+namespace renderer      { class IntersectionResult; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class Project; }
 namespace renderer      { class ShadingRay; }
 
 namespace renderer
@@ -49,7 +55,7 @@ namespace renderer
 //
 // A disk object.
 //
-// The disk is assumed to be centered at the origin and pointing the Z direction.
+// The disk is centered at the origin and lies in the X-Z plane.
 //
 
 class APPLESEED_DLLSYMBOL DiskObject

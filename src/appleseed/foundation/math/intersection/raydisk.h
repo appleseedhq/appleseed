@@ -55,7 +55,7 @@ inline bool intersect_disk(
 // Test the intersection between a unit-length ray segment and the surface of a disk.
 // The disk is assumed to be centered at the origin and pointing to the Y direction.
 // If the ray segment and the disk intersect, the distance to the closest
-// intersection is returned in `tmin` and the parametric reprensentation of the surface
+// intersection is returned in `tmin` and the parametric representation of the surface
 // hit is returned in `u` and `v`. Otherwise `tmin`, `u` and `v` are left unchanged.
 template <typename T>
 inline bool intersect_disk(
@@ -71,7 +71,7 @@ inline bool intersect_disk(
 //
 
 template <typename T>
-inline bool intersect_disk(
+bool intersect_disk(
     const Ray<T, 3>&        ray,
     const T                 radius)
 {
@@ -80,7 +80,7 @@ inline bool intersect_disk(
 }
 
 template <typename T>
-inline bool intersect_disk(
+bool intersect_disk(
     const Ray<T, 3>&        ray,
     const T                 radius,
     T&                      t,
@@ -89,22 +89,21 @@ inline bool intersect_disk(
 {
     assert(is_normalized(ray.m_dir));
 
-    // Reject rays parallel to the disk's plane.
     const T dist_to_plane = -ray.m_org.y / ray.m_dir.y;
-    if (dist_to_plane <= ray.m_tmin || dist_to_plane >= ray.m_tmax)
+    if (dist_to_plane < ray.m_tmin || dist_to_plane >= ray.m_tmax)
         return false;
 
-    Vector<T, 3> hit = ray.point_at(dist_to_plane);
+    const Vector<T, 3> hit = ray.point_at(dist_to_plane);
     const T dist_sqr = square(hit.x) + square(hit.z);
     if (dist_sqr > square(radius))
         return false;
 
     t = dist_to_plane;
     T phi = std::atan2(hit.x, hit.z);
-    if (phi < T(0))
+    if (phi < T(0.0))
         phi += TwoPi<T>();
     u = phi * RcpTwoPi<T>();
-    v = T(1) - std::sqrt(dist_sqr) / radius;
+    v = T(1.0) - std::sqrt(dist_sqr) / radius;
 
     return true;
 }
