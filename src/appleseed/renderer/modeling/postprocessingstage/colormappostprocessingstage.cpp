@@ -41,6 +41,7 @@
 #include "foundation/image/color.h"
 #include "foundation/image/colormap.h"
 #include "foundation/image/colormapdata.h"
+#include "foundation/image/conversion.h"
 #include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/image.h"
 #include "foundation/image/text/textrenderer.h"
@@ -276,10 +277,13 @@ namespace
         bool                m_render_isolines;
         float               m_line_thickness;
 
-        void set_palette_from_image_file(const string& filepath)
+        void set_palette_from_image_file(const string& file_path)
         {
             GenericImageFileReader reader;
-            unique_ptr<Image> image(reader.read(filepath.c_str()));
+            unique_ptr<Image> image(reader.read(file_path.c_str()));
+
+            if (!is_linear_image_file_format(file_path))
+                convert_srgb_to_linear_rgb(*image);
 
             m_color_map.set_palette_from_image_file(*image.get());
         }
