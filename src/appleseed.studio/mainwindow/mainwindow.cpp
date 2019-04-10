@@ -144,7 +144,6 @@ MainWindow::MainWindow(QWidget* parent)
     build_connections();
 
     slot_load_application_settings();
-    slot_check_fullscreen();
 
     update_project_explorer();
     update_workspace();
@@ -397,6 +396,13 @@ void MainWindow::build_menus()
     connect(m_ui->log->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
     connect(m_ui->python_console->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
     connect(fullscreen_action, SIGNAL(triggered()), SLOT(slot_fullscreen()));
+
+    if (any_of(m_minimize_buttons.cbegin(),
+               m_minimize_buttons.cend(),
+               [](MinimizeButton* button) {return button->is_on();})) {
+
+        fullscreen_action->setChecked(false);
+    }
 
     //
     // Rendering menu.
