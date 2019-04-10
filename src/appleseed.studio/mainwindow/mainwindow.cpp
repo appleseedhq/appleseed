@@ -144,6 +144,7 @@ MainWindow::MainWindow(QWidget* parent)
     build_connections();
 
     slot_load_application_settings();
+    slot_check_fullscreen();
 
     update_project_explorer();
     update_workspace();
@@ -390,6 +391,11 @@ void MainWindow::build_menus()
     QAction* fullscreen_action = m_ui->menu_view->addAction("Fullscreen");
     fullscreen_action->setCheckable(true);
     fullscreen_action->setShortcut(Qt::Key_F11);
+    fullscreen_action->setObjectName("Fullscreen");
+    connect(m_ui->project_explorer->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
+    connect(m_ui->attribute_editor->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
+    connect(m_ui->log->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
+    connect(m_ui->python_console->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
     connect(fullscreen_action, SIGNAL(triggered()), SLOT(slot_fullscreen()));
 
     //
@@ -2137,6 +2143,24 @@ void MainWindow::slot_fullscreen()
 
     for (MinimizeButton* button : m_minimize_buttons)
         button->set_fullscreen(m_fullscreen);
+}
+
+void MainWindow::slot_check_fullscreen()
+{
+    QAction* fullscreen = m_ui->menu_view->findChild<QAction*>("Fullscreen");
+
+    if (all_of(m_minimize_buttons.cbegin(),
+               m_minimize_buttons.cend(),
+               [](MinimizeButton* button) {return button->is_on();})) {
+
+        fullscreen->setChecked(true);
+    }
+
+    else {
+        if (fullscreen->isChecked()) {
+            fullscreen->setChecked(false);
+        }
+    }
 }
 
 void MainWindow::slot_show_application_settings_window()

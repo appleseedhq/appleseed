@@ -301,6 +301,7 @@ class MainWindow
 
     // General UI actions.
     void slot_fullscreen();
+    void slot_check_fullscreen();
 
     // Child windows.
     void slot_show_application_settings_window();
