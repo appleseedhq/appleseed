@@ -6,16 +6,21 @@ clone_folder: C:\projects\appleseed
 image:
   - Visual Studio 2017
   - Visual Studio 2015
-  - Visual Studio 2013
 configuration: Debug
 platform: x64
 install:
 - cmd: >-
-    appveyor DownloadFile https://github.com/appleseedhq/appleseed-deps/releases/download/v18/appleseed-deps-stage-win64-vs141-v18.zip
+    appveyor DownloadFile https://github.com/appleseedhq/appleseed-deps/releases/download/v19/appleseed-deps-stage-win64-vs141-v19.zip
 
-    7z x appleseed-deps-stage-win64-vs141-v18.zip -oappleseed-deps-stage-win64-vs141-v18
+    7z x appleseed-deps-stage-win64-vs141-v19.zip -oappleseed-deps-stage-win64-vs141-v19
 
-    rm appleseed-deps-stage-win64-vs141-v18.zip
+    appveyor DownloadFile https://github.com/appleseedhq/appveyor-deps/releases/download/v2/boost_1_69_0_vc141.zip
+    
+    7z x boost_1_69_0_vc141.zip
+    
+    rm boost_1_69_0_vc141.zip
+
+    rm appleseed-deps-stage-win64-vs141-v19.zip
 
 before_build:
 - cmd: >-
@@ -23,7 +28,7 @@ before_build:
 
     cd build
 
-    cmake -G "Visual Studio 15 2017 Win64" -DWITH_DISNEY_MATERIAL=ON -DWITH_STUDIO=OFF -DUSE_SSE42=ON -DBOOST_ROOT=C:\Libraries\boost_1_66_0 -DPYTHON_INCLUDE_DIR=C:\Python27-x64\include -DPYTHON_LIBRARY=C:\Python27-x64\libs\python27.lib -DAPPLESEED_DEPS_STAGE_DIR=C:\projects\appleseed\appleseed-deps-stage-win64-vs141-v18\stage\vc141 ..
+    cmake -G "Visual Studio 15 2017 Win64" -DWITH_DISNEY_MATERIAL=ON -DWITH_STUDIO=OFF -DUSE_SSE42=ON -DBOOST_ROOT=C:\projects\appleseed\boost_1_69_0_vc141 -DPYTHON_INCLUDE_DIR=C:\Python27-x64\include -DPYTHON_LIBRARY=C:\Python27-x64\libs\python27.lib -DAPPLESEED_DEPS_STAGE_DIR=C:\projects\appleseed\appleseed-deps-stage-win64-vs141-v19\stage\vc141 ..
 
 for:
 -
@@ -32,17 +37,17 @@ for:
       - image: Visual Studio 2015
   install:
   - cmd: >-
-      appveyor DownloadFile https://github.com/appleseedhq/appleseed-deps/releases/download/v18/appleseed-deps-stage-win64-vs140-v18.zip
+      appveyor DownloadFile https://github.com/appleseedhq/appleseed-deps/releases/download/v19/appleseed-deps-stage-win64-vs140-v19.zip
 
-      appveyor DownloadFile https://github.com/appleseedhq/appveyor-deps/releases/download/v1/boost_1_55_0_2015_py35.zip
+      7z x appleseed-deps-stage-win64-vs140-v19.zip -oappleseed-deps-stage-win64-vs140-v19
+      
+      appveyor DownloadFile https://github.com/appleseedhq/appveyor-deps/releases/download/v2/boost_1_69_0_vc140.zip
 
-      7z x appleseed-deps-stage-win64-vs140-v18.zip -oappleseed-deps-stage-win64-vs140-v18
+      7z x boost_1_69_0_vc140.zip
+      
+      rm boost_1_69_0_vc140.zip
 
-      7z x boost_1_55_0_2015_py35.zip
-
-      rm appleseed-deps-stage-win64-vs140-v18.zip
-
-      rm boost_1_55_0_2015_py35.zip
+      rm appleseed-deps-stage-win64-vs140-v19.zip
 
   before_build:
   - cmd: >-
@@ -50,7 +55,7 @@ for:
 
       cd build
 
-      cmake -G "Visual Studio 14 2015 Win64" -DWITH_DISNEY_MATERIAL=ON -DWITH_STUDIO=OFF -DUSE_SSE42=ON -DBOOST_ROOT=C:\projects\appleseed\boost_1_55_0_2015_py35 -DPYTHON_INCLUDE_DIR=C:\Python27-x64\include -DPYTHON_LIBRARY=C:\Python27-x64\libs\python27.lib -DAPPLESEED_DEPS_STAGE_DIR=C:\projects\appleseed\appleseed-deps-stage-win64-vs140-v18\stage\vc14 ..
+      cmake -G "Visual Studio 14 2015 Win64" -DWITH_DISNEY_MATERIAL=ON -DWITH_STUDIO=OFF -DUSE_SSE42=ON -DBOOST_ROOT=C:\projects\appleseed\boost_1_69_0_vc140 -DPYTHON_INCLUDE_DIR=C:\Python27-x64\include -DPYTHON_LIBRARY=C:\Python27-x64\libs\python27.lib -DAPPLESEED_DEPS_STAGE_DIR=C:\projects\appleseed\appleseed-deps-stage-win64-vs140-v19\stage\vc14 ..
 
   test_script:
   - cmd: >-
@@ -63,45 +68,6 @@ for:
       set PATH=C:\projects\appleseed\sandbox\bin\v140\Debug;%PATH%
 
       cd C:\projects\appleseed\sandbox\lib\v140\Debug\python\appleseed
-
-      py -2 runtests.py
--
-  matrix:
-    only:
-      - image: Visual Studio 2013
-  install:
-  - cmd: >-
-      appveyor DownloadFile https://github.com/appleseedhq/appleseed-deps/releases/download/v18/appleseed-deps-stage-win64-vs110-v18.zip
-
-      appveyor DownloadFile https://github.com/appleseedhq/appveyor-deps/releases/download/v1/boost_1_55_0_vc11.zip
-
-      7z x appleseed-deps-stage-win64-vs110-v18.zip -oappleseed-deps-stage-win64-vs110-v18
-
-      7z x boost_1_55_0_vc11.zip
-
-      rm appleseed-deps-stage-win64-vs110-v18.zip
-
-      rm boost_1_55_0_vc11.zip
-
-  before_build:
-  - cmd: >-
-      mkdir build
-
-      cd build
-
-      cmake -G "Visual Studio 11 2012 Win64" -DWITH_DISNEY_MATERIAL=ON -DWITH_STUDIO=OFF -DUSE_SSE42=ON -DBOOST_ROOT=C:\projects\appleseed\boost_1_55_0 -DPYTHON_INCLUDE_DIR=C:\Python27-x64\include -DPYTHON_LIBRARY=C:\Python27-x64\libs\python27.lib -DAPPLESEED_DEPS_STAGE_DIR=C:\projects\appleseed\appleseed-deps-stage-win64-vs110-v18\stage\vc11 ..
-
-  test_script:
-  - cmd: >-
-      cd C:\projects\appleseed\sandbox\bin\v110\Debug
-
-      appleseed.cli --run-unit-tests --verbose-unit-tests
-
-      set PYTHONPATH=C:\projects\appleseed\sandbox\lib\v110\Debug\python;%PYTHONPATH%
-
-      set PATH=C:\projects\appleseed\sandbox\bin\v110\Debug;%PATH%
-
-      cd C:\projects\appleseed\sandbox\lib\v110\Debug\python\appleseed
 
       py -2 runtests.py
 
