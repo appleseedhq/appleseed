@@ -1,90 +1,101 @@
+
+#
+# This source file is part of appleseed.
+# Visit https://appleseedhq.net/ for additional information and resources.
+#
+# This software is released under the MIT license.
+#
+# Copyright (c) 2018-2019 Jonathan Dent, The appleseedhq Organization
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+
 version: 1.0.{build}
+
 branches:
   only:
-  - master
+    - master
+
 clone_folder: C:\projects\appleseed
+
 image:
   - Visual Studio 2017
   - Visual Studio 2015
-configuration: Debug
+
 platform: x64
-install:
-- cmd: >-
-    appveyor DownloadFile https://github.com/appleseedhq/appleseed-deps/releases/download/v19/appleseed-deps-stage-win64-vs141-v19.zip
 
-    7z x appleseed-deps-stage-win64-vs141-v19.zip -oappleseed-deps-stage-win64-vs141-v19
+configuration: Debug
 
-    appveyor DownloadFile https://github.com/appleseedhq/appveyor-deps/releases/download/v2/boost_1_69_0_vc141.zip
-    
-    7z x boost_1_69_0_vc141.zip
-    
-    rm boost_1_69_0_vc141.zip
-
-    rm appleseed-deps-stage-win64-vs141-v19.zip
-
-before_build:
-- cmd: >-
-    mkdir build
-
-    cd build
-
-    cmake -G "Visual Studio 15 2017 Win64" -DWITH_DISNEY_MATERIAL=ON -DWITH_STUDIO=OFF -DUSE_SSE42=ON -DBOOST_ROOT=C:\projects\appleseed\boost_1_69_0_vc141 -DPYTHON_INCLUDE_DIR=C:\Python27-x64\include -DPYTHON_LIBRARY=C:\Python27-x64\libs\python27.lib -DAPPLESEED_DEPS_STAGE_DIR=C:\projects\appleseed\appleseed-deps-stage-win64-vs141-v19\stage\vc141 ..
-
-for:
--
-  matrix:
-    only:
-      - image: Visual Studio 2015
-  install:
-  - cmd: >-
-      appveyor DownloadFile https://github.com/appleseedhq/appleseed-deps/releases/download/v19/appleseed-deps-stage-win64-vs140-v19.zip
-
-      7z x appleseed-deps-stage-win64-vs140-v19.zip -oappleseed-deps-stage-win64-vs140-v19
-      
-      appveyor DownloadFile https://github.com/appleseedhq/appveyor-deps/releases/download/v2/boost_1_69_0_vc140.zip
-
-      7z x boost_1_69_0_vc140.zip
-      
-      rm boost_1_69_0_vc140.zip
-
-      rm appleseed-deps-stage-win64-vs140-v19.zip
-
-  before_build:
-  - cmd: >-
-      mkdir build
-
-      cd build
-
-      cmake -G "Visual Studio 14 2015 Win64" -DWITH_DISNEY_MATERIAL=ON -DWITH_STUDIO=OFF -DUSE_SSE42=ON -DBOOST_ROOT=C:\projects\appleseed\boost_1_69_0_vc140 -DPYTHON_INCLUDE_DIR=C:\Python27-x64\include -DPYTHON_LIBRARY=C:\Python27-x64\libs\python27.lib -DAPPLESEED_DEPS_STAGE_DIR=C:\projects\appleseed\appleseed-deps-stage-win64-vs140-v19\stage\vc14 ..
-
-  test_script:
-  - cmd: >-
-      cd C:\projects\appleseed\sandbox\bin\v140\Debug
-
-      appleseed.cli --run-unit-tests --verbose-unit-tests
-
-      set PYTHONPATH=C:\projects\appleseed\sandbox\lib\v140\Debug\python;%PYTHONPATH%
-
-      set PATH=C:\projects\appleseed\sandbox\bin\v140\Debug;%PATH%
-
-      cd C:\projects\appleseed\sandbox\lib\v140\Debug\python\appleseed
-
-      py -2 runtests.py
+environment:
+  AppVeyorDepsVersion: v2
+  AppleseedDepsVersion: v19
+  BoostVersion: 1_69_0
 
 build:
   project: build\appleseed.sln
   parallel: true
   verbosity: normal
+
+install:
+  - cmd: |
+      appveyor DownloadFile https://github.com/appleseedhq/appleseed-deps/releases/download/%AppleseedDepsVersion%/appleseed-deps-stage-win64-%CompilerVersion%-%AppleseedDepsVersion%.zip
+      7z x appleseed-deps-stage-win64-%CompilerVersion%-%AppleseedDepsVersion%.zip -oappleseed-deps
+      rm appleseed-deps-stage-win64-%CompilerVersion%-%AppleseedDepsVersion%.zip
+      
+      appveyor DownloadFile https://github.com/appleseedhq/appveyor-deps/releases/download/%AppVeyorDepsVersion%/boost_%BoostVersion%_%CompilerVersion%.zip
+      7z x boost_%BoostVersion%_%CompilerVersion%.zip
+      rm boost_%BoostVersion%_%CompilerVersion%.zip
+
+before_build:
+  - cmd: |
+      mkdir build
+      cd build
+      cmake -G "%CMakeGenerator%" -DWITH_DISNEY_MATERIAL=ON -DWITH_EMBREE=ON -DWITH_STUDIO=OFF -DUSE_SSE42=ON -DBOOST_ROOT=C:\projects\appleseed\boost_%BoostVersion%_%CompilerVersion% -DPYTHON_INCLUDE_DIR=C:\Python27-x64\include -DPYTHON_LIBRARY=C:\Python27-x64\libs\python27.lib -DAPPLESEED_DEPS_STAGE_DIR=C:\projects\appleseed\appleseed-deps\stage\%CompilerVersion% ..
+
 test_script:
-- cmd: >-
-    cd C:\projects\appleseed\sandbox\bin\v141\Debug
+  - cmd: |
+      cd C:\projects\appleseed\sandbox\bin\%SandboxVersion%\Debug
+      
+      appleseed.cli --run-unit-tests --verbose-unit-tests
+      
+      set PYTHONPATH=C:\projects\appleseed\sandbox\lib\%SandboxVersion%\Debug\python;%PYTHONPATH%
+      set PATH=C:\projects\appleseed\sandbox\bin\%SandboxVersion%\Debug;%PATH%
+      cd C:\projects\appleseed\sandbox\lib\%SandboxVersion%\Debug\python\appleseed
+      py -2 runtests.py
 
-    appleseed.cli --run-unit-tests --verbose-unit-tests
+for:
+  -
+    matrix:
+      only:
+        - image: Visual Studio 2017
 
-    set PYTHONPATH=C:\projects\appleseed\sandbox\lib\v141\Debug\python;%PYTHONPATH%
+    environment:
+      CMakeGenerator: Visual Studio 15 2017 Win64
+      CompilerVersion: vc141
+      SandboxVersion: v141
 
-    set PATH=C:\projects\appleseed\sandbox\bin\v141\Debug;%PATH%
+  -
+    matrix:
+      only:
+        - image: Visual Studio 2015
 
-    cd C:\projects\appleseed\sandbox\lib\v141\Debug\python\appleseed
-
-    py -2 runtests.py
+    environment:
+      CMakeGenerator: Visual Studio 14 2015 Win64
+      CompilerVersion: vc140
+      SandboxVersion: v140
