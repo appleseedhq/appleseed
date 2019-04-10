@@ -37,9 +37,9 @@ if (NOT PYTHON_MAJOR_VERSION STREQUAL "2")
 endif ()
 
 if (Boost_VERSION_STRING VERSION_GREATER_EQUAL 1.67)
-    find_package (Boost 1.55 COMPONENTS python27 python35)
+    find_package (Boost 1.61 COMPONENTS python27 python35)
 else()
-    find_package (Boost 1.55 COMPONENTS python python3)
+    find_package (Boost 1.61 COMPONENTS python python3)
 endif()
 
 if (WITH_PYTHON3_BINDINGS)

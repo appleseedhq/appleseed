@@ -82,7 +82,7 @@ endif ()
 
 set (BOOST_NEEDED_LIBS )
 
-find_package (Boost 1.55 REQUIRED ${BOOST_NEEDED_LIBS})
+find_package (Boost 1.61 REQUIRED ${BOOST_NEEDED_LIBS})
 
 add_definitions (-DBOOST_FILESYSTEM_VERSION=3 -DBOOST_FILESYSTEM_NO_DEPRECATED)
 
