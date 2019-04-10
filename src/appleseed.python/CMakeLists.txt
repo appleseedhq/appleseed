@@ -38,9 +38,9 @@ endif ()
 
 if (Boost_VERSION_STRING VERSION_GREATER_EQUAL 1.67)
     find_package (Boost 1.61 COMPONENTS python27 python35)
-else()
+else ()
     find_package (Boost 1.61 COMPONENTS python python3)
-endif()
+endif ()
 
 if (WITH_PYTHON3_BINDINGS)
     find_package (Python3 REQUIRED)

@@ -48,10 +48,10 @@ set (CMAKE_MODULE_PATH
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     option (USE_FIND_PACKAGE_FOR_OIIO "Use find_package() for OpenImageIO library"         OFF)
     option (USE_FIND_PACKAGE_FOR_OSL  "Use find_package() for OpenShadingLanguage library" OFF)
-else()
+else ()
     set (USE_FIND_PACKAGE_FOR_OIIO ON)
     set (USE_FIND_PACKAGE_FOR_OSL  ON)
-endif()
+endif ()
 
 option (USE_STATIC_BOOST    "Use static Boost libraries"                ON)
 option (USE_STATIC_OIIO     "Use static OpenImageIO libraries"          ON)

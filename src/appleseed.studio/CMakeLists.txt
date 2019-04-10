@@ -38,9 +38,9 @@ if (NOT PYTHON_MAJOR_VERSION STREQUAL "2")
 else ()
     if (Boost_VERSION_STRING VERSION_GREATER_EQUAL 1.67)
         find_package (Boost 1.61 COMPONENTS python27)
-    else()
+    else ()
         find_package (Boost 1.61 COMPONENTS python)
-    endif()
+    endif ()
 endif ()
 
 # OpenGL.

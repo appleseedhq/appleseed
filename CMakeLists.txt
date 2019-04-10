@@ -156,7 +156,7 @@ else ()
     set (USE_FIND_PACKAGE_FOR_SEEXPR        ON)
     set (USE_FIND_PACKAGE_FOR_XERCES        ON)
     set (USE_FIND_PACKAGE_FOR_ZLIB          ON)
-endif()
+endif ()
 
 option (USE_STATIC_BOOST                    "Use static Boost libraries"                                ON)
 option (USE_STATIC_EMBREE                   "Use static Embree libraries"                               ON)
