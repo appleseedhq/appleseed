@@ -435,9 +435,10 @@ class PackageBuilder:
                 self.create_preserve_file(dirpath)
 
     def disable_system_qt_plugins(self):
-        progress("Disabling system's Qt plugins")
-        with open("appleseed/bin/qt.conf", "w") as f:
-            pass
+        pass
+        # progress("Disabling system's Qt plugins")
+        # with open("appleseed/bin/qt.conf", "w") as f:
+        #     pass
 
     def create_preserve_file(self, path):
         with open(os.path.join(path, "preserve.txt"), "w") as f:
@@ -485,9 +486,10 @@ class WindowsPackageBuilder(PackageBuilder):
 
     def add_dependencies_to_stage(self):
         progress("Windows-specific: Adding dependencies to staging directory")
-        self.copy_qt_framework("QtCore")
-        self.copy_qt_framework("QtGui")
-        self.copy_qt_framework("QtOpenGL")
+        self.copy_qt_framework("Qt5Core")
+        self.copy_qt_framework("Qt5Gui")
+        self.copy_qt_framework("Qt5OpenGL")
+        self.copy_qt_framework("Qt5Widgets")
         copy_glob(os.path.join(self.settings.platform_runtime_path, "*"), "appleseed/bin/")
 
     def add_python_to_stage(self):
@@ -507,7 +509,7 @@ class WindowsPackageBuilder(PackageBuilder):
         shutil.copy(os.path.join(self.settings.python_path, "README.txt"), "appleseed/python27")
 
     def copy_qt_framework(self, framework_name):
-        src_filepath = os.path.join(self.settings.qt_runtime_path, framework_name + "4" + ".dll")
+        src_filepath = os.path.join(self.settings.qt_runtime_path, framework_name + ".dll")
         dst_path = os.path.join("appleseed", "bin")
         shutil.copy(src_filepath, dst_path)
 

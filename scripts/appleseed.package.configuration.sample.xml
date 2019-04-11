@@ -13,8 +13,8 @@
     <!-- The path to appleseed header files. -->
     <appleseed_headers_path>C:\appleseed\src\appleseed</appleseed_headers_path>
 
-    <!-- The path to the Qt shared libraries. -->
-    <qt_runtime_path>C:\qt-everywhere-opensource-src-4.8.7\lib</qt_runtime_path>
+    <!-- The path to the Qt5 shared libraries. -->
+    <qt_runtime_path>C:\Qt\5.12.2\msvc2017_64\bin</qt_runtime_path>
 
     <!-- The path to the platform runtime files (Windows only). -->
     <platform_runtime_path>C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\redist\x64\Microsoft.VC140.CRT</platform_runtime_path>
