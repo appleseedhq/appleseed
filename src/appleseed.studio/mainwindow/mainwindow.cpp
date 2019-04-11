@@ -387,21 +387,21 @@ void MainWindow::build_menus()
     m_ui->menu_view->addAction(m_ui->python_console->toggleViewAction());
     m_ui->menu_view->addSeparator();
 
-    QAction* fullscreen_action = m_ui->menu_view->addAction("Fullscreen");
-    fullscreen_action->setCheckable(true);
-    fullscreen_action->setShortcut(Qt::Key_F11);
-    fullscreen_action->setObjectName("Fullscreen");
+    QAction* action_fullscreen = m_ui->menu_view->addAction("Fullscreen");
+    action_fullscreen->setCheckable(true);
+    action_fullscreen->setShortcut(Qt::Key_F11);
+    action_fullscreen->setObjectName("Fullscreen");
     connect(m_ui->project_explorer->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
     connect(m_ui->attribute_editor->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
     connect(m_ui->log->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
     connect(m_ui->python_console->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
-    connect(fullscreen_action, SIGNAL(triggered()), SLOT(slot_fullscreen()));
+    connect(action_fullscreen, SIGNAL(triggered()), SLOT(slot_fullscreen()));
 
     if (any_of(m_minimize_buttons.cbegin(),
                m_minimize_buttons.cend(),
                [](MinimizeButton* button) {return button->is_on();})) {
 
-        fullscreen_action->setChecked(false);
+        action_fullscreen->setChecked(false);
     }
 
     //
