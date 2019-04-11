@@ -397,13 +397,6 @@ void MainWindow::build_menus()
     connect(m_ui->python_console->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
     connect(action_fullscreen, SIGNAL(triggered()), SLOT(slot_fullscreen()));
 
-    if (any_of(m_minimize_buttons.cbegin(),
-               m_minimize_buttons.cend(),
-               [](MinimizeButton* button) {return button->is_on();})) {
-
-        action_fullscreen->setChecked(false);
-    }
-
     //
     // Rendering menu.
     //
@@ -2155,18 +2148,11 @@ void MainWindow::slot_check_fullscreen()
 {
     QAction* fullscreen = m_ui->menu_view->findChild<QAction*>("Fullscreen");
 
-    if (all_of(m_minimize_buttons.cbegin(),
-               m_minimize_buttons.cend(),
-               [](MinimizeButton* button) {return button->is_on();})) {
+    const bool is_fullscreen = all_of(m_minimize_buttons.cbegin(),
+                                      m_minimize_buttons.cend(),
+                                      [](MinimizeButton* button) {return button->is_on();});
 
-        fullscreen->setChecked(true);
-    }
-
-    else {
-        if (fullscreen->isChecked()) {
-            fullscreen->setChecked(false);
-        }
-    }
+    fullscreen->setChecked(is_fullscreen);
 }
 
 void MainWindow::slot_show_application_settings_window()
