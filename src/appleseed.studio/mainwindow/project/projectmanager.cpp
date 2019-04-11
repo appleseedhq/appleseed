@@ -40,7 +40,9 @@
 #include "foundation/platform/compiler.h"
 
 // Qt headers.
+#if defined(__GNUC__) && (__GNUC__ > 4)
 #include <QtConcurrent>
+#endif
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
@@ -89,8 +91,14 @@ void ProjectManager::load_project_async(const string& filepath)
 
     m_async_io_filepath = QString::fromStdString(filepath);
 
+#if defined(__GNUC__) && (__GNUC__ > 4)
     m_async_io_future_watcher.setFuture(
         QtConcurrent::run(this, &ProjectManager::do_load_project, filepath));
+#else
+    const bool successful = do_load_project(filepath);
+    m_is_loading = false;
+    emit signal_load_project_async_complete(m_async_io_filepath, successful);
+#endif
 }
 
 bool ProjectManager::load_builtin_project(const string& name)
