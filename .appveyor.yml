@@ -10,9 +10,9 @@ configuration: Debug
 platform: x64
 install:
 - cmd: >-
-    appveyor DownloadFile https://github.com/appleseedhq/appleseed-deps/releases/download/v19/appleseed-deps-stage-win64-vs141-v19.zip
+    appveyor DownloadFile https://github.com/appleseedhq/appleseed-deps/releases/download/v19/appleseed-deps-stage-win64-vc141-v19.zip
 
-    7z x appleseed-deps-stage-win64-vs141-v19.zip -oappleseed-deps-stage-win64-vs141-v19
+    7z x appleseed-deps-stage-win64-vc141-v19.zip -oappleseed-deps-stage-win64-vs141-v19
 
     appveyor DownloadFile https://github.com/appleseedhq/appveyor-deps/releases/download/v2/boost_1_69_0_vc141.zip
     
@@ -20,7 +20,7 @@ install:
     
     rm boost_1_69_0_vc141.zip
 
-    rm appleseed-deps-stage-win64-vs141-v19.zip
+    rm appleseed-deps-stage-win64-vc141-v19.zip
 
 before_build:
 - cmd: >-
@@ -37,9 +37,9 @@ for:
       - image: Visual Studio 2015
   install:
   - cmd: >-
-      appveyor DownloadFile https://github.com/appleseedhq/appleseed-deps/releases/download/v19/appleseed-deps-stage-win64-vs140-v19.zip
+      appveyor DownloadFile https://github.com/appleseedhq/appleseed-deps/releases/download/v19/appleseed-deps-stage-win64-vc140-v19.zip
 
-      7z x appleseed-deps-stage-win64-vs140-v19.zip -oappleseed-deps-stage-win64-vs140-v19
+      7z x appleseed-deps-stage-win64-vc140-v19.zip -oappleseed-deps-stage-win64-vs140-v19
       
       appveyor DownloadFile https://github.com/appleseedhq/appveyor-deps/releases/download/v2/boost_1_69_0_vc140.zip
 
@@ -47,7 +47,7 @@ for:
       
       rm boost_1_69_0_vc140.zip
 
-      rm appleseed-deps-stage-win64-vs140-v19.zip
+      rm appleseed-deps-stage-win64-vc140-v19.zip
 
   before_build:
   - cmd: >-
