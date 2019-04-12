@@ -137,6 +137,7 @@ class MainWindow
     QAction*                                    m_action_pause_resume_rendering;
     QAction*                                    m_action_stop_rendering;
     QAction*                                    m_action_rendering_settings;
+    QAction*                                    m_action_fullscreen;
 
     std::vector<QAction*>                       m_recently_opened;
     std::vector<MinimizeButton*>                m_minimize_buttons;
