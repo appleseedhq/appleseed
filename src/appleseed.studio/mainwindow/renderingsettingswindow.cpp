@@ -603,7 +603,7 @@ namespace
 
         void create_image_plane_sampling_texture_controlled_sampler_settings(QVBoxLayout* parent)
         {
-            m_texture_controlled_image_plane_sampler = new QGroupBox("Texture Controlled Sampler");
+            m_texture_controlled_image_plane_sampler = new QGroupBox("Texture-controlled Sampler");
             parent->addWidget(m_texture_controlled_image_plane_sampler);
 
             QVBoxLayout* layout = create_vertical_layout();

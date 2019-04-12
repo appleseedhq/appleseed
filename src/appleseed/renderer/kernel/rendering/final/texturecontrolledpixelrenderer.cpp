@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Stephen Agyemang, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -77,7 +76,7 @@ namespace renderer
 namespace
 {
     //
-    // Texture controlled pixel renderer.
+    // Texture-controlled pixel renderer.
     //
 
     class TextureControlledPixelRenderer
@@ -118,7 +117,7 @@ namespace
         void print_settings() const override
         {
             RENDERER_LOG_INFO(
-                "texture controlled pixel renderer settings:\n"
+                "texture-controlled pixel renderer settings:\n"
                 "  min samples                   %s\n"
                 "  max samples                   %s\n"
                 "  force anti-aliasing           %s\n",
@@ -178,7 +177,7 @@ namespace
                         : Vector2d(0.5);
 
                 // Sample the pixel filter.
-                const auto &filter_table = frame.get_filter_sampling_table();
+                const auto& filter_table = frame.get_filter_sampling_table();
                 const Vector2d pf(
                     static_cast<double>(filter_table.sample(s[0]) + 0.5f),
                     static_cast<double>(filter_table.sample(s[1]) + 0.5f));
@@ -303,26 +302,41 @@ Dictionary TextureControlledPixelRendererFactory::get_params_metadata()
 
 TextureControlledPixelRendererFactory::TextureControlledPixelRendererFactory(
     const Frame&                          frame,
-    const std::unique_ptr<const ImageBuf> texture,
     ISampleRendererFactory*               factory,
     const ParamArray&                     params)
   : m_frame(frame)
   , m_factory(factory)
   , m_params(params)
 {
+}
+
+bool TextureControlledPixelRendererFactory::load_texture(const std::string &texture_path)
+{
+    // Create a new dedicated ImageCache instead of using the global ImageCache.
+    // This is to prevent errors during ImageBuf access if the file behind tex_path was overwritten on disk.
+    ImageCache *image_cache = ImageCache::create();
+    std::unique_ptr<ImageBuf> texture(new ImageBuf(texture_path, 0, 0, image_cache));
+    // Force the read to immediately do the entire disk I/O for the file.
+    // We can then safely destroy the cache since the entire image data has been read into the ImageBuf.
+    const bool read_successful = texture->read(0, 0, true);
+    ImageCache::destroy(image_cache);
+
+    if(!read_successful)
+        return false;
+
     ImageSpec spec = texture->spec();
     const ROI roi(
         0,
-        frame.image().properties().m_canvas_width,
+        m_frame.image().properties().m_canvas_width,
         0,
-        frame.image().properties().m_canvas_height,
+        m_frame.image().properties().m_canvas_height,
         0,
         1,
         0,
         texture->nchannels());
 
     m_texture = std::make_shared<ImageBuf>();
-    ImageBufAlgo::resize(*m_texture.get(), *texture.get(), "", 0, roi);
+    return ImageBufAlgo::resize(*m_texture.get(), *texture.get(), "", 0, roi);
 }
 
 void TextureControlledPixelRendererFactory::release()
@@ -333,6 +347,8 @@ void TextureControlledPixelRendererFactory::release()
 IPixelRenderer* TextureControlledPixelRendererFactory::create(
     const size_t                thread_index)
 {
+    assert(m_texture);
+
     return new TextureControlledPixelRenderer(m_frame, m_texture, m_factory, m_params, thread_index);
 }
 

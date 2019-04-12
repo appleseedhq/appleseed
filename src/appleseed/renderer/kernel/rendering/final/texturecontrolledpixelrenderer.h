@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Stephen Agyemang, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -55,7 +54,7 @@ namespace renderer
 {
 
 //
-// Texture controlled pixel renderer.
+// Texture-controlled pixel renderer.
 //
 
 class TextureControlledPixelRendererFactory
@@ -68,14 +67,16 @@ class TextureControlledPixelRendererFactory
     // Constructor.
     TextureControlledPixelRendererFactory(
         const Frame&                                frame,
-        const std::unique_ptr<const OIIO::ImageBuf> texture,
         ISampleRendererFactory*                     factory,
         const ParamArray&                           params);
+    
+    // Load an image texture from a file
+    bool load_texture(const std::string& texture_path);
     
     // Delete this instance.
     void release() override;
 
-    // Return a new texture controlled pixel renderer instance.
+    // Return a new texture-controlled pixel renderer instance.
     IPixelRenderer* create(
         const size_t                thread_index) override;
 
