@@ -47,7 +47,7 @@ namespace foundation
 //
 
 template <typename T>
-inline bool intersect_parallelogram(
+bool intersect_parallelogram(
     const Ray<T, 3>&        ray,
     const Vector<T, 3>&     corner,
     const Vector<T, 3>&     x,
@@ -58,7 +58,7 @@ inline bool intersect_parallelogram(
     T&                      v);
 
 template <typename T>
-inline bool intersect_parallelogram(
+bool intersect_parallelogram(
     const Ray<T, 3>&        ray,
     const Vector<T, 3>&     corner,
     const Vector<T, 3>&     x,
@@ -71,7 +71,7 @@ inline bool intersect_parallelogram(
 //
 
 template <typename T>
-bool intersect_parallelogram(
+inline bool intersect_parallelogram(
     const Ray<T, 3>&        ray,
     const Vector<T, 3>&     corner,
     const Vector<T, 3>&     x,
@@ -101,7 +101,7 @@ bool intersect_parallelogram(
 }
 
 template <typename T>
-bool intersect_parallelogram(
+inline bool intersect_parallelogram(
     const Ray<T, 3>&        ray,
     const Vector<T, 3>&     corner,
     const Vector<T, 3>&     x,

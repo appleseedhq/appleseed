@@ -48,7 +48,7 @@ namespace foundation
 // Test the intersection between a unit-length ray segment and the surface of a disk.
 // The disk is assumed to be centered at the origin and pointing to the Y direction.
 template <typename T>
-inline bool intersect_disk(
+bool intersect_disk(
     const Ray<T, 3>&        ray,
     const T                 radius);
 
@@ -58,7 +58,7 @@ inline bool intersect_disk(
 // intersection is returned in `tmin` and the parametric representation of the surface
 // hit is returned in `u` and `v`. Otherwise `tmin`, `u` and `v` are left unchanged.
 template <typename T>
-inline bool intersect_disk(
+bool intersect_disk(
     const Ray<T, 3>&        ray,
     const T                 radius,
     T&                      tmin,
@@ -71,7 +71,7 @@ inline bool intersect_disk(
 //
 
 template <typename T>
-bool intersect_disk(
+inline bool intersect_disk(
     const Ray<T, 3>&        ray,
     const T                 radius)
 {
@@ -90,7 +90,7 @@ bool intersect_disk(
 }
 
 template <typename T>
-bool intersect_disk(
+inline bool intersect_disk(
     const Ray<T, 3>&        ray,
     const T                 radius,
     T&                      t,
