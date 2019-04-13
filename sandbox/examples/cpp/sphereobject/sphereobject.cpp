@@ -64,7 +64,7 @@ namespace
     // The sphere is assumed to be centered at the origin.
     //
 
-    const char* Model = "sphere_object";
+    const char* Model = "example_sphere_object";
 
     class SphereObject
       : public asr::ProceduralObject

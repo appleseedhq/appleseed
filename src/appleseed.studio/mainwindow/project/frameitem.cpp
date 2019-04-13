@@ -158,7 +158,7 @@ void FrameItem::edit(const Dictionary& values)
 
     m_frame = m_editor_context.m_project_builder.edit_frame(values);
 
-    set_title(QString::fromAscii(m_frame->get_name()));
+    set_title(QString::fromUtf8(m_frame->get_name()));
 
     addChild(
         m_post_processing_stage_collection_item =

@@ -74,7 +74,7 @@ class LightSamplerBase
         const size_t                        light_index,
         LightSample&                        light_sample,
         const float                         light_prob = 1.0f) const;
-  
+
   protected:
     struct Parameters
     {
@@ -84,43 +84,43 @@ class LightSamplerBase
     };
 
     typedef std::vector<NonPhysicalLightInfo> NonPhysicalLightVector;
-    typedef std::vector<EmittingTriangle> EmittingTriangleVector;
+    typedef std::vector<EmittingShape> EmittingShapeVector;
     typedef foundation::CDF<size_t, float> EmitterCDF;
 
     typedef std::function<void (const NonPhysicalLightInfo&)> LightHandlingFunction;
-    typedef std::function<bool (const Material*, const float, const size_t)> TriangleHandlingFunction;
+    typedef std::function<bool (const Material*, const float, const size_t)> ShapeHandlingFunction;
 
     const Parameters                        m_params;
 
     NonPhysicalLightVector                  m_non_physical_lights;
-    EmittingTriangleVector                  m_emitting_triangles;
+    EmittingShapeVector                     m_emitting_shapes;
 
     size_t                                  m_non_physical_light_count;
-    
-    EmitterCDF                              m_non_physical_lights_cdf;
-    EmitterCDF                              m_emitting_triangles_cdf;
 
-    EmittingTriangleKeyHasher               m_triangle_key_hasher;
-    EmittingTriangleHashTable               m_emitting_triangle_hash_table;
+    EmitterCDF                              m_non_physical_lights_cdf;
+    EmitterCDF                              m_emitting_shapes_cdf;
+
+    EmittingShapeKeyHasher                  m_shape_key_hasher;
+    EmittingShapeHashTable                  m_emitting_shape_hash_table;
 
     // Return metadata for parameters common to all light samplers.
     static foundation::Dictionary get_params_metadata();
 
-    // Build a hash table that allows to find the emitting triangle at a given shading point.
-    void build_emitting_triangle_hash_table();
+    // Build a hash table that allows to find the emitting shape at a given shading point.
+    void build_emitting_shape_hash_table();
 
-    // Recursively collect emitting triangles from a given set of assembly instances.
-    void collect_emitting_triangles(
+    // Recursively collect emitting shapes from a given set of assembly instances.
+    void collect_emitting_shapes(
         const AssemblyInstanceContainer&    assembly_instances,
         const TransformSequence&            parent_transform_seq,
-        const TriangleHandlingFunction&     triangle_handling);
+        const ShapeHandlingFunction&        shape_handling);
 
-    // Collect emitting triangles from a given assembly.
-    void collect_emitting_triangles(
+    // Collect emitting shapes from a given assembly.
+    void collect_emitting_shapes(
         const Assembly&                     assembly,
         const AssemblyInstance&             assembly_instance,
         const TransformSequence&            transform_sequence,
-        const TriangleHandlingFunction&     triangle_handling);
+        const ShapeHandlingFunction&        shape_handling);
 
     // Recursively collect non-physical lights from a given set of assembly instances.
     void collect_non_physical_lights(
@@ -140,16 +140,16 @@ class LightSamplerBase
         const float                         object_area,
         const MaterialArray&                materials);
 
-    // Sample a given emitting triangle.
-    void sample_emitting_triangle(
+    // Sample a given emitting shape.
+    void sample_emitting_shape(
         const ShadingRay::Time&             time,
         const foundation::Vector2f&         s,
-        const size_t                        triangle_index,
-        const float                         triangle_prob,
+        const size_t                        shape_index,
+        const float                         shape_prob,
         LightSample&                        sample) const;
 
-    // Sample the set of emitting triangles.
-    void sample_emitting_triangles(
+    // Sample the set of emitting shapes.
+    void sample_emitting_shapes(
         const ShadingRay::Time&             time,
         const foundation::Vector3f&         s,
         LightSample&                        light_sample) const;

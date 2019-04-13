@@ -79,7 +79,7 @@
                 <parameter name="normal_map_up" value="z" />
             </material>
             <object name="plane" model="infinite_plane_object" />
-            <object name="sphere" model="sphere_object">
+            <object name="sphere" model="example_sphere_object">
                 <parameter name="radius" value="0.2" />
             </object>
             <object_instance name="plane_inst" object="plane">

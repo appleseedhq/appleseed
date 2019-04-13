@@ -79,9 +79,9 @@ namespace
             ColorMap color_map;
             color_map.set_palette_from_array(InfernoColorMap, countof(InfernoColorMap) / 3);
 
-            float min_var, max_var;
-            color_map.find_min_max_red_channel(*m_image, crop_window, min_var, max_var);
-            color_map.remap_red_channel(*m_image, crop_window, min_var, max_var);
+            // Clamps the pixel variation in the red channel between 0 and 1.
+            // No normalization happens here.
+            color_map.remap_red_channel(*m_image, crop_window, 0.0f, 1.0f);
         }
 
         const char* get_model() const override

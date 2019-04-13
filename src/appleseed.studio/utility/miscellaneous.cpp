@@ -219,12 +219,12 @@ namespace
 {
     QString get_value(const ParamArray& settings, const QString& key)
     {
-        return settings.get_path_optional<QString>(key.toAscii().constData());
+        return settings.get_path_optional<QString>(key.toUtf8().constData());
     }
 
     void set_value(ParamArray& settings, const QString& key, const QString& value)
     {
-        settings.insert_path(key.toAscii().constData(), value);
+        settings.insert_path(key.toUtf8().constData(), value);
     }
 }
 
@@ -363,11 +363,11 @@ void set_minimum_width(QMessageBox& msgbox, const int minimum_width)
         layout->columnCount());     // column span
 }
 
-QShortcut* create_window_local_shortcut(QWidget* parent, const int key)
+QShortcut* create_window_local_shortcut(QWidget* parent, const QKeySequence key_sequence)
 {
     return
         new QShortcut(
-            QKeySequence(key),
+            QKeySequence(key_sequence),
             parent,
             nullptr,
             nullptr,

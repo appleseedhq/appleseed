@@ -49,7 +49,7 @@ namespace renderer
 enum LightType
 {
     NonPhysicalLightType = 0,
-    EmittingTriangleType = 1
+    EmittingShapeType = 1
 };
 
 //
@@ -65,23 +65,23 @@ class NonPhysicalLightInfo
 
 
 //
-// A light-emitting triangle.
+// A light-emitting shape.
 //
 
-class EmittingTriangle
+class EmittingShape
 {
   public:
     const AssemblyInstance*     m_assembly_instance;
     size_t                      m_object_instance_index;
-    size_t                      m_triangle_index;
+    size_t                      m_shape_index;
     size_t                      m_light_tree_node_index;
     foundation::Vector3d        m_v0, m_v1, m_v2;               // world space vertices of the triangle
     foundation::Vector3d        m_n0, m_n1, m_n2;               // world space vertex normals
     foundation::Vector3d        m_geometric_normal;             // world space geometric normal, unit-length
-    TriangleSupportPlaneType    m_triangle_support_plane;       // support plane of the triangle in assembly space
-    float                       m_area;                         // world space triangle area
-    float                       m_rcp_area;                     // world space triangle area reciprocal
-    float                       m_triangle_prob;                // probability density of this triangle
+    TriangleSupportPlaneType    m_shape_support_plane;          // support plane of the shape in assembly space
+    float                       m_area;                         // world space shape area
+    float                       m_rcp_area;                     // world space shape area reciprocal
+    float                       m_shape_prob;                   // probability density of this shape
     const Material*             m_material;
 };
 

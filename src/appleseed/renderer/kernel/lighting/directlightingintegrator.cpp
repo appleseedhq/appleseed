@@ -66,7 +66,7 @@ namespace renderer
 //       take_single_material_sample
 //
 //   compute_outgoing_radiance_light_sampling_low_variance
-//       add_emitting_triangle_sample_contribution
+//       add_emitting_shape_sample_contribution
 //       add_non_physical_light_sample_contribution
 //
 //   compute_outgoing_radiance_combined_sampling_low_variance
@@ -175,9 +175,9 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
                 sample);
 
             // Add the contribution of the chosen light.
-            if (sample.m_triangle)
+            if (sample.m_shape)
             {
-                add_emitting_triangle_sample_contribution(
+                add_emitting_shape_sample_contribution(
                     sampling_context,
                     sample,
                     mis_heuristic,
@@ -335,7 +335,7 @@ void DirectLightingIntegrator::take_single_material_sample(
     madd(radiance, sample_value, edf_value);
 }
 
-void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
+void DirectLightingIntegrator::add_emitting_shape_sample_contribution(
     SamplingContext&            sampling_context,
     const LightSample&          sample,
     const MISHeuristic          mis_heuristic,
@@ -343,7 +343,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     DirectShadingComponents&    radiance,
     LightPathStream*            light_path_stream) const
 {
-    const Material* material = sample.m_triangle->m_material;
+    const Material* material = sample.m_shape->m_material;
     const Material::RenderData& material_data = material->get_render_data();
     const EDF* edf = material_data.m_edf;
 
@@ -383,7 +383,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
                 cos_on *
                 rcp_sample_square_distance *
                 edf->get_max_contribution() *
-                sample.m_triangle->m_area);
+                sample.m_shape->m_area);
 
         // Use Russian Roulette to skip this sample if its maximum contribution is low.
         if (max_contribution < m_low_light_threshold)
@@ -464,8 +464,8 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     // Record light path event.
     if (light_path_stream)
     {
-        light_path_stream->sampled_emitting_triangle(
-            *sample.m_triangle,
+        light_path_stream->sampled_emitting_shape(
+            *sample.m_shape,
             sample.m_point,
             material_value.m_beauty,
             edf_value);

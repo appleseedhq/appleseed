@@ -32,7 +32,7 @@
 # CMake configuration.
 #--------------------------------------------------------------------------------------------------
 
-cmake_minimum_required (VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.9 FATAL_ERROR)
 
 project (helloworld)
 
@@ -49,10 +49,10 @@ set (CMAKE_MODULE_PATH
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     option (USE_FIND_PACKAGE_FOR_OIIO "Use find_package() for OpenImageIO library"         OFF)
     option (USE_FIND_PACKAGE_FOR_OSL  "Use find_package() for OpenShadingLanguage library" OFF)
-else()
+else ()
     set (USE_FIND_PACKAGE_FOR_OIIO ON)
     set (USE_FIND_PACKAGE_FOR_OSL  ON)
-endif()
+endif ()
 
 option (USE_STATIC_BOOST    "Use static Boost libraries"                ON)
 option (USE_STATIC_OIIO     "Use static OpenImageIO libraries"          ON)
@@ -83,7 +83,7 @@ endif ()
 
 set (BOOST_NEEDED_LIBS system)
 
-find_package (Boost 1.55 REQUIRED ${BOOST_NEEDED_LIBS})
+find_package (Boost 1.61 REQUIRED ${BOOST_NEEDED_LIBS})
 
 add_definitions (-DBOOST_FILESYSTEM_VERSION=3 -DBOOST_FILESYSTEM_NO_DEPRECATED)
 

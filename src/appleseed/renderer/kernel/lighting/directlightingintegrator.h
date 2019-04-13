@@ -61,8 +61,8 @@ namespace renderer
 //   The sample_lights() and sample_material_and_lights() methods have "low variance" counterparts
 //   respectively called sample_lights_low_variance() and sample_material_and_lights_low_variance().
 //   These methods treat non-physical light sources (such as point lights) and light-emitting
-//   triangles differently: every light source of the scene is sampled individually, while the
-//   set of light-emitting triangles is sampled as a whole.
+//   shapes differently: every light source of the scene is sampled individually, while the
+//   set of light-emitting shapes is sampled as a whole.
 //
 //   The number of shadow rays cast by these functions may be as high as the number of light
 //   samples passed to the constructor plus the number of non-physical lights in the scene.
@@ -124,7 +124,7 @@ class DirectLightingIntegrator
         const foundation::Dual3d&       outgoing,
         DirectShadingComponents&        radiance) const;
 
-    void add_emitting_triangle_sample_contribution(
+    void add_emitting_shape_sample_contribution(
         SamplingContext&                sampling_context,
         const LightSample&              sample,
         const foundation::MISHeuristic  mis_heuristic,

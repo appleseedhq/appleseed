@@ -32,7 +32,7 @@
 # CMake configuration.
 #--------------------------------------------------------------------------------------------------
 
-cmake_minimum_required (VERSION 3.1 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.9 FATAL_ERROR)
 
 cmake_policy (SET CMP0008 NEW)      # libraries linked by full-path must have a valid library file name
 
@@ -129,10 +129,10 @@ option (WITH_PYTHON2_BINDINGS               "Build Python bindings for Python 2"
 option (WITH_PYTHON3_BINDINGS               "Build Python bindings for Python 3"                        OFF)
 option (WITH_DISNEY_MATERIAL                "Build Disney material"                                     OFF)
 option (WITH_EMBREE                         "Include support for Embree intersection backend"           OFF)
-option (WITH_HEADERS                        "Install header files (to build samples)"                   ON)
-option (WITH_SAMPLES                        "Install sample files (requires headers)"                   ON)
-option (INSTALL_TESTS                       "Install unit tests and benchmarks"                         ON)
 option (WITH_DOXYGEN                        "Generate API reference with Doxygen"                       ON)
+option (INSTALL_HEADERS                     "Install header files"                                      ON)
+option (INSTALL_TESTS                       "Install unit tests and benchmarks"                         ON)
+option (INSTALL_API_EXAMPLES                "Install API examples (requires header files)"              ON)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     option (USE_FIND_PACKAGE_FOR_EMBREE     "Use find_package() for Embree library"                     OFF)
@@ -146,17 +146,17 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     option (USE_FIND_PACKAGE_FOR_XERCES     "Use find_package() for Xerces library"                     OFF)
     option (USE_FIND_PACKAGE_FOR_ZLIB       "Use find_package() for zlib library"                       OFF)
 else ()
-    set (USE_FIND_PACKAGE_FOR_EMBREE ON)
-    set (USE_FIND_PACKAGE_FOR_EXR    ON)
-    set (USE_FIND_PACKAGE_FOR_LZ4    ON)
-    set (USE_FIND_PACKAGE_FOR_OCIO   ON)
-    set (USE_FIND_PACKAGE_FOR_OIIO   ON)
-    set (USE_FIND_PACKAGE_FOR_OSL    ON)
-    set (USE_FIND_PACKAGE_FOR_PNG    ON)
-    set (USE_FIND_PACKAGE_FOR_SEEXPR ON)
-    set (USE_FIND_PACKAGE_FOR_XERCES ON)
-    set (USE_FIND_PACKAGE_FOR_ZLIB   ON)
-endif()
+    set (USE_FIND_PACKAGE_FOR_EMBREE        ON)
+    set (USE_FIND_PACKAGE_FOR_EXR           ON)
+    set (USE_FIND_PACKAGE_FOR_LZ4           ON)
+    set (USE_FIND_PACKAGE_FOR_OCIO          ON)
+    set (USE_FIND_PACKAGE_FOR_OIIO          ON)
+    set (USE_FIND_PACKAGE_FOR_OSL           ON)
+    set (USE_FIND_PACKAGE_FOR_PNG           ON)
+    set (USE_FIND_PACKAGE_FOR_SEEXPR        ON)
+    set (USE_FIND_PACKAGE_FOR_XERCES        ON)
+    set (USE_FIND_PACKAGE_FOR_ZLIB          ON)
+endif ()
 
 option (USE_STATIC_BOOST                    "Use static Boost libraries"                                ON)
 option (USE_STATIC_EMBREE                   "Use static Embree libraries"                               ON)
@@ -233,7 +233,7 @@ if (USE_STATIC_BOOST)
     set (Boost_USE_STATIC_LIBS TRUE)
 endif ()
 
-find_package (Boost 1.55 REQUIRED COMPONENTS atomic chrono date_time filesystem regex system thread wave)
+find_package (Boost 1.61 REQUIRED COMPONENTS atomic chrono date_time filesystem regex system thread wave)
 
 add_definitions (-DBOOST_FILESYSTEM_VERSION=3 -DBOOST_FILESYSTEM_NO_DEPRECATED)
 
@@ -697,12 +697,28 @@ endif ()
 #--------------------------------------------------------------------------------------------------
 
 install (
+    DIRECTORY
+        sandbox/docs
+        sandbox/icons
+        sandbox/settings
+        sandbox/shaders
+        sandbox/share
+        sandbox/stylesheets
+    DESTINATION .
+)
+
+install (
     FILES
         scripts/cleanmany.py
         scripts/convertmany.py
         scripts/rendermanager.py
         scripts/rendermany.py
         scripts/rendernode.py
+        ${OSL_COMPILER}
+        ${OSL_QUERY_INFO}
+        ${OSL_MAKETX}
+        ${OPENIMAGEIO_OIIOTOOL}
+        ${OPENIMAGEIO_IDIFF}
     DESTINATION bin
 )
 
@@ -714,53 +730,11 @@ install (
 )
 
 install (
-    FILES
-        ${OSL_COMPILER}
-        ${OSL_QUERY_INFO}
-        ${OSL_MAKETX}
-        ${OPENIMAGEIO_OIIOTOOL}
-        ${OPENIMAGEIO_IDIFF}
-    DESTINATION bin
-)
-
-install (
-    DIRECTORY sandbox/shaders
-    DESTINATION .
-)
-
-install (
-    DIRECTORY
-        sandbox/docs
-        sandbox/icons
-        sandbox/settings
-        sandbox/share
-        sandbox/stylesheets
-    DESTINATION .
-)
-
-install (
     CODE "FILE (MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/images)"
     CODE "FILE (MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/images/autosave)"
 )
 
-if (WITH_SAMPLES)
-    install (
-        DIRECTORY
-            sandbox/samples
-        DESTINATION .
-    )
-endif ()
-
-if (INSTALL_TESTS)
-    install (
-        DIRECTORY
-            "sandbox/tests/unit benchmarks"
-            "sandbox/tests/unit tests"
-        DESTINATION tests
-    )
-endif ()
-
-if (WITH_HEADERS)
+if (INSTALL_HEADERS)
     install (
         DIRECTORY src/appleseed/foundation
         DESTINATION include
@@ -777,5 +751,22 @@ if (WITH_HEADERS)
         DIRECTORY src/appleseed/renderer
         DESTINATION include
         FILES_MATCHING PATTERN "*.h"
+    )
+endif ()
+
+if (INSTALL_TESTS)
+    install (
+        DIRECTORY
+            "sandbox/tests/unit benchmarks"
+            "sandbox/tests/unit tests"
+        DESTINATION tests
+    )
+endif ()
+
+if (INSTALL_API_EXAMPLES)
+    install (
+        DIRECTORY
+            sandbox/examples
+        DESTINATION .
     )
 endif ()

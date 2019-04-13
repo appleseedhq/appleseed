@@ -54,7 +54,7 @@ namespace renderer
 
 LightSamplerBase::LightSamplerBase(const ParamArray& params)
   : m_params(params)
-  , m_emitting_triangle_hash_table(m_triangle_key_hasher)
+  , m_emitting_shape_hash_table(m_shape_key_hasher)
 {
 }
 
@@ -93,30 +93,30 @@ Dictionary LightSamplerBase::get_params_metadata()
     return metadata;
 }
 
-void LightSamplerBase::build_emitting_triangle_hash_table()
+void LightSamplerBase::build_emitting_shape_hash_table()
 {
-    const size_t emitting_triangle_count = m_emitting_triangles.size();
+    const size_t emitting_shape_count = m_emitting_shapes.size();
 
-    m_emitting_triangle_hash_table.resize(
-        emitting_triangle_count > 0 ? next_pow2(emitting_triangle_count) : 0);
+    m_emitting_shape_hash_table.resize(
+        emitting_shape_count > 0 ? next_pow2(emitting_shape_count) : 0);
 
-    for (size_t i = 0; i < emitting_triangle_count; ++i)
+    for (size_t i = 0; i < emitting_shape_count; ++i)
     {
-        const EmittingTriangle& emitting_triangle = m_emitting_triangles[i];
+        const EmittingShape& emitting_shape = m_emitting_shapes[i];
 
-        const EmittingTriangleKey emitting_triangle_key(
-            emitting_triangle.m_assembly_instance->get_uid(),
-            emitting_triangle.m_object_instance_index,
-            emitting_triangle.m_triangle_index);
+        const EmittingShapeKey emitting_shape_key(
+            emitting_shape.m_assembly_instance->get_uid(),
+            emitting_shape.m_object_instance_index,
+            emitting_shape.m_shape_index);
 
-        m_emitting_triangle_hash_table.insert(emitting_triangle_key, &emitting_triangle);
+        m_emitting_shape_hash_table.insert(emitting_shape_key, &emitting_shape);
     }
 }
 
-void LightSamplerBase::collect_emitting_triangles(
+void LightSamplerBase::collect_emitting_shapes(
     const AssemblyInstanceContainer&    assembly_instances,
     const TransformSequence&            parent_transform_seq,
-    const TriangleHandlingFunction&     triangle_handling)
+    const ShapeHandlingFunction&        shape_handling)
 {
     for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
     {
@@ -132,25 +132,25 @@ void LightSamplerBase::collect_emitting_triangles(
         cumulated_transform_seq.prepare();
 
         // Recurse into child assembly instances.
-        collect_emitting_triangles(
+        collect_emitting_shapes(
             assembly.assembly_instances(),
             cumulated_transform_seq,
-            triangle_handling);
+            shape_handling);
 
-        // Collect emitting triangles from this assembly instance.
-        collect_emitting_triangles(
+        // Collect emitting shapes from this assembly instance.
+        collect_emitting_shapes(
             assembly,
             assembly_instance,
             cumulated_transform_seq,
-            triangle_handling);
+            shape_handling);
     }
 }
 
-void LightSamplerBase::collect_emitting_triangles(
+void LightSamplerBase::collect_emitting_shapes(
     const Assembly&                     assembly,
     const AssemblyInstance&             assembly_instance,
     const TransformSequence&            transform_sequence,
-    const TriangleHandlingFunction&     triangle_handling)
+    const ShapeHandlingFunction&        shape_handling)
 {
     // Loop over the object instances of the assembly.
     const size_t object_instance_count = assembly.object_instances().size();
@@ -278,35 +278,35 @@ void LightSamplerBase::collect_emitting_triangles(
                 if (material == nullptr || !material->has_emission())
                     continue;
 
-                // Invoke the triangle handling function.
-                const bool accept_triangle =
-                    triangle_handling(
+                // Invoke the shape handling function.
+                const bool accept_shape =
+                    shape_handling(
                         material,
                         static_cast<float>(area),
-                        m_emitting_triangles.size());
+                        m_emitting_shapes.size());
 
-                if (accept_triangle)
+                if (accept_shape)
                 {
-                    // Create a light-emitting triangle.
-                    EmittingTriangle emitting_triangle;
-                    emitting_triangle.m_assembly_instance = &assembly_instance;
-                    emitting_triangle.m_object_instance_index = object_instance_index;
-                    emitting_triangle.m_triangle_index = triangle_index;
-                    emitting_triangle.m_v0 = v0;
-                    emitting_triangle.m_v1 = v1;
-                    emitting_triangle.m_v2 = v2;
-                    emitting_triangle.m_n0 = side == 0 ? n0 : -n0;
-                    emitting_triangle.m_n1 = side == 0 ? n1 : -n1;
-                    emitting_triangle.m_n2 = side == 0 ? n2 : -n2;
-                    emitting_triangle.m_geometric_normal = side == 0 ? geometric_normal : -geometric_normal;
-                    emitting_triangle.m_triangle_support_plane = triangle_support_plane;
-                    emitting_triangle.m_area = static_cast<float>(area);
-                    emitting_triangle.m_rcp_area = static_cast<float>(rcp_area);
-                    emitting_triangle.m_triangle_prob = 0.0f;   // will be initialized once the emitting triangle CDF is built
-                    emitting_triangle.m_material = material;
+                    // Create a light-emitting shape.
+                    EmittingShape emitting_shape;
+                    emitting_shape.m_assembly_instance = &assembly_instance;
+                    emitting_shape.m_object_instance_index = object_instance_index;
+                    emitting_shape.m_shape_index = triangle_index;
+                    emitting_shape.m_v0 = v0;
+                    emitting_shape.m_v1 = v1;
+                    emitting_shape.m_v2 = v2;
+                    emitting_shape.m_n0 = side == 0 ? n0 : -n0;
+                    emitting_shape.m_n1 = side == 0 ? n1 : -n1;
+                    emitting_shape.m_n2 = side == 0 ? n2 : -n2;
+                    emitting_shape.m_geometric_normal = side == 0 ? geometric_normal : -geometric_normal;
+                    emitting_shape.m_shape_support_plane = triangle_support_plane;
+                    emitting_shape.m_area = static_cast<float>(area);
+                    emitting_shape.m_rcp_area = static_cast<float>(rcp_area);
+                    emitting_shape.m_shape_prob = 0.0f;   // will be initialized once the emitting shape CDF is built
+                    emitting_shape.m_material = material;
 
-                    // Store the light-emitting triangle.
-                    m_emitting_triangles.push_back(emitting_triangle);
+                    // Store the light-emitting shape.
+                    m_emitting_shapes.push_back(emitting_shape);
 
                     // Accumulate the object area for OSL shaders.
                     object_area += area;
@@ -397,20 +397,20 @@ void LightSamplerBase::store_object_area_in_shadergroups(
     }
 }
 
-void LightSamplerBase::sample_emitting_triangle(
+void LightSamplerBase::sample_emitting_shape(
     const ShadingRay::Time&             time,
     const Vector2f&                     s,
-    const size_t                        triangle_index,
-    const float                         triangle_prob,
+    const size_t                        shape_index,
+    const float                         shape_prob,
     LightSample&                        light_sample) const
 {
-    // Fetch the emitting triangle.
-    const EmittingTriangle& emitting_triangle = m_emitting_triangles[triangle_index];
+    // Fetch the emitting shape.
+    const EmittingShape& emitting_shape = m_emitting_shapes[shape_index];
 
-    // Store a pointer to the emitting triangle.
-    light_sample.m_triangle = &emitting_triangle;
+    // Store a pointer to the emitting shape.
+    light_sample.m_shape = &emitting_shape;
 
-    // Uniformly sample the surface of the triangle.
+    // Uniformly sample the surface of the shape.
     const Vector3d bary = sample_triangle_uniform(Vector2d(s));
 
     // Set the barycentric coordinates.
@@ -419,45 +419,45 @@ void LightSamplerBase::sample_emitting_triangle(
 
     // Compute the world space position of the sample.
     light_sample.m_point =
-          bary[0] * emitting_triangle.m_v0
-        + bary[1] * emitting_triangle.m_v1
-        + bary[2] * emitting_triangle.m_v2;
+          bary[0] * emitting_shape.m_v0
+        + bary[1] * emitting_shape.m_v1
+        + bary[2] * emitting_shape.m_v2;
 
     // Compute the world space shading normal at the position of the sample.
     light_sample.m_shading_normal =
-          bary[0] * emitting_triangle.m_n0
-        + bary[1] * emitting_triangle.m_n1
-        + bary[2] * emitting_triangle.m_n2;
+          bary[0] * emitting_shape.m_n0
+        + bary[1] * emitting_shape.m_n1
+        + bary[2] * emitting_shape.m_n2;
     light_sample.m_shading_normal = normalize(light_sample.m_shading_normal);
 
     // Set the world space geometric normal.
-    light_sample.m_geometric_normal = emitting_triangle.m_geometric_normal;
+    light_sample.m_geometric_normal = emitting_shape.m_geometric_normal;
 
     // Compute the probability density of this sample.
-    light_sample.m_probability = triangle_prob * emitting_triangle.m_rcp_area;
+    light_sample.m_probability = shape_prob * emitting_shape.m_rcp_area;
     assert(light_sample.m_probability > 0.0f);
 }
 
-void LightSamplerBase::sample_emitting_triangles(
+void LightSamplerBase::sample_emitting_shapes(
     const ShadingRay::Time&             time,
     const Vector3f&                     s,
     LightSample&                        light_sample) const
 {
-    assert(m_emitting_triangles_cdf.valid());
+    assert(m_emitting_shapes_cdf.valid());
 
-    const EmitterCDF::ItemWeightPair result = m_emitting_triangles_cdf.sample(s[0]);
+    const EmitterCDF::ItemWeightPair result = m_emitting_shapes_cdf.sample(s[0]);
     const size_t emitter_index = result.first;
     const float emitter_prob = result.second;
 
     light_sample.m_light = nullptr;
-    sample_emitting_triangle(
+    sample_emitting_shape(
         time,
         Vector2f(s[1], s[2]),
         emitter_index,
         emitter_prob,
         light_sample);
 
-    assert(light_sample.m_triangle);
+    assert(light_sample.m_shape);
     assert(light_sample.m_probability > 0.0f);
 }
 
