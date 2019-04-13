@@ -37,6 +37,8 @@
 // appleseed.foundation headers.
 #include "foundation/image/analysis.h"
 #include "foundation/image/color.h"
+#include "foundation/image/colormap.h"
+#include "foundation/image/colormapdata.h"
 #include "foundation/image/image.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -80,9 +82,8 @@ namespace
             if (!frame.has_valid_ref_image())
                 return;
 
-            // TODO: Convert to inferno color map.
-            static const Color3f Blue(0.0f, 0.0f, 1.0f);
-            static const Color3f Red(1.0f, 0.0f, 0.0f);
+            ColorMap color_map;
+            color_map.set_palette_from_array(InfernoColorMapLinearRGB, countof(InfernoColorMapLinearRGB) / 3);
 
             const AABB2u& crop_window = frame.get_crop_window();
 
@@ -108,19 +109,7 @@ namespace
             if (max_error == 0.0f)
                 return;
 
-            for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
-            {
-                for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
-                {
-                    float error;
-                    m_image->get_pixel(x, y, &error, 1);
-
-                    const float k = fit(error, 0.0f, max_error, 0.0f, 1.0f);
-                    assert(k >= 0.0f && k <= 1.0f);
-
-                    m_image->set_pixel(x, y, lerp(Blue, Red, k));
-                }
-            }
+            color_map.remap_red_channel(*m_image, crop_window, 0.0f, max_error);
         }
 
       private:
