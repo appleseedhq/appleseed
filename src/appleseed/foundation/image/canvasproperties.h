@@ -68,10 +68,11 @@ class APPLESEED_DLLSYMBOL CanvasProperties
     size_t                  m_tile_count_y;             // number of tiles of a column in the canvas
     size_t                  m_tile_count;               // total number of tiles in the canvas
     size_t                  m_pixel_count;              // total number of pixels in the canvas
+    size_t                  m_channel_size;             // size in bytes of one channel
     size_t                  m_pixel_size;               // size in bytes of one pixel
 
     // Constructors.
-    CanvasProperties();
+    CanvasProperties() = default;
     CanvasProperties(
         const size_t        canvas_width,
         const size_t        canvas_height,
@@ -90,11 +91,6 @@ class APPLESEED_DLLSYMBOL CanvasProperties
 // CanvasProperties class implementation.
 //
 
-
-inline CanvasProperties::CanvasProperties()
-{
-}
-
 inline CanvasProperties::CanvasProperties(
     const size_t            canvas_width,
     const size_t            canvas_height,
@@ -109,7 +105,7 @@ inline CanvasProperties::CanvasProperties(
   , m_channel_count(channel_count)
   , m_pixel_format(pixel_format)
 {
-    m_rcp_canvas_width  = 1.0 / m_canvas_width;
+    m_rcp_canvas_width = 1.0 / m_canvas_width;
     m_rcp_canvas_height = 1.0 / m_canvas_height;
 
     m_rcp_tile_width = 1.0 / m_tile_width;
@@ -123,7 +119,8 @@ inline CanvasProperties::CanvasProperties(
     m_tile_count = m_tile_count_x * m_tile_count_y;
 
     m_pixel_count = m_canvas_width * m_canvas_height;
-    m_pixel_size = m_channel_count * Pixel::size(m_pixel_format);
+    m_channel_size = Pixel::size(m_pixel_format);
+    m_pixel_size = m_channel_count * m_channel_size;
 }
 
 inline size_t CanvasProperties::get_tile_width(const size_t tile_x) const
