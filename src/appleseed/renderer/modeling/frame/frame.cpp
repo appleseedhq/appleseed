@@ -47,6 +47,7 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/image/analysis.h"
 #include "foundation/image/color.h"
 #include "foundation/image/conversion.h"
@@ -183,14 +184,24 @@ Frame::Frame(
     {
         RENDERER_LOG_DEBUG("loading reference image %s...", impl->m_ref_image_path.c_str());
 
-        GenericImageFileReader reader;
-        impl->m_ref_image.reset(reader.read(
-            search_paths.qualify(impl->m_ref_image_path).c_str()));
-
-        if (!has_valid_ref_image())
+        try
+        {
+            GenericImageFileReader reader;
+            impl->m_ref_image.reset(
+                reader.read(
+                    search_paths.qualify(impl->m_ref_image_path).c_str()));
+        }
+        catch (const ExceptionIOError&)
         {
             RENDERER_LOG_ERROR(
-                "the reference image is not compatible with the output frame (different dimensions).");
+                "failed to load reference image %s; continuing without a reference image.",
+                impl->m_ref_image_path.c_str());
+        }
+
+        if (impl->m_ref_image && !has_valid_ref_image())
+        {
+            RENDERER_LOG_ERROR(
+                "the reference image has different dimensions than the frame; continuing without a reference image");
         }
     }
 
@@ -332,7 +343,8 @@ Image* Frame::ref_image() const
 
 bool Frame::has_valid_ref_image() const
 {
-    return impl->m_ref_image &&
+    return
+        impl->m_ref_image &&
         are_images_compatible(*impl->m_image.get(), *impl->m_ref_image.get());
 }
 
