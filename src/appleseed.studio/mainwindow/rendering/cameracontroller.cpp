@@ -279,8 +279,8 @@ Vector2d CameraController::get_mouse_position(const QMouseEvent* event) const
     const int width = m_widget->width();
     const int height = m_widget->height();
 
-    const double x =  static_cast<double>(event->x()) / width;
-    const double y = -static_cast<double>(event->y()) / height;
+    const double x = static_cast<double>(event->x()) / width;
+    const double y = 1.0 - static_cast<double>(event->y()) / height;
 
     return Vector2d(x, y);
 }
