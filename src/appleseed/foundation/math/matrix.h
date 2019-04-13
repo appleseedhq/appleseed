@@ -57,16 +57,15 @@ namespace foundation
 {
 
 //
+// MxN matrix class (M rows, N columns) of arbitrary type.
+//
+// Matrices are stored in row-major order.
+//
 // References:
 //
 //   http://en.wikipedia.org/wiki/Rotation_matrix
 //
 //   Real-Time Rendering, Second Edition, A. K. Peters
-//
-
-
-//
-// MxN matrix class (M rows, N columns) of arbitrary type.
 //
 
 template <typename T, size_t M, size_t N>
