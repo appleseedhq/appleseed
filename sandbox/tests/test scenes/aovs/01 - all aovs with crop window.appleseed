@@ -381,6 +381,7 @@
             <parameter name="camera" value="camera" />
             <parameter name="crop_window" value="116 126 218 320" />
             <parameter name="resolution" value="512 512" />
+            <parameter name="reference_image" value="ref/01 - all aovs with crop window.exr" />
             <aovs>
                 <aov model="albedo_aov" />
                 <aov model="depth_aov" />
@@ -393,6 +394,7 @@
                 <aov model="indirect_glossy_aov" />
                 <aov model="invalid_samples_aov" />
                 <aov model="normal_aov" />
+                <aov model="pixel_error_aov" />
                 <aov model="pixel_sample_count_aov" />
                 <aov model="pixel_time_aov" />
                 <aov model="position_aov" />
