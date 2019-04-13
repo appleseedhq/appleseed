@@ -1,4 +1,5 @@
 
+
 //
 // This source file is part of appleseed.
 // Visit https://appleseedhq.net/ for additional information and resources.
@@ -54,28 +55,35 @@ using namespace renderer;
 // Instead of adding an OpenGL extension library like glew
 // as a dependency, manually define it if needed.
 #ifndef GL_RGBA32F
-    #define GL_RGBA32F  0x8814
+#define GL_RGBA32F  0x8814
 #endif
 
 namespace
 {
     class BlenderProgressiveTileCallback
-      : public ITileCallback
+        : public ITileCallback
     {
-      public:
+    public:
         explicit BlenderProgressiveTileCallback(const bpy::object& request_redraw_callback)
-          : m_buffer_width(0)
-          , m_buffer_height(0)
-          , m_updated_buffer(false)
-          , m_texture_width(0)
-          , m_texture_height(0)
-          , m_request_redraw_callback(request_redraw_callback)
+            : m_buffer_width(0)
+            , m_buffer_height(0)
+            , m_updated_buffer(false)
+            , m_texture_width(0)
+            , m_texture_height(0)
+            , m_request_redraw_callback(request_redraw_callback)
+            , m_updated_data_buffer(false)
+            , m_shader_program_id(0)
+            , m_vao_id(0)
+            , m_vertex_vbo_id(0)
+            , m_texture_vbo_id(0)
+            , m_ebo_id(0)
         {
         }
 
         ~BlenderProgressiveTileCallback() override
         {
             delete_texture();
+            delete_buffers();
         }
 
         void release() override
@@ -146,7 +154,8 @@ namespace
             }
         }
 
-        void draw_pixels(const float x, const float y, const float w, const float h)
+
+        void draw_pixels()
         {
             if (m_texture_width != m_buffer_width || m_texture_height != m_buffer_height)
                 delete_texture();
@@ -173,32 +182,111 @@ namespace
                     m_updated_buffer = false;
                 }
 
-                glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+                if (!m_updated_data_buffer)
+                {
 
-                glEnable(GL_TEXTURE_2D);
+                    m_indices =
+                    {
+                        0, 1, 3,
+                        1, 2, 3
+                    };
+
+                    m_texture_coords =
+                    {
+                        0.0f, 1.0f,
+                        1.0f, 1.0f,
+                        1.0f, 0.0f,
+                        0.0f, 0.0f
+                    };
+
+                    m_vertex_coords =
+                    {
+                        -1, -1,
+                         1, -1,
+                         1,  1,
+                        -1,  1
+                    };
+
+                    // Get shader program set by blender.
+                    glGetIntegerv(GL_CURRENT_PROGRAM, &m_shader_program_id);
+
+                    // Create vertex shader if there isn't one.
+                    GLint shader_count;
+                    glGetProgramiv(m_shader_program_id, GL_ATTACHED_SHADERS, &shader_count);
+                    if (shader_count < 2)
+                        create_vertex_shader();
+
+                    m_texcoord_location = glGetAttribLocation(m_shader_program_id, "texCoord");
+                    m_position_location = glGetAttribLocation(m_shader_program_id, "pos");
+
+                    glGenVertexArrays(1, &m_vao_id);
+                    glGenBuffers(1, &m_vertex_vbo_id);
+                    glGenBuffers(1, &m_texture_vbo_id);
+                    glGenBuffers(1, &m_ebo_id);
+
+                    glBindVertexArray(m_vao_id);
+
+                    // Bind index buffer.
+                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo_id);
+                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indices.size() * sizeof(int), &m_indices[0], GL_STATIC_DRAW);
+
+                    // Bind texture buffer.
+                    glBindBuffer(GL_ARRAY_BUFFER, m_texture_vbo_id);
+                    glBufferData(GL_ARRAY_BUFFER, m_texture_coords.size() * sizeof(float), &m_texture_coords[0], GL_STATIC_DRAW);
+                    glEnableVertexAttribArray(m_texcoord_location);
+                    glVertexAttribPointer(m_texcoord_location, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), reinterpret_cast<void*>(0));
+
+                    // Bind vertex buffer.
+                    glBindBuffer(GL_ARRAY_BUFFER, m_vertex_vbo_id);
+                    glBufferData(GL_ARRAY_BUFFER, m_vertex_coords.size() * sizeof(float), &m_vertex_coords[0], GL_STATIC_DRAW);
+                    glEnableVertexAttribArray(m_position_location);
+                    glVertexAttribPointer(m_position_location, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), reinterpret_cast<void*>(0));
+
+                    m_updated_data_buffer = true;
+
+                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+                    glBindBuffer(GL_ARRAY_BUFFER, 0);
+                }
+                glBindVertexArray(m_vao_id);
+
+                glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, m_texture_id);
-                glBegin(GL_QUADS);
-                    glTexCoord2f(0.0f, 1.0f); glVertex3f(x    ,  y    , 0.0f);
-                    glTexCoord2f(1.0f, 1.0f); glVertex3f(x + w,  y    , 0.0f);
-                    glTexCoord2f(1.0f, 0.0f); glVertex3f(x + w,  y + h, 0.0f);
-                    glTexCoord2f(0.0f, 0.0f); glVertex3f(x    ,  y + h, 0.0f);
-                glEnd();
+                glUniform1i(glGetUniformLocation(m_shader_program_id, "image_texture"), 0);
+
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo_id);
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+                glBindVertexArray(0);
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
                 glBindTexture(GL_TEXTURE_2D, 0);
-                glDisable(GL_TEXTURE_2D);
             }
         }
 
-      private:
-        std::vector<float>  m_buffer;
-        size_t              m_buffer_width;
-        size_t              m_buffer_height;
-        bool                m_updated_buffer;
+    private:
+        std::vector<float>      m_buffer;
+        size_t                  m_buffer_width;
+        size_t                  m_buffer_height;
+        bool                    m_updated_buffer;
 
-        GLuint              m_texture_id;
-        size_t              m_texture_width;
-        size_t              m_texture_height;
+        GLuint                  m_texture_id;
+        size_t                  m_texture_width;
+        size_t                  m_texture_height;
 
-        bpy::object         m_request_redraw_callback;
+        bpy::object             m_request_redraw_callback;
+
+        std::array<GLfloat, 8>  m_vertex_coords;
+        std::array<GLfloat, 8>  m_texture_coords;
+        std::array<GLuint, 6>   m_indices;
+
+        GLint                   m_shader_program_id;
+        GLint                   m_texcoord_location;
+        GLint                   m_position_location;
+        GLuint                  m_vao_id;
+        GLuint                  m_vertex_vbo_id;
+        GLuint                  m_texture_vbo_id;
+        GLuint                  m_ebo_id;
+        bool                    m_updated_data_buffer;
 
         void delete_texture()
         {
@@ -210,6 +298,41 @@ namespace
                 m_texture_width = 0;
                 m_texture_height = 0;
             }
+        }
+
+        void delete_buffers()
+        {
+            if (m_updated_data_buffer)
+            {
+                glDeleteVertexArrays(1, &m_vao_id);
+                glDeleteBuffers(1, &m_vertex_vbo_id);
+                glDeleteBuffers(1, &m_texture_vbo_id);
+                glDeleteBuffers(1, &m_ebo_id);
+
+                m_updated_data_buffer = false;
+            }
+        }
+
+        void create_vertex_shader()
+        {
+            const char* vertex_shader_source =
+                "#version 130\n"
+                "attribute vec2 texCoord;\n"
+                "attribute vec2 pos;\n"
+                "void main()\n"
+                "{\n"
+                "   gl_Position = vec4(pos, 0.0, 1.0);\n"
+                "   gl_TexCoord[0].st = texCoord;"
+                "}";
+
+            GLuint vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
+            glShaderSource(vertex_shader_id, 1, &vertex_shader_source, nullptr);
+            glCompileShader(vertex_shader_id);
+
+            glAttachShader(m_shader_program_id, vertex_shader_id);
+            glLinkProgram(m_shader_program_id);
+
+            glDeleteShader(vertex_shader_id);
         }
 
         void allocate_texture()
