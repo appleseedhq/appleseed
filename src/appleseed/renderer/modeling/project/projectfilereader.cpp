@@ -2276,13 +2276,7 @@ namespace
       public:
         explicit SceneElementHandler(ParseContext& context)
           : BaseGroupElementHandler(context)
-          , m_project(nullptr)
         {
-        }
-
-        void set_project(Project* project)
-        {
-            m_project = project;
         }
 
         void start_element(const Attributes& attrs) override
@@ -2290,7 +2284,7 @@ namespace
             ParametrizedElementHandler::start_element(attrs);
 
             // Discover and load plugins before building the scene.
-            m_project->get_plugin_store().load_all_plugins_from_paths(m_project->search_paths());
+            m_context.get_project().get_plugin_store().load_all_plugins_from_paths(m_context.get_project().search_paths());
 
             m_scene = SceneFactory::create();
         }
@@ -2406,7 +2400,6 @@ namespace
         }
 
       private:
-        Project*                m_project;
         auto_release_ptr<Scene> m_scene;
     };
 
@@ -2721,28 +2714,21 @@ namespace
     {
       public:
         explicit OutputElementHandler(ParseContext& context)
-          : m_project(nullptr)
+          : m_context(context)
         {
-        }
-
-        void set_project(Project* project)
-        {
-            m_project = project;
         }
 
         void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
         {
-            assert(m_project);
-
             switch (element)
             {
               case ElementFrame:
                 {
                     FrameElementHandler* frame_handler =
                         static_cast<FrameElementHandler*>(handler);
-                    m_project->set_frame(frame_handler->get_frame());
+                    m_context.get_project().set_frame(frame_handler->get_frame());
                 }
                 break;
 
@@ -2751,7 +2737,7 @@ namespace
         }
 
       private:
-        Project*        m_project;
+        ParseContext& m_context;
     };
 
 
@@ -2765,13 +2751,7 @@ namespace
       public:
         explicit ConfigurationElementHandler(ParseContext& context)
           : m_context(context)
-          , m_project(nullptr)
         {
-        }
-
-        void set_project(Project* project)
-        {
-            m_project = project;
         }
 
         void start_element(const Attributes& attrs) override
@@ -2796,14 +2776,11 @@ namespace
             // Handle configuration inheritance.
             if (!m_base_name.empty())
             {
-                assert(m_project);
                 const Configuration* base =
-                    m_project->configurations().get_by_name(m_base_name.c_str());
+                    m_context.get_project().configurations().get_by_name(m_base_name.c_str());
 
                 if (base)
-                {
                     m_configuration->set_base(base);
-                }
                 else
                 {
                     RENDERER_LOG_ERROR(
@@ -2822,7 +2799,6 @@ namespace
 
       private:
         ParseContext&                   m_context;
-        Project*                        m_project;
         auto_release_ptr<Configuration> m_configuration;
         string                          m_name;
         string                          m_base_name;
@@ -2838,41 +2814,14 @@ namespace
     {
       public:
         explicit ConfigurationsElementHandler(ParseContext& context)
-          : m_project(nullptr)
+          : m_context(context)
         {
-        }
-
-        void set_project(Project* project)
-        {
-            m_project = project;
-        }
-
-        void start_child_element(
-            const ProjectElementID      element,
-            ElementHandlerType*         handler) override
-        {
-            assert(m_project);
-
-            switch (element)
-            {
-              case ElementConfiguration:
-                {
-                    ConfigurationElementHandler* config_handler =
-                        static_cast<ConfigurationElementHandler*>(handler);
-                    config_handler->set_project(m_project);
-                }
-                break;
-
-              assert_otherwise;
-            }
         }
 
         void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
         {
-            assert(m_project);
-
             switch (element)
             {
               case ElementConfiguration:
@@ -2880,7 +2829,7 @@ namespace
                     // Insert the configuration directly into the project.
                     ConfigurationElementHandler* config_handler =
                         static_cast<ConfigurationElementHandler*>(handler);
-                    m_project->configurations().insert(
+                    m_context.get_project().configurations().insert(
                         config_handler->get_configuration());
                 }
                 break;
@@ -2890,7 +2839,7 @@ namespace
         }
 
       private:
-        Project*        m_project;
+        ParseContext& m_context;
     };
 
 
@@ -2933,21 +2882,13 @@ namespace
       public:
         explicit SearchPathsElementHandler(ParseContext& context)
           : m_context(context)
-          , m_project(nullptr)
         {
-        }
-
-        void set_project(Project* project)
-        {
-            m_project = project;
         }
 
         void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
         {
-            assert(m_project);
-
             switch (element)
             {
               case ElementSearchPath:
@@ -2960,7 +2901,7 @@ namespace
                         static_cast<SearchPathElementHandler*>(handler);
                     const string& path = path_handler->get_path();
                     if (!path.empty())
-                        m_project->search_paths().push_back_explicit_path(path);
+                        m_context.get_project().search_paths().push_back_explicit_path(path);
                 }
                 break;
 
@@ -2969,8 +2910,7 @@ namespace
         }
 
       private:
-        ParseContext&   m_context;
-        Project*        m_project;
+        ParseContext& m_context;
     };
 
 
@@ -2983,13 +2923,8 @@ namespace
     {
       public:
         explicit DisplayElementHandler(ParseContext& context)
-          : m_project(nullptr)
+          : m_context(context)
         {
-        }
-
-        void set_project(Project* project)
-        {
-            m_project = project;
         }
 
         void start_element(const Attributes& attrs) override
@@ -3001,12 +2936,12 @@ namespace
         void end_element() override
         {
             ParametrizedElementHandler::end_element();
-            m_project->set_display(DisplayFactory::create(m_name.c_str(), m_params));
+            m_context.get_project().set_display(DisplayFactory::create(m_name.c_str(), m_params));
         }
 
       private:
-        Project*    m_project;
-        string      m_name;
+        ParseContext&   m_context;
+        string          m_name;
     };
 
 
@@ -3018,9 +2953,8 @@ namespace
       : public ElementHandlerBaseType
     {
       public:
-        ProjectElementHandler(ParseContext& context, Project* project)
+        explicit ProjectElementHandler(ParseContext& context)
           : m_context(context)
-          , m_project(project)
         {
         }
 
@@ -3039,47 +2973,13 @@ namespace
                 m_context.get_event_counters().signal_warning();
             }
 
-            m_project->set_format_revision(format_revision);
-        }
-
-        void start_child_element(
-            const ProjectElementID      element,
-            ElementHandlerType*         handler) override
-        {
-            assert(m_project);
-
-            switch (element)
-            {
-              case ElementConfigurations:
-                static_cast<ConfigurationsElementHandler*>(handler)->set_project(m_project);
-                break;
-
-              case ElementOutput:
-                static_cast<OutputElementHandler*>(handler)->set_project(m_project);
-                break;
-
-              case ElementScene:
-                static_cast<SceneElementHandler*>(handler)->set_project(m_project);
-                break;
-
-              case ElementSearchPaths:
-                static_cast<SearchPathsElementHandler*>(handler)->set_project(m_project);
-                break;
-
-              case ElementDisplay:
-                static_cast<DisplayElementHandler*>(handler)->set_project(m_project);
-                break;
-
-              assert_otherwise;
-            }
+            m_context.get_project().set_format_revision(format_revision);
         }
 
         void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
         {
-            assert(m_project);
-
             switch (element)
             {
               case ElementConfigurations:
@@ -3096,7 +2996,7 @@ namespace
                         static_cast<SceneElementHandler*>(handler);
                     auto_release_ptr<Scene> scene = scene_handler->get_scene();
                     if (scene.get())
-                        m_project->set_scene(scene);
+                        m_context.get_project().set_scene(scene);
                 }
                 break;
 
@@ -3113,8 +3013,7 @@ namespace
         }
 
       private:
-        ParseContext&   m_context;
-        Project*        m_project;
+        ParseContext& m_context;
     };
 
 
@@ -3176,7 +3075,7 @@ namespace
             register_factory_helper<VolumeElementHandler>("volume", ElementVolume);
 
             unique_ptr<IElementHandlerFactory<ProjectElementID>> factory(
-                new ProjectElementHandlerFactory(m_context, project));
+                new ProjectElementHandlerFactory(m_context));
 
             register_factory("project", ElementProject, move(factory));
         }
@@ -3187,19 +3086,16 @@ namespace
         struct ProjectElementHandlerFactory
           : public IElementHandlerFactory<ProjectElementID>
         {
-            ParseContext&   m_context;
-            Project*        m_project;
+            ParseContext& m_context;
 
-            ProjectElementHandlerFactory(ParseContext& context, Project* project)
+            explicit ProjectElementHandlerFactory(ParseContext& context)
               : m_context(context)
-              , m_project(project)
             {
             }
 
             unique_ptr<ElementHandlerType> create() override
             {
-                return unique_ptr<ElementHandlerType>(
-                    new ProjectElementHandler(m_context, m_project));
+                return unique_ptr<ElementHandlerType>(new ProjectElementHandler(m_context));
             }
         };
 
@@ -3207,7 +3103,7 @@ namespace
         struct GenericElementHandlerFactory
           : public IElementHandlerFactory<ProjectElementID>
         {
-            ParseContext&   m_context;
+            ParseContext& m_context;
 
             explicit GenericElementHandlerFactory(ParseContext& context)
               : m_context(context)
