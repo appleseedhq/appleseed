@@ -2620,6 +2620,7 @@ namespace
     {
       public:
         explicit FrameElementHandler(ParseContext& context)
+          : m_context(context)
         {
         }
 
@@ -2639,7 +2640,13 @@ namespace
         {
             ParametrizedElementHandler::end_element();
 
-            m_frame = FrameFactory::create(m_name.c_str(), m_params, m_aovs);
+            m_frame =
+                FrameFactory::create(
+                    m_name.c_str(),
+                    m_params,
+                    m_aovs,
+                    m_context.get_project().search_paths());
+
             m_frame->post_processing_stages().swap(m_post_processing_stages);
         }
 
@@ -2697,6 +2704,7 @@ namespace
         }
 
       private:
+        ParseContext&                   m_context;
         auto_release_ptr<Frame>         m_frame;
         string                          m_name;
         AOVContainer                    m_aovs;
