@@ -114,15 +114,18 @@ class APPLESEED_DLLSYMBOL Tile
         const size_t        c) const;
 
     // Structured write access to a given pixel, with automatic pixel format conversion.
+    // It is legal to set only a subset of the image's channels.
     template <typename T>
     void set_pixel(
         const size_t        i,
-        const T             components[]);
+        const T             components[],
+        const size_t        component_count);
     template <typename T>
     void set_pixel(
         const size_t        x,
         const size_t        y,
-        const T             components[]);
+        const T             components[],
+        const size_t        component_count);
     template <typename T, size_t N>
     void set_pixel(
         const size_t        i,
@@ -147,15 +150,18 @@ class APPLESEED_DLLSYMBOL Tile
         const T             value);
 
     // Structured read access to a given pixel, with automatic pixel format conversion.
+    // It is legal to get only a subset of the image's channels.
     template <typename T>
     void get_pixel(
         const size_t        i,
-        T                   components[]) const;
+        T                   components[],
+        const size_t        component_count) const;
     template <typename T>
     void get_pixel(
         const size_t        x,
         const size_t        y,
-        T                   components[]) const;
+        T                   components[],
+        const size_t        component_count) const;
     template <typename T, size_t N>
     void get_pixel(
         const size_t        i,
@@ -276,27 +282,32 @@ inline uint8* Tile::component(
 template <typename T>
 inline void Tile::set_pixel(
     const size_t        i,
-    const T             components[])
+    const T             components[],
+    const size_t        component_count)
 {
+    assert(component_count <= m_channel_count);
+
     Pixel::convert_to_format(
-        components,                             // source begin
-        components + m_channel_count,           // source end
-        1,                                      // source stride
-        m_pixel_format,                         // destination format
-        pixel(i),                               // destination
-        1);                                     // destination stride
+        components,                     // source begin
+        components + component_count,   // source end
+        1,                              // source stride
+        m_pixel_format,                 // destination format
+        pixel(i),                       // destination
+        1);                             // destination stride
 }
 
 template <typename T>
 inline void Tile::set_pixel(
     const size_t        x,
     const size_t        y,
-    const T             components[])
+    const T             components[],
+    const size_t        component_count)
 {
     assert(x < m_width);
     assert(y < m_height);
+    assert(component_count <= m_channel_count);
 
-    set_pixel<T>(y * m_width + x, components);
+    set_pixel<T>(y * m_width + x, components, component_count);
 }
 
 template <typename T, size_t N>
@@ -304,9 +315,15 @@ inline void Tile::set_pixel(
     const size_t        i,
     const Color<T, N>&  color)
 {
-    assert(N == m_channel_count);
+    assert(N <= m_channel_count);
 
-    set_pixel(i, &color[0]);
+    Pixel::convert_to_format(
+        &color[0],                      // source begin
+        &color[0] + N,                  // source end
+        1,                              // source stride
+        m_pixel_format,                 // destination format
+        pixel(i),                       // destination
+        1);                             // destination stride
 }
 
 template <typename T, size_t N>
@@ -315,9 +332,11 @@ inline void Tile::set_pixel(
     const size_t        y,
     const Color<T, N>&  color)
 {
-    assert(N == m_channel_count);
+    assert(x < m_width);
+    assert(y < m_height);
+    assert(N <= m_channel_count);
 
-    set_pixel(x, y, &color[0]);
+    set_pixel(y * m_width + x, color);
 }
 
 template <typename T>
@@ -327,12 +346,12 @@ inline void Tile::set_component(
     const T             value)
 {
     Pixel::convert_to_format(
-        &value,                                 // source begin
-        &value + 1,                             // source end
-        1,                                      // source stride
-        m_pixel_format,                         // destination format
-        component(i, c),                        // destination
-        1);                                     // destination stride
+        &value,                         // source begin
+        &value + 1,                     // source end
+        1,                              // source stride
+        m_pixel_format,                 // destination format
+        component(i, c),                // destination
+        1);                             // destination stride
 }
 
 template <typename T>
@@ -351,29 +370,35 @@ inline void Tile::set_component(
 template <typename T>
 inline void Tile::get_pixel(
     const size_t        i,
-    T                   components[]) const
+    T                   components[],
+    const size_t        component_count) const
 {
-    const uint8* src = pixel(i);
+    assert(component_count <= m_channel_count);
+
+    const uint8* src_begin = pixel(i);
+    const uint8* src_end = src_begin + component_count * m_channel_size;
 
     Pixel::convert_from_format(
-        m_pixel_format,                         // source format
-        src,                                    // source begin
-        src + m_pixel_size,                     // source end
-        1,                                      // source stride
-        components,                             // destination
-        1);                                     // destination stride
+        m_pixel_format,                 // source format
+        src_begin,                      // source begin
+        src_end,                        // source end
+        1,                              // source stride
+        components,                     // destination
+        1);                             // destination stride
 }
 
 template <typename T>
 inline void Tile::get_pixel(
     const size_t        x,
     const size_t        y,
-    T                   components[]) const
+    T                   components[],
+    const size_t        component_count) const
 {
     assert(x < m_width);
     assert(y < m_height);
+    assert(component_count <= m_channel_count);
 
-    get_pixel<T>(y * m_width + x, components);
+    get_pixel<T>(y * m_width + x, components, component_count);
 }
 
 template <typename T, size_t N>
@@ -381,9 +406,18 @@ inline void Tile::get_pixel(
     const size_t        i,
     Color<T, N>&        color) const
 {
-    assert(N == m_channel_count);
+    assert(N <= m_channel_count);
 
-    get_pixel(i, &color[0]);
+    const uint8* src_begin = pixel(i);
+    const uint8* src_end = src_begin + N * m_channel_size;
+
+    Pixel::convert_from_format(
+        m_pixel_format,                 // source format
+        src_begin,                      // source begin
+        src_end,                        // source end
+        1,                              // source stride
+        &color[0],                      // destination
+        1);                             // destination stride
 }
 
 template <typename T, size_t N>
@@ -392,9 +426,11 @@ inline void Tile::get_pixel(
     const size_t        y,
     Color<T, N>&        color) const
 {
-    assert(N == m_channel_count);
+    assert(x < m_width);
+    assert(y < m_height);
+    assert(N <= m_channel_count);
 
-    get_pixel(x, y, &color[0]);
+    get_pixel(y * m_width + x, color);
 }
 
 template <typename T>
@@ -406,12 +442,12 @@ inline T Tile::get_component(
 
     T value;
     Pixel::convert_from_format(
-        m_pixel_format,                         // source format
-        src,                                    // source begin
-        src + m_channel_size,                   // source end
-        1,                                      // source stride
-        &value,                                 // destination
-        1);                                     // destination stride
+        m_pixel_format,                 // source format
+        src,                            // source begin
+        src + m_channel_size,           // source end
+        1,                              // source stride
+        &value,                         // destination
+        1);                             // destination stride
 
     return value;
 }
@@ -436,12 +472,12 @@ inline void Tile::clear(const Color& color)
     // Set first pixel of first row.
     uint8* base = pixel(0, 0);
     Pixel::convert_to_format(
-        &color[0],                              // source begin
-        &color[0] + m_channel_count,            // source end
-        1,                                      // source stride
-        m_pixel_format,                         // destination format
-        base,                                   // destination
-        1);                                     // destination stride
+        &color[0],                      // source begin
+        &color[0] + m_channel_count,    // source end
+        1,                              // source stride
+        m_pixel_format,                 // destination format
+        base,                           // destination
+        1);                             // destination stride
 
     // Set remaining pixels of first row.
     uint8* dest = base + m_pixel_size;

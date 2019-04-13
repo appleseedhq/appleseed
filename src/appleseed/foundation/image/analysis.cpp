@@ -136,23 +136,19 @@ double compute_rms_deviation(const Image& image1, const Image& image2)
         throw ExceptionIncompatibleImages();
 
     const CanvasProperties& props = image1.properties();
-
     double mse = 0.0;   // mean square error
 
     for (size_t y = 0; y < props.m_canvas_height; ++y)
     {
         for (size_t x = 0; x < props.m_canvas_width; ++x)
         {
-            float color1[4];
+            Color3f color1;
             image1.get_pixel(x, y, color1);
 
-            float color2[4];
+            Color3f color2;
             image2.get_pixel(x, y, color2);
 
-            mse +=
-                compute_error_squared(
-                    Color3f::from_array(color1),
-                    Color3f::from_array(color2));
+            mse += compute_error_squared(color1, color2);
         }
     }
 

@@ -305,9 +305,9 @@ inline ImageSampler::ImageSampler(const Image& image)
 
 inline void ImageSampler::sample(const size_t x, const size_t y, Payload& payload, float& importance) const
 {
-    float color[4];
+    Color3f color;
     m_image.get_pixel(x, y, color);
-    importance = luminance(Color3f::from_array(color));
+    importance = luminance(color);
 }
 
 }   // namespace foundation

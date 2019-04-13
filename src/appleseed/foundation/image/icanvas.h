@@ -33,9 +33,7 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
-#include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
-#include "foundation/math/scalar.h"
 #include "foundation/platform/types.h"
 
 // appleseed.main headers.
@@ -57,7 +55,7 @@ class APPLESEED_DLLSYMBOL ICanvas
 {
   public:
     // Destructor.
-    virtual ~ICanvas() {}
+    virtual ~ICanvas() = default;
 
     // Access canvas properties.
     virtual const CanvasProperties& properties() const = 0;
@@ -79,28 +77,32 @@ class APPLESEED_DLLSYMBOL ICanvas
         const size_t            y) const;
 
     // Structured write access to a given pixel, with automatic pixel format conversion.
+    // It is legal to set only a subset of the image's channels.
+    template <typename T>
+    void set_pixel(
+        const size_t            x,
+        const size_t            y,
+        const T                 components[],
+        const size_t            component_count);
     template <typename T, size_t N>
     void set_pixel(
         const size_t            x,
         const size_t            y,
         const Color<T, N>&      color);
-    template <typename T>
-    void set_pixel(
-        const size_t            x,
-        const size_t            y,
-        const T                 components[]);
 
     // Structured read access to a given pixel, with automatic pixel format conversion.
+    // It is legal to get only a subset of the image's channels.
+    template <typename T>
+    void get_pixel(
+        const size_t            x,
+        const size_t            y,
+        T                       components[],
+        const size_t            component_count) const;
     template <typename T, size_t N>
     void get_pixel(
         const size_t            x,
         const size_t            y,
         Color<T, N>&            color) const;
-    template <typename T>
-    void get_pixel(
-        const size_t            x,
-        const size_t            y,
-        T                       components[]) const;
 
     // Set all pixels to a given color.
     // This causes all tiles to be accessed, and created if necessary.
@@ -117,28 +119,22 @@ inline uint8* ICanvas::pixel(
     const size_t        x,
     const size_t        y)
 {
-    // Retrieve canvas properties.
     const CanvasProperties& props = properties();
-
     assert(x < props.m_canvas_width);
     assert(y < props.m_canvas_height);
 
-    // Compute the coordinates of the tile containing the pixel (x, y).
-    const size_t tile_x = truncate<size_t>(x * props.m_rcp_tile_width);
-    const size_t tile_y = truncate<size_t>(y * props.m_rcp_tile_height);
+    const size_t tile_x = x / props.m_tile_width;
+    const size_t pixel_x = x % props.m_tile_width;
     assert(tile_x < props.m_tile_count_x);
+
+    const size_t tile_y = y / props.m_tile_height;
+    const size_t pixel_y = y % props.m_tile_height;
     assert(tile_y < props.m_tile_count_y);
 
-    // Retrieve the tile.
-    Tile& t = tile(tile_x, tile_y);
-
-    // Compute the tile space coordinates of the pixel (x, y).
-    const size_t pixel_x = x - tile_x * props.m_tile_width;
-    const size_t pixel_y = y - tile_y * props.m_tile_height;
+    const Tile& t = tile(tile_x, tile_y);
     assert(pixel_x < t.get_width());
     assert(pixel_y < t.get_height());
 
-    // Access the pixel.
     return t.pixel(pixel_x, pixel_y);
 }
 
@@ -146,29 +142,50 @@ inline const uint8* ICanvas::pixel(
     const size_t        x,
     const size_t        y) const
 {
-    // Retrieve canvas properties.
     const CanvasProperties& props = properties();
-
     assert(x < props.m_canvas_width);
     assert(y < props.m_canvas_height);
 
-    // Compute the coordinates of the tile containing the pixel (x, y).
-    const size_t tile_x = truncate<size_t>(x * props.m_rcp_tile_width);
-    const size_t tile_y = truncate<size_t>(y * props.m_rcp_tile_height);
+    const size_t tile_x = x / props.m_tile_width;
+    const size_t pixel_x = x % props.m_tile_width;
     assert(tile_x < props.m_tile_count_x);
+
+    const size_t tile_y = y / props.m_tile_height;
+    const size_t pixel_y = y % props.m_tile_height;
     assert(tile_y < props.m_tile_count_y);
 
-    // Retrieve the tile.
     const Tile& t = tile(tile_x, tile_y);
-
-    // Compute the tile space coordinates of the pixel (x, y).
-    const size_t pixel_x = x - tile_x * props.m_tile_width;
-    const size_t pixel_y = y - tile_y * props.m_tile_height;
     assert(pixel_x < t.get_width());
     assert(pixel_y < t.get_height());
 
-    // Access the pixel.
     return t.pixel(pixel_x, pixel_y);
+}
+
+template <typename T>
+inline void ICanvas::set_pixel(
+    const size_t        x,
+    const size_t        y,
+    const T             components[],
+    const size_t        component_count)
+{
+    const CanvasProperties& props = properties();
+    assert(x < props.m_canvas_width);
+    assert(y < props.m_canvas_height);
+    assert(component_count <= props.m_channel_count);
+
+    const size_t tile_x = x / props.m_tile_width;
+    const size_t pixel_x = x % props.m_tile_width;
+    assert(tile_x < props.m_tile_count_x);
+
+    const size_t tile_y = y / props.m_tile_height;
+    const size_t pixel_y = y % props.m_tile_height;
+    assert(tile_y < props.m_tile_count_y);
+
+    Tile& t = tile(tile_x, tile_y);
+    assert(pixel_x < t.get_width());
+    assert(pixel_y < t.get_height());
+
+    t.set_pixel(pixel_x, pixel_y, components, component_count);
 }
 
 template <typename T, size_t N>
@@ -178,33 +195,50 @@ inline void ICanvas::set_pixel(
     const Color<T, N>&  color)
 {
     const CanvasProperties& props = properties();
+    assert(x < props.m_canvas_width);
+    assert(y < props.m_canvas_height);
+    assert(N <= props.m_channel_count);
 
-    assert(N == props.m_channel_count);
+    const size_t tile_x = x / props.m_tile_width;
+    const size_t pixel_x = x % props.m_tile_width;
+    assert(tile_x < props.m_tile_count_x);
 
-    Pixel::convert_to_format(
-        &color[0],                          // source begin
-        &color[0] + props.m_channel_count,  // source end
-        1,                                  // source stride
-        props.m_pixel_format,               // destination format
-        pixel(x, y),                        // destination
-        1);                                 // destination stride
+    const size_t tile_y = y / props.m_tile_height;
+    const size_t pixel_y = y % props.m_tile_height;
+    assert(tile_y < props.m_tile_count_y);
+
+    Tile& t = tile(tile_x, tile_y);
+    assert(pixel_x < t.get_width());
+    assert(pixel_y < t.get_height());
+
+    t.set_pixel(pixel_x, pixel_y, color);
 }
 
 template <typename T>
-inline void ICanvas::set_pixel(
+inline void ICanvas::get_pixel(
     const size_t        x,
     const size_t        y,
-    const T             components[])
+    T                   components[],
+    const size_t        component_count) const
 {
     const CanvasProperties& props = properties();
+    assert(x < props.m_canvas_width);
+    assert(y < props.m_canvas_height);
+    assert(component_count <= props.m_channel_count);
 
-    Pixel::convert_to_format(
-        components,                         // source begin
-        components + props.m_channel_count, // source end
-        1,                                  // source stride
-        props.m_pixel_format,               // destination format
-        pixel(x, y),                        // destination
-        1);                                 // destination stride
+    const size_t tile_x = x / props.m_tile_width;
+    const size_t pixel_x = x % props.m_tile_width;
+    assert(tile_x < props.m_tile_count_x);
+
+    const size_t tile_y = y / props.m_tile_height;
+    const size_t pixel_y = y % props.m_tile_height;
+    assert(tile_y < props.m_tile_count_y);
+
+    const Tile& t = tile(tile_x, tile_y);
+    assert(pixel_x < t.get_width());
+    assert(pixel_y < t.get_height());
+
+    t.get_pixel(pixel_x, pixel_y, components, component_count);
 }
 
 template <typename T, size_t N>
@@ -214,43 +248,29 @@ inline void ICanvas::get_pixel(
     Color<T, N>&        color) const
 {
     const CanvasProperties& props = properties();
+    assert(x < props.m_canvas_width);
+    assert(y < props.m_canvas_height);
+    assert(N <= props.m_channel_count);
 
-    assert(N == props.m_channel_count);
+    const size_t tile_x = x / props.m_tile_width;
+    const size_t pixel_x = x % props.m_tile_width;
+    assert(tile_x < props.m_tile_count_x);
 
-    const uint8* src = pixel(x, y);
+    const size_t tile_y = y / props.m_tile_height;
+    const size_t pixel_y = y % props.m_tile_height;
+    assert(tile_y < props.m_tile_count_y);
 
-    Pixel::convert_from_format(
-        props.m_pixel_format,               // source format
-        src,                                // source begin
-        src + props.m_pixel_size,           // source end
-        1,                                  // source stride
-        &color[0],                          // destination
-        1);                                 // destination stride
-}
+    const Tile& t = tile(tile_x, tile_y);
+    assert(pixel_x < t.get_width());
+    assert(pixel_y < t.get_height());
 
-template <typename T>
-inline void ICanvas::get_pixel(
-    const size_t        x,
-    const size_t        y,
-    T                   components[]) const
-{
-    const CanvasProperties& props = properties();
-    const uint8* src = pixel(x, y);
-
-    Pixel::convert_from_format(
-        props.m_pixel_format,               // source format
-        src,                                // source begin
-        src + props.m_pixel_size,           // source end
-        1,                                  // source stride
-        components,                         // destination
-        1);                                 // destination stride
+    t.get_pixel(pixel_x, pixel_y, color);
 }
 
 template <typename T, size_t N>
 inline void ICanvas::clear(const Color<T, N>& color)
 {
     const CanvasProperties& props = properties();
-
     assert(N == props.m_channel_count);
 
     for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
