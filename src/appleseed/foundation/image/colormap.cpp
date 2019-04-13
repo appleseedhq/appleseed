@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
+#include "foundation/image/image.h"
 #include "foundation/math/scalar.h"
 
 // Standard headers.
@@ -43,19 +44,42 @@ using namespace std;
 namespace foundation
 {
 
+namespace
+{
+    template <typename Func>
+    void for_each_pixel(
+        Image&          image,
+        const AABB2u&   crop_window,
+        const Func&     func)
+    {
+        for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
+        {
+            for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
+            {
+                Color3f color;
+                image.get_pixel(x, y, color);
+
+                func(color);
+
+                image.set_pixel(x, y, color);
+            }
+        }
+    }
+}
+
 void ColorMap::find_min_max_red_channel(
     Image&          image,
     const AABB2u&   crop_window,
-    float&          min_val,
-    float&          max_val)
+    float&          min_value,
+    float&          max_value)
 {
-    min_val = +numeric_limits<float>::max();
-    max_val = -numeric_limits<float>::max();
+    min_value = +numeric_limits<float>::max();
+    max_value = -numeric_limits<float>::max();
 
-    for_each_pixel(image, crop_window, [&min_val, &max_val](const Color4f& val)
+    for_each_pixel(image, crop_window, [&min_value, &max_value](const Color3f& color)
     {
-        min_val = min(val[0], min_val);
-        max_val = max(val[0], max_val);
+        min_value = min(color[0], min_value);
+        max_value = max(color[0], max_value);
     });
 }
 
@@ -68,10 +92,10 @@ void ColorMap::find_min_max_relative_luminance(
     min_luminance = +numeric_limits<float>::max();
     max_luminance = -numeric_limits<float>::max();
 
-    for_each_pixel(image, crop_window, [&min_luminance, &max_luminance](const Color4f& color)
+    for_each_pixel(image, crop_window, [&min_luminance, &max_luminance](const Color3f& color)
     {
-        min_luminance = min(luminance(color.rgb()), min_luminance);
-        max_luminance = max(luminance(color.rgb()), max_luminance);
+        min_luminance = min(luminance(color), min_luminance);
+        max_luminance = max(luminance(color), max_luminance);
     });
 }
 
@@ -106,19 +130,21 @@ void ColorMap::remap_red_channel(
 {
     if (max_value == min_value)
     {
-        for_each_pixel(image, crop_window, [this](Color4f& color)
+        const Color3f mapped_color = evaluate_palette(0.0f);
+
+        for_each_pixel(image, crop_window, [mapped_color](Color3f& color)
         {
-            color.rgb() = evaluate_palette(0.0f);
+            color = mapped_color;
         });
     }
     else
     {
         const float k = 1.0f / (max_value - min_value);
 
-        for_each_pixel(image, crop_window, [this, min_value, k](Color4f& color)
+        for_each_pixel(image, crop_window, [this, min_value, k](Color3f& color)
         {
             const float x = saturate((color[0] - min_value) * k);
-            color.rgb() = evaluate_palette(x);
+            color = evaluate_palette(x);
         });
     }
 }
@@ -131,19 +157,21 @@ void ColorMap::remap_relative_luminance(
 {
     if (min_luminance == max_luminance)
     {
-        for_each_pixel(image, crop_window, [this](Color4f& color)
+        const Color3f mapped_color = evaluate_palette(0.0f);
+
+        for_each_pixel(image, crop_window, [mapped_color](Color3f& color)
         {
-            color.rgb() = evaluate_palette(0.0f);
+            color = mapped_color;
         });
     }
     else
     {
         const float k = 1.0f / (max_luminance - min_luminance);
 
-        for_each_pixel(image, crop_window, [this, min_luminance, k](Color4f& color)
+        for_each_pixel(image, crop_window, [this, min_luminance, k](Color3f& color)
         {
-            const float x = saturate((luminance(color.rgb()) - min_luminance) * k);
-            color.rgb() = evaluate_palette(x);
+            const float x = saturate((luminance(color) - min_luminance) * k);
+            color = evaluate_palette(x);
         });
     }
 }
