@@ -89,26 +89,6 @@ void AOV::post_process_image(const Frame& frame)
 {
 }
 
-void AOV::create_image(
-    const size_t            canvas_width,
-    const size_t            canvas_height,
-    const size_t            tile_width,
-    const size_t            tile_height,
-    ImageStack&             aov_images)
-{
-    m_image_index = aov_images.get_index(get_name());
-
-    if (m_image_index == ~size_t(0))
-    {
-        m_image_index = aov_images.append(
-            get_name(),
-            get_channel_count(),
-            PixelFormatFloat);
-    }
-
-    m_image = &aov_images.get_image(m_image_index);
-}
-
 bool AOV::write_images(
     const char*             file_path,
     const ImageAttributes&  image_attributes) const
@@ -153,6 +133,26 @@ bool AOV::write_images(
         pretty_time(stopwatch.get_seconds()).c_str());
 
     return true;
+}
+
+void AOV::create_image(
+    const size_t            canvas_width,
+    const size_t            canvas_height,
+    const size_t            tile_width,
+    const size_t            tile_height,
+    ImageStack&             aov_images)
+{
+    m_image_index = aov_images.get_index(get_name());
+
+    if (m_image_index == ~size_t(0))
+    {
+        m_image_index = aov_images.append(
+            get_name(),
+            get_channel_count(),
+            PixelFormatFloat);
+    }
+
+    m_image = &aov_images.get_image(m_image_index);
 }
 
 
