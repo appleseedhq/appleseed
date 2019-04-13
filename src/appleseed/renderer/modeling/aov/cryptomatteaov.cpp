@@ -529,7 +529,7 @@ namespace
                         for (size_t i = ranked_vector.size(); i < num_channels; ++i)
                             pixel_values.push_back(0.0f);
 
-                        m_aov_image.set_pixel(rx, ry, pixel_values.data());
+                        m_aov_image.set_pixel(rx, ry, pixel_values.data(), pixel_values.size());
                     }
                 }
             }
@@ -723,7 +723,7 @@ void CryptomatteAOV::clear_image()
     for (size_t ry = 0, ey = image_props.m_canvas_height; ry < ey; ++ry)
     {
         for (size_t rx = 0, ex = image_props.m_canvas_width; rx < ex; ++rx)
-            impl->m_image->set_pixel(rx, ry, pixel_values.data());
+            impl->m_image->set_pixel(rx, ry, pixel_values.data(), pixel_values.size());
     }
 
     for (size_t i = 0, e = image_props.m_tile_count; i < e; ++i)

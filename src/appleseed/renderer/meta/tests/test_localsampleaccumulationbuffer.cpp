@@ -88,7 +88,7 @@ TEST_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
         {
             for (size_t x = 0; x < color_tile.get_width(); ++x)
             {
-                float color[4];
+                Color4f color;
                 color_tile.get_pixel(x, y, color);
 
                 const float expected = rect.contains(Vector2u(x, y)) ? 1.0f : 0.0f;

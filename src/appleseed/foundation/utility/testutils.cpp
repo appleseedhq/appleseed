@@ -102,10 +102,10 @@ bool are_images_feq(
         for (size_t x = 0; x < width; ++x)
         {
             float color1[4];
-            image1.get_pixel(x, y, color1);
+            image1.get_pixel(x, y, color1, channel_count);
 
             float color2[4];
-            image2.get_pixel(x, y, color2);
+            image2.get_pixel(x, y, color2, channel_count);
 
             for (size_t c = 0; c < channel_count; ++c)
             {

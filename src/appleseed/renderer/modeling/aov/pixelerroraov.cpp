@@ -92,19 +92,16 @@ namespace
             {
                 for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
                 {
-                    float image_color[4];
+                    Color3f image_color;
                     frame.image().get_pixel(x, y, image_color);
 
-                    float ref_color[4];
+                    Color3f ref_color;
                     frame.ref_image()->get_pixel(x, y, ref_color);
 
-                    const float error = sqrt(compute_error_squared(
-                        Color3f::from_array(image_color),
-                        Color3f::from_array(ref_color)));
+                    const float error = sqrt(compute_error_squared(image_color, ref_color));
                     max_error = max(max_error, error);
 
-                    const Color3f color(error, 0.0f, 0.0f);
-                    m_image->set_pixel(x, y, color);
+                    m_image->set_pixel(x, y, &error, 1);
                 }
             }
 
@@ -115,12 +112,13 @@ namespace
             {
                 for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
                 {
-                    Color3f error;
-                    m_image->get_pixel(x, y, error);
+                    float error;
+                    m_image->get_pixel(x, y, &error, 1);
 
-                    const float color = fit(error.r, 0.0f, max_error, 0.0f, 1.0f);
-                    assert(color >= 0.0f && color <= 1.0f);
-                    m_image->set_pixel(x, y, lerp(Blue, Red, color));
+                    const float k = fit(error, 0.0f, max_error, 0.0f, 1.0f);
+                    assert(k >= 0.0f && k <= 1.0f);
+
+                    m_image->set_pixel(x, y, lerp(Blue, Red, k));
                 }
             }
         }
