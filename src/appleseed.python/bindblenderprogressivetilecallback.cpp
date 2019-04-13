@@ -1,5 +1,4 @@
 
-
 //
 // This source file is part of appleseed.
 // Visit https://appleseedhq.net/ for additional information and resources.
@@ -63,20 +62,20 @@ namespace
     class BlenderProgressiveTileCallback
         : public ITileCallback
     {
-    public:
+      public:
         explicit BlenderProgressiveTileCallback(const bpy::object& request_redraw_callback)
-            : m_buffer_width(0)
-            , m_buffer_height(0)
-            , m_updated_buffer(false)
-            , m_texture_width(0)
-            , m_texture_height(0)
-            , m_request_redraw_callback(request_redraw_callback)
-            , m_updated_data_buffer(false)
-            , m_shader_program_id(0)
-            , m_vao_id(0)
-            , m_vertex_vbo_id(0)
-            , m_texture_vbo_id(0)
-            , m_ebo_id(0)
+          : m_buffer_width(0)
+          , m_buffer_height(0)
+          , m_updated_buffer(false)
+          , m_texture_width(0)
+          , m_texture_height(0)
+          , m_request_redraw_callback(request_redraw_callback)
+          , m_updated_data_buffer(false)
+          , m_shader_program_id(0)
+          , m_vao_id(0)
+          , m_vertex_vbo_id(0)
+          , m_texture_vbo_id(0)
+          , m_ebo_id(0)
         {
         }
 
