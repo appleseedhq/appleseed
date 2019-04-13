@@ -80,7 +80,8 @@ class CameraController
     void update_transform();
 
     // Modify the camera position and orientation using 2D dragging movements.
-    // 'point' is a point on the image plane, in normalized device coordinates.
+    // 'point' is a point on the image plane, in normalized device coordinates,
+    // that is in [0,1)^2 where (0,0) is at the top-left corner of the image.
     void begin_drag(const Movement movement, const Vector<T, 2>& point);
     void update_drag(const Vector<T, 2>& point);
     void end_drag();
