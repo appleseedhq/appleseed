@@ -65,12 +65,8 @@ AboutWindow::AboutWindow(QWidget* parent)
 {
     m_ui->setupUi(this);
 
+    setWindowFlags(Qt::Window);
     setAttribute(Qt::WA_DeleteOnClose);
-
-    setWindowFlags(
-        Qt::Dialog |
-        Qt::CustomizeWindowHint |
-        Qt::WindowCloseButtonHint);
 
     set_library_version();
     set_library_features();
