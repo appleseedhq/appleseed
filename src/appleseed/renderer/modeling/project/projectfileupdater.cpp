@@ -2136,6 +2136,8 @@ namespace
             {
                 if (strcmp(bsdf.get_model(), "glass_bsdf") == 0)
                     update_microfacet_params(bsdf);
+                else if (strcmp(bsdf.get_model(), "metal_brdf") == 0)
+                    update_microfacet_params(bsdf);
             }
         }
 

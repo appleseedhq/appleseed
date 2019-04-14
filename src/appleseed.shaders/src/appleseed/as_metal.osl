@@ -73,7 +73,8 @@ shader as_metal
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_deprecated = 1
     ]],
     float in_roughness = 0.25
     [[
@@ -383,13 +384,11 @@ shader as_metal
     }
 
     out_outColor += as_metal(
-        distribution,
         Nn,
         tangent,
         in_face_reflectance,
         in_edge_reflectance,
         in_roughness,
-        0.0, // specular spread, used in Student's t-MDF only (unused)
         in_anisotropy_amount,
         "energy_compensation", in_energy_compensation);
 }

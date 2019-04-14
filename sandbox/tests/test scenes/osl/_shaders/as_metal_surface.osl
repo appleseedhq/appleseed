@@ -50,12 +50,6 @@ shader as_metal_surface
     [[
         int    divider = 1
     ]],
-    string               Distribution = "ggx"
-    [[
-        string help = "Microfacet distribution to use: Beckmann or GGX.",
-        string widget = "popup",
-        string options = "beckmann|ggx"
-    ]],
     float                Roughness = 0.1
     [[
         string help = "Roughness",
@@ -76,12 +70,10 @@ shader as_metal_surface
 )
 {
     BRDF = Reflectance * as_metal(
-        Distribution,
         Normal,
         Tn,
         NormalReflectance,
         EdgeTint,
         microfacet_roughness(Roughness, RoughnessDepthScale),
-        0.5,    // Highlight falloff.
         Anisotropic);
 }

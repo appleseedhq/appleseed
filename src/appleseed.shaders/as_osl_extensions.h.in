@@ -75,13 +75,11 @@ closure color as_blinn(
     float       ior) BUILTIN;
 
 closure color as_metal(
-    string      distribution,           // "beckmann", "ggx" or "std"
     normal      N,
     vector      T,
     color       normal_reflectance,
     color       edge_tint,
     float       roughness,
-    float       highlight_falloff,
     float       anisotropic
     // keyword arguments:
     //   float "energy_compensation" = 0
