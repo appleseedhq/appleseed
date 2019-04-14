@@ -153,7 +153,6 @@ namespace
             }
         }
 
-
         void draw_pixels()
         {
             if (m_texture_width != m_buffer_width || m_texture_height != m_buffer_height)
@@ -320,7 +319,7 @@ namespace
                 "void main()\n"
                 "{\n"
                 "   gl_Position = vec4(pos, 0.0, 1.0);\n"
-                "   gl_TexCoord[0].st = texCoord;"
+                "   gl_TexCoord[0].st = texCoord\n;"
                 "}";
 
             GLuint vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
