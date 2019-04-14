@@ -2146,7 +2146,7 @@ void MainWindow::slot_fullscreen()
 
 void MainWindow::slot_check_fullscreen()
 {
-    QList<QDockWidget*> dock_widgets = findChildren<QDockWidget*>();
+    const QList<QDockWidget*> dock_widgets = findChildren<QDockWidget*>();
 
     const bool is_fullscreen = all_of(dock_widgets.cbegin(),
                                       dock_widgets.cend(),
