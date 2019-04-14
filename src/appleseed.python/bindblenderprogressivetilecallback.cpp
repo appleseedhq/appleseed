@@ -37,7 +37,6 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
-#include "foundation/platform/opengl.h"
 #include "foundation/platform/python.h"
 #include "foundation/utility/autoreleaseptr.h"
 
@@ -152,7 +151,6 @@ namespace
                 }
             }
         }
-
 
         void draw_pixels()
         {
@@ -320,7 +318,7 @@ namespace
                 "void main()\n"
                 "{\n"
                 "   gl_Position = vec4(pos, 0.0, 1.0);\n"
-                "   gl_TexCoord[0].st = texCoord;"
+                "   gl_TexCoord[0].st = texCoord\n;"
                 "}";
 
             GLuint vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
