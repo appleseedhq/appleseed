@@ -50,7 +50,7 @@ echo "Installing Homebrew packages..."
 brew update
 brew upgrade
 
-brew install qt5 pyqt5 boost-python llvm@3.9 lz4 openimageio xerces-c zlib
+brew install qt5 pyqt5 boost-python llvm@5 lz4 openimageio xerces-c zlib
 
 mkdir -p $HOME/Library/Python/2.7/lib/python/site-packages
 echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' \
@@ -69,7 +69,7 @@ echo "Building OSL..."
 git clone https://github.com/imageworks/OpenShadingLanguage.git
 pushd OpenShadingLanguage
 
-git checkout Release-1.8.12
+git checkout Release-1.10.3
 
 mkdir build
 cd build
@@ -79,7 +79,7 @@ cmake \
     -DLLVM_STATIC=ON \
     -DENABLERTTI=ON \
     -DUSE_LIBCPLUSPLUS=ON \
-    -DLLVM_DIRECTORY=/usr/local/opt/llvm@3.9/ \
+    -DLLVM_DIRECTORY=/usr/local/opt/llvm@5/ \
     -DCMAKE_INSTALL_PREFIX=$THISDIR \
     ..
 
