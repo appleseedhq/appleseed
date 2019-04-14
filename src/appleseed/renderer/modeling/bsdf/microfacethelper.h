@@ -82,19 +82,6 @@ inline void microfacet_alpha_from_roughness(
 
 
 //
-// Map highlight falloff to STD microfacet distribution function's gamma parameter
-// in a perceptually linear fashion.
-//
-
-inline float highlight_falloff_to_gama(const float highlight_falloff)
-{
-    const float t = highlight_falloff;
-    const float t2 = t * t;
-    return foundation::mix(1.51f, 40.0f, t2 * t2 * t);
-}
-
-
-//
 // Helper class to sample and evaluate microfacet BRDFs.
 //
 
@@ -156,7 +143,7 @@ class MicrofacetBRDFHelper
         //                 sample.m_shading_basis,
         //                 outgoing,
         //                 incoming);
-        // 
+        //
         //         assert(feq(probability, ref_probability, 1.0e-2f));
         // #endif
 
@@ -338,10 +325,6 @@ float get_average_albedo(
     const foundation::GGXMDF&       mdf,
     const float                     roughness);
 
-float get_average_albedo(
-    const foundation::BeckmannMDF&  mdf,
-    const float                     roughness);
-
 void microfacet_energy_compensation_term(
     const foundation::GGXMDF&       mdf,
     const float                     roughness,
@@ -349,15 +332,6 @@ void microfacet_energy_compensation_term(
     const float                     cos_on,
     float&                          fms,
     float&                          eavg);
-
-void microfacet_energy_compensation_term(
-    const foundation::BeckmannMDF&  mdf,
-    const float                     roughness,
-    const float                     cos_in,
-    const float                     cos_on,
-    float&                          fms,
-    float&                          eavg);
-
 
 // Write the computed tables to OpenEXR images and C++ arrays.
 // Used in Renderer_Modeling_BSDF_EnergyCompensation unit test.

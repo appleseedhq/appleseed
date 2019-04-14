@@ -160,18 +160,15 @@ namespace
       : public NonCopyable
     {
         MDFAlbedoTable m_ggx;
-        MDFAlbedoTable m_beckmann;
 
 #ifdef COMPUTE_ALBEDO_TABLES
         AlbedoTables()
           : m_ggx(GGXMDF())
-          , m_beckmann(BeckmannMDF())
         {
         }
 #else
         AlbedoTables()
           : m_ggx(g_glossy_ggx_albedo_table)
-          , m_beckmann(g_glossy_beckmann_albedo_table)
         {
         }
 #endif
@@ -214,13 +211,6 @@ float get_average_albedo(
     return g_dir_albedo_tables.m_ggx.get_average_albedo(roughness);
 }
 
-float get_average_albedo(
-    const foundation::BeckmannMDF&  mdf,
-    const float                     roughness)
-{
-    return g_dir_albedo_tables.m_beckmann.get_average_albedo(roughness);
-}
-
 void microfacet_energy_compensation_term(
     const GGXMDF&       mdf,
     const float         roughness,
@@ -231,23 +221,6 @@ void microfacet_energy_compensation_term(
 {
     compute_energy_compensation_term(
         g_dir_albedo_tables.m_ggx,
-        roughness,
-        cos_in,
-        cos_on,
-        fms,
-        eavg);
-}
-
-void microfacet_energy_compensation_term(
-    const BeckmannMDF&  mdf,
-    const float         roughness,
-    const float         cos_in,
-    const float         cos_on,
-    float&              fms,
-    float&              eavg)
-{
-    compute_energy_compensation_term(
-        g_dir_albedo_tables.m_beckmann,
         roughness,
         cos_in,
         cos_on,
@@ -266,13 +239,6 @@ void write_microfacet_directional_albedo_tables(
     ggx_table.write_table_to_cpp_array(
         dir / "glossy_ggx_albedo_table.cpp",
         "g_glossy_ggx_albedo_table");
-
-    const BeckmannMDF beckmann;
-    const MDFAlbedoTable beckmann_table(beckmann);
-    beckmann_table.write_table_to_image(dir / "glossy_beckmann_albedo_table.exr");
-    beckmann_table.write_table_to_cpp_array(
-        dir / "glossy_beckmann_albedo_table.cpp",
-        "g_glossy_beckmann_albedo_table");
 }
 
 }   // namespace renderer

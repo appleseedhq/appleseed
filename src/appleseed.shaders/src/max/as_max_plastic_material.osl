@@ -36,7 +36,8 @@ shader as_max_plastic_material
     [[
         string widget = "popup",
         string options = "beckmann|ggx|gtr1|std",
-        string help = "Microfacet distribution function to use"
+        string help = "Microfacet distribution function to use",
+        int as_deprecated = 1
     ]],
     color SpecularColor = color(0.5),
     float SpecularWeight = 1.0
@@ -53,7 +54,8 @@ shader as_max_plastic_material
     [[
         float min = 0.0,
         float max = 1.0,
-        string help = "Specular falloff, or highlights spread."
+        string help = "Specular falloff, or highlights spread.",
+        int as_deprecated = 1
     ]],
     float IOR = 1.5
     [[
@@ -77,12 +79,10 @@ shader as_max_plastic_material
 )
 {
     ClosureOut = as_plastic(
-        Distribution,
         Normal,
         SpecularColor,
         SpecularWeight,
         Roughness,
-        1.0 - Spread,
         IOR,
         DiffuseColor,
         DiffuseWeight,
