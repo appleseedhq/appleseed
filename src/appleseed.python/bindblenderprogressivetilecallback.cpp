@@ -54,13 +54,13 @@ using namespace renderer;
 // Instead of adding an OpenGL extension library like glew
 // as a dependency, manually define it if needed.
 #ifndef GL_RGBA32F
-#define GL_RGBA32F  0x8814
+    #define GL_RGBA32F  0x8814
 #endif
 
 namespace
 {
     class BlenderProgressiveTileCallback
-        : public ITileCallback
+      : public ITileCallback
     {
       public:
         explicit BlenderProgressiveTileCallback(const bpy::object& request_redraw_callback)
@@ -241,10 +241,10 @@ namespace
                     glEnableVertexAttribArray(m_position_location);
                     glVertexAttribPointer(m_position_location, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), reinterpret_cast<void*>(0));
 
-                    m_updated_data_buffer = true;
-
                     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
                     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+                    m_updated_data_buffer = true;
                 }
                 glBindVertexArray(m_vao_id);
 
@@ -257,7 +257,6 @@ namespace
 
                 glBindVertexArray(0);
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
                 glBindTexture(GL_TEXTURE_2D, 0);
             }
         }
