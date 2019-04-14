@@ -189,7 +189,8 @@ shader as_standard_surface
         string label = "Specular Spread",
         string page = "Specular",
         string help = "Specular spread, controls the tails of the highlights.",
-        int divider = 1
+        int divider = 1,
+        int as_deprecated = 1
     ]],
     int in_fresnel_type = 0
     [[
@@ -732,11 +733,9 @@ shader as_standard_surface
             {
                 out_outColor += coating_transmittance * opacity *
                     in_specular_color * as_glossy(
-                        "std",
                         Nn,
                         tangent,
                         in_specular_roughness,
-                        1.0 - in_specular_spread,
                         in_anisotropy_amount,
                         in_ior);
             }

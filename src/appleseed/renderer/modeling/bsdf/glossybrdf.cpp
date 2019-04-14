@@ -101,7 +101,6 @@ namespace
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("roughness", InputFormatFloat, "0.15");
-            m_inputs.declare("highlight_falloff", InputFormatFloat, "0.4");
             m_inputs.declare("anisotropy", InputFormatFloat, "0.0");
             m_inputs.declare("ior", InputFormatFloat, "1.5");
             m_inputs.declare("fresnel_weight", InputFormatFloat, "1.0");
@@ -116,35 +115,6 @@ namespace
         const char* get_model() const override
         {
             return Model;
-        }
-
-        bool on_frame_begin(
-            const Project&              project,
-            const BaseGroup*            parent,
-            OnFrameBeginRecorder&       recorder,
-            IAbortSwitch*               abort_switch) override
-        {
-            if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
-                return false;
-
-            const OnFrameBeginMessageContext context("bsdf", this);
-
-            const string mdf =
-                m_params.get_required<string>(
-                    "mdf",
-                    "ggx",
-                    make_vector("beckmann", "ggx", "std"),
-                    context);
-
-            if (mdf == "ggx")
-                m_mdf_type = GGX;
-            else if (mdf == "beckmann")
-                m_mdf_type = Beckmann;
-            else if (mdf == "std")
-                m_mdf_type = Std;
-            else return false;
-
-            return true;
         }
 
         size_t compute_input_data_size() const override
@@ -206,80 +176,27 @@ namespace
                     alpha_x,
                     alpha_y);
 
-                switch (m_mdf_type)
+                const GGXMDF mdf;
+                MicrofacetBRDFHelper<true>::sample(
+                    sampling_context,
+                    mdf,
+                    alpha_x,
+                    alpha_y,
+                    1.0f,
+                    f,
+                    sample);
+
+                if (sample.get_mode() != ScatteringMode::None)
                 {
-                  case GGX:
-                    {
-                        const GGXMDF mdf;
-                        MicrofacetBRDFHelper<true>::sample(
-                            sampling_context,
-                            mdf,
-                            alpha_x,
-                            alpha_y,
-                            1.0f,
-                            f,
-                            sample);
+                    add_energy_compensation_term(
+                        mdf,
+                        values,
+                        sample.m_outgoing.get_value(),
+                        sample.m_incoming.get_value(),
+                        sample.m_shading_basis.get_normal(),
+                        sample.m_value.m_glossy);
 
-                        if (sample.get_mode() != ScatteringMode::None)
-                        {
-                            add_energy_compensation_term(
-                                mdf,
-                                values,
-                                sample.m_outgoing.get_value(),
-                                sample.m_incoming.get_value(),
-                                sample.m_shading_basis.get_normal(),
-                                sample.m_value.m_glossy);
-
-                            sample.m_min_roughness = values->m_roughness;
-                        }
-                    }
-                    break;
-
-                  case Beckmann:
-                    {
-                        const BeckmannMDF mdf;
-                        MicrofacetBRDFHelper<true>::sample(
-                            sampling_context,
-                            mdf,
-                            alpha_x,
-                            alpha_y,
-                            1.0f,
-                            f,
-                            sample);
-
-                        if (sample.get_mode() != ScatteringMode::None)
-                        {
-                            add_energy_compensation_term(
-                                mdf,
-                                values,
-                                sample.m_outgoing.get_value(),
-                                sample.m_incoming.get_value(),
-                                sample.m_shading_basis.get_normal(),
-                                sample.m_value.m_glossy);
-
-                            sample.m_min_roughness = values->m_roughness;
-                        }
-                    }
-                    break;
-
-                  case Std:
-                    {
-                        const StdMDF mdf;
-                        MicrofacetBRDFHelper<true>::sample(
-                            sampling_context,
-                            mdf,
-                            alpha_x,
-                            alpha_y,
-                            highlight_falloff_to_gama(values->m_highlight_falloff),
-                            f,
-                            sample);
-
-                        if (sample.get_mode() != ScatteringMode::None)
-                            sample.m_min_roughness = values->m_roughness;
-                    }
-                    break;
-
-                  assert_otherwise;
+                    sample.m_min_roughness = values->m_roughness;
                 }
 
                 sample.m_value.m_beauty = sample.m_value.m_glossy;
@@ -315,79 +232,25 @@ namespace
                 values->m_precomputed.m_outside_ior / values->m_ior,
                 values->m_fresnel_weight);
 
-            float pdf;
+            const GGXMDF mdf;
+            const float pdf = MicrofacetBRDFHelper<true>::evaluate(
+                mdf,
+                alpha_x,
+                alpha_y,
+                1.0f,
+                shading_basis,
+                outgoing,
+                incoming,
+                f,
+                value.m_glossy);
 
-            switch (m_mdf_type)
-            {
-              case GGX:
-                {
-                    const GGXMDF mdf;
-                    pdf = MicrofacetBRDFHelper<true>::evaluate(
-                        mdf,
-                        alpha_x,
-                        alpha_y,
-                        1.0f,
-                        shading_basis,
-                        outgoing,
-                        incoming,
-                        f,
-                        value.m_glossy);
-
-                    add_energy_compensation_term(
-                        mdf,
-                        values,
-                        outgoing,
-                        incoming,
-                        shading_basis.get_normal(),
-                        value.m_glossy);
-                }
-                break;
-
-              case Beckmann:
-                {
-                    const BeckmannMDF mdf;
-                    pdf = MicrofacetBRDFHelper<true>::evaluate(
-                        mdf,
-                        alpha_x,
-                        alpha_y,
-                        1.0f,
-                        shading_basis,
-                        outgoing,
-                        incoming,
-                        f,
-                        value.m_glossy);
-
-                    add_energy_compensation_term(
-                        mdf,
-                        values,
-                        outgoing,
-                        incoming,
-                        shading_basis.get_normal(),
-                        value.m_glossy);
-                }
-                break;
-
-              case Std:
-                {
-                    const StdMDF mdf;
-                    pdf = MicrofacetBRDFHelper<true>::evaluate(
-                        mdf,
-                        alpha_x,
-                        alpha_y,
-                        highlight_falloff_to_gama(values->m_highlight_falloff),
-                        shading_basis,
-                        outgoing,
-                        incoming,
-                        f,
-                        value.m_glossy);
-                }
-                break;
-
-              default:
-                assert(!"Unexpected MDF type.");
-                pdf = 0.0f;
-                break;
-            }
+            add_energy_compensation_term(
+                mdf,
+                values,
+                outgoing,
+                incoming,
+                shading_basis.get_normal(),
+                value.m_glossy);
 
             value.m_beauty = value.m_glossy;
 
@@ -416,57 +279,15 @@ namespace
                 alpha_x,
                 alpha_y);
 
-            float pdf;
-
-            switch (m_mdf_type)
-            {
-              case GGX:
-                {
-                    const GGXMDF mdf;
-                    pdf = MicrofacetBRDFHelper<true>::pdf(
-                        mdf,
-                        alpha_x,
-                        alpha_y,
-                        1.0f,
-                        shading_basis,
-                        outgoing,
-                        incoming);
-                }
-                break;
-
-              case Beckmann:
-                {
-                    const BeckmannMDF mdf;
-                    pdf = MicrofacetBRDFHelper<true>::pdf(
-                        mdf,
-                        alpha_x,
-                        alpha_y,
-                        1.0f,
-                        shading_basis,
-                        outgoing,
-                        incoming);
-                }
-                break;
-
-              case Std:
-                {
-                    const StdMDF mdf;
-                    pdf = MicrofacetBRDFHelper<true>::pdf(
-                        mdf,
-                        alpha_x,
-                        alpha_y,
-                        highlight_falloff_to_gama(values->m_highlight_falloff),
-                        shading_basis,
-                        outgoing,
-                        incoming);
-                }
-                break;
-
-              default:
-                assert(!"Unexpected MDF type.");
-                pdf = 0.0f;
-                break;
-            }
+            const GGXMDF mdf;
+            const float pdf = MicrofacetBRDFHelper<true>::pdf(
+                mdf,
+                alpha_x,
+                alpha_y,
+                1.0f,
+                shading_basis,
+                outgoing,
+                incoming);
 
             assert(pdf >= 0.0f);
             return pdf;
@@ -512,15 +333,6 @@ namespace
                     values->m_energy_compensation * values->m_reflectance_multiplier * fms);
             }
         }
-
-        enum MDFType
-        {
-            GGX = 0,
-            Beckmann,
-            Std
-        };
-
-        MDFType m_mdf_type;
     };
 
     typedef BSDFWrapper<GlossyBRDFImpl> GlossyBRDF;
@@ -552,19 +364,6 @@ Dictionary GlossyBRDFFactory::get_model_metadata() const
 DictionaryArray GlossyBRDFFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "mdf")
-            .insert("label", "Microfacet Distribution Function")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Beckmann", "beckmann")
-                    .insert("GGX", "ggx")
-                    .insert("STD", "std"))
-            .insert("use", "required")
-            .insert("default", "ggx"));
 
     metadata.push_back(
         Dictionary()
@@ -607,22 +406,6 @@ DictionaryArray GlossyBRDFFactory::get_input_metadata() const
                     .insert("value", "1.0")
                     .insert("type", "hard"))
             .insert("default", "0.15"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "highlight_falloff")
-            .insert("label", "Highlight Falloff")
-            .insert("type", "numeric")
-            .insert("min",
-                Dictionary()
-                    .insert("value", "0.0")
-                    .insert("type", "hard"))
-            .insert("max",
-                Dictionary()
-                    .insert("value", "1.0")
-                    .insert("type", "hard"))
-            .insert("use", "optional")
-            .insert("default", "0.4"));
 
     metadata.push_back(
         Dictionary()

@@ -76,12 +76,7 @@ enum ClosureID
 
     // Microfacet closures.
     GlassID,
-
     GlossyID,
-    GlossyBeckmannID,
-    GlossyGGXID,
-    GlossySTDID,
-
     MetalID,
 
     PlasticID,

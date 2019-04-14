@@ -42,11 +42,14 @@ shader as_max_sss_material
     // BRDF part.
     float                SpecularReflectance = 0.8,
     color                SpecularColor = 1.0,
-    string               Distribution = "ggx",
+    string               Distribution = "ggx"
+    [[
+        int as_deprecated = 1,
+    ]],
     float                Roughness = 0.1,
     float                RoughnessDepthScale = 1.0,
     float                Anisotropic = 0.0,
-    
+
     vector               Normal = N,
     vector               Tn = 0,
 
@@ -69,13 +72,11 @@ shader as_max_sss_material
     }
     else
         BSSRDF = SSSReflectance * SSSColor * diffuse(Normal);
-    
+
      BRDF = SpecularColor * SpecularReflectance * as_glossy(
-        Distribution,
         Normal,
         Tn,
         microfacet_roughness(Roughness, RoughnessDepthScale),
-        0.5,    // Highlight falloff.
         Anisotropic,
         Ior);
 

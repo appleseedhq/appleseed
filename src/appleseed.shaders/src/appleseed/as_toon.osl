@@ -857,11 +857,9 @@ shader as_toon
             // controlled via BRDF,BTDF weights in i.e, glass BSDF.
 
             out_outColor += in_specular_weight * as_glossy(
-                "beckmann",
                 specularN,
                 tangent,
                 in_specular_roughness,
-                0.0, // specular spread for Student t-MDF
                 in_anisotropy_amount,
                 in_ior);
         }
