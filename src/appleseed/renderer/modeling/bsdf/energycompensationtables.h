@@ -34,8 +34,6 @@ namespace renderer
 extern const float g_glossy_beckmann_albedo_table[1056];
 extern const float g_glossy_ggx_albedo_table[1056];
 
-extern const float g_glass_beckmann_albedo_table[4352];
-extern const float g_glass_beckmann_rcp_eta_albedo_table[4352];
 extern const float g_glass_ggx_albedo_table[4352];
 extern const float g_glass_ggx_rcp_eta_albedo_table[4352];
 

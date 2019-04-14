@@ -34,7 +34,10 @@ shader as_max_glass_material
     color                ReflectionTint = 1.0,
     color                RefractionTint = 1.0,
     float                Ior = 1.5,
-    string               Distribution = "ggx",
+    string               Distribution = "ggx"
+    [[
+        int as_deprecated = 1
+    ]],
     float                Roughness = 0.1,
     float                Anisotropic = 0.0,
     color                VolumeTransmittance = 1.0,
@@ -43,14 +46,12 @@ shader as_max_glass_material
 )
 {
     ClosureOut = as_glass(
-        Distribution,
         Normal,
         Tn,
         SurfaceTransmittance,
         ReflectionTint,
         RefractionTint,
         Roughness,
-        0.5,
         Anisotropic,
         Ior,
         VolumeTransmittance,

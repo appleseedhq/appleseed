@@ -392,14 +392,12 @@ shader as_sbs_pbrmaterial
     if (in_refraction > 0.0)
     {
         bsdf += in_refraction * in_opacity * as_glass(
-            "ggx",
             Nn,
             vector(0),  // tangent
             color(1),   // surface transmittance
             color(0),   // reflection tint
             diffuse_color,
             0.01,       // roughness
-            0.0,        // highlight falloff
             0.0,        // anisotropic amount
             in_refractionIOR,
             in_absorptionColor,

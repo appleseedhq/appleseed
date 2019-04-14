@@ -76,10 +76,6 @@ enum ClosureID
 
     // Microfacet closures.
     GlassID,
-    GlassBeckmannID,
-    GlassGGXID,
-    GlassSTDID,
-    LastGlassClosure = GlassSTDID,
 
     GlossyID,
     GlossyBeckmannID,

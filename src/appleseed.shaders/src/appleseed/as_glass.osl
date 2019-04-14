@@ -99,7 +99,8 @@ shader as_glass
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_deprecated = 1
     ]],
     float in_roughness = 0.1
     [[
@@ -118,7 +119,8 @@ shader as_glass
         float max = 1.0,
         string label = "Specular Spread",
         string page = "Specular",
-        int divider = 1
+        int divider = 1,
+        int as_deprecated = 1
     ]],
     float in_anisotropy_amount = 0.0
     [[
@@ -351,14 +353,12 @@ shader as_glass
     }
 
     out_outColor += as_glass(
-        in_distribution,
         Nn,
         tangent,
         in_transmittance_amount * in_surface_transmittance,
         in_reflection_tint,
         in_refraction_tint,
         in_roughness,
-        in_specular_spread,
         in_anisotropy_amount,
         in_ior,
         in_volume_transmittance,
