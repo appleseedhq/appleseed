@@ -50,12 +50,6 @@ shader as_glass_surface
         string help = "Index of refraction",
         int    divider = 1
     ]],
-    string               Distribution = "ggx"
-    [[
-        string help = "Microfacet distribution to use",
-        string widget = "popup",
-        string options = "beckmann|ggx"
-    ]],
     float                Roughness = 0.1
     [[
         string help = "Surface roughness",
@@ -75,14 +69,12 @@ shader as_glass_surface
 )
 {
     BSDF = Transmittance * as_glass(
-        Distribution,
         Normal,
         Tn,
         SurfaceTransmittance,
         ReflectionTint,
         RefractionTint,
         Roughness,
-        0.5,            // Highlight falloff.
         Anisotropic,
         Ior,
         VolumeTransmittance,

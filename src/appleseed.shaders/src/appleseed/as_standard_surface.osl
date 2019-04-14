@@ -717,14 +717,12 @@ shader as_standard_surface
             if (compute_transmission)
             {
                 out_outColor += opacity * as_glass(
-                    "std",
                     Nn,
                     tangent,
                     coating_transmittance,
                     in_specular_color,
                     in_refraction_amount * in_refraction_tint,
                     in_specular_roughness,
-                    1.0 - in_specular_spread,
                     in_anisotropy_amount,
                     in_ior,
                     in_absorption_color,

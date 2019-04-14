@@ -95,9 +95,7 @@ namespace
             m_diffuse_btdf = create_and_register_bsdf(TranslucentID, "diffuse_btdf");
             m_disney_brdf = create_and_register_bsdf(DisneyID, "disney_brdf");
 
-            m_glass_beckmann_bsdf = create_and_register_glass_bsdf(GlassBeckmannID, "beckmann");
-            m_glass_ggx_bsdf = create_and_register_glass_bsdf(GlassGGXID, "ggx");
-            m_glass_std_bsdf = create_and_register_glass_bsdf(GlassSTDID, "std");
+            m_glass_bsdf = create_and_register_bsdf(GlassID, "glass_bsdf");
 
             m_glossy_beckmann_brdf = create_and_register_glossy_brdf(GlossyBeckmannID, "beckmann");
             m_glossy_ggx_brdf = create_and_register_glossy_brdf(GlossyGGXID, "ggx");
@@ -361,7 +359,7 @@ namespace
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 const ClosureID cid = c->get_closure_type(i);
-                if (cid > GlassID && cid <= LastGlassClosure)
+                if (cid == GlassID)
                 {
                     const float w = c->get_closure_scalar_weight(i);
                     Spectrum a;
@@ -381,9 +379,7 @@ namespace
         auto_release_ptr<BSDF>      m_blinn_brdf;
         auto_release_ptr<BSDF>      m_diffuse_btdf;
         auto_release_ptr<BSDF>      m_disney_brdf;
-        auto_release_ptr<BSDF>      m_glass_beckmann_bsdf;
-        auto_release_ptr<BSDF>      m_glass_ggx_bsdf;
-        auto_release_ptr<BSDF>      m_glass_std_bsdf;
+        auto_release_ptr<BSDF>      m_glass_bsdf;
         auto_release_ptr<BSDF>      m_glossy_beckmann_brdf;
         auto_release_ptr<BSDF>      m_glossy_ggx_brdf;
         auto_release_ptr<BSDF>      m_glossy_std_brdf;
@@ -403,22 +399,6 @@ namespace
         {
             auto_release_ptr<BSDF> bsdf =
                 BSDFFactoryRegistrar().lookup(model)->create(model, ParamArray());
-
-            m_all_bsdfs[cid] = bsdf.get();
-
-            return bsdf;
-        }
-
-        auto_release_ptr<BSDF> create_and_register_glass_bsdf(
-            const ClosureID         cid,
-            const char*             mdf_name)
-        {
-            auto_release_ptr<BSDF> bsdf =
-                GlassBSDFFactory().create(
-                    "glass_bsdf",
-                    ParamArray()
-                        .insert("mdf", mdf_name)
-                        .insert("volume_parameterization", "transmittance"));
 
             m_all_bsdfs[cid] = bsdf.get();
 

@@ -2088,6 +2088,9 @@ namespace
         void update() override
         {
             replace_max_samples_interactive_renderer_setting();
+
+            if (Scene* scene = m_project.get_scene())
+                update_assemblies(scene->assemblies());
         }
 
       private:
@@ -2116,6 +2119,45 @@ namespace
                     }
                 }
             }
+        }
+
+        static void update_assemblies(const AssemblyContainer& assemblies)
+        {
+            for (const auto& assembly : assemblies)
+            {
+                update_bsdfs(assembly.bsdfs());
+                update_assemblies(assembly.assemblies());
+            }
+        }
+
+        static void update_bsdfs(BSDFContainer& bsdfs)
+        {
+            for (auto& bsdf : bsdfs)
+            {
+                if (strcmp(bsdf.get_model(), "glass_bsdf") == 0)
+                    update_microfacet_params(bsdf);
+            }
+        }
+
+        static void update_microfacet_params(BSDF& bsdf)
+        {
+            ParamArray& params = bsdf.get_parameters();
+
+            if (params.strings().exist("mdf"))
+            {
+                const string mdf = params.strings().get<string>("mdf");
+                params.strings().remove("mdf");
+                if (mdf != "ggx")
+                {
+                    RENDERER_LOG_WARNING(
+                        "the %s microfacet distribution used by BSDF \"%s\" was removed; "
+                        "the GGX distribution will be used instead.",
+                        mdf.c_str(),
+                        bsdf.get_name());
+                }
+            }
+
+            params.strings().remove("highlight_falloff");
         }
     };
 }

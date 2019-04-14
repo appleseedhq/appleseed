@@ -88,14 +88,12 @@ closure color as_metal(
     ) BUILTIN;
 
 closure color as_glass(
-    string      distribution,           // "beckmann", "ggx" or "std"
     normal      N,
     vector      T,
     color       surface_transmittance,
     color       reflection_tint,
     color       refraction_tint,
     float       roughness,
-    float       highlight_falloff,
     float       anisotropic,
     float       ior,
     color       volume_transmittance,

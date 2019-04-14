@@ -571,14 +571,12 @@ closure color microfacet(
     if (refract)
     {
         return as_glass(
-            distribution,
             N,
             U,
             color(1),   // surface transmittance
             color(0),   // reflection tint
             color(1),   // refraction tint
             xalpha,     // roughness
-            0.5,        // highlight falloff
             anisotropy,
             eta,
             color(1),   // volume transmittance
@@ -618,14 +616,12 @@ closure color reflection(normal N) { return reflection (N, 50.0); }
 closure color refraction(normal N, float eta)
 {
     return as_glass(
-        "beckmann",
         N,
         vector(0),      // U
         color(1),       // surface transmittance
         color(0),       // reflection tint
         color(1),       // refraction tint
         0.0,            // roughness
-        0.5,            // highlight falloff
         0.0,            // anisotropy
         eta,
         color(1),       // volume transmittance

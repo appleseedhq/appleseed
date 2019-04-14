@@ -60,7 +60,6 @@ APPLESEED_DECLARE_INPUT_VALUES(GlassBSDFInputValues)
     Spectrum        m_reflection_tint;
     Spectrum        m_refraction_tint;
     float           m_roughness;
-    float           m_highlight_falloff;
     float           m_anisotropy;
     float           m_ior;
     Spectrum        m_volume_transmittance;
