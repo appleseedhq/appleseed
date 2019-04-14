@@ -460,13 +460,11 @@ shader as_sbs_pbrmaterial
         {
             bsdf *= 1.0 - metallicness;
             bsdf += in_opacity * metallicness * as_metal(
-                "ggx",
                 Nn,
                 tangent,
                 in_baseColor,
                 color(1.0), // edge tint
                 max(0.01, in_roughness),
-                0.0,        // highlight falloff
                 in_anisotropyLevel,
                 "energy_compensation", 0.0);
         }

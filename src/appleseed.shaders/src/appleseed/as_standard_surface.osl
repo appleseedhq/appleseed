@@ -745,13 +745,11 @@ shader as_standard_surface
         {
             out_outColor += coating_transmittance * opacity *
                 in_specular_color * as_metal(
-                    "std",
                     Nn,
                     tangent,
                     in_face_tint,
                     in_edge_tint,
                     in_specular_roughness,
-                    1.0 - in_specular_spread,
                     in_anisotropy_amount);
         }
 

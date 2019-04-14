@@ -83,9 +83,6 @@ enum ClosureID
     GlossySTDID,
 
     MetalID,
-    MetalBeckmannID,
-    MetalGGXID,
-    MetalSTDID,
 
     PlasticID,
     PlasticBeckmannID,

@@ -853,13 +853,11 @@ namespace
     {
         struct Params
         {
-            OSL::ustring    dist;
             OSL::Vec3       N;
             OSL::Vec3       T;
             OSL::Color3     normal_reflectance;
             OSL::Color3     edge_tint;
             float           roughness;
-            float           highlight_falloff;
             float           anisotropy;
             float           energy_compensation;
         };
@@ -893,26 +891,19 @@ namespace
         {
             const OSL::ClosureParam params[] =
             {
-                CLOSURE_STRING_PARAM(Params, dist),
                 CLOSURE_VECTOR_PARAM(Params, N),
                 CLOSURE_VECTOR_PARAM(Params, T),
                 CLOSURE_COLOR_PARAM(Params, normal_reflectance),
                 CLOSURE_COLOR_PARAM(Params, edge_tint),
                 CLOSURE_FLOAT_PARAM(Params, roughness),
-                CLOSURE_FLOAT_PARAM(Params, highlight_falloff),
                 CLOSURE_FLOAT_PARAM(Params, anisotropy),
                 CLOSURE_FLOAT_KEYPARAM(Params, energy_compensation, "energy_compensation"),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
             shading_system.register_closure(name(), id(), params, &prepare_closure, nullptr);
-
             g_closure_convert_funs[id()] = &convert_closure;
-
             g_closure_get_modes_funs[id()] = &modes;
-            g_closure_get_modes_funs[MetalBeckmannID] = &modes;
-            g_closure_get_modes_funs[MetalGGXID] = &modes;
-            g_closure_get_modes_funs[MetalSTDID] = &modes;
         }
 
         static void convert_closure(
@@ -924,25 +915,9 @@ namespace
         {
             const Params* p = static_cast<const Params*>(osl_params);
 
-            MetalBRDFInputValues* values;
-            ClosureID cid;
-
-            if (p->dist == g_ggx_str)
-                cid = MetalGGXID;
-            else if (p->dist == g_beckmann_str)
-                cid = MetalBeckmannID;
-            else if (p->dist == g_std_str)
-                cid = MetalSTDID;
-            else
-            {
-                string msg("invalid microfacet distribution function: ");
-                msg += p->dist.c_str();
-                throw ExceptionOSLRuntimeError(msg.c_str());
-            }
-
-            values =
+            MetalBRDFInputValues* values =
                 composite_closure.add_closure<MetalBRDFInputValues>(
-                    cid,
+                    id(),
                     shading_basis,
                     weight,
                     p->N,
@@ -953,7 +928,6 @@ namespace
             values->m_edge_tint.set(Color3f(p->edge_tint), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = max(p->roughness, 0.0f);
-            values->m_highlight_falloff = saturate(p->highlight_falloff);
             values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
             values->m_energy_compensation = saturate(p->energy_compensation);
         }

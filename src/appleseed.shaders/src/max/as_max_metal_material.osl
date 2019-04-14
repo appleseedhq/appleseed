@@ -54,7 +54,8 @@ shader as_max_metal_material
     [[
         string help = "Microfacet distribution to use: Beckmann or GGX.",
         string widget = "popup",
-        string options = "beckmann|ggx"
+        string options = "beckmann|ggx",
+        int as_deprecated = 1
     ]],
     float                Roughness = 0.1
     [[
@@ -76,13 +77,11 @@ shader as_max_metal_material
 )
 {
     ClosureOut = Reflectance * as_metal(
-        Distribution,
         Normal,
         Tn,
         NormalReflectance,
         EdgeTint,
         microfacet_roughness(Roughness, RoughnessDepthScale),
-        0.5,    // Highlight falloff.
         Anisotropic,
         "energy_compensation", 1.0);
 }
