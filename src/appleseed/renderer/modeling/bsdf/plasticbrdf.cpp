@@ -101,7 +101,6 @@ namespace
             m_inputs.declare("specular_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("specular_reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("roughness", InputFormatFloat, "0.15");
-            m_inputs.declare("highlight_falloff", InputFormatFloat, "0.4");
             m_inputs.declare("ior", InputFormatFloat, "1.5");
             m_inputs.declare("internal_scattering", InputFormatFloat, "1.0");
         }
@@ -114,37 +113,6 @@ namespace
         const char* get_model() const override
         {
             return Model;
-        }
-
-        bool on_frame_begin(
-            const Project&              project,
-            const BaseGroup*            parent,
-            OnFrameBeginRecorder&       recorder,
-            IAbortSwitch*               abort_switch) override
-        {
-            if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
-                return false;
-
-            const OnFrameBeginMessageContext context("bsdf", this);
-
-            const string mdf =
-                m_params.get_required<string>(
-                    "mdf",
-                    "ggx",
-                    make_vector("beckmann", "ggx", "gtr1", "std"),
-                    context);
-
-            if (mdf == "ggx")
-                m_mdf.reset(new GGXMDF());
-            else if (mdf == "beckmann")
-                m_mdf.reset(new BeckmannMDF());
-            else if (mdf == "gtr1")
-                m_mdf.reset(new GTR1MDF());
-            else if (mdf == "std")
-                m_mdf.reset(new StdMDF());
-            else return false;
-
-            return true;
         }
 
         size_t compute_input_data_size() const override
@@ -183,9 +151,9 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
             const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
-            const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             // Compute the microfacet normal by sampling the MDF.
+            const GGXMDF mdf;
             const Vector3f& outgoing = sample.m_outgoing.get_value();
             const Vector3f wo = sample.m_shading_basis.transform_to_local(outgoing);
             sampling_context.split_in_place(3, 1);
@@ -193,7 +161,7 @@ namespace
             const Vector3f m =
                 alpha == 0.0f
                     ? Vector3f(0.0f, 1.0f, 0.0f)
-                    : m_mdf->sample(wo, Vector2f(s[0], s[1]), alpha, alpha, gamma);
+                    : mdf.sample(wo, Vector2f(s[0], s[1]), alpha, alpha, 0.0f);
 
             const float F = fresnel_reflectance(wo, m, values->m_precomputed.m_eta);
             const float specular_probability = choose_specular_probability(*values, F);
@@ -223,7 +191,8 @@ namespace
                 }
                 else
                 {
-                    const float probability = specular_pdf(*m_mdf, alpha, gamma, wo, m) * specular_probability;
+                    const GGXMDF mdf;
+                    const float probability = specular_pdf(mdf, alpha, wo, m) * specular_probability;
                     assert(probability >= 0.0f);
 
                     if (probability > 1.0e-6f)
@@ -234,9 +203,8 @@ namespace
 
                         evaluate_specular(
                             values->m_specular_reflectance,
-                            *m_mdf,
+                            mdf,
                             alpha,
-                            gamma,
                             wi,
                             wo,
                             m,
@@ -290,7 +258,6 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
             const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
-            const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             const Vector3f wo = shading_basis.transform_to_local(outgoing);
             const Vector3f wi = shading_basis.transform_to_local(incoming);
@@ -307,18 +274,18 @@ namespace
 
             if (ScatteringMode::has_glossy(modes))
             {
+                const GGXMDF mdf;
                 evaluate_specular(
                     values->m_specular_reflectance,
-                    *m_mdf,
+                    mdf,
                     alpha,
-                    gamma,
                     wi,
                     wo,
                     m,
                     Fo,
                     value.m_glossy);
 
-                pdf_glossy = specular_pdf(*m_mdf, alpha, gamma, wo, m);
+                pdf_glossy = specular_pdf(mdf, alpha, wo, m);
             }
 
             if (ScatteringMode::has_diffuse(modes))
@@ -357,7 +324,6 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
             const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
-            const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             const Vector3f wo = shading_basis.transform_to_local(outgoing);
             const Vector3f wi = shading_basis.transform_to_local(incoming);
@@ -369,9 +335,10 @@ namespace
             const float F = fresnel_reflectance(wo, m, values->m_precomputed.m_eta);
             const float specular_probability = choose_specular_probability(*values, F);
 
+            const GGXMDF mdf;
             const float pdf_glossy =
                 ScatteringMode::has_glossy(modes)
-                    ? specular_pdf(*m_mdf, alpha, gamma, wo, m)
+                    ? specular_pdf(mdf, alpha, wo, m)
                     : 0.0f;
 
             const float pdf_diffuse =
@@ -390,8 +357,6 @@ namespace
 
       private:
         typedef PlasticBRDFInputValues InputValues;
-
-        unique_ptr<MDF> m_mdf;
 
         static float choose_specular_probability(
             const InputValues&          values,
@@ -423,9 +388,8 @@ namespace
 
         static void evaluate_specular(
             const Spectrum&             specular_reflectance,
-            const MDF&                  mdf,
+            const GGXMDF&               mdf,
             const float                 alpha,
-            const float                 gamma,
             const Vector3f&             wi,
             const Vector3f&             wo,
             const Vector3f&             m,
@@ -443,15 +407,14 @@ namespace
             }
 
             value = specular_reflectance;
-            const float D = mdf.D(m, alpha, alpha, gamma);
-            const float G = mdf.G(wi, wo, m, alpha, alpha, gamma);
+            const float D = mdf.D(m, alpha, alpha, 0.0f);
+            const float G = mdf.G(wi, wo, m, alpha, alpha, 0.0f);
             value *= F * D * G / denom;
         }
 
         static float specular_pdf(
-            const MDF&                  mdf,
+            const GGXMDF&               mdf,
             const float                 alpha,
-            const float                 gamma,
             const Vector3f&             wo,
             const Vector3f&             m)
         {
@@ -463,7 +426,7 @@ namespace
                 return 0.0f;
 
             const float jacobian = 1.0f / (4.0f * abs(cos_wom));
-            return jacobian * mdf.pdf(wo, m, alpha, alpha, gamma);
+            return jacobian * mdf.pdf(wo, m, alpha, alpha, 0.0f);
         }
 
         static void evaluate_diffuse(
@@ -516,20 +479,6 @@ Dictionary PlasticBRDFFactory::get_model_metadata() const
 DictionaryArray PlasticBRDFFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "mdf")
-            .insert("label", "Microfacet Distribution Function")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Beckmann", "beckmann")
-                    .insert("GGX", "ggx")
-                    .insert("GTR1", "gtr1")
-                    .insert("STD", "std"))
-            .insert("use", "required")
-            .insert("default", "ggx"));
 
     metadata.push_back(
         Dictionary()
@@ -594,22 +543,6 @@ DictionaryArray PlasticBRDFFactory::get_input_metadata() const
                     .insert("value", "1.0")
                     .insert("type", "hard"))
             .insert("default", "0.15"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "highlight_falloff")
-            .insert("label", "Highlight Falloff")
-            .insert("type", "numeric")
-            .insert("min",
-                Dictionary()
-                    .insert("value", "0.0")
-                    .insert("type", "hard"))
-            .insert("max",
-                Dictionary()
-                    .insert("value", "1.0")
-                    .insert("type", "hard"))
-            .insert("use", "optional")
-            .insert("default", "0.4"));
 
     metadata.push_back(
         Dictionary()

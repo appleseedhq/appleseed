@@ -107,7 +107,8 @@ shader as_plastic
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_deprecated = 1
     ]],
     float in_specular_roughness = 0.2
     [[
@@ -126,7 +127,8 @@ shader as_plastic
         float max = 1.0,
         string label = "Specular Spread",
         string page = "Specular",
-        string help = "Specular highlights spread, only valid for GTR, Student's t-MDF."
+        string help = "Specular highlights spread, only valid for GTR, Student's t-MDF.",
+        int as_deprecated = 1
     ]],
     normal in_bump_normal = N
     [[
@@ -252,43 +254,13 @@ shader as_plastic
         return;
     }
 
-    string distribution;
-
-    if (in_distribution == 0)
-    {
-        distribution = "beckmann";
-    }
-    else if (in_distribution == 1)
-    {
-        distribution = "ggx";
-    }
-    else if (in_distribution == 2)
-    {
-        distribution = "gtr1";
-    }
-    else if (in_distribution == 3)
-    {
-        distribution = "std";
-    }
-    else
-    {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-        warning("[WARNING]: Invalid MDF in %s,\t%s:%d\n",
-                shadername, __FILE__, __LINE__);
-#endif
-    }
-
     color opacity = 1.0 - in_transparency;
 
     out_outColor += opacity * as_plastic(
-        distribution,
         in_bump_normal,
         in_specular_color,
         in_specular_weight,
         in_specular_roughness,
-        1.0 - in_specular_spread, // it seems spread is reverted
         in_ior,
         in_color,
         in_diffuse_weight,

@@ -144,12 +144,10 @@ closure color as_disney(
     float       clearcoat_gloss) BUILTIN;
 
 closure color as_plastic(
-    string      distribution,           // "beckmann", "ggx", "gtr1" or "std"
     normal      N,
     color       specular_color,
     float       specular_weight,
     float       specular_roughness,
-    float       highlight_falloff,
     float       ior,
     color       diffuse_color,
     float       diffuse_weight,

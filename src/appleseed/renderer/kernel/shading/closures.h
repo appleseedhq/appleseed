@@ -78,12 +78,7 @@ enum ClosureID
     GlassID,
     GlossyID,
     MetalID,
-
     PlasticID,
-    PlasticBeckmannID,
-    PlasticGGXID,
-    PlasticGTR1ID,
-    PlasticSTDID,
 
     // BSSRDF closures.
     SubsurfaceID,
