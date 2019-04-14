@@ -443,11 +443,9 @@ shader as_sbs_pbrmaterial
             float eta = (sqrt_f0 + 1.0) / max(1.0e-6, 1.0 - sqrt_f0);
 
             bsdf += in_opacity * as_glossy(
-                "ggx",
                 Nn,
                 tangent,
                 max(0.01, in_roughness),
-                0.0,
                 in_anisotropyLevel,
                 eta,
                 // disable fresnel weight to scale by F above

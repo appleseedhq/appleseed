@@ -374,11 +374,9 @@ shader as_subsurface
         }
 
         out_outColor += in_specular_weight * as_glossy(
-            "ggx",
             Nn,
             vector(0),  // tangent
             in_specular_roughness,
-            0.0,        // specular spread for Student's t-MDF
             in_anisotropy_amount,
             in_ior,
             "energy_compensation", 1.0);

@@ -96,11 +96,7 @@ namespace
             m_disney_brdf = create_and_register_bsdf(DisneyID, "disney_brdf");
 
             m_glass_bsdf = create_and_register_bsdf(GlassID, "glass_bsdf");
-
-            m_glossy_beckmann_brdf = create_and_register_glossy_brdf(GlossyBeckmannID, "beckmann");
-            m_glossy_ggx_brdf = create_and_register_glossy_brdf(GlossyGGXID, "ggx");
-            m_glossy_std_brdf = create_and_register_glossy_brdf(GlossySTDID, "std");
-
+            m_glossy_brdf = create_and_register_bsdf(GlossyID, "glossy_brdf");
             m_metal_brdf = create_and_register_bsdf(MetalID, "metal_brdf");
 
             m_orennayar_brdf = create_and_register_bsdf(OrenNayarID, "orennayar_brdf");
@@ -378,9 +374,7 @@ namespace
         auto_release_ptr<BSDF>      m_diffuse_btdf;
         auto_release_ptr<BSDF>      m_disney_brdf;
         auto_release_ptr<BSDF>      m_glass_bsdf;
-        auto_release_ptr<BSDF>      m_glossy_beckmann_brdf;
-        auto_release_ptr<BSDF>      m_glossy_ggx_brdf;
-        auto_release_ptr<BSDF>      m_glossy_std_brdf;
+        auto_release_ptr<BSDF>      m_glossy_brdf;
         auto_release_ptr<BSDF>      m_metal_brdf;
         auto_release_ptr<BSDF>      m_orennayar_brdf;
         auto_release_ptr<BSDF>      m_plastic_beckmann_brdf;
@@ -395,20 +389,6 @@ namespace
         {
             auto_release_ptr<BSDF> bsdf =
                 BSDFFactoryRegistrar().lookup(model)->create(model, ParamArray());
-
-            m_all_bsdfs[cid] = bsdf.get();
-
-            return bsdf;
-        }
-
-        auto_release_ptr<BSDF> create_and_register_glossy_brdf(
-            const ClosureID         cid,
-            const char*             mdf_name)
-        {
-            auto_release_ptr<BSDF> bsdf =
-                GlossyBRDFFactory().create(
-                    "glossy_brdf",
-                    ParamArray().insert("mdf", mdf_name));
 
             m_all_bsdfs[cid] = bsdf.get();
 

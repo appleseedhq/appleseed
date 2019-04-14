@@ -280,11 +280,9 @@ shader as_maya_phongE
 
         out_outColor += opacity * specular_color *
             as_glossy(
-                "std",
                 Nn,
                 vector(0),
                 in_roughness,
-                in_highlightSize,
                 0.0,
                 0.0);
     }

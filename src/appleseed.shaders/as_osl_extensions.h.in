@@ -58,11 +58,9 @@ closure color as_oren_nayar(
 closure color as_sheen(normal N) BUILTIN;
 
 closure color as_glossy(
-    string      distribution,           // "beckmann", "ggx" or "std"
     normal      N,
     vector      T,
     float       roughness,
-    float       highlight_falloff,
     float       anisotropic,
     float       ior
     // keyword arguments:

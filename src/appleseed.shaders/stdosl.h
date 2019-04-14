@@ -585,11 +585,9 @@ closure color microfacet(
     else
     {
         return as_glossy(
-            distribution,
             N,
             U,
             xalpha,     // roughness
-            0.5,        // highlight falloff
             anisotropy,
             eta);
     }

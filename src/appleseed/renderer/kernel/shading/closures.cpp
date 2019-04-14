@@ -625,11 +625,9 @@ namespace
     {
         struct Params
         {
-            OSL::ustring    dist;
             OSL::Vec3       N;
             OSL::Vec3       T;
             float           roughness;
-            float           highlight_falloff;
             float           anisotropy;
             float           ior;
             float           energy_compensation;
@@ -666,11 +664,9 @@ namespace
         {
             const OSL::ClosureParam params[] =
             {
-                CLOSURE_STRING_PARAM(Params, dist),
                 CLOSURE_VECTOR_PARAM(Params, N),
                 CLOSURE_VECTOR_PARAM(Params, T),
                 CLOSURE_FLOAT_PARAM(Params, roughness),
-                CLOSURE_FLOAT_PARAM(Params, highlight_falloff),
                 CLOSURE_FLOAT_PARAM(Params, anisotropy),
                 CLOSURE_FLOAT_PARAM(Params, ior),
                 CLOSURE_FLOAT_KEYPARAM(Params, energy_compensation, "energy_compensation"),
@@ -679,13 +675,8 @@ namespace
             };
 
             shading_system.register_closure(name(), id(), params, &prepare_closure, nullptr);
-
             g_closure_convert_funs[id()] = &convert_closure;
-
             g_closure_get_modes_funs[id()] = &modes;
-            g_closure_get_modes_funs[GlossyBeckmannID] = &modes;
-            g_closure_get_modes_funs[GlossyGGXID] = &modes;
-            g_closure_get_modes_funs[GlossySTDID] = &modes;
         }
 
         static void convert_closure(
@@ -697,81 +688,38 @@ namespace
         {
             const Params* p = static_cast<const Params*>(osl_params);
 
-            GlossyBRDFInputValues* values;
-            ClosureID cid;
-
             const float roughness = saturate(p->roughness);
             const float fresnel_weight = saturate(p->fresnel_weight);
 
-            const float highlight_falloff = saturate(p->highlight_falloff);
             const float ior = max(p->ior, 0.001f);
-            float w = luminance(weight);
 
-            if (p->dist == g_ggx_str)
-            {
-                cid = GlossyGGXID;
-                w *= sample_weight<GGXMDF>(roughness, ior, fresnel_weight);
-            }
-            else if (p->dist == g_beckmann_str)
-            {
-                cid = GlossyBeckmannID;
-                w *= sample_weight<BeckmannMDF>(roughness, ior, fresnel_weight);
-            }
-            else if (p->dist == g_std_str)
-            {
-                cid = GlossySTDID;
-                w *= sample_weight_std(roughness, highlight_falloff, ior, fresnel_weight);
-            }
-            else
-            {
-                string msg("invalid microfacet distribution function: ");
-                msg += p->dist.c_str();
-                throw ExceptionOSLRuntimeError(msg.c_str());
-            }
-
-            values =
+            GlossyBRDFInputValues* values =
                 composite_closure.add_closure<GlossyBRDFInputValues>(
-                    cid,
+                    id(),
                     shading_basis,
                     weight,
                     p->N,
                     p->T,
                     arena);
-            composite_closure.override_closure_scalar_weight(w);
+
+            composite_closure.override_closure_scalar_weight(
+                luminance(weight) * sample_weight(roughness, ior, fresnel_weight));
 
             values->m_reflectance.set(1.0f);
             values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = roughness;
-            values->m_highlight_falloff = highlight_falloff;
             values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
             values->m_ior = ior;
             values->m_fresnel_weight = fresnel_weight;
             values->m_energy_compensation = saturate(p->energy_compensation);
         }
 
-        template <typename MDF>
         static float sample_weight(
             const float roughness,
             const float ior,
             const float fresnel_weight)
         {
-            const float eavg = get_average_albedo(MDF(), roughness);
-            const float favg = lerp(
-                1.0f,
-                average_fresnel_reflectance_dielectric(ior),
-                fresnel_weight);
-            return eavg * favg;
-        }
-
-        static float sample_weight_std(
-            const float roughness,
-            const float highlight_falloff,
-            const float ior,
-            const float fresnel_weight)
-        {
-            const float eavg0 = get_average_albedo(GGXMDF(), roughness);
-            const float eavg1 = get_average_albedo(BeckmannMDF(), roughness);
-            const float eavg = lerp(eavg0, eavg1, highlight_falloff);
+            const float eavg = get_average_albedo(GGXMDF(), roughness);
             const float favg = lerp(
                 1.0f,
                 average_fresnel_reflectance_dielectric(ior),
@@ -1221,7 +1169,7 @@ namespace
 
             GlossyBRDFInputValues* values =
                 composite_closure.add_closure<GlossyBRDFInputValues>(
-                    GlossyBeckmannID,
+                    GlossyID,
                     shading_basis,
                     weight,
                     p->N,

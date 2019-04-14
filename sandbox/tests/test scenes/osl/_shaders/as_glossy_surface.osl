@@ -54,12 +54,6 @@ shader as_glossy_surface
         string help = "Index of refraction",
         int    divider = 1
     ]],
-    string               Distribution = "ggx"
-    [[
-        string help = "Microfacet distribution to use",
-        string widget = "popup",
-        string options = "beckmann|ggx"
-    ]],
     float                Roughness = 0.1
     [[
         string help = "Surface roughness",
@@ -80,11 +74,9 @@ shader as_glossy_surface
 )
 {
     BRDF = Color * Reflectance * as_glossy(
-        Distribution,
         Normal,
         Tn,
         microfacet_roughness(Roughness, RoughnessDepthScale),
-        0.5,    // Highlight falloff.
         Anisotropic,
         Ior);
 }
