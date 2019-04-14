@@ -144,6 +144,7 @@ MainWindow::MainWindow(QWidget* parent)
     build_connections();
 
     slot_load_application_settings();
+    slot_check_fullscreen();
 
     update_project_explorer();
     update_workspace();
@@ -387,9 +388,14 @@ void MainWindow::build_menus()
     m_ui->menu_view->addAction(m_ui->python_console->toggleViewAction());
     m_ui->menu_view->addSeparator();
 
-    QAction* fullscreen_action = m_ui->menu_view->addAction("Fullscreen");
-    fullscreen_action->setShortcut(Qt::Key_F11);
-    connect(fullscreen_action, SIGNAL(triggered()), SLOT(slot_fullscreen()));
+    m_action_fullscreen = m_ui->menu_view->addAction("Fullscreen");
+    m_action_fullscreen->setCheckable(true);
+    m_action_fullscreen->setShortcut(Qt::Key_F11);
+    connect(m_ui->project_explorer->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
+    connect(m_ui->attribute_editor->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
+    connect(m_ui->log->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
+    connect(m_ui->python_console->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
+    connect(m_action_fullscreen, SIGNAL(triggered()), SLOT(slot_fullscreen()));
 
     //
     // Rendering menu.
@@ -2136,6 +2142,17 @@ void MainWindow::slot_fullscreen()
 
     for (MinimizeButton* button : m_minimize_buttons)
         button->set_fullscreen(m_fullscreen);
+}
+
+void MainWindow::slot_check_fullscreen()
+{
+    const QList<QDockWidget*> dock_widgets = findChildren<QDockWidget*>();
+
+    const bool is_fullscreen = all_of(dock_widgets.cbegin(),
+                                      dock_widgets.cend(),
+                                      [](QDockWidget* dock) {return dock->isHidden();});
+
+    m_action_fullscreen->setChecked(is_fullscreen);
 }
 
 void MainWindow::slot_show_application_settings_window()
