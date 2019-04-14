@@ -144,6 +144,7 @@ MainWindow::MainWindow(QWidget* parent)
     build_connections();
 
     slot_load_application_settings();
+    slot_check_fullscreen();
 
     update_project_explorer();
     update_workspace();
@@ -2146,9 +2147,11 @@ void MainWindow::slot_fullscreen()
 
 void MainWindow::slot_check_fullscreen()
 {
-    const bool is_fullscreen = all_of(m_minimize_buttons.cbegin(),
-                                      m_minimize_buttons.cend(),
-                                      [](MinimizeButton* button) {return button->is_on();});
+    QList<QDockWidget*> dock_widgets = findChildren<QDockWidget*>();
+
+    const bool is_fullscreen = all_of(dock_widgets.cbegin(),
+                                      dock_widgets.cend(),
+                                      [](QDockWidget* dock) {return dock->isHidden();});
 
     m_action_fullscreen->setChecked(is_fullscreen);
 }
