@@ -1,6 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.8.10
-# options: -O2 -DNDEBUG -I/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/include -o /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/gaffer/texture3d/as_noise3d.oso
+# Compiled by oslc 1.10.3
+# options: -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include
 shader as_noise3d
 param	vector	In	0 0 0		%read{1,1} %write{0,0} %derivs %initexpr
 param	string	NoiseType	"perlin"		%meta{string,widget,"popup"} %meta{string,options,"perlin|uperlin|cell|simplex|usimplex|gabor"}  %read{4,7} %write{2147483647,-1}
@@ -23,30 +23,30 @@ const	string	$const2	"direction"		%read{4,7} %write{2147483647,-1}
 const	string	$const3	"bandwidth"		%read{4,7} %write{2147483647,-1}
 const	string	$const4	"impulses"		%read{4,7} %write{2147483647,-1}
 code In
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture3d/as_noise3d.osl:31
+# as_noise3d.osl:31
 #     vector        In = P,
-	assign		In P 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture3d/as_noise3d.osl"} %line{31} %argrw{"wr"}
+	assign		In P 	%filename{"as_noise3d.osl"} %line{31} %argrw{"wr"}
 code ___main___
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture3d/as_noise3d.osl:57
+# as_noise3d.osl:57
 #     vector p = (In * Frequency) + Offset;
-	mul		$tmp1 In Frequency 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture3d/as_noise3d.osl"} %line{57} %argrw{"wrr"}
+	mul		$tmp1 In Frequency 	%filename{"as_noise3d.osl"} %line{57} %argrw{"wrr"}
 	add		p $tmp1 Offset 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture3d/as_noise3d.osl:59
+# as_noise3d.osl:59
 #     if (Periodic)
 	if		Periodic 6 8 	%line{59} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture3d/as_noise3d.osl:68
-#             "impulses", Impulses);
-	pnoise		FloatOut NoiseType p Period $const1 AnisotropyMode $const2 Direction $const3 Bandwidth $const4 Impulses 	%line{68} %argrw{"wrrrrrrrrrrr"} %argderivs{2,3}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture3d/as_noise3d.osl:77
-#             "impulses", Impulses);
-	pnoise		VectorOut NoiseType p Period $const1 AnisotropyMode $const2 Direction $const3 Bandwidth $const4 Impulses 	%line{77} %argrw{"wrrrrrrrrrrr"} %argderivs{2,3}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture3d/as_noise3d.osl:87
-#             "impulses", Impulses);
-	noise		FloatOut NoiseType p $const1 AnisotropyMode $const2 Direction $const3 Bandwidth $const4 Impulses 	%line{87} %argrw{"wrrrrrrrrrr"} %argderivs{2}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture3d/as_noise3d.osl:95
-#             "impulses", Impulses);
-	noise		VectorOut NoiseType p $const1 AnisotropyMode $const2 Direction $const3 Bandwidth $const4 Impulses 	%line{95} %argrw{"wrrrrrrrrrr"} %argderivs{2}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture3d/as_noise3d.osl:98
+# as_noise3d.osl:61
+#         FloatOut = pnoise(
+	pnoise		FloatOut NoiseType p Period $const1 AnisotropyMode $const2 Direction $const3 Bandwidth $const4 Impulses 	%line{61} %argrw{"wrrrrrrrrrrr"} %argderivs{2,3}
+# as_noise3d.osl:70
+#         VectorOut = pnoise(
+	pnoise		VectorOut NoiseType p Period $const1 AnisotropyMode $const2 Direction $const3 Bandwidth $const4 Impulses 	%line{70} %argrw{"wrrrrrrrrrrr"} %argderivs{2,3}
+# as_noise3d.osl:81
+#         FloatOut = noise(
+	noise		FloatOut NoiseType p $const1 AnisotropyMode $const2 Direction $const3 Bandwidth $const4 Impulses 	%line{81} %argrw{"wrrrrrrrrrr"} %argderivs{2}
+# as_noise3d.osl:89
+#         VectorOut = noise(
+	noise		VectorOut NoiseType p $const1 AnisotropyMode $const2 Direction $const3 Bandwidth $const4 Impulses 	%line{89} %argrw{"wrrrrrrrrrr"} %argderivs{2}
+# as_noise3d.osl:98
 #     ColorOut = color(VectorOut);
 	assign		ColorOut VectorOut 	%line{98} %argrw{"wr"}
 	end

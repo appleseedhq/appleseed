@@ -1,9 +1,9 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.8.10
-# options: -O2 -DNDEBUG -I/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/include -o /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/gaffer/surface/as_translucent_surface.oso
+# Compiled by oslc 1.10.3
+# options: -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include
 shader as_translucent_surface	%meta{string,help,"Translucent surface shader."} 
 param	vector	Normal	0 0 0		%read{1,1} %write{0,0} %initexpr
-param	float	Transmittance	0.80000001		%meta{float,min,0} %meta{float,max,1}  %read{2,2} %write{2147483647,-1}
+param	float	Transmittance	0.800000012		%meta{float,min,0} %meta{float,max,1}  %read{2,2} %write{2147483647,-1}
 param	color	Color	1 1 1		%read{2,2} %write{2147483647,-1}
 oparam	closure color	BTDF			%read{2147483647,-1} %write{3,3}
 global	normal	N	%read{0,0} %write{2147483647,-1}
@@ -11,13 +11,13 @@ temp	closure color	$tmp1	%read{3,3} %write{1,1}
 const	string	$const1	"translucent"		%read{1,1} %write{2147483647,-1}
 temp	color	$tmp2	%read{3,3} %write{2,2}
 code Normal
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_translucent_surface.osl:34
+# as_translucent_surface.osl:34
 #     vector               Normal = N,
-	assign		Normal N 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_translucent_surface.osl"} %line{34} %argrw{"wr"}
+	assign		Normal N 	%filename{"as_translucent_surface.osl"} %line{34} %argrw{"wr"}
 code ___main___
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_translucent_surface.osl:44
+# as_translucent_surface.osl:44
 #     BTDF = Transmittance * Color * translucent(Normal);
-	closure		$tmp1 $const1 Normal 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_translucent_surface.osl"} %line{44} %argrw{"wrr"}
+	closure		$tmp1 $const1 Normal 	%filename{"as_translucent_surface.osl"} %line{44} %argrw{"wrr"}
 	mul		$tmp2 Transmittance Color 	%argrw{"wrr"}
 	mul		BTDF $tmp1 $tmp2 	%argrw{"wrr"}
 	end

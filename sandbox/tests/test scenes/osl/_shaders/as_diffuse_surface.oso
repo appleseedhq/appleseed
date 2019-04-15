@@ -1,9 +1,9 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.9.8
-# options: 
+# Compiled by oslc 1.10.3
+# options: -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include
 shader as_diffuse_surface	%meta{string,help,"Diffuse surface shader"} 
 param	vector	Normal	0 0 0		%read{2,2} %write{0,0} %initexpr
-param	float	Reflectance	0.80000001		%meta{float,min,0}  %read{3,3} %write{2147483647,-1}
+param	float	Reflectance	0.800000012		%meta{float,min,0}  %read{3,3} %write{2147483647,-1}
 param	color	Color	1 1 1		%read{3,3} %write{2147483647,-1}
 param	float	Roughness	0		%meta{string,help,"Surface roughness."} %meta{float,min,0} %meta{float,max,1}  %read{2,2} %write{2147483647,-1}
 oparam	closure color	BRDF			%read{2147483647,-1} %write{4,4}
@@ -21,9 +21,9 @@ code ___main___
 # as_diffuse_surface.osl:49
 #     BRDF = Reflectance * Color * oren_nayar(Normal, Roughness);
 	functioncall	$const1 3 	%filename{"as_diffuse_surface.osl"} %line{49} %argrw{"r"}
-# /hdd/packages/appleseed/2.1.0/shaders/stdosl.h:555
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:450
 #     return as_oren_nayar(color(1.0), N, sigma);
-	closure		$tmp1 $const3 $const2 Normal Roughness 	%filename{"/hdd/packages/appleseed/2.1.0/shaders/stdosl.h"} %line{555} %argrw{"wrrrr"}
+	closure		$tmp1 $const3 $const2 Normal Roughness 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{450} %argrw{"wrrrr"}
 # as_diffuse_surface.osl:49
 #     BRDF = Reflectance * Color * oren_nayar(Normal, Roughness);
 	mul		$tmp3 Reflectance Color 	%filename{"as_diffuse_surface.osl"} %line{49} %argrw{"wrr"}

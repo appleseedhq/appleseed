@@ -1,6 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.7.4
-# options: 
+# Compiled by oslc 1.10.3
+# options: -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include
 surface envmap
 param	string	filename	""		%read{10,10} %write{2147483647,-1}
 global	vector	I	%read{0,0} %write{2147483647,-1} %derivs
@@ -17,9 +17,9 @@ const	int	$const2	2		%read{3,3} %write{2147483647,-1}
 temp	float	$tmp2	%read{5,5} %write{3,3} %derivs
 const	int	$const3	0		%read{4,4} %write{2147483647,-1}
 temp	float	$tmp3	%read{5,5} %write{4,4} %derivs
-const	float	$const4	3.1415927		%read{6,8} %write{2147483647,-1}
+const	float	$const4	3.14159274		%read{6,8} %write{2147483647,-1}
 temp	float	$tmp4	%read{7,7} %write{6,6} %derivs
-const	float	$const5	6.2831855		%read{7,7} %write{2147483647,-1}
+const	float	$const5	6.28318548		%read{7,7} %write{2147483647,-1}
 const	float	$const6	1		%read{9,9} %write{2147483647,-1}
 temp	float	$tmp5	%read{9,9} %write{8,8} %derivs
 temp	closure color	$tmp6	%read{12,12} %write{11,11}

@@ -1,11 +1,11 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.8.10
-# options: -O2 -DNDEBUG -I/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/include -o /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/gaffer/material/as_material_builder.oso
+# Compiled by oslc 1.10.3
+# options: -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include
 surface as_material_builder	%meta{string,help,"Builds a material from a surface shader"} 
 param	closure color	BSDF			%read{0,0} %write{2147483647,-1}
 global	closure color	Ci	%read{2147483647,-1} %write{0,0}
 code ___main___
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/material/as_material_builder.osl:37
+# as_material_builder.osl:37
 #     Ci = BSDF;
-	assign		Ci BSDF 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/material/as_material_builder.osl"} %line{37} %argrw{"wr"}
+	assign		Ci BSDF 	%filename{"as_material_builder.osl"} %line{37} %argrw{"wr"}
 	end

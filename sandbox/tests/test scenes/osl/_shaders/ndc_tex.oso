@@ -1,6 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.8.10
-# options: 
+# Compiled by oslc 1.10.3
+# options: -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include
 surface ndc_tex
 param	string	filename	""		%read{5,5} %write{2147483647,-1}
 global	point	P	%read{0,0} %write{2147483647,-1} %derivs

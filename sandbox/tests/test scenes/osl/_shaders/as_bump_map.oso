@@ -1,6 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.8.10
-# options: -O2 -DNDEBUG -I/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/include -o /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/gaffer/normal/as_bump_map.oso
+# Compiled by oslc 1.10.3
+# options: -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include
 shader as_bump_map
 param	vector	Position	0 0 0		%read{6,7} %write{0,0} %derivs %initexpr
 param	vector	Normal	0 0 0		%read{2,43} %write{1,1} %initexpr
@@ -17,14 +17,14 @@ local	vector	dpdx	%read{14,31} %write{6,6}
 local	vector	dpdy	%read{18,29} %write{7,7}
 local	float	dhx	%read{16,33} %write{9,9}
 local	float	dhy	%read{20,34} %write{11,11}
-local	vector	___350_new_tn	%read{22,22} %write{17,17}
-local	vector	___350_new_bn	%read{22,22} %write{21,21}
-local	int	___351_has_diffs	%read{26,26} %write{23,23}
-local	int	___351_get_attr_ok	%read{24,24} %write{23,23}
-local	vector	___352_rx	%read{31,33} %write{29,29}
-local	vector	___352_ry	%read{34,34} %write{30,30}
-local	float	___352_det	%read{32,37} %write{31,31}
-local	vector	___352_surf_grad	%read{39,39} %write{36,36}
+local	vector	___340_new_tn	%read{22,22} %write{17,17}
+local	vector	___340_new_bn	%read{22,22} %write{21,21}
+local	int	___341_has_diffs	%read{26,26} %write{23,23}
+local	int	___341_get_attr_ok	%read{24,24} %write{23,23}
+local	vector	___342_rx	%read{31,33} %write{29,29}
+local	vector	___342_ry	%read{34,34} %write{30,30}
+local	float	___342_det	%read{32,37} %write{31,31}
+local	vector	___342_surf_grad	%read{39,39} %write{36,36}
 const	float	$const1	0		%read{3,44} %write{2147483647,-1}
 temp	int	$tmp1	%read{4,4} %write{3,3}
 temp	float	$tmp2	%read{9,9} %write{8,8}
@@ -52,93 +52,93 @@ temp	float	$tmp20	%read{44,44} %write{43,43}
 temp	int	$tmp21	%read{45,45} %write{44,44}
 temp	int	$tmp22	%read{46,46} %write{45,45}
 code Position
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:31
+# as_bump_map.osl:31
 #     vector        Position = P,
-	assign		Position P 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl"} %line{31} %argrw{"wr"}
+	assign		Position P 	%filename{"as_bump_map.osl"} %line{31} %argrw{"wr"}
 code Normal
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:32
+# as_bump_map.osl:32
 #     vector        Normal = N,
-	assign		Normal N 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl"} %line{32} %argrw{"wr"}
+	assign		Normal N 	%filename{"as_bump_map.osl"} %line{32} %argrw{"wr"}
 code NormalOut
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:62
-# )
-	assign		NormalOut Normal 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl"} %line{62} %argrw{"wr"}
+# as_bump_map.osl:61
+#     output vector NormalOut = Normal
+	assign		NormalOut Normal 	%filename{"as_bump_map.osl"} %line{61} %argrw{"wr"}
 code ___main___
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:64
+# as_bump_map.osl:64
 #     if (Amount == 0.0)
-	eq		$tmp1 Amount $const1 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl"} %line{64} %argrw{"wrr"}
+	eq		$tmp1 Amount $const1 	%filename{"as_bump_map.osl"} %line{64} %argrw{"wrr"}
 	if		$tmp1 6 6 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:65
+# as_bump_map.osl:65
 #         return;
 	exit	%line{65}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:67
+# as_bump_map.osl:67
 #     vector dpdx = Dx(Position);
 	Dx		dpdx Position 	%line{67} %argrw{"wr"} %argderivs{1}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:68
+# as_bump_map.osl:68
 #     vector dpdy = Dy(Position);
 	Dy		dpdy Position 	%line{68} %argrw{"wr"} %argderivs{1}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:70
+# as_bump_map.osl:70
 #     float dhx = Dx(Height) * Amount;
 	Dx		$tmp2 Height 	%line{70} %argrw{"wr"} %argderivs{1}
 	mul		dhx $tmp2 Amount 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:71
+# as_bump_map.osl:71
 #     float dhy = Dy(Height) * Amount;
 	Dy		$tmp3 Height 	%line{71} %argrw{"wr"} %argderivs{1}
 	mul		dhy $tmp3 Amount 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:73
+# as_bump_map.osl:73
 #     if (Method == "classic")
 	eq		$tmp4 Method $const2 	%line{73} %argrw{"wrr"}
 	if		$tmp4 23 40 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:83
+# as_bump_map.osl:83
 #         vector new_tn = Tn * length(dpdx) + Normal * dhx;
 	length		$tmp5 dpdx 	%line{83} %argrw{"wr"}
 	mul		$tmp6 Tn $tmp5 	%argrw{"wrr"}
 	mul		$tmp7 Normal dhx 	%argrw{"wrr"}
-	add		___350_new_tn $tmp6 $tmp7 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:84
+	add		___340_new_tn $tmp6 $tmp7 	%argrw{"wrr"}
+# as_bump_map.osl:84
 #         vector new_bn = Bn * length(dpdy) + Normal * dhy;
 	length		$tmp8 dpdy 	%line{84} %argrw{"wr"}
 	mul		$tmp9 Bn $tmp8 	%argrw{"wrr"}
 	mul		$tmp10 Normal dhy 	%argrw{"wrr"}
-	add		___350_new_bn $tmp9 $tmp10 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:85
+	add		___340_new_bn $tmp9 $tmp10 	%argrw{"wrr"}
+# as_bump_map.osl:85
 #         NormalOut = cross(new_bn, new_tn);
-	cross		NormalOut ___350_new_bn ___350_new_tn 	%line{85} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:100
+	cross		NormalOut ___340_new_bn ___340_new_tn 	%line{85} %argrw{"wrr"}
+# as_bump_map.osl:100
 #         int get_attr_ok = getattribute("path:ray_has_differentials", has_diffs);
-	getattribute	___351_get_attr_ok $const3 ___351_has_diffs 	%line{100} %argrw{"wrw"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:103
+	getattribute	___341_get_attr_ok $const3 ___341_has_diffs 	%line{100} %argrw{"wrw"}
+# as_bump_map.osl:103
 #         if (get_attr_ok && has_diffs)
-	neq		$tmp11 ___351_get_attr_ok $const4 	%line{103} %argrw{"wrr"}
+	neq		$tmp11 ___341_get_attr_ok $const4 	%line{103} %argrw{"wrr"}
 	if		$tmp11 28 28 	%argrw{"r"}
-	neq		$tmp12 ___351_has_diffs $const4 	%argrw{"wrr"}
+	neq		$tmp12 ___341_has_diffs $const4 	%argrw{"wrr"}
 	assign		$tmp11 $tmp12 	%argrw{"wr"}
 	if		$tmp11 40 40 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:105
+# as_bump_map.osl:105
 #             vector rx = cross(dpdy, Normal);
-	cross		___352_rx dpdy Normal 	%line{105} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:106
+	cross		___342_rx dpdy Normal 	%line{105} %argrw{"wrr"}
+# as_bump_map.osl:106
 #             vector ry = cross(Normal, dpdx);
-	cross		___352_ry Normal dpdx 	%line{106} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:108
+	cross		___342_ry Normal dpdx 	%line{106} %argrw{"wrr"}
+# as_bump_map.osl:108
 #             float det = dot(dpdx, rx);
-	dot		___352_det dpdx ___352_rx 	%line{108} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:109
+	dot		___342_det dpdx ___342_rx 	%line{108} %argrw{"wrr"}
+# as_bump_map.osl:109
 #             vector surf_grad = sign(det) * (dhx * rx + dhy * ry);
-	sign		$tmp13 ___352_det 	%line{109} %argrw{"wr"}
-	mul		$tmp14 dhx ___352_rx 	%argrw{"wrr"}
-	mul		$tmp15 dhy ___352_ry 	%argrw{"wrr"}
+	sign		$tmp13 ___342_det 	%line{109} %argrw{"wr"}
+	mul		$tmp14 dhx ___342_rx 	%argrw{"wrr"}
+	mul		$tmp15 dhy ___342_ry 	%argrw{"wrr"}
 	add		$tmp16 $tmp14 $tmp15 	%argrw{"wrr"}
-	mul		___352_surf_grad $tmp13 $tmp16 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:111
+	mul		___342_surf_grad $tmp13 $tmp16 	%argrw{"wrr"}
+# as_bump_map.osl:111
 #             NormalOut = abs(det) * Normal - surf_grad;
-	abs		$tmp17 ___352_det 	%line{111} %argrw{"wr"}
+	abs		$tmp17 ___342_det 	%line{111} %argrw{"wr"}
 	mul		$tmp18 $tmp17 Normal 	%argrw{"wrr"}
-	sub		NormalOut $tmp18 ___352_surf_grad 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:115
+	sub		NormalOut $tmp18 ___342_surf_grad 	%argrw{"wrr"}
+# as_bump_map.osl:115
 #     NormalOut = normalize(NormalOut);
 	normalize	NormalOut NormalOut 	%line{115} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:119
+# as_bump_map.osl:119
 #     if (PreventNormalFlip && dot(Normal, NormalOut) < 0.0)
 	neq		$tmp19 PreventNormalFlip $const4 	%line{119} %argrw{"wrr"}
 	if		$tmp19 47 47 	%argrw{"r"}
@@ -147,7 +147,7 @@ code ___main___
 	neq		$tmp22 $tmp21 $const4 	%argrw{"wrr"}
 	assign		$tmp19 $tmp22 	%argrw{"wr"}
 	if		$tmp19 49 49 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/normal/as_bump_map.osl:120
+# as_bump_map.osl:120
 #         NormalOut = -NormalOut;
 	neg		NormalOut NormalOut 	%line{120} %argrw{"wr"}
 	end

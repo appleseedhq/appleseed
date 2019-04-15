@@ -1,6 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.8.10
-# options: -O2 -DNDEBUG -I/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/include -o /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/gaffer/surface/as_surface_mix.oso
+# Compiled by oslc 1.10.3
+# options: -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include
 shader as_surface_mix	%meta{string,help,"Mixes two surface shaders."} 
 param	closure color	BSDF1			%read{0,0} %write{2147483647,-1}
 param	closure color	BSDF2			%read{2,2} %write{2147483647,-1}
@@ -11,9 +11,9 @@ const	float	$const1	1		%read{1,1} %write{2147483647,-1}
 temp	float	$tmp2	%read{2,2} %write{1,1}
 temp	closure color	$tmp3	%read{3,3} %write{2,2}
 code ___main___
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_surface_mix.osl:44
+# as_surface_mix.osl:44
 #     BSDF = Factor * BSDF1 + (1.0 - Factor) * BSDF2;
-	mul		$tmp1 BSDF1 Factor 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_surface_mix.osl"} %line{44} %argrw{"wrr"}
+	mul		$tmp1 BSDF1 Factor 	%filename{"as_surface_mix.osl"} %line{44} %argrw{"wrr"}
 	sub		$tmp2 $const1 Factor 	%argrw{"wrr"}
 	mul		$tmp3 BSDF2 $tmp2 	%argrw{"wrr"}
 	add		BSDF $tmp1 $tmp3 	%argrw{"wrr"}
