@@ -29,7 +29,6 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 
@@ -38,53 +37,6 @@
 
 namespace foundation
 {
-
-//
-// MDF: Base class for microfacet distribution functions.
-//
-
-class MDF
-  : public NonCopyable
-{
-  public:
-    virtual ~MDF();
-
-    virtual float D(
-        const Vector3f&     m,
-        const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma) const = 0;
-
-    virtual float G(
-        const Vector3f&     wi,
-        const Vector3f&     wo,
-        const Vector3f&     m,
-        const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma) const = 0;
-
-    virtual float G1(
-        const Vector3f&     v,
-        const Vector3f&     m,
-        const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma) const = 0;
-
-    virtual Vector3f sample(
-        const Vector3f&     v,
-        const Vector2f&     s,
-        const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma) const = 0;
-
-    virtual float pdf(
-        const Vector3f&     v,
-        const Vector3f&     m,
-        const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma) const = 0;
-};
-
 
 //
 // Blinn-Phong Microfacet Distribution Function.
@@ -101,45 +53,42 @@ class MDF
 //
 
 class BlinnMDF
-  : public MDF
 {
   public:
-    BlinnMDF() {}
-
-    float D(
+    static float D(
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    float G(
+    static float G(
         const Vector3f&     wi,
         const Vector3f&     wo,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    float G1(
+    static float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    Vector3f sample(
+    static Vector3f sample(
         const Vector3f&     v,
         const Vector2f&     s,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    float pdf(
+    static float pdf(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 };
 
 
@@ -167,60 +116,57 @@ class BlinnMDF
 //
 
 class BeckmannMDF
-  : public MDF
 {
   public:
-    BeckmannMDF() {}
-
-    float D(
+    static float D(
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    float G(
+    static float G(
         const Vector3f&     wi,
         const Vector3f&     wo,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    float G1(
+    static float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    Vector3f sample(
+    static Vector3f sample(
         const Vector3f&     v,
         const Vector2f&     s,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    Vector3f sample(
+    static Vector3f sample(
         const Vector2f&     s,
-        const float         alpha) const;
+        const float         alpha);
 
-    float pdf(
+    static float pdf(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    Vector2f sample_slope(
+    static Vector2f sample_slope(
         const float         cos_theta,
         const Vector2f&     s,
-        const float         gamma) const;
+        const float         gamma);
 
-    float lambda(
+    static float lambda(
         const Vector3f&     v,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const;
+        const float         gamma);
 };
 
 
@@ -243,51 +189,48 @@ class BeckmannMDF
 //
 
 class GGXMDF
-  : public MDF
 {
   public:
-    GGXMDF() {}
-
-    float D(
+    static float D(
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    float G(
+    static float G(
         const Vector3f&     wi,
         const Vector3f&     wo,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    float G1(
+    static float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    Vector3f sample(
+    static Vector3f sample(
         const Vector3f&     v,
         const Vector2f&     s,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    float pdf(
+    static float pdf(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    float lambda(
+    static float lambda(
         const Vector3f&     v,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const;
+        const float         gamma);
 };
 
 
@@ -303,45 +246,42 @@ class GGXMDF
 //
 
 class WardMDF
-  : public MDF
 {
   public:
-    WardMDF() {}
-
-    float D(
+    static float D(
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    float G(
+    static float G(
         const Vector3f&     wi,
         const Vector3f&     wo,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    float G1(
+    static float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    Vector3f sample(
+    static Vector3f sample(
         const Vector3f&     v,
         const Vector2f&     s,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    float pdf(
+    static float pdf(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 };
 
 
@@ -358,52 +298,49 @@ class WardMDF
 //
 
 class GTR1MDF
-  : public MDF
 {
   public:
-    GTR1MDF() {}
-
-    float D(
+    static float D(
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    float G(
+    static float G(
         const Vector3f&     wi,
         const Vector3f&     wo,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    float G1(
+    static float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    Vector3f sample(
+    static Vector3f sample(
         const Vector3f&     v,
         const Vector2f&     s,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    float pdf(
+    static float pdf(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
   private:
-    float lambda(
+    static float lambda(
         const Vector3f&     v,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const;
+        const float         gamma);
 };
 
 
@@ -418,54 +355,51 @@ class GTR1MDF
 //
 
 class StdMDF
-  : public MDF
 {
   public:
-    StdMDF() {}
-
-    float D(
+    static float D(
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    float G(
+    static float G(
         const Vector3f&     wi,
         const Vector3f&     wo,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    float G1(
+    static float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    Vector3f sample(
+    static Vector3f sample(
         const Vector3f&     v,
         const Vector2f&     s,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
-    float pdf(
+    static float pdf(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const override;
+        const float         gamma);
 
   private:
-    float lambda(
+    static float lambda(
         const Vector3f&     v,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma) const;
+        const float         gamma);
 
-    float S2(const float cot_theta, const float gamma) const;
+    static float S2(const float cot_theta, const float gamma);
 };
 
 }   // namespace foundation

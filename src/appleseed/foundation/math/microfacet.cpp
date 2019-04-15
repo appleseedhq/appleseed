@@ -98,9 +98,8 @@ namespace
         return sqrt(cos_phi_2_ax_2 + sin_phi_2_ay_2);
     }
 
-    template <typename Distribution>
+    template <typename MDF>
     float pdf_visible_normals(
-        const Distribution& mdf,
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
@@ -115,18 +114,9 @@ namespace
             return 0.0f;
 
         return
-            mdf.G1(v, m, alpha_x, alpha_y, gamma) * abs(dot(v, m)) *
-            mdf.D(m, alpha_x, alpha_y, gamma) / abs(cos_theta_v);
+            MDF::G1(v, m, alpha_x, alpha_y, gamma) * abs(dot(v, m)) *
+            MDF::D(m, alpha_x, alpha_y, gamma) / abs(cos_theta_v);
     }
-}
-
-
-//
-// MDF class implementation.
-//
-
-MDF::~MDF()
-{
 }
 
 
@@ -138,7 +128,7 @@ float BlinnMDF::D(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     return (alpha_x + 2.0f) * RcpTwoPi<float>() * pow(abs(m.y), alpha_x);
 }
@@ -149,7 +139,7 @@ float BlinnMDF::G(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     return min(
         G1(wi, m, alpha_x, alpha_y, gamma),
@@ -161,7 +151,7 @@ float BlinnMDF::G1(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     const float cos_vm = dot(v, m);
     if (cos_vm == 0.0f)
@@ -175,7 +165,7 @@ Vector3f BlinnMDF::sample(
     const Vector2f&     s,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     const float cos_theta = pow(1.0f - s[0], 1.0f / (alpha_x + 2.0f));
     const float sin_theta = sqrt(max(0.0f, 1.0f - square(cos_theta)));
@@ -191,9 +181,9 @@ float BlinnMDF::pdf(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
-    return pdf_visible_normals(*this, v, m, alpha_x, alpha_y, gamma);
+    return pdf_visible_normals<BlinnMDF>(v, m, alpha_x, alpha_y, gamma);
 }
 
 
@@ -205,7 +195,7 @@ float BeckmannMDF::D(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     const float cos_theta = m.y;
     if (cos_theta == 0.0f)
@@ -232,7 +222,7 @@ float BeckmannMDF::G(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     return 1.0f / (1.0f + lambda(wo, alpha_x, alpha_y, gamma) + lambda(wi, alpha_x, alpha_y, gamma));
 }
@@ -242,7 +232,7 @@ float BeckmannMDF::G1(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     return 1.0f / (1.0f + lambda(v, alpha_x, alpha_y, gamma));
 }
@@ -251,7 +241,7 @@ float BeckmannMDF::lambda(
     const Vector3f&     v,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     const float cos_theta = v.y;
     if (cos_theta == 0.0f)
@@ -287,7 +277,7 @@ Vector3f BeckmannMDF::sample(
     const Vector2f&     s,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     // Preconditions.
     assert(is_normalized(v));
@@ -326,7 +316,7 @@ Vector3f BeckmannMDF::sample(
 Vector2f BeckmannMDF::sample_slope(
     const float         cos_theta,
     const Vector2f&     s,
-    const float         gamma) const
+    const float         gamma)
 {
     const float threshold = 1e-06f;
     Vector2f slope;
@@ -389,9 +379,9 @@ float BeckmannMDF::pdf(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
-    return pdf_visible_normals(*this, v, m, alpha_x, alpha_y, gamma);
+    return pdf_visible_normals<BeckmannMDF>(v, m, alpha_x, alpha_y, gamma);
 }
 
 
@@ -403,7 +393,7 @@ float GGXMDF::D(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     const float cos_theta = m.y;
     if (cos_theta == 0.0f)
@@ -431,7 +421,7 @@ float GGXMDF::G(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     return 1.0f / (1.0f + lambda(wo, alpha_x, alpha_y, gamma) + lambda(wi, alpha_x, alpha_y, gamma));
 }
@@ -441,7 +431,7 @@ float GGXMDF::G1(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     return 1.0f / (1.0f + lambda(v, alpha_x, alpha_y, gamma));
 }
@@ -450,7 +440,7 @@ float GGXMDF::lambda(
     const Vector3f&     v,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     const float cos_theta = v.y;
     if (cos_theta == 0.0f)
@@ -476,7 +466,7 @@ Vector3f GGXMDF::sample(
     const Vector2f&     s,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     // Preconditions.
     assert(is_normalized(v));
@@ -524,9 +514,9 @@ float GGXMDF::pdf(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
-    return pdf_visible_normals(*this, v, m, alpha_x, alpha_y, gamma);
+    return pdf_visible_normals<GGXMDF>(v, m, alpha_x, alpha_y, gamma);
 }
 
 
@@ -538,7 +528,7 @@ float WardMDF::D(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     const float cos_theta = m.y;
 
@@ -561,7 +551,7 @@ float WardMDF::G(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     return min(
         G1(wi, m, alpha_x, alpha_y, gamma),
@@ -573,7 +563,7 @@ float WardMDF::G1(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     if (v.y <= 0.0f)
         return 0.0f;
@@ -593,7 +583,7 @@ Vector3f WardMDF::sample(
     const Vector2f&     s,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     const float tan_alpha_2 = square(alpha_x) * (-std::log(1.0f - s[0]));
     const float cos_alpha = 1.0f / sqrt(1.0f + tan_alpha_2);
@@ -607,7 +597,7 @@ float WardMDF::pdf(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     return D(m, alpha_x, alpha_y, gamma);
 }
@@ -621,7 +611,7 @@ float GTR1MDF::D(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     const float alpha = clamp(alpha_x, 0.001f, 0.999f);
     const float alpha_x_2 = square(alpha);
@@ -637,7 +627,7 @@ float GTR1MDF::G(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     return 1.0f / (1.0f + lambda(wo, alpha_x, alpha_y, gamma) + lambda(wi, alpha_x, alpha_y, gamma));
 }
@@ -647,7 +637,7 @@ float GTR1MDF::G1(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     return 1.0f / (1.0f + lambda(v, alpha_x, alpha_y, gamma));
 }
@@ -656,7 +646,7 @@ float GTR1MDF::lambda(
     const Vector3f&     v,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     const float cos_theta = v.y;
     if (cos_theta == 0.0f)
@@ -688,7 +678,7 @@ Vector3f GTR1MDF::sample(
     const Vector2f&     s,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     const float alpha = clamp(alpha_x, 0.001f, 0.999f);
     const float alpha_2 = square(alpha);
@@ -707,7 +697,7 @@ float GTR1MDF::pdf(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     return D(m, alpha_x, alpha_y, gamma) * std::abs(m.y);
 }
@@ -721,7 +711,7 @@ float StdMDF::D(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     const float cos_theta = m.y;
     if (cos_theta == 0.0f)
@@ -755,7 +745,7 @@ float StdMDF::G(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     assert(gamma > 1.5f);
 
@@ -767,7 +757,7 @@ float StdMDF::G1(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     assert(gamma > 1.5f);
 
@@ -778,7 +768,7 @@ float StdMDF::lambda(
     const Vector3f&     v,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     const float cos_theta = abs(v.y);
     if (cos_theta == 0.0f)
@@ -817,7 +807,7 @@ float StdMDF::pdf(
     const Vector3f&     m,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     return D(m, alpha_x, alpha_y, gamma) * std::abs(m.y);
 }
@@ -827,7 +817,7 @@ Vector3f StdMDF::sample(
     const Vector2f&     s,
     const float         alpha_x,
     const float         alpha_y,
-    const float         gamma) const
+    const float         gamma)
 {
     // todo: implement the improved sampling strategy in the supplemental material of [1].
 
@@ -857,7 +847,7 @@ Vector3f StdMDF::sample(
     return Vector3f::make_unit_vector(theta, phi);
 }
 
-float StdMDF::S2(const float cot_theta, const float gamma) const
+float StdMDF::S2(const float cot_theta, const float gamma)
 {
     const float cot_theta_2 = square(cot_theta);
     const float cot_theta_3 = cot_theta_2 * cot_theta;
