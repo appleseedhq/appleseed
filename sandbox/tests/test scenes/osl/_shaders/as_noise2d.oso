@@ -1,6 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.8.10
-# options: -O2 -DNDEBUG -I/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/include -o /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/gaffer/texture2d/as_noise2d.oso
+# Compiled by oslc 1.10.3
+# options: -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include
 shader as_noise2d
 param	float	U	0		%read{3,3} %write{0,0} %derivs %initexpr
 param	float	V	0		%read{7,7} %write{1,1} %derivs %initexpr
@@ -37,54 +37,54 @@ const	string	$const6	"impulses"		%read{13,18} %write{2147483647,-1}
 temp	float	$tmp9	%read{16,16} %write{14,14} %derivs
 temp	float	$tmp10	%read{16,16} %write{15,15} %derivs
 code U
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_noise2d.osl:31
+# as_noise2d.osl:31
 #     float         U = u,
-	assign		U u 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_noise2d.osl"} %line{31} %argrw{"wr"}
+	assign		U u 	%filename{"as_noise2d.osl"} %line{31} %argrw{"wr"}
 code V
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_noise2d.osl:32
+# as_noise2d.osl:32
 #     float         V = v,
-	assign		V v 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_noise2d.osl"} %line{32} %argrw{"wr"}
+	assign		V v 	%filename{"as_noise2d.osl"} %line{32} %argrw{"wr"}
 code ___main___
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_noise2d.osl:58
+# as_noise2d.osl:58
 #     float uu = (U * Frequency[0]) + Offset[0];
-	compref		$tmp1 Frequency $const1 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_noise2d.osl"} %line{58} %argrw{"wrr"}
+	compref		$tmp1 Frequency $const1 	%filename{"as_noise2d.osl"} %line{58} %argrw{"wrr"}
 	mul		$tmp2 U $tmp1 	%argrw{"wrr"}
 	compref		$tmp3 Offset $const1 	%argrw{"wrr"}
 	add		uu $tmp2 $tmp3 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_noise2d.osl:59
+# as_noise2d.osl:59
 #     float vv = (V * Frequency[1]) + Offset[1];
 	compref		$tmp4 Frequency $const2 	%line{59} %argrw{"wrr"}
 	mul		$tmp5 V $tmp4 	%argrw{"wrr"}
 	compref		$tmp6 Offset $const2 	%argrw{"wrr"}
 	add		vv $tmp5 $tmp6 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_noise2d.osl:61
+# as_noise2d.osl:61
 #     if (Periodic)
 	if		Periodic 17 19 	%line{61} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_noise2d.osl:67
+# as_noise2d.osl:67
 #             Period[0],
 	compref		$tmp7 Period $const1 	%line{67} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_noise2d.osl:68
+# as_noise2d.osl:68
 #             Period[1],
 	compref		$tmp8 Period $const2 	%line{68} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_noise2d.osl:72
-#             "impulses", Impulses);
-	pnoise		FloatOut NoiseType uu vv $tmp7 $tmp8 $const3 AnisotropyMode $const4 Direction $const5 Bandwidth $const6 Impulses 	%line{72} %argrw{"wrrrrrrrrrrrrr"} %argderivs{2,3,4,5}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_noise2d.osl:78
+# as_noise2d.osl:63
+#         FloatOut = pnoise(
+	pnoise		FloatOut NoiseType uu vv $tmp7 $tmp8 $const3 AnisotropyMode $const4 Direction $const5 Bandwidth $const6 Impulses 	%line{63} %argrw{"wrrrrrrrrrrrrr"} %argderivs{2,3,4,5}
+# as_noise2d.osl:78
 #             Period[0],
 	compref		$tmp9 Period $const1 	%line{78} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_noise2d.osl:79
+# as_noise2d.osl:79
 #             Period[1],
 	compref		$tmp10 Period $const2 	%line{79} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_noise2d.osl:83
-#             "impulses", Impulses);
-	pnoise		VectorOut NoiseType uu vv $tmp9 $tmp10 $const3 AnisotropyMode $const4 Direction $const5 Bandwidth $const6 Impulses 	%line{83} %argrw{"wrrrrrrrrrrrrr"} %argderivs{2,3,4,5}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_noise2d.osl:94
-#             "impulses", Impulses);
-	noise		FloatOut NoiseType uu vv $const3 AnisotropyMode $const4 Direction $const5 Bandwidth $const6 Impulses 	%line{94} %argrw{"wrrrrrrrrrrr"} %argderivs{2,3}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_noise2d.osl:103
-#             "impulses", Impulses);
-	noise		VectorOut NoiseType uu vv $const3 AnisotropyMode $const4 Direction $const5 Bandwidth $const6 Impulses 	%line{103} %argrw{"wrrrrrrrrrrr"} %argderivs{2,3}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_noise2d.osl:106
+# as_noise2d.osl:74
+#         VectorOut = pnoise(
+	pnoise		VectorOut NoiseType uu vv $tmp9 $tmp10 $const3 AnisotropyMode $const4 Direction $const5 Bandwidth $const6 Impulses 	%line{74} %argrw{"wrrrrrrrrrrrrr"} %argderivs{2,3,4,5}
+# as_noise2d.osl:87
+#         FloatOut = noise(
+	noise		FloatOut NoiseType uu vv $const3 AnisotropyMode $const4 Direction $const5 Bandwidth $const6 Impulses 	%line{87} %argrw{"wrrrrrrrrrrr"} %argderivs{2,3}
+# as_noise2d.osl:96
+#         VectorOut = noise(
+	noise		VectorOut NoiseType uu vv $const3 AnisotropyMode $const4 Direction $const5 Bandwidth $const6 Impulses 	%line{96} %argrw{"wrrrrrrrrrrr"} %argderivs{2,3}
+# as_noise2d.osl:106
 #     ColorOut = color(VectorOut);
 	assign		ColorOut VectorOut 	%line{106} %argrw{"wr"}
 	end

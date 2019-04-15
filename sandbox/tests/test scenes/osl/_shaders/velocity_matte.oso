@@ -1,6 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.7.4
-# options: 
+# Compiled by oslc 1.10.3
+# options: -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include
 surface velocity_matte
 global	normal	N	%read{3,3} %write{2147483647,-1}
 global	closure color	Ci	%read{2147483647,-1} %write{4,4}
@@ -8,7 +8,7 @@ global	vector	dPdtime	%read{0,0} %write{2147483647,-1}
 local	color	Cs	%read{4,4} %write{2,2}
 temp	color	$tmp1	%read{2,2} %write{1,1}
 temp	color	$tmp2	%read{1,1} %write{0,0}
-const	float	$const1	0.30000001		%read{2,2} %write{2147483647,-1}
+const	float	$const1	0.300000012		%read{2,2} %write{2147483647,-1}
 temp	closure color	$tmp3	%read{4,4} %write{3,3}
 const	string	$const2	"diffuse"		%read{3,3} %write{2147483647,-1}
 code ___main___

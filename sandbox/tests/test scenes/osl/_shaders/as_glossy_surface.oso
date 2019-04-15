@@ -1,20 +1,19 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.8.10
-# options: -O2 -DNDEBUG -I/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/include -o /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/gaffer/surface/as_glossy_surface.oso
+# Compiled by oslc 1.10.3
+# options: -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include
 shader as_glossy_surface	%meta{string,help,"Glossy surface shader"} 
 param	vector	Normal	0 0 0		%read{11,11} %write{0,0} %initexpr
 param	vector	Tn	0 0 0		%meta{int,lockgeom,0} %meta{string,help,"Tangent"} %meta{string,label,"Tangent"}  %read{11,11} %write{2147483647,-1}
-param	float	Reflectance	0.80000001		%meta{float,min,0} %meta{float,max,1}  %read{12,12} %write{2147483647,-1}
+param	float	Reflectance	0.800000012		%meta{float,min,0} %meta{float,max,1}  %read{12,12} %write{2147483647,-1}
 param	color	Color	1 1 1		%meta{string,help,"Color"}  %read{12,12} %write{2147483647,-1}
 param	float	Ior	1.5		%meta{string,help,"Index of refraction"} %meta{int,divider,1}  %read{11,11} %write{2147483647,-1}
-param	string	Distribution	"ggx"		%meta{string,help,"Microfacet distribution to use"} %meta{string,widget,"popup"} %meta{string,options,"beckmann|ggx"}  %read{11,11} %write{2147483647,-1}
-param	float	Roughness	0.1		%meta{string,help,"Surface roughness"} %meta{float,min,0.001} %meta{float,max,1}  %read{2,7} %write{2147483647,-1}
+param	float	Roughness	0.100000001		%meta{string,help,"Surface roughness"} %meta{float,min,0.00100000005} %meta{float,max,1}  %read{2,7} %write{2147483647,-1}
 param	float	RoughnessDepthScale	1		%meta{float,min,1}  %read{3,7} %write{2147483647,-1}
 param	float	Anisotropic	0		%meta{string,help,"Anisotropy"} %meta{float,min,-1} %meta{float,max,1}  %read{11,11} %write{2147483647,-1}
 oparam	closure color	BRDF			%read{2147483647,-1} %write{13,13}
 global	normal	N	%read{0,0} %write{2147483647,-1}
-local	float	___361_out	%read{10,10} %write{2,9}
-local	int	___362_ray_depth	%read{6,8} %write{5,5}
+local	float	___351_out	%read{10,10} %write{2,9}
+local	int	___352_ray_depth	%read{6,8} %write{5,5}
 temp	closure color	$tmp1	%read{13,13} %write{11,11}
 temp	float	$tmp2	%read{11,11} %write{10,10}
 const	string	$const1	"microfacet_roughness"		%read{1,1} %write{2147483647,-1}
@@ -24,45 +23,40 @@ temp	int	$tmp4	%read{2147483647,-1} %write{5,5}
 const	string	$const3	"path:ray_depth"		%read{5,5} %write{2147483647,-1}
 temp	float	$tmp5	%read{9,9} %write{7,7}
 temp	float	$tmp6	%read{9,9} %write{8,8}
-const	float	$const4	0.5		%read{11,11} %write{2147483647,-1}
-const	string	$const5	"as_glossy"		%read{11,11} %write{2147483647,-1}
+const	string	$const4	"as_glossy"		%read{11,11} %write{2147483647,-1}
 temp	color	$tmp7	%read{13,13} %write{12,12}
 code Normal
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_glossy_surface.osl:36
+# as_glossy_surface.osl:36
 #     vector               Normal = N,
-	assign		Normal N 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_glossy_surface.osl"} %line{36} %argrw{"wr"}
+	assign		Normal N 	%filename{"as_glossy_surface.osl"} %line{36} %argrw{"wr"}
 code ___main___
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_glossy_surface.osl:86
+# as_glossy_surface.osl:79
 #         microfacet_roughness(Roughness, RoughnessDepthScale),
-	functioncall	$const1 11 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_glossy_surface.osl"} %line{86} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/include/appleseed/material/as_material_helpers.h:36
+	functioncall	$const1 11 	%filename{"as_glossy_surface.osl"} %line{79} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include/appleseed/material/as_material_helpers.h:35
 #     float out = roughness;
-	assign		___361_out Roughness 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/include/appleseed/material/as_material_helpers.h"} %line{36} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/include/appleseed/material/as_material_helpers.h:38
+	assign		___351_out Roughness 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include/appleseed/material/as_material_helpers.h"} %line{35} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include/appleseed/material/as_material_helpers.h:37
 #     if (depth_scale > 1.0)
-	gt		$tmp3 RoughnessDepthScale $const2 	%line{38} %argrw{"wrr"}
+	gt		$tmp3 RoughnessDepthScale $const2 	%line{37} %argrw{"wrr"}
 	if		$tmp3 10 10 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/include/appleseed/material/as_material_helpers.h:41
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include/appleseed/material/as_material_helpers.h:40
 #         getattribute("path:ray_depth", ray_depth);
-	getattribute	$tmp4 $const3 ___362_ray_depth 	%line{41} %argrw{"wrw"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/include/appleseed/material/as_material_helpers.h:43
+	getattribute	$tmp4 $const3 ___352_ray_depth 	%line{40} %argrw{"wrw"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include/appleseed/material/as_material_helpers.h:42
 #         if (ray_depth)
-	if		___362_ray_depth 10 10 	%line{43} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/include/appleseed/material/as_material_helpers.h:45
+	if		___352_ray_depth 10 10 	%line{42} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include/appleseed/material/as_material_helpers.h:44
 #             out = roughness * depth_scale * ray_depth;
-	mul		$tmp5 Roughness RoughnessDepthScale 	%line{45} %argrw{"wrr"}
-	assign		$tmp6 ___362_ray_depth 	%argrw{"wr"}
-	mul		___361_out $tmp5 $tmp6 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/include/appleseed/material/as_material_helpers.h:48
+	mul		$tmp5 Roughness RoughnessDepthScale 	%line{44} %argrw{"wrr"}
+	assign		$tmp6 ___352_ray_depth 	%argrw{"wr"}
+	mul		___351_out $tmp5 $tmp6 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include/appleseed/material/as_material_helpers.h:47
 #     return out;
-	assign		$tmp2 ___361_out 	%line{48} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_glossy_surface.osl:89
-#         string label = "Tangent"
-	closure		$tmp1 $const5 Distribution Normal Tn $tmp2 $const4 Anisotropic Ior 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_glossy_surface.osl"} %line{89} %argrw{"wrrrrrrrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_glossy_surface.osl:82
+	assign		$tmp2 ___351_out 	%line{47} %argrw{"wr"}
+# as_glossy_surface.osl:76
 #     BRDF = Color * Reflectance * as_glossy(
-	mul		$tmp7 Color Reflectance 	%line{82} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_glossy_surface.osl:89
-#         Ior);
-	mul		BRDF $tmp1 $tmp7 	%line{89} %argrw{"wrr"}
+	closure		$tmp1 $const4 Normal Tn $tmp2 Anisotropic Ior 	%filename{"as_glossy_surface.osl"} %line{76} %argrw{"wrrrrrr"}
+	mul		$tmp7 Color Reflectance 	%argrw{"wrr"}
+	mul		BRDF $tmp1 $tmp7 	%argrw{"wrr"}
 	end

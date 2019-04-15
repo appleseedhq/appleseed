@@ -1,6 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.8.10
-# options: -O2 -DNDEBUG -I/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/include -o /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/gaffer/texture2d/as_color_texture.oso
+# Compiled by oslc 1.10.3
+# options: -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include
 shader as_color_texture
 param	float	U	0		%read{505,515} %write{0,0} %derivs %initexpr
 param	float	V	0		%read{506,516} %write{1,1} %derivs %initexpr
@@ -24,9 +24,9 @@ local	string[100]	mari_filenames	%read{509,509} %write{6,501}
 local	string	tx_filename	%read{517,517} %write{502,514}
 local	float	uu	%read{517,517} %write{511,515} %derivs
 local	float	vv	%read{517,517} %write{513,516} %derivs
-local	int	___350_utile	%read{508,510} %write{505,505} %derivs
-local	int	___350_vtile	%read{507,512} %write{506,506} %derivs
-local	int	___350_offset	%read{509,509} %write{508,508}
+local	int	___340_utile	%read{508,510} %write{505,505} %derivs
+local	int	___340_vtile	%read{507,512} %write{506,506} %derivs
+local	int	___340_offset	%read{509,509} %write{508,508}
 temp	string	$tmp1	%read{6,6} %write{5,5}
 const	string	$const1	"%s%d%s"		%read{5,500} %write{2147483647,-1}
 const	int	$const2	10		%read{2,507} %write{2147483647,-1}
@@ -545,17 +545,17 @@ const	string	$const111	"firstchannel"		%read{517,517} %write{2147483647,-1}
 const	string	$const112	"fill"		%read{517,517} %write{2147483647,-1}
 const	string	$const113	"alpha"		%read{517,517} %write{2147483647,-1}
 code U
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_color_texture.osl:33
+# as_color_texture.osl:33
 #     float        U = u,
-	assign		U u 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_color_texture.osl"} %line{33} %argrw{"wr"}
+	assign		U u 	%filename{"as_color_texture.osl"} %line{33} %argrw{"wr"}
 code V
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_color_texture.osl:34
+# as_color_texture.osl:34
 #     float        V = v,
-	assign		V v 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_color_texture.osl"} %line{34} %argrw{"wr"}
+	assign		V v 	%filename{"as_color_texture.osl"} %line{34} %argrw{"wr"}
 code ___main___
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_color_texture.osl:74
+# as_color_texture.osl:74
 #     string mari_filenames[100] = {TEN_MARI_UDIM_ROWS};
-	mul		$tmp2 $const2 $const3 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_color_texture.osl"} %line{74} %argrw{"wrr"}
+	mul		$tmp2 $const2 $const3 	%filename{"as_color_texture.osl"} %line{74} %argrw{"wrr"}
 	add		$tmp3 $tmp2 $const3 	%argrw{"wrr"}
 	add		$tmp4 $tmp3 $const4 	%argrw{"wrr"}
 	format		$tmp1 $const1 Filename $tmp4 UDIMPrefix 	%argrw{"wrrrr"}
@@ -1055,44 +1055,44 @@ code ___main___
 	add		$tmp400 $tmp399 $const4 	%argrw{"wrr"}
 	format		$tmp397 $const1 Filename $tmp400 UDIMPrefix 	%argrw{"wrrrr"}
 	aassign		mari_filenames $const102 $tmp397 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_color_texture.osl:76
+# as_color_texture.osl:76
 #     string tx_filename = "";
 	assign		tx_filename $const103 	%line{76} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_color_texture.osl:80
+# as_color_texture.osl:80
 #     if (UDIM == "mari")
 	eq		$tmp401 UDIM $const104 	%line{80} %argrw{"wrr"}
 	if		$tmp401 514 517 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_color_texture.osl:82
+# as_color_texture.osl:82
 #         int utile  = int(U);
-	assign		___350_utile U 	%line{82} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_color_texture.osl:83
+	assign		___340_utile U 	%line{82} %argrw{"wr"}
+# as_color_texture.osl:83
 #         int vtile  = int(V);
-	assign		___350_vtile V 	%line{83} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_color_texture.osl:84
+	assign		___340_vtile V 	%line{83} %argrw{"wr"}
+# as_color_texture.osl:84
 #         int offset = 10 * vtile + utile;
-	mul		$tmp402 $const2 ___350_vtile 	%line{84} %argrw{"wrr"}
-	add		___350_offset $tmp402 ___350_utile 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_color_texture.osl:85
+	mul		$tmp402 $const2 ___340_vtile 	%line{84} %argrw{"wrr"}
+	add		___340_offset $tmp402 ___340_utile 	%argrw{"wrr"}
+# as_color_texture.osl:85
 #         tx_filename = mari_filenames[offset];
-	aref		tx_filename mari_filenames ___350_offset 	%line{85} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_color_texture.osl:86
+	aref		tx_filename mari_filenames ___340_offset 	%line{85} %argrw{"wrr"}
+# as_color_texture.osl:86
 #         uu = U - utile;
-	assign		$tmp403 ___350_utile 	%line{86} %argrw{"wr"}
+	assign		$tmp403 ___340_utile 	%line{86} %argrw{"wr"}
 	sub		uu U $tmp403 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_color_texture.osl:87
+# as_color_texture.osl:87
 #         vv = V - vtile;
-	assign		$tmp404 ___350_vtile 	%line{87} %argrw{"wr"}
+	assign		$tmp404 ___340_vtile 	%line{87} %argrw{"wr"}
 	sub		vv V $tmp404 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_color_texture.osl:91
+# as_color_texture.osl:91
 #         tx_filename = Filename;
 	assign		tx_filename Filename 	%line{91} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_color_texture.osl:92
+# as_color_texture.osl:92
 #         uu = U;
 	assign		uu U 	%line{92} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_color_texture.osl:93
+# as_color_texture.osl:93
 #         vv = V;
 	assign		vv V 	%line{93} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/texture2d/as_color_texture.osl:108
-#         "alpha", AlphaOut);
-	texture		ColorOut tx_filename uu vv $const105 UWidth $const106 VWidth $const107 UBlur $const108 VBlur $const109 UWrap $const110 VWrap $const111 FirstChannel $const112 Fill $const113 AlphaOut 	%line{108} %argrw{"wrrrrrrrrrrrrrrrrrrrrw"} %argderivs{2,3}
+# as_color_texture.osl:96
+#     ColorOut = texture(
+	texture		ColorOut tx_filename uu vv $const105 UWidth $const106 VWidth $const107 UBlur $const108 VBlur $const109 UWrap $const110 VWrap $const111 FirstChannel $const112 Fill $const113 AlphaOut 	%line{96} %argrw{"wrrrrrrrrrrrrrrrrrrrrw"} %argderivs{2,3}
 	end

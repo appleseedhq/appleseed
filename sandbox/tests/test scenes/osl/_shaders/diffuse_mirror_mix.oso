@@ -1,6 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.7.4
-# options: 
+# Compiled by oslc 1.10.3
+# options: -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include
 surface diffuse_mirror_mix
 param	vector	Tn	0 0 0		%meta{int,lockgeom,0}  %read{9,15} %write{2147483647,-1}
 param	float	Kd	1		%read{1,1} %write{2147483647,-1}
@@ -20,11 +20,9 @@ const	int	$const4	0		%read{6,12} %write{2147483647,-1}
 temp	float	$tmp5	%read{7,7} %write{6,6}
 temp	int	$tmp6	%read{8,8} %write{7,7}
 temp	closure color	$tmp7	%read{10,10} %write{9,9}
-const	string	$const5	"ggx"		%read{9,15} %write{2147483647,-1}
-const	float	$const6	0.1		%read{9,15} %write{2147483647,-1}
-const	float	$const7	0.5		%read{9,15} %write{2147483647,-1}
-const	float	$const8	1.5		%read{9,15} %write{2147483647,-1}
-const	string	$const9	"as_glossy"		%read{9,15} %write{2147483647,-1}
+const	float	$const5	0.100000001		%read{9,15} %write{2147483647,-1}
+const	float	$const6	1.5		%read{9,15} %write{2147483647,-1}
+const	string	$const7	"as_glossy"		%read{9,15} %write{2147483647,-1}
 temp	closure color	$tmp8	%read{11,11} %write{10,10}
 temp	float	$tmp9	%read{13,13} %write{12,12}
 temp	int	$tmp10	%read{14,14} %write{13,13}
@@ -47,8 +45,8 @@ code ___main___
 	lt		$tmp6 $tmp5 $const3 	%argrw{"wrr"}
 	if		$tmp6 12 12 	%argrw{"r"}
 # diffuse_mirror_mix.osl:13
-#             Ci += Kr * as_glossy("ggx", N, Tn, 0.1, 0.5, 0.0, 1.5);
-	closure		$tmp7 $const9 $const5 N Tn $const6 $const7 $const3 $const8 	%line{13} %argrw{"wrrrrrrrr"}
+#             Ci += Kr * as_glossy(N, Tn, 0.1, 0.0, 1.5);
+	closure		$tmp7 $const7 N Tn $const5 $const3 $const6 	%line{13} %argrw{"wrrrrrr"}
 	mul		$tmp8 $tmp7 Kr 	%argrw{"wrr"}
 	add		Ci Ci $tmp8 	%argrw{"wrr"}
 # diffuse_mirror_mix.osl:17
@@ -57,8 +55,8 @@ code ___main___
 	gt		$tmp10 $tmp9 $const3 	%argrw{"wrr"}
 	if		$tmp10 18 18 	%argrw{"r"}
 # diffuse_mirror_mix.osl:18
-#             Ci += Kr * as_glossy("ggx", N, Tn, 0.1, 0.5, 0.0, 1.5);
-	closure		$tmp11 $const9 $const5 N Tn $const6 $const7 $const3 $const8 	%line{18} %argrw{"wrrrrrrrr"}
+#             Ci += Kr * as_glossy(N, Tn, 0.1, 0.0, 1.5);
+	closure		$tmp11 $const7 N Tn $const5 $const3 $const6 	%line{18} %argrw{"wrrrrrr"}
 	mul		$tmp12 $tmp11 Kr 	%argrw{"wrr"}
 	add		Ci Ci $tmp12 	%argrw{"wrr"}
 	end

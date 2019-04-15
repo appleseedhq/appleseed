@@ -1,6 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.7.5
-# options: -O2
+# Compiled by oslc 1.10.3
+# options: -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include
 surface subsurface_betterdipole
 param	vector	Tn	0 0 0		%meta{int,lockgeom,0}  %read{13,13} %write{2147483647,-1}
 global	normal	N	%read{2,13} %write{2147483647,-1}
@@ -10,58 +10,61 @@ const	int	$const1	0		%read{0,0} %write{2147483647,-1}
 temp	closure color	$tmp1	%read{3,3} %write{2,2}
 const	string	$const2	"better_dipole"		%read{2,9} %write{2147483647,-1}
 const	color	$const3	0.5 0 0		%read{2,2} %write{2147483647,-1}
-const	float	$const4	0.1		%read{1,1} %write{2147483647,-1}
+const	float	$const4	0.100000001		%read{1,1} %write{2147483647,-1}
 temp	color	$tmp3	%read{2,2} %write{1,1}
-const	float	$const5	1.3		%read{2,13} %write{2147483647,-1}
+const	float	$const5	1.29999995		%read{2,13} %write{2147483647,-1}
 const	string	$const6	"as_subsurface"		%read{2,9} %write{2147483647,-1}
-const	float	$const7	0.30000001		%read{3,3} %write{2147483647,-1}
+const	float	$const7	0.300000012		%read{3,3} %write{2147483647,-1}
 temp	closure color	$tmp4	%read{7,7} %write{3,3}
 temp	closure color	$tmp5	%read{6,6} %write{5,5}
-const	color	$const8	0.5 0.30000001 0.050000001		%read{5,5} %write{2147483647,-1}
-const	float	$const9	0.050000001		%read{4,4} %write{2147483647,-1}
+const	color	$const8	0.5 0.300000012 0.0500000007		%read{5,5} %write{2147483647,-1}
+const	float	$const9	0.0500000007		%read{4,4} %write{2147483647,-1}
 temp	color	$tmp7	%read{5,5} %write{4,4}
-const	float	$const10	0.2		%read{6,13} %write{2147483647,-1}
+const	float	$const10	0.200000003		%read{6,13} %write{2147483647,-1}
 temp	closure color	$tmp8	%read{7,7} %write{6,6}
 temp	closure color	$tmp9	%read{11,11} %write{7,7}
 temp	closure color	$tmp10	%read{10,10} %write{9,9}
-const	color	$const11	0 0.5 0.76999998		%read{9,9} %write{2147483647,-1}
-const	float	$const12	0.0099999998		%read{8,8} %write{2147483647,-1}
+const	color	$const11	0 0.5 0.769999981		%read{9,9} %write{2147483647,-1}
+const	float	$const12	0.00999999978		%read{8,8} %write{2147483647,-1}
 temp	color	$tmp12	%read{9,9} %write{8,8}
-const	float	$const13	0.5		%read{10,13} %write{2147483647,-1}
+const	float	$const13	0.5		%read{10,10} %write{2147483647,-1}
 temp	closure color	$tmp13	%read{11,11} %write{10,10}
-const	color	$const14	1 0.80000001 0.89999998		%read{12,12} %write{2147483647,-1}
+const	color	$const14	1 0.800000012 0.899999976		%read{12,12} %write{2147483647,-1}
 temp	closure color	$tmp15	%read{15,15} %write{12,12}
 temp	closure color	$tmp16	%read{14,14} %write{13,13}
-const	string	$const15	"ggx"		%read{13,13} %write{2147483647,-1}
-const	float	$const16	0		%read{13,13} %write{2147483647,-1}
-const	string	$const17	"as_glossy"		%read{13,13} %write{2147483647,-1}
-const	float	$const18	0.64999998		%read{14,14} %write{2147483647,-1}
+const	float	$const15	0		%read{13,13} %write{2147483647,-1}
+const	string	$const16	"as_glossy"		%read{13,13} %write{2147483647,-1}
+const	float	$const17	0.649999976		%read{14,14} %write{2147483647,-1}
 temp	closure color	$tmp17	%read{15,15} %write{14,14}
 code ___main___
-# N:\\appleseed\\appleseed\\sandbox\\tests\\test scenes\\bssrdf\\shaders\\subsurface_betterdipole.osl:5
-# 
-	assign		diff $const1 	%filename{"N:\\appleseed\\appleseed\\sandbox\\tests\\test scenes\\bssrdf\\shaders\\subsurface_betterdipole.osl"} %line{5} %argrw{"wr"}
-# N:\\appleseed\\appleseed\\sandbox\\tests\\test scenes\\bssrdf\\shaders\\subsurface_betterdipole.osl:8
-#         0.2 * as_subsurface("better_dipole", N, color(0.5, 0.3, 0.05), 0.05, 1.3) +
-	assign		$tmp3 $const4 	%line{8} %argrw{"wr"}
+# subsurface_betterdipole.osl:4
+#     closure color diff = 0;
+	assign		diff $const1 	%filename{"subsurface_betterdipole.osl"} %line{4} %argrw{"wr"}
+# subsurface_betterdipole.osl:7
+#         0.3 * as_subsurface("better_dipole", N, color(0.5, 0.0, 0.0),  0.10, 1.3) +
+	assign		$tmp3 $const4 	%line{7} %argrw{"wr"}
 	closure		$tmp1 $const6 $const2 N $const3 $tmp3 $const5 	%argrw{"wrrrrrr"}
 	mul		$tmp4 $tmp1 $const7 	%argrw{"wrr"}
-# N:\\appleseed\\appleseed\\sandbox\\tests\\test scenes\\bssrdf\\shaders\\subsurface_betterdipole.osl:9
-#         0.5 * as_subsurface("better_dipole", N, color(0.0, 0.5, 0.77), 0.01, 1.3);
-	assign		$tmp7 $const9 	%line{9} %argrw{"wr"}
+# subsurface_betterdipole.osl:8
+#         0.2 * as_subsurface("better_dipole", N, color(0.5, 0.3, 0.05), 0.05, 1.3) +
+	assign		$tmp7 $const9 	%line{8} %argrw{"wr"}
 	closure		$tmp5 $const6 $const2 N $const8 $tmp7 $const5 	%argrw{"wrrrrrr"}
 	mul		$tmp8 $tmp5 $const10 	%argrw{"wrr"}
-	add		$tmp9 $tmp4 $tmp8 	%argrw{"wrr"}
-# N:\\appleseed\\appleseed\\sandbox\\tests\\test scenes\\bssrdf\\shaders\\subsurface_betterdipole.osl:10
-# 
-	assign		$tmp12 $const12 	%line{10} %argrw{"wr"}
+# subsurface_betterdipole.osl:7
+#         0.3 * as_subsurface("better_dipole", N, color(0.5, 0.0, 0.0),  0.10, 1.3) +
+	add		$tmp9 $tmp4 $tmp8 	%line{7} %argrw{"wrr"}
+# subsurface_betterdipole.osl:9
+#         0.5 * as_subsurface("better_dipole", N, color(0.0, 0.5, 0.77), 0.01, 1.3);
+	assign		$tmp12 $const12 	%line{9} %argrw{"wr"}
 	closure		$tmp10 $const6 $const2 N $const11 $tmp12 $const5 	%argrw{"wrrrrrr"}
 	mul		$tmp13 $tmp10 $const13 	%argrw{"wrr"}
-	add		diff $tmp9 $tmp13 	%argrw{"wrr"}
-# N:\\appleseed\\appleseed\\sandbox\\tests\\test scenes\\bssrdf\\shaders\\subsurface_betterdipole.osl:12
-# }
-	mul		$tmp15 diff $const14 	%line{12} %argrw{"wrr"}
-	closure		$tmp16 $const17 $const15 N Tn $const10 $const13 $const16 $const5 	%argrw{"wrrrrrrrr"}
-	mul		$tmp17 $tmp16 $const18 	%argrw{"wrr"}
+# subsurface_betterdipole.osl:8
+#         0.2 * as_subsurface("better_dipole", N, color(0.5, 0.3, 0.05), 0.05, 1.3) +
+	add		diff $tmp9 $tmp13 	%line{8} %argrw{"wrr"}
+# subsurface_betterdipole.osl:11
+#     Ci = color(1.0, 0.8, 0.9) * diff + 0.65 * as_glossy(N, Tn, 0.2, 0.0, 1.3);
+	mul		$tmp15 diff $const14 	%line{11} %argrw{"wrr"}
+	closure		$tmp16 $const16 N Tn $const10 $const15 $const5 	%argrw{"wrrrrrr"}
+	mul		$tmp17 $tmp16 $const17 	%argrw{"wrr"}
 	add		Ci $tmp15 $tmp17 	%argrw{"wrr"}
 	end

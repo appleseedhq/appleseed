@@ -1,6 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.7.4
-# options: 
+# Compiled by oslc 1.10.3
+# options: -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include
 surface test_emission
 param	float	Kl	1		%read{9,9} %write{2147483647,-1}
 param	color	Cl	1 1 1		%read{10,10} %write{2147483647,-1}
@@ -17,7 +17,7 @@ temp	float	$tmp3	%read{7,7} %write{3,3}
 temp	float	$tmp4	%read{6,6} %write{5,5}
 const	float	$const5	7.5		%read{4,4} %write{2147483647,-1}
 temp	point	$tmp5	%read{5,5} %write{4,4}
-const	float	$const6	0.1		%read{6,6} %write{2147483647,-1}
+const	float	$const6	0.100000001		%read{6,6} %write{2147483647,-1}
 temp	float	$tmp6	%read{7,7} %write{6,6}
 temp	float	$tmp7	%read{8,8} %write{7,7}
 temp	float	$tmp8	%read{9,9} %write{8,8}

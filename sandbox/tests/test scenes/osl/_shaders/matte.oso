@@ -1,6 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.7.4
-# options: 
+# Compiled by oslc 1.10.3
+# options: -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include
 surface matte
 param	float	Kd	1		%read{1,1} %write{2147483647,-1}
 param	color	Cs	0 0 0		%read{1,1} %write{2147483647,-1}

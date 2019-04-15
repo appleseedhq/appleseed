@@ -1,41 +1,41 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.8.10
-# options: -O2 -DNDEBUG -I/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/include -o /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/gaffer/surface/as_emission_surface.oso
+# Compiled by oslc 1.10.3
+# options: -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include
 shader as_emission_surface
 param	closure color	BSDF1			%read{9,9} %write{2147483647,-1}
 param	float	Emission	1		%meta{float,min,0}  %read{2,2} %write{2147483647,-1}
 param	color	Color	1 1 1		%read{2,2} %write{2147483647,-1}
 param	int	Normalize	0		%meta{string,help,"normalize light emission"} %meta{string,widget,"checkBox"}  %read{3,3} %write{2147483647,-1}
 oparam	closure color	BSDF			%read{2147483647,-1} %write{8,9}
-local	color	___350_E	%read{6,8} %write{2,6}
+local	color	___340_E	%read{6,8} %write{2,6}
 temp	int	$tmp1	%read{1,1} %write{0,0}
 const	string	$const1	"light"		%read{0,0} %write{2147483647,-1}
 temp	float	$tmp2	%read{5,5} %write{4,4}
-const	float	$const2	3.1415927		%read{5,5} %write{2147483647,-1}
+const	float	$const2	3.14159274		%read{5,5} %write{2147483647,-1}
 temp	float	$tmp3	%read{6,6} %write{5,5}
 temp	closure color	$tmp4	%read{8,8} %write{7,7}
 const	string	$const3	"emission"		%read{7,7} %write{2147483647,-1}
 code ___main___
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_emission_surface.osl:45
+# as_emission_surface.osl:45
 #     if (raytype("light"))
-	raytype		$tmp1 $const1 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_emission_surface.osl"} %line{45} %argrw{"wr"}
+	raytype		$tmp1 $const1 	%filename{"as_emission_surface.osl"} %line{45} %argrw{"wr"}
 	if		$tmp1 9 10 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_emission_surface.osl:47
+# as_emission_surface.osl:47
 #         color E = Emission * Color;
-	mul		___350_E Emission Color 	%line{47} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_emission_surface.osl:49
+	mul		___340_E Emission Color 	%line{47} %argrw{"wrr"}
+# as_emission_surface.osl:49
 #         if (Normalize)
 	if		Normalize 7 7 	%line{49} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_emission_surface.osl:50
+# as_emission_surface.osl:50
 #             E /= surfacearea() * M_PI;
 	surfacearea	$tmp2 	%line{50} %argrw{"w"}
 	mul		$tmp3 $tmp2 $const2 	%argrw{"wrr"}
-	div		___350_E ___350_E $tmp3 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_emission_surface.osl:52
+	div		___340_E ___340_E $tmp3 	%argrw{"wrr"}
+# as_emission_surface.osl:52
 #         BSDF = E * emission();
 	closure		$tmp4 $const3 	%line{52} %argrw{"wr"}
-	mul		BSDF $tmp4 ___350_E 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_emission_surface.osl:55
+	mul		BSDF $tmp4 ___340_E 	%argrw{"wrr"}
+# as_emission_surface.osl:55
 #         BSDF = BSDF1;
 	assign		BSDF BSDF1 	%line{55} %argrw{"wr"}
 	end

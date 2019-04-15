@@ -1,31 +1,24 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.8.10
-# options: -O2 -DNDEBUG -I/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/include -o /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/gaffer/surface/as_plastic_surface.oso
+# Compiled by oslc 1.10.3
+# options: -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include
 shader as_plastic_surface	%meta{string,help,"Plastic surface shader"} 
-param	vector	Normal	0 0 0		%read{2,2} %write{0,0} %initexpr
-param	string	Distribution	"ggx"		%meta{string,widget,"popup"} %meta{string,options,"beckmann|ggx|gtr1|std"} %meta{string,help,"Microfacet distribution function to use"}  %read{2,2} %write{2147483647,-1}
-param	color	SpecularColor	0.5 0.5 0.5		%read{2,2} %write{2147483647,-1}
-param	float	SpecularWeight	1		%meta{float,min,0} %meta{float,max,1}  %read{2,2} %write{2147483647,-1}
-param	float	Roughness	0.1		%meta{float,min,0} %meta{float,max,1}  %read{2,2} %write{2147483647,-1}
-param	float	Spread	0.25		%meta{float,min,0} %meta{float,max,1} %meta{string,help,"Specular falloff, or highlights spread."}  %read{1,1} %write{2147483647,-1}
-param	float	IOR	1.5		%meta{float,min,1} %meta{float,max,2.5} %meta{string,help,"Index of refraction"}  %read{2,2} %write{2147483647,-1}
-param	color	DiffuseColor	0.5 0.5 0.5		%read{2,2} %write{2147483647,-1}
-param	float	DiffuseWeight	1		%meta{float,min,0} %meta{float,max,1}  %read{2,2} %write{2147483647,-1}
-param	float	Scattering	0		%meta{float,min,0} %meta{float,max,1}  %read{2,2} %write{2147483647,-1}
-oparam	closure color	BSDF			%read{2147483647,-1} %write{2,2}
+param	vector	Normal	0 0 0		%read{1,1} %write{0,0} %initexpr
+param	color	SpecularColor	0.5 0.5 0.5		%read{1,1} %write{2147483647,-1}
+param	float	SpecularWeight	1		%meta{float,min,0} %meta{float,max,1}  %read{1,1} %write{2147483647,-1}
+param	float	Roughness	0.100000001		%meta{float,min,0} %meta{float,max,1}  %read{1,1} %write{2147483647,-1}
+param	float	IOR	1.5		%meta{float,min,1} %meta{float,max,2.5} %meta{string,help,"Index of refraction"}  %read{1,1} %write{2147483647,-1}
+param	color	DiffuseColor	0.5 0.5 0.5		%read{1,1} %write{2147483647,-1}
+param	float	DiffuseWeight	1		%meta{float,min,0} %meta{float,max,1}  %read{1,1} %write{2147483647,-1}
+param	float	Scattering	0		%meta{float,min,0} %meta{float,max,1}  %read{1,1} %write{2147483647,-1}
+oparam	closure color	BSDF			%read{2147483647,-1} %write{1,1}
 global	normal	N	%read{0,0} %write{2147483647,-1}
-const	float	$const1	1		%read{1,1} %write{2147483647,-1}
-temp	float	$tmp1	%read{2,2} %write{1,1}
-const	string	$const2	"as_plastic"		%read{2,2} %write{2147483647,-1}
+const	string	$const1	"as_plastic"		%read{1,1} %write{2147483647,-1}
 code Normal
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_plastic_surface.osl:34
+# as_plastic_surface.osl:34
 #     vector Normal = N,
-	assign		Normal N 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_plastic_surface.osl"} %line{34} %argrw{"wr"}
+	assign		Normal N 	%filename{"as_plastic_surface.osl"} %line{34} %argrw{"wr"}
 code ___main___
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_plastic_surface.osl:85
-#         1.0 - Spread,
-	sub		$tmp1 $const1 Spread 	%filename{"/home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_plastic_surface.osl"} %line{85} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/src/appleseed.shaders/src/gaffer/surface/as_plastic_surface.osl:89
-#         Scattering);
-	closure		BSDF $const2 Distribution Normal SpecularColor SpecularWeight Roughness $tmp1 IOR DiffuseColor DiffuseWeight Scattering 	%line{89} %argrw{"wrrrrrrrrrrr"}
+# as_plastic_surface.osl:67
+#     BSDF = as_plastic(
+	closure		BSDF $const1 Normal SpecularColor SpecularWeight Roughness IOR DiffuseColor DiffuseWeight Scattering 	%filename{"as_plastic_surface.osl"} %line{67} %argrw{"wrrrrrrrrr"}
 	end

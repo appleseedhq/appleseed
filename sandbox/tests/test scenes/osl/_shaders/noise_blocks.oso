@@ -1,8 +1,8 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.7.4
-# options: 
+# Compiled by oslc 1.10.3
+# options: -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include
 surface noise_blocks
-param	float	Kd	0.80000001		%read{3,3} %write{2147483647,-1}
+param	float	Kd	0.800000012		%read{3,3} %write{2147483647,-1}
 param	matrix	Xform	1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1		%read{0,0} %write{2147483647,-1}
 global	point	P	%read{0,0} %write{2147483647,-1}
 global	normal	N	%read{2,2} %write{2147483647,-1}

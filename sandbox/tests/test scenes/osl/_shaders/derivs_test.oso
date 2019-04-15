@@ -1,6 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.7.4
-# options: 
+# Compiled by oslc 1.10.3
+# options: -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/include
 surface derivs_test
 param	int	direction	0		%read{2,11} %write{2147483647,-1}
 param	int	analytic	0		%read{7,7} %write{2147483647,-1}
@@ -11,7 +11,7 @@ global	float	v	%read{1,1} %write{2147483647,-1} %derivs
 global	closure color	Ci	%read{2147483647,-1} %write{19,19}
 local	float	s	%read{5,10} %write{0,6} %derivs
 local	float	t	%read{4,10} %write{1,5} %derivs
-local	float	___320_tmp	%read{6,6} %write{4,4} %derivs
+local	float	___340_tmp	%read{6,6} %write{4,4} %derivs
 local	float	value	%read{13,14} %write{9,10} %derivs
 local	float	deriv	%read{17,17} %write{13,14}
 const	int	$const1	1		%read{2,2} %write{2147483647,-1}
@@ -44,13 +44,13 @@ code ___main___
 	if		$tmp1 7 7 	%argrw{"r"}
 # derivs_test.osl:13
 #         float tmp = t;
-	assign		___320_tmp t 	%line{13} %argrw{"wr"}
+	assign		___340_tmp t 	%line{13} %argrw{"wr"}
 # derivs_test.osl:14
 #         t = s;
 	assign		t s 	%line{14} %argrw{"wr"}
 # derivs_test.osl:15
 #         s = tmp;
-	assign		s ___320_tmp 	%line{15} %argrw{"wr"}
+	assign		s ___340_tmp 	%line{15} %argrw{"wr"}
 # derivs_test.osl:20
 #     if (analytic)
 	if		analytic 10 11 	%line{20} %argrw{"r"}
@@ -58,9 +58,9 @@ code ___main___
 #         value = sin(75.0 * s);
 	mul		$tmp2 $const2 s 	%line{21} %argrw{"wrr"}
 	sin		value $tmp2 	%argrw{"wr"}
-# derivs_test.osl:30
-#         );
-	texture		value $const3 s t $const4 $const5 $const6 $const5 	%line{30} %argrw{"wrrrrrrr"} %argderivs{2,3}
+# derivs_test.osl:24
+#         value = texture(
+	texture		value $const3 s t $const4 $const5 $const6 $const5 	%line{24} %argrw{"wrrrrrrr"} %argderivs{2,3}
 # derivs_test.osl:33
 #     float deriv = direction == 0 ? Dx(value) : Dy(value);
 	eq		$tmp3 direction $const7 	%line{33} %argrw{"wrr"}
@@ -71,9 +71,9 @@ code ___main___
 #     Ci = clamp(deriv, 0.0, 1.0) * diffuse(N);
 	closure		$tmp4 $const8 N 	%line{34} %argrw{"wrr"}
 	functioncall	$const11 19 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:144
-# PERCOMP1 (logb)
-	min		$tmp6 deriv $const10 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{144} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:163
+# float  clamp (float x, float minval, float maxval) { return max(min(x,maxval),minval); }
+	min		$tmp6 deriv $const10 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{163} %argrw{"wrr"}
 	max		$tmp5 $tmp6 $const9 	%argrw{"wrr"}
 # derivs_test.osl:34
 #     Ci = clamp(deriv, 0.0, 1.0) * diffuse(N);
