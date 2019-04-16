@@ -398,12 +398,12 @@ endmacro ()
 
 macro (get_sandbox_bin_path path)
     slashes_to_backslashes (${path} ${PROJECT_SOURCE_DIR})
-    set (${path} ${${path}}\\sandbox\\bin\\$(PlatformToolset)\\$(ConfigurationName))
+    set (${path} ${${path}}\\sandbox\\bin\\vc$(PlatformToolsetVersion)\\$(ConfigurationName))
 endmacro ()
 
 macro (get_sandbox_lib_path path)
     slashes_to_backslashes (${path} ${PROJECT_SOURCE_DIR})
-    set (${path} ${${path}}\\sandbox\\lib\\$(PlatformToolset)\\$(ConfigurationName))
+    set (${path} ${${path}}\\sandbox\\lib\\vc$(PlatformToolsetVersion)\\$(ConfigurationName))
 endmacro ()
 
 macro (get_sandbox_py_path path)
