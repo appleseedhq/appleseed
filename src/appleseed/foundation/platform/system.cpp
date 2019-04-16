@@ -960,13 +960,13 @@ const char* System::get_cpu_architecture()
     #ifdef APPLESEED_X86
         return "x86 32-bit";
     #else
-        return "unknown 32-bit"
+        return "unknown 32-bit";
     #endif
 #else
     #ifdef APPLESEED_X86
         return "x86 64-bit";
     #else
-        return "unknown 64-bit"
+        return "unknown 64-bit";
     #endif
 #endif
 }
