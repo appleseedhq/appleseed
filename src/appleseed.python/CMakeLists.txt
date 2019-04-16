@@ -228,6 +228,7 @@ if (WITH_PYTHON3_BINDINGS)
 
     target_link_libraries (appleseed.python3
         appleseed
+        glad
         ${Boost_PYTHON3_LIBRARY}        # all Boost libraries but Boost.Python
         ${PYTHON3_LIBRARY}
     )

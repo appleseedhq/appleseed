@@ -325,6 +325,7 @@ endif ()
 include_directories (
     src/thirdparty/bcd
     src/thirdparty/murmurhash3
+    src/thirdparty/glad/include
     src/appleseed
 )
 
@@ -620,6 +621,7 @@ endmacro ()
 
 add_subdirectory (src/thirdparty/bcd)
 add_subdirectory (src/thirdparty/murmurhash3)
+add_subdirectory (src/thirdparty/glad)
 
 add_subdirectory (src/appleseed)
 add_subdirectory (src/appleseed.shaders)
