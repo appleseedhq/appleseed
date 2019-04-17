@@ -36,9 +36,9 @@ using namespace foundation;
 
 #ifdef DEBUG
 
-TEST_SUITE(Foundation_Utility_Poison)
+TEST_SUITE(Foundation_Utility_Debug_Poison)
 {
-    TEST_CASE(Poison_Int8)
+    TEST_CASE(Debug_Poison_Int8)
     {
         int8 x = 0;
 
@@ -47,7 +47,7 @@ TEST_SUITE(Foundation_Utility_Poison)
         EXPECT_EQ(int8(0xADU), x);
     }
 
-    TEST_CASE(Poison_UInt8)
+    TEST_CASE(Debug_Poison_UInt8)
     {
         uint8 x = 0;
 
@@ -56,7 +56,7 @@ TEST_SUITE(Foundation_Utility_Poison)
         EXPECT_EQ(0xADU, x);
     }
 
-    TEST_CASE(Poison_Int32)
+    TEST_CASE(Debug_Poison_Int32)
     {
         int32 x = 0;
 
@@ -65,7 +65,7 @@ TEST_SUITE(Foundation_Utility_Poison)
         EXPECT_EQ(int32(0xADADADADU), x);
     }
 
-    TEST_CASE(Poison_UInt32)
+    TEST_CASE(Debug_Poison_UInt32)
     {
         uint32 x = 0;
 
@@ -74,7 +74,7 @@ TEST_SUITE(Foundation_Utility_Poison)
         EXPECT_EQ(0xADADADADU, x);
     }
 
-    TEST_CASE(Poison_VoidPointer)
+    TEST_CASE(Debug_Poison_VoidPointer)
     {
         void* p = nullptr;
 
@@ -87,7 +87,7 @@ TEST_SUITE(Foundation_Utility_Poison)
 #endif
     }
 
-    TEST_CASE(Poison_IntPointer)
+    TEST_CASE(Debug_Poison_IntPointer)
     {
         int* p = nullptr;
 
@@ -100,7 +100,7 @@ TEST_SUITE(Foundation_Utility_Poison)
 #endif
     }
 
-    TEST_CASE(Poison_Float)
+    TEST_CASE(Debug_Poison_Float)
     {
         float x = 0.0f;
 
@@ -109,7 +109,7 @@ TEST_SUITE(Foundation_Utility_Poison)
         EXPECT_FALSE(x == x);
     }
 
-    TEST_CASE(Poison_Double)
+    TEST_CASE(Debug_Poison_Double)
     {
         double x = 0.0;
 
@@ -118,7 +118,7 @@ TEST_SUITE(Foundation_Utility_Poison)
         EXPECT_FALSE(x == x);
     }
 
-    TEST_CASE(Poison_Bool)
+    TEST_CASE(Debug_Poison_Bool)
     {
         bool b = false;
 
@@ -130,7 +130,7 @@ TEST_SUITE(Foundation_Utility_Poison)
     // Templates cannot take local types in C++03.
     enum Enum { A, B, C };
 
-    TEST_CASE(Poison_Enum)
+    TEST_CASE(Debug_Poison_Enum)
     {
         Enum actual = A;
         debug_poison(actual);
@@ -145,9 +145,9 @@ TEST_SUITE(Foundation_Utility_Poison)
 
 // always_poison should work in any build mode.
 
-TEST_SUITE(Foundation_Utility_Poison)
+TEST_SUITE(Foundation_Utility_Always_Poison)
 {
-    TEST_CASE(Poison_Int8)
+    TEST_CASE(Always_Poison_Int8)
     {
         int8 x = 0;
 
@@ -156,7 +156,7 @@ TEST_SUITE(Foundation_Utility_Poison)
         EXPECT_EQ(int8(0xADU), x);
     }
 
-    TEST_CASE(Poison_UInt8)
+    TEST_CASE(Always_Poison_UInt8)
     {
         uint8 x = 0;
 
@@ -165,7 +165,7 @@ TEST_SUITE(Foundation_Utility_Poison)
         EXPECT_EQ(0xADU, x);
     }
 
-    TEST_CASE(Poison_Int32)
+    TEST_CASE(Always_Poison_Int32)
     {
         int32 x = 0;
 
@@ -174,7 +174,7 @@ TEST_SUITE(Foundation_Utility_Poison)
         EXPECT_EQ(int32(0xADADADADU), x);
     }
 
-    TEST_CASE(Poison_UInt32)
+    TEST_CASE(Always_Poison_UInt32)
     {
         uint32 x = 0;
 
@@ -183,7 +183,7 @@ TEST_SUITE(Foundation_Utility_Poison)
         EXPECT_EQ(0xADADADADU, x);
     }
 
-    TEST_CASE(Poison_VoidPointer)
+    TEST_CASE(Always_Poison_VoidPointer)
     {
         void* p = nullptr;
 
@@ -196,7 +196,7 @@ TEST_SUITE(Foundation_Utility_Poison)
 #endif
     }
 
-    TEST_CASE(Poison_IntPointer)
+    TEST_CASE(Always_Poison_IntPointer)
     {
         int* p = nullptr;
 
@@ -209,7 +209,7 @@ TEST_SUITE(Foundation_Utility_Poison)
 #endif
     }
 
-    TEST_CASE(Poison_Float)
+    TEST_CASE(Always_Poison_Float)
     {
         float x = 0.0f;
 
@@ -218,7 +218,7 @@ TEST_SUITE(Foundation_Utility_Poison)
         EXPECT_FALSE(x == x);
     }
 
-    TEST_CASE(Poison_Double)
+    TEST_CASE(Always_Poison_Double)
     {
         double x = 0.0;
 
@@ -227,7 +227,7 @@ TEST_SUITE(Foundation_Utility_Poison)
         EXPECT_FALSE(x == x);
     }
 
-    TEST_CASE(Poison_Bool)
+    TEST_CASE(Always_Poison_Bool)
     {
         bool b = false;
 
@@ -239,7 +239,7 @@ TEST_SUITE(Foundation_Utility_Poison)
     // Templates cannot take local types in C++03.
     enum Enum { A, B, C };
 
-    TEST_CASE(Poison_Enum)
+    TEST_CASE(Always_Poison_Enum)
     {
         Enum actual = A;
         always_poison(actual);
