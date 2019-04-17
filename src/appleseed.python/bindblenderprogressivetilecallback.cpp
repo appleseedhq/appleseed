@@ -259,7 +259,7 @@ namespace
 
                 glUniform1i(m_image_texture_location, 0);
                 if (m_model_view_projection_location != -1)
-                    glUniformMatrix4fv(m_model_view_projection_location, 1, GL_TRUE, &(Matrix4f::identity()[0][0]));
+                    glUniformMatrix4fv(m_model_view_projection_location, 1, GL_TRUE, &(Matrix4f::identity()[0]));
 
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo_id);
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
