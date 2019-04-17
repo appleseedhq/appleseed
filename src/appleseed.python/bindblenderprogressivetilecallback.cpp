@@ -208,10 +208,10 @@ namespace
                         -1,  1
                     };
                     
-                    // Get shader program set by blender.
+                    // Get shader program set by Blender.
                     glGetIntegerv(GL_CURRENT_PROGRAM, &m_shader_program_id);
 
-                    // Blender 2.79b and bellow don't create a vertex shader.
+                    // Blender 2.79b and below don't create a vertex shader.
                     // Create vertex shader if there isn't one.
                     GLint shader_count;
                     glGetProgramiv(m_shader_program_id, GL_ATTACHED_SHADERS, &shader_count);
