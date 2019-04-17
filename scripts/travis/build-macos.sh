@@ -34,29 +34,48 @@ THISDIR=`pwd`
 
 
 #--------------------------------------------------------------------------------------------------
-# Configure CMake.
+# Update Homebrew and Homebrew formulae.
 #--------------------------------------------------------------------------------------------------
 
+echo "travis_fold:start:brew-update"
+echo "Updating Homebrew and Homebrew formulae..."
+
+brew update
+
+echo "travis_fold:end:brew-update"
+
+
+#--------------------------------------------------------------------------------------------------
+# Update CMake.
+#--------------------------------------------------------------------------------------------------
+
+echo "travis_fold:start:cmake"
+echo "Updating CMake..."
+
+brew upgrade cmake
 cmake --version
+
+echo "travis_fold:end:cmake"
 
 
 #--------------------------------------------------------------------------------------------------
 # Install Homebrew packages.
 #--------------------------------------------------------------------------------------------------
 
-echo "travis_fold:start:brew"
+echo "travis_fold:start:brew-packages"
 echo "Installing Homebrew packages..."
 
-brew update
-brew upgrade
+brew upgrade python@2
+brew link python@2
+brew info python@2
 
-brew install qt5 pyqt5 boost-python llvm@5 lz4 openimageio xerces-c zlib
+brew install boost boost-python llvm@5 lz4 openimageio qt xerces-c zlib
 
 mkdir -p $HOME/Library/Python/2.7/lib/python/site-packages
 echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' \
     >> $HOME/Library/Python/2.7/lib/python/site-packages/homebrew.pth
 
-echo "travis_fold:end:brew"
+echo "travis_fold:end:brew-packages"
 
 
 #--------------------------------------------------------------------------------------------------
@@ -76,6 +95,7 @@ cd build
 
 cmake \
     -Wno-dev \
+    -DCMAKE_PREFIX_PATH=/usr/local/opt/qt \
     -DLLVM_STATIC=ON \
     -DENABLERTTI=ON \
     -DUSE_LIBCPLUSPLUS=ON \
@@ -97,7 +117,7 @@ echo "travis_fold:end:osl"
 echo "travis_fold:start:seexpr"
 echo "Building SeExpr..."
 
-git clone https://github.com/termhn/SeExpr
+git clone https://github.com/appleseedhq/SeExpr
 pushd SeExpr
 
 git checkout appleseed-qt5
@@ -107,7 +127,6 @@ cd build
 
 cmake \
     -Wno-dev \
-    -DCMAKE_POLICY_DEFAULT_CMP0042=OLD \
     -DCMAKE_PREFIX_PATH=/usr/local/opt/qt \
     -DCMAKE_INSTALL_PREFIX=$THISDIR \
     ..
@@ -125,7 +144,6 @@ echo "travis_fold:end:seexpr"
 # This must be done before compiling appleseed because the compiling process needs to invokes oslc.
 #--------------------------------------------------------------------------------------------------
 
-export LD_LIBRARY_PATH=$THISDIR/lib:sandbox/lib/Debug:$LD_LIBRARY_PATH      # TODO: is this useful?
 export DYLD_LIBRARY_PATH=$THISDIR/lib:$DYLD_LIBRARY_PATH
 export PYTHONPATH=$PYTHONPATH:sandbox/lib/Debug/python
 
@@ -140,14 +158,13 @@ echo "Building appleseed..."
 mkdir build
 pushd build
 
-# TODO: is it necessary to set DBoost_PYTHON_LIBRARY_RELEASE?
 cmake \
+    -Wno-dev \
     -DCMAKE_BUILD_TYPE=Debug \
-    -DWITH_STUDIO=OFF \
+    -DCMAKE_PREFIX_PATH=/usr/local/opt/qt \
     -DWITH_DISNEY_MATERIAL=ON \
-    -DWITH_PYTHON2_BINDINGS=OFF \
     -DUSE_STATIC_BOOST=OFF \
-    -DBoost_PYTHON_LIBRARY_RELEASE=/usr/local/lib/libboost_python27.dylib \
+    -DBoost_PYTHON_LIBRARY=/usr/local/lib/libboost_python27.dylib \
     -DOSL_INCLUDE_DIR=$THISDIR/include \
     -DOSL_LIBRARIES=$THISDIR/lib \
     -DOSL_EXEC_LIBRARY=$THISDIR/lib/liboslexec.dylib \
@@ -155,15 +172,14 @@ cmake \
     -DOSL_QUERY_LIBRARY=$THISDIR/lib/liboslquery.dylib \
     -DOSL_COMPILER=$THISDIR/bin/oslc \
     -DOSL_QUERY_INFO=$THISDIR/bin/oslinfo \
-    -DPYTHON_INCLUDE_DIR=/usr/local/Cellar/python@2/2.7.15/Frameworks/Python.framework/Versions/2.7/include/python2.7/ \
-    -DPYTHON_LIBRARY=/usr/local/Cellar/python@2/2.7.15/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
+    -DPYTHON_INCLUDE_DIR=/usr/local/Cellar/python@2/2.7.16/Frameworks/Python.framework/Versions/2.7/include/python2.7/ \
+    -DPYTHON_LIBRARY=/usr/local/Cellar/python@2/2.7.16/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
     -DSEEXPR_INCLUDE_DIR=$THISDIR/include \
     -DSEEXPR_LIBRARY=$THISDIR/lib/libSeExpr.dylib \
     -DSEEXPREDITOR_INCLUDE_DIR=$THISDIR/include \
     -DSEEXPREDITOR_LIBRARY=$THISDIR/lib/libSeExprEditor.dylib \
     -DZLIB_INCLUDE_DIR=/usr/local/opt/zlib/include \
     -DZLIB_LIBRARY=/usr/local/opt/zlib/lib/libz.dylib \
-    -DCMAKE_PREFIX_PATH=/usr/local/opt/qt \
     ..
 
 make -j 2
@@ -189,12 +205,12 @@ echo "travis_fold:end:unit-tests"
 # Run appleseed.python unit tests.
 #--------------------------------------------------------------------------------------------------
 
-# echo "travis_fold:start:python-unit-tests"
-# echo "Running appleseed.python unit tests..."
-#
-# python sandbox/lib/Debug/python/appleseed/test/runtests.py
-#
-# echo "travis_fold:end:python-unit-tests"
+echo "travis_fold:start:python-unit-tests"
+echo "Running appleseed.python unit tests..."
+
+python sandbox/lib/Debug/python/appleseed/test/runtests.py
+
+echo "travis_fold:end:python-unit-tests"
 
 
 set +e
