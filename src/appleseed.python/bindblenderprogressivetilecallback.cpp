@@ -207,10 +207,11 @@ namespace
                          1,  1,
                         -1,  1
                     };
-
+                    
                     // Get shader program set by blender.
                     glGetIntegerv(GL_CURRENT_PROGRAM, &m_shader_program_id);
 
+                    // Blender 2.79b and bellow don't create a vertex shader.
                     // Create vertex shader if there isn't one.
                     GLint shader_count;
                     glGetProgramiv(m_shader_program_id, GL_ATTACHED_SHADERS, &shader_count);
@@ -325,6 +326,7 @@ namespace
 
         void create_vertex_shader()
         {
+            // version 1.3 was used because gl_TexCoord is deprecated in newer versions.
             const char* vertex_shader_source =
                 "#version 130\n"
                 "attribute vec2 texCoord;\n"
