@@ -141,7 +141,9 @@ TEST_SUITE(Foundation_Utility_Poison)
         EXPECT_EQ(expected, actual);
     }
 }
-#else // Non-debug
+#endif 
+
+// always_poison should work in any build mode.
 
 TEST_SUITE(Foundation_Utility_Poison)
 {
@@ -249,4 +251,3 @@ TEST_SUITE(Foundation_Utility_Poison)
     }
 }
 
-#endif
