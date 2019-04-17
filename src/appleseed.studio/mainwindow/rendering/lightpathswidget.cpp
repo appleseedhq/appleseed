@@ -42,7 +42,6 @@
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/math/scalar.h"
-#include "foundation/platform/opengl.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/string.h"
 

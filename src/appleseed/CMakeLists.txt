@@ -584,7 +584,6 @@ set (foundation_platform_sources
     foundation/platform/debugger.h
     foundation/platform/defaulttimers.cpp
     foundation/platform/defaulttimers.h
-    foundation/platform/opengl.h
     foundation/platform/path.cpp
     foundation/platform/path.h
     foundation/platform/python.h
