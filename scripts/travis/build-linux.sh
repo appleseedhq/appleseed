@@ -64,7 +64,7 @@ export CMAKE_LIBRARY_PATH=$APPLESEED_DEPENDENCIES/lib
 # This must be done before compiling appleseed because the compiling process needs to invokes oslc.
 #--------------------------------------------------------------------------------------------------
 
-export LD_LIBRARY_PATH=$APPLESEED_DEPENDENCIES/lib:sandbox/lib/Debug:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$APPLESEED_DEPENDENCIES/lib:$LD_LIBRARY_PATH
 export PYTHONPATH=$PYTHONPATH:sandbox/lib/Debug/python
 
 
@@ -78,8 +78,8 @@ echo "Building appleseed..."
 mkdir build
 pushd build
 
-# TODO: is it necessary to set DBoost_PYTHON_LIBRARY?
 cmake \
+    -Wno-dev \
     -DCMAKE_BUILD_TYPE=Debug \
     -DUSE_SSE42=ON \
     -DWITH_DISNEY_MATERIAL=OFF \
@@ -91,7 +91,6 @@ cmake \
     -DBoost_CHRONO_LIBRARY_DEBUG=$APPLESEED_DEPENDENCIES/lib/libboost_chrono-gcc48-mt-1_61.so.1.61.0 \
     -DBoost_DATE_TIME_LIBRARY_DEBUG=$APPLESEED_DEPENDENCIES/lib/libboost_date_time-gcc48-mt-1_61.so.1.61.0 \
     -DBoost_FILESYSTEM_LIBRARY_DEBUG=$APPLESEED_DEPENDENCIES/lib/libboost_filesystem-gcc48-mt-1_61.so.1.61.0 \
-    -DBoost_PYTHON_LIBRARY=$APPLESEED_DEPENDENCIES/lib/libboost_python-gcc48-mt-1_61.so.1.61.0 \
     -DBoost_PYTHON_LIBRARY_DEBUG=$APPLESEED_DEPENDENCIES/lib/libboost_python-gcc48-mt-1_61.so.1.61.0 \
     -DBoost_REGEX_LIBRARY_DEBUG=$APPLESEED_DEPENDENCIES/lib/libboost_regex-gcc48-mt-1_61.so.1.61.0 \
     -DBoost_SYSTEM_LIBRARY_DEBUG=$APPLESEED_DEPENDENCIES/lib/libboost_system-gcc48-mt-1_61.so.1.61.0 \
