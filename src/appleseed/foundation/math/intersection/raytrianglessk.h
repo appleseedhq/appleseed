@@ -467,10 +467,10 @@ inline T TriangleSSKSupportPlane<T>::intersect(
 template <typename T>
 void PoisonImpl<TriangleSSKSupportPlane<T>>::do_poison(TriangleSSKSupportPlane<T>& plane)
 {
-    poison(plane.m_nu);
-    poison(plane.m_nv);
-    poison(plane.m_np);
-    poison(plane.m_ci);
+    always_poison(plane.m_nu);
+    always_poison(plane.m_nv);
+    always_poison(plane.m_np);
+    always_poison(plane.m_ci);
 }
 
 }   // namespace foundation

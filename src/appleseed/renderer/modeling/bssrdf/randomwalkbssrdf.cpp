@@ -238,9 +238,9 @@ namespace
             Vector3f direction;
             bool transmitted = false;
 
-            poison(scattering_point);
+            debug_poison(scattering_point);
             always_poison(slab_normal);
-            poison(direction);
+            debug_poison(direction);
 
             if (m_use_glass_bsdf)
             {

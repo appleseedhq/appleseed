@@ -253,8 +253,8 @@ inline Transform<T>::Transform(
 template <typename T>
 void PoisonImpl<Transform<T>>::do_poison(Transform<T>& transform)
 {
-    poison(transform.m_local_to_parent);
-    poison(transform.m_parent_to_local);
+    always_poison(transform.m_local_to_parent);
+    always_poison(transform.m_parent_to_local);
 }
 
 template <typename T>

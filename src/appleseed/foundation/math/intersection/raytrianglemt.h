@@ -305,9 +305,9 @@ inline T TriangleMTSupportPlane<T>::intersect(
 template <typename T>
 void PoisonImpl<TriangleMTSupportPlane<T>>::do_poison(TriangleMTSupportPlane<T>& plane)
 {
-    poison(plane.m_v0);
-    poison(plane.m_e0);
-    poison(plane.m_e1);
+    always_poison(plane.m_v0);
+    always_poison(plane.m_e0);
+    always_poison(plane.m_e1);
 }
 
 }   // namespace foundation

@@ -299,9 +299,9 @@ inline const Vector<T, 3>& Basis3<T>::get_tangent_v() const
 template <typename T>
 void PoisonImpl<Basis3<T>>::do_poison(Basis3<T>& basis)
 {
-    poison(basis.m_n);
-    poison(basis.m_u);
-    poison(basis.m_v);
+    always_poison(basis.m_n);
+    always_poison(basis.m_u);
+    always_poison(basis.m_v);
 }
 
 #ifndef NDEBUG
