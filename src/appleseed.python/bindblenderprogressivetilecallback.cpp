@@ -40,13 +40,13 @@
 #include "foundation/platform/python.h"
 #include "foundation/utility/autoreleaseptr.h"
 
+// OpenGL
+#include <glad/glad.h>
+
 // Standard headers.
 #include <cassert>
 #include <cstddef>
 #include <vector>
-
-// OpenGL
-#include <glad/glad.h>
 
 namespace bpy = boost::python;
 using namespace foundation;
