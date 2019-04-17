@@ -218,7 +218,7 @@ namespace
                     if (shader_count < 2)
                         create_vertex_shader();
 
-                    glUniformMatrix4fv(glGetUniformLocation(m_shader_program_id, "ModelViewProjectionMatrix"), 1, GL_TRUE, &(Matrix4f::make_identity()[0]));
+                    glUniformMatrix4fv(glGetUniformLocation(m_shader_program_id, "ModelViewProjectionMatrix"), 1, GL_TRUE, &(Matrix4f::identity()[0]));
 
                     m_texcoord_location = glGetAttribLocation(m_shader_program_id, "texCoord");
                     m_position_location = glGetAttribLocation(m_shader_program_id, "pos");
