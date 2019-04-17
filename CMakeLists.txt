@@ -324,6 +324,7 @@ endif ()
 # Common include paths.
 include_directories (
     src/thirdparty/bcd
+    src/thirdparty/glad/include
     src/thirdparty/murmurhash3
     src/appleseed
 )
@@ -619,6 +620,7 @@ endmacro ()
 #--------------------------------------------------------------------------------------------------
 
 add_subdirectory (src/thirdparty/bcd)
+add_subdirectory (src/thirdparty/glad)
 add_subdirectory (src/thirdparty/murmurhash3)
 
 add_subdirectory (src/appleseed)
