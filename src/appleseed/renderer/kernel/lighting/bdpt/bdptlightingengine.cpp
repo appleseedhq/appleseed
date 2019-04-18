@@ -663,22 +663,20 @@ namespace
                     bdpt_vertex.m_is_light_vertex = true;
                 }
 
-                BDPTVertex* bdpt_vertex_prev2 = *m_num_vertices > 1 ? &m_vertices[*m_num_vertices - 2] : nullptr;
                 BDPTVertex* bdpt_vertex_prev1 = *m_num_vertices > 0 ? &m_vertices[*m_num_vertices - 1] : nullptr;
                 if (bdpt_vertex_prev1)
                 {
-                    if (bdpt_vertex_prev1->m_is_light_vertex && m_adjoint)
-                        bdpt_vertex.m_fwd_pdf = bdpt_vertex_prev1->pdf_light(&bdpt_vertex);
-                    else
-                        bdpt_vertex.m_fwd_pdf = bdpt_vertex_prev1->pdf(nullptr, &bdpt_vertex, m_adjoint);
+                    bdpt_vertex.m_fwd_pdf = bdpt_vertex_prev1->pdf(nullptr, &bdpt_vertex, m_adjoint);
 
                     if (bdpt_vertex.m_fwd_pdf == 0.0f) bdpt_vertex.m_fwd_pdf = 1.0f;
                     assert(bdpt_vertex.m_fwd_pdf > 0.0f);
-                }
-                if (bdpt_vertex_prev2)
-                {
-                    bdpt_vertex_prev2->m_rev_pdf = bdpt_vertex_prev1->convert_density(vertex.m_prev_prob, *bdpt_vertex_prev2);
-                    assert(bdpt_vertex_prev2->m_rev_pdf >= 0.0f);
+
+                    BDPTVertex* bdpt_vertex_prev2 = *m_num_vertices > 1 ? &m_vertices[*m_num_vertices - 2] : nullptr;
+                    if (bdpt_vertex_prev2)
+                    {
+                        bdpt_vertex_prev2->m_rev_pdf = bdpt_vertex_prev1->convert_density(vertex.m_prev_prob, *bdpt_vertex_prev2);
+                        assert(bdpt_vertex_prev2->m_rev_pdf >= 0.0f);
+                    }
                 }
 
                 (*m_num_vertices)++;
