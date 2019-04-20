@@ -267,7 +267,6 @@ namespace
             float ri = 1.0f;
             for (int i = t - 2; i > 0; --i)
             {
-                BDPTVertex* vertex = &camera_vertices[i];
                 float rev_pdf;
 
                 if (i == t - 2)
@@ -280,9 +279,9 @@ namespace
                     if (s == 0)  rev_pdf = pt->pdf_light(pt_prev);
                     else         rev_pdf = pt->pdf(qs, pt_prev, true);
                 }
-                else rev_pdf = vertex->m_rev_pdf;
+                else rev_pdf = camera_vertices[i].m_rev_pdf;
 
-                ri *= rev_pdf / vertex->m_fwd_pdf;
+                ri *= rev_pdf / camera_vertices[i].m_fwd_pdf;
                 sum_ri += ri;
             }
 
@@ -290,14 +289,13 @@ namespace
             ri = 1.0f;
             for (int i = s - 1; i >= 0; --i)
             {
-                BDPTVertex* vertex = &light_vertices[i];
                 float rev_pdf;
 
                 if (i == s - 1)      rev_pdf = pt->pdf(pt_prev, qs, false);
                 else if (i == s - 2) rev_pdf = qs->pdf(pt, qs_prev, false);
-                else                 rev_pdf = vertex->m_rev_pdf;
+                else                 rev_pdf = light_vertices[i].m_rev_pdf;
 
-                ri *= rev_pdf / vertex->m_fwd_pdf;
+                ri *= rev_pdf / light_vertices[i].m_fwd_pdf;
                 sum_ri += ri;
             }
 
