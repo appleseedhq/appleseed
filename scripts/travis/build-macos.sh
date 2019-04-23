@@ -30,8 +30,6 @@
 
 set -e
 
-THISDIR=`pwd`
-
 
 #--------------------------------------------------------------------------------------------------
 # Update Homebrew and Homebrew formulae.
@@ -100,7 +98,6 @@ cmake \
     -DENABLERTTI=ON \
     -DUSE_LIBCPLUSPLUS=ON \
     -DLLVM_DIRECTORY=/usr/local/opt/llvm@5/ \
-    -DCMAKE_INSTALL_PREFIX=$THISDIR \
     ..
 
 make install -j 2
@@ -128,7 +125,6 @@ cd build
 cmake \
     -Wno-dev \
     -DCMAKE_PREFIX_PATH=/usr/local/opt/qt \
-    -DCMAKE_INSTALL_PREFIX=$THISDIR \
     ..
 
 mkdir src/doc/html
@@ -144,7 +140,6 @@ echo "travis_fold:end:seexpr"
 # This must be done before compiling appleseed because the compiling process needs to invokes oslc.
 #--------------------------------------------------------------------------------------------------
 
-export DYLD_LIBRARY_PATH=$THISDIR/lib:$DYLD_LIBRARY_PATH
 export PYTHONPATH=$PYTHONPATH:sandbox/lib/Debug/python
 
 
