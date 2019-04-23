@@ -37,6 +37,9 @@ shader as_bump
     string as_node_name = "asBump",
     string as_category = "utility",
 
+    string as_max_class_id = "1163801542 1876308219",
+    string as_max_plugin_type = "texture",
+
     int as_maya_type_id = 0x00127a00,
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility"
 ]]
