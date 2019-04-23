@@ -139,5 +139,5 @@ class PoisonImpl<double>
         x = FP<double>::snan();
     }
 };
-    
+
 }   // namespace foundation
