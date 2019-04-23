@@ -252,6 +252,7 @@ link_directories (${Boost_LIBRARY_DIRS})
 #--------------------------------------------------------------------------------------------------
 
 if (WITH_EMBREE)
+    set (APPLESEED_WITH_EMBREE ON)
     add_definitions (-DAPPLESEED_WITH_EMBREE)
     if (USE_STATIC_EMBREE)
         add_definitions (-DEMBREE_STATIC_LIB)
@@ -298,6 +299,7 @@ if (USE_FIND_PACKAGE_FOR_PNG)
 endif ()
 
 if (WITH_DISNEY_MATERIAL)
+    set (APPLESEED_WITH_DISNEY_MATERIAL ON)
     add_definitions (-DAPPLESEED_WITH_DISNEY_MATERIAL)
     if (USE_FIND_PACKAGE_FOR_SEEXPR)
         find_package (SeExpr REQUIRED)
@@ -434,6 +436,7 @@ endif ()
 # SIMD.
 if (is_x86)
     if (USE_AVX2)
+        set (APPLESEED_USE_AVX2 ON)
         set (preprocessor_definitions_common
             ${preprocessor_definitions_common}
             APPLESEED_USE_AVX2
@@ -441,6 +444,7 @@ if (is_x86)
         set (USE_AVX TRUE)
     endif ()
     if (USE_AVX)
+        set (APPLESEED_USE_AVX ON)
         set (preprocessor_definitions_common
             ${preprocessor_definitions_common}
             APPLESEED_USE_AVX
@@ -448,6 +452,7 @@ if (is_x86)
         set (USE_SSE42 TRUE)
     endif ()
     if (USE_SSE42)
+        set (APPLESEED_USE_SSE42 ON)
         set (preprocessor_definitions_common
             ${preprocessor_definitions_common}
             APPLESEED_USE_SSE42
@@ -455,6 +460,7 @@ if (is_x86)
         set (USE_SSE TRUE)
     endif ()
     if (USE_SSE)
+        set (APPLESEED_USE_SSE ON)
         set (preprocessor_definitions_common
             ${preprocessor_definitions_common}
             APPLESEED_USE_SSE
@@ -464,6 +470,7 @@ if (is_x86)
         endif ()
     endif ()
     if (USE_F16C)
+        set (APPLESEED_USE_FC16 ON)
         set (preprocessor_definitions_common
             ${preprocessor_definitions_common}
             APPLESEED_USE_F16C
@@ -536,6 +543,14 @@ macro (append_custom_preprocessor_definitions target first_definition)
         COMPILE_DEFINITIONS_PROFILE ${definitions}
     )
 endmacro ()
+
+
+#--------------------------------------------------------------------------------------------------
+# Auto-generate build options header.
+#--------------------------------------------------------------------------------------------------
+
+configure_file (${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/buildoptions.h.in
+                ${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/buildoptions.h)
 
 
 #--------------------------------------------------------------------------------------------------
