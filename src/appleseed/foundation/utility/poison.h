@@ -140,5 +140,4 @@ class PoisonImpl<double>
     }
 
 };
-
 }   // namespace foundation
