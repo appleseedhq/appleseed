@@ -82,6 +82,7 @@ source_group ("foundation\\core\\exceptions" FILES
 set (foundation_core_sources
     foundation/core/appleseed.cpp
     foundation/core/appleseed.h
+    foundation/core/buildoptions.h.in
     foundation/core/thirdparties.cpp
     foundation/core/thirdparties.h
     foundation/core/version.h.in
@@ -952,6 +953,7 @@ set (renderer_api_sources
     renderer/api/aov.h
     renderer/api/bsdf.h
     renderer/api/bssrdf.h
+    renderer/api/buildoptions.h
     renderer/api/camera.h
     renderer/api/color.h
     renderer/api/display.h
