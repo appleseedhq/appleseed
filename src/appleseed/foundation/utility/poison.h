@@ -42,11 +42,18 @@ namespace foundation
 // Poisoning is the act of setting a variable or an object to a remarkable value
 // that will help detect when it is used without being initialized.
 //
-// To poison a variable or object x:
+// To poison a variable or object x in any build mode:
 //
-//     foundation::poison(x);
+//     foundation::always_poison(x);
 //
-// To implement poisoning of custom objects, specialize foundation::PoisonImpl:
+// To poison a variable or object x only in DEBUG mode only:
+//
+//    foundation::debug_poison(x);
+//
+// To implement poisoning of custom objects with type T, specialize 
+// foundation::PoisonImpl<T>::do_poison(T& obj). 
+// Within the do_poison function, call always_posion exclusively, since 
+// debug_poison may cause unwanted behaviour:
 //
 //     namespace foundation
 //     {
@@ -56,9 +63,9 @@ namespace foundation
 //           public:
 //             static void do_poison(ns::MyObject& object)
 //             {
-//                 poison(object.x);
-//                 poison(object.y);
-//                 poison(object.z);
+//                 always_poison(object.x);
+//                 always_poison(object.y);
+//                 always_poison(object.z);
 //             }
 //         };
 //     }
