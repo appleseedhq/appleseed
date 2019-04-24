@@ -113,8 +113,8 @@ namespace renderer
 namespace
 {
     // Floating-point formatting settings.
-    const char* MatrixFormat     = "%.15f";
-    const char* ColorValueFormat = "%.6f";
+    const char* MatrixFormat     = "%." + std::to_string(std::numeric_limits<double>::max_digits10) + "f";
+    const char* ColorValueFormat = "%." + std::to_string(std::numeric_limits<float>::max_digits10) + "f";
 
     class Writer
     {

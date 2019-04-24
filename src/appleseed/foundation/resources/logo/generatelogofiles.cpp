@@ -135,7 +135,7 @@ TEST_SUITE(Foundation_Resources_Logos)
 
                 color.rgb() = srgb_to_linear_rgb(color.rgb());
 
-                fprintf(file, "%.4ff, %.4ff, %.4ff, %.4ff", color[0], color[1], color[2], color[3]);
+                fprintf(file, "%.9ff, %.9ff, %.9ff, %.9ff", color[0], color[1], color[2], color[3]);
                 ++written_pixels;
             }
         }

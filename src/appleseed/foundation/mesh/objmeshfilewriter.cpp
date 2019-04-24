@@ -275,7 +275,7 @@ void OBJMeshFileWriter::write_faces_vn_vt(const IMeshWalker& walker) const
 }
 
 // Formatting string for all floating-point values.
-#define FP_FORMAT "%.15f"
+#define FP_FORMAT "%.17f"
 
 void OBJMeshFileWriter::write_vector(const char* prefix, const Vector2d& v) const
 {
