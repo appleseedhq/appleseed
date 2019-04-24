@@ -499,7 +499,7 @@ template <typename T, size_t N>
 void PoisonImpl<Vector<T, N>>::do_poison(Vector<T, N>& v)
 {
     for (size_t i = 0; i < N; ++i)
-        poison(v[i]);
+        always_poison(v[i]);
 }
 
 template <typename T, size_t N>

@@ -404,7 +404,7 @@ template <typename T, size_t N>
 void PoisonImpl<Color<T, N>>::do_poison(Color<T, N>& c)
 {
     for (size_t i = 0; i < N; ++i)
-        poison(c[i]);
+        always_poison(c[i]);
 }
 
 template <typename T, size_t N>

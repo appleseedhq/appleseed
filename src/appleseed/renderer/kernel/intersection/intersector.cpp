@@ -364,7 +364,7 @@ void Intersector::make_surface_shading_point(
 {
     // This helps finding bugs if make_surface_shading_point()
     // is called on a previously used shading point.
-    poison(shading_point);
+    debug_poison(shading_point);
 
     // Context.
     shading_point.m_texture_cache = &m_texture_cache;
@@ -392,7 +392,7 @@ void Intersector::make_volume_shading_point(
 {
     // This helps finding bugs if make_volume_shading_point()
     // is called on a previously used shading point.
-    poison(shading_point);
+    debug_poison(shading_point);
 
     assert(is_normalized(volume_ray.m_dir));
     assert(volume_ray.get_current_medium() != nullptr);

@@ -566,7 +566,7 @@ template <typename T, size_t M, size_t N>
 void PoisonImpl<Matrix<T, M, N>>::do_poison(Matrix<T, M, N>& m)
 {
     for (size_t i = 0; i < m.Components; ++i)
-        poison(m[i]);
+        always_poison(m[i]);
 }
 
 template <typename T, size_t M, size_t N>

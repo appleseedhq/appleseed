@@ -1324,7 +1324,7 @@ class PoisonImpl<renderer::DynamicSpectrum<T, N>>
     static void do_poison(renderer::DynamicSpectrum<T, N>& s)
     {
         for (size_t i = 0, e = renderer::DynamicSpectrum<T, N>::size(); i < e; ++i)
-            poison(s[i]);
+            debug_poison(s[i]);
     }
 };
 

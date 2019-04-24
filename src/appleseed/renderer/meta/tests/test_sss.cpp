@@ -109,10 +109,10 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             m_bssrdf->on_frame_begin(m_project, nullptr, m_recorder);
 
             m_values.m_weight = 1.0f;
-            poison(m_values.m_reflectance);
-            poison(m_values.m_reflectance_multiplier);
-            poison(m_values.m_mfp);
-            poison(m_values.m_mfp_multiplier);
+            debug_poison(m_values.m_reflectance);
+            debug_poison(m_values.m_reflectance_multiplier);
+            debug_poison(m_values.m_mfp);
+            debug_poison(m_values.m_mfp_multiplier);
             m_values.m_sigma_a.set(sigma_a);
             m_values.m_sigma_s.set(sigma_s);
             m_values.m_g = 0.0f;
@@ -222,8 +222,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             values.m_reflectance_multiplier = 1.0f;
             values.m_mfp.set(mfp);
             values.m_mfp_multiplier = 1.0f;
-            poison(values.m_sigma_a);
-            poison(values.m_sigma_s);
+            debug_poison(values.m_sigma_a);
+            debug_poison(values.m_sigma_s);
             values.m_g = 0.0f;
             values.m_ior = 1.0f;
             values.m_fresnel_weight = 1.0f;

@@ -263,10 +263,10 @@ inline typename Ray<T, N>::VectorType Ray<T, N>::point_at(const ValueType t) con
 template <typename T, size_t N>
 void PoisonImpl<Ray<T, N>>::do_poison(Ray<T, N>& ray)
 {
-    poison(ray.m_org);
-    poison(ray.m_dir);
-    poison(ray.m_tmin);
-    poison(ray.m_tmax);
+    always_poison(ray.m_org);
+    always_poison(ray.m_dir);
+    always_poison(ray.m_tmin);
+    always_poison(ray.m_tmax);
 }
 
 template <typename T, size_t N>
