@@ -108,7 +108,7 @@ namespace
 // (Same template applies to mesh faces.)
 //
 
-void convert_tessface_mesh(
+void export_mesh_blender79(
     MeshObject*         blender_mesh,
     const size_t        bl_vert_count,
     const uintptr_t     bl_vert_ptr,
@@ -185,7 +185,7 @@ void convert_tessface_mesh(
     }
 }
 
-void convert_tessface_vertex_pose(
+void export_mesh_blender79_pose(
     MeshObject*     blender_mesh,
     const size_t    pose,
     const size_t    bl_vert_count,
@@ -213,7 +213,7 @@ void convert_tessface_vertex_pose(
     }
 }
 
-void convert_looptri_mesh(
+void export_mesh_blender80(
     MeshObject*         blender_mesh,
     const size_t        bl_looptri_count,
     const uintptr_t     bl_looptri_ptr,
@@ -292,7 +292,7 @@ void convert_looptri_mesh(
     }
 }
 
-void convert_looptri_vertex_pose(
+void export_mesh_blender80_pose(
     MeshObject*         blender_mesh,
     const size_t        pose,
     const uintptr_t     bl_loop_ptr,
@@ -326,8 +326,8 @@ void convert_looptri_vertex_pose(
 
 void bind_blender_mesh_converter()
 {
-    bpy::def("convert_tessface_mesh", &convert_tessface_mesh);
-    bpy::def("convert_tessface_vertex_pose", &convert_tessface_vertex_pose);
-    bpy::def("convert_looptri_mesh", &convert_looptri_mesh);
-    bpy::def("convert_looptri_vertex_pose", &convert_looptri_vertex_pose);
+    bpy::def("export_mesh_blender79", &export_mesh_blender79);
+    bpy::def("export_mesh_blender79_pose", &export_mesh_blender79_pose);
+    bpy::def("export_mesh_blender80", &export_mesh_blender80);
+    bpy::def("export_mesh_blender80_pose", &export_mesh_blender80_pose);
 }
