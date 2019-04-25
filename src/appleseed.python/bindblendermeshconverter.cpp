@@ -43,6 +43,8 @@ namespace
 {
     // Blender data structures.
     // https://developer.blender.org/diffusion/B/browse/master/source/blender/makesdna/DNA_meshdata_types.h
+
+    // Blender 2.79 structures.
     struct MFace
     {
         unsigned int v[4];
@@ -65,7 +67,7 @@ namespace
         short mode, tile, unwrap;
     };
 
-    // Blender 2.8 structures
+    // Blender 2.8 structures.
     struct MLoop
     {
         // Vertex index.
@@ -97,15 +99,15 @@ namespace
 
 
 //
-// The following function takes a series of pointers to Blender mesh data
-// and modifies the appleseed MeshObject entity.
+//  The following function takes a series of pointers to Blender mesh data
+//  and modifies the appleseed MeshObject entity.
 //
-// Arguments:
+//  Arguments:
 //
-// blender_mesh: the appleseed MeshObject created earlier in the export process
-// bl_vert_count: the number of vertices in the mesh
-// bl_vert_ptr: a string pointer to the first element of the vertex array
-// (Same template applies to mesh faces.)
+//  blender_mesh: the appleseed MeshObject created earlier in the export process
+//  bl_vert_count: the number of vertices in the mesh
+//  bl_vert_ptr: a string pointer to the first element of the vertex array
+//  (Same template applies to mesh faces.)
 //
 
 void export_mesh_blender79(
@@ -116,7 +118,7 @@ void export_mesh_blender79(
     const uintptr_t     bl_faces_ptr,
     const uintptr_t     bl_uv_ptr,
     const bool          export_normals,
-    const bool          export_uvs) 
+    const bool          export_uvs)
 {
     // Convert uintptr_t numbers to actual pointers.
     const MVert* bl_vertices = reinterpret_cast<MVert*>(bl_vert_ptr);
@@ -186,11 +188,11 @@ void export_mesh_blender79(
 }
 
 void export_mesh_blender79_pose(
-    MeshObject*     blender_mesh,
-    const size_t    pose,
-    const size_t    bl_vert_count,
-    const uintptr_t bl_vert_ptr,
-    const bool      export_normals) 
+    MeshObject*         blender_mesh,
+    const size_t        pose,
+    const size_t        bl_vert_count,
+    const uintptr_t     bl_vert_ptr,
+    const bool          export_normals) 
 {
     // Convert uintptr_t numbers to actual pointers.
     const MVert* bl_vertices = reinterpret_cast<MVert*>(bl_vert_ptr);
@@ -223,7 +225,7 @@ void export_mesh_blender80(
     const uintptr_t     bl_vertices_ptr,
     const uintptr_t     bl_loops_uv_ptr,
     const bool          export_normals,
-    const bool          export_uvs) 
+    const bool          export_uvs)
 {
     // Convert uintptr_t numbers to actual pointers.
     const MLoopTri* bl_looptri_array = reinterpret_cast<MLoopTri*>(bl_looptri_ptr);
@@ -232,7 +234,7 @@ void export_mesh_blender80(
     const MVert* bl_vert_array = reinterpret_cast<MVert*>(bl_vertices_ptr);
     const MLoopUV* bl_loop_uv_array = reinterpret_cast<MLoopUV*>(bl_loops_uv_ptr);
 
-    // Push vertices
+    // Push vertices.
     blender_mesh->reserve_vertices(bl_loop_count);
 
     for (size_t loop_index = 0; loop_index < bl_loop_count; ++loop_index)
@@ -242,7 +244,7 @@ void export_mesh_blender80(
         blender_mesh->push_vertex(GVector3(bl_vert.co[0], bl_vert.co[1], bl_vert.co[2]));
     }
 
-    // Push faces
+    // Push faces.
     blender_mesh->reserve_triangles(bl_looptri_count);
 
     for (size_t looptri_index = 0; looptri_index < bl_looptri_count; ++looptri_index)
@@ -252,7 +254,7 @@ void export_mesh_blender80(
         blender_mesh->push_triangle(Triangle(bl_looptri.tri[0], bl_looptri.tri[1], bl_looptri.tri[2], mat_index));
     }
 
-    // Push normals
+    // Push normals.
     if (export_normals)
     {
         for (size_t loop_index = 0; loop_index < bl_loop_count; ++loop_index)
@@ -272,7 +274,7 @@ void export_mesh_blender80(
         }
     }
 
-    // Push UV coordinates
+    // Push UV coordinates.
     if (export_uvs)
     {
         for (size_t loop_index = 0; loop_index < bl_loop_count; ++loop_index)
