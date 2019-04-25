@@ -99,15 +99,15 @@ namespace
 
 
 //
-//  The following function takes a series of pointers to Blender mesh data
-//  and modifies the appleseed MeshObject entity.
+// The following function takes a series of pointers to Blender mesh data
+// and modifies the appleseed MeshObject entity.
 //
-//  Arguments:
+//    Arguments:
 //
-//  blender_mesh: the appleseed MeshObject created earlier in the export process
-//  bl_vert_count: the number of vertices in the mesh
-//  bl_vert_ptr: a string pointer to the first element of the vertex array
-//  (Same template applies to mesh faces.)
+//    blender_mesh: the appleseed MeshObject created earlier in the export process
+//    bl_vert_count: the number of vertices in the mesh
+//    bl_vert_ptr: a string pointer to the first element of the vertex array
+//    (Same template applies to mesh faces.)
 //
 
 void export_mesh_blender79(
@@ -192,7 +192,7 @@ void export_mesh_blender79_pose(
     const size_t        pose,
     const size_t        bl_vert_count,
     const uintptr_t     bl_vert_ptr,
-    const bool          export_normals) 
+    const bool          export_normals)
 {
     // Convert uintptr_t numbers to actual pointers.
     const MVert* bl_vertices = reinterpret_cast<MVert*>(bl_vert_ptr);
@@ -300,7 +300,7 @@ void export_mesh_blender80_pose(
     const uintptr_t     bl_loop_ptr,
     const size_t        bl_loop_count,
     const uintptr_t     bl_vert_ptr,
-    const bool          export_normals) 
+    const bool          export_normals)
 {
     // Convert uintptr_t numbers to actual pointers.
     const MVert* bl_vert_array = reinterpret_cast<MVert*>(bl_vert_ptr);
