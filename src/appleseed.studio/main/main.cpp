@@ -339,9 +339,6 @@ int main(int argc, char* argv[])
     // The locale must be set after the construction of QApplication.
     QLocale::setDefault(QLocale::C);
 
-    // QApplication sets C locale to the user's locale, we need to fix this.
-    std::setlocale(LC_ALL, "C");
-
     // Qt changes the locale when loading images from disk for the very first time.
     // The problem was tracked for both `QImage` and `QPixmap`: in their `load()`
     // functions, both classes call `QImageReader::read()` which causes the locale
@@ -370,6 +367,9 @@ int main(int argc, char* argv[])
 
     // Create the application's main window.
     appleseed::studio::MainWindow window;
+
+    // QApplication and QMainWindow set C locale to the user's locale, we need to fix this.
+    std::setlocale(LC_ALL, "C");
 
     // Initialize the python interpreter and load plugins.
     PythonInterpreter::instance().set_main_window(&window);
