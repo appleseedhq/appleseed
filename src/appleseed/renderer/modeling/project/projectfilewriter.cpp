@@ -98,8 +98,6 @@
 #include <string>
 #include <vector>
 
-#include <iostream>
-
 using namespace boost;
 using namespace foundation;
 using namespace std;
