@@ -14,7 +14,7 @@
    <string>appleseed.studio</string>
   </property>
   <property name="locale">
-   <locale language="English" country="UnitedStates"/>
+   <locale language="C" country="AnyCountry"/>
   </property>
   <property name="toolButtonStyle">
    <enum>Qt::ToolButtonIconOnly</enum>
