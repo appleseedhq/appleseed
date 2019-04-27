@@ -620,7 +620,7 @@ namespace
                     light_sample.m_geometric_normal,
                     light_sample.m_shading_normal);
 
-            const Material* material = light_sample.m_shape->m_material;
+            const Material* material = light_sample.m_shape->get_material();
             const Material::RenderData& material_data = material->get_render_data();
 
             // Build a shading point on the light source.

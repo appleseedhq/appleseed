@@ -146,7 +146,7 @@ BackwardLightSampler::BackwardLightSampler(
                     importance_multiplier = edf->get_uncached_importance_multiplier();
 
                 // Compute the probability density of this shape.
-                const float shape_importance = m_params.m_importance_sampling ? static_cast<float>(area) : 1.0f;
+                const float shape_importance = m_params.m_importance_sampling ? area : 1.0f;
                 const float shape_prob = shape_importance * importance_multiplier;
 
                 // Insert the light-emitting shape into the CDF.
@@ -246,12 +246,11 @@ float BackwardLightSampler::evaluate_pdf(
             ? m_light_tree->evaluate_node_pdf(
                 surface_shading_point,
                 shape->m_light_tree_node_index)
-            : shape->m_shape_prob;
+            : shape->evaluate_pdf_uniform();
 
-    const float pdf = shape_probability * shape->m_rcp_area;
-    assert(pdf >= 0.0f);
+    assert(shape_probability >= 0.0f);
 
-    return pdf;
+    return shape_probability;
 }
 
 void BackwardLightSampler::sample_light_tree(
@@ -289,11 +288,9 @@ void BackwardLightSampler::sample_light_tree(
     else
     {
         assert(light_type == EmittingShapeType);
-        sample_emitting_shape(
+        sample_emitting_shapes(
             time,
-            Vector2f(s[1], s[2]),
-            light_index,
-            light_prob,
+            s,
             light_sample);
     }
 

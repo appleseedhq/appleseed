@@ -30,7 +30,6 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/lighttree.h"
 #include "renderer/kernel/lighting/lighttypes.h"
 
 // appleseed.foundation headers.
@@ -167,6 +166,21 @@ inline LightSample::LightSample()
   : m_shape(nullptr)
   , m_light(nullptr)
 {
+}
+
+inline void LightSample::make_shading_point(
+    ShadingPoint&               shading_point,
+    const foundation::Vector3d& direction,
+    const Intersector&          intersector) const
+{
+    assert(m_shape && !m_light);
+
+    m_shape->make_shading_point(
+        shading_point,
+        m_point,
+        direction,
+        m_bary,
+        intersector);
 }
 
 }   // namespace renderer

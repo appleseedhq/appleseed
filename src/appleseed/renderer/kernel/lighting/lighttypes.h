@@ -33,15 +33,21 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/stampedptr.h"
 
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
 namespace renderer  { class AssemblyInstance; }
+namespace renderer  { class BackwardLightSampler; }
+namespace renderer  { class Intersector; }
 namespace renderer  { class Light; }
+namespace renderer  { class LightSample; }
 namespace renderer  { class Material; }
+namespace renderer  { class ShadingPoint; }
 
 namespace renderer
 {
@@ -52,6 +58,7 @@ enum LightType
     EmittingShapeType = 1
 };
 
+
 //
 // A non-physical light.
 //
@@ -59,8 +66,8 @@ enum LightType
 class NonPhysicalLightInfo
 {
   public:
-    TransformSequence           m_transform_sequence;           // assembly instance (parent of the light) space to world space
-    const Light*                m_light;
+    TransformSequence   m_transform_sequence;   // assembly instance (parent of the light) space to world space
+    const Light*        m_light;
 };
 
 
@@ -71,18 +78,176 @@ class NonPhysicalLightInfo
 class EmittingShape
 {
   public:
-    const AssemblyInstance*     m_assembly_instance;
+    enum ShapeType
+    {
+        TriangleShape = 0
+    };
+
+    static EmittingShape create_triangle_shape(
+        const AssemblyInstance*     assembly_instance,
+        const size_t                object_instance_index,
+        const size_t                primitive_index,
+        const Material*             material,
+        const foundation::Vector3d& v0,
+        const foundation::Vector3d& v1,
+        const foundation::Vector3d& v2,
+        const foundation::Vector3d& n0,
+        const foundation::Vector3d& n1,
+        const foundation::Vector3d& n2,
+        const foundation::Vector3d& geometric_normal);
+
+    ShapeType get_shape_type() const;
+
+    const AssemblyInstance* get_assembly_instance() const;
+
+    size_t get_object_instance_index() const;
+
+    size_t get_primitive_index() const;
+
+    float get_area() const;
+    float get_rcp_area() const;
+
+    float get_shape_prob() const;
+    void set_shape_prob(const float prob);
+
+    const Material* get_material() const;
+
+    const foundation::AABB3d& get_bbox() const;
+
+    const foundation::Vector3d& get_centroid() const;
+
+    void sample_uniform(
+        const foundation::Vector2f& s,
+        const float                 shape_prob,
+        LightSample&                light_sample) const;
+
+    float evaluate_pdf_uniform() const;
+
+    void make_shading_point(
+        ShadingPoint&               shading_point,
+        const foundation::Vector3d& point,
+        const foundation::Vector3d& direction,
+        const foundation::Vector2f& bary,
+        const Intersector&          intersector) const;
+
+    // Estimate average and maximum radiant flux emitted by this shape.
+    void estimate_flux();
+
+    // Return estimated average and maximum radiant flux in W emitted by this shape.
+    float get_average_flux() const;
+    float get_max_flux() const;
+
+  private:
+    friend class LightSamplerBase;
+    friend class BackwardLightSampler;
+
+    struct Triangle
+    {
+        foundation::Vector3d    m_v0, m_v1, m_v2;               // world space vertices of the shape
+        foundation::Vector3d    m_n0, m_n1, m_n2;               // world space vertex normals
+        foundation::Vector3d    m_geometric_normal;             // world space geometric normal, unit-length
+        double  m_plane_dist;
+    };
+
+    union Geom
+    {
+        Triangle m_triangle;
+    };
+
+    typedef foundation::stamped_ptr<const AssemblyInstance> AssemblyInstanceAndType;
+
+    AssemblyInstanceAndType     m_assembly_instance_and_type;
     size_t                      m_object_instance_index;
-    size_t                      m_shape_index;
     size_t                      m_light_tree_node_index;
-    foundation::Vector3d        m_v0, m_v1, m_v2;               // world space vertices of the triangle
-    foundation::Vector3d        m_n0, m_n1, m_n2;               // world space vertex normals
-    foundation::Vector3d        m_geometric_normal;             // world space geometric normal, unit-length
+    size_t                      m_primitive_index;
+    Geom                        m_geom;
     TriangleSupportPlaneType    m_shape_support_plane;          // support plane of the shape in assembly space
     float                       m_area;                         // world space shape area
     float                       m_rcp_area;                     // world space shape area reciprocal
     float                       m_shape_prob;                   // probability density of this shape
+    float                       m_average_flux;                 // estimated average radiant flux in W emitted by this shape
+    float                       m_max_flux;                     // estimated maximum radiant flux in W emitted by this shape
     const Material*             m_material;
+    foundation::AABB3d          m_bbox;
+    foundation::Vector3d        m_centroid;
+
+    // Constructor.
+    EmittingShape(
+        const ShapeType             shape_type,
+        const AssemblyInstance*     assembly_instance,
+        const size_t                object_instance_index,
+        const size_t                primitive_index,
+        const Material*             material);
 };
+
+
+//
+// EmittingShape class implementation.
+//
+
+inline EmittingShape::ShapeType EmittingShape::get_shape_type() const
+{
+    return static_cast<ShapeType>(m_assembly_instance_and_type.get_stamp());
+}
+
+inline const AssemblyInstance* EmittingShape::get_assembly_instance() const
+{
+    return m_assembly_instance_and_type.get_ptr();
+}
+
+inline size_t EmittingShape::get_primitive_index() const
+{
+    return m_primitive_index;
+}
+
+inline size_t EmittingShape::get_object_instance_index() const
+{
+    return m_object_instance_index;
+}
+
+inline float EmittingShape::get_area() const
+{
+    return m_area;
+}
+
+inline float EmittingShape::get_rcp_area() const
+{
+    return m_rcp_area;
+}
+
+inline float EmittingShape::get_shape_prob() const
+{
+    return m_shape_prob;
+}
+
+inline void EmittingShape::set_shape_prob(const float prob)
+{
+    m_shape_prob = prob;
+}
+
+inline const Material* EmittingShape::get_material() const
+{
+    return m_material;
+}
+
+inline const foundation::AABB3d& EmittingShape::get_bbox() const
+{
+    return m_bbox;
+}
+
+inline const foundation::Vector3d& EmittingShape::get_centroid() const
+{
+    return m_centroid;
+}
+
+inline float EmittingShape::get_average_flux() const
+{
+    return m_average_flux;
+}
+
+inline float EmittingShape::get_max_flux() const
+{
+    return m_max_flux;
+}
 
 }   // namespace renderer

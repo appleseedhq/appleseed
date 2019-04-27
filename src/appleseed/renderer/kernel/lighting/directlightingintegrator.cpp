@@ -343,7 +343,7 @@ void DirectLightingIntegrator::add_emitting_shape_sample_contribution(
     DirectShadingComponents&    radiance,
     LightPathStream*            light_path_stream) const
 {
-    const Material* material = sample.m_shape->m_material;
+    const Material* material = sample.m_shape->get_material();
     const Material::RenderData& material_data = material->get_render_data();
     const EDF* edf = material_data.m_edf;
 
@@ -382,8 +382,7 @@ void DirectLightingIntegrator::add_emitting_shape_sample_contribution(
             static_cast<float>(
                 cos_on *
                 rcp_sample_square_distance *
-                edf->get_max_contribution() *
-                sample.m_shape->m_area);
+                sample.m_shape->get_max_flux());
 
         // Use Russian Roulette to skip this sample if its maximum contribution is low.
         if (max_contribution < m_low_light_threshold)
