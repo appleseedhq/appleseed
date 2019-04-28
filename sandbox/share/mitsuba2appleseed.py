@@ -33,6 +33,7 @@ from xml.etree.ElementTree import ElementTree
 import appleseed as asr
 import argparse
 import math
+import os.path
 import sys
 import traceback
 
@@ -941,10 +942,15 @@ def main():
     except IOError:
         fatal("Failed to load {0}".format(args.input_file))
 
+    for child in tree.getroot():
+        filepath= child.find("string[@name='filename']")
+        if filepath is not None:
+            filepath.attrib["value"] = os.path.join(os.path.dirname(args.input_file), filepath.attrib["value"])
+
     project = convert(tree)
 
     asr.ProjectFileWriter().write(project, args.output_file,
-                                  asr.ProjectFileWriterOptions.OmitHandlingAssetFiles)
+    asr.ProjectFileWriterOptions.OmitHandlingAssetFiles)
 
 if __name__ == '__main__':
     main()
