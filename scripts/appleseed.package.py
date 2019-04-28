@@ -485,9 +485,10 @@ class WindowsPackageBuilder(PackageBuilder):
 
     def add_dependencies_to_stage(self):
         progress("Windows-specific: Adding dependencies to staging directory")
-        self.copy_qt_framework("QtCore")
-        self.copy_qt_framework("QtGui")
-        self.copy_qt_framework("QtOpenGL")
+        self.copy_qt_framework("Qt5Core")
+        self.copy_qt_framework("Qt5Gui")
+        self.copy_qt_framework("Qt5OpenGL")
+        self.copy_qt_framework("Qt5Widgets")
         copy_glob(os.path.join(self.settings.platform_runtime_path, "*"), "appleseed/bin/")
 
     def add_python_to_stage(self):
@@ -507,7 +508,7 @@ class WindowsPackageBuilder(PackageBuilder):
         shutil.copy(os.path.join(self.settings.python_path, "README.txt"), "appleseed/python27")
 
     def copy_qt_framework(self, framework_name):
-        src_filepath = os.path.join(self.settings.qt_runtime_path, framework_name + "4" + ".dll")
+        src_filepath = os.path.join(self.settings.qt_runtime_path, framework_name + ".dll")
         dst_path = os.path.join("appleseed", "bin")
         shutil.copy(src_filepath, dst_path)
 
@@ -536,10 +537,10 @@ class MacPackageBuilder(PackageBuilder):
     def add_dependencies_to_stage(self):
         progress("Mac-specific: Adding dependencies to staging directory")
         self.add_unix_dependencies_to_stage()
-        self.copy_qt_framework("QtCore")
-        self.copy_qt_framework("QtGui")
-        self.copy_qt_resources("QtGui")
-        self.copy_qt_framework("QtOpenGL")
+        self.copy_qt_framework("Qt5Core")
+        self.copy_qt_framework("Qt5Gui")
+        self.copy_qt_framework("Qt5OpenGL")
+        self.copy_qt_framework("Qt5Widgets")
 
     def add_python_to_stage(self):
         progress("Mac-specific: Adding Python 2.7 to staging directory")
@@ -551,15 +552,15 @@ class MacPackageBuilder(PackageBuilder):
 
     def copy_qt_framework(self, framework_name):
         framework_dir = framework_name + ".framework"
-        src_filepath = os.path.join(self.settings.qt_runtime_path, framework_dir, "Versions", "4", framework_name)
-        dest_path = os.path.join("appleseed", "lib", framework_dir, "Versions", "4")
+        src_filepath = os.path.join(self.settings.qt_runtime_path, framework_dir, "Versions", "5", framework_name)
+        dest_path = os.path.join("appleseed", "lib", framework_dir, "Versions", "5")
         safe_make_directory(dest_path)
         shutil.copy(src_filepath, dest_path)
         make_writable(os.path.join(dest_path, framework_name))
 
     def copy_qt_resources(self, framework_name):
         framework_dir = framework_name + ".framework"
-        src_path = os.path.join(self.settings.qt_runtime_path, framework_dir, "Versions", "4", "Resources")
+        src_path = os.path.join(self.settings.qt_runtime_path, framework_dir, "Versions", "5", "Resources")
         dest_path = os.path.join("appleseed", "lib", framework_dir, "Resources")
         shutil.copytree(src_path, dest_path)
 
