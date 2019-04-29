@@ -130,6 +130,7 @@ option (WITH_PYTHON3_BINDINGS               "Build Python bindings for Python 3"
 option (WITH_DISNEY_MATERIAL                "Build Disney material"                                     OFF)
 option (WITH_EMBREE                         "Include support for Embree intersection backend"           OFF)
 option (WITH_GPU                            "Build GPU support"                                         OFF)
+option (WITH_SPECTRAL_SUPPORT               "Include support for spectral colors"                       ON)
 option (WITH_DOXYGEN                        "Generate API reference with Doxygen"                       ON)
 option (INSTALL_HEADERS                     "Install header files"                                      ON)
 option (INSTALL_TESTS                       "Install unit tests and benchmarks"                         ON)
@@ -184,6 +185,11 @@ if (is_x86)
     option (USE_F16C                        "Use F16C instruction set"                                  OFF)
 else ()
     # Unknown architecture: No SIMD.
+endif ()
+
+if (WITH_SPECTRAL_SUPPORT)
+    set (APPLESEED_WITH_SPECTRAL_SUPPORT ON)
+    add_definitions (-DAPPLESEED_WITH_SPECTRAL_SUPPORT)
 endif ()
 
 

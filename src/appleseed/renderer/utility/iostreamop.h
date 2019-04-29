@@ -30,6 +30,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/utility/dynamicspectrum.h"
+#include "renderer/utility/rgbspectrum.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/iostreamop.h"
@@ -49,6 +50,9 @@ namespace renderer
 template <typename T, size_t N>
 std::ostream& operator<<(std::ostream& s, const DynamicSpectrum<T, N>& spectrum);
 
+// renderer::RGBSpectrum.
+template <typename T>
+std::ostream& operator<<(std::ostream& s, const RGBSpectrum<T>& spectrum);
 
 //
 // iostream operators implementation.
@@ -56,6 +60,12 @@ std::ostream& operator<<(std::ostream& s, const DynamicSpectrum<T, N>& spectrum)
 
 template <typename T, size_t N>
 std::ostream& operator<<(std::ostream& s, const DynamicSpectrum<T, N>& spectrum)
+{
+    return foundation::impl::write_sequence(s, spectrum, spectrum.size());
+}
+
+template <typename T>
+std::ostream& operator<<(std::ostream& s, const RGBSpectrum<T>& spectrum)
 {
     return foundation::impl::write_sequence(s, spectrum, spectrum.size());
 }

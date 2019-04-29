@@ -30,7 +30,11 @@
 #pragma once
 
 // appleseed.renderer headers.
+#ifdef APPLESEED_WITH_SPECTRAL_SUPPORT
 #include "renderer/utility/dynamicspectrum.h"
+#else
+#include "renderer/utility/rgbspectrum.h"
+#endif
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -59,7 +63,11 @@ typedef foundation::Ray<GScalar, 3> GRay3;
 typedef foundation::RayInfo<GScalar, 3> GRayInfo3;
 
 // Spectrum representation.
+#ifdef APPLESEED_WITH_SPECTRAL_SUPPORT
 typedef DynamicSpectrum31f Spectrum;
+#else
+typedef RGBSpectrumf Spectrum;
+#endif
 
 // Alpha channel representation.
 typedef foundation::Color<float, 1> Alpha;

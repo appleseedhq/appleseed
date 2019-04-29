@@ -1437,6 +1437,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_pixelsampler.cpp
     renderer/meta/tests/test_projectfilereader.cpp
     renderer/meta/tests/test_projectfilewriter.cpp
+    renderer/meta/tests/test_rgbspectrum.cpp
     renderer/meta/tests/test_samplecounter.cpp
     renderer/meta/tests/test_samplecounthistory.cpp
     renderer/meta/tests/test_samplegeneratorjob.cpp
@@ -2093,6 +2094,7 @@ set (renderer_utility_sources
     renderer/utility/pluginstore.h
     renderer/utility/projectpoints.cpp
     renderer/utility/projectpoints.h
+    renderer/utility/rgbspectrum.h
     renderer/utility/seexpr.h
     renderer/utility/settingsparsing.cpp
     renderer/utility/settingsparsing.h
