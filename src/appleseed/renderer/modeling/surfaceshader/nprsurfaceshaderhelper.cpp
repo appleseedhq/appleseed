@@ -64,9 +64,11 @@ void NPRSurfaceShaderHelper::evaluate(
     const Material* material = shading_point.get_material();
     const ShaderGroup* sg = material->get_render_data().m_shader_group;
 
+#ifdef APPLESEED_WITH_SPECTRAL_SUPPORT
     // For now, we only work in RGB mode.
     if (shading_components.m_beauty.get_mode() == Spectrum::Spectral)
         return;
+#endif
 
     // Make the shading results available to OSL.
     shading_point.m_surface_shader_diffuse = Color3f(

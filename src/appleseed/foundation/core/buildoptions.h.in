@@ -36,6 +36,10 @@
 #cmakedefine APPLESEED_USE_AVX2
 #cmakedefine APPLESEED_USE_F16C
 
+// Optional features.
+
+#cmakedefine APPLESEED_WITH_SPECTRAL_SUPPORT
+
 // Optional components.
 
 #cmakedefine APPLESEED_WITH_DISNEY_MATERIAL
