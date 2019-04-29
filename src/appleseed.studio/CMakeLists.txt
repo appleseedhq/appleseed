@@ -34,12 +34,12 @@
 
 # Boost.
 if (NOT PYTHON_MAJOR_VERSION STREQUAL "2")
-    message (FATAL_ERROR "Python 2.x needed")
+    message (FATAL_ERROR "Python 2.x needed.")
 else ()
-    if (Boost_VERSION_STRING VERSION_GREATER_EQUAL 1.67)
-        find_package (Boost 1.61 COMPONENTS python27)
+    if (Boost_VERSION GREATER_EQUAL 106700)
+        find_package (Boost 1.61 REQUIRED COMPONENTS python27)
     else ()
-        find_package (Boost 1.61 COMPONENTS python)
+        find_package (Boost 1.61 REQUIRED COMPONENTS python)
     endif ()
 endif ()
 
@@ -47,7 +47,7 @@ endif ()
 find_package (OpenGL REQUIRED)
 
 # Qt 5.
-find_package (Qt5 COMPONENTS Core Concurrent OpenGL Widgets REQUIRED)
+find_package (Qt5 REQUIRED COMPONENTS Concurrent Core OpenGL Widgets)
 
 
 #--------------------------------------------------------------------------------------------------
