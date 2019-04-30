@@ -105,11 +105,7 @@ vector<size_t> LightTree::build()
     {
         const EmittingShape& shape = m_emitting_shapes[i];
 
-        AABB3d bbox;
-        bbox.invalidate();
-        bbox.insert(shape.m_v0);
-        bbox.insert(shape.m_v1);
-        bbox.insert(shape.m_v2);
+        const AABB3d& bbox = shape.get_bbox();
 
         light_bboxes.push_back(bbox);
         m_items.emplace_back(bbox, i, EmittingShapeType);
@@ -207,7 +203,7 @@ float LightTree::recursive_node_update(
             const EmittingShape& shape = m_emitting_shapes[light_index];
 
             // Retrieve the emitting shape importance.
-            const EDF* edf = shape.m_material->get_uncached_edf();
+            const EDF* edf = shape.get_material()->get_uncached_edf();
             assert(edf != nullptr);
 
             const float max_contribution = edf->get_uncached_max_contribution();
@@ -304,12 +300,6 @@ float LightTree::evaluate_node_pdf(
     return pdf;
 }
 
-Vector3d LightTree::emitting_shape_centroid(const size_t shape_index) const
-{
-    const EmittingShape& shape = m_emitting_shapes[shape_index];
-    return (shape.m_v0 + shape.m_v1 + shape.m_v2) * (1.0 / 3.0);
-}
-
 namespace
 {
     // [1] Section 2.2.
@@ -375,7 +365,7 @@ float LightTree::compute_node_probability(
     {
         const Item& item = m_items[node.get_item_index()];
         if (item.m_light_type == EmittingShapeType)
-            position = emitting_shape_centroid(item.m_light_index);
+            position = m_emitting_shapes[item.m_light_index].get_centroid();
         else position = bbox.center();
     }
     else position = bbox.center();

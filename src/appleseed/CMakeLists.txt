@@ -540,6 +540,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_snprintf.cpp
     foundation/meta/tests/test_sphericalimportancesampler.cpp
     foundation/meta/tests/test_spline.cpp
+    foundation/meta/tests/test_stampedptr.cpp
     foundation/meta/tests/test_statistics.cpp
     foundation/meta/tests/test_stlallocatortestbed.cpp
     foundation/meta/tests/test_stopwatch.cpp
@@ -913,6 +914,7 @@ set (foundation_utility_sources
     foundation/utility/settings.h
     foundation/utility/siphash.cpp
     foundation/utility/siphash.h
+    foundation/utility/stampedptr.h
     foundation/utility/statistics.cpp
     foundation/utility/statistics.h
     foundation/utility/stopwatch.h
@@ -1158,13 +1160,13 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/lightpathrecorder.h
     renderer/kernel/lighting/lightpathstream.cpp
     renderer/kernel/lighting/lightpathstream.h
-    renderer/kernel/lighting/lightsample.cpp
     renderer/kernel/lighting/lightsample.h
     renderer/kernel/lighting/lightsamplerbase.cpp
     renderer/kernel/lighting/lightsamplerbase.h
     renderer/kernel/lighting/lighttree.cpp
     renderer/kernel/lighting/lighttree.h
     renderer/kernel/lighting/lighttree_node.h
+    renderer/kernel/lighting/lighttypes.cpp
     renderer/kernel/lighting/lighttypes.h
     renderer/kernel/lighting/materialsamplers.cpp
     renderer/kernel/lighting/materialsamplers.h

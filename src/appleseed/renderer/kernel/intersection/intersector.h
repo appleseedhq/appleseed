@@ -106,10 +106,9 @@ class Intersector
     // Manufacture a hit "by hand".
     // There is no restriction placed on the shading point passed to this method.
     // For instance it may have been previously initialized and used.
-    void make_surface_shading_point(
+    void make_triangle_shading_point(
         ShadingPoint&                       shading_point,
         const ShadingRay&                   shading_ray,
-        const ShadingPoint::PrimitiveType   primitive_type,
         const foundation::Vector2f&         bary,
         const AssemblyInstance*             assembly_instance,
         const foundation::Transformd&       assembly_instance_transform,

@@ -126,9 +126,6 @@ class LightTree
         const size_t                                node_level,
         IndexLUT&                                   tri_index_to_node_index);
 
-    foundation::Vector3d emitting_shape_centroid(
-        const size_t                                shape_index) const;
-
     float compute_node_probability(
         const LightTreeNode<foundation::AABB3d>&    node,
         const foundation::AABB3d&                   bbox,

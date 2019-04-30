@@ -351,10 +351,9 @@ bool Intersector::trace_probe(
     return visitor.hit();
 }
 
-void Intersector::make_surface_shading_point(
+void Intersector::make_triangle_shading_point(
     ShadingPoint&                       shading_point,
     const ShadingRay&                   shading_ray,
-    const ShadingPoint::PrimitiveType   primitive_type,
     const Vector2f&                     bary,
     const AssemblyInstance*             assembly_instance,
     const Transformd&                   assembly_instance_transform,
@@ -372,7 +371,7 @@ void Intersector::make_surface_shading_point(
     shading_point.m_ray = shading_ray;
 
     // Primary intersection results.
-    shading_point.m_primitive_type = primitive_type;
+    shading_point.m_primitive_type = ShadingPoint::PrimitiveTriangle;
     shading_point.m_bary = bary;
     shading_point.m_assembly_instance = assembly_instance;
     shading_point.m_assembly_instance_transform = assembly_instance_transform;

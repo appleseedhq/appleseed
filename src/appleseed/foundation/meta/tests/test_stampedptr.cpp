@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,51 +26,49 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "lightsample.h"
-
-// appleseed.renderer headers.
-#include "renderer/kernel/intersection/intersector.h"
-#include "renderer/kernel/shading/shadingpoint.h"
+// appleseed.foundation headers.
+#include "foundation/platform/types.h"
+#include "foundation/utility/stampedptr.h"
+#include "foundation/utility/test.h"
 
 // Standard headers.
-#include <cassert>
-#include <string>
+#include <memory>
 
 using namespace foundation;
 using namespace std;
 
-namespace renderer
+TEST_SUITE(Foundation_Utility_StampedPtr)
 {
+    TEST_CASE(TestWithStackPointer)
+    {
+        const int value = 11;
+        const uint16 stamp = 7;
 
-//
-// LightSample class implementation.
-//
+        stamped_ptr<const int> x(&value, stamp);
 
-void LightSample::make_shading_point(
-    ShadingPoint&           shading_point,
-    const Vector3d&         direction,
-    const Intersector&      intersector) const
-{
-    assert(m_shape && !m_light);
+        EXPECT_EQ(&value, x.get_ptr());
+        EXPECT_EQ(stamp, x.get_stamp());
+        EXPECT_EQ(value, *x.get_ptr());
+    }
 
-    intersector.make_surface_shading_point(
-        shading_point,
-        ShadingRay(
-            m_point,
-            direction,
-            0.0,
-            0.0,
-            ShadingRay::Time(),
-            VisibilityFlags::CameraRay, 0),
-        ShadingPoint::PrimitiveTriangle,    // note: we assume light samples are always on shapes (and not on curves)
-        m_bary,
-        m_shape->m_assembly_instance,
-        m_shape->m_assembly_instance->transform_sequence().get_earliest_transform(),
-        m_shape->m_object_instance_index,
-        m_shape->m_shape_index,
-        m_shape->m_shape_support_plane);
+    TEST_CASE(TestWithHeapPointer)
+    {
+        const unique_ptr<int> ptr(new int(11));
+        const uint16 stamp = 7;
+
+        stamped_ptr<const int> x(ptr.get(), stamp);
+
+        EXPECT_EQ(ptr.get(), x.get_ptr());
+        EXPECT_EQ(stamp, x.get_stamp());
+        EXPECT_EQ(*ptr, *x.get_ptr());
+    }
+
+    TEST_CASE(TestWithNullPtr)
+    {
+        const uint16 stamp = 7;
+        stamped_ptr<const int> x(nullptr, stamp);
+
+        EXPECT_EQ(nullptr, x.get_ptr());
+        EXPECT_EQ(stamp, x.get_stamp());
+    }
 }
-
-} // namespace renderer
-

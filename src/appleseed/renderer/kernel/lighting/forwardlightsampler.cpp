@@ -92,7 +92,7 @@ ForwardLightSampler::ForwardLightSampler(const Scene& scene, const ParamArray& p
                 importance_multiplier = edf->get_uncached_importance_multiplier();
 
             // Compute the probability density of this shape.
-            const float shape_importance = m_params.m_importance_sampling ? static_cast<float>(area) : 1.0f;
+            const float shape_importance = m_params.m_importance_sampling ? area : 1.0f;
             const float shape_prob = shape_importance * importance_multiplier;
 
             // Insert the light-emitting shape into the CDF.
@@ -113,7 +113,7 @@ ForwardLightSampler::ForwardLightSampler(const Scene& scene, const ParamArray& p
 
     // Store the shape probability densities into the emitting shapes.
     for (size_t i = 0, e = m_emitting_shapes.size(); i < e; ++i)
-        m_emitting_shapes[i].m_shape_prob = m_emitting_shapes_cdf[i].second;
+        m_emitting_shapes[i].set_shape_prob(m_emitting_shapes_cdf[i].second);
 
    RENDERER_LOG_INFO(
         "found %s %s, %s emitting %s.",
@@ -170,7 +170,7 @@ float ForwardLightSampler::evaluate_pdf(const ShadingPoint& light_shading_point)
         return 0.0f;
 
     const EmittingShape* shape = *shape_ptr;
-    return shape->m_shape_prob * shape->m_rcp_area;
+    return shape->evaluate_pdf_uniform();
 }
 
 void ForwardLightSampler::sample_non_physical_lights(

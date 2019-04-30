@@ -62,9 +62,6 @@ class LightSamplerBase
   : public foundation::NonCopyable
 {
   public:
-    // Constructor.
-    explicit LightSamplerBase(const ParamArray& params);
-
     // Return the number of non-physical lights in the scene.
     size_t get_non_physical_light_count() const;
 
@@ -106,6 +103,9 @@ class LightSamplerBase
     // Return metadata for parameters common to all light samplers.
     static foundation::Dictionary get_params_metadata();
 
+    // Constructor.
+    explicit LightSamplerBase(const ParamArray& params);
+
     // Build a hash table that allows to find the emitting shape at a given shading point.
     void build_emitting_shape_hash_table();
 
@@ -139,14 +139,6 @@ class LightSamplerBase
         const ObjectInstance*               object_instance,
         const float                         object_area,
         const MaterialArray&                materials);
-
-    // Sample a given emitting shape.
-    void sample_emitting_shape(
-        const ShadingRay::Time&             time,
-        const foundation::Vector2f&         s,
-        const size_t                        shape_index,
-        const float                         shape_prob,
-        LightSample&                        sample) const;
 
     // Sample the set of emitting shapes.
     void sample_emitting_shapes(
