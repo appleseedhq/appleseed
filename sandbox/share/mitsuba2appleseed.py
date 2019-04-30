@@ -942,7 +942,7 @@ def main():
     except IOError:
         fatal("Failed to load {0}".format(args.input_file))
     
-    # Add input file as a path to filename allowing input file to be anywhere.
+    # Make asset paths in the Mitsuba file relative to the Mitsuba file itself.
     for child in tree.getroot():
         filepath = child.find("string[@name='filename']")
         if filepath is not None:
