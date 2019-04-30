@@ -6,7 +6,7 @@
 # This software is released under the MIT license.
 #
 # Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-# Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+# Copyright (c) 2014-2019 Francois Beaune, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -664,23 +664,26 @@ if (WITH_CLI)
     add_subdirectory (src/appleseed.cli)
 endif ()
 
-if (WITH_PYTHON2_BINDINGS)
-    set (Python_ADDITIONAL_VERSIONS 2.7)
+if (WITH_PYTHON2_BINDINGS OR WITH_PYTHON3_BINDINGS)
     find_package (PythonLibs REQUIRED)
+    
+    if (WITH_PYTHON2_BINDINGS)
+        set (Python_ADDITIONAL_VERSIONS 2.7)
 
-    # Splitting version string into list.
-    string (REGEX MATCHALL "[0123456789]+" PYTHON_VERSION_LIST "${PYTHONLIBS_VERSION_STRING}")
+        # Splitting version string into list.
+        string (REGEX MATCHALL "[0123456789]+" PYTHON_VERSION_LIST "${PYTHONLIBS_VERSION_STRING}")
 
-    if (PYTHON_VERSION_LIST)
-        # Accessing major and minor version numbers with the version list we got.
-        list (GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
-        list (GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
-    else ()
-        # Default to latest Python 2 release if version string cannot be read.
-        message (STATUS "Cannot find Python version; using Python 2.7 by default.")
-        set (PYTHON_MAJOR_VERSION "2")
-        set (PYTHON_MINOR_VERSION "7")
-    endif ()
+        if (PYTHON_VERSION_LIST)
+            # Accessing major and minor version numbers with the version list we got.
+            list (GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
+            list (GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
+        else ()
+            # Default to latest Python 2 release if version string cannot be read.
+            message (STATUS "Cannot find Python version; using Python 2.7 by default.")
+            set (PYTHON_MAJOR_VERSION "2")
+            set (PYTHON_MINOR_VERSION "7")
+        endif ()
+    endif()
 
     add_subdirectory (src/appleseed.python)
 endif ()
