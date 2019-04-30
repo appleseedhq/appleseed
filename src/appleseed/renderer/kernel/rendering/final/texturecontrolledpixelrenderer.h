@@ -66,11 +66,11 @@ class TextureControlledPixelRendererFactory
 
     // Constructor.
     TextureControlledPixelRendererFactory(
-        const Frame&                                frame,
-        ISampleRendererFactory*                     factory,
-        const ParamArray&                           params);
+        const Frame&                    frame,
+        ISampleRendererFactory*         factory,
+        const ParamArray&               params);
     
-    // Load an image texture from a file
+    // Load a texture from a file.
     bool load_texture(const std::string& texture_path);
     
     // Delete this instance.
@@ -78,13 +78,13 @@ class TextureControlledPixelRendererFactory
 
     // Return a new texture-controlled pixel renderer instance.
     IPixelRenderer* create(
-        const size_t                thread_index) override;
+        const size_t                    thread_index) override;
 
   private:
-    const Frame&                          m_frame;
-    std::shared_ptr<OIIO::ImageBuf>       m_texture;
-    ISampleRendererFactory*               m_factory;
-    ParamArray                            m_params;
+    const Frame&                        m_frame;
+    std::shared_ptr<OIIO::ImageBuf>     m_texture;
+    ISampleRendererFactory*             m_factory;
+    ParamArray                          m_params;
 };
 
 }   // namespace renderer
