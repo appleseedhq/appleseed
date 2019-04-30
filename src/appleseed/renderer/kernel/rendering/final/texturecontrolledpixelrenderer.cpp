@@ -310,18 +310,19 @@ TextureControlledPixelRendererFactory::TextureControlledPixelRendererFactory(
 {
 }
 
-bool TextureControlledPixelRendererFactory::load_texture(const std::string &texture_path)
+bool TextureControlledPixelRendererFactory::load_texture(const std::string& texture_path)
 {
     // Create a new dedicated ImageCache instead of using the global ImageCache.
     // This is to prevent errors during ImageBuf access if the file behind tex_path was overwritten on disk.
-    ImageCache *image_cache = ImageCache::create();
+    ImageCache* image_cache = ImageCache::create();
     std::unique_ptr<ImageBuf> texture(new ImageBuf(texture_path, 0, 0, image_cache));
+
     // Force the read to immediately do the entire disk I/O for the file.
     // We can then safely destroy the cache since the entire image data has been read into the ImageBuf.
     const bool read_successful = texture->read(0, 0, true);
     ImageCache::destroy(image_cache);
 
-    if(!read_successful)
+    if (!read_successful)
         return false;
 
     ImageSpec spec = texture->spec();
