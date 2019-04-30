@@ -33,6 +33,7 @@ from xml.etree.ElementTree import ElementTree
 import appleseed as asr
 import argparse
 import math
+import os.path
 import sys
 import traceback
 
@@ -940,6 +941,12 @@ def main():
         tree.parse(args.input_file)
     except IOError:
         fatal("Failed to load {0}".format(args.input_file))
+    
+    # Make asset paths in the Mitsuba file relative to the Mitsuba file itself.
+    for child in tree.getroot():
+        filepath = child.find("string[@name='filename']")
+        if filepath is not None:
+            filepath.attrib["value"] = os.path.join(os.path.dirname(args.input_file), filepath.attrib["value"])
 
     project = convert(tree)
 
