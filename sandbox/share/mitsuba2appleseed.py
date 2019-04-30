@@ -941,7 +941,8 @@ def main():
         tree.parse(args.input_file)
     except IOError:
         fatal("Failed to load {0}".format(args.input_file))
-
+    
+    # Add input file as a path to filename allowing input file to be anywhere.
     for child in tree.getroot():
         filepath = child.find("string[@name='filename']")
         if filepath is not None:
@@ -949,7 +950,7 @@ def main():
 
     project = convert(tree)
 
-    asr.ProjectFileWriter().write(project, args.output_file, 
+    asr.ProjectFileWriter().write(project, args.output_file,
                                   asr.ProjectFileWriterOptions.OmitHandlingAssetFiles)
 
 if __name__ == '__main__':
