@@ -355,15 +355,15 @@ void LightSamplerBase::collect_emitting_shapes(
             y = global_transform.vector_to_parent(y);
             n = global_transform.normal_to_parent(n);
 
-            if (norm(x) * norm(y) == 0.0)
+            const double area = norm(x) * norm(y);
+
+            if (area == 0.0)
             {
                 RENDERER_LOG_WARNING(
                     "rectangle object \"%s\" has zero area; it will be ignored.",
                     rectangle.get_name());
                 continue;
             }
-
-            const double area = norm(x) * norm(y);
 
             for (size_t side = 0; side < 2; ++side)
             {

@@ -174,9 +174,9 @@ void EmittingShape::sample_uniform(
         // Uniformly sample the surface of the shape.
         const Vector3d bary = sample_triangle_uniform(Vector2d(s));
 
-        // Set the barycentric coordinates.
-        light_sample.m_bary[0] = static_cast<float>(bary[0]);
-        light_sample.m_bary[1] = static_cast<float>(bary[1]);
+        // Set the parametric coordinates.
+        light_sample.m_param[0] = static_cast<float>(bary[0]);
+        light_sample.m_param[1] = static_cast<float>(bary[1]);
 
         // Compute the world space position of the sample.
         light_sample.m_point =
@@ -196,8 +196,8 @@ void EmittingShape::sample_uniform(
     }
     else if (shape_type == RectangleShape)
     {
-        // Set the barycentric coordinates.
-        light_sample.m_bary = s;
+        // Set the parametric coordinates.
+        light_sample.m_param = s;
 
         light_sample.m_point =
             m_geom.m_rectangle.m_origin +
