@@ -136,8 +136,7 @@ TEST_SUITE(Foundation_Resources_Logos)
 
                 color.rgb() = srgb_to_linear_rgb(color.rgb());
                 
-                std::string fmt = "%." + std::to_string(std::numeric_limits<float>::max_digits10) + "ff";
-                fprintf(file, (fmt + ", " + fmt + ", " + fmt + ", " + fmt).c_str(), color[0], color[1], color[2], color[3]);
+                fprintf(file, "%.9ff, %.9ff, %.9ff, %.9ff", color[0], color[1], color[2], color[3]);
                 ++written_pixels;
             }
         }

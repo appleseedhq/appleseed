@@ -50,7 +50,6 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdio>
-#include <limits>
 #include <string>
 #include <vector>
 
@@ -551,7 +550,7 @@ TEST_SUITE(Foundation_Math_QMC)
             {
                 const double s = radical_inverse<double>(Primes[d], i);
                 
-                std::string fmt = "%." + std::to_string(std::numeric_limits<double>::max_digits10) + "f";
+                std::string fmt = "%.17f";
                 fprintf(file, fmt.c_str(), s);
 
                 if (d < Dimension - 1)
