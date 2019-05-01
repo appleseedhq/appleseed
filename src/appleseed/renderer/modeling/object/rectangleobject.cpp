@@ -143,6 +143,21 @@ double RectangleObject::get_uncached_height() const
     return m_params.get_optional<double>("height", 1.0);
 }
 
+void RectangleObject::get_origin_and_axes(
+    Vector3d&               origin,
+    Vector3d&               x,
+    Vector3d&               y,
+    Vector3d&               n) const
+{
+    const double width = get_uncached_width();
+    const double height = get_uncached_height();
+
+    origin = Vector3d(-width * 0.5, 0.0, height * 0.5);
+    x = Vector3d(width, 0.0, 0.0);
+    y = Vector3d(0.0, 0.0, -height);
+    n = Vector3d(0.0, 1.0, 0.0);
+}
+
 void RectangleObject::intersect(
     const ShadingRay&      ray,
     IntersectionResult&    result) const

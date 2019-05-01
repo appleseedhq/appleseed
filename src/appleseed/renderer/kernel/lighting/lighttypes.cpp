@@ -108,6 +108,39 @@ EmittingShape EmittingShape::create_triangle_shape(
     return shape;
 }
 
+EmittingShape EmittingShape::create_rectangle_shape(
+    const AssemblyInstance*     assembly_instance,
+    const size_t                object_instance_index,
+    const Material*             material,
+    const Vector3d&             p,
+    const Vector3d&             x,
+    const Vector3d&             y,
+    const Vector3d&             n)
+{
+    EmittingShape shape(
+        RectangleShape,
+        assembly_instance,
+        object_instance_index,
+        0,
+        material);
+
+    shape.m_geom.m_rectangle.m_origin = p;
+    shape.m_geom.m_rectangle.m_x = x;
+    shape.m_geom.m_rectangle.m_y = y;
+    shape.m_geom.m_rectangle.m_width = norm(x);
+    shape.m_geom.m_rectangle.m_height = norm(y);
+    shape.m_geom.m_rectangle.m_geometric_normal = n;
+    shape.m_geom.m_rectangle.m_plane_dist = -dot(p, n);
+
+    shape.m_area = static_cast<float>(
+        shape.m_geom.m_rectangle.m_width * shape.m_geom.m_rectangle.m_height);
+
+    if (shape.m_area != 0.0f)
+        shape.m_rcp_area = 1.0f / shape.m_area;
+
+    return shape;
+}
+
 EmittingShape::EmittingShape(
     const ShapeType         shape_type,
     const AssemblyInstance* assembly_instance,
@@ -161,6 +194,20 @@ void EmittingShape::sample_uniform(
         // Set the world space geometric normal.
         light_sample.m_geometric_normal = m_geom.m_triangle.m_geometric_normal;
     }
+    else if (shape_type == RectangleShape)
+    {
+        // Set the barycentric coordinates.
+        light_sample.m_bary = s;
+
+        light_sample.m_point =
+            m_geom.m_rectangle.m_origin +
+            static_cast<double>(s[0]) * m_geom.m_rectangle.m_x +
+            static_cast<double>(s[1]) * m_geom.m_rectangle.m_y;
+
+        // Set the world space shading and geometric normal.
+        light_sample.m_shading_normal = m_geom.m_rectangle.m_geometric_normal;
+        light_sample.m_geometric_normal = m_geom.m_rectangle.m_geometric_normal;
+    }
     else
     {
         assert(false && "Unknown emitter shape type");
@@ -203,6 +250,26 @@ void EmittingShape::make_shading_point(
             get_object_instance_index(),
             get_primitive_index(),
             m_shape_support_plane);
+    }
+    else if (shape_type == RectangleShape)
+    {
+        const Vector3d p =
+            m_geom.m_rectangle.m_origin +
+            static_cast<double>(bary[0]) * m_geom.m_rectangle.m_x +
+            static_cast<double>(bary[1]) * m_geom.m_rectangle.m_y;
+
+        intersector.make_procedural_surface_shading_point(
+            shading_point,
+            ray,
+            bary,
+            get_assembly_instance(),
+            get_assembly_instance()->transform_sequence().get_earliest_transform(),
+            get_object_instance_index(),
+            get_primitive_index(),
+            p,
+            m_geom.m_rectangle.m_geometric_normal,
+            m_geom.m_rectangle.m_x,
+            cross(m_geom.m_rectangle.m_x, m_geom.m_rectangle.m_geometric_normal));
     }
     else
     {

@@ -35,6 +35,7 @@
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/object/meshobject.h"
+#include "renderer/modeling/object/rectangleobject.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #include "renderer/utility/triangle.h"
@@ -164,6 +165,12 @@ void LightSamplerBase::collect_emitting_shapes(
         // Skip object instances without light-emitting materials.
         if (!has_emitting_materials(front_materials) && !has_emitting_materials(back_materials))
             continue;
+
+        // Compute the object space to world space transformation.
+        // todo: add support for moving light-emitters.
+        const Transformd& object_instance_transform = object_instance->get_transform();
+        const Transformd& assembly_instance_transform = transform_sequence.get_earliest_transform();
+        const Transformd global_transform = assembly_instance_transform * object_instance_transform;
 
         // Retrieve the object.
         Object& object = object_instance->get_object();
@@ -315,6 +322,83 @@ void LightSamplerBase::collect_emitting_shapes(
                         // Accumulate the object area for OSL shaders.
                         object_area += emitting_shape.m_area;
                     }
+                }
+            }
+        }
+        else if (strcmp(object.get_model(), RectangleObjectFactory().get_model()) == 0)
+        {
+            // Fetch the materials assigned to this rectangle.
+            const Material* front_material =
+                front_materials.empty() ? nullptr : front_materials[0];
+
+            const Material* back_material =
+                back_materials.empty() ? nullptr : back_materials[0];
+
+            // Skip rectangles that don't emit light.
+            if ((front_material == nullptr || !front_material->has_emission()) &&
+                (back_material == nullptr || !back_material->has_emission()))
+                continue;
+
+            // Retrieve the rectangle.
+            const RectangleObject& rectangle = static_cast<const RectangleObject&>(object);
+
+            // Retrieve object instance space geometry of the rectangle.
+            Vector3d o, x, y, n;
+            rectangle.get_origin_and_axes(o, x, y, n);
+
+            if (object_instance->must_flip_normals())
+                n = -n;
+
+            // Transform rectangle to world space.
+            o = global_transform.point_to_parent(o);
+            x = global_transform.vector_to_parent(x);
+            y = global_transform.vector_to_parent(y);
+            n = global_transform.normal_to_parent(n);
+
+            if (norm(x) * norm(y) == 0.0)
+            {
+                RENDERER_LOG_WARNING(
+                    "rectangle object \"%s\" has zero area; it will be ignored.",
+                    rectangle.get_name());
+                continue;
+            }
+
+            const double area = norm(x) * norm(y);
+
+            for (size_t side = 0; side < 2; ++side)
+            {
+                // Retrieve the material; skip sides without a material or without emission.
+                const Material* material = side == 0 ? front_material : back_material;
+                if (material == nullptr || !material->has_emission())
+                    continue;
+
+                // Invoke the shape handling function.
+                const bool accept_shape =
+                    shape_handling(
+                        material,
+                        static_cast<float>(area),
+                        m_emitting_shapes.size());
+
+                if (accept_shape)
+                {
+                    // Create a light-emitting rectangle.
+                    auto emitting_shape = EmittingShape::create_rectangle_shape(
+                        &assembly_instance,
+                        object_instance_index,
+                        material,
+                        o,
+                        x,
+                        y,
+                        side == 0 ? n : -n);
+
+                    // Estimate radiant flux emitted by this shape.
+                    emitting_shape.estimate_flux();
+
+                    // Store the light-emitting shape.
+                    m_emitting_shapes.push_back(emitting_shape);
+
+                    // Accumulate the object area for OSL shaders.
+                    object_area += emitting_shape.m_area;
                 }
             }
         }
