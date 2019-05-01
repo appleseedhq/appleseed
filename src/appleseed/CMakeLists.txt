@@ -2104,6 +2104,8 @@ set (renderer_utility_sources
     renderer/utility/iostreamop.h
     renderer/utility/messagecontext.cpp
     renderer/utility/messagecontext.h
+    renderer/utility/oiiomaketexture.cpp
+    renderer/utility/oiiomaketexture.h
     renderer/utility/paramarray.cpp
     renderer/utility/paramarray.h
     renderer/utility/plugin.cpp
@@ -2277,6 +2279,7 @@ link_against_openexr (appleseed)
 link_against_zlib (appleseed)
 link_against_lz4 (appleseed)
 
+link_against_ocio (appleseed)
 link_against_oiio (appleseed)
 link_against_osl (appleseed)
 

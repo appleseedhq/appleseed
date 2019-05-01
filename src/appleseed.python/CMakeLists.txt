@@ -227,24 +227,20 @@ endif ()
 
 if (WITH_PYTHON2_BINDINGS)
     link_against_platform (appleseed.python)
-    link_against_ocio (appleseed.python)
-    link_against_oiio (appleseed.python)
 
     target_link_libraries (appleseed.python
         appleseed
-        ${Boost_PYTHON_LIBRARY}             # all Boost libraries but Boost.Python3
+        ${Boost_PYTHON_LIBRARY}             # Only Boost.Python2 library
         ${PYTHON_LIBRARIES}
     )
 endif ()
 
 if (WITH_PYTHON3_BINDINGS)
     link_against_platform (appleseed.python3)
-    link_against_ocio (appleseed.python3)
-    link_against_oiio (appleseed.python3)
 
     target_link_libraries (appleseed.python3
         appleseed
-        ${Boost_PYTHON3_LIBRARY}        # all Boost libraries but Boost.Python
+        ${Boost_PYTHON3_LIBRARY}        # Only Boost.Python3 library
         glad
         ${PYTHON3_LIBRARY}
     )
