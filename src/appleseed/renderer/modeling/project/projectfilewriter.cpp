@@ -114,8 +114,8 @@ namespace renderer
 namespace
 {
     // Floating-point formatting settings.
-    std::string MatrixFormat     = "%." + std::to_string(std::numeric_limits<double>::max_digits10) + "f";
-    std::string ColorValueFormat = "%." + std::to_string(std::numeric_limits<float>::max_digits10) + "f";
+    const char* MatrixFormat     = "%.17f";
+    const char* ColorValueFormat = "%.9f";
 
     class Writer
     {
@@ -192,7 +192,7 @@ namespace
             const Vec&          v,
             const size_t        size,
             const size_t        columns,
-            const std::string&         fmt)
+            const char*         fmt)
         {
             assert(columns > 0);
 
@@ -204,7 +204,7 @@ namespace
                     fputs(m_indenter.c_str(), m_file);
                 else fputc(' ', m_file);
 
-                fprintf(m_file, fmt.c_str(), v[i]);
+                fprintf(m_file, fmt, v[i]);
 
                 if (col == columns - 1 || i == size - 1)
                     fputc('\n', m_file);
