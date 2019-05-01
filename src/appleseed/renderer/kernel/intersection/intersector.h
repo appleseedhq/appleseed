@@ -116,6 +116,22 @@ class Intersector
         const size_t                        primitive_index,
         const TriangleSupportPlaneType&     triangle_support_plane) const;
 
+    // Manufacture a procedural surface hit "by hand".
+    // There is no restriction placed on the shading point passed to this method.
+    // For instance it may have been previously initialized and used.
+    void make_procedural_surface_shading_point(
+        ShadingPoint&                       shading_point,
+        const ShadingRay&                   shading_ray,
+        const foundation::Vector2f&         bary,
+        const AssemblyInstance*             assembly_instance,
+        const foundation::Transformd&       assembly_instance_transform,
+        const size_t                        object_instance_index,
+        const size_t                        primitive_index,
+        const foundation::Vector3d&         point,
+        const foundation::Vector3d&         normal,
+        const foundation::Vector3d&         dpdu,
+        const foundation::Vector3d&         dpdv) const;
+
     // Manufacture a volume shading point "by hand".
     // There is no restriction placed on the shading point passed to this method.
     // For instance it may have been previously initialized and used.

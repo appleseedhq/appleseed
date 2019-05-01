@@ -384,6 +384,65 @@ void Intersector::make_triangle_shading_point(
     shading_point.m_members = 0;
 }
 
+void Intersector::make_procedural_surface_shading_point(
+    ShadingPoint&                       shading_point,
+    const ShadingRay&                   shading_ray,
+    const foundation::Vector2f&         uv,
+    const AssemblyInstance*             assembly_instance,
+    const foundation::Transformd&       assembly_instance_transform,
+    const size_t                        object_instance_index,
+    const size_t                        primitive_index,
+    const Vector3d&                     point,
+    const Vector3d&                     normal,
+    const Vector3d&                     dpdu,
+    const Vector3d&                     dpdv) const
+{
+    // This helps finding bugs if make_surface_shading_point()
+    // is called on a previously used shading point.
+    debug_poison(shading_point);
+
+    shading_point.m_texture_cache = &m_texture_cache;
+    shading_point.m_scene = &m_trace_context.get_scene();
+
+    assert(shading_ray.m_has_differentials == false);
+    shading_point.m_ray = shading_ray;
+
+    shading_point.m_primitive_type = ShadingPoint::PrimitiveProceduralSurface;
+
+    shading_point.m_bary = uv;
+    shading_point.m_assembly_instance = assembly_instance;
+    shading_point.m_assembly_instance_transform = assembly_instance_transform;
+    shading_point.m_assembly_instance_transform_seq = &assembly_instance->transform_sequence();
+    shading_point.m_object_instance_index = object_instance_index;
+    shading_point.m_primitive_index = primitive_index;
+
+    shading_point.m_point = point;
+    shading_point.m_members |= ShadingPoint::HasPoint;
+
+    assert(is_normalized(normal));
+    shading_point.m_geometric_normal = shading_point.m_original_shading_normal = normal;
+    shading_point.m_members |= ShadingPoint::HasGeometricNormal | ShadingPoint::HasOriginalShadingNormal;
+
+    shading_point.m_shading_basis = Basis3d(
+        normal,
+        normalize(dpdu),
+        normalize(dpdv));
+    shading_point.m_members |= ShadingPoint::HasShadingBasis;
+
+    shading_point.m_uv = uv;
+    shading_point.m_members = ShadingPoint::HasUV0;
+
+    shading_point.m_dpdu = dpdu;
+    shading_point.m_dpdu = dpdv;
+    shading_point.m_members |= ShadingPoint::HasWorldSpaceDerivatives;
+
+    shading_point.m_dpdx = Vector3d(0.0);
+    shading_point.m_dpdy = Vector3d(0.0);
+    shading_point.m_duvdx = Vector2f(0.0);
+    shading_point.m_duvdy = Vector2f(0.0);
+    shading_point.m_members = ShadingPoint::HasScreenSpaceDerivatives;
+}
+
 void Intersector::make_volume_shading_point(
     ShadingPoint&                       shading_point,
     const ShadingRay&                   volume_ray,

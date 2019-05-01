@@ -75,6 +75,12 @@ class APPLESEED_DLLSYMBOL RectangleObject
     double get_uncached_width() const;
     double get_uncached_height() const;
 
+    void get_origin_and_axes(
+        foundation::Vector3d&       origin,
+        foundation::Vector3d&       x,
+        foundation::Vector3d&       y,
+        foundation::Vector3d&       n) const;
+
     void intersect(
         const ShadingRay&           ray,
         IntersectionResult&         result) const override;

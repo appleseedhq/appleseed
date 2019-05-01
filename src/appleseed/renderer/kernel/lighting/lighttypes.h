@@ -80,7 +80,8 @@ class EmittingShape
   public:
     enum ShapeType
     {
-        TriangleShape = 0
+        TriangleShape = 0,
+        RectangleShape
     };
 
     static EmittingShape create_triangle_shape(
@@ -95,6 +96,15 @@ class EmittingShape
         const foundation::Vector3d& n1,
         const foundation::Vector3d& n2,
         const foundation::Vector3d& geometric_normal);
+
+    static EmittingShape create_rectangle_shape(
+        const AssemblyInstance*     assembly_instance,
+        const size_t                object_instance_index,
+        const Material*             material,
+        const foundation::Vector3d& p,
+        const foundation::Vector3d& x,
+        const foundation::Vector3d& y,
+        const foundation::Vector3d& n);
 
     ShapeType get_shape_type() const;
 
@@ -149,9 +159,20 @@ class EmittingShape
         double  m_plane_dist;
     };
 
+    struct Rectangle
+    {
+        foundation::Vector3d    m_origin;                       // world space position of the bottom left corner of the rectangle
+        foundation::Vector3d    m_x, m_y;                       // world space x and y axes
+        double                  m_width;                        // rectangle width
+        double                  m_height;                       // rectangle height
+        foundation::Vector3d    m_geometric_normal;             // world space geometric normal, unit-length
+        double                  m_plane_dist;
+    };
+
     union Geom
     {
-        Triangle m_triangle;
+        Triangle    m_triangle;
+        Rectangle   m_rectangle;
     };
 
     typedef foundation::stamped_ptr<const AssemblyInstance> AssemblyInstanceAndType;
