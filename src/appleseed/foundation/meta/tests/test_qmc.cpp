@@ -549,7 +549,7 @@ TEST_SUITE(Foundation_Math_QMC)
             for (size_t d = 0; d < Dimension; ++d)
             {
                 const double s = radical_inverse<double>(Primes[d], i);
-                
+
                 fprintf(file, "%.17f", s);
 
                 if (d < Dimension - 1)
