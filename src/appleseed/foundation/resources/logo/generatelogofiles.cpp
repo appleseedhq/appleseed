@@ -44,7 +44,6 @@
 // Standard headers.
 #include <cstddef>
 #include <cstdio>
-#include <limits>
 #include <memory>
 #include <string>
 
