@@ -41,6 +41,7 @@
 #include "utility/inputwidgetproxies.h"
 #include "utility/miscellaneous.h"
 #include "utility/mousewheelfocuseventfilter.h"
+#include "utility/settingskeys.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
@@ -64,6 +65,7 @@
 #include <QKeySequence>
 #include <QLabel>
 #include <QLayout>
+#include <QLineEdit>
 #include <QMessageBox>
 #include <QRadioButton>
 #include <QShortcut>
@@ -340,6 +342,15 @@ class RenderSettingsPanel
         return combobox;
     }
 
+    QLineEdit* create_line_edit(
+        const string&           widget_key)
+    {
+        QLineEdit* line_edit = new QLineEdit();
+        m_widget_proxies[widget_key] = new LineEditProxy(line_edit);
+
+        return line_edit;
+    }
+
     void create_direct_link(
         const string&           widget_key,
         const string&           param_path,
@@ -473,15 +484,20 @@ namespace
             create_image_plane_sampling_general_settings(layout);
             create_image_plane_sampling_sampler_settings(layout);
 
-            create_direct_link("general.passes",                            "passes");
+            create_direct_link("general.passes",                                   "passes");
 
-            create_direct_link("uniform_sampler.samples",                   "uniform_pixel_renderer.samples");
-            create_direct_link("uniform_sampler.force_antialiasing",        "uniform_pixel_renderer.force_antialiasing");
+            create_direct_link("texture_controlled_sampler.min_samples",           "texture_controlled_pixel_renderer.min_samples");
+            create_direct_link("texture_controlled_sampler.max_samples",           "texture_controlled_pixel_renderer.max_samples");
+            create_direct_link("texture_controlled_sampler.file_path",             "texture_controlled_pixel_renderer.file_path");
+            create_direct_link("texture_controlled_sampler.force_antialiasing",    "texture_controlled_pixel_renderer.force_antialiasing");
 
-            create_direct_link("adaptive_tile_sampler.batch_size",          "adaptive_tile_renderer.batch_size");
-            create_direct_link("adaptive_tile_sampler.min_samples",         "adaptive_tile_renderer.min_samples");
-            create_direct_link("adaptive_tile_sampler.max_samples",         "adaptive_tile_renderer.max_samples");
-            create_direct_link("adaptive_tile_sampler.noise_threshold",     "adaptive_tile_renderer.noise_threshold");
+            create_direct_link("uniform_sampler.samples",                          "uniform_pixel_renderer.samples");
+            create_direct_link("uniform_sampler.force_antialiasing",               "uniform_pixel_renderer.force_antialiasing");
+
+            create_direct_link("adaptive_tile_sampler.batch_size",                 "adaptive_tile_renderer.batch_size");
+            create_direct_link("adaptive_tile_sampler.min_samples",                "adaptive_tile_renderer.min_samples");
+            create_direct_link("adaptive_tile_sampler.max_samples",                "adaptive_tile_renderer.max_samples");
+            create_direct_link("adaptive_tile_sampler.noise_threshold",            "adaptive_tile_renderer.noise_threshold");
 
             load_general_sampler(config);
             load_directly_linked_values(config);
@@ -516,7 +532,13 @@ namespace
         QSpinBox*   m_image_plane_sampler_passes;
         QGroupBox*  m_uniform_image_plane_sampler;
         QGroupBox*  m_adaptive_tile_image_plane_sampler;
+        QGroupBox*  m_texture_controlled_image_plane_sampler;
+        QSpinBox*   m_texture_controlled_sampler_min_samples;
+        QSpinBox*   m_texture_controlled_sampler_max_samples;
         QCheckBox*  m_uniform_sampler_force_aa;
+        QCheckBox*  m_texture_controlled_sampler_force_aa;
+        QLineEdit*  m_path_line_edit;
+        ParamArray  m_file_open_settings;
 
         void create_image_plane_sampling_general_settings(QVBoxLayout* parent)
         {
@@ -533,6 +555,7 @@ namespace
             m_image_plane_sampler_combo->setToolTip(m_params_metadata.get_path("sampling_mode.help"));
             m_image_plane_sampler_combo->addItem("Uniform", "uniform");
             m_image_plane_sampler_combo->addItem("Adaptive", "adaptive_tile");
+            m_image_plane_sampler_combo->addItem("Texture", "texture");
             m_image_plane_sampler_combo->setCurrentIndex(-1);
             sublayout->addRow("Sampler:", m_image_plane_sampler_combo);
 
@@ -547,11 +570,14 @@ namespace
 
         void create_image_plane_sampling_sampler_settings(QVBoxLayout* parent)
         {
-            QHBoxLayout* layout = create_horizontal_layout();
-            parent->addLayout(layout);
+            QVBoxLayout* v_layout = create_vertical_layout();
+            QHBoxLayout* h_layout = create_horizontal_layout();
+            v_layout->addLayout(h_layout);
+            parent->addLayout(v_layout);
 
-            create_image_plane_sampling_uniform_sampler_settings(layout);
-            create_image_plane_sampling_adaptive_tile_sampler_settings(layout);
+            create_image_plane_sampling_uniform_sampler_settings(h_layout);
+            create_image_plane_sampling_adaptive_tile_sampler_settings(h_layout);
+            create_image_plane_sampling_texture_controlled_sampler_settings(v_layout);
         }
 
         void create_image_plane_sampling_uniform_sampler_settings(QHBoxLayout* parent)
@@ -573,6 +599,53 @@ namespace
             connect(
                 samples_spinbox, SIGNAL(valueChanged(const int)),
                 SLOT(slot_changed_uniform_sampler_samples(const int)));
+        }
+
+        void create_image_plane_sampling_texture_controlled_sampler_settings(QVBoxLayout* parent)
+        {
+            m_texture_controlled_image_plane_sampler = new QGroupBox("Texture-controlled Sampler");
+            parent->addWidget(m_texture_controlled_image_plane_sampler);
+
+            QVBoxLayout* layout = create_vertical_layout();
+            m_texture_controlled_image_plane_sampler->setLayout(layout);
+
+            m_texture_controlled_sampler_min_samples = create_integer_input("texture_controlled_sampler.min_samples", 0, 1000000, 1);
+            m_texture_controlled_sampler_min_samples->setToolTip(m_params_metadata.get_path("texture_controlled_pixel_renderer.min_samples.help"));
+            layout->addLayout(create_form_layout("Min Samples:", m_texture_controlled_sampler_min_samples));
+
+            m_texture_controlled_sampler_max_samples = create_integer_input("texture_controlled_sampler.max_samples", 1, 1000000, 1);
+            m_texture_controlled_sampler_max_samples->setToolTip(m_params_metadata.get_path("texture_controlled_pixel_renderer.max_samples.help"));
+            layout->addLayout(create_form_layout("Max Samples:", m_texture_controlled_sampler_max_samples));
+
+            m_texture_controlled_sampler_force_aa = create_checkbox("texture_controlled_sampler.force_antialiasing", "Force Antialiasing");
+            m_texture_controlled_sampler_force_aa->setToolTip(m_params_metadata.get_path("texture_controlled_pixel_renderer.force_antialiasing.help"));
+            m_texture_controlled_sampler_force_aa->setDisabled(
+                m_texture_controlled_sampler_min_samples->value() > 1 ||
+                m_texture_controlled_sampler_max_samples->value() == 0);
+            layout->addWidget(m_texture_controlled_sampler_force_aa);
+
+            QHBoxLayout* file_layout = create_horizontal_layout();
+            QLabel* label = new QLabel("File Path:");
+            m_path_line_edit = create_line_edit("texture_controlled_sampler.file_path");
+            QWidget* browse_button = new QPushButton("Browse");
+            browse_button->setToolTip(m_params_metadata.get_path("texture_controlled_pixel_renderer.file_path.help"));
+            browse_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+            file_layout->addWidget(label);
+            file_layout->addWidget(m_path_line_edit);
+            file_layout->addWidget(browse_button);
+            layout->addLayout(file_layout);
+
+            connect(
+                browse_button, SIGNAL(pressed()),
+                SLOT(slot_browse_button_pressed()));
+
+            connect(
+                m_texture_controlled_sampler_min_samples, SIGNAL(valueChanged(const int)),
+                SLOT(slot_changed_texture_sampler_min_samples(const int)));
+
+            connect(
+                m_texture_controlled_sampler_max_samples, SIGNAL(valueChanged(const int)),
+                SLOT(slot_changed_texture_sampler_max_samples(const int)));
         }
 
         void create_image_plane_sampling_adaptive_tile_sampler_settings(QHBoxLayout* parent)
@@ -632,11 +705,42 @@ namespace
 
             m_uniform_image_plane_sampler->setEnabled(sampler == "uniform");
             m_adaptive_tile_image_plane_sampler->setEnabled(sampler == "adaptive_tile");
+            m_texture_controlled_image_plane_sampler->setEnabled(sampler == "texture");
         }
 
         void slot_changed_uniform_sampler_samples(const int samples)
         {
             m_uniform_sampler_force_aa->setDisabled(samples > 1);
+        }
+
+        void slot_browse_button_pressed()
+        {
+            QFileDialog::Options options;
+
+            QString filepath =
+                get_open_filename(
+                    this,
+                    "Open...",
+                    get_oiio_image_files_filter(),
+                    m_file_open_settings,
+                    SETTINGS_FILE_DIALOG_OIIO_TEXTURES,
+                    options);
+
+            if (!filepath.isEmpty())
+            {
+                m_path_line_edit->setText(filepath);
+            }
+        }
+
+        void slot_changed_texture_sampler_min_samples(const int samples)
+        {
+            m_texture_controlled_sampler_max_samples->setMinimum(samples);
+            m_texture_controlled_sampler_force_aa->setDisabled(samples > 1 || m_texture_controlled_sampler_max_samples->value() == 0);
+        }
+
+        void slot_changed_texture_sampler_max_samples(const int samples)
+        {
+            m_texture_controlled_sampler_min_samples->setMaximum(samples);
         }
     };
 

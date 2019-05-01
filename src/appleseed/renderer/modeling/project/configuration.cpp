@@ -35,6 +35,7 @@
 #include "renderer/kernel/lighting/pt/ptlightingengine.h"
 #include "renderer/kernel/lighting/sppm/sppmlightingengine.h"
 #include "renderer/kernel/rendering/final/adaptivetilerenderer.h"
+#include "renderer/kernel/rendering/final/texturecontrolledpixelrenderer.h"
 #include "renderer/kernel/rendering/final/uniformpixelrenderer.h"
 #include "renderer/kernel/rendering/generic/genericframerenderer.h"
 #include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
@@ -175,6 +176,10 @@ Dictionary Configuration::get_metadata()
     metadata.dictionaries().insert(
         "uniform_pixel_renderer",
         UniformPixelRendererFactory::get_params_metadata());
+
+    metadata.dictionaries().insert(
+        "texture_controlled_pixel_renderer",
+        TextureControlledPixelRendererFactory::get_params_metadata());
 
     metadata.dictionaries().insert(
         "adaptive_tile_renderer",

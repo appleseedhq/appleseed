@@ -43,6 +43,7 @@
 #include "renderer/kernel/rendering/debug/debugtilerenderer.h"
 #include "renderer/kernel/rendering/ephemeralshadingresultframebufferfactory.h"
 #include "renderer/kernel/rendering/final/adaptivetilerenderer.h"
+#include "renderer/kernel/rendering/final/texturecontrolledpixelrenderer.h"
 #include "renderer/kernel/rendering/final/uniformpixelrenderer.h"
 #include "renderer/kernel/rendering/generic/genericframerenderer.h"
 #include "renderer/kernel/rendering/generic/genericsamplegenerator.h"
@@ -55,10 +56,16 @@
 #include "renderer/modeling/project/project.h"
 #include "renderer/utility/paramarray.h"
 
+// OpenImageIO headers.
+#include "foundation/platform/_beginoiioheaders.h"
+#include "OpenImageIO/imagebuf.h"
+#include "foundation/platform/_endoiioheaders.h"
+
 // Standard headers.
 #include <string>
 
 using namespace foundation;
+using namespace OIIO;
 using namespace std;
 
 namespace renderer
@@ -365,6 +372,40 @@ bool RendererComponents::create_pixel_renderer_factory()
                 m_frame,
                 m_sample_renderer_factory.get(),
                 get_child_and_inherit_globals(m_params, "uniform_pixel_renderer")));
+
+        return true;
+    }
+    else if (name == "texture")
+    {
+        if (m_sample_renderer_factory.get() == nullptr)
+        {
+            RENDERER_LOG_ERROR("cannot use the texture-controlled pixel renderer without a sample renderer.");
+            return false;
+        }
+
+        ParamArray tex_sampler_params = get_child_and_inherit_globals(m_params, "texture_controlled_pixel_renderer");
+        const string tex_path = tex_sampler_params.get_optional<string>("file_path", "");
+
+        if (tex_path.empty())
+        {
+            RENDERER_LOG_ERROR("no texture path was specified for the texture-controlled pixel renderer.");
+            return false;
+        }
+
+        std::unique_ptr<TextureControlledPixelRendererFactory> texture_controlled_renderer_factory(
+            new TextureControlledPixelRendererFactory(
+                m_frame,
+                m_sample_renderer_factory.get(),
+                tex_sampler_params)
+        );
+
+        if (!texture_controlled_renderer_factory->load_texture(tex_path))
+        {
+            RENDERER_LOG_ERROR("could not read the texture specified for the texture-controlled pixel renderer.");
+            return false;
+        }
+
+        m_pixel_renderer_factory = std::move(texture_controlled_renderer_factory);
 
         return true;
     }
