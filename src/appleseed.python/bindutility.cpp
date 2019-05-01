@@ -30,60 +30,41 @@
 // appleseed.renderer headers.
 #include "renderer/api/log.h"
 #include "renderer/modeling/project/eventcounters.h"
+#include "renderer/utility/oiiomaketexture.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/python.h"
-
-// OIIO headers.
-#include "foundation/platform/_beginoiioheaders.h"
-#include "OpenImageIO/imagebufalgo.h"
-#include "foundation/platform/_endoiioheaders.h"
+#include "foundation/utility/api/apistring.h"
 
 // Standard headers.
-#include <sstream>
 #include <string>
-#include <unordered_map>
 
 namespace bpy = boost::python;
 using namespace foundation;
-using namespace OIIO;
 using namespace renderer;
 using namespace std;
 
-void oiio_make_texture(
+namespace
+{
+
+void make_texture(
     const string&   in_filename,
     const string&   out_filename,
     const string&   in_colorspace,
     const string&   out_depth)
 {
-    std::unordered_map<string, TypeDesc> out_depth_map;
-    out_depth_map["sint8"] = TypeDesc::INT8;
-    out_depth_map["uint8"] = TypeDesc::UINT8;
-    out_depth_map["uint16"] = TypeDesc::UINT16;
-    out_depth_map["sint16"] = TypeDesc::INT16;
-    out_depth_map["half"] = TypeDesc::HALF;
-    out_depth_map["float"] = TypeDesc::FLOAT;
+    APIString error_msg;
+    const bool success = oiio_make_texture(
+        in_filename.c_str(),
+        out_filename.c_str(),
+        in_colorspace.c_str(),
+        out_depth.c_str(),
+        error_msg);
 
-    ImageSpec spec;
+    if (!success)
+        PyErr_SetString(PyExc_RuntimeError, error_msg.c_str());
+}
 
-    if (out_depth != "default")
-        spec.format = out_depth_map[out_depth];
-
-    spec.attribute("maketx:updatemode", 1);
-    spec.attribute("maketx:constant_color_detect", 1);
-    spec.attribute("maketx:monochrome detect", 1);
-    spec.attribute("maketx:opaque detect", 1);
-    spec.attribute("maketx:unpremult", 1);
-    spec.attribute("maketx:incolorspace", in_colorspace);
-    spec.attribute("maketx:outcolorspace", "linear");
-    spec.attribute("maketx:fixnan", "box3");
-
-    const ImageBufAlgo::MakeTextureMode mode = ImageBufAlgo::MakeTxTexture;
-
-    stringstream s;
-
-    if (!ImageBufAlgo::make_texture(mode, in_filename, out_filename, spec, &s))
-        PyErr_SetString(PyExc_RuntimeError, s.str().c_str());
 }
 
 void bind_utility()
@@ -106,5 +87,5 @@ void bind_utility()
 
     bpy::def("global_logger", global_logger, bpy::return_value_policy<bpy::reference_existing_object>());
 
-    bpy::def("oiio_make_texture", &oiio_make_texture);
+    bpy::def("oiio_make_texture", &make_texture);
 }
