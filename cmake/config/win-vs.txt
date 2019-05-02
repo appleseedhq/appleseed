@@ -50,18 +50,20 @@ set (preprocessor_definitions_common
     BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE  # turn off "Boost.Config is older than your compiler version" warnings
 )
 if (USE_STATIC_BOOST)
-    set (preprocessor_definitions_common ${preprocessor_definitions_common}
+    set (preprocessor_definitions_common
+        ${preprocessor_definitions_common}
         BOOST_PYTHON_STATIC_LIB             # link statically against Boost.Python
     )
 else ()
-    set (preprocessor_definitions_common ${preprocessor_definitions_common}
+    set (preprocessor_definitions_common
+        ${preprocessor_definitions_common}
         BOOST_ALL_DYN_LINK                  # link dynamically
     )
 endif ()
 if (NOT USE_STATIC_EXR)
     set (preprocessor_definitions_common
         ${preprocessor_definitions_common}
-        OPENEXR_DLL                         # We need to set this pre-processor for OpenEXR to link correctly when the lib is dynamic
+        OPENEXR_DLL                         # we need to set this pre-processor for OpenEXR to link correctly when the lib is dynamic
     )
 endif ()
 
@@ -94,8 +96,6 @@ if (CMAKE_SIZEOF_VOID_P EQUAL 8)
         /bigobj                             # Increase Number of Sections in .Obj file
     )
 endif ()
-set (exe_linker_flags_common
-)
 set (shared_lib_linker_flags_common
     ${exe_linker_flags_common}
 )
@@ -108,10 +108,12 @@ set (c_compiler_flags_debug
 )
 if (CMAKE_SIZEOF_VOID_P EQUAL 8)
     set (c_compiler_flags_debug
+        ${c_compiler_flags_debug}
         /Zi                                 # set Debug Information Format to Program Database
     )
 else ()
     set (c_compiler_flags_debug
+        ${c_compiler_flags_debug}
         /ZI                                 # set Debug Information Format to Program Database for Edit & Continue
     )
 endif ()
