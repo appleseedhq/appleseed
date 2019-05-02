@@ -153,7 +153,6 @@ namespace
             const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
 
             // Compute the microfacet normal by sampling the MDF.
-            const GGXMDF mdf;
             const Vector3f& outgoing = sample.m_outgoing.get_value();
             const Vector3f wo = sample.m_shading_basis.transform_to_local(outgoing);
             sampling_context.split_in_place(3, 1);
@@ -161,7 +160,7 @@ namespace
             const Vector3f m =
                 alpha == 0.0f
                     ? Vector3f(0.0f, 1.0f, 0.0f)
-                    : mdf.sample(wo, Vector2f(s[0], s[1]), alpha, alpha, 0.0f);
+                    : GGXMDF::sample(wo, Vector2f(s[0], s[1]), alpha, alpha, 0.0f);
 
             const float F = fresnel_reflectance(wo, m, values->m_precomputed.m_eta);
             const float specular_probability = choose_specular_probability(*values, F);
