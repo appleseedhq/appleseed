@@ -46,10 +46,10 @@ TEST_SUITE(Foundation_Array_Array)
         EXPECT_TRUE(x.empty());
         EXPECT_EQ(FloatType, x.type());
 
-        Array y(UInt32Type, 100);
+        Array y(UInt32Type, 101);
         EXPECT_FALSE(y.empty());
         EXPECT_EQ(UInt32Type, y.type());
-        EXPECT_EQ(100, y.size());
+        EXPECT_EQ(101, y.size());
     }
 
     TEST_CASE(CopyConstruct)
@@ -72,7 +72,7 @@ TEST_SUITE(Foundation_Array_Array)
         Array x(UInt32Type);
         ArrayRef<uint32> xref(x);
 
-        const uint32 items[] = {1, 5, 7, 11};
+        const uint32 items[] = {1, 5, 7, 11, 17};
         xref.assign(items, items + countof(items));
 
         Array y(x);

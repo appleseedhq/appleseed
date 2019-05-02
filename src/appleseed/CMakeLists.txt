@@ -50,6 +50,7 @@ set (foundation_array_sources
     foundation/array/applyvisitor.h
     foundation/array/array.cpp
     foundation/array/array.h
+    foundation/array/arrayallocator.h
     foundation/array/arrayref.h
     foundation/array/arraytraits.h
     foundation/array/arrayview.h
