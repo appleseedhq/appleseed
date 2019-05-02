@@ -155,7 +155,6 @@ namespace
                 0,                          // number of samples -- unknown
                 instance);                  // initial instance number
 
-            float pixel_red_channel;
             const ROI roi(
                 pi.x,
                 pi.x + 1,
@@ -166,15 +165,23 @@ namespace
                 0,
                 1);
 
+            float pixel_red_channel;
             m_texture->get_pixels(roi, TypeDesc::TypeFloat, &pixel_red_channel);
-            const size_t sample_count = foundation::round<size_t>(foundation::lerp(m_min_sample_count, m_max_sample_count, pixel_red_channel));
+
+            const size_t sample_count =
+                round<size_t>(
+                    foundation::lerp(       // qualifier needed
+                        static_cast<float>(m_min_sample_count),
+                        static_cast<float>(m_max_sample_count),
+                        pixel_red_channel));
+
             for (size_t i = 0; i < sample_count; ++i)
             {
                 // Generate a uniform sample in [0,1)^2.
-                const Vector2d s =
+                const Vector2f s =
                     m_max_sample_count > 1 || m_params.m_force_aa
-                        ? sampling_context.next2<Vector2d>()
-                        : Vector2d(0.5);
+                        ? sampling_context.next2<Vector2f>()
+                        : Vector2f(0.5f);
 
                 // Sample the pixel filter.
                 const auto& filter_table = frame.get_filter_sampling_table();
@@ -325,19 +332,19 @@ bool TextureControlledPixelRendererFactory::load_texture(const std::string& text
     if (!read_successful)
         return false;
 
-    ImageSpec spec = texture->spec();
+    const CanvasProperties& frame_props = m_frame.image().properties();
     const ROI roi(
-        0,
-        m_frame.image().properties().m_canvas_width,
-        0,
-        m_frame.image().properties().m_canvas_height,
-        0,
-        1,
-        0,
-        texture->nchannels());
+        0,                                                  // xbegin
+        static_cast<int>(frame_props.m_canvas_width),       // xend
+        0,                                                  // ybegin
+        static_cast<int>(frame_props.m_canvas_height),      // yend
+        0,                                                  // zbegin
+        1,                                                  // zend
+        0,                                                  // chbegin
+        texture->nchannels());                              // chend
 
     m_texture = std::make_shared<ImageBuf>();
-    return ImageBufAlgo::resize(*m_texture.get(), *texture.get(), "", 0, roi);
+    return ImageBufAlgo::resize(*m_texture.get(), *texture.get(), "", 0.0f, roi);
 }
 
 void TextureControlledPixelRendererFactory::release()
