@@ -113,8 +113,8 @@ namespace renderer
 namespace
 {
     // Floating-point formatting settings.
-    const char* MatrixFormat     = "%.15f";
-    const char* ColorValueFormat = "%.6f";
+    const char* MatrixFormat     = "%.17f";
+    const char* ColorValueFormat = "%.9f";
 
     class Writer
     {
