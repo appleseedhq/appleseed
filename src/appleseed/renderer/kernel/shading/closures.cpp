@@ -715,15 +715,16 @@ namespace
         }
 
         static float sample_weight(
-            const float roughness,
-            const float ior,
-            const float fresnel_weight)
+            const float                 roughness,
+            const float                 ior,
+            const float                 fresnel_weight)
         {
             const float eavg = get_average_albedo(GGXMDF(), roughness);
-            const float favg = lerp(
-                1.0f,
-                average_fresnel_reflectance_dielectric(ior),
-                fresnel_weight);
+            const float favg =
+                lerp(
+                    1.0f,
+                    average_fresnel_reflectance_dielectric(ior),
+                    fresnel_weight);
             return eavg * favg;
         }
     };

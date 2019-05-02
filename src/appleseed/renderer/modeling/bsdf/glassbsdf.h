@@ -110,7 +110,7 @@ class APPLESEED_DLLSYMBOL GlassBSDFFactory
 };
 
 // Write the computed tables to OpenEXR images and C++ arrays.
-// Used in Renderer_Modeling_BSDF_EnergyCompensation unit test.
+// Used in Renderer_Modeling_BSDF_EnergyCompensation unit tests.
 void write_glass_directional_albedo_tables(const char* directory);
 
 }   // namespace renderer
