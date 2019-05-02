@@ -29,6 +29,7 @@
 #pragma once
 
 // appleseed.foundation headers.
+#include "foundation/array/arrayallocator.h"
 #include "foundation/array/arraytraits.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/alignedallocator.h"
@@ -153,14 +154,9 @@ class APPLESEED_DLLSYMBOL Array
     struct Model
       : public Concept
     {
-        Model()
-        {
-        }
+        Model() = default;
 
-        Model(const Model& other)
-          : m_items(other.m_items)
-        {
-        }
+        Model(const Model& other) = default;
 
         Concept* copy() const override
         {
@@ -247,7 +243,7 @@ class APPLESEED_DLLSYMBOL Array
             return m_items == m->m_items;
         }
 
-        std::vector<T, AlignedAllocator<T>> m_items;
+        std::vector<T, ArrayAllocator<T>> m_items;
     };
 
     Concept* m_self;
