@@ -96,8 +96,6 @@ class APPLESEED_DLLSYMBOL AssemblyInstance
     // Return the assembly bound to this instance.
     Assembly& get_assembly() const;
 
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
     bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,

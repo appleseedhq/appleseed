@@ -70,15 +70,12 @@ class APPLESEED_DLLSYMBOL Environment
     // Return a string identifying the model of this environment.
     const char* get_model() const;
 
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
     bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,
         foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
-    // This method is called once after rendering each frame (only if on_frame_begin() was called).
     void on_frame_end(
         const Project&              project,
         const BaseGroup*            parent) override;

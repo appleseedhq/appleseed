@@ -90,16 +90,14 @@ class APPLESEED_DLLSYMBOL BaseGroup
     void collect_asset_paths(foundation::StringArray& paths) const;
     void update_asset_paths(const foundation::StringDictionary& mappings);
 
-    // This method is called once before rendering.
-    // Returns true on success, false otherwise.
+    // Please refer to the documentation of Entity::on_render_begin().
     bool on_render_begin(
         const Project&              project,
         const BaseGroup*            parent,
         OnRenderBeginRecorder&      recorder,
         foundation::IAbortSwitch*   abort_switch = nullptr);
 
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
+    // Please refer to the documentation of Entity::on_frame_begin().
     bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,

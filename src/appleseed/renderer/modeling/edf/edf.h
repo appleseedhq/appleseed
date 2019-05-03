@@ -104,8 +104,6 @@ class APPLESEED_DLLSYMBOL EDF
     // Get the cached approximate maximum contribution.
     float get_max_contribution() const;
 
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
     bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,
