@@ -728,10 +728,6 @@ void MainWindow::build_connections()
     connect(
         &m_rendering_manager, SIGNAL(signal_rendering_end()),
         SLOT(slot_rendering_end()));
-
-    connect(
-        &m_rendering_manager, SIGNAL(signal_camera_changed()),
-        SLOT(slot_camera_changed()));
 }
 
 void MainWindow::update_workspace()
@@ -1015,9 +1011,6 @@ void MainWindow::add_render_tab(const QString& label)
     connect(
         render_tab, SIGNAL(signal_camera_changed()),
         &m_rendering_manager, SLOT(slot_camera_changed()));
-    connect(
-        render_tab, SIGNAL(signal_camera_changed()),
-        &m_rendering_manager, SIGNAL(signal_camera_changed()));
 
     // Add the render tab to the tab bar.
     const int tab_index = m_ui->tab_render_channels->addTab(render_tab, label);

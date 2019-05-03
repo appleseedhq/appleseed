@@ -151,7 +151,6 @@ class RenderingManager
     void clear_sticky_actions();
 
   signals:
-    void signal_camera_changed();
     void signal_rendering_end();
 
   public slots:
