@@ -115,7 +115,10 @@ namespace
             const BaseGroup*        parent) override
         {
             if (m_reader.is_open())
+            {
+                RENDERER_LOG_INFO("closing texture file %s...", m_filepath.c_str());
                 m_reader.close();
+            }
 
             Texture::on_render_end(project, parent);
         }
