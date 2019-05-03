@@ -110,14 +110,14 @@ namespace
             return Model;
         }
 
-        void on_frame_end(
+        void on_render_end(
             const Project&          project,
             const BaseGroup*        parent) override
         {
             if (m_reader.is_open())
                 m_reader.close();
 
-            Texture::on_frame_end(project, parent);
+            Texture::on_render_end(project, parent);
         }
 
         ColorSpace get_color_space() const override
