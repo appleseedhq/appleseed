@@ -307,6 +307,19 @@ License:
 ------------------------------------------------------------------------------
 
 
+glad
+https://github.com/Dav1dde/glad
+
+License:
+
+
+    Q: What's the license of glad generated code?
+    A: Any of Public Domain, WTFPL or CC0.
+
+
+------------------------------------------------------------------------------
+
+
 IlmBase
 http://www.openexr.com/
 
@@ -676,6 +689,19 @@ License:
     You can contact the author at :
     - LZ4 homepage : http://fastcompression.blogspot.com/p/lz4.html
     - LZ4 source repository : http://code.google.com/p/lz4/
+
+
+------------------------------------------------------------------------------
+
+
+MurmurHash
+https://github.com/aappleby/smhasher
+
+License:
+
+
+    MurmurHash3 was written by Austin Appleby, and is placed in the public
+    domain. The author hereby disclaims copyright to this source code.
 
 
 ------------------------------------------------------------------------------
