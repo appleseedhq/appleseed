@@ -105,9 +105,7 @@ namespace
             if (!check_uniform("irradiance") ||
                 !check_uniform("irradiance_multiplier") ||
                 !check_uniform("exposure"))
-            {
                 return false;
-            }
 
             check_non_zero_emission("irradiance", "irradiance_multiplier");
 

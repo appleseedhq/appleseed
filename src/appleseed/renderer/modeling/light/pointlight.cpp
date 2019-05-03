@@ -101,13 +101,10 @@ namespace
             if (!Light::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            if (
-                !check_uniform("intensity") ||
+            if (!check_uniform("intensity") ||
                 !check_uniform("intensity_multiplier") ||
                 !check_uniform("exposure"))
-            {
                 return false;
-            }
 
             check_non_zero_emission("intensity", "intensity_multiplier");
 
