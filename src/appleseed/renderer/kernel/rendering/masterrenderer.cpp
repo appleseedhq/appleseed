@@ -87,11 +87,6 @@ namespace renderer
 
 namespace
 {
-    string make_search_path_string(const SearchPaths& search_paths)
-    {
-        return search_paths.to_string_reversed(SearchPaths::osl_path_separator()).c_str();
-    }
-
     // An abort switch whose abort status is determined by a renderer::IRendererController.
     class RendererControllerAbortSwitch
       : public IAbortSwitch
