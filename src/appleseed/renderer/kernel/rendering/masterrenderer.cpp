@@ -466,7 +466,7 @@ struct MasterRenderer::Impl
         if (!components.create())
             return IRendererController::AbortRendering;
 
-        // Print renderer component settings.
+        // Print renderer components settings.
         components.print_settings();
 
         // Report whether Embree is used or not.
@@ -502,6 +502,7 @@ struct MasterRenderer::Impl
         // Perform post-render actions.
         recorder.on_render_end(m_project);
 
+        // End light path recording.
         const CanvasProperties& props = m_project.get_frame()->image().properties();
         m_project.get_light_path_recorder().finalize(
             props.m_canvas_width,
