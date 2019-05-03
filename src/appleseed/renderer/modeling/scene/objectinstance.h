@@ -187,8 +187,6 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     // Return true if at least one of the material referenced by this instance has an alpha map set.
     bool uses_alpha_mapping() const;
 
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
     bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,

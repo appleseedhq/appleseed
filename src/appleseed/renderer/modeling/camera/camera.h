@@ -104,16 +104,12 @@ class APPLESEED_DLLSYMBOL Camera
     // Return the time at the middle of the shutter interval.
     float get_shutter_middle_time() const;
 
-    // This method is called once before rendering.
-    // Returns true on success, false otherwise.
     bool on_render_begin(
         const Project&                  project,
         const BaseGroup*                parent,
         OnRenderBeginRecorder&          recorder,
         foundation::IAbortSwitch*       abort_switch = nullptr) override;
 
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
     bool on_frame_begin(
         const Project&                  project,
         const BaseGroup*                parent,

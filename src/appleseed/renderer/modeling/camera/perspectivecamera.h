@@ -53,8 +53,6 @@ class PerspectiveCamera
         const char*                     name,
         const ParamArray&               params);
 
-    // This method is called once before rendering.
-    // Returns true on success, false otherwise.
     bool on_render_begin(
         const Project&                  project,
         const BaseGroup*                parent,

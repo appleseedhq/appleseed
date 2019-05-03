@@ -63,17 +63,13 @@ class ShadingEngine
     // Constructor.
     explicit ShadingEngine(const ParamArray& params);
 
-    // This method is called before rendering begins, and whenever rendering is reinitialized
-    // (i.e. because an entity has been edited). At this point, all entities inputs are bound.
-    // Returns true on success, or false if an error occurred or if the abort switch was triggered.
+    // Please refer to the documentation of Entity::on_render_begin().
     bool on_render_begin(
         const Project&              project,
         OnRenderBeginRecorder&      recorder,
         foundation::IAbortSwitch*   abort_switch = nullptr);
 
-    // This method is called before rendering a frame begins, and whenever rendering is restarted
-    // (i.e. because the camera has been moved). At this point, all entities inputs are bound.
-    // Returns true on success, or false if an error occurred or if the abort switch was triggered.
+    // Please refer to the documentation of Entity::on_frame_begin().
     bool on_frame_begin(
         const Project&              project,
         OnFrameBeginRecorder&       recorder,

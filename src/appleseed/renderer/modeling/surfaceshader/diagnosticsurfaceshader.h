@@ -105,9 +105,6 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
     // Return a string identifying the model of this surface shader.
     const char* get_model() const override;
 
-    // This method is called before rendering begins, and whenever rendering is reinitialized
-    // (i.e. because an entity has been edited). At this point, all entities inputs are bound.
-    // Returns true on success, or false if an error occurred or if the abort switch was triggered.
     bool on_render_begin(
         const Project&              project,
         const BaseGroup*            parent,
