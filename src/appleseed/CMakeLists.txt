@@ -1234,7 +1234,6 @@ set (renderer_kernel_rendering_final_sources
     renderer/kernel/rendering/final/texturecontrolledpixelrenderer.h
     renderer/kernel/rendering/final/uniformpixelrenderer.cpp
     renderer/kernel/rendering/final/uniformpixelrenderer.h
-    renderer/kernel/rendering/final/variationtracker.h
 )
 list (APPEND appleseed_sources
     ${renderer_kernel_rendering_final_sources}
@@ -1454,7 +1453,6 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_texturestore.cpp
     renderer/meta/tests/test_tracer.cpp
     renderer/meta/tests/test_transformsequence.cpp
-    renderer/meta/tests/test_variationtracker.cpp
     renderer/meta/tests/test_volume.cpp
 )
 list (APPEND appleseed_sources
