@@ -73,6 +73,7 @@
 
 // Forward declarations.
 namespace renderer  { class OnFrameBeginRecorder; }
+namespace renderer  { class OnRenderBeginRecorder; }
 
 using namespace foundation;
 using namespace std;
@@ -197,6 +198,25 @@ namespace
             return Model;
         }
 
+        bool on_render_begin(
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnRenderBeginRecorder&  recorder,
+            IAbortSwitch*           abort_switch) override
+        {
+            if (!EnvironmentEDF::on_render_begin(project, parent, recorder, abort_switch))
+                return false;
+
+            // Don't do anything if this is not the active environment EDF.
+            const Environment* environment = project.get_scene()->get_environment();
+            if (environment->get_uncached_environment_edf() != this)
+                return true;
+
+            build_importance_map(*project.get_scene(), abort_switch);
+
+            return true;
+        }
+
         bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
@@ -206,15 +226,12 @@ namespace
             if (!EnvironmentEDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            // Do not build an importance map if the environment EDF is not the active one.
+            // Don't do anything if this is not the active environment EDF.
             const Environment* environment = project.get_scene()->get_environment();
-            if (environment->get_uncached_environment_edf() == this)
-            {
-                check_non_zero_emission("radiance", "radiance_multiplier");
+            if (environment->get_uncached_environment_edf() != this)
+                return true;
 
-                if (m_importance_sampler.get() == nullptr)
-                    build_importance_map(*project.get_scene(), abort_switch);
-            }
+            check_non_zero_emission("radiance", "radiance_multiplier");
 
             return true;
         }
