@@ -37,7 +37,6 @@
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/energycompensation.h"
-#include "renderer/modeling/bsdf/energycompensationtables.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
@@ -93,14 +92,58 @@ namespace
     //       http://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_slides.pdf
     //
 
+    float fresnel_reflectance(
+        const float         cos_theta_i,
+        const float         eta,
+        float&              cos_theta_t)
+    {
+        const float sin_theta_t2 = (1.0f - square(cos_theta_i)) * square(eta);
+        if (sin_theta_t2 > 1.0f)
+        {
+            cos_theta_t = 0.0f;
+            return 1.0f;
+        }
+
+        cos_theta_t = min(sqrt(max(1.0f - sin_theta_t2, 0.0f)), 1.0f);
+
+        float F;
+        fresnel_reflectance_dielectric(
+            F,
+            eta,
+            abs(cos_theta_i),
+            cos_theta_t);
+
+        return F;
+    }
+
+    float fresnel_reflectance(
+        const float         cos_theta_i,
+        const float         eta)
+    {
+        float cos_theta_t;
+        return fresnel_reflectance(cos_theta_i, eta, cos_theta_t);
+    }
+
+    Vector3f refracted_direction(
+        const Vector3f&     wo,
+        const Vector3f&     m,
+        const float         cos_wom,
+        const float         cos_theta_t,
+        const float         rcp_eta)
+    {
+        const Vector3f wi =
+            cos_wom > 0.0f
+                ? (rcp_eta * cos_wom - cos_theta_t) * m - rcp_eta * wo
+                : (rcp_eta * cos_wom + cos_theta_t) * m - rcp_eta * wo;
+        return improve_normalization(wi);
+    }
+
     float get_dir_albedo(
-        const GGXMDF&       mdf,
         const float         eta,
         const float         roughness,
         const float         cos_theta);
 
     float get_avg_albedo(
-        const GGXMDF&       mdf,
         const float         eta,
         const float         roughness);
 
@@ -365,13 +408,12 @@ namespace
             else
             {
                 is_refraction = true;
-
-                // Compute the refracted direction.
-                wi =
-                    cos_wom > 0.0f
-                        ? (rcp_eta * cos_wom - cos_theta_t) * m - rcp_eta * wo
-                        : (rcp_eta * cos_wom + cos_theta_t) * m - rcp_eta * wo;
-                wi = improve_normalization(wi);
+                wi = refracted_direction(
+                    wo,
+                    m,
+                    cos_wom,
+                    cos_theta_t,
+                    rcp_eta);
 
                 // If incoming and outgoing are on the same side of the surface, this is not a refraction.
                 if (wi.y * wo.y > 0.0f)
@@ -728,38 +770,6 @@ namespace
             return sum_probabilities != 0.0f ? r_probability / sum_probabilities : 1.0f;
         }
 
-        static float fresnel_reflectance(
-            const float                 cos_theta_i,
-            const float                 eta,
-            float&                      cos_theta_t)
-        {
-            const float sin_theta_t2 = (1.0f - square(cos_theta_i)) * square(eta);
-            if (sin_theta_t2 > 1.0f)
-            {
-                cos_theta_t = 0.0f;
-                return 1.0f;
-            }
-
-            cos_theta_t = min(sqrt(max(1.0f - sin_theta_t2, 0.0f)), 1.0f);
-
-            float F;
-            fresnel_reflectance_dielectric(
-                F,
-                eta,
-                abs(cos_theta_i),
-                cos_theta_t);
-
-            return F;
-        }
-
-        static float fresnel_reflectance(
-            const float                 cos_theta_i,
-            const float                 eta)
-        {
-            float cos_theta_t;
-            return fresnel_reflectance(cos_theta_i, eta, cos_theta_t);
-        }
-
         static Vector3f half_reflection_vector(
             const Vector3f&             wo,
             const Vector3f&             wi)
@@ -769,23 +779,22 @@ namespace
             return h.y < 0.0f ? -h : h;
         }
 
-        template <typename SpectrumType>
         static void evaluate_reflection(
             const GGXMDF&               mdf,
-            const SpectrumType&         reflection_color,
+            const Spectrum&             reflection_color,
             const Vector3f&             wo,
             const Vector3f&             wi,
             const Vector3f&             m,
             const float                 alpha_x,
             const float                 alpha_y,
             const float                 F,
-            SpectrumType&               value)
+            Spectrum&                   value)
         {
             // [1] eq. 20.
             const float denom = abs(4.0f * wo.y * wi.y);
             if (denom == 0.0f)
             {
-                set_to_zero(value);
+                value.set(0.0f);
                 return;
             }
 
@@ -822,11 +831,10 @@ namespace
             return h.y < 0.0f ? -h : h;
         }
 
-        template <typename SpectrumType>
         static void evaluate_refraction(
             const GGXMDF&               mdf,
             const float                 eta,
-            const SpectrumType&         refraction_color,
+            const Spectrum&             refraction_color,
             const bool                  adjoint,
             const Vector3f&             wo,
             const Vector3f&             wi,
@@ -834,11 +842,11 @@ namespace
             const float                 alpha_x,
             const float                 alpha_y,
             const float                 T,
-            SpectrumType&               value)
+            Spectrum&                   value)
         {
             if (wo.y == 0.0f || wi.y == 0.0f)
             {
-                set_to_zero(value);
+                value.set(0.0f);
                 return;
             }
 
@@ -850,7 +858,7 @@ namespace
             const float sqrt_denom = cos_oh + eta * cos_ih;
             if (abs(sqrt_denom) < 1.0e-6f)
             {
-                set_to_zero(value);
+                value.set(0.0f);
                 return;
             }
 
@@ -885,16 +893,6 @@ namespace
 
             const float jacobian = abs(cos_ih) * square(eta / sqrt_denom);
             return jacobian * mdf.pdf(wo, m, alpha_x, alpha_y, 0.0f);
-        }
-
-        static void set_to_zero(float& x)
-        {
-            x = 0.0f;
-        }
-
-        static void set_to_zero(Spectrum& x)
-        {
-            x.set(0.0f);
         }
 
         static float ec_lobe_ratio(
@@ -944,8 +942,8 @@ namespace
 
             const float rcp_eta = 1.0f / eta;
 
-            const float Eavg = get_avg_albedo(mdf, eta, roughness);
-            const float Eavg_rcp_eta = get_avg_albedo(mdf, rcp_eta, roughness);
+            const float Eavg = get_avg_albedo(eta, roughness);
+            const float Eavg_rcp_eta = get_avg_albedo(rcp_eta, roughness);
 
             // Avoid divisions by zero.
             if (Eavg == 1.0f || Eavg_rcp_eta == 1.0f)
@@ -972,7 +970,6 @@ namespace
                         values->m_precomputed.m_refraction_weight);
 
                 const float Eo = get_dir_albedo(
-                    mdf,
                     eta,
                     roughness,
                     abs(cos_on));
@@ -984,7 +981,6 @@ namespace
                     //           Pi * (1 - Eavg(n))
 
                     const float Ei = get_dir_albedo(
-                        mdf,
                         eta,
                         roughness,
                         abs(cos_in));
@@ -999,7 +995,6 @@ namespace
                     //             Pi * (1 - Eavg(1/n))
 
                     const float Ei = get_dir_albedo(
-                        mdf,
                         rcp_eta,
                         roughness,
                         abs(cos_in));
@@ -1021,7 +1016,6 @@ namespace
                         values->m_precomputed.m_refraction_weight);
 
                 const float Eo = get_dir_albedo(
-                    mdf,
                     rcp_eta,
                     roughness,
                     abs(cos_on));
@@ -1033,7 +1027,6 @@ namespace
                     //             Pi * (1 - Eavg(n))
 
                     const float Ei = get_dir_albedo(
-                        mdf,
                         rcp_eta,
                         roughness,
                         abs(cos_in));
@@ -1048,7 +1041,6 @@ namespace
                     //               Pi * (1 - Eavg(n))
 
                     const float Ei = get_dir_albedo(
-                        mdf,
                         eta,
                         roughness,
                         abs(cos_in));
@@ -1078,13 +1070,7 @@ namespace
       : public AlbedoTable3D
     {
       public:
-        GlassAlbedoTable(const float* table, const float min_eta, const float max_eta)
-          : AlbedoTable3D(table, min_eta, max_eta)
-        {
-        }
-
-        template <typename MDF>
-        GlassAlbedoTable(const MDF& mdf, const float min_eta, const float max_eta)
+        GlassAlbedoTable(const float min_eta, const float max_eta)
           : AlbedoTable3D(min_eta, max_eta)
         {
             for (size_t z = 0; z < TableSize; ++z)
@@ -1099,8 +1085,7 @@ namespace
                     for (size_t x = 0; x < TableSize; ++x)
                     {
                         const float cos_theta = static_cast<float>(x) / (TableSize - 1);
-
-                        dir_table(x, y, z) = compute_directional_albedo<MDF>(eta, alpha, cos_theta);
+                        dir_table(x, y, z) = compute_directional_albedo(eta, alpha, cos_theta);
                     }
 
                     avg_table(y, z) = average_albedo(TableSize, &dir_table(0, y, z));
@@ -1111,7 +1096,6 @@ namespace
       private:
         // Compute the albedo for a given outgoing direction.
         // See Physically Based Rendering, first edition, pp. 689-690.
-        template <typename MDF>
         float compute_directional_albedo(
             const float eta,
             const float alpha,
@@ -1130,63 +1114,73 @@ namespace
             const Vector3f wo(sin_theta, cos_theta, 0.0f);
 
             float R = 0.0f;
-            const MDF mdf;
+            const GGXMDF mdf;
             const size_t SampleCount = 512;
 
             for (size_t i = 0; i < SampleCount; ++i)
             {
-                // Generate a uniform sample in [0,1)^3.
-                const size_t Bases[] = { 2, 3 };
-                const Vector3f s = hammersley_sequence<float, 3>(Bases, SampleCount, i);
+                // Generate a uniform sample in [0,1)^2.
+                const size_t Bases[] = { 2 };
+                const Vector2f s = hammersley_sequence<float, 2>(Bases, SampleCount, i);
 
-                Vector3f wi;
-                float value = 0.0f;
-                float probability = 0.0f;
+                // Compute the microfacet normal by sampling the MDF.
+                const Vector3f m = mdf.sample(wo, s, alpha, alpha, 0.0f);
+                assert(m.y > 0.0f);
 
-                GlassBSDFImpl::do_sample(
-                    mdf,
-                    s,
-                    false,
-                    shading_basis,
-                    alpha,
-                    alpha,
-                    1.0f, // reflection_color
-                    1.0f, // reflection_weight
-                    1.0f, // refraction_color
-                    1.0f, // refraction_weight
-                    eta,
-                    wo,
-                    wi,
-                    value,
-                    probability);
-                assert(probability >= 0.0f);
+                // Compute the Fresnel term.
+                const float rcp_eta = 1.0f / eta;
+                const float cos_wom = clamp(dot(wo, m), -1.0f, 1.0f);
 
-                if (probability < 1.0e-6f)
-                    continue;
+                float cos_theta_t;
+                const float F = fresnel_reflectance(cos_wom, rcp_eta, cos_theta_t);
 
-                R += value * abs(wi.y) / probability;
+                const float rcp_G1 = safe_rcp(mdf.G1(wo, m, alpha, alpha, 0.0f));
+
+                // Evaluate the reflection lobe.
+                {
+                    const Vector3f wi = improve_normalization(reflect(wo, m));
+
+                    if (wi.y * wo.y > 0.0f)
+                    {
+                        const float G = mdf.G(wi, wo, m, alpha, alpha, 0.0f);
+                        R += F * G * rcp_G1;
+                    }
+                }
+
+                // Evaluate the transmission lobe.
+                {
+                    const Vector3f wi = refracted_direction(
+                        wo,
+                        m,
+                        cos_wom,
+                        cos_theta_t,
+                        rcp_eta);
+
+                    if (wi.y * wo.y <= 0.0f)
+                    {
+                        const float G = mdf.G(wi, wo, m, alpha, alpha, 0.0f);
+                        R += (1.0f - F) * G * rcp_G1;
+                    }
+                }
             }
 
             return min(R / static_cast<float>(SampleCount), 1.0f);
+        }
+
+        static float safe_rcp(const float x)
+        {
+            return std::abs(x) < 1e-8f ? 1e-8f : 1.0f / x;
         }
     };
 
     struct GlassAlbedoTables
       : public NonCopyable
     {
-#ifdef COMPUTE_ALBEDO_TABLES
         GlassAlbedoTables()
-          : m_ggx(GGXMDF(), MinEta, MaxEta)
-          , m_ggx_rcp_eta(GGXMDF(), 1.0f / MaxEta, 1.0f / MinEta)
+          : m_ggx(MinEta, MaxEta)
+          , m_ggx_rcp_eta(1.0f / MaxEta, 1.0f / MinEta)
         {
         }
-#else
-        GlassAlbedoTables()
-          : m_ggx(g_glass_ggx_albedo_table, MinEta, MaxEta)
-          , m_ggx_rcp_eta(g_glass_ggx_rcp_eta_albedo_table, 1.0f / MaxEta, 1.0f / MinEta)
-        {
-        }
-#endif
 
         GlassAlbedoTable m_ggx;
         GlassAlbedoTable m_ggx_rcp_eta;
@@ -1195,7 +1189,6 @@ namespace
     GlassAlbedoTables g_dir_albedo_tables;
 
     float get_dir_albedo(
-        const GGXMDF&       mdf,
         const float         eta,
         const float         roughness,
         const float         cos_theta)
@@ -1217,7 +1210,6 @@ namespace
     }
 
     float get_avg_albedo(
-        const GGXMDF&       mdf,
         const float         eta,
         const float         roughness)
     {
@@ -1498,9 +1490,8 @@ void write_glass_directional_albedo_tables(const char* directory)
 {
     const bfs::path dir(directory);
 
-    const GGXMDF ggx;
-    const GlassAlbedoTable ggx_table(ggx, MinEta, MaxEta);
-    const GlassAlbedoTable ggx_rcp_eta_table(ggx, 1.0f / MaxEta, 1.0f / MinEta);
+    const GlassAlbedoTable ggx_table(MinEta, MaxEta);
+    const GlassAlbedoTable ggx_rcp_eta_table(1.0f / MaxEta, 1.0f / MinEta);
 
     ggx_table.write_table_to_image(
         dir / "glass_ggx_albedo_table.exr");
