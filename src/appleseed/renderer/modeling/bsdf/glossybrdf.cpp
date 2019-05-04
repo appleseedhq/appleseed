@@ -86,6 +86,9 @@ namespace
     //   [3] Revisiting Physically Based Shading at Imageworks
     //       http://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_slides.pdf
     //
+    //   [4] Practical multiple scattering compensation for microfacet models
+    //       https://blog.selfshadow.com/publications/turquin/ms_comp_final.pdf
+    //
 
     const char* Model = "glossy_brdf";
 
@@ -134,9 +137,9 @@ namespace
             new (&values->m_precomputed) InputValues::Precomputed();
             values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
 
-            values->m_precomputed.m_fresnel_average =
-                average_fresnel_reflectance_dielectric(
-                    values->m_ior / values->m_precomputed.m_outside_ior);
+            normal_reflectance_dielectric(
+                values->m_precomputed.m_F0,
+                values->m_ior / values->m_precomputed.m_outside_ior);
         }
 
         void sample(
@@ -188,11 +191,9 @@ namespace
 
                 if (sample.get_mode() != ScatteringMode::None)
                 {
-                    add_energy_compensation_term(
-                        mdf,
+                    apply_energy_compensation_factor(
                         values,
                         sample.m_outgoing.get_value(),
-                        sample.m_incoming.get_value(),
                         sample.m_shading_basis.get_normal(),
                         sample.m_value.m_glossy);
 
@@ -233,22 +234,21 @@ namespace
                 values->m_fresnel_weight);
 
             const GGXMDF mdf;
-            const float pdf = MicrofacetBRDFHelper<true>::evaluate(
-                mdf,
-                alpha_x,
-                alpha_y,
-                1.0f,
-                shading_basis,
-                outgoing,
-                incoming,
-                f,
-                value.m_glossy);
+            const float pdf =
+                MicrofacetBRDFHelper<true>::evaluate(
+                    mdf,
+                    alpha_x,
+                    alpha_y,
+                    1.0f,
+                    shading_basis,
+                    outgoing,
+                    incoming,
+                    f,
+                    value.m_glossy);
 
-            add_energy_compensation_term(
-                mdf,
+            apply_energy_compensation_factor(
                 values,
                 outgoing,
-                incoming,
                 shading_basis.get_normal(),
                 value.m_glossy);
 
@@ -280,14 +280,15 @@ namespace
                 alpha_y);
 
             const GGXMDF mdf;
-            const float pdf = MicrofacetBRDFHelper<true>::pdf(
-                mdf,
-                alpha_x,
-                alpha_y,
-                1.0f,
-                shading_basis,
-                outgoing,
-                incoming);
+            const float pdf =
+                MicrofacetBRDFHelper<true>::pdf(
+                    mdf,
+                    alpha_x,
+                    alpha_y,
+                    1.0f,
+                    shading_basis,
+                    outgoing,
+                    incoming);
 
             assert(pdf >= 0.0f);
             return pdf;
@@ -296,41 +297,27 @@ namespace
       private:
         typedef GlossyBRDFInputValues InputValues;
 
-        template <typename MDF>
-        static void add_energy_compensation_term(
-            const MDF&                  mdf,
+        static void apply_energy_compensation_factor(
             const InputValues*          values,
             const Vector3f&             outgoing,
-            const Vector3f&             incoming,
             const Vector3f&             n,
             Spectrum&                   value)
         {
             if (values->m_energy_compensation != 0.0f)
             {
-                const float cos_on = dot(outgoing, n);
-                const float cos_in = dot(incoming, n);
+                const float Ess = get_directional_albedo(
+                    std::abs(dot(outgoing, n)),
+                    values->m_roughness);
 
-                float fms;
-                float eavg;
-                microfacet_energy_compensation_term(
-                    mdf,
-                    values->m_roughness,
-                    cos_in,
-                    cos_on,
-                    fms,
-                    eavg);
+                if (Ess == 0.0f)
+                    return;
+
+                float fms = (1.0f - Ess) / Ess;
 
                 if (values->m_fresnel_weight != 0.0f)
-                {
-                    const float fterm =
-                        (square(values->m_precomputed.m_fresnel_average) * eavg) / (1.0f - values->m_precomputed.m_fresnel_average * (1.0f - eavg));
-                    fms *= lerp(1.0f, fterm, values->m_fresnel_weight);
-                }
+                    fms *= lerp(1.0f, values->m_precomputed.m_F0, values->m_fresnel_weight);
 
-                madd(
-                    value,
-                    values->m_reflectance,
-                    values->m_energy_compensation * values->m_reflectance_multiplier * fms);
+                value *= 1.0f + (values->m_energy_compensation * fms);
             }
         }
     };

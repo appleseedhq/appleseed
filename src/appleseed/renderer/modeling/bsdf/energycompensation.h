@@ -63,8 +63,6 @@ class AlbedoTable2D
   protected:
     AlbedoTable2D();
 
-    explicit AlbedoTable2D(const float* table);
-
     ~AlbedoTable2D();
 
     size_t array_size() const;
@@ -108,11 +106,7 @@ class AlbedoTable3D
 
   protected:
     AlbedoTable3D(const float min_eta, const float max_eta);
-    AlbedoTable3D(const float* table, const float min_eta, const float max_eta);
-
     ~AlbedoTable3D();
-
-    void init();
 
     size_t array_size() const;
 

@@ -321,17 +321,11 @@ class MicrofacetBRDFHelper
     }
 };
 
-float get_average_albedo(
-    const foundation::GGXMDF&       mdf,
-    const float                     roughness);
+float get_directional_albedo(
+    const float                 cos_theta,
+    const float                 roughness);
 
-void microfacet_energy_compensation_term(
-    const foundation::GGXMDF&       mdf,
-    const float                     roughness,
-    const float                     cos_in,
-    const float                     cos_on,
-    float&                          fms,
-    float&                          eavg);
+float get_average_albedo(const float roughness);
 
 // Write the computed tables to OpenEXR images and C++ arrays.
 // Used in Renderer_Modeling_BSDF_EnergyCompensation unit tests.

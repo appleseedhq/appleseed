@@ -82,6 +82,9 @@ namespace
     //   [2] Revisiting Physically Based Shading at Imageworks
     //       http://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_slides.pdf
     //
+    //   [3] Practical multiple scattering compensation for microfacet models
+    //       https://blog.selfshadow.com/publications/turquin/ms_comp_final.pdf
+    //
 
     const char* Model = "metal_brdf";
 
@@ -189,11 +192,9 @@ namespace
 
                 if (sample.get_mode() != ScatteringMode::None)
                 {
-                    add_energy_compensation_term(
-                        mdf,
+                    apply_energy_compensation_factor(
                         values,
                         sample.m_outgoing.get_value(),
-                        sample.m_incoming.get_value(),
                         sample.m_shading_basis.get_normal(),
                         sample.m_value.m_glossy);
 
@@ -234,22 +235,21 @@ namespace
                 values->m_reflectance_multiplier);
 
             GGXMDF mdf;
-            const float pdf = MicrofacetBRDFHelper<false>::evaluate(
-                mdf,
-                alpha_x,
-                alpha_y,
-                1.0f,
-                shading_basis,
-                outgoing,
-                incoming,
-                f,
-                value.m_glossy);
+            const float pdf =
+                MicrofacetBRDFHelper<false>::evaluate(
+                    mdf,
+                    alpha_x,
+                    alpha_y,
+                    1.0f,
+                    shading_basis,
+                    outgoing,
+                    incoming,
+                    f,
+                    value.m_glossy);
 
-            add_energy_compensation_term(
-                mdf,
+            apply_energy_compensation_factor(
                 values,
                 outgoing,
-                incoming,
                 shading_basis.get_normal(),
                 value.m_glossy);
 
@@ -281,14 +281,15 @@ namespace
                 alpha_y);
 
             GGXMDF mdf;
-            const float pdf = MicrofacetBRDFHelper<false>::pdf(
-                mdf,
-                alpha_x,
-                alpha_y,
-                1.0f,
-                shading_basis,
-                outgoing,
-                incoming);
+            const float pdf =
+                MicrofacetBRDFHelper<false>::pdf(
+                    mdf,
+                    alpha_x,
+                    alpha_y,
+                    1.0f,
+                    shading_basis,
+                    outgoing,
+                    incoming);
 
             assert(pdf >= 0.0f);
             return pdf;
@@ -297,41 +298,33 @@ namespace
       private:
         typedef MetalBRDFInputValues InputValues;
 
-        template <typename MDF>
-        static void add_energy_compensation_term(
-            const MDF&                  mdf,
+        static void apply_energy_compensation_factor(
             const InputValues*          values,
             const Vector3f&             outgoing,
-            const Vector3f&             incoming,
             const Vector3f&             n,
             Spectrum&                   value)
         {
             if (values->m_energy_compensation != 0.0f)
             {
-                const float cos_on = dot(outgoing, n);
-                const float cos_in = dot(incoming, n);
+                const float Ess =
+                    get_directional_albedo(
+                        std::abs(dot(outgoing, n)),
+                        values->m_roughness);
 
-                float fms;
-                float eavg;
-                microfacet_energy_compensation_term(
-                    mdf,
-                    values->m_roughness,
-                    cos_in,
-                    cos_on,
-                    fms,
-                    eavg);
+                if (Ess == 0.0f)
+                    return;
 
+                const float Eavg = get_average_albedo(values->m_roughness);
                 Spectrum fterm = values->m_precomputed.m_fresnel_average;
                 fterm *= fterm;
-                fterm *= eavg;
+                fterm *= Eavg;
 
                 const Spectrum one(1.0f);
-                fterm /= one - values->m_precomputed.m_fresnel_average * (1.0f - eavg);
+                fterm /= one - values->m_precomputed.m_fresnel_average * (1.0f - Eavg);
 
-                madd(
-                    value,
-                    fterm,
-                    values->m_energy_compensation * values->m_reflectance_multiplier * fms);
+                fterm *= values->m_energy_compensation * ((1.0f - Ess) / Ess);
+                fterm += one;
+                value *= fterm;
             }
         }
     };

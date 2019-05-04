@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/energycompensation.h"
-#include "renderer/modeling/bsdf/energycompensationtables.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -92,11 +91,6 @@ namespace
                 m_avg_table[i] = average_albedo(TableSize, p);
                 p += TableSize;
             }
-        }
-
-        explicit MDFAlbedoTable(const float* table)
-          : AlbedoTable2D(table)
-        {
         }
 
       private:
@@ -161,75 +155,31 @@ namespace
     {
         MDFAlbedoTable m_ggx;
 
-#ifdef COMPUTE_ALBEDO_TABLES
         AlbedoTables()
           : m_ggx(GGXMDF())
         {
         }
-#else
-        AlbedoTables()
-          : m_ggx(g_glossy_ggx_albedo_table)
-        {
-        }
-#endif
     };
 
     AlbedoTables g_dir_albedo_tables;
-
-    void compute_energy_compensation_term(
-        const MDFAlbedoTable&   table,
-        const float             roughness,
-        const float             cos_in,
-        const float             cos_on,
-        float&                  fms,
-        float&                  eavg)
-    {
-        if (cos_in == 0.0f || cos_on == 0.0f || roughness == 0.0f)
-        {
-            fms = 0.0f;
-            eavg = 1.0f;
-            return;
-        }
-
-        eavg = table.get_average_albedo(roughness);
-        if (eavg == 1.0f)
-        {
-            fms = 0.0f;
-            return;
-        }
-
-        const float eo = table.get_directional_albedo(abs(cos_on), roughness);
-        const float ei = table.get_directional_albedo(abs(cos_in), roughness);
-        fms = ((1.0f - eo) * (1.0f - ei)) / (Pi<float>() * (1.0f - eavg));
-    }
 }
 
-float get_average_albedo(
-    const foundation::GGXMDF&       mdf,
-    const float                     roughness)
+float get_directional_albedo(
+    const float     cos_theta,
+    const float     roughness)
+{
+    return g_dir_albedo_tables.m_ggx.get_directional_albedo(
+        cos_theta,
+        roughness);
+}
+
+float get_average_albedo(const float roughness)
 {
     return g_dir_albedo_tables.m_ggx.get_average_albedo(roughness);
 }
 
-void microfacet_energy_compensation_term(
-    const GGXMDF&       mdf,
-    const float         roughness,
-    const float         cos_in,
-    const float         cos_on,
-    float&              fms,
-    float&              eavg)
-{
-    compute_energy_compensation_term(
-        g_dir_albedo_tables.m_ggx,
-        roughness,
-        cos_in,
-        cos_on,
-        fms,
-        eavg);
-}
-
 void write_microfacet_directional_albedo_tables(
-    const char*         directory)
+    const char*     directory)
 {
     const bf::path dir(directory);
 

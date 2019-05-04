@@ -129,15 +129,6 @@ AlbedoTable2D::AlbedoTable2D()
     m_avg_table = m_albedo_table + TableSize * TableSize;
 }
 
-AlbedoTable2D::AlbedoTable2D(const float* table)
-  : TableSize(32)
-  , TableHeight(TableSize + 1)
-  , m_data(nullptr)
-{
-    m_albedo_table = const_cast<float*>(table);
-    m_avg_table = m_albedo_table + TableSize * TableSize;
-}
-
 AlbedoTable2D::~AlbedoTable2D()
 {
     delete[] m_data;
@@ -267,30 +258,14 @@ AlbedoTable3D::AlbedoTable3D(const float min_eta, const float max_eta)
     m_data = new float[array_size()];
     m_albedo_table = m_data;
 
-    init();
-}
-
-AlbedoTable3D::AlbedoTable3D(const float* table, const float min_eta, const float max_eta)
-  : TableSize(16)
-  , m_data(nullptr)
-  , m_min_eta(min_eta)
-  , m_max_eta(max_eta)
-{
-    m_albedo_table = const_cast<float*>(table);
-
-    init();
+    const size_t avg_table_size = TableSize * TableSize;
+    const size_t dir_table_size = TableSize * avg_table_size;
+    m_avg_table = m_albedo_table + dir_table_size;
 }
 
 AlbedoTable3D::~AlbedoTable3D()
 {
     delete[] m_data;
-}
-
-void AlbedoTable3D::init()
-{
-    const size_t avg_table_size = TableSize * TableSize;
-    const size_t dir_table_size = TableSize * avg_table_size;
-    m_avg_table = m_albedo_table + dir_table_size;
 }
 
 size_t AlbedoTable3D::array_size() const

@@ -66,7 +66,7 @@ APPLESEED_DECLARE_INPUT_VALUES(GlossyBRDFInputValues)
     struct Precomputed
     {
         float   m_outside_ior;
-        float   m_fresnel_average;
+        float   m_F0;
     };
 
     Precomputed m_precomputed;
