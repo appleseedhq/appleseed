@@ -31,6 +31,10 @@
 #include "system.h"
 
 // appleseed.foundation headers.
+#ifdef APPLESEED_WITH_GPU
+#include "foundation/cuda/cudadevice.h"
+#include "foundation/cuda/exception.h"
+#endif
 #include "foundation/platform/arch.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/thread.h"
@@ -92,6 +96,13 @@
 #else
 
     #error Unsupported platform.
+
+#endif
+
+#ifdef APPLESEED_WITH_GPU
+
+    #include <cuda.h>
+    #include <optix.h>
 
 #endif
 
@@ -885,6 +896,71 @@ uint64 System::get_peak_process_virtual_memory_size()
 
 #endif
 
+#ifdef APPLESEED_WITH_GPU
+namespace
+{
+
+void print_gpu_information(Logger& logger)
+{
+    try
+    {
+        const CUDADeviceList& dev_list = CUDADeviceList::instance();
+
+        if (dev_list.empty())
+        {
+            logger.write(LogMessage::Info, __FILE__, __LINE__, "No GPU devices found.\n");
+            return;
+        }
+
+        logger.write(LogMessage::Info, __FILE__, __LINE__, "GPU information:");
+
+        int driver_version = 0;
+        cuDriverGetVersion(&driver_version);
+
+        logger.write(LogMessage::Info, __FILE__, __LINE__, "  Driver version         %d", driver_version);
+        logger.write(LogMessage::Info, __FILE__, __LINE__, "  Device count           " FMT_SIZE_T, dev_list.size());
+
+        for (size_t i = 0, e = dev_list.size(); i < e; ++i)
+        {
+            const CUDADevice& dev = dev_list.get_device(i);
+
+            logger.write(
+                LogMessage::Info,
+                __FILE__,
+                __LINE__,
+                "    Device %s:\n"
+                "      Compute capability        %d.%d\n"
+                "      Memory                    %.0f MBytes",
+                dev.m_name.c_str(),
+                dev.m_compute_capability.first,
+                dev.m_compute_capability.second,
+                dev.m_total_mem / 1048576.0f);
+        }
+    }
+    catch (const ExceptionCUDAError& e)
+    {
+        logger.write(
+            LogMessage::Info,
+            __FILE__,
+            __LINE__,
+            "CUDA error: %s.\n",
+            e.what());
+        return;
+    }
+
+    unsigned int optix_version;
+    if (rtGetVersion(&optix_version) == RT_SUCCESS)
+    {
+        unsigned int major =  optix_version / 10000;
+        unsigned int minor = (optix_version % 10000) / 100;
+        unsigned int micro =  optix_version % 100;
+        logger.write(LogMessage::Info, __FILE__, __LINE__, "  using OptiX version %d.%d.%d", major, minor, micro);
+    }
+}
+
+}
+#endif
+
 // ------------------------------------------------------------------------------------------------
 // Common code.
 // ------------------------------------------------------------------------------------------------
@@ -952,6 +1028,10 @@ void System::print_information(Logger& logger)
         pretty_size(get_total_virtual_memory_size()).c_str(),
         pretty_uint(DefaultWallclockTimer().frequency()).c_str(),
         pretty_uint(DefaultProcessorTimer().frequency()).c_str());
+
+#ifdef APPLESEED_WITH_GPU
+        print_gpu_information(logger);
+#endif
 }
 
 const char* System::get_cpu_architecture()
