@@ -94,6 +94,10 @@ namespace foundation
 #elif defined __GNUC__
     #define APPLESEED_FORCE_INLINE inline __attribute__((always_inline))
 
+// CUDA.
+#elif defined __CUDACC__
+    #define APPLESEED_FORCE_INLINE __forceinline__
+
 // Other compilers: fall back to standard inlining.
 #else
     #define APPLESEED_FORCE_INLINE inline
@@ -111,6 +115,10 @@ namespace foundation
 // gcc.
 #elif defined __GNUC__
     #define APPLESEED_NO_INLINE __attribute__((noinline))
+
+// CUDA.
+#elif defined __CUDACC__
+    #define APPLESEED_NO_INLINE __noinline__
 
 // Other compilers: ignore the qualifier.
 #else
@@ -168,7 +176,18 @@ namespace foundation
 // A qualifier similar to the 'restrict' keyword in C99.
 //
 
-#define APPLESEED_RESTRICT __restrict
+// Visual C++.
+#if defined _MSC_VER
+    #define APPLESEED_RESTRICT __restrict
+
+// gcc, clang or CUDA.
+#elif defined __GNUC__ || defined __clang__ || defined __CUDACC__
+    #define APPLESEED_RESTRICT __restrict__
+
+// Other compilers: ignore the qualifier.
+#else
+    #define APPLESEED_RESTRICT
+#endif
 
 
 //
@@ -290,6 +309,33 @@ namespace foundation
 #else
     #define APPLESEED_PRINTF_FMT
     #define APPLESEED_PRINTF_FMT_ATTR(string_index, first_to_check)
+#endif
+
+
+//
+// CUDA specific defines.
+//
+
+#ifdef __CUDACC__
+    #define APPLESEED_HOST                  __host__
+    #define APPLESEED_DEVICE                __device__
+    #define APPLESEED_HOST_DEVICE           __host__ __device__
+
+    #define APPLESEED_DEVICE_INLINE         __forceinline__ __device__
+    #define APPLESEED_HOST_DEVICE_INLINE    __forceinline__ __host__ __device__
+
+    #define APPLESEED_DEVICE_ALIGN(n) __align__(n)
+#else
+    #define APPLESEED_HOST
+    #define APPLESEED_DEVICE
+    #define APPLESEED_HOST_DEVICE
+    #define APPLESEED_HOST_DEVICE_INLINE inline
+
+    #define APPLESEED_DEVICE_ALIGN(n)
+#endif
+
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ > 0
+    #define APPLESEED_DEVICE_COMPILATION // Defined when compiling CUDA device code.
 #endif
 
 
