@@ -101,7 +101,7 @@ class EmittingShape
         const AssemblyInstance*     assembly_instance,
         const size_t                object_instance_index,
         const Material*             material,
-        const foundation::Vector3d& p,
+        const foundation::Vector3d& c,
         const foundation::Vector3d& x,
         const foundation::Vector3d& y,
         const foundation::Vector3d& n);
@@ -161,7 +161,7 @@ class EmittingShape
 
     struct Rectangle
     {
-        foundation::Vector3d    m_origin;                       // world space position of the bottom left corner of the rectangle
+        foundation::Vector3d    m_corner;                       // world space position of the bottom left corner of the rectangle
         foundation::Vector3d    m_x, m_y;                       // world space x and y axes
         double                  m_width;                        // rectangle width
         double                  m_height;                       // rectangle height

@@ -103,7 +103,7 @@ class Intersector
         const ShadingRay&                   ray,
         const ShadingPoint*                 parent_shading_point = nullptr) const;
 
-    // Manufacture a hit "by hand".
+    // Manufacture a triangle hit "by hand".
     // There is no restriction placed on the shading point passed to this method.
     // For instance it may have been previously initialized and used.
     void make_triangle_shading_point(

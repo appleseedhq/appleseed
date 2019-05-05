@@ -75,8 +75,8 @@ class APPLESEED_DLLSYMBOL RectangleObject
     double get_uncached_width() const;
     double get_uncached_height() const;
 
-    void get_origin_and_axes(
-        foundation::Vector3d&       origin,
+    void get_corner_and_axes(
+        foundation::Vector3d&       corner,
         foundation::Vector3d&       x,
         foundation::Vector3d&       y,
         foundation::Vector3d&       n) const;

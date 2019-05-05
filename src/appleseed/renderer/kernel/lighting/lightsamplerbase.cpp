@@ -343,14 +343,14 @@ void LightSamplerBase::collect_emitting_shapes(
             const RectangleObject& rectangle = static_cast<const RectangleObject&>(object);
 
             // Retrieve object instance space geometry of the rectangle.
-            Vector3d o, x, y, n;
-            rectangle.get_origin_and_axes(o, x, y, n);
+            Vector3d c, x, y, n;
+            rectangle.get_corner_and_axes(c, x, y, n);
 
             if (object_instance->must_flip_normals())
                 n = -n;
 
             // Transform rectangle to world space.
-            o = global_transform.point_to_parent(o);
+            c = global_transform.point_to_parent(c);
             x = global_transform.vector_to_parent(x);
             y = global_transform.vector_to_parent(y);
             n = global_transform.normal_to_parent(n);
@@ -386,7 +386,7 @@ void LightSamplerBase::collect_emitting_shapes(
                         &assembly_instance,
                         object_instance_index,
                         material,
-                        o,
+                        c,
                         x,
                         y,
                         side == 0 ? n : -n);
