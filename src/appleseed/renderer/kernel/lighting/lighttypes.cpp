@@ -144,6 +144,33 @@ EmittingShape EmittingShape::create_rectangle_shape(
     return shape;
 }
 
+EmittingShape EmittingShape::create_sphere_shape(
+    const AssemblyInstance*     assembly_instance,
+    const size_t                object_instance_index,
+    const Material*             material,
+    const Vector3d&             center,
+    const double                radius)
+{
+    EmittingShape shape(
+        SphereShape,
+        assembly_instance,
+        object_instance_index,
+        0,
+        material);
+
+    shape.m_geom.m_sphere.m_center = center;
+    shape.m_geom.m_sphere.m_radius = radius;
+
+    shape.m_area = static_cast<float>(FourPi<double>() * square(radius));
+
+    if (shape.m_area != 0.0f)
+        shape.m_rcp_area = 1.0f / shape.m_area;
+    else
+        shape.m_rcp_area = FP<float>().snan();
+
+    return shape;
+}
+
 EmittingShape::EmittingShape(
     const ShapeType         shape_type,
     const AssemblyInstance* assembly_instance,
@@ -211,6 +238,20 @@ void EmittingShape::sample_uniform(
         light_sample.m_shading_normal = m_geom.m_rectangle.m_geometric_normal;
         light_sample.m_geometric_normal = m_geom.m_rectangle.m_geometric_normal;
     }
+    else if (shape_type == SphereShape)
+    {
+        // Set the parametric coordinates.
+        light_sample.m_param_coords = s;
+
+        Vector3d n(sample_sphere_uniform(s));
+
+        // Set the world space shading and geometric normals.
+        light_sample.m_shading_normal = n;
+        light_sample.m_geometric_normal = n;
+
+        // Compute the world space position of the sample.
+        light_sample.m_point = m_geom.m_sphere.m_center + n * m_geom.m_sphere.m_radius;
+    }
     else
     {
         assert(false && "Unknown emitter shape type");
@@ -273,6 +314,30 @@ void EmittingShape::make_shading_point(
             m_geom.m_rectangle.m_geometric_normal,
             m_geom.m_rectangle.m_x,
             cross(m_geom.m_rectangle.m_x, m_geom.m_rectangle.m_geometric_normal));
+    }
+    else if (shape_type == SphereShape)
+    {
+        const double theta = static_cast<double>(bary[0]);
+        const double phi = static_cast<double>(bary[1]);
+
+        const Vector3d n = Vector3d::make_unit_vector(theta, phi);
+        const Vector3d p = m_geom.m_sphere.m_center + m_geom.m_sphere.m_radius * n;
+
+        const Vector3d dpdu(-TwoPi<double>() * n.y, TwoPi<double>() + n.x, 0.0);
+        const Vector3d dpdv = cross(dpdu, n);
+
+        intersector.make_procedural_surface_shading_point(
+            shading_point,
+            ray,
+            bary,
+            get_assembly_instance(),
+            get_assembly_instance()->transform_sequence().get_earliest_transform(),
+            get_object_instance_index(),
+            get_primitive_index(),
+            p,
+            n,
+            dpdu,
+            dpdv);
     }
     else
     {

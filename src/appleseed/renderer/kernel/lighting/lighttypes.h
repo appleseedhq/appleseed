@@ -81,7 +81,8 @@ class EmittingShape
     enum ShapeType
     {
         TriangleShape = 0,
-        RectangleShape
+        RectangleShape,
+        SphereShape
     };
 
     static EmittingShape create_triangle_shape(
@@ -105,6 +106,13 @@ class EmittingShape
         const foundation::Vector3d& x,
         const foundation::Vector3d& y,
         const foundation::Vector3d& n);
+
+    static EmittingShape create_sphere_shape(
+        const AssemblyInstance*     assembly_instance,
+        const size_t                object_instance_index,
+        const Material*             material,
+        const foundation::Vector3d& center,
+        const double                radius);
 
     ShapeType get_shape_type() const;
 
@@ -169,10 +177,17 @@ class EmittingShape
         double                  m_plane_dist;
     };
 
+    struct Sphere
+    {
+        foundation::Vector3d    m_center;                       // world space center of the sphere
+        double                  m_radius;                       // sphere radius
+    };
+
     union Geom
     {
         Triangle    m_triangle;
         Rectangle   m_rectangle;
+        Sphere      m_sphere;
     };
 
     typedef foundation::stamped_ptr<const AssemblyInstance> AssemblyInstanceAndType;
