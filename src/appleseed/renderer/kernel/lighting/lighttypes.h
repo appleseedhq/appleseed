@@ -91,6 +91,7 @@ class EmittingShape
         const size_t                object_instance_index,
         const size_t                primitive_index,
         const Material*             material,
+        const double                area,
         const foundation::Vector3d& v0,
         const foundation::Vector3d& v1,
         const foundation::Vector3d& v2,
@@ -103,6 +104,7 @@ class EmittingShape
         const AssemblyInstance*     assembly_instance,
         const size_t                object_instance_index,
         const Material*             material,
+        const double                area,
         const foundation::Vector3d& c,
         const foundation::Vector3d& x,
         const foundation::Vector3d& y,
@@ -112,6 +114,7 @@ class EmittingShape
         const AssemblyInstance*     assembly_instance,
         const size_t                object_instance_index,
         const Material*             material,
+        const double                area,
         const foundation::Vector3d& center,
         const double                radius);
 
@@ -119,6 +122,7 @@ class EmittingShape
         const AssemblyInstance*     assembly_instance,
         const size_t                object_instance_index,
         const Material*             material,
+        const double                area,
         const foundation::Vector3d& c,
         const double                r,
         const foundation::Vector3d& n,

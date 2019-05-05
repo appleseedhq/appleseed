@@ -304,6 +304,7 @@ void LightSamplerBase::collect_emitting_shapes(
                             object_instance_index,
                             triangle_index,
                             material,
+                            area,
                             v0,
                             v1,
                             v2,
@@ -388,6 +389,7 @@ void LightSamplerBase::collect_emitting_shapes(
                         &assembly_instance,
                         object_instance_index,
                         material,
+                        area,
                         c,
                         x,
                         y,
@@ -456,6 +458,7 @@ void LightSamplerBase::collect_emitting_shapes(
                     &assembly_instance,
                     object_instance_index,
                     material,
+                    area,
                     center,
                     radius);
 
@@ -531,6 +534,7 @@ void LightSamplerBase::collect_emitting_shapes(
                     &assembly_instance,
                     object_instance_index,
                     material,
+                    area,
                     center,
                     r,
                     n,

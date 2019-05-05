@@ -75,6 +75,7 @@ EmittingShape EmittingShape::create_triangle_shape(
     const size_t                object_instance_index,
     const size_t                primitive_index,
     const Material*             material,
+    const double                area,
     const Vector3d&             v0,
     const Vector3d&             v1,
     const Vector3d&             v2,
@@ -106,6 +107,14 @@ EmittingShape EmittingShape::create_triangle_shape(
 
     shape.m_centroid = (v0 + v1 + v2) * (1.0 / 3.0);
 
+    shape.m_area = static_cast<float>(area);
+
+    if (shape.m_area != 0.0f)
+        shape.m_rcp_area = 1.0f / shape.m_area;
+    else
+        shape.m_rcp_area = FP<float>().snan();
+
+
     return shape;
 }
 
@@ -113,6 +122,7 @@ EmittingShape EmittingShape::create_rectangle_shape(
     const AssemblyInstance*     assembly_instance,
     const size_t                object_instance_index,
     const Material*             material,
+    const double                area,
     const Vector3d&             c,
     const Vector3d&             x,
     const Vector3d&             y,
@@ -133,8 +143,7 @@ EmittingShape EmittingShape::create_rectangle_shape(
     shape.m_geom.m_rectangle.m_geometric_normal = n;
     shape.m_geom.m_rectangle.m_plane_dist = -dot(c, n);
 
-    shape.m_area = static_cast<float>(
-        shape.m_geom.m_rectangle.m_width * shape.m_geom.m_rectangle.m_height);
+    shape.m_area = static_cast<float>(area);
 
     if (shape.m_area != 0.0f)
         shape.m_rcp_area = 1.0f / shape.m_area;
@@ -148,6 +157,7 @@ EmittingShape EmittingShape::create_sphere_shape(
     const AssemblyInstance*     assembly_instance,
     const size_t                object_instance_index,
     const Material*             material,
+    const double                area,
     const Vector3d&             center,
     const double                radius)
 {
@@ -161,7 +171,7 @@ EmittingShape EmittingShape::create_sphere_shape(
     shape.m_geom.m_sphere.m_center = center;
     shape.m_geom.m_sphere.m_radius = radius;
 
-    shape.m_area = static_cast<float>(FourPi<double>() * square(radius));
+    shape.m_area = static_cast<float>(area);
 
     if (shape.m_area != 0.0f)
         shape.m_rcp_area = 1.0f / shape.m_area;
@@ -175,6 +185,7 @@ EmittingShape EmittingShape::create_disk_shape(
     const AssemblyInstance*     assembly_instance,
     const size_t                object_instance_index,
     const Material*             material,
+    const double                area,
     const Vector3d&             c,
     const double                r,
     const Vector3d&             n,
@@ -194,7 +205,7 @@ EmittingShape EmittingShape::create_disk_shape(
     shape.m_geom.m_disk.m_x = x;
     shape.m_geom.m_disk.m_y = y;
 
-    shape.m_area = Pi<float>() * square(static_cast<float>(r));
+    shape.m_area = static_cast<float>(area);
 
     if (shape.m_area != 0.0f)
         shape.m_rcp_area = 1.0f / shape.m_area;
