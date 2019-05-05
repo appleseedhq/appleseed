@@ -34,6 +34,7 @@
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
+#include "renderer/modeling/object/diskobject.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/rectangleobject.h"
 #include "renderer/modeling/object/sphereobject.h"
@@ -457,6 +458,84 @@ void LightSamplerBase::collect_emitting_shapes(
                     material,
                     center,
                     radius);
+
+                // Estimate radiant flux emitted by this shape.
+                emitting_shape.estimate_flux();
+
+                // Store the light-emitting shape.
+                m_emitting_shapes.push_back(emitting_shape);
+
+                // Accumulate the object area for OSL shaders.
+                object_area += emitting_shape.m_area;
+            }
+        }
+        else if (strcmp(object.get_model(), DiskObjectFactory().get_model()) == 0)
+        {
+            // Fetch the materials assigned to this disk.
+            const Material* material = front_materials.empty() ? nullptr : front_materials[0];
+
+            // Skip disks that don't emit light.
+            if ((material == nullptr || !material->has_emission()))
+                continue;
+
+            // Retrieve the disk.
+            const DiskObject& disk = static_cast<const DiskObject&>(object);
+
+            // Retrieve object instance space geometry of the disk.
+            double r = disk.get_uncached_radius();
+            Vector3d x, y, n;
+            disk.get_axes(x, y, n);
+
+            if (object_instance->must_flip_normals())
+                n = -n;
+
+            // Transform disk to world space.
+            x = global_transform.vector_to_parent(x);
+            y = global_transform.vector_to_parent(y);
+            n = global_transform.normal_to_parent(n);
+            const Matrix4d& xform = global_transform.get_local_to_parent();
+            Vector3d center, scale;
+            Quaterniond rot;
+            xform.decompose(scale, rot, center);
+
+            if (feq(scale.x, scale.y) && feq(scale.x, scale.z))
+                r *= scale.x;
+            else
+            {
+                RENDERER_LOG_WARNING(
+                    "transform of disk object \"%s\" has a non-uniform scale factor; scale will be ignored.",
+                    disk.get_name());
+            }
+
+            if (r == 0.0)
+            {
+                RENDERER_LOG_WARNING(
+                    "disk object \"%s\" has zero radius; it will be ignored.",
+                    disk.get_name());
+                continue;
+            }
+
+            const double area = Pi<double>() * square(r);
+
+            // Invoke the shape handling function.
+            const bool accept_shape =
+                shape_handling(
+                    material,
+                    static_cast<float>(area),
+                    m_emitting_shapes.size());
+
+            if (accept_shape)
+            {
+                // Create a light-emitting shape.
+                auto emitting_shape = EmittingShape::create_disk_shape(
+                    &assembly_instance,
+                    object_instance_index,
+                    material,
+                    center,
+                    r,
+                    n,
+                    x,
+                    y);
 
                 // Estimate radiant flux emitted by this shape.
                 emitting_shape.estimate_flux();

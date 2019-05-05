@@ -171,6 +171,39 @@ EmittingShape EmittingShape::create_sphere_shape(
     return shape;
 }
 
+EmittingShape EmittingShape::create_disk_shape(
+    const AssemblyInstance*     assembly_instance,
+    const size_t                object_instance_index,
+    const Material*             material,
+    const Vector3d&             c,
+    const double                r,
+    const Vector3d&             n,
+    const Vector3d&             x,
+    const Vector3d&             y)
+{
+    EmittingShape shape(
+        DiskShape,
+        assembly_instance,
+        object_instance_index,
+        0,
+        material);
+
+    shape.m_geom.m_disk.m_center = c;
+    shape.m_geom.m_disk.m_radius = r;
+    shape.m_geom.m_disk.m_geometric_normal = n;
+    shape.m_geom.m_disk.m_x = x;
+    shape.m_geom.m_disk.m_y = y;
+
+    shape.m_area = Pi<float>() * square(static_cast<float>(r));
+
+    if (shape.m_area != 0.0f)
+        shape.m_rcp_area = 1.0f / shape.m_area;
+    else
+        shape.m_rcp_area = FP<float>().snan();
+
+    return shape;
+}
+
 EmittingShape::EmittingShape(
     const ShapeType         shape_type,
     const AssemblyInstance* assembly_instance,
@@ -251,6 +284,25 @@ void EmittingShape::sample_uniform(
 
         // Compute the world space position of the sample.
         light_sample.m_point = m_geom.m_sphere.m_center + n * m_geom.m_sphere.m_radius;
+    }
+    else if (shape_type == DiskShape)
+    {
+        const Vector2f param_coords = sample_disk_uniform(s);
+
+        // Compute the world space position of the sample.
+        Vector3d p =
+            m_geom.m_disk.m_center +
+            static_cast<double>(param_coords[0]) * m_geom.m_disk.m_x +
+            static_cast<double>(param_coords[1]) * m_geom.m_disk.m_y;
+
+        light_sample.m_point = p;
+
+        // Set the parametric coordinates.
+        light_sample.m_param_coords = param_coords;
+
+        // Set the world space shading and geometric normals.
+        light_sample.m_shading_normal = m_geom.m_disk.m_geometric_normal;
+        light_sample.m_geometric_normal = m_geom.m_disk.m_geometric_normal;
     }
     else
     {
@@ -338,6 +390,26 @@ void EmittingShape::make_shading_point(
             n,
             dpdu,
             dpdv);
+    }
+    else if (shape_type == DiskShape)
+    {
+        const Vector3d p =
+            m_geom.m_disk.m_center +
+            static_cast<double>(bary[0]) * m_geom.m_disk.m_x +
+            static_cast<double>(bary[1]) * m_geom.m_disk.m_y;
+
+        intersector.make_procedural_surface_shading_point(
+            shading_point,
+            ray,
+            bary,
+            get_assembly_instance(),
+            get_assembly_instance()->transform_sequence().get_earliest_transform(),
+            get_object_instance_index(),
+            get_primitive_index(),
+            p,
+            m_geom.m_disk.m_geometric_normal,
+            m_geom.m_disk.m_x,
+            cross(m_geom.m_disk.m_x, m_geom.m_disk.m_geometric_normal));
     }
     else
     {

@@ -33,6 +33,7 @@
 #include "renderer/modeling/object/proceduralobject.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 
@@ -79,6 +80,12 @@ class APPLESEED_DLLSYMBOL DiskObject
     const char* get_material_slot(const size_t index) const override;
 
     double get_uncached_radius() const;
+    foundation::Vector3d get_uncached_center() const;
+
+    void get_axes(
+        foundation::Vector3d&       x,
+        foundation::Vector3d&       y,
+        foundation::Vector3d&       n) const;
 
     void intersect(
         const ShadingRay&           ray,
