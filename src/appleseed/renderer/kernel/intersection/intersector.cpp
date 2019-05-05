@@ -387,9 +387,9 @@ void Intersector::make_triangle_shading_point(
 void Intersector::make_procedural_surface_shading_point(
     ShadingPoint&                       shading_point,
     const ShadingRay&                   shading_ray,
-    const foundation::Vector2f&         uv,
+    const Vector2f&                     uv,
     const AssemblyInstance*             assembly_instance,
-    const foundation::Transformd&       assembly_instance_transform,
+    const Transformd&                   assembly_instance_transform,
     const size_t                        object_instance_index,
     const size_t                        primitive_index,
     const Vector3d&                     point,

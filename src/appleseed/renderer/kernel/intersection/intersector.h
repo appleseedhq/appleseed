@@ -103,7 +103,7 @@ class Intersector
         const ShadingRay&                   ray,
         const ShadingPoint*                 parent_shading_point = nullptr) const;
 
-    // Manufacture a hit "by hand".
+    // Manufacture a triangle hit "by hand".
     // There is no restriction placed on the shading point passed to this method.
     // For instance it may have been previously initialized and used.
     void make_triangle_shading_point(
@@ -122,7 +122,7 @@ class Intersector
     void make_procedural_surface_shading_point(
         ShadingPoint&                       shading_point,
         const ShadingRay&                   shading_ray,
-        const foundation::Vector2f&         bary,
+        const foundation::Vector2f&         uv,
         const AssemblyInstance*             assembly_instance,
         const foundation::Transformd&       assembly_instance_transform,
         const size_t                        object_instance_index,

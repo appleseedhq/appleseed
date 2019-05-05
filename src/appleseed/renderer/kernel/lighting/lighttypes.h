@@ -81,7 +81,9 @@ class EmittingShape
     enum ShapeType
     {
         TriangleShape = 0,
-        RectangleShape
+        RectangleShape,
+        SphereShape,
+        DiskShape
     };
 
     static EmittingShape create_triangle_shape(
@@ -89,6 +91,7 @@ class EmittingShape
         const size_t                object_instance_index,
         const size_t                primitive_index,
         const Material*             material,
+        const double                area,
         const foundation::Vector3d& v0,
         const foundation::Vector3d& v1,
         const foundation::Vector3d& v2,
@@ -101,10 +104,30 @@ class EmittingShape
         const AssemblyInstance*     assembly_instance,
         const size_t                object_instance_index,
         const Material*             material,
-        const foundation::Vector3d& p,
+        const double                area,
+        const foundation::Vector3d& o,
         const foundation::Vector3d& x,
         const foundation::Vector3d& y,
         const foundation::Vector3d& n);
+
+    static EmittingShape create_sphere_shape(
+        const AssemblyInstance*     assembly_instance,
+        const size_t                object_instance_index,
+        const Material*             material,
+        const double                area,
+        const foundation::Vector3d& center,
+        const double                radius);
+
+    static EmittingShape create_disk_shape(
+        const AssemblyInstance*     assembly_instance,
+        const size_t                object_instance_index,
+        const Material*             material,
+        const double                area,
+        const foundation::Vector3d& c,
+        const double                r,
+        const foundation::Vector3d& n,
+        const foundation::Vector3d& x,
+        const foundation::Vector3d& y);
 
     ShapeType get_shape_type() const;
 
@@ -169,10 +192,26 @@ class EmittingShape
         double                  m_plane_dist;
     };
 
+    struct Sphere
+    {
+        foundation::Vector3d    m_center;                       // world space center of the sphere
+        double                  m_radius;                       // sphere radius
+    };
+
+    struct Disk
+    {
+        foundation::Vector3d    m_center;               // world space center of the disk
+        foundation::Vector3d    m_geometric_normal;     // world space geometric normal, unit-length
+        double                  m_radius;               // world space disk radius
+        foundation::Vector3d    m_x, m_y;               // world space x and y axes
+    };
+
     union Geom
     {
         Triangle    m_triangle;
         Rectangle   m_rectangle;
+        Sphere      m_sphere;
+        Disk        m_disk;
     };
 
     typedef foundation::stamped_ptr<const AssemblyInstance> AssemblyInstanceAndType;
