@@ -123,7 +123,7 @@ EmittingShape EmittingShape::create_rectangle_shape(
     const size_t                object_instance_index,
     const Material*             material,
     const double                area,
-    const Vector3d&             c,
+    const Vector3d&             o,
     const Vector3d&             x,
     const Vector3d&             y,
     const Vector3d&             n)
@@ -135,13 +135,13 @@ EmittingShape EmittingShape::create_rectangle_shape(
         0,
         material);
 
-    shape.m_geom.m_rectangle.m_corner = c;
+    shape.m_geom.m_rectangle.m_origin = o;
     shape.m_geom.m_rectangle.m_x = x;
     shape.m_geom.m_rectangle.m_y = y;
     shape.m_geom.m_rectangle.m_width = norm(x);
     shape.m_geom.m_rectangle.m_height = norm(y);
     shape.m_geom.m_rectangle.m_geometric_normal = n;
-    shape.m_geom.m_rectangle.m_plane_dist = -dot(c, n);
+    shape.m_geom.m_rectangle.m_plane_dist = -dot(o, n);
 
     shape.m_area = static_cast<float>(area);
 
@@ -274,7 +274,7 @@ void EmittingShape::sample_uniform(
         light_sample.m_param_coords = s;
 
         light_sample.m_point =
-            m_geom.m_rectangle.m_corner +
+            m_geom.m_rectangle.m_origin +
             static_cast<double>(s[0]) * m_geom.m_rectangle.m_x +
             static_cast<double>(s[1]) * m_geom.m_rectangle.m_y;
 
@@ -333,7 +333,7 @@ void EmittingShape::make_shading_point(
     ShadingPoint&           shading_point,
     const Vector3d&         point,
     const Vector3d&         direction,
-    const Vector2f&         bary,
+    const Vector2f&         param_coords,
     const Intersector&      intersector) const
 {
     const ShadingRay ray(
@@ -351,7 +351,7 @@ void EmittingShape::make_shading_point(
         intersector.make_triangle_shading_point(
             shading_point,
             ray,
-            bary,
+            param_coords,
             get_assembly_instance(),
             get_assembly_instance()->transform_sequence().get_earliest_transform(),
             get_object_instance_index(),
@@ -361,14 +361,14 @@ void EmittingShape::make_shading_point(
     else if (shape_type == RectangleShape)
     {
         const Vector3d p =
-            m_geom.m_rectangle.m_corner +
-            static_cast<double>(bary[0]) * m_geom.m_rectangle.m_x +
-            static_cast<double>(bary[1]) * m_geom.m_rectangle.m_y;
+            m_geom.m_rectangle.m_origin +
+            static_cast<double>(param_coords[0]) * m_geom.m_rectangle.m_x +
+            static_cast<double>(param_coords[1]) * m_geom.m_rectangle.m_y;
 
         intersector.make_procedural_surface_shading_point(
             shading_point,
             ray,
-            bary,
+            param_coords,
             get_assembly_instance(),
             get_assembly_instance()->transform_sequence().get_earliest_transform(),
             get_object_instance_index(),
@@ -380,8 +380,8 @@ void EmittingShape::make_shading_point(
     }
     else if (shape_type == SphereShape)
     {
-        const double theta = static_cast<double>(bary[0]);
-        const double phi = static_cast<double>(bary[1]);
+        const double theta = static_cast<double>(param_coords[0]);
+        const double phi = static_cast<double>(param_coords[1]);
 
         const Vector3d n = Vector3d::make_unit_vector(theta, phi);
         const Vector3d p = m_geom.m_sphere.m_center + m_geom.m_sphere.m_radius * n;
@@ -392,7 +392,7 @@ void EmittingShape::make_shading_point(
         intersector.make_procedural_surface_shading_point(
             shading_point,
             ray,
-            bary,
+            param_coords,
             get_assembly_instance(),
             get_assembly_instance()->transform_sequence().get_earliest_transform(),
             get_object_instance_index(),
@@ -406,13 +406,13 @@ void EmittingShape::make_shading_point(
     {
         const Vector3d p =
             m_geom.m_disk.m_center +
-            static_cast<double>(bary[0]) * m_geom.m_disk.m_x +
-            static_cast<double>(bary[1]) * m_geom.m_disk.m_y;
+            static_cast<double>(param_coords[0]) * m_geom.m_disk.m_x +
+            static_cast<double>(param_coords[1]) * m_geom.m_disk.m_y;
 
         intersector.make_procedural_surface_shading_point(
             shading_point,
             ray,
-            bary,
+            param_coords,
             get_assembly_instance(),
             get_assembly_instance()->transform_sequence().get_earliest_transform(),
             get_object_instance_index(),

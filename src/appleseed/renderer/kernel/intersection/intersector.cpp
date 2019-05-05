@@ -387,7 +387,7 @@ void Intersector::make_triangle_shading_point(
 void Intersector::make_procedural_surface_shading_point(
     ShadingPoint&                       shading_point,
     const ShadingRay&                   shading_ray,
-    const Vector2f&                     bary,
+    const Vector2f&                     uv,
     const AssemblyInstance*             assembly_instance,
     const Transformd&                   assembly_instance_transform,
     const size_t                        object_instance_index,
@@ -409,7 +409,7 @@ void Intersector::make_procedural_surface_shading_point(
 
     shading_point.m_primitive_type = ShadingPoint::PrimitiveProceduralSurface;
 
-    shading_point.m_bary = bary;
+    shading_point.m_bary = uv;
     shading_point.m_assembly_instance = assembly_instance;
     shading_point.m_assembly_instance_transform = assembly_instance_transform;
     shading_point.m_assembly_instance_transform_seq = &assembly_instance->transform_sequence();
@@ -429,7 +429,7 @@ void Intersector::make_procedural_surface_shading_point(
         normalize(dpdv));
     shading_point.m_members |= ShadingPoint::HasShadingBasis;
 
-    shading_point.m_uv = bary;
+    shading_point.m_uv = uv;
     shading_point.m_members = ShadingPoint::HasUV0;
 
     shading_point.m_dpdu = dpdu;
