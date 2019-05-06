@@ -37,6 +37,7 @@
 #include "foundation/platform/types.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstddef>
@@ -176,6 +177,10 @@ T cube(const T x);
 // Return 1 / x.
 template <typename T>
 T rcp(const T x);
+
+// Return the square root of x or 0 if x is negative.
+template <typename T>
+T safe_sqrt(const T x);
 
 // Compile-time exponentiation of the form x^p where p >= 0.
 // Note: swapped template arguments to allow writing pow_int<3>(3.14).
@@ -426,6 +431,12 @@ template <typename T>
 inline T cube(const T x)
 {
     return x * x * x;
+}
+
+template <typename T>
+inline T safe_sqrt(const T x)
+{
+    return std::sqrt(std::max(x, T(0.0)));
 }
 
 template <typename T>
