@@ -191,12 +191,16 @@ namespace
 
         void print_settings() const override
         {
+            const uint64 hours = m_params.m_time_limit / 3600;
+            const uint64 minutes = (m_params.m_time_limit - hours * 3600) / 60;
+            const uint64 seconds = m_params.m_time_limit - hours * 3600 - minutes * 60;
             RENDERER_LOG_INFO(
                 "progressive frame renderer settings:\n"
                 "  spectrum mode                 %s\n"
                 "  sampling mode                 %s\n"
                 "  rendering threads             %s\n"
                 "  max average samples per pixel %s\n"
+                "  time limit                    %s\n"
                 "  max fps                       %f\n"
                 "  collect performance stats     %s\n"
                 "  collect luminance stats       %s",
@@ -206,6 +210,11 @@ namespace
                 m_params.m_max_average_spp == numeric_limits<uint64>::max()
                     ? "unlimited"
                     : pretty_uint(m_params.m_max_average_spp).c_str(),
+                m_params.m_time_limit == numeric_limits<uint64>::max()
+                ? "unlimited"
+                : std::string(pretty_uint(hours) + "h "
+                    + pretty_uint(minutes) + "m "
+                    + pretty_uint(seconds) + "s").c_str(),
                 m_params.m_max_fps,
                 m_params.m_perf_stats ? "on" : "off",
                 m_params.m_luminance_stats ? "on" : "off");
@@ -222,7 +231,8 @@ namespace
 
         bool is_rendering() const override
         {
-            return m_job_queue.has_scheduled_or_running_jobs();
+            m_stopwatch.measure();
+            return (m_job_queue.has_scheduled_or_running_jobs() && m_params.m_time_limit > m_stopwatch.get_seconds());
         }
 
         void start_rendering() override
@@ -233,6 +243,8 @@ namespace
             m_abort_switch.clear();
             m_buffer->clear();
             m_sample_counter.clear();
+
+            m_stopwatch.start();
 
             // Reset sample generators.
             for (auto sample_generator : m_sample_generators)
@@ -299,6 +311,8 @@ namespace
 
         void pause_rendering() override
         {
+            m_stopwatch.pause();
+
             m_job_manager->pause();
 
             if (m_display_func.get())
@@ -366,6 +380,7 @@ namespace
             const SamplingContext::Mode m_sampling_mode;
             const size_t                m_thread_count;       // number of rendering threads
             const uint64                m_max_average_spp;    // maximum average number of samples to compute per pixel
+            const uint64                m_time_limit;         // maximum time rendering
             const double                m_max_fps;            // maximum display frequency in frames/second
             const bool                  m_perf_stats;         // collect and print performance statistics?
             const bool                  m_luminance_stats;    // collect and print luminance statistics?
@@ -375,6 +390,7 @@ namespace
               , m_sampling_mode(get_sampling_context_mode(params))
               , m_thread_count(get_rendering_thread_count(params))
               , m_max_average_spp(params.get_optional<uint64>("max_average_spp", numeric_limits<uint64>::max()))
+              , m_time_limit(params.get_optional<uint64>("time_limit", numeric_limits<uint64>::max()))
               , m_max_fps(params.get_optional<double>("max_fps", 30.0))
               , m_perf_stats(params.get_optional<bool>("performance_statistics", false))
               , m_luminance_stats(params.get_optional<bool>("luminance_statistics", false))
@@ -676,32 +692,34 @@ namespace
         // Progressive frame renderer implementation details.
         //
 
-        const Project&                          m_project;
-        const Parameters                        m_params;
-        SampleCounter                           m_sample_counter;
+        const Project&                              m_project;
+        const Parameters                            m_params;
+        SampleCounter                               m_sample_counter;
 
-        unique_ptr<SampleAccumulationBuffer>    m_buffer;
+        unique_ptr<SampleAccumulationBuffer>        m_buffer;
 
-        JobQueue                                m_job_queue;
-        unique_ptr<JobManager>                  m_job_manager;
-        AbortSwitch                             m_abort_switch;
+        JobQueue                                    m_job_queue;
+        unique_ptr<JobManager>                      m_job_manager;
+        AbortSwitch                                 m_abort_switch;
 
         typedef vector<ISampleGenerator*> SampleGeneratorVector;
-        SampleGeneratorVector                   m_sample_generators;
+        SampleGeneratorVector                       m_sample_generators;
 
         typedef vector<SampleGeneratorJob*> SampleGeneratorJobVector;
-        SampleGeneratorJobVector                m_sample_generator_jobs;
+        SampleGeneratorJobVector                    m_sample_generator_jobs;
 
-        auto_release_ptr<ITileCallback>         m_tile_callback;
+        auto_release_ptr<ITileCallback>             m_tile_callback;
 
-        double                                  m_ref_image_avg_lum;
+        double                                      m_ref_image_avg_lum;
 
-        unique_ptr<DisplayFunc>                 m_display_func;
-        unique_ptr<boost::thread>               m_display_thread;
-        AbortSwitch                             m_display_thread_abort_switch;
+        unique_ptr<DisplayFunc>                     m_display_func;
+        unique_ptr<boost::thread>                   m_display_thread;
+        AbortSwitch                                 m_display_thread_abort_switch;
 
-        unique_ptr<StatisticsFunc>              m_statistics_func;
-        unique_ptr<boost::thread>               m_statistics_thread;
+        unique_ptr<StatisticsFunc>                  m_statistics_func;
+        unique_ptr<boost::thread>                   m_statistics_thread;
+
+        mutable Stopwatch<DefaultWallclockTimer>    m_stopwatch;
 
         void print_sample_generators_stats() const
         {
@@ -742,6 +760,15 @@ Dictionary ProgressiveFrameRendererFactory::get_params_metadata()
             .insert("unlimited", "true")
             .insert("label", "Max Average Samples Per Pixel")
             .insert("help", "Maximum number of average samples per pixel"));
+
+    metadata.dictionaries().insert(
+        "time_limit",
+        Dictionary()
+        .insert("type", "int")
+        .insert("default", "60")
+        .insert("unlimited", "true")
+        .insert("label", "Time Limit:")
+        .insert("help", "Maximum time rendering"));
 
     return metadata;
 }
