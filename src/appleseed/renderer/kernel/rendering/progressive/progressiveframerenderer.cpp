@@ -764,11 +764,11 @@ Dictionary ProgressiveFrameRendererFactory::get_params_metadata()
     metadata.dictionaries().insert(
         "time_limit",
         Dictionary()
-        .insert("type", "int")
-        .insert("default", "60")
-        .insert("unlimited", "true")
-        .insert("label", "Time Limit:")
-        .insert("help", "Maximum time rendering"));
+            .insert("type", "int")
+            .insert("default", "60")
+            .insert("unlimited", "true")
+            .insert("label", "Time Limit:")
+            .insert("help", "Maximum time rendering"));
 
     return metadata;
 }
