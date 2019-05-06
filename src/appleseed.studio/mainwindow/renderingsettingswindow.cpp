@@ -436,7 +436,7 @@ namespace
 
       public:
         explicit GeneralSettingsPanel(QWidget* parent = nullptr)
-            : RenderSettingsPanel("General Settings", parent)
+          : RenderSettingsPanel("General Settings", parent)
         {
         }
 
