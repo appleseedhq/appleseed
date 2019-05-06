@@ -108,8 +108,6 @@ bool EDF::on_frame_begin(
             get_path().c_str());
     }
 
-    m_max_contribution = get_uncached_max_contribution();
-
     if (get_uncached_importance_multiplier() <= 0.0f)
     {
         RENDERER_LOG_WARNING(
