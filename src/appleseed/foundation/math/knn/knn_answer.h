@@ -205,7 +205,8 @@ inline void Answer<T>::heap_insert(
 template <typename T>
 inline void Answer<T>::sort()
 {
-    std::sort(m_entries, m_entries + m_size);
+    if (m_size > 1)
+        std::sort(m_entries, m_entries + m_size);
 }
 
 template <typename T>
