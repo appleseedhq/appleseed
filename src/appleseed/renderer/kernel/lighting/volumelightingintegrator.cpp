@@ -384,7 +384,7 @@ void VolumeLightingIntegrator::compute_radiance_combined_sampling(
     if (!m_light_sampler.has_lights())
         return;
 
-    Spectrum extinction_coef = m_volume.extinction_coefficient(
+    const Spectrum& extinction_coef = m_volume.extinction_coefficient(
         m_volume_data, m_volume_ray);
 
     if (m_distance_sample_count > 0)

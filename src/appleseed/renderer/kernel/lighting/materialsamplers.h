@@ -44,7 +44,7 @@ namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
 
 //
-// This file contains wrappers over sampleable entities, such as BSDFs and Volumes.
+// This file contains wrappers over samplable entities, such as BSDFs and Volumes.
 // These wrappers provide a uniform interface for sampling and evaluating these entities
 // at a certain point, which can be used during lighting integration.
 //

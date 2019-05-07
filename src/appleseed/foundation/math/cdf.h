@@ -190,7 +190,7 @@ inline void CDF<Item, Weight>::insert(const Item& item, const Weight weight)
 }
 
 template <typename Item, typename Weight>
-inline const std::pair<Item, Weight>& CDF<Item, Weight>::operator[](const size_t i) const
+inline const typename CDF<Item, Weight>::ItemWeightPair& CDF<Item, Weight>::operator[](const size_t i) const
 {
     assert(i < m_items.size());
     return m_items[i];
@@ -264,7 +264,9 @@ inline size_t sample_pdf_linear_search(
     for (size_t i = 0; i < size; ++i)
     {
         u += pdf[i];
-        if (x < u) return i;
+
+        if (x < u)
+            return i;
     }
 
     return size - 1;

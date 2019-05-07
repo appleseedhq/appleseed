@@ -70,6 +70,7 @@ class Builder
         const size_t                count);
 
     // Like build() but the points will be moved into the tree rather than copied.
+    // todo: take rvalue reference.
     template <typename Timer>
     void build_move_points(
         std::vector<VectorType>&    points);
