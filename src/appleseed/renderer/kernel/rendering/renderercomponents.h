@@ -99,9 +99,14 @@ class RendererComponents
         foundation::IAbortSwitch*   abort_switch = nullptr);
 
     // Retrieve individual components.
+    const TraceContext& get_trace_context() const;
+    BackwardLightSampler* get_backward_light_sampler() const;
     ShadingEngine& get_shading_engine();
-    IShadingResultFrameBufferFactory& get_shading_result_framebuffer_factory();
-    IFrameRenderer& get_frame_renderer();
+    TextureStore& get_texture_store() const;
+    OIIOTextureSystem& get_oiio_texture_system();
+    OSLShadingSystem& get_osl_shading_system();
+    IShadingResultFrameBufferFactory& get_shading_result_framebuffer_factory() const;
+    IFrameRenderer& get_frame_renderer() const;
 
   private:
     const Project&                                      m_project;
@@ -114,8 +119,8 @@ class RendererComponents
     std::unique_ptr<BackwardLightSampler>               m_backward_light_sampler;
     ShadingEngine                                       m_shading_engine;
     TextureStore&                                       m_texture_store;
-    OIIOTextureSystem&                                  m_texture_system;
-    OSLShadingSystem&                                   m_shading_system;
+    OIIOTextureSystem&                                  m_oiio_texture_system;
+    OSLShadingSystem&                                   m_osl_shading_system;
 
     std::unique_ptr<ILightingEngineFactory>             m_lighting_engine_factory;
     std::unique_ptr<ISampleRendererFactory>             m_sample_renderer_factory;
@@ -140,17 +145,42 @@ class RendererComponents
 // RendererComponents class implementation.
 //
 
+inline const TraceContext& RendererComponents::get_trace_context() const
+{
+    return m_trace_context;
+}
+
+inline BackwardLightSampler* RendererComponents::get_backward_light_sampler() const
+{
+    return m_backward_light_sampler.get();
+}
+
 inline ShadingEngine& RendererComponents::get_shading_engine()
 {
     return m_shading_engine;
 }
 
-inline IFrameRenderer& RendererComponents::get_frame_renderer()
+inline TextureStore& RendererComponents::get_texture_store() const
+{
+    return m_texture_store;
+}
+
+inline OIIOTextureSystem& RendererComponents::get_oiio_texture_system()
+{
+    return m_oiio_texture_system;
+}
+
+inline OSLShadingSystem& RendererComponents::get_osl_shading_system()
+{
+    return m_osl_shading_system;
+}
+
+inline IFrameRenderer& RendererComponents::get_frame_renderer() const
 {
     return *m_frame_renderer.get();
 }
 
-inline IShadingResultFrameBufferFactory& RendererComponents::get_shading_result_framebuffer_factory()
+inline IShadingResultFrameBufferFactory& RendererComponents::get_shading_result_framebuffer_factory() const
 {
     return *m_shading_result_framebuffer_factory.get();
 }

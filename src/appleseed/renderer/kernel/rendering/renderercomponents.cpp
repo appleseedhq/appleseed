@@ -116,8 +116,8 @@ RendererComponents::RendererComponents(
   , m_backward_light_sampler(nullptr)
   , m_shading_engine(get_child_and_inherit_globals(params, "shading_engine"))
   , m_texture_store(texture_store)
-  , m_texture_system(texture_system)
-  , m_shading_system(shading_system)
+  , m_oiio_texture_system(texture_system)
+  , m_osl_shading_system(shading_system)
 {
 }
 
@@ -232,8 +232,8 @@ bool RendererComponents::create_lighting_engine_factory()
                 *m_forward_light_sampler,
                 m_trace_context,
                 m_texture_store,
-                m_texture_system,
-                m_shading_system,
+                m_oiio_texture_system,
+                m_osl_shading_system,
                 sppm_params);
 
         m_pass_callback.reset(sppm_pass_callback);
@@ -274,8 +274,8 @@ bool RendererComponents::create_sample_renderer_factory()
                 m_texture_store,
                 m_lighting_engine_factory.get(),
                 m_shading_engine,
-                m_texture_system,
-                m_shading_system,
+                m_oiio_texture_system,
+                m_osl_shading_system,
                 get_child_and_inherit_globals(m_params, "generic_sample_renderer")));
         return true;
     }
@@ -336,8 +336,8 @@ bool RendererComponents::create_sample_generator_factory()
                 m_trace_context,
                 m_texture_store,
                 *m_forward_light_sampler,
-                m_texture_system,
-                m_shading_system,
+                m_oiio_texture_system,
+                m_osl_shading_system,
                 get_child_and_inherit_globals(m_params, "lighttracing_sample_generator")));
 
         return true;
