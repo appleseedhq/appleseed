@@ -388,8 +388,8 @@ void DirectLightingIntegrator::add_emitting_shape_sample_contribution(
         if (max_contribution < m_low_light_threshold)
         {
             // Generate a uniform sample in [0,1).
-            sampling_context.split_in_place(1, 1);
-            const float s = sampling_context.next2<float>();
+            SamplingContext child_sampling_context = sampling_context.split(1, 1);
+            const float s = child_sampling_context.next2<float>();
 
             // Compute the probability of taking the sample's contribution into account.
             contribution_prob = max_contribution / m_low_light_threshold;
