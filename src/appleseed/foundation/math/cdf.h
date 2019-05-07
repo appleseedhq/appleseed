@@ -200,6 +200,7 @@ template <typename Item, typename Weight>
 void CDF<Item, Weight>::prepare()
 {
     assert(valid());
+    assert(m_densities.empty());
 
     const size_t item_count = m_items.size();
 
@@ -224,11 +225,16 @@ void CDF<Item, Weight>::prepare()
         if (m_items[i].second > Weight(0.0))
             break;
     }
+
+    assert(m_densities.size() == m_items.size());
 }
 
 template <typename Item, typename Weight>
 inline const std::pair<Item, Weight>& CDF<Item, Weight>::sample(const Weight x) const
 {
+    assert(valid());
+    assert(!m_densities.empty());
+
     const size_t i =
         sample_cdf(
             m_densities.begin(),
