@@ -29,9 +29,6 @@
 
 #pragma once
 
-// appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-
 // Standard headers.
 #include <algorithm>
 #include <cassert>
@@ -53,7 +50,6 @@ namespace foundation
 
 template <typename Item, typename Weight>
 class CDF
-  : public NonCopyable
 {
   public:
     typedef std::pair<Item, Weight> ItemWeightPair;
