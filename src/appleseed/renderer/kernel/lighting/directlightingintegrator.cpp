@@ -415,9 +415,9 @@ void DirectLightingIntegrator::add_emitting_shape_sample_contribution(
     DirectShadingComponents material_value;
     const float material_probability =
         m_material_sampler.evaluate(
-            m_light_sampling_modes,
             Vector3f(outgoing.get_value()),
             Vector3f(incoming),
+            m_light_sampling_modes,
             material_value);
     assert(material_probability >= 0.0f);
     if (material_probability == 0.0f)
@@ -520,9 +520,9 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     DirectShadingComponents material_value;
     const float material_probability =
         m_material_sampler.evaluate(
-            m_light_sampling_modes,
             Vector3f(outgoing.get_value()),
             Vector3f(incoming),
+            m_light_sampling_modes,
             material_value);
     assert(material_probability >= 0.0f);
     if (material_probability == 0.0f)

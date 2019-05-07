@@ -163,9 +163,9 @@ bool BSDFSampler::sample(
 }
 
 float BSDFSampler::evaluate(
-    const int                   light_sampling_modes,
     const Vector3f&             outgoing,
     const Vector3f&             incoming,
+    const int                   light_sampling_modes,
     DirectShadingComponents&    value) const
 {
     return
@@ -299,9 +299,9 @@ bool VolumeSampler::sample(
 }
 
 float VolumeSampler::evaluate(
-    const int                   light_sampling_modes,
     const Vector3f&             outgoing,
     const Vector3f&             incoming,
+    const int                   light_sampling_modes,
     DirectShadingComponents&    value) const
 {
     const float pdf =

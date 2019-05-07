@@ -212,9 +212,9 @@ void compute_ibl_environment_sampling(
         DirectShadingComponents material_value;
         const float material_prob =
             material_sampler.evaluate(
-                env_sampling_modes,
                 Vector3f(outgoing.get_value()),
                 incoming,
+                env_sampling_modes,
                 material_value);
         if (material_prob == 0.0f)
             continue;
