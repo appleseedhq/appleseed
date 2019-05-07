@@ -57,6 +57,9 @@ class CDF
     // Constructor.
     CDF();
 
+    // Return the number of items in the CDF.
+    size_t size() const;
+
     // Return true if the CDF is empty.
     bool empty() const;
 
@@ -139,6 +142,12 @@ template <typename Item, typename Weight>
 inline CDF<Item, Weight>::CDF()
   : m_weight_sum(0.0)
 {
+}
+
+template <typename Item, typename Weight>
+inline size_t CDF<Item, Weight>::size() const
+{
+    return m_items.size();
 }
 
 template <typename Item, typename Weight>
