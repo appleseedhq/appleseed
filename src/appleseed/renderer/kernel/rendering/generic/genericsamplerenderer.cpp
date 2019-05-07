@@ -218,13 +218,14 @@ namespace
                 if (iterations == 1)
                 {
                     // Shade the first intersection point along the ray.
-                    const bool terminate_path = m_shading_engine.shade(
-                        sampling_context,
-                        pixel_context,
-                        m_shading_context,
-                        *shading_point_ptr,
-                        aov_accumulators,
-                        shading_result);
+                    const bool terminate_path =
+                        m_shading_engine.shade(
+                            sampling_context,
+                            pixel_context,
+                            m_shading_context,
+                            *shading_point_ptr,
+                            aov_accumulators,
+                            shading_result);
 
                     if (terminate_path)
                         break;
@@ -233,13 +234,14 @@ namespace
                 {
                     // Shade the next intersection point along the ray.
                     ShadingResult local_result(shading_result.m_aov_count);
-                    const bool terminate_path = m_shading_engine.shade(
-                        sampling_context,
-                        pixel_context,
-                        m_shading_context,
-                        *shading_point_ptr,
-                        aov_accumulators,
-                        local_result);
+                    const bool terminate_path =
+                        m_shading_engine.shade(
+                            sampling_context,
+                            pixel_context,
+                            m_shading_context,
+                            *shading_point_ptr,
+                            aov_accumulators,
+                            local_result);
 
                     // Composite `shading_result` over `local_result`.
                     shading_result.composite_over(local_result);

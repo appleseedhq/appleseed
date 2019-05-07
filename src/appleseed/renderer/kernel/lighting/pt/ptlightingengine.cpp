@@ -566,7 +566,7 @@ namespace
 
                 // This may happen for points of the environment map with infinite components,
                 // which are then excluded from importance sampling and thus have zero weight.
-                if (env_prob == 0.0)
+                if (env_prob == 0.0f)
                     return;
 
                 // Multiple importance sampling.
@@ -642,11 +642,12 @@ namespace
                     m_is_indirect_lighting = true;
 
                 // When caustics are disabled, disable glossy and specular components after a diffuse or volume bounce.
-                const bool has_diffuse_or_volume_scattering =
-                    vertex.m_prev_mode == ScatteringMode::Diffuse ||
-                    vertex.m_prev_mode == ScatteringMode::Volume;
-                if (!m_params.m_enable_caustics && has_diffuse_or_volume_scattering)
-                    vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
+                if (!m_params.m_enable_caustics)
+                {
+                    if (vertex.m_prev_mode == ScatteringMode::Diffuse ||
+                        vertex.m_prev_mode == ScatteringMode::Volume)
+                        vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
+                }
 
                 // Terminate the path if all scattering modes are disabled.
                 if (vertex.m_scattering_modes == ScatteringMode::None)
