@@ -681,7 +681,9 @@ if (WITH_PYTHON2_BINDINGS)
         set (PYTHON_MAJOR_VERSION "2")
         set (PYTHON_MINOR_VERSION "7")
     endif ()
+endif ()
 
+if (WITH_PYTHON2_BINDINGS OR WITH_PYTHON3_BINDINGS)
     add_subdirectory (src/appleseed.python)
 endif ()
 
