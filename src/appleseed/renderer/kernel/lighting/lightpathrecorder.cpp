@@ -310,7 +310,7 @@ bool LightPathRecorder::write(const char* filename) const
         checked_write(file, Version);
 
         // Number of paths.
-        assert(light_path_count < 4294967295ULL);
+        assert(light_path_count < 4294967296ULL);
         checked_write(file, static_cast<uint32>(light_path_count));
 
         // On-disk variant of Impl::IndexEntry.
