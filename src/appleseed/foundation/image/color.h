@@ -343,9 +343,11 @@ typedef Color<double,   4> Color4d;
 template <typename T, typename Int>
 Color<T, 3> integer_to_color3(const Int i);
 
-// Compute the squared error between two linear rgb colors.
+// Compute the square L2 distance between two linear RGB colors.
 template <typename T>
-T compute_error_squared(const Color<T, 3>& c1, const Color<T, 3>& c2);
+T square_distance(
+    const Color<T, 3>& c1,
+    const Color<T, 3>& c2);
 
 
 //
@@ -1188,7 +1190,9 @@ Color<T, 3> integer_to_color3(const Int i)
 }
 
 template <typename T>
-inline T compute_error_squared(const Color<T, 3>& c1, const Color<T, 3>& c2)
+inline T square_distance(
+    const Color<T, 3>& c1,
+    const Color<T, 3>& c2)
 {
     return
         square(c1.r - c2.r) +

@@ -148,7 +148,7 @@ double compute_rms_deviation(const Image& image1, const Image& image2)
             Color3f color2;
             image2.get_pixel(x, y, color2);
 
-            mse += compute_error_squared(color1, color2);
+            mse += square_distance(color1, color2);
         }
     }
 

@@ -45,27 +45,27 @@ namespace foundation
 // Distance functions.
 //
 
-// Compute the square distance between two points.
+// Compute the square L2 distance between two points.
 template <typename T, size_t N>
 T square_distance(
     const Vector<T, N>& a,
     const Vector<T, N>& b);
 
-// Compute the square distance between a point and a line.
+// Compute the square L2 distance between a point and a line.
 template <typename T, size_t N>
 T square_distance_point_line(
     const Vector<T, N>& point,
     const Vector<T, N>& a,          // a point on the line
     const Vector<T, N>& v);         // direction of the line, unit-length
 
-// Compute the square distance between a point and a line segment.
+// Compute the square L2 distance between a point and a line segment.
 template <typename T, size_t N>
 T square_distance_point_segment(
     const Vector<T, N>& point,
     const Vector<T, N>& a,          // one end of the segment
     const Vector<T, N>& b);         // the other end
 
-// Compute the square distance between a point and an AABB.
+// Compute the square L2 distance between a point and an AABB.
 // Return 0 if the point is inside the AABB.
 template <typename T, size_t N>
 T square_distance(
