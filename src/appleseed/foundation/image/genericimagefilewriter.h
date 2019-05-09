@@ -6,8 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
-// Copyright (c) 2018 Thomas Manceau, The appleseedhq Organization
+// Copyright (c) 2014-2019 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/iimagefilewriter.h"
-#include "foundation/image/imageattributes.h"
 #include "foundation/image/pixel.h"
 
 // OpenImageIO headers.
@@ -41,8 +39,12 @@
 #include "OpenImageIO/version.h"
 #include "foundation/platform/_endoiioheaders.h"
 
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
 namespace foundation { class ICanvas; }
+namespace foundation { class ImageAttributes; }
 
 namespace foundation
 {
@@ -60,12 +62,12 @@ class APPLESEED_DLLSYMBOL GenericImageFileWriter
     // Set the pixel format of the topmost image on the stack.
     void set_image_output_format(const PixelFormat output_pixel_format);
 
-    // Set the image channels of the topmost image on the stack.
+    // Set the image channel names of the topmost image on the stack.
     void set_image_channels(
         const size_t    channel_count,
         const char**    channel_names);
 
-    // Add attributes to the topmost image on the stack.
+    // Set attributes of the topmost image on the stack.
     void set_image_attributes(const ImageAttributes& image_attributes);
 
     // Return the number of images in the stack.
@@ -73,21 +75,6 @@ class APPLESEED_DLLSYMBOL GenericImageFileWriter
 
     // Write all images from the stack (if possible) to disk.
     void write();
-
-  private:
-    void close_file();
-
-    void set_image_spec();
-    
-    void set_generic_image_attributes(const ImageAttributes& image_attributes);
-    void set_exr_image_attributes(const ImageAttributes& image_attributes);
-    
-    void write(const size_t image_index);
-    void write_single_image();
-    void write_multi_images();
-
-    void write_scanlines(const size_t image_index);
-    void write_tiles(const size_t image_index);
 
   private:
     struct Impl;
