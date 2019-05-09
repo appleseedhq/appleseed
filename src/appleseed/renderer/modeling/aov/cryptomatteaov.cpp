@@ -63,9 +63,11 @@
 // Murmurhash3 headers.
 #include "MurmurHash3.h"
 
-// OIIO headers.
+// OpenImageIO headers.
+#include "foundation/platform/_beginoiioheaders.h"
 #include "OpenImageIO/imageio.h"
 #include "OpenImageIO/version.h"
+#include "foundation/platform/_endoiioheaders.h"
 
 // Standard headers.
 #include <algorithm>
