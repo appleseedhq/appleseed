@@ -99,7 +99,7 @@ namespace
                     Color3f ref_color;
                     frame.ref_image()->get_pixel(x, y, ref_color);
 
-                    const float error = sqrt(compute_error_squared(image_color, ref_color));
+                    const float error = sqrt(square_distance(image_color, ref_color));
                     max_error = max(max_error, error);
 
                     m_image->set_pixel(x, y, &error, 1);
