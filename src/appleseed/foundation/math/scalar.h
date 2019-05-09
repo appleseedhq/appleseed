@@ -53,6 +53,7 @@ namespace foundation
 // Constants.
 //
 
+// Mathematical constants.
 template <typename T> inline T Pi()                 { return static_cast<T>(3.1415926535897932); }
 template <typename T> inline T TwoPi()              { return static_cast<T>(6.2831853071795865); }  // 2 * Pi
 template <typename T> inline T FourPi()             { return static_cast<T>(12.566370614359173); }  // 4 * Pi
@@ -75,6 +76,70 @@ template <typename T> inline T RcpSqrtTwo()         { return static_cast<T>(0.70
 template <typename T> inline T SqrtThree()          { return static_cast<T>(1.7320508075688773); }  // sqrt(3)
 template <typename T> inline T GoldenRatio()        { return static_cast<T>(1.6180339887498948); }  // (1 + sqrt(5)) / 2
 template <typename T> inline T Ln10()               { return static_cast<T>(2.3025850929940457); }  // ln(10)
+
+//
+// The four floating point constants below were determined with the following program:
+//
+//   #include <cmath>
+//   #include <cstdint>
+//   #include <iomanip>
+//   #include <iostream>
+//   #include <limits>
+//
+//   template <typename Target, typename Source>
+//   Target binary_cast(Source s)
+//   {
+//       union { Source m_source; Target m_target; } u;
+//       u.m_source = s;
+//       return u.m_target;
+//   }
+//
+//   template <typename Float, typename UInt>
+//   Float compute_rcp_power_of_two()
+//   {
+//       Float x = std::pow(Float(2.0), std::numeric_limits<UInt>::digits);
+//
+//       while (true)
+//       {
+//           const Float rcp_x = Float(1.0) / x;
+//
+//           if (std::numeric_limits<UInt>::max() * rcp_x < Float(1.0))
+//               return rcp_x;
+//
+//           const UInt x_bits = binary_cast<UInt>(x);
+//           x = binary_cast<Float>(x_bits + 1);
+//       }
+//   }
+//
+//   int main()
+//   {
+//       std::cout << std::setprecision(9) << compute_rcp_power_of_two<float, std::uint32_t>() << std::endl;
+//       std::cout << std::setprecision(17) << compute_rcp_power_of_two<double, std::uint32_t>() << std::endl;
+//       std::cout << std::setprecision(9) << compute_rcp_power_of_two<float, std::uint64_t>() << std::endl;
+//       std::cout << std::setprecision(17) << compute_rcp_power_of_two<double, std::uint64_t>() << std::endl;
+//   }
+//
+// Run this code on Coliru:
+//
+//   http://coliru.stacked-crooked.com/a/05d58a1b19118b8e
+//
+// Output:
+//
+//   2.32830616e-10
+//   2.3283064365386963e-10
+//   5.42101022e-20
+//   5.421010862427521e-20
+//
+
+// Return a constant that, when multiplied by 2^32 - 1 (0xFFFFFFFF), equals the largest value strictly smaller than 1.0.
+template <typename T> inline T Rcp2Pow32();
+template <> inline float Rcp2Pow32<float>()         { return 2.32830616e-10f; }
+template <> inline double Rcp2Pow32<double>()       { return 2.3283064365386963e-10; }
+
+// Return a constant that, when multiplied by 2^64 - 1 (0xFFFFFFFFFFFFFFFF), equals the largest value strictly smaller than 1.0.
+template <typename T> inline T Rcp2Pow64();
+template <> inline float Rcp2Pow64<float>()         { return 5.42101022e-20f; }
+template <> inline double Rcp2Pow64<double>()       { return 5.421010862427521e-20; }
 
 
 //

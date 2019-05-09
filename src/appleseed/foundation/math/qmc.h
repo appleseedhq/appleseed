@@ -30,6 +30,7 @@
 #pragma once
 
 // appleseed.foundation headers.
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/arch.h"
 #include "foundation/platform/types.h"
@@ -223,7 +224,13 @@ inline T radical_inverse_base2_32(
     value = ((value & 0xF0F0F0F0u) >> 4) | ((value & 0x0F0F0F0Fu) << 4);                        // 4-bit swap
     value = ((value & 0xCCCCCCCCu) >> 2) | ((value & 0x33333333u) << 2);                        // 2-bit swap
     value = ((value & 0xAAAAAAAAu) >> 1) | ((value & 0x55555555u) << 1);                        // 1-bit swap
-    return static_cast<T>(value / 4294967296.0f);
+
+    const T result = value * Rcp2Pow32<T>();
+
+    assert(result >= T(0.0));
+    assert(result < T(1.0));
+
+    return result;
 }
 
 template <typename T>
@@ -236,7 +243,13 @@ inline T radical_inverse_base2_64(
     value = ((value & 0xF0F0F0F0F0F0F0F0ull) >> 4)  | ((value & 0x0F0F0F0F0F0F0F0Full) << 4);   // 4-bit swap
     value = ((value & 0xCCCCCCCCCCCCCCCCull) >> 2)  | ((value & 0x3333333333333333ull) << 2);   // 2-bit swap
     value = ((value & 0xAAAAAAAAAAAAAAAAull) >> 1)  | ((value & 0x5555555555555555ull) << 1);   // 1-bit swap
-    return static_cast<T>(value / 18446744073709551616.0);
+
+    const T result = value * Rcp2Pow64<T>();
+
+    assert(result >= T(0.0));
+    assert(result < T(1.0));
+
+    return result;
 }
 
 template <typename T>
