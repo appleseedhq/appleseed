@@ -58,16 +58,56 @@ using namespace std;
 
 TEST_SUITE(Foundation_Math_QMC)
 {
-    TEST_CASE(RadicalInverseBase2)
+    TEST_CASE(RadicalInverseBase2_32_Float)
     {
-        EXPECT_FEQ(0.0,     radical_inverse_base2<double>(0));
-        EXPECT_FEQ(0.5,     radical_inverse_base2<double>(1));
-        EXPECT_FEQ(0.25,    radical_inverse_base2<double>(2));
-        EXPECT_FEQ(0.75,    radical_inverse_base2<double>(3));
-        EXPECT_FEQ(0.125,   radical_inverse_base2<double>(4));
-        EXPECT_FEQ(0.625,   radical_inverse_base2<double>(5));
-        EXPECT_FEQ(0.375,   radical_inverse_base2<double>(6));
-        EXPECT_FEQ(0.875,   radical_inverse_base2<double>(7));
+        EXPECT_FEQ(0.000f, radical_inverse_base2_32<float>(0));
+        EXPECT_FEQ(0.500f, radical_inverse_base2_32<float>(1));
+        EXPECT_FEQ(0.250f, radical_inverse_base2_32<float>(2));
+        EXPECT_FEQ(0.750f, radical_inverse_base2_32<float>(3));
+        EXPECT_FEQ(0.125f, radical_inverse_base2_32<float>(4));
+        EXPECT_FEQ(0.625f, radical_inverse_base2_32<float>(5));
+        EXPECT_FEQ(0.375f, radical_inverse_base2_32<float>(6));
+        EXPECT_FEQ(0.875f, radical_inverse_base2_32<float>(7));
+        EXPECT_EQ(0.999999881f, radical_inverse_base2_32<float>(0xFFFFFFFFul));
+    }
+
+    TEST_CASE(RadicalInverseBase2_32_Double)
+    {
+        EXPECT_FEQ(0.000, radical_inverse_base2_32<double>(0));
+        EXPECT_FEQ(0.500, radical_inverse_base2_32<double>(1));
+        EXPECT_FEQ(0.250, radical_inverse_base2_32<double>(2));
+        EXPECT_FEQ(0.750, radical_inverse_base2_32<double>(3));
+        EXPECT_FEQ(0.125, radical_inverse_base2_32<double>(4));
+        EXPECT_FEQ(0.625, radical_inverse_base2_32<double>(5));
+        EXPECT_FEQ(0.375, radical_inverse_base2_32<double>(6));
+        EXPECT_FEQ(0.875, radical_inverse_base2_32<double>(7));
+        EXPECT_EQ(0.99999999976716936, radical_inverse_base2_32<double>(0xFFFFFFFFul));
+    }
+
+    TEST_CASE(RadicalInverseBase2_64_Float)
+    {
+        EXPECT_FEQ(0.000f, radical_inverse_base2_64<float>(0));
+        EXPECT_FEQ(0.500f, radical_inverse_base2_64<float>(1));
+        EXPECT_FEQ(0.250f, radical_inverse_base2_64<float>(2));
+        EXPECT_FEQ(0.750f, radical_inverse_base2_64<float>(3));
+        EXPECT_FEQ(0.125f, radical_inverse_base2_64<float>(4));
+        EXPECT_FEQ(0.625f, radical_inverse_base2_64<float>(5));
+        EXPECT_FEQ(0.375f, radical_inverse_base2_64<float>(6));
+        EXPECT_FEQ(0.875f, radical_inverse_base2_64<float>(7));
+        EXPECT_EQ(0.999999881f, radical_inverse_base2_64<float>(0xFFFFFFFFFFFFFFFFull));
+    }
+
+    TEST_CASE(RadicalInverseBase2_64_Double)
+    {
+        EXPECT_FEQ(0.000, radical_inverse_base2_64<double>(0));
+        EXPECT_FEQ(0.500, radical_inverse_base2_64<double>(1));
+        EXPECT_FEQ(0.250, radical_inverse_base2_64<double>(2));
+        EXPECT_FEQ(0.750, radical_inverse_base2_64<double>(3));
+        EXPECT_FEQ(0.125, radical_inverse_base2_64<double>(4));
+        EXPECT_FEQ(0.625, radical_inverse_base2_64<double>(5));
+        EXPECT_FEQ(0.375, radical_inverse_base2_64<double>(6));
+        EXPECT_FEQ(0.875, radical_inverse_base2_64<double>(7));
+        EXPECT_EQ(0.99999999999999978, radical_inverse_base2_64<double>(0xFFFFFFFFFFFFFFFFull));
     }
 
     TEST_CASE(RadicalInverse_Base2)
