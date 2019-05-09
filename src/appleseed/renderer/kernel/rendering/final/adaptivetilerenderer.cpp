@@ -938,9 +938,9 @@ Dictionary AdaptiveTileRendererFactory::get_params_metadata()
         "batch_size",
         Dictionary()
             .insert("type", "int")
+            .insert("default", "16")
             .insert("min", "1")
             .insert("max", "1000000")
-            .insert("default", "16")
             .insert("label", "Batch Size")
             .insert("help", "How many samples to render before each convergence estimation"));
 
@@ -948,9 +948,9 @@ Dictionary AdaptiveTileRendererFactory::get_params_metadata()
         "min_samples",
         Dictionary()
             .insert("type", "int")
+            .insert("default", "16")
             .insert("min", "0")
             .insert("max", "1000000")
-            .insert("default", "16")
             .insert("label", "Min Samples")
             .insert("help", "Number of uniform samples to render before adaptive sampling"));
 
@@ -968,9 +968,9 @@ Dictionary AdaptiveTileRendererFactory::get_params_metadata()
         "noise_threshold",
         Dictionary()
             .insert("type", "float")
+            .insert("default", "0.1")
             .insert("min", "0.0001")
             .insert("max", "10000.0")
-            .insert("default", "0.1")
             .insert("label", "Noise Threshold")
             .insert("help", "Maximum amount of noise allowed in the image"));
 
