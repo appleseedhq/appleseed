@@ -39,12 +39,10 @@ BENCHMARK_SUITE(Foundation_Math_Hash)
 
     struct Fixture
     {
-        uint32  m_uint_result;
-        float   m_float_result;
+        uint32 m_result;
 
         Fixture()
-          : m_uint_result(0)
-          , m_float_result(0.0f)
+          : m_result(0)
         {
         }
     };
@@ -52,18 +50,18 @@ BENCHMARK_SUITE(Foundation_Math_Hash)
     BENCHMARK_CASE_F(HashUInt32, Fixture)
     {
         for (uint32 i = 0; i < N; ++i)
-            m_uint_result += hash_uint32(i);
+            m_result += hash_uint32(i);
     }
 
-    BENCHMARK_CASE_F(HashUInt32Pixar, Fixture)
+    BENCHMARK_CASE_F(HashUInt32Wang, Fixture)
     {
         for (uint32 i = 0; i < N; ++i)
-            m_float_result += hash_uint32_pixar(i, 12345678);
+            m_result += hash_uint32_wang(i);
     }
 
     BENCHMARK_CASE_F(MixUInt32, Fixture)
     {
         for (uint32 i = 0; i < N; ++i)
-            m_uint_result += mix_uint32(i, m_uint_result);
+            m_result += mix_uint32(i, m_result);
     }
 }

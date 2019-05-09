@@ -46,13 +46,21 @@ class ColorMap
 {
   public:
     static void find_min_max_red_channel(
-        Image&          image,
+        const Image&    image,
+        float&          min_value,
+        float&          max_value);
+    static void find_min_max_red_channel(
+        const Image&    image,
         const AABB2u&   crop_window,
         float&          min_value,
         float&          max_value);
 
     static void find_min_max_relative_luminance(
-        Image&          image,
+        const Image&    image,
+        float&          min_luminance,
+        float&          max_luminance);
+    static void find_min_max_relative_luminance(
+        const Image&    image,
         const AABB2u&   crop_window,
         float&          min_luminance,
         float&          max_luminance);
@@ -65,10 +73,18 @@ class ColorMap
 
     void remap_red_channel(
         Image&          image,
+        const float     min_val,
+        const float     max_val) const;
+    void remap_red_channel(
+        Image&          image,
         const AABB2u&   crop_window,
         const float     min_val,
         const float     max_val) const;
 
+    void remap_relative_luminance(
+        Image&          image,
+        const float     min_luminance,
+        const float     max_luminance) const;
     void remap_relative_luminance(
         Image&          image,
         const AABB2u&   crop_window,
@@ -79,6 +95,8 @@ class ColorMap
 
   private:
     std::vector<Color3f> m_palette;
+
+    static AABB2u get_full_crop_window(const Image& image);
 };
 
 }   // namespace foundation

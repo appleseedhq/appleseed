@@ -48,9 +48,9 @@ namespace
 {
     template <typename Func>
     void for_each_pixel(
-        Image&          image,
+        const Image&    image,
         const AABB2u&   crop_window,
-        const Func&     func)
+        const Func&     visitor)
     {
         for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
         {
@@ -58,17 +58,43 @@ namespace
             {
                 Color3f color;
                 image.get_pixel(x, y, color);
+                visitor(color);
+            }
+        }
+    }
 
-                func(color);
-
-                image.set_pixel(x, y, color);
+    template <typename Func>
+    void for_each_pixel(
+        Image&          image,
+        const AABB2u&   crop_window,
+        const Func&     mutator)
+    {
+        for (size_t y = crop_window.min.y; y <= crop_window.max.y; ++y)
+        {
+            for (size_t x = crop_window.min.x; x <= crop_window.max.x; ++x)
+            {
+                Color3f color;
+                image.get_pixel(x, y, color);
+                image.set_pixel(x, y, mutator(color));
             }
         }
     }
 }
 
 void ColorMap::find_min_max_red_channel(
-    Image&          image,
+    const Image&    image,
+    float&          min_value,
+    float&          max_value)
+{
+    find_min_max_red_channel(
+        image,
+        get_full_crop_window(image),
+        min_value,
+        max_value);
+}
+
+void ColorMap::find_min_max_red_channel(
+    const Image&    image,
     const AABB2u&   crop_window,
     float&          min_value,
     float&          max_value)
@@ -84,7 +110,19 @@ void ColorMap::find_min_max_red_channel(
 }
 
 void ColorMap::find_min_max_relative_luminance(
-    Image&          image,
+    const Image&    image,
+    float&          min_luminance,
+    float&          max_luminance)
+{
+    find_min_max_relative_luminance(
+        image,
+        get_full_crop_window(image),
+        min_luminance,
+        max_luminance);
+}
+
+void ColorMap::find_min_max_relative_luminance(
+    const Image&    image,
     const AABB2u&   crop_window,
     float&          min_luminance,
     float&          max_luminance)
@@ -124,6 +162,18 @@ void ColorMap::set_palette_from_image_file(const Image& image)
 
 void ColorMap::remap_red_channel(
     Image&          image,
+    const float     min_value,
+    const float     max_value) const
+{
+    remap_red_channel(
+        image,
+        get_full_crop_window(image),
+        min_value,
+        max_value);
+}
+
+void ColorMap::remap_red_channel(
+    Image&          image,
     const AABB2u&   crop_window,
     const float     min_value,
     const float     max_value) const
@@ -132,21 +182,33 @@ void ColorMap::remap_red_channel(
     {
         const Color3f mapped_color = evaluate_palette(0.0f);
 
-        for_each_pixel(image, crop_window, [mapped_color](Color3f& color)
+        for_each_pixel(image, crop_window, [mapped_color](const Color3f& color)
         {
-            color = mapped_color;
+            return mapped_color;
         });
     }
     else
     {
         const float k = 1.0f / (max_value - min_value);
 
-        for_each_pixel(image, crop_window, [this, min_value, k](Color3f& color)
+        for_each_pixel(image, crop_window, [this, min_value, k](const Color3f& color)
         {
             const float x = saturate((color[0] - min_value) * k);
-            color = evaluate_palette(x);
+            return evaluate_palette(x);
         });
     }
+}
+
+void ColorMap::remap_relative_luminance(
+    Image&          image,
+    const float     min_luminance,
+    const float     max_luminance) const
+{
+    remap_relative_luminance(
+        image,
+        get_full_crop_window(image),
+        min_luminance,
+        max_luminance);
 }
 
 void ColorMap::remap_relative_luminance(
@@ -159,19 +221,19 @@ void ColorMap::remap_relative_luminance(
     {
         const Color3f mapped_color = evaluate_palette(0.0f);
 
-        for_each_pixel(image, crop_window, [mapped_color](Color3f& color)
+        for_each_pixel(image, crop_window, [mapped_color](const Color3f& color)
         {
-            color = mapped_color;
+            return mapped_color;
         });
     }
     else
     {
         const float k = 1.0f / (max_luminance - min_luminance);
 
-        for_each_pixel(image, crop_window, [this, min_luminance, k](Color3f& color)
+        for_each_pixel(image, crop_window, [this, min_luminance, k](const Color3f& color)
         {
             const float x = saturate((luminance(color) - min_luminance) * k);
-            color = evaluate_palette(x);
+            return evaluate_palette(x);
         });
     }
 }
@@ -186,6 +248,15 @@ Color3f ColorMap::evaluate_palette(float x) const
     const float w = x - ix;
 
     return lerp(m_palette[ix], m_palette[ix + 1], w);
+}
+
+AABB2u ColorMap::get_full_crop_window(const Image& image)
+{
+    const CanvasProperties& props = image.properties();
+    return
+        AABB2u(
+            Vector2u(0, 0),
+            Vector2u(props.m_canvas_width - 1, props.m_canvas_height - 1));
 }
 
 }   // namespace foundation
