@@ -43,8 +43,6 @@ class OIIOTextureSystem
     void release();
 
   private:
-    ~OIIOTextureSystem() override;
-
     // Needed by gcc 8.
     void operator delete(void*) {}
 };

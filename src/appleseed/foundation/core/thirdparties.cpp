@@ -64,15 +64,15 @@
 #include <OpenImageIO/oiioversion.h>
 #include "foundation/platform/_endoiioheaders.h"
 
-// OSL headers.
-#include "foundation/platform/_beginoslheaders.h"
-#include <OSL/oslversion.h>
-#include "foundation/platform/_endoslheaders.h"
-
 // OptiX headers.
 #ifdef APPLESEED_WITH_GPU
 #include <optix.h>
 #endif
+
+// OSL headers.
+#include "foundation/platform/_beginoslheaders.h"
+#include <OSL/oslversion.h>
+#include "foundation/platform/_endoslheaders.h"
 
 // Xerces-C++ headers.
 #include <xercesc/util/XercesVersion.hpp>
@@ -113,9 +113,9 @@ LibraryVersionArray ThirdParties::get_versions()
     unsigned int optix_version;
     if (rtGetVersion(&optix_version) == RT_SUCCESS)
     {
-        unsigned int major =  optix_version / 10000;
-        unsigned int minor = (optix_version % 10000) / 100;
-        unsigned int micro =  optix_version % 100;
+        const unsigned int major = optix_version / 10000;
+        const unsigned int minor = (optix_version % 10000) / 100;
+        const unsigned int micro = optix_version % 100;
         versions.push_back(APIStringPair("OptiX", format("{0}.{1}.{2}", major, minor, micro)));
     }
 #endif

@@ -517,7 +517,7 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
                 m_dpdv = (du0 * dp1 - du1 * dp0) * rcp_det;
 
                 //
-                // Substract the component of dPdu (resp. dPdv) that is not orthogonal to the shading normal.
+                // Subtract the component of dPdu (resp. dPdv) that is not orthogonal to the shading normal.
                 // Assuming that the geometric and shading normals don't differ excessively, this leads to a
                 // very negligible shortening of dPdu (resp. dPdv).
                 //
