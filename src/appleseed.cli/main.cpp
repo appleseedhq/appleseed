@@ -141,10 +141,21 @@ namespace
                 g_logger,
                 g_cl.m_verbose_unit_tests.is_set()));
 
-        TestResult result;
-
+        // Change current directory to the tests' root directory.
         const bf::path old_current_path =
             Application::change_current_directory_to_tests_root_path();
+
+        // Create unit tests output directories.
+        if (!Application::create_unit_tests_output_directories())
+        {
+            LOG_ERROR(
+                g_logger,
+                "failed to create unit tests output directories %s, aborting test execution.",
+                Application::get_unit_tests_output_path());
+            return false;
+        }
+
+        TestResult result;
 
         // Run test suites.
         if (g_cl.m_run_unit_tests.values().empty())
@@ -166,10 +177,10 @@ namespace
             }
         }
 
+        print_unit_test_result(result);
+
         // Restore the current directory.
         bf::current_path(old_current_path);
-
-        print_unit_test_result(result);
 
         return result.get_assertion_failure_count() == 0;
     }

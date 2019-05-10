@@ -69,16 +69,24 @@ class SHAREDDLL Application
     // a fatal error message through the provided foundation::Logger object.
     static void check_installation(foundation::Logger& logger);
 
-    // Return the root path of the application. The root path of an application
-    // is the path to the parent of the bin/ subdirectory. This method returns
-    // an empty string if the application is not correctly installed.
+    // Return the root path of the application.
+    // This is the path to the parent of the bin/ directory.
+    // Returns nullptr if the application is not correctly installed.
     static const char* get_root_path();
 
     // Return the user settings path.
+    // Returns nullptr if the notion of user settings path is not supported on this platform.
     static const char* get_user_settings_path();
 
-    // Return the root path of the application's tests.
+    // Return the root path of the application's tests (unit tests, unit benchmarks, etc.).
+    // On a developer's machine, this is path/to/appleseed/sandbox/tests/.
+    // Returns nullptr if the application is not correctly installed.
     static const char* get_tests_root_path();
+
+    // Return the output path of the application's unit tests.
+    // On a developer's machine, this is path/to/appleseed/sandbox/tests/unit tests/outputs/.
+    // Returns nullptr if the application is not correctly installed.
+    static const char* get_unit_tests_output_path();
 
     // Load a settings file from appleseed's settings directory.
     // Returns true if settings could be loaded, false otherwise.
@@ -103,6 +111,10 @@ class SHAREDDLL Application
     // Change the current directory to the root path of the application's tests.
     // Returns the path to the current directory.
     static boost::filesystem::path change_current_directory_to_tests_root_path();
+
+    // Create output directories for the application's unit tests.
+    // Returns true on success, false otherwise.
+    static bool create_unit_tests_output_directories();
 };
 
 
@@ -115,11 +127,13 @@ inline boost::filesystem::path Application::change_current_directory_to_tests_ro
     namespace bf = boost::filesystem;
 
     const bf::path old_current_path = bf::current_path();
-
-    const bf::path tests_root_path(Application::get_tests_root_path());
-    bf::current_path(tests_root_path);
-
+    bf::current_path(get_tests_root_path());
     return old_current_path;
+}
+
+inline bool Application::create_unit_tests_output_directories()
+{
+    return boost::filesystem::create_directories(get_unit_tests_output_path());
 }
 
 }   // namespace shared

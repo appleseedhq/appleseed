@@ -173,7 +173,7 @@ void BenchmarkWindow::reload_benchmarks()
 {
     const bf::path benchmarks_path =
           bf::path(Application::get_tests_root_path())
-        / "unit benchmarks/results/";
+        / "unit benchmarks" / "results";
 
     m_benchmark_aggregator.clear();
     m_benchmark_aggregator.scan_directory(benchmarks_path.string().c_str());
