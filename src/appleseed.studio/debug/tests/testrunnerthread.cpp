@@ -74,15 +74,23 @@ void TestRunnerThread::run()
     set_current_thread_name("tests");
 
     QtTestListener listener(m_output_widget, m_result_widget);
-    TestResult result;
 
     global_logger().set_enabled(false);
 
+    // Change current directory to the tests' root directory.
     const bf::path old_current_path =
         Application::change_current_directory_to_tests_root_path();
 
+    // Create unit tests output directories.
+    // todo: how should errors be handled here?
+    Application::create_unit_tests_output_directories();
+
+    TestResult result;
+
+    // Run test suites.
     m_repository.run(listener, result);
 
+    // Restore the current directory.
     bf::current_path(old_current_path);
 
     global_logger().set_enabled(true);

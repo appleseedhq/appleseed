@@ -145,15 +145,11 @@ namespace
         while (path.has_parent_path() && path.filename() != "bin")
             path = path.parent_path();
 
-        if (path.has_root_path())
-        {
-            root_path = path.parent_path();
-            return true;
-        }
-        else
-        {
+        if (!path.has_root_path())
             return false;
-        }
+
+        root_path = path.parent_path();
+        return true;
     }
 
     void copy_directory_path_to_buffer(const bf::path& path, char* output)
@@ -165,55 +161,49 @@ namespace
         strcpy(output, path_string.c_str());
         output[path_string.size()] = '\0';
     }
+
+    const char* nullptr_if_empty(const char* buffer)
+    {
+        return buffer[0] != '\0' ? buffer : nullptr;
+    }
 }
 
 const char* Application::get_root_path()
 {
-    static char root_path_buffer[FOUNDATION_MAX_PATH_LENGTH + 1];
-    static bool root_path_initialized = false;
+    static char buffer[FOUNDATION_MAX_PATH_LENGTH + 1] = { 0 };
+    static bool buffer_initialized = false;
 
-    if (!root_path_initialized)
+    if (!buffer_initialized)
     {
         bf::path root_path;
-
         if (compute_root_path(root_path))
-        {
-            copy_directory_path_to_buffer(root_path, root_path_buffer);
-        }
-        else
-        {
-            root_path_buffer[0] = '\0';
-        }
+            copy_directory_path_to_buffer(root_path, buffer);
 
-        root_path_initialized = true;
+        buffer_initialized = true;
     }
 
-    return root_path_buffer;
+    return nullptr_if_empty(buffer);
 }
 
 const char* Application::get_user_settings_path()
 {
-    static char user_settings_buffer[FOUNDATION_MAX_PATH_LENGTH + 1];
-    static bool user_settings_initialized = false;
+    static char buffer[FOUNDATION_MAX_PATH_LENGTH + 1] = { 0 };
+    static bool buffer_initialized = false;
 
-    if (!user_settings_initialized)
+    if (!buffer_initialized)
     {
 // Windows.
 #if defined _WIN32
 
-        return nullptr;
-
 // macOS.
 #elif defined __APPLE__
-
-        return nullptr;
 
 // Other Unices.
 #elif defined __linux__ || defined __FreeBSD__
 
         bf::path p(get_home_directory());
         p /= ".appleseed/settings";
-        copy_directory_path_to_buffer(p, user_settings_buffer);
+        copy_directory_path_to_buffer(p, buffer);
 
 // Other platforms.
 #else
@@ -221,35 +211,51 @@ const char* Application::get_user_settings_path()
         #error Unsupported platform.
 
 #endif
-        user_settings_initialized = true;
+
+        buffer_initialized = true;
     }
 
-    return user_settings_buffer;
+    return nullptr_if_empty(buffer);
 }
 
 const char* Application::get_tests_root_path()
 {
-    static char tests_root_path_buffer[FOUNDATION_MAX_PATH_LENGTH + 1];
-    static bool tests_root_path_initialized = false;
+    static char buffer[FOUNDATION_MAX_PATH_LENGTH + 1] = { 0 };
+    static bool buffer_initialized = false;
 
-    if (!tests_root_path_initialized)
+    if (!buffer_initialized)
     {
         bf::path root_path;
-
         if (compute_root_path(root_path))
         {
-            root_path = root_path / bf::path("tests");
-            copy_directory_path_to_buffer(root_path, tests_root_path_buffer);
-        }
-        else
-        {
-            tests_root_path_buffer[0] = '\0';
+            root_path = root_path / "tests";
+            copy_directory_path_to_buffer(root_path, buffer);
         }
 
-        tests_root_path_initialized = true;
+        buffer_initialized = true;
     }
 
-    return tests_root_path_buffer;
+    return nullptr_if_empty(buffer);
+}
+
+const char* Application::get_unit_tests_output_path()
+{
+    static char buffer[FOUNDATION_MAX_PATH_LENGTH + 1] = { 0 };
+    static bool buffer_initialized = false;
+
+    if (!buffer_initialized)
+    {
+        bf::path root_path;
+        if (compute_root_path(root_path))
+        {
+            root_path = root_path / "tests" / "unit tests" / "outputs";
+            copy_directory_path_to_buffer(root_path, buffer);
+        }
+
+        buffer_initialized = true;
+    }
+
+    return nullptr_if_empty(buffer);
 }
 
 bool Application::load_settings(
@@ -340,8 +346,8 @@ void Application::initialize_resource_search_paths(SearchPaths& search_paths)
 
     const bf::path root_path = Application::get_root_path();
 
-    search_paths.push_back_explicit_path(
-        (root_path / "shaders").string().c_str()); // OSL headers.
+    // OSL headers.
+    search_paths.push_back_explicit_path((root_path / "shaders").string());
 }
 
 }   // namespace shared
