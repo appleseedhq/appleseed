@@ -121,8 +121,8 @@ namespace
 
         ofs << "plt.axis('equal')\n";
         ofs << "plt.axis(["
-             << -rx << ", " << rx * 1.25f << ", "
-             << -ry << ", " << ry * 1.25f << "])\n";
+            << -rx << ", " << rx * 1.25f << ", "
+            << -ry << ", " << ry * 1.25f << "])\n";
 
         ofs << "x, y = zip(*points1)\n";
         ofs << "plt.scatter(x, y,s=1, c='r')\n";
@@ -149,7 +149,7 @@ TEST_SUITE(Foundation_Image_FilterSamplingTable_BoxFilter)
             filter1,
             filter2,
             SampleCount,
-            "unit tests/outputs/FIS_plot_box.py");
+            "unit tests/outputs/test_fis_plot_box.py");
     }
 }
 
@@ -166,16 +166,15 @@ TEST_SUITE(Foundation_Image_FilterSamplingTable_TriangleFilter)
             filter1,
             filter2,
             SampleCount,
-            "unit tests/outputs/FIS_plot_triangle.py");
+            "unit tests/outputs/test_fis_plot_triangle.py");
     }
 }
 
 TEST_SUITE(Foundation_Image_FilterSamplingTable_GaussianFilter)
 {
-    const float Alpha = 8.0f;
-
     TEST_CASE(PlotSamples)
     {
+        const float Alpha = 8.0f;
         const float Radius = 1.5f;
         const size_t SampleCount = 2048;
 
@@ -185,7 +184,7 @@ TEST_SUITE(Foundation_Image_FilterSamplingTable_GaussianFilter)
             filter1,
             filter2,
             SampleCount,
-            "unit tests/outputs/FIS_plot_gaussian.py");
+            "unit tests/outputs/test_fis_plot_gaussian.py");
     }
 }
 
@@ -202,6 +201,6 @@ TEST_SUITE(Foundation_Image_FilterSamplingTable_BlackmanFilter)
             filter1,
             filter2,
             SampleCount,
-            "unit tests/outputs/FIS_plot_blackman.py");
+            "unit tests/outputs/test_fis_plot_blackman.py");
     }
 }
