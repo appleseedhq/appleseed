@@ -46,10 +46,6 @@
 #include "foundation/utility/seexpr.h"
 #include "foundation/utility/tls.h"
 
-// Boost headers.
-#include "boost/algorithm/string.hpp"
-#include "boost/algorithm/string/split.hpp"
-
 // Standard headers.
 #include <algorithm>
 #include <exception>
@@ -59,7 +55,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace boost;
 using namespace std;
 
 namespace renderer

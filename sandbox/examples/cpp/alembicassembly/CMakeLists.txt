@@ -113,7 +113,7 @@ if (USE_FIND_PACKAGE_FOR_OIIO)
 endif ()
 
 if (USE_STATIC_OSL)
-    add_definitions (-DOSL_STATIC_LIBRARY)
+    add_definitions (-DOSL_STATIC_BUILD)
 endif ()
 if (USE_FIND_PACKAGE_FOR_OSL)
     find_package (OSL REQUIRED)
