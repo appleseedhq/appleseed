@@ -95,8 +95,7 @@ LibraryVersionArray ThirdParties::get_versions()
     static const char* BCDVersion = "v1.1";
     static const char* LibJpegTurboVersion = "1.3.1";
     static const char* LibTIFFVersion = "4.0.3";
-    static const char* LLVMVersion = "3.4.2";
-    static const char* SeExprVersion = "commit db9610a24401fa7198c54c8768d0484175f54172";
+    static const char* SeExprVersion = "appleseedhq/SeExpr, qt5-appleseed branch, commit 8a3d1cd";
 
     LibraryVersionArray versions;
 
@@ -124,7 +123,6 @@ LibraryVersionArray ThirdParties::get_versions()
     versions.push_back(APIStringPair("libjpeg-turbo", LibJpegTurboVersion));
     versions.push_back(APIStringPair("libpng", PNG_LIBPNG_VER_STRING));
     versions.push_back(APIStringPair("LibTIFF", LibTIFFVersion));
-    versions.push_back(APIStringPair("LLVM", LLVMVersion));
     versions.push_back(APIStringPair("LZ4", format("{0}.{1}.{2}", LZ4_VERSION_MAJOR, LZ4_VERSION_MINOR, LZ4_VERSION_RELEASE)));
     versions.push_back(APIStringPair("OpenColorIO", OCIO_VERSION));
     versions.push_back(APIStringPair("OpenEXR", OPENEXR_VERSION_STRING));

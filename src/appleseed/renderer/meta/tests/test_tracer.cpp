@@ -77,14 +77,10 @@
 #include "foundation/platform/_endoiioheaders.h"
 
 // Standard headers.
-#include <cstddef>
 #include <memory>
-#include <string>
 
 using namespace foundation;
 using namespace renderer;
-using namespace boost;
-using namespace std;
 
 TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 {

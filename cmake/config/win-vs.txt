@@ -282,9 +282,11 @@ macro (link_against_oiio target)
     else ()
         target_link_libraries (${target}
             debug       ${APPLESEED_DEPS_STAGE_DIR}/oiio-debug/lib/OpenImageIO.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/oiio-debug/lib/OpenImageIO_Util.lib
             debug       ${APPLESEED_DEPS_STAGE_DIR}/libjpeg-turbo-debug/lib/jpeg-static.lib
             debug       ${APPLESEED_DEPS_STAGE_DIR}/libtiff-debug/lib/libtiff.lib
             optimized   ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/lib/OpenImageIO.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/lib/OpenImageIO_Util.lib
             optimized   ${APPLESEED_DEPS_STAGE_DIR}/libjpeg-turbo-release/lib/jpeg-static.lib
             optimized   ${APPLESEED_DEPS_STAGE_DIR}/libtiff-release/lib/libtiff.lib
         )
@@ -315,30 +317,37 @@ endmacro ()
 
 macro (link_against_osl target)
     set (LLVM_LIBS
-        LLVMLTO LLVMLinker LLVMipo LLVMVectorize LLVMBitWriter LLVMTableGen LLVMDebugInfo LLVMOption LLVMX86Disassembler LLVMX86AsmParser
-        LLVMX86CodeGen LLVMSelectionDAG LLVMAsmPrinter LLVMX86Desc LLVMX86Info LLVMX86AsmPrinter LLVMX86Utils LLVMIRReader LLVMBitReader
-        LLVMAsmParser LLVMMCDisassembler LLVMMCParser LLVMInstrumentation LLVMInterpreter LLVMMCJIT LLVMJIT LLVMCodeGen LLVMObjCARCOpts
-        LLVMScalarOpts LLVMInstCombine LLVMTransformUtils LLVMipa LLVMAnalysis LLVMRuntimeDyld LLVMExecutionEngine LLVMTarget LLVMMC
-        LLVMObject LLVMCore LLVMSupport
+        LLVMAggressiveInstCombine LLVMAnalysis LLVMAsmParser LLVMAsmPrinter LLVMBinaryFormat LLVMBitReader
+        LLVMBitWriter LLVMCodeGen LLVMCore LLVMCoroutines LLVMCoverage LLVMDebugInfoCodeView LLVMDebugInfoDWARF
+        LLVMDebugInfoMSF LLVMDebugInfoPDB LLVMDemangle LLVMDlltoolDriver LLVMExecutionEngine LLVMFuzzMutate
+        LLVMGlobalISel LLVMInstCombine LLVMInstrumentation LLVMInterpreter LLVMipo LLVMIRReader LLVMLibDriver
+        LLVMLineEditor LLVMLinker LLVMLTO LLVMMC LLVMMCA LLVMMCDisassembler LLVMMCJIT LLVMMCParser LLVMMIRParser
+        LLVMObjCARCOpts LLVMObject LLVMObjectYAML LLVMOption LLVMOptRemarks LLVMOrcJIT LLVMPasses LLVMProfileData
+        LLVMRuntimeDyld LLVMScalarOpts LLVMSelectionDAG LLVMSupport LLVMSymbolize LLVMTableGen LLVMTarget
+        LLVMTextAPI LLVMTransformUtils LLVMVectorize LLVMWindowsManifest LLVMX86AsmParser LLVMX86AsmPrinter
+        LLVMX86CodeGen LLVMX86Desc LLVMX86Disassembler LLVMX86Info LLVMX86Utils LLVMXRay
     )
 
     if (USE_FIND_PACKAGE_FOR_OSL)
         target_link_libraries (${target}
-            ${OSL_EXEC_LIBRARY}
-            ${OSL_QUERY_LIBRARY}
             ${OSL_COMP_LIBRARY}
+            ${OSL_EXEC_LIBRARY}
+            ${OSL_NOISE_LIBRARY}
+            ${OSL_QUERY_LIBRARY}
         )
         foreach (lib ${LLVM_LIBS})
             target_link_libraries (${target} "${LLVM_LIBS_DIR}/${lib}.lib")
         endforeach ()
     else ()
         target_link_libraries (${target}
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/osl-debug/lib/oslexec.lib
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/osl-debug/lib/oslquery.lib
             debug       ${APPLESEED_DEPS_STAGE_DIR}/osl-debug/lib/oslcomp.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/osl-release/lib/oslexec.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/osl-release/lib/oslquery.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/osl-debug/lib/oslexec.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/osl-debug/lib/oslnoise.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/osl-debug/lib/oslquery.lib
             optimized   ${APPLESEED_DEPS_STAGE_DIR}/osl-release/lib/oslcomp.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/osl-release/lib/oslexec.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/osl-release/lib/oslnoise.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/osl-release/lib/oslquery.lib
         )
         foreach (lib ${LLVM_LIBS})
             target_link_libraries (${target}
