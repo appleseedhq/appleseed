@@ -132,7 +132,6 @@ QScrollBar
 QScrollBar::handle
 {
     background-color: SELECTED_BACKGROUND_COLOR;
-    border-radius: 4px;
 }
 
 QScrollBar::handle:hover
@@ -425,6 +424,7 @@ QToolButton
 {
     margin-left: 2px;
     margin-right: 2px;
+    icon-size: 10px;
 }
 
 QToolButton:hover
@@ -457,16 +457,13 @@ QToolButton#color_picker
 QDockWidget::title
 {
     background-color: ACTIVE_BACKGROUND_COLOR;
-    padding-left: 10px;
-    padding-top: 4px;
+    padding: 3px 6px;
 }
 
 QDockWidget::close-button,
 QDockWidget::float-button
 {
     border: 0px;
-    margin: 2px;
-    padding: 0px;
 }
 
 QDockWidget::float-button:hover,
@@ -508,7 +505,6 @@ QDockWidget::title
 
 /*
  * QTabWidget.
- * QTabBar.
  */
 
 QTabWidget::pane
@@ -517,11 +513,23 @@ QTabWidget::pane
     border-width: 1px 0 0 0;
 }
 
+
+/*
+ * QTabBar.
+ */
+
+QTabBar
+{
+    qproperty-drawBase: 0;
+    border: BORDER_STYLE;
+    border-width: 1px 0 0 0;
+}
+
 QTabBar::tab
 {
     background-color: ACTIVE_BACKGROUND_COLOR;
-    height: 15px;
-    padding: 3px 11px 4px 11px;
+    height: 20px;
+    padding: 3px 11px;
 }
 
 QTabBar::tab:hover
@@ -545,8 +553,7 @@ QPushButton
 {
     background-color: ACTIVE_BACKGROUND_COLOR;
     border: BORDER_STYLE;
-    border-radius: 5px;
-    padding: 2px 11px 3px 11px;
+    padding: 3px 11px;
 
     /*
         min-width causes push buttons in QMessageBox to overlap on Linux.
@@ -582,7 +589,8 @@ QHeaderView::section
     background-color: ACTIVE_BACKGROUND_COLOR;
     border: 0px;
     border-left: 1px solid BORDER_COLOR;
-    padding: 3px 11px 4px 11px;
+    height: 20px;
+    padding: 3px 11px;
 }
 
 QHeaderView::section:first,
@@ -1045,11 +1053,6 @@ QAbstractSpinBox::down-arrow:disabled
 /*
  * appleseed::studio::FoldablePanelWidget.
  */
-
-appleseed--studio--FoldablePanelWidget > QPushButton
-{
-    border-radius: 0px;
-}
 
 appleseed--studio--FoldablePanelWidget > QFrame[hasFrame="true"]
 {
