@@ -233,17 +233,6 @@ macro (link_against_embree target)
     endif ()
 endmacro ()
 
-macro (link_against_libpng target)
-    if (USE_FIND_PACKAGE_FOR_PNG)
-        target_link_libraries (${target} ${PNG_LIBRARIES})
-    else ()
-        target_link_libraries (${target}
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/libpng-debug/lib/libpng16_staticd.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/libpng-release/lib/libpng16_static.lib
-        )
-    endif ()
-endmacro ()
-
 macro (link_against_lz4 target)
     if (USE_FIND_PACKAGE_FOR_LZ4)
         target_link_libraries (${target} ${LZ4_LIBRARY})
@@ -262,11 +251,11 @@ macro (link_against_ocio target)
         )
     else ()
         target_link_libraries (${target}
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/ocio-debug/lib/libyaml-cppmdd.lib
             debug       ${APPLESEED_DEPS_STAGE_DIR}/ocio-debug/lib/OpenColorIO.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ocio-debug/lib/libyaml-cppmdd.lib
             debug       ${APPLESEED_DEPS_STAGE_DIR}/ocio-debug/lib/tinyxml.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/libyaml-cppmd.lib
             optimized   ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/OpenColorIO.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/libyaml-cppmd.lib
             optimized   ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/tinyxml.lib
         )
     endif ()
@@ -275,20 +264,23 @@ endmacro ()
 macro (link_against_oiio target)
     if (USE_FIND_PACKAGE_FOR_OIIO)
         target_link_libraries (${target}
-            ${OPENIMAGEIO_LIBRARIES}
             ${LIBJPEG_LIBRARY}
             ${LIBTIFF_LIBRARY}
+            ${OPENIMAGEIO_LIBRARIES}
+            ${PNG_LIBRARIES}
         )
     else ()
         target_link_libraries (${target}
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/libjpeg-turbo-debug/lib/jpeg-static.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/libpng-debug/lib/libpng16_staticd.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/libtiff-debug/lib/libtiff.lib
             debug       ${APPLESEED_DEPS_STAGE_DIR}/oiio-debug/lib/OpenImageIO.lib
             debug       ${APPLESEED_DEPS_STAGE_DIR}/oiio-debug/lib/OpenImageIO_Util.lib
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/libjpeg-turbo-debug/lib/jpeg-static.lib
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/libtiff-debug/lib/libtiff.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/libjpeg-turbo-release/lib/jpeg-static.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/libpng-release/lib/libpng16_static.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/libtiff-release/lib/libtiff.lib
             optimized   ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/lib/OpenImageIO.lib
             optimized   ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/lib/OpenImageIO_Util.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/libjpeg-turbo-release/lib/jpeg-static.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/libtiff-release/lib/libtiff.lib
         )
     endif ()
 endmacro ()

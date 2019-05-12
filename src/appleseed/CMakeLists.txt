@@ -2272,13 +2272,10 @@ append_custom_preprocessor_definitions (appleseed
 #--------------------------------------------------------------------------------------------------
 
 link_against_platform (appleseed)
-link_against_libpng (appleseed)
 link_against_xercesc (appleseed)
-
 link_against_openexr (appleseed)
 link_against_zlib (appleseed)
 link_against_lz4 (appleseed)
-
 link_against_ocio (appleseed)
 link_against_oiio (appleseed)
 link_against_osl (appleseed)
