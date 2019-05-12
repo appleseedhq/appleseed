@@ -45,9 +45,6 @@
 #include <OpenEXR/IlmBaseConfig.h>
 #include "foundation/platform/_endexrheaders.h"
 
-// libpng headers.
-#include <png.h>
-
 // LZ4 headers.
 #include <lz4.h>
 
@@ -121,7 +118,6 @@ LibraryVersionArray ThirdParties::get_versions()
 
     versions.push_back(APIStringPair("IlmBase", ILMBASE_VERSION_STRING));
     versions.push_back(APIStringPair("libjpeg-turbo", LibJpegTurboVersion));
-    versions.push_back(APIStringPair("libpng", PNG_LIBPNG_VER_STRING));
     versions.push_back(APIStringPair("LibTIFF", LibTIFFVersion));
     versions.push_back(APIStringPair("LZ4", format("{0}.{1}.{2}", LZ4_VERSION_MAJOR, LZ4_VERSION_MINOR, LZ4_VERSION_RELEASE)));
     versions.push_back(APIStringPair("OpenColorIO", OCIO_VERSION));

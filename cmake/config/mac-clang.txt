@@ -129,16 +129,6 @@ macro (link_against_embree target)
     endif ()
 endmacro ()
 
-macro (link_against_libpng target)
-    if (USE_FIND_PACKAGE_FOR_PNG)
-        target_link_libraries (${target} ${PNG_LIBRARIES})
-    else ()
-        target_link_libraries (${target}
-            ${CMAKE_SOURCE_DIR}/build/${platform}/libpng/libpng.a
-        )
-    endif ()
-endmacro ()
-
 macro (link_against_lz4 target)
     if (USE_FIND_PACKAGE_FOR_LZ4)
         target_link_libraries (${target} ${LZ4_LIBRARY})
