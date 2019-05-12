@@ -77,6 +77,7 @@ def format_message(severity, msg):
     return "\n".join("{0} node  {1} | {2}".format(timestamp, padded_severity, line)
                      for line in msg.splitlines())
 
+
 VALID_USER_NAME_CHARS = frozenset("%s%s_-" % (string.ascii_letters, string.digits))
 
 
@@ -502,5 +503,6 @@ def main():
 
     log.info("exiting...")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

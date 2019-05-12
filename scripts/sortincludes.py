@@ -97,5 +97,6 @@ def main():
             if ext == ".h" or ext == ".cpp":
                 process_file(filepath)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

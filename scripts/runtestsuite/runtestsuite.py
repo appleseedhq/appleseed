@@ -39,9 +39,9 @@ import sys
 import urllib
 
 
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # Constants.
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
 DEFAULT_TOOL_FILEPATH = "..\\..\\sandbox\\bin\\Release\\appleseed.cli.exe" if os.name == "nt" else \
                         "../../sandbox/bin/Release/appleseed.cli"
@@ -52,9 +52,9 @@ VALUE_THRESHOLD = 2                 # max allowed absolute diff between two pixe
 MAX_DIFFERING_COMPONENTS = 4 * 2    # max number of pixel components that are allowed to differ significantly
 
 
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # Utilities.
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
 def remove_prefix(text, prefix):
     return text[len(prefix):] if text.startswith(prefix) else text
@@ -113,9 +113,9 @@ def write_rgba_png_file(filepath, rows):
         writer.write(file, rows)
 
 
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # Utility class to log progress.
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
 class Logger:
 
@@ -171,9 +171,9 @@ class Logger:
                                          colorama.Fore.RESET))
 
 
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # Utility class to generate an HTML report.
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
 class ReportWriter:
 
@@ -254,9 +254,9 @@ class ReportWriter:
             return 'cp "{0}" "{1}"'.format(output_filepath, reference_filepath)
 
 
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # Render a given project file.
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
 def render_project_file(args, project_filepath, output_filepath, log_filepath):
     with open(log_filepath, "w", 0) as log_file:
@@ -280,13 +280,13 @@ def render_project_file(args, project_filepath, output_filepath, log_filepath):
         return result == 0, end_time - start_time
 
 
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # Compare two images.
 # Returns a (num_diff, max_diff, diff_image) where:
 #   num_diff is the number of components whose absolute difference is larger than value_threshold
 #   max_diff is the maximum absolute difference between two components
 #   diff_image is the difference between the two images
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
 def compare_images(rows1, rows2, value_threshold):
     num_diff = 0
@@ -353,11 +353,11 @@ def transform_to_false_color(rows):
             row[i + 3] = 255
 
 
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # Render a given test scene.
 # Return True if the test scene passed, False if it failed to render, or if the output does not
 # match the reference image.
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
 def render_test_scene(args, logger, report_writer, project_directory, project_filename):
     project_basename = os.path.splitext(project_filename)[0]
@@ -436,10 +436,10 @@ def render_test_scene(args, logger, report_writer, project_directory, project_fi
     return True
 
 
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # Render all test scenes in a given directory (possibly recursively).
 # Returns the number of rendered and passing test scenes.
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
 def render_test_scenes(script_directory, args):
     rendered_scene_count = 0
@@ -474,9 +474,9 @@ def render_test_scenes(script_directory, args):
     return rendered_scene_count, passing_scene_count
 
 
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # Entry point.
-#--------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
 def main():
     colorama.init()
@@ -526,5 +526,6 @@ def main():
                   colorama.Fore.RESET))
     print("  Total Time    : {0}".format(format_duration(end_time - start_time)))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

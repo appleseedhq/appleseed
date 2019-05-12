@@ -83,5 +83,6 @@ def main():
         if "renders" in dirnames:
             update_ref_images(dirpath)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
