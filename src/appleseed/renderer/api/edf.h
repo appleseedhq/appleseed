@@ -29,6 +29,9 @@
 
 #pragma once
 
+// Build options header.
+#include "renderer/api/buildoptions.h"
+
 // API headers.
 #include "renderer/modeling/edf/coneedf.h"
 #include "renderer/modeling/edf/diffuseedf.h"

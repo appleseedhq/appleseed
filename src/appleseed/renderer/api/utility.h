@@ -29,6 +29,9 @@
 
 #pragma once
 
+// Build options header.
+#include "renderer/api/buildoptions.h"
+
 // API headers.
 #include "renderer/utility/bbox.h"
 #include "renderer/utility/messagecontext.h"

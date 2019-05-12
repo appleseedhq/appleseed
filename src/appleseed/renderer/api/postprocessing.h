@@ -28,6 +28,9 @@
 
 #pragma once
 
+// Build options header.
+#include "renderer/api/buildoptions.h"
+
 // API headers.
 #include "renderer/modeling/postprocessingstage/colormappostprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/ipostprocessingstagefactory.h"

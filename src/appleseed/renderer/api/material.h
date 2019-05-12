@@ -29,6 +29,9 @@
 
 #pragma once
 
+// Build options header.
+#include "renderer/api/buildoptions.h"
+
 // API headers.
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
 #include "renderer/modeling/material/disneymaterial.h"

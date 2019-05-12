@@ -29,6 +29,9 @@
 
 #pragma once
 
+// Build options header.
+#include "renderer/api/buildoptions.h"
+
 // API headers.
 #include "renderer/modeling/surfaceshader/aosurfaceshader.h"
 #include "renderer/modeling/surfaceshader/constantsurfaceshader.h"

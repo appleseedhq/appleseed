@@ -29,6 +29,9 @@
 
 #pragma once
 
+// Build options header.
+#include "renderer/api/buildoptions.h"
+
 // API headers.
 #include "renderer/modeling/light/directionallight.h"
 #include "renderer/modeling/light/ilightfactory.h"

@@ -29,6 +29,9 @@
 
 #pragma once
 
+// Build options header.
+#include "renderer/api/buildoptions.h"
+
 // API headers.
 #include "renderer/modeling/object/curveobject.h"
 #include "renderer/modeling/object/curveobjectreader.h"

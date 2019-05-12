@@ -28,6 +28,9 @@
 
 #pragma once
 
+// Build options header.
+#include "renderer/api/buildoptions.h"
+
 // API headers.
 #include "renderer/kernel/rasterization/objectrasterizer.h"
 #include "renderer/kernel/rasterization/rasterizationcamera.h"

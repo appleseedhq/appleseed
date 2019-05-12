@@ -29,6 +29,9 @@
 
 #pragma once
 
+// Build options header.
+#include "renderer/api/buildoptions.h"
+
 // API headers.
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environment/environmenttraits.h"

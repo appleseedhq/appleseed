@@ -28,6 +28,9 @@
 
 #pragma once
 
+// Build options header.
+#include "renderer/api/buildoptions.h"
+
 // API headers.
 #include "renderer/modeling/shadergroup/shader.h"
 #include "renderer/modeling/shadergroup/shadercompiler.h"
