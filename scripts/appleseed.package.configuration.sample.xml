@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <!-- The name of the target platform. This parameter is only used to name the final archive.
-         Example values: win64-vs140, linux64-gcc4, mac64-clang, etc. -->
-    <platform>win64-vs140</platform>
+         Example values: win64-vc141, linux64-gcc48, mac64-clang, etc. -->
+    <platform>win64-vc141</platform>
 
     <!-- The name of the configuration. Binary files will be taken from sandbox/bin/<configuration>/. -->
-    <configuration>v140\Ship</configuration>
+    <configuration>vc141\Ship</configuration>
 
     <!-- The path to the appleseed installation where binaries files will be taken from. -->
     <appleseed_path>C:\appleseed</appleseed_path>
@@ -14,10 +14,10 @@
     <appleseed_headers_path>C:\appleseed\src\appleseed</appleseed_headers_path>
 
     <!-- The path to the Qt shared libraries. -->
-    <qt_runtime_path>C:\qt-everywhere-opensource-src-4.8.7\lib</qt_runtime_path>
+    <qt_runtime_path>C:\dev\qt\5.12.2\msvc2017_64\bin</qt_runtime_path>
 
     <!-- The path to the platform runtime files (Windows only). -->
-    <platform_runtime_path>C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\redist\x64\Microsoft.VC140.CRT</platform_runtime_path>
+    <platform_runtime_path>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Redist\MSVC\14.16.27012\x64\Microsoft.VC141.CRT</platform_runtime_path>
 
     <!-- The path to a Python 2.7 installation. -->
     <python_path>C:\appleseed-deps\python27</python_path>
