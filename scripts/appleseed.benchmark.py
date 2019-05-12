@@ -159,5 +159,6 @@ def main():
 
     logger.write("\nTotal suite time: {0}\n".format(elapsed_time))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

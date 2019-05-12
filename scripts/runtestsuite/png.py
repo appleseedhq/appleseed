@@ -2743,7 +2743,7 @@ def _main(argv):
             writer.convert_pnm(infile, outfile)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         _main(sys.argv)
     except Error, e:

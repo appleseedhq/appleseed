@@ -107,5 +107,6 @@ def main():
 
     print("cleaned {0} project file(s) in {1}.".format(cleaned_file_count, end_time - start_time))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

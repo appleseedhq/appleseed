@@ -117,5 +117,6 @@ def main():
 
     print("converted {0} mesh file(s) in {1}.".format(converted_file_count, end_time - start_time))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

@@ -162,5 +162,6 @@ def main():
     print("rendered {0} project file(s) in {1}."
           .format(rendered_file_count, format_duration(end_time - start_time)))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
