@@ -318,9 +318,9 @@ void Statistics::insert(
 }
 
 template <>
-inline void Statistics::insert<int32>(
+inline void Statistics::insert<int>(
     const std::string&                  name,
-    const int32&                        value,
+    const int&                          value,
     const std::string&                  unit)
 {
     insert(
@@ -329,9 +329,9 @@ inline void Statistics::insert<int32>(
 }
 
 template <>
-inline void Statistics::insert<uint32>(
+inline void Statistics::insert<unsigned int>(
     const std::string&                  name,
-    const uint32&                       value,
+    const unsigned int&                 value,
     const std::string&                  unit)
 {
     insert(
@@ -340,9 +340,9 @@ inline void Statistics::insert<uint32>(
 }
 
 template <>
-inline void Statistics::insert<int64>(
+inline void Statistics::insert<long>(
     const std::string&                  name,
-    const int64&                        value,
+    const long&                         value,
     const std::string&                  unit)
 {
     insert(
@@ -351,9 +351,9 @@ inline void Statistics::insert<int64>(
 }
 
 template <>
-inline void Statistics::insert<uint64>(
+inline void Statistics::insert<unsigned long>(
     const std::string&                  name,
-    const uint64&                       value,
+    const unsigned long&                value,
     const std::string&                  unit)
 {
     insert(
@@ -361,6 +361,27 @@ inline void Statistics::insert<uint64>(
             new UnsignedIntegerEntry(name, unit, value)));
 }
 
+template <>
+inline void Statistics::insert<long long>(
+    const std::string&                  name,
+    const long long&                    value,
+    const std::string&                  unit)
+{
+    insert(
+        std::unique_ptr<IntegerEntry>(
+            new IntegerEntry(name, unit, value)));
+}
+
+template <>
+inline void Statistics::insert<unsigned long long>(
+    const std::string&                  name,
+    const unsigned long long&           value,
+    const std::string&                  unit)
+{
+    insert(
+        std::unique_ptr<UnsignedIntegerEntry>(
+            new UnsignedIntegerEntry(name, unit, value)));
+}
 template <>
 inline void Statistics::insert<float>(
     const std::string&                  name,
