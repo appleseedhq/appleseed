@@ -896,74 +896,77 @@ uint64 System::get_peak_process_virtual_memory_size()
 
 #endif
 
-#ifdef APPLESEED_WITH_GPU
-namespace
-{
-
-void print_gpu_information(Logger& logger)
-{
-    try
-    {
-        const CUDADeviceList& dev_list = CUDADeviceList::instance();
-
-        if (dev_list.empty())
-        {
-            logger.write(LogMessage::Info, __FILE__, __LINE__, "No GPU devices found.\n");
-            return;
-        }
-
-        logger.write(LogMessage::Info, __FILE__, __LINE__, "GPU information:");
-
-        int driver_version = 0;
-        cuDriverGetVersion(&driver_version);
-
-        logger.write(LogMessage::Info, __FILE__, __LINE__, "  Driver version         %d", driver_version);
-        logger.write(LogMessage::Info, __FILE__, __LINE__, "  Device count           " FMT_SIZE_T, dev_list.size());
-
-        for (size_t i = 0, e = dev_list.size(); i < e; ++i)
-        {
-            const CUDADevice& dev = dev_list.get_device(i);
-
-            logger.write(
-                LogMessage::Info,
-                __FILE__,
-                __LINE__,
-                "    Device %s:\n"
-                "      Compute capability        %d.%d\n"
-                "      Memory                    %.0f MBytes",
-                dev.m_name.c_str(),
-                dev.m_compute_capability.first,
-                dev.m_compute_capability.second,
-                dev.m_total_mem / 1048576.0f);
-        }
-    }
-    catch (const ExceptionCUDAError& e)
-    {
-        logger.write(
-            LogMessage::Info,
-            __FILE__,
-            __LINE__,
-            "CUDA error: %s.\n",
-            e.what());
-        return;
-    }
-
-    unsigned int optix_version;
-    if (rtGetVersion(&optix_version) == RT_SUCCESS)
-    {
-        unsigned int major =  optix_version / 10000;
-        unsigned int minor = (optix_version % 10000) / 100;
-        unsigned int micro =  optix_version % 100;
-        logger.write(LogMessage::Info, __FILE__, __LINE__, "  using OptiX version %d.%d.%d", major, minor, micro);
-    }
-}
-
-}
-#endif
-
 // ------------------------------------------------------------------------------------------------
 // Common code.
 // ------------------------------------------------------------------------------------------------
+
+#ifdef APPLESEED_WITH_GPU
+
+namespace
+{
+    void print_gpu_information(Logger& logger)
+    {
+        try
+        {
+            const CUDADeviceList& dev_list = CUDADeviceList::instance();
+            if (dev_list.empty())
+            {
+                LOG_INFO(logger, "no GPU device found.\n");
+                return;
+            }
+
+            LOG_INFO(logger, "GPU information:");
+
+            // Devices.
+            LOG_INFO(logger, "  device count                  " FMT_SIZE_T, dev_list.size());
+            for (size_t i = 0, e = dev_list.size(); i < e; ++i)
+            {
+                const CUDADevice& dev = dev_list.get_device(i);
+
+                LOG_INFO(
+                    logger,
+                    "    device #" FMT_SIZE_T ":\n"
+                    "      name                      %s\n"
+                    "      compute capability        %d.%d\n"
+                    "      memory                    %s",
+                    i,
+                    dev.m_name.c_str(),
+                    dev.m_compute_capability_major,
+                    dev.m_compute_capability_minor,
+                    pretty_size(dev.m_total_mem).c_str());
+            }
+
+            // Driver version.
+            int cuda_version;
+            check_cuda_result(cuDriverGetVersion(&cuda_version));
+            const int major_cuda_version = cuda_version / 1000;
+            const int minor_cuda_version = (cuda_version % 1000) / 10;
+            LOG_INFO(logger, "  CUDA version                  %d.%d", major_cuda_version, minor_cuda_version);
+
+            // OptiX version.
+            unsigned int optix_version;
+            if (rtGetVersion(&optix_version) == RT_SUCCESS)
+            {
+                const unsigned int major_optix_version = optix_version / 10000;
+                const unsigned int minor_optix_version = (optix_version % 10000) / 100;
+                const unsigned int micro_optix_version = optix_version % 100;
+                LOG_INFO(
+                    logger,
+                    "  OptiX version                 %u.%u.%u",
+                    major_optix_version,
+                    minor_optix_version,
+                    micro_optix_version);
+            }
+        }
+        catch (const ExceptionCUDAError& e)
+        {
+            LOG_ERROR(logger, "%s", e.what());
+            return;
+        }
+    }
+}
+
+#endif
 
 void System::print_information(Logger& logger)
 {
@@ -992,6 +995,7 @@ void System::print_information(Logger& logger)
     const string isa = "base instruction set";
 #endif
 
+    // Can't use LOG_INFO() here because of the #ifdefs.
     logger.write(
         LogMessage::Info,
         __FILE__,
@@ -1030,7 +1034,7 @@ void System::print_information(Logger& logger)
         pretty_uint(DefaultProcessorTimer().frequency()).c_str());
 
 #ifdef APPLESEED_WITH_GPU
-        print_gpu_information(logger);
+    print_gpu_information(logger);
 #endif
 }
 

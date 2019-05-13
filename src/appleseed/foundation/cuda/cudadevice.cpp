@@ -47,51 +47,51 @@ namespace foundation
 //
 
 CUDADevice::CUDADevice(const CUdevice device_number)
-  : m_cuda_device_number(device_number)
+  : m_cuda_device(device_number)
 {
     char device_name[256];
-    cuDeviceGetName(device_name, 256, m_cuda_device_number);
+    check_cuda_result(cuDeviceGetName(device_name, 256, m_cuda_device));
     m_name = device_name;
 
-    cuDeviceComputeCapability(
-        &m_compute_capability.first,
-        &m_compute_capability.second,
-        m_cuda_device_number);
+    check_cuda_result(cuDeviceGetAttribute(&m_compute_capability_major, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, m_cuda_device));
+    check_cuda_result(cuDeviceGetAttribute(&m_compute_capability_minor, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, m_cuda_device));
+    check_cuda_result(cuDeviceGetAttribute(&m_compute_mode, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, m_cuda_device));
 
-    cuDeviceGetAttribute(&m_compute_mode, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, m_cuda_device_number);
+    check_cuda_result(cuDeviceTotalMem(&m_total_mem, m_cuda_device));
 
-    cuDeviceTotalMem(&m_total_mem, m_cuda_device_number);
+    check_cuda_result(cuDeviceGetAttribute(&m_max_threads_per_block, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, m_cuda_device));
 
-    cuDeviceGetAttribute(&m_max_threads_per_block, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, m_cuda_device_number);
+    check_cuda_result(cuDeviceGetAttribute(&m_max_block_dim_x, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_X, m_cuda_device));
+    check_cuda_result(cuDeviceGetAttribute(&m_max_block_dim_y, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_Y, m_cuda_device));
+    check_cuda_result(cuDeviceGetAttribute(&m_max_block_dim_z, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_Z, m_cuda_device));
 
-    cuDeviceGetAttribute(&m_max_block_dim_x, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_X, m_cuda_device_number);
-    cuDeviceGetAttribute(&m_max_block_dim_y, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_Y, m_cuda_device_number);
-    cuDeviceGetAttribute(&m_max_block_dim_z, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_Z, m_cuda_device_number);
+    check_cuda_result(cuDeviceGetAttribute(&m_max_grid_dim_x, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_X, m_cuda_device));
+    check_cuda_result(cuDeviceGetAttribute(&m_max_grid_dim_y, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Y, m_cuda_device));
+    check_cuda_result(cuDeviceGetAttribute(&m_max_grid_dim_z, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Z, m_cuda_device));
 
-    cuDeviceGetAttribute(&m_max_grid_dim_x, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_X, m_cuda_device_number);
-    cuDeviceGetAttribute(&m_max_grid_dim_y, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Y, m_cuda_device_number);
-    cuDeviceGetAttribute(&m_max_grid_dim_z, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Z, m_cuda_device_number);
-
-    cuDeviceGetAttribute(&m_max_registers, CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_BLOCK, m_cuda_device_number);
+    check_cuda_result(cuDeviceGetAttribute(&m_max_registers, CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_BLOCK, m_cuda_device));
 }
 
 
 //
-// CUDADevice class implementation.
+// CUDADeviceList class implementation.
 //
 
 struct CUDADeviceList::Impl
 {
+    vector<CUDADevice>         m_devices;
+    mutable vector<CUcontext>  m_contexts;
+
     Impl()
     {
         // Initialize CUDA.
-        check_cuda_error(cuInit(0));
+        check_cuda_result(cuInit(0));
 
         int device_count;
-        check_cuda_error(cuDeviceGetCount(&device_count));
+        check_cuda_result(cuDeviceGetCount(&device_count));
 
-        m_devices.reserve(static_cast<std::size_t>(device_count));
-        m_contexts.resize(static_cast<std::size_t>(device_count), nullptr);
+        m_devices.reserve(static_cast<size_t>(device_count));
+        m_contexts.resize(static_cast<size_t>(device_count), nullptr);
 
         for (int i = 0; i < device_count; ++i)
             m_devices.emplace_back(i);
@@ -105,9 +105,6 @@ struct CUDADeviceList::Impl
                 cuDevicePrimaryCtxRelease(static_cast<CUdevice>(i));
         }
     }
-
-    vector<CUDADevice>         m_devices;
-    mutable vector<CUcontext>  m_contexts;
 };
 
 CUDADeviceList::CUDADeviceList()
@@ -131,12 +128,12 @@ bool CUDADeviceList::empty() const
     return impl->m_devices.empty();
 }
 
-std::size_t CUDADeviceList::size() const
+size_t CUDADeviceList::size() const
 {
     return impl->m_devices.size();
 }
 
-const CUDADevice& CUDADeviceList::get_device(const std::size_t device_number) const
+const CUDADevice& CUDADeviceList::get_device(const size_t device_number) const
 {
     assert(device_number < size());
     return impl->m_devices[device_number];
@@ -144,25 +141,25 @@ const CUDADevice& CUDADeviceList::get_device(const std::size_t device_number) co
 
 CUcontext CUDADeviceList::get_primary_context(const CUDADevice& device) const
 {
-    assert(device.m_cuda_device_number < size());
+    assert(device.m_cuda_device < size());
     assert(device.m_compute_mode != CU_COMPUTEMODE_PROHIBITED);
 
-    const CUdevice dev = device.m_cuda_device_number;
+    const CUdevice dev = device.m_cuda_device;
 
     // Create a primary context for the device if needed.
     if (impl->m_contexts[dev] == nullptr)
     {
         CUcontext ctx;
-        check_cuda_error(cuDevicePrimaryCtxRetain(&ctx, dev));
+        check_cuda_result(cuDevicePrimaryCtxRetain(&ctx, dev));
 
         // todo: set context flags here?
-        //cuDevicePrimaryCtxSetFlags(dev, ...);
+        // cuDevicePrimaryCtxSetFlags(dev, ...);
 
-        check_cuda_error(cuCtxPushCurrent(ctx));
+        check_cuda_result(cuCtxPushCurrent(ctx));
         impl->m_contexts[dev] = ctx;
     }
 
     return impl->m_contexts[dev];
 }
 
-}
+}   // namespace foundation

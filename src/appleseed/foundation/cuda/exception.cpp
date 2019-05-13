@@ -41,7 +41,7 @@ namespace foundation
 // ExceptionCUDAError class implementation.
 //
 
-ExceptionCUDAError::ExceptionCUDAError(CUresult error)
+ExceptionCUDAError::ExceptionCUDAError(const CUresult error)
 {
     string err;
     const char* error_string;
@@ -58,10 +58,10 @@ ExceptionCUDAError::ExceptionCUDAError(CUresult error)
     set_what(err.c_str());
 }
 
-void check_cuda_error(const CUresult error)
+void check_cuda_result(const CUresult error)
 {
     if (error != CUDA_SUCCESS)
         throw ExceptionCUDAError(error);
 }
 
-}       // namespace foundation
+}   // namespace foundation

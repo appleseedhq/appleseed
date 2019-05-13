@@ -120,7 +120,7 @@ if (WITH_GPU)
     source_group ("foundation\\cuda" FILES
         ${foundation_cuda_sources}
     )
-endif()
+endif ()
 
 set (foundation_curve_sources
     foundation/curve/binarycurvefilereader.cpp
