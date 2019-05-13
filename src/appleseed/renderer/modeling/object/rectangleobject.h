@@ -104,7 +104,7 @@ class APPLESEED_DLLSYMBOL RectangleObject
 // Rectangle object factory.
 //
 
-class RectangleObjectFactory
+class APPLESEED_DLLSYMBOL RectangleObjectFactory
   : public IObjectFactory
 {
   public:

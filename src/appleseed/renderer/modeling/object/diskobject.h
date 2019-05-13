@@ -110,7 +110,7 @@ class APPLESEED_DLLSYMBOL DiskObject
 // Disk object factory.
 //
 
-class DiskObjectFactory
+class APPLESEED_DLLSYMBOL DiskObjectFactory
   : public IObjectFactory
 {
   public:

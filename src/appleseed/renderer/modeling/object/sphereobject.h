@@ -100,7 +100,7 @@ class APPLESEED_DLLSYMBOL SphereObject
 // Sphere object factory.
 //
 
-class SphereObjectFactory
+class APPLESEED_DLLSYMBOL SphereObjectFactory
   : public IObjectFactory
 {
   public:
