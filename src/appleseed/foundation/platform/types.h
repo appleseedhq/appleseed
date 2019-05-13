@@ -33,6 +33,7 @@
 #include "foundation/platform/arch.h"
 
 // Standard headers.
+#include <cinttypes>
 #include <cstddef>
 #include <cstdint>
 
@@ -43,73 +44,14 @@ namespace foundation
 // Define fixed-size integral types.
 //
 
-// Visual C++.
-#if defined _MSC_VER
-
-    typedef signed char                 int8;
-    typedef unsigned char               uint8;
-
-    typedef signed short int            int16;
-    typedef unsigned short int          uint16;
-
-    typedef signed int                  int32;
-    typedef unsigned int                uint32;
-
-    typedef signed long long int        int64;
-    typedef unsigned long long int      uint64;
-
-// gcc.
-#elif defined __GNUC__
-
-    typedef signed char                 int8;
-    typedef unsigned char               uint8;
-
-    typedef signed short int            int16;
-    typedef unsigned short int          uint16;
-
-    typedef signed int                  int32;
-    typedef unsigned int                uint32;
-
-    #if defined APPLESEED_ARCH32
-        typedef signed long long int    int64;
-        typedef unsigned long long int  uint64;
-    #elif defined APPLESEED_ARCH64
-        typedef signed long int         int64;
-        typedef unsigned long int       uint64;
-    #else
-        #error Cannot determine machine architecture.
-    #endif
-
-// CUDA device compilation.
-#elif defined APPLESEED_DEVICE_COMPILATION
-
-    typedef int8_t                      int8;
-    typedef uint8_t                     uint8;
-
-    typedef int16_t                     int16;
-    typedef uint16_t                    uint16;
-
-    typedef int32_t                     int32;
-    typedef uint32_t                    uint32;
-
-    typedef int64_t                     int64;
-    typedef uint64_t                    uint64;
-
-// Other platforms.
-#else
-
-    #error Fixed-size integral types are not defined on this platform.
-
-#endif
-
-static_assert(sizeof(int8)   == 1, "The size of foundation::int8 must be exactly 1 byte");
-static_assert(sizeof(int16)  == 2, "The size of foundation::int16 must be exactly 2 bytes");
-static_assert(sizeof(int32)  == 4, "The size of foundation::int32 must be exactly 4 bytes");
-static_assert(sizeof(int64)  == 8, "The size of foundation::int64 must be exactly 8 bytes");
-static_assert(sizeof(uint8)  == 1, "The size of foundation::uint8 must be exactly 1 byte");
-static_assert(sizeof(uint16) == 2, "The size of foundation::uint16 must be exactly 2 bytes");
-static_assert(sizeof(uint32) == 4, "The size of foundation::uint32 must be exactly 4 bytes");
-static_assert(sizeof(uint64) == 8, "The size of foundation::uint64 must be exactly 8 bytes");
+using int8   = std::int8_t;
+using int16  = std::int16_t;
+using int32  = std::int32_t;
+using int64  = std::int64_t;
+using uint8  = std::uint8_t;
+using uint16 = std::uint16_t;
+using uint32 = std::uint32_t;
+using uint64 = std::uint64_t;
 
 
 //
@@ -133,39 +75,8 @@ static_assert(
 // Format strings to use with std::printf() variants.
 //
 
-// Visual C++.
-#if defined _MSC_VER
-
-    #define FMT_UINT64              "%llu"
-    #define FMT_UINT64_HEX          "%llx"
-    #define FMT_SIZE_T              "%Iu"
-
-// gcc.
-#elif defined __GNUC__
-
-    #if defined APPLESEED_ARCH32
-        #define FMT_UINT64          "%llu"
-        #define FMT_UINT64_HEX      "%llx"
-    #elif defined APPLESEED_ARCH64
-        #define FMT_UINT64          "%lu"
-        #define FMT_UINT64_HEX      "%lx"
-    #else
-        #error Cannot determine machine architecture.
-    #endif
-
-    #define FMT_SIZE_T              "%zu"
-
-#elif defined __CUDACC__
-
-    #define FMT_UINT64              "%lu"
-    #define FMT_UINT64_HEX          "%llx"
-    #define FMT_SIZE_T              "%zu"
-
-// Other compilers.
-#else
-
-    #error Format strings are not defined on this platform.
-
-#endif
+#define FMT_UINT64          "%" PRIu64
+#define FMT_UINT64_HEX      "%" PRIx64
+#define FMT_SIZE_T          "%zu"
 
 }   // namespace foundation
