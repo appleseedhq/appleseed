@@ -47,7 +47,9 @@ namespace
         ArrayView<SrcType> src(array);
         ArrayRef<DstType> dst(tmp);
 
-        std::copy(src.begin(), src.end(), std::back_inserter(dst));
+        for (const auto value : src)
+            dst.push_back(static_cast<DstType>(value));
+
         array = std::move(tmp);
     }
 }
