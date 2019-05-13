@@ -136,30 +136,30 @@ static_assert(
 // Visual C++.
 #if defined _MSC_VER
 
-    #define FMT_UINT64          "%llu"
-    #define FMT_UINT64_HEX      "%llx"
-    #define FMT_SIZE_T          "%Iu"
+    #define FMT_UINT64              "%llu"
+    #define FMT_UINT64_HEX          "%llx"
+    #define FMT_SIZE_T              "%Iu"
 
 // gcc.
 #elif defined __GNUC__
 
     #if defined APPLESEED_ARCH32
-        #define FMT_UINT64      "%llu"
-        #define FMT_UINT64_HEX  "%llx"
+        #define FMT_UINT64          "%llu"
+        #define FMT_UINT64_HEX      "%llx"
     #elif defined APPLESEED_ARCH64
-        #define FMT_UINT64      "%lu"
-        #define FMT_UINT64_HEX  "%lx"
+        #define FMT_UINT64          "%lu"
+        #define FMT_UINT64_HEX      "%lx"
     #else
         #error Cannot determine machine architecture.
     #endif
 
-    #define FMT_SIZE_T "%zu"
+    #define FMT_SIZE_T              "%zu"
 
 #elif defined __CUDACC__
 
-    #define FMT_UINT64      "%lu"
-    #define FMT_UINT64_HEX  "%llx"
-    #define FMT_SIZE_T      "%zu"
+    #define FMT_UINT64              "%lu"
+    #define FMT_UINT64_HEX          "%llx"
+    #define FMT_SIZE_T              "%zu"
 
 // Other compilers.
 #else

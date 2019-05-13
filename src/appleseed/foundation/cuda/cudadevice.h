@@ -30,14 +30,13 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/api/apistring.h"
 
 // CUDA headers.
 #include <cuda.h>
 
 // Standard headers.
 #include <cstddef>
-#include <utility>
+#include <string>
 
 namespace foundation
 {
@@ -49,27 +48,28 @@ class CUDADevice
     explicit CUDADevice(const CUdevice device_number);
 
     // Device properties.
-    CUdevice            m_cuda_device_number;
-    APIString           m_name;
-    std::pair<int, int> m_compute_capability;
-    int                 m_compute_mode;
 
-    std::size_t         m_total_mem;
+    CUdevice        m_cuda_device;
+    std::string     m_name;
+    int             m_compute_capability_major;
+    int             m_compute_capability_minor;
+    int             m_compute_mode;
 
-    int                 m_max_threads_per_block;
-    int                 m_max_block_dim_x;
-    int                 m_max_block_dim_y;
-    int                 m_max_block_dim_z;
-    int                 m_max_grid_dim_x;
-    int                 m_max_grid_dim_y;
-    int                 m_max_grid_dim_z;
+    size_t          m_total_mem;
 
-    int                 m_max_registers;
+    int             m_max_threads_per_block;
+    int             m_max_block_dim_x;
+    int             m_max_block_dim_y;
+    int             m_max_block_dim_z;
+    int             m_max_grid_dim_x;
+    int             m_max_grid_dim_y;
+    int             m_max_grid_dim_z;
+
+    int             m_max_registers;
 };
 
-
 class CUDADeviceList
-  : NonCopyable
+  : public NonCopyable
 {
   public:
     static const CUDADeviceList& instance();
@@ -78,9 +78,9 @@ class CUDADeviceList
 
     bool empty() const;
 
-    std::size_t size() const;
+    size_t size() const;
 
-    const CUDADevice& get_device(const std::size_t device_number) const;
+    const CUDADevice& get_device(const size_t device_number) const;
 
     CUcontext get_primary_context(const CUDADevice& device) const;
 
@@ -91,4 +91,4 @@ class CUDADeviceList
     CUDADeviceList();
 };
 
-}       // namespace foundation
+}   // namespace foundation

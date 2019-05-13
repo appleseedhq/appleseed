@@ -320,22 +320,18 @@ namespace foundation
     #define APPLESEED_HOST                  __host__
     #define APPLESEED_DEVICE                __device__
     #define APPLESEED_HOST_DEVICE           __host__ __device__
-
     #define APPLESEED_DEVICE_INLINE         __forceinline__ __device__
     #define APPLESEED_HOST_DEVICE_INLINE    __forceinline__ __host__ __device__
-
-    #define APPLESEED_DEVICE_ALIGN(n) __align__(n)
+    #define APPLESEED_DEVICE_ALIGN(n)       __align__(n)
 #else
     #define APPLESEED_HOST
-    #define APPLESEED_DEVICE
     #define APPLESEED_HOST_DEVICE
-    #define APPLESEED_HOST_DEVICE_INLINE inline
-
+    #define APPLESEED_HOST_DEVICE_INLINE    inline
     #define APPLESEED_DEVICE_ALIGN(n)
 #endif
 
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ > 0
-    #define APPLESEED_DEVICE_COMPILATION // Defined when compiling CUDA device code.
+    #define APPLESEED_DEVICE_COMPILATION    // defined when compiling CUDA device code
 #endif
 
 

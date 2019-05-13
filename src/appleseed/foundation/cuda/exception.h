@@ -46,9 +46,10 @@ class ExceptionCUDAError
 {
   public:
     // Constructor.
-    explicit ExceptionCUDAError(CUresult error);
+    explicit ExceptionCUDAError(const CUresult error);
 };
 
-void check_cuda_error(const CUresult error);
+// Throws a ExceptionCUDAError exception if `error` is different than CUDA_SUCCESS.
+void check_cuda_result(const CUresult error);
 
-}       // namespace foundation
+}   // namespace foundation
