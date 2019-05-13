@@ -560,7 +560,7 @@ QPushButton
         if defined(X) || defined(Y) is not supported by our preprocessor at this time.
     */
 #ifdef __APPLE__
-    min-width: 50px;
+    min-width: 60px;
 #endif
 #ifdef _WIN32
     min-width: 50px;
