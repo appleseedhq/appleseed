@@ -41,12 +41,10 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
     packages:
-      - gcc-4.8
-      - g++-4.8
-      - gcc-5
-      - g++-5
       - gcc-6
       - g++-6
+      - gcc-7
+      - g++-7
       - python2.7-dev
       - qtbase5-dev
       - libqt5opengl5-dev
@@ -63,15 +61,11 @@ matrix:
   include:
     - os: linux
       compiler: gcc
-      env: GCC_VERSION=4.8
-
-    - os: linux
-      compiler: gcc
-      env: GCC_VERSION=5
-
-    - os: linux
-      compiler: gcc
       env: GCC_VERSION=6
+
+    - os: linux
+      compiler: gcc
+      env: GCC_VERSION=7
 
   exclude:
     - os: osx
