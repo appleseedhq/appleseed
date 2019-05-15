@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2019 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,9 +35,6 @@
 #include "renderer/utility/paramarray.h"
 #include "renderer/utility/pluginstore.h"
 #include "renderer/utility/projectpoints.h"
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-#include "renderer/utility/seexpr.h"
-#endif
 #include "renderer/utility/settingsparsing.h"
 #include "renderer/utility/stochasticcast.h"
 #include "renderer/utility/testutils.h"
