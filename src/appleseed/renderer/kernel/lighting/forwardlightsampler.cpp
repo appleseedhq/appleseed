@@ -113,7 +113,7 @@ ForwardLightSampler::ForwardLightSampler(const Scene& scene, const ParamArray& p
 
     // Store the shape probability densities into the emitting shapes.
     for (size_t i = 0, e = m_emitting_shapes.size(); i < e; ++i)
-        m_emitting_shapes[i].set_shape_prob(m_emitting_shapes_cdf[i].second);
+        m_emitting_shapes[i].m_shape_prob = m_emitting_shapes_cdf[i].second;
 
    RENDERER_LOG_INFO(
         "found %s %s, %s emitting %s.",

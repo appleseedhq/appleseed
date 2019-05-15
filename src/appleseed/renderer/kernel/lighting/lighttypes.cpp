@@ -235,9 +235,10 @@ EmittingShape::EmittingShape(
 
 void EmittingShape::sample_uniform(
     const Vector2f&         s,
-    const float             shape_prob,
     LightSample&            light_sample) const
 {
+    assert(m_shape_prob >= 0.0f);
+
     // Store a pointer to the emitting shape.
     light_sample.m_shape = this;
 
@@ -321,12 +322,13 @@ void EmittingShape::sample_uniform(
     }
 
     // Compute the probability density of this sample.
-    light_sample.m_probability = shape_prob * get_rcp_area();
+    light_sample.m_probability = evaluate_pdf_uniform();
 }
 
 float EmittingShape::evaluate_pdf_uniform() const
 {
-    return get_shape_prob() * get_rcp_area();
+    assert(m_shape_prob >= 0.0f);
+    return m_shape_prob * get_rcp_area();
 }
 
 void EmittingShape::make_shading_point(

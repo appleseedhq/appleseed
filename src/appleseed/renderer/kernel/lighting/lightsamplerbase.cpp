@@ -642,11 +642,10 @@ void LightSamplerBase::sample_emitting_shapes(
 
     const EmitterCDF::ItemWeightPair result = m_emitting_shapes_cdf.sample(s[0]);
     const size_t emitter_index = result.first;
-    const float emitter_prob = result.second;
 
     light_sample.m_light = nullptr;
     const EmittingShape& emitting_shape = m_emitting_shapes[emitter_index];
-    emitting_shape.sample_uniform(Vector2f(s[1], s[2]), emitter_prob, light_sample);
+    emitting_shape.sample_uniform(Vector2f(s[1], s[2]), light_sample);
 
     assert(light_sample.m_shape);
     assert(light_sample.m_probability > 0.0f);

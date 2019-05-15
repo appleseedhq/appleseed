@@ -43,6 +43,8 @@
 // Forward declarations.
 namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class BackwardLightSampler; }
+namespace renderer  { class ForwardLightSampler; }
+namespace renderer  { class LightSamplerBase; }
 namespace renderer  { class Intersector; }
 namespace renderer  { class Light; }
 namespace renderer  { class LightSample; }
@@ -140,9 +142,6 @@ class EmittingShape
     float get_area() const;
     float get_rcp_area() const;
 
-    float get_shape_prob() const;
-    void set_shape_prob(const float prob);
-
     const Material* get_material() const;
 
     const foundation::AABB3d& get_bbox() const;
@@ -151,7 +150,6 @@ class EmittingShape
 
     void sample_uniform(
         const foundation::Vector2f& s,
-        const float                 shape_prob,
         LightSample&                light_sample) const;
 
     float evaluate_pdf_uniform() const;
@@ -171,8 +169,9 @@ class EmittingShape
     float get_max_flux() const;
 
   private:
-    friend class LightSamplerBase;
     friend class BackwardLightSampler;
+    friend class ForwardLightSampler;
+    friend class LightSamplerBase;
 
     struct Triangle
     {
@@ -273,16 +272,6 @@ inline float EmittingShape::get_area() const
 inline float EmittingShape::get_rcp_area() const
 {
     return m_rcp_area;
-}
-
-inline float EmittingShape::get_shape_prob() const
-{
-    return m_shape_prob;
-}
-
-inline void EmittingShape::set_shape_prob(const float prob)
-{
-    m_shape_prob = prob;
 }
 
 inline const Material* EmittingShape::get_material() const
