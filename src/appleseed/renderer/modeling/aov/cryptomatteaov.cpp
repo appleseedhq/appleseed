@@ -510,11 +510,12 @@ namespace
                         pixel_values.push_back(b);
 
                         // Remove background contribution.
+                        size_t ranked_vector_start = 0;
                         if (ranked_vector.size() > 1 && m3hash_preview == 0)
-                            ranked_vector.erase(ranked_vector.begin());
+                            ranked_vector_start = 1;
 
                         // Ranked channels.
-                        for (size_t i = 0, e = min(ranked_vector.size(), m_num_layers); i < e; ++i)
+                        for (size_t i = ranked_vector_start, e = min(ranked_vector.size(), m_num_layers); i < e; ++i)
                         {
                             const uint32 m3hash = ranked_vector[i].second;
                             float rank(0.0f), coverage(0.0f);
@@ -527,8 +528,14 @@ namespace
                             pixel_values.push_back(coverage);
                         }
 
+                        // Set the remaining channels of the pixel to black.
+                        // This is determined by taking 2 channels per ranked vector plus
+                        // 3 channels for the preview image and subtracting that from the
+                        // total number of AOV channels.
                         const size_t num_channels = (m_num_layers * 2) + 3;
-                        for (size_t i = ranked_vector.size(); i < num_channels; ++i)
+                        const size_t filled_channels = (ranked_vector.size() - ranked_vector_start) * 2 + 3;
+
+                        for (size_t i = filled_channels; i < num_channels; ++i)
                             pixel_values.push_back(0.0f);
 
                         m_aov_image.set_pixel(rx, ry, pixel_values.data(), pixel_values.size());
