@@ -40,7 +40,7 @@ THISDIR=`pwd`
 echo "travis_fold:start:deps"
 echo "Downloading and unpacking dependencies..."
 
-curl -L "https://github.com/appleseedhq/prebuilt-linux-deps/releases/download/binaries/appleseed-deps-shared-2.1.tgz" > deps.tgz
+curl -L "https://github.com/appleseedhq/prebuilt-linux-deps/releases/download/v2.1/appleseed-deps-shared-2.1.tgz" > deps.tgz
 tar xfz deps.tgz
 rm deps.tgz
 
