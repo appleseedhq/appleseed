@@ -38,6 +38,9 @@
 #include "foundation/image/image.h"
 #include "foundation/platform/python.h"
 
+// Standard headers.
+#include <string>
+
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
@@ -91,6 +94,21 @@ namespace
 
         return channels;
     }
+
+    Image& get_crypto_image(AOV* aov)
+    {
+        const string model = aov->get_model();
+
+        if (model == "cryptomatte_object_aov" || model == "cryptomatte_material_aov")
+            return static_cast<CryptomatteAOV*>(aov)->get_crypto_image();
+
+        PyErr_SetString(PyExc_RuntimeError, "AOV is not a Cryptomatte AOV");
+        bpy::throw_error_already_set();
+
+        // If AOV is not a Cryptomatte type, return a blank pointer for the image.
+        Image* dummy = nullptr;
+        return *dummy;
+    }
 }
 
 void bind_aov()
@@ -103,7 +121,8 @@ void bind_aov()
         .def("get_channel_count", &AOV::get_channel_count)
         .def("get_channel_names", &get_channel_names)
         .def("has_color_data", &AOV::has_color_data)
-        .def("get_image", &AOV::get_image, bpy::return_value_policy<bpy::reference_existing_object>());
+        .def("get_image", &AOV::get_image, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_crypto_image", &get_crypto_image, bpy::return_value_policy<bpy::reference_existing_object>());
 
     bind_typed_entity_vector<AOV>("AOVContainer");
 
