@@ -511,13 +511,8 @@ namespace
 
                         // Remove background contribution.
                         size_t ranked_vector_start = 0;
-                        size_t ranked_vector_size = ranked_vector.size();
-
                         if (ranked_vector.size() > 1 && m3hash_preview == 0)
-                        {
                             ranked_vector_start = 1;
-                            ranked_vector_size -= 1;
-                        }
 
                         // Ranked channels.
                         for (size_t i = ranked_vector_start, e = min(ranked_vector.size(), m_num_layers); i < e; ++i)
@@ -538,9 +533,9 @@ namespace
                         // 3 channels for the preview image and subtracting that from the
                         // total number of AOV channels.
                         const size_t num_channels = (m_num_layers * 2) + 3;
-                        const size_t filled_pixels = ranked_vector_size * 2 + 3;
+                        const size_t filled_channels = (ranked_vector.size() - ranked_vector_start) * 2 + 3;
 
-                        for (size_t i = filled_pixels; i < num_channels; ++i)
+                        for (size_t i = filled_channels; i < num_channels; ++i)
                             pixel_values.push_back(0.0f);
 
                         m_aov_image.set_pixel(rx, ry, pixel_values.data(), pixel_values.size());
