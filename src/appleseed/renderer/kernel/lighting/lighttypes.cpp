@@ -40,6 +40,7 @@
 #include "foundation/math/intersection/rayparallelogram.h"
 #include "foundation/math/intersection/raytrianglemt.h"
 #include "foundation/math/sampling/mappings.h"
+#include "foundation/math/sampling/sphericalcapsampler.h"
 
 using namespace foundation;
 
