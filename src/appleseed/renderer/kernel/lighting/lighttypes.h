@@ -35,6 +35,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
+#include "foundation/math/sampling/sphericalcapsampler.h"
 #include "foundation/utility/stampedptr.h"
 
 // Standard headers.
@@ -194,8 +195,9 @@ class EmittingShape
 
     struct Sphere
     {
-        foundation::Vector3d    m_center;                       // world space center of the sphere
-        double                  m_radius;                       // sphere radius
+        foundation::Vector3d                    m_center;       // world space center of the sphere
+        double                                  m_radius;       // sphere radius
+        foundation::SphericalCapSampler<double> m_sampler;      // sphere solid angle sampler
     };
 
     struct Disk

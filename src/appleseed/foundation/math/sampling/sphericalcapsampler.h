@@ -41,4 +41,9 @@ namespace foundation
 //       http://momentsingraphics.de/Media/I3D2019/Peters2019-SamplingSphericalCaps.pdf
 //
 
+template <typename T>
+class SphericalCapSampler
+{
+};
+
 }  // namespace foundation
