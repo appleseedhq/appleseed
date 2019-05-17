@@ -75,7 +75,7 @@ class SphericalCapSampler
         m_solid_angle = -m_minimal_dot * TwoPi<T>() + TwoPi<T>();
     }
 
-    T get_area() const
+    T get_solid_angle() const
     {
         return m_solid_angle;
     }
@@ -87,7 +87,7 @@ class SphericalCapSampler
         local.z = lerp(m_minimal_dot, T(1.0), s.x);
 
         // Complete to a point on the sphere
-        float radius = std::sqrt(saturate(-square(local.z) + T(1.0)));
+        T radius = std::sqrt(saturate(-square(local.z) + T(1.0)));
         local.x = radius * cos(TwoPi<T>() * s.y);
         local.y = radius * sin(TwoPi<T>() * s.y);
 
@@ -96,12 +96,12 @@ class SphericalCapSampler
     }
 
   private:
-      const Vector<T, 3>    m_tangent;
-      const Vector<T, 3>    m_bitangent;
-      const Vector<T, 3>    m_normal;
+      Vector<T, 3>    m_tangent;
+      Vector<T, 3>    m_bitangent;
+      Vector<T, 3>    m_normal;
 
-      const T               m_minimal_dot;
-      const T               m_solid_angle;
+      T               m_minimal_dot;
+      T               m_solid_angle;
 };
 
 }  // namespace foundation
