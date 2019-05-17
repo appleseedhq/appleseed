@@ -182,10 +182,6 @@ BackwardLightSampler::BackwardLightSampler(
         // Prepare the light-emitting shapes CDF for smapling.
         if (m_emitting_shapes_cdf.valid())
             m_emitting_shapes_cdf.prepare();
-
-        // Store the shape probability densities into the emitting shapes.
-        for (size_t i = 0, e = m_emitting_shapes.size(); i < e; ++i)
-            m_emitting_shapes[i].m_shape_prob = m_emitting_shapes_cdf[i].second;
     }
 
     RENDERER_LOG_INFO(
@@ -241,12 +237,14 @@ float BackwardLightSampler::evaluate_pdf(
 
     const EmittingShape* shape = *shape_ptr;
 
+    const float emitter_prob = m_emitting_shapes_cdf[shape_key.m_shape_index].second;
+
     const float shape_probability =
         m_use_light_tree
             ? m_light_tree->evaluate_node_pdf(
                 surface_shading_point,
                 shape->m_light_tree_node_index)
-            : shape->evaluate_pdf_uniform();
+            : emitter_prob * shape->evaluate_pdf_uniform();
 
     assert(shape_probability >= 0.0f);
 

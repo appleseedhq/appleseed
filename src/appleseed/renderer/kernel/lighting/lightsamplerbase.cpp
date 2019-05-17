@@ -302,7 +302,7 @@ void LightSamplerBase::collect_emitting_shapes(
                         auto emitting_shape = EmittingShape::create_triangle_shape(
                             &assembly_instance,
                             object_instance_index,
-                            triangle_index,
+                            m_emitting_shapes.size(),
                             material,
                             area,
                             v0,
@@ -388,6 +388,7 @@ void LightSamplerBase::collect_emitting_shapes(
                     auto emitting_shape = EmittingShape::create_rectangle_shape(
                         &assembly_instance,
                         object_instance_index,
+                        m_emitting_shapes.size(),
                         material,
                         area,
                         o,
@@ -457,6 +458,7 @@ void LightSamplerBase::collect_emitting_shapes(
                 auto emitting_shape = EmittingShape::create_sphere_shape(
                     &assembly_instance,
                     object_instance_index,
+                    m_emitting_shapes.size(),
                     material,
                     area,
                     center,
@@ -533,6 +535,7 @@ void LightSamplerBase::collect_emitting_shapes(
                 auto emitting_shape = EmittingShape::create_disk_shape(
                     &assembly_instance,
                     object_instance_index,
+                    m_emitting_shapes.size(),
                     material,
                     area,
                     center,
@@ -556,6 +559,8 @@ void LightSamplerBase::collect_emitting_shapes(
             // Skip curves and other object types.
             continue;
         }
+
+        assert(m_emitting_shapes.size() == m_emitting_shapes_cdf.size());
 
         store_object_area_in_shadergroups(
             &assembly_instance,

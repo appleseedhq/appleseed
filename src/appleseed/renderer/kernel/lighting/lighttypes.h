@@ -103,6 +103,7 @@ class EmittingShape
     static EmittingShape create_rectangle_shape(
         const AssemblyInstance*     assembly_instance,
         const size_t                object_instance_index,
+        const size_t                primitive_index,
         const Material*             material,
         const double                area,
         const foundation::Vector3d& o,
@@ -113,6 +114,7 @@ class EmittingShape
     static EmittingShape create_sphere_shape(
         const AssemblyInstance*     assembly_instance,
         const size_t                object_instance_index,
+        const size_t                primitive_index,
         const Material*             material,
         const double                area,
         const foundation::Vector3d& center,
@@ -121,6 +123,7 @@ class EmittingShape
     static EmittingShape create_disk_shape(
         const AssemblyInstance*     assembly_instance,
         const size_t                object_instance_index,
+        const size_t                primitive_index,
         const Material*             material,
         const double                area,
         const foundation::Vector3d& c,
@@ -139,9 +142,6 @@ class EmittingShape
 
     float get_area() const;
     float get_rcp_area() const;
-
-    float get_shape_prob() const;
-    void set_shape_prob(const float prob);
 
     const Material* get_material() const;
 
@@ -224,7 +224,6 @@ class EmittingShape
     TriangleSupportPlaneType    m_shape_support_plane;          // support plane of the shape in assembly space
     float                       m_area;                         // world space shape area
     float                       m_rcp_area;                     // world space shape area reciprocal
-    float                       m_shape_prob;                   // probability density of this shape
     float                       m_average_flux;                 // estimated average radiant flux in W emitted by this shape
     float                       m_max_flux;                     // estimated maximum radiant flux in W emitted by this shape
     const Material*             m_material;
@@ -273,16 +272,6 @@ inline float EmittingShape::get_area() const
 inline float EmittingShape::get_rcp_area() const
 {
     return m_rcp_area;
-}
-
-inline float EmittingShape::get_shape_prob() const
-{
-    return m_shape_prob;
-}
-
-inline void EmittingShape::set_shape_prob(const float prob)
-{
-    m_shape_prob = prob;
 }
 
 inline const Material* EmittingShape::get_material() const

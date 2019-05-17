@@ -121,6 +121,7 @@ EmittingShape EmittingShape::create_triangle_shape(
 EmittingShape EmittingShape::create_rectangle_shape(
     const AssemblyInstance*     assembly_instance,
     const size_t                object_instance_index,
+    const size_t                primitive_index,
     const Material*             material,
     const double                area,
     const Vector3d&             o,
@@ -132,7 +133,7 @@ EmittingShape EmittingShape::create_rectangle_shape(
         RectangleShape,
         assembly_instance,
         object_instance_index,
-        0,
+        primitive_index,
         material);
 
     shape.m_geom.m_rectangle.m_origin = o;
@@ -156,6 +157,7 @@ EmittingShape EmittingShape::create_rectangle_shape(
 EmittingShape EmittingShape::create_sphere_shape(
     const AssemblyInstance*     assembly_instance,
     const size_t                object_instance_index,
+    const size_t                primitive_index,
     const Material*             material,
     const double                area,
     const Vector3d&             center,
@@ -165,7 +167,7 @@ EmittingShape EmittingShape::create_sphere_shape(
         SphereShape,
         assembly_instance,
         object_instance_index,
-        0,
+        primitive_index,
         material);
 
     shape.m_geom.m_sphere.m_center = center;
@@ -184,6 +186,7 @@ EmittingShape EmittingShape::create_sphere_shape(
 EmittingShape EmittingShape::create_disk_shape(
     const AssemblyInstance*     assembly_instance,
     const size_t                object_instance_index,
+    const size_t                primitive_index,
     const Material*             material,
     const double                area,
     const Vector3d&             c,
@@ -196,7 +199,7 @@ EmittingShape EmittingShape::create_disk_shape(
         DiskShape,
         assembly_instance,
         object_instance_index,
-        0,
+        primitive_index,
         material);
 
     shape.m_geom.m_disk.m_center = c;
@@ -229,7 +232,6 @@ EmittingShape::EmittingShape(
     m_object_instance_index = object_instance_index;
     m_primitive_index = primitive_index;
     m_material = material;
-    m_shape_prob = 0.0f;
     m_average_flux = 1.0f;
 }
 
@@ -321,12 +323,12 @@ void EmittingShape::sample_uniform(
     }
 
     // Compute the probability density of this sample.
-    light_sample.m_probability = shape_prob * get_rcp_area();
+    light_sample.m_probability = shape_prob * evaluate_pdf_uniform();
 }
 
 float EmittingShape::evaluate_pdf_uniform() const
 {
-    return get_shape_prob() * get_rcp_area();
+    return get_rcp_area();
 }
 
 void EmittingShape::make_shading_point(
