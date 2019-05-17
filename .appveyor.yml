@@ -66,8 +66,8 @@ for:
 
 install:
   - cmd: |
-      appveyor DownloadFile https://github.com/appleseedhq/appleseed-deps/releases/download/%AppleseedDepsVersion%/appleseed-deps-stage-win64-%CompilerId%-%AppleseedDepsVersion%.zip
-      7z x appleseed-deps-stage-win64-%CompilerId%-%AppleseedDepsVersion%.zip -oappleseed-deps
+      appveyor DownloadFile https://github.com/appleseedhq/windows-deps/releases/download/%AppleseedDepsVersion%/appleseed-deps-stage-win64-%CompilerId%-%AppleseedDepsVersion%.zip
+      7z x appleseed-deps-stage-win64-%CompilerId%-%AppleseedDepsVersion%.zip -owindows-deps
       rm appleseed-deps-stage-win64-%CompilerId%-%AppleseedDepsVersion%.zip
       
       appveyor DownloadFile https://github.com/appleseedhq/appveyor-deps/releases/download/%AppVeyorDepsVersion%/boost_%BoostVersion%_%CompilerId%.zip
@@ -78,7 +78,7 @@ before_build:
   - cmd: |
       mkdir build
       cd build
-      cmake -Wno-dev -G "%CMakeGenerator%" -DWITH_DISNEY_MATERIAL=ON -DWITH_EMBREE=ON -DWITH_STUDIO=OFF -DWITH_PYTHON3_BINDINGS=ON -DUSE_SSE42=ON -DBOOST_ROOT=C:\projects\appleseed\boost_%BoostVersion%_%CompilerId% -DPYTHON_INCLUDE_DIR=C:\Python27-x64\include -DPYTHON_LIBRARY=C:\Python27-x64\libs\python27.lib -DPYTHON3_INCLUDE_DIR=C:\Python35-x64\include -DPYTHON3_LIBRARY=C:\Python35-x64\libs\python35.lib -DAPPLESEED_DEPS_STAGE_DIR=C:\projects\appleseed\appleseed-deps\stage\%CompilerId% ..
+      cmake -Wno-dev -G "%CMakeGenerator%" -DWITH_DISNEY_MATERIAL=ON -DWITH_EMBREE=ON -DWITH_STUDIO=OFF -DWITH_PYTHON3_BINDINGS=ON -DUSE_SSE42=ON -DBOOST_ROOT=C:\projects\appleseed\boost_%BoostVersion%_%CompilerId% -DPYTHON_INCLUDE_DIR=C:\Python27-x64\include -DPYTHON_LIBRARY=C:\Python27-x64\libs\python27.lib -DPYTHON3_INCLUDE_DIR=C:\Python35-x64\include -DPYTHON3_LIBRARY=C:\Python35-x64\libs\python35.lib -DAPPLESEED_DEPS_STAGE_DIR=C:\projects\appleseed\windows-deps\stage\%CompilerId% ..
 
 build:
   project: build\appleseed.sln
