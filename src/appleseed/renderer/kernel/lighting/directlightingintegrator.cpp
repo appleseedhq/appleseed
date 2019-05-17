@@ -164,15 +164,20 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
 
         sampling_context.split_in_place(3, m_light_sample_count);
 
+        size_t actual_sample_count = 0;
+
         for (size_t i = 0, e = m_light_sample_count; i < e; ++i)
         {
             // Sample the light set.
             LightSample sample;
-            m_light_sampler.sample_lightset(
+            if (!m_light_sampler.sample_lightset(
                 m_time,
                 sampling_context.next2<Vector3f>(),
                 m_material_sampler.get_shading_point(),
-                sample);
+                sample))
+            {
+                continue;
+            }
 
             // Add the contribution of the chosen light.
             if (sample.m_shape)
@@ -194,10 +199,12 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
                     lightset_radiance,
                     light_path_stream);
             }
+
+            ++actual_sample_count;
         }
 
-        if (m_light_sample_count > 1)
-            lightset_radiance /= static_cast<float>(m_light_sample_count);
+        if (actual_sample_count > 1)
+            lightset_radiance /= static_cast<float>(actual_sample_count);
 
         radiance += lightset_radiance;
     }

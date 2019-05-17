@@ -44,6 +44,7 @@
 // Forward declarations.
 namespace renderer  { class LightSample; }
 namespace renderer  { class Scene; }
+namespace renderer  { class ShadingPoint; }
 
 namespace renderer
 {

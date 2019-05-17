@@ -194,7 +194,7 @@ BackwardLightSampler::BackwardLightSampler(
         plural(m_emitting_shapes.size(), "shape").c_str());
 }
 
-void BackwardLightSampler::sample_lightset(
+bool BackwardLightSampler::sample_lightset(
     const ShadingRay::Time&             time,
     const Vector3f&                     s,
     const ShadingPoint&                 shading_point,
@@ -208,13 +208,16 @@ void BackwardLightSampler::sample_lightset(
             s,
             shading_point,
             light_sample);
+
+        return true;
     }
     else
     {
         // CDF-based sampling.
-        sample_emitting_shapes(
+        return sample_emitting_shapes_solid_angle(
             time,
             s,
+            shading_point,
             light_sample);
     }
 }
@@ -244,7 +247,7 @@ float BackwardLightSampler::evaluate_pdf(
             ? m_light_tree->evaluate_node_pdf(
                 surface_shading_point,
                 shape->m_light_tree_node_index)
-            : emitter_prob * shape->evaluate_pdf_uniform();
+            : emitter_prob * shape->evaluate_pdf_solid_angle(light_shading_point, surface_shading_point);
 
     assert(shape_probability >= 0.0f);
 
@@ -286,7 +289,7 @@ void BackwardLightSampler::sample_light_tree(
     else
     {
         assert(light_type == EmittingShapeType);
-        sample_emitting_shapes(
+        sample_emitting_shapes_uniform(
             time,
             s,
             light_sample);

@@ -331,6 +331,82 @@ float EmittingShape::evaluate_pdf_uniform() const
     return get_rcp_area();
 }
 
+bool EmittingShape::sample_solid_angle(
+    const ShadingPoint&         shading_point,
+    const foundation::Vector2f& s,
+    const float                 shape_prob,
+    LightSample&                light_sample) const
+{
+    // Store a pointer to the emitting shape.
+    light_sample.m_shape = this;
+
+    const auto shape_type = get_shape_type();
+
+    if (shape_type == TriangleShape)
+    {
+        assert(false);
+        sample_uniform(s, shape_prob, light_sample);
+        return true;
+    }
+    else if (shape_type == RectangleShape)
+    {
+        assert(false);
+        sample_uniform(s, shape_prob, light_sample);
+        return true;
+    }
+    else if (shape_type == SphereShape)
+    {
+        assert(false);
+        sample_uniform(s, shape_prob, light_sample);
+        return true;
+    }
+    else if (shape_type == DiskShape)
+    {
+        assert(false);
+        sample_uniform(s, shape_prob, light_sample);
+        return true;
+    }
+    else
+    {
+        assert(false && "Unknown emitter shape type");
+    }
+
+    return false;
+}
+
+float EmittingShape::evaluate_pdf_solid_angle(
+    const ShadingPoint&         light_shading_point,
+    const ShadingPoint&         surface_shading_point) const
+{
+    const auto shape_type = get_shape_type();
+
+    if (shape_type == TriangleShape)
+    {
+        assert(false);
+        return evaluate_pdf_uniform();
+    }
+    else if (shape_type == RectangleShape)
+    {
+        assert(false);
+        return evaluate_pdf_uniform();
+    }
+    else if (shape_type == SphereShape)
+    {
+        assert(false);
+        return evaluate_pdf_uniform();
+    }
+    else if (shape_type == DiskShape)
+    {
+        assert(false);
+        return evaluate_pdf_uniform();
+    }
+    else
+    {
+        assert(false && "Unknown emitter shape type");
+        return -1.0f;
+    }
+}
+
 void EmittingShape::make_shading_point(
     ShadingPoint&           shading_point,
     const Vector3d&         point,

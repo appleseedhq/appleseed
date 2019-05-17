@@ -156,6 +156,16 @@ class EmittingShape
 
     float evaluate_pdf_uniform() const;
 
+    bool sample_solid_angle(
+        const ShadingPoint&         shading_point,
+        const foundation::Vector2f& s,
+        const float                 shape_prob,
+        LightSample&                light_sample) const;
+
+    float evaluate_pdf_solid_angle(
+        const ShadingPoint&         light_shading_point,
+        const ShadingPoint&         surface_shading_point) const;
+
     void make_shading_point(
         ShadingPoint&               shading_point,
         const foundation::Vector3d& point,

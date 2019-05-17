@@ -32,6 +32,7 @@
 // appleseed.renderer headers
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/object/diskobject.h"
@@ -638,7 +639,7 @@ void LightSamplerBase::store_object_area_in_shadergroups(
     }
 }
 
-void LightSamplerBase::sample_emitting_shapes(
+void LightSamplerBase::sample_emitting_shapes_uniform(
     const ShadingRay::Time&             time,
     const Vector3f&                     s,
     LightSample&                        light_sample) const
@@ -657,6 +658,34 @@ void LightSamplerBase::sample_emitting_shapes(
     assert(light_sample.m_probability > 0.0f);
 }
 
+bool LightSamplerBase::sample_emitting_shapes_solid_angle(
+    const ShadingRay::Time&             time,
+    const Vector3f&                     s,
+    const ShadingPoint&                 shading_point,
+    LightSample&                        light_sample) const
+{
+    assert(m_emitting_shapes_cdf.valid());
+
+    const EmitterCDF::ItemWeightPair result = m_emitting_shapes_cdf.sample(s[0]);
+    const size_t emitter_index = result.first;
+    const float emitter_prob = result.second;
+
+    light_sample.m_light = nullptr;
+    const EmittingShape& emitting_shape = m_emitting_shapes[emitter_index];
+    const bool valid_sample = emitting_shape.sample_solid_angle(
+        shading_point,
+        Vector2f(s[1], s[2]),
+        emitter_prob,
+        light_sample);
+
+    if (valid_sample)
+    {
+        assert(light_sample.m_shape);
+        assert(light_sample.m_probability > 0.0f);
+    }
+
+    return valid_sample;
+}
 
 //
 // LightSamplerBase::Parameters class implementation.
