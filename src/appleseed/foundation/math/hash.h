@@ -54,6 +54,9 @@ namespace foundation
 //   Designing a good non-cryptographic hash function
 //   http://ticki.github.io/blog/designing-a-good-non-cryptographic-hash-function/
 //
+//   Table of basic reversible integer operations
+//   http://marc-b-reynolds.github.io/math/2017/10/13/IntegerBijections.html
+//
 
 
 //
