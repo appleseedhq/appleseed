@@ -40,6 +40,7 @@
 #include "foundation/math/intersection/rayparallelogram.h"
 #include "foundation/math/intersection/raytrianglemt.h"
 #include "foundation/math/sampling/mappings.h"
+#include "foundation/math/sampling/sphericalcapsampler.h"
 
 using namespace foundation;
 
@@ -178,8 +179,6 @@ EmittingShape EmittingShape::create_sphere_shape(
         shape.m_rcp_area = 1.0f / shape.m_area;
     else
         shape.m_rcp_area = FP<float>().snan();
-
-    shape.m_geom.m_sphere.m_sampler = SphericalCapSampler<double>();
 
     return shape;
 }

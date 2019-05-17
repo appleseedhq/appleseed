@@ -28,6 +28,12 @@
 
 #pragma once
 
+// appleseed.foundation headers.
+#include "foundation/math/vector.h"
+
+// Standard headers.
+#include <cmath>
+
 namespace foundation
 {
 
@@ -44,6 +50,58 @@ namespace foundation
 template <typename T>
 class SphericalCapSampler
 {
+  public:
+    // Constructor.
+    SphericalCapSampler(
+        const Vector<T, 3>&   center,
+        const T               radius)
+    {
+        const T rcp_center_distance = 1.0f / std::sqrt(dot(center, center));
+
+        // Construct a coordinate frame with z pointing to the sphere.
+        m_normal = rcp_center_distance * center;
+        m_tangent =
+            normalize(
+                cross(
+                    m_normal,
+                    Vector<T, 3>(T(0.0), T(1.0), T(0.0))));
+        m_bitangent = cross(m_normal, m_tangent);
+
+        const T max_radius = radius * rcp_center_distance;
+        m_minimal_dot =
+            std::sqrt(
+                saturate(
+                    -square(max_radius) + T(1.0)));
+        m_solid_angle = -m_minimal_dot * TwoPi<T>() + TwoPi<T>();
+    }
+
+    T get_area() const
+    {
+        return m_solid_angle;
+    }
+
+    Vector<T, 3> sample(const Vector<T, 2>& s) const
+    {
+        Vector<T, 3> local;
+
+        local.z = lerp(m_minimal_dot, T(1.0), s.x);
+
+        // Complete to a point on the sphere
+        float radius = std::sqrt(saturate(-square(local.z) + T(1.0)));
+        local.x = radius * cos(TwoPi<T>() * s.y);
+        local.y = radius * sin(TwoPi<T>() * s.y);
+
+        // Now turn that into a world space sample
+        return local.x * m_tangent + local.y * m_bitangent + local.z * m_normal;
+    }
+
+  private:
+      const Vector<T, 3>    m_tangent;
+      const Vector<T, 3>    m_bitangent;
+      const Vector<T, 3>    m_normal;
+
+      const T               m_minimal_dot;
+      const T               m_solid_angle;
 };
 
 }  // namespace foundation
