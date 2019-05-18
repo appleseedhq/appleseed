@@ -160,7 +160,7 @@ namespace
             const Vector3f m =
                 alpha == 0.0f
                     ? Vector3f(0.0f, 1.0f, 0.0f)
-                    : GGXMDF::sample(wo, Vector2f(s[0], s[1]), alpha, alpha);
+                    : GGXMDF::sample(wo, Vector2f(s[0], s[1]), alpha);
 
             const float F = fresnel_reflectance(wo, m, values->m_precomputed.m_eta);
             const float specular_probability = choose_specular_probability(*values, F);
@@ -190,8 +190,7 @@ namespace
                 }
                 else
                 {
-                    const GGXMDF mdf;
-                    const float probability = specular_pdf(mdf, alpha, wo, m) * specular_probability;
+                    const float probability = specular_pdf(alpha, wo, m) * specular_probability;
                     assert(probability >= 0.0f);
 
                     if (probability > 1.0e-6f)
@@ -202,7 +201,6 @@ namespace
 
                         evaluate_specular(
                             values->m_specular_reflectance,
-                            mdf,
                             alpha,
                             wi,
                             wo,
@@ -273,10 +271,8 @@ namespace
 
             if (ScatteringMode::has_glossy(modes))
             {
-                const GGXMDF mdf;
                 evaluate_specular(
                     values->m_specular_reflectance,
-                    mdf,
                     alpha,
                     wi,
                     wo,
@@ -284,7 +280,7 @@ namespace
                     Fo,
                     value.m_glossy);
 
-                pdf_glossy = specular_pdf(mdf, alpha, wo, m);
+                pdf_glossy = specular_pdf(alpha, wo, m);
             }
 
             if (ScatteringMode::has_diffuse(modes))
@@ -334,10 +330,9 @@ namespace
             const float F = fresnel_reflectance(wo, m, values->m_precomputed.m_eta);
             const float specular_probability = choose_specular_probability(*values, F);
 
-            const GGXMDF mdf;
             const float pdf_glossy =
                 ScatteringMode::has_glossy(modes)
-                    ? specular_pdf(mdf, alpha, wo, m)
+                    ? specular_pdf(alpha, wo, m)
                     : 0.0f;
 
             const float pdf_diffuse =
@@ -387,7 +382,6 @@ namespace
 
         static void evaluate_specular(
             const Spectrum&             specular_reflectance,
-            const GGXMDF&               mdf,
             const float                 alpha,
             const Vector3f&             wi,
             const Vector3f&             wo,
@@ -406,13 +400,12 @@ namespace
             }
 
             value = specular_reflectance;
-            const float D = mdf.D(m, alpha, alpha);
-            const float G = mdf.G(wi, wo, m, alpha, alpha);
+            const float D = GGXMDF::D(m, alpha);
+            const float G = GGXMDF::G(wi, wo, m, alpha);
             value *= F * D * G / denom;
         }
 
         static float specular_pdf(
-            const GGXMDF&               mdf,
             const float                 alpha,
             const Vector3f&             wo,
             const Vector3f&             m)
@@ -425,7 +418,7 @@ namespace
                 return 0.0f;
 
             const float jacobian = 1.0f / (4.0f * abs(cos_wom));
-            return jacobian * mdf.pdf(wo, m, alpha, alpha);
+            return jacobian * GGXMDF::pdf(wo, m, alpha, alpha);
         }
 
         static void evaluate_diffuse(

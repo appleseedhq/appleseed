@@ -500,6 +500,81 @@ float GGXMDF::pdf(
     return pdf_visible_normals<GGXMDF>(v, m, alpha_x, alpha_y);
 }
 
+float GGXMDF::D(
+    const Vector3f&     m,
+    const float         alpha)
+{
+    const float cos_theta = m.y;
+    if (cos_theta == 0.0f)
+        return square(alpha) * RcpPi<float>();
+
+    const float a2 = square(alpha);
+    const float cos_theta_2 = square(cos_theta);
+    const float cos_theta_4 = square(cos_theta_2);
+    const float tan_theta_2 = (1.0f - cos_theta_2) / cos_theta_2;
+
+    const float A = 1.0f / a2;
+    const float tmp = 1.0f + tan_theta_2 * A;
+    return 1.0f / (Pi<float>() * a2 * cos_theta_4 * square(tmp));
+}
+
+float GGXMDF::G(
+    const Vector3f&     wi,
+    const Vector3f&     wo,
+    const Vector3f&     m,
+    const float         alpha)
+{
+    return 1.0f / (1.0f + lambda(wo, alpha) + lambda(wi, alpha));
+}
+
+float GGXMDF::G1(
+    const Vector3f&     v,
+    const Vector3f&     m,
+    const float         alpha)
+{
+    return 1.0f / (1.0f + lambda(v, alpha));
+}
+
+float GGXMDF::lambda(
+    const Vector3f&     v,
+    const float         alpha)
+{
+    const float cos_theta = v.y;
+    if (cos_theta == 0.0f)
+        return 0.0f;
+
+    const float cos_theta_2 = square(cos_theta);
+    const float sin_theta = sqrt(max(0.0f, 1.0f - cos_theta_2));
+
+    const float tan_theta_2 = square(sin_theta) / cos_theta_2;
+    const float a2_rcp = square(alpha) * tan_theta_2;
+    return (-1.0f + sqrt(1.0f + a2_rcp)) * 0.5f;
+}
+
+Vector3f GGXMDF::sample(
+    const Vector3f&     v,
+    const Vector2f&     s,
+    const float         alpha)
+{
+    return sample(v, s, alpha, alpha);
+}
+
+float GGXMDF::pdf(
+    const Vector3f&     v,
+    const Vector3f&     m,
+    const float         alpha)
+{
+    assert(is_normalized(v));
+
+    const float cos_theta_v = v.y;
+
+    if (cos_theta_v == 0.0f)
+        return 0.0f;
+
+    return
+        G1(v, m, alpha) * abs(dot(v, m)) *
+        D(m, alpha) / abs(cos_theta_v);
+}
 
 //
 // WardMDF class implementation.
