@@ -38,6 +38,7 @@
 // Boost headers.
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
+#include "boost/system/error_code.hpp"
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
@@ -133,7 +134,9 @@ inline boost::filesystem::path Application::change_current_directory_to_tests_ro
 
 inline bool Application::create_unit_tests_output_directories()
 {
-    return boost::filesystem::create_directories(get_unit_tests_output_path());
+    boost::system::error_code ec;
+    boost::filesystem::create_directories(get_unit_tests_output_path(), ec);
+    return !ec;
 }
 
 }   // namespace shared
