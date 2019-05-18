@@ -86,33 +86,30 @@ namespace
         Vector3f sample(const Vector2f& s) const
         {
             return
-                WardMDF().sample(
+                WardMDF::sample(
                     Vector3f(0.0f, 0.0f, 0.0f),
                     s,
                     m_alpha,
-                    m_alpha,
-                    0.0f);
+                    m_alpha);
         }
 
         float evaluate(const float cos_alpha) const
         {
             return
-                WardMDF().D(
+                WardMDF::D(
                     Vector3f(0.0f, cos_alpha, 0.0f),
                     m_alpha,
-                    m_alpha,
-                    0.0f);
+                    m_alpha);
         }
 
         float evaluate_pdf(const float cos_alpha) const
         {
             return
-                WardMDF().pdf(
+                WardMDF::pdf(
                     Vector3f(0.0f, 0.0f, 0.0f),
                     Vector3f(0.0f, cos_alpha, 0.0f),
                     m_alpha,
-                    m_alpha,
-                    0.0f);
+                    m_alpha);
         }
 
       private:

@@ -58,37 +58,32 @@ class BlinnMDF
     static float D(
         const Vector3f&     m,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
     static float G(
         const Vector3f&     wi,
         const Vector3f&     wo,
         const Vector3f&     m,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
     static float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
     static Vector3f sample(
         const Vector3f&     v,
         const Vector2f&     s,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
     static float pdf(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 };
 
 
@@ -121,30 +116,26 @@ class BeckmannMDF
     static float D(
         const Vector3f&     m,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
     static float G(
         const Vector3f&     wi,
         const Vector3f&     wo,
         const Vector3f&     m,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
     static float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
     static Vector3f sample(
         const Vector3f&     v,
         const Vector2f&     s,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
     static Vector3f sample(
         const Vector2f&     s,
@@ -154,19 +145,17 @@ class BeckmannMDF
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
+  private:
     static Vector2f sample_slope(
         const float         cos_theta,
-        const Vector2f&     s,
-        const float         gamma);
+        const Vector2f&     s);
 
     static float lambda(
         const Vector3f&     v,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 };
 
 
@@ -194,43 +183,38 @@ class GGXMDF
     static float D(
         const Vector3f&     m,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
     static float G(
         const Vector3f&     wi,
         const Vector3f&     wo,
         const Vector3f&     m,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
     static float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
     static Vector3f sample(
         const Vector3f&     v,
         const Vector2f&     s,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
     static float pdf(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
+  private:
     static float lambda(
         const Vector3f&     v,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 };
 
 
@@ -251,37 +235,32 @@ class WardMDF
     static float D(
         const Vector3f&     m,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
     static float G(
         const Vector3f&     wi,
         const Vector3f&     wo,
         const Vector3f&     m,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
     static float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
     static Vector3f sample(
         const Vector3f&     v,
         const Vector2f&     s,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
     static float pdf(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 };
 
 
@@ -303,44 +282,38 @@ class GTR1MDF
     static float D(
         const Vector3f&     m,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
     static float G(
         const Vector3f&     wi,
         const Vector3f&     wo,
         const Vector3f&     m,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
     static float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
     static Vector3f sample(
         const Vector3f&     v,
         const Vector2f&     s,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
     static float pdf(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 
   private:
     static float lambda(
         const Vector3f&     v,
         const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma);
+        const float         alpha_y);
 };
 
 

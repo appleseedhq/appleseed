@@ -160,7 +160,7 @@ namespace
             const Vector3f m =
                 alpha == 0.0f
                     ? Vector3f(0.0f, 1.0f, 0.0f)
-                    : GGXMDF::sample(wo, Vector2f(s[0], s[1]), alpha, alpha, 0.0f);
+                    : GGXMDF::sample(wo, Vector2f(s[0], s[1]), alpha, alpha);
 
             const float F = fresnel_reflectance(wo, m, values->m_precomputed.m_eta);
             const float specular_probability = choose_specular_probability(*values, F);
@@ -406,8 +406,8 @@ namespace
             }
 
             value = specular_reflectance;
-            const float D = mdf.D(m, alpha, alpha, 0.0f);
-            const float G = mdf.G(wi, wo, m, alpha, alpha, 0.0f);
+            const float D = mdf.D(m, alpha, alpha);
+            const float G = mdf.G(wi, wo, m, alpha, alpha);
             value *= F * D * G / denom;
         }
 
@@ -425,7 +425,7 @@ namespace
                 return 0.0f;
 
             const float jacobian = 1.0f / (4.0f * abs(cos_wom));
-            return jacobian * mdf.pdf(wo, m, alpha, alpha, 0.0f);
+            return jacobian * mdf.pdf(wo, m, alpha, alpha);
         }
 
         static void evaluate_diffuse(

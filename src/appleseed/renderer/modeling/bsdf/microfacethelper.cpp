@@ -127,7 +127,6 @@ namespace
             const Vector3f wo(sin_theta, cos_theta, 0.0f);
 
             float R = 0.0f;
-            const MDF mdf;
 
             for (size_t i = 0; i < sample_count; ++i)
             {
@@ -137,7 +136,7 @@ namespace
 
                 Vector3f wi;
                 float probability;
-                const float value = MicrofacetBRDFHelper<false>::sample(mdf, s, alpha, wo, wi, probability);
+                const float value = MicrofacetBRDFHelper<MDF, false>::sample(s, alpha, wo, wi, probability);
 
                 // Skip samples with very low probability.
                 if (probability < 1.0e-6f)

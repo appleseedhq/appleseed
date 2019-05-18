@@ -64,8 +64,7 @@ BENCHMARK_SUITE(Foundation_Math_Microfacet)
                     m_outgoing,
                     s,
                     alpha_x,
-                    alpha_y,
-                    0.0f);
+                    alpha_y);
         }
 
         void evaluate(const float alpha_x, const float alpha_y)
@@ -78,8 +77,7 @@ BENCHMARK_SUITE(Foundation_Math_Microfacet)
                 MDFType().D(
                     normalize(Vector3f(s[0], 0.5f, s[1])),
                     alpha_x,
-                    alpha_y,
-                    0.0f);
+                    alpha_y);
         }
     };
 

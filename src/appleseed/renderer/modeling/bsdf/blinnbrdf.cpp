@@ -155,12 +155,10 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
 
             const FresnelFun f(values->m_precomputed.m_outside_ior / values->m_ior);
-            MicrofacetBRDFHelper<false>::sample(
+            MicrofacetBRDFHelper<BlinnMDF, false>::sample(
                 sampling_context,
-                m_mdf,
                 values->m_exponent,
                 values->m_exponent,
-                0.0f,
                 f,
                 sample);
             sample.m_value.m_beauty = sample.m_value.m_glossy;
@@ -186,11 +184,9 @@ namespace
             const FresnelFun f(values->m_precomputed.m_outside_ior / values->m_ior);
 
             const float pdf =
-                MicrofacetBRDFHelper<false>::evaluate(
-                    m_mdf,
+                MicrofacetBRDFHelper<BlinnMDF, false>::evaluate(
                     values->m_exponent,
                     values->m_exponent,
-                    0.0f,
                     shading_basis,
                     outgoing,
                     incoming,
@@ -218,11 +214,9 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
 
             const float pdf =
-                MicrofacetBRDFHelper<false>::pdf(
-                    m_mdf,
+                MicrofacetBRDFHelper<BlinnMDF, false>::pdf(
                     values->m_exponent,
                     values->m_exponent,
-                    0.0f,
                     shading_basis,
                     outgoing,
                     incoming);
@@ -233,8 +227,6 @@ namespace
 
       private:
         typedef BlinnBRDFInputValues InputValues;
-
-        BlinnMDF m_mdf;
     };
 
     typedef BSDFWrapper<BlinnBRDFImpl> BlinnBRDF;
