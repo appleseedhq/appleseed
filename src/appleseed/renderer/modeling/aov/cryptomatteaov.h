@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_AOV_CRYPTOMATTEAOV_H
-#define APPLESEED_RENDERER_MODELING_AOV_CRYPTOMATTEAOV_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/modeling/aov/aov.h"
@@ -35,6 +34,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>
@@ -53,7 +55,7 @@ namespace renderer
 // Cryptomatte AOV.
 //
 
-class CryptomatteAOV
+class APPLESEED_DLLSYMBOL CryptomatteAOV
   : public AOV
 {
   public:
@@ -74,6 +76,8 @@ class CryptomatteAOV
     const char** get_channel_names() const override;
 
     bool has_color_data() const override;
+
+    foundation::Image* get_cryptomatte_image() const;
 
     void create_image(
         const size_t    canvas_width,
@@ -129,4 +133,3 @@ class APPLESEED_DLLSYMBOL CryptomatteAOVFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_AOV_CRYPTOMATTEAOV_H

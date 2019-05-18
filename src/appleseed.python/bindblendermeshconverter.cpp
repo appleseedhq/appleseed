@@ -142,7 +142,7 @@ void export_mesh_blender79(
         for (size_t vertex_index = 0; vertex_index < bl_vert_count; ++vertex_index)
         {
             const MVert& vert = bl_vertices[vertex_index];
-            blender_mesh->push_vertex_normal(GVector3(vert.no[0], vert.no[1], vert.no[2]));
+            blender_mesh->push_vertex_normal(normalize(GVector3(vert.no[0], vert.no[1], vert.no[2])));
         }
     }
 
@@ -210,7 +210,7 @@ void export_mesh_blender79_pose(
         for (size_t vertex_index = 0; vertex_index < bl_vert_count; ++vertex_index)
         {
             const MVert& vert = bl_vertices[vertex_index];
-            blender_mesh->set_vertex_normal_pose(vertex_index, pose, GVector3(vert.no[0], vert.no[1], vert.no[2]));
+            blender_mesh->set_vertex_normal_pose(vertex_index, pose, normalize(GVector3(vert.no[0], vert.no[1], vert.no[2])));
         }
     }
 }
@@ -261,7 +261,7 @@ void export_mesh_blender80(
         {
             const MLoop& bl_loop = bl_loop_array[loop_index];
             const MVert& bl_vert = bl_vert_array[bl_loop.v];
-            blender_mesh->push_vertex_normal(GVector3(bl_vert.no[0], bl_vert.no[1], bl_vert.no[2]));
+            blender_mesh->push_vertex_normal(normalize(GVector3(bl_vert.no[0], bl_vert.no[1], bl_vert.no[2])));
         }
 
         for (size_t looptri_index = 0; looptri_index < bl_looptri_count; ++looptri_index)
@@ -321,7 +321,7 @@ void export_mesh_blender80_pose(
         {
             const MLoop& bl_loop = bl_loop_array[loop_index];
             const MVert& bl_vert = bl_vert_array[bl_loop.v];
-            blender_mesh->set_vertex_normal_pose(loop_index, pose, GVector3(bl_vert.no[0], bl_vert.no[1], bl_vert.no[2]));
+            blender_mesh->set_vertex_normal_pose(loop_index, pose, normalize(GVector3(bl_vert.no[0], bl_vert.no[1], bl_vert.no[2])));
         }
     }
 }

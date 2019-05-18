@@ -67,6 +67,25 @@ namespace
         return factory->create(name, bpy_dict_to_param_array(params));
     }
 
+    auto_release_ptr<Object> create_object(
+        const string&    model,
+        const string&    name,
+        const bpy::dict& params)
+    {
+        const ObjectFactoryRegistrar factories;
+        const IObjectFactory* factory = factories.lookup(model.c_str());
+
+        if (factory)
+            return factory->create(name.c_str(), bpy_dict_to_param_array(params));
+        else
+        {
+            PyErr_SetString(PyExc_RuntimeError, "Object model not found");
+            bpy::throw_error_already_set();
+        }
+
+        return auto_release_ptr<Object>();
+    }
+
     void bpy_list_to_string_array(const bpy::list& l, StringArray& strings)
     {
         strings.clear();
@@ -163,6 +182,7 @@ namespace
 void bind_object()
 {
     bpy::class_<Object, auto_release_ptr<Object>, bpy::bases<Entity>, boost::noncopyable>("Object", bpy::no_init)
+        .def("__init__", bpy::make_constructor(create_object))
         .def("get_model", &Object::get_model)
         .def("compute_local_bbox", &Object::compute_local_bbox)
         .def("material_slots", &obj_material_slots)

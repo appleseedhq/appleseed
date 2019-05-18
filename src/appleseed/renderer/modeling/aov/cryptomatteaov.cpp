@@ -697,6 +697,11 @@ bool CryptomatteAOV::has_color_data() const
     return false;
 }
 
+Image* CryptomatteAOV::get_cryptomatte_image() const
+{
+    return impl->m_image.get();
+}
+
 void CryptomatteAOV::create_image(
     const size_t    canvas_width,
     const size_t    canvas_height,
