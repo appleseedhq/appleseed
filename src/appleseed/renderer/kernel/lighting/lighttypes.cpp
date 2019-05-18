@@ -360,32 +360,23 @@ bool EmittingShape::sample_solid_angle(
         const Vector3d o = shading_point.get_point();
 
         const SphericalCapSampler<double> sampler(
-            m_geom.m_sphere.m_center - o,
+            o,
+            m_geom.m_sphere.m_center,
             m_geom.m_sphere.m_radius
         );
 
-        const Vector3d d = sampler.sample(Vector2d(s));
+        const Vector3d n = sampler.sample(Vector2d(s));
 
-        // Project the point on the spere.
-        const Ray3d ray(o, d);
-        double t;
+        // todo: reproject the point on the sphere.
 
-        if (!intersect_sphere_unit_direction(ray, m_geom.m_sphere.m_center, m_geom.m_sphere.m_radius, t))
-            return false;
-
-        light_sample.m_point = o + t * d;
+        light_sample.m_point = m_geom.m_sphere.m_center + m_geom.m_sphere.m_radius * n;
         light_sample.m_param_coords = s;
 
-        const Vector3d n = normalize(light_sample.m_point - m_geom.m_sphere.m_center);
         light_sample.m_geometric_normal = n;
         light_sample.m_shading_normal = n;
 
-        // Compute the probability.
-        const double cos_theta = dot(shading_point.get_shading_normal(), d);
-        const double rcp_solid_angle = 1.0 / sampler.get_solid_angle();
-
-        const double pdf = (cos_theta * rcp_solid_angle) / square(t);
-        light_sample.m_probability = shape_prob * static_cast<float>(pdf);
+        light_sample.m_probability =
+            shape_prob * static_cast<float>(sampler.get_pdf() / square_distance(light_sample.m_point, o));
 
         return true;
     }
@@ -422,21 +413,14 @@ float EmittingShape::evaluate_pdf_solid_angle(
     else if (shape_type == SphereShape)
     {
         const Vector3d o = surface_shading_point.get_point();
-        const Vector3d l = light_shading_point.get_point();
 
         const SphericalCapSampler<double> sampler(
-            m_geom.m_sphere.m_center - o,
+            o,
+            m_geom.m_sphere.m_center,
             m_geom.m_sphere.m_radius
         );
 
-        // Compute the probability.
-        const double cos_theta = dot(surface_shading_point.get_shading_normal(), normalize(l - o));
-        const double rcp_solid_angle = 1.0 / sampler.get_solid_angle();
-
-        const double t = square_distance(l, o);
-
-        const double pdf = (cos_theta * rcp_solid_angle) / t;
-        return static_cast<float>(pdf);
+        return static_cast<float>(sampler.get_pdf() / square_distance(o, light_shading_point.get_point()));
     }
     else if (shape_type == DiskShape)
     {

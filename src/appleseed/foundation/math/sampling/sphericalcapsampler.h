@@ -46,6 +46,9 @@ namespace foundation
 //   [2] Sampling Projected Spherical Caps in Real Time
 //       http://momentsingraphics.de/Media/I3D2019/Peters2019-SamplingSphericalCaps.pdf
 //
+//   [3] Sampling Light Sources
+//       http://www.pbr-book.org/3ed-2018/Light_Transport_I_Surface_Reflection/Sampling_Light_Sources.html#sec:sampling-lights
+//
 
 template <typename T>
 class SphericalCapSampler
@@ -53,55 +56,63 @@ class SphericalCapSampler
   public:
     // Constructor.
     SphericalCapSampler(
+        const Vector<T, 3>&   surface_point,
         const Vector<T, 3>&   center,
         const T               radius)
+      : m_radius(radius)
     {
         const T rcp_center_distance = 1.0f / std::sqrt(dot(center, center));
 
         // Construct a coordinate frame with z pointing to the sphere.
-        m_normal = rcp_center_distance * center;
-        m_tangent =
-            normalize(
-                cross(
-                    m_normal,
-                    Vector<T, 3>(T(0.0), T(1.0), T(0.0))));
-        m_bitangent = cross(m_normal, m_tangent);
+        // todo: use Basis3 here.
+        m_z = normalize(center - surface_point);
+        m_x =
+            (std::abs(m_z.x) > std::abs(m_z.y))
+            ? (Vector<T, 3>(-m_z.z, T(0.0), m_z.x) / std::sqrt(square(m_z.x) + square(m_z.z)))
+            : (Vector<T, 3>(T(0.0), m_z.z, -m_z.y) / std::sqrt(square(m_z.y) + square(m_z.z)));
+        m_y = cross(m_z, m_x);
 
-        const T max_radius = radius * rcp_center_distance;
-        m_minimal_dot =
-            std::sqrt(
-                saturate(
-                    -square(max_radius) + T(1.0)));
-        m_solid_angle = -m_minimal_dot * TwoPi<T>() + TwoPi<T>();
+        m_dc = std::sqrt(square_distance(surface_point, center));
+
+        // Compute sampling cone parameters.
+        m_sin_theta_max_2 = square(radius) / square_distance(surface_point, center);
+        m_cos_theta_max = std::sqrt(std::max(T(0.0), T(1.0) - m_sin_theta_max_2));
     }
 
-    T get_solid_angle() const
+    T get_pdf() const
     {
-        return m_solid_angle;
+        // todo: handle the case where the surface_point is inside the sphere.
+        return T(1.0) / (TwoPi<T>() * (T(1.0) - m_cos_theta_max));
     }
 
     Vector<T, 3> sample(const Vector<T, 2>& s) const
     {
-        Vector<T, 3> local;
+        // todo: handle the case where the surface_point is inside the sphere.
+        const T cos_theta = (T(1.0) - s[0]) + s[0] * m_cos_theta_max;
+        const T sin_theta = std::sqrt(std::max(T(0.0), T(1.0) - square(cos_theta)));
+        const T phi = s[1] * TwoPi<T>();
 
-        local.z = lerp(m_minimal_dot, T(1.0), s.x);
+        const T ds = m_dc * cos_theta - std::sqrt(std::max(T(0.0), square(m_radius) - square(m_dc) * square(sin_theta)));
+        const T cos_alpha = (square(m_dc) + square(m_radius) - square(ds)) / (T(2.0) * m_dc * m_radius);
+        const T sin_alpha = std::sqrt(std::max(T(0.0), T(1.0) - square(cos_alpha)));
 
-        // Complete to a point on the sphere
-        T radius = std::sqrt(saturate(-square(local.z) + T(1.0)));
-        local.x = radius * cos(TwoPi<T>() * s.y);
-        local.y = radius * sin(TwoPi<T>() * s.y);
+        const Vector<T, 3> normal =
+            sin_alpha * std::cos(phi) * (-m_x)
+            + sin_alpha * std::sin(phi) * (-m_y)
+            + cos_alpha * (-m_z);
 
-        // Now turn that into a world space sample
-        return local.x * m_tangent + local.y * m_bitangent + local.z * m_normal;
+        return normal;
     }
 
   private:
-      Vector<T, 3>    m_tangent;
-      Vector<T, 3>    m_bitangent;
-      Vector<T, 3>    m_normal;
+      Vector<T, 3>      m_x;
+      Vector<T, 3>      m_y;
+      Vector<T, 3>      m_z;
 
-      T               m_minimal_dot;
-      T               m_solid_angle;
+      T                 m_radius;
+      T                 m_sin_theta_max_2;
+      T                 m_cos_theta_max;
+      T                 m_dc;
 };
 
 }  // namespace foundation
