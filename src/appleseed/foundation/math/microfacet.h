@@ -210,11 +210,44 @@ class GGXMDF
         const float         alpha_x,
         const float         alpha_y);
 
+    // Isotropic versions of the above methods.
+    // They are used in shading models that don't support
+    // anisotropy and when computing albedo tables.
+
+    static float D(
+        const Vector3f&     m,
+        const float         alpha);
+
+    static float G(
+        const Vector3f&     wi,
+        const Vector3f&     wo,
+        const Vector3f&     m,
+        const float         alpha);
+
+    static float G1(
+        const Vector3f&     v,
+        const Vector3f&     m,
+        const float         alpha);
+
+    static Vector3f sample(
+        const Vector3f&     v,
+        const Vector2f&     s,
+        const float         alpha);
+
+    static float pdf(
+        const Vector3f&     v,
+        const Vector3f&     m,
+        const float         alpha);
+
   private:
     static float lambda(
         const Vector3f&     v,
         const float         alpha_x,
         const float         alpha_y);
+
+    static float lambda(
+        const Vector3f&     v,
+        const float         alpha);
 };
 
 

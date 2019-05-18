@@ -254,55 +254,6 @@ class MicrofacetBRDFHelper
                 alpha_x,
                 alpha_y) / std::abs(4.0f * cos_oh);
     }
-
-    // Simplified version of sample used when computing albedo tables.
-    static float sample(
-        const foundation::Vector2f&     s,
-        const float                     alpha,
-        const foundation::Vector3f&     wo,
-        foundation::Vector3f&           wi,
-        float&                          probability)
-    {
-        foundation::Vector3f m = MDF::sample(wo, s, alpha, alpha);
-
-        const float cos_oh = std::abs(foundation::dot(wo, m));
-        const float cos_on = std::abs(wo.y);
-
-        if (cos_on == 0.0f || cos_oh == 0.0f)
-        {
-            probability = 0.0f;
-            return 0.0f;
-        }
-
-        const foundation::Vector3f n(0.0f, 1.0f, 0.0f);
-
-        wi = foundation::reflect(wo, m);
-
-        if (BSDF::force_above_surface(wi, n))
-            m = foundation::normalize(wo + wi);
-
-        const float cos_in = std::abs(wi.y);
-
-        if (cos_in == 0.0f)
-        {
-            probability = 0.0f;
-            return 0.0f;
-        }
-
-        const float D = MDF::D(m, alpha, alpha);
-        const float G =
-            MDF::G(
-                wi,
-                wo,
-                m,
-                alpha,
-                alpha);
-
-        probability = MDF::pdf(wo, m, alpha, alpha) / std::abs(4.0f * cos_oh);
-        assert(probability >= 0.0f);
-
-        return D * G / (4.0f * cos_on * cos_in);
-    }
 };
 
 float get_directional_albedo(

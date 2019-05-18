@@ -133,19 +133,41 @@ namespace
                 // Generate a uniform sample in [0,1)^3.
                 const size_t Bases[] = { 2 };
                 const Vector2f s = hammersley_sequence<float, 2>(Bases, sample_count, i);
-
-                Vector3f wi;
-                float probability;
-                const float value = MicrofacetBRDFHelper<MDF, false>::sample(s, alpha, wo, wi, probability);
-
-                // Skip samples with very low probability.
-                if (probability < 1.0e-6f)
-                    continue;
-
-                R += value * abs(wi.y) / probability;
+                R += sample<GGXMDF>(s, wo, alpha);
             }
 
             return min(R / static_cast<float>(sample_count), 1.0f);
+        }
+
+        template <typename MDF>
+        static float sample(
+            const Vector2f& s,
+            const Vector3f& wo,
+            const float     alpha)
+        {
+            Vector3f m = MDF::sample(wo, s, alpha);
+
+            const float cos_oh = std::abs(dot(wo, m));
+            const float cos_on = std::abs(wo.y);
+
+            if (cos_on == 0.0f || cos_oh == 0.0f)
+                return 0.0f;
+
+            const Vector3f n(0.0f, 1.0f, 0.0f);
+
+            Vector3f wi = reflect(wo, m);
+
+            if (BSDF::force_above_surface(wi, n))
+                m = normalize(wo + wi);
+
+            const float cos_in = std::abs(wi.y);
+
+            if (cos_in == 0.0f)
+                return 0.0f;
+
+            const float G = MDF::G(wi, wo, m, alpha);
+            const float G1 = MDF::G1(wo, m, alpha);
+            return G / G1;
         }
     };
 
