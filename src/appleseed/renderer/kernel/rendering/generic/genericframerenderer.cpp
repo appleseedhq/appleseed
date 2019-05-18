@@ -385,6 +385,7 @@ namespace
                         assert(!m_job_queue.has_scheduled_or_running_jobs());
                     }
 
+                    // Optionally write a checkpoint file to disk.
                     m_frame.save_checkpoint(m_framebuffer_factory, pass);
                 }
 

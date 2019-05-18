@@ -184,14 +184,16 @@ class APPLESEED_DLLSYMBOL Frame
         const size_t                                thread_count,
         foundation::IAbortSwitch*                   abort_switch) const;
 
-    // Open the checkpoint if the chekpoint resume option is enabled.
+    // Load a checkpoint file from disk if checkpoint resuming is enabled.
     // Returns true if successful, false otherwise.
-    bool load_checkpoint(IShadingResultFrameBufferFactory*  buffer_factory);
+    bool load_checkpoint(
+        IShadingResultFrameBufferFactory*           buffer_factory,
+        const size_t                                pass_count);        // total number of passes to render
 
-    // Create a checkpoint file for the resuming the render at the current pass.
+    // Save a checkpoint file to disk if checkpoint creation is enabled.
     void save_checkpoint(
         IShadingResultFrameBufferFactory*           buffer_factory,
-        const size_t                                pass) const;
+        const size_t                                pass_index) const;  // index of the pass to be written
 
     // Write the main image to disk.
     // Return true if successful, false otherwise.

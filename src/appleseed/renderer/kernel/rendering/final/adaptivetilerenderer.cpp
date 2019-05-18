@@ -257,7 +257,7 @@ namespace
                 // The AOV takes care of normalizing values depending on sampling parameters.
                 sample_aov->set_normalization_range(
                     m_params.m_min_samples,
-                    m_params.m_max_samples * m_params.m_passes);
+                    m_params.m_max_samples * m_params.m_pass_count);
             }
         }
 
@@ -346,7 +346,7 @@ namespace
                     frame.aov_images().size(),
                     tile_bbox));
 
-            if (m_params.m_passes > 1)
+            if (m_params.m_pass_count > 1)
                 second_framebuffer->copy_from(*framebuffer);
             else second_framebuffer->clear();
 
@@ -621,7 +621,7 @@ namespace
             const size_t                        m_max_samples;
             const float                         m_noise_threshold;
             const float                         m_splitting_threshold;
-            const size_t                        m_passes;
+            const size_t                        m_pass_count;
 
             explicit Parameters(const ParamArray& params)
               : m_sampling_mode(get_sampling_context_mode(params))
@@ -630,7 +630,7 @@ namespace
               , m_max_samples(params.get_required<size_t>("max_samples", 256))
               , m_noise_threshold(params.get_required<float>("noise_threshold", 1.0f))
               , m_splitting_threshold(m_noise_threshold * 256.0f)
-              , m_passes(params.get_optional<size_t>("passes", 1))
+              , m_pass_count(params.get_optional<size_t>("passes", 1))
             {
             }
         };

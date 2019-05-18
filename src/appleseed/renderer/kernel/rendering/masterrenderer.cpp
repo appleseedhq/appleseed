@@ -459,7 +459,10 @@ struct MasterRenderer::Impl
             *m_texture_system,
             *m_shading_system);
         if (!components.create())
+        {
+            recorder.on_render_end(m_project);
             return IRendererController::AbortRendering;
+        }
 
         // Print renderer components settings.
         components.print_settings();
@@ -480,8 +483,12 @@ struct MasterRenderer::Impl
 
         // Load the checkpoint if any.
         Frame& frame = *m_project.get_frame();
-        if (!frame.load_checkpoint(&(components.get_shading_result_framebuffer_factory())))
+        const size_t pass_count = m_params.get_optional<size_t>("passes", 1);
+        if (!frame.load_checkpoint(&components.get_shading_result_framebuffer_factory(), pass_count))
+        {
+            recorder.on_render_end(m_project);
             return IRendererController::AbortRendering;
+        }
 
         // Let renderer components perform their pre-render actions. Don't proceed if that failed.
         if (!components.on_render_begin(recorder, &abort_switch) ||

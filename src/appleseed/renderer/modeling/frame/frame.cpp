@@ -123,12 +123,7 @@ struct Frame::Impl
     string                          m_checkpoint_create_path;
     bool                            m_checkpoint_resume;
     string                          m_checkpoint_resume_path;
-
-    // When resuming a render, first pass index should be
-    // the number of the resumed render's pass + 1.
-    // Otherwise it's 0.
-    size_t                          m_initial_pass;
-    size_t                          m_pass_count;
+    string                          m_ref_image_path;
 
     // Child entities.
     AOVContainer                    m_aovs;
@@ -138,13 +133,13 @@ struct Frame::Impl
 
     // Images.
     unique_ptr<Image>               m_image;
-    string                          m_ref_image_path;
     unique_ptr<Image>               m_ref_image;
     unique_ptr<ImageStack>          m_aov_images;
 
     // Internal state.
     unique_ptr<FilterSamplingTable> m_filter_sampling_table;
     ParamArray                      m_render_info;
+    size_t                          m_initial_pass = 0;
 
     explicit Impl(Frame* parent)
       : m_aovs(parent)
@@ -155,11 +150,11 @@ struct Frame::Impl
 };
 
 Frame::Frame(
-    const char*         name,
-    const ParamArray&   params,
-    const AOVContainer& aovs,
-    const SearchPaths&  search_paths)
-  : Entity(g_class_uid, params)
+    const char*             name,
+    const ParamArray&       params,
+    const AOVContainer&     aovs,
+    const SearchPaths&      search_paths)
+  : Entity(g_class_uid,     params)
   , impl(new Impl(this))
 {
     set_name(name);
@@ -258,9 +253,6 @@ Frame::Frame(
         impl->m_internal_aovs.insert(auto_release_ptr<AOV>(aov));
     }
     else impl->m_denoiser_aov = nullptr;
-
-    impl->m_initial_pass = 0;
-    impl->m_pass_count = params.get_optional<size_t>("passes", 1);
 }
 
 Frame::~Frame()
@@ -428,10 +420,10 @@ void Frame::update_asset_paths(const StringDictionary& mappings)
 }
 
 bool Frame::on_frame_begin(
-    const Project&                                  project,
-    const BaseGroup*                                parent,
-    OnFrameBeginRecorder&                           recorder,
-    IAbortSwitch*                                   abort_switch)
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
+    IAbortSwitch*           abort_switch)
 {
     if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
@@ -465,8 +457,8 @@ Frame::DenoisingMode Frame::get_denoising_mode() const
 }
 
 void Frame::denoise(
-    const size_t                                thread_count,
-    IAbortSwitch*                               abort_switch) const
+    const size_t            thread_count,
+    IAbortSwitch*           abort_switch) const
 {
     DenoiserOptions options;
 
@@ -557,8 +549,8 @@ namespace
     {
       public:
         ShadingBufferCanvas(
-            const Frame&                                frame,
-            IShadingResultFrameBufferFactory*           buffer_factory)
+            const Frame&                        frame,
+            IShadingResultFrameBufferFactory*   buffer_factory)
           : m_buffer_factory(buffer_factory)
           , m_frame(frame)
           , m_props(
@@ -578,8 +570,8 @@ namespace
         }
 
         Tile& tile(
-            const size_t            tile_x,
-            const size_t            tile_y) override
+            const size_t    tile_x,
+            const size_t    tile_y) override
         {
             ShadingResultFrameBuffer* tile_buffer = m_buffer_factory->create(
                 m_frame,
@@ -592,8 +584,8 @@ namespace
         }
 
         const Tile& tile(
-            const size_t            tile_x,
-            const size_t            tile_y) const override
+            const size_t    tile_x,
+            const size_t    tile_y) const override
         {
             const ShadingResultFrameBuffer* tile_buffer = m_buffer_factory->create(
                 m_frame,
@@ -606,13 +598,13 @@ namespace
         }
 
       private:
-        IShadingResultFrameBufferFactory*           m_buffer_factory;
-        const Frame&                                m_frame;
-        const CanvasProperties                      m_props;
+        IShadingResultFrameBufferFactory*   m_buffer_factory;
+        const Frame&                        m_frame;
+        const CanvasProperties              m_props;
 
         AABB2i get_tile_bbox(
-            const size_t            tile_x,
-            const size_t            tile_y) const
+            const size_t    tile_x,
+            const size_t    tile_y) const
         {
             const Image& image = m_frame.image();
             const CanvasProperties& props = image.properties();
@@ -790,7 +782,9 @@ namespace
     }
 }
 
-bool Frame::load_checkpoint(IShadingResultFrameBufferFactory* buffer_factory)
+bool Frame::load_checkpoint(
+    IShadingResultFrameBufferFactory*   buffer_factory,
+    const size_t                        pass_count)
 {
     if  (!impl->m_checkpoint_resume)
         return true;
@@ -814,9 +808,9 @@ bool Frame::load_checkpoint(IShadingResultFrameBufferFactory* buffer_factory)
     while (reader.choose_subimage(layer_index))
     {
         CanvasProperties layer_canvas_props;
-        ImageAttributes layer_attributes;
-
         reader.read_canvas_properties(layer_canvas_props);
+
+        ImageAttributes layer_attributes;
         reader.read_image_attributes(layer_attributes);
 
         const string layer_name =
@@ -832,91 +826,95 @@ bool Frame::load_checkpoint(IShadingResultFrameBufferFactory* buffer_factory)
         ++layer_index;
     }
 
-    // Check checkpoint's compatibility.
+    // Check checkpoint file's compatibility.
     if (!is_checkpoint_compatible(impl->m_checkpoint_resume_path, *this, checkpoint_props))
-    {
         return false;
-    }
 
+    // Compute the index of the first pass to render.
     const size_t start_pass = get<2>(checkpoint_props[0]).get<size_t>("appleseed:LastPass") + 1;
 
     // Check if passes have already been rendered.
-    if (impl->m_pass_count <= start_pass)
+    if (start_pass < pass_count)
     {
-        RENDERER_LOG_WARNING("the requested passes have already been rendered and saved into the checkpoint.");
-        return false;
-    }
+        // Interface the shading buffer in a canvas.
+        ShadingBufferCanvas shading_canvas(*this, buffer_factory);
 
-    // Interface the shading buffer in a canvas.
-    ShadingBufferCanvas shading_canvas(*this, buffer_factory);
-
-    // Load tiles from the checkpoint.
-    const CanvasProperties& beauty_props = get<1>(checkpoint_props[0]);
-
-    for (size_t tile_y = 0; tile_y < beauty_props.m_tile_count_y; ++tile_y)
-    {
-        for (size_t tile_x = 0; tile_x < beauty_props.m_tile_count_x; ++tile_x)
+        try
         {
-            // Read shading buffer.
-            reader.choose_subimage(1);
-            Tile& shading_tile = shading_canvas.tile(tile_x, tile_y);
-            reader.read_tile(tile_x, tile_y, &shading_tile);
-
-            // No need to read beauty and filtered AOVs because they
-            // are in the shading buffer.
-
-            // Read unfiltered AOV layers.
-            vector<unique_ptr<Tile>> aov_tiles;
-            vector<const float*> aov_ptrs;
-            for (size_t i = 0; i < aovs().size(); ++i)
+            // Load tiles from the checkpoint.
+            const CanvasProperties& beauty_props = get<1>(checkpoint_props[0]);
+            for (size_t tile_y = 0; tile_y < beauty_props.m_tile_count_y; ++tile_y)
             {
-                UnfilteredAOV* aov = dynamic_cast<UnfilteredAOV*>(
-                    aovs().get_by_index(i));
-
-                if (aov == nullptr)
-                    continue;
-
-                const string aov_name = aov->get_name();
-
-                // Search layer index in the file.
-                size_t subimage_index(~0);
-                for (size_t s = 0; s < checkpoint_props.size(); ++s)
+                for (size_t tile_x = 0; tile_x < beauty_props.m_tile_count_x; ++tile_x)
                 {
-                    if (get<0>(checkpoint_props[s]) == aov_name)
+                    // Read shading buffer.
+                    reader.choose_subimage(1);
+                    Tile& shading_tile = shading_canvas.tile(tile_x, tile_y);
+                    reader.read_tile(tile_x, tile_y, &shading_tile);
+
+                    // No need to read beauty and filtered AOVs because they
+                    // are in the shading buffer.
+
+                    // Read unfiltered AOV layers.
+                    vector<unique_ptr<Tile>> aov_tiles;
+                    vector<const float*> aov_ptrs;
+                    for (size_t aov_index = 0; aov_index < aovs().size(); ++aov_index)
                     {
-                        subimage_index = s;
-                        break;
+                        UnfilteredAOV* aov = dynamic_cast<UnfilteredAOV*>(aovs().get_by_index(aov_index));
+                        if (aov == nullptr)
+                            continue;
+
+                        const string aov_name = aov->get_name();
+
+                        // Search layer index in the file.
+                        size_t subimage_index(~0);
+                        for (size_t prop_index = 0; prop_index < checkpoint_props.size(); ++prop_index)
+                        {
+                            if (get<0>(checkpoint_props[prop_index]) == aov_name)
+                            {
+                                subimage_index = prop_index;
+                                break;
+                            }
+                        }
+                        assert(subimage_index != size_t(~0));
+
+                        // Read AOV tile.
+                        Image& aov_image = aov->get_image();
+                        Tile& aov_tile = aov_image.tile(tile_x, tile_y);
+                        reader.choose_subimage(subimage_index);
+                        reader.read_tile(tile_x, tile_y, &aov_tile);
                     }
                 }
+            }
 
-                assert(subimage_index != size_t(~0));
+            // Load internal AOVs (from external files).
+            for (size_t i = 0, e = internal_aovs().size(); i < e; ++i)
+            {
+                AOV* aov = internal_aovs().get_by_index(i);
+                DenoiserAOV* denoiser_aov = dynamic_cast<DenoiserAOV*>(aov);
 
-                Image& aov_image = aov->get_image();
-                Tile& aov_tile = aov_image.tile(tile_x, tile_y);
-                reader.choose_subimage(subimage_index);
-                reader.read_tile(tile_x, tile_y, &aov_tile);
+                // Load denoiser checkpoint.
+                if (denoiser_aov != nullptr)
+                {
+                    if (!load_denoiser_checkpoint(impl->m_checkpoint_resume_path, denoiser_aov))
+                        return false;
+                }
             }
         }
-    }
-
-    // Load internal AOVs (from external files).
-    for (size_t i = 0, e = internal_aovs().size(); i < e; ++i)
-    {
-        AOV* aov = internal_aovs().get_by_index(i);
-
-        DenoiserAOV* denoiser_aov = dynamic_cast<DenoiserAOV*>(aov);
-
-        // Load denoiser checkpoint.
-        if (denoiser_aov != nullptr)
+        catch (const ExceptionIOError& ex)
         {
-            if (!load_denoiser_checkpoint(impl->m_checkpoint_resume_path, denoiser_aov))
-                return false;
+            RENDERER_LOG_ERROR(
+                "failed to load checkpoint file %s: %s",
+                impl->m_checkpoint_resume_path.c_str(),
+                ex.what());
+            return false;
         }
     }
 
-    RENDERER_LOG_INFO("read checkpoint file %s, resuming rendering at pass %s.",
+    RENDERER_LOG_INFO(
+        "successfully read checkpoint file %s, resuming rendering at pass %s.",
         impl->m_checkpoint_resume_path.c_str(),
-        pretty_uint(start_pass).c_str());
+        pretty_uint(start_pass + 1).c_str());
 
     impl->m_initial_pass = start_pass;
 
@@ -924,8 +922,8 @@ bool Frame::load_checkpoint(IShadingResultFrameBufferFactory* buffer_factory)
 }
 
 void Frame::save_checkpoint(
-    IShadingResultFrameBufferFactory*           buffer_factory,
-    const size_t                                pass) const
+    IShadingResultFrameBufferFactory*   buffer_factory,
+    const size_t                        pass_index) const
 {
     if (!impl->m_checkpoint_create)
         return;
@@ -938,7 +936,7 @@ void Frame::save_checkpoint(
     {
         writer.append_image(&image());
         ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
-        image_attributes.insert("appleseed:LastPass", pass);
+        image_attributes.insert("appleseed:LastPass", pass_index);
         image_attributes.insert("image_name", "beauty");
         writer.set_image_attributes(image_attributes);
     }
@@ -996,9 +994,10 @@ void Frame::save_checkpoint(
             save_denoiser_checkpoint(impl->m_checkpoint_create_path, denoiser_aov);
     }
 
-    RENDERER_LOG_INFO("wrote checkpoint file %s for pass %s.",
-        impl->m_checkpoint_create_path.c_str(),
-        pretty_uint(pass + 1).c_str());
+    RENDERER_LOG_INFO(
+        "wrote pass %s to checkpoint file %s.",
+        pretty_uint(pass_index + 1).c_str(),
+        impl->m_checkpoint_create_path.c_str());
 }
 
 namespace
@@ -1287,8 +1286,8 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
 }
 
 bool Frame::archive(
-    const char*                                 directory,
-    char**                                      output_path) const
+    const char*     directory,
+    char**          output_path) const
 {
     assert(directory);
 
