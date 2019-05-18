@@ -77,7 +77,7 @@ class APPLESEED_DLLSYMBOL CryptomatteAOV
 
     bool has_color_data() const override;
 
-    foundation::Image& get_crypto_image() const;
+    foundation::Image* get_cryptomatte_image() const;
 
     void create_image(
         const size_t    canvas_width,

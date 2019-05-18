@@ -95,19 +95,9 @@ namespace
         return channels;
     }
 
-    Image& get_crypto_image(AOV* aov)
+    Image* get_cryptomatte_image(const AOV* aov)
     {
-        const string model = aov->get_model();
-
-        if (model == "cryptomatte_object_aov" || model == "cryptomatte_material_aov")
-            return static_cast<CryptomatteAOV*>(aov)->get_crypto_image();
-
-        PyErr_SetString(PyExc_RuntimeError, "AOV is not a Cryptomatte AOV");
-        bpy::throw_error_already_set();
-
-        // If AOV is not a Cryptomatte type, return a blank pointer for the image.
-        Image* dummy = nullptr;
-        return *dummy;
+        return static_cast<const CryptomatteAOV*>(aov)->get_cryptomatte_image();
     }
 }
 
@@ -122,7 +112,7 @@ void bind_aov()
         .def("get_channel_names", &get_channel_names)
         .def("has_color_data", &AOV::has_color_data)
         .def("get_image", &AOV::get_image, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def("get_crypto_image", &get_crypto_image, bpy::return_value_policy<bpy::reference_existing_object>());
+        .def("get_cryptomatte_image", &get_cryptomatte_image, bpy::return_value_policy<bpy::reference_existing_object>());
 
     bind_typed_entity_vector<AOV>("AOVContainer");
 
