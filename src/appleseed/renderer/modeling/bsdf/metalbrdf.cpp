@@ -180,13 +180,10 @@ namespace
                     alpha_x,
                     alpha_y);
 
-                GGXMDF mdf;
-                MicrofacetBRDFHelper<false>::sample(
+                MicrofacetBRDFHelper<GGXMDF, false>::sample(
                     sampling_context,
-                    mdf,
                     alpha_x,
                     alpha_y,
-                    1.0f,
                     f,
                     sample);
 
@@ -234,13 +231,10 @@ namespace
                 values->m_precomputed.m_outside_ior,
                 values->m_reflectance_multiplier);
 
-            GGXMDF mdf;
             const float pdf =
-                MicrofacetBRDFHelper<false>::evaluate(
-                    mdf,
+                MicrofacetBRDFHelper<GGXMDF, false>::evaluate(
                     alpha_x,
                     alpha_y,
-                    1.0f,
                     shading_basis,
                     outgoing,
                     incoming,
@@ -280,13 +274,10 @@ namespace
                 alpha_x,
                 alpha_y);
 
-            GGXMDF mdf;
             const float pdf =
-                MicrofacetBRDFHelper<false>::pdf(
-                    mdf,
+                MicrofacetBRDFHelper<GGXMDF, false>::pdf(
                     alpha_x,
                     alpha_y,
-                    1.0f,
                     shading_basis,
                     outgoing,
                     incoming);

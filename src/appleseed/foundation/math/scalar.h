@@ -178,6 +178,10 @@ T cube(const T x);
 template <typename T>
 T rcp(const T x);
 
+// Return 1 / x or eps if the absolute value of x is less than eps.
+template <typename T>
+T safe_rcp(const T x, const T eps);
+
 // Return the square root of x or 0 if x is negative.
 template <typename T>
 T safe_sqrt(const T x);
@@ -427,15 +431,21 @@ inline T cube(const T x)
 }
 
 template <typename T>
-inline T safe_sqrt(const T x)
-{
-    return std::sqrt(std::max(x, T(0.0)));
-}
-
-template <typename T>
 inline T rcp(const T x)
 {
     return T(1.0) / x;
+}
+
+template <typename T>
+inline T safe_rcp(const T x, const T eps)
+{
+    return std::abs(x) < eps ? eps : T(1.0) / x;
+}
+
+template <typename T>
+inline T safe_sqrt(const T x)
+{
+    return std::sqrt(std::max(x, T(0.0)));
 }
 
 template <typename T, size_t P>

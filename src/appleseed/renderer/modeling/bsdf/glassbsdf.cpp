@@ -293,7 +293,7 @@ namespace
             const Vector3f s = sampling_context.next2<Vector3f>();
 
             // Compute the microfacet normal by sampling the MDF.
-            const Vector3f m = GGXMDF::sample(wo, Vector2f(s[0], s[1]), alpha_x, alpha_y, 0.0f);
+            const Vector3f m = GGXMDF::sample(wo, Vector2f(s[0], s[1]), alpha_x, alpha_y);
             assert(m.y > 0.0f);
 
             // Compute the Fresnel term and the sampling probabilities.
@@ -676,8 +676,8 @@ namespace
                 return;
             }
 
-            const float D = GGXMDF::D(m, alpha_x, alpha_y, 0.0f);
-            const float G = GGXMDF::G(wi, wo, m, alpha_x, alpha_y, 0.0f);
+            const float D = GGXMDF::D(m, alpha_x, alpha_y);
+            const float G = GGXMDF::G(wi, wo, m, alpha_x, alpha_y);
 
             value = reflection_color;
             value *= F * D * G / denom;
@@ -695,7 +695,7 @@ namespace
                 return 0.0f;
 
             const float jacobian = 1.0f / (4.0f * abs(cos_oh));
-            return jacobian * GGXMDF::pdf(wo, m, alpha_x, alpha_y, 0.0f);
+            return jacobian * GGXMDF::pdf(wo, m, alpha_x, alpha_y);
         }
 
         static Vector3f half_refraction_vector(
@@ -738,8 +738,8 @@ namespace
                 return;
             }
 
-            const float D = GGXMDF::D(m, alpha_x, alpha_y, 0.0f);
-            const float G = GGXMDF::G(wi, wo, m, alpha_x, alpha_y, 0.0f);
+            const float D = GGXMDF::D(m, alpha_x, alpha_y);
+            const float G = GGXMDF::G(wi, wo, m, alpha_x, alpha_y);
 
             float multiplier = abs(dots) * T * D * G / square(sqrt_denom);
 
@@ -767,12 +767,13 @@ namespace
                 return 0.0f;
 
             const float jacobian = abs(cos_ih) * square(eta / sqrt_denom);
-            return jacobian * GGXMDF::pdf(wo, m, alpha_x, alpha_y, 0.0f);
+            return jacobian * GGXMDF::pdf(wo, m, alpha_x, alpha_y);
         }
     };
 
     typedef BSDFWrapper<GlassBSDFImpl, false> GlassBSDF;
 
+#ifdef COMPUTE_ALBEDO_TABLES
     const float MinEta = 1.01f;
     const float MaxEta = 3.0f;
 
@@ -833,7 +834,7 @@ namespace
                 const Vector2f s = hammersley_sequence<float, 2>(Bases, SampleCount, i);
 
                 // Compute the microfacet normal by sampling the MDF.
-                const Vector3f m = GGXMDF::sample(wo, s, alpha, alpha, 0.0f);
+                const Vector3f m = GGXMDF::sample(wo, s, alpha, alpha);
                 assert(m.y > 0.0f);
 
                 // Compute the Fresnel term.
@@ -843,7 +844,8 @@ namespace
                 float cos_theta_t;
                 const float F = fresnel_reflectance(cos_wom, rcp_eta, cos_theta_t);
 
-                const float rcp_G1 = safe_rcp(GGXMDF::G1(wo, m, alpha, alpha, 0.0f));
+                const float rcp_G1 =
+                    safe_rcp(GGXMDF::G1(wo, m, alpha, alpha), 1e-8f);
 
                 // Evaluate the reflection lobe.
                 {
@@ -851,7 +853,7 @@ namespace
 
                     if (wi.y * wo.y > 0.0f)
                     {
-                        const float G = GGXMDF::G(wi, wo, m, alpha, alpha, 0.0f);
+                        const float G = GGXMDF::G(wi, wo, m, alpha, alpha);
                         R += F * G * rcp_G1;
                     }
                 }
@@ -867,18 +869,13 @@ namespace
 
                     if (wi.y * wo.y <= 0.0f)
                     {
-                        const float G = GGXMDF::G(wi, wo, m, alpha, alpha, 0.0f);
+                        const float G = GGXMDF::G(wi, wo, m, alpha, alpha);
                         R += (1.0f - F) * G * rcp_G1;
                     }
                 }
             }
 
             return min(R / static_cast<float>(SampleCount), 1.0f);
-        }
-
-        static float safe_rcp(const float x)
-        {
-            return std::abs(x) < 1e-8f ? 1e-8f : 1.0f / x;
         }
     };
 
@@ -935,6 +932,7 @@ namespace
                 roughness);
         }
     }
+#endif
 }
 
 
@@ -1197,6 +1195,7 @@ auto_release_ptr<BSDF> GlassBSDFFactory::create(
 
 void write_glass_directional_albedo_tables(const char* directory)
 {
+#ifdef COMPUTE_ALBEDO_TABLES
     const bfs::path dir(directory);
 
     const GlassAlbedoTable ggx_table(MinEta, MaxEta);
@@ -1213,6 +1212,7 @@ void write_glass_directional_albedo_tables(const char* directory)
     ggx_rcp_eta_table.write_table_to_cpp_array(
         dir / "glass_ggx_rcp_eta_albedo_table.cpp",
         "g_glass_ggx_rcp_eta_albedo_table");
+#endif
 }
 
 }   // namespace renderer
