@@ -366,11 +366,24 @@ bool EmittingShape::sample_solid_angle(
         );
 
         const Vector3d n = sampler.sample(Vector2d(s));
+        assert(is_normalized(n));
+        const Vector3d p = m_geom.m_sphere.m_center + m_geom.m_sphere.m_radius * n;
 
-        // todo: reproject the point on the sphere.
+        //const Vector3d d = normalize(p - o);
+        //const Ray3d ray(o, d);
+        // We should have somethinkg like "intersect_always_sphere" that will take the closest t.
+        //double t;
+        //const bool intersects = intersect_sphere(ray, m_geom.m_sphere.m_center, m_geom.m_sphere.m_radius, t);
 
-        light_sample.m_point = m_geom.m_sphere.m_center + m_geom.m_sphere.m_radius * n;
-        light_sample.m_param_coords = s;
+        //light_sample.m_point = o + d * t;
+        light_sample.m_point = p;
+
+        const double u = atan2(-n.z, n.x) * RcpTwoPi<double>();
+        const double v = 1.0 - (acos(n.y) * RcpPi<double>());
+        light_sample.m_param_coords =
+            Vector2f(
+                static_cast<float>(u),
+                static_cast<float>(v));
 
         light_sample.m_geometric_normal = n;
         light_sample.m_shading_normal = n;
