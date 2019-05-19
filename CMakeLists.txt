@@ -6,7 +6,7 @@
 # This software is released under the MIT license.
 #
 # Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-# Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+# Copyright (c) 2014-2019 Francois Beaune, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -478,7 +478,7 @@ if (is_x86)
         endif ()
     endif ()
     if (USE_F16C)
-        set (APPLESEED_USE_FC16 ON)
+        set (APPLESEED_USE_F16C ON)
         set (preprocessor_definitions_common
             ${preprocessor_definitions_common}
             APPLESEED_USE_F16C
