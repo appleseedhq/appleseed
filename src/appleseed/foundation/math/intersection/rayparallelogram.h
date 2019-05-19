@@ -89,11 +89,11 @@ inline bool intersect_parallelogram(
 
     const Vector<T, 3> vi = ray.point_at(t) - corner;
 
-    u = dot(x, vi);
+    u = dot(x, vi) / dot(x, x);
     if (u < T(0.0) || u > T(1.0))
         return false;
 
-    v = dot(y, vi);
+    v = dot(y, vi) / dot(y, y);
     if (v < T(0.0) || v > T(1.0))
         return false;
 
