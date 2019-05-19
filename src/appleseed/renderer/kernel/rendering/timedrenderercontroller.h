@@ -58,6 +58,7 @@ class APPLESEED_DLLSYMBOL TimedRendererController
     void on_frame_begin() override;
     void on_rendering_pause() override;
     void on_rendering_resume() override;
+
     Status get_status() const override;
 
   private:

@@ -104,7 +104,7 @@ void RendererControllerCollection::on_progress()
 
 IRendererController::Status RendererControllerCollection::get_status() const
 {
-    IRendererController::Status status = IRendererController::Status::ContinueRendering;
+    IRendererController::Status status = IRendererController::ContinueRendering;
     for (auto i : impl->m_renderer_controller)
         status = i->get_status() > status ? i->get_status() : status;
     return status;
