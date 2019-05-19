@@ -29,6 +29,7 @@
 #pragma once
 
 // appleseed.foundation headers.
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/vector.h"
 
 // Standard headers.
@@ -82,19 +83,19 @@ class SphericalCapSampler
     T get_pdf() const
     {
         // todo: handle the case where the surface_point is inside the sphere.
-        return T(1.0) / (TwoPi<T>() * (T(1.0) - m_cos_theta_max));
+        return sample_cone_uniform_pdf(m_cos_theta_max);
     }
 
     Vector<T, 3> sample(const Vector<T, 2>& s) const
     {
         // todo: handle the case where the surface_point is inside the sphere.
-        const T cos_theta = (T(1.0) - s[0]) + s[0] * m_cos_theta_max;
-        const T sin_theta = std::sqrt(std::max(T(0.0), T(1.0) - square(cos_theta)));
+        const T cos_theta = lerp(T(1.0), m_cos_theta_max, s[0]);
+        const T sin_theta = safe_sqrt(T(1.0) - square(cos_theta));
         const T phi = s[1] * TwoPi<T>();
 
-        const T ds = m_dc * cos_theta - std::sqrt(std::max(T(0.0), square(m_radius) - square(m_dc) * square(sin_theta)));
+        const T ds = m_dc * cos_theta - safe_sqrt(square(m_radius) - square(m_dc) * square(sin_theta));
         const T cos_alpha = (square(m_dc) + square(m_radius) - square(ds)) / (T(2.0) * m_dc * m_radius);
-        const T sin_alpha = std::sqrt(std::max(T(0.0), T(1.0) - square(cos_alpha)));
+        const T sin_alpha = safe_sqrt(T(1.0) - square(cos_alpha));
 
         const Vector<T, 3> normal =
             sin_alpha * std::cos(phi) * (-m_x)
