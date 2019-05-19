@@ -168,6 +168,8 @@ class RenderingManager
     RenderingMode                               m_rendering_mode;
     RenderTab*                                  m_render_tab;
 
+    std::unique_ptr<renderer::RendererControllerCollection>
+                                                m_renderer_controller_collection;
     std::unique_ptr<renderer::TileCallbackCollectionFactory>      
                                                 m_tile_callback_factory;
     std::unique_ptr<renderer::MasterRenderer>   m_master_renderer;

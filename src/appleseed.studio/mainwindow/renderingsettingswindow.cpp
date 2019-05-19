@@ -460,7 +460,7 @@ namespace
 
       public:
         explicit FinalGeneralSettingsPanel(const Configuration& config, QWidget* parent = nullptr)
-            : GeneralSettingsPanel(parent)
+          : GeneralSettingsPanel(parent)
         {
             QFormLayout* layout = create_form_layout();
             container()->setLayout(layout);
@@ -483,7 +483,7 @@ namespace
 
       public:
         explicit InteractiveGeneralSettingsPanel(const Configuration& config, QWidget* parent = nullptr)
-            : GeneralSettingsPanel(parent)
+          : GeneralSettingsPanel(parent)
         {
             QFormLayout* layout = create_form_layout();
             container()->setLayout(layout);
@@ -540,10 +540,10 @@ namespace
             else
             {
                 // Transform to seconds.
-                unsigned int hours = get_widget<unsigned int>("hours");
-                unsigned int minutes = get_widget<unsigned int>("minutes");
-                unsigned int seconds = get_widget<unsigned int>("seconds");
-                unsigned int time_limit = seconds + minutes * 60 + hours * 60 * 60;
+                const unsigned int hours = get_widget<unsigned int>("hours");
+                const unsigned int minutes = get_widget<unsigned int>("minutes");
+                const unsigned int seconds = get_widget<unsigned int>("seconds");
+                const unsigned int time_limit = seconds + minutes * 60 + hours * 60 * 60;
                 set_config(config, "progressive_frame_renderer.time_limit", time_limit);
             }
         }
