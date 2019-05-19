@@ -69,7 +69,7 @@ brew upgrade python@2
 brew link python@2
 brew info python@2
 
-brew install boost boost-python llvm@5 lz4 openimageio qt xerces-c zlib
+brew install boost boost-python embree llvm@5 lz4 openimageio qt xerces-c zlib
 
 mkdir -p $HOME/Library/Python/2.7/lib/python/site-packages
 echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' \
@@ -163,6 +163,7 @@ cmake \
     -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_PREFIX_PATH=/usr/local/opt/qt \
     -DWITH_DISNEY_MATERIAL=ON \
+    -DWITH_EMBREE=ON \
     -DUSE_STATIC_BOOST=OFF \
     -DBoost_PYTHON_LIBRARY=/usr/local/lib/libboost_python27.dylib \
     -DOSL_INCLUDE_DIR=$THISDIR/include \
