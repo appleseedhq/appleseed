@@ -78,12 +78,14 @@ echo "Building appleseed..."
 mkdir build
 pushd build
 
+# Disney material support is not enabled because Travis/Linux (Xenial) has Qt 5.5.1
+# while libSeExprEditor.so from the linux-deps package was built against Qt 5.12.0.
 cmake \
     -Wno-dev \
-    -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" \
     -DCMAKE_BUILD_TYPE=Debug \
-    -DUSE_SSE42=ON \
+    -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" \
     -DWITH_EMBREE=ON \
+    -DUSE_SSE42=ON \
     -DUSE_STATIC_BOOST=OFF \
     -DBOOST_INCLUDEDIR=$APPLESEED_DEPENDENCIES/include/boost_1_61_0 \
     -DBOOST_LIBRARYDIR=$APPLESEED_DEPENDENCIES/lib/ \
