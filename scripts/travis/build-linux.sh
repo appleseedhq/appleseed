@@ -80,6 +80,7 @@ pushd build
 
 cmake \
     -Wno-dev \
+    -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" \
     -DCMAKE_BUILD_TYPE=Debug \
     -DUSE_SSE42=ON \
     -DWITH_EMBREE=ON \
