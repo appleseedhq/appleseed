@@ -2230,7 +2230,6 @@ void CompositeNPRClosure::process_closure_tree(
       default:
         {
             const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
-
             if (c->id == NPRShadingID)
             {
                 const Color3f w = weight * Color3f(c->w);
@@ -2287,7 +2286,6 @@ namespace
               default:
                 {
                     const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
-
                     if (c->id == closure_id)
                         return Color3f(c->w);
                     else return Color3f(0.0f);
