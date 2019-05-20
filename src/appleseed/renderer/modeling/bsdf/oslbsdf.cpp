@@ -94,15 +94,15 @@ namespace
             m_blinn_brdf = create_and_register_bsdf(BlinnID, "blinn_brdf");
             m_diffuse_btdf = create_and_register_bsdf(TranslucentID, "diffuse_btdf");
             m_disney_brdf = create_and_register_bsdf(DisneyID, "disney_brdf");
-
-            m_glass_bsdf = create_and_register_bsdf(GlassID, "glass_bsdf");
+            m_glass_bsdf =
+                create_and_register_bsdf(
+                    GlassID,
+                    "glass_bsdf",
+                    ParamArray().insert("volume_parameterization", "transmittance"));
             m_glossy_brdf = create_and_register_bsdf(GlossyID, "glossy_brdf");
             m_metal_brdf = create_and_register_bsdf(MetalID, "metal_brdf");
-
             m_orennayar_brdf = create_and_register_bsdf(OrenNayarID, "orennayar_brdf");
-
             m_plastic_brdf = create_and_register_bsdf(PlasticID, "plastic_brdf");
-
             m_sheen_brdf = create_and_register_bsdf(SheenID, "sheen_brdf");
         }
 
@@ -379,10 +379,11 @@ namespace
 
         auto_release_ptr<BSDF> create_and_register_bsdf(
             const ClosureID         cid,
-            const char*             model)
+            const char*             model,
+            const ParamArray&       params = ParamArray())
         {
             auto_release_ptr<BSDF> bsdf =
-                BSDFFactoryRegistrar().lookup(model)->create(model, ParamArray());
+                BSDFFactoryRegistrar().lookup(model)->create(model, params);
 
             m_all_bsdfs[cid] = bsdf.get();
 
