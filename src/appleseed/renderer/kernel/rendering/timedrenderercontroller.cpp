@@ -69,10 +69,20 @@ void TimedRendererController::on_frame_begin()
     impl->m_stopwatch.start();
 }
 
+void TimedRendererController::on_rendering_pause()
+{
+    impl->m_stopwatch.pause();
+}
+
+void TimedRendererController::on_rendering_resume()
+{
+    impl->m_stopwatch.resume();
+}
+
 IRendererController::Status TimedRendererController::get_status() const
 {
     return
-        impl->m_stopwatch.measure().get_seconds() > impl->m_seconds
+        impl->m_stopwatch.measure().get_seconds() >= impl->m_seconds
             ? TerminateRendering
             : ContinueRendering;
 }

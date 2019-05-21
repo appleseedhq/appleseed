@@ -197,6 +197,7 @@ namespace
                 "  sampling mode                 %s\n"
                 "  rendering threads             %s\n"
                 "  max average samples per pixel %s\n"
+                "  time limit                    %s\n"
                 "  max fps                       %f\n"
                 "  collect performance stats     %s\n"
                 "  collect luminance stats       %s",
@@ -206,6 +207,9 @@ namespace
                 m_params.m_max_average_spp == numeric_limits<uint64>::max()
                     ? "unlimited"
                     : pretty_uint(m_params.m_max_average_spp).c_str(),
+                m_params.m_time_limit == numeric_limits<uint64>::max()
+                    ? "unlimited"
+                    : pretty_time(static_cast<double>(m_params.m_time_limit)).c_str(),
                 m_params.m_max_fps,
                 m_params.m_perf_stats ? "on" : "off",
                 m_params.m_luminance_stats ? "on" : "off");
@@ -366,6 +370,7 @@ namespace
             const SamplingContext::Mode m_sampling_mode;
             const size_t                m_thread_count;       // number of rendering threads
             const uint64                m_max_average_spp;    // maximum average number of samples to compute per pixel
+            const uint64                m_time_limit;         // maximum rendering time in seconds
             const double                m_max_fps;            // maximum display frequency in frames/second
             const bool                  m_perf_stats;         // collect and print performance statistics?
             const bool                  m_luminance_stats;    // collect and print luminance statistics?
@@ -375,6 +380,7 @@ namespace
               , m_sampling_mode(get_sampling_context_mode(params))
               , m_thread_count(get_rendering_thread_count(params))
               , m_max_average_spp(params.get_optional<uint64>("max_average_spp", numeric_limits<uint64>::max()))
+              , m_time_limit(params.get_optional<uint64>("time_limit", numeric_limits<uint64>::max()))
               , m_max_fps(params.get_optional<double>("max_fps", 30.0))
               , m_perf_stats(params.get_optional<bool>("performance_statistics", false))
               , m_luminance_stats(params.get_optional<bool>("luminance_statistics", false))
@@ -742,6 +748,15 @@ Dictionary ProgressiveFrameRendererFactory::get_params_metadata()
             .insert("unlimited", "true")
             .insert("label", "Max Average Samples Per Pixel")
             .insert("help", "Maximum number of average samples per pixel"));
+
+    metadata.dictionaries().insert(
+        "time_limit",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "60")
+            .insert("unlimited", "true")
+            .insert("label", "Time Limit:")
+            .insert("help", "Maximum rendering time"));
 
     return metadata;
 }

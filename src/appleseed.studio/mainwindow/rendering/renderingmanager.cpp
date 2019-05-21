@@ -201,6 +201,19 @@ void RenderingManager::start_rendering(
 
     m_render_tab->get_render_widget()->start_render();
 
+    m_renderer_controller_collection.reset(new RendererControllerCollection());
+
+    m_renderer_controller_collection->insert(&m_renderer_controller);
+
+    if (params.get<string>("frame_renderer") == "progressive")
+    {
+        m_timed_renderer_controller.reset(
+            new TimedRendererController(
+                m_params.get_path_optional<double>("progressive_frame_renderer.time_limit",
+                numeric_limits<double>::max())));
+        m_renderer_controller_collection->insert(m_timed_renderer_controller.get());
+    }
+
     TileCallbackCollectionFactory* tile_callback_collection_factory = 
         new TileCallbackCollectionFactory();
 
@@ -220,7 +233,7 @@ void RenderingManager::start_rendering(
             *m_project,
             m_params,
             m_resource_search_paths,
-            &m_renderer_controller,
+            m_renderer_controller_collection.get(),
             m_tile_callback_factory.get()));
 
     m_master_renderer_thread.reset(

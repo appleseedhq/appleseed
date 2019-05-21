@@ -122,7 +122,7 @@ namespace
         return layout;
     }
 
-    QWidget* create_horizontal_group(QWidget* widget1, QWidget* widget2 = nullptr, QWidget* widget3 = nullptr)
+    QWidget* create_horizontal_group(QWidget* widget1, QWidget* widget2 = nullptr, QWidget* widget3 = nullptr, QWidget* widget4 = nullptr)
     {
         QWidget* group = new QWidget();
 
@@ -140,6 +140,9 @@ namespace
 
         if (widget3)
             layout->addWidget(widget3);
+
+        if (widget4)
+            layout->addWidget(widget4);
 
         return group;
     }
@@ -432,19 +435,37 @@ namespace
         Q_OBJECT
 
       public:
-        explicit GeneralSettingsPanel(const Configuration& config, QWidget* parent = nullptr)
+        explicit GeneralSettingsPanel(QWidget* parent = nullptr)
           : RenderSettingsPanel("General Settings", parent)
         {
-            QFormLayout* layout = create_form_layout();
-            container()->setLayout(layout);
+        }
 
+      protected:
+        void create_color_pipeline(QFormLayout* parent)
+        {
             QComboBox* color_pipeline_combobox = create_combobox("spectrum_mode");
             color_pipeline_combobox->setToolTip(m_params_metadata.get_path("spectrum_mode.help"));
             color_pipeline_combobox->addItem("RGB", "rgb");
             color_pipeline_combobox->addItem("Spectral", "spectral");
-            layout->addRow("Color Pipeline:", color_pipeline_combobox);
+            parent->addRow("Color Pipeline:", color_pipeline_combobox);
 
             create_direct_link("spectrum_mode", "spectrum_mode", "rgb");
+        }
+    };
+
+    class FinalGeneralSettingsPanel
+      : public GeneralSettingsPanel
+    {
+        Q_OBJECT
+
+      public:
+        explicit FinalGeneralSettingsPanel(const Configuration& config, QWidget* parent = nullptr)
+          : GeneralSettingsPanel(parent)
+        {
+            QFormLayout* layout = create_form_layout();
+            container()->setLayout(layout);
+
+            create_color_pipeline(layout);
 
             load_directly_linked_values(config);
         }
@@ -454,6 +475,80 @@ namespace
             save_directly_linked_values(config);
         }
     };
+
+    class InteractiveGeneralSettingsPanel
+      : public GeneralSettingsPanel
+    {
+        Q_OBJECT
+
+      public:
+        explicit InteractiveGeneralSettingsPanel(const Configuration& config, QWidget* parent = nullptr)
+          : GeneralSettingsPanel(parent)
+        {
+            QFormLayout* layout = create_form_layout();
+            container()->setLayout(layout);
+
+            create_color_pipeline(layout);
+            create_time_limit(layout);
+
+            load_directly_linked_values(config);
+            load_time_limit(config);
+        }
+
+        void save_config(Configuration& config) const override
+        {
+            save_directly_linked_values(config);
+            save_time_limit(config);
+        }
+
+      private:
+        void create_time_limit(QFormLayout* parent)
+        {
+            QSpinBox* hours = create_integer_input("hours", 0, 24, 1, "h");
+            QSpinBox* minutes = create_integer_input("minutes", 0, 60, 1, "m");
+            QSpinBox* seconds = create_integer_input("seconds", 0, 60, 5, "s");
+            QCheckBox* unlimited_time = create_checkbox("unlimited_time", "Unlimited");
+            parent->addRow("Time Limit:", create_horizontal_group(hours, minutes, seconds, unlimited_time));
+            connect(unlimited_time, SIGNAL(toggled(bool)), hours, SLOT(setDisabled(bool)));
+            connect(unlimited_time, SIGNAL(toggled(bool)), minutes, SLOT(setDisabled(bool)));
+            connect(unlimited_time, SIGNAL(toggled(bool)), seconds, SLOT(setDisabled(bool)));
+        }
+
+        void load_time_limit(const Configuration& config)
+        {
+            constexpr int DefaultSeconds = 0;
+            constexpr int DefaultMinutes = 1;
+            constexpr int DefaultHours = 0;
+
+            const int time_limit = m_params_metadata.get_path_optional<int>("progressive_frame_renderer.time_limit.default", -1);
+
+            // Tramsform from seconds.
+            const unsigned int hours = time_limit == -1 ? DefaultHours : time_limit / 3600;
+            const unsigned int minutes = time_limit == -1 ? DefaultMinutes : (time_limit - hours * 3600) / 60;
+            const unsigned int seconds = time_limit == -1 ? DefaultSeconds : time_limit - hours * 3600 - minutes * 60;
+
+            set_widget("unlimited_time", true);
+            set_widget("hours", hours);
+            set_widget("minutes", minutes);
+            set_widget("seconds", seconds);
+        }
+
+        void save_time_limit(Configuration & config) const
+        {
+            if (get_widget<bool>("unlimited_time"))
+                config.get_parameters().remove_path("progressive_frame_renderer.time_limit");
+            else
+            {
+                // Transform to seconds.
+                const unsigned int hours = get_widget<unsigned int>("hours");
+                const unsigned int minutes = get_widget<unsigned int>("minutes");
+                const unsigned int seconds = get_widget<unsigned int>("seconds");
+                const unsigned int time_limit = seconds + minutes * 60 + hours * 60 * 60;
+                set_config(config, "progressive_frame_renderer.time_limit", time_limit);
+            }
+        }
+    };
+
 
     //
     // Image Plane Sampling panels.
@@ -1665,15 +1760,15 @@ void RenderingSettingsWindow::create_panels(const Configuration& config)
 
     m_panels.clear();
 
-    m_panels.push_back(new GeneralSettingsPanel(config));
-
     if (interactive)
     {
+        m_panels.push_back(new InteractiveGeneralSettingsPanel(config));
         m_panels.push_back(new InteractiveImagePlaneSamplingPanel(config));
         m_panels.push_back(new InteractiveConfigurationLightingPanel(config));
     }
     else
     {
+        m_panels.push_back(new FinalGeneralSettingsPanel(config));
         m_panels.push_back(new FinalImagePlaneSamplingPanel(config));
         m_panels.push_back(new FinalConfigurationLightingPanel(config));
     }

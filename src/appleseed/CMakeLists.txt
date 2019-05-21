@@ -1327,6 +1327,8 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/pixelrendererbase.h
     renderer/kernel/rendering/renderercomponents.cpp
     renderer/kernel/rendering/renderercomponents.h
+    renderer/kernel/rendering/renderercontrollercollection.cpp
+    renderer/kernel/rendering/renderercontrollercollection.h
     renderer/kernel/rendering/rendererservices.cpp
     renderer/kernel/rendering/rendererservices.h
     renderer/kernel/rendering/sample.h
