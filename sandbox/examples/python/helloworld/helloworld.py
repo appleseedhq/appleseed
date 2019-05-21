@@ -252,12 +252,13 @@ class TileCallback(asr.ITileCallback):
 
 class RenderThread(threading.Thread):
 
-    def __init__(self, renderer):
+    def __init__(self, master_renderer, renderer_controller):
         super(RenderThread, self).__init__()
-        self.__renderer = renderer
+        self.__master_renderer = master_renderer
+        self.__renderer_controller = renderer_controller
 
     def run(self):
-        self.__renderer.render()
+        self.__master_renderer.render(self.__renderer_controller)
 
 RENDER_ON_THREAD = True
 
@@ -287,18 +288,16 @@ def main():
     renderer = asr.MasterRenderer(project,
                                   project.configurations()['final'].get_inherited_parameters(),
                                   resource_search_paths,
-                                  renderer_controller,
                                   tile_callback)
 
     # Render the frame.
     if RENDER_ON_THREAD:
-        render_thread = RenderThread(renderer)
+        render_thread = RenderThread(renderer, renderer_controller)
         render_thread.start()
-
         while render_thread.isAlive():
             render_thread.join(0.5)  # seconds
     else:
-        renderer.render()
+        renderer.render(renderer_controller)
 
     # Save the frame to disk.
     project.get_frame().write_main_image("output/test.png")

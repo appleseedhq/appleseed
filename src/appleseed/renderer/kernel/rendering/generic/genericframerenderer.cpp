@@ -64,6 +64,9 @@
 #include <string>
 #include <vector>
 
+// Forward declarations.
+namespace renderer { class IRendererController; }
+
 using namespace boost;
 using namespace foundation;
 using namespace std;
@@ -160,6 +163,11 @@ namespace
                 pretty_uint(m_params.m_pass_count).c_str());
 
             m_tile_renderers.front()->print_settings();
+        }
+
+        IRendererController* get_renderer_controller() override
+        {
+            return nullptr;
         }
 
         void render() override

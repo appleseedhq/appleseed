@@ -557,7 +557,6 @@ namespace
             project.ref(),
             params,
             resource_search_paths,
-            &renderer_controller,
             tile_callback_factory.get());
 
         // Render the frame.
@@ -566,11 +565,11 @@ namespace
         if (params.get_optional<bool>("background_mode", true))
         {
             ProcessPriorityContext background_context(ProcessPriorityLow, &g_logger);
-            rendering_result = renderer.render();
+            rendering_result = renderer.render(renderer_controller);
         }
         else
         {
-            rendering_result = renderer.render();
+            rendering_result = renderer.render(renderer_controller);
         }
         if (rendering_result.m_status != MasterRenderer::RenderingResult::Succeeded)
             return false;
@@ -675,8 +674,7 @@ namespace
         MasterRenderer renderer(
             project.ref(),
             params,
-            resource_search_paths,
-            &renderer_controller);
+            resource_search_paths);
 
         double total_time_seconds, render_time_seconds;
         {
@@ -684,13 +682,13 @@ namespace
             ProcessPriorityContext benchmark_context(ProcessPriorityHigh, &g_logger);
 
             // Render a first time.
-            auto result = renderer.render();
+            auto result = renderer.render(renderer_controller);
             if (result.m_status != MasterRenderer::RenderingResult::Succeeded)
                 return false;
             total_time_seconds = result.m_render_time;
 
             // Render a second time.
-            result = renderer.render();
+            result = renderer.render(renderer_controller);
             if (result.m_status != MasterRenderer::RenderingResult::Succeeded)
                 return false;
             render_time_seconds = result.m_render_time;
