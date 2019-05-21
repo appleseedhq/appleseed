@@ -82,7 +82,7 @@ void TimedRendererController::on_rendering_resume()
 IRendererController::Status TimedRendererController::get_status() const
 {
     return
-        impl->m_stopwatch.measure().get_seconds() > impl->m_seconds
+        impl->m_stopwatch.measure().get_seconds() >= impl->m_seconds
             ? TerminateRendering
             : ContinueRendering;
 }

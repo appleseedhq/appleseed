@@ -205,7 +205,7 @@ void RenderingManager::start_rendering(
 
     m_renderer_controller_collection->insert(&m_renderer_controller);
 
-    if(params.get_required<string>("frame_renderer", "generic") == "progressive")
+    if (params.get<string>("frame_renderer") == "progressive")
     {
         m_timed_renderer_controller.reset(
             new TimedRendererController(
