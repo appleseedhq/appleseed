@@ -39,6 +39,7 @@
 #include "renderer/kernel/rendering/progressive/samplecounthistory.h"
 #include "renderer/kernel/rendering/progressive/samplegeneratorjob.h"
 #include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
+#include "renderer/kernel/rendering/timedrenderercontroller.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/utility/settingsparsing.h"
@@ -108,6 +109,7 @@ namespace
                     ? m_params.m_max_average_spp * project.get_frame()->get_crop_window().volume()
                     : m_params.m_max_average_spp)
           , m_ref_image_avg_lum(0.0)
+          , m_renderer_controller(m_params.m_time_limit)
         {
             // We must have a generator factory, but it's OK not to have a callback factory.
             assert(generator_factory);
@@ -207,14 +209,19 @@ namespace
                 m_params.m_max_average_spp == numeric_limits<uint64>::max()
                     ? "unlimited"
                     : pretty_uint(m_params.m_max_average_spp).c_str(),
-                m_params.m_time_limit == numeric_limits<uint64>::max()
+                m_params.m_time_limit == numeric_limits<double>::max()
                     ? "unlimited"
-                    : pretty_time(static_cast<double>(m_params.m_time_limit)).c_str(),
+                    : pretty_time(m_params.m_time_limit).c_str(),
                 m_params.m_max_fps,
                 m_params.m_perf_stats ? "on" : "off",
                 m_params.m_luminance_stats ? "on" : "off");
 
             m_sample_generators.front()->print_settings();
+        }
+
+        IRendererController* get_renderer_controller() override
+        {
+            return &m_renderer_controller;
         }
 
         void render() override
@@ -370,7 +377,7 @@ namespace
             const SamplingContext::Mode m_sampling_mode;
             const size_t                m_thread_count;       // number of rendering threads
             const uint64                m_max_average_spp;    // maximum average number of samples to compute per pixel
-            const uint64                m_time_limit;         // maximum rendering time in seconds
+            const double                m_time_limit;         // maximum rendering time in seconds
             const double                m_max_fps;            // maximum display frequency in frames/second
             const bool                  m_perf_stats;         // collect and print performance statistics?
             const bool                  m_luminance_stats;    // collect and print luminance statistics?
@@ -380,7 +387,7 @@ namespace
               , m_sampling_mode(get_sampling_context_mode(params))
               , m_thread_count(get_rendering_thread_count(params))
               , m_max_average_spp(params.get_optional<uint64>("max_average_spp", numeric_limits<uint64>::max()))
-              , m_time_limit(params.get_optional<uint64>("time_limit", numeric_limits<uint64>::max()))
+              , m_time_limit(params.get_optional<double>("time_limit", numeric_limits<double>::max()))
               , m_max_fps(params.get_optional<double>("max_fps", 30.0))
               , m_perf_stats(params.get_optional<bool>("performance_statistics", false))
               , m_luminance_stats(params.get_optional<bool>("luminance_statistics", false))
@@ -700,14 +707,15 @@ namespace
 
         auto_release_ptr<ITileCallback>         m_tile_callback;
 
-        double                                  m_ref_image_avg_lum;
-
         unique_ptr<DisplayFunc>                 m_display_func;
         unique_ptr<boost::thread>               m_display_thread;
         AbortSwitch                             m_display_thread_abort_switch;
 
+        double                                  m_ref_image_avg_lum;
         unique_ptr<StatisticsFunc>              m_statistics_func;
         unique_ptr<boost::thread>               m_statistics_thread;
+
+        TimedRendererController                 m_renderer_controller;
 
         void print_sample_generators_stats() const
         {

@@ -64,7 +64,6 @@ namespace
             bpy::object                 project_object,
             const ParamArray&           params,
             const bpy::list&            resource_search_paths,
-            IRendererController*        renderer_controller,
             ITileCallbackFactory*       tile_callback_factory = nullptr)
           : m_project_object(project_object)
         {
@@ -76,7 +75,6 @@ namespace
                     *project,
                     params,
                     m_resource_search_paths,
-                    renderer_controller,
                     tile_callback_factory));
         }
 
@@ -84,7 +82,6 @@ namespace
             bpy::object                 project_object,
             const ParamArray&           params,
             const bpy::list&            resource_search_paths,
-            IRendererController*        renderer_controller,
             ITileCallback*              tile_callback)
           : m_project_object(project_object)
         {
@@ -96,7 +93,6 @@ namespace
                     *project,
                     params,
                     m_resource_search_paths,
-                    renderer_controller,
                     tile_callback));
         }
 
@@ -122,22 +118,19 @@ namespace
     std::shared_ptr<MasterRendererWrapper> create_master_renderer(
         bpy::object             project,
         const bpy::dict&        params,
-        const bpy::list&        resource_search_paths,
-        IRendererController*    renderer_controller)
+        const bpy::list&        resource_search_paths)
     {
         return
             std::make_shared<MasterRendererWrapper>(
                 *project,
                 bpy_dict_to_param_array(params),
-                resource_search_paths,
-                renderer_controller);
+                resource_search_paths);
     }
 
     std::shared_ptr<MasterRendererWrapper> create_master_renderer_with_tile_callback(
         bpy::object             project,
         const bpy::dict&        params,
         const bpy::list&        resource_search_paths,
-        IRendererController*    renderer_controller,
         ITileCallback*          tile_callback)
     {
         return
@@ -145,7 +138,6 @@ namespace
                 *project,
                 bpy_dict_to_param_array(params),
                 resource_search_paths,
-                renderer_controller,
                 tile_callback);
     }
 
@@ -161,13 +153,13 @@ namespace
         m->m_renderer->get_parameters() = bpy_dict_to_param_array(params);
     }
 
-    bool master_renderer_render(MasterRendererWrapper* m)
+    bool master_renderer_render(MasterRendererWrapper* m, IRendererController& renderer_controller)
     {
         // Unlock Python's global interpreter lock (GIL) while we do lengthy C++ computations.
         // The GIL is locked again when unlock goes out of scope.
         ScopedGILUnlock unlock;
 
-        const auto result = m->m_renderer->render();
+        const auto result = m->m_renderer->render(renderer_controller);
 
         return result.m_status == MasterRenderer::RenderingResult::Succeeded;
     }

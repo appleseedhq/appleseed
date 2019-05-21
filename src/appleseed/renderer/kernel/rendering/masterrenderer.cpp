@@ -37,6 +37,7 @@
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/oiioerrorhandler.h"
 #include "renderer/kernel/rendering/renderercomponents.h"
+#include "renderer/kernel/rendering/renderercontrollercollection.h"
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/rendering/serialrenderercontroller.h"
 #include "renderer/kernel/rendering/serialtilecallback.h"
@@ -116,35 +117,68 @@ struct MasterRenderer::Impl
     Project&                            m_project;
     ParamArray                          m_params;
     const SearchPaths&                  m_resource_search_paths;
+    ITileCallbackFactory*               m_tile_callback_factory;
+    ITileCallback*                      m_tile_callback;
+
+    Display*                            m_display;
+    SerialRendererController*           m_serial_renderer_controller;
+    ITileCallbackFactory*               m_serial_tile_callback_factory;
 
     OIIOErrorHandler*                   m_error_handler;
-
     OIIOTextureSystem*                  m_texture_system;
-
     RendererServices*                   m_renderer_services;
     OSLShadingSystem*                   m_shading_system;
     auto_release_ptr<ShaderCompiler>    m_osl_compiler;
 
-    IRendererController*                m_renderer_controller;
-    ITileCallbackFactory*               m_tile_callback_factory;
-
-    SerialRendererController*           m_serial_renderer_controller;
-    ITileCallbackFactory*               m_serial_tile_callback_factory;
-
-    Display*                            m_display;
-
     Stopwatch<DefaultWallclockTimer>    m_stopwatch;
 
     Impl(
-        Project&            project,
-        const ParamArray&   params,
-        const SearchPaths&  resource_search_paths)
+        Project&                        project,
+        const ParamArray&               params,
+        const SearchPaths&              resource_search_paths,
+        ITileCallbackFactory*           tile_callback_factory)
       : m_project(project)
       , m_params(params)
       , m_resource_search_paths(resource_search_paths)
+      , m_tile_callback_factory(tile_callback_factory)
+      , m_tile_callback(nullptr)
+      , m_display(nullptr)
       , m_serial_renderer_controller(nullptr)
       , m_serial_tile_callback_factory(nullptr)
+    {
+        initialize();
+
+        if (m_tile_callback_factory == nullptr)
+        {
+            // Try to use the display if there is one in the project
+            // and no tile callback factory was specified.
+            Display* display = m_project.get_display();
+            if (display != nullptr && display->open(m_project))
+            {
+                m_tile_callback_factory = display->get_tile_callback_factory();
+                m_display = display;
+            }
+        }
+    }
+
+    Impl(
+        Project&                        project,
+        const ParamArray&               params,
+        const SearchPaths&              resource_search_paths,
+        ITileCallback*                  tile_callback)
+      : m_project(project)
+      , m_params(params)
+      , m_resource_search_paths(resource_search_paths)
+      , m_tile_callback_factory(nullptr)
+      , m_tile_callback(tile_callback)
       , m_display(nullptr)
+      , m_serial_renderer_controller(nullptr)
+      , m_serial_tile_callback_factory(nullptr)
+    {
+        initialize();
+    }
+
+    void initialize()
     {
         m_error_handler = new OIIOErrorHandler();
 #ifndef NDEBUG
@@ -278,7 +312,7 @@ struct MasterRenderer::Impl
     }
 
     // Render the project.
-    MasterRenderer::RenderingResult render()
+    MasterRenderer::RenderingResult render(IRendererController& renderer_controller)
     {
         // RenderingResult is initialized to Failed.
         RenderingResult result;
@@ -293,11 +327,25 @@ struct MasterRenderer::Impl
         // Reset the frame's render info.
         m_project.get_frame()->render_info().clear();
 
+        // If a single tile callback was provided, wrap the provided renderer controller
+        // and single tile callback into their serial counterparts.
+        if (m_tile_callback != nullptr)
+        {
+            m_serial_renderer_controller =
+                new SerialRendererController(&renderer_controller, m_tile_callback);
+            m_serial_tile_callback_factory =
+                new SerialTileCallbackFactory(m_serial_renderer_controller);
+            m_tile_callback_factory = m_serial_tile_callback_factory;
+        }
+
         try
         {
             // Render.
             m_stopwatch.start();
-            result.m_status = do_render();
+            result.m_status = do_render(
+                m_serial_renderer_controller != nullptr
+                    ? *m_serial_renderer_controller
+                    : renderer_controller);
             m_stopwatch.measure();
             result.m_render_time = m_stopwatch.get_seconds();
 
@@ -319,20 +367,20 @@ struct MasterRenderer::Impl
         }
         catch (const bad_alloc&)
         {
-            m_renderer_controller->on_rendering_abort();
+            renderer_controller.on_rendering_abort();
             RENDERER_LOG_ERROR("rendering failed (ran out of memory).");
             result.m_status = RenderingResult::Failed;
         }
 #ifdef NDEBUG
         catch (const exception& e)
         {
-            m_renderer_controller->on_rendering_abort();
+            renderer_controller.on_rendering_abort();
             RENDERER_LOG_ERROR("rendering failed (%s).", e.what());
             result.m_status = RenderingResult::Failed;
         }
         catch (...)
         {
-            m_renderer_controller->on_rendering_abort();
+            renderer_controller.on_rendering_abort();
             RENDERER_LOG_ERROR("rendering failed (unknown exception).");
             result.m_status = RenderingResult::Failed;
         }
@@ -366,39 +414,39 @@ struct MasterRenderer::Impl
     }
 
     // Render a frame until completed or aborted and handle reinitialization events.
-    MasterRenderer::RenderingResult::Status do_render()
+    MasterRenderer::RenderingResult::Status do_render(IRendererController& renderer_controller)
     {
         while (true)
         {
-            m_renderer_controller->on_rendering_begin();
+            renderer_controller.on_rendering_begin();
 
             // Construct an abort switch that will allow to abort initialization.
-            RendererControllerAbortSwitch abort_switch(*m_renderer_controller);
+            RendererControllerAbortSwitch abort_switch(renderer_controller);
 
             // Expand procedural assemblies before scene entities inputs are bound.
             if (!m_project.get_scene()->expand_procedural_assemblies(m_project, &abort_switch))
             {
-                m_renderer_controller->on_rendering_abort();
+                renderer_controller.on_rendering_abort();
                 return RenderingResult::Aborted;
             }
 
             // Bind scene entities inputs.
             if (!bind_scene_entities_inputs())
             {
-                m_renderer_controller->on_rendering_abort();
+                renderer_controller.on_rendering_abort();
                 return RenderingResult::Aborted;
             }
 
-            const IRendererController::Status status = initialize_and_render_frame();
+            const IRendererController::Status status = initialize_and_render_frame(renderer_controller);
 
             switch (status)
             {
               case IRendererController::TerminateRendering:
-                m_renderer_controller->on_rendering_success();
+                renderer_controller.on_rendering_success();
                 return RenderingResult::Succeeded;
 
               case IRendererController::AbortRendering:
-                m_renderer_controller->on_rendering_abort();
+                renderer_controller.on_rendering_abort();
                 return RenderingResult::Aborted;
 
               case IRendererController::ReinitializeRendering:
@@ -418,10 +466,10 @@ struct MasterRenderer::Impl
     }
 
     // Initialize rendering components and render a frame.
-    IRendererController::Status initialize_and_render_frame()
+    IRendererController::Status initialize_and_render_frame(IRendererController& renderer_controller)
     {
         // Construct an abort switch that will allow to abort initialization or rendering.
-        RendererControllerAbortSwitch abort_switch(*m_renderer_controller);
+        RendererControllerAbortSwitch abort_switch(renderer_controller);
 
         // Create the texture store.
         TextureStore texture_store(
@@ -435,7 +483,7 @@ struct MasterRenderer::Impl
             // If it wasn't an abort, it was a failure.
             return
                 abort_switch.is_aborted()
-                    ? m_renderer_controller->get_status()
+                    ? renderer_controller.get_status()
                     : IRendererController::AbortRendering;
         }
 
@@ -447,7 +495,7 @@ struct MasterRenderer::Impl
             abort_switch.is_aborted())
         {
             recorder.on_render_end(m_project);
-            return m_renderer_controller->get_status();
+            return renderer_controller.get_status();
         }
 
         // Create renderer components.
@@ -495,11 +543,11 @@ struct MasterRenderer::Impl
             abort_switch.is_aborted())
         {
             recorder.on_render_end(m_project);
-            return m_renderer_controller->get_status();
+            return renderer_controller.get_status();
         }
 
         // Execute the main rendering loop.
-        const auto status = render_frame(components, abort_switch);
+        const auto status = render_frame(components, renderer_controller, abort_switch);
 
         // Perform post-render actions.
         recorder.on_render_end(m_project);
@@ -519,14 +567,21 @@ struct MasterRenderer::Impl
     // Render a frame until completed or aborted and handle restart events.
     IRendererController::Status render_frame(
         RendererComponents&     components,
+        IRendererController&    renderer_controller,
         IAbortSwitch&           abort_switch)
     {
+        // Combine the provided renderer controller and the (optional) frame renderer's controller into one.
+        RendererControllerCollection combined_renderer_controller;
+        combined_renderer_controller.insert(&renderer_controller);
+        if (components.get_frame_renderer().get_renderer_controller())
+            combined_renderer_controller.insert(components.get_frame_renderer().get_renderer_controller());
+
         while (true)
         {
             // The `on_frame_begin()` method of the renderer controller might alter the scene
             // (e.g. transform the camera), thus it needs to be called before the `on_frame_begin()`
             // of the scene which assumes the scene is up-to-date and ready to be rendered.
-            m_renderer_controller->on_frame_begin();
+            combined_renderer_controller.on_frame_begin();
 
             // Discard recorded light paths.
             m_project.get_light_path_recorder().clear();
@@ -538,7 +593,7 @@ struct MasterRenderer::Impl
                 abort_switch.is_aborted())
             {
                 recorder.on_frame_end(m_project);
-                m_renderer_controller->on_frame_end();
+                combined_renderer_controller.on_frame_end();
                 return IRendererController::AbortRendering;
             }
 
@@ -553,7 +608,8 @@ struct MasterRenderer::Impl
             frame_renderer.start_rendering();
 
             // Wait until the the frame is completed or rendering is aborted.
-            const IRendererController::Status status = wait_for_event(frame_renderer);
+            const IRendererController::Status status =
+                wait_for_event(frame_renderer, combined_renderer_controller);
 
             switch (status)
             {
@@ -574,7 +630,7 @@ struct MasterRenderer::Impl
 
             // Perform post-frame actions.
             recorder.on_frame_end(m_project);
-            m_renderer_controller->on_frame_end();
+            combined_renderer_controller.on_frame_end();
 
             switch (status)
             {
@@ -592,7 +648,9 @@ struct MasterRenderer::Impl
     }
 
     // Wait until the the frame is completed or rendering is aborted.
-    IRendererController::Status wait_for_event(IFrameRenderer& frame_renderer)
+    IRendererController::Status wait_for_event(
+        IFrameRenderer&         frame_renderer,
+        IRendererController&    renderer_controller)
     {
         bool is_paused = false;
 
@@ -601,7 +659,7 @@ struct MasterRenderer::Impl
             if (!frame_renderer.is_rendering())
                 return IRendererController::TerminateRendering;
 
-            const IRendererController::Status status = m_renderer_controller->get_status();
+            const IRendererController::Status status = renderer_controller.get_status();
 
             switch (status)
             {
@@ -609,7 +667,7 @@ struct MasterRenderer::Impl
                 if (is_paused)
                 {
                     frame_renderer.resume_rendering();
-                    m_renderer_controller->on_rendering_resume();
+                    renderer_controller.on_rendering_resume();
                     m_stopwatch.resume();
                     is_paused = false;
                 }
@@ -619,7 +677,7 @@ struct MasterRenderer::Impl
                 if (!is_paused)
                 {
                     frame_renderer.pause_rendering();
-                    m_renderer_controller->on_rendering_pause();
+                    renderer_controller.on_rendering_pause();
                     m_stopwatch.pause();
                     is_paused = true;
                 }
@@ -629,7 +687,7 @@ struct MasterRenderer::Impl
                 return status;
             }
 
-            m_renderer_controller->on_progress();
+            renderer_controller.on_progress();
 
             foundation::sleep(1);   // namespace qualifer required
         }
@@ -713,41 +771,18 @@ MasterRenderer::MasterRenderer(
     Project&                project,
     const ParamArray&       params,
     const SearchPaths&      resource_search_paths,
-    IRendererController*    renderer_controller,
     ITileCallbackFactory*   tile_callback_factory)
-  : impl(new Impl(project, params, resource_search_paths))
+  : impl(new Impl(project, params, resource_search_paths, tile_callback_factory))
 {
-    impl->m_renderer_controller = renderer_controller;
-    impl->m_tile_callback_factory = tile_callback_factory;
-
-    if (impl->m_tile_callback_factory == nullptr)
-    {
-        // Try to use the display if there is one in the project
-        // and no tile callback factory was specified.
-        Display* display = impl->m_project.get_display();
-        if (display != nullptr && display->open(impl->m_project))
-        {
-            impl->m_tile_callback_factory = display->get_tile_callback_factory();
-            impl->m_display = display;
-        }
-    }
 }
 
 MasterRenderer::MasterRenderer(
     Project&                project,
     const ParamArray&       params,
     const SearchPaths&      resource_search_paths,
-    IRendererController*    renderer_controller,
     ITileCallback*          tile_callback)
-  : impl(new Impl(project, params, resource_search_paths))
+  : impl(new Impl(project, params, resource_search_paths, tile_callback))
 {
-    impl->m_renderer_controller =
-    impl->m_serial_renderer_controller =
-        new SerialRendererController(renderer_controller, tile_callback);
-
-    impl->m_tile_callback_factory =
-    impl->m_serial_tile_callback_factory =
-        new SerialTileCallbackFactory(impl->m_serial_renderer_controller);
 }
 
 MasterRenderer::~MasterRenderer()
@@ -765,9 +800,9 @@ const ParamArray& MasterRenderer::get_parameters() const
     return impl->m_params;
 }
 
-MasterRenderer::RenderingResult MasterRenderer::render()
+MasterRenderer::RenderingResult MasterRenderer::render(IRendererController& renderer_controller)
 {
-    return impl->render();
+    return impl->render(renderer_controller);
 }
 
 

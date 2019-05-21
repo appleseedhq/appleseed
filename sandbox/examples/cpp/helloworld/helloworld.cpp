@@ -299,11 +299,10 @@ int main()
         new asr::MasterRenderer(
             project.ref(),
             project->configurations().get_by_name("final")->get_inherited_parameters(),
-            resource_search_paths,
-            &renderer_controller));
+            resource_search_paths));
 
     // Render the frame.
-    renderer->render();
+    renderer->render(renderer_controller);
 
     // Save the frame to disk.
     project->get_frame()->write_main_image("output/test.png");

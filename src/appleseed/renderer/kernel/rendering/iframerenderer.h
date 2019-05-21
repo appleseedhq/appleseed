@@ -32,6 +32,9 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
 
+// Forward declarations.
+namespace renderer { class IRendererController; }
+
 namespace renderer
 {
 
@@ -43,6 +46,12 @@ class IFrameRenderer
   : public foundation::IUnknown
 {
   public:
+    // A frame renderer can provide its own renderer controller and thus
+    // participate in controlling how rendering proceeds, in addition to
+    // other renderer controllers already in use.
+    // Return nullptr if this frame renderer has no renderer controller.
+    virtual IRendererController* get_renderer_controller() = 0;
+
     // Print this component's settings to the renderer's global logger.
     virtual void print_settings() const = 0;
 

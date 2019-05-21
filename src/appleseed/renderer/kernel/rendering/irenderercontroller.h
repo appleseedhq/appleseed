@@ -47,7 +47,7 @@ class APPLESEED_DLLSYMBOL IRendererController
 {
   public:
     // Destructor.
-    virtual ~IRendererController() {}
+    virtual ~IRendererController() = default;
 
     // This method is called before rendering begins or is reinitialized.
     virtual void on_rendering_begin() = 0;
