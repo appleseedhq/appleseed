@@ -96,7 +96,7 @@ namespace
     string get_last_error_message()
     {
 #ifdef _WIN32
-        return get_windows_last_error_message();
+        return get_last_windows_error_message();
 #else
         return dlerror();
 #endif
