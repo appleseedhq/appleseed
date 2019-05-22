@@ -59,6 +59,75 @@ namespace foundation
 APPLESEED_DLLSYMBOL void disable_all_windows_abort_dialogs();
 
 // Return the error message associated with the error code returned by GetLastError().
-std::string get_windows_last_error_message();
+std::string get_last_windows_error_message();
+
+// Same as get_last_windows_error_message() but returns a wide string.
+std::wstring get_last_windows_error_message_wide();
+
+
+//
+// Inline implementations to expose these functions (that return std:: types) to plugins.
+//
+
+inline std::string get_last_windows_error_message()
+{
+    //
+    // Relevant articles:
+    //
+    //   http://coolcowstudio.wordpress.com/2012/10/19/getlasterror-as-stdstring/
+    //   http://blogs.msdn.com/b/oldnewthing/archive/2007/11/28/6564257.aspx
+    //
+
+    const DWORD error_code = GetLastError();
+
+    char* buf;
+    const DWORD buf_len =
+        FormatMessageA(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER              // allocate the output buffer
+                | FORMAT_MESSAGE_FROM_SYSTEM            // the message number is a system error code
+                | FORMAT_MESSAGE_IGNORE_INSERTS,        // don't process %1... placeholders
+            nullptr,                                    // format string (unused)
+            error_code,                                 // message ID
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),  // use default language
+            reinterpret_cast<char*>(&buf),              // output buffer
+            0,                                          // size of the output buffer in TCHARs (unused)
+            nullptr);                                   // argument list (unused)
+
+    if (buf_len == 0)
+        return "FormatMessageA() call failed.";
+
+    const std::string result(buf, buf + buf_len);
+
+    LocalFree(buf);
+
+    return result;
+}
+
+inline std::wstring get_last_windows_error_message_wide()
+{
+    const DWORD error_code = GetLastError();
+
+    wchar_t* buf;
+    const DWORD buf_len =
+        FormatMessageW(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER
+                | FORMAT_MESSAGE_FROM_SYSTEM
+                | FORMAT_MESSAGE_IGNORE_INSERTS,
+            nullptr,
+            error_code,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            reinterpret_cast<wchar_t*>(&buf),
+            0,
+            nullptr);
+
+    if (buf_len == 0)
+        return L"FormatMessageW() call failed.";
+
+    const std::wstring result(buf, buf + buf_len);
+
+    LocalFree(buf);
+
+    return result;
+}
 
 }   // namespace foundation
