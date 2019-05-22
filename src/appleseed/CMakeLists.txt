@@ -985,7 +985,6 @@ set (renderer_api_sources
     renderer/api/aov.h
     renderer/api/bsdf.h
     renderer/api/bssrdf.h
-    renderer/api/buildoptions.h
     renderer/api/camera.h
     renderer/api/color.h
     renderer/api/display.h
