@@ -1012,7 +1012,6 @@ set (renderer_api_sources
     renderer/api/trace.h
     renderer/api/types.h
     renderer/api/utility.h
-    renderer/api/version.h
     renderer/api/volume.h
 )
 list (APPEND appleseed_sources
