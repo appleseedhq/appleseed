@@ -27,10 +27,8 @@
 // THE SOFTWARE.
 //
 
-// appleseed.renderer headers.
-#include "renderer/api/version.h"
-
 // appleseed.foundation headers.
+#include "foundation/core/version.h"
 #include "foundation/platform/python.h"
 
 // Forward declarations.
