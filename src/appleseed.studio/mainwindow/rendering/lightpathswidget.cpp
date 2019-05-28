@@ -385,7 +385,7 @@ void LightPathsWidget::render_light_path(const size_t light_path_index) const
         light_path_recorder.get_light_path_vertex(i, v1);
 
         auto radiance = Color3f::from_array(v1.m_radiance);
-        radiance /= sum_value(radiance);
+        radiance /= radiance + Color3f(1.0);
         radiance = linear_rgb_to_srgb(radiance);
 
         glColor(radiance);
