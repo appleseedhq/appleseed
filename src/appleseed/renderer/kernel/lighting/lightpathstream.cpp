@@ -269,9 +269,18 @@ void LightPathStream::create_path_from_hit_emitter(const size_t emitter_event_in
 
             // Update current radiance.
             const auto& throughput = event_data.m_path_throughput;
+            // Multiply by previous throughput to attenuate by the next hit
             current_radiance *= prev_throughput;
+            // Divide by throughput before previous so that we isolate only throughput from the light source to current vertex,
+            // since throughput is cumulative in reverse
             current_radiance /= throughput;
             prev_throughput = throughput;
+
+            // If the hit is an emitter, add the radiance to current
+            if (event.m_type == EventType::HitEmitter)
+            {
+                current_radiance += m_hit_emitter_data[event.m_data_index].m_emitted_radiance;
+            }
         }
     }
 
@@ -335,9 +344,18 @@ void LightPathStream::create_path_from_sampled_emitter(const size_t emitter_even
 
             // Update current radiance.
             const auto& throughput = event_data.m_path_throughput;
+            // Multiply by previous throughput to attenuate by the next hit
             current_radiance *= prev_throughput;
+            // Divide by throughput before previous so that we isolate only throughput from the light source to current vertex,
+            // since throughput is cumulative in reverse
             current_radiance /= throughput;
             prev_throughput = throughput;
+
+            // If the hit is an emitter, add the radiance to current
+            if (event.m_type == EventType::HitEmitter)
+            {
+                current_radiance += m_hit_emitter_data[event.m_data_index].m_emitted_radiance;
+            }
         }
     }
 
@@ -401,9 +419,18 @@ void LightPathStream::create_path_from_sampled_environment(const size_t env_even
 
             // Update current radiance.
             const auto& throughput = event_data.m_path_throughput;
+            // Multiply by previous throughput to attenuate by the next hit
             current_radiance *= prev_throughput;
+            // Divide by throughput before previous so that we isolate only throughput from the light source to current vertex,
+            // since throughput is cumulative in reverse
             current_radiance /= throughput;
             prev_throughput = throughput;
+
+            // If the hit is an emitter, add the radiance to current
+            if (event.m_type == EventType::HitEmitter)
+            {
+                current_radiance += m_hit_emitter_data[event.m_data_index].m_emitted_radiance;
+            }
         }
     }
 

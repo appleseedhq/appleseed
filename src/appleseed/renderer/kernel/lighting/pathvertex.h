@@ -70,7 +70,7 @@ class PathVertex
     // Path properties.
     size_t                      m_path_length;
     int                         m_scattering_modes;
-    Spectrum                    m_throughput;
+    Spectrum                    m_throughput;   // cumulative throughput (percent of incoming light which is reflected as outgoing light) of this path, up to but excluding this vertex
 
     // Current vertex properties.
     const ShadingPoint*         m_shading_point;

@@ -117,7 +117,7 @@ class LightPathStream
     {
         const ObjectInstance*       m_object_instance;          // object instance that was hit
         foundation::Vector3f        m_vertex_position;          // world space position of the hit point on the reflector
-        foundation::Color3f         m_path_throughput;          // cumulative path throughput up to but excluding this vertex
+        foundation::Color3f         m_path_throughput;          // cumulative path throughput up to but excluding this vertex, in reverse order (i.e. in the order from camera to light source)
     };
 
     struct HitEmitterData
