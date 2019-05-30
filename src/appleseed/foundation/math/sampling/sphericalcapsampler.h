@@ -62,7 +62,7 @@ class SphericalCapSampler
         const T               radius)
       : m_radius(radius)
     {
-        const T rcp_center_distance = 1.0f / std::sqrt(dot(center, center));
+        const T rcp_center_distance = T(1.0) / std::sqrt(dot(center, center));
 
         // Construct a coordinate frame with z pointing to the sphere.
         // todo: use Basis3 here.
