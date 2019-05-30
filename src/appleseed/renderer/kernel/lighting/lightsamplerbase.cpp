@@ -414,7 +414,7 @@ void LightSamplerBase::collect_emitting_shapes(
             const Material* material = front_materials.empty() ? nullptr : front_materials[0];
 
             // Skip spheres that don't emit light.
-            if ((material == nullptr || !material->has_emission()))
+            if (material == nullptr || !material->has_emission())
                 continue;
 
             // Retrieve the sphere.
@@ -445,6 +445,8 @@ void LightSamplerBase::collect_emitting_shapes(
             }
 
             const double area = FourPi<double>() * square(radius);
+
+            assert(radius == 0.5);
 
             // Invoke the shape handling function.
             const bool accept_shape =

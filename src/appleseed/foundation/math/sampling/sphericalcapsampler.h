@@ -35,6 +35,8 @@
 // Standard headers.
 #include <cmath>
 
+#include <iostream>
+
 namespace foundation
 {
 
@@ -51,6 +53,7 @@ namespace foundation
 //       http://www.pbr-book.org/3ed-2018/Light_Transport_I_Surface_Reflection/Sampling_Light_Sources.html#sec:sampling-lights
 //
 
+// todo: split declaration and definition.
 template <typename T>
 class SphericalCapSampler
 {
@@ -65,19 +68,36 @@ class SphericalCapSampler
         const T rcp_center_distance = T(1.0) / std::sqrt(dot(center, center));
 
         // Construct a coordinate frame with z pointing to the sphere.
-        // todo: use Basis3 here.
+        // todo: use Basis3 here. the vector we give to basis3 is y (normal).
         m_z = normalize(center - surface_point);
         m_x =
             (std::abs(m_z.x) > std::abs(m_z.y))
             ? (Vector<T, 3>(-m_z.z, T(0.0), m_z.x) / std::sqrt(square(m_z.x) + square(m_z.z)))
             : (Vector<T, 3>(T(0.0), m_z.z, -m_z.y) / std::sqrt(square(m_z.y) + square(m_z.z)));
         m_y = cross(m_z, m_x);
+        // Make sure (m_x, m_y, m_z) forms an orthonormal basis.
+        assert(is_normalized(m_x));
+        assert(is_normalized(m_y));
+        assert(is_normalized(m_z));
+        assert(fz(dot(m_x, m_y), make_eps<T>(1.0e-4f, 1.0e-6)));
+        assert(fz(dot(m_x, m_z), make_eps<T>(1.0e-4f, 1.0e-6)));
+        assert(fz(dot(m_y, m_z), make_eps<T>(1.0e-4f, 1.0e-6)));
 
+        // Make sure (m_x, m_y, m_z) is right-handed.
+        assert(feq(dot(cross(m_x, m_y), m_z), T(1.0), make_eps<T>(1.0e-4f, 1.0e-5)));
+
+        // todo: cache square_distance
+        // todo: rename dc to dist
         m_dc = std::sqrt(square_distance(surface_point, center));
 
         // Compute sampling cone parameters.
         m_sin_theta_max_2 = square(radius) / square_distance(surface_point, center);
         m_cos_theta_max = std::sqrt(std::max(T(0.0), T(1.0) - m_sin_theta_max_2));
+
+        if (square_distance(surface_point, center) < square(radius))
+        {
+            std::cout << "What the actual fuck, the point is inside.\n";
+        }
     }
 
     T get_pdf() const
@@ -86,6 +106,7 @@ class SphericalCapSampler
         return sample_cone_uniform_pdf(m_cos_theta_max);
     }
 
+    // Return the normal of a point on the spherical cap.
     Vector<T, 3> sample(const Vector<T, 2>& s) const
     {
         // todo: handle the case where the surface_point is inside the sphere.
@@ -93,10 +114,12 @@ class SphericalCapSampler
         const T sin_theta = safe_sqrt(T(1.0) - square(cos_theta));
         const T phi = s[1] * TwoPi<T>();
 
+        // todo: compute ds² directly.
         const T ds = m_dc * cos_theta - safe_sqrt(square(m_radius) - square(m_dc) * square(sin_theta));
         const T cos_alpha = (square(m_dc) + square(m_radius) - square(ds)) / (T(2.0) * m_dc * m_radius);
         const T sin_alpha = safe_sqrt(T(1.0) - square(cos_alpha));
 
+        // todo: -m_x -> m_x and -m_y -> m_y.
         const Vector<T, 3> normal =
             sin_alpha * std::cos(phi) * (-m_x)
             + sin_alpha * std::sin(phi) * (-m_y)

@@ -165,6 +165,7 @@ EmittingShape EmittingShape::create_sphere_shape(
     shape.m_geom.m_sphere.m_center = center;
     shape.m_geom.m_sphere.m_radius = radius;
 
+    // todo: compute area here
     shape.m_area = static_cast<float>(area);
 
     if (shape.m_area != 0.0f)
@@ -199,6 +200,10 @@ EmittingShape EmittingShape::create_disk_shape(
     shape.m_geom.m_disk.m_geometric_normal = n;
     shape.m_geom.m_disk.m_x = x;
     shape.m_geom.m_disk.m_y = y;
+
+    assert(c.x == 0.0);
+    assert(c.y == 0.5);
+    assert(c.z == 0.0);
 
     shape.m_area = static_cast<float>(area);
 
@@ -279,9 +284,10 @@ void EmittingShape::sample_uniform(
     else if (shape_type == SphereShape)
     {
         // Set the parametric coordinates.
+        // fixme: polar coordinates
         light_sample.m_param_coords = s;
 
-        Vector3d n(sample_sphere_uniform(s));
+        const Vector3d n(sample_sphere_uniform(s));
 
         // Set the world space shading and geometric normals.
         light_sample.m_shading_normal = n;
@@ -318,6 +324,7 @@ void EmittingShape::sample_uniform(
     light_sample.m_probability = shape_prob * evaluate_pdf_uniform();
 }
 
+// todo: make this inline
 float EmittingShape::evaluate_pdf_uniform() const
 {
     return get_rcp_area();
@@ -348,7 +355,8 @@ bool EmittingShape::sample_solid_angle(
     }
     else if (shape_type == SphereShape)
     {
-        const Vector3d o = shading_point.get_point();
+        // todo: rename o to surface_point.
+        const Vector3d& o = shading_point.get_point();
 
         const SphericalCapSampler<double> sampler(
             o,
@@ -359,6 +367,7 @@ bool EmittingShape::sample_solid_angle(
         const Vector3d n = sampler.sample(Vector2d(s));
         assert(is_normalized(n));
         const Vector3d p = m_geom.m_sphere.m_center + m_geom.m_sphere.m_radius * n;
+        assert(feq(sqrt(square_distance(p, m_geom.m_sphere.m_center)), m_geom.m_sphere.m_radius, 0.01));
 
         //const Vector3d d = normalize(p - o);
         //const Ray3d ray(o, d);
@@ -378,9 +387,9 @@ bool EmittingShape::sample_solid_angle(
 
         light_sample.m_geometric_normal = n;
         light_sample.m_shading_normal = n;
-
+        assert(shape_prob == 1.0);
         light_sample.m_probability =
-            shape_prob * static_cast<float>(sampler.get_pdf() / square_distance(light_sample.m_point, o));
+            shape_prob * static_cast<float>(sampler.get_pdf() / square_distance(p, o));
 
         return true;
     }
@@ -398,6 +407,7 @@ bool EmittingShape::sample_solid_angle(
     return false;
 }
 
+// todo: rename to evaluate_pdf.
 float EmittingShape::evaluate_pdf_solid_angle(
     const ShadingPoint&         light_shading_point,
     const ShadingPoint&         surface_shading_point) const
@@ -416,7 +426,8 @@ float EmittingShape::evaluate_pdf_solid_angle(
     }
     else if (shape_type == SphereShape)
     {
-        const Vector3d o = surface_shading_point.get_point();
+        // todo: rename o.
+        const Vector3d& o = surface_shading_point.get_point();
 
         const SphericalCapSampler<double> sampler(
             o,
@@ -495,7 +506,7 @@ void EmittingShape::make_shading_point(
         const Vector3d n = Vector3d::make_unit_vector(theta, phi);
         const Vector3d p = m_geom.m_sphere.m_center + m_geom.m_sphere.m_radius * n;
 
-        const Vector3d dpdu(-TwoPi<double>() * n.y, TwoPi<double>() + n.x, 0.0);
+        const Vector3d dpdu(-TwoPi<double>() * n.y, TwoPi<double>() * n.x, 0.0);
         const Vector3d dpdv = cross(dpdu, n);
 
         intersector.make_procedural_surface_shading_point(
