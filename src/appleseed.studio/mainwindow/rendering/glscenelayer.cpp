@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "lightpathswidget.h"
+#include "glscenelayer.h"
 
 // appleseed.studio headers.
 #include "utility/miscellaneous.h"
@@ -51,6 +51,7 @@
 // Qt headers.
 #include <QKeyEvent>
 #include <QOpenGLFunctions_3_3_Core>
+#include <QGLFormat>
 #include <QSurfaceFormat>
 #include <QString>
 
@@ -60,6 +61,7 @@
 
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -95,8 +97,8 @@ namespace
     struct OpenGLRasterizer
       : public ObjectRasterizer
     {
-        std::vector<float>   m_buffer;
-        size_t               m_prim_count;
+        vector<float>   m_buffer;
+        size_t          m_prim_count;
 
         void begin_object(const size_t triangle_count_hint) override
         {
@@ -127,116 +129,56 @@ namespace
     };
 }
 
-LightPathsWidget::LightPathsWidget(
-    const Project&          project,
-    const size_t            width,
-    const size_t            height)
+GLSceneLayer::GLSceneLayer(
+    const Project&                  project,
+    const size_t                    width,
+    const size_t                    height,
+    QOpenGLFunctions_3_3_Core*      functions,
+    QSurfaceFormat                  format)
   : m_project(project)
   , m_camera(*m_project.get_uncached_active_camera())
   , m_backface_culling_enabled(false)
-  , m_selected_light_path_index(-1)
+  , m_gl(functions)
   , m_gl_initialized(false)
+  , m_format(format)
 {
-    setFocusPolicy(Qt::StrongFocus);
-    setFixedWidth(static_cast<int>(width));
-    setFixedHeight(static_cast<int>(height));
-
     const float time = m_camera.get_shutter_middle_time();
     set_transform(m_camera.transform_sequence().evaluate(time));
+
+    init_gl();
 }
 
-QImage LightPathsWidget::capture()
+void GLSceneLayer::set_gl_functions(QOpenGLFunctions_3_3_Core* functions)
 {
-    return grabFramebuffer();
+    m_gl = functions;
 }
 
-void LightPathsWidget::set_transform(const Transformd& transform)
+void GLSceneLayer::set_transform(const Transformd& transform)
 {
     m_camera_matrix = transform.get_parent_to_local();
     m_gl_view_matrix = transpose(m_camera_matrix);
     m_camera_position = Vector3f(m_camera_matrix.extract_translation());
 }
 
-void LightPathsWidget::set_light_paths(const LightPathArray& light_paths)
-{
-    m_light_paths = light_paths;
-
-    if (m_light_paths.size() > 1)
-    {
-        // Sort paths by descending radiance at the camera.
-        const auto& light_path_recorder = m_project.get_light_path_recorder();
-        std::sort(
-            &m_light_paths[0],
-            &m_light_paths[0] + m_light_paths.size(),
-            [&light_path_recorder](const LightPath& lhs, const LightPath& rhs)
-            {
-                LightPathVertex lhs_v;
-                light_path_recorder.get_light_path_vertex(lhs.m_vertex_end_index - 1, lhs_v);
-
-                LightPathVertex rhs_v;
-                light_path_recorder.get_light_path_vertex(rhs.m_vertex_end_index - 1, rhs_v);
-
-                return
-                    sum_value(Color3f::from_array(lhs_v.m_radiance)) >
-                    sum_value(Color3f::from_array(rhs_v.m_radiance));
-            });
-    }
-
-    // Display all paths by default.
-    set_selected_light_path_index(-1);
-    load_light_paths_data();
-}
-
-void LightPathsWidget::set_selected_light_path_index(const int selected_light_path_index)
-{
-    m_selected_light_path_index = selected_light_path_index;
-
-    dump_selected_light_path();
-    update();
-
-    emit signal_light_path_selection_changed(
-        m_selected_light_path_index,
-        static_cast<int>(m_light_paths.size()));
-}
-
-void LightPathsWidget::slot_display_all_light_paths()
-{
-    if (m_selected_light_path_index > -1)
-        set_selected_light_path_index(-1);
-}
-
-void LightPathsWidget::slot_display_previous_light_path()
-{
-    if (m_selected_light_path_index > -1)
-        set_selected_light_path_index(m_selected_light_path_index - 1);
-}
-
-void LightPathsWidget::slot_display_next_light_path()
-{
-    if (m_selected_light_path_index < static_cast<int>(m_light_paths.size()) - 1)
-        set_selected_light_path_index(m_selected_light_path_index + 1);
-}
-
-void LightPathsWidget::slot_toggle_backface_culling(const bool checked)
+void GLSceneLayer::slot_toggle_backface_culling(const bool checked)
 {
     m_backface_culling_enabled = checked;
-    update();
 }
 
-void LightPathsWidget::slot_synchronize_camera()
+void GLSceneLayer::slot_synchronize_camera()
 {
     m_camera.transform_sequence().clear();
     m_camera.transform_sequence().set_transform(0.0f,
         Transformd::from_local_to_parent(inverse(m_camera_matrix)));
 }
 
-void LightPathsWidget::load_object_instance(
+void GLSceneLayer::load_object_instance(
     const ObjectInstance&   object_instance,
     const Matrix4f&         assembly_transform_matrix)
 {
     Object* object = object_instance.find_object();
 
-    // This would already be logged in LightPathsWidget::load_scene_data
+    // This would already be logged in GLSceneLayer::load_scene_data
     if (object == nullptr)
         return;
 
@@ -245,7 +187,7 @@ void LightPathsWidget::load_object_instance(
     const Matrix4f model_matrix = assembly_transform_matrix * object_transform_matrix;
 
     // Object vertex buffer data has already been loaded; just add an instance
-    const std::string obj_name = std::string(object->get_name());
+    const string obj_name = string(object->get_name());
     size_t buf_idx = m_scene_object_index_map.at(obj_name);
 
     const GLuint object_instances_vbo = m_scene_object_instance_vbos[buf_idx];
@@ -263,13 +205,13 @@ void LightPathsWidget::load_object_instance(
         reinterpret_cast<const GLvoid*>(&gl_matrix[0]));
 }
 
-void LightPathsWidget::load_assembly_instance(
+void GLSceneLayer::load_assembly_instance(
     const AssemblyInstance& assembly_instance,
     const float             time)
 {
     const Assembly* assembly = assembly_instance.find_assembly();
 
-    // This would already be logged in LightPathsWidget::load_scene_data
+    // This would already be logged in GLSceneLayer::load_scene_data
     if (assembly == nullptr)
         return;
 
@@ -284,9 +226,9 @@ void LightPathsWidget::load_assembly_instance(
         load_assembly_instance(child_assembly_instance, time);
 }
 
-void LightPathsWidget::load_object_data(const Object& object)
+void GLSceneLayer::load_object_data(const Object& object)
 {
-    const std::string obj_name = std::string(object.get_name());
+    const string obj_name = string(object.get_name());
     RENDERER_LOG_DEBUG("opengl: uploading mesh data for object \"%s\"...", obj_name.c_str());
 
     if (m_scene_object_index_map.count(obj_name) == 0)
@@ -333,7 +275,7 @@ void LightPathsWidget::load_object_data(const Object& object)
     }
 }
 
-void LightPathsWidget::load_assembly_data(const Assembly& assembly)
+void GLSceneLayer::load_assembly_data(const Assembly& assembly)
 {
     for (const auto& object : assembly.objects())
         load_object_data(object);
@@ -342,7 +284,7 @@ void LightPathsWidget::load_assembly_data(const Assembly& assembly)
         load_assembly_data(child_assembly);
 }
 
-void LightPathsWidget::load_scene_data()
+void GLSceneLayer::load_scene_data()
 {
     const float time = m_camera.get_shutter_middle_time();
 
@@ -390,7 +332,7 @@ void LightPathsWidget::load_scene_data()
                 continue;
             }
 
-            const std::string obj_name = std::string(object->get_name());
+            const string obj_name = string(object->get_name());
             const size_t buf_idx = m_scene_object_index_map[obj_name];
             m_scene_object_instance_counts[buf_idx] += 1;
         }
@@ -431,61 +373,6 @@ void LightPathsWidget::load_scene_data()
     // Actually load the transform data for each instance into the allocated instance buffers
     for (const auto& assembly_instance : m_project.get_scene()->assembly_instances())
         load_assembly_instance(assembly_instance, time);
-}
-
-void LightPathsWidget::load_light_paths_data()
-{
-    m_light_paths_index_offsets.clear();
-    if (!m_light_paths.empty())
-    {
-        m_light_paths_index_offsets.push_back(0);
-
-        const auto& light_path_recorder = m_project.get_light_path_recorder();
-
-        const size_t total_gl_vertex_count = 2 * (light_path_recorder.get_vertex_count() - 2) + 2;
-
-        GLsizei total_index_count = 0;
-        std::vector<float> buffer;
-        buffer.reserve(total_gl_vertex_count * LightPathVertexFloatStride);
-        for (size_t light_path_idx = 0; light_path_idx < m_light_paths.size(); light_path_idx++)
-        {
-            const auto& path = m_light_paths[light_path_idx];
-            assert(path.m_vertex_end_index - path.m_vertex_begin_index >= 2);
-
-            LightPathVertex prev;
-            light_path_recorder.get_light_path_vertex(path.m_vertex_begin_index, prev);
-            for (size_t vertex_idx = path.m_vertex_begin_index + 1; vertex_idx < path.m_vertex_end_index; vertex_idx++)
-            {
-                LightPathVertex curr;
-                light_path_recorder.get_light_path_vertex(vertex_idx, curr);
-
-                auto piece_radiance = Color3f::from_array(curr.m_radiance);
-                piece_radiance /= piece_radiance + Color3f(1.0f);   // Reinhard tone mapping
-                piece_radiance = linear_rgb_to_srgb(piece_radiance);
-
-                const float temp_store[LightPathVertexLineFloatStride] =
-                {
-                    prev.m_position[0], prev.m_position[1], prev.m_position[2],
-                    piece_radiance[0], piece_radiance[1], piece_radiance[2],
-
-                    curr.m_position[0], curr.m_position[1], curr.m_position[2],
-                    piece_radiance[0], piece_radiance[1], piece_radiance[2],
-                };
-                buffer.insert(buffer.end(), temp_store, temp_store + 12);
-
-                total_index_count += 2;
-                prev = curr;
-            }
-            m_light_paths_index_offsets.push_back(total_index_count);
-        }
-
-        m_gl->glBindBuffer(GL_ARRAY_BUFFER, m_light_paths_vbo);
-        m_gl->glBufferData(
-            GL_ARRAY_BUFFER,
-            buffer.size() * sizeof(float),
-            reinterpret_cast<const GLvoid*>(&buffer[0]),
-            GL_STATIC_DRAW);
-    }
 }
 
 namespace
@@ -575,24 +462,17 @@ namespace
     }
 }
 
-void LightPathsWidget::initializeGL()
+void GLSceneLayer::init_gl(QSurfaceFormat format)
 {
-    m_gl = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
     // If there was already previous data, clean up
-    LightPathsWidget::cleanup_gl_data();
+    GLSceneLayer::cleanup_gl_data();
 
-    const auto qgl_format = format();
-
-    if (!m_gl->initializeOpenGLFunctions())
+    bool manual_srgb_conversion = false;
+    if (format.colorSpace() != QSurfaceFormat::sRGBColorSpace)
     {
-        const int major_version = qgl_format.majorVersion();
-        const int minor_version = qgl_format.minorVersion();
-        RENDERER_LOG_ERROR(
-            "opengl: could not load required gl functions: loaded version %d.%d, required version 3.3.",
-            major_version,
-            minor_version);
-        m_gl_initialized = false;
-        return;
+        manual_srgb_conversion = true;
+        RENDERER_LOG_WARNING(
+            "opengl: srgb framebuffer extensions not supported, using slower manual conversion.");
     }
 
     glEnable(GL_DEPTH_TEST);
@@ -605,18 +485,9 @@ void LightPathsWidget::initializeGL()
         load_gl_shader("scene.vert"),
         load_gl_shader("scene.frag"));
 
-    create_shader_program(
-        m_gl,
-        m_light_paths_shader_program,
-        load_gl_shader("lightpaths.vert"),
-        load_gl_shader("lightpaths.frag"));
-
     m_scene_view_mat_location = m_gl->glGetUniformLocation(m_scene_shader_program, "u_view");
     m_scene_proj_mat_location = m_gl->glGetUniformLocation(m_scene_shader_program, "u_proj");
     m_scene_camera_pos_location = m_gl->glGetUniformLocation(m_scene_shader_program, "u_camera_pos");
-
-    m_light_paths_view_mat_location = m_gl->glGetUniformLocation(m_light_paths_shader_program, "u_view");
-    m_light_paths_proj_mat_location = m_gl->glGetUniformLocation(m_light_paths_shader_program, "u_proj");
 
     const float z_near = 0.01f;
     const float z_far = 1000.0f;
@@ -638,41 +509,12 @@ void LightPathsWidget::initializeGL()
     // from the FBO to the default framebuffer, which flips the image.
     m_gl_proj_matrix = transpose(Matrix4f::make_frustum(top, bottom, left, right, z_near, z_far));
 
-    GLuint temp_light_paths_vao = 0;
-    GLuint temp_light_paths_vbo = 0;
-    m_gl->glGenVertexArrays(1, &temp_light_paths_vao);
-    m_gl->glGenBuffers(1, &temp_light_paths_vbo);
-    m_light_paths_vao = temp_light_paths_vao;
-    m_light_paths_vbo = temp_light_paths_vbo;
-
-    m_gl->glBindVertexArray(m_light_paths_vao);
-    m_gl->glBindBuffer(GL_ARRAY_BUFFER, m_light_paths_vbo);
-    m_gl->glVertexAttribPointer(
-        0,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        LightPathVertexByteStride,
-        reinterpret_cast<const GLvoid*>(0));
-    m_gl->glVertexAttribPointer(
-        1,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        LightPathVertexByteStride,
-        reinterpret_cast<const GLvoid*>(LightPathVertexByteStride / 2));
-    m_gl->glEnableVertexAttribArray(0);
-    m_gl->glEnableVertexAttribArray(1);
-
-    m_gl->glBindVertexArray(0);
-
     load_scene_data();
-    load_light_paths_data();
 
     m_gl_initialized = true;
 }
 
-void LightPathsWidget::cleanup_gl_data()
+void GLSceneLayer::cleanup_gl_data()
 {
     if (!m_scene_object_vaos.empty())
     {
@@ -699,24 +541,28 @@ void LightPathsWidget::cleanup_gl_data()
     {
         m_gl->glDeleteProgram(m_scene_shader_program);
     }
-    if (m_light_paths_shader_program != 0)
-    {
-        m_gl->glDeleteProgram(m_light_paths_shader_program);
-    }
     m_scene_object_index_map.clear();
     m_scene_object_data_index_counts.clear();
     m_scene_object_instance_counts.clear();
     m_scene_object_current_instances.clear();
 }
 
-void LightPathsWidget::resizeGL(int w, int h)
+void GLSceneLayer::draw()
 {
-    glViewport(0, 0, static_cast<GLsizei>(w), static_cast<GLsizei>(h));
+    if (!m_gl_initialized)
+        return;
+
+    if (m_backface_culling_enabled)
+        glEnable(GL_CULL_FACE);
+    else glDisable(GL_CULL_FACE);
+
+    m_gl->glUseProgram(m_scene_shader_program);
+    render_scene();
 }
 
-void LightPathsWidget::paintGL()
+void GLSceneLayer::draw_depth_only()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT);
 
     if (!m_gl_initialized)
         return;
@@ -725,38 +571,13 @@ void LightPathsWidget::paintGL()
         glEnable(GL_CULL_FACE);
     else glDisable(GL_CULL_FACE);
 
-    render_geometry();
-    render_light_paths();
+    m_gl->glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    m_gl->glUseProgram(m_depthonly_shader_program);
+    render_scene();
 }
 
-void LightPathsWidget::keyPressEvent(QKeyEvent* event)
+void GLSceneLayer::render_scene()
 {
-    switch (event->key())
-    {
-      // Home key: display all paths.
-      case Qt::Key_Home:
-        slot_display_all_light_paths();
-        break;
-
-      // Left key: display previous path.
-      case Qt::Key_Left:
-        slot_display_previous_light_path();
-        break;
-
-      // Right key: display next path.
-      case Qt::Key_Right:
-        slot_display_next_light_path();
-        break;
-
-      default:
-        QOpenGLWidget::keyPressEvent(event);
-        break;
-    }
-}
-
-void LightPathsWidget::render_geometry()
-{
-    m_gl->glUseProgram(m_scene_shader_program);
     m_gl->glUniformMatrix4fv(
         m_scene_view_mat_location,
         1,
@@ -785,82 +606,6 @@ void LightPathsWidget::render_geometry()
             0,
             index_count,
             instance_count);
-    }
-}
-
-void LightPathsWidget::render_light_paths()
-{
-    if (m_light_paths_index_offsets.size() > 1)
-    {
-        m_gl->glUseProgram(m_light_paths_shader_program);
-        m_gl->glUniformMatrix4fv(
-            m_light_paths_view_mat_location,
-            1,
-            false,
-            const_cast<const GLfloat*>(&m_gl_view_matrix[0]));
-        m_gl->glUniformMatrix4fv(
-            m_light_paths_proj_mat_location,
-            1,
-            false,
-            const_cast<const GLfloat*>(&m_gl_proj_matrix[0]));
-
-        m_gl->glBindVertexArray(m_light_paths_vao);
-
-        GLint first;
-        GLsizei count;
-        assert(m_selected_light_path_index >= -1);
-        if (m_selected_light_path_index == -1)
-        {
-            first = 0;
-            count = m_light_paths_index_offsets[m_light_paths_index_offsets.size() - 1];
-        }
-        else
-        {
-            first = static_cast<GLint>(m_light_paths_index_offsets[m_selected_light_path_index]);
-            count = m_light_paths_index_offsets[m_selected_light_path_index + 1] - first;
-        }
-        glDrawArrays(GL_LINES, first, count);
-    }
-}
-
-void LightPathsWidget::dump_selected_light_path() const
-{
-    if (m_selected_light_path_index == -1)
-    {
-        if (m_light_paths.empty())
-            RENDERER_LOG_INFO("no light path to display.");
-        else
-        {
-            RENDERER_LOG_INFO("displaying all %s light path%s.",
-                pretty_uint(m_light_paths.size()).c_str(),
-                m_light_paths.size() > 1 ? "s" : "");
-        }
-    }
-    else
-    {
-        RENDERER_LOG_INFO("displaying light path %s:",
-            pretty_int(m_selected_light_path_index + 1).c_str());
-
-        const auto& light_path_recorder = m_project.get_light_path_recorder();
-        const auto& path = m_light_paths[m_selected_light_path_index];
-
-        for (size_t i = path.m_vertex_begin_index; i < path.m_vertex_end_index; ++i)
-        {
-            LightPathVertex v;
-            light_path_recorder.get_light_path_vertex(i, v);
-
-            const std::string entity_name =
-                v.m_entity != nullptr
-                    ? foundation::format("\"{0}\"", v.m_entity->get_path().c_str())
-                    : "n/a";
-
-            RENDERER_LOG_INFO("  vertex " FMT_SIZE_T ": entity: %s - position: (%f, %f, %f) - radiance: (%f, %f, %f) - total radiance: %f",
-                i - path.m_vertex_begin_index + 1,
-                entity_name.c_str(),
-                v.m_position[0], v.m_position[1], v.m_position[2],
-                v.m_radiance[0], v.m_radiance[1], v.m_radiance[2],
-                v.m_radiance[0] + v.m_radiance[1] + v.m_radiance[2]);
-        }
     }
 }
 

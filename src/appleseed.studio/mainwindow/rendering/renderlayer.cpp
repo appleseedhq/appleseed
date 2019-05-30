@@ -28,7 +28,7 @@
 //
 
 // Interface header.
-#include "renderwidget.h"
+#include "renderlayer.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
@@ -48,6 +48,7 @@
 #include <QDropEvent>
 #include <QMimeData>
 #include <QMutexLocker>
+#include <QRect>
 #include <Qt>
 
 // Standard headers.
@@ -61,10 +62,10 @@ namespace appleseed {
 namespace studio {
 
 //
-// RenderWidget class implementation.
+// RenderLayer class implementation.
 //
 
-RenderWidget::RenderWidget(
+RenderLayer::RenderLayer(
     const size_t            width,
     const size_t            height,
     OCIO::ConstConfigRcPtr  ocio_config,
@@ -86,14 +87,19 @@ RenderWidget::RenderWidget(
     setAcceptDrops(true);
 }
 
-QImage RenderWidget::capture()
+QImage RenderLayer::capture()
 {
     QMutexLocker locker(&m_mutex);
 
     return m_image.copy();
 }
 
-void RenderWidget::resize(
+void RenderLayer::darken()
+{
+    multiply(0.2f);
+}
+
+void RenderLayer::resize(
     const size_t    width,
     const size_t    height)
 {
@@ -111,7 +117,7 @@ void RenderWidget::resize(
     clear();
 }
 
-void RenderWidget::clear()
+void RenderLayer::clear()
 {
     QMutexLocker locker(&m_mutex);
 
@@ -136,14 +142,14 @@ namespace
     }
 }
 
-void RenderWidget::start_render()
+void RenderLayer::start_render()
 {
     // Clear the image storage.
     if (m_image_storage)
         m_image_storage->clear(Color4f(0.0f));
 }
 
-void RenderWidget::multiply(const float multiplier)
+void RenderLayer::multiply(const float multiplier)
 {
     QMutexLocker locker(&m_mutex);
 
@@ -199,7 +205,7 @@ namespace
     }
 }
 
-void RenderWidget::highlight_tile(
+void RenderLayer::highlight_tile(
     const Frame&    frame,
     const size_t    tile_x,
     const size_t    tile_y)
@@ -242,7 +248,7 @@ void RenderWidget::highlight_tile(
         sizeof(BracketColor));
 }
 
-void RenderWidget::blit_tile(
+void RenderLayer::blit_tile(
     const Frame&    frame,
     const size_t    tile_x,
     const size_t    tile_y)
@@ -255,7 +261,7 @@ void RenderWidget::blit_tile(
     update_tile_no_lock(tile_x, tile_y);
 }
 
-void RenderWidget::blit_frame(const Frame& frame)
+void RenderLayer::blit_frame(const Frame& frame)
 {
     QMutexLocker locker(&m_mutex);
 
@@ -273,7 +279,7 @@ void RenderWidget::blit_frame(const Frame& frame)
     }
 }
 
-void RenderWidget::slot_display_transform_changed(const QString& transform)
+void RenderLayer::slot_display_transform_changed(const QString& transform)
 {
     {
         QMutexLocker locker(&m_mutex);
@@ -320,7 +326,7 @@ namespace
     }
 }
 
-void RenderWidget::allocate_working_storage(const CanvasProperties& frame_props)
+void RenderLayer::allocate_working_storage(const CanvasProperties& frame_props)
 {
     if (!m_image_storage || !is_compatible(*m_image_storage, frame_props))
     {
@@ -355,7 +361,7 @@ void RenderWidget::allocate_working_storage(const CanvasProperties& frame_props)
     }
 }
 
-void RenderWidget::blit_tile_no_lock(
+void RenderLayer::blit_tile_no_lock(
     const Frame&    frame,
     const size_t    tile_x,
     const size_t    tile_y)
@@ -368,7 +374,7 @@ void RenderWidget::blit_tile_no_lock(
     dst_tile.copy_from(src_tile);
 }
 
-void RenderWidget::update_tile_no_lock(const size_t tile_x, const size_t tile_y)
+void RenderLayer::update_tile_no_lock(const size_t tile_x, const size_t tile_y)
 {
     // Retrieve the source tile.
     const Tile& src_tile = m_image_storage->tile(tile_x, tile_y);
@@ -418,39 +424,11 @@ void RenderWidget::update_tile_no_lock(const size_t tile_x, const size_t tile_y)
     NativeDrawing::blit(dest, dest_stride, uint8_rgb_tile);
 }
 
-void RenderWidget::paintEvent(QPaintEvent* event)
+void RenderLayer::paint(const QRect& rect, QPainter& painter)
 {
     QMutexLocker locker(&m_mutex);
 
-    m_painter.begin(this);
-    m_painter.drawImage(rect(), m_image);
-    m_painter.end();
-}
-
-void RenderWidget::dragEnterEvent(QDragEnterEvent* event)
-{
-    if (event->mimeData()->hasFormat("text/plain"))
-        event->acceptProposedAction();
-}
-
-void RenderWidget::dragMoveEvent(QDragMoveEvent* event)
-{
-    if (pos().x() <= event->pos().x() && pos().y() <= event->pos().y()
-        && event->pos().x() < pos().x() + width() && event->pos().y() < pos().y() + height())
-    {
-        event->accept();
-    }
-    else
-        event->ignore();
-}
-
-void RenderWidget::dropEvent(QDropEvent* event)
-{
-    emit signal_material_dropped(
-        Vector2d(
-            static_cast<double>(event->pos().x()) / width(),
-            static_cast<double>(event->pos().y()) / height()),
-        event->mimeData()->text());
+    painter.drawImage(rect, m_image);
 }
 
 }   // namespace studio

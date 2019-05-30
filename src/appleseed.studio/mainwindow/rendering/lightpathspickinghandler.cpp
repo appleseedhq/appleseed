@@ -57,7 +57,7 @@ namespace appleseed {
 namespace studio {
 
 LightPathsPickingHandler::LightPathsPickingHandler(
-    LightPathsWidget*               light_paths_widget,
+    LightPathsLayer*               light_paths_widget,
     const MouseCoordinatesTracker&  mouse_tracker,
     const Project&                  project)
   : m_light_paths_widget(light_paths_widget)

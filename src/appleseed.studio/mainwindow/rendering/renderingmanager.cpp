@@ -34,7 +34,7 @@
 #include "mainwindow/rendering/cameracontroller.h"
 #include "mainwindow/rendering/qttilecallback.h"
 #include "mainwindow/rendering/rendertab.h"
-#include "mainwindow/rendering/renderwidget.h"
+#include "mainwindow/rendering/viewportwidget.h"
 #include "mainwindow/statusbar.h"
 
 // appleseed.shared headers.
@@ -202,14 +202,14 @@ void RenderingManager::start_rendering(
     m_rendering_mode = rendering_mode;
     m_render_tab = render_tab;
 
-    m_render_tab->get_render_widget()->start_render();
+    m_render_tab->get_viewport_widget()->get_render_layer()->start_render();
 
     TileCallbackCollectionFactory* tile_callback_collection_factory = 
         new TileCallbackCollectionFactory();
 
     tile_callback_collection_factory->insert(
         new QtTileCallbackFactory(
-            m_render_tab->get_render_widget()));
+            m_render_tab->get_viewport_widget()));
 
     tile_callback_collection_factory->insert(
         new ProgressTileCallbackFactory(
@@ -506,7 +506,7 @@ void RenderingManager::slot_frame_end()
     m_status_bar.stop_rendering_time_display();
 
     // Ensure that the render widget is up-to-date.
-    m_render_tab->get_render_widget()->update();
+    m_render_tab->get_viewport_widget()->update();
 }
 
 void RenderingManager::slot_camera_change_begin()

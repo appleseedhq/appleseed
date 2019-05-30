@@ -54,7 +54,7 @@ namespace OCIO = OCIO_NAMESPACE;
 
 // Forward declarations.
 namespace appleseed { namespace studio { class ProjectExplorer; } }
-namespace appleseed { namespace studio { class RenderWidget; } }
+namespace appleseed { namespace studio { class ViewportWidget; } }
 namespace renderer  { class Entity; }
 namespace renderer  { class Project; }
 namespace renderer  { class RenderingManager; }
@@ -85,15 +85,13 @@ class RenderTab
         RenderingManager&       rendering_manager,
         OCIO::ConstConfigRcPtr  ocio_config);
 
-    RenderWidget* get_render_widget() const;
+    ViewportWidget* get_viewport_widget() const;
     CameraController* get_camera_controller() const;
     ScenePickingHandler* get_scene_picking_handler() const;
 
     void set_clear_frame_button_enabled(const bool enabled);
     void set_render_region_buttons_enabled(const bool enabled);
 
-    void clear();
-    void darken();
     void reset_zoom();
 
     void update();
@@ -113,7 +111,6 @@ class RenderTab
     void signal_quicksave_frame_and_aovs();
     void signal_set_render_region(const QRect& rect);
     void signal_clear_render_region();
-    void signal_render_widget_context_menu(const QPoint& point);
     void signal_reset_zoom();
     void signal_clear_frame();
 
@@ -125,19 +122,19 @@ class RenderTab
     void signal_rectangle_selection(const QRect& rect);
 
   private slots:
-    void slot_render_widget_context_menu(const QPoint& point);
     void slot_toggle_render_region(const bool checked);
     void slot_set_render_region(const QRect& rect);
     void slot_toggle_pixel_inspector(const bool checked);
 
   private:
-    RenderWidget*                               m_render_widget;
+    ViewportWidget*                             m_viewport_widget;
     QScrollArea*                                m_scroll_area;
     QToolBar*                                   m_toolbar;
     QToolButton*                                m_set_render_region_button;
     QToolButton*                                m_clear_render_region_button;
     QToolButton*                                m_clear_frame_button;
     QComboBox*                                  m_picking_mode_combo;
+    QComboBox*                                  m_display_transform_combo;
     QLabel*                                     m_info_label;
     QLabel*                                     m_r_label;
     QLabel*                                     m_g_label;
@@ -161,7 +158,7 @@ class RenderTab
 
     OCIO::ConstConfigRcPtr                      m_ocio_config;
 
-    void create_render_widget();
+    void create_viewport_widget();
     void create_toolbar();
     void create_scrollarea();
     void recreate_handlers();

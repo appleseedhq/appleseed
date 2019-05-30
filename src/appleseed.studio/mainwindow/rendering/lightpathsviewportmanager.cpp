@@ -27,11 +27,11 @@
 //
 
 // Interface header.
-#include "lightpathstab.h"
+#include "lightpathsviewportmanager.h"
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/lightpathspickinghandler.h"
-#include "mainwindow/rendering/lightpathswidget.h"
+#include "mainwindow/rendering/lightpathslayer.h"
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
 
@@ -70,29 +70,20 @@ namespace appleseed {
 namespace studio {
 
 //
-// LightPathsTab class implementation.
+// LightPathsViewportManager class implementation.
 //
 
-LightPathsTab::LightPathsTab(Project& project, ParamArray& settings)
+LightPathsViewportManager::LightPathsViewportManager(Project& project, ParamArray& settings)
   : m_project(project)
   , m_settings(settings)
 {
-    setObjectName("render_widget_tab");
-    setLayout(new QGridLayout());
-    layout()->setSpacing(0);
-    layout()->setMargin(0);
-
     create_light_paths_widget();
     create_toolbar();
-    create_scrollarea();
-
-    layout()->addWidget(m_toolbar);
-    layout()->addWidget(m_scroll_area);
 
     recreate_handlers();
 }
 
-void LightPathsTab::slot_entity_picked(const ScenePicker::PickingResult& result)
+void LightPathsViewportManager::slot_entity_picked(const ScenePicker::PickingResult& result)
 {
     const CanvasProperties& props = m_project.get_frame()->image().properties();
 
@@ -102,7 +93,7 @@ void LightPathsTab::slot_entity_picked(const ScenePicker::PickingResult& result)
             result.m_ndc[1] * static_cast<int>(props.m_canvas_height)));
 }
 
-void LightPathsTab::slot_rectangle_selection(const QRect& rect)
+void LightPathsViewportManager::slot_rectangle_selection(const QRect& rect)
 {
     m_screen_space_paths_picking_handler->pick(
         AABB2i(
@@ -110,7 +101,7 @@ void LightPathsTab::slot_rectangle_selection(const QRect& rect)
             Vector2i(rect.x() + rect.width() - 1, rect.y() + rect.height() - 1)));
 }
 
-void LightPathsTab::slot_light_path_selection_changed(
+void LightPathsViewportManager::slot_light_path_selection_changed(
     const int       selected_light_path_index,
     const int       total_light_paths) const
 {
@@ -126,24 +117,17 @@ void LightPathsTab::slot_light_path_selection_changed(
     }
 }
 
-void LightPathsTab::slot_context_menu(const QPoint& point)
+void LightPathsViewportManager::slot_context_menu(const QPoint& point)
 {
     if (!(QApplication::keyboardModifiers() & Qt::ShiftModifier))
         return;
 
     QMenu* menu = new QMenu(this);
 
-    const auto light_path_count = m_project.get_light_path_recorder().get_light_path_count();
-    menu->addAction(
-        QString("Save %1 Light Path%2...")
-            .arg(QString::fromStdString(pretty_uint(light_path_count)))
-            .arg(light_path_count > 1 ? "s" : ""),
-        this, SLOT(slot_save_light_paths()));
-
-    menu->exec(m_light_paths_widget->mapToGlobal(point));
+    menu->exec(m_light_paths_layer->mapToGlobal(point));
 }
 
-void LightPathsTab::slot_save_light_paths()
+void LightPathsViewportManager::slot_save_light_paths()
 {
     QString filepath =
         get_save_filename(
@@ -165,18 +149,18 @@ void LightPathsTab::slot_save_light_paths()
     m_project.get_light_path_recorder().write(filepath.toUtf8().constData());
 }
 
-void LightPathsTab::slot_camera_changed()
+void LightPathsViewportManager::slot_camera_changed()
 {
-    m_light_paths_widget->set_transform(m_camera_controller->get_transform());
-    m_light_paths_widget->update();
+    m_light_paths_layer->set_transform(m_camera_controller->get_transform());
+    m_light_paths_layer->update();
 }
 
-void LightPathsTab::create_light_paths_widget()
+void LightPathsViewportManager::create_light_paths_widget()
 {
     // Create the OpenGL widget.
     const CanvasProperties& props = m_project.get_frame()->image().properties();
     m_light_paths_widget =
-        new LightPathsWidget(
+        new LightPathsLayer(
             m_project,
             props.m_canvas_width,
             props.m_canvas_height);
@@ -191,7 +175,7 @@ void LightPathsTab::create_light_paths_widget()
         SLOT(slot_context_menu(const QPoint&)));
 }
 
-void LightPathsTab::create_toolbar()
+void LightPathsViewportManager::create_toolbar()
 {
     // Create the render toolbar.
     m_toolbar = new QToolBar();
@@ -267,7 +251,7 @@ void LightPathsTab::create_toolbar()
     m_toolbar->addWidget(m_info_label);
 }
 
-void LightPathsTab::create_scrollarea()
+void LightPathsViewportManager::create_scrollarea()
 {
     // Encapsulate the OpenGL widget into another widget that adds a margin around it.
     QWidget* gl_widget_wrapper = new QWidget();
@@ -284,7 +268,7 @@ void LightPathsTab::create_scrollarea()
     m_scroll_area->setWidget(gl_widget_wrapper);
 }
 
-void LightPathsTab::recreate_handlers()
+void LightPathsViewportManager::recreate_handlers()
 {
     // Handler for zooming the render widget in and out with the keyboard or the mouse wheel.
     m_zoom_handler.reset(
