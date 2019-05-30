@@ -127,11 +127,27 @@ void AboutWindow::set_library_features()
         false;
 #endif
 
+    const bool WithSpectralSupport =
+#ifdef APPLESEED_WITH_SPECTRAL_SUPPORT
+        true;
+#else
+        false;
+#endif
+
+    const bool WithGPUSupport =
+#ifdef APPLESEED_WITH_GPU
+        true;
+#else
+        false;
+#endif
+
     QString details;
     details += "This build of appleseed has the following features:\n\n";
     details += QString("  Instruction sets: %1\n").arg(Appleseed::get_lib_cpu_features());
-    details += QString("  Disney material: %1\n").arg(to_enabled_disabled(WithDisneyMaterial));
+    details += QString("  Disney material with SeExpr support: %1\n").arg(to_enabled_disabled(WithDisneyMaterial));
     details += QString("  Embree: %1\n").arg(to_enabled_disabled(WithEmbree));
+    details += QString("  Spectral support: %1\n").arg(to_enabled_disabled(WithSpectralSupport));
+    details += QString("  GPU support: %1\n").arg(to_enabled_disabled(WithGPUSupport));
     details += "\n";
     m_ui->label_details->setText(m_ui->label_details->text() + details);
 }
