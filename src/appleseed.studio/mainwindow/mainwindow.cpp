@@ -392,11 +392,8 @@ void MainWindow::build_menus()
     m_action_fullscreen->setCheckable(true);
     m_action_fullscreen->setShortcut(Qt::Key_F11);
 
-    const QList<QDockWidget*> dock_widgets = findChildren<QDockWidget*>();
-
-    for (const auto dock_widget : dock_widgets) {
+    for (const auto dock_widget : findChildren<QDockWidget*>())
         connect(dock_widget->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
-    }
 
     connect(m_action_fullscreen, SIGNAL(triggered()), SLOT(slot_fullscreen()));
 
