@@ -209,8 +209,6 @@ class MainWindow
     void recreate_render_tabs();
     void remove_render_tabs();
     void add_render_tab(const QString& label);
-    void add_light_paths_tab();
-    void remove_light_paths_tab();
 
     // Project file handling.
     renderer::ParamArray get_project_params(const char* configuration_name) const;
@@ -287,7 +285,7 @@ class MainWindow
     void slot_set_render_region(const QRect& rect);
 
     // Render widget actions.
-    void slot_render_widget_context_menu(const QPoint& point);
+    void slot_viewport_widget_context_menu(const QPoint& point);
     void slot_save_frame();
     void slot_save_frame_and_aovs();
     void slot_quicksave_frame_and_aovs();

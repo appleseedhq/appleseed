@@ -40,9 +40,9 @@
 #include "mainwindow/project/attributeeditor.h"
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/pythonconsole/pythonconsolewidget.h"
-#include "mainwindow/rendering/lightpathstab.h"
 #include "mainwindow/rendering/materialdrophandler.h"
-#include "mainwindow/rendering/renderwidget.h"
+#include "mainwindow/rendering/renderlayer.h"
+#include "mainwindow/rendering/viewportwidget.h"
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
@@ -743,10 +743,10 @@ void MainWindow::update_workspace()
     m_ui->attribute_editor_scrollarea_contents->setEnabled(true);
 
     // Add/remove light paths tab.
-    if (m_project_manager.is_project_open() &&
-        m_project_manager.get_project()->get_light_path_recorder().get_light_path_count() > 0)
-        add_light_paths_tab();
-    else remove_light_paths_tab();
+    //if (m_project_manager.is_project_open() &&
+    //    m_project_manager.get_project()->get_light_path_recorder().get_light_path_count() > 0)
+    //    add_light_paths_tab();
+    //else remove_light_paths_tab();
 }
 
 void MainWindow::update_project_explorer()
@@ -979,8 +979,8 @@ void MainWindow::add_render_tab(const QString& label)
 
     // Connect the render tab to the main window and the rendering manager.
     connect(
-        render_tab, SIGNAL(signal_render_widget_context_menu(const QPoint&)),
-        SLOT(slot_render_widget_context_menu(const QPoint&)));
+        render_tab->get_viewport_widget(), SIGNAL(signal_viewport_widget_context_menu(const QPoint&)),
+        SLOT(slot_viewport_widget_context_menu(const QPoint&)));
     connect(
         render_tab, SIGNAL(signal_set_render_region(const QRect&)),
         SLOT(slot_set_render_region(const QRect&)));
@@ -1018,41 +1018,6 @@ void MainWindow::add_render_tab(const QString& label)
     // Update mappings.
     m_render_tabs[label.toStdString()] = render_tab;
     m_tab_index_to_render_tab[tab_index] = render_tab;
-}
-
-void MainWindow::add_light_paths_tab()
-{
-    if (m_light_paths_tab == nullptr)
-    {
-        // Create light paths tab.
-        m_light_paths_tab =
-            new LightPathsTab(
-                *m_project_manager.get_project(),
-                m_application_settings);
-
-        // Connect render tabs to the light paths tab.
-        for (const auto& kv : m_render_tabs)
-        {
-            connect(
-                kv.second, SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
-                m_light_paths_tab, SLOT(slot_entity_picked(renderer::ScenePicker::PickingResult)));
-            connect(
-                kv.second, SIGNAL(signal_rectangle_selection(const QRect&)),
-                m_light_paths_tab, SLOT(slot_rectangle_selection(const QRect&)));
-        }
-
-        // Add the light paths tab to the tab bar.
-        m_ui->tab_render_channels->addTab(m_light_paths_tab, "Light Paths");
-    }
-}
-
-void MainWindow::remove_light_paths_tab()
-{
-    if (m_light_paths_tab != nullptr)
-    {
-        delete m_light_paths_tab;
-        m_light_paths_tab = nullptr;
-    }
 }
 
 ParamArray MainWindow::get_project_params(const char* configuration_name) const
@@ -1231,9 +1196,6 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
     set_diagnostics_widgets_enabled(rendering_mode == InteractiveRendering, rendering_mode);
     m_ui->attribute_editor_scrollarea_contents->setEnabled(rendering_mode == InteractiveRendering);
 
-    // Remove light paths tab.
-    remove_light_paths_tab();
-
     // Stop monitoring the project file in Final rendering mode.
     if (rendering_mode == FinalRendering)
     {
@@ -1249,7 +1211,7 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
     // Darken render widgets.
     for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
     {
-        i->second->darken();
+        i->second->get_viewport_widget()->get_render_layer()->darken();
         i->second->update();
     }
 
@@ -1305,8 +1267,8 @@ void MainWindow::apply_false_colors_settings()
         // Blit the regular frame into the render widget.
         for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
         {
-            i->second->get_render_widget()->blit_frame(*frame);
-            i->second->get_render_widget()->update();
+            i->second->get_viewport_widget()->get_render_layer()->blit_frame(*frame);
+            i->second->get_viewport_widget()->get_render_layer()->update();
         }
     }
 }
@@ -1328,8 +1290,8 @@ void MainWindow::apply_post_processing_stage(
         // Blit the frame copy into the render widget.
         for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
         {
-            i->second->get_render_widget()->blit_frame(working_frame);
-            i->second->get_render_widget()->update();
+            i->second->get_viewport_widget()->get_render_layer()->blit_frame(working_frame);
+            i->second->get_viewport_widget()->get_render_layer()->update();
         }
     }
 }
@@ -1933,7 +1895,7 @@ void MainWindow::slot_set_render_region(const QRect& rect)
     }
 }
 
-void MainWindow::slot_render_widget_context_menu(const QPoint& point)
+void MainWindow::slot_viewport_widget_context_menu(const QPoint& point)
 {
     if (!(QApplication::keyboardModifiers() & Qt::ShiftModifier))
         return;
@@ -2073,7 +2035,7 @@ void MainWindow::slot_save_render_widget_content()
         return;
 
     // todo: this is sketchy. The render tab should be retrieved from the signal.
-    m_render_tabs["RGB"]->get_render_widget()->capture().save(filepath);
+    m_render_tabs["RGB"]->get_viewport_widget()->get_render_layer()->capture().save(filepath);
 
     RENDERER_LOG_INFO("wrote image file %s.", filepath.toStdString().c_str());
 }
@@ -2085,7 +2047,10 @@ void MainWindow::slot_clear_frame()
 
     // In the UI, clear all render widgets to black.
     for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
-        i->second->clear();
+    {
+        i->second->get_viewport_widget()->get_render_layer()->clear();
+        i->second->get_viewport_widget()->repaint();
+    }
 }
 
 void MainWindow::slot_reset_zoom()

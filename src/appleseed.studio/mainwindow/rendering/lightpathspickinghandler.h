@@ -36,7 +36,7 @@
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class LightPathsWidget; } }
+namespace appleseed { namespace studio { class LightPathsLayer; } }
 namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
 namespace renderer  { class Project; }
 class QEvent;
@@ -51,7 +51,7 @@ class LightPathsPickingHandler
 
   public:
     LightPathsPickingHandler(
-        LightPathsWidget*                   light_paths_widget,
+        LightPathsLayer*                   light_paths_widget,
         const MouseCoordinatesTracker&      mouse_tracker,
         const renderer::Project&            project);
 
@@ -63,7 +63,7 @@ class LightPathsPickingHandler
     void pick(const foundation::AABB2i& rect) const;
 
   private:
-    LightPathsWidget*                       m_light_paths_widget;
+    LightPathsLayer*                       m_light_paths_widget;
     const MouseCoordinatesTracker&          m_mouse_tracker;
     const renderer::Project&                m_project;
     bool                                    m_enabled;

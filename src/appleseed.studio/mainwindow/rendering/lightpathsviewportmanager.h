@@ -47,7 +47,7 @@
 #include <memory>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class LightPathsWidget; } }
+namespace appleseed { namespace studio { class LightPathsLayer; } }
 namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
 class QLabel;
@@ -61,16 +61,16 @@ namespace appleseed {
 namespace studio {
 
 //
-// A tab providing an hardware-accelerated visualization of recorded light paths.
+// Manager for the light paths display overlay into the viewport
 //
 
-class LightPathsTab
-  : public QWidget
+class LightPathsViewportManager
+  : public QObject
 {
     Q_OBJECT
 
   public:
-    LightPathsTab(
+    LightPathsViewportManager(
         renderer::Project&      project,
         renderer::ParamArray&   settings);
 
@@ -89,7 +89,7 @@ class LightPathsTab
   private:
     renderer::Project&                          m_project;
     renderer::ParamArray&                       m_settings;
-    LightPathsWidget*                           m_light_paths_widget;
+    LightPathsLayer*                            m_light_paths_layer;
     QScrollArea*                                m_scroll_area;
     QToolBar*                                   m_toolbar;
     QToolButton*                                m_prev_path_button;

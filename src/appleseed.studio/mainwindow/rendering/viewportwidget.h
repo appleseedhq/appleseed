@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Gray Olson, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,22 +29,26 @@
 #pragma once
 
 // appleseed.studio headers.
+#include "mainwindow/rendering/lightpathslayer.h"
 #include "mainwindow/rendering/renderclipboardhandler.h"
+#include "mainwindow/rendering/renderlayer.h"
+#include "mainwindow/rendering/glscenelayer.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/vector.h"
 
-// OpenColorIO headers.
-#include <OpenColorIO/OpenColorIO.h>
-namespace OCIO = OCIO_NAMESPACE;
-
 // Qt headers.
 #include <QImage>
 #include <QMutex>
+#include <QOpenGLWidget>
 #include <QPainter>
 #include <QWidget>
+
+// OpenColorIO headers.
+#include <OpenColorIO/OpenColorIO.h>
+namespace OCIO = OCIO_NAMESPACE;
 
 // Standard headers.
 #include <cstddef>
@@ -59,6 +62,7 @@ class QDragEnterEvent;
 class QDragMoveEvent;
 class QDropEvent;
 class QPaintEvent;
+class QOpenGLFunctions_3_3_Core;
 
 namespace appleseed {
 namespace studio {
@@ -67,15 +71,16 @@ namespace studio {
 // A render widget based on QImage.
 //
 
-class RenderWidget
-  : public QWidget
+class ViewportWidget
+  : public QOpenGLWidget
   , public ICapturableWidget
 {
     Q_OBJECT
 
   public:
     // Constructor.
-    RenderWidget(
+    ViewportWidget(
+        const renderer::Project&    project,
         const size_t                width,
         const size_t                height,
         OCIO::ConstConfigRcPtr      ocio_config,
@@ -89,84 +94,48 @@ class RenderWidget
         const size_t            width,
         const size_t            height);
 
-    // Thread-safe.
-    void clear();
-
-    // Called before rendering begins.
-    void start_render();
+    RenderLayer* get_render_layer();
+    //GLSceneLayer* get_gl_scene_layer();
+    //LightPathsLayer* get_light_paths_layer();
 
     // Thread-safe.
-    void multiply(const float multiplier);
-
-    // Thread-safe.
-    void highlight_tile(
-        const renderer::Frame&  frame,
-        const size_t            tile_x,
-        const size_t            tile_y);
-
-    // Thread-safe.
-    void blit_tile(
-        const renderer::Frame&  frame,
-        const size_t            tile_x,
-        const size_t            tile_y);
-
-    // Thread-safe.
-    void blit_frame(const renderer::Frame& frame);
-
-    // Direct access to internals for high-performance drawing.
-    QMutex& mutex();
-    QImage& image();
+    //void highlight_tile(
+    //    const renderer::Frame&  frame,
+    //    const size_t            tile_x,
+    //    const size_t            tile_y);
 
   signals:
     void signal_material_dropped(
         const foundation::Vector2d& drop_pos,
         const QString&          material_name);
+    void signal_viewport_widget_context_menu(const QPoint& point);
 
-  public slots:
-    void slot_display_transform_changed(const QString& transform);
+  private slots:
+    void slot_viewport_widget_context_menu(const QPoint& point);
 
   private:
-    mutable QMutex                      m_mutex;
-    QImage                              m_image;
+    const renderer::Project&            m_project;
+    int                                 m_width;
+    int                                 m_height;
+
+    QOpenGLFunctions_3_3_Core*          m_gl;
     QPainter                            m_painter;
-    std::unique_ptr<foundation::Tile>   m_float_tile_storage;
-    std::unique_ptr<foundation::Tile>   m_uint8_tile_storage;
-    std::unique_ptr<foundation::Image>  m_image_storage;
 
-    OCIO::ConstConfigRcPtr              m_ocio_config;
-    OCIO::ConstProcessorRcPtr           m_ocio_processor;
+    std::unique_ptr<RenderLayer>       m_render_layer;
+    //std::unique_ptr<GLSceneLayer>      m_gl_scene_layer;
+    //std::unique_ptr<LightPathsLayer>   m_light_paths_layer;
 
-    void allocate_working_storage(const foundation::CanvasProperties& frame_props);
+    void create_render_layer(OCIO::ConstConfigRcPtr  ocio_config);
+    //void create_gl_scene_layer();
+    //void create_light_paths_layer();
 
-    void blit_tile_no_lock(
-        const renderer::Frame&  frame,
-        const size_t            tile_x,
-        const size_t            tile_y);
-
-    void update_tile_no_lock(
-        const size_t            tile_x,
-        const size_t            tile_y);
-
+    void initializeGL() override;
     void paintEvent(QPaintEvent* event) override;
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dragMoveEvent(QDragMoveEvent* event) override;
     void dropEvent(QDropEvent* event) override;
 };
 
-
-//
-// RenderWidget class implementation.
-//
-
-inline QMutex& RenderWidget::mutex()
-{
-    return m_mutex;
-}
-
-inline QImage& RenderWidget::image()
-{
-    return m_image;
-}
 
 }   // namespace studio
 }   // namespace appleseed

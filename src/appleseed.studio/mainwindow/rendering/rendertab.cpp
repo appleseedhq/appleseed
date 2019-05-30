@@ -32,7 +32,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/projectexplorer.h"
-#include "mainwindow/rendering/renderwidget.h"
+#include "mainwindow/rendering/viewportwidget.h"
 #include "utility/miscellaneous.h"
 
 // appleseed.renderer headers.
@@ -88,7 +88,7 @@ RenderTab::RenderTab(
     layout()->setSpacing(0);
     layout()->setMargin(0);
 
-    create_render_widget();
+    create_viewport_widget();
     create_toolbar();
     create_scrollarea();
 
@@ -98,9 +98,9 @@ RenderTab::RenderTab(
     recreate_handlers();
 }
 
-RenderWidget* RenderTab::get_render_widget() const
+ViewportWidget* RenderTab::get_viewport_widget() const
 {
-    return m_render_widget;
+    return m_viewport_widget;
 }
 
 CameraController* RenderTab::get_camera_controller() const
@@ -124,17 +124,6 @@ void RenderTab::set_render_region_buttons_enabled(const bool enabled)
     m_clear_render_region_button->setEnabled(enabled);
 }
 
-void RenderTab::clear()
-{
-    m_render_widget->clear();
-    m_render_widget->repaint();
-}
-
-void RenderTab::darken()
-{
-    m_render_widget->multiply(0.2f);
-}
-
 void RenderTab::reset_zoom()
 {
     m_zoom_handler->reset_zoom();
@@ -142,7 +131,7 @@ void RenderTab::reset_zoom()
 
 void RenderTab::update()
 {
-    m_render_widget->update();
+    m_viewport_widget->update();
 }
 
 void RenderTab::update_size()
@@ -151,7 +140,7 @@ void RenderTab::update_size()
 
     const CanvasProperties& props = m_project.get_frame()->image().properties();
 
-    m_render_widget->resize(
+    m_viewport_widget->resize(
         props.m_canvas_width,
         props.m_canvas_height);
 
@@ -171,11 +160,6 @@ void RenderTab::load_state(const State& state)
     // The order matters here.
     m_zoom_handler->load_state(state.m_zoom_handler_state);
     m_pan_handler->load_state(state.m_pan_handler_state);
-}
-
-void RenderTab::slot_render_widget_context_menu(const QPoint& point)
-{
-    emit signal_render_widget_context_menu(m_render_widget->mapToGlobal(point));
 }
 
 void RenderTab::slot_toggle_render_region(const bool checked)
@@ -199,23 +183,32 @@ void RenderTab::slot_toggle_pixel_inspector(const bool checked)
     m_pixel_inspector_handler->update_tooltip_visibility();
 }
 
-void RenderTab::create_render_widget()
+void RenderTab::create_viewport_widget()
 {
     const CanvasProperties& props = m_project.get_frame()->image().properties();
 
-    m_render_widget =
-        new RenderWidget(
+    m_viewport_widget =
+        new ViewportWidget(
+            m_project,
             props.m_canvas_width,
             props.m_canvas_height,
-            m_ocio_config);
+            m_ocio_config,
+            this);
 
-    m_render_widget->setContextMenuPolicy(Qt::CustomContextMenu);
+    m_viewport_widget->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(
-        m_render_widget, SIGNAL(customContextMenuRequested(const QPoint&)),
+        m_viewport_widget, SIGNAL(customContextMenuRequested(const QPoint&)),
         SLOT(slot_render_widget_context_menu(const QPoint&)));
 
-    m_render_widget->setMouseTracking(true);
+    connect(
+        this, SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
+        m_viewport_widget->get_render_layer(), SLOT(slot_entity_picked(renderer::ScenePicker::PickingResult)));
+    connect(
+        this, SIGNAL(signal_rectangle_selection(const QRect&)),
+        m_viewport_widget->get_render_layer(), SLOT(slot_rectangle_selection(const QRect&)));
+
+    m_viewport_widget->setMouseTracking(true);
 }
 
 void RenderTab::create_toolbar()
@@ -323,7 +316,7 @@ void RenderTab::create_toolbar()
     m_toolbar->addWidget(display_label);
 
     // Create the display combobox.
-    QComboBox* m_display_transform_combo = new QComboBox();
+    m_display_transform_combo = new QComboBox();
     m_display_transform_combo->setObjectName("display_combo");
     {
         const char* display_name = m_ocio_config->getDefaultDisplay();
@@ -344,7 +337,7 @@ void RenderTab::create_toolbar()
     m_toolbar->addWidget(m_display_transform_combo);
     connect(
         m_display_transform_combo, SIGNAL(currentIndexChanged(QString)),
-        m_render_widget, SLOT(slot_display_transform_changed(QString)));
+        m_viewport_widget->get_render_layer(), SLOT(slot_display_transform_changed(QString)));
 
     // Add stretchy spacer.
     // This places interactive widgets on the left and info on the right.
@@ -390,7 +383,7 @@ void RenderTab::create_scrollarea()
     render_widget_wrapper->setLayout(new QGridLayout());
     render_widget_wrapper->layout()->setSizeConstraint(QLayout::SetFixedSize);
     render_widget_wrapper->layout()->setContentsMargins(20, 20, 20, 20);
-    render_widget_wrapper->layout()->addWidget(m_render_widget);
+    render_widget_wrapper->layout()->addWidget(m_viewport_widget);
 
     // Wrap the render widget in a scroll area.
     m_scroll_area = new QScrollArea();
@@ -405,7 +398,7 @@ void RenderTab::recreate_handlers()
     m_zoom_handler.reset(
         new WidgetZoomHandler(
             m_scroll_area,
-            m_render_widget));
+            m_viewport_widget));
 
     // Handler for panning the render widget with the mouse.
     m_pan_handler.reset(
@@ -415,13 +408,13 @@ void RenderTab::recreate_handlers()
     // Handler for tracking and displaying mouse coordinates.
     m_mouse_tracker.reset(
         new MouseCoordinatesTracker(
-            m_render_widget,
+            m_viewport_widget,
             m_info_label));
 
-    // Handle for tracking and displaying the color of the pixel under the mouse cursor.
+    // Handler for tracking and displaying the color of the pixel under the mouse cursor.
     m_pixel_color_tracker.reset(
         new PixelColorTracker(
-            m_render_widget,
+            m_viewport_widget,
             m_r_label,
             m_g_label,
             m_b_label,
@@ -432,14 +425,14 @@ void RenderTab::recreate_handlers()
     // Handler for pixel inspection in the render widget.
     m_pixel_inspector_handler.reset(
         new PixelInspectorHandler(
-            m_render_widget,
+            m_viewport_widget,
             *m_mouse_tracker.get(),
             m_project));
 
     // Camera handler.
     m_camera_controller.reset(
         new CameraController(
-            m_render_widget,
+            m_viewport_widget,
             m_project));
     connect(
         m_camera_controller.get(), SIGNAL(signal_camera_change_begin()),
@@ -457,7 +450,7 @@ void RenderTab::recreate_handlers()
     // Handler for picking scene entities in the render widget.
     m_scene_picking_handler.reset(
         new ScenePickingHandler(
-            m_render_widget,
+            m_viewport_widget,
             m_picking_mode_combo,
             *m_mouse_tracker.get(),
             m_project_explorer,
@@ -472,7 +465,7 @@ void RenderTab::recreate_handlers()
     // Handler for setting render regions with the mouse.
     m_render_region_handler.reset(
         new RenderRegionHandler(
-            m_render_widget,
+            m_viewport_widget,
             *m_mouse_tracker.get()));
     connect(
         m_render_region_handler.get(), SIGNAL(signal_rectangle_selection(const QRect&)),
@@ -482,7 +475,7 @@ void RenderTab::recreate_handlers()
         SLOT(slot_set_render_region(const QRect&)));
 
     // Clipboard handler.
-    m_clipboard_handler.reset(new RenderClipboardHandler(m_render_widget, m_render_widget));
+    m_clipboard_handler.reset(new RenderClipboardHandler(m_viewport_widget, m_viewport_widget));
 
     // Set initial state.
     m_pixel_inspector_handler->set_enabled(false);
@@ -496,7 +489,7 @@ void RenderTab::recreate_handlers()
             m_rendering_manager));
 
     connect(
-        m_render_widget,
+        m_viewport_widget,
         SIGNAL(signal_material_dropped(
             const foundation::Vector2d&,
             const QString&)),
