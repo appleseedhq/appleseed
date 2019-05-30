@@ -196,16 +196,6 @@ bool file_exists(const QString& path)
     return info.exists() && info.isFile();
 }
 
-QByteArray load_gl_shader(const QString& base_name)
-{
-    const QString resource_path(QString(":/shaders/%1").arg(base_name));
-
-    QFile file(resource_path);
-    file.open(QFile::ReadOnly);
-
-    return file.readAll();
-}
-
 QIcon load_icons(const QString& base_name)
 {
     const QString base_icon_filepath(make_app_path("icons/%1.png").arg(base_name));

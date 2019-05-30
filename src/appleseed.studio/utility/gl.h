@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Gray Olson, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,44 +28,48 @@
 
 #pragma once
 
-// appleseed.foundation headers.
-#include "foundation/math/aabb.h"
-#include "foundation/math/vector.h"
-
 // Qt headers.
-#include <QObject>
+#include <QOpenGLWidget>
+#include <QOpenGLFunctions_4_1_Core>
+
+// standard headers.
+#include <string>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class LightPathsLayer; } }
-namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
-namespace appleseed { namespace studio { class ViewportWidget; } }
-namespace renderer  { class Project; }
-class QEvent;
+class QByteArray;
+class QString;
 
 namespace appleseed {
 namespace studio {
 
-class LightPathsPickingHandler
-  : public QObject
-{
-    Q_OBJECT
+// Get a string from an OpenGL shader kind value.
+const std::string shader_kind_to_string(const GLint shader_kind);
 
-  public:
-    LightPathsPickingHandler(
-        ViewportWidget*                     viewport_widget,
-        const MouseCoordinatesTracker&      mouse_tracker,
-        const renderer::Project&            project);
+// Compile a GL shader.
+void compile_shader(
+    QOpenGLFunctions_4_1_Core* f,
+    const GLuint               shader,
+    const GLsizei              count,
+    const GLchar**             src_string,
+    const GLint*               length);
 
-    void set_enabled(const bool enabled);
+// Link a GL shader program.
+void link_shader_program(
+    QOpenGLFunctions_4_1_Core*  f,
+    const GLuint                program,
+    const GLuint                vert,
+    const GLuint                frag);
 
-    void pick(const foundation::Vector2i& pixel) const;
-    void pick(const foundation::AABB2i& rect) const;
+// Create a GL shader program with a vertex and optional fragment shader.
+void create_shader_program(
+    QOpenGLFunctions_4_1_Core*  f,
+    GLuint&                     program,
+    const QByteArray*           vert_source,
+    const QByteArray*           frag_source);
 
-  private:
-    ViewportWidget*                         m_viewport_widget;
-    const renderer::Project&                m_project;
-    bool                                    m_enabled;
-};
+// Load a GLSL shader from file into a QByteArray.
+QByteArray load_gl_shader(const QString& base_name);
 
 }   // namespace studio
 }   // namespace appleseed
+

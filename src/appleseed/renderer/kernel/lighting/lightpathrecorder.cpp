@@ -275,6 +275,10 @@ void LightPathRecorder::get_light_path_vertex(
     result.m_radiance[0] = source_vertex.m_radiance[0];
     result.m_radiance[1] = source_vertex.m_radiance[1];
     result.m_radiance[2] = source_vertex.m_radiance[2];
+
+    result.m_surface_normal[0] = source_vertex.m_surface_normal[0];
+    result.m_surface_normal[1] = source_vertex.m_surface_normal[1];
+    result.m_surface_normal[2] = source_vertex.m_surface_normal[2];
 }
 
 bool LightPathRecorder::write(const char* filename) const

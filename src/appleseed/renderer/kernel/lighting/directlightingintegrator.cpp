@@ -467,6 +467,7 @@ void DirectLightingIntegrator::add_emitting_shape_sample_contribution(
         light_path_stream->sampled_emitting_shape(
             *sample.m_shape,
             sample.m_point,
+            sample.m_geometric_normal,
             material_value.m_beauty,
             edf_value);
     }
@@ -542,6 +543,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
         light_path_stream->sampled_non_physical_light(
             *light,
             emission_position,
+            m_material_sampler.get_shading_point().get_geometric_normal(),
             material_value.m_beauty,
             light_value);
     }

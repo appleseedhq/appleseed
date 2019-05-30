@@ -248,12 +248,14 @@ source_group ("mainwindow\\pythonconsole" FILES
 set (mainwindow_rendering_sources
     mainwindow/rendering/cameracontroller.cpp
     mainwindow/rendering/cameracontroller.h
+    mainwindow/rendering/glscenelayer.h
+    mainwindow/rendering/glscenelayer.cpp
+    mainwindow/rendering/lightpathslayer.cpp
+    mainwindow/rendering/lightpathslayer.h
     mainwindow/rendering/lightpathspickinghandler.cpp
     mainwindow/rendering/lightpathspickinghandler.h
-    mainwindow/rendering/lightpathstab.cpp
-    mainwindow/rendering/lightpathstab.h
-    mainwindow/rendering/lightpathswidget.cpp
-    mainwindow/rendering/lightpathswidget.h
+    mainwindow/rendering/lightpathsviewportmanager.cpp
+    mainwindow/rendering/lightpathsviewportmanager.h
     mainwindow/rendering/materialdrophandler.cpp
     mainwindow/rendering/materialdrophandler.h
     mainwindow/rendering/pixelcolortracker.cpp
@@ -268,14 +270,16 @@ set (mainwindow_rendering_sources
     mainwindow/rendering/renderclipboardhandler.h
     mainwindow/rendering/renderingmanager.cpp
     mainwindow/rendering/renderingmanager.h
-    mainwindow/rendering/renderregionhandler.cpp
-    mainwindow/rendering/renderregionhandler.h
-    mainwindow/rendering/rendertab.cpp
-    mainwindow/rendering/rendertab.h
-    mainwindow/rendering/renderwidget.cpp
-    mainwindow/rendering/renderwidget.h
+    mainwindow/rendering/renderlayer.cpp
+    mainwindow/rendering/renderlayer.h
     mainwindow/rendering/scenepickinghandler.cpp
     mainwindow/rendering/scenepickinghandler.h
+    mainwindow/rendering/viewportregionselectionhandler.cpp
+    mainwindow/rendering/viewportregionselectionhandler.h
+    mainwindow/rendering/viewporttab.cpp
+    mainwindow/rendering/viewporttab.h
+    mainwindow/rendering/viewportwidget.cpp
+    mainwindow/rendering/viewportwidget.h
 )
 list (APPEND appleseed.studio_sources
     ${mainwindow_rendering_sources}
@@ -360,6 +364,8 @@ set (utility_sources
     utility/doubleslider.h
     utility/foldablepanelwidget.cpp
     utility/foldablepanelwidget.h
+    utility/gl.cpp
+    utility/gl.h
     utility/inputwidgetproxies.cpp
     utility/inputwidgetproxies.h
     utility/interop.h

@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2018 Gray Olson, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -58,47 +58,42 @@ namespace renderer  { class ObjectInstance; }
 namespace renderer  { class Project; }
 class QKeyEvent;
 class QImage;
-class QOpenGLFunctions_3_3_Core;
+class QOpenGLFunctions_4_1_Core;
+class QSurfaceFormat;
 
 namespace appleseed {
 namespace studio {
 
 //
-// A widget providing an hardware-accelerated visualization of recorded light paths.
+// A widget providing an hardware-accelerated visualization of the loaded scene.
 //
 
-class LightPathsWidget
-  : public QOpenGLWidget
-  , public ICapturableWidget
+class GLSceneLayer
+  : public QObject
 {
     Q_OBJECT
 
   public:
-    LightPathsWidget(
+    GLSceneLayer(
         const renderer::Project&            project,
         const size_t                        width,
         const size_t                        height);
 
-    QImage capture() override;
+    ~GLSceneLayer();
+
+    void init_gl(
+        QSurfaceFormat                      format);
 
     void set_transform(
         const foundation::Transformd&       transform);
 
-    void set_light_paths(
-        const renderer::LightPathArray&     light_paths);
+    void set_gl_functions(
+        QOpenGLFunctions_4_1_Core*          functions);
 
-    void set_selected_light_path_index(
-        const int                           selected_light_path_index);
-
-  signals:
-    void signal_light_path_selection_changed(
-        const int                           selected_light_path_index,
-        const int                           total_light_paths) const;
+    void draw();
+    void draw_depth_only();
 
   public slots:
-    void slot_display_all_light_paths();
-    void slot_display_previous_light_path();
-    void slot_display_next_light_path();
     void slot_toggle_backface_culling(const bool checked);
     void slot_synchronize_camera();
 
@@ -110,10 +105,7 @@ class LightPathsWidget
 
     bool                                    m_backface_culling_enabled;
 
-    renderer::LightPathArray                m_light_paths;
-    int                                     m_selected_light_path_index;    // -1 == display all paths
-
-    QOpenGLFunctions_3_3_Core*              m_gl;
+    QOpenGLFunctions_4_1_Core*              m_gl;
 
     std::vector<GLuint>                     m_scene_object_data_vbos;
     std::vector<GLsizei>                    m_scene_object_data_index_counts;
@@ -126,24 +118,17 @@ class LightPathsWidget
     GLint                                   m_scene_view_mat_location;
     GLint                                   m_scene_proj_mat_location;
     GLint                                   m_scene_camera_pos_location;
-    GLuint                                  m_light_paths_vbo;
-    std::vector<GLsizei>                    m_light_paths_index_offsets;
-    GLuint                                  m_light_paths_vao;
-    GLuint                                  m_light_paths_shader_program;
-    GLint                                   m_light_paths_view_mat_location;
-    GLint                                   m_light_paths_proj_mat_location;
+    GLuint                                  m_depthonly_shader_program;
+    GLint                                   m_depthonly_view_mat_location;
+    GLint                                   m_depthonly_proj_mat_location;
+    GLint                                   m_depthonly_camera_pos_location;
     foundation::Matrix4f                    m_gl_view_matrix;
     foundation::Matrix4f                    m_gl_proj_matrix;
-    bool                                    m_gl_initialized;
+    bool                                    m_initialized;
 
-    void initializeGL() override;
-    void resizeGL(int w, int h) override;
-    void paintGL() override;
-    void keyPressEvent(QKeyEvent* event) override;
-
+    void render_scene();
     void cleanup_gl_data();
     void load_scene_data();
-    void load_light_paths_data();
 
     void load_assembly_data(
         const renderer::Assembly&           object);
@@ -158,11 +143,6 @@ class LightPathsWidget
     void load_object_instance(
         const renderer::ObjectInstance&     object_instance,
         const foundation::Matrix4f&         assembly_transform_matrix);
-
-    void render_geometry();
-    void render_light_paths();
-
-    void dump_selected_light_path() const;
 };
 
 }   // namespace studio

@@ -27,11 +27,12 @@
 //
 
 // Interface header.
-#include "lightpathstab.h"
+#include "lightpathsviewportmanager.h"
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/lightpathspickinghandler.h"
-#include "mainwindow/rendering/lightpathswidget.h"
+#include "mainwindow/rendering/lightpathslayer.h"
+#include "mainwindow/rendering/viewporttab.h"
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
 
@@ -70,84 +71,133 @@ namespace appleseed {
 namespace studio {
 
 //
-// LightPathsTab class implementation.
+// LightPathsViewportManager class implementation.
 //
 
-LightPathsTab::LightPathsTab(Project& project, ParamArray& settings)
-  : m_project(project)
+LightPathsViewportManager::LightPathsViewportManager(
+    ViewportTab*    viewport_tab,
+    Project*        project,
+    ParamArray&     settings)
+  : m_enabled(false)
+  , m_picking_enabled(true)
+  , m_paths_display_active(false)
+  , m_project(project)
   , m_settings(settings)
+  , m_viewport_tab(viewport_tab)
 {
-    setObjectName("render_widget_tab");
-    setLayout(new QGridLayout());
-    layout()->setSpacing(0);
-    layout()->setMargin(0);
+    LightPathsLayer* light_paths_layer = m_viewport_tab->get_viewport_widget()->get_light_paths_layer();
+    connect(
+        light_paths_layer, SIGNAL(signal_light_path_selection_changed(const int, const int)),
+        SLOT(slot_light_path_selection_changed(const int, const int)));
 
-    create_light_paths_widget();
     create_toolbar();
-    create_scrollarea();
-
-    layout()->addWidget(m_toolbar);
-    layout()->addWidget(m_scroll_area);
 
     recreate_handlers();
 }
 
-void LightPathsTab::slot_entity_picked(const ScenePicker::PickingResult& result)
+void LightPathsViewportManager::reset(renderer::Project* project)
 {
-    const CanvasProperties& props = m_project.get_frame()->image().properties();
+    set_enabled(false);
+    set_display_enabled(false);
+    set_picking_enabled(true);
+    m_project = project;
+}
 
+void LightPathsViewportManager::slot_base_layer_changed(const ViewportWidget::BaseLayer layer)
+{
+    if (layer == ViewportWidget::BaseLayer::FinalRender)
+        set_picking_enabled(true);
+    else
+        set_picking_enabled(false);
+}
+
+void LightPathsViewportManager::set_enabled(const bool enabled)
+{
+    m_enabled = enabled;
+    if (enabled)
+    {
+        m_toolbar->show();
+    }
+    else
+    {
+        set_display_enabled(false);
+        m_toolbar->hide();
+    }
+    m_toolbar->setDisabled(!enabled);
+
+    emit signal_should_display(m_enabled && m_paths_display_active);
+}
+
+void LightPathsViewportManager::set_display_enabled(const bool enabled)
+{
+    m_paths_display_active = enabled;
+
+    emit signal_should_display(m_enabled && m_paths_display_active);
+}
+
+void LightPathsViewportManager::set_picking_enabled(const bool enabled)
+{
+    m_picking_enabled = enabled;
+    m_screen_space_paths_picking_handler->set_enabled(enabled);
+}
+
+QToolBar* LightPathsViewportManager::toolbar() const
+{
+    return m_toolbar;
+}
+
+void LightPathsViewportManager::slot_entity_picked(const ScenePicker::PickingResult& result)
+{
+    if (!m_picking_enabled || !m_enabled) return;
+
+    set_display_enabled(true);
+
+    const CanvasProperties& props = m_project->get_frame()->image().properties();
     m_screen_space_paths_picking_handler->pick(
         Vector2i(
             result.m_ndc[0] * static_cast<int>(props.m_canvas_width),
             result.m_ndc[1] * static_cast<int>(props.m_canvas_height)));
 }
 
-void LightPathsTab::slot_rectangle_selection(const QRect& rect)
+void LightPathsViewportManager::slot_light_paths_display_toggled(const bool active)
 {
+    set_enabled(active);
+}
+
+void LightPathsViewportManager::slot_rectangle_selection(const QRect& rect)
+{
+    if (!m_picking_enabled || !m_enabled) return;
+
+    set_display_enabled(true);
     m_screen_space_paths_picking_handler->pick(
         AABB2i(
             Vector2i(rect.x(), rect.y()),
             Vector2i(rect.x() + rect.width() - 1, rect.y() + rect.height() - 1)));
 }
 
-void LightPathsTab::slot_light_path_selection_changed(
+void LightPathsViewportManager::slot_light_path_selection_changed(
     const int       selected_light_path_index,
-    const int       total_light_paths) const
+    const int       total_light_paths)
 {
     if (total_light_paths > 0)
     {
+        set_display_enabled(true);
         m_prev_path_button->setEnabled(selected_light_path_index > -1);
         m_next_path_button->setEnabled(selected_light_path_index < total_light_paths - 1);
     }
     else
     {
+        set_display_enabled(false);
         m_prev_path_button->setEnabled(false);
         m_next_path_button->setEnabled(false);
     }
 }
 
-void LightPathsTab::slot_context_menu(const QPoint& point)
-{
-    if (!(QApplication::keyboardModifiers() & Qt::ShiftModifier))
-        return;
-
-    QMenu* menu = new QMenu(this);
-
-    const auto light_path_count = m_project.get_light_path_recorder().get_light_path_count();
-    menu->addAction(
-        QString("Save %1 Light Path%2...")
-            .arg(QString::fromStdString(pretty_uint(light_path_count)))
-            .arg(light_path_count > 1 ? "s" : ""),
-        this, SLOT(slot_save_light_paths()));
-
-    menu->exec(m_light_paths_widget->mapToGlobal(point));
-}
-
-void LightPathsTab::slot_save_light_paths()
+void LightPathsViewportManager::slot_save_light_paths()
 {
     QString filepath =
         get_save_filename(
-            this,
+            m_viewport_tab,
             "Save Light Paths As...",
             "Light Paths Files (*.aspaths);;All Files (*.*)",
             m_settings,
@@ -162,37 +212,18 @@ void LightPathsTab::slot_save_light_paths()
     filepath = QDir::toNativeSeparators(filepath);
 
     // Write light paths to disk.
-    m_project.get_light_path_recorder().write(filepath.toUtf8().constData());
+    m_project->get_light_path_recorder().write(filepath.toUtf8().constData());
 }
 
-void LightPathsTab::slot_camera_changed()
+void LightPathsViewportManager::slot_camera_changed()
 {
-    m_light_paths_widget->set_transform(m_camera_controller->get_transform());
-    m_light_paths_widget->update();
+    if (!m_enabled) return;
 }
 
-void LightPathsTab::create_light_paths_widget()
+void LightPathsViewportManager::create_toolbar()
 {
-    // Create the OpenGL widget.
-    const CanvasProperties& props = m_project.get_frame()->image().properties();
-    m_light_paths_widget =
-        new LightPathsWidget(
-            m_project,
-            props.m_canvas_width,
-            props.m_canvas_height);
+    LightPathsLayer* light_paths_layer = m_viewport_tab->get_viewport_widget()->get_light_paths_layer();
 
-    // Enable context menu on the OpenGL widget.
-    m_light_paths_widget->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(
-        m_light_paths_widget, SIGNAL(signal_light_path_selection_changed(const int, const int)),
-        SLOT(slot_light_path_selection_changed(const int, const int)));
-    connect(
-        m_light_paths_widget, SIGNAL(customContextMenuRequested(const QPoint&)),
-        SLOT(slot_context_menu(const QPoint&)));
-}
-
-void LightPathsTab::create_toolbar()
-{
     // Create the render toolbar.
     m_toolbar = new QToolBar();
     m_toolbar->setObjectName("render_toolbar");
@@ -201,7 +232,7 @@ void LightPathsTab::create_toolbar()
     // Save Light Paths button.
     QToolButton* save_light_paths_button = new QToolButton();
     save_light_paths_button->setIcon(load_icons("lightpathstab_save_light_paths"));
-    const auto light_path_count = m_project.get_light_path_recorder().get_light_path_count();
+    const auto light_path_count = m_project->get_light_path_recorder().get_light_path_count();
     save_light_paths_button->setToolTip(
         QString("Save %1 Light Path%2...")
             .arg(QString::fromStdString(pretty_uint(light_path_count)))
@@ -220,7 +251,7 @@ void LightPathsTab::create_toolbar()
     m_prev_path_button->setEnabled(false);
     connect(
         m_prev_path_button, SIGNAL(clicked()),
-        m_light_paths_widget, SLOT(slot_display_previous_light_path()));
+        light_paths_layer, SLOT(slot_display_previous_light_path()));
     m_toolbar->addWidget(m_prev_path_button);
 
     // Next Light Path button.
@@ -230,7 +261,7 @@ void LightPathsTab::create_toolbar()
     m_next_path_button->setEnabled(false);
     connect(
         m_next_path_button, SIGNAL(clicked()),
-        m_light_paths_widget, SLOT(slot_display_next_light_path()));
+        light_paths_layer, SLOT(slot_display_next_light_path()));
     m_toolbar->addWidget(m_next_path_button);
 
     m_toolbar->addSeparator();
@@ -243,7 +274,7 @@ void LightPathsTab::create_toolbar()
     backface_culling_button->setChecked(false);
     connect(
         backface_culling_button, SIGNAL(toggled(bool)),
-        m_light_paths_widget, SLOT(slot_toggle_backface_culling(const bool)));
+        light_paths_layer, SLOT(slot_toggle_backface_culling(bool)));
     m_toolbar->addWidget(backface_culling_button);
 
     // Synchronize Camera button.
@@ -252,7 +283,7 @@ void LightPathsTab::create_toolbar()
     sync_camera_button->setToolTip("Synchronize the rendering camera with this camera");
     connect(
         sync_camera_button, SIGNAL(clicked()),
-        m_light_paths_widget, SLOT(slot_synchronize_camera()));
+        light_paths_layer, SLOT(slot_synchronize_camera()));
     m_toolbar->addWidget(sync_camera_button);
 
     // Add stretchy spacer.
@@ -265,50 +296,19 @@ void LightPathsTab::create_toolbar()
     m_info_label = new QLabel();
     m_info_label->setObjectName("info_label");
     m_toolbar->addWidget(m_info_label);
+
+    m_toolbar->setDisabled(true);
+    m_toolbar->hide();
 }
 
-void LightPathsTab::create_scrollarea()
+void LightPathsViewportManager::recreate_handlers()
 {
-    // Encapsulate the OpenGL widget into another widget that adds a margin around it.
-    QWidget* gl_widget_wrapper = new QWidget();
-    gl_widget_wrapper->setObjectName("render_widget_wrapper");
-    gl_widget_wrapper->setLayout(new QGridLayout());
-    gl_widget_wrapper->layout()->setSizeConstraint(QLayout::SetFixedSize);
-    gl_widget_wrapper->layout()->setContentsMargins(20, 20, 20, 20);
-    gl_widget_wrapper->layout()->addWidget(m_light_paths_widget);
-
-    // Wrap the OpenGL widget in a scroll area.
-    m_scroll_area = new QScrollArea();
-    m_scroll_area->setObjectName(QString::fromUtf8("render_widget_scrollarea"));
-    m_scroll_area->setAlignment(Qt::AlignCenter);
-    m_scroll_area->setWidget(gl_widget_wrapper);
-}
-
-void LightPathsTab::recreate_handlers()
-{
-    // Handler for zooming the render widget in and out with the keyboard or the mouse wheel.
-    m_zoom_handler.reset(
-        new WidgetZoomHandler(
-            m_scroll_area,
-            m_light_paths_widget));
-
-    // Handler for panning the render widget with the mouse.
-    m_pan_handler.reset(
-        new ScrollAreaPanHandler(
-            m_scroll_area));
-
-    // Handler for tracking and displaying mouse coordinates.
-    m_mouse_tracker.reset(
-        new MouseCoordinatesTracker(
-            m_light_paths_widget,
-            m_info_label));
-
     // The screen-space paths picking handler is used to pick paths from the render widget.
     m_screen_space_paths_picking_handler.reset(
         new LightPathsPickingHandler(
-            m_light_paths_widget,
+            m_viewport_tab->get_viewport_widget(),
             *m_mouse_tracker.get(),
-            m_project));
+            *m_project));
     m_screen_space_paths_picking_handler->set_enabled(false);
 
     // The world-space paths picking handler is used to pick paths in the light paths widget.
@@ -320,21 +320,10 @@ void LightPathsTab::recreate_handlers()
     //         m_project));
 
     // Camera handler.
-    m_light_paths_widget->setMouseTracking(true);
-    m_camera_controller.reset(
-        new CameraController(
-            m_light_paths_widget,
-            m_project,
-            m_project.get_uncached_active_camera()));
-    connect(
-        m_camera_controller.get(), SIGNAL(signal_camera_changed()),
-        SLOT(slot_camera_changed()));
-
-    // Clipboard handler.
-    m_clipboard_handler.reset(new RenderClipboardHandler(m_light_paths_widget, m_light_paths_widget));
+    m_viewport_tab->get_viewport_widget()->setMouseTracking(true);
 }
 
 }   // namespace studio
 }   // namespace appleseed
 
-#include "mainwindow/rendering/moc_cpp_lightpathstab.cxx"
+//#include "mainwindow/rendering/moc_cpp_lightpathsviewportmanager.cxx"
