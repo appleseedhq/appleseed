@@ -63,15 +63,6 @@ namespace renderer
 //       https://www.arnoldrenderer.com/research/egsr2013_spherical_rectangle.pdf
 //
 
-namespace
-{
-    template <typename Shape>
-    double signed_plane_distance(const Shape& shape, const Vector3d& p)
-    {
-        return dot(p, shape.m_geometric_normal) + shape.m_plane_dist;
-    }
-}
-
 EmittingShape EmittingShape::create_triangle_shape(
     const AssemblyInstance*     assembly_instance,
     const size_t                object_instance_index,
