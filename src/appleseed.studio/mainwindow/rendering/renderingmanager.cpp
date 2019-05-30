@@ -32,9 +32,9 @@
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/cameracontroller.h"
+#include "mainwindow/rendering/finalrenderviewporttab.h"
 #include "mainwindow/rendering/qttilecallback.h"
-#include "mainwindow/rendering/rendertab.h"
-#include "mainwindow/rendering/renderwidget.h"
+#include "mainwindow/rendering/viewportcanvas.h"
 #include "mainwindow/statusbar.h"
 
 // appleseed.common headers.
@@ -122,7 +122,7 @@ namespace
 RenderingManager::RenderingManager(StatusBar& status_bar)
   : m_status_bar(status_bar)
   , m_project(nullptr)
-  , m_render_tab(nullptr)
+  , m_final_render_viewport_tab(nullptr)
 {
     Application::initialize_resource_search_paths(m_resource_search_paths);
 
@@ -189,25 +189,30 @@ RenderingManager::~RenderingManager()
     clear_sticky_actions();
 }
 
+RenderingManager::RenderingMode RenderingManager::get_rendering_mode() const
+{
+    return m_rendering_mode;
+}
+
 void RenderingManager::start_rendering(
     Project*                    project,
     const ParamArray&           params,
     const RenderingMode         rendering_mode,
-    RenderTab*                  render_tab)
+    FinalRenderViewportTab*     final_render_viewport_tab)
 {
     m_project = project;
     m_params = params;
     m_rendering_mode = rendering_mode;
-    m_render_tab = render_tab;
+    m_final_render_viewport_tab = final_render_viewport_tab;
 
-    m_render_tab->get_render_widget()->start_render();
+    m_final_render_viewport_tab->get_viewport_canvas()->get_render_layer()->start_render();
 
     TileCallbackCollectionFactory* tile_callback_collection_factory =
         new TileCallbackCollectionFactory();
 
     tile_callback_collection_factory->insert(
         new QtTileCallbackFactory(
-            m_render_tab->get_render_widget()));
+            m_final_render_viewport_tab->get_viewport_canvas()));
 
     tile_callback_collection_factory->insert(
         new ProgressTileCallbackFactory(
@@ -434,7 +439,7 @@ void RenderingManager::slot_rendering_begin()
     run_scheduled_actions();
 
     if (m_rendering_mode == RenderingMode::InteractiveRendering)
-        m_render_tab->get_camera_controller()->set_enabled(true);
+        m_final_render_viewport_tab->get_camera_controller()->set_enabled(true);
 
     m_has_camera_changed = false;
 
@@ -461,10 +466,10 @@ void RenderingManager::slot_rendering_end()
 {
     // Disable camera interaction.
     if (m_rendering_mode == RenderingMode::InteractiveRendering)
-        m_render_tab->get_camera_controller()->set_enabled(false);
+        m_final_render_viewport_tab->get_camera_controller()->set_enabled(false);
 
-    // Save the controller target point into the camera.
-    m_render_tab->get_camera_controller()->save_camera_target();
+    // Save the controller target point into the camera when rendering ends.
+    m_final_render_viewport_tab->get_camera_controller()->save_camera_target();
 
     // Stop printing rendering time in the status bar.
     m_status_bar.stop_rendering_time_display();
@@ -484,10 +489,10 @@ void RenderingManager::slot_rendering_failed()
 {
     // Disable camera interaction.
     if (m_rendering_mode == RenderingMode::InteractiveRendering)
-        m_render_tab->get_camera_controller()->set_enabled(false);
+        m_final_render_viewport_tab->get_camera_controller()->set_enabled(false);
 
-    // Save the controller target point into the camera.
-    m_render_tab->get_camera_controller()->save_camera_target();
+    // Save the controller target point into the camera when rendering ends.
+    m_final_render_viewport_tab->get_camera_controller()->save_camera_target();
 
     // Stop printing rendering time in the status bar.
     m_status_bar.stop_rendering_time_display();
@@ -498,7 +503,7 @@ void RenderingManager::slot_frame_begin()
     // Update the scene's camera before rendering the frame.
     if (m_has_camera_changed)
     {
-        m_render_tab->get_camera_controller()->update_camera_transform();
+        m_final_render_viewport_tab->get_camera_controller()->update_camera_transform();
         m_has_camera_changed = false;
     }
 }
@@ -506,7 +511,7 @@ void RenderingManager::slot_frame_begin()
 void RenderingManager::slot_frame_end()
 {
     // Ensure that the render widget is up-to-date.
-    m_render_tab->get_render_widget()->update();
+    m_final_render_viewport_tab->get_viewport_canvas()->update();
 }
 
 void RenderingManager::slot_camera_change_begin()

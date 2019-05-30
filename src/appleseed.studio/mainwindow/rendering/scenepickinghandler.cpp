@@ -122,7 +122,7 @@ bool ScenePickingHandler::eventFilter(QObject* object, QEvent* event)
 {
     if (m_enabled)
     {
-        if (event->type() == QEvent::MouseButtonPress)
+        if (event->type() == QEvent::MouseButtonRelease)
         {
             const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
             if (!(mouse_event->modifiers() & (Qt::AltModifier | Qt::ShiftModifier | Qt::ControlModifier)))

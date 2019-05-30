@@ -1,8 +1,11 @@
 <RCC>
     <qresource prefix="/">
         <file>images/appleseed-logo-256.png</file>
+        <file>shaders/final_render.frag</file>
+        <file>shaders/fullscreen_tri.vert</file>
         <file>shaders/lightpaths.frag</file>
         <file>shaders/lightpaths.vert</file>
+        <file>shaders/oit_resolve.frag</file>
         <file>shaders/scene.frag</file>
         <file>shaders/scene.vert</file>
     </qresource>

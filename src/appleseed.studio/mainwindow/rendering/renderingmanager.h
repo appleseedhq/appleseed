@@ -55,7 +55,7 @@
 #include <vector>
 
 // Forward declarations.
-namespace appleseed     { namespace studio { class RenderTab; } }
+namespace appleseed     { namespace studio { class FinalRenderViewportTab; } }
 namespace appleseed     { namespace studio { class StatusBar; } }
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Frame; }
@@ -87,7 +87,10 @@ class RenderingManager
         renderer::Project*              project,
         const renderer::ParamArray&     params,
         const RenderingMode             rendering_mode,
-        RenderTab*                      render_tab);
+        FinalRenderViewportTab*         final_render_viewport_tab);
+
+    // Get current rendering mode
+    RenderingMode get_rendering_mode() const;
 
     // Return true if currently rendering, false otherwise.
     bool is_rendering() const;
@@ -165,7 +168,7 @@ class RenderingManager
     renderer::ParamArray                        m_params;
     foundation::SearchPaths                     m_resource_search_paths;
     RenderingMode                               m_rendering_mode;
-    RenderTab*                                  m_render_tab;
+    FinalRenderViewportTab*                     m_final_render_viewport_tab;
 
     std::unique_ptr<renderer::TileCallbackCollectionFactory>
                                                 m_tile_callback_factory;

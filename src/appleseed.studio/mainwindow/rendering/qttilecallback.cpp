@@ -31,7 +31,8 @@
 #include "qttilecallback.h"
 
 // appleseed.studio headers.
-#include "mainwindow/rendering/renderwidget.h"
+#include "mainwindow/rendering/renderlayer.h"
+#include "mainwindow/rendering/viewportcanvas.h"
 
 // Qt headers.
 #include <QObject>
@@ -60,12 +61,12 @@ namespace
         Q_OBJECT
 
       public:
-        explicit QtTileCallback(RenderWidget* render_widget)
-          : m_render_widget(render_widget)
+        explicit QtTileCallback(ViewportCanvas* viewport_canvas)
+          : m_render_layer(viewport_canvas->get_render_layer())
         {
             connect(
                 this, SIGNAL(signal_update()),
-                m_render_widget, SLOT(update()),
+                viewport_canvas, SLOT(repaint()),
                 Qt::QueuedConnection);
         }
 
@@ -81,9 +82,8 @@ namespace
             const size_t    thread_index,
             const size_t    thread_count) override
         {
-            assert(m_render_widget);
-            m_render_widget->highlight_tile(*frame, tile_x, tile_y, thread_index, thread_count);
-
+            assert(m_render_layer);
+            m_render_layer->highlight_tile(*frame, tile_x, tile_y, thread_index, thread_count);
             emit signal_update();
         }
 
@@ -92,9 +92,8 @@ namespace
             const size_t    tile_x,
             const size_t    tile_y) override
         {
-            assert(m_render_widget);
-            m_render_widget->blit_tile(*frame, tile_x, tile_y);
-
+            assert(m_render_layer);
+            m_render_layer->blit_tile(*frame, tile_x, tile_y);
             emit signal_update();
         }
 
@@ -105,9 +104,8 @@ namespace
             const double            /*samples_per_pixel*/,
             const std::uint64_t     /*samples_per_second*/) override
         {
-            assert(m_render_widget);
-            m_render_widget->blit_frame(frame);
-
+            assert(m_render_layer);
+            m_render_layer->blit_frame(frame);
             emit signal_update();
         }
 
@@ -115,7 +113,7 @@ namespace
         void signal_update();
 
       private:
-        RenderWidget* m_render_widget;
+        RenderLayer* m_render_layer;
     };
 }
 
@@ -124,8 +122,8 @@ namespace
 // QtTileCallbackFactory class implementation.
 //
 
-QtTileCallbackFactory::QtTileCallbackFactory(RenderWidget* render_widget)
-  : m_render_widget(render_widget)
+QtTileCallbackFactory::QtTileCallbackFactory(ViewportCanvas* viewport_canvas)
+  : m_viewport_canvas(viewport_canvas)
 {
 }
 
@@ -136,7 +134,7 @@ void QtTileCallbackFactory::release()
 
 ITileCallback* QtTileCallbackFactory::create()
 {
-    return new QtTileCallback(m_render_widget);
+    return new QtTileCallback(m_viewport_canvas);
 }
 
 }   // namespace studio

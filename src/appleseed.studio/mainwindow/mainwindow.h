@@ -35,7 +35,9 @@
 #include "mainwindow/applicationsettingswindow.h"
 #include "mainwindow/falsecolorswindow.h"
 #include "mainwindow/rendering/renderingmanager.h"
-#include "mainwindow/rendering/rendertab.h"
+#include "mainwindow/rendering/finalrenderviewporttab.h"
+#include "mainwindow/rendering/openglviewporttab.h"
+#include "mainwindow/rendering/viewporttab.h"
 #include "mainwindow/renderingsettingswindow.h"
 #include "mainwindow/statusbar.h"
 
@@ -62,8 +64,8 @@ namespace OCIO = OCIO_NAMESPACE;
 
 // Forward declarations.
 namespace appleseed { namespace studio { class AttributeEditor; } }
-namespace appleseed { namespace studio { class LightPathsTab; } }
 namespace appleseed { namespace studio { class MinimizeButton; } }
+namespace appleseed { namespace studio { class LightPathsManager; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace renderer  { class Project; }
 namespace Ui        { class MainWindow; }
@@ -161,17 +163,22 @@ class MainWindow
     AttributeEditor*                            m_attribute_editor;
     RenderingManager                            m_rendering_manager;
 
-    typedef std::map<std::string, RenderTab*> RenderTabCollection;
-    typedef std::map<std::string, RenderTab::State> RenderTabStateCollection;
+    typedef std::map<std::string, ViewportTab*> ViewportTabCollection;
+    typedef std::map<std::string, ViewportTab::State> ViewportTabStateCollection;
 
-    RenderTabCollection                         m_render_tabs;
-    std::map<int, RenderTab*>                   m_tab_index_to_render_tab;
-    LightPathsTab*                              m_light_paths_tab;
+    ViewportTabCollection                       m_viewport_tabs;
+    std::map<int, ViewportTab*>                 m_tab_index_to_viewport_tab;
+
+    FinalRenderViewportTab*                     m_final_render_viewport_tab;
+    int                                         m_final_render_viewport_tab_index;
+    OpenGLViewportTab*                          m_opengl_viewport_tab;
+    int                                         m_opengl_viewport_tab_index;
+    std::unique_ptr<LightPathsManager>          m_light_paths_manager;
 
     struct StateBeforeProjectOpen
     {
         bool                                    m_is_rendering;
-        RenderTabStateCollection                m_render_tab_states;
+        ViewportTabStateCollection              m_viewport_tab_states;
     };
 
     std::unique_ptr<StateBeforeProjectOpen>     m_state_before_project_open;
@@ -208,11 +215,12 @@ class MainWindow
     void restore_state_after_project_open();
 
     // Render tabs.
-    void recreate_render_tabs();
-    void remove_render_tabs();
-    void add_render_tab(const QString& label);
-    void add_light_paths_tab();
-    void remove_light_paths_tab();
+    void recreate_viewport_tabs();
+    void remove_viewport_tabs();
+    void create_final_render_tab();
+    void create_opengl_tab();
+    int add_viewport_tab(ViewportTab* viewport_tab, const QString& label);
+    void connect_tabs();
 
     // Project file handling.
     renderer::ParamArray get_project_params(const char* configuration_name) const;
@@ -289,7 +297,7 @@ class MainWindow
     void slot_set_render_region(const QRect& rect);
 
     // Render widget actions.
-    void slot_render_widget_context_menu(const QPoint& point);
+    void slot_viewport_canvas_context_menu(const QPoint& point);
     void slot_save_frame();
     void slot_save_frame_and_aovs();
     void slot_quicksave_frame_and_aovs();
@@ -305,6 +313,7 @@ class MainWindow
     // General UI actions.
     void slot_fullscreen();
     void slot_check_fullscreen();
+    void slot_current_tab_changed(int index);
 
     // Child windows.
     void slot_show_application_settings_window();

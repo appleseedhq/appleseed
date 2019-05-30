@@ -25,14 +25,40 @@
 // THE SOFTWARE.
 //
 
-#version 330
+#version 420
 #extension GL_ARB_separate_shader_objects : enable
 
-layout(location = 0) in vec3 v_color;
+in float f_aa_norm;
+flat in vec4 f_color;
+flat in float f_thickness;
+flat in float f_total_thickness;
+flat in float f_aspect_expansion_len;
 
-out vec4 Target0;
+uniform vec2 u_res;  // resolution of the frame.
 
+// Output requires 2 values to be able to overlay correctly paths over a layer.
+// The first output is for paths color and the second output is for paths opacity.
+layout(location = 0) out vec4 accum_target;
+layout(location = 1) out float revealage_target;
+
+void write_pixel(vec4 premultiplied_col, vec3 transmit) {
+    premultiplied_col.a *= 1.0 - clamp((transmit.r + transmit.g + transmit.b) * (1.0 / 3.0), 0, 1);
+
+    const float a = min(1.0, premultiplied_col.a) * 8.0 + 0.01;
+    const float b = -gl_FragCoord.z * 0.95 + 1.0;
+
+    const float w = clamp(a * a * a * 1e8 * b * b * b, 1e-2, 3e2);
+
+    accum_target = premultiplied_col * w;
+    revealage_target = premultiplied_col.a;
+}
 void main()
 {
-    Target0 = vec4(v_color, 1.0);
+    const float dist = abs(f_aa_norm) * f_total_thickness - 0.5 / f_aspect_expansion_len;
+    const float eps = fwidth(dist);
+    float a = 1.0 - smoothstep(f_thickness - eps, f_thickness + eps, dist);
+    a *= f_color.a;
+
+    const vec4 premult = vec4(f_color.rgb * a, a);
+    write_pixel(premult, vec3(0.0));
 }

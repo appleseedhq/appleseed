@@ -39,8 +39,12 @@
 #include "mainwindow/project/attributeeditor.h"
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/pythonconsole/pythonconsolewidget.h"
-#include "mainwindow/rendering/lightpathstab.h"
-#include "mainwindow/rendering/renderwidget.h"
+#include "mainwindow/rendering/finalrenderviewporttab.h"
+#include "mainwindow/rendering/lightpathsmanager.h"
+#include "mainwindow/rendering/materialdrophandler.h"
+#include "mainwindow/rendering/openglviewporttab.h"
+#include "mainwindow/rendering/renderlayer.h"
+#include "mainwindow/rendering/viewportcanvas.h"
 #include "utility/settingskeys.h"
 
 // appleseed.qtcommon headers.
@@ -130,7 +134,6 @@ MainWindow::MainWindow(QWidget* parent)
   , m_project_explorer(nullptr)
   , m_attribute_editor(nullptr)
   , m_project_file_watcher(nullptr)
-  , m_light_paths_tab(nullptr)
 {
     initialize_ocio();
 
@@ -203,7 +206,7 @@ bool MainWindow::open_project(const QString& filepath)
         m_rendering_manager.wait_until_rendering_end();
     }
 
-    remove_render_tabs();
+    remove_viewport_tabs();
 
     set_file_widgets_enabled(false, RenderingMode::NotRendering);
     set_project_explorer_enabled(false);
@@ -218,7 +221,7 @@ bool MainWindow::open_project(const QString& filepath)
     }
     else
     {
-        recreate_render_tabs();
+        recreate_viewport_tabs();
         update_workspace();
     }
 
@@ -235,7 +238,7 @@ void MainWindow::open_project_async(const QString& filepath)
         m_rendering_manager.wait_until_rendering_end();
     }
 
-    remove_render_tabs();
+    remove_viewport_tabs();
 
     set_file_widgets_enabled(false, RenderingMode::NotRendering);
     set_project_explorer_enabled(false);
@@ -727,6 +730,10 @@ void MainWindow::build_connections()
     connect(
         &m_rendering_manager, SIGNAL(signal_rendering_end()),
         SLOT(slot_rendering_end()));
+
+    connect(
+        m_ui->tab_render_channels, &QTabWidget::currentChanged,
+        this, &MainWindow::slot_current_tab_changed);
 }
 
 void MainWindow::update_workspace()
@@ -740,12 +747,6 @@ void MainWindow::update_workspace()
     set_diagnostics_widgets_enabled(true, RenderingMode::NotRendering);
     update_pause_resume_checkbox(false);
     m_ui->attribute_editor_scrollarea_contents->setEnabled(true);
-
-    // Add/remove light paths tab.
-    if (m_project_manager.is_project_open() &&
-        m_project_manager.get_project()->get_light_path_recorder().get_light_path_count() > 0)
-        add_light_paths_tab();
-    else remove_light_paths_tab();
 }
 
 void MainWindow::update_project_explorer()
@@ -883,27 +884,25 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const Rend
     m_ui->action_rendering_rendering_settings->setEnabled(allow_start);
     m_action_rendering_settings->setEnabled(allow_start);
 
-    // Render tab buttons.
+    // Viewport tab buttons.
     const int current_tab_index = m_ui->tab_render_channels->currentIndex();
     if (current_tab_index != -1)
     {
-        const auto render_tab_it = m_tab_index_to_render_tab.find(current_tab_index);
-        if (render_tab_it != m_tab_index_to_render_tab.end())
-        {
-            RenderTab* render_tab = render_tab_it->second;
+        // Clear frame.
+        m_final_render_viewport_tab->set_clear_frame_button_enabled(
+            is_enabled && is_project_open && rendering_mode == RenderingMode::NotRendering);
 
-            // Clear frame.
-            render_tab->set_clear_frame_button_enabled(
-                is_enabled && is_project_open && rendering_mode == RenderingMode::NotRendering);
+        // Set/clear rendering region.
+        m_final_render_viewport_tab->set_render_region_buttons_enabled(
+            is_enabled && is_project_open && rendering_mode != RenderingMode::FinalRendering);
 
-            // Set/clear rendering region.
-            render_tab->set_render_region_buttons_enabled(
-                is_enabled && is_project_open && rendering_mode != RenderingMode::FinalRendering);
+        // Scene picker.
+        m_final_render_viewport_tab->get_scene_picking_handler()->set_enabled(
+            is_enabled && is_project_open && rendering_mode != RenderingMode::FinalRendering);
 
-            // Scene picker.
-            render_tab->get_scene_picking_handler()->set_enabled(
-                is_enabled && is_project_open && rendering_mode != RenderingMode::FinalRendering);
-        }
+        // Light paths overlay.
+        const bool enable_light_paths_overlay = is_enabled && is_project_open && rendering_mode == RenderingMode::NotRendering;
+        m_final_render_viewport_tab->set_light_paths_toggle_enabled(enable_light_paths_overlay);
     }
 }
 
@@ -921,18 +920,18 @@ void MainWindow::save_state_before_project_open()
 
     m_state_before_project_open->m_is_rendering = m_rendering_manager.is_rendering();
 
-    for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
-        m_state_before_project_open->m_render_tab_states[i->first] = i->second->save_state();
+    for (const_each<ViewportTabCollection> i = m_viewport_tabs; i; ++i)
+        m_state_before_project_open->m_viewport_tab_states[i->first] = i->second->save_state();
 }
 
 void MainWindow::restore_state_after_project_open()
 {
     if (m_state_before_project_open.get())
     {
-        for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        for (const_each<ViewportTabCollection> i = m_viewport_tabs; i; ++i)
         {
-            const RenderTabStateCollection& tab_states = m_state_before_project_open->m_render_tab_states;
-            const RenderTabStateCollection::const_iterator tab_state_it = tab_states.find(i->first);
+            const ViewportTabStateCollection& tab_states = m_state_before_project_open->m_viewport_tab_states;
+            const ViewportTabStateCollection::const_iterator tab_state_it = tab_states.find(i->first);
 
             if (tab_state_it != tab_states.end())
                 i->second->load_state(tab_state_it->second);
@@ -943,112 +942,144 @@ void MainWindow::restore_state_after_project_open()
     }
 }
 
-void MainWindow::recreate_render_tabs()
+void MainWindow::recreate_viewport_tabs()
 {
-    remove_render_tabs();
+    remove_viewport_tabs();
 
     if (m_project_manager.is_project_open())
-        add_render_tab("RGB");
+    { 
+        m_light_paths_manager.reset(
+            new LightPathsManager(
+                *m_project_manager.get_project(),
+                m_application_settings));
+
+        create_final_render_tab();
+        create_opengl_tab();
+
+        // Connect tabs together once they are all created.
+        connect_tabs();
+    }
 }
 
-void MainWindow::remove_render_tabs()
+void MainWindow::remove_viewport_tabs()
 {
-    for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
-        delete i->second;
-
-    m_render_tabs.clear();
-    m_tab_index_to_render_tab.clear();
+    m_ui->tab_render_channels->blockSignals(true);
 
     while (m_ui->tab_render_channels->count() > 0)
         m_ui->tab_render_channels->removeTab(0);
+
+    m_ui->tab_render_channels->blockSignals(false);
+
+    for (const_each<ViewportTabCollection> i = m_viewport_tabs; i; ++i)
+        delete i->second;
+
+    m_viewport_tabs.clear();
+    m_tab_index_to_viewport_tab.clear();
+
+    m_final_render_viewport_tab = 0;
+    m_opengl_viewport_tab = 0;
 }
 
-void MainWindow::add_render_tab(const QString& label)
+void MainWindow::create_final_render_tab()
 {
-    // Create render tab.
-    RenderTab* render_tab =
-        new RenderTab(
+    m_final_render_viewport_tab =
+        new FinalRenderViewportTab(
             *m_project_explorer,
             *m_project_manager.get_project(),
             m_rendering_manager,
-            m_ocio_config);
+            *m_light_paths_manager,
+            m_ocio_config,
+            m_application_settings);
 
-    // Connect the render tab to the main window and the rendering manager.
+    // Connect the beauty viewport tab to the main window and the rendering manager.
     connect(
-        render_tab, SIGNAL(signal_render_widget_context_menu(const QPoint&)),
-        SLOT(slot_render_widget_context_menu(const QPoint&)));
-    connect(
-        render_tab, SIGNAL(signal_set_render_region(const QRect&)),
+        m_final_render_viewport_tab, SIGNAL(signal_set_render_region(const QRect&)),
         SLOT(slot_set_render_region(const QRect&)));
     connect(
-        render_tab, SIGNAL(signal_clear_render_region()),
+        m_final_render_viewport_tab, SIGNAL(signal_viewport_canvas_context_menu(const QPoint&)),
+        SLOT(slot_viewport_canvas_context_menu(const QPoint&)));
+    connect(
+        m_final_render_viewport_tab, SIGNAL(signal_clear_render_region()),
         SLOT(slot_clear_render_region()));
     connect(
-        render_tab, SIGNAL(signal_save_frame_and_aovs()),
+        m_final_render_viewport_tab, SIGNAL(signal_save_frame_and_aovs()),
         SLOT(slot_save_frame_and_aovs()));
     connect(
-        render_tab, SIGNAL(signal_quicksave_frame_and_aovs()),
+        m_final_render_viewport_tab, SIGNAL(signal_quicksave_frame_and_aovs()),
         SLOT(slot_quicksave_frame_and_aovs()));
     connect(
-        render_tab, SIGNAL(signal_reset_zoom()),
+        m_final_render_viewport_tab, SIGNAL(signal_reset_zoom()),
         SLOT(slot_reset_zoom()));
     connect(
-        render_tab, SIGNAL(signal_clear_frame()),
+        m_final_render_viewport_tab, SIGNAL(signal_clear_frame()),
         SLOT(slot_clear_frame()));
     connect(
-        render_tab, SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
+        m_final_render_viewport_tab, SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
         SLOT(slot_clear_filter()));
     connect(
-        render_tab, SIGNAL(signal_camera_change_begin()),
+        m_final_render_viewport_tab, SIGNAL(signal_camera_change_begin()),
         &m_rendering_manager, SLOT(slot_camera_change_begin()));
     connect(
-        render_tab, SIGNAL(signal_camera_change_end()),
+        m_final_render_viewport_tab, SIGNAL(signal_camera_change_end()),
         &m_rendering_manager, SLOT(slot_camera_change_end()));
     connect(
-        render_tab, SIGNAL(signal_camera_changed()),
+        m_final_render_viewport_tab, SIGNAL(signal_camera_changed()),
         &m_rendering_manager, SLOT(slot_camera_changed()));
 
-    // Add the render tab to the tab bar.
-    const int tab_index = m_ui->tab_render_channels->addTab(render_tab, label);
-
-    // Update mappings.
-    m_render_tabs[label.toStdString()] = render_tab;
-    m_tab_index_to_render_tab[tab_index] = render_tab;
+    m_final_render_viewport_tab_index = add_viewport_tab(m_final_render_viewport_tab, "Beauty");
 }
 
-void MainWindow::add_light_paths_tab()
+void MainWindow::create_opengl_tab()
 {
-    if (m_light_paths_tab == nullptr)
-    {
-        // Create light paths tab.
-        m_light_paths_tab =
-            new LightPathsTab(
-                *m_project_manager.get_project(),
-                m_application_settings);
+    m_opengl_viewport_tab =
+        new OpenGLViewportTab(
+            *m_project_explorer,
+            *m_project_manager.get_project(),
+            m_rendering_manager,
+            *m_light_paths_manager,
+            m_ocio_config,
+            m_application_settings);
 
-        // Connect render tabs to the light paths tab.
-        for (const auto& kv : m_render_tabs)
-        {
-            connect(
-                kv.second, SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
-                m_light_paths_tab, SLOT(slot_entity_picked(renderer::ScenePicker::PickingResult)));
-            connect(
-                kv.second, SIGNAL(signal_rectangle_selection(const QRect&)),
-                m_light_paths_tab, SLOT(slot_rectangle_selection(const QRect&)));
-        }
+    // Connect the opengl viewport tab to the main window and the rendering manager.
+    connect(
+        m_opengl_viewport_tab, SIGNAL(signal_viewport_canvas_context_menu(const QPoint&)),
+        SLOT(slot_viewport_canvas_context_menu(const QPoint&)));
+    connect(
+        m_opengl_viewport_tab, SIGNAL(signal_reset_zoom()),
+        SLOT(slot_reset_zoom()));
 
-        // Add the light paths tab to the tab bar.
-        m_ui->tab_render_channels->addTab(m_light_paths_tab, "Light Paths");
-    }
+    m_opengl_viewport_tab_index = add_viewport_tab(m_opengl_viewport_tab, "OpenGL");
 }
 
-void MainWindow::remove_light_paths_tab()
+int MainWindow::add_viewport_tab(ViewportTab* viewport_tab, const QString& label)
 {
-    if (m_light_paths_tab != nullptr)
-    {
-        delete m_light_paths_tab;
-        m_light_paths_tab = nullptr;
-    }
+    const int tab_index = static_cast<int>(m_viewport_tabs.size());
+
+    // Update mappings before inserting the tab.
+    // When inserting a tab, it may show the tab and
+    // trigger QTabWidget::currentChanged signal.
+    // We want to make sure our mappings are ready
+    // before running our slots.
+    m_viewport_tabs[label.toStdString()] = viewport_tab;
+    m_tab_index_to_viewport_tab[tab_index] = viewport_tab;
+
+    // Add the viewport tab to the tab bar.
+    const int final_tab_index = m_ui->tab_render_channels->insertTab(tab_index, viewport_tab, label);
+
+    assert(final_tab_index == tab_index);
+
+    return final_tab_index;
+}
+
+void MainWindow::connect_tabs()
+{
+    assert(m_final_render_viewport_tab);
+    assert(m_opengl_viewport_tab);
+
+    // Connect final render tab light paths selection to opengl tab.
+    //connect(
+        //m_final_render_viewport_tab, &FinalRenderViewportTab::signal_entity_picked,
+        //m_opengl_viewport_tab, &OpenGLViewportTab::slot_entity_picked);
 }
 
 ParamArray MainWindow::get_project_params(const char* configuration_name) const
@@ -1124,7 +1155,7 @@ bool MainWindow::can_close_project()
 void MainWindow::on_project_change()
 {
     update_project_explorer();
-    recreate_render_tabs();
+    recreate_viewport_tabs();
 
     update_override_shading_menu_item();
     m_false_colors_window.reset();
@@ -1220,15 +1251,15 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
 
     m_false_colors_window.reset();
 
+    // Switch to the final render viewport tab.
+    m_ui->tab_render_channels->setCurrentIndex(m_final_render_viewport_tab_index);
+
     // Enable/disable menus and widgets appropriately.
     set_file_widgets_enabled(false, rendering_mode);
     set_project_explorer_enabled(rendering_mode == RenderingMode::InteractiveRendering);
     set_rendering_widgets_enabled(true, rendering_mode);
     set_diagnostics_widgets_enabled(rendering_mode == RenderingMode::InteractiveRendering, rendering_mode);
     m_ui->attribute_editor_scrollarea_contents->setEnabled(rendering_mode == RenderingMode::InteractiveRendering);
-
-    // Remove light paths tab.
-    remove_light_paths_tab();
 
     // Stop monitoring the project file in Final rendering mode.
     if (rendering_mode == RenderingMode::FinalRendering)
@@ -1240,13 +1271,14 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
     Project* project = m_project_manager.get_project();
     Frame* frame = project->get_frame();
 
+    project->get_light_path_recorder().clear();
+    m_light_paths_manager->clear_light_paths_selection();
     frame->clear_main_and_aov_images();
 
     // Darken render widgets.
-    for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+    for (const_each<ViewportTabCollection> i = m_viewport_tabs; i; ++i)
     {
-        i->second->darken();
-        i->second->update();
+        i->second->render_began();
     }
 
     // Retrieve the appropriate rendering configuration.
@@ -1261,7 +1293,7 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
         rendering_mode == RenderingMode::InteractiveRendering
             ? RenderingManager::RenderingMode::InteractiveRendering
             : RenderingManager::RenderingMode::FinalRendering,
-        m_render_tabs["RGB"]);
+        m_final_render_viewport_tab);
 }
 
 void MainWindow::apply_false_colors_settings()
@@ -1299,10 +1331,10 @@ void MainWindow::apply_false_colors_settings()
     else
     {
         // Blit the regular frame into the render widget.
-        for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        for (const_each<ViewportTabCollection> i = m_viewport_tabs; i; ++i)
         {
-            i->second->get_render_widget()->blit_frame(*frame);
-            i->second->get_render_widget()->update();
+            i->second->get_viewport_canvas()->get_render_layer()->blit_frame(*frame);
+            i->second->get_viewport_canvas()->get_render_layer()->update();
         }
     }
 }
@@ -1322,10 +1354,10 @@ void MainWindow::apply_post_processing_stage(
         stage.execute(working_frame);
 
         // Blit the frame copy into the render widget.
-        for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        for (const_each<ViewportTabCollection> i = m_viewport_tabs; i; ++i)
         {
-            i->second->get_render_widget()->blit_frame(working_frame);
-            i->second->get_render_widget()->update();
+            i->second->get_viewport_canvas()->get_render_layer()->blit_frame(working_frame);
+            i->second->get_viewport_canvas()->get_render_layer()->update();
         }
     }
 }
@@ -1372,7 +1404,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     if (m_benchmark_window.get())
         m_benchmark_window->close();
 
-    remove_render_tabs();
+    remove_viewport_tabs();
 
     m_project_manager.close_project();
 
@@ -1490,7 +1522,7 @@ void MainWindow::slot_open_project_complete(const QString& filepath, const bool 
     else
     {
         show_project_file_loading_failed_message_box(this, filepath);
-        recreate_render_tabs();
+        recreate_viewport_tabs();
         update_workspace();
     }
 }
@@ -1929,7 +1961,7 @@ void MainWindow::slot_set_render_region(const QRect& rect)
     }
 }
 
-void MainWindow::slot_render_widget_context_menu(const QPoint& point)
+void MainWindow::slot_viewport_canvas_context_menu(const QPoint& point)
 {
     if (!(QApplication::keyboardModifiers() & Qt::ShiftModifier))
         return;
@@ -2069,7 +2101,7 @@ void MainWindow::slot_save_render_widget_content()
         return;
 
     // todo: this is sketchy. The render tab should be retrieved from the signal.
-    m_render_tabs["RGB"]->get_render_widget()->capture().save(filepath);
+    m_viewport_tabs["Beauty"]->get_viewport_canvas()->get_render_layer()->capture().save(filepath);
 
     RENDERER_LOG_INFO("wrote image file %s.", filepath.toStdString().c_str());
 }
@@ -2080,16 +2112,18 @@ void MainWindow::slot_clear_frame()
     frame->clear_main_and_aov_images();
 
     // Clear all render widgets to black.
-    for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
-        i->second->clear();
+    for (const std::pair<std::string, ViewportTab*>& kvp : m_viewport_tabs)
+    {
+        kvp.second->clear();
+    }
 }
 
 void MainWindow::slot_reset_zoom()
 {
     const int current_tab_index = m_ui->tab_render_channels->currentIndex();
-    const auto render_tab_it = m_tab_index_to_render_tab.find(current_tab_index);
-    if (render_tab_it != m_tab_index_to_render_tab.end())
-        render_tab_it->second->reset_zoom();
+    const auto viewport_tab_it = m_tab_index_to_viewport_tab.find(current_tab_index);
+    if (viewport_tab_it != m_tab_index_to_viewport_tab.end())
+        viewport_tab_it->second->reset_zoom();
 }
 
 void MainWindow::slot_filter_text_changed(const QString& pattern)
@@ -2105,7 +2139,7 @@ void MainWindow::slot_clear_filter()
 
 void MainWindow::slot_frame_modified()
 {
-    for (each<RenderTabCollection> i = m_render_tabs; i; ++i)
+    for (each<ViewportTabCollection> i = m_viewport_tabs; i; ++i)
         i->second->update_size();
 }
 
@@ -2141,6 +2175,15 @@ void MainWindow::slot_check_fullscreen()
         std::all_of(std::begin(dock_widgets), std::end(dock_widgets), [](QDockWidget* dock) { return dock->isHidden(); });
 
     m_action_fullscreen->setChecked(is_fullscreen);
+}
+
+void MainWindow::slot_current_tab_changed(int index)
+{
+    if (index == -1) return;
+
+    ViewportTab* tab = m_tab_index_to_viewport_tab[index];
+
+    tab->on_tab_selected();
 }
 
 void MainWindow::slot_show_application_settings_window()

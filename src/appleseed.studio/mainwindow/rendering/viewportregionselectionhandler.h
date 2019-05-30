@@ -43,18 +43,18 @@ class QWidget;
 namespace appleseed {
 namespace studio {
 
-class RenderRegionHandler
+class ViewportRegionSelectionHandler
   : public QObject
 {
     Q_OBJECT
 
   public:
     // Default mode is RectangleSelectionMode.
-    RenderRegionHandler(
+    ViewportRegionSelectionHandler(
         QWidget*                                    widget,
         const qtcommon::MouseCoordinatesTracker&    mouse_tracker);
 
-    ~RenderRegionHandler() override;
+    ~ViewportRegionSelectionHandler() override;
 
     void set_enabled(const bool enabled);
 
