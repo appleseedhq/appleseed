@@ -391,10 +391,10 @@ void MainWindow::build_menus()
     m_action_fullscreen = m_ui->menu_view->addAction("Fullscreen");
     m_action_fullscreen->setCheckable(true);
     m_action_fullscreen->setShortcut(Qt::Key_F11);
-    connect(m_ui->project_explorer->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
-    connect(m_ui->attribute_editor->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
-    connect(m_ui->log->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
-    connect(m_ui->python_console->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
+
+    for (const auto dock_widget : findChildren<QDockWidget*>())
+        connect(dock_widget->toggleViewAction(), SIGNAL(triggered()), SLOT(slot_check_fullscreen()));
+
     connect(m_action_fullscreen, SIGNAL(triggered()), SLOT(slot_fullscreen()));
 
     //
