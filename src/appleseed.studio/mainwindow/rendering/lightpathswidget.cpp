@@ -455,7 +455,7 @@ void LightPathsWidget::load_light_paths_data()
                 light_path_recorder.get_light_path_vertex(vertex_idx, curr);
 
                 auto piece_radiance = Color3f::from_array(curr.m_radiance);
-                piece_radiance /= sum_value(piece_radiance);
+                piece_radiance /= piece_radiance + Color3f(1.0f);   // Reinhard tone mapping
                 piece_radiance = linear_rgb_to_srgb(piece_radiance);
 
                 const float temp_store[LightPathVertexLineFloatStride] =
