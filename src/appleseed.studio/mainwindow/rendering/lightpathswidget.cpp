@@ -282,7 +282,8 @@ void LightPathsWidget::load_assembly_instance(
 void LightPathsWidget::load_object_data(const Object& object)
 {
     const string obj_name = string(object.get_name());
-    RENDERER_LOG_DEBUG("opengl: uploading mesh data for object: %s", obj_name.c_str());
+    RENDERER_LOG_DEBUG("opengl: uploading mesh data for object \"%s\"...", obj_name.c_str());
+
     if (m_scene_object_index_map.count(obj_name) == 0)
     {
         // Object vertex buffer data has not been loaded; load it
@@ -340,7 +341,7 @@ void LightPathsWidget::load_scene_data()
 {
     const float time = m_camera.get_shutter_middle_time();
 
-    RENDERER_LOG_DEBUG("opengl: uploading scene data.");
+    RENDERER_LOG_DEBUG("opengl: uploading scene data...");
 
     // First, load all the unique object vertex buffer data into static VBOs
     for (const auto& assembly : m_project.get_scene()->assemblies())
@@ -367,7 +368,7 @@ void LightPathsWidget::load_scene_data()
         if (assembly == nullptr)
         {
             RENDERER_LOG_ERROR(
-                "assembly instance \"%s\" has null base assembly reference",
+                "assembly instance \"%s\" has null base assembly reference.",
                 assembly_instance.get_name());
             continue;
         }
@@ -379,7 +380,7 @@ void LightPathsWidget::load_scene_data()
             if (object == nullptr)
             {
                 RENDERER_LOG_ERROR(
-                    "object instance \"%s\" has null base object reference",
+                    "object instance \"%s\" has null base object reference.",
                     object_instance.get_name());
                 continue;
             }
@@ -580,7 +581,7 @@ void LightPathsWidget::initializeGL()
         const int major_version = qgl_format.majorVersion();
         const int minor_version = qgl_format.minorVersion();
         RENDERER_LOG_ERROR(
-            "opengl: could not load required gl functions. loaded version %d.%d, required version 3.3",
+            "opengl: could not load required gl functions: loaded version %d.%d, required version 3.3.",
             major_version,
             minor_version);
         m_gl_initialized = false;
