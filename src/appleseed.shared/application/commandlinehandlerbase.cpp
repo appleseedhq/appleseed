@@ -97,7 +97,7 @@ struct CommandLineHandlerBase::Impl
             "%s, using %s version %s, %s configuration\n"
             "compiled on %s at %s using %s version %s\n"
             "copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited\n"
-            "copyright (c) 2014-2018 The appleseedhq Organization\n"
+            "copyright (c) 2014-2019 The appleseedhq Organization\n"
             "this software is released under the MIT license (https://opensource.org/licenses/MIT).\n"
             "visit https://appleseedhq.net/ for additional information and resources.",
             m_application_name.c_str(),
@@ -123,15 +123,33 @@ struct CommandLineHandlerBase::Impl
             false;
 #endif
 
+        const bool WithSpectralSupport =
+#ifdef APPLESEED_WITH_SPECTRAL_SUPPORT
+            true;
+#else
+            false;
+#endif
+
+        const bool WithGPUSupport =
+#ifdef APPLESEED_WITH_GPU
+            true;
+#else
+            false;
+#endif
+
         LOG_INFO(
             logger,
             "library features:\n"
-            "  instruction sets              %s\n"
-            "  Disney material               %s\n"
-            "  Embree                        %s",
+            "  Instruction sets                         %s\n"
+            "  Disney material with SeExpr support      %s\n"
+            "  Embree                                   %s\n"
+            "  Spectral support                         %s\n"
+            "  GPU support                              %s",
             Appleseed::get_lib_cpu_features(),
             to_enabled_disabled(WithDisneyMaterial),
-            to_enabled_disabled(WithEmbree));
+            to_enabled_disabled(WithEmbree),
+            to_enabled_disabled(WithSpectralSupport),
+            to_enabled_disabled(WithGPUSupport));
     }
 
     static void print_libraries_information(SuperLogger& logger)
