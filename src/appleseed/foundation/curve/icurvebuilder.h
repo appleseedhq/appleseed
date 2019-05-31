@@ -64,6 +64,9 @@ class APPLESEED_DLLSYMBOL ICurveBuilder
     virtual void push_vertex(const Vector3f& v) = 0;
 
     // Append a width to the vertex of a curve.
+    virtual void push_vertex_count(const size_t vertex_count) = 0;
+
+    // Append a width to the vertex of a curve.
     virtual void push_vertex_width(const float w) = 0;
 
     // Append a color value to the vertex of a curve.

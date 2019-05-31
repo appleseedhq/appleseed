@@ -158,16 +158,26 @@ namespace
               assert_otherwise;
             }
 
+            m_object->push_vertices(m_vertices);
+            m_object->push_widths(m_widths);
+            m_vertex_counts.push_back(m_vertices.size());
             m_total_vertex_count += m_vertices.size();
         }
 
         void end_curve_object() override
         {
+            m_object->push_vertex_counts(m_vertex_counts);
+            m_object->push_total_vertex_count(m_total_vertex_count);
         }
 
         void push_vertex(const Vector3f& v) override
         {
             return m_vertices.push_back(GVector3(v));
+        }
+
+        void push_vertex_count(const size_t vertex_count) override
+        {
+            return m_vertex_counts.push_back(vertex_count);
         }
 
         void push_vertex_width(const float w) override
@@ -281,6 +291,7 @@ namespace
         size_t              m_split_count;
 
         // Curve attributes and statistics.
+        vector<size_t>      m_vertex_counts;
         vector<GVector3>    m_vertices;
         vector<GScalar>     m_widths;
         vector<GScalar>     m_opacities;
