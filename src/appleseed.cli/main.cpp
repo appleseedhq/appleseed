@@ -304,14 +304,15 @@ namespace
         const Frame* frame = project.get_frame();
         assert(frame != nullptr);
 
-        ParamArray params = frame->get_parameters();
+        const ParamArray initial_params = frame->get_parameters();
+        ParamArray new_params = initial_params;
 
         if (g_cl.m_resolution.is_set())
         {
             const string resolution =
                   foundation::to_string(g_cl.m_resolution.values()[0]) + ' ' +
                   foundation::to_string(g_cl.m_resolution.values()[1]);
-            params.insert("resolution", resolution);
+            new_params.insert("resolution", resolution);
         }
 
         if (g_cl.m_window.is_set())
@@ -321,24 +322,24 @@ namespace
                   foundation::to_string(g_cl.m_window.values()[1]) + ' ' +
                   foundation::to_string(g_cl.m_window.values()[2]) + ' ' +
                   foundation::to_string(g_cl.m_window.values()[3]);
-            params.insert("crop_window", crop_window);
+            new_params.insert("crop_window", crop_window);
         }
 
         if (g_cl.m_noise_seed.is_set())
         {
             const uint32 noise_seed = static_cast<uint32>(g_cl.m_noise_seed.value());
-            params.insert("noise_seed", noise_seed);
+            new_params.insert("noise_seed", noise_seed);
         }
 
         if (g_cl.m_output.is_set())
         {
             const char* file_path = g_cl.m_output.value().c_str();
-            params.insert("output_path", file_path);
+            new_params.insert("output_path", file_path);
         }
 
         if (g_cl.m_checkpoint_create.is_set())
         {
-            params.insert("checkpoint_create", true);
+            new_params.insert("checkpoint_create", true);
 
             if (g_cl.m_checkpoint_create.values().empty() && !g_cl.m_output.is_set())
             {
@@ -349,7 +350,7 @@ namespace
                 return false;
             }
 
-            params.insert(
+            new_params.insert(
                 "checkpoint_create_path",
                 !g_cl.m_checkpoint_create.values().empty()
                     ? g_cl.m_checkpoint_create.value()
@@ -358,7 +359,7 @@ namespace
 
         if (g_cl.m_checkpoint_resume.is_set())
         {
-            params.insert("checkpoint_resume", true);
+            new_params.insert("checkpoint_resume", true);
 
             if (g_cl.m_checkpoint_resume.values().empty() && !g_cl.m_output.is_set())
             {
@@ -369,7 +370,7 @@ namespace
                 return false;
             }
 
-            params.insert(
+            new_params.insert(
                 "checkpoint_resume_path",
                 !g_cl.m_checkpoint_resume.values().empty()
                     ? g_cl.m_checkpoint_resume.value()
@@ -377,15 +378,21 @@ namespace
         }
 
         if (g_cl.m_passes.is_set())
-            params.insert_path("passes", g_cl.m_passes.values()[0]);
+            new_params.insert_path("passes", g_cl.m_passes.values()[0]);
 
-        auto_release_ptr<Frame> new_frame(
-            FrameFactory::create(
-                frame->get_name(),
-                params,
-                frame->aovs()));
+        if (new_params != initial_params)
+        {
+            LOG_DEBUG(
+                g_logger,
+                "command line parameters require frame \"%s\" to be recreated.",
+                frame->get_name());
 
-        project.set_frame(new_frame);
+            project.set_frame(
+                FrameFactory::create(
+                    frame->get_name(),
+                    new_params,
+                    frame->aovs()));
+        }
 
         return true;
     }
