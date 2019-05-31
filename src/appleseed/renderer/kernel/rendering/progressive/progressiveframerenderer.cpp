@@ -654,6 +654,9 @@ namespace
             {
                 assert(m_luminance_stats || m_ref_image);
 
+                // Develop the accumulation buffer to the frame.
+                m_buffer.develop_to_frame(*m_project.get_frame(), m_abort_switch);
+
                 string output;
 
                 if (m_luminance_stats)
