@@ -374,6 +374,9 @@ bool EmittingShape::sample_solid_angle(
         // We should have somethinkg like "intersect_always_sphere" that will take the closest t.
         //double t;
         //const bool intersects = intersect_sphere(ray, m_geom.m_sphere.m_center, m_geom.m_sphere.m_radius, t);
+        const float cos_on = static_cast<float>(dot(normalize(o - m_geom.m_sphere.m_center), n));
+        //const float cos_on = static_cast<float>(dot(shading_point.get_shading_normal(), normalize(m_geom.m_sphere.m_center - o)));
+        assert(cos_on > 0.0f);
 
         //light_sample.m_point = o + d * t;
         light_sample.m_point = p;
@@ -434,6 +437,10 @@ float EmittingShape::evaluate_pdf_solid_angle(
             m_geom.m_sphere.m_center,
             m_geom.m_sphere.m_radius
         );
+
+        //const float cos_on = static_cast<float>(dot(surface_shading_point.get_shading_normal(), normalize(m_geom.m_sphere.m_center - o)));
+        const float cos_on = static_cast<float>(dot(normalize(o - m_geom.m_sphere.m_center), light_shading_point.get_shading_normal()));
+        assert(cos_on > 0.0f);
 
         return static_cast<float>(sampler.get_pdf() / square_distance(o, light_shading_point.get_point()));
     }
