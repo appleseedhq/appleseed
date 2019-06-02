@@ -121,8 +121,8 @@ class SphericalCapSampler
 
         // todo: -m_x -> m_x and -m_y -> m_y.
         const Vector<T, 3> normal =
-            sin_alpha * std::cos(phi) * (-m_x)
-            + sin_alpha * std::sin(phi) * (-m_y)
+            sin_alpha * std::cos(phi) * (m_x)
+            + sin_alpha * std::sin(phi) * (m_y)
             + cos_alpha * (-m_z);
 
         return normal;

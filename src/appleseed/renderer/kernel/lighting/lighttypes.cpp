@@ -374,8 +374,9 @@ bool EmittingShape::sample_solid_angle(
         // We should have somethinkg like "intersect_always_sphere" that will take the closest t.
         //double t;
         //const bool intersects = intersect_sphere(ray, m_geom.m_sphere.m_center, m_geom.m_sphere.m_radius, t);
-        const float cos_on = static_cast<float>(dot(normalize(o - m_geom.m_sphere.m_center), n));
+        //const float cos_on = static_cast<float>(dot(normalize(o - m_geom.m_sphere.m_center), n));
         //const float cos_on = static_cast<float>(dot(shading_point.get_shading_normal(), normalize(m_geom.m_sphere.m_center - o)));
+        const float cos_on = static_cast<float>(dot(shading_point.get_shading_normal(), normalize(p - o))) * 0.5f + 0.5f;
         assert(cos_on > 0.0f);
 
         //light_sample.m_point = o + d * t;
@@ -392,7 +393,7 @@ bool EmittingShape::sample_solid_angle(
         light_sample.m_shading_normal = n;
         assert(shape_prob == 1.0);
         light_sample.m_probability =
-            shape_prob * static_cast<float>(sampler.get_pdf() / square_distance(p, o));
+            shape_prob * static_cast<float>(cos_on * sampler.get_pdf() / square_distance(p, o));
 
         return true;
     }
@@ -439,10 +440,11 @@ float EmittingShape::evaluate_pdf_solid_angle(
         );
 
         //const float cos_on = static_cast<float>(dot(surface_shading_point.get_shading_normal(), normalize(m_geom.m_sphere.m_center - o)));
-        const float cos_on = static_cast<float>(dot(normalize(o - m_geom.m_sphere.m_center), light_shading_point.get_shading_normal()));
+        //const float cos_on = static_cast<float>(dot(normalize(o - m_geom.m_sphere.m_center), light_shading_point.get_shading_normal()));
+        const float cos_on = static_cast<float>(dot(surface_shading_point.get_shading_normal(), normalize(light_shading_point.get_point() - o))) * 0.5f + 0.5f;
         assert(cos_on > 0.0f);
 
-        return static_cast<float>(sampler.get_pdf() / square_distance(o, light_shading_point.get_point()));
+        return static_cast<float>(cos_on * sampler.get_pdf() / square_distance(o, light_shading_point.get_point()));
     }
     else if (shape_type == DiskShape)
     {
