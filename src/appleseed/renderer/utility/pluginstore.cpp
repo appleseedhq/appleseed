@@ -135,6 +135,29 @@ struct PluginStore::Impl
         return plugin_map_it->second.get();
     }
 
+    Plugin* load_plugin_and_invoke_handlers_no_lock(const char* filepath)
+    {
+        // Load the plugin.
+        Plugin* plugin = load_plugin_no_lock(filepath);
+
+        if (plugin != nullptr)
+        {
+            // Invoke plugin handlers.
+            for (const auto& plugin_handler_item : m_plugin_handlers)
+            {
+                const string& entry_point_name = plugin_handler_item.first;
+                const PluginHandlerType& plugin_handler = plugin_handler_item.second;
+
+                // If the plugin exposes the expected entry point then pass it to the plugin handler.
+                void* plugin_entry_point = plugin->get_symbol(entry_point_name.c_str());
+                if (plugin_entry_point != nullptr)
+                    plugin_handler(plugin, plugin_entry_point);
+            }
+        }
+
+        return plugin;
+    }
+
     void load_all_plugins_from_path_no_lock(bf::path path)
     {
         path = safe_canonical(path);
@@ -162,47 +185,8 @@ struct PluginStore::Impl
             if (lower_case(filepath.extension().string()) != SharedLibrary::get_default_file_extension())
                 continue;
 
-            vector<PluginHandlerMap::value_type> relevant_plugin_handlers;
-
-            try
-            {
-                // Open the shared library.
-                SharedLibrary library(filepath.string().c_str());
-
-                // Collect known entry points defined by the shared library.
-                for (const auto& plugin_handler_item : m_plugin_handlers)
-                {
-                    const string& entry_point_name = plugin_handler_item.first;
-
-                    // If the plugin defines the expected entry point then keep this plugin handler to invoke it later.
-                    if (library.get_symbol(entry_point_name.c_str()) != nullptr)
-                        relevant_plugin_handlers.push_back(plugin_handler_item);
-                }
-            }
-            catch (const ExceptionCannotLoadSharedLib& e)
-            {
-                RENDERER_LOG_DEBUG("could not open shared library %s: %s.", filepath.string().c_str(), e.what());
-                continue;
-            }
-
-            if (!relevant_plugin_handlers.empty())
-            {
-                // Load the plugin.
-                Plugin* plugin = load_plugin_no_lock(filepath.string().c_str());
-
-                // Invoke plugin handlers.
-                for (const auto& plugin_handler_item : relevant_plugin_handlers)
-                {
-                    const string& entry_point_name = plugin_handler_item.first;
-                    const PluginHandlerType& plugin_handler = plugin_handler_item.second;
-
-                    // Retrieve again the plugin's entry point corresponding to this plugin handler.
-                    void* plugin_entry_point = plugin->get_symbol(entry_point_name.c_str());
-
-                    // Invoke the plugin handler.
-                    plugin_handler(plugin, plugin_entry_point);
-                }
-            }
+            // Load the plugin and invoke plugin handlers.
+            load_plugin_and_invoke_handlers_no_lock(filepath.string().c_str());
         }
     }
 };
@@ -240,7 +224,7 @@ void PluginStore::unload_all_plugins()
 Plugin* PluginStore::load_plugin(const char* filepath)
 {
     boost::lock_guard<boost::mutex> lock(impl->m_store_mutex);
-    return impl->load_plugin_no_lock(filepath);
+    return impl->load_plugin_and_invoke_handlers_no_lock(filepath);
 }
 
 void PluginStore::unload_plugin(Plugin* plugin)
