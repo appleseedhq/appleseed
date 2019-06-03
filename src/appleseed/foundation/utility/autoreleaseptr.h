@@ -153,7 +153,7 @@ class auto_release_ptr
 #endif
     operator bool() const
     {
-        return static_cast<bool>(m_ptr);
+        return m_ptr != nullptr;
     }
 
     // Return the wrapped pointer.

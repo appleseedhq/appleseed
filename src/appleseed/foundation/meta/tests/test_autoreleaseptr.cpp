@@ -174,4 +174,13 @@ TEST_SUITE(Foundation_Utility_AutoReleasePtr)
 
         EXPECT_TRUE(release_was_called);
     }
+
+    TEST_CASE(ImplicitConversionToBool)
+    {
+        auto_release_ptr<Derived> ptr(new Derived());
+
+        const bool value = ptr ? true : false;
+
+        EXPECT_TRUE(value);
+    }
 }
