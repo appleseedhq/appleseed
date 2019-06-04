@@ -104,6 +104,10 @@ class DynamicSpectrum
         const foundation::RegularSpectrum<ValueType, N>&    spectrum,
         const foundation::LightingConditions&               lighting_conditions,
         const Intent                                        intent);
+    DynamicSpectrum(
+        const foundation::RegularSpectrum<ValueType, N>&    spectrum,
+        const foundation::ColorMatchingFunction&            cmf,
+        const Intent                                        intent);
 
     // Construct a spectrum from another spectrum of a different type.
     template <typename U>
@@ -126,18 +130,30 @@ class DynamicSpectrum
         const foundation::RegularSpectrum<ValueType, N>&    spectrum,
         const foundation::LightingConditions&               lighting_conditions,
         const Intent                                        intent);
+    void set(
+        const foundation::RegularSpectrum<ValueType, N>&    spectrum,
+        const foundation::ColorMatchingFunction&            cmf,
+        const Intent                                        intent);
 
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
     const ValueType& operator[](const size_t i) const;
 
     // Convert the spectrum to a linear RGB color.
-    foundation::Color<ValueType, 3> to_rgb(
+    // Use in reflective and transmissive samples.
+    foundation::Color<ValueType, 3> reflectance_to_rgb(
         const foundation::LightingConditions&   lighting_conditions) const;
 
+    // Use in emissive samples.
+    foundation::Color<ValueType, 3> illuminance_to_rgb(const foundation::ColorMatchingFunction& cmf) const;
+
     // Convert the spectrum to a CIE XYZ color.
-    foundation::Color<ValueType, 3> to_ciexyz(
+    // Use in reflective and transmissive samples
+    foundation::Color<ValueType, 3>  reflectance_to_ciexyz(
         const foundation::LightingConditions&   lighting_conditions) const;
+
+    // Use in emissive samples.
+    foundation::Color<ValueType, 3> illuminance_to_ciexyz(const foundation::ColorMatchingFunction& cmf) const;
 
   private:
     static APPLESEED_TLS Mode       s_mode;
@@ -353,6 +369,19 @@ inline DynamicSpectrum<T, N>::DynamicSpectrum(
 }
 
 template <typename T, size_t N>
+inline DynamicSpectrum<T, N>::DynamicSpectrum(
+    const foundation::RegularSpectrum<ValueType,        N>& spectrum,
+    const foundation::ColorMatchingFunction&            cmf,
+    const Intent                                        intent)
+{
+    set(spectrum, cmf, intent);
+
+#ifdef APPLESEED_USE_SSE
+    m_samples[s_size] = T(0.0);
+#endif
+}
+
+template <typename T, size_t N>
 template <typename U>
 inline DynamicSpectrum<T, N>::DynamicSpectrum(const DynamicSpectrum<U, N>& rhs)
 {
@@ -451,7 +480,27 @@ void DynamicSpectrum<T, N>::set(
     {
         reinterpret_cast<foundation::Color<T, 3>&>(m_samples[0]) =
             foundation::ciexyz_to_linear_rgb(
-                foundation::spectrum_to_ciexyz<T>(lighting_conditions, spectrum));
+                foundation::spectral_reflectance_to_ciexyz<T>(lighting_conditions, spectrum));
+    }
+}
+
+template <typename T, size_t N>
+void DynamicSpectrum<T, N>::set(
+    const foundation::RegularSpectrum<ValueType, N>&    spectrum,
+    const foundation::ColorMatchingFunction&            cmf,
+    const Intent                                        intent)
+{
+    if (s_mode == Spectral)
+    {
+        for (size_t i = 0; i < N; ++i)
+            m_samples[i] = spectrum[i];
+    }
+    else
+    {
+
+        reinterpret_cast<foundation::Color<T, 3>&>(m_samples[0]) =
+            foundation::ciexyz_to_linear_rgb(
+                foundation::spectral_illuminance_to_ciexyz<T>(cmf, spectrum));
     }
 }
 
@@ -470,26 +519,47 @@ inline const T& DynamicSpectrum<T, N>::operator[](const size_t i) const
 }
 
 template <typename T, size_t N>
-inline foundation::Color<T, 3> DynamicSpectrum<T, N>::to_rgb(
+inline foundation::Color<T, 3> DynamicSpectrum<T, N>::reflectance_to_rgb(
     const foundation::LightingConditions& lighting_conditions) const
 {
     return
         s_mode == RGB
             ? foundation::Color<T, 3>(m_samples[0], m_samples[1], m_samples[2])
             : foundation::ciexyz_to_linear_rgb(
-                  foundation::spectrum_to_ciexyz<T>(lighting_conditions, *this));
+                  foundation::spectral_reflectance_to_ciexyz<T>(lighting_conditions, *this));
 }
 
 template <typename T, size_t N>
-inline foundation::Color<T, 3> DynamicSpectrum<T, N>::to_ciexyz(
+inline foundation::Color<T, 3> DynamicSpectrum<T, N>::illuminance_to_rgb(const foundation::ColorMatchingFunction& cmf) const
+{
+    return
+        s_mode == RGB
+        ? foundation::Color<T, 3>(m_samples[0], m_samples[1], m_samples[2])
+        : foundation::ciexyz_to_linear_rgb(
+            foundation::spectral_illuminance_to_ciexyz<T>(cmf, *this));
+}
+
+template <typename T, size_t N>
+inline foundation::Color<T, 3> DynamicSpectrum<T, N>::reflectance_to_ciexyz(
     const foundation::LightingConditions& lighting_conditions) const
 {
     return
         s_mode == RGB
             ? linear_rgb_to_ciexyz(
                   foundation::Color<T, 3>(m_samples[0], m_samples[1], m_samples[2]))
-            : foundation::spectrum_to_ciexyz<T>(lighting_conditions, *this);
+            : foundation::spectral_reflectance_to_ciexyz<T>(lighting_conditions, *this);
 }
+
+template <typename T, size_t N>
+inline foundation::Color<T, 3> DynamicSpectrum<T, N>::illuminance_to_ciexyz(const foundation::ColorMatchingFunction& cmf) const
+{
+    return
+        s_mode == RGB
+        ? linear_rgb_to_ciexyz(
+            foundation::Color<T, 3>(m_samples[0], m_samples[1], m_samples[2]))
+        : foundation::spectral_illuminance_to_ciexyz<T>(cmf, *this);
+}
+
 
 template <typename T, size_t N>
 inline bool operator!=(const DynamicSpectrum<T, N>& lhs, const DynamicSpectrum<T, N>& rhs)

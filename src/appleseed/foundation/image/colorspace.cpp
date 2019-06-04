@@ -1443,6 +1443,15 @@ const RegularSpectrum31f RGBToSpectrumRedIlluminance(RegularSpectrum31f::from_ar
 const RegularSpectrum31f RGBToSpectrumGreenIlluminance(RegularSpectrum31f::from_array(RGBToSpectrumGreenIlluminanceTab));
 const RegularSpectrum31f RGBToSpectrumBlueIlluminance(RegularSpectrum31f::from_array(RGBToSpectrumBlueIlluminanceTab));
 
+// Get color matching functions normalizer
+float get_cmf_normalizer(Color4f cmf[32])
+{
+    float n = 0.0f;
+    for (std::size_t w = 0; w < 31; ++w)
+        n += cmf[w][1];
+   return 1.0f / n;
+}
+
 
 //
 // Lighting conditions class implementation.
@@ -1457,7 +1466,7 @@ LightingConditions::LightingConditions(
     const RegularSpectrum31f    cmf[3])
 {
     // Precompute convolution of color matching functions and illuminant.
-    for (size_t w = 0; w < 32; ++w)
+    for (size_t w = 0; w < 31; ++w)
     {
         m_cmf[w][0] = cmf[0][w] * illuminant[w];
         m_cmf[w][1] = cmf[1][w] * illuminant[w];
@@ -1465,15 +1474,39 @@ LightingConditions::LightingConditions(
         m_cmf[w][3] = 0.0f;
     }
 
-    // Integrate the luminance.
-    float n = 0.0f;
-    for (size_t w = 0; w < 31; ++w)
-        n += m_cmf[w][1];
-    float rcp_n = 1.0f / n;
+    m_cmf[31][0] = 0.0f;
+    m_cmf[31][1] = 0.0f;
+    m_cmf[31][2] = 0.0f;
+    m_cmf[31][3] = 0.0f;
 
-    // Rescale the color matching functions such that luminance integrates to 1.
-    for (size_t w = 0; w < 31; ++w)
-        m_cmf[w] *= rcp_n;
+    m_rcp_n = get_cmf_normalizer(m_cmf);
+}
+
+
+//
+// Color matching functions implementation.
+//
+
+ColorMatchingFunction::ColorMatchingFunction()
+{
+}
+
+ColorMatchingFunction::ColorMatchingFunction(const RegularSpectrum31f cmf[3])
+{
+    for (std::size_t i = 0; i < 31; i++)
+    {
+        m_cmf[i][0] = cmf[0][i];
+        m_cmf[i][1] = cmf[1][i];
+        m_cmf[i][2] = cmf[2][i];
+        m_cmf[i][3] = 0.0f;
+    }
+
+    m_cmf[31][0] = 0.0f;
+    m_cmf[31][1] = 0.0f;
+    m_cmf[31][2] = 0.0f;
+    m_cmf[31][3] = 0.0f;
+
+    m_rcp_n = get_cmf_normalizer(m_cmf);
 }
 
 
@@ -1481,15 +1514,31 @@ LightingConditions::LightingConditions(
 // Spectrum <-> CIE XYZ transformations implementation.
 //
 
-void spectrum_to_ciexyz_standard(
+void spectral_reflectance_to_ciexyz_standard(
     const float                 spectrum[],
     float                       ciexyz[3])
 {
     const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE19312Deg);
 
     const Color3f c =
-        spectrum_to_ciexyz<float, RegularSpectrum31f>(
+        spectral_reflectance_to_ciexyz<float, RegularSpectrum31f>(
             lighting_conditions,
+            RegularSpectrum31f::from_array(spectrum));
+
+    ciexyz[0] = c[0];
+    ciexyz[1] = c[1];
+    ciexyz[2] = c[2];
+}
+
+void spectral_illuminance_to_ciexyz_standard(
+    const float                 spectrum[],
+    float                       ciexyz[3])
+{
+    const ColorMatchingFunction cmf(XYZCMFCIE19312Deg);
+
+    const Color3f c =
+        spectral_illuminance_to_ciexyz<float, RegularSpectrum31f>(
+            cmf,
             RegularSpectrum31f::from_array(spectrum));
 
     ciexyz[0] = c[0];

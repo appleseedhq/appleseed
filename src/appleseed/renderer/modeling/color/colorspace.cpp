@@ -34,7 +34,8 @@ using namespace foundation;
 namespace renderer
 {
 
-LightingConditions g_std_lighting_conditions;
+LightingConditions      g_std_lighting_conditions;
+ColorMatchingFunction   g_std_cmf;
 
 namespace
 {
@@ -46,7 +47,16 @@ namespace
         }
     };
 
+    struct InitilizeStdColorMatchingFunction
+    { 
+        InitilizeStdColorMatchingFunction()
+        {
+            g_std_cmf = ColorMatchingFunction(XYZCMFCIE19312Deg);
+        }
+    };
+
     InitializeStdLightingConditions initialize_std_lighting_conditions;
+    InitilizeStdColorMatchingFunction initialize_std_cmf;
 }
 
 }   // namespace renderer

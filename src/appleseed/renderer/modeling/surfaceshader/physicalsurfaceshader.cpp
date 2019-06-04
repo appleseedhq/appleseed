@@ -160,7 +160,7 @@ namespace
             }
 
             shading_result.m_main.rgb() =
-                shading_components.m_beauty.to_rgb(g_std_lighting_conditions);
+                shading_components.m_beauty.illuminance_to_rgb(g_std_cmf);
         }
 
       private:

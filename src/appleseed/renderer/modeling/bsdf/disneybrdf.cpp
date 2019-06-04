@@ -398,7 +398,7 @@ namespace
             new (&values->m_precomputed) InputValues::Precomputed();
 
             const Color3f tint_xyz =
-                values->m_base_color.to_ciexyz(g_std_lighting_conditions);
+                values->m_base_color.reflectance_to_ciexyz(g_std_lighting_conditions);
 
             values->m_precomputed.m_tint_color.set(
                 tint_xyz[1] > 0.0f

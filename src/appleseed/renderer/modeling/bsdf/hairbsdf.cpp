@@ -171,7 +171,7 @@ namespace
     {
         return std::accumulate(retAp.begin(), retAp.end(), 0.0f, [](float s, const Spectrum& ap)
         {
-            return s + luminance(ap.to_rgb(g_std_lighting_conditions));
+            return s + luminance(ap.illuminance_to_ciexyz(g_std_cmf));
         });
     }
 
@@ -222,7 +222,7 @@ namespace
 
         const float sumY = sum_luminance(retAp);
         for (int i = 0; i <= 3; i++)
-            ret[i] = luminance(retAp[i].to_rgb(g_std_lighting_conditions)) / sumY;
+            ret[i] = luminance(retAp[i].illuminance_to_rgb(g_std_cmf)) / sumY;
     }
 
     //

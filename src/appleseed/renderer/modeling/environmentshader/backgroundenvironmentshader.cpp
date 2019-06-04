@@ -101,7 +101,7 @@ namespace
                 SourceInputs(uv),
                 &values);
 
-            shading_result.m_main.rgb() = values.m_color.to_rgb(g_std_lighting_conditions);
+            shading_result.m_main.rgb() = values.m_color.illuminance_to_rgb(g_std_cmf);
             shading_result.m_main.a = values.m_alpha;
         }
 

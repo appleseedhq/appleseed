@@ -308,7 +308,7 @@ namespace
                     output_spectrum);
 
                 Color3f ciexyz;
-                spectrum_to_ciexyz_standard(&output_spectrum[0], &ciexyz[0]);
+                spectral_reflectance_to_ciexyz_standard(&output_spectrum[0], &ciexyz[0]);
 
                 return linear_rgb_to_srgb(ciexyz_to_linear_rgb(ciexyz));
             }

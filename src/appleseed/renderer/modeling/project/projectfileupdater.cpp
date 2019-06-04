@@ -564,7 +564,7 @@ namespace
 
                     if (color)
                     {
-                        const ColorSource source(*color);
+                        const ColorSource source(*color, InputFormatSpectralReflectance);
 
                         float mdf_param_value;
                         source.evaluate_uniform(mdf_param_value);

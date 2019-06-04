@@ -720,7 +720,7 @@ void InputBinder::bind_color_to_input(
     const ColorEntity* color_entity = colors.get_by_name(param_value);
     assert(color_entity);
 
-    input.bind(new ColorSource(*color_entity));
+    input.bind(new ColorSource(*color_entity, input.format()));
 }
 
 void InputBinder::bind_texture_instance_to_input(
