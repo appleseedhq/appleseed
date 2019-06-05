@@ -29,6 +29,9 @@
 
 #pragma once
 
+// appleseed.foundation headers.
+#include "foundation/platform/compilerfeatures.h"
+
 // Standard headers.
 #include <cassert>
 
@@ -48,7 +51,7 @@ struct auto_release_ptr_ref
 {
     T* m_ptr;
 
-    explicit auto_release_ptr_ref(T* ptr)
+    explicit auto_release_ptr_ref(T* ptr) APPLESEED_NOEXCEPT
       : m_ptr(ptr)
     {
     }
@@ -61,32 +64,32 @@ class auto_release_ptr
     typedef T element_type;
 
     // Construct from a raw pointer.
-    explicit auto_release_ptr(T* ptr = nullptr) throw()
+    explicit auto_release_ptr(T* ptr = nullptr) APPLESEED_NOEXCEPT
       : m_ptr(ptr)
     {
     }
 
     // Construct from another auto_release_ptr of the same type.
-    auto_release_ptr(auto_release_ptr& rhs) throw()
+    auto_release_ptr(auto_release_ptr& rhs) APPLESEED_NOEXCEPT
       : m_ptr(rhs.release())
     {
     }
 
     // Construct from another auto_release_ptr of a different but related type.
     template <typename U>
-    auto_release_ptr(auto_release_ptr<U>& rhs) throw()
+    auto_release_ptr(auto_release_ptr<U>& rhs) APPLESEED_NOEXCEPT
       : m_ptr(rhs.release())
     {
     }
 
     // Construct from an auto_release_ptr_ref.
-    auto_release_ptr(auto_release_ptr_ref<T> ref) throw()
+    auto_release_ptr(auto_release_ptr_ref<T> ref) APPLESEED_NOEXCEPT
       : m_ptr(ref.m_ptr)
     {
     }
 
     // Assign from another auto_release_ptr of the same type.
-    auto_release_ptr& operator=(auto_release_ptr& rhs) throw()
+    auto_release_ptr& operator=(auto_release_ptr& rhs) APPLESEED_NOEXCEPT
     {
         reset(rhs.release());
         return *this;
@@ -94,14 +97,14 @@ class auto_release_ptr
 
     // Assign from another auto_release_ptr of a different but related type.
     template <typename U>
-    auto_release_ptr& operator=(auto_release_ptr<U>& rhs) throw()
+    auto_release_ptr& operator=(auto_release_ptr<U>& rhs) APPLESEED_NOEXCEPT
     {
         reset(rhs.release());
         return *this;
     }
 
     // Assign from an auto_release_ptr_ref.
-    auto_release_ptr<T>& operator=(auto_release_ptr_ref<T> ref) throw()
+    auto_release_ptr<T>& operator=(auto_release_ptr_ref<T> ref)
     {
         if (m_ptr != ref.m_ptr)
         {
@@ -123,25 +126,25 @@ class auto_release_ptr
 
     // Automatic conversion to an auto_release_ptr_ref.
     template <typename U>
-    operator auto_release_ptr_ref<U>() throw()
+    operator auto_release_ptr_ref<U>() APPLESEED_NOEXCEPT
     {
         return auto_release_ptr_ref<U>(static_cast<U*>(release()));
     }
 
     // Automatic conversion to an auto_release_ptr of a different type.
     template <typename U>
-    operator auto_release_ptr<U>() throw()
+    operator auto_release_ptr<U>() APPLESEED_NOEXCEPT
     {
         return auto_release_ptr<U>(static_cast<U*>(release()));
     }
 
     // Dereference the wrapped pointer.
-    T& operator*() const throw()
+    T& operator*() const APPLESEED_NOEXCEPT
     {
         assert(m_ptr);
         return *m_ptr;
     }
-    T* operator->() const throw()
+    T* operator->() const APPLESEED_NOEXCEPT
     {
         assert(m_ptr);
         return m_ptr;
@@ -151,24 +154,24 @@ class auto_release_ptr
 #if !defined(_MSC_VER) || _MSC_VER >= 1800
     explicit
 #endif
-    operator bool() const
+    operator bool() const APPLESEED_NOEXCEPT
     {
         return m_ptr != nullptr;
     }
 
     // Return the wrapped pointer.
-    T* get() const throw()
+    T* get() const APPLESEED_NOEXCEPT
     {
         return m_ptr;
     }
-    T& ref() const throw()
+    T& ref() const APPLESEED_NOEXCEPT
     {
         assert(m_ptr);
         return *m_ptr;
     }
 
     // Return the wrapped pointer and give up ownership.
-    T* release() throw()
+    T* release() APPLESEED_NOEXCEPT
     {
         T* rv = m_ptr;
         m_ptr = nullptr;
@@ -176,7 +179,7 @@ class auto_release_ptr
     }
 
     // Delete the owned pointer and replace it with the provided raw pointer.
-    void reset(T* ptr = nullptr) throw()
+    void reset(T* ptr = nullptr)
     {
         if (m_ptr != ptr)
         {
