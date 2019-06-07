@@ -48,6 +48,20 @@ using namespace std;
 namespace renderer
 {
 
+string get_render_device(const ParamArray& params)
+{
+    std::vector<std::string> devices;
+    devices.emplace_back("cpu");
+
+    const string device =
+        params.get_optional<string>(
+            "device",
+            "cpu",
+            devices);
+
+    return device;
+}
+
 Spectrum::Mode get_spectrum_mode(const ParamArray& params)
 {
     const string spectrum_mode =
