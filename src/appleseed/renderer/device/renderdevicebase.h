@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,33 +29,40 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
-
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
-// Standard headers.
-#include <cstddef>
-#include <string>
+#include "renderer/device/irenderdevice.h"
 
 // Forward declarations.
-namespace renderer  { class ParamArray; }
+namespace renderer   { class IFrameRenderer; }
+namespace renderer   { class ParamArray; }
+namespace renderer   { class Project; }
 
 namespace renderer
 {
 
-// Render device.
-std::string get_render_device(const ParamArray& params);
+class RenderDeviceBase
+  : public IRenderDevice
+{
+  protected:
+    RenderDeviceBase(
+        Project&            project,
+        const ParamArray&   params);
 
-// Spectrum mode.
-APPLESEED_DLLSYMBOL Spectrum::Mode get_spectrum_mode(const ParamArray& params);
-std::string get_spectrum_mode_name(const Spectrum::Mode mode);
+    const Project& get_project() const;
+    Project& get_project();
 
-// Sampling mode.
-APPLESEED_DLLSYMBOL SamplingContext::Mode get_sampling_context_mode(const ParamArray& params);
-std::string get_sampling_context_mode_name(const SamplingContext::Mode mode);
+    const ParamArray& get_params() const;
 
-// Rendering threads.
-APPLESEED_DLLSYMBOL size_t get_rendering_thread_count(const ParamArray& params);
+    bool is_progressive_render() const;
 
-}   // namespace renderer
+    IRendererController* get_frame_renderer_controller() override;
+
+    static IRendererController::Status wait_for_event(
+        IFrameRenderer&      frame_renderer,
+        IRendererController& renderer_controller);
+
+  private:
+    Project&            m_project;
+    const ParamArray&   m_params;
+};
+
+}       // namespace renderer

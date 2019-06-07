@@ -74,26 +74,43 @@ Dictionary Configuration::get_metadata()
     Dictionary metadata;
 
     metadata.insert(
+        "device",
+        Dictionary()
+            .insert("type", "enum")
+            .insert("values", "cpu")
+            .insert("default", "cpu")
+            .insert("label", "Device")
+            .insert("help", "Render device")
+            .insert(
+                "options",
+                Dictionary()
+                    .insert(
+                        "cpu",
+                        Dictionary()
+                            .insert("label", "CPU")
+                            .insert("help", "CPU device"))));
+
+    metadata.insert(
         "spectrum_mode",
         Dictionary()
-        .insert("type", "enum")
-        .insert("values", "rgb|spectral")
-        .insert("default", "rgb")
-        .insert("label", "Color Pipeline")
-        .insert("help", "Color pipeline used throughout the renderer")
-        .insert(
-            "options",
-            Dictionary()
+            .insert("type", "enum")
+            .insert("values", "rgb|spectral")
+            .insert("default", "rgb")
+            .insert("label", "Color Pipeline")
+            .insert("help", "Color pipeline used throughout the renderer")
             .insert(
-                "rgb",
+                "options",
                 Dictionary()
-                .insert("label", "RGB")
-                .insert("help", "RGB pipeline"))
-            .insert(
-                "spectral",
-                Dictionary()
-                .insert("label", "Spectral")
-                .insert("help", "Spectral pipeline using 31 equidistant components in the 400-700 nm range"))));
+                .insert(
+                    "rgb",
+                    Dictionary()
+                        .insert("label", "RGB")
+                        .insert("help", "RGB pipeline"))
+                .insert(
+                    "spectral",
+                    Dictionary()
+                        .insert("label", "Spectral")
+                        .insert("help", "Spectral pipeline using 31 equidistant components in the 400-700 nm range"))));
 
     metadata.insert(
         "sampling_mode",

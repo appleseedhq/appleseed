@@ -441,6 +441,16 @@ namespace
         }
 
       protected:
+        void create_devices(QFormLayout* parent)
+        {
+            QComboBox* device_combobox = create_combobox("device");
+            device_combobox->setToolTip(m_params_metadata.get_path("device.help"));
+            device_combobox->addItem("CPU", "cpu");
+            parent->addRow("Device:", device_combobox);
+
+            create_direct_link("device", "device", "cpu");
+        }
+
         void create_color_pipeline(QFormLayout* parent)
         {
             QComboBox* color_pipeline_combobox = create_combobox("spectrum_mode");
@@ -465,6 +475,7 @@ namespace
             QFormLayout* layout = create_form_layout();
             container()->setLayout(layout);
 
+            create_devices(layout);
             create_color_pipeline(layout);
 
             load_directly_linked_values(config);
@@ -488,6 +499,7 @@ namespace
             QFormLayout* layout = create_form_layout();
             container()->setLayout(layout);
 
+            create_devices(layout);
             create_color_pipeline(layout);
             create_time_limit(layout);
 
@@ -560,7 +572,7 @@ namespace
       public:
         explicit ImagePlaneSamplingPanel(QWidget* parent = nullptr)
           : RenderSettingsPanel("Image Plane Sampling", parent)
-        {   
+        {
         }
     };
 
@@ -857,7 +869,7 @@ namespace
         }
 
         void save_config(Configuration& config) const override
-        {            
+        {
             if (get_widget<bool>("general.unlimited_samples"))
                 config.get_parameters().remove_path("progressive_frame_renderer.max_average_spp");
             else set_config(config, "progressive_frame_renderer.max_average_spp", get_widget<int>("general.max_average_spp"));
@@ -1218,9 +1230,9 @@ namespace
         {
             CollapsibleSectionWidget* collapsible_section = new CollapsibleSectionWidget("Advanced");
             parent->addWidget(collapsible_section);
-            
+
             QVBoxLayout* layout = new QVBoxLayout();
-    
+
             create_pt_advanced_nee_settings(layout);
             create_pt_advanced_optimization_settings(layout);
             create_pt_advanced_diag_settings(layout);
@@ -1504,7 +1516,7 @@ namespace
         {
             CollapsibleSectionWidget* collapsible_section = new CollapsibleSectionWidget("Advanced");
             parent->addWidget(collapsible_section);
-            
+
             QVBoxLayout* layout = create_vertical_layout();
 
             create_advanced_max_ray_intensity_settings(layout);
