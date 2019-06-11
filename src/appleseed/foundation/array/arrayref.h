@@ -154,6 +154,21 @@ class ArrayRef
         m_array.push_back(&x);
     }
 
+#if APPLESEED_COMPILER_CXX_GENERALIZED_INITIALIZERS
+    // Add new items to the array.
+    void push_back(const std::initializer_list<T>& l)
+    {
+        for (const auto& x : l)
+            m_array.push_back(&x);
+    }
+#endif
+
+    void fill(const size_t size, const T& value)
+    {
+        m_array.resize(size);
+        std::fill(begin(), end(), value);
+    }
+
     template <typename Iterator>
     void assign(Iterator first, Iterator last)
     {
