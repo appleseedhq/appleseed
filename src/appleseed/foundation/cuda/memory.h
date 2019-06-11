@@ -37,6 +37,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstddef>
 
 namespace foundation
 {
@@ -124,7 +125,7 @@ class DevicePtr
 
 template <typename T, typename DeviceMemoryAllocator = GlobalDeviceMemoryAllocator>
 class DeviceBuffer
-  : NonCopyable
+  : public NonCopyable
 {
   public:
     typedef typename DeviceMemoryAllocator::pointer_type pointer_type;
@@ -138,8 +139,7 @@ class DeviceBuffer
 
     ~DeviceBuffer()
     {
-        if (m_ptr)
-            DeviceMemoryAllocator::free(m_ptr);
+        DeviceMemoryAllocator::free(m_ptr);
     }
 
     void reset()

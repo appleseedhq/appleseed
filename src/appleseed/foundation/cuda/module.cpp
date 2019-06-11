@@ -64,7 +64,7 @@ CUDAModule::~CUDAModule()
 
 CUDAModule& CUDAModule::operator=(CUDAModule&& other)
 {
-    std::swap(m_module, other.m_module);
+    swap(m_module, other.m_module);
     return *this;
 }
 

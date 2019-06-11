@@ -42,7 +42,7 @@ namespace foundation
 //
 
 class CUDAModule
-  : NonCopyable
+  : public NonCopyable
 {
   public:
     CUDAModule();
