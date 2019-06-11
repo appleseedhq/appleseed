@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/energycompensation.h"
+#include "renderer/modeling/bsdf/energycompensationtables.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -70,6 +71,11 @@ namespace
       : public AlbedoTable2D
     {
       public:
+        explicit MDFAlbedoTable(const float* table)
+          : AlbedoTable2D(table)
+        {
+        }
+
         template <typename MDF>
         explicit MDFAlbedoTable(const MDF& mdf)
         {
@@ -176,10 +182,17 @@ namespace
     {
         MDFAlbedoTable m_ggx;
 
+#ifdef COMPUTE_ALBEDO_TABLES
         AlbedoTables()
           : m_ggx(GGXMDF())
         {
         }
+#else
+        AlbedoTables()
+          : m_ggx(g_glossy_ggx_albedo_table)
+        {
+        }
+#endif
     };
 
     AlbedoTables g_dir_albedo_tables;

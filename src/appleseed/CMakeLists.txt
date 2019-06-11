@@ -1582,6 +1582,8 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/disneybrdf.h
     renderer/modeling/bsdf/energycompensation.cpp
     renderer/modeling/bsdf/energycompensation.h
+    renderer/modeling/bsdf/energycompensationtables.cpp
+    renderer/modeling/bsdf/energycompensationtables.h
     renderer/modeling/bsdf/fresnel.h
     renderer/modeling/bsdf/glassbsdf.cpp
     renderer/modeling/bsdf/glassbsdf.h
