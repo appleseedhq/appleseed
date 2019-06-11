@@ -106,12 +106,6 @@ class CopyOnWrite
         return *this;
     }
 
-    // Return true if the wrapper is empty.
-    bool empty() const APPLESEED_NOEXCEPT
-    {
-        return m_model == nullptr;
-    }
-
     // Return true if the wrapped object is not shared
     // by other copy-on-write wrappers.
     bool unique() const APPLESEED_NOEXCEPT
@@ -137,6 +131,18 @@ class CopyOnWrite
             *this = CopyOnWrite(read());
 
         return m_model->m_value;
+    }
+
+    // Return true if the wrapper is not empty.
+    explicit operator bool() const APPLESEED_NOEXCEPT
+    {
+        return m_model != nullptr;
+    }
+
+    // Return true if the wrapper is empty.
+    bool is_null() const APPLESEED_NOEXCEPT
+    {
+        return m_model == nullptr;
     }
 
   private:

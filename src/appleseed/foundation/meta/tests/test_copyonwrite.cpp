@@ -76,7 +76,7 @@ TEST_SUITE(Foundation_Utility_CopyOnWrite)
         EXPECT_TRUE(a.unique());
 
         CopyOnWrite<int> b(move(a));
-        EXPECT_TRUE(a.empty());
+        EXPECT_TRUE(a.is_null());
         EXPECT_TRUE(b.unique());
 
         EXPECT_EQ(11, b.read());
@@ -106,7 +106,7 @@ TEST_SUITE(Foundation_Utility_CopyOnWrite)
 
         CopyOnWrite<int> b;
         b = move(a);
-        EXPECT_TRUE(a.empty());
+        EXPECT_TRUE(a.is_null());
         EXPECT_TRUE(b.unique());
 
         EXPECT_EQ(11, b.read());
