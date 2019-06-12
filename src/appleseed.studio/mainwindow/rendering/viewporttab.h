@@ -73,13 +73,13 @@ namespace studio {
 // A tab wrapping a render widget and its toolbar.
 //
 
-class RenderTab
+class ViewportTab
   : public QWidget
 {
     Q_OBJECT
 
   public:
-    RenderTab(
+    ViewportTab(
         ProjectExplorer&        project_explorer,
         renderer::Project&      project,
         RenderingManager&       rendering_manager,
@@ -88,6 +88,9 @@ class RenderTab
     ViewportWidget* get_viewport_widget() const;
     CameraController* get_camera_controller() const;
     ScenePickingHandler* get_scene_picking_handler() const;
+
+    void enable_light_paths_toggle();
+    void disable_light_paths_toggle();
 
     void set_clear_frame_button_enabled(const bool enabled);
     void set_render_region_buttons_enabled(const bool enabled);
@@ -113,6 +116,7 @@ class RenderTab
     void signal_clear_render_region();
     void signal_reset_zoom();
     void signal_clear_frame();
+    void signal_viewport_widget_context_menu(const QPoint& point);
 
     void signal_camera_change_begin();
     void signal_camera_changed();
@@ -122,6 +126,7 @@ class RenderTab
     void signal_rectangle_selection(const QRect& rect);
 
   private slots:
+    void slot_viewport_widget_context_menu(const QPoint& point);
     void slot_toggle_render_region(const bool checked);
     void slot_set_render_region(const QRect& rect);
     void slot_toggle_pixel_inspector(const bool checked);
@@ -133,8 +138,10 @@ class RenderTab
     QToolButton*                                m_set_render_region_button;
     QToolButton*                                m_clear_render_region_button;
     QToolButton*                                m_clear_frame_button;
+    QToolButton*                                m_light_paths_toggle_button;
     QComboBox*                                  m_picking_mode_combo;
     QComboBox*                                  m_display_transform_combo;
+    QComboBox*                                  m_base_layer_combo;
     QLabel*                                     m_info_label;
     QLabel*                                     m_r_label;
     QLabel*                                     m_g_label;

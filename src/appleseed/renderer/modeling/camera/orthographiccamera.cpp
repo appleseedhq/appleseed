@@ -80,6 +80,15 @@ namespace
             const ParamArray&       params)
           : Camera(name, params)
         {
+            // Extract the film dimensions from the camera parameters.
+            m_film_dimensions = extract_film_dimensions();
+
+            // Extract the abscissa of the near plane from the camera parameters.
+            m_near_z = extract_near_z();
+
+            // Precompute reciprocals of film dimensions.
+            m_rcp_film_width = 1.0 / m_film_dimensions[0];
+            m_rcp_film_height = 1.0 / m_film_dimensions[1];
         }
 
         void release() override
@@ -125,18 +134,8 @@ namespace
             if (!Camera::on_render_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            // Extract the film dimensions from the camera parameters.
-            m_film_dimensions = extract_film_dimensions();
-
-            // Extract the abscissa of the near plane from the camera parameters.
-            m_near_z = extract_near_z();
-
             // Retrieve the scene diameter that will be used to position the camera.
             m_safe_scene_diameter = project.get_scene()->get_render_data().m_safe_diameter;
-
-            // Precompute reciprocals of film dimensions.
-            m_rcp_film_width = 1.0 / m_film_dimensions[0];
-            m_rcp_film_height = 1.0 / m_film_dimensions[1];
 
             // Precompute pixel area.
             const size_t pixel_count = project.get_frame()->image().properties().m_pixel_count;
@@ -290,6 +289,9 @@ namespace
                     0.5 + point.x * m_rcp_film_width,
                     0.5 - point.y * m_rcp_film_height);
         }
+
+      private:
+        bool m_extracted_params;
     };
 }
 

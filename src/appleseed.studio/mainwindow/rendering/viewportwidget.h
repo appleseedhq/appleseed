@@ -86,6 +86,14 @@ class ViewportWidget
         OCIO::ConstConfigRcPtr      ocio_config,
         QWidget*                    parent = nullptr);
 
+    enum BaseLayer {
+        FinalRender,
+        OpenGL,
+        BASE_LAYER_MAX_VALUE
+    };
+
+    static QString base_layer_string(BaseLayer layer);
+
     // Thread-safe.
     QImage capture() override;
 
@@ -95,23 +103,17 @@ class ViewportWidget
         const size_t            height);
 
     RenderLayer* get_render_layer();
-    //GLSceneLayer* get_gl_scene_layer();
+    GLSceneLayer* get_gl_scene_layer();
     //LightPathsLayer* get_light_paths_layer();
-
-    // Thread-safe.
-    //void highlight_tile(
-    //    const renderer::Frame&  frame,
-    //    const size_t            tile_x,
-    //    const size_t            tile_y);
 
   signals:
     void signal_material_dropped(
         const foundation::Vector2d& drop_pos,
         const QString&          material_name);
-    void signal_viewport_widget_context_menu(const QPoint& point);
 
   private slots:
-    void slot_viewport_widget_context_menu(const QPoint& point);
+    void slot_light_paths_toggled(bool checked);
+    void slot_base_layer_changed(int index);
 
   private:
     const renderer::Project&            m_project;
@@ -121,21 +123,23 @@ class ViewportWidget
     QOpenGLFunctions_3_3_Core*          m_gl;
     QPainter                            m_painter;
 
-    std::unique_ptr<RenderLayer>       m_render_layer;
-    //std::unique_ptr<GLSceneLayer>      m_gl_scene_layer;
+    std::unique_ptr<RenderLayer>        m_render_layer;
+    std::unique_ptr<GLSceneLayer>       m_gl_scene_layer;
     //std::unique_ptr<LightPathsLayer>   m_light_paths_layer;
 
+    bool                                m_draw_light_paths;
+    BaseLayer                           m_active_base_layer;
+
     void create_render_layer(OCIO::ConstConfigRcPtr  ocio_config);
-    //void create_gl_scene_layer();
+    void create_gl_scene_layer();
     //void create_light_paths_layer();
 
     void initializeGL() override;
-    void paintEvent(QPaintEvent* event) override;
+    void paintGL() override;
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dragMoveEvent(QDragMoveEvent* event) override;
     void dropEvent(QDropEvent* event) override;
 };
-
 
 }   // namespace studio
 }   // namespace appleseed
