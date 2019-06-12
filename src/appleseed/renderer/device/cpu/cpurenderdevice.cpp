@@ -168,8 +168,6 @@ bool CPURenderDevice::initialize(
             texture_store,
             *m_texture_system,
             *m_shading_system));
-    if (!m_components->create())
-        return false;
 
     // Set OSL search paths.
     string prev_osl_search_paths;
@@ -192,11 +190,15 @@ bool CPURenderDevice::initialize(
         RENDERER_LOG_INFO("OSL headers not found.");
 
     // Re-optimize shader groups that need updating.
-    return
-        get_project().get_scene()->create_optimized_osl_shader_groups(
+    if (!get_project().get_scene()->create_optimized_osl_shader_groups(
             *m_shading_system,
             m_osl_compiler.get(),
-            &abort_switch);
+            &abort_switch))
+    {
+        return false;
+    }
+
+    return m_components->create();
 }
 
 bool CPURenderDevice::build_or_update_scene()
