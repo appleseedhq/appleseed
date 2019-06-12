@@ -85,7 +85,10 @@ class GLSceneLayer
     void set_gl_functions(
         QOpenGLFunctions_3_3_Core*          functions);
 
-    void init_gl(QSurfaceFormat             format);
+    void initialize(
+        QSurfaceFormat                      format);
+
+    bool is_initialized();
 
     void draw();
     void draw_depth_only();
@@ -112,13 +115,16 @@ class GLSceneLayer
     std::vector<GLuint>                     m_scene_object_vaos;
     std::unordered_map<std::string, size_t> m_scene_object_index_map;
     GLuint                                  m_scene_shader_program;
-    GLuint                                  m_depthonly_shader_program;
     GLint                                   m_scene_view_mat_location;
     GLint                                   m_scene_proj_mat_location;
     GLint                                   m_scene_camera_pos_location;
+    GLuint                                  m_depthonly_shader_program;
+    GLint                                   m_depthonly_view_mat_location;
+    GLint                                   m_depthonly_proj_mat_location;
+    GLint                                   m_depthonly_camera_pos_location;
     foundation::Matrix4f                    m_gl_view_matrix;
     foundation::Matrix4f                    m_gl_proj_matrix;
-    bool                                    m_gl_initialized;
+    bool                                    m_initialized;
 
     void render_scene();
 

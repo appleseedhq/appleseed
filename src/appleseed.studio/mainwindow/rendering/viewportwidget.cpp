@@ -48,6 +48,7 @@
 #include <QMimeData>
 #include <QMutexLocker>
 #include <QOpenGLFunctions_3_3_Core>
+#include <QTimer>
 #include <Qt>
 
 // Standard headers.
@@ -73,6 +74,8 @@ ViewportWidget::ViewportWidget(
     QWidget*                    parent)
   : QOpenGLWidget(parent)
   , m_project(project)
+  , m_draw_light_paths(false)
+  , m_active_base_layer(static_cast<BaseLayer>(0))
 {
     setFocusPolicy(Qt::StrongFocus);
     setFixedWidth(static_cast<int>(width));
@@ -81,12 +84,23 @@ ViewportWidget::ViewportWidget(
     setAttribute(Qt::WA_OpaquePaintEvent, true);
 
     create_render_layer(ocio_config);
-    //create_gl_scene_layer();
+    create_gl_scene_layer();
     //create_light_paths_layer();
 
     resize(width, height);
 
     setAcceptDrops(true);
+}
+
+QString ViewportWidget::base_layer_string(BaseLayer layer)
+{
+    switch (layer)
+    {
+        case BaseLayer::FinalRender: return QString("Final Render");
+        case BaseLayer::OpenGL: return QString("OpenGL");
+    }
+    assert(false);
+    return QString("BaseLayer");
 }
 
 void ViewportWidget::create_render_layer(OCIO::ConstConfigRcPtr  ocio_config)
@@ -98,14 +112,14 @@ void ViewportWidget::create_render_layer(OCIO::ConstConfigRcPtr  ocio_config)
             ocio_config));
 }
 
-//void ViewportWidget::create_gl_scene_layer()
-//{
-//    m_gl_scene_layer =
-//        std::unique_ptr<GLSceneLayer>(new GLSceneLayer(
-//            m_project,
-//            m_width,
-//            m_height));
-//}
+void ViewportWidget::create_gl_scene_layer()
+{
+    m_gl_scene_layer =
+        std::unique_ptr<GLSceneLayer>(new GLSceneLayer(
+            m_project,
+            m_width,
+            m_height));
+}
 //
 //void ViewportWidget::create_light_paths_layer()
 //{
@@ -126,10 +140,10 @@ RenderLayer* ViewportWidget::get_render_layer()
 //    return m_light_paths_layer.get();
 //}
 //
-//GLSceneLayer* ViewportWidget::get_gl_scene_layer()
-//{
-//    return m_gl_scene_layer.get();
-//}
+GLSceneLayer* ViewportWidget::get_gl_scene_layer()
+{
+    return m_gl_scene_layer.get();
+}
 
 QImage ViewportWidget::capture()
 {
@@ -137,6 +151,8 @@ QImage ViewportWidget::capture()
 }
 
 void ViewportWidget::initializeGL() {
+    RENDERER_LOG_INFO("initializing opengl.");
+
     m_gl = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
 
     const auto qs_format = format();
@@ -145,14 +161,13 @@ void ViewportWidget::initializeGL() {
         const int major_version = qs_format.majorVersion();
         const int minor_version = qs_format.minorVersion();
         RENDERER_LOG_ERROR(
-            "opengl: could not load required gl functions. loaded version %d.%d, required version 3.3",
+            "opengl: could not load required gl functions. loaded version %d.%d, required version 3.3.",
             major_version,
             minor_version);
         return;
     }
 
-    //m_gl_scene_layer->set_gl_functions(m_gl);
-    //m_gl_scene_layer->init_gl(qs_format);
+    m_gl_scene_layer->set_gl_functions(m_gl);
     //m_light_paths_layer->set_gl_functions(m_gl);
     //m_light_paths_layer->init_gl(qs_format);
 }
@@ -164,15 +179,28 @@ void ViewportWidget::resize(
     m_render_layer->resize(width, height);
 }
 
-void ViewportWidget::paintEvent(QPaintEvent* event)
+void ViewportWidget::paintGL()
 {
-    m_painter.begin(this);
-    m_render_layer->paint(rect(), m_painter);
-    m_painter.end();
-    //m_painter.beginNativePainting();
-    //m_gl_scene_layer->draw_depth_only();
-    //m_light_paths_layer->draw();
-    //m_painter.endNativePainting();
+    if (!m_gl_scene_layer->is_initialized())
+        m_gl_scene_layer->initialize(format());
+
+    if (m_active_base_layer == BaseLayer::FinalRender)
+    {
+        m_painter.begin(this);
+        m_render_layer->paint(rect(), m_painter);
+        m_painter.end();
+    }
+
+    m_gl->glViewport(0, 0, width(), height());
+
+    if (m_active_base_layer == BaseLayer::OpenGL || m_draw_light_paths)
+        m_gl_scene_layer->draw_depth_only();
+
+    if (m_active_base_layer == BaseLayer::OpenGL)
+        m_gl_scene_layer->draw();
+
+    //if (m_draw_light_paths)
+    //    m_light_paths_layer->draw();
 }
 
 void ViewportWidget::dragEnterEvent(QDragEnterEvent* event)
@@ -201,9 +229,17 @@ void ViewportWidget::dropEvent(QDropEvent* event)
         event->mimeData()->text());
 }
 
-void ViewportWidget::slot_viewport_widget_context_menu(const QPoint& point)
+void ViewportWidget::slot_base_layer_changed(int index)
 {
-    emit signal_viewport_widget_context_menu(mapToGlobal(point));
+    assert(index < BaseLayer::BASE_LAYER_MAX_VALUE);
+    m_active_base_layer = static_cast<BaseLayer>(index);
+    update();
+}
+
+void ViewportWidget::slot_light_paths_toggled(bool checked)
+{
+    m_draw_light_paths = checked;
+    update();
 }
 
 }   // namespace studio

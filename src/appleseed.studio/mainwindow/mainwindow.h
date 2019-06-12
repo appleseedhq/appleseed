@@ -37,7 +37,7 @@
 #include "mainwindow/project/projectmanager.h"
 #include "mainwindow/qtlogtarget.h"
 #include "mainwindow/rendering/renderingmanager.h"
-#include "mainwindow/rendering/rendertab.h"
+#include "mainwindow/rendering/viewporttab.h"
 #include "mainwindow/renderingsettingswindow.h"
 #include "mainwindow/statusbar.h"
 
@@ -159,17 +159,17 @@ class MainWindow
     AttributeEditor*                            m_attribute_editor;
     RenderingManager                            m_rendering_manager;
 
-    typedef std::map<std::string, RenderTab*> RenderTabCollection;
-    typedef std::map<std::string, RenderTab::State> RenderTabStateCollection;
+    typedef std::map<std::string, ViewportTab*> ViewportTabCollection;
+    typedef std::map<std::string, ViewportTab::State> ViewportTabStateCollection;
 
-    RenderTabCollection                         m_render_tabs;
-    std::map<int, RenderTab*>                   m_tab_index_to_render_tab;
+    ViewportTabCollection                       m_viewport_tabs;
+    std::map<int, ViewportTab*>                 m_tab_index_to_viewport_tab;
     LightPathsTab*                              m_light_paths_tab;
 
     struct StateBeforeProjectOpen
     {
         bool                                    m_is_rendering;
-        RenderTabStateCollection                m_render_tab_states;
+        ViewportTabStateCollection              m_viewport_tab_states;
     };
 
     std::unique_ptr<StateBeforeProjectOpen>     m_state_before_project_open;
@@ -206,9 +206,9 @@ class MainWindow
     void restore_state_after_project_open();
 
     // Render tabs.
-    void recreate_render_tabs();
-    void remove_render_tabs();
-    void add_render_tab(const QString& label);
+    void recreate_viewport_tabs();
+    void remove_viewport_tabs();
+    void add_viewport_tab(const QString& label);
 
     // Project file handling.
     renderer::ParamArray get_project_params(const char* configuration_name) const;

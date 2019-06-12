@@ -28,7 +28,7 @@
 //
 
 // Interface header.
-#include "rendertab.h"
+#include "viewporttab.h"
 
 // appleseed.studio headers.
 #include "mainwindow/project/projectexplorer.h"
@@ -70,10 +70,10 @@ namespace appleseed {
 namespace studio {
 
 //
-// RenderTab class implementation.
+// ViewportTab class implementation.
 //
 
-RenderTab::RenderTab(
+ViewportTab::ViewportTab(
     ProjectExplorer&        project_explorer,
     Project&                project,
     RenderingManager&       rendering_manager,
@@ -98,43 +98,49 @@ RenderTab::RenderTab(
     recreate_handlers();
 }
 
-ViewportWidget* RenderTab::get_viewport_widget() const
+void ViewportTab::enable_light_paths_toggle()
+{}
+
+void ViewportTab::disable_light_paths_toggle()
+{}
+
+ViewportWidget* ViewportTab::get_viewport_widget() const
 {
     return m_viewport_widget;
 }
 
-CameraController* RenderTab::get_camera_controller() const
+CameraController* ViewportTab::get_camera_controller() const
 {
     return m_camera_controller.get();
 }
 
-ScenePickingHandler* RenderTab::get_scene_picking_handler() const
+ScenePickingHandler* ViewportTab::get_scene_picking_handler() const
 {
     return m_scene_picking_handler.get();
 }
 
-void RenderTab::set_clear_frame_button_enabled(const bool enabled)
+void ViewportTab::set_clear_frame_button_enabled(const bool enabled)
 {
     m_clear_frame_button->setEnabled(enabled);
 }
 
-void RenderTab::set_render_region_buttons_enabled(const bool enabled)
+void ViewportTab::set_render_region_buttons_enabled(const bool enabled)
 {
     m_set_render_region_button->setEnabled(enabled);
     m_clear_render_region_button->setEnabled(enabled);
 }
 
-void RenderTab::reset_zoom()
+void ViewportTab::reset_zoom()
 {
     m_zoom_handler->reset_zoom();
 }
 
-void RenderTab::update()
+void ViewportTab::update()
 {
     m_viewport_widget->update();
 }
 
-void RenderTab::update_size()
+void ViewportTab::update_size()
 {
     m_set_render_region_button->setChecked(false);
 
@@ -147,7 +153,7 @@ void RenderTab::update_size()
     recreate_handlers();
 }
 
-RenderTab::State RenderTab::save_state() const
+ViewportTab::State ViewportTab::save_state() const
 {
     State state;
     state.m_zoom_handler_state = m_zoom_handler->save_state();
@@ -155,14 +161,19 @@ RenderTab::State RenderTab::save_state() const
     return state;
 }
 
-void RenderTab::load_state(const State& state)
+void ViewportTab::load_state(const State& state)
 {
     // The order matters here.
     m_zoom_handler->load_state(state.m_zoom_handler_state);
     m_pan_handler->load_state(state.m_pan_handler_state);
 }
 
-void RenderTab::slot_toggle_render_region(const bool checked)
+void ViewportTab::slot_viewport_widget_context_menu(const QPoint& point)
+{
+    emit signal_viewport_widget_context_menu(m_viewport_widget->mapToGlobal(point));
+}
+
+void ViewportTab::slot_toggle_render_region(const bool checked)
 {
     m_scene_picking_handler->set_enabled(!checked);
     m_render_region_handler->set_mode(
@@ -171,19 +182,19 @@ void RenderTab::slot_toggle_render_region(const bool checked)
             : RenderRegionHandler::RectangleSelectionMode);
 }
 
-void RenderTab::slot_set_render_region(const QRect& rect)
+void ViewportTab::slot_set_render_region(const QRect& rect)
 {
     m_set_render_region_button->setChecked(false);
     emit signal_set_render_region(rect);
 }
 
-void RenderTab::slot_toggle_pixel_inspector(const bool checked)
+void ViewportTab::slot_toggle_pixel_inspector(const bool checked)
 {
     m_pixel_inspector_handler->set_enabled(checked);
     m_pixel_inspector_handler->update_tooltip_visibility();
 }
 
-void RenderTab::create_viewport_widget()
+void ViewportTab::create_viewport_widget()
 {
     const CanvasProperties& props = m_project.get_frame()->image().properties();
 
@@ -199,24 +210,45 @@ void RenderTab::create_viewport_widget()
 
     connect(
         m_viewport_widget, SIGNAL(customContextMenuRequested(const QPoint&)),
-        SLOT(slot_render_widget_context_menu(const QPoint&)));
-
-    connect(
-        this, SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
-        m_viewport_widget->get_render_layer(), SLOT(slot_entity_picked(renderer::ScenePicker::PickingResult)));
-    connect(
-        this, SIGNAL(signal_rectangle_selection(const QRect&)),
-        m_viewport_widget->get_render_layer(), SLOT(slot_rectangle_selection(const QRect&)));
+        SLOT(slot_viewport_widget_context_menu(const QPoint&)));
 
     m_viewport_widget->setMouseTracking(true);
 }
 
-void RenderTab::create_toolbar()
+void ViewportTab::create_toolbar()
 {
     // Create the render toolbar.
     m_toolbar = new QToolBar();
     m_toolbar->setObjectName("render_toolbar");
     m_toolbar->setIconSize(QSize(18, 18));
+
+    // Create the label preceding the scene display combo box
+    QLabel* scene_layer_label = new QLabel("Scene Display Mode:");
+    scene_layer_label->setObjectName("display_mode_label");
+    m_toolbar->addWidget(scene_layer_label);
+
+    // Create the scene base layer combo box
+    m_base_layer_combo = new QComboBox();
+    m_base_layer_combo->setObjectName("base_layer_combo");
+    for (int i = 0; i < ViewportWidget::BaseLayer::BASE_LAYER_MAX_VALUE; i++) {
+        m_base_layer_combo->addItem(ViewportWidget::base_layer_string(static_cast<ViewportWidget::BaseLayer>(i)));
+    }
+    m_toolbar->addWidget(m_base_layer_combo);
+    connect(
+        m_base_layer_combo, SIGNAL(activated(int)),
+        m_viewport_widget, SLOT(slot_base_layer_changed(int))
+    );
+
+    m_light_paths_toggle_button = new QToolButton();
+    m_light_paths_toggle_button->setText("Display Light Paths Overlay");
+    m_light_paths_toggle_button->setCheckable(true);
+    m_toolbar->addWidget(m_light_paths_toggle_button);
+    connect(
+        m_light_paths_toggle_button, SIGNAL(toggled(bool)),
+        m_viewport_widget, SLOT(slot_light_paths_toggled(bool))
+    );
+
+    m_toolbar->addSeparator();
 
     // Save Frame and AOVs button.
     QToolButton* save_aovs_button = new QToolButton();
@@ -311,7 +343,7 @@ void RenderTab::create_toolbar()
     m_toolbar->addSeparator();
 
     // Create the label preceding the display combobox.
-    QLabel* display_label = new QLabel("Display:");
+    QLabel* display_label = new QLabel("Display Transform:");
     display_label->setObjectName("display_label");
     m_toolbar->addWidget(display_label);
 
@@ -375,7 +407,7 @@ void RenderTab::create_toolbar()
     m_toolbar->addWidget(m_a_label);
 }
 
-void RenderTab::create_scrollarea()
+void ViewportTab::create_scrollarea()
 {
     // Encapsulate the render widget into another widget that adds a margin around it.
     QWidget* render_widget_wrapper = new QWidget();
@@ -392,7 +424,7 @@ void RenderTab::create_scrollarea()
     m_scroll_area->setWidget(render_widget_wrapper);
 }
 
-void RenderTab::recreate_handlers()
+void ViewportTab::recreate_handlers()
 {
     // Handler for zooming the render widget in and out with the keyboard or the mouse wheel.
     m_zoom_handler.reset(
@@ -502,4 +534,4 @@ void RenderTab::recreate_handlers()
 }   // namespace studio
 }   // namespace appleseed
 
-#include "mainwindow/rendering/moc_cpp_rendertab.cxx"
+#include "mainwindow/rendering/moc_cpp_viewporttab.cxx"

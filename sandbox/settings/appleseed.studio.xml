@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
     <parameter name="autosave" value="false" />
-    <parameter name="message_verbosity" value="info" />
+    <parameter name="message_verbosity" value="debug" />
     <parameter name="print_final_average_luminance" value="false" />
     <parameter name="rendering_threads" value="auto" />
     <parameter name="sampling_mode" value="qmc" />

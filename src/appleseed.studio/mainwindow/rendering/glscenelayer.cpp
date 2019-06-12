@@ -126,20 +126,15 @@ namespace {
 GLSceneLayer::GLSceneLayer(
     const Project&                  project,
     const size_t                    width,
-    const size_t                    height,
-    QOpenGLFunctions_3_3_Core*      functions,
-    QSurfaceFormat                  format)
+    const size_t                    height)
   : m_project(project)
   , m_camera(*m_project.get_uncached_active_camera())
   , m_backface_culling_enabled(false)
-  , m_gl(functions)
-  , m_gl_initialized(false)
-  , m_format(format)
+  , m_initialized(false)
 {
+    m_camera.transform_sequence().prepare();
     const float time = m_camera.get_shutter_middle_time();
     set_transform(m_camera.transform_sequence().evaluate(time));
-
-    init_gl();
 }
 
 void GLSceneLayer::set_gl_functions(QOpenGLFunctions_3_3_Core* functions)
@@ -414,7 +409,10 @@ namespace {
         const GLuint                frag)
     {
         f->glAttachShader(program, vert);
-        f->glAttachShader(program, frag);
+
+        if (frag != 0)
+            f->glAttachShader(program, frag);
+
         f->glLinkProgram(program);
 
         GLint success;
@@ -431,55 +429,62 @@ namespace {
     void create_shader_program(
         QOpenGLFunctions_3_3_Core*  f,
         GLuint&                     program,
-        const QByteArray&               vert_source,
-        const QByteArray&               frag_source)
+        const QByteArray*               vert_source,
+        const QByteArray*               frag_source)
     {
+        bool has_frag_shader = frag_source != nullptr;
+
         GLuint vert = f->glCreateShader(GL_VERTEX_SHADER);
-        GLuint frag = f->glCreateShader(GL_FRAGMENT_SHADER);
+        GLuint frag = has_frag_shader ? f->glCreateShader(GL_FRAGMENT_SHADER) : 0;
 
-        auto gl_vert_source = static_cast<const GLchar*>(vert_source.constData());
-        auto gl_vert_source_length = static_cast<const GLint>(vert_source.size());
-
-        auto gl_frag_source = static_cast<const GLchar*>(frag_source.constData());
-        auto gl_frag_source_length = static_cast<const GLint>(frag_source.size());
+        auto gl_vert_source = static_cast<const GLchar*>(vert_source->constData());
+        auto gl_vert_source_length = static_cast<const GLint>(vert_source->size());
 
         compile_shader(f, vert, 1, &gl_vert_source, &gl_vert_source_length);
-        compile_shader(f, frag, 1, &gl_frag_source, &gl_frag_source_length);
+
+        if (has_frag_shader)
+        {
+            auto gl_frag_source = static_cast<const GLchar*>(frag_source->constData());
+            auto gl_frag_source_length = static_cast<const GLint>(frag_source->size());
+            compile_shader(f, frag, 1, &gl_frag_source, &gl_frag_source_length);
+        }
 
         program = f->glCreateProgram();
         link_shader_program(f, program, vert, frag);
 
         f->glDeleteShader(vert);
-        f->glDeleteShader(frag);
+        if (has_frag_shader)
+            f->glDeleteShader(frag);
     }
 }
 
-void GLSceneLayer::init_gl(QSurfaceFormat format)
+void GLSceneLayer::initialize(QSurfaceFormat format)
 {
     // If there was already previous data, clean up
     GLSceneLayer::cleanup_gl_data();
 
-    bool manual_srgb_conversion = false;
-    if (format.colorSpace() != QSurfaceFormat::sRGBColorSpace)
-    {
-        manual_srgb_conversion = true;
-        RENDERER_LOG_WARNING(
-            "opengl: srgb framebuffer extensions not supported, using slower manual conversion.");
-    }
-
-    glEnable(GL_DEPTH_TEST);
-
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    auto vertex_shader = load_gl_shader("scene.vert");
+    auto fragment_shader = load_gl_shader("scene.frag");
 
     create_shader_program(
         m_gl,
         m_scene_shader_program,
-        load_gl_shader("scene.vert"),
-        load_gl_shader("scene.frag"));
+        &vertex_shader,
+        &fragment_shader);
 
     m_scene_view_mat_location = m_gl->glGetUniformLocation(m_scene_shader_program, "u_view");
     m_scene_proj_mat_location = m_gl->glGetUniformLocation(m_scene_shader_program, "u_proj");
     m_scene_camera_pos_location = m_gl->glGetUniformLocation(m_scene_shader_program, "u_camera_pos");
+
+    create_shader_program(
+        m_gl,
+        m_depthonly_shader_program,
+        &vertex_shader,
+        nullptr);
+
+    m_depthonly_view_mat_location = m_gl->glGetUniformLocation(m_depthonly_shader_program, "u_view");
+    m_depthonly_proj_mat_location = m_gl->glGetUniformLocation(m_depthonly_shader_program, "u_proj");
+    m_depthonly_camera_pos_location = m_gl->glGetUniformLocation(m_depthonly_shader_program, "u_camera_pos");
 
     const float z_near = 0.01f;
     const float z_far = 1000.0f;
@@ -503,7 +508,12 @@ void GLSceneLayer::init_gl(QSurfaceFormat format)
 
     load_scene_data();
 
-    m_gl_initialized = true;
+    m_initialized = true;
+}
+
+bool GLSceneLayer::is_initialized()
+{
+    return m_initialized;
 }
 
 void GLSceneLayer::cleanup_gl_data()
@@ -533,6 +543,10 @@ void GLSceneLayer::cleanup_gl_data()
     {
         m_gl->glDeleteProgram(m_scene_shader_program);
     }
+    if (m_depthonly_shader_program != 0)
+    {
+        m_gl->glDeleteProgram(m_depthonly_shader_program);
+    }
     m_scene_object_index_map.clear();
     m_scene_object_data_index_counts.clear();
     m_scene_object_instance_counts.clear();
@@ -541,35 +555,18 @@ void GLSceneLayer::cleanup_gl_data()
 
 void GLSceneLayer::draw()
 {
-    if (!m_gl_initialized)
+    if (!m_initialized)
         return;
 
     if (m_backface_culling_enabled)
         glEnable(GL_CULL_FACE);
     else glDisable(GL_CULL_FACE);
 
+    m_gl->glDepthMask(GL_FALSE);
+    m_gl->glEnable(GL_DEPTH_TEST);
+    m_gl->glDepthFunc(GL_LEQUAL);
     m_gl->glUseProgram(m_scene_shader_program);
-    render_scene();
-}
 
-void GLSceneLayer::draw_depth_only()
-{
-    glClear(GL_DEPTH_BUFFER_BIT);
-
-    if (!m_gl_initialized)
-        return;
-
-    if (m_backface_culling_enabled)
-        glEnable(GL_CULL_FACE);
-    else glDisable(GL_CULL_FACE);
-
-    m_gl->glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-    m_gl->glUseProgram(m_depthonly_shader_program);
-    render_scene();
-}
-
-void GLSceneLayer::render_scene()
-{
     m_gl->glUniformMatrix4fv(
         m_scene_view_mat_location,
         1,
@@ -584,7 +581,49 @@ void GLSceneLayer::render_scene()
         m_scene_camera_pos_location,
         1,
         const_cast<const GLfloat*>(&m_camera_position[0]));
+    
+    render_scene();
 
+    m_gl->glDepthMask(GL_TRUE);
+}
+
+void GLSceneLayer::draw_depth_only()
+{
+    if (!m_initialized)
+        return;
+
+    if (m_backface_culling_enabled)
+        glEnable(GL_CULL_FACE);
+    else glDisable(GL_CULL_FACE);
+
+    m_gl->glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    m_gl->glDepthMask(GL_TRUE);
+    m_gl->glEnable(GL_DEPTH_TEST);
+    m_gl->glDepthFunc(GL_LEQUAL);
+    m_gl->glUseProgram(m_depthonly_shader_program);
+
+    m_gl->glUniformMatrix4fv(
+        m_depthonly_view_mat_location,
+        1,
+        false,
+        const_cast<const GLfloat*>(&m_gl_view_matrix[0]));
+    m_gl->glUniformMatrix4fv(
+        m_depthonly_proj_mat_location,
+        1,
+        false,
+        const_cast<const GLfloat*>(&m_gl_proj_matrix[0]));
+    m_gl->glUniform3fv(
+        m_depthonly_camera_pos_location,
+        1,
+        const_cast<const GLfloat*>(&m_camera_position[0]));
+
+    render_scene();
+
+    m_gl->glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+}
+
+void GLSceneLayer::render_scene()
+{
     for (size_t i = 0; i < m_scene_object_data_vbos.size(); i++)
     {
         GLuint vao = m_scene_object_vaos[i];
@@ -592,7 +631,6 @@ void GLSceneLayer::render_scene()
         int instance_count = m_scene_object_instance_counts[i];
 
         m_gl->glBindVertexArray(vao);
-
         m_gl->glDrawArraysInstanced(
             GL_TRIANGLES,
             0,

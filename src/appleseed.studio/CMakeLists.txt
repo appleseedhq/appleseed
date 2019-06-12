@@ -248,8 +248,8 @@ source_group ("mainwindow\\pythonconsole" FILES
 set (mainwindow_rendering_sources
     mainwindow/rendering/cameracontroller.cpp
     mainwindow/rendering/cameracontroller.h
-    # mainwindow/rendering/glscenelayer.h
-    # mainwindow/rendering/glscenelayer.cpp
+    mainwindow/rendering/glscenelayer.h
+    mainwindow/rendering/glscenelayer.cpp
     # mainwindow/rendering/lightpathspickinghandler.cpp
     # mainwindow/rendering/lightpathspickinghandler.h
     # mainwindow/rendering/lightpathsviewportmanager.cpp
@@ -273,12 +273,12 @@ set (mainwindow_rendering_sources
     mainwindow/rendering/renderingtimer.h
     mainwindow/rendering/renderregionhandler.cpp
     mainwindow/rendering/renderregionhandler.h
-    mainwindow/rendering/rendertab.cpp
-    mainwindow/rendering/rendertab.h
     mainwindow/rendering/renderlayer.cpp
     mainwindow/rendering/renderlayer.h
     mainwindow/rendering/scenepickinghandler.cpp
     mainwindow/rendering/scenepickinghandler.h
+    mainwindow/rendering/viewporttab.cpp
+    mainwindow/rendering/viewporttab.h
     mainwindow/rendering/viewportwidget.h
     mainwindow/rendering/viewportwidget.cpp
 )
