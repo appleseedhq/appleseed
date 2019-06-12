@@ -32,6 +32,9 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/lighting/bdpt/bdptlightingengine.h"
+#include "renderer/kernel/lighting/gpt/gptlightingengine.h"
+#include "renderer/kernel/lighting/gpt/gptparameters.h"
+#include "renderer/kernel/lighting/gpt/gptpasscallback.h"
 #include "renderer/kernel/lighting/lighttracing/lighttracingsamplegenerator.h"
 #include "renderer/kernel/lighting/pt/ptlightingengine.h"
 #include "renderer/kernel/lighting/sppm/sppmlightingengine.h"
@@ -181,7 +184,7 @@ bool RendererComponents::create_lighting_engine_factory()
     {
         return true;
     }
-    else if (name == "pt")
+    else if (name == "ptttt")
     {
         m_backward_light_sampler.reset(
             new BackwardLightSampler(
@@ -192,7 +195,37 @@ bool RendererComponents::create_lighting_engine_factory()
             new PTLightingEngineFactory(
                 *m_backward_light_sampler,
                 m_project.get_light_path_recorder(),
-                get_child_and_inherit_globals(m_params, "pt")));    // todo: change to "pt_lighting_engine"?
+                get_child_and_inherit_globals(m_params, "pt"))); // todo: change to "pt_lighting_engine"?
+
+        return true;
+    }
+    else if (name == "pt")
+    {
+        m_backward_light_sampler.reset(
+            new BackwardLightSampler(
+                m_scene,
+                get_child_and_inherit_globals(m_params, "light_sampler")));
+
+        m_sd_tree.reset(new STree());
+
+        GPTParameters gpt_parameters(
+            get_child_and_inherit_globals(m_params, "pt"));
+
+        m_renderer_controller.reset(new TerminatableRendererController());
+
+        m_pass_callback.reset(
+            new GPTPassCallback(
+                gpt_parameters,
+                dynamic_cast<TerminatableRendererController*>(m_renderer_controller.get()),
+                m_sd_tree.get()
+            ));
+
+        m_lighting_engine_factory.reset(
+            new GPTLightingEngineFactory(
+                m_sd_tree.get(),
+                *m_backward_light_sampler,
+                m_project.get_light_path_recorder(),
+                gpt_parameters));
 
         return true;
     }
@@ -549,6 +582,7 @@ bool RendererComponents::create_frame_renderer_factory()
                 m_tile_renderer_factory.get(),
                 m_tile_callback_factory,
                 m_pass_callback.get(),
+                m_renderer_controller.get(),
                 get_child_and_inherit_globals(m_params, "generic_frame_renderer")));
 
         return true;

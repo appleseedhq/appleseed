@@ -43,6 +43,7 @@ namespace renderer      { class IPassCallback; }
 namespace renderer      { class IShadingResultFrameBufferFactory; }
 namespace renderer      { class ITileCallbackFactory; }
 namespace renderer      { class ITileRendererFactory; }
+namespace renderer      { class IRendererController; }
 
 namespace renderer
 {
@@ -65,6 +66,7 @@ class GenericFrameRendererFactory
         ITileRendererFactory*               tile_renderer_factory,
         ITileCallbackFactory*               tile_callback_factory,      // may be nullptr
         IPassCallback*                      pass_callback,              // may be nullptr
+        IRendererController*                renderer_controller,        // may be nullptr
         const ParamArray&                   params);
 
     // Delete this instance.
@@ -80,6 +82,7 @@ class GenericFrameRendererFactory
         ITileRendererFactory*               tile_renderer_factory,
         ITileCallbackFactory*               tile_callback_factory,      // may be nullptr
         IPassCallback*                      pass_callback,              // may be nullptr
+        IRendererController*                renderer_controller,        // may be nullptr
         const ParamArray&                   params);
 
   private:
@@ -88,6 +91,7 @@ class GenericFrameRendererFactory
     ITileRendererFactory*                   m_tile_renderer_factory;
     ITileCallbackFactory*                   m_tile_callback_factory;    // may be nullptr
     IPassCallback*                          m_pass_callback;            // may be nullptr
+    IRendererController*                    m_renderer_controller;      // may be nullptr
     const ParamArray                        m_params;
 };
 
