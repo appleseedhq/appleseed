@@ -372,6 +372,8 @@ struct MasterRenderer::Impl
 
         if (!success || abort_switch.is_aborted())
         {
+            recorder.on_render_end(m_project);
+
             // If it wasn't an abort, it was a failure.
             return
                 abort_switch.is_aborted()
