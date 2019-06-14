@@ -58,11 +58,13 @@ namespace renderer
 GPTPassCallback::GPTPassCallback(
         const GPTParameters&            params,
         TerminatableRendererController* renderer_controller,
-        STree*                          sd_tree)
+        STree*                          sd_tree,
+        const size_t                    sample_budget)
   : m_params(params)
   , m_renderer_controller(renderer_controller)
   , m_sd_tree(sd_tree)
   , m_pass_number(0)
+  , m_sample_budget(sample_budget)
 {
 }
 
@@ -85,12 +87,17 @@ bool GPTPassCallback::on_pass_end(
 {
     ++m_pass_number;
 
-    if(m_pass_number * m_params.m_samples_per_pass >= m_params.m_spp_budget)
+    if(m_pass_number * m_params.m_samples_per_pass >= m_sample_budget)
     {
         // m_renderer_controller->terminate();
         return true;
     }
     return false;
+}
+
+size_t GPTPassCallback::get_samples_per_pass() const
+{
+    return m_params.m_samples_per_pass;
 }
 
 }   // namespace renderer

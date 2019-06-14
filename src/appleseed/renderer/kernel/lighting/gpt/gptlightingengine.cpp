@@ -965,6 +965,36 @@ Dictionary GPTLightingEngineFactory::get_params_metadata()
     Dictionary metadata;
 
     metadata.dictionaries().insert(
+        "samples_per_pass",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "4")
+            .insert("unlimited", "false")
+            .insert("min", "1")
+            .insert("max", "32")
+            .insert("label", "Samples Per Pass")
+            .insert("help", "Number of samples for one path guiding pass"));
+
+    metadata.dictionaries().insert(
+        "bsdf_sampling_fraction",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "0.5")
+            .insert("unlimited", "false")
+            .insert("min", "0.0")
+            .insert("max", "1.0")
+            .insert("label", "BSDF Sampling Fraction")
+            .insert("help", "Fraction of pure BSDF samples for path extension"));
+
+    metadata.dictionaries().insert(
+        "dl_light_samples",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "1.0")
+            .insert("label", "Light Samples")
+            .insert("help", "Number of samples used to estimate direct lighting"));
+
+    metadata.dictionaries().insert(
         "enable_dl",
         Dictionary()
             .insert("type", "bool")

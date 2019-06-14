@@ -64,7 +64,8 @@ class GPTPassCallback
     GPTPassCallback(
         const GPTParameters&            params,
         TerminatableRendererController* renderer_controller,
-        STree*                          sd_tree);
+        STree*                          sd_tree,
+        const size_t                    sample_budget);
 
     // Delete this instance.
     void release() override;
@@ -81,11 +82,14 @@ class GPTPassCallback
         foundation::JobQueue&           job_queue,
         foundation::IAbortSwitch&       abort_switch) override;
 
+    size_t get_samples_per_pass() const;
+
   private:
     const GPTParameters                 m_params;
     size_t                              m_pass_number;
     STree*                              m_sd_tree;
     TerminatableRendererController*     m_renderer_controller;
+    const size_t                        m_sample_budget;
 };
 
 }   // namespace renderer

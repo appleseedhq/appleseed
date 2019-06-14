@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/backwardlightsampler.h"
+#include "renderer/kernel/lighting/gpt/gptlightingengine.h"
 #include "renderer/kernel/lighting/pt/ptlightingengine.h"
 #include "renderer/kernel/lighting/sppm/sppmlightingengine.h"
 #include "renderer/kernel/rendering/final/adaptivetilerenderer.h"
@@ -142,6 +143,11 @@ Dictionary Configuration::get_metadata()
                             .insert("label", "Unidirectional Path Tracer")
                             .insert("help", "Unidirectional path tracing"))
                     .insert(
+                        "gpt",
+                        Dictionary()
+                            .insert("label", "Guided Path Tracer")
+                            .insert("help", "Guided path tracing"))
+                    .insert(
                         "sppm",
                         Dictionary()
                             .insert("label", "Stochastic Progressive Photon Mapping")
@@ -196,6 +202,10 @@ Dictionary Configuration::get_metadata()
     metadata.dictionaries().insert(
         "pt",
         PTLightingEngineFactory::get_params_metadata());
+
+    metadata.dictionaries().insert(
+        "gpt",
+        GPTLightingEngineFactory::get_params_metadata());
 
     metadata.dictionaries().insert(
         "sppm",

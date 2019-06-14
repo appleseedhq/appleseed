@@ -184,7 +184,7 @@ bool RendererComponents::create_lighting_engine_factory()
     {
         return true;
     }
-    else if (name == "disable_pt")
+    else if (name == "pt")
     {
         m_backward_light_sampler.reset(
             new BackwardLightSampler(
@@ -199,8 +199,16 @@ bool RendererComponents::create_lighting_engine_factory()
 
         return true;
     }
-    else if (name == "pt")
+    else if (name == "gpt")
     {
+        const string pixel_renderer_name = m_params.get_optional<string>("pixel_renderer", "");
+
+        if(pixel_renderer_name != "uniform")
+        {
+            RENDERER_LOG_ERROR("cannot use the guided path tracing with pixel renderer other than uniform pixel renderer.");
+            return false;
+        }
+
         m_backward_light_sampler.reset(
             new BackwardLightSampler(
                 m_scene,
@@ -209,16 +217,18 @@ bool RendererComponents::create_lighting_engine_factory()
         m_sd_tree.reset(new STree());
 
         GPTParameters gpt_parameters(
-            get_child_and_inherit_globals(m_params, "pt"));
+            get_child_and_inherit_globals(m_params, "gpt"));
 
         m_renderer_controller.reset(new TerminatableRendererController());
+
+        ParamArray uniform_pixel_renderer_params = get_child_and_inherit_globals(m_params, "uniform_pixel_renderer");
 
         m_pass_callback.reset(
             new GPTPassCallback(
                 gpt_parameters,
-                dynamic_cast<TerminatableRendererController*>(m_renderer_controller.get()),
-                m_sd_tree.get()
-            ));
+                dynamic_cast<TerminatableRendererController *>(m_renderer_controller.get()),
+                m_sd_tree.get(),
+                uniform_pixel_renderer_params.get_required<size_t>("samples", 64)));
 
         m_lighting_engine_factory.reset(
             new GPTLightingEngineFactory(
@@ -400,11 +410,22 @@ bool RendererComponents::create_pixel_renderer_factory()
             return false;
         }
 
+        ParamArray params = get_child_and_inherit_globals(m_params, "uniform_pixel_renderer");
+
+        const string lighting_engine_name = m_params.get_required<string>("lighting_engine", "");
+
+        if (lighting_engine_name == "gpt")
+        {
+            GPTParameters gpt_parameters(
+                get_child_and_inherit_globals(m_params, "gpt"));
+            params.insert("samples", gpt_parameters.m_samples_per_pass);
+        }
+
         m_pixel_renderer_factory.reset(
             new UniformPixelRendererFactory(
                 m_frame,
                 m_sample_renderer_factory.get(),
-                get_child_and_inherit_globals(m_params, "uniform_pixel_renderer")));
+                params));
 
         return true;
     }
@@ -575,6 +596,17 @@ bool RendererComponents::create_frame_renderer_factory()
             return false;
         }
 
+        ParamArray params = get_child_and_inherit_globals(m_params, "generic_frame_renderer");
+
+        const string lighting_engine_name = m_params.get_required<string>("lighting_engine", "");
+
+        if (lighting_engine_name == "gpt")
+        {
+            GPTParameters gpt_parameters(
+                get_child_and_inherit_globals(m_params, "gpt"));
+            params.insert("passes", 10000000);
+        }
+
         m_frame_renderer.reset(
             GenericFrameRendererFactory::create(
                 m_frame,
@@ -583,7 +615,7 @@ bool RendererComponents::create_frame_renderer_factory()
                 m_tile_callback_factory,
                 m_pass_callback.get(),
                 m_renderer_controller.get(),
-                get_child_and_inherit_globals(m_params, "generic_frame_renderer")));
+                params));
 
         return true;
     }

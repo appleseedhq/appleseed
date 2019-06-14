@@ -48,9 +48,8 @@ namespace renderer
 {
 
 GPTParameters::GPTParameters(const ParamArray& params)
-    : m_spp_budget(1024)
-    , m_bsdf_sampling_fraction(0.2f)
-    , m_samples_per_pass(4)
+    : m_samples_per_pass(params.get_optional<int>("samples_per_pass", 4))
+    , m_bsdf_sampling_fraction(params.get_optional<float>("bsdf_sampling_fraction", 0.5f))
     , m_enable_dl(params.get_optional<bool>("enable_dl", true))
     , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
     , m_enable_caustics(params.get_optional<bool>("enable_caustics", false))
@@ -88,7 +87,6 @@ void GPTParameters::print() const
 {
     RENDERER_LOG_INFO(
         "guided path tracer settings:\n"
-        "  sample budget                 %s\n"
         "  bsdf sampling fraction        %s\n"
         "  samples per pass              %s\n"
         "  direct lighting               %s\n"
@@ -108,7 +106,6 @@ void GPTParameters::print() const
         "  volume distance samples       %s\n"
         "  equiangular sampling          %s\n"
         "  clamp roughness               %s",
-        pretty_uint(m_spp_budget).c_str(),
         pretty_scalar(m_bsdf_sampling_fraction).c_str(),
         pretty_uint(m_samples_per_pass).c_str(),
         m_enable_dl ? "on" : "off",

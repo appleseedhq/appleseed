@@ -50,7 +50,6 @@ struct GPTParameters
 
   void print() const;
 
-  const size_t    m_spp_budget;
   const size_t    m_samples_per_pass;
   const float     m_bsdf_sampling_fraction;
   const bool      m_enable_dl;                    // is direct lighting enabled?
