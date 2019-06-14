@@ -1152,6 +1152,8 @@ set (renderer_kernel_lighting_gpt_sources
     renderer/kernel/lighting/gpt/gptparameters.cpp
     renderer/kernel/lighting/gpt/gptpasscallback.h
     renderer/kernel/lighting/gpt/gptpasscallback.cpp
+    renderer/kernel/lighting/gpt/pathguidedsampler.h
+    renderer/kernel/lighting/gpt/pathguidedsampler.cpp
 )
 list (APPEND appleseed_sources
     ${renderer_kernel_lighting_gpt_sources}

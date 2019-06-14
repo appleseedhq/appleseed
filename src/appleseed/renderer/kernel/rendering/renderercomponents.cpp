@@ -184,7 +184,7 @@ bool RendererComponents::create_lighting_engine_factory()
     {
         return true;
     }
-    else if (name == "ptttt")
+    else if (name == "disable_pt")
     {
         m_backward_light_sampler.reset(
             new BackwardLightSampler(

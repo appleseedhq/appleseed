@@ -35,6 +35,7 @@
 #include "renderer/kernel/aov/aovcomponents.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/pathvertex.h"
+#include "renderer/kernel/lighting/gpt/pathguidedsampler.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/lighting/sdtree.h"
 #include "renderer/kernel/shading/shadingcontext.h"
@@ -182,23 +183,6 @@ class GuidedPathTracer
         const ShadingRay&       ray,
         PathVertex&             vertex,
         ShadingPoint&           shading_point);
-
-    bool guide_path_extension(
-        PathVertex              &vertex,
-        BSDFSample              &bsdf_sample,
-        float                   &wo_pdf,
-        float                   &bsdf_pdf,
-        float                   &d_tree_pdf,
-        SamplingContext         &sampling_context,
-        DTreeWrapper            *d_tree) const;
-
-    void guided_path_extension_pdf(
-        PathVertex              &vertex,
-        float                   &wo_pdf,
-        float                   &bsdf_pdf,
-        float                   &d_tree_pdf,
-        const BSDFSample        &bsdf_sample,
-        const DTreeWrapper      *d_tree) const;
 };
 
 
@@ -726,19 +710,24 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
         return false;
     
 
-    float wo_pdf, bsdf_pdf, dTree_pdf;
-    DTreeWrapper* d_tree = m_sd_tree->get_dTreeWrapper();
+    float wo_pdf, bsdf_pdf, d_tree_pdf;
 
-    bool is_path_guided = guide_path_extension(
-        vertex,
+    PathGuidedSampler sampler(
+        m_sd_tree,
+        m_bsdf_sampling_fraction,
+        *vertex.m_bsdf,
+        vertex.m_bsdf_data,
+        vertex.m_scattering_modes,
+        *vertex.m_shading_point
+    );
+
+    bool is_path_guided = sampler.sample(
+        sampling_context,
         sample,
         wo_pdf,
         bsdf_pdf,
-        dTree_pdf,
-        sampling_context,
-        d_tree
+        d_tree_pdf
     );
-
     
     if(!is_path_guided)
     {
@@ -1033,128 +1022,5 @@ inline const ShadingPoint& GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>
 {
     return reinterpret_cast<const ShadingPoint*>(m_shading_point_arena.get_storage())[i];
 }
-
-template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
-bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::guide_path_extension(
-    PathVertex              &vertex,
-    BSDFSample              &bsdf_sample,
-    float                   &wo_pdf,
-    float                   &bsdf_pdf,
-    float                   &d_tree_pdf,
-    SamplingContext         &sampling_context,
-    DTreeWrapper            *d_tree) const
-    {
-        sampling_context.split_in_place(2, 1);
-        foundation::Vector2f sample = sampling_context.next2<foundation::Vector2f>();
-        bool is_path_guided = false;
-
-        if (/* !m_isBuilt  ||*/ !d_tree || vertex.m_bsdf->is_purely_specular())
-        {
-            vertex.m_bsdf->sample(
-                sampling_context,
-                vertex.m_bsdf_data,
-                Adjoint,
-                true, // multiply by |cos(incoming, normal)|
-                vertex.m_scattering_modes,
-                bsdf_sample);
-            wo_pdf = bsdf_sample.get_probability();
-            d_tree_pdf = 0;
-            return is_path_guided;
-        }
-
-        if (sample.x < m_bsdf_sampling_fraction)
-        {
-            sample.x /= m_bsdf_sampling_fraction;
-            vertex.m_bsdf->sample(
-                sampling_context,
-                vertex.m_bsdf_data,
-                Adjoint,
-                true, // multiply by |cos(incoming, normal)|
-                vertex.m_scattering_modes,
-                bsdf_sample);
-
-            if(bsdf_sample.get_mode() == ScatteringMode::None)
-            {
-                wo_pdf = bsdf_pdf = d_tree_pdf = 0;
-                return is_path_guided;
-            }
-
-            // If we sampled a delta component, then we have a 0 probability
-            // of sampling that direction via guiding, thus we can return early.
-            if (bsdf_sample.get_mode() == ScatteringMode::Specular)
-            {
-                d_tree_pdf = 0;
-                wo_pdf = m_bsdf_sampling_fraction; // Do we have layered BSDFs? i.e. is Specular with non delta pdf possible?
-                //return result / m_bsdf_sampling_fraction;
-                return is_path_guided;
-            }
-
-            // result *= bsdf_pdf; // Not necessary cause we don't have pre-divided bsdf values?
-        }
-        else
-        {
-            is_path_guided = true;
-            sample.x = (sample.x - m_bsdf_sampling_fraction) / (1 - m_bsdf_sampling_fraction);
-            DTreeSample dtree_sample;
-            d_tree->sample(sampling_context, dtree_sample);
-            bsdf_sample.m_incoming = foundation::Dual3f(dtree_sample.m_dir);
-            //bsdf_sample.set_to_scattering(ScatteringMode::None, dtree_sample.m_probability);
-            //result = bsdf->eval(bRec);
-            vertex.m_bsdf->evaluate(
-                vertex.m_bsdf_data,
-                Adjoint, // not adjoint
-                true,  // multiply by |cos(incoming, normal)|
-                foundation::Vector3f(vertex.get_geometric_normal()),
-                foundation::Basis3f(vertex.get_shading_basis()),
-                foundation::Vector3f(vertex.m_outgoing.get_value()),
-                bsdf_sample.m_incoming.get_value(),
-                vertex.m_scattering_modes,
-                bsdf_sample.m_value);
-            bsdf_sample.set_to_scattering(ScatteringMode::Diffuse, dtree_sample.m_probability);
-        }
-
-        guided_path_extension_pdf(vertex, wo_pdf, bsdf_pdf, d_tree_pdf, bsdf_sample, d_tree);
-        // do we need this?
-        // if (wo_pdf == 0)
-        // {
-        //     return Spectrum{0.0f};
-        // }
-
-        return is_path_guided;
-    }
-
-template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
-void GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::guided_path_extension_pdf(
-    PathVertex              &vertex,
-    float                   &wo_pdf,
-    float                   &bsdf_pdf,
-    float                   &d_tree_pdf,
-    const BSDFSample        &bsdf_sample,
-    const DTreeWrapper      *d_tree) const
-    {
-        d_tree_pdf = 0;
-        bsdf_pdf = vertex.m_bsdf->evaluate_pdf(
-            vertex.m_bsdf_data,
-            Adjoint, // not adjoint
-            foundation::Vector3f(vertex.get_geometric_normal()),
-            foundation::Basis3f(vertex.get_shading_basis()),
-            foundation::Vector3f(vertex.m_outgoing.get_value()),
-            bsdf_sample.m_incoming.get_value(),
-            vertex.m_scattering_modes);
-
-        if (/* !m_isBuilt ||*/ !d_tree || vertex.m_bsdf->is_purely_specular()) {
-            wo_pdf = bsdf_pdf;
-            return;
-        }
-
-        // Do we need this?
-        // if (!std::isfinite(bsdf_pdf)) {
-        //     wo_pdf = 0;
-        //     return;
-        // }
-
-        d_tree_pdf = d_tree->pdf(bsdf_sample.m_incoming.get_value());
-        wo_pdf = m_bsdf_sampling_fraction * bsdf_pdf + (1 - m_bsdf_sampling_fraction) * d_tree_pdf;
-    }
 
 }   // namespace renderer

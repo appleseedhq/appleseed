@@ -171,6 +171,7 @@ namespace
             AOVComponents&          aov_components)
         {
             PathVisitor path_visitor(
+                m_sd_tree,
                 m_params,
                 m_light_sampler,
                 sampling_context,
@@ -279,8 +280,10 @@ namespace
             AOVComponents&                      m_aov_components;
             LightPathStream*                    m_light_path_stream;
             bool                                m_omit_emitted_light;
+            STree*                              m_sd_tree;
 
             PathVisitorBase(
+                STree*                          sd_tree,
                 const GPTParameters&            params,
                 const BackwardLightSampler&     light_sampler,
                 SamplingContext&                sampling_context,
@@ -298,6 +301,7 @@ namespace
               , m_aov_components(aov_components)
               , m_light_path_stream(light_path_stream)
               , m_omit_emitted_light(false)
+              , m_sd_tree(sd_tree)
             {
             }
         };
@@ -311,6 +315,7 @@ namespace
         {
           public:
             PathVisitorSimple(
+                STree*                          sd_tree,
                 const GPTParameters&            params,
                 const BackwardLightSampler&     light_sampler,
                 SamplingContext&                sampling_context,
@@ -320,6 +325,7 @@ namespace
                 AOVComponents&                  aov_components,
                 LightPathStream*                light_path_stream)
               : PathVisitorBase(
+                    sd_tree,
                     params,
                     light_sampler,
                     sampling_context,
@@ -416,6 +422,7 @@ namespace
         {
           public:
             PathVisitorNextEventEstimation(
+                STree*                          sd_tree,
                 const GPTParameters&            params,
                 const BackwardLightSampler&     light_sampler,
                 SamplingContext&                sampling_context,
@@ -425,6 +432,7 @@ namespace
                 AOVComponents&                  aov_components,
                 LightPathStream*                light_path_stream)
               : PathVisitorBase(
+                    sd_tree,
                     params,
                     light_sampler,
                     sampling_context,
@@ -616,7 +624,7 @@ namespace
             }
 
           private:
-            bool m_is_indirect_lighting;
+            bool   m_is_indirect_lighting;
 
             void add_emitted_light_contribution(
                 const PathVertex&           vertex,
@@ -660,7 +668,9 @@ namespace
                 if (light_sample_count == 0)
                     return;
 
-                const BSDFSampler bsdf_sampler(
+                const PathGuidedSampler path_guided_sampler(
+                    m_sd_tree,
+                    m_params.m_bsdf_sampling_fraction,
                     bsdf,
                     bsdf_data,
                     scattering_modes,       // bsdf_sampling_modes (unused)
@@ -670,7 +680,7 @@ namespace
                 const DirectLightingIntegrator integrator(
                     m_shading_context,
                     m_light_sampler,
-                    bsdf_sampler,
+                    path_guided_sampler,
                     shading_point.get_time(),
                     scattering_modes,       // light_sampling_modes
                     1,                      // material_sample_count
@@ -708,7 +718,9 @@ namespace
                         m_sampling_context,
                         m_params.m_ibl_env_sample_count);
 
-                const BSDFSampler bsdf_sampler(
+                const PathGuidedSampler path_guided_sampler(
+                    m_sd_tree,
+                    m_params.m_bsdf_sampling_fraction,
                     bsdf,
                     bsdf_data,
                     scattering_modes,       // bsdf_sampling_modes (unused)
@@ -720,7 +732,7 @@ namespace
                     m_shading_context,
                     *m_env_edf,
                     outgoing,
-                    bsdf_sampler,
+                    path_guided_sampler,
                     scattering_modes,
                     1,                      // bsdf_sample_count
                     env_sample_count,

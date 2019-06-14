@@ -78,7 +78,7 @@ void GPTPassCallback::on_pass_begin(
 {
 }
 
-void GPTPassCallback::on_pass_end(
+bool GPTPassCallback::on_pass_end(
     const Frame&            frame,
     JobQueue&               job_queue,
     IAbortSwitch&           abort_switch)
@@ -86,7 +86,11 @@ void GPTPassCallback::on_pass_end(
     ++m_pass_number;
 
     if(m_pass_number * m_params.m_samples_per_pass >= m_params.m_spp_budget)
-        m_renderer_controller->terminate();
+    {
+        // m_renderer_controller->terminate();
+        return true;
+    }
+    return false;
 }
 
 }   // namespace renderer

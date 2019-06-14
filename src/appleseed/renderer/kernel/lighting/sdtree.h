@@ -50,7 +50,7 @@ class DTreeWrapper
 
 class STree {
   public:
-    DTreeWrapper* get_dTreeWrapper();
+    DTreeWrapper* get_d_tree_wrapper(const foundation::Vector3d& point);
 
   private:
     DTreeWrapper m_dTreeWrapper;

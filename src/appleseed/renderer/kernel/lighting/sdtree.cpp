@@ -28,7 +28,7 @@ void DTreeWrapper::sample(
     sample.m_probability = pdf(sample.m_dir);
 }
 
-DTreeWrapper* STree::get_dTreeWrapper()
+DTreeWrapper* STree::get_d_tree_wrapper(const foundation::Vector3d &point)
 {
     return &m_dTreeWrapper;
 }

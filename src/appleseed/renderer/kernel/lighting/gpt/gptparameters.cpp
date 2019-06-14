@@ -48,8 +48,8 @@ namespace renderer
 {
 
 GPTParameters::GPTParameters(const ParamArray& params)
-    : m_spp_budget(50)
-    , m_bsdf_sampling_fraction(0.0f)
+    : m_spp_budget(1024)
+    , m_bsdf_sampling_fraction(0.2f)
     , m_samples_per_pass(4)
     , m_enable_dl(params.get_optional<bool>("enable_dl", true))
     , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
