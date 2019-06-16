@@ -337,7 +337,7 @@ namespace
             {
             }
 
-            void on_miss(const PathVertex& vertex)
+            void on_miss(const PathVertex &vertex, GPTVertexPath& guided_path)
             {
                 assert(vertex.m_prev_mode != ScatteringMode::None);
 
@@ -364,9 +364,11 @@ namespace
                     vertex.m_path_length,
                     vertex.m_aov_mode,
                     env_radiance);
+                
+                guided_path.add_radiance(env_radiance);
             }
 
-            void on_hit(const PathVertex& vertex)
+            void on_hit(const PathVertex &vertex, GPTVertexPath& guided_path)
             {
                 // Emitted light contribution.
                 if ((!m_omit_emitted_light || m_params.m_enable_caustics) &&
@@ -391,6 +393,8 @@ namespace
                         vertex.m_path_length,
                         vertex.m_aov_mode,
                         emitted_radiance);
+                    
+                    guided_path.add_radiance(emitted_radiance);
                 }
                 else
                 {
@@ -400,7 +404,7 @@ namespace
                 }
             }
 
-            void on_scatter(PathVertex& vertex)
+            void on_scatter(PathVertex &vertex, GPTVertexPath& guided_path)
             {
                 // When caustics are disabled, disable glossy and specular components after a diffuse or volume bounce.
                 // Note that accept_scattering() is later going to return false in this case.
@@ -445,7 +449,7 @@ namespace
             {
             }
 
-            void on_miss(const PathVertex& vertex)
+            void on_miss(const PathVertex &vertex, GPTVertexPath& guided_path)
             {
                 assert(vertex.m_prev_mode != ScatteringMode::None);
 
@@ -495,9 +499,11 @@ namespace
                     vertex.m_path_length,
                     vertex.m_aov_mode,
                     env_radiance);
+
+                guided_path.add_radiance(env_radiance);
             }
 
-            void on_hit(const PathVertex& vertex)
+            void on_hit(const PathVertex& vertex, GPTVertexPath& guided_path)
             {
                 // Emitted light contribution.
                 if ((!m_omit_emitted_light || m_params.m_enable_caustics) &&
@@ -526,6 +532,8 @@ namespace
                         vertex.m_path_length,
                         vertex.m_aov_mode,
                         emitted_radiance);
+                    
+                    guided_path.add_radiance(emitted_radiance);
                 }
                 else
                 {
@@ -535,7 +543,7 @@ namespace
                 }
             }
 
-            void on_scatter(PathVertex& vertex)
+            void on_scatter(PathVertex &vertex, GPTVertexPath& guided_path)
             {
                 assert(vertex.m_scattering_modes != ScatteringMode::None);
 
@@ -621,6 +629,8 @@ namespace
                     vertex.m_path_length,
                     vertex.m_aov_mode,
                     vertex_radiance);
+
+                guided_path.add_radiance(vertex_radiance.m_beauty);
             }
 
           private:
@@ -669,7 +679,7 @@ namespace
                     return;
 
                 const PathGuidedSampler path_guided_sampler(
-                    m_sd_tree,
+                    m_sd_tree->get_d_tree_wrapper(shading_point.get_point()),
                     m_params.m_bsdf_sampling_fraction,
                     bsdf,
                     bsdf_data,
@@ -719,11 +729,11 @@ namespace
                         m_params.m_ibl_env_sample_count);
 
                 const PathGuidedSampler path_guided_sampler(
-                    m_sd_tree,
+                    m_sd_tree->get_d_tree_wrapper(shading_point.get_point()),
                     m_params.m_bsdf_sampling_fraction,
                     bsdf,
                     bsdf_data,
-                    scattering_modes,       // bsdf_sampling_modes (unused)
+                    scattering_modes, // bsdf_sampling_modes (unused)
                     shading_point);
 
                 // This path will be extended via BSDF sampling: sample the environment only.
@@ -829,7 +839,7 @@ namespace
             {
             }
 
-            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray)
+            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray, GPTVertexPath& guided_path)
             {
                 // Any light contribution after a diffuse, glossy or volume bounce is considered indirect.
                 if (ScatteringMode::has_diffuse_or_glossy_or_volume(vertex.m_scattering_modes))
@@ -893,7 +903,7 @@ namespace
                 }
             }
 
-            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray)
+            void visit_ray(PathVertex &vertex, const ShadingRay &volume_ray, GPTVertexPath &guided_path)
             {
                 // Any light contribution after a diffuse, glossy or volume bounce is considered indirect.
                 if (ScatteringMode::has_diffuse_or_glossy_or_volume(vertex.m_scattering_modes))
@@ -950,6 +960,8 @@ namespace
 
                 radiance *= vertex.m_throughput;
                 m_path_radiance.add(vertex.m_path_length, vertex.m_aov_mode, radiance);
+
+                guided_path.add_radiance(radiance.m_beauty);
             }
         };
     };

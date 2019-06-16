@@ -14,7 +14,7 @@ class PathGuidedSampler
 {
   public:
     PathGuidedSampler(
-        STree*                          sd_tree,
+        DTreeWrapper*                   d_tree,
         const float                     bsdf_sampling_fraction,
         const BSDF&                     bsdf,
         const void*                     bsdf_data,
@@ -62,7 +62,6 @@ class PathGuidedSampler
         float&                          d_tree_pdf,
         DirectShadingComponents&        value) const;
 
-    STree*                              m_sd_tree;
     DTreeWrapper*                       m_d_tree;
     const float                         m_bsdf_sampling_fraction;
 };

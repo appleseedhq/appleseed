@@ -21,7 +21,7 @@ namespace renderer
 //
 
 PathGuidedSampler::PathGuidedSampler(
-    STree*                          sd_tree,
+    DTreeWrapper*                   d_tree,
     const float                     bsdf_sampling_fraction,
     const BSDF&                     bsdf,
     const void*                     bsdf_data,
@@ -32,11 +32,10 @@ PathGuidedSampler::PathGuidedSampler(
       bsdf_data,
       bsdf_sampling_modes,
       shading_point)
-  , m_sd_tree(sd_tree)
+  , m_d_tree(d_tree)
   , m_bsdf_sampling_fraction(bsdf_sampling_fraction)
 {
-    assert(m_sd_tree);
-    m_d_tree = m_sd_tree->get_d_tree_wrapper(m_shading_point.get_point());
+    assert(m_d_tree);
 }
 
 bool PathGuidedSampler::sample(

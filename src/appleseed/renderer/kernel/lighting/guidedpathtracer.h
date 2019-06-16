@@ -173,7 +173,8 @@ class GuidedPathTracer
         SamplingContext&        sampling_context,
         PathVertex&             vertex,
         BSDFSample&             sample,
-        ShadingRay&             ray);
+        ShadingRay&             ray,
+        GPTVertexPath&          guide_vertices);
 
     // This method performs raymarching across the volume.
     // Returns whether the path should be continued.
@@ -182,7 +183,8 @@ class GuidedPathTracer
         const ShadingContext&   shading_context,
         const ShadingRay&       ray,
         PathVertex&             vertex,
-        ShadingPoint&           shading_point);
+        ShadingPoint&           shading_point,
+        GPTVertexPath&          guided_path);
 };
 
 
@@ -271,6 +273,8 @@ size_t GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
     m_volume_bounces = 0;
     m_iterations = 0;
 
+    GPTVertexPath guided_path;
+
     while (true)
     {
         if (clear_arena)
@@ -318,7 +322,7 @@ size_t GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         // Terminate the path if the ray didn't hit anything.
         if (!vertex.m_shading_point->hit_surface())
         {
-            m_path_visitor.on_miss(vertex);
+            m_path_visitor.on_miss(vertex, guided_path);
             break;
         }
 
@@ -486,7 +490,7 @@ size_t GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         // the incoming vertex if we need to change the probability of reaching this vertex by BSDF
         // sampling from projected solid angle measure to area measure.
         vertex.m_cos_on = foundation::dot(vertex.m_outgoing.get_value(), vertex.get_shading_normal());
-        m_path_visitor.on_hit(vertex);
+        m_path_visitor.on_hit(vertex, guided_path);
 
         // Use Russian Roulette to cut the path without introducing bias.
         if (!continue_path_rr(sampling_context, vertex))
@@ -557,7 +561,7 @@ size_t GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         {
             // If there is a BSDF, compute the bounce.
             const bool continue_path =
-                process_bounce(sampling_context, vertex, bsdf_sample, next_ray);
+                process_bounce(sampling_context, vertex, bsdf_sample, next_ray, guided_path);
 
             // Terminate the path if this scattering event is not accepted.
             if (!continue_path)
@@ -627,7 +631,8 @@ size_t GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                     shading_context,
                     next_ray,
                     vertex,
-                    *next_shading_point))
+                    *next_shading_point,
+                    guided_path))
                 break;
         }
         else
@@ -643,6 +648,14 @@ size_t GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         vertex.m_parent_shading_point = vertex.m_shading_point;
         vertex.m_shading_point = next_shading_point;
     }
+
+    guided_path.record_to_tree(
+        *m_sd_tree,
+        0.5f, //probably not correct
+        ESpatialFilter::ENearest,
+        EDirectionalFilter::ENearest,
+        sampling_context
+    );
 
     return vertex.m_path_length;
 }
@@ -700,20 +713,21 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     SamplingContext&            sampling_context,
     PathVertex&                 vertex,
     BSDFSample&                 sample,
-    ShadingRay&                 next_ray)
+    ShadingRay&                 next_ray,
+    GPTVertexPath&              guided_path)
 {
     // Let the path visitor handle the scattering event.
-    m_path_visitor.on_scatter(vertex);
+    m_path_visitor.on_scatter(vertex, guided_path);
 
     // Terminate the path if all scattering modes are disabled.
     if (vertex.m_scattering_modes == ScatteringMode::None)
         return false;
     
-
+    DTreeWrapper* d_tree = m_sd_tree->get_d_tree_wrapper(vertex.get_point());
     float wo_pdf, bsdf_pdf, d_tree_pdf;
 
     PathGuidedSampler sampler(
-        m_sd_tree,
+        d_tree,
         m_bsdf_sampling_fraction,
         *vertex.m_bsdf,
         vertex.m_bsdf_data,
@@ -759,9 +773,6 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
             return false;
     }
 
-
-
-
     // Save the scattering properties for MIS at light-emitting vertices.
     vertex.m_prev_mode = sample.get_mode();
     vertex.m_prev_prob = wo_pdf;
@@ -774,6 +785,26 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     if (is_path_guided || wo_pdf != BSDF::DiracDelta)
         sample.m_value /= wo_pdf;
     vertex.m_throughput *= sample.m_value.m_beauty;
+
+    // Add a vertex to the guided path
+    if(!guided_path.is_full())
+    {
+        guided_path.add_vertex(
+            GPTVertex{
+                d_tree,
+                foundation::Vector3f(),
+                foundation::Vector3f(vertex.get_point()),
+                sample.m_incoming.get_value(),
+                vertex.m_throughput,
+                sample.m_value.m_beauty,
+                renderer::Spectrum(0.0f),
+                wo_pdf,
+                bsdf_pdf,
+                d_tree_pdf,
+                sample.get_mode() == ScatteringMode::Specular
+            }
+        );
+    }
 
     // Update bounce counters.
     ++vertex.m_path_length;
@@ -809,7 +840,8 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
     const ShadingContext&       shading_context,
     const ShadingRay&           ray,
     PathVertex&                 vertex,
-    ShadingPoint&               exit_point)
+    ShadingPoint&               exit_point,
+    GPTVertexPath&              guided_path)
 {
     if (!continue_path_rr(sampling_context, vertex))
         return false;
@@ -855,7 +887,7 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         vertex.m_volume_data = data;
 
         // Apply the visitor to this ray.
-        m_volume_visitor.visit_ray(vertex, volume_ray);
+        m_volume_visitor.visit_ray(vertex, volume_ray, guided_path);
 
         if ((vertex.m_scattering_modes & ScatteringMode::Volume) == 0)
         {
