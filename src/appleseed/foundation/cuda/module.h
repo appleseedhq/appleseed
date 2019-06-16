@@ -49,11 +49,11 @@ class CUDAModule
 
     explicit CUDAModule(const char* filename);
 
-    CUDAModule(CUDAModule&& other);
+    CUDAModule(CUDAModule&& rhs);
 
     ~CUDAModule();
 
-    CUDAModule& operator=(CUDAModule&& other);
+    CUDAModule& operator=(CUDAModule&& rhs);
 
     CUfunction get_function(const char* name);
 

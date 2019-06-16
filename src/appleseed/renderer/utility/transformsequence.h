@@ -54,12 +54,14 @@ class APPLESEED_DLLSYMBOL TransformSequence
     // Constructors.
     TransformSequence();
     TransformSequence(const TransformSequence& rhs);
+    TransformSequence(TransformSequence&& rhs) APPLESEED_NOEXCEPT;
 
     // Destructor.
     ~TransformSequence();
 
-    // Assignment operator.
+    // Assignment operators.
     TransformSequence& operator=(const TransformSequence& rhs);
+    TransformSequence& operator=(TransformSequence&& rhs) APPLESEED_NOEXCEPT;
 
     // Return true if the sequence is empty.
     bool empty() const;
