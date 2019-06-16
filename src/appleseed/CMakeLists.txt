@@ -1025,6 +1025,32 @@ source_group ("renderer\\api" FILES
     ${renderer_api_sources}
 )
 
+set (renderer_device_sources
+    renderer/device/irendercontext.h
+    renderer/device/irenderdevice.h
+    renderer/device/renderdevicebase.cpp
+    renderer/device/renderdevicebase.h
+)
+list (APPEND appleseed_sources
+    ${renderer_device_sources}
+)
+source_group ("renderer\\device" FILES
+    ${renderer_device_sources}
+)
+
+set (renderer_device_cpu_sources
+    renderer/device/cpu/cpurendercontext.cpp
+    renderer/device/cpu/cpurendercontext.h
+    renderer/device/cpu/cpurenderdevice.cpp
+    renderer/device/cpu/cpurenderdevice.h
+)
+list (APPEND appleseed_sources
+    ${renderer_device_cpu_sources}
+)
+source_group ("renderer\\device\\cpu" FILES
+    ${renderer_device_cpu_sources}
+)
+
 set (renderer_global_sources
     renderer/global/globallogger.cpp
     renderer/global/globallogger.h
@@ -1578,6 +1604,8 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/disneybrdf.h
     renderer/modeling/bsdf/energycompensation.cpp
     renderer/modeling/bsdf/energycompensation.h
+    renderer/modeling/bsdf/energycompensationtables.cpp
+    renderer/modeling/bsdf/energycompensationtables.h
     renderer/modeling/bsdf/fresnel.h
     renderer/modeling/bsdf/glassbsdf.cpp
     renderer/modeling/bsdf/glassbsdf.h

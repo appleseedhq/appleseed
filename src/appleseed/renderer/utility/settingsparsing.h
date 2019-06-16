@@ -44,6 +44,9 @@ namespace renderer  { class ParamArray; }
 namespace renderer
 {
 
+// Render device.
+std::string get_render_device(const ParamArray& params);
+
 // Spectrum mode.
 APPLESEED_DLLSYMBOL Spectrum::Mode get_spectrum_mode(const ParamArray& params);
 std::string get_spectrum_mode_name(const Spectrum::Mode mode);

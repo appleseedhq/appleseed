@@ -37,6 +37,7 @@
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/energycompensation.h"
+#include "renderer/modeling/bsdf/energycompensationtables.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
@@ -773,7 +774,6 @@ namespace
 
     typedef BSDFWrapper<GlassBSDFImpl, false> GlassBSDF;
 
-#ifdef COMPUTE_ALBEDO_TABLES
     const float MinEta = 1.01f;
     const float MaxEta = 3.0f;
 
@@ -781,6 +781,11 @@ namespace
       : public AlbedoTable3D
     {
       public:
+        GlassAlbedoTable(const float* table, const float min_eta, const float max_eta)
+          : AlbedoTable3D(table, min_eta, max_eta)
+        {
+        }
+
         GlassAlbedoTable(const float min_eta, const float max_eta)
           : AlbedoTable3D(min_eta, max_eta)
         {
@@ -882,11 +887,19 @@ namespace
     struct GlassAlbedoTables
       : public NonCopyable
     {
+#ifdef COMPUTE_ALBEDO_TABLES
         GlassAlbedoTables()
-          : m_ggx(MinEta, MaxEta)
-          , m_ggx_rcp_eta(1.0f / MaxEta, 1.0f / MinEta)
+          : m_ggx(GGXMDF(), MinEta, MaxEta)
+          , m_ggx_rcp_eta(GGXMDF(), 1.0f / MaxEta, 1.0f / MinEta)
         {
         }
+#else
+        GlassAlbedoTables()
+          : m_ggx(g_glass_ggx_albedo_table, MinEta, MaxEta)
+          , m_ggx_rcp_eta(g_glass_ggx_rcp_eta_albedo_table, 1.0f / MaxEta, 1.0f / MinEta)
+        {
+        }
+#endif
 
         GlassAlbedoTable m_ggx;
         GlassAlbedoTable m_ggx_rcp_eta;
@@ -932,7 +945,6 @@ namespace
                 roughness);
         }
     }
-#endif
 }
 
 
@@ -1195,7 +1207,6 @@ auto_release_ptr<BSDF> GlassBSDFFactory::create(
 
 void write_glass_directional_albedo_tables(const char* directory)
 {
-#ifdef COMPUTE_ALBEDO_TABLES
     const bfs::path dir(directory);
 
     const GlassAlbedoTable ggx_table(MinEta, MaxEta);
@@ -1212,7 +1223,6 @@ void write_glass_directional_albedo_tables(const char* directory)
     ggx_rcp_eta_table.write_table_to_cpp_array(
         dir / "glass_ggx_rcp_eta_albedo_table.cpp",
         "g_glass_ggx_rcp_eta_albedo_table");
-#endif
 }
 
 }   // namespace renderer

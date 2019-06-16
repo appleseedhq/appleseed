@@ -26,55 +26,17 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "module.h"
+#pragma once
 
-// appleseed.foundation headers.
-#include "foundation/cuda/exception.h"
+// appleseed.renderer headers.
+#include "renderer/device/irendercontext.h"
 
-// Standard headers.
-#include <algorithm>
-#include <cassert>
-
-using namespace std;
-
-namespace foundation
+namespace renderer
 {
 
-CUDAModule::CUDAModule()
-  : m_module(nullptr)
+class CPURenderContext
+  : public IRenderContext
 {
-}
+};
 
-CUDAModule::CUDAModule(const char* filename)
-{
-    check_cuda_result(cuModuleLoad(&m_module, filename));
-}
-
-CUDAModule::CUDAModule(CUDAModule&& other)
-{
-    std::swap(m_module, other.m_module);
-}
-
-CUDAModule::~CUDAModule()
-{
-    if (m_module)
-        cuModuleUnload(m_module);
-}
-
-CUDAModule& CUDAModule::operator=(CUDAModule&& other)
-{
-    swap(m_module, other.m_module);
-    return *this;
-}
-
-CUfunction CUDAModule::get_function(const char* name)
-{
-    assert(m_module);
-
-    CUfunction f;
-    check_cuda_result(cuModuleGetFunction(&f, m_module, name));
-    return f;
-}
-
-}       // namespace foundation
+}       // namespace renderer

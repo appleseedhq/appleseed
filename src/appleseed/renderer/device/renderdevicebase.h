@@ -26,55 +26,43 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "module.h"
+#pragma once
 
-// appleseed.foundation headers.
-#include "foundation/cuda/exception.h"
+// appleseed.renderer headers.
+#include "renderer/device/irenderdevice.h"
 
-// Standard headers.
-#include <algorithm>
-#include <cassert>
+// Forward declarations.
+namespace renderer   { class IFrameRenderer; }
+namespace renderer   { class ParamArray; }
+namespace renderer   { class Project; }
 
-using namespace std;
-
-namespace foundation
+namespace renderer
 {
 
-CUDAModule::CUDAModule()
-  : m_module(nullptr)
+class RenderDeviceBase
+  : public IRenderDevice
 {
-}
+  protected:
+    RenderDeviceBase(
+        Project&            project,
+        const ParamArray&   params);
 
-CUDAModule::CUDAModule(const char* filename)
-{
-    check_cuda_result(cuModuleLoad(&m_module, filename));
-}
+    const Project& get_project() const;
+    Project& get_project();
 
-CUDAModule::CUDAModule(CUDAModule&& other)
-{
-    std::swap(m_module, other.m_module);
-}
+    const ParamArray& get_params() const;
 
-CUDAModule::~CUDAModule()
-{
-    if (m_module)
-        cuModuleUnload(m_module);
-}
+    bool is_progressive_render() const;
 
-CUDAModule& CUDAModule::operator=(CUDAModule&& other)
-{
-    swap(m_module, other.m_module);
-    return *this;
-}
+    IRendererController* get_frame_renderer_controller() override;
 
-CUfunction CUDAModule::get_function(const char* name)
-{
-    assert(m_module);
+    static IRendererController::Status wait_for_event(
+        IFrameRenderer&      frame_renderer,
+        IRendererController& renderer_controller);
 
-    CUfunction f;
-    check_cuda_result(cuModuleGetFunction(&f, m_module, name));
-    return f;
-}
+  private:
+    Project&            m_project;
+    const ParamArray&   m_params;
+};
 
-}       // namespace foundation
+}       // namespace renderer

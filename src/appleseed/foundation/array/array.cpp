@@ -44,7 +44,109 @@ namespace foundation
 // Array class implementation.
 //
 
-Array::Concept::~Concept()
+template <typename T>
+Array::Concept* Array::Model<T>::copy() const
+{
+    return new Array::Model<T>(*this);
+}
+
+template <typename T>
+ArrayType Array::Model<T>::type() const
+{
+    return ArrayTraits<T>::array_type();
+}
+
+template <typename T>
+size_t Array::Model<T>::item_size() const
+{
+    return sizeof(T);
+}
+
+template <typename T>
+bool Array::Model<T>::empty() const
+{
+    return m_items.empty();
+}
+
+template <typename T>
+size_t Array::Model<T>::size() const
+{
+    return m_items.size();
+}
+
+template <typename T>
+size_t Array::Model<T>::capacity() const
+{
+    return m_items.capacity();
+}
+
+template <typename T>
+void Array::Model<T>::clear()
+{
+    m_items.clear();
+}
+
+template <typename T>
+void Array::Model<T>::reserve(const size_t n)
+{
+    m_items.reserve(n);
+}
+
+template <typename T>
+void Array::Model<T>::resize(const size_t n)
+{
+    m_items.resize(n);
+}
+
+template <typename T>
+void Array::Model<T>::shrink_to_fit()
+{
+    m_items.shrink_to_fit();
+}
+
+template <typename T>
+void Array::Model<T>::push_back(const void* p)
+{
+    m_items.push_back(*reinterpret_cast<const T*>(p));
+}
+
+template <typename T>
+const void* Array::Model<T>::begin() const
+{
+    return m_items.data();
+}
+
+template <typename T>
+const void* Array::Model<T>::end() const
+{
+    return
+        reinterpret_cast<const int8*>(m_items.data())
+        + sizeof(T) * m_items.size();
+}
+
+template <typename T>
+void* Array::Model<T>::begin()
+{
+    return m_items.data();
+}
+
+template <typename T>
+void* Array::Model<T>::end()
+{
+    return
+        reinterpret_cast<int8*>(m_items.data())
+        + sizeof(T) * m_items.size();
+}
+
+template <typename T>
+bool Array::Model<T>::equals(const Concept* rhs) const
+{
+    const Array::Model<T>* m = reinterpret_cast<const Array::Model<T>*>(rhs);
+    return m_items == m->m_items;
+}
+
+Array::Array()
+  : m_self(nullptr)
 {
 }
 
@@ -137,16 +239,22 @@ void Array::clear()
     m_self->clear();
 }
 
+void Array::reserve(const size_t n)
+{
+    assert(!is_moved());
+    m_self->reserve(n);
+}
+
 void Array::resize(const size_t n)
 {
     assert(!is_moved());
     m_self->resize(n);
 }
 
-void Array::reserve(const size_t n)
+const void* Array::data() const
 {
     assert(!is_moved());
-    m_self->reserve(n);
+    return begin();
 }
 
 void Array::shrink_to_fit()

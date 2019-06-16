@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2019 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2018 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,55 +26,14 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "module.h"
+#pragma once
 
-// appleseed.foundation headers.
-#include "foundation/cuda/exception.h"
-
-// Standard headers.
-#include <algorithm>
-#include <cassert>
-
-using namespace std;
-
-namespace foundation
+namespace renderer
 {
 
-CUDAModule::CUDAModule()
-  : m_module(nullptr)
-{
-}
+extern const float g_glossy_ggx_albedo_table[1056];
 
-CUDAModule::CUDAModule(const char* filename)
-{
-    check_cuda_result(cuModuleLoad(&m_module, filename));
-}
+extern const float g_glass_ggx_albedo_table[4352];
+extern const float g_glass_ggx_rcp_eta_albedo_table[4352];
 
-CUDAModule::CUDAModule(CUDAModule&& other)
-{
-    std::swap(m_module, other.m_module);
-}
-
-CUDAModule::~CUDAModule()
-{
-    if (m_module)
-        cuModuleUnload(m_module);
-}
-
-CUDAModule& CUDAModule::operator=(CUDAModule&& other)
-{
-    swap(m_module, other.m_module);
-    return *this;
-}
-
-CUfunction CUDAModule::get_function(const char* name)
-{
-    assert(m_module);
-
-    CUfunction f;
-    check_cuda_result(cuModuleGetFunction(&f, m_module, name));
-    return f;
-}
-
-}       // namespace foundation
+}   // namespace renderer
