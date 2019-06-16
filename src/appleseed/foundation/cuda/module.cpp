@@ -51,9 +51,10 @@ CUDAModule::CUDAModule(const char* filename)
     check_cuda_result(cuModuleLoad(&m_module, filename));
 }
 
-CUDAModule::CUDAModule(CUDAModule&& other)
+CUDAModule::CUDAModule(CUDAModule&& rhs)
+  : m_module(rhs.m_module)
 {
-    std::swap(m_module, other.m_module);
+    rhs.m_module = nullptr;
 }
 
 CUDAModule::~CUDAModule()
@@ -62,9 +63,10 @@ CUDAModule::~CUDAModule()
         cuModuleUnload(m_module);
 }
 
-CUDAModule& CUDAModule::operator=(CUDAModule&& other)
+CUDAModule& CUDAModule::operator=(CUDAModule&& rhs)
 {
-    swap(m_module, other.m_module);
+    CUDAModule tmp(move(rhs));
+    swap(m_module, tmp.m_module);
     return *this;
 }
 

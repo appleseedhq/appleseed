@@ -65,18 +65,18 @@ class CopyOnWrite
     }
 
     // Copy constructor.
-    CopyOnWrite(const CopyOnWrite& other)
-      : m_model(other.m_model)
+    CopyOnWrite(const CopyOnWrite& rhs)
+      : m_model(rhs.m_model)
     {
         assert(m_model);
         m_model->m_count++;
     }
 
     // Move constructor.
-    CopyOnWrite(CopyOnWrite&& other) APPLESEED_NOEXCEPT
+    CopyOnWrite(CopyOnWrite&& rhs) APPLESEED_NOEXCEPT
     {
-        m_model = other.m_model;
-        other.m_model = nullptr;
+        m_model = rhs.m_model;
+        rhs.m_model = nullptr;
     }
 
     // Destructor.
@@ -92,17 +92,18 @@ class CopyOnWrite
     }
 
     // Copy assignment.
-    CopyOnWrite& operator=(const CopyOnWrite& other)
+    CopyOnWrite& operator=(const CopyOnWrite& rhs)
     {
-        CopyOnWrite tmp(other);
+        CopyOnWrite tmp(rhs);
         std::swap(this->m_model, tmp.m_model);
         return *this;
     }
 
     // Move assignment.
-    CopyOnWrite& operator=(CopyOnWrite&& other) APPLESEED_NOEXCEPT
+    CopyOnWrite& operator=(CopyOnWrite&& rhs) APPLESEED_NOEXCEPT
     {
-        std::swap(m_model, other.m_model);
+        CopyOnWrite tmp(std::move(rhs));
+        std::swap(m_model, tmp.m_model);
         return *this;
     }
 
