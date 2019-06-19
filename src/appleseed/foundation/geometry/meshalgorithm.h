@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2019 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,41 +28,18 @@
 
 #pragma once
 
-// appleseed.foundation headers.
-#include "foundation/math/aabb.h"
-
-// Standard headers.
-#include <cstddef>
-
 // Forward declarations.
-namespace foundation { class Array; }
+namespace foundation { class Mesh; }
 
 namespace foundation
 {
 
-AABB3f compute_bounding_box(const Array& vertices);
-AABB3f compute_bounding_box(const Array& vertices, const AABB3f& initial_bbox);
+void unshare_normals(Mesh& mesh);
 
-struct FaceSidesInfo
-{
-    FaceSidesInfo()
-      : m_face_count(0)
-      , m_triangle_count(0)
-      , m_quad_count(0)
-      , m_ngon_count(0)
-      , m_invalid_count(0)
-      , m_max_face_sides(0)
-    {
-    }
+void compute_smooth_normals(Mesh& mesh);
 
-    size_t m_face_count;
-    size_t m_triangle_count;
-    size_t m_quad_count;
-    size_t m_ngon_count;
-    size_t m_invalid_count;
-    size_t m_max_face_sides;
-};
+void compute_smooth_tangents(Mesh& mesh);
 
-FaceSidesInfo get_face_sides_info(const Array& verts_per_face);
+Mesh triangulate(const Mesh& mesh, const bool keep_quads = false);
 
 }       // namespace foundation

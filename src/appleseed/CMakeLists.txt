@@ -58,8 +58,6 @@ set (foundation_array_sources
     foundation/array/exception.h
     foundation/array/keyframedarray.cpp
     foundation/array/keyframedarray.h
-    foundation/array/meshalgorithm.cpp
-    foundation/array/meshalgorithm.h
 )
 list (APPEND appleseed_sources
     ${foundation_array_sources}
@@ -151,6 +149,19 @@ list (APPEND appleseed_sources
 )
 source_group ("foundation\\curve" FILES
     ${foundation_curve_sources}
+)
+
+set (foundation_geometry_sources
+    foundation/geometry/mesh.cpp
+    foundation/geometry/mesh.h
+    foundation/geometry/meshalgorithm.cpp
+    foundation/geometry/meshalgorithm.h
+)
+list (APPEND appleseed_sources
+    ${foundation_geometry_sources}
+)
+source_group ("foundation\\geometry" FILES
+    ${foundation_geometry_sources}
 )
 
 set (foundation_image_text_sources
@@ -535,6 +546,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_math_filter.cpp
     foundation/meta/tests/test_matrix.cpp
     foundation/meta/tests/test_memory.cpp
+    foundation/meta/tests/test_mesh.cpp
     foundation/meta/tests/test_microfacet.cpp
     foundation/meta/tests/test_minmax.cpp
     foundation/meta/tests/test_mis.cpp
