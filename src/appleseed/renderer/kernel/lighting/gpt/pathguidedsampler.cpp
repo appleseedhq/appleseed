@@ -179,7 +179,9 @@ bool PathGuidedSampler::guide_path_extension(
                 bsdf_sample.m_incoming.get_value(),
                 m_bsdf_sampling_modes,
                 bsdf_sample.m_value);
-            bsdf_sample.set_to_scattering(ScatteringMode::Diffuse, dtree_sample.m_probability);
+            bsdf_sample.set_to_scattering(
+                ScatteringMode::has_diffuse(m_bsdf.get_modes()) ? ScatteringMode::Diffuse : ScatteringMode::Glossy,
+                dtree_sample.m_probability);
         }
 
         guided_path_extension_pdf(bsdf_sample, wo_pdf, bsdf_pdf, d_tree_pdf);
