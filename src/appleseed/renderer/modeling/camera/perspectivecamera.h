@@ -53,6 +53,20 @@ class PerspectiveCamera
         const char*                     name,
         const ParamArray&               params);
 
+    // Get the film dimensions in camera space, in meters
+    const foundation::Vector2d& get_film_dimensions() const;
+
+    // Get the focal length in camera space, in meters
+    double get_focal_length() const;
+
+    // Get the camera shift in camera space, in meters
+    const foundation::Vector2d& get_shift() const;
+
+    // Focal length <-> horizontal field of view conversion functions.
+    // Focal length and film width are expressed in meters; horizontal field of view is expressed in radians.
+    static double hfov_to_focal_length(const double film_width, const double hfov);
+    static double focal_length_to_hfov(const double film_width, const double focal_length);
+
     bool on_render_begin(
         const Project&                  project,
         const BaseGroup*                parent,
@@ -91,11 +105,6 @@ class PerspectiveCamera
 
     // Utility function to retrieve the focal length (in meters) from the camera parameters.
     double extract_focal_length(const double film_width) const;
-
-    // Focal length <-> horizontal field of view conversion functions.
-    // Focal length and film width are expressed in meters; horizontal field of view is expressed in radians.
-    static double hfov_to_focal_length(const double film_width, const double hfov);
-    static double focal_length_to_hfov(const double film_width, const double focal_length);
 
     // Project points between NDC and camera spaces.
     foundation::Vector3d ndc_to_camera(const foundation::Vector2d& point) const;
