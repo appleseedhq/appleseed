@@ -32,6 +32,8 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/projectexplorer.h"
+#include "mainwindow/rendering/lightpathsviewportmanager.h"
+#include "mainwindow/rendering/renderingmanager.h"
 #include "mainwindow/rendering/viewportwidget.h"
 #include "utility/miscellaneous.h"
 
@@ -77,8 +79,10 @@ ViewportTab::ViewportTab(
     ProjectExplorer&        project_explorer,
     Project&                project,
     RenderingManager&       rendering_manager,
-    OCIO::ConstConfigRcPtr  ocio_config)
-  : m_project_explorer(project_explorer)
+    OCIO::ConstConfigRcPtr  ocio_config,
+    renderer::ParamArray    application_settings)
+  : m_application_settings(application_settings)
+  , m_project_explorer(project_explorer)
   , m_project(project)
   , m_rendering_manager(rendering_manager)
   , m_ocio_config(ocio_config)
@@ -89,20 +93,16 @@ ViewportTab::ViewportTab(
     layout()->setMargin(0);
 
     create_viewport_widget();
+    create_light_paths_manager(m_application_settings);
     create_toolbar();
     create_scrollarea();
 
     layout()->addWidget(m_toolbar);
+    layout()->addWidget(m_light_paths_manager->toolbar());
     layout()->addWidget(m_scroll_area);
 
     recreate_handlers();
 }
-
-void ViewportTab::enable_light_paths_toggle()
-{}
-
-void ViewportTab::disable_light_paths_toggle()
-{}
 
 ViewportWidget* ViewportTab::get_viewport_widget() const
 {
@@ -128,6 +128,14 @@ void ViewportTab::set_render_region_buttons_enabled(const bool enabled)
 {
     m_set_render_region_button->setEnabled(enabled);
     m_clear_render_region_button->setEnabled(enabled);
+}
+
+void ViewportTab::render_began()
+{
+    get_viewport_widget()->get_render_layer()->darken();
+    get_viewport_widget()->get_light_paths_layer()->update_render_camera_transform();
+    set_light_paths_enabled(false);
+    update();
 }
 
 void ViewportTab::reset_zoom()
@@ -168,18 +176,48 @@ void ViewportTab::load_state(const State& state)
     m_pan_handler->load_state(state.m_pan_handler_state);
 }
 
-void ViewportTab::slot_viewport_widget_context_menu(const QPoint& point)
+void ViewportTab::set_light_paths_enabled(const bool enabled)
 {
-    emit signal_viewport_widget_context_menu(m_viewport_widget->mapToGlobal(point));
+    m_light_paths_toggle_button->setDisabled(!enabled);
+    m_light_paths_manager->set_enabled(enabled);
+}
+
+void ViewportTab::slot_base_layer_changed(int index)
+{
+    assert(index < ViewportWidget::BaseLayer::BASE_LAYER_MAX_VALUE);
+    auto base_layer = static_cast<ViewportWidget::BaseLayer>(index);
+
+    switch (base_layer)
+    {
+        case ViewportWidget::BaseLayer::FinalRender:
+            if (m_rendering_manager.is_rendering()
+                && m_rendering_manager.get_rendering_mode() == RenderingManager::RenderingMode::InteractiveRendering)
+                m_camera_controller.get()->set_enabled(true);
+            else
+                m_camera_controller.get()->set_enabled(false);
+            break;
+
+        case ViewportWidget::BaseLayer::OpenGL:
+            m_camera_controller.get()->set_enabled(true);
+            break;
+    }
+}
+
+void ViewportTab::slot_camera_changed()
+{
+
+    m_viewport_widget->get_light_paths_layer()->set_transform(get_camera_controller()->get_transform());
+    m_viewport_widget->get_gl_scene_layer()->set_transform(get_camera_controller()->get_transform());
+    update();
 }
 
 void ViewportTab::slot_toggle_render_region(const bool checked)
 {
     m_scene_picking_handler->set_enabled(!checked);
-    m_render_region_handler->set_mode(
+    m_viewport_selection_handler->set_mode(
         checked
-            ? RenderRegionHandler::RenderRegionMode
-            : RenderRegionHandler::RectangleSelectionMode);
+            ? ViewportRegionSelectionHandler::RenderRegionMode
+            : ViewportRegionSelectionHandler::RectangleSelectionMode);
 }
 
 void ViewportTab::slot_set_render_region(const QRect& rect)
@@ -192,6 +230,11 @@ void ViewportTab::slot_toggle_pixel_inspector(const bool checked)
 {
     m_pixel_inspector_handler->set_enabled(checked);
     m_pixel_inspector_handler->update_tooltip_visibility();
+}
+
+void ViewportTab::slot_viewport_widget_context_menu(const QPoint& point)
+{
+    emit signal_viewport_widget_context_menu(m_viewport_widget->mapToGlobal(point));
 }
 
 void ViewportTab::create_viewport_widget()
@@ -213,6 +256,14 @@ void ViewportTab::create_viewport_widget()
         SLOT(slot_viewport_widget_context_menu(const QPoint&)));
 
     m_viewport_widget->setMouseTracking(true);
+}
+
+void ViewportTab::create_light_paths_manager(renderer::ParamArray application_settings)
+{
+    m_light_paths_manager = new LightPathsViewportManager(
+        this,
+        m_project,
+        application_settings);
 }
 
 void ViewportTab::create_toolbar()
@@ -238,6 +289,10 @@ void ViewportTab::create_toolbar()
         m_base_layer_combo, SIGNAL(activated(int)),
         m_viewport_widget, SLOT(slot_base_layer_changed(int))
     );
+    connect(
+        m_base_layer_combo, SIGNAL(activated(int)),
+        SLOT(slot_base_layer_changed(int))
+    );
 
     m_light_paths_toggle_button = new QToolButton();
     m_light_paths_toggle_button->setText("Display Light Paths Overlay");
@@ -246,6 +301,10 @@ void ViewportTab::create_toolbar()
     connect(
         m_light_paths_toggle_button, SIGNAL(toggled(bool)),
         m_viewport_widget, SLOT(slot_light_paths_toggled(bool))
+    );
+    connect(
+        m_light_paths_toggle_button, SIGNAL(toggled(bool)),
+        m_light_paths_manager, SLOT(slot_light_paths_display_toggled(bool))
     );
 
     m_toolbar->addSeparator();
@@ -476,6 +535,9 @@ void ViewportTab::recreate_handlers()
         m_camera_controller.get(), SIGNAL(signal_camera_changed()),
         SIGNAL(signal_camera_changed()));
     connect(
+        m_camera_controller.get(), SIGNAL(signal_camera_changed()),
+        SLOT(slot_camera_changed()));
+    connect(
         &m_project_explorer, SIGNAL(signal_frame_modified()),
         m_camera_controller.get(), SLOT(slot_frame_modified()));
 
@@ -493,17 +555,23 @@ void ViewportTab::recreate_handlers()
     connect(
         m_scene_picking_handler.get(), SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
         m_camera_controller.get(), SLOT(slot_entity_picked(renderer::ScenePicker::PickingResult)));
+    connect(
+        m_scene_picking_handler.get(), SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
+        m_light_paths_manager, SLOT(slot_entity_picked(renderer::ScenePicker::PickingResult)));
 
     // Handler for setting render regions with the mouse.
-    m_render_region_handler.reset(
-        new RenderRegionHandler(
+    m_viewport_selection_handler.reset(
+        new ViewportRegionSelectionHandler(
             m_viewport_widget,
             *m_mouse_tracker.get()));
     connect(
-        m_render_region_handler.get(), SIGNAL(signal_rectangle_selection(const QRect&)),
+        m_viewport_selection_handler.get(), SIGNAL(signal_rectangle_selection(const QRect&)),
         SIGNAL(signal_rectangle_selection(const QRect&)));
     connect(
-        m_render_region_handler.get(), SIGNAL(signal_render_region(const QRect&)),
+        m_viewport_selection_handler.get(), SIGNAL(signal_rectangle_selection(const QRect&)),
+        m_light_paths_manager, SLOT(slot_rectangle_selection(const QRect&)));
+    connect(
+        m_viewport_selection_handler.get(), SIGNAL(signal_render_region(const QRect&)),
         SLOT(slot_set_render_region(const QRect&)));
 
     // Clipboard handler.

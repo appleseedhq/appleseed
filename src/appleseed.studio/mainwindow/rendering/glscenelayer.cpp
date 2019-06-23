@@ -458,7 +458,7 @@ namespace {
     }
 }
 
-void GLSceneLayer::initialize(QSurfaceFormat format)
+void GLSceneLayer::init_gl(QSurfaceFormat format)
 {
     // If there was already previous data, clean up
     GLSceneLayer::cleanup_gl_data();
@@ -509,11 +509,6 @@ void GLSceneLayer::initialize(QSurfaceFormat format)
     load_scene_data();
 
     m_initialized = true;
-}
-
-bool GLSceneLayer::is_initialized()
-{
-    return m_initialized;
 }
 
 void GLSceneLayer::cleanup_gl_data()

@@ -79,16 +79,14 @@ class GLSceneLayer
         const size_t                        width,
         const size_t                        height);
 
+    void init_gl(
+        QSurfaceFormat                      format);
+
     void set_transform(
         const foundation::Transformd&       transform);
 
     void set_gl_functions(
         QOpenGLFunctions_3_3_Core*          functions);
-
-    void initialize(
-        QSurfaceFormat                      format);
-
-    bool is_initialized();
 
     void draw();
     void draw_depth_only();

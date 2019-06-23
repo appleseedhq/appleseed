@@ -85,7 +85,7 @@ ViewportWidget::ViewportWidget(
 
     create_render_layer(ocio_config);
     create_gl_scene_layer();
-    //create_light_paths_layer();
+    create_light_paths_layer();
 
     resize(width, height);
 
@@ -120,26 +120,26 @@ void ViewportWidget::create_gl_scene_layer()
             m_width,
             m_height));
 }
-//
-//void ViewportWidget::create_light_paths_layer()
-//{
-//    m_light_paths_layer =
-//        std::unique_ptr<LightPathsLayer>(new LightPathsLayer(
-//            m_project,
-//            m_width,
-//            m_height));
-//}
+
+void ViewportWidget::create_light_paths_layer()
+{
+    m_light_paths_layer =
+        std::unique_ptr<LightPathsLayer>(new LightPathsLayer(
+            m_project,
+            m_width,
+            m_height));
+}
 
 RenderLayer* ViewportWidget::get_render_layer()
 {
     return m_render_layer.get();
 }
 
-//LightPathsLayer* ViewportWidget::get_light_paths_layer()
-//{
-//    return m_light_paths_layer.get();
-//}
-//
+LightPathsLayer* ViewportWidget::get_light_paths_layer()
+{
+    return m_light_paths_layer.get();
+}
+
 GLSceneLayer* ViewportWidget::get_gl_scene_layer()
 {
     return m_gl_scene_layer.get();
@@ -168,8 +168,9 @@ void ViewportWidget::initializeGL() {
     }
 
     m_gl_scene_layer->set_gl_functions(m_gl);
-    //m_light_paths_layer->set_gl_functions(m_gl);
-    //m_light_paths_layer->init_gl(qs_format);
+    m_gl_scene_layer->init_gl(qs_format);
+    m_light_paths_layer->set_gl_functions(m_gl);
+    m_light_paths_layer->init_gl(qs_format);
 }
 
 void ViewportWidget::resize(
@@ -179,11 +180,14 @@ void ViewportWidget::resize(
     m_render_layer->resize(width, height);
 }
 
+void ViewportWidget::set_draw_light_paths_enabled(const bool enabled)
+{
+    m_draw_light_paths = enabled;
+    update();
+}
+
 void ViewportWidget::paintGL()
 {
-    if (!m_gl_scene_layer->is_initialized())
-        m_gl_scene_layer->initialize(format());
-
     if (m_active_base_layer == BaseLayer::FinalRender)
     {
         m_painter.begin(this);
@@ -199,8 +203,13 @@ void ViewportWidget::paintGL()
     if (m_active_base_layer == BaseLayer::OpenGL)
         m_gl_scene_layer->draw();
 
-    //if (m_draw_light_paths)
-    //    m_light_paths_layer->draw();
+    if (m_draw_light_paths)
+    {
+        if (m_active_base_layer == BaseLayer::FinalRender)
+            m_light_paths_layer->draw_render_camera();
+        else
+            m_light_paths_layer->draw();
+    }
 }
 
 void ViewportWidget::dragEnterEvent(QDragEnterEvent* event)
@@ -238,8 +247,7 @@ void ViewportWidget::slot_base_layer_changed(int index)
 
 void ViewportWidget::slot_light_paths_toggled(bool checked)
 {
-    m_draw_light_paths = checked;
-    update();
+    set_draw_light_paths_enabled(checked);
 }
 
 }   // namespace studio

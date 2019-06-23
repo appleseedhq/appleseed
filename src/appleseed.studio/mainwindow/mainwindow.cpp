@@ -742,17 +742,17 @@ void MainWindow::update_workspace()
     update_pause_resume_checkbox(false);
     m_ui->attribute_editor_scrollarea_contents->setEnabled(true);
 
-    // Add/remove light paths tab.
+    // Enable/disable light paths
     if (m_project_manager.is_project_open() &&
         m_project_manager.get_project()->get_light_path_recorder().get_light_path_count() > 0)
     {
         for (const_each<ViewportTabCollection> i = m_viewport_tabs; i; ++i)
-            i->second->enable_light_paths_toggle();
+            i->second->set_light_paths_enabled(true);
     }
     else
     {
         for (const_each<ViewportTabCollection> i = m_viewport_tabs; i; ++i)
-            i->second->disable_light_paths_toggle();
+            i->second->set_light_paths_enabled(false);
     }
 }
 
@@ -894,7 +894,7 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const Rend
     // Rendering -> Render Settings.
     m_ui->action_rendering_rendering_settings->setEnabled(allow_start);
 
-    // Render tab buttons.
+    // Viewport tab buttons.
     const int current_tab_index = m_ui->tab_render_channels->currentIndex();
     if (current_tab_index != -1)
     {
@@ -982,7 +982,8 @@ void MainWindow::add_viewport_tab(const QString& label)
             *m_project_explorer,
             *m_project_manager.get_project(),
             m_rendering_manager,
-            m_ocio_config);
+            m_ocio_config,
+            m_application_settings);
 
     // Connect the render tab to the main window and the rendering manager.
     connect(
@@ -1218,8 +1219,7 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
     // Darken render widgets.
     for (const_each<ViewportTabCollection> i = m_viewport_tabs; i; ++i)
     {
-        i->second->get_viewport_widget()->get_render_layer()->darken();
-        i->second->update();
+        i->second->render_began();
     }
 
     // Retrieve the appropriate rendering configuration.

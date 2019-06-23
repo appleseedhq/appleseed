@@ -30,9 +30,10 @@
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/lightpathslayer.h"
+#include "mainwindow/rendering/glscenelayer.h"
 #include "mainwindow/rendering/renderclipboardhandler.h"
 #include "mainwindow/rendering/renderlayer.h"
-#include "mainwindow/rendering/glscenelayer.h"
+
 
 // appleseed.foundation headers.
 #include "foundation/image/image.h"
@@ -104,7 +105,9 @@ class ViewportWidget
 
     RenderLayer* get_render_layer();
     GLSceneLayer* get_gl_scene_layer();
-    //LightPathsLayer* get_light_paths_layer();
+    LightPathsLayer* get_light_paths_layer();
+
+    void set_draw_light_paths_enabled(const bool enabled);
 
   signals:
     void signal_material_dropped(
@@ -125,14 +128,14 @@ class ViewportWidget
 
     std::unique_ptr<RenderLayer>        m_render_layer;
     std::unique_ptr<GLSceneLayer>       m_gl_scene_layer;
-    //std::unique_ptr<LightPathsLayer>   m_light_paths_layer;
+    std::unique_ptr<LightPathsLayer>    m_light_paths_layer;
 
     bool                                m_draw_light_paths;
     BaseLayer                           m_active_base_layer;
 
-    void create_render_layer(OCIO::ConstConfigRcPtr  ocio_config);
+    void create_light_paths_layer();
     void create_gl_scene_layer();
-    //void create_light_paths_layer();
+    void create_render_layer(OCIO::ConstConfigRcPtr  ocio_config);
 
     void initializeGL() override;
     void paintGL() override;

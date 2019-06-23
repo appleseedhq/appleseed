@@ -250,12 +250,12 @@ set (mainwindow_rendering_sources
     mainwindow/rendering/cameracontroller.h
     mainwindow/rendering/glscenelayer.h
     mainwindow/rendering/glscenelayer.cpp
-    # mainwindow/rendering/lightpathspickinghandler.cpp
-    # mainwindow/rendering/lightpathspickinghandler.h
-    # mainwindow/rendering/lightpathsviewportmanager.cpp
-    # mainwindow/rendering/lightpathsviewportmanager.h
-    # mainwindow/rendering/lightpathslayer.cpp
-    # mainwindow/rendering/lightpathslayer.h
+    mainwindow/rendering/lightpathspickinghandler.cpp
+    mainwindow/rendering/lightpathspickinghandler.h
+    mainwindow/rendering/lightpathsviewportmanager.cpp
+    mainwindow/rendering/lightpathsviewportmanager.h
+    mainwindow/rendering/lightpathslayer.cpp
+    mainwindow/rendering/lightpathslayer.h
     mainwindow/rendering/materialdrophandler.cpp
     mainwindow/rendering/materialdrophandler.h
     mainwindow/rendering/pixelcolortracker.cpp
@@ -271,12 +271,12 @@ set (mainwindow_rendering_sources
     mainwindow/rendering/renderingmanager.cpp
     mainwindow/rendering/renderingmanager.h
     mainwindow/rendering/renderingtimer.h
-    mainwindow/rendering/renderregionhandler.cpp
-    mainwindow/rendering/renderregionhandler.h
     mainwindow/rendering/renderlayer.cpp
     mainwindow/rendering/renderlayer.h
     mainwindow/rendering/scenepickinghandler.cpp
     mainwindow/rendering/scenepickinghandler.h
+    mainwindow/rendering/viewportregionselectionhandler.cpp
+    mainwindow/rendering/viewportregionselectionhandler.h
     mainwindow/rendering/viewporttab.cpp
     mainwindow/rendering/viewporttab.h
     mainwindow/rendering/viewportwidget.h
