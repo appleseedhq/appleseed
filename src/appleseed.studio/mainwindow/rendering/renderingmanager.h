@@ -90,6 +90,9 @@ class RenderingManager
         const RenderingMode             rendering_mode,
         ViewportTab*                    viewport_tab);
 
+    // Get current rendering mode
+    RenderingMode get_rendering_mode() const;
+
     // Return true if currently rendering, false otherwise.
     bool is_rendering() const;
 

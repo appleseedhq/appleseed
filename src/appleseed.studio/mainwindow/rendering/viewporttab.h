@@ -35,8 +35,8 @@
 #include "mainwindow/rendering/pixelcolortracker.h"
 #include "mainwindow/rendering/pixelinspectorhandler.h"
 #include "mainwindow/rendering/renderclipboardhandler.h"
-#include "mainwindow/rendering/renderregionhandler.h"
 #include "mainwindow/rendering/scenepickinghandler.h"
+#include "mainwindow/rendering/viewportregionselectionhandler.h"
 #include "utility/mousecoordinatestracker.h"
 #include "utility/scrollareapanhandler.h"
 #include "utility/widgetzoomhandler.h"
@@ -53,6 +53,7 @@ namespace OCIO = OCIO_NAMESPACE;
 #include <memory>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class LightPathsViewportManager; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace appleseed { namespace studio { class ViewportWidget; } }
 namespace renderer  { class Entity; }
@@ -83,18 +84,18 @@ class ViewportTab
         ProjectExplorer&        project_explorer,
         renderer::Project&      project,
         RenderingManager&       rendering_manager,
-        OCIO::ConstConfigRcPtr  ocio_config);
+        OCIO::ConstConfigRcPtr  ocio_config,
+        renderer::ParamArray    application_settings);
 
     ViewportWidget* get_viewport_widget() const;
     CameraController* get_camera_controller() const;
     ScenePickingHandler* get_scene_picking_handler() const;
 
-    void enable_light_paths_toggle();
-    void disable_light_paths_toggle();
-
+    void set_light_paths_enabled(const bool enabled);
     void set_clear_frame_button_enabled(const bool enabled);
     void set_render_region_buttons_enabled(const bool enabled);
 
+    void render_began();
     void reset_zoom();
 
     void update();
@@ -126,48 +127,54 @@ class ViewportTab
     void signal_rectangle_selection(const QRect& rect);
 
   private slots:
-    void slot_viewport_widget_context_menu(const QPoint& point);
-    void slot_toggle_render_region(const bool checked);
+    void slot_camera_changed();
+    void slot_base_layer_changed(int index);
     void slot_set_render_region(const QRect& rect);
     void slot_toggle_pixel_inspector(const bool checked);
+    void slot_toggle_render_region(const bool checked);
+    void slot_viewport_widget_context_menu(const QPoint& point);
 
   private:
-    ViewportWidget*                             m_viewport_widget;
-    QScrollArea*                                m_scroll_area;
-    QToolBar*                                   m_toolbar;
-    QToolButton*                                m_set_render_region_button;
-    QToolButton*                                m_clear_render_region_button;
-    QToolButton*                                m_clear_frame_button;
-    QToolButton*                                m_light_paths_toggle_button;
-    QComboBox*                                  m_picking_mode_combo;
-    QComboBox*                                  m_display_transform_combo;
-    QComboBox*                                  m_base_layer_combo;
-    QLabel*                                     m_info_label;
-    QLabel*                                     m_r_label;
-    QLabel*                                     m_g_label;
-    QLabel*                                     m_b_label;
-    QLabel*                                     m_a_label;
+    ViewportWidget*                                 m_viewport_widget;
+    LightPathsViewportManager*                      m_light_paths_manager;
 
-    ProjectExplorer&                            m_project_explorer;
-    renderer::Project&                          m_project;
-    RenderingManager&                           m_rendering_manager;
+    QScrollArea*                                    m_scroll_area;
+    QToolBar*                                       m_toolbar;
+    QToolButton*                                    m_set_render_region_button;
+    QToolButton*                                    m_clear_render_region_button;
+    QToolButton*                                    m_clear_frame_button;
+    QToolButton*                                    m_light_paths_toggle_button;
+    QComboBox*                                      m_picking_mode_combo;
+    QComboBox*                                      m_display_transform_combo;
+    QComboBox*                                      m_base_layer_combo;
+    QLabel*                                         m_info_label;
+    QLabel*                                         m_r_label;
+    QLabel*                                         m_g_label;
+    QLabel*                                         m_b_label;
+    QLabel*                                         m_a_label;
 
-    std::unique_ptr<WidgetZoomHandler>          m_zoom_handler;
-    std::unique_ptr<ScrollAreaPanHandler>       m_pan_handler;
-    std::unique_ptr<MaterialDropHandler>        m_material_drop_handler;
-    std::unique_ptr<MouseCoordinatesTracker>    m_mouse_tracker;
-    std::unique_ptr<PixelColorTracker>          m_pixel_color_tracker;
-    std::unique_ptr<PixelInspectorHandler>      m_pixel_inspector_handler;
-    std::unique_ptr<CameraController>           m_camera_controller;
-    std::unique_ptr<ScenePickingHandler>        m_scene_picking_handler;
-    std::unique_ptr<RenderRegionHandler>        m_render_region_handler;
-    std::unique_ptr<RenderClipboardHandler>     m_clipboard_handler;
+    ProjectExplorer&                                m_project_explorer;
+    renderer::Project&                              m_project;
+    RenderingManager&                               m_rendering_manager;
+    renderer::ParamArray                            m_application_settings;
 
-    OCIO::ConstConfigRcPtr                      m_ocio_config;
+    std::unique_ptr<WidgetZoomHandler>              m_zoom_handler;
+    std::unique_ptr<ScrollAreaPanHandler>           m_pan_handler;
+    std::unique_ptr<MaterialDropHandler>            m_material_drop_handler;
+    std::unique_ptr<MouseCoordinatesTracker>        m_mouse_tracker;
+    std::unique_ptr<PixelColorTracker>              m_pixel_color_tracker;
+    std::unique_ptr<PixelInspectorHandler>          m_pixel_inspector_handler;
+    std::unique_ptr<CameraController>               m_camera_controller;
+    std::unique_ptr<ScenePickingHandler>            m_scene_picking_handler;
+    std::unique_ptr<ViewportRegionSelectionHandler> m_viewport_selection_handler;
+    std::unique_ptr<RenderClipboardHandler>         m_clipboard_handler;
 
-    void create_viewport_widget();
-    void create_toolbar();
+    OCIO::ConstConfigRcPtr                          m_ocio_config;
+
+    void create_light_paths_manager(renderer::ParamArray application_settings);
     void create_scrollarea();
+    void create_toolbar();
+    void create_viewport_widget();
     void recreate_handlers();
 };
 

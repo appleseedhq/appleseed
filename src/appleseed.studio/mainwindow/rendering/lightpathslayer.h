@@ -67,7 +67,7 @@ namespace studio {
 // A widget providing an hardware-accelerated visualization of recorded light paths.
 //
 
-class LightPathsLayer
+class LightPathsLayer: public QObject
 {
     Q_OBJECT
 
@@ -76,6 +76,9 @@ class LightPathsLayer
         const renderer::Project&            project,
         const size_t                        width,
         const size_t                        height);
+
+
+    void update_render_camera_transform();
 
     void set_transform(
         const foundation::Transformd&       transform);
@@ -91,7 +94,9 @@ class LightPathsLayer
 
     void init_gl(QSurfaceFormat format);
 
-    void draw();
+    void draw() const;
+
+    void draw_render_camera() const;
 
   signals:
     void signal_light_path_selection_changed(
@@ -109,7 +114,7 @@ class LightPathsLayer
     const renderer::Project&                m_project;
     renderer::Camera&                       m_camera;
     foundation::Matrix4d                    m_camera_matrix;
-    foundation::Vector3f                    m_camera_position;
+    foundation::Matrix4d                    m_render_camera_matrix;
 
     bool                                    m_backface_culling_enabled;
 
@@ -124,12 +129,15 @@ class LightPathsLayer
     GLuint                                  m_light_paths_shader_program;
     GLint                                   m_light_paths_view_mat_location;
     GLint                                   m_light_paths_proj_mat_location;
+    foundation::Matrix4f                    m_gl_render_view_matrix;
     foundation::Matrix4f                    m_gl_view_matrix;
     foundation::Matrix4f                    m_gl_proj_matrix;
     bool                                    m_gl_initialized;
 
     void cleanup_gl_data();
     void load_light_paths_data();
+
+    void render_scene(const GLfloat* gl_view_matrix) const;
 
     void dump_selected_light_path() const;
 };

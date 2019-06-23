@@ -142,11 +142,17 @@ void LightPathsLayer::set_gl_functions(QOpenGLFunctions_3_3_Core* functions)
     m_gl = functions;
 }
 
+void LightPathsLayer::update_render_camera_transform()
+{
+    const float time = m_camera.get_shutter_middle_time();
+    m_render_camera_matrix = m_camera.transform_sequence().evaluate(time).get_parent_to_local();
+    m_gl_render_view_matrix = transpose(m_render_camera_matrix);
+}
+
 void LightPathsLayer::set_transform(const Transformd& transform)
 {
     m_camera_matrix = transform.get_parent_to_local();
     m_gl_view_matrix = transpose(m_camera_matrix);
-    m_camera_position = Vector3f(m_camera_matrix.extract_translation());
 }
 
 void LightPathsLayer::set_light_paths(const LightPathArray& light_paths)
@@ -365,23 +371,18 @@ void LightPathsLayer::init_gl(QSurfaceFormat format)
     // If there was already previous data, clean up
     LightPathsLayer::cleanup_gl_data();
 
-    bool manual_srgb_conversion = false;
-    if (format.colorSpace() != QSurfaceFormat::sRGBColorSpace)
-    {
-        manual_srgb_conversion = true;
-        RENDERER_LOG_WARNING(
-            "opengl: srgb framebuffer extensions not supported, using slower manual conversion.");
-    }
-
     glEnable(GL_DEPTH_TEST);
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+    auto vertex_shader = load_gl_shader("lightpaths.vert");
+    auto fragment_shader = load_gl_shader("lightpaths.frag");
+
     create_shader_program(
         m_gl,
         m_light_paths_shader_program,
-        load_gl_shader("lightpaths.vert"),
-        load_gl_shader("lightpaths.frag"));
+        vertex_shader,
+        fragment_shader);
 
     m_light_paths_view_mat_location = m_gl->glGetUniformLocation(m_light_paths_shader_program, "u_view");
     m_light_paths_proj_mat_location = m_gl->glGetUniformLocation(m_light_paths_shader_program, "u_proj");
@@ -447,23 +448,40 @@ void LightPathsLayer::cleanup_gl_data()
     }
 }
 
-void LightPathsLayer::draw()
+void LightPathsLayer::draw_render_camera() const
+{
+    auto gl_view_matrix = const_cast<const GLfloat*>(&m_gl_render_view_matrix[0]);
+    render_scene(gl_view_matrix);
+}
+
+void LightPathsLayer::draw() const
+{
+    auto gl_view_matrix = const_cast<const GLfloat*>(&m_gl_view_matrix[0]);
+    render_scene(gl_view_matrix);
+}
+
+void LightPathsLayer::render_scene(const GLfloat* gl_view_matrix) const
 {
     if (!m_gl_initialized)
         return;
 
     if (m_backface_culling_enabled)
-        glEnable(GL_CULL_FACE);
-    else glDisable(GL_CULL_FACE);
+        m_gl->glEnable(GL_CULL_FACE);
+    else m_gl->glDisable(GL_CULL_FACE);
+
+    m_gl->glDepthMask(GL_TRUE);
+    m_gl->glEnable(GL_DEPTH_TEST);
+    m_gl->glDepthFunc(GL_LEQUAL);
 
     if (m_light_paths_index_offsets.size() > 1)
     {
         m_gl->glUseProgram(m_light_paths_shader_program);
+
         m_gl->glUniformMatrix4fv(
             m_light_paths_view_mat_location,
             1,
             false,
-            const_cast<const GLfloat*>(&m_gl_view_matrix[0]));
+            gl_view_matrix);
         m_gl->glUniformMatrix4fv(
             m_light_paths_proj_mat_location,
             1,

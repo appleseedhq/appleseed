@@ -47,7 +47,7 @@
 #include <memory>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class LightPathsLayer; } }
+namespace appleseed { namespace studio { class ViewportTab; } }
 namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
 class QLabel;
@@ -71,42 +71,44 @@ class LightPathsViewportManager
 
   public:
     LightPathsViewportManager(
+        ViewportTab*            viewport_tab,
         renderer::Project&      project,
         renderer::ParamArray&   settings);
+
+    QToolBar* toolbar() const;
+
+    void set_enabled(const bool enabled);
 
   public slots:
     void slot_entity_picked(const renderer::ScenePicker::PickingResult& result);
     void slot_rectangle_selection(const QRect& rect);
+    void slot_light_paths_display_toggled(const bool active);
 
   private slots:
     void slot_light_path_selection_changed(
         const int               selected_light_path_index,
         const int               total_light_paths) const;
-    void slot_context_menu(const QPoint& point);
     void slot_save_light_paths();
     void slot_camera_changed();
 
   private:
+    bool                                        m_enabled;
+
     renderer::Project&                          m_project;
     renderer::ParamArray&                       m_settings;
-    LightPathsLayer*                            m_light_paths_layer;
-    QScrollArea*                                m_scroll_area;
+    ViewportTab*                                m_viewport_tab;
     QToolBar*                                   m_toolbar;
+    //QToolButton*                                m_pick_paths_button;
     QToolButton*                                m_prev_path_button;
     QToolButton*                                m_next_path_button;
     QLabel*                                     m_info_label;
 
-    std::unique_ptr<WidgetZoomHandler>          m_zoom_handler;
     std::unique_ptr<ScrollAreaPanHandler>       m_pan_handler;
     std::unique_ptr<MouseCoordinatesTracker>    m_mouse_tracker;
-    std::unique_ptr<CameraController>           m_camera_controller;
     std::unique_ptr<LightPathsPickingHandler>   m_screen_space_paths_picking_handler;
     std::unique_ptr<LightPathsPickingHandler>   m_world_space_paths_picking_handler;
-    std::unique_ptr<RenderClipboardHandler>     m_clipboard_handler;
 
-    void create_light_paths_widget();
     void create_toolbar();
-    void create_scrollarea();
     void recreate_handlers();
 
 };
