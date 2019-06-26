@@ -169,7 +169,8 @@ namespace
                 m_light_path_stream->begin_path(
                     pixel_context,
                     shading_point.get_scene().get_active_camera(),
-                    shading_point.get_ray().m_org);
+                    shading_point.get_ray().m_org,
+                    shading_point.get_ray().m_dir);
             }
 
             if (m_params.m_next_event_estimation)

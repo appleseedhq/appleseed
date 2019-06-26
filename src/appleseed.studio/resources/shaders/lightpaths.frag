@@ -28,11 +28,20 @@
 #version 330
 #extension GL_ARB_separate_shader_objects : enable
 
-layout(location = 0) in vec3 v_color;
+flat in vec3 f_color;
+in float f_aa_norm;
+flat in float f_thickness;
+flat in float f_total_thickness;
+flat in float f_aspect_expansion_len;
+
+uniform vec2 u_res;
 
 out vec4 Target0;
 
 void main()
 {
-    Target0 = vec4(v_color, 1.0);
+    float dist = abs(f_aa_norm) * f_total_thickness - 0.5 / f_aspect_expansion_len;
+    float eps = fwidth(dist);
+    float a = 1.0 - smoothstep(f_thickness - eps, f_thickness + eps, dist);
+    Target0 = vec4(f_color, a);
 }

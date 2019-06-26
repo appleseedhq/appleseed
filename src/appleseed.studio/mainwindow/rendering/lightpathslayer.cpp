@@ -57,6 +57,7 @@
 // Standard headers.
 #include <algorithm>
 #include <cmath>
+#include <array>
 
 using namespace foundation;
 using namespace renderer;
@@ -66,59 +67,15 @@ namespace appleseed {
 namespace studio {
 
 namespace {
-    // Number of floats per OpenGL vertex for a piece of scene geometry
-    // Vector3 position and Vector3 normal.
-    const size_t SceneVertexFloatStride = 6;
-    // Number of bytes per OpenGL vertex for a piece of scene geometry.
-    const size_t SceneVertexByteStride = SceneVertexFloatStride * sizeof(float);
-    // Number of floats per triangle for a piece of scene geometry.
-    const size_t SceneTriangleFloatStride = SceneVertexFloatStride * 3;
+    // Byte stride of a vec3.
+    const size_t Vec3ByteStride = sizeof(float) * 3;
 
-    // Number of floats per OpenGL vertex for a light path
-    // Vector3 position and Vector3 color.
-    const size_t LightPathVertexFloatStride = 6;
-    // Number of bytes per OpenGL vertex for a piece of scene geometry.
-    const size_t LightPathVertexByteStride = LightPathVertexFloatStride * sizeof(float);
-    // Number of floats per line for a light path.
-    const size_t LightPathVertexLineFloatStride = LightPathVertexFloatStride * 2;
-
-    // Number of floats per OpenGL transform matrix.
-    const size_t TransformFloatStride = 16;
-    // Number of bytes per OpenGL transform matrix.
-    const size_t TransformByteStride = TransformFloatStride * sizeof(float);
-
-    struct OpenGLRasterizer
-      : public ObjectRasterizer
-    {
-        vector<float>   m_buffer;
-        size_t          m_prim_count;
-
-        void begin_object(const size_t triangle_count_hint) override
-        {
-            m_buffer.clear();
-            m_buffer.reserve(triangle_count_hint * SceneTriangleFloatStride);
-            m_prim_count = 0;
-        }
-
-        void end_object() override {}
-
-        void rasterize(const Triangle& triangle) override
-        {
-            const float temp_store[SceneTriangleFloatStride] =
-            {
-                static_cast<float>(triangle.m_v0[0]), static_cast<float>(triangle.m_v0[1]), static_cast<float>(triangle.m_v0[2]),
-                static_cast<float>(triangle.m_n0[0]), static_cast<float>(triangle.m_n0[1]), static_cast<float>(triangle.m_n0[2]),
-
-                static_cast<float>(triangle.m_v1[0]), static_cast<float>(triangle.m_v1[1]), static_cast<float>(triangle.m_v1[2]),
-                static_cast<float>(triangle.m_n1[0]), static_cast<float>(triangle.m_n1[1]), static_cast<float>(triangle.m_n1[2]),
-
-                static_cast<float>(triangle.m_v2[0]), static_cast<float>(triangle.m_v2[1]), static_cast<float>(triangle.m_v2[2]),
-                static_cast<float>(triangle.m_n2[0]), static_cast<float>(triangle.m_n2[1]), static_cast<float>(triangle.m_n2[2]),
-            };
-            m_buffer.reserve(m_buffer.size() + SceneTriangleFloatStride);
-            m_buffer.insert(m_buffer.end(), temp_store, temp_store + SceneTriangleFloatStride);
-            m_prim_count++;
-        }
+    // Struct of an element of the "others" vertex buffer
+    struct OtherAttributes {
+        GLfloat v_luminance;
+        GLint   v_distance_start_end;
+        GLfloat v_color[3];
+        GLfloat v_surface_normal[3];
     };
 }
 
@@ -131,10 +88,21 @@ LightPathsLayer::LightPathsLayer(
   , m_backface_culling_enabled(false)
   , m_selected_light_path_index(-1)
   , m_gl_initialized(false)
+  , m_width(width)
+  , m_height(height)
+  , m_max_thickness(4.0f)
+  , m_min_thickness(1.0f)
+  , m_max_luminance(0.0f)
 {
 
     const float time = m_camera.get_shutter_middle_time();
     set_transform(m_camera.transform_sequence().evaluate(time));
+}
+
+void LightPathsLayer::resize(const size_t width, const size_t height)
+{
+    m_width = width,
+    m_height = height;
 }
 
 void LightPathsLayer::set_gl_functions(QOpenGLFunctions_3_3_Core* functions)
@@ -228,18 +196,42 @@ void LightPathsLayer::slot_synchronize_camera()
 
 void LightPathsLayer::load_light_paths_data()
 {
-    m_light_paths_index_offsets.clear();
+    m_index_offsets.clear();
+    m_max_luminance = 0.0f;
     if (!m_light_paths.empty())
     {
-        m_light_paths_index_offsets.push_back(0);
+        m_index_offsets.push_back(0);
 
         const auto& light_path_recorder = m_project.get_light_path_recorder();
 
-        const size_t total_gl_vertex_count = 2 * (light_path_recorder.get_vertex_count() - 2) + 2;
-
         GLsizei total_index_count = 0;
-        vector<float> buffer;
-        buffer.reserve(total_gl_vertex_count * LightPathVertexFloatStride);
+
+        // Vertex count * 4 since we will be adding two vertices for each point along the line and will
+        // be adding each point twice for the beginning and end parts of each segment
+        // Add two because we need extra at the front and back for the extra 'previous' and 'next' attributes
+        const size_t total_gl_vertex_count = 2 * (light_path_recorder.get_vertex_count() + 2);
+
+        vector<unsigned int> indices;
+        vector<float> positions_buffer;
+        // * 3 since we want 3 floats per position
+        positions_buffer.reserve(total_gl_vertex_count * 3);
+        indices.reserve(total_gl_vertex_count);
+
+        // Add an empty vertex at the beginning to serve as first 'previous'
+        array<float, 6> empty_positions =
+        {
+            0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0,
+        };
+        positions_buffer.insert(
+            positions_buffer.end(),
+            empty_positions.begin(),
+            empty_positions.end());
+        
+        vector<OtherAttributes> others_buffer;
+        others_buffer.reserve(total_gl_vertex_count);
+        array<OtherAttributes, 4> others;
+
         for (size_t light_path_idx = 0; light_path_idx < m_light_paths.size(); light_path_idx++)
         {
             const auto& path = m_light_paths[light_path_idx];
@@ -249,34 +241,102 @@ void LightPathsLayer::load_light_paths_data()
             light_path_recorder.get_light_path_vertex(path.m_vertex_begin_index, prev);
             for (size_t vertex_idx = path.m_vertex_begin_index + 1; vertex_idx < path.m_vertex_end_index; vertex_idx++)
             {
-                LightPathVertex curr;
-                light_path_recorder.get_light_path_vertex(vertex_idx, curr);
+                LightPathVertex vert;
+                light_path_recorder.get_light_path_vertex(vertex_idx, vert);
 
-                auto piece_radiance = Color3f::from_array(curr.m_radiance);
-                piece_radiance /= piece_radiance + Color3f(1.0f);
+                auto piece_radiance = Color3f::from_array(vert.m_radiance);
                 piece_radiance = linear_rgb_to_srgb(piece_radiance);
+                auto piece_luminance = luminance(piece_radiance);
+                m_max_luminance = max(m_max_luminance, piece_luminance);
+                piece_radiance /= piece_luminance;
+                //piece_radiance /= piece_radiance + Color3f(1.0);
 
-                const float temp_store[LightPathVertexLineFloatStride] =
-                {
+                array<GLfloat, 12> positions_temp_store = {
                     prev.m_position[0], prev.m_position[1], prev.m_position[2],
-                    piece_radiance[0], piece_radiance[1], piece_radiance[2],
-
-                    curr.m_position[0], curr.m_position[1], curr.m_position[2],
-                    piece_radiance[0], piece_radiance[1], piece_radiance[2],
+                    prev.m_position[0], prev.m_position[1], prev.m_position[2],
+                    vert.m_position[0], vert.m_position[1], vert.m_position[2],
+                    vert.m_position[0], vert.m_position[1], vert.m_position[2],
                 };
-                buffer.insert(buffer.end(), temp_store, temp_store + 12);
+                positions_buffer.insert(
+                    positions_buffer.end(),
+                    positions_temp_store.begin(),
+                    positions_temp_store.end());
 
-                total_index_count += 2;
-                prev = curr;
+                unsigned int start_index = static_cast<unsigned int>(others_buffer.size());
+                
+                GLint start = 2;
+                GLint end = 4;
+
+                others = {{
+                    {
+                        piece_luminance,
+                        start,
+                        {piece_radiance[0], piece_radiance[1], piece_radiance[2]},
+                        {prev.m_surface_normal[0], prev.m_surface_normal[1], prev.m_surface_normal[2]}
+                    },
+                    {
+                        piece_luminance,
+                        1 | start,
+                        {piece_radiance[0], piece_radiance[1], piece_radiance[2]},
+                        {prev.m_surface_normal[0], prev.m_surface_normal[1], prev.m_surface_normal[2]}
+                    },
+                    {
+                        piece_luminance,
+                        end,
+                        {piece_radiance[0], piece_radiance[1], piece_radiance[2]},
+                        {vert.m_surface_normal[0], vert.m_surface_normal[1], vert.m_surface_normal[2]}
+                    },
+                    {
+                        piece_luminance,
+                        1 | end,
+                        {piece_radiance[0], piece_radiance[1], piece_radiance[2]},
+                        {vert.m_surface_normal[0], vert.m_surface_normal[1], vert.m_surface_normal[2]}
+                    },
+                }};
+                others_buffer.insert(
+                    others_buffer.end(),
+                    others.begin(),
+                    others.end());
+
+                array<unsigned int, 6> indices_scratch = {
+                    start_index, start_index + 1, start_index + 2,
+                    start_index + 1, start_index + 2, start_index + 3,
+                };
+                indices.insert(
+                    indices.end(),
+                    indices_scratch.begin(),
+                    indices_scratch.end());
+
+                total_index_count += 6;
+                prev = vert;
             }
-            m_light_paths_index_offsets.push_back(total_index_count);
+            m_index_offsets.push_back(total_index_count);
         }
 
-        m_gl->glBindBuffer(GL_ARRAY_BUFFER, m_light_paths_vbo);
+        // Add an empty vertex at the end to serve as last 'next'
+        positions_buffer.insert(
+            positions_buffer.end(),
+            empty_positions.begin(),
+            empty_positions.end());
+        
+        // Upload the data to the buffers
+        m_gl->glBindBuffer(GL_ARRAY_BUFFER, m_positions_vbo);
         m_gl->glBufferData(
             GL_ARRAY_BUFFER,
-            buffer.size() * sizeof(float),
-            reinterpret_cast<const GLvoid*>(&buffer[0]),
+            positions_buffer.size() * sizeof(float),
+            reinterpret_cast<const GLvoid*>(&positions_buffer[0]),
+            GL_STATIC_DRAW);
+        m_gl->glBindBuffer(GL_ARRAY_BUFFER, m_others_vbo);
+        m_gl->glBufferData(
+            GL_ARRAY_BUFFER,
+            others_buffer.size() * sizeof(OtherAttributes),
+            reinterpret_cast<const GLvoid*>(&others_buffer[0]),
+            GL_STATIC_DRAW);
+        m_gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indices_ebo);
+        m_gl->glBufferData(
+            GL_ELEMENT_ARRAY_BUFFER,
+            indices.size() * sizeof(unsigned int),
+            reinterpret_cast<const GLvoid*>(&indices[0]),
             GL_STATIC_DRAW);
     }
 }
@@ -380,12 +440,16 @@ void LightPathsLayer::init_gl(QSurfaceFormat format)
 
     create_shader_program(
         m_gl,
-        m_light_paths_shader_program,
+        m_shader_program,
         vertex_shader,
         fragment_shader);
 
-    m_light_paths_view_mat_location = m_gl->glGetUniformLocation(m_light_paths_shader_program, "u_view");
-    m_light_paths_proj_mat_location = m_gl->glGetUniformLocation(m_light_paths_shader_program, "u_proj");
+    m_view_mat_loc = m_gl->glGetUniformLocation(m_shader_program, "u_view");
+    m_proj_mat_loc = m_gl->glGetUniformLocation(m_shader_program, "u_proj");
+    m_res_loc = m_gl->glGetUniformLocation(m_shader_program, "u_res");
+    m_max_luminance_loc = m_gl->glGetUniformLocation(m_shader_program, "u_max_luminance");
+    m_max_thickness_loc = m_gl->glGetUniformLocation(m_shader_program, "u_max_thickness");
+    m_min_thickness_loc = m_gl->glGetUniformLocation(m_shader_program, "u_min_thickness");
 
     const float z_near = 0.01f;
     const float z_far = 1000.0f;
@@ -408,32 +472,102 @@ void LightPathsLayer::init_gl(QSurfaceFormat format)
     m_gl_proj_matrix = transpose(Matrix4f::make_frustum(top, bottom, left, right, z_near, z_far));
 
     GLuint temp_light_paths_vao = 0;
-    GLuint temp_light_paths_vbo = 0;
     m_gl->glGenVertexArrays(1, &temp_light_paths_vao);
-    m_gl->glGenBuffers(1, &temp_light_paths_vbo);
     m_light_paths_vao = temp_light_paths_vao;
-    m_light_paths_vbo = temp_light_paths_vbo;
+
+    GLuint temp_vbos[3] = {0, 0, 0};
+    m_gl->glGenBuffers(3, &temp_vbos[0]);
+    m_positions_vbo = temp_vbos[0];
+    m_others_vbo = temp_vbos[1];
+    m_indices_ebo = temp_vbos[2];
 
     m_gl->glBindVertexArray(m_light_paths_vao);
-    m_gl->glBindBuffer(GL_ARRAY_BUFFER, m_light_paths_vbo);
+
+    m_gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indices_ebo);
+
+    // v_previous, v_position, and v_next all reference offsets into the same vertex data buffer.
+    // v_previous is at vertex offset 0, v_position is at vertex offset 2 and v_next is at vertex offset 4.
+    // See http://codeflow.org/entries/2012/aug/05/webgl-rendering-of-solid-trails/ for reference.
+    m_gl->glBindBuffer(GL_ARRAY_BUFFER, m_positions_vbo);
+
+    // vec3 v_previous;
     m_gl->glVertexAttribPointer(
         0,
         3,
         GL_FLOAT,
         GL_FALSE,
-        LightPathVertexByteStride,
+        Vec3ByteStride,
         reinterpret_cast<const GLvoid*>(0));
+    m_gl->glEnableVertexAttribArray(0);
+
+    // vec3 v_position;
     m_gl->glVertexAttribPointer(
         1,
         3,
         GL_FLOAT,
         GL_FALSE,
-        LightPathVertexByteStride,
-        reinterpret_cast<const GLvoid*>(LightPathVertexByteStride / 2));
-    m_gl->glEnableVertexAttribArray(0);
+        Vec3ByteStride,
+        reinterpret_cast<const GLvoid*>(Vec3ByteStride * 2));
     m_gl->glEnableVertexAttribArray(1);
 
+    // vec3 v_next;
+    m_gl->glVertexAttribPointer(
+        2,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        Vec3ByteStride,
+        reinterpret_cast<const GLvoid*>(Vec3ByteStride * 4));
+    m_gl->glEnableVertexAttribArray(2);
+
+    // The rest of the attributes are stored in a separate data buffer, interleaved.
+    m_gl->glBindBuffer(GL_ARRAY_BUFFER, m_others_vbo);
+
+    // float v_thickness;
+    m_gl->glVertexAttribPointer(
+        3,
+        1,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(OtherAttributes),
+        reinterpret_cast<const GLvoid*>(0));
+    m_gl->glEnableVertexAttribArray(3);
+
+    // This attribute stores 3 bools:
+    // bit 0: normal direction which maps to -1.0 (false) or 1.0 (true)
+    // bit 1: whether this is the start vertex of a new path
+    // bit 2: whether this is the end vertex of a path
+    // int v_direction_start_end;
+    m_gl->glVertexAttribIPointer(
+        4,
+        1,
+        GL_INT,
+        sizeof(OtherAttributes),
+        reinterpret_cast<const GLvoid*>(sizeof(GLfloat)));
+    m_gl->glEnableVertexAttribArray(4);
+
+    // vec3 v_color;
+    m_gl->glVertexAttribPointer(
+        5,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(OtherAttributes),
+        reinterpret_cast<const GLvoid*>(sizeof(GLfloat) + sizeof(GLint)));
+    m_gl->glEnableVertexAttribArray(5);
+
+    // vec3 v_surface_normal;
+    m_gl->glVertexAttribPointer(
+        6,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(OtherAttributes),
+        reinterpret_cast<const GLvoid*>(sizeof(GLfloat) + sizeof(GLint) + 3 * sizeof(GLfloat)));
+    m_gl->glEnableVertexAttribArray(6);
+
     m_gl->glBindVertexArray(0);
+    m_gl->glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     load_light_paths_data();
 
@@ -442,22 +576,30 @@ void LightPathsLayer::init_gl(QSurfaceFormat format)
 
 void LightPathsLayer::cleanup_gl_data()
 {
-    if (m_light_paths_shader_program != 0)
+    if (m_shader_program != 0)
     {
-        m_gl->glDeleteProgram(m_light_paths_shader_program);
+        m_gl->glDeleteProgram(m_shader_program);
     }
 }
 
 void LightPathsLayer::draw_render_camera() const
 {
     auto gl_view_matrix = const_cast<const GLfloat*>(&m_gl_render_view_matrix[0]);
+
+    m_gl->glEnable(GL_BLEND);
+    m_gl->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     render_scene(gl_view_matrix);
+    m_gl->glDisable(GL_BLEND);
 }
 
 void LightPathsLayer::draw() const
 {
     auto gl_view_matrix = const_cast<const GLfloat*>(&m_gl_view_matrix[0]);
+
+    m_gl->glEnable(GL_BLEND);
+    m_gl->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     render_scene(gl_view_matrix);
+    m_gl->glDisable(GL_BLEND);
 }
 
 void LightPathsLayer::render_scene(const GLfloat* gl_view_matrix) const
@@ -473,20 +615,33 @@ void LightPathsLayer::render_scene(const GLfloat* gl_view_matrix) const
     m_gl->glEnable(GL_DEPTH_TEST);
     m_gl->glDepthFunc(GL_LEQUAL);
 
-    if (m_light_paths_index_offsets.size() > 1)
+    if (m_index_offsets.size() > 1)
     {
-        m_gl->glUseProgram(m_light_paths_shader_program);
+        m_gl->glUseProgram(m_shader_program);
 
         m_gl->glUniformMatrix4fv(
-            m_light_paths_view_mat_location,
+            m_view_mat_loc,
             1,
             false,
             gl_view_matrix);
         m_gl->glUniformMatrix4fv(
-            m_light_paths_proj_mat_location,
+            m_proj_mat_loc,
             1,
             false,
             const_cast<const GLfloat*>(&m_gl_proj_matrix[0]));
+        m_gl->glUniform1f(
+            m_max_luminance_loc,
+            m_max_luminance);
+        m_gl->glUniform1f(
+            m_max_thickness_loc,
+            m_max_thickness);
+        m_gl->glUniform1f(
+            m_min_thickness_loc,
+            m_min_thickness);
+        m_gl->glUniform2f(
+            m_res_loc,
+            (GLfloat)m_width,
+            (GLfloat)m_height);
 
         m_gl->glBindVertexArray(m_light_paths_vao);
 
@@ -496,14 +651,16 @@ void LightPathsLayer::render_scene(const GLfloat* gl_view_matrix) const
         if (m_selected_light_path_index == -1)
         {
             first = 0;
-            count = m_light_paths_index_offsets[m_light_paths_index_offsets.size() - 1];
+            count = m_index_offsets[m_index_offsets.size() - 1] / 3;
         }
         else
         {
-            first = static_cast<GLint>(m_light_paths_index_offsets[m_selected_light_path_index]);
-            count = m_light_paths_index_offsets[m_selected_light_path_index + 1] - first;
+            first = static_cast<GLint>(m_index_offsets[m_selected_light_path_index]);
+            count = m_index_offsets[m_selected_light_path_index + 1] - first;
         }
-        glDrawArrays(GL_LINES, first, count);
+        m_gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indices_ebo);
+        m_gl->glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, reinterpret_cast<GLvoid*>(first * sizeof(unsigned int)));
+        m_gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 }
 

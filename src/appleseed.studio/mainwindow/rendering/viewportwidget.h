@@ -138,6 +138,7 @@ class ViewportWidget
     void create_render_layer(OCIO::ConstConfigRcPtr  ocio_config);
 
     void initializeGL() override;
+    void resizeGL(int width, int height) override;
     void paintGL() override;
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dragMoveEvent(QDragMoveEvent* event) override;

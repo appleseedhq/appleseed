@@ -174,10 +174,18 @@ void ViewportWidget::initializeGL() {
 }
 
 void ViewportWidget::resize(
-    const size_t    width,
-    const size_t    height)
+    const size_t width,
+    const size_t height)
 {
     m_render_layer->resize(width, height);
+    m_light_paths_layer->resize(width, height);
+}
+
+void ViewportWidget::resizeGL(
+    int width,
+    int height)
+{
+    m_light_paths_layer->resize(width, height);
 }
 
 void ViewportWidget::set_draw_light_paths_enabled(const bool enabled)

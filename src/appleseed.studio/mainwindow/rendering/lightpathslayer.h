@@ -77,6 +77,7 @@ class LightPathsLayer: public QObject
         const size_t                        width,
         const size_t                        height);
 
+    void resize(const size_t width, const size_t height);
 
     void update_render_camera_transform();
 
@@ -120,15 +121,26 @@ class LightPathsLayer: public QObject
 
     renderer::LightPathArray                m_light_paths;
     int                                     m_selected_light_path_index;    // -1 == display all paths
+    float                                   m_max_luminance;
+    float                                   m_max_thickness;
+    float                                   m_min_thickness;
+    size_t                                  m_width;
+    size_t                                  m_height;
 
     QOpenGLFunctions_3_3_Core*              m_gl;
 
-    GLuint                                  m_light_paths_vbo;
-    std::vector<GLsizei>                    m_light_paths_index_offsets;
+    GLuint                                  m_positions_vbo;
+    GLuint                                  m_others_vbo;
+    GLuint                                  m_indices_ebo;
+    std::vector<GLsizei>                    m_index_offsets;
     GLuint                                  m_light_paths_vao;
-    GLuint                                  m_light_paths_shader_program;
-    GLint                                   m_light_paths_view_mat_location;
-    GLint                                   m_light_paths_proj_mat_location;
+    GLuint                                  m_shader_program;
+    GLint                                   m_view_mat_loc;
+    GLint                                   m_proj_mat_loc;
+    GLint                                   m_res_loc;
+    GLint                                   m_max_luminance_loc;
+    GLint                                   m_min_thickness_loc;
+    GLint                                   m_max_thickness_loc;
     foundation::Matrix4f                    m_gl_render_view_matrix;
     foundation::Matrix4f                    m_gl_view_matrix;
     foundation::Matrix4f                    m_gl_proj_matrix;
