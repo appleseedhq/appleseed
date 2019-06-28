@@ -56,6 +56,21 @@ PerspectiveCamera::PerspectiveCamera(const char* name, const ParamArray& params)
 {
 }
 
+const foundation::Vector2d& PerspectiveCamera::get_film_dimensions() const
+{
+    return m_film_dimensions;
+}
+
+double PerspectiveCamera::get_focal_length() const
+{
+    return m_focal_length;
+}
+
+const foundation::Vector2d& PerspectiveCamera::get_shift() const
+{
+    return m_shift;
+}
+
 bool PerspectiveCamera::on_render_begin(
     const Project&          project,
     const BaseGroup*        parent,
