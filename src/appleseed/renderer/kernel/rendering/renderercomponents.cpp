@@ -54,6 +54,7 @@
 #include "renderer/kernel/rendering/generic/generictilerenderer.h"
 #include "renderer/kernel/rendering/permanentshadingresultframebufferfactory.h"
 #include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
+#include "renderer/kernel/rendering/variancetrackingshadingresultframebufferfactory.h"
 #include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/modeling/project/project.h"
@@ -205,7 +206,15 @@ bool RendererComponents::create_lighting_engine_factory()
 
         if(pixel_renderer_name != "uniform")
         {
-            RENDERER_LOG_ERROR("cannot use the guided path tracing with pixel renderer other than uniform pixel renderer.");
+            RENDERER_LOG_ERROR("cannot use guided path tracing with pixel renderer other than uniform pixel renderer.");
+            return false;
+        }
+
+        const string framebuffer_name = m_params.get_optional<string>("shading_result_framebuffer", "ephemeral");
+
+        if (framebuffer_name != "permanent")
+        {
+            RENDERER_LOG_ERROR("cannot use guided path tracing without permanent shading result framebuffer.");
             return false;
         }
 
@@ -228,7 +237,8 @@ bool RendererComponents::create_lighting_engine_factory()
                 gpt_parameters,
                 dynamic_cast<TerminatableRendererController *>(m_renderer_controller.get()),
                 m_sd_tree.get(),
-                uniform_pixel_renderer_params.get_required<size_t>("samples", 64)));
+                uniform_pixel_renderer_params.get_required<size_t>("samples", 64),
+                m_params.get_optional<size_t>("passes", 10000000)));
 
         m_lighting_engine_factory.reset(
             new GPTLightingEngineFactory(
@@ -475,8 +485,17 @@ bool RendererComponents::create_pixel_renderer_factory()
 bool RendererComponents::create_shading_result_framebuffer_factory()
 {
     const string name = m_params.get_optional<string>("shading_result_framebuffer", "ephemeral");
+    GPTPassCallback *gpt_pass_callback = dynamic_cast<GPTPassCallback *>(m_pass_callback.get());
 
-    if (name.empty())
+    if(gpt_pass_callback != nullptr)
+    {
+        VarianceTrackingShadingResultFrameBufferFactory *framebuffer_factory = new VarianceTrackingShadingResultFrameBufferFactory(m_frame);
+        m_shading_result_framebuffer_factory.reset(
+            framebuffer_factory);
+        gpt_pass_callback->set_framebuffer(framebuffer_factory);
+        return true;
+    }
+    else if (name.empty())
     {
         return true;
     }
@@ -602,8 +621,6 @@ bool RendererComponents::create_frame_renderer_factory()
 
         if (lighting_engine_name == "gpt")
         {
-            GPTParameters gpt_parameters(
-                get_child_and_inherit_globals(m_params, "gpt"));
             params.insert("passes", 10000000);
         }
 

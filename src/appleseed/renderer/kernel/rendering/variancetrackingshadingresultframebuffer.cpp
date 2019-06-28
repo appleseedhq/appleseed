@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Stephen Agyemang, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +27,7 @@
 //
 
 // Interface header.
-#include "shadingresultframebuffer.h"
+#include "variancetrackingshadingresultframebuffer.h"
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/tilestack.h"
@@ -36,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+#include "foundation/image/colorspace.h"
 #include "foundation/image/tile.h"
 #include "foundation/platform/compiler.h"
 
@@ -48,44 +48,47 @@ using namespace std;
 namespace renderer
 {
 
-ShadingResultFrameBuffer::ShadingResultFrameBuffer(
+VarianceTrackingShadingResultFrameBuffer::VarianceTrackingShadingResultFrameBuffer(
     const size_t                    width,
     const size_t                    height,
     const size_t                    aov_count)
-  : AccumulatorTile(
+  : ShadingResultFrameBuffer(
         width,
         height,
-        get_total_channel_count(aov_count))
-  , m_aov_count(aov_count)
-  , m_scratch(get_total_channel_count(aov_count))
+        aov_count + 1)
+    , m_aov_count(aov_count)
 {
 }
 
-ShadingResultFrameBuffer::ShadingResultFrameBuffer(
+VarianceTrackingShadingResultFrameBuffer::VarianceTrackingShadingResultFrameBuffer(
     const size_t                    width,
     const size_t                    height,
     const size_t                    aov_count,
     const AABB2u&                   crop_window)
-  : AccumulatorTile(
+  : ShadingResultFrameBuffer(
         width,
         height,
-        get_total_channel_count(aov_count),
+        aov_count + 1,
         crop_window)
-  , m_aov_count(aov_count)
-  , m_scratch(get_total_channel_count(aov_count))
+    , m_aov_count(aov_count)
 {
 }
 
-void ShadingResultFrameBuffer::add(
+void VarianceTrackingShadingResultFrameBuffer::add(
     const Vector2u&                 pi,
     const ShadingResult&            sample)
 {
     float* ptr = &m_scratch[0];
 
-    *ptr++ = sample.m_main[0];
-    *ptr++ = sample.m_main[1];
-    *ptr++ = sample.m_main[2];
-    *ptr++ = sample.m_main[3];
+    const float main_0 = sample.m_main[0]; 
+    const float main_1 = sample.m_main[1]; 
+    const float main_2 = sample.m_main[2]; 
+    const float main_3 = sample.m_main[3]; 
+
+    *ptr++ = main_0;
+    *ptr++ = main_1;
+    *ptr++ = main_2;
+    *ptr++ = main_3;
 
     for (size_t i = 0, e = m_aov_count; i < e; ++i)
     {
@@ -96,28 +99,15 @@ void ShadingResultFrameBuffer::add(
         *ptr++ = aov[3];
     }
 
+    *ptr++ = main_0 * main_0;
+    *ptr++ = main_1 * main_1;
+    *ptr++ = main_2 * main_2;
+    *ptr++ = main_3 * main_3;
+
     AccumulatorTile::add(pi, &m_scratch[0]);
 }
 
-void ShadingResultFrameBuffer::merge(
-    const size_t                    dest_x,
-    const size_t                    dest_y,
-    const ShadingResultFrameBuffer& source,
-    const size_t                    source_x,
-    const size_t                    source_y,
-    const float                     scaling)
-{
-    assert(typeid(this) == typeid(source));
-    assert(m_channel_count == source.m_channel_count);
-
-    const float* APPLESEED_RESTRICT source_ptr = source.pixel(source_x, source_y);
-    float* APPLESEED_RESTRICT dest_ptr = pixel(dest_x, dest_y);
-
-    for (size_t i = 0, e = m_channel_count; i < e; ++i)
-        dest_ptr[i] += source_ptr[i] * scaling;
-}
-
-void ShadingResultFrameBuffer::develop_to_tile(
+void VarianceTrackingShadingResultFrameBuffer::develop_to_tile(
     Tile&                           tile,
     TileStack&                      aov_tiles) const
 {
@@ -140,8 +130,48 @@ void ShadingResultFrameBuffer::develop_to_tile(
                 aov_tiles.set_pixel(x, y, i, aov * rcp_weight);
                 ptr += 4;
             }
+
+            ptr += 4; // Skip sum of squared samples
         }
     }
+}
+
+float VarianceTrackingShadingResultFrameBuffer::variance(
+    const size_t                    num_samples) const
+{
+    assert(num_samples > 0);
+
+    float tile_variance = 0.0f;
+    const float* ptr = pixel(0);
+
+    for (size_t y = 0, h = m_height; y < h; ++y)
+    {
+        for (size_t x = 0, w = m_width; x < w; ++x)
+        {
+            const float weight = *ptr;
+            const float rcp_weight = weight == 0.0f ? 0.0f : 1.0f / weight;
+
+            const Color3f color(
+                ptr[1] * rcp_weight,
+                ptr[2] * rcp_weight,
+                ptr[3] * rcp_weight);
+
+            ptr += m_channel_count - 4; // skip to beginning of summed squares
+
+            const Color3f summed_squares(
+                ptr[0] * rcp_weight,
+                ptr[1] * rcp_weight,
+                ptr[2] * rcp_weight);
+
+            const Color3f pixel_variance(summed_squares - (color * color) / num_samples);
+
+            tile_variance += std::min(luminance(pixel_variance), 10000.0f);
+
+            ptr += 4;
+        }
+    }
+
+    return tile_variance;
 }
 
 }   // namespace renderer

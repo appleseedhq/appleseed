@@ -36,6 +36,7 @@
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/image.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/string.h"
@@ -59,13 +60,22 @@ GPTPassCallback::GPTPassCallback(
         const GPTParameters&            params,
         TerminatableRendererController* renderer_controller,
         STree*                          sd_tree,
-        const size_t                    sample_budget)
+        const size_t                    sample_budget,
+        const size_t                    max_passes)
   : m_params(params)
   , m_renderer_controller(renderer_controller)
   , m_sd_tree(sd_tree)
-  , m_pass_number(0)
+  , m_passes_left_curr_iter(0)
+  , m_passes_rendered(0)
+  , m_last_extrapolated_variance(std::numeric_limits<float>::infinity())
   , m_sample_budget(sample_budget)
+  , m_iter(0)
+  , m_is_final_iter(false)
 {
+    m_max_passes = m_sample_budget / m_params.m_samples_per_pass;
+    
+    if(m_max_passes > max_passes)
+        m_max_passes = max_passes;
 }
 
 void GPTPassCallback::release()
@@ -78,6 +88,25 @@ void GPTPassCallback::on_pass_begin(
     JobQueue&               job_queue,
     IAbortSwitch&           abort_switch)
 {
+    if(m_passes_left_curr_iter > 0)
+        return;
+    
+    // New iteration
+
+    // Prepare pass
+    const size_t remaining_passes = m_max_passes - m_passes_rendered;
+    m_num_passes_curr_iter = m_passes_left_curr_iter = std::min(size_t(1 << m_iter++), remaining_passes);
+
+    if(m_is_final_iter || remaining_passes - m_passes_left_curr_iter < 2 * m_passes_left_curr_iter)
+    {
+        m_passes_left_curr_iter = remaining_passes;
+        m_is_final_iter = true;
+
+        // Let guided path tracer components know it's final iter time
+    }
+    
+    // Clear frame and reset tree
+    m_framebuffer->clear();
 }
 
 bool GPTPassCallback::on_pass_end(
@@ -85,19 +114,48 @@ bool GPTPassCallback::on_pass_end(
     JobQueue&               job_queue,
     IAbortSwitch&           abort_switch)
 {
-    ++m_pass_number;
+    ++m_passes_rendered;
+    --m_passes_left_curr_iter;
 
-    if(m_pass_number * m_params.m_samples_per_pass >= m_sample_budget)
+    if(m_passes_rendered >= m_max_passes)
     {
-        // m_renderer_controller->terminate();
+        // Do end logic
+
+
         return true;
     }
+
+    if(m_passes_left_curr_iter == 0)
+    {
+        // Update variance projection
+        const size_t remaining_passes = m_max_passes - m_passes_rendered;
+        const size_t samples_rendered = m_passes_rendered * m_params.m_samples_per_pass;
+        const float current_extraplolated_variance =
+            m_framebuffer->variance(samples_rendered) * m_num_passes_curr_iter / remaining_passes;
+
+        RENDERER_LOG_INFO("Extrapolated variance: %s", pretty_scalar(current_extraplolated_variance, 3).c_str());
+
+        if(samples_rendered > 256 && // make this number a user param
+           current_extraplolated_variance > m_last_extrapolated_variance)
+        {
+            //m_is_final_iter = true;
+        }
+
+        m_last_extrapolated_variance = current_extraplolated_variance;
+    }
+
+
     return false;
 }
 
 size_t GPTPassCallback::get_samples_per_pass() const
 {
     return m_params.m_samples_per_pass;
+}
+
+void GPTPassCallback::set_framebuffer(VarianceTrackingShadingResultFrameBufferFactory* framebuffer)
+{
+    m_framebuffer = framebuffer;
 }
 
 }   // namespace renderer

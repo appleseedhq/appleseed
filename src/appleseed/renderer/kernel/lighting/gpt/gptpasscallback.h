@@ -32,8 +32,10 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/gpt/gptparameters.h"
 #include "renderer/kernel/lighting/sdtree.h"
-#include "renderer/kernel/rendering/terminatablerenderercontroller.h"
 #include "renderer/kernel/rendering/ipasscallback.h"
+#include "renderer/kernel/rendering/terminatablerenderercontroller.h"
+#include "renderer/kernel/rendering/variancetrackingshadingresultframebufferfactory.h"
+#include "renderer/modeling/project/project.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -62,34 +64,44 @@ class GPTPassCallback
   public:
     // Constructor.
     GPTPassCallback(
-        const GPTParameters&            params,
-        TerminatableRendererController* renderer_controller,
-        STree*                          sd_tree,
-        const size_t                    sample_budget);
+        const GPTParameters&                      params,
+        TerminatableRendererController*           renderer_controller,
+        STree*                                    sd_tree,
+        const size_t                              sample_budget,
+        const size_t                              max_passes);
 
     // Delete this instance.
     void release() override;
 
     // This method is called at the beginning of a pass.
     void on_pass_begin(
-        const Frame&                    frame,
-        foundation::JobQueue&           job_queue,
-        foundation::IAbortSwitch&       abort_switch) override;
+        const Frame&                              frame,
+        foundation::JobQueue&                     job_queue,
+        foundation::IAbortSwitch&                 abort_switch) override;
 
     // This method is called at the end of a pass.
     bool on_pass_end(
-        const Frame&                    frame,
-        foundation::JobQueue&           job_queue,
-        foundation::IAbortSwitch&       abort_switch) override;
+        const Frame&                              frame,
+        foundation::JobQueue&                     job_queue,
+        foundation::IAbortSwitch&                 abort_switch) override;
 
     size_t get_samples_per_pass() const;
 
+    void set_framebuffer(VarianceTrackingShadingResultFrameBufferFactory* framebuffer);
+
   private:
-    const GPTParameters                 m_params;
-    size_t                              m_pass_number;
-    STree*                              m_sd_tree;
-    TerminatableRendererController*     m_renderer_controller;
-    const size_t                        m_sample_budget;
+    const GPTParameters                                  m_params;
+    size_t                                               m_iter;
+    size_t                                               m_max_passes;
+    size_t                                               m_passes_rendered;
+    size_t                                               m_passes_left_curr_iter;
+    size_t                                               m_num_passes_curr_iter;
+    STree*                                               m_sd_tree;
+    TerminatableRendererController*                      m_renderer_controller;
+    size_t                                               m_sample_budget;
+    float                                                m_last_extrapolated_variance;
+    bool                                                 m_is_final_iter;
+    VarianceTrackingShadingResultFrameBufferFactory*     m_framebuffer;
 };
 
 }   // namespace renderer

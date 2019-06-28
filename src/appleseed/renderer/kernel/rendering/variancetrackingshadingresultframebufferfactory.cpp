@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Stephen Agyemang, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,11 +27,11 @@
 //
 
 // Interface header.
-#include "permanentshadingresultframebufferfactory.h"
+#include "variancetrackingshadingresultframebufferfactory.h"
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/imagestack.h"
-#include "renderer/kernel/rendering/shadingresultframebuffer.h"
+#include "renderer/kernel/rendering/variancetrackingshadingresultframebuffer.h"
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
@@ -45,12 +44,12 @@ using namespace foundation;
 namespace renderer
 {
 
-void PermanentShadingResultFrameBufferFactory::release()
+void VarianceTrackingShadingResultFrameBufferFactory::release()
 {
     delete this;
 }
 
-PermanentShadingResultFrameBufferFactory::PermanentShadingResultFrameBufferFactory(
+VarianceTrackingShadingResultFrameBufferFactory::VarianceTrackingShadingResultFrameBufferFactory(
     const Frame&                frame)
 {
     const size_t tile_count_x = frame.image().properties().m_tile_count_x;
@@ -59,13 +58,13 @@ PermanentShadingResultFrameBufferFactory::PermanentShadingResultFrameBufferFacto
     m_framebuffers.resize(tile_count_x * tile_count_y, nullptr);
 }
 
-PermanentShadingResultFrameBufferFactory::~PermanentShadingResultFrameBufferFactory()
+VarianceTrackingShadingResultFrameBufferFactory::~VarianceTrackingShadingResultFrameBufferFactory()
 {
     for (size_t i = 0; i < m_framebuffers.size(); ++i)
         delete m_framebuffers[i];
 }
 
-ShadingResultFrameBuffer* PermanentShadingResultFrameBufferFactory::create(
+ShadingResultFrameBuffer* VarianceTrackingShadingResultFrameBufferFactory::create(
     const Frame&                frame,
     const size_t                tile_x,
     const size_t                tile_y,
@@ -79,7 +78,7 @@ ShadingResultFrameBuffer* PermanentShadingResultFrameBufferFactory::create(
         const Tile& tile = frame.image().tile(tile_x, tile_y);
 
         m_framebuffers[index] =
-            new ShadingResultFrameBuffer(
+            new VarianceTrackingShadingResultFrameBuffer(
                 tile.get_width(),
                 tile.get_height(),
                 frame.aov_images().size(),
@@ -91,16 +90,40 @@ ShadingResultFrameBuffer* PermanentShadingResultFrameBufferFactory::create(
     return m_framebuffers[index];
 }
 
-void PermanentShadingResultFrameBufferFactory::destroy(
+void VarianceTrackingShadingResultFrameBufferFactory::destroy(
     ShadingResultFrameBuffer*   framebuffer)
 {
 }
 
-size_t PermanentShadingResultFrameBufferFactory::get_total_channel_count(
-    const size_t aov_count) const
+void VarianceTrackingShadingResultFrameBufferFactory::clear()
 {
-    return ShadingResultFrameBuffer::get_total_channel_count(
+    for(auto framebuffer : m_framebuffers)
+    {
+        if(framebuffer != nullptr)
+            framebuffer->clear();
+    }
+}
+
+size_t VarianceTrackingShadingResultFrameBufferFactory::get_total_channel_count(
+    const size_t                aov_count) const
+{
+    return VarianceTrackingShadingResultFrameBuffer::get_total_channel_count(
         aov_count);
+}
+
+float VarianceTrackingShadingResultFrameBufferFactory::variance(
+    const size_t                num_samples) const
+{
+    float variance = 0.0f;
+    size_t num_pixels = 0;
+
+    for(const auto framebuffer : m_framebuffers)
+    {
+        variance += framebuffer->variance(num_samples);
+        num_pixels += framebuffer->get_pixel_count();
+    }
+
+    return variance / (num_pixels * (num_samples - 1));
 }
 
 }   // namespace renderer

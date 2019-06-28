@@ -61,6 +61,9 @@ class EphemeralShadingResultFrameBufferFactory
 
     void destroy(
         ShadingResultFrameBuffer*   framebuffer) override;
+
+    size_t get_total_channel_count(
+        const size_t aov_count) const override;
 };
 
 }   // namespace renderer
