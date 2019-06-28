@@ -53,13 +53,13 @@ class PerspectiveCamera
         const char*                     name,
         const ParamArray&               params);
 
-    // Get the film dimensions in camera space, in meters
+    // Get the film dimensions in camera space, in meters.
     const foundation::Vector2d& get_film_dimensions() const;
 
-    // Get the focal length in camera space, in meters
+    // Get the focal length in camera space, in meters.
     double get_focal_length() const;
 
-    // Get the camera shift in camera space, in meters
+    // Get the camera shift in camera space, in meters.
     const foundation::Vector2d& get_shift() const;
 
     // Focal length <-> horizontal field of view conversion functions.
