@@ -101,8 +101,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
     }
 
 #if 0
-    // Test waits for a brilliant solution of how to invoke it without emitting error message
 
+    // This test waits for a brilliant solution on how to invoke it without emitting an error message.
     TEST_CASE(ReadInvalidPackedProject)
     {
         const char* UnpackDirectory = "unit tests/inputs/test_projectfilereader_invalidpackedproject.unpacked/";
@@ -126,5 +126,6 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
             throw e;
         }
     }
+
 #endif
 }
