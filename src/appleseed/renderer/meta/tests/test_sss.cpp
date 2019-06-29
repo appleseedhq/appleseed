@@ -1118,6 +1118,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     }
 
 #if 0
+
     // There is still a misunderstanding about the directional dipole or a bug in our implementation
     // which makes this test fail. Commenting it until we figure things out.
     TEST_CASE(DirectionalDipole_IntegrateProfile)
@@ -1134,6 +1135,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         EXPECT_FEQ_EPS(Rd, integral, 1.0e-2f);
     }
+
 #endif
 
     //
