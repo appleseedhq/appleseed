@@ -228,14 +228,11 @@ bool RendererComponents::create_lighting_engine_factory()
         GPTParameters gpt_parameters(
             get_child_and_inherit_globals(m_params, "gpt"));
 
-        m_renderer_controller.reset(new TerminatableRendererController());
-
         ParamArray uniform_pixel_renderer_params = get_child_and_inherit_globals(m_params, "uniform_pixel_renderer");
 
         m_pass_callback.reset(
             new GPTPassCallback(
                 gpt_parameters,
-                dynamic_cast<TerminatableRendererController *>(m_renderer_controller.get()),
                 m_sd_tree.get(),
                 uniform_pixel_renderer_params.get_required<size_t>("samples", 64),
                 m_params.get_optional<size_t>("passes", 10000000)));
@@ -631,7 +628,6 @@ bool RendererComponents::create_frame_renderer_factory()
                 m_tile_renderer_factory.get(),
                 m_tile_callback_factory,
                 m_pass_callback.get(),
-                m_renderer_controller.get(),
                 params));
 
         return true;

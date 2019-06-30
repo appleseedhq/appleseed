@@ -33,7 +33,6 @@
 #include "renderer/kernel/lighting/gpt/gptparameters.h"
 #include "renderer/kernel/lighting/sdtree.h"
 #include "renderer/kernel/rendering/ipasscallback.h"
-#include "renderer/kernel/rendering/terminatablerenderercontroller.h"
 #include "renderer/kernel/rendering/variancetrackingshadingresultframebufferfactory.h"
 #include "renderer/modeling/project/project.h"
 
@@ -65,7 +64,6 @@ class GPTPassCallback
     // Constructor.
     GPTPassCallback(
         const GPTParameters&                      params,
-        TerminatableRendererController*           renderer_controller,
         STree*                                    sd_tree,
         const size_t                              sample_budget,
         const size_t                              max_passes);
@@ -97,7 +95,6 @@ class GPTPassCallback
     size_t                                               m_passes_left_curr_iter;
     size_t                                               m_num_passes_curr_iter;
     STree*                                               m_sd_tree;
-    TerminatableRendererController*                      m_renderer_controller;
     size_t                                               m_sample_budget;
     float                                                m_last_extrapolated_variance;
     bool                                                 m_is_final_iter;

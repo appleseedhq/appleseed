@@ -87,13 +87,11 @@ namespace
             ITileRendererFactory*               tile_renderer_factory,
             ITileCallbackFactory*               tile_callback_factory,
             IPassCallback*                      pass_callback,
-            IRendererController*                renderer_controller,
             const ParamArray&                   params)
           : m_frame(frame)
           , m_framebuffer_factory(framebuffer_factory)
           , m_params(params)
           , m_pass_callback(pass_callback)
-          , m_renderer_controller(renderer_controller)
           , m_is_rendering(false)
         {
             // We must have a renderer factory, but it's OK not to have a callback factory.
@@ -166,7 +164,7 @@ namespace
 
         IRendererController* get_renderer_controller() override
         {
-            return m_renderer_controller;
+            return nullptr;
         }
 
         void render() override
@@ -490,7 +488,6 @@ namespace
         vector<ITileRenderer*>                  m_tile_renderers;   // tile renderers, one per thread
         vector<ITileCallback*>                  m_tile_callbacks;   // tile callbacks, none or one per thread
         IPassCallback*                          m_pass_callback;
-        IRendererController*                    m_renderer_controller;
 
         TileJobFactory                          m_tile_job_factory;
 
@@ -562,14 +559,12 @@ GenericFrameRendererFactory::GenericFrameRendererFactory(
     ITileRendererFactory*               tile_renderer_factory,
     ITileCallbackFactory*               tile_callback_factory,
     IPassCallback*                      pass_callback,
-    IRendererController*                renderer_controller,
     const ParamArray&                   params)
   : m_frame(frame)
   , m_framebuffer_factory(framebuffer_factory)
   , m_tile_renderer_factory(tile_renderer_factory)
   , m_tile_callback_factory(tile_callback_factory)
   , m_pass_callback(pass_callback)
-  , m_renderer_controller(renderer_controller)
   , m_params(params)
 {
 }
@@ -588,7 +583,6 @@ IFrameRenderer* GenericFrameRendererFactory::create()
             m_tile_renderer_factory,
             m_tile_callback_factory,
             m_pass_callback,
-            m_renderer_controller,
             m_params);
 }
 
@@ -598,7 +592,6 @@ IFrameRenderer* GenericFrameRendererFactory::create(
     ITileRendererFactory*               tile_renderer_factory,
     ITileCallbackFactory*               tile_callback_factory,
     IPassCallback*                      pass_callback,
-    IRendererController*                renderer_controller,
     const ParamArray&                   params)
 {
     return
@@ -608,7 +601,6 @@ IFrameRenderer* GenericFrameRendererFactory::create(
             tile_renderer_factory,
             tile_callback_factory,
             pass_callback,
-            renderer_controller,
             params);
 }
 

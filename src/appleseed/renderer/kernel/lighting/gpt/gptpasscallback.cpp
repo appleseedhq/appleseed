@@ -36,7 +36,6 @@
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/image.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/string.h"
@@ -58,12 +57,10 @@ namespace renderer
 
 GPTPassCallback::GPTPassCallback(
         const GPTParameters&            params,
-        TerminatableRendererController* renderer_controller,
         STree*                          sd_tree,
         const size_t                    sample_budget,
         const size_t                    max_passes)
   : m_params(params)
-  , m_renderer_controller(renderer_controller)
   , m_sd_tree(sd_tree)
   , m_passes_left_curr_iter(0)
   , m_passes_rendered(0)

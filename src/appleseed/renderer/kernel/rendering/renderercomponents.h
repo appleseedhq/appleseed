@@ -125,7 +125,6 @@ class RendererComponents
     OSLShadingSystem&                                   m_osl_shading_system;
 
     std::unique_ptr<STree>                              m_sd_tree;
-    std::unique_ptr<IRendererController>                m_renderer_controller;
     std::unique_ptr<ILightingEngineFactory>             m_lighting_engine_factory;
     std::unique_ptr<ISampleRendererFactory>             m_sample_renderer_factory;
     std::unique_ptr<ISampleGeneratorFactory>            m_sample_generator_factory;
