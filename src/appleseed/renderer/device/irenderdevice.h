@@ -45,7 +45,6 @@ namespace renderer   { class IRenderContext; }
 namespace renderer   { class ITileCallbackFactory; }
 namespace renderer   { class OnFrameBeginRecorder; }
 namespace renderer   { class OnRenderBeginRecorder; }
-namespace renderer   { class TextureStore; }
 
 namespace renderer
 {
@@ -59,7 +58,6 @@ class IRenderDevice
 
     // Initialize the render device.
     virtual bool initialize(
-        TextureStore&                   texture_store,
         const foundation::SearchPaths&  resource_search_paths,
         ITileCallbackFactory*           tile_callback_factory,
         foundation::IAbortSwitch&       abort_switch)  = 0;

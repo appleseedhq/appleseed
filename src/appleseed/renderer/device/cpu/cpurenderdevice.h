@@ -31,6 +31,7 @@
 // appleseed.renderer headers.
 #include "renderer/device/cpu/cpurendercontext.h"
 #include "renderer/device/renderdevicebase.h"
+#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/shadergroup/shadercompiler.h"
 
 // appleseed.foundation headers.
@@ -61,7 +62,6 @@ class CPURenderDevice
     ~CPURenderDevice() override;
 
     bool initialize(
-        TextureStore&                   texture_store,
         const foundation::SearchPaths&  resource_search_paths,
         ITileCallbackFactory*           tile_callback_factory,
         foundation::IAbortSwitch&       abort_switch) override;
@@ -99,6 +99,7 @@ class CPURenderDevice
     RendererServices*                               m_renderer_services;
     OSLShadingSystem*                               m_shading_system;
     foundation::auto_release_ptr<ShaderCompiler>    m_osl_compiler;
+    TextureStore                                    m_texture_store;
     std::unique_ptr<RendererComponents>             m_components;
 };
 
