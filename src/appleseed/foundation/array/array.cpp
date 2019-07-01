@@ -32,9 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/otherwise.h"
 
-// Stamdard headers.
-#include <algorithm>
-
 using namespace std;
 
 namespace foundation
@@ -182,20 +179,20 @@ Array::~Array()
     delete m_self;
 }
 
-Array::Array(const Array& other)
+Array::Array(const Array& rhs)
 {
-    m_self = other.m_self->copy();
+    m_self = rhs.m_self->copy();
 }
 
-Array::Array(Array&& other) APPLESEED_NOEXCEPT
+Array::Array(Array&& rhs) APPLESEED_NOEXCEPT
 {
-    m_self = other.m_self;
-    other.m_self = nullptr;
+    m_self = rhs.m_self;
+    rhs.m_self = nullptr;
 }
 
-Array& Array::operator=(const Array& other)
+Array& Array::operator=(const Array& rhs)
 {
-    Concept* tmp(other.m_self->copy());
+    Concept* tmp(rhs.m_self->copy());
 
     delete m_self;
     m_self = tmp;
@@ -203,9 +200,11 @@ Array& Array::operator=(const Array& other)
     return *this;
 }
 
-Array& Array::operator=(Array&& other) APPLESEED_NOEXCEPT
+Array& Array::operator=(Array&& rhs) APPLESEED_NOEXCEPT
 {
-    swap(m_self, other.m_self);
+    delete m_self;
+    m_self = rhs.m_self;
+    rhs.m_self = nullptr;
     return *this;
 }
 

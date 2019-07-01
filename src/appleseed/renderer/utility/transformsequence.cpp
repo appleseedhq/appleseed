@@ -63,6 +63,18 @@ TransformSequence::TransformSequence(const TransformSequence& rhs)
     copy_from(rhs);
 }
 
+TransformSequence::TransformSequence(TransformSequence&& rhs) APPLESEED_NOEXCEPT
+  : m_capacity(rhs.m_capacity)
+  , m_size(rhs.m_size)
+  , m_keys(rhs.m_keys)
+  , m_interpolators(rhs.m_interpolators)
+  , m_can_swap_handedness(rhs.m_can_swap_handedness)
+  , m_all_swap_handedness(rhs.m_all_swap_handedness)
+{
+    rhs.m_keys = nullptr;
+    rhs.m_interpolators = nullptr;
+}
+
 TransformSequence::~TransformSequence()
 {
     clear();
@@ -71,6 +83,18 @@ TransformSequence::~TransformSequence()
 TransformSequence& TransformSequence::operator=(const TransformSequence& rhs)
 {
     copy_from(rhs);
+    return *this;
+}
+
+TransformSequence& TransformSequence::operator=(TransformSequence&& rhs) APPLESEED_NOEXCEPT
+{
+    m_capacity = rhs.m_capacity;
+    m_size = rhs.m_size;
+    swap(m_keys, rhs.m_keys);
+    swap(m_interpolators, rhs.m_interpolators);
+    m_can_swap_handedness = rhs.m_can_swap_handedness;
+    m_all_swap_handedness = rhs.m_all_swap_handedness;
+    rhs.clear();
     return *this;
 }
 

@@ -65,16 +65,16 @@ class APPLESEED_DLLSYMBOL Array
     ~Array();
 
     // Copy constructor
-    Array(const Array& other);
+    Array(const Array& rhs);
 
     // Move constructor.
-    Array(Array&& other) APPLESEED_NOEXCEPT;
+    Array(Array&& rhs) APPLESEED_NOEXCEPT;
 
     // Assignment.
-    Array& operator=(const Array& other);
+    Array& operator=(const Array& rhs);
 
     // Move assignment.
-    Array& operator=(Array&& other) APPLESEED_NOEXCEPT;
+    Array& operator=(Array&& rhs) APPLESEED_NOEXCEPT;
 
     // Return the type of the array elements.
     ArrayType type() const;
@@ -162,7 +162,7 @@ class APPLESEED_DLLSYMBOL Array
     {
         Model() = default;
 
-        Model(const Model& other) = default;
+        Model(const Model& rhs) = default;
 
         Concept* copy() const override;
 

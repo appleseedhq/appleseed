@@ -565,7 +565,7 @@ namespace
                     pretty_uint(tile_converged_pixel_count),
                     converged_pixels_string));
             stats.insert("samples/pixel", m_spp);
-            stats.insert("average noise level", average_noise_level);
+            stats.insert("average noise level", pretty_scalar(average_noise_level, 3));
             RENDERER_LOG_DEBUG(
                 "tile (" FMT_SIZE_T ", " FMT_SIZE_T ") final statistics:\n%s",
                 tile_x,

@@ -56,6 +56,8 @@ set (foundation_array_sources
     foundation/array/arrayview.h
     foundation/array/exception.cpp
     foundation/array/exception.h
+    foundation/array/keyframedarray.cpp
+    foundation/array/keyframedarray.h
     foundation/array/meshalgorithm.cpp
     foundation/array/meshalgorithm.h
 )
@@ -525,6 +527,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_intersection_raytriangle.cpp
     foundation/meta/tests/test_iostreamop.cpp
     foundation/meta/tests/test_job.cpp
+    foundation/meta/tests/test_keyframedarray.cpp
     foundation/meta/tests/test_knn.cpp
     foundation/meta/tests/test_kvpair.cpp
     foundation/meta/tests/test_lazy.cpp
@@ -2180,6 +2183,7 @@ set (renderer_utility_sources
     renderer/utility/testutils.h
     renderer/utility/transformsequence.cpp
     renderer/utility/transformsequence.h
+    renderer/utility/transformsequencestack.h
     renderer/utility/triangle.h
 )
 list (APPEND appleseed_sources
