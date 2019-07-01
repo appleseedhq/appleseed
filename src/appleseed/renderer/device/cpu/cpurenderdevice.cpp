@@ -213,9 +213,10 @@ bool CPURenderDevice::build_or_update_scene()
 
 bool CPURenderDevice::load_checkpoint(Frame& frame, const size_t pass_count)
 {
-    return frame.load_checkpoint(
-        &m_components->get_shading_result_framebuffer_factory(),
-        pass_count);
+    return
+        frame.load_checkpoint(
+            &m_components->get_shading_result_framebuffer_factory(),
+            pass_count);
 }
 
 IRendererController* CPURenderDevice::get_frame_renderer_controller()
@@ -254,8 +255,8 @@ IRendererController::Status CPURenderDevice::render_frame(
     frame_renderer.start_rendering();
 
     // Wait until the the frame is completed or rendering is aborted.
-    const IRendererController::Status status = wait_for_event(
-        frame_renderer, renderer_controller);
+    const IRendererController::Status status =
+        wait_for_event(frame_renderer, renderer_controller);
 
     switch (status)
     {
@@ -288,4 +289,4 @@ Dictionary CPURenderDevice::get_metadata()
     return metadata;
 }
 
-}
+}   // namespace renderer

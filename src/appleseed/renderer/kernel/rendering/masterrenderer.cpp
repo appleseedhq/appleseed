@@ -358,10 +358,11 @@ struct MasterRenderer::Impl
         }
 
         // Initialize the render device.
-        const bool success = m_render_device->initialize(
-            m_resource_search_paths,
-            m_tile_callback_factory,
-            abort_switch);
+        const bool success =
+            m_render_device->initialize(
+                m_resource_search_paths,
+                m_tile_callback_factory,
+                abort_switch);
 
         if (!success || abort_switch.is_aborted())
         {
@@ -404,6 +405,7 @@ struct MasterRenderer::Impl
             return IRendererController::AbortRendering;
         }
 
+        // Perform pre-render actions.
         if (!m_render_device->on_render_begin(recorder, &abort_switch) ||
             abort_switch.is_aborted())
         {
