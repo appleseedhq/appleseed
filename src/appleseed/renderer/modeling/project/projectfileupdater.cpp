@@ -2016,7 +2016,8 @@ namespace
             {
                 RENDERER_LOG_WARNING(
                     "with the introduction of filter importance sampling, some reconstruction filters were removed; "
-                    "migrating this project to use the default reconstruction filter instead.");
+                    "migrating this project to use the default reconstruction filter instead (%s).",
+                    DefaultFilterName);
 
                 params.insert_path("filter", DefaultFilterName);
             }
