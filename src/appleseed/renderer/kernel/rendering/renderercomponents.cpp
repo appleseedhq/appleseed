@@ -66,6 +66,7 @@
 #include "foundation/platform/_endoiioheaders.h"
 
 // Standard headers.
+#include <limits>
 #include <string>
 
 using namespace foundation;
@@ -210,7 +211,7 @@ bool RendererComponents::create_lighting_engine_factory()
             return false;
         }
 
-        const string framebuffer_name = m_params.get_optional<string>("shading_result_framebuffer", "ephemeral");
+        const string framebuffer_name = m_params.get_optional<string>("shading_result_framebuffer", "");
 
         if (framebuffer_name != "permanent")
         {
@@ -235,7 +236,7 @@ bool RendererComponents::create_lighting_engine_factory()
                 gpt_parameters,
                 m_sd_tree.get(),
                 uniform_pixel_renderer_params.get_required<size_t>("samples", 64),
-                m_params.get_optional<size_t>("passes", 10000000)));
+                m_params.get_optional<size_t>("passes", std::numeric_limits<size_t>::max())));
 
         m_lighting_engine_factory.reset(
             new GPTLightingEngineFactory(

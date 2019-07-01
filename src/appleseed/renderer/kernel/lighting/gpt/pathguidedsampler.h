@@ -9,6 +9,11 @@
 namespace renderer
 {
 
+//
+// Sampler acting as a wrapper for path guided sampling at shading points for the implementation of
+// "Practical Path Guiding for Efficient Light-Transport Simulation" [Müller et al. 2017].
+//
+
 class PathGuidedSampler
   : public BSDFSampler
 {

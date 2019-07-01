@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Stephen Agyemang, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,19 +40,14 @@
 #include "foundation/utility/string.h"
 
 // Standard headers.
-#include <cassert>
-#include <cmath>
-#include <string>
+#include <algorithm>
+#include <limits>
 
 using namespace foundation;
 using namespace std;
 
 namespace renderer
 {
-
-//
-// GPTPassCallback class implementation.
-//
 
 GPTPassCallback::GPTPassCallback(
         const GPTParameters&            params,
@@ -88,9 +82,9 @@ void GPTPassCallback::on_pass_begin(
     if(m_passes_left_curr_iter > 0)
         return;
     
-    // New iteration
+    // New iteration.
 
-    // Prepare pass
+    // Prepare pass.
     const size_t remaining_passes = m_max_passes - m_passes_rendered;
     m_num_passes_curr_iter = m_passes_left_curr_iter = std::min(size_t(1 << m_iter++), remaining_passes);
 
@@ -99,11 +93,12 @@ void GPTPassCallback::on_pass_begin(
         m_passes_left_curr_iter = remaining_passes;
         m_is_final_iter = true;
 
-        // Let guided path tracer components know it's final iter time
+        // TODO: Let guided path tracer components know it's final iter time.
     }
     
-    // Clear frame and reset tree
+    // Clear the frame.
     m_framebuffer->clear();
+    // TODO: Reset the SD tree.
 }
 
 bool GPTPassCallback::on_pass_end(
@@ -116,7 +111,7 @@ bool GPTPassCallback::on_pass_end(
 
     if(m_passes_rendered >= m_max_passes)
     {
-        // Do end logic
+        // Do end logic.
 
 
         return true;
@@ -124,23 +119,22 @@ bool GPTPassCallback::on_pass_end(
 
     if(m_passes_left_curr_iter == 0)
     {
-        // Update variance projection
+        // Update the variance projection.
         const size_t remaining_passes = m_max_passes - m_passes_rendered;
         const size_t samples_rendered = m_passes_rendered * m_params.m_samples_per_pass;
         const float current_extraplolated_variance =
             m_framebuffer->variance(samples_rendered) * m_num_passes_curr_iter / remaining_passes;
 
-        RENDERER_LOG_INFO("Extrapolated variance: %s", pretty_scalar(current_extraplolated_variance, 3).c_str());
+        // RENDERER_LOG_INFO("Extrapolated variance: %s", pretty_scalar(current_extraplolated_variance, 3).c_str());
 
-        if(samples_rendered > 256 && // make this number a user param
+        if(samples_rendered > 256 && // TODO: make this number a user param?
            current_extraplolated_variance > m_last_extrapolated_variance)
         {
-            //m_is_final_iter = true;
+            m_is_final_iter = true;
         }
 
         m_last_extrapolated_variance = current_extraplolated_variance;
     }
-
 
     return false;
 }
@@ -150,7 +144,8 @@ size_t GPTPassCallback::get_samples_per_pass() const
     return m_params.m_samples_per_pass;
 }
 
-void GPTPassCallback::set_framebuffer(VarianceTrackingShadingResultFrameBufferFactory* framebuffer)
+void GPTPassCallback::set_framebuffer(
+    VarianceTrackingShadingResultFrameBufferFactory* framebuffer)
 {
     m_framebuffer = framebuffer;
 }

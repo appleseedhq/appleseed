@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Stephen Agyemang, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,8 +33,8 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/aov/aovcomponents.h"
 #include "renderer/kernel/intersection/intersector.h"
-#include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/gpt/pathguidedsampler.h"
+#include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/lighting/sdtree.h"
 #include "renderer/kernel/shading/shadingcontext.h"
@@ -83,9 +82,9 @@ namespace renderer
 //           const ScatteringMode::Mode  prev_mode,
 //           const ScatteringMode::Mode  next_mode) const;
 //
-//       void on_miss(const PathVertex& vertex);
-//       void on_hit(const PathVertex& vertex);
-//       void on_scatter(PathVertex& vertex);
+//       void on_miss(const PathVertex& vertex, GPTVertexPath& guided_path);
+//       void on_hit(const PathVertex& vertex, GPTVertexPath& guided_path);
+//       void on_scatter(PathVertex& vertex, GPTVertexPath& guided_path);
 //   };
 //
 // The VolumeVisitor class must conform to the following prototype:

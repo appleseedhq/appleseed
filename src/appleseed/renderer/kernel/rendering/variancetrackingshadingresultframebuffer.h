@@ -62,7 +62,8 @@ class VarianceTrackingShadingResultFrameBuffer
 
     ~VarianceTrackingShadingResultFrameBuffer() override {}
 
-    static size_t get_total_channel_count(const size_t aov_count);
+    static size_t get_total_channel_count(
+        const size_t                    aov_count);
 
     void add(
         const foundation::Vector2u&     pi,

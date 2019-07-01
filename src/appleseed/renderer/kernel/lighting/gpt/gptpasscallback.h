@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Stephen Agyemang, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,16 +33,6 @@
 #include "renderer/kernel/lighting/sdtree.h"
 #include "renderer/kernel/rendering/ipasscallback.h"
 #include "renderer/kernel/rendering/variancetrackingshadingresultframebufferfactory.h"
-#include "renderer/modeling/project/project.h"
-
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-#include "foundation/platform/timers.h"
-#include "foundation/utility/stopwatch.h"
-
-// Standard headers.
-#include <cstddef>
-#include <memory>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
@@ -63,29 +52,30 @@ class GPTPassCallback
   public:
     // Constructor.
     GPTPassCallback(
-        const GPTParameters&                      params,
-        STree*                                    sd_tree,
-        const size_t                              sample_budget,
-        const size_t                              max_passes);
+        const GPTParameters&                             params,
+        STree*                                           sd_tree,
+        const size_t                                     sample_budget,
+        const size_t                                     max_passes);
 
     // Delete this instance.
     void release() override;
 
     // This method is called at the beginning of a pass.
     void on_pass_begin(
-        const Frame&                              frame,
-        foundation::JobQueue&                     job_queue,
-        foundation::IAbortSwitch&                 abort_switch) override;
+        const Frame&                                     frame,
+        foundation::JobQueue&                            job_queue,
+        foundation::IAbortSwitch&                        abort_switch) override;
 
     // This method is called at the end of a pass.
     bool on_pass_end(
-        const Frame&                              frame,
-        foundation::JobQueue&                     job_queue,
-        foundation::IAbortSwitch&                 abort_switch) override;
+        const Frame&                                     frame,
+        foundation::JobQueue&                            job_queue,
+        foundation::IAbortSwitch&                        abort_switch) override;
 
     size_t get_samples_per_pass() const;
 
-    void set_framebuffer(VarianceTrackingShadingResultFrameBufferFactory* framebuffer);
+    void set_framebuffer(
+        VarianceTrackingShadingResultFrameBufferFactory* framebuffer);
 
   private:
     const GPTParameters                                  m_params;

@@ -99,6 +99,7 @@ void VarianceTrackingShadingResultFrameBuffer::add(
         *ptr++ = aov[3];
     }
 
+    // Put squared samples in the last buffer channels.
     *ptr++ = main_0 * main_0;
     *ptr++ = main_1 * main_1;
     *ptr++ = main_2 * main_2;
@@ -165,6 +166,7 @@ float VarianceTrackingShadingResultFrameBuffer::variance(
 
             const Color3f pixel_variance(summed_squares - (color * color) / num_samples);
 
+            // Clamp values to mitigate the effect of fireflies
             tile_variance += std::min(luminance(pixel_variance), 10000.0f);
 
             ptr += 4;

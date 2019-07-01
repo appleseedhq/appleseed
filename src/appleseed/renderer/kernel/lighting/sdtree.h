@@ -3,12 +3,12 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 
-// appleseed.foundation headers.
-#include "foundation/math/scalar.h"
-#include "foundation/math/sampling/mappings.h"
-
 // Standard headers.
 #include <array>
+
+//
+// SD-Tree mplementation for "Practical Path Guiding for Efficient Light-Transport Simulation" [Müller et al. 2017].
+//
 
 namespace renderer {
 
@@ -75,25 +75,26 @@ struct GPTVertex
 
     void add_radiance(const renderer::Spectrum& radiance);
     
-    void record_to_tree(STree&                  sd_tree,
-                        float                   statistical_weight,
-                        ESpatialFilter          spatial_filter,
-                        EDirectionalFilter      directional_filter,
-                        SamplingContext&        sampling_context);
+    void record_to_tree(STree&                    sd_tree,
+                        float                     statistical_weight,
+                        ESpatialFilter            spatial_filter,
+                        EDirectionalFilter        directional_filter,
+                        SamplingContext&          sampling_context);
 };
 
 class GPTVertexPath
 {
   public:
     GPTVertexPath();
-    void add_vertex(const GPTVertex& vertex);
-    void add_radiance(const renderer::Spectrum& radiance);
+    void add_vertex(const GPTVertex&              vertex);
+    void add_radiance(const renderer::Spectrum&   radiance);
 
-    void record_to_tree(STree&                  sd_tree,
-                        float                   statistical_weight,
-                        ESpatialFilter          spatial_filter,
-                        EDirectionalFilter      directional_filter,
-                        SamplingContext&        sampling_context);
+    void record_to_tree(STree&                    sd_tree,
+                        float                     statistical_weight,
+                        ESpatialFilter            spatial_filter,
+                        EDirectionalFilter        directional_filter,
+                        SamplingContext&          sampling_context);
+
     bool is_full() const;
 
   private:
