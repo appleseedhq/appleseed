@@ -5,6 +5,9 @@
         <search_path>
             geometry
         </search_path>
+        <search_path>
+            ../../../shaders/max
+        </search_path>
     </search_paths>
     <scene>
         <camera name="camera" model="pinhole_camera">
@@ -41,166 +44,55 @@
         </environment>
         <assembly name="assembly">
             <shader_group name="Material #894_mat_shader_group">
-                <shader type="shader" name="as_max_color_texture" layer="Material #894_mat_BaseColor">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="color 0.9 0.9 0.9" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="Material #894_mat_Metallic">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="Material #894_mat_Specular">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="Material #894_mat_SpecularTint">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="Material #894_mat_Roughness">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="Material #894_mat_Sheen">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="Material #894_mat_SheenTint">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="Material #894_mat_Anisotropic">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="Material #894_mat_Clearcoat">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="Material #894_mat_ClearcoatGloss">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
                 <shader type="surface" name="as_max_disney_material" layer="Material #894_mat">
+                    <parameter name="Anisotropic" value="float 0" />
+                    <parameter name="BaseColor" value="color 0.9 0.9 0.9" />
+                    <parameter name="Clearcoat" value="float 0" />
+                    <parameter name="ClearcoatGloss" value="float 0" />
+                    <parameter name="Metallic" value="float 0" />
+                    <parameter name="Roughness" value="float 0" />
+                    <parameter name="Sheen" value="float 0" />
+                    <parameter name="SheenTint" value="float 0" />
+                    <parameter name="Specular" value="float 0" />
+                    <parameter name="SpecularTint" value="float 0" />
                 </shader>
-                <connect_shaders src_layer="Material #894_mat_BaseColor" src_param="ColorOut" dst_layer="Material #894_mat" dst_param="BaseColor" />
-                <connect_shaders src_layer="Material #894_mat_Metallic" src_param="FloatOut" dst_layer="Material #894_mat" dst_param="Metallic" />
-                <connect_shaders src_layer="Material #894_mat_Specular" src_param="FloatOut" dst_layer="Material #894_mat" dst_param="Specular" />
-                <connect_shaders src_layer="Material #894_mat_SpecularTint" src_param="FloatOut" dst_layer="Material #894_mat" dst_param="SpecularTint" />
-                <connect_shaders src_layer="Material #894_mat_Roughness" src_param="FloatOut" dst_layer="Material #894_mat" dst_param="Roughness" />
-                <connect_shaders src_layer="Material #894_mat_Sheen" src_param="FloatOut" dst_layer="Material #894_mat" dst_param="Sheen" />
-                <connect_shaders src_layer="Material #894_mat_SheenTint" src_param="FloatOut" dst_layer="Material #894_mat" dst_param="SheenTint" />
-                <connect_shaders src_layer="Material #894_mat_Anisotropic" src_param="FloatOut" dst_layer="Material #894_mat" dst_param="Anisotropic" />
-                <connect_shaders src_layer="Material #894_mat_Clearcoat" src_param="FloatOut" dst_layer="Material #894_mat" dst_param="Clearcoat" />
-                <connect_shaders src_layer="Material #894_mat_ClearcoatGloss" src_param="FloatOut" dst_layer="Material #894_mat" dst_param="ClearcoatGloss" />
+                <shader type="surface" name="as_max_closure2surface" layer="Material #894_mat_closureToSurface">
+                </shader>
+                <connect_shaders src_layer="Material #894_mat" src_param="ClosureOut" dst_layer="Material #894_mat_closureToSurface" dst_param="in_input" />
             </shader_group>
             <shader_group name="Material #917_mat_shader_group">
-                <shader type="shader" name="as_max_color_texture" layer="Material #917_mat_BaseColor">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="color 0.92549 0.603922 0.0470588" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="Material #917_mat_Metallic">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="Material #917_mat_Specular">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0.483871" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="Material #917_mat_SpecularTint">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="Material #917_mat_Roughness">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0.4" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="Material #917_mat_Sheen">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="Material #917_mat_SheenTint">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="Material #917_mat_Anisotropic">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="Material #917_mat_Clearcoat">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="Material #917_mat_ClearcoatGloss">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
                 <shader type="surface" name="as_max_disney_material" layer="Material #917_mat">
+                    <parameter name="Anisotropic" value="float 0" />
+                    <parameter name="BaseColor" value="color 0.92549 0.603922 0.0470588" />
+                    <parameter name="Clearcoat" value="float 0" />
+                    <parameter name="ClearcoatGloss" value="float 0" />
+                    <parameter name="Metallic" value="float 0" />
+                    <parameter name="Roughness" value="float 0.4" />
+                    <parameter name="Sheen" value="float 0" />
+                    <parameter name="SheenTint" value="float 0" />
+                    <parameter name="Specular" value="float 0.483871" />
+                    <parameter name="SpecularTint" value="float 0" />
                 </shader>
-                <connect_shaders src_layer="Material #917_mat_BaseColor" src_param="ColorOut" dst_layer="Material #917_mat" dst_param="BaseColor" />
-                <connect_shaders src_layer="Material #917_mat_Metallic" src_param="FloatOut" dst_layer="Material #917_mat" dst_param="Metallic" />
-                <connect_shaders src_layer="Material #917_mat_Specular" src_param="FloatOut" dst_layer="Material #917_mat" dst_param="Specular" />
-                <connect_shaders src_layer="Material #917_mat_SpecularTint" src_param="FloatOut" dst_layer="Material #917_mat" dst_param="SpecularTint" />
-                <connect_shaders src_layer="Material #917_mat_Roughness" src_param="FloatOut" dst_layer="Material #917_mat" dst_param="Roughness" />
-                <connect_shaders src_layer="Material #917_mat_Sheen" src_param="FloatOut" dst_layer="Material #917_mat" dst_param="Sheen" />
-                <connect_shaders src_layer="Material #917_mat_SheenTint" src_param="FloatOut" dst_layer="Material #917_mat" dst_param="SheenTint" />
-                <connect_shaders src_layer="Material #917_mat_Anisotropic" src_param="FloatOut" dst_layer="Material #917_mat" dst_param="Anisotropic" />
-                <connect_shaders src_layer="Material #917_mat_Clearcoat" src_param="FloatOut" dst_layer="Material #917_mat" dst_param="Clearcoat" />
-                <connect_shaders src_layer="Material #917_mat_ClearcoatGloss" src_param="FloatOut" dst_layer="Material #917_mat" dst_param="ClearcoatGloss" />
+                <shader type="surface" name="as_max_closure2surface" layer="Material #917_mat_closureToSurface">
+                </shader>
+                <connect_shaders src_layer="Material #917_mat" src_param="ClosureOut" dst_layer="Material #917_mat_closureToSurface" dst_param="in_input" />
             </shader_group>
             <shader_group name="hair_mat_shader_group">
-                <shader type="shader" name="as_max_color_texture" layer="hair_mat_BaseColor">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="color 0.286275 0 0" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="hair_mat_Metallic">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="hair_mat_Specular">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0.758065" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="hair_mat_SpecularTint">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0.685484" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="hair_mat_Roughness">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0.241935" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="hair_mat_Sheen">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="hair_mat_SheenTint">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="hair_mat_Anisotropic">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="hair_mat_Clearcoat">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
-                <shader type="shader" name="as_max_float_texture" layer="hair_mat_ClearcoatGloss">
-                    <parameter name="Filename" value="string " />
-                    <parameter name="Multiplier" value="float 0" />
-                </shader>
                 <shader type="surface" name="as_max_disney_material" layer="hair_mat">
+                    <parameter name="Anisotropic" value="float 0" />
+                    <parameter name="BaseColor" value="color 0.286275 0 0" />
+                    <parameter name="Clearcoat" value="float 0" />
+                    <parameter name="ClearcoatGloss" value="float 0" />
+                    <parameter name="Metallic" value="float 0" />
+                    <parameter name="Roughness" value="float 0.241935" />
+                    <parameter name="Sheen" value="float 0" />
+                    <parameter name="SheenTint" value="float 0" />
+                    <parameter name="Specular" value="float 0.758065" />
+                    <parameter name="SpecularTint" value="float 0.685484" />
                 </shader>
-                <connect_shaders src_layer="hair_mat_BaseColor" src_param="ColorOut" dst_layer="hair_mat" dst_param="BaseColor" />
-                <connect_shaders src_layer="hair_mat_Metallic" src_param="FloatOut" dst_layer="hair_mat" dst_param="Metallic" />
-                <connect_shaders src_layer="hair_mat_Specular" src_param="FloatOut" dst_layer="hair_mat" dst_param="Specular" />
-                <connect_shaders src_layer="hair_mat_SpecularTint" src_param="FloatOut" dst_layer="hair_mat" dst_param="SpecularTint" />
-                <connect_shaders src_layer="hair_mat_Roughness" src_param="FloatOut" dst_layer="hair_mat" dst_param="Roughness" />
-                <connect_shaders src_layer="hair_mat_Sheen" src_param="FloatOut" dst_layer="hair_mat" dst_param="Sheen" />
-                <connect_shaders src_layer="hair_mat_SheenTint" src_param="FloatOut" dst_layer="hair_mat" dst_param="SheenTint" />
-                <connect_shaders src_layer="hair_mat_Anisotropic" src_param="FloatOut" dst_layer="hair_mat" dst_param="Anisotropic" />
-                <connect_shaders src_layer="hair_mat_Clearcoat" src_param="FloatOut" dst_layer="hair_mat" dst_param="Clearcoat" />
-                <connect_shaders src_layer="hair_mat_ClearcoatGloss" src_param="FloatOut" dst_layer="hair_mat" dst_param="ClearcoatGloss" />
+                <shader type="surface" name="as_max_closure2surface" layer="hair_mat_closureToSurface">
+                </shader>
+                <connect_shaders src_layer="hair_mat" src_param="ClosureOut" dst_layer="hair_mat_closureToSurface" dst_param="in_input" />
             </shader_group>
             <material name="Material #894_mat" model="osl_material">
                 <parameter name="alpha_map" value="1" />
