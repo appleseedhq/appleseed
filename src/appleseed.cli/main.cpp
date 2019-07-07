@@ -41,6 +41,7 @@
 #include "renderer/api/lighting.h"
 #include "renderer/api/log.h"
 #include "renderer/api/object.h"
+#include "renderer/api/postprocessing.h"
 #include "renderer/api/project.h"
 #include "renderer/api/rendering.h"
 #include "renderer/api/scene.h"
@@ -387,11 +388,23 @@ namespace
                 "command line parameters require frame \"%s\" to be recreated.",
                 frame->get_name());
 
-            project.set_frame(
+            auto_release_ptr<Frame> new_frame =
                 FrameFactory::create(
                     frame->get_name(),
                     new_params,
-                    frame->aovs()));
+                    frame->aovs());
+
+            // Recreate post-processing stages.
+            for (PostProcessingStage& stage : frame->post_processing_stages())
+            {
+                const IPostProcessingStageFactory* stage_factory =
+                    project.get_factory_registrar<PostProcessingStage>().lookup(stage.get_model());
+                assert(stage_factory);
+                new_frame->post_processing_stages().insert(
+                    stage_factory->create(stage.get_name(), stage.get_parameters()));
+            }
+
+            project.set_frame(new_frame);
         }
 
         return true;
