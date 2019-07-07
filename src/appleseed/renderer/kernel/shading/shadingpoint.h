@@ -913,6 +913,7 @@ inline const foundation::Color3f& ShadingPoint::get_per_vertex_color() const
         compute_per_vertex_color();
         m_members |= HasPerVertexColor;
     }
+
     return m_color;
 }
 
