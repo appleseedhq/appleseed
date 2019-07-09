@@ -91,8 +91,7 @@ void GlobalSampleAccumulationBuffer::store_samples(
         if ((counter++ & 4096) == 0 && abort_switch.is_aborted())
             return;
 
-        Color3f value(s->m_color.rgb());
-        m_fb.atomic_add(Vector2u(s->m_pixel_coords), &value[0]);
+        m_fb.atomic_add(Vector2u(s->m_pixel_coords), &s->m_color[0]);
     }
 }
 
