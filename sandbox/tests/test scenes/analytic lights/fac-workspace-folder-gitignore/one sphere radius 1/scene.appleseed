@@ -126,7 +126,9 @@
     </scene>
     <output>
         <frame name="beauty">            
-            <parameter name="reference_image" value="wip/ground_truth.exr" />
+            <parameter name="reference_image" value="uniform_converged.exr" />
+            <!--
+            -->
             <parameter name="camera" value="Camera" />
             <parameter name="denoise_scales" value="3" />
             <parameter name="denoiser" value="off" />
@@ -137,6 +139,9 @@
             <parameter name="patch_distance_threshold" value="1" />
             <parameter name="prefilter_spikes" value="true" />
             <parameter name="random_pixel_order" value="true" />
+            <!--
+            <parameter name="resolution" value="384 288" />
+            -->
             <parameter name="resolution" value="768 576" />
             <parameter name="skip_denoised" value="true" />
             <parameter name="spike_threshold" value="2" />
@@ -251,8 +256,8 @@
                 <parameter name="enable_light_importance_sampling" value="false" />
             </parameters>
             <parameters name="progressive_frame_renderer">
-                <parameter name="max_fps" value="10" />
-                <parameter name="max_samples" value="-1" />
+                <parameter name="max_fps" value="1" />
+                <parameter name="max_average_spp" value="128" />
             </parameters>
             <parameters name="pt">
                 <parameter name="clamp_roughness" value="false" />
@@ -262,7 +267,7 @@
                 <parameter name="enable_dl" value="true" />
                 <parameter name="enable_ibl" value="true" />
                 <parameter name="ibl_env_samples" value="1.000000" />
-                <parameter name="max_bounces" value="0" />
+                <parameter name="max_bounces" value="-1" />
                 <parameter name="max_diffuse_bounces" value="-1" />
                 <parameter name="max_glossy_bounces" value="-1" />
                 <parameter name="max_specular_bounces" value="-1" />
