@@ -143,7 +143,7 @@ class LightSamplerBase
     // Sample a given emitting shape.
     void sample_emitting_shape(
         const ShadingRay::Time&             time,
-        const foundation::Vector3f&         s,
+        const foundation::Vector2f&         s,
         const size_t                        shape_index,
         const float                         shape_prob,
         LightSample&                        light_sample) const;
