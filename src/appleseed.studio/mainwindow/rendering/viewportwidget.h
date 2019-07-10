@@ -109,15 +109,16 @@ class ViewportWidget
     GLSceneLayer* get_gl_scene_layer();
     LightPathsLayer* get_light_paths_layer();
 
-    void set_draw_light_paths_enabled(const bool enabled);
-
   signals:
     void signal_material_dropped(
         const foundation::Vector2d& drop_pos,
         const QString&          material_name);
+    void signal_base_layer_changed(const ViewportWidget::BaseLayer layer);
+
+  public slots:
+    void slot_light_paths_should_display(const bool should_display);
 
   private slots:
-    void slot_light_paths_toggled(bool checked);
     void slot_base_layer_changed(int index);
 
   private:

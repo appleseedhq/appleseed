@@ -33,7 +33,6 @@
 #include "mainwindow/rendering/lightpathspickinghandler.h"
 #include "mainwindow/rendering/lightpathslayer.h"
 #include "mainwindow/rendering/viewporttab.h"
-#include "mainwindow/rendering/viewportwidget.h"
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
 
@@ -77,9 +76,11 @@ namespace studio {
 
 LightPathsViewportManager::LightPathsViewportManager(
     ViewportTab*    viewport_tab,
-    Project&        project,
+    Project*        project,
     ParamArray&     settings)
   : m_enabled(false)
+  , m_picking_enabled(true)
+  , m_paths_display_active(false)
   , m_project(project)
   , m_settings(settings)
   , m_viewport_tab(viewport_tab)
@@ -94,15 +95,49 @@ LightPathsViewportManager::LightPathsViewportManager(
     recreate_handlers();
 }
 
+void LightPathsViewportManager::reset(renderer::Project* project)
+{
+    set_enabled(false);
+    set_display_enabled(false);
+    set_picking_enabled(true);
+    m_project = project;
+}
+
+void LightPathsViewportManager::slot_base_layer_changed(const ViewportWidget::BaseLayer layer)
+{
+    if (layer == ViewportWidget::BaseLayer::FinalRender)
+        set_picking_enabled(true);
+    else
+        set_picking_enabled(false);
+}
+
 void LightPathsViewportManager::set_enabled(const bool enabled)
 {
     m_enabled = enabled;
     if (enabled)
+    {
         m_toolbar->show();
+    }
     else
+    {
+        set_display_enabled(false);
         m_toolbar->hide();
-
+    }
     m_toolbar->setDisabled(!enabled);
+
+    emit signal_should_display(m_enabled && m_paths_display_active);
+}
+
+void LightPathsViewportManager::set_display_enabled(const bool enabled)
+{
+    m_paths_display_active = enabled;
+
+    emit signal_should_display(m_enabled && m_paths_display_active);
+}
+
+void LightPathsViewportManager::set_picking_enabled(const bool enabled)
+{
+    m_picking_enabled = enabled;
     m_screen_space_paths_picking_handler->set_enabled(enabled);
 }
 
@@ -113,9 +148,11 @@ QToolBar* LightPathsViewportManager::toolbar() const
 
 void LightPathsViewportManager::slot_entity_picked(const ScenePicker::PickingResult& result)
 {
-    if (!m_enabled) return;
+    if (!m_picking_enabled || !m_enabled) return;
 
-    const CanvasProperties& props = m_project.get_frame()->image().properties();
+    set_display_enabled(true);
+
+    const CanvasProperties& props = m_project->get_frame()->image().properties();
     m_screen_space_paths_picking_handler->pick(
         Vector2i(
             result.m_ndc[0] * static_cast<int>(props.m_canvas_width),
@@ -129,8 +166,9 @@ void LightPathsViewportManager::slot_light_paths_display_toggled(const bool acti
 
 void LightPathsViewportManager::slot_rectangle_selection(const QRect& rect)
 {
-    if (!m_enabled) return;
+    if (!m_picking_enabled || !m_enabled) return;
 
+    set_display_enabled(true);
     m_screen_space_paths_picking_handler->pick(
         AABB2i(
             Vector2i(rect.x(), rect.y()),
@@ -139,15 +177,17 @@ void LightPathsViewportManager::slot_rectangle_selection(const QRect& rect)
 
 void LightPathsViewportManager::slot_light_path_selection_changed(
     const int       selected_light_path_index,
-    const int       total_light_paths) const
+    const int       total_light_paths)
 {
     if (total_light_paths > 0)
     {
+        set_display_enabled(true);
         m_prev_path_button->setEnabled(selected_light_path_index > -1);
         m_next_path_button->setEnabled(selected_light_path_index < total_light_paths - 1);
     }
     else
     {
+        set_display_enabled(false);
         m_prev_path_button->setEnabled(false);
         m_next_path_button->setEnabled(false);
     }
@@ -172,7 +212,7 @@ void LightPathsViewportManager::slot_save_light_paths()
     filepath = QDir::toNativeSeparators(filepath);
 
     // Write light paths to disk.
-    m_project.get_light_path_recorder().write(filepath.toUtf8().constData());
+    m_project->get_light_path_recorder().write(filepath.toUtf8().constData());
 }
 
 void LightPathsViewportManager::slot_camera_changed()
@@ -192,7 +232,7 @@ void LightPathsViewportManager::create_toolbar()
     // Save Light Paths button.
     QToolButton* save_light_paths_button = new QToolButton();
     save_light_paths_button->setIcon(load_icons("lightpathstab_save_light_paths"));
-    const auto light_path_count = m_project.get_light_path_recorder().get_light_path_count();
+    const auto light_path_count = m_project->get_light_path_recorder().get_light_path_count();
     save_light_paths_button->setToolTip(
         QString("Save %1 Light Path%2...")
             .arg(QString::fromStdString(pretty_uint(light_path_count)))
@@ -233,8 +273,8 @@ void LightPathsViewportManager::create_toolbar()
     backface_culling_button->setCheckable(true);
     backface_culling_button->setChecked(false);
     connect(
-        backface_culling_button, SIGNAL(toggled()),
-        light_paths_layer, SLOT(slot_toggle_backface_culling()));
+        backface_culling_button, SIGNAL(toggled(bool)),
+        light_paths_layer, SLOT(slot_toggle_backface_culling(bool)));
     m_toolbar->addWidget(backface_culling_button);
 
     // Synchronize Camera button.
@@ -268,7 +308,7 @@ void LightPathsViewportManager::recreate_handlers()
         new LightPathsPickingHandler(
             m_viewport_tab->get_viewport_widget(),
             *m_mouse_tracker.get(),
-            m_project));
+            *m_project));
     m_screen_space_paths_picking_handler->set_enabled(false);
 
     // The world-space paths picking handler is used to pick paths in the light paths widget.

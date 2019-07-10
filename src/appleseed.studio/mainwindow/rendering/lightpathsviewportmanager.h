@@ -32,6 +32,7 @@
 #include "mainwindow/rendering/cameracontroller.h"
 #include "mainwindow/rendering/lightpathspickinghandler.h"
 #include "mainwindow/rendering/renderclipboardhandler.h"
+#include "mainwindow/rendering/viewportwidget.h"
 #include "utility/mousecoordinatestracker.h"
 #include "utility/scrollareapanhandler.h"
 #include "utility/widgetzoomhandler.h"
@@ -72,12 +73,19 @@ class LightPathsViewportManager
   public:
     LightPathsViewportManager(
         ViewportTab*            viewport_tab,
-        renderer::Project&      project,
+        renderer::Project*      project,
         renderer::ParamArray&   settings);
+
+    void reset(renderer::Project* project);
 
     QToolBar* toolbar() const;
 
     void set_enabled(const bool enabled);
+    void set_picking_enabled(const bool enabled);
+    void set_display_enabled(const bool enabled);
+
+  signals:
+    void signal_should_display(const bool should_display);
 
   public slots:
     void slot_entity_picked(const renderer::ScenePicker::PickingResult& result);
@@ -85,16 +93,19 @@ class LightPathsViewportManager
     void slot_light_paths_display_toggled(const bool active);
 
   private slots:
+    void slot_base_layer_changed(const ViewportWidget::BaseLayer layer);
     void slot_light_path_selection_changed(
         const int               selected_light_path_index,
-        const int               total_light_paths) const;
+        const int               total_light_paths);
     void slot_save_light_paths();
     void slot_camera_changed();
 
   private:
     bool                                        m_enabled;
+    bool                                        m_picking_enabled;
+    bool                                        m_paths_display_active;
 
-    renderer::Project&                          m_project;
+    renderer::Project*                          m_project;
     renderer::ParamArray&                       m_settings;
     ViewportTab*                                m_viewport_tab;
     QToolBar*                                   m_toolbar;

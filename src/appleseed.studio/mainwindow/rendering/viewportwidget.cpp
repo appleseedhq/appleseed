@@ -285,12 +285,6 @@ void ViewportWidget::resizeGL(
     m_gl->glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void ViewportWidget::set_draw_light_paths_enabled(const bool enabled)
-{
-    m_draw_light_paths = enabled;
-    update();
-}
-
 void ViewportWidget::paintGL()
 {
 
@@ -407,11 +401,14 @@ void ViewportWidget::slot_base_layer_changed(int index)
     assert(index < BaseLayer::BASE_LAYER_MAX_VALUE);
     m_active_base_layer = static_cast<BaseLayer>(index);
     update();
+
+    emit signal_base_layer_changed(m_active_base_layer);
 }
 
-void ViewportWidget::slot_light_paths_toggled(bool checked)
+void ViewportWidget::slot_light_paths_should_display(const bool should_display)
 {
-    set_draw_light_paths_enabled(checked);
+    m_draw_light_paths = should_display;
+    update();
 }
 
 }   // namespace studio

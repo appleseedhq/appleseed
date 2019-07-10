@@ -37,6 +37,7 @@
 #include "mainwindow/rendering/renderclipboardhandler.h"
 #include "mainwindow/rendering/scenepickinghandler.h"
 #include "mainwindow/rendering/viewportregionselectionhandler.h"
+#include "mainwindow/rendering/viewportwidget.h"
 #include "utility/mousecoordinatestracker.h"
 #include "utility/scrollareapanhandler.h"
 #include "utility/widgetzoomhandler.h"
@@ -55,7 +56,6 @@ namespace OCIO = OCIO_NAMESPACE;
 // Forward declarations.
 namespace appleseed { namespace studio { class LightPathsViewportManager; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
-namespace appleseed { namespace studio { class ViewportWidget; } }
 namespace renderer  { class Entity; }
 namespace renderer  { class Project; }
 namespace renderer  { class RenderingManager; }
@@ -91,8 +91,8 @@ class ViewportTab
     CameraController* get_camera_controller() const;
     ScenePickingHandler* get_scene_picking_handler() const;
 
-    void set_light_paths_enabled(const bool enabled);
     void set_clear_frame_button_enabled(const bool enabled);
+    void set_light_paths_toggle_enabled(const bool enabled);
     void set_render_region_buttons_enabled(const bool enabled);
 
     void render_began();
@@ -128,7 +128,7 @@ class ViewportTab
 
   private slots:
     void slot_camera_changed();
-    void slot_base_layer_changed(int index);
+    void slot_base_layer_changed(const ViewportWidget::BaseLayer base_layer);
     void slot_set_render_region(const QRect& rect);
     void slot_toggle_pixel_inspector(const bool checked);
     void slot_toggle_render_region(const bool checked);
@@ -136,7 +136,6 @@ class ViewportTab
 
   private:
     ViewportWidget*                                 m_viewport_widget;
-    LightPathsViewportManager*                      m_light_paths_manager;
 
     QScrollArea*                                    m_scroll_area;
     QToolBar*                                       m_toolbar;
@@ -158,6 +157,7 @@ class ViewportTab
     RenderingManager&                               m_rendering_manager;
     renderer::ParamArray                            m_application_settings;
 
+    std::unique_ptr<LightPathsViewportManager>      m_light_paths_manager;
     std::unique_ptr<WidgetZoomHandler>              m_zoom_handler;
     std::unique_ptr<ScrollAreaPanHandler>           m_pan_handler;
     std::unique_ptr<MaterialDropHandler>            m_material_drop_handler;
@@ -171,7 +171,7 @@ class ViewportTab
 
     OCIO::ConstConfigRcPtr                          m_ocio_config;
 
-    void create_light_paths_manager(renderer::ParamArray application_settings);
+    void create_light_paths_manager();
     void create_scrollarea();
     void create_toolbar();
     void create_viewport_widget();

@@ -34,7 +34,6 @@
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/rendering/lightpathsviewportmanager.h"
 #include "mainwindow/rendering/renderingmanager.h"
-#include "mainwindow/rendering/viewportwidget.h"
 #include "utility/miscellaneous.h"
 
 // appleseed.renderer headers.
@@ -93,9 +92,9 @@ ViewportTab::ViewportTab(
     layout()->setMargin(0);
 
     create_viewport_widget();
-    create_light_paths_manager(m_application_settings);
     create_toolbar();
     create_scrollarea();
+    create_light_paths_manager();
 
     layout()->addWidget(m_toolbar);
     layout()->addWidget(m_light_paths_manager->toolbar());
@@ -134,7 +133,8 @@ void ViewportTab::render_began()
 {
     m_viewport_widget->get_render_layer()->darken();
     m_viewport_widget->get_light_paths_layer()->update_render_camera_transform();
-    set_light_paths_enabled(false);
+    m_light_paths_manager.get()->reset(&m_project);
+    set_light_paths_toggle_enabled(false);
     update();
 }
 
@@ -176,29 +176,21 @@ void ViewportTab::load_state(const State& state)
     m_pan_handler->load_state(state.m_pan_handler_state);
 }
 
-void ViewportTab::set_light_paths_enabled(const bool enabled)
+void ViewportTab::slot_base_layer_changed(const ViewportWidget::BaseLayer base_layer)
 {
-    m_light_paths_toggle_button->setDisabled(!enabled);
-    m_light_paths_manager->set_enabled(enabled);
-}
-
-void ViewportTab::slot_base_layer_changed(int index)
-{
-    assert(index < ViewportWidget::BaseLayer::BASE_LAYER_MAX_VALUE);
-    auto base_layer = static_cast<ViewportWidget::BaseLayer>(index);
-
     switch (base_layer)
     {
-    case ViewportWidget::BaseLayer::FinalRender:
-        if (m_rendering_manager.is_rendering()
-            && m_rendering_manager.get_rendering_mode() == RenderingManager::RenderingMode::InteractiveRendering)
+        case ViewportWidget::BaseLayer::FinalRender:
+            if (m_rendering_manager.is_rendering()
+                && m_rendering_manager.get_rendering_mode() == RenderingManager::RenderingMode::InteractiveRendering)
+                m_camera_controller.get()->set_enabled(true);
+            else
+                m_camera_controller.get()->set_enabled(false);
+            break;
+
+        case ViewportWidget::BaseLayer::OpenGL:
             m_camera_controller.get()->set_enabled(true);
-        else
-            m_camera_controller.get()->set_enabled(false);
-        break;
-    case ViewportWidget::BaseLayer::OpenGL:
-        m_camera_controller.get()->set_enabled(true);
-        break;
+            break;
     }
 }
 
@@ -257,12 +249,25 @@ void ViewportTab::create_viewport_widget()
     m_viewport_widget->setMouseTracking(true);
 }
 
-void ViewportTab::create_light_paths_manager(renderer::ParamArray application_settings)
+void ViewportTab::create_light_paths_manager()
 {
-    m_light_paths_manager = new LightPathsViewportManager(
+    m_light_paths_manager.reset(new LightPathsViewportManager(
         this,
-        m_project,
-        application_settings);
+        &m_project,
+        m_application_settings));
+
+    connect(
+        m_viewport_widget, SIGNAL(signal_base_layer_changed(const ViewportWidget::BaseLayer)),
+        m_light_paths_manager.get(), SLOT(slot_base_layer_changed(const ViewportWidget::BaseLayer))
+    );
+    connect(
+        m_light_paths_manager.get(), SIGNAL(signal_should_display(const bool)),
+        m_viewport_widget, SLOT(slot_light_paths_should_display(const bool))
+    );
+    connect(
+        m_light_paths_toggle_button, SIGNAL(toggled(bool)),
+        m_light_paths_manager.get(), SLOT(slot_light_paths_display_toggled(bool))
+    );
 }
 
 void ViewportTab::create_toolbar()
@@ -289,8 +294,8 @@ void ViewportTab::create_toolbar()
         m_viewport_widget, SLOT(slot_base_layer_changed(int))
     );
     connect(
-        m_base_layer_combo, SIGNAL(activated(int)),
-        SLOT(slot_base_layer_changed(int))
+        m_viewport_widget, SIGNAL(signal_base_layer_changed(const ViewportWidget::BaseLayer)),
+        SLOT(slot_base_layer_changed(const ViewportWidget::BaseLayer))
     );
 
     m_light_paths_toggle_button = new QToolButton();
@@ -548,7 +553,7 @@ void ViewportTab::recreate_handlers()
         m_camera_controller.get(), SLOT(slot_entity_picked(renderer::ScenePicker::PickingResult)));
     connect(
         m_scene_picking_handler.get(), SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
-        m_light_paths_manager, SLOT(slot_entity_picked(renderer::ScenePicker::PickingResult)));
+        m_light_paths_manager.get(), SLOT(slot_entity_picked(renderer::ScenePicker::PickingResult)));
 
     // Handler for setting render regions with the mouse.
     m_viewport_selection_handler.reset(
@@ -560,7 +565,7 @@ void ViewportTab::recreate_handlers()
         SIGNAL(signal_rectangle_selection(const QRect&)));
     connect(
         m_viewport_selection_handler.get(), SIGNAL(signal_rectangle_selection(const QRect&)),
-        m_light_paths_manager, SLOT(slot_rectangle_selection(const QRect&)));
+        m_light_paths_manager.get(), SLOT(slot_rectangle_selection(const QRect&)));
     connect(
         m_viewport_selection_handler.get(), SIGNAL(signal_render_region(const QRect&)),
         SLOT(slot_set_render_region(const QRect&)));
@@ -588,6 +593,14 @@ void ViewportTab::recreate_handlers()
         SLOT(slot_material_dropped(
             const foundation::Vector2d&,
             const QString&)));
+}
+
+void ViewportTab::set_light_paths_toggle_enabled(const bool enabled)
+{
+    if (!enabled)
+        m_light_paths_toggle_button->setChecked(false);
+
+    m_light_paths_toggle_button->setDisabled(!enabled);
 }
 
 }   // namespace studio
