@@ -189,17 +189,16 @@ void ViewportTab::slot_base_layer_changed(int index)
 
     switch (base_layer)
     {
-        case ViewportWidget::BaseLayer::FinalRender:
-            if (m_rendering_manager.is_rendering()
-                && m_rendering_manager.get_rendering_mode() == RenderingManager::RenderingMode::InteractiveRendering)
-                m_camera_controller.get()->set_enabled(true);
-            else
-                m_camera_controller.get()->set_enabled(false);
-            break;
-
-        case ViewportWidget::BaseLayer::OpenGL:
+    case ViewportWidget::BaseLayer::FinalRender:
+        if (m_rendering_manager.is_rendering()
+            && m_rendering_manager.get_rendering_mode() == RenderingManager::RenderingMode::InteractiveRendering)
             m_camera_controller.get()->set_enabled(true);
-            break;
+        else
+            m_camera_controller.get()->set_enabled(false);
+        break;
+    case ViewportWidget::BaseLayer::OpenGL:
+        m_camera_controller.get()->set_enabled(true);
+        break;
     }
 }
 
@@ -298,14 +297,6 @@ void ViewportTab::create_toolbar()
     m_light_paths_toggle_button->setText("Display Light Paths Overlay");
     m_light_paths_toggle_button->setCheckable(true);
     m_toolbar->addWidget(m_light_paths_toggle_button);
-    connect(
-        m_light_paths_toggle_button, SIGNAL(toggled(bool)),
-        m_viewport_widget, SLOT(slot_light_paths_toggled(bool))
-    );
-    connect(
-        m_light_paths_toggle_button, SIGNAL(toggled(bool)),
-        m_light_paths_manager, SLOT(slot_light_paths_display_toggled(bool))
-    );
 
     m_toolbar->addSeparator();
 

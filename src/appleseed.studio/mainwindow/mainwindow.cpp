@@ -747,12 +747,12 @@ void MainWindow::update_workspace()
         m_project_manager.get_project()->get_light_path_recorder().get_light_path_count() > 0)
     {
         for (const_each<ViewportTabCollection> i = m_viewport_tabs; i; ++i)
-            i->second->set_light_paths_enabled(true);
+            i->second->set_light_paths_toggle_enabled(true);
     }
     else
     {
         for (const_each<ViewportTabCollection> i = m_viewport_tabs; i; ++i)
-            i->second->set_light_paths_enabled(false);
+            i->second->set_light_paths_toggle_enabled(false);
     }
 }
 
