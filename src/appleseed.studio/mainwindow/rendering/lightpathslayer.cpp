@@ -30,7 +30,7 @@
 #include "lightpathslayer.h"
 
 // appleseed.studio headers.
-#include "utility/miscellaneous.h"
+#include "utility/gl.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/camera.h"
@@ -50,7 +50,7 @@
 
 // Qt headers.
 #include <QKeyEvent>
-#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLFunctions_4_1_Core>
 #include <QSurfaceFormat>
 #include <QString>
 
@@ -105,7 +105,7 @@ void LightPathsLayer::resize(const size_t width, const size_t height)
     m_height = height;
 }
 
-void LightPathsLayer::set_gl_functions(QOpenGLFunctions_3_3_Core* functions)
+void LightPathsLayer::set_gl_functions(QOpenGLFunctions_4_1_Core* functions)
 {
     m_gl = functions;
 }
@@ -341,91 +341,6 @@ void LightPathsLayer::load_light_paths_data()
     }
 }
 
-namespace {
-    const string shader_kind_to_string(const GLint shader_kind)
-    {
-        switch (shader_kind) {
-            case GL_VERTEX_SHADER:
-                return "Vertex";
-            case GL_FRAGMENT_SHADER:
-                return "Fragment";
-            default:
-                return "Unknown Kind";
-        }
-    }
-
-    void compile_shader(
-        QOpenGLFunctions_3_3_Core* f,
-        const GLuint               shader,
-        const GLsizei              count,
-        const GLchar**             src_string,
-        const GLint*               length)
-    {
-        f->glShaderSource(shader, count, src_string, length);
-        f->glCompileShader(shader);
-        GLint success;
-        f->glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-
-        if (!success)
-        {
-            char info_log[1024];
-            f->glGetShaderInfoLog(shader, 1024, NULL, info_log);
-
-            GLint shader_kind;
-            f->glGetShaderiv(shader, GL_SHADER_TYPE, &shader_kind);
-            string shader_kind_string = shader_kind_to_string(shader_kind);
-
-            RENDERER_LOG_ERROR("opengl: %s shader compilation failed:\n%s", shader_kind_string.c_str(), info_log);
-        }
-    }
-
-    void link_shader_program(
-        QOpenGLFunctions_3_3_Core*  f,
-        const GLuint                program,
-        const GLuint                vert,
-        const GLuint                frag)
-    {
-        f->glAttachShader(program, vert);
-        f->glAttachShader(program, frag);
-        f->glLinkProgram(program);
-
-        GLint success;
-        f->glGetProgramiv(program, GL_LINK_STATUS, &success);
-
-        if (!success)
-        {
-            char info_log[1024];
-            f->glGetProgramInfoLog(program, 1024, NULL, info_log);
-            RENDERER_LOG_ERROR("opengl: shader program linking failed:\n%s", info_log);
-        }
-    }
-
-    void create_shader_program(
-        QOpenGLFunctions_3_3_Core*  f,
-        GLuint&                     program,
-        const QByteArray&               vert_source,
-        const QByteArray&               frag_source)
-    {
-        GLuint vert = f->glCreateShader(GL_VERTEX_SHADER);
-        GLuint frag = f->glCreateShader(GL_FRAGMENT_SHADER);
-
-        auto gl_vert_source = static_cast<const GLchar*>(vert_source.constData());
-        auto gl_vert_source_length = static_cast<const GLint>(vert_source.size());
-
-        auto gl_frag_source = static_cast<const GLchar*>(frag_source.constData());
-        auto gl_frag_source_length = static_cast<const GLint>(frag_source.size());
-
-        compile_shader(f, vert, 1, &gl_vert_source, &gl_vert_source_length);
-        compile_shader(f, frag, 1, &gl_frag_source, &gl_frag_source_length);
-
-        program = f->glCreateProgram();
-        link_shader_program(f, program, vert, frag);
-
-        f->glDeleteShader(vert);
-        f->glDeleteShader(frag);
-    }
-}
-
 void LightPathsLayer::init_gl(QSurfaceFormat format)
 {
     // If there was already previous data, clean up
@@ -441,8 +356,8 @@ void LightPathsLayer::init_gl(QSurfaceFormat format)
     create_shader_program(
         m_gl,
         m_shader_program,
-        vertex_shader,
-        fragment_shader);
+        &vertex_shader,
+        &fragment_shader);
 
     m_view_mat_loc = m_gl->glGetUniformLocation(m_shader_program, "u_view");
     m_proj_mat_loc = m_gl->glGetUniformLocation(m_shader_program, "u_proj");
@@ -586,20 +501,14 @@ void LightPathsLayer::draw_render_camera() const
 {
     auto gl_view_matrix = const_cast<const GLfloat*>(&m_gl_render_view_matrix[0]);
 
-    m_gl->glEnable(GL_BLEND);
-    m_gl->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     render_scene(gl_view_matrix);
-    m_gl->glDisable(GL_BLEND);
 }
 
 void LightPathsLayer::draw() const
 {
     auto gl_view_matrix = const_cast<const GLfloat*>(&m_gl_view_matrix[0]);
 
-    m_gl->glEnable(GL_BLEND);
-    m_gl->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     render_scene(gl_view_matrix);
-    m_gl->glDisable(GL_BLEND);
 }
 
 void LightPathsLayer::render_scene(const GLfloat* gl_view_matrix) const

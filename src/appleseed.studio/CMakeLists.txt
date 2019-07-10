@@ -365,6 +365,8 @@ set (utility_sources
     utility/doubleslider.h
     utility/foldablepanelwidget.cpp
     utility/foldablepanelwidget.h
+    utility/gl.cpp
+    utility/gl.h
     utility/inputwidgetproxies.cpp
     utility/inputwidgetproxies.h
     utility/interop.h

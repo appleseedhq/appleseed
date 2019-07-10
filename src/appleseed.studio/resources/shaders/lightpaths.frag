@@ -25,7 +25,7 @@
 // THE SOFTWARE.
 //
 
-#version 330
+#version 410
 #extension GL_ARB_separate_shader_objects : enable
 
 flat in vec3 f_color;
@@ -36,12 +36,26 @@ flat in float f_aspect_expansion_len;
 
 uniform vec2 u_res;
 
-out vec4 Target0;
+layout(location = 0) out vec4 accum_target;
+layout(location = 1) out float revealage_target;
 
+void write_pixel(vec4 premultiplied_col, vec3 transmit) { 
+    // premultiplied_col.a *= 1.0 - clamp((transmit.r + transmit.g + transmit.b) * (1.0 / 3.0), 0, 1);
+ 
+    float a = min(1.0, premultiplied_col.a) * 8.0 + 0.01;
+    float b = -gl_FragCoord.z * 0.95 + 1.0;
+ 
+    float w = clamp(a * a * a * 1e8 * b * b * b, 1e-2, 3e2);
+
+    accum_target = premultiplied_col * w;
+    revealage_target = premultiplied_col.a;
+}
 void main()
 {
     float dist = abs(f_aa_norm) * f_total_thickness - 0.5 / f_aspect_expansion_len;
     float eps = fwidth(dist);
     float a = 1.0 - smoothstep(f_thickness - eps, f_thickness + eps, dist);
-    Target0 = vec4(f_color, a);
+
+    vec4 premult = vec4(f_color * a, a);
+    write_pixel(premult, vec3(1.0));
 }

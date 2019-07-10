@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit https://appleseedhq.net/ for additional information and resources.
@@ -25,23 +26,50 @@
 // THE SOFTWARE.
 //
 
-#version 410
-#extension GL_ARB_separate_shader_objects : enable
+#pragma once
 
-layout(location = 0) in vec3 a_pos;
-layout(location = 1) in vec3 a_norm;
-layout(location = 2) in mat4 i_model;
+// Qt headers.
+#include <QOpenGLWidget>
+#include <QOpenGLFunctions_4_1_Core>
 
-uniform mat4 u_view;
-uniform mat4 u_proj;
+// standard headers.
+#include <string>
 
-layout(location = 1) out vec3 v_world_pos;
-layout(location = 0) out vec3 v_norm;
+// Forward declarations.
+class QByteArray;
+class QString;
 
-void main()
-{
-    vec4 world_pos = i_model * vec4(a_pos, 1.0);
-    v_world_pos = world_pos.xyz;
-    v_norm = a_norm;
-    gl_Position = u_proj * u_view * world_pos;
-}
+namespace appleseed {
+namespace studio {
+
+// Get a string from an OpenGL shader kind value.
+const std::string shader_kind_to_string(const GLint shader_kind);
+
+// Compile a GL shader.
+void compile_shader(
+    QOpenGLFunctions_4_1_Core* f,
+    const GLuint               shader,
+    const GLsizei              count,
+    const GLchar**             src_string,
+    const GLint*               length);
+
+// Link a GL shader program.
+void link_shader_program(
+    QOpenGLFunctions_4_1_Core*  f,
+    const GLuint                program,
+    const GLuint                vert,
+    const GLuint                frag);
+
+// Create a GL shader program with a vertex and optional fragment shader.
+void create_shader_program(
+    QOpenGLFunctions_4_1_Core*  f,
+    GLuint&                     program,
+    const QByteArray*           vert_source,
+    const QByteArray*           frag_source);
+
+// Load a GLSL shader from file into a QByteArray.
+QByteArray load_gl_shader(const QString& base_name);
+
+}   // namespace studio
+}   // namespace appleseed
+

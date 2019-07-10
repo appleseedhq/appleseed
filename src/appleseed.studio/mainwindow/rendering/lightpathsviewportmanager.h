@@ -98,7 +98,6 @@ class LightPathsViewportManager
     renderer::ParamArray&                       m_settings;
     ViewportTab*                                m_viewport_tab;
     QToolBar*                                   m_toolbar;
-    //QToolButton*                                m_pick_paths_button;
     QToolButton*                                m_prev_path_button;
     QToolButton*                                m_next_path_button;
     QLabel*                                     m_info_label;
@@ -110,7 +109,6 @@ class LightPathsViewportManager
 
     void create_toolbar();
     void recreate_handlers();
-
 };
 
 }   // namespace studio

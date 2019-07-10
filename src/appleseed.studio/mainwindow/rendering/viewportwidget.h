@@ -63,7 +63,7 @@ class QDragEnterEvent;
 class QDragMoveEvent;
 class QDropEvent;
 class QPaintEvent;
-class QOpenGLFunctions_3_3_Core;
+class QOpenGLFunctions_4_1_Core;
 
 namespace appleseed {
 namespace studio {
@@ -86,6 +86,8 @@ class ViewportWidget
         const size_t                height,
         OCIO::ConstConfigRcPtr      ocio_config,
         QWidget*                    parent = nullptr);
+
+    ~ViewportWidget();
 
     enum BaseLayer {
         FinalRender,
@@ -123,8 +125,21 @@ class ViewportWidget
     int                                 m_width;
     int                                 m_height;
 
-    QOpenGLFunctions_3_3_Core*          m_gl;
+    QOpenGLFunctions_4_1_Core*          m_gl;
     QPainter                            m_painter;
+
+    GLuint                              m_depth_tex;
+    GLuint                              m_color_tex;
+    GLuint                              m_accum_tex;
+    GLuint                              m_revealage_tex;
+    GLuint                              m_main_fb;
+    GLuint                              m_accum_revealage_fb;
+    GLuint                              m_empty_vao;
+    GLuint                              m_empty_vbo;
+
+    GLuint                              m_resolve_program;
+    GLint                               m_accum_loc;
+    GLint                               m_revealage_loc;
 
     std::unique_ptr<RenderLayer>        m_render_layer;
     std::unique_ptr<GLSceneLayer>       m_gl_scene_layer;

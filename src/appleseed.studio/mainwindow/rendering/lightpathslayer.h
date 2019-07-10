@@ -58,7 +58,7 @@ namespace renderer  { class ObjectInstance; }
 namespace renderer  { class Project; }
 class QKeyEvent;
 class QImage;
-class QOpenGLFunctions_3_3_Core;
+class QOpenGLFunctions_4_1_Core;
 
 namespace appleseed {
 namespace studio {
@@ -91,7 +91,7 @@ class LightPathsLayer: public QObject
         const int                           selected_light_path_index);
 
     void set_gl_functions(
-        QOpenGLFunctions_3_3_Core*          functions);
+        QOpenGLFunctions_4_1_Core*          functions);
 
     void init_gl(QSurfaceFormat format);
 
@@ -127,7 +127,7 @@ class LightPathsLayer: public QObject
     size_t                                  m_width;
     size_t                                  m_height;
 
-    QOpenGLFunctions_3_3_Core*              m_gl;
+    QOpenGLFunctions_4_1_Core*              m_gl;
 
     GLuint                                  m_positions_vbo;
     GLuint                                  m_others_vbo;

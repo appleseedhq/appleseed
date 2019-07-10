@@ -87,7 +87,7 @@ LightPathsViewportManager::LightPathsViewportManager(
     LightPathsLayer* light_paths_layer = m_viewport_tab->get_viewport_widget()->get_light_paths_layer();
     connect(
         light_paths_layer, SIGNAL(signal_light_path_selection_changed(const int, const int)),
-        SLOT(slot_light_path_selection_changed));
+        SLOT(slot_light_path_selection_changed(const int, const int)));
 
     create_toolbar();
 
@@ -101,6 +101,7 @@ void LightPathsViewportManager::set_enabled(const bool enabled)
         m_toolbar->show();
     else
         m_toolbar->hide();
+
     m_toolbar->setDisabled(!enabled);
     m_screen_space_paths_picking_handler->set_enabled(enabled);
 }
@@ -115,7 +116,6 @@ void LightPathsViewportManager::slot_entity_picked(const ScenePicker::PickingRes
     if (!m_enabled) return;
 
     const CanvasProperties& props = m_project.get_frame()->image().properties();
-
     m_screen_space_paths_picking_handler->pick(
         Vector2i(
             result.m_ndc[0] * static_cast<int>(props.m_canvas_width),
@@ -188,14 +188,6 @@ void LightPathsViewportManager::create_toolbar()
     m_toolbar = new QToolBar();
     m_toolbar->setObjectName("render_toolbar");
     m_toolbar->setIconSize(QSize(18, 18));
-
-    //// Pick paths button
-    //QToolButton* m_pick_paths_button = new QToolButton();
-    //m_pick_paths_button->setText("Pick Light Paths");
-    //m_pick_paths_button->setToolTip("Pick Light Paths");
-    //connect(
-    //    m_pick_paths_button, SIGNAL(clicked()),
-    //    SIGNAL(slot_light_paths_pick_button_clicked));
 
     // Save Light Paths button.
     QToolButton* save_light_paths_button = new QToolButton();

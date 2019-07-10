@@ -132,8 +132,8 @@ void ViewportTab::set_render_region_buttons_enabled(const bool enabled)
 
 void ViewportTab::render_began()
 {
-    get_viewport_widget()->get_render_layer()->darken();
-    get_viewport_widget()->get_light_paths_layer()->update_render_camera_transform();
+    m_viewport_widget->get_render_layer()->darken();
+    m_viewport_widget->get_light_paths_layer()->update_render_camera_transform();
     set_light_paths_enabled(false);
     update();
 }

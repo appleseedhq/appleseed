@@ -40,6 +40,7 @@
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/types.h"
+#include "utility/gl.h"
 
 // Qt headers.
 #include <QColor>
@@ -48,6 +49,8 @@
 #include <QDropEvent>
 #include <QMimeData>
 #include <QMutexLocker>
+#include <QOpenGLFunctions_4_1_Core>
+#include <QOpenGLTexture>
 #include <QRect>
 #include <Qt>
 
@@ -74,10 +77,13 @@ RenderLayer::RenderLayer(
   : QWidget(parent)
   , m_mutex(QMutex::Recursive)
   , m_ocio_config(ocio_config)
+  , m_gl_initialized(false)
 {
     setFocusPolicy(Qt::StrongFocus);
     setAutoFillBackground(false);
     setAttribute(Qt::WA_OpaquePaintEvent, true);
+
+    m_gl_tex = new QOpenGLTexture(QOpenGLTexture::Target2D);
 
     resize(width, height);
 
@@ -86,6 +92,64 @@ RenderLayer::RenderLayer(
     slot_display_transform_changed(default_transform);
 
     setAcceptDrops(true);
+}
+
+void RenderLayer::draw(GLuint empty_vao, bool paths_display_active)
+{
+    QMutexLocker locker(&m_mutex);
+
+    if (m_gl_tex->width() != m_image.width() || m_gl_tex->height() != m_image.height())
+    {
+        if (m_gl_tex->isCreated())
+            m_gl_tex->destroy();
+
+        m_gl_tex->create();
+        m_gl_tex->setSize(m_image.width(), m_image.height());
+        m_gl_tex->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Nearest);
+    }
+
+    m_gl_tex->setData(m_image, QOpenGLTexture::MipMapGeneration::DontGenerateMipMaps);
+
+    m_gl->glUseProgram(m_shader_program);
+
+    GLfloat mult = paths_display_active ? 0.6 : 1.0;
+    m_gl->glUniform1f(m_mult_loc, mult);
+
+    m_gl->glActiveTexture(GL_TEXTURE0);
+    m_gl_tex->bind();
+    m_gl->glDisable(GL_DEPTH_TEST);
+    m_gl->glDepthMask(GL_FALSE);
+    m_gl->glBindVertexArray(empty_vao);
+    m_gl->glDrawArrays(GL_TRIANGLES, 0, 3);
+    m_gl->glDepthMask(GL_TRUE);
+}
+
+
+void RenderLayer::init_gl(QSurfaceFormat format)
+{
+    if (!m_gl)
+    {
+        RENDERER_LOG_ERROR("Attempted to initialize GL without first setting GL functions");
+        return;
+    }
+
+    auto vertex_shader = load_gl_shader("fullscreen_tri.vert");
+    auto fragment_shader = load_gl_shader("final_render.frag");
+
+    create_shader_program(
+        m_gl,
+        m_shader_program,
+        &vertex_shader,
+        &fragment_shader);
+
+    m_mult_loc = m_gl->glGetUniformLocation(m_shader_program, "u_mult");
+
+    m_gl_initialized = true;
+}
+
+void RenderLayer::set_gl_functions(QOpenGLFunctions_4_1_Core* functions)
+{
+    m_gl = functions;
 }
 
 QImage RenderLayer::capture()
@@ -423,13 +487,6 @@ void RenderLayer::update_tile_no_lock(const size_t tile_x, const size_t tile_y)
 
     // Blit the tile to the destination image.
     NativeDrawing::blit(dest, dest_stride, uint8_rgb_tile);
-}
-
-void RenderLayer::paint(const QRect& rect, QPainter& painter)
-{
-    QMutexLocker locker(&m_mutex);
-
-    painter.drawImage(rect, m_image);
 }
 
 }   // namespace studio

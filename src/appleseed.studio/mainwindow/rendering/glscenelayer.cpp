@@ -30,7 +30,7 @@
 #include "glscenelayer.h"
 
 // appleseed.studio headers.
-#include "utility/miscellaneous.h"
+#include "utility/gl.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/camera.h"
@@ -50,7 +50,7 @@
 
 // Qt headers.
 #include <QKeyEvent>
-#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLFunctions_4_1_Core>
 #include <QGLFormat>
 #include <QSurfaceFormat>
 #include <QString>
@@ -137,7 +137,12 @@ GLSceneLayer::GLSceneLayer(
     set_transform(m_camera.transform_sequence().evaluate(time));
 }
 
-void GLSceneLayer::set_gl_functions(QOpenGLFunctions_3_3_Core* functions)
+GLSceneLayer::~GLSceneLayer()
+{
+    cleanup_gl_data();
+}
+
+void GLSceneLayer::set_gl_functions(QOpenGLFunctions_4_1_Core* functions)
 {
     m_gl = functions;
 }
@@ -362,100 +367,6 @@ void GLSceneLayer::load_scene_data()
     // Actually load the transform data for each instance into the allocated instance buffers
     for (const auto& assembly_instance : m_project.get_scene()->assembly_instances())
         load_assembly_instance(assembly_instance, time);
-}
-
-namespace {
-    const string shader_kind_to_string(const GLint shader_kind)
-    {
-        switch (shader_kind) {
-            case GL_VERTEX_SHADER:
-                return "Vertex";
-            case GL_FRAGMENT_SHADER:
-                return "Fragment";
-            default:
-                return "Unknown Kind";
-        }
-    }
-
-    void compile_shader(
-        QOpenGLFunctions_3_3_Core* f,
-        const GLuint               shader,
-        const GLsizei              count,
-        const GLchar**             src_string,
-        const GLint*               length)
-    {
-        f->glShaderSource(shader, count, src_string, length);
-        f->glCompileShader(shader);
-        GLint success;
-        f->glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-
-        if (!success)
-        {
-            char info_log[1024];
-            f->glGetShaderInfoLog(shader, 1024, NULL, info_log);
-
-            GLint shader_kind;
-            f->glGetShaderiv(shader, GL_SHADER_TYPE, &shader_kind);
-            string shader_kind_string = shader_kind_to_string(shader_kind);
-
-            RENDERER_LOG_ERROR("opengl: %s shader compilation failed:\n%s", shader_kind_string.c_str(), info_log);
-        }
-    }
-
-    void link_shader_program(
-        QOpenGLFunctions_3_3_Core*  f,
-        const GLuint                program,
-        const GLuint                vert,
-        const GLuint                frag)
-    {
-        f->glAttachShader(program, vert);
-
-        if (frag != 0)
-            f->glAttachShader(program, frag);
-
-        f->glLinkProgram(program);
-
-        GLint success;
-        f->glGetProgramiv(program, GL_LINK_STATUS, &success);
-
-        if (!success)
-        {
-            char info_log[1024];
-            f->glGetProgramInfoLog(program, 1024, NULL, info_log);
-            RENDERER_LOG_ERROR("opengl: shader program linking failed:\n%s", info_log);
-        }
-    }
-
-    void create_shader_program(
-        QOpenGLFunctions_3_3_Core*  f,
-        GLuint&                     program,
-        const QByteArray*               vert_source,
-        const QByteArray*               frag_source)
-    {
-        bool has_frag_shader = frag_source != nullptr;
-
-        GLuint vert = f->glCreateShader(GL_VERTEX_SHADER);
-        GLuint frag = has_frag_shader ? f->glCreateShader(GL_FRAGMENT_SHADER) : 0;
-
-        auto gl_vert_source = static_cast<const GLchar*>(vert_source->constData());
-        auto gl_vert_source_length = static_cast<const GLint>(vert_source->size());
-
-        compile_shader(f, vert, 1, &gl_vert_source, &gl_vert_source_length);
-
-        if (has_frag_shader)
-        {
-            auto gl_frag_source = static_cast<const GLchar*>(frag_source->constData());
-            auto gl_frag_source_length = static_cast<const GLint>(frag_source->size());
-            compile_shader(f, frag, 1, &gl_frag_source, &gl_frag_source_length);
-        }
-
-        program = f->glCreateProgram();
-        link_shader_program(f, program, vert, frag);
-
-        f->glDeleteShader(vert);
-        if (has_frag_shader)
-            f->glDeleteShader(frag);
-    }
 }
 
 void GLSceneLayer::init_gl(QSurfaceFormat format)

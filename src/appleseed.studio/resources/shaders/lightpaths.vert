@@ -25,7 +25,7 @@
 // THE SOFTWARE.
 //
 
-#version 330
+#version 410
 
 const float AA_BUFFER_SIZE = 1.0;
 

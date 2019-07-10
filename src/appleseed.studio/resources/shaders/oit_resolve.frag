@@ -26,22 +26,27 @@
 //
 
 #version 410
-#extension GL_ARB_separate_shader_objects : enable
 
-layout(location = 0) in vec3 a_pos;
-layout(location = 1) in vec3 a_norm;
-layout(location = 2) in mat4 i_model;
+uniform sampler2D u_accum_tex;
+uniform sampler2D u_revealage_tex;
 
-uniform mat4 u_view;
-uniform mat4 u_proj;
+out vec4 Target0;
 
-layout(location = 1) out vec3 v_world_pos;
-layout(location = 0) out vec3 v_norm;
+float max4(vec4 v) {
+  return max(max(max(v.x, v.y), v.z), v.w);
+}
 
-void main()
-{
-    vec4 world_pos = i_model * vec4(a_pos, 1.0);
-    v_world_pos = world_pos.xyz;
-    v_norm = a_norm;
-    gl_Position = u_proj * u_view * world_pos;
+void main() {
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+
+    float revealage = texelFetch(u_revealage_tex, coord, 0).r;
+
+    vec4 accum = texelFetch(u_accum_tex, coord, 0);
+    // Suppress overflow
+    if (isinf(max4(abs(accum)))) {
+        accum.rgb = vec3(accum.a);
+    }
+    vec3 averageColor = accum.rgb / max(accum.a, 0.00001);
+ 
+    Target0 = vec4(averageColor, 1.0 - revealage);
 }

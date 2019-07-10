@@ -58,7 +58,7 @@ namespace renderer  { class ObjectInstance; }
 namespace renderer  { class Project; }
 class QKeyEvent;
 class QImage;
-class QOpenGLFunctions_3_3_Core;
+class QOpenGLFunctions_4_1_Core;
 class QSurfaceFormat;
 
 namespace appleseed {
@@ -79,6 +79,8 @@ class GLSceneLayer
         const size_t                        width,
         const size_t                        height);
 
+    ~GLSceneLayer();
+
     void init_gl(
         QSurfaceFormat                      format);
 
@@ -86,7 +88,7 @@ class GLSceneLayer
         const foundation::Transformd&       transform);
 
     void set_gl_functions(
-        QOpenGLFunctions_3_3_Core*          functions);
+        QOpenGLFunctions_4_1_Core*          functions);
 
     void draw();
     void draw_depth_only();
@@ -103,7 +105,7 @@ class GLSceneLayer
 
     bool                                    m_backface_culling_enabled;
 
-    QOpenGLFunctions_3_3_Core*              m_gl;
+    QOpenGLFunctions_4_1_Core*              m_gl;
 
     std::vector<GLuint>                     m_scene_object_data_vbos;
     std::vector<GLsizei>                    m_scene_object_data_index_counts;
@@ -125,7 +127,6 @@ class GLSceneLayer
     bool                                    m_initialized;
 
     void render_scene();
-
     void cleanup_gl_data();
     void load_scene_data();
 

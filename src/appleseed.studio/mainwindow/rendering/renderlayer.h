@@ -44,6 +44,7 @@ namespace OCIO = OCIO_NAMESPACE;
 // Qt headers.
 #include <QImage>
 #include <QMutex>
+#include <QOpenGLWidget>
 #include <QPainter>
 #include <QWidget>
 
@@ -58,6 +59,8 @@ namespace renderer      { class Frame; }
 class QDragEnterEvent;
 class QDragMoveEvent;
 class QDropEvent;
+class QOpenGLFunctions_4_1_Core;
+class QOpenGLTexture;
 class QPaintEvent;
 class QRect;
 
@@ -117,8 +120,10 @@ class RenderLayer
     // Thread-safe.
     void blit_frame(const renderer::Frame& frame);
 
-    // Thread-safe. Paint self into specified painter.
-    void paint(const QRect& rect, QPainter& painter);
+    void draw(GLuint empty_vao, bool paths_display_active);
+    void init_gl(QSurfaceFormat format);
+    void set_gl_functions(
+        QOpenGLFunctions_4_1_Core*          functions);
 
     // Direct access to internals for high-performance drawing.
     QMutex& mutex();
@@ -135,10 +140,15 @@ class RenderLayer
   private:
     mutable QMutex                      m_mutex;
     QImage                              m_image;
-    QPainter                            m_painter;
     std::unique_ptr<foundation::Tile>   m_float_tile_storage;
     std::unique_ptr<foundation::Tile>   m_uint8_tile_storage;
     std::unique_ptr<foundation::Image>  m_image_storage;
+
+    QOpenGLFunctions_4_1_Core*          m_gl;
+    QOpenGLTexture*                     m_gl_tex;
+    GLuint                              m_shader_program;
+    GLint                               m_mult_loc;
+    bool                                m_gl_initialized;
 
     OCIO::ConstConfigRcPtr              m_ocio_config;
     OCIO::ConstProcessorRcPtr           m_ocio_processor;
