@@ -741,7 +741,11 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
         bsdf_pdf,
         d_tree_pdf
     );
-    
+
+    // Terminate the path if it gets absorbed.
+    if (sample.get_mode() == ScatteringMode::None)
+        return false;
+
     if(!is_path_guided)
     {
         // Above-surface scattering.
@@ -763,9 +767,6 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
             if ((sample.get_mode() & vertex.m_scattering_modes) == 0)
                 sample.set_to_absorption();
         }
-        // Terminate the path if it gets absorbed.
-        if (sample.get_mode() == ScatteringMode::None)
-            return false;
 
         // Terminate the path if this scattering event is not accepted.
         if (!m_path_visitor.accept_scattering(vertex.m_prev_mode, sample.get_mode()))
@@ -781,7 +782,7 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
         vertex.m_aov_mode = sample.get_mode();
 
     // Update path throughput.
-    if (is_path_guided || wo_pdf != BSDF::DiracDelta)
+    if (wo_pdf != BSDF::DiracDelta)
         sample.m_value /= wo_pdf;
     vertex.m_throughput *= sample.m_value.m_beauty;
 
