@@ -67,6 +67,10 @@ matrix:
       compiler: gcc
       env: GCC_VERSION=7
 
+  allow_failures:
+      - os: osx
+        compiler: clang
+
   exclude:
     - os: osx
       compiler: gcc
