@@ -99,6 +99,7 @@ cmake \
     -DLLVM_STATIC=ON \
     -DENABLERTTI=ON \
     -DUSE_LIBCPLUSPLUS=ON \
+    -DUSE_QT=OFF \
     -DLLVM_DIRECTORY=/usr/local/opt/llvm@5/ \
     -DCMAKE_INSTALL_PREFIX=$THISDIR \
     ..
