@@ -65,7 +65,7 @@ class CopyOnWrite
     }
 
     // Copy constructor.
-    CopyOnWrite(const CopyOnWrite& rhs)
+    CopyOnWrite(const CopyOnWrite& rhs) APPLESEED_NOEXCEPT
       : m_model(rhs.m_model)
     {
         assert(m_model);
