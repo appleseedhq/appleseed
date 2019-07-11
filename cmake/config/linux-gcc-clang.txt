@@ -174,13 +174,7 @@ macro (link_against_embree target)
 endmacro ()
 
 macro (link_against_lz4 target)
-    if (USE_FIND_PACKAGE_FOR_LZ4)
-        target_link_libraries (${target} ${LZ4_LIBRARY})
-    else ()
-        target_link_libraries (${target}
-            ${CMAKE_SOURCE_DIR}/build/${platform}/lz4/lz4.a
-        )
-    endif ()
+    target_link_libraries (${target} ${LZ4_LIBRARY})
 endmacro ()
 
 macro (link_against_ocio target)
@@ -192,21 +186,10 @@ macro (link_against_oiio target)
 endmacro ()
 
 macro (link_against_openexr target)
-    if (USE_FIND_PACKAGE_FOR_EXR)
-        target_link_libraries (${target}
-            ${IMATH_LIBRARIES}
-            ${OPENEXR_LIBRARIES}
-        )
-    else ()
-        target_link_libraries (${target}
-            # Static libraries must be specified in order of reverse-dependency.
-            ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/libHalf.a
-            ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/libIlmImf.a
-            ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/libIlmThread.a
-            ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/libImath.a
-            ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/libIex.a
-        )
-    endif ()
+    target_link_libraries (${target}
+        ${IMATH_LIBRARIES}
+        ${OPENEXR_LIBRARIES}
+    )
 endmacro ()
 
 macro (link_against_osl target)
@@ -222,23 +205,11 @@ macro (link_against_seexpreditor target)
 endmacro ()
 
 macro (link_against_xercesc target)
-    if (USE_FIND_PACKAGE_FOR_XERCES)
-        target_link_libraries (${target} ${XERCES_LIBRARIES})
-    else ()
-        target_link_libraries (${target}
-            ${CMAKE_SOURCE_DIR}/build/${platform}/xerces-c/libxerces-c.a
-        )
-    endif ()
+    target_link_libraries (${target} ${XERCES_LIBRARIES})
 endmacro ()
 
 macro (link_against_zlib target)
-    if (USE_FIND_PACKAGE_FOR_ZLIB)
-        target_link_libraries (${target} ${ZLIB_LIBRARIES})
-    else ()
-        target_link_libraries (${target}
-            ${CMAKE_SOURCE_DIR}/build/${platform}/zlib/libz.a
-        )
-    endif ()
+    target_link_libraries (${target} ${ZLIB_LIBRARIES})
 endmacro ()
 
 
