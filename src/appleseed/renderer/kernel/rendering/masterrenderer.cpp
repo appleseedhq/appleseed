@@ -39,7 +39,6 @@
 #include "renderer/kernel/rendering/renderercontrollercollection.h"
 #include "renderer/kernel/rendering/serialrenderercontroller.h"
 #include "renderer/kernel/rendering/serialtilecallback.h"
-#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/display/display.h"
 #include "renderer/modeling/entity/onframebeginrecorder.h"
 #include "renderer/modeling/entity/onrenderbeginrecorder.h"
@@ -180,6 +179,10 @@ struct MasterRenderer::Impl
         // RenderingResult is initialized to Failed.
         RenderingResult result;
 
+        // Perform basic integrity checks on the scene.
+        if (!check_scene())
+            return result;
+
         // Update the render device if needed.
         const string device_name = get_render_device(m_params);
         if (device_name == "cpu")
@@ -192,10 +195,6 @@ struct MasterRenderer::Impl
             RENDERER_LOG_ERROR("unknown render device: %s.", device_name.c_str());
             return result;
         }
-
-        // Perform basic integrity checks on the scene.
-        if (!check_scene())
-            return result;
 
         // Initialize thread-local variables.
         Spectrum::set_mode(get_spectrum_mode(m_params));
@@ -347,11 +346,6 @@ struct MasterRenderer::Impl
         // Construct an abort switch that will allow to abort initialization or rendering.
         RendererControllerAbortSwitch abort_switch(renderer_controller);
 
-        // Create the texture store.
-        TextureStore texture_store(
-            *m_project.get_scene(),
-            m_params.child("texture_store"));
-
         // Let scene entities perform their pre-render actions. Don't proceed if that failed.
         // This is done before creating renderer components because renderer components need
         // to access the scene's render data such as the scene's bounding box.
@@ -365,7 +359,6 @@ struct MasterRenderer::Impl
 
         // Initialize the render device.
         const bool success = m_render_device->initialize(
-            texture_store,
             m_resource_search_paths,
             m_tile_callback_factory,
             abort_switch);
@@ -429,9 +422,6 @@ struct MasterRenderer::Impl
         m_project.get_light_path_recorder().finalize(
             props.m_canvas_width,
             props.m_canvas_height);
-
-        // Print texture store performance statistics.
-        RENDERER_LOG_DEBUG("%s", texture_store.get_statistics().to_string().c_str());
 
         return status;
     }

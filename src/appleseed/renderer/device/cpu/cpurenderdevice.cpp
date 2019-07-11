@@ -60,6 +60,7 @@ CPURenderDevice::CPURenderDevice(
     Project&                project,
     const ParamArray&       params)
   : RenderDeviceBase(project, params)
+  , m_texture_store(*project.get_scene(), params.child("texture_store"))
 {
     m_error_handler = new OIIOErrorHandler();
 #ifndef NDEBUG
@@ -119,10 +120,12 @@ CPURenderDevice::~CPURenderDevice()
     RENDERER_LOG_DEBUG("destroying oiio texture system...");
     m_texture_system->release();
     delete m_error_handler;
+
+    // Print texture store performance statistics.
+    RENDERER_LOG_DEBUG("%s", m_texture_store.get_statistics().to_string().c_str());
 }
 
 bool CPURenderDevice::initialize(
-    TextureStore&           texture_store,
     const SearchPaths&      resource_search_paths,
     ITileCallbackFactory*   tile_callback_factory,
     IAbortSwitch&           abort_switch)
@@ -157,7 +160,7 @@ bool CPURenderDevice::initialize(
     m_texture_system->attribute("plugin_searchpath", project_search_paths);
 
     // Initialize OSL.
-    m_renderer_services->initialize(texture_store);
+    m_renderer_services->initialize(m_texture_store);
 
     // Create renderer components.
     m_components.reset(
@@ -165,7 +168,7 @@ bool CPURenderDevice::initialize(
             get_project(),
             get_params(),
             tile_callback_factory,
-            texture_store,
+            m_texture_store,
             *m_texture_system,
             *m_shading_system));
 
