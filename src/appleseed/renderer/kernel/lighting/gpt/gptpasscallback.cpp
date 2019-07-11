@@ -86,7 +86,7 @@ void GPTPassCallback::on_pass_begin(
 
     // Prepare pass.
     const size_t remaining_passes = m_max_passes - m_passes_rendered;
-    m_num_passes_curr_iter = m_passes_left_curr_iter = std::min(size_t(1 << m_iter++), remaining_passes);
+    m_num_passes_curr_iter = m_passes_left_curr_iter = std::min(size_t(1) << m_iter++, remaining_passes);
 
     if(m_is_final_iter || remaining_passes - m_passes_left_curr_iter < 2 * m_passes_left_curr_iter)
     {

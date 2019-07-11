@@ -41,6 +41,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <typeinfo>
 
 using namespace foundation;
 using namespace std;

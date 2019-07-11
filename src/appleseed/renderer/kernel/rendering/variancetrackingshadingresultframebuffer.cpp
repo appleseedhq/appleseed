@@ -164,7 +164,7 @@ float VarianceTrackingShadingResultFrameBuffer::variance(
                 ptr[1] * rcp_weight,
                 ptr[2] * rcp_weight);
 
-            const Color3f pixel_variance(summed_squares - (color * color) / num_samples);
+            const Color3f pixel_variance(summed_squares - (color * color) / static_cast<float>(num_samples));
 
             // Clamp values to mitigate the effect of fireflies
             tile_variance += std::min(luminance(pixel_variance), 10000.0f);
