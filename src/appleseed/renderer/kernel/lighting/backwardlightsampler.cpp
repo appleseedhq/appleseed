@@ -182,10 +182,6 @@ BackwardLightSampler::BackwardLightSampler(
         // Prepare the light-emitting shapes CDF for smapling.
         if (m_emitting_shapes_cdf.valid())
             m_emitting_shapes_cdf.prepare();
-
-        // Store the shape probability densities into the emitting shapes.
-        for (size_t i = 0, e = m_emitting_shapes.size(); i < e; ++i)
-            m_emitting_shapes[i].m_shape_prob = m_emitting_shapes_cdf[i].second;
     }
 
     RENDERER_LOG_INFO(
@@ -198,7 +194,7 @@ BackwardLightSampler::BackwardLightSampler(
         plural(m_emitting_shapes.size(), "shape").c_str());
 }
 
-void BackwardLightSampler::sample_lightset(
+bool BackwardLightSampler::sample_lightset(
     const ShadingRay::Time&             time,
     const Vector3f&                     s,
     const ShadingPoint&                 shading_point,
@@ -212,13 +208,16 @@ void BackwardLightSampler::sample_lightset(
             s,
             shading_point,
             light_sample);
+
+        return true;
     }
     else
     {
         // CDF-based sampling.
-        sample_emitting_shapes(
+        return sample_emitting_shapes_solid_angle(
             time,
             s,
+            shading_point,
             light_sample);
     }
 }
@@ -227,8 +226,6 @@ float BackwardLightSampler::evaluate_pdf(
     const ShadingPoint&                 light_shading_point,
     const ShadingPoint&                 surface_shading_point) const
 {
-    assert(light_shading_point.is_triangle_primitive());
-
     const EmittingShapeKey shape_key(
         light_shading_point.get_assembly_instance().get_uid(),
         light_shading_point.get_object_instance_index(),
@@ -241,12 +238,17 @@ float BackwardLightSampler::evaluate_pdf(
 
     const EmittingShape* shape = *shape_ptr;
 
+    // fixme: add prob shape in the shape and dont get it here.
+    const float emitter_prob = m_emitting_shapes_cdf[shape_key.m_shape_index].second;
+    assert(m_emitting_shapes_cdf.size() == 1);
+    assert(shape == &m_emitting_shapes[m_emitting_shapes_cdf[0].first]);
+
     const float shape_probability =
         m_use_light_tree
             ? m_light_tree->evaluate_node_pdf(
                 surface_shading_point,
                 shape->m_light_tree_node_index)
-            : shape->evaluate_pdf_uniform();
+            : emitter_prob * shape->evaluate_pdf_solid_angle(light_shading_point, surface_shading_point);
 
     assert(shape_probability >= 0.0f);
 
@@ -288,7 +290,7 @@ void BackwardLightSampler::sample_light_tree(
     else
     {
         assert(light_type == EmittingShapeType);
-        sample_emitting_shapes(
+        sample_emitting_shapes_uniform(
             time,
             s,
             light_sample);

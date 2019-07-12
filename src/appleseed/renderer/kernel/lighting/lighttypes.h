@@ -103,6 +103,7 @@ class EmittingShape
     static EmittingShape create_rectangle_shape(
         const AssemblyInstance*     assembly_instance,
         const size_t                object_instance_index,
+        const size_t                primitive_index,
         const Material*             material,
         const double                area,
         const foundation::Vector3d& o,
@@ -113,6 +114,7 @@ class EmittingShape
     static EmittingShape create_sphere_shape(
         const AssemblyInstance*     assembly_instance,
         const size_t                object_instance_index,
+        const size_t                primitive_index,
         const Material*             material,
         const double                area,
         const foundation::Vector3d& center,
@@ -121,6 +123,7 @@ class EmittingShape
     static EmittingShape create_disk_shape(
         const AssemblyInstance*     assembly_instance,
         const size_t                object_instance_index,
+        const size_t                primitive_index,
         const Material*             material,
         const double                area,
         const foundation::Vector3d& c,
@@ -140,9 +143,6 @@ class EmittingShape
     float get_area() const;
     float get_rcp_area() const;
 
-    float get_shape_prob() const;
-    void set_shape_prob(const float prob);
-
     const Material* get_material() const;
 
     const foundation::AABB3d& get_bbox() const;
@@ -155,6 +155,16 @@ class EmittingShape
         LightSample&                light_sample) const;
 
     float evaluate_pdf_uniform() const;
+
+    bool sample_solid_angle(
+        const ShadingPoint&         shading_point,
+        const foundation::Vector2f& s,
+        const float                 shape_prob,
+        LightSample&                light_sample) const;
+
+    float evaluate_pdf_solid_angle(
+        const ShadingPoint&         light_shading_point,
+        const ShadingPoint&         surface_shading_point) const;
 
     void make_shading_point(
         ShadingPoint&               shading_point,
@@ -194,8 +204,8 @@ class EmittingShape
 
     struct Sphere
     {
-        foundation::Vector3d    m_center;                       // world space center of the sphere
-        double                  m_radius;                       // sphere radius
+        foundation::Vector3d                    m_center;       // world space center of the sphere
+        double                                  m_radius;       // sphere radius
     };
 
     struct Disk
@@ -224,7 +234,6 @@ class EmittingShape
     TriangleSupportPlaneType    m_shape_support_plane;          // support plane of the shape in assembly space
     float                       m_area;                         // world space shape area
     float                       m_rcp_area;                     // world space shape area reciprocal
-    float                       m_shape_prob;                   // probability density of this shape
     float                       m_average_flux;                 // estimated average radiant flux in W emitted by this shape
     float                       m_max_flux;                     // estimated maximum radiant flux in W emitted by this shape
     const Material*             m_material;
@@ -273,16 +282,6 @@ inline float EmittingShape::get_area() const
 inline float EmittingShape::get_rcp_area() const
 {
     return m_rcp_area;
-}
-
-inline float EmittingShape::get_shape_prob() const
-{
-    return m_shape_prob;
-}
-
-inline void EmittingShape::set_shape_prob(const float prob)
-{
-    m_shape_prob = prob;
 }
 
 inline const Material* EmittingShape::get_material() const

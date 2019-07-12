@@ -316,6 +316,7 @@ set (foundation_math_sampling_sources
     foundation/math/sampling/mappings.h
     foundation/math/sampling/qmcsamplingcontext.h
     foundation/math/sampling/rngsamplingcontext.h
+    foundation/math/sampling/sphericalcapsampler.h
     foundation/math/sampling/sphericalimportancesampler.h
     foundation/math/sampling/sphericalrectanglesampler.h
     foundation/math/sampling/sphericaltrianglesampler.h

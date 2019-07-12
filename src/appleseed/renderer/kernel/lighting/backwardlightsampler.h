@@ -79,7 +79,7 @@ class BackwardLightSampler
     bool has_lightset() const;
 
     // Sample the light set.
-    void sample_lightset(
+    bool sample_lightset(
         const ShadingRay::Time&             time,
         const foundation::Vector3f&         s,
         const ShadingPoint&                 shading_point,

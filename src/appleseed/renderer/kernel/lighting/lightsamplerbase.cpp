@@ -32,6 +32,7 @@
 // appleseed.renderer headers
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/object/diskobject.h"
@@ -302,7 +303,7 @@ void LightSamplerBase::collect_emitting_shapes(
                         auto emitting_shape = EmittingShape::create_triangle_shape(
                             &assembly_instance,
                             object_instance_index,
-                            triangle_index,
+                            m_emitting_shapes.size(),
                             material,
                             area,
                             v0,
@@ -388,6 +389,7 @@ void LightSamplerBase::collect_emitting_shapes(
                     auto emitting_shape = EmittingShape::create_rectangle_shape(
                         &assembly_instance,
                         object_instance_index,
+                        m_emitting_shapes.size(),
                         material,
                         area,
                         o,
@@ -412,7 +414,7 @@ void LightSamplerBase::collect_emitting_shapes(
             const Material* material = front_materials.empty() ? nullptr : front_materials[0];
 
             // Skip spheres that don't emit light.
-            if ((material == nullptr || !material->has_emission()))
+            if (material == nullptr || !material->has_emission())
                 continue;
 
             // Retrieve the sphere.
@@ -444,6 +446,8 @@ void LightSamplerBase::collect_emitting_shapes(
 
             const double area = FourPi<double>() * square(radius);
 
+            assert(radius == 0.5);
+
             // Invoke the shape handling function.
             const bool accept_shape =
                 shape_handling(
@@ -457,6 +461,7 @@ void LightSamplerBase::collect_emitting_shapes(
                 auto emitting_shape = EmittingShape::create_sphere_shape(
                     &assembly_instance,
                     object_instance_index,
+                    m_emitting_shapes.size(),
                     material,
                     area,
                     center,
@@ -533,6 +538,7 @@ void LightSamplerBase::collect_emitting_shapes(
                 auto emitting_shape = EmittingShape::create_disk_shape(
                     &assembly_instance,
                     object_instance_index,
+                    m_emitting_shapes.size(),
                     material,
                     area,
                     center,
@@ -556,6 +562,8 @@ void LightSamplerBase::collect_emitting_shapes(
             // Skip curves and other object types.
             continue;
         }
+
+        assert(m_emitting_shapes.size() == m_emitting_shapes_cdf.size());
 
         store_object_area_in_shadergroups(
             &assembly_instance,
@@ -633,7 +641,7 @@ void LightSamplerBase::store_object_area_in_shadergroups(
     }
 }
 
-void LightSamplerBase::sample_emitting_shapes(
+void LightSamplerBase::sample_emitting_shapes_uniform(
     const ShadingRay::Time&             time,
     const Vector3f&                     s,
     LightSample&                        light_sample) const
@@ -652,6 +660,34 @@ void LightSamplerBase::sample_emitting_shapes(
     assert(light_sample.m_probability > 0.0f);
 }
 
+bool LightSamplerBase::sample_emitting_shapes_solid_angle(
+    const ShadingRay::Time&             time,
+    const Vector3f&                     s,
+    const ShadingPoint&                 shading_point,
+    LightSample&                        light_sample) const
+{
+    assert(m_emitting_shapes_cdf.valid());
+
+    const EmitterCDF::ItemWeightPair result = m_emitting_shapes_cdf.sample(s[0]);
+    const size_t emitter_index = result.first;
+    const float emitter_prob = result.second;
+
+    light_sample.m_light = nullptr;
+    const EmittingShape& emitting_shape = m_emitting_shapes[emitter_index];
+    const bool valid_sample = emitting_shape.sample_solid_angle(
+        shading_point,
+        Vector2f(s[1], s[2]),
+        emitter_prob,
+        light_sample);
+
+    if (valid_sample)
+    {
+        assert(light_sample.m_shape);
+        assert(light_sample.m_probability > 0.0f);
+    }
+
+    return valid_sample;
+}
 
 //
 // LightSamplerBase::Parameters class implementation.

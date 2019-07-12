@@ -111,10 +111,6 @@ ForwardLightSampler::ForwardLightSampler(const Scene& scene, const ParamArray& p
     if (m_emitting_shapes_cdf.valid())
         m_emitting_shapes_cdf.prepare();
 
-    // Store the shape probability densities into the emitting shapes.
-    for (size_t i = 0, e = m_emitting_shapes.size(); i < e; ++i)
-        m_emitting_shapes[i].set_shape_prob(m_emitting_shapes_cdf[i].second);
-
    RENDERER_LOG_INFO(
         "found %s %s, %s emitting %s.",
         pretty_int(m_non_physical_light_count).c_str(),
@@ -143,7 +139,7 @@ void ForwardLightSampler::sample(
             }
             else
             {
-                sample_emitting_shapes(
+                sample_emitting_shapes_uniform(
                     time,
                     Vector3f((s[0] - 0.5f) * 2.0f, s[1], s[2]),
                     light_sample);
@@ -153,7 +149,7 @@ void ForwardLightSampler::sample(
         }
         else sample_non_physical_lights(time, s, light_sample);
     }
-    else sample_emitting_shapes(time, s, light_sample);
+    else sample_emitting_shapes_uniform(time, s, light_sample);
 }
 
 float ForwardLightSampler::evaluate_pdf(const ShadingPoint& light_shading_point) const
@@ -170,7 +166,9 @@ float ForwardLightSampler::evaluate_pdf(const ShadingPoint& light_shading_point)
         return 0.0f;
 
     const EmittingShape* shape = *shape_ptr;
-    return shape->evaluate_pdf_uniform();
+    const float emitter_prob = m_emitting_shapes_cdf[shape_key.m_shape_index].second;
+
+    return emitter_prob * shape->evaluate_pdf_uniform();
 }
 
 void ForwardLightSampler::sample_non_physical_lights(
