@@ -288,9 +288,11 @@ void BackwardLightSampler::sample_light_tree(
     else
     {
         assert(light_type == EmittingShapeType);
-        sample_emitting_shapes(
+        sample_emitting_shape(
             time,
-            s,
+            Vector2f(s[1], s[2]),
+            light_index,
+            light_prob,
             light_sample);
     }
 

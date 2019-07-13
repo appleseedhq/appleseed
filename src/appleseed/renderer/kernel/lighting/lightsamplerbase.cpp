@@ -633,6 +633,24 @@ void LightSamplerBase::store_object_area_in_shadergroups(
     }
 }
 
+void LightSamplerBase::sample_emitting_shape(
+    const ShadingRay::Time&             time,
+    const Vector2f&                     s,
+    const size_t                        shape_index,
+    const float                         shape_prob,
+    LightSample&                        light_sample) const
+{
+    // Fetch the emitting shape.
+    const EmittingShape& emitting_shape = m_emitting_shapes[shape_index];
+
+    // Uniformly sample the surface of the shape.
+    light_sample.m_light = nullptr;
+    emitting_shape.sample_uniform(s, shape_prob, light_sample);
+
+    assert(light_sample.m_shape);
+    assert(light_sample.m_probability > 0.0f);
+}
+
 void LightSamplerBase::sample_emitting_shapes(
     const ShadingRay::Time&             time,
     const Vector3f&                     s,
@@ -640,12 +658,14 @@ void LightSamplerBase::sample_emitting_shapes(
 {
     assert(m_emitting_shapes_cdf.valid());
 
+    // Fetch the emitting shape.
     const EmitterCDF::ItemWeightPair result = m_emitting_shapes_cdf.sample(s[0]);
     const size_t emitter_index = result.first;
     const float emitter_prob = result.second;
-
-    light_sample.m_light = nullptr;
     const EmittingShape& emitting_shape = m_emitting_shapes[emitter_index];
+
+    // Uniformly sample the surface of the shape.
+    light_sample.m_light = nullptr;
     emitting_shape.sample_uniform(Vector2f(s[1], s[2]), emitter_prob, light_sample);
 
     assert(light_sample.m_shape);
