@@ -86,23 +86,6 @@ namespace
         return auto_release_ptr<Object>();
     }
 
-    void bpy_list_to_string_array(const bpy::list& l, StringArray& strings)
-    {
-        strings.clear();
-
-        for (bpy::ssize_t i = 0, e = bpy::len(l); i < e; ++i)
-        {
-            bpy::extract<const char*> ex(l[i]);
-            if (!ex.check())
-            {
-                PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings.");
-                bpy::throw_error_already_set();
-            }
-
-            strings.push_back(ex());
-        }
-    }
-
     bpy::list obj_material_slots(const Object* obj)
     {
         bpy::list result;
