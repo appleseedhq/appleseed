@@ -125,7 +125,7 @@ bool GPTPassCallback::on_pass_end(
         const float current_extraplolated_variance =
             m_framebuffer->variance(samples_rendered) * m_num_passes_curr_iter / remaining_passes;
 
-        // RENDERER_LOG_INFO("Extrapolated variance: %s", pretty_scalar(current_extraplolated_variance, 3).c_str());
+        RENDERER_LOG_INFO("Extrapolated variance: %s", pretty_scalar(current_extraplolated_variance, 7).c_str());
 
         if(samples_rendered > 256 && // TODO: make this number a user param?
            current_extraplolated_variance > m_last_extrapolated_variance)

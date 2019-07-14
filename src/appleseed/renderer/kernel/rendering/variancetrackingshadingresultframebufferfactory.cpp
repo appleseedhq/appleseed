@@ -36,7 +36,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
-#include "foundation/image/image.h"
 #include "foundation/image/tile.h"
 
 using namespace foundation;
@@ -119,9 +118,41 @@ float VarianceTrackingShadingResultFrameBufferFactory::variance(
 
     for(const auto framebuffer : m_framebuffers)
     {
-        variance += framebuffer->variance(num_samples);
+        if(framebuffer == nullptr)
+            continue;
+            
+        variance += framebuffer->variance();
         num_pixels += framebuffer->get_pixel_count();
     }
+
+    return variance / (num_pixels * (num_samples - 1));
+}
+
+float VarianceTrackingShadingResultFrameBufferFactory::variance_image(
+    Image&                      image,
+    const size_t                num_samples) const
+{
+    const size_t tile_count_x = image.properties().m_tile_count_x;
+    const size_t tile_count_y = image.properties().m_tile_count_y;
+    
+    float variance = 0.0f;
+    size_t num_pixels = 0;
+
+    for(size_t tile_y = 0; tile_y < tile_count_y; ++tile_y)
+        for(size_t tile_x = 0; tile_x < tile_count_x; ++tile_x)
+        {
+            Tile &tile = image.tile(tile_x, tile_y);
+            const size_t index = tile_y * tile_count_x + tile_x;
+
+            const VarianceTrackingShadingResultFrameBuffer* framebuffer =
+                m_framebuffers[index];
+
+            if (framebuffer == nullptr)
+                continue;
+
+            variance += framebuffer->variance_to_tile(tile);
+            num_pixels += framebuffer->get_pixel_count();
+        }
 
     return variance / (num_pixels * (num_samples - 1));
 }

@@ -32,6 +32,8 @@
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/image.h"
+#include "foundation/image/tile.h"
 #include "foundation/math/aabb.h"
 
 // Standard headers.
@@ -73,8 +75,10 @@ class VarianceTrackingShadingResultFrameBuffer
         foundation::Tile&               tile,
         TileStack&                      aov_tiles) const override;
 
-    float variance(
-        const size_t                    num_samples) const;
+    float variance() const;
+
+    float variance_to_tile(
+        foundation::Tile&               tile) const;
   
   private:
     const size_t                        m_aov_count;

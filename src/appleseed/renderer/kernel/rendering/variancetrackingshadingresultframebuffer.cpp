@@ -137,41 +137,73 @@ void VarianceTrackingShadingResultFrameBuffer::develop_to_tile(
     }
 }
 
-float VarianceTrackingShadingResultFrameBuffer::variance(
-    const size_t                    num_samples) const
+float VarianceTrackingShadingResultFrameBuffer::variance() const
 {
-    assert(num_samples > 0);
-
     float tile_variance = 0.0f;
     const float* ptr = pixel(0);
 
     for (size_t y = 0, h = m_height; y < h; ++y)
-    {
         for (size_t x = 0, w = m_width; x < w; ++x)
         {
             const float weight = *ptr;
-            const float rcp_weight = weight == 0.0f ? 0.0f : 1.0f / weight;
 
-            const Color3f color(
-                ptr[1] * rcp_weight,
-                ptr[2] * rcp_weight,
-                ptr[3] * rcp_weight);
+            const Color3f sample_sum(
+                ptr[1],
+                ptr[2],
+                ptr[3]);
 
             ptr += m_channel_count - 4; // skip to beginning of summed squares
 
-            const Color3f summed_squares(
-                ptr[0] * rcp_weight,
-                ptr[1] * rcp_weight,
-                ptr[2] * rcp_weight);
+            const Color3f square_sum(
+                ptr[0],
+                ptr[1],
+                ptr[2]);
 
-            const Color3f pixel_variance(summed_squares - (color * color) / static_cast<float>(num_samples));
+            // Variance estimator: (1 / n) * Sum_i[(X_i - µ)²] = Sum_i[X_i²] - Sum_i[X_i]² / n .
+            const Color3f pixel_variance(square_sum - (sample_sum * sample_sum) / weight);
 
-            // Clamp values to mitigate the effect of fireflies
+            // Clamp values to mitigate the effect of fireflies.
             tile_variance += std::min(luminance(pixel_variance), 10000.0f);
 
             ptr += 4;
         }
-    }
+
+    return tile_variance;
+}
+
+float VarianceTrackingShadingResultFrameBuffer::variance_to_tile(
+    Tile&                           tile) const
+{
+    float tile_variance = 0.0f;
+    const float* ptr = pixel(0);
+
+    for (size_t y = 0, h = m_height; y < h; ++y)
+        for (size_t x = 0, w = m_width; x < w; ++x)
+        {
+            const float weight = *ptr;
+
+            const Color3f sample_sum(
+                ptr[1],
+                ptr[2],
+                ptr[3]);
+
+            ptr += m_channel_count - 4; // skip to beginning of summed squares
+
+            const Color3f square_sum(
+                ptr[0],
+                ptr[1],
+                ptr[2]);
+
+            // Variance estimator: (1 / n) * Sum_i[(X_i - µ)²] = Sum_i[X_i²] - Sum_i[X_i]² / n .
+            const Color3f pixel_variance(square_sum - (sample_sum * sample_sum) / weight);
+
+            // Clamp values to mitigate the effect of fireflies.
+            const float variance_luminance = std::min(luminance(pixel_variance), 10000.0f);
+            tile_variance += variance_luminance;
+            tile.set_pixel(x, y, Color3f(variance_luminance));
+
+            ptr += 4;
+        }
 
     return tile_variance;
 }

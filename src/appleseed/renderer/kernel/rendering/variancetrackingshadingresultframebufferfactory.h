@@ -32,6 +32,7 @@
 #include "renderer/kernel/rendering/ishadingresultframebufferfactory.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/image.h"
 #include "foundation/math/aabb.h"
 #include "foundation/platform/compiler.h"
 
@@ -75,6 +76,10 @@ class VarianceTrackingShadingResultFrameBufferFactory
     void clear();
 
     float variance(
+        const size_t                num_samples) const;
+
+    float variance_image(
+        foundation::Image&          image,
         const size_t                num_samples) const;
 
   private:
