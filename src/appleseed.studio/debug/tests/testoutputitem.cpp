@@ -106,7 +106,7 @@ namespace
     void set_all_columns_text_color(QTreeWidgetItem* item, const QColor& color)
     {
         for (int i = 0; i < item->columnCount(); ++i)
-            item->setTextColor(i, color);
+            item->setForeground(i, color);
     }
 }
 
@@ -125,7 +125,7 @@ void TestOutputItem::set(
 
     if (passed)
     {
-        setTextColor(StatusColumnIndex, QColor("green"));
+        setForeground(StatusColumnIndex, QColor("green"));
     }
     else
     {
