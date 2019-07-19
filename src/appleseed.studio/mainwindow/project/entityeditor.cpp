@@ -66,7 +66,6 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QShortcut>
-#include <QSignalMapper>
 #include <QSlider>
 #include <QString>
 #include <Qt>
@@ -107,9 +106,6 @@ EntityEditor::EntityEditor(
   , m_form_factory(move(form_factory))
   , m_entity_browser(move(entity_browser))
   , m_custom_ui(move(custom_ui))
-  , m_entity_picker_bind_signal_mapper(new QSignalMapper(this))
-  , m_color_picker_signal_mapper(new QSignalMapper(this))
-  , m_file_picker_signal_mapper(new QSignalMapper(this))
 {
     if (m_parent->layout() != nullptr)
     {
@@ -168,18 +164,6 @@ void EntityEditor::create_form_layout()
 
 void EntityEditor::create_connections()
 {
-    connect(
-        m_entity_picker_bind_signal_mapper, SIGNAL(mapped(const QString&)),
-        SLOT(slot_open_entity_browser(const QString&)));
-
-    connect(
-        m_color_picker_signal_mapper, SIGNAL(mapped(const QString&)),
-        SLOT(slot_open_color_picker(const QString&)));
-
-    connect(
-        m_file_picker_signal_mapper, SIGNAL(mapped(const QString&)),
-        SLOT(slot_open_file_picker(const QString&)));
-
     if (m_custom_ui.get())
     {
         connect(
@@ -450,10 +434,8 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dic
 
     QToolButton* picker_button = new QToolButton(m_parent);
     picker_button->setObjectName("color_picker");
-    connect(picker_button, SIGNAL(clicked()), m_color_picker_signal_mapper, SLOT(map()));
-
     const string name = metadata.get<string>("name");
-    m_color_picker_signal_mapper->setMapping(picker_button, QString::fromStdString(name));
+    connect(picker_button, &QToolButton::clicked, [=]() { emit slot_open_color_picker(QString::fromStdString(name)); });
 
     if (should_be_focused(metadata))
     {
@@ -520,8 +502,7 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const 
     input_widget->set_validator(new QDoubleValidatorWithDefault(validator_min, validator_max, 16, default_value));
     input_widget->set_default_value(default_value);
 
-    connect(input_widget, SIGNAL(signal_bind_button_clicked()), m_entity_picker_bind_signal_mapper, SLOT(map()));
-    m_entity_picker_bind_signal_mapper->setMapping(input_widget, QString::fromStdString(name));
+    connect(input_widget, &ColorMapInputWidget::signal_bind_button_clicked, [=]() { emit slot_open_entity_browser(QString::fromStdString(name)); });
 
     if (should_be_focused(metadata))
         input_widget->set_focus();
@@ -541,8 +522,7 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_entity_input_widgets(const Di
     const string name = metadata.get<string>("name");
 
     EntityInputWidget* input_widget = new EntityInputWidget(m_parent);
-    connect(input_widget, SIGNAL(signal_bind_button_clicked()), m_entity_picker_bind_signal_mapper, SLOT(map()));
-    m_entity_picker_bind_signal_mapper->setMapping(input_widget, QString::fromStdString(name));
+    connect(input_widget, &EntityInputWidget::signal_bind_button_clicked, [=]() { emit slot_open_entity_browser(QString::fromStdString(name)); });
 
     if (should_be_focused(metadata))
         input_widget->set_focus();
@@ -563,11 +543,9 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_file_input_widgets(const Dict
 
     QLineEdit* line_edit = new QLineEdit(m_parent);
 
-    QWidget* browse_button = new QPushButton("Browse", m_parent);
+    QPushButton* browse_button = new QPushButton("Browse", m_parent);
     browse_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    connect(browse_button, SIGNAL(clicked()), m_file_picker_signal_mapper, SLOT(map()));
-
-    m_file_picker_signal_mapper->setMapping(browse_button, QString::fromStdString(name));
+    connect(browse_button, &QPushButton::clicked, [=]() { emit slot_open_file_picker(QString::fromStdString(name)); });
 
     if (should_be_focused(metadata))
     {

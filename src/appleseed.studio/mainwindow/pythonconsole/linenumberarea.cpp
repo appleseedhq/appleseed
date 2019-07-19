@@ -77,7 +77,7 @@ int LineNumberArea::area_width()
         ++digits;
     }
 
-    return 3 + fontMetrics().width(QLatin1Char('9')) * digits;
+    return 3 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
 }
 
 void LineNumberArea::paintEvent(QPaintEvent* event)
