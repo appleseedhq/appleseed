@@ -51,7 +51,6 @@ namespace renderer      { class Project; }
 class QColor;
 class QFormLayout;
 class QMouseEvent;
-class QSignalMapper;
 class QString;
 class QToolButton;
 class QWidget;
@@ -110,10 +109,6 @@ class DisneyMaterialLayerUI
     QFormLayout*                        m_content_layout;
 
     InputWidgetProxyCollection          m_widget_proxies;
-
-    QSignalMapper*                      m_color_picker_signal_mapper;
-    QSignalMapper*                      m_file_picker_signal_mapper;
-    QSignalMapper*                      m_expression_editor_signal_mapper;
 
     bool                                m_is_folded;
 
