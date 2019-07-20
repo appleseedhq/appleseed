@@ -136,7 +136,7 @@ namespace
 
                     const Vector3f& outgoing = sample.m_outgoing.get_value();
                     const float cos_on = abs(dot(outgoing, n));
-                    oren_nayar_qualitative(
+                    oren_nayar(
                         cos_on,
                         cos_in,
                         values->m_roughness,
@@ -186,7 +186,7 @@ namespace
             if (values->m_roughness != 0.0f)
             {
                 const float cos_on = abs(dot(outgoing, n));
-                oren_nayar_qualitative(
+                oren_nayar(
                     cos_on,
                     cos_in,
                     values->m_roughness,
@@ -237,7 +237,7 @@ namespace
       private:
         typedef OrenNayarBRDFInputValues InputValues;
 
-        static void oren_nayar_qualitative(
+        static void oren_nayar(
             const float                 cos_on,
             const float                 cos_in,
             const float                 roughness,
@@ -290,14 +290,16 @@ namespace
                     + (1.0f - abs(delta_cos_phi)) * C3 * tan(0.5f * (alpha + beta)));
 
             // Add interreflection component.
-            Spectrum r2 = reflectance;
-            r2 *= r2;
-            r2 *=
+            Spectrum ir = reflectance;
+            ir *= ir;
+            ir *=
                   0.17f
-                * square(reflectance_multiplier) * RcpPi<float>()
+                * square(reflectance_multiplier)
+                * RcpPi<float>()
                 * sigma2 / (sigma2 + 0.13f)
                 * (1.0f - delta_cos_phi * square(2.0f * beta * RcpPi<float>()));
-            value += r2;
+            value += ir;
+
             clamp_low_in_place(value, 0.0f);
         }
     };
