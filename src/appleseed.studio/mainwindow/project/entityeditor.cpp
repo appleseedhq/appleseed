@@ -81,6 +81,7 @@
 #include <cassert>
 #include <cmath>
 #include <limits>
+#include <sstream>
 #include <utility>
 
 using namespace foundation;
@@ -332,7 +333,13 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const D
 
     const string value = metadata.strings().get<string>("value");
     if (!value.empty())
-        adaptor->slot_set_line_edit_value(from_string<double>(value));
+    {
+        // Keep the first value if there is more than one.
+        istringstream istr(value);
+        double val;
+        istr >> val;
+        adaptor->slot_set_line_edit_value(val);
+    }
 
     unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 
