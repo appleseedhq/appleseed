@@ -113,6 +113,7 @@ class APPLESEED_DLLSYMBOL ColorEntity
 
     void extract_parameters();
     void extract_values();
+    void remove_color_alpha_parameters();
     void check_validity();
 };
 

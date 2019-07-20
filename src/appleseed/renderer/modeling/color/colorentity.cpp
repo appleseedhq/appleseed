@@ -83,6 +83,7 @@ ColorEntity::ColorEntity(
 
     extract_parameters();
     extract_values();
+    remove_color_alpha_parameters();
 
     check_validity();
 }
@@ -97,6 +98,7 @@ ColorEntity::ColorEntity(
     set_name(name);
 
     extract_parameters();
+    remove_color_alpha_parameters();
 
     impl->m_values = values;
     impl->m_alpha.push_back(1.0f);
@@ -115,6 +117,7 @@ ColorEntity::ColorEntity(
     set_name(name);
 
     extract_parameters();
+    remove_color_alpha_parameters();
 
     impl->m_values = values;
     impl->m_alpha = alpha;
@@ -196,7 +199,10 @@ void ColorEntity::extract_values()
 
     impl->m_values = m_params.get_required("color", black);
     impl->m_alpha = m_params.get_optional("alpha", opaque);
+}
 
+void ColorEntity::remove_color_alpha_parameters()
+{
     m_params.strings().remove("color");
     m_params.strings().remove("alpha");
 }
