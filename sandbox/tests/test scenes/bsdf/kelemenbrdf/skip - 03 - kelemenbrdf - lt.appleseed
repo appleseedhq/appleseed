@@ -17,8 +17,6 @@
             </transform>
         </camera>
         <color name="white">
-            <parameter name="alpha" value="1.0" />
-            <parameter name="color" value="1 1 1" />
             <parameter name="color_space" value="linear_rgb" />
             <parameter name="multiplier" value="1.0" />
             <parameter name="wavelength_range" value="400.0 700.0" />
@@ -41,8 +39,6 @@
         </environment>
         <assembly name="assembly">
             <color name="matte_reflectance">
-                <parameter name="alpha" value="1.0" />
-                <parameter name="color" value="0.921569 0.309804 0.188235" />
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1.0" />
                 <parameter name="wavelength_range" value="400.0 700.0" />
@@ -54,8 +50,6 @@
                 </alpha>
             </color>
             <color name="plane_color">
-                <parameter name="alpha" value="1" />
-                <parameter name="color" value="0.0941176 0.0941176 0.0941176" />
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1.0" />
                 <parameter name="wavelength_range" value="400.0 700.0" />
@@ -67,8 +61,6 @@
                 </alpha>
             </color>
             <color name="specular_reflectance">
-                <parameter name="alpha" value="1" />
-                <parameter name="color" value="1 1 1" />
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="0.1" />
                 <parameter name="wavelength_range" value="400.0 700.0" />

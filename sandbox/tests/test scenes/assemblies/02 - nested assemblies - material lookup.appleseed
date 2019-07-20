@@ -24,8 +24,6 @@
         <environment name="environment" model="generic_environment" />
         <assembly name="assembly">
             <color name="green">
-                <parameter name="alpha" value="1" />
-                <parameter name="color" value="0.439216 1 0.0901961" />
                 <parameter name="color_space" value="srgb" />
                 <parameter name="multiplier" value="1.0" />
                 <parameter name="wavelength_range" value="400.0 700.0" />
