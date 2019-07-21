@@ -75,12 +75,12 @@ class VarianceTrackingShadingResultFrameBufferFactory
 
     void clear();
 
-    float variance(
-        const size_t                num_samples) const;
+    // Return estimate of the mean pixel variance.
+    float estimator_variance() const;
 
-    float variance_image(
-        foundation::Image&          image,
-        const size_t                num_samples) const;
+    // Transfer pixel variance estimates to image and return estimate of the mean pixel variance.
+    float estimator_variance_to_image(
+        foundation::Image&          image) const;
 
   private:
     std::vector<VarianceTrackingShadingResultFrameBuffer*> m_framebuffers;

@@ -82,12 +82,14 @@ class GPTPassCallback
     size_t                                               m_iter;
     size_t                                               m_max_passes;
     size_t                                               m_passes_rendered;
+    size_t                                               m_remaining_passes;
     size_t                                               m_passes_left_curr_iter;
     size_t                                               m_num_passes_curr_iter;
     STree*                                               m_sd_tree;
     size_t                                               m_sample_budget;
     float                                                m_last_extrapolated_variance;
     bool                                                 m_is_final_iter;
+    bool                                                 m_var_increase;
     VarianceTrackingShadingResultFrameBufferFactory*     m_framebuffer;
 };
 

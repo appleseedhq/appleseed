@@ -24,7 +24,8 @@ class PathGuidedSampler
         const BSDF&                     bsdf,
         const void*                     bsdf_data,
         const int                       bsdf_sampling_modes,
-        const ShadingPoint&             shading_point);
+        const ShadingPoint&             shading_point,
+        const bool                      sd_tree_is_built);
 
     bool sample(
         SamplingContext&                sampling_context,
@@ -69,6 +70,7 @@ class PathGuidedSampler
 
     DTreeWrapper*                       m_d_tree;
     const float                         m_bsdf_sampling_fraction;
+    const bool                          m_sd_tree_is_built;
 };
 
 }   // namespace render

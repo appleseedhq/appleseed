@@ -110,33 +110,31 @@ size_t VarianceTrackingShadingResultFrameBufferFactory::get_total_channel_count(
         aov_count);
 }
 
-float VarianceTrackingShadingResultFrameBufferFactory::variance(
-    const size_t                num_samples) const
+float VarianceTrackingShadingResultFrameBufferFactory::estimator_variance() const
 {
     float variance = 0.0f;
-    size_t num_pixels = 0;
+    size_t buffer_count = 0;
 
     for(const auto framebuffer : m_framebuffers)
     {
         if(framebuffer == nullptr)
             continue;
             
-        variance += framebuffer->variance();
-        num_pixels += framebuffer->get_pixel_count();
+        variance += framebuffer->estimator_variance();
+        ++buffer_count;
     }
 
-    return variance / (num_pixels * (num_samples - 1));
+    return buffer_count == 0 ? 0 : variance / buffer_count;
 }
 
-float VarianceTrackingShadingResultFrameBufferFactory::variance_image(
-    Image&                      image,
-    const size_t                num_samples) const
+float VarianceTrackingShadingResultFrameBufferFactory::estimator_variance_to_image(
+    Image&                      image) const
 {
     const size_t tile_count_x = image.properties().m_tile_count_x;
     const size_t tile_count_y = image.properties().m_tile_count_y;
     
     float variance = 0.0f;
-    size_t num_pixels = 0;
+    size_t buffer_count = 0;
 
     for(size_t tile_y = 0; tile_y < tile_count_y; ++tile_y)
         for(size_t tile_x = 0; tile_x < tile_count_x; ++tile_x)
@@ -150,11 +148,11 @@ float VarianceTrackingShadingResultFrameBufferFactory::variance_image(
             if (framebuffer == nullptr)
                 continue;
 
-            variance += framebuffer->variance_to_tile(tile);
-            num_pixels += framebuffer->get_pixel_count();
+            variance += framebuffer->estimator_variance_to_tile(tile);
+            ++buffer_count;
         }
 
-    return variance / (num_pixels * (num_samples - 1));
+    return buffer_count == 0 ? 0 : variance / buffer_count;
 }
 
 }   // namespace renderer

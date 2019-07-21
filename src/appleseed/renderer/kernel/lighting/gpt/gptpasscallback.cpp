@@ -62,11 +62,14 @@ GPTPassCallback::GPTPassCallback(
   , m_sample_budget(sample_budget)
   , m_iter(0)
   , m_is_final_iter(false)
+  , m_var_increase(false)
 {
     m_max_passes = m_sample_budget / m_params.m_samples_per_pass;
     
     if(m_max_passes > max_passes)
         m_max_passes = max_passes;
+    
+    m_remaining_passes = m_max_passes;
 }
 
 void GPTPassCallback::release()
@@ -85,20 +88,24 @@ void GPTPassCallback::on_pass_begin(
     // New iteration.
 
     // Prepare pass.
-    const size_t remaining_passes = m_max_passes - m_passes_rendered;
-    m_num_passes_curr_iter = m_passes_left_curr_iter = std::min(size_t(1) << m_iter++, remaining_passes);
+    m_num_passes_curr_iter = m_passes_left_curr_iter = std::min(size_t(1) << m_iter, m_remaining_passes);
 
-    if(m_is_final_iter || remaining_passes - m_passes_left_curr_iter < 2 * m_passes_left_curr_iter)
+    if(m_is_final_iter || m_remaining_passes - m_passes_left_curr_iter < 2 * m_passes_left_curr_iter)
     {
-        m_passes_left_curr_iter = remaining_passes;
+        m_passes_left_curr_iter = m_remaining_passes;
         m_is_final_iter = true;
-
-        // TODO: Let guided path tracer components know it's final iter time.
+        m_sd_tree->start_final_iteration();
     }
     
-    // Clear the frame.
-    m_framebuffer->clear();
-    // TODO: Reset the SD tree.
+    if(!m_var_increase && m_iter > 0)
+    {
+        // Clear the frame.
+        m_framebuffer->clear();
+        m_sd_tree->buildSDTree();
+        m_sd_tree->resetSDTree(m_iter, m_params.m_samples_per_pass);
+    }
+
+    ++m_iter;
 }
 
 bool GPTPassCallback::on_pass_end(
@@ -108,11 +115,13 @@ bool GPTPassCallback::on_pass_end(
 {
     ++m_passes_rendered;
     --m_passes_left_curr_iter;
+    --m_remaining_passes;
 
     if(m_passes_rendered >= m_max_passes)
     {
         // Do end logic.
-
+        const float variance = m_framebuffer->estimator_variance();
+        RENDERER_LOG_INFO("Final variance estimate: %s", pretty_scalar(variance, 7).c_str());
 
         return true;
     }
@@ -120,17 +129,23 @@ bool GPTPassCallback::on_pass_end(
     if(m_passes_left_curr_iter == 0)
     {
         // Update the variance projection.
-        const size_t remaining_passes = m_max_passes - m_passes_rendered;
+        const size_t remaining_passes_at_curr_iter_start = m_remaining_passes + m_num_passes_curr_iter;
         const size_t samples_rendered = m_passes_rendered * m_params.m_samples_per_pass;
+        const float variance = m_framebuffer->estimator_variance();
         const float current_extraplolated_variance =
-            m_framebuffer->variance(samples_rendered) * m_num_passes_curr_iter / remaining_passes;
+            variance * m_num_passes_curr_iter / remaining_passes_at_curr_iter_start;
 
-        RENDERER_LOG_INFO("Extrapolated variance: %s", pretty_scalar(current_extraplolated_variance, 7).c_str());
+        RENDERER_LOG_INFO("Variance: %s", pretty_scalar(variance, 7).c_str());
+
+        RENDERER_LOG_INFO("Extrapolated variance:\n    Previous: %s\n    Current: %s\n",
+                    pretty_scalar(m_last_extrapolated_variance, 7).c_str(),
+                    pretty_scalar(current_extraplolated_variance, 7).c_str());
 
         if(samples_rendered > 256 && // TODO: make this number a user param?
            current_extraplolated_variance > m_last_extrapolated_variance)
         {
-            m_is_final_iter = true;
+            RENDERER_LOG_INFO("Extrapolated variance is increasing, initiating final iteration");
+            m_var_increase = m_is_final_iter = true;
         }
 
         m_last_extrapolated_variance = current_extraplolated_variance;

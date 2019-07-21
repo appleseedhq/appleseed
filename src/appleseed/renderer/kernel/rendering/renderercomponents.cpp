@@ -58,6 +58,7 @@
 #include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/paramarray.h"
 
 // OpenImageIO headers.
@@ -224,7 +225,7 @@ bool RendererComponents::create_lighting_engine_factory()
                 m_scene,
                 get_child_and_inherit_globals(m_params, "light_sampler")));
 
-        m_sd_tree.reset(new STree());
+        m_sd_tree.reset(new STree(m_scene.compute_bbox()));
 
         GPTParameters gpt_parameters(
             get_child_and_inherit_globals(m_params, "gpt"));

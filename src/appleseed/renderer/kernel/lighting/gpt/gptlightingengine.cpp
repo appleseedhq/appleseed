@@ -674,12 +674,13 @@ namespace
                     return;
 
                 const PathGuidedSampler path_guided_sampler(
-                    m_sd_tree->get_d_tree_wrapper(shading_point.get_point()),
+                    m_sd_tree->dTreeWrapper(foundation::Vector3f(shading_point.get_point())),
                     m_params.m_bsdf_sampling_fraction,
                     bsdf,
                     bsdf_data,
                     scattering_modes,       // bsdf_sampling_modes (unused)
-                    shading_point);
+                    shading_point,
+                    m_sd_tree->is_built());
 
                 // This path will be extended via BSDF sampling: sample the lights only.
                 const DirectLightingIntegrator integrator(
@@ -724,12 +725,13 @@ namespace
                         m_params.m_ibl_env_sample_count);
 
                 const PathGuidedSampler path_guided_sampler(
-                    m_sd_tree->get_d_tree_wrapper(shading_point.get_point()),
+                    m_sd_tree->dTreeWrapper(foundation::Vector3f(shading_point.get_point())),
                     m_params.m_bsdf_sampling_fraction,
                     bsdf,
                     bsdf_data,
                     scattering_modes, // bsdf_sampling_modes (unused)
-                    shading_point);
+                    shading_point,
+                    m_sd_tree->is_built());
 
                 // This path will be extended via BSDF sampling: sample the environment only.
                 compute_ibl_environment_sampling(

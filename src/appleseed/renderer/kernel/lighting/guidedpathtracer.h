@@ -648,13 +648,14 @@ size_t GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         vertex.m_shading_point = next_shading_point;
     }
 
-    guided_path.record_to_tree(
-        *m_sd_tree,
-        0.5f, //probably not correct
-        ESpatialFilter::ENearest,
-        EDirectionalFilter::ENearest,
-        sampling_context
-    );
+    if(!m_sd_tree->is_final_iteration())
+        guided_path.record_to_tree(
+            *m_sd_tree,
+            0.5f, //probably not correct
+            ESpatialFilter::EStochasticBox,
+            EDirectionalFilter::EBox,
+            EBsdfSamplingFractionLoss::ENone,
+            sampling_context);
 
     return vertex.m_path_length;
 }
@@ -722,7 +723,8 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     if (vertex.m_scattering_modes == ScatteringMode::None)
         return false;
     
-    DTreeWrapper* d_tree = m_sd_tree->get_d_tree_wrapper(vertex.get_point());
+    foundation::Vector3f voxel_size;
+    DTreeWrapper* d_tree = m_sd_tree->dTreeWrapper(foundation::Vector3f(vertex.get_point()), voxel_size);
     float wo_pdf, bsdf_pdf, d_tree_pdf;
 
     PathGuidedSampler sampler(
@@ -731,7 +733,8 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
         *vertex.m_bsdf,
         vertex.m_bsdf_data,
         vertex.m_scattering_modes,
-        *vertex.m_shading_point
+        *vertex.m_shading_point,
+        m_sd_tree->is_built()
     );
 
     bool is_path_guided = sampler.sample(
@@ -787,12 +790,12 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     vertex.m_throughput *= sample.m_value.m_beauty;
 
     // Add a vertex to the guided path
-    if(!guided_path.is_full())
+    if(!guided_path.is_full() && !m_sd_tree->is_final_iteration())
     {
         guided_path.add_vertex(
             GPTVertex{
                 d_tree,
-                foundation::Vector3f(),
+                voxel_size,
                 foundation::Vector3f(vertex.get_point()),
                 sample.m_incoming.get_value(),
                 vertex.m_throughput,

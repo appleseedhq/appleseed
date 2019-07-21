@@ -25,7 +25,8 @@ PathGuidedSampler::PathGuidedSampler(
     const BSDF&                     bsdf,
     const void*                     bsdf_data,
     const int                       bsdf_sampling_modes,
-    const ShadingPoint&             shading_point)
+    const ShadingPoint&             shading_point,
+    const bool                      sd_tree_is_built)
   : BSDFSampler(
       bsdf,
       bsdf_data,
@@ -33,6 +34,7 @@ PathGuidedSampler::PathGuidedSampler(
       shading_point)
   , m_d_tree(d_tree)
   , m_bsdf_sampling_fraction(bsdf_sampling_fraction)
+  , m_sd_tree_is_built(sd_tree_is_built)
 {
     assert(m_d_tree);
 }
@@ -120,7 +122,7 @@ bool PathGuidedSampler::guide_path_extension(
     foundation::Vector2f sample = sampling_context.next2<foundation::Vector2f>();
     bool is_path_guided = false;
 
-    if (/* !m_isBuilt  ||*/ m_bsdf.is_purely_specular())
+    if (!m_sd_tree_is_built || m_bsdf.is_purely_specular())
     {
         m_bsdf.sample(
             sampling_context,
@@ -166,9 +168,8 @@ bool PathGuidedSampler::guide_path_extension(
     {
         is_path_guided = true;
         sample.x = (sample.x - m_bsdf_sampling_fraction) / (1 - m_bsdf_sampling_fraction);
-        DTreeSample d_tree_sample;
-        m_d_tree->sample(sampling_context, d_tree_sample);
-        bsdf_sample.m_incoming = foundation::Dual3f(d_tree_sample.m_dir);
+        const foundation::Vector3f d_tree_dir = m_d_tree->sample(sampling_context);
+        bsdf_sample.m_incoming = foundation::Dual3f(d_tree_dir);
 
         bsdf_pdf = m_bsdf.evaluate(
             m_bsdf_data,
@@ -182,7 +183,7 @@ bool PathGuidedSampler::guide_path_extension(
             bsdf_sample.m_value);
         bsdf_sample.set_to_scattering(
             ScatteringMode::has_diffuse(m_bsdf.get_modes()) ? ScatteringMode::Diffuse : ScatteringMode::Glossy,
-            d_tree_sample.m_probability);
+            bsdf_pdf);
     }
 
     guided_path_extension_pdf(bsdf_sample, wo_pdf, bsdf_pdf, d_tree_pdf);
@@ -221,7 +222,8 @@ DirectShadingComponents&            value) const
         m_bsdf_sampling_modes,
         value);
 
-    if (/* !m_isBuilt ||*/ m_bsdf.is_purely_specular()) {
+    if (!m_sd_tree_is_built || m_bsdf.is_purely_specular())
+    {
         wo_pdf = bsdf_pdf;
         return;
     }
