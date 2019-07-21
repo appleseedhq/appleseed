@@ -214,7 +214,6 @@ namespace
             // Create a single sample.
             Sample sample;
             sample.m_pixel_coords = pixel_context.get_pixel_coords();
-            sample.m_position = Vector2f(sample_position);
             sample.m_color = shading_result.m_main;
             samples.push_back(sample);
 

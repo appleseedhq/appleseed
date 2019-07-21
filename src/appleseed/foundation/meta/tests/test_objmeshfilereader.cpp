@@ -44,7 +44,10 @@ using namespace std;
 
 TEST_SUITE(Foundation_Mesh_OBJMeshFileReader)
 {
-    struct Face {};
+    struct Face
+    {
+        vector<size_t>      m_vertices;
+    };
 
     struct Mesh
     {
@@ -68,25 +71,40 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileReader)
 
         size_t push_vertex(const Vector3d& v) override
         {
+            assert(!m_meshes.empty());
             m_meshes.back().m_vertices.push_back(v);
             return m_meshes.back().m_vertices.size() - 1;
         }
 
         size_t push_vertex_normal(const Vector3d& v) override
         {
+            assert(!m_meshes.empty());
             m_meshes.back().m_vertex_normals.push_back(safe_normalize(v));
             return m_meshes.back().m_vertex_normals.size() - 1;
         }
 
         size_t push_tex_coords(const Vector2d& v) override
         {
+            assert(!m_meshes.empty());
             m_meshes.back().m_tex_coords.push_back(v);
             return m_meshes.back().m_tex_coords.size() - 1;
         }
 
         void begin_face(const size_t vertex_count) override
         {
+            assert(!m_meshes.empty());
             m_meshes.back().m_faces.emplace_back();
+            Face& face = m_meshes.back().m_faces.back();
+            face.m_vertices.resize(vertex_count);
+        }
+
+        void set_face_vertices(const size_t vertices[]) override
+        {
+            assert(!m_meshes.empty());
+            assert(!m_meshes.back().m_faces.empty());
+            Face& face = m_meshes.back().m_faces.back();
+            for (size_t i = 0, e = face.m_vertices.size(); i < e; ++i)
+                face.m_vertices[i] = vertices[i];
         }
     };
 
@@ -121,4 +139,41 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileReader)
         EXPECT_EQ(4, mesh.m_tex_coords.size());
         EXPECT_EQ(1, mesh.m_faces.size());
     }
+
+#if 0
+
+    TEST_CASE(OBJFileToCPPFile)
+    {
+        OBJMeshFileReader reader("input.obj");
+        MeshBuilder builder;
+        reader.read(builder);
+
+        assert(builder.m_meshes.size() == 1);
+
+        FILE* f = fopen("output.cpp", "wt");
+        assert(f);
+
+        const Mesh& m = builder.m_meshes.front();
+
+        fprintf(f, "static const float Vertices[] =\n{\n");
+        for (const auto& v : m.m_vertices)
+        {
+            fprintf(f, "    %.7ff, %.7ff, %.7ff,\n", v.x, v.y, v.z);
+        }
+        fprintf(f, "};\n\n");
+
+        fprintf(f, "static const size_t Triangles[] =\n{\n");
+        for (const auto& face : m.m_faces)
+        {
+            fprintf(
+                f,
+                "    " FMT_SIZE_T ", " FMT_SIZE_T ", " FMT_SIZE_T ",\n",
+                face.m_vertices[0], face.m_vertices[1], face.m_vertices[2]);
+        }
+        fprintf(f, "};\n");
+
+        fclose(f);
+    }
+
+#endif
 }

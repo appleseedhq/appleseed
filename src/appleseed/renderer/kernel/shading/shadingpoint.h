@@ -913,6 +913,7 @@ inline const foundation::Color3f& ShadingPoint::get_per_vertex_color() const
         compute_per_vertex_color();
         m_members |= HasPerVertexColor;
     }
+
     return m_color;
 }
 
@@ -957,11 +958,11 @@ inline void ShadingPoint::fetch_materials() const
         }
 
         // Fetch the materials.
-        if (static_cast<size_t>(m_primitive_pa) < materials->size())
-            m_material = (*materials)[m_primitive_pa];
-
-        if (static_cast<size_t>(m_primitive_pa) < opposite_materials->size())
-            m_opposite_material = (*opposite_materials)[m_primitive_pa];
+        const size_t material_index = static_cast<size_t>(m_primitive_pa);
+        if (material_index < materials->size())
+            m_material = (*materials)[material_index];
+        if (material_index < opposite_materials->size())
+            m_opposite_material = (*opposite_materials)[material_index];
     }
 }
 

@@ -52,7 +52,6 @@ namespace renderer { class Project; }
 class QColor;
 class QVBoxLayout;
 class QFormLayout;
-class QSignalMapper;
 class QString;
 
 namespace appleseed {
@@ -126,10 +125,6 @@ class EntityEditor
     QFormLayout*                            m_form_layout;
     InputMetadataCollection                 m_input_metadata;
     InputWidgetProxyCollection              m_widget_proxies;
-
-    QSignalMapper*                          m_entity_picker_bind_signal_mapper;
-    QSignalMapper*                          m_color_picker_signal_mapper;
-    QSignalMapper*                          m_file_picker_signal_mapper;
 
     void create_form_layout();
     void create_connections();

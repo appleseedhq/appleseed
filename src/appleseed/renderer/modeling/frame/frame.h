@@ -158,9 +158,6 @@ class APPLESEED_DLLSYMBOL Frame
         const double                                    sample_x,           // x coordinate of the sample in the pixel, in [0,1)
         const double                                    sample_y) const;    // y coordinate of the sample in the pixel, in [0,1)
 
-    // Return the image space coordinates of a given point in NDC coordinates.
-    foundation::Vector2i get_pixel_position(const foundation::Vector2d& ndc) const;
-
     // Do any post-process needed by AOV images.
     void post_process_aov_images() const;
 
@@ -318,13 +315,6 @@ inline foundation::Vector2d Frame::get_sample_position(
             tile_y * m_props.m_tile_height + pixel_y,
             sample_x,
             sample_y);
-}
-
-inline foundation::Vector2i Frame::get_pixel_position(const foundation::Vector2d& ndc) const
-{
-    return foundation::Vector2i(
-        static_cast<int>((ndc.x * m_props.m_canvas_width) + 0.5),
-        static_cast<int>((ndc.y * m_props.m_canvas_height) + 0.5));
 }
 
 }   // namespace renderer
