@@ -80,10 +80,10 @@ void VarianceTrackingShadingResultFrameBuffer::add(
 {
     float* ptr = &m_scratch[0];
 
-    const float main_0 = sample.m_main[0]; 
-    const float main_1 = sample.m_main[1]; 
-    const float main_2 = sample.m_main[2]; 
-    const float main_3 = sample.m_main[3]; 
+    const float main_0 = sample.m_main[0];
+    const float main_1 = sample.m_main[1];
+    const float main_2 = sample.m_main[2];
+    const float main_3 = sample.m_main[3];
 
     *ptr++ = main_0;
     *ptr++ = main_1;
@@ -103,7 +103,7 @@ void VarianceTrackingShadingResultFrameBuffer::add(
     *ptr++ = main_0 * main_0;
     *ptr++ = main_1 * main_1;
     *ptr++ = main_2 * main_2;
-    *ptr++ = main_3 * main_3;
+    *ptr++ = main_3;            // do not square alpha
 
     AccumulatorTile::add(pi, &m_scratch[0]);
 }
@@ -137,20 +137,22 @@ void VarianceTrackingShadingResultFrameBuffer::develop_to_tile(
     }
 }
 
-float VarianceTrackingShadingResultFrameBuffer::variance() const
+float VarianceTrackingShadingResultFrameBuffer::estimator_variance() const
 {
-    float tile_variance = 0.0f;
+    float estimator_variance_sum = 0.0f;
     const float* ptr = pixel(0);
 
     for (size_t y = 0, h = m_height; y < h; ++y)
         for (size_t x = 0, w = m_width; x < w; ++x)
         {
             const float weight = *ptr;
+            const float rcp_weight = weight == 0.0f ? 0.0f : 1.0f / weight;
+            const float rcp_weight_minus_one = weight - 1.0f == 0.0f ? 0.0f : 1.0f / (weight - 1.0f);
 
-            const Color3f sample_sum(
-                ptr[1],
-                ptr[2],
-                ptr[3]);
+            const Color3f pixel_value(
+                ptr[1] * rcp_weight,
+                ptr[2] * rcp_weight,
+                ptr[3] * rcp_weight);
 
             ptr += m_channel_count - 4; // skip to beginning of summed squares
 
@@ -159,33 +161,39 @@ float VarianceTrackingShadingResultFrameBuffer::variance() const
                 ptr[1],
                 ptr[2]);
 
-            // Variance estimator: (1 / n) * Sum_i[(X_i - µ)²] = Sum_i[X_i²] - Sum_i[X_i]² / n .
-            const Color3f pixel_variance(square_sum - (sample_sum * sample_sum) / weight);
+            // Estimator for the variance of the mean estimator (= pixel value): Sigma² / n.
+            // Sigma² is estimated as [sum_of_squares - n * pixel_value²] / (n - 1)
+            const Color3f sigma_2((square_sum - weight * pixel_value * pixel_value) * rcp_weight_minus_one);
 
-            // Clamp values to mitigate the effect of fireflies.
-            tile_variance += std::min(luminance(pixel_variance), 10000.0f);
+            // Clamp sigma² to mitigate the effect of fireflies.
+            const float estimator_variance = std::min(luminance(sigma_2), 5000.0f) * rcp_weight;
+
+            estimator_variance_sum += estimator_variance;
 
             ptr += 4;
         }
 
-    return tile_variance;
+    return estimator_variance_sum / get_pixel_count();
 }
 
-float VarianceTrackingShadingResultFrameBuffer::variance_to_tile(
+float VarianceTrackingShadingResultFrameBuffer::estimator_variance_to_tile(
     Tile&                           tile) const
 {
-    float tile_variance = 0.0f;
+    float estimator_variance_sum = 0.0f;
     const float* ptr = pixel(0);
 
     for (size_t y = 0, h = m_height; y < h; ++y)
         for (size_t x = 0, w = m_width; x < w; ++x)
         {
             const float weight = *ptr;
+            const float rcp_weight = weight == 0.0f ? 0.0f : 1.0f / weight;
+            const float rcp_weight_minus_one = weight - 1.0f == 0.0f ? 0.0f : 1.0f / (weight - 1.0f);
 
-            const Color3f sample_sum(
-                ptr[1],
-                ptr[2],
-                ptr[3]);
+            // Clamp the values to mitigate the effect of fireflies.
+            const Color3f pixel_value(
+                ptr[1] * rcp_weight,
+                ptr[2] * rcp_weight,
+                ptr[3] * rcp_weight);
 
             ptr += m_channel_count - 4; // skip to beginning of summed squares
 
@@ -194,18 +202,20 @@ float VarianceTrackingShadingResultFrameBuffer::variance_to_tile(
                 ptr[1],
                 ptr[2]);
 
-            // Variance estimator: (1 / n) * Sum_i[(X_i - µ)²] = Sum_i[X_i²] - Sum_i[X_i]² / n .
-            const Color3f pixel_variance(square_sum - (sample_sum * sample_sum) / weight);
+            // Estimator for the variance of the mean estimator (= pixel value): Sigma² / n.
+            // Sigma² is estimated as [sum_of_squares - n * pixel_value²] / (n - 1)
+            const Color3f sigma_2((square_sum - weight * pixel_value * pixel_value) * rcp_weight_minus_one);
 
-            // Clamp values to mitigate the effect of fireflies.
-            const float variance_luminance = std::min(luminance(pixel_variance), 10000.0f);
-            tile_variance += variance_luminance;
-            tile.set_pixel(x, y, Color3f(variance_luminance));
+            // Clamp sigma² to mitigate the effect of fireflies.
+            const float estimator_variance = std::min(luminance(sigma_2), 5000.0f) * rcp_weight;
+
+            tile.set_pixel(x, y, Color3f(estimator_variance));
+            estimator_variance_sum += estimator_variance;
 
             ptr += 4;
         }
 
-    return tile_variance;
+    return estimator_variance_sum / get_pixel_count();
 }
 
 }   // namespace renderer

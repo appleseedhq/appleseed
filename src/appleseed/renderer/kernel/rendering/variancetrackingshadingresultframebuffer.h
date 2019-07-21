@@ -75,9 +75,11 @@ class VarianceTrackingShadingResultFrameBuffer
         foundation::Tile&               tile,
         TileStack&                      aov_tiles) const override;
 
-    float variance() const;
+    // Return estimate of the mean pixel variance.
+    float estimator_variance() const;
 
-    float variance_to_tile(
+    // Transfer pixel variance estimates to tile and return estimate of the mean pixel variance.
+    float estimator_variance_to_tile(
         foundation::Tile&               tile) const;
   
   private:
