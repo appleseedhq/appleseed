@@ -279,13 +279,13 @@ namespace
         {
             const Parameters&               m_params;
             const Camera&                   m_camera;
-            const Frame&                    m_frame;
+            const size_t                    m_canvas_width;
+            const size_t                    m_canvas_height;
             const ShadingContext&           m_shading_context;
             SamplingContext&                m_sampling_context;
-
-            const Spectrum                  m_initial_flux;         // initial particle flux (in W)
             SampleVector&                   m_samples;
             size_t                          m_sample_count;         // the number of samples added to m_samples
+            const Spectrum                  m_initial_flux;         // initial particle flux (in W)
 
             PathVisitor(
                 const Parameters&           params,
@@ -297,7 +297,8 @@ namespace
                 const Spectrum&             initial_flux)
               : m_params(params)
               , m_camera(*scene.get_active_camera())
-              , m_frame(frame)
+              , m_canvas_width(frame.image().properties().m_canvas_width)
+              , m_canvas_height(frame.image().properties().m_canvas_height)
               , m_shading_context(shading_context)
               , m_sampling_context(sampling_context)
               , m_samples(samples)
@@ -512,9 +513,10 @@ namespace
                 const Color3f linear_rgb = radiance.to_rgb(g_std_lighting_conditions);
 
                 Sample sample;
-                sample.m_pixel_coords = m_frame.get_pixel_position(position_ndc);
-                sample.m_position = Vector2f(position_ndc);
-                sample.m_color = Color4f(linear_rgb, 1.0f);
+                sample.m_pixel_coords.x = static_cast<int>(position_ndc.x * m_canvas_width);
+                sample.m_pixel_coords.y = static_cast<int>(position_ndc.y * m_canvas_height);
+                sample.m_color.rgb() = linear_rgb;
+                sample.m_color.a = 1.0f;
                 m_samples.push_back(sample);
 
                 ++m_sample_count;

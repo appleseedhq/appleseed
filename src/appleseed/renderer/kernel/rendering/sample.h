@@ -40,7 +40,6 @@ class Sample
 {
   public:
     foundation::Vector2i    m_pixel_coords;
-    foundation::Vector2f    m_position;
     foundation::Color4f     m_color;
 };
 

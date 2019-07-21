@@ -1229,6 +1229,7 @@ IMPLEMENT_USER_DATA_GETTER(vertex_color)
 
         return true;
     }
+
     return false;
 }
 

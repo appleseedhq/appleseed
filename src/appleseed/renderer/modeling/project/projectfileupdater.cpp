@@ -93,6 +93,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstring>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -2015,7 +2016,8 @@ namespace
             {
                 RENDERER_LOG_WARNING(
                     "with the introduction of filter importance sampling, some reconstruction filters were removed; "
-                    "migrating this project to use the default reconstruction filter instead.");
+                    "migrating this project to use the default reconstruction filter instead (%s).",
+                    DefaultFilterName);
 
                 params.insert_path("filter", DefaultFilterName);
             }
@@ -2109,12 +2111,19 @@ namespace
                         const uint64 max_samples = pfr.strings().get<uint64>("max_samples");
                         pfr.strings().remove("max_samples");
 
-                        Frame* frame = m_project.get_frame();
-                        if (frame)
+                        if (max_samples < numeric_limits<uint64>::max())
                         {
-                            // If max samples was previously set then preserve the nearest max average spp count.
-                            pfr.strings().insert(
-                                "max_average_spp", static_cast<uint64>(ceil(max_samples / frame->get_crop_window().volume())));
+                            Frame* frame = m_project.get_frame();
+                            if (frame)
+                            {
+                                // If max samples was previously set then preserve the nearest max average spp count.
+                                const uint64 pixel_count = frame->get_crop_window().volume();
+                                const uint64 max_average_spp =
+                                    static_cast<uint64>(
+                                        ceil(
+                                            static_cast<double>(max_samples) / pixel_count));
+                                pfr.strings().insert("max_average_spp", max_average_spp);
+                            }
                         }
                     }
                 }

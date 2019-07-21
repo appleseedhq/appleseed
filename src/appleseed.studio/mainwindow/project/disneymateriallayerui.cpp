@@ -56,7 +56,6 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
-#include <QSignalMapper>
 #include <Qt>
 #include <QToolButton>
 #include <QVariant>
@@ -91,27 +90,12 @@ DisneyMaterialLayerUI::DisneyMaterialLayerUI(
   , m_input_metadata(DisneyMaterialLayer::get_input_metadata())
   , m_fold_icon(":/widgets/layer_fold.png")
   , m_unfold_icon(":/widgets/layer_unfold.png")
-  , m_color_picker_signal_mapper(new QSignalMapper(this))
-  , m_file_picker_signal_mapper(new QSignalMapper(this))
-  , m_expression_editor_signal_mapper(new QSignalMapper(this))
   , m_is_folded(values.strings().exist("layer_folded") && values.get<bool>("layer_folded"))
 {
     setProperty("hasFrame", true);
 
     create_layer_ui();
     create_input_widgets(values);
-
-    connect(
-        m_color_picker_signal_mapper, SIGNAL(mapped(const QString&)),
-        SLOT(slot_open_color_picker(const QString&)));
-
-    connect(
-        m_file_picker_signal_mapper, SIGNAL(mapped(const QString&)),
-        SLOT(slot_open_file_picker(const QString&)));
-
-    connect(
-        m_expression_editor_signal_mapper, SIGNAL(mapped(const QString&)),
-        SLOT(slot_open_expression_editor(const QString&)));
 
     if (m_is_folded)
         fold();
@@ -443,10 +427,8 @@ unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_color_input_widgets(
 
     QToolButton* picker_button = new QToolButton(m_content_widget);
     picker_button->setObjectName("color_picker");
-    connect(picker_button, SIGNAL(clicked()), m_color_picker_signal_mapper, SLOT(map()));
-
     const string name = metadata.get<string>("name");
-    m_color_picker_signal_mapper->setMapping(picker_button, QString::fromStdString(name));
+    connect(picker_button, &QToolButton::clicked, [=]() { emit slot_open_color_picker(QString::fromStdString(name)); });
 
     if (should_be_focused(metadata))
     {
@@ -509,8 +491,7 @@ QWidget* DisneyMaterialLayerUI::create_texture_button(const string& name)
     texture_button->setAutoRaise(true);     // enable hover state
     texture_button->setToolTip("Bind Texture...");
 
-    connect(texture_button, SIGNAL(clicked()), m_file_picker_signal_mapper, SLOT(map()));
-    m_file_picker_signal_mapper->setMapping(texture_button, QString::fromStdString(name));
+    connect(texture_button, &QToolButton::clicked, [=]() { emit slot_open_file_picker(QString::fromStdString(name)); });
 
     return texture_button;
 }
@@ -522,8 +503,7 @@ QWidget* DisneyMaterialLayerUI::create_expression_button(const string& name)
     expression_button->setAutoRaise(true);  // enable hover state
     expression_button->setToolTip("Bind Expression...");
 
-    connect(expression_button, SIGNAL(clicked()), m_expression_editor_signal_mapper, SLOT(map()));
-    m_expression_editor_signal_mapper->setMapping(expression_button, QString::fromStdString(name));
+    connect(expression_button, &QToolButton::clicked, [=]() { emit slot_open_expression_editor(QString::fromStdString(name)); });
 
     return expression_button;
 }

@@ -67,7 +67,7 @@ class SHAREDDLL CommandLineHandlerBase
     void add_message_verbosity_option();
     void add_message_coloring_option();
     void add_display_options_option();
-#if defined WIN32 && defined DEBUG
+#ifdef WIN32
     void add_disable_abort_dialogs_option();
 #endif
 
