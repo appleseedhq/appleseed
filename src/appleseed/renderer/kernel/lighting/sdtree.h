@@ -815,6 +815,41 @@ struct STreeNode {
     std::array<uint32_t, 2> children;
 };
 
+struct DTreeStatistics
+{
+    size_t maxDepth = 0;
+    size_t minDepth = std::numeric_limits<size_t>::max();
+    float  avgDepth = 0;
+    float  maxAvgRadiance = 0;
+    float  minAvgRadiance = std::numeric_limits<float>::max();
+    float  avgAvgRadiance = 0;
+    size_t maxNodes = 0;
+    size_t minNodes = std::numeric_limits<size_t>::max();
+    float  avgNodes = 0;
+    float  maxStatisticalWeight = 0;
+    float  minStatisticalWeight = std::numeric_limits<float>::max();
+    float  avgStatisticalWeight = 0;
+
+    size_t nPoints = 0;
+    size_t nPointsNodes = 0;
+
+    void build()
+    {
+        if (nPoints > 0)
+        {
+            avgDepth /= nPoints;
+            avgAvgRadiance /= nPoints;
+
+            if (nPointsNodes > 0)
+            {
+                avgNodes /= nPointsNodes;
+            }
+
+            avgStatisticalWeight /= nPoints;
+        }
+    }
+};
+
 
 class MySTreeNode {
   public:
@@ -832,8 +867,6 @@ class MySTreeNode {
 
     DTreeWrapper* d_tree_wrapper(foundation::Vector3f &point, foundation::Vector3f &size)
     {
-        assert(point[m_axis] >= 0.0f && point[m_axis] <= 1.0f);
-
         if(m_d_tree != nullptr)
             return m_d_tree.get();
         else
@@ -846,24 +879,6 @@ class MySTreeNode {
     DTreeWrapper* d_tree_wrapper()
     {
         return m_d_tree.get();
-    }
-
-    size_t depth(foundation::Vector3f& point) const
-    {
-        assert(point[m_axis] >= 0.0f && point[m_axis] <= 1.0f);
-
-        if(m_d_tree != nullptr)
-            return 1;
-        else
-            return 1 + choose_node(point)->depth(point);
-    }
-
-    size_t depth() const
-    {
-        if(m_d_tree != nullptr)
-            return 1;
-        else
-            return std::max(m_first_node->depth(), m_second_node->depth());
     }
 
     void subdivide()
@@ -890,25 +905,25 @@ class MySTreeNode {
         m_second_node->subdivide(required_samples);
     }
 
-    void forEachDTreeWrapperConst(std::function<void(const DTreeWrapper*)> func) const
+    void reset(const size_t max_depth, const float subdiv_threshold)
     {
-        if(m_d_tree != nullptr)
-            func(m_d_tree.get());
+        if (m_d_tree != nullptr)
+            m_d_tree->reset(max_depth, subdiv_threshold);
         else
         {
-            m_first_node->forEachDTreeWrapperConst(func);
-            m_second_node->forEachDTreeWrapperConst(func);
+            m_first_node->reset(max_depth, subdiv_threshold);
+            m_second_node->reset(max_depth, subdiv_threshold);
         }
     }
 
-    void forEachDTreeWrapperParallel(std::function<void(DTreeWrapper*)> func)
+    void build()
     {
         if (m_d_tree != nullptr)
-            func(m_d_tree.get());
+            m_d_tree->build();
         else
         {
-            m_first_node->forEachDTreeWrapperParallel(func);
-            m_second_node->forEachDTreeWrapperParallel(func);
+            m_first_node->build();
+            m_second_node->build();
         }
     }
 
@@ -920,7 +935,43 @@ class MySTreeNode {
         {
             return m_first_node->approximate_memory_footprint() + m_second_node->approximate_memory_footprint();
         }
-        
+    }
+
+    void gather_statistics(DTreeStatistics& statistics) const
+    {
+        if(m_d_tree != nullptr)
+        {
+            const size_t depth = m_d_tree->depth();
+            statistics.maxDepth = std::max(statistics.maxDepth, depth);
+            statistics.minDepth = std::min(statistics.minDepth, depth);
+            statistics.avgDepth += depth;
+
+            const float avgRadiance = m_d_tree->meanRadiance();
+            statistics.maxAvgRadiance = std::max(statistics.maxAvgRadiance, avgRadiance);
+            statistics.minAvgRadiance = std::min(statistics.minAvgRadiance, avgRadiance);
+            statistics.avgAvgRadiance += avgRadiance;
+
+            if (m_d_tree->numNodes() > 1)
+            {
+                const size_t nodes = m_d_tree->numNodes();
+                statistics.maxNodes = std::max(statistics.maxNodes, nodes);
+                statistics.minNodes = std::min(statistics.minNodes, nodes);
+                statistics.avgNodes += nodes;
+                ++statistics.nPointsNodes;
+            }
+
+            const float statisticalWeight = m_d_tree->statisticalWeight();
+            statistics.maxStatisticalWeight = std::max(statistics.maxStatisticalWeight, statisticalWeight);
+            statistics.minStatisticalWeight = std::min(statistics.minStatisticalWeight, statisticalWeight);
+            statistics.avgStatisticalWeight += statisticalWeight;
+
+            ++statistics.nPoints;
+        }
+        else
+        {
+            m_first_node->gather_statistics(statistics);
+            m_second_node->gather_statistics(statistics);
+        }
     }
 
     // forEachLeaf
@@ -944,7 +995,7 @@ private:
         }
         else
         {
-            point[m_axis] = (point[m_axis] - 0.5f) * 2;
+            point[m_axis] = (point[m_axis] - 0.5f) * 2.0f;
             return m_second_node.get();
         }
     }
@@ -992,19 +1043,10 @@ public:
         return dTreeWrapper(p, size);
     }
 
-    void forEachDTreeWrapperConst(std::function<void(const DTreeWrapper*)> func) const {
-
-        m_node.forEachDTreeWrapperConst(func);
-    }
-
     // only called by dump()
     // void forEachDTreeWrapperConstP(std::function<void(const DTreeWrapper*, const foundation::Vector3f&, const foundation::Vector3f&)> func) const {
     //     m_nodes[0].forEachLeaf(func, m_aabb.min, m_aabb.max - m_aabb.min, m_nodes);
     // }
-
-    void forEachDTreeWrapperParallel(std::function<void(DTreeWrapper*)> func) {
-        m_node.forEachDTreeWrapperParallel(func);
-    }
 
     // only called by GPTVertex
     // void record(const foundation::Vector3f& p, const foundation::Vector3f& dTreeVoxelSize, DTreeRecord rec, EDirectionalFilter directionalFilter, EBsdfSamplingFractionLoss bsdfSamplingFractionLoss) {
@@ -1052,69 +1094,21 @@ public:
         RENDERER_LOG_INFO("Resetting distributions for sampling.");
 
         refine((size_t)(std::sqrt(std::pow(2, iter) * spp_per_pass / 4) * sTreeThreshold), sdTreeMaxMemory);
-        forEachDTreeWrapperParallel([this](DTreeWrapper* dTree) { dTree->reset(20, dTreeThreshold); });
+        m_node.reset(20, dTreeThreshold);
     }
 
     void buildSDTree() {
         RENDERER_LOG_INFO("Building distributions for sampling.");
 
         // Build distributions
-        forEachDTreeWrapperParallel([](DTreeWrapper* dTree) { dTree->build(); });
+        m_node.build();
 
         // Gather statistics
-        int maxDepth = 0;
-        int minDepth = std::numeric_limits<int>::max();
-        float avgDepth = 0;
-        float maxAvgRadiance = 0;
-        float minAvgRadiance = std::numeric_limits<float>::max();
-        float avgAvgRadiance = 0;
-        size_t maxNodes = 0;
-        size_t minNodes = std::numeric_limits<size_t>::max();
-        float avgNodes = 0;
-        float maxStatisticalWeight = 0;
-        float minStatisticalWeight = std::numeric_limits<float>::max();
-        float avgStatisticalWeight = 0;
+        DTreeStatistics statistics;
 
-        int nPoints = 0;
-        int nPointsNodes = 0;
+        m_node.gather_statistics(statistics);
 
-        forEachDTreeWrapperConst([&](const DTreeWrapper* dTree) {
-            const int depth = dTree->depth();
-            maxDepth = std::max(maxDepth, depth);
-            minDepth = std::min(minDepth, depth);
-            avgDepth += depth;
-
-            const float avgRadiance = dTree->meanRadiance();
-            maxAvgRadiance = std::max(maxAvgRadiance, avgRadiance);
-            minAvgRadiance = std::min(minAvgRadiance, avgRadiance);
-            avgAvgRadiance += avgRadiance;
-
-            if (dTree->numNodes() > 1) {
-                const size_t nodes = dTree->numNodes();
-                maxNodes = std::max(maxNodes, nodes);
-                minNodes = std::min(minNodes, nodes);
-                avgNodes += nodes;
-                ++nPointsNodes;
-            }
-
-            const float statisticalWeight = dTree->statisticalWeight();
-            maxStatisticalWeight = std::max(maxStatisticalWeight, statisticalWeight);
-            minStatisticalWeight = std::min(minStatisticalWeight, statisticalWeight);
-            avgStatisticalWeight += statisticalWeight;
-
-            ++nPoints;
-        });
-
-        if (nPoints > 0) {
-            avgDepth /= nPoints;
-            avgAvgRadiance /= nPoints;
-
-            if (nPointsNodes > 0) {
-                avgNodes /= nPointsNodes;
-            }
-
-            avgStatisticalWeight /= nPoints;
-        }
+        statistics.build();
 
         RENDERER_LOG_INFO(
             "Distribution statistics:\n"
@@ -1122,10 +1116,10 @@ public:
             "  Mean radiance = [%s, %s, %s]\n"
             "  Node count    = [%s, %s, %s]\n"
             "  Stat. weight  = [%s, %s, %s]\n",
-            foundation::pretty_uint(minDepth).c_str(), foundation::pretty_scalar(avgDepth, 5).c_str(), foundation::pretty_uint(maxDepth).c_str(),
-            foundation::pretty_scalar(minAvgRadiance, 5).c_str(), foundation::pretty_scalar(avgAvgRadiance, 5).c_str(), foundation::pretty_scalar(maxAvgRadiance, 5).c_str(),
-            foundation::pretty_uint(minNodes).c_str(), foundation::pretty_scalar(avgNodes, 5).c_str(), foundation::pretty_uint(maxNodes).c_str(),
-            foundation::pretty_scalar(minStatisticalWeight, 5).c_str(), foundation::pretty_scalar(avgStatisticalWeight, 5).c_str(), foundation::pretty_scalar(maxStatisticalWeight, 5).c_str()
+            foundation::pretty_uint(statistics.minDepth).c_str(), foundation::pretty_scalar(statistics.avgDepth, 5).c_str(), foundation::pretty_uint(statistics.maxDepth).c_str(),
+            foundation::pretty_scalar(statistics.minAvgRadiance, 5).c_str(), foundation::pretty_scalar(statistics.avgAvgRadiance, 5).c_str(), foundation::pretty_scalar(statistics.maxAvgRadiance, 5).c_str(),
+            foundation::pretty_uint(statistics.minNodes).c_str(), foundation::pretty_scalar(statistics.avgNodes, 5).c_str(), foundation::pretty_uint(statistics.maxNodes).c_str(),
+            foundation::pretty_scalar(statistics.minStatisticalWeight, 5).c_str(), foundation::pretty_scalar(statistics.avgStatisticalWeight, 5).c_str(), foundation::pretty_scalar(statistics.maxStatisticalWeight, 5).c_str()
         );
 
         m_is_built = true;
