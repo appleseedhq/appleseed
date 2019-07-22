@@ -1,0 +1,32 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.10.5
+# options: -O2
+shader diffuse_vertex_colors
+param	color	in_color	0.5 0.5 0.5		%read{2147483647,-1} %write{2147483647,-1}
+oparam	closure color	out_outColor			%read{6,6} %write{6,6}
+global	normal	N	%read{4,4} %write{2147483647,-1}
+local	color	vertex_color	%read{5,5} %write{3,3}
+temp	int	$tmp1	%read{1,1} %write{0,0}
+const	string	$const1	"shadow"		%read{0,0} %write{2147483647,-1}
+temp	int	$tmp2	%read{2147483647,-1} %write{3,3}
+const	string	$const2	"vertex_color"		%read{3,3} %write{2147483647,-1}
+temp	closure color	$tmp3	%read{5,5} %write{4,4}
+const	string	$const3	"diffuse"		%read{4,4} %write{2147483647,-1}
+temp	closure color	$tmp4	%read{6,6} %write{5,5}
+code ___main___
+# diffuse_vertex_colors.osl:35
+#     if (raytype("shadow"))
+	raytype		$tmp1 $const1 	%filename{"diffuse_vertex_colors.osl"} %line{35} %argrw{"wr"}
+	if		$tmp1 3 3 	%argrw{"r"}
+# diffuse_vertex_colors.osl:36
+#         return;
+	exit	%line{36}
+# diffuse_vertex_colors.osl:39
+#     getattribute("vertex_color", vertex_color);
+	getattribute	$tmp2 $const2 vertex_color 	%line{39} %argrw{"wrw"}
+# diffuse_vertex_colors.osl:41
+#     out_outColor += vertex_color * diffuse(N);
+	closure		$tmp3 $const3 N 	%line{41} %argrw{"wrr"}
+	mul		$tmp4 $tmp3 vertex_color 	%argrw{"wrr"}
+	add		out_outColor out_outColor $tmp4 	%argrw{"wrr"}
+	end

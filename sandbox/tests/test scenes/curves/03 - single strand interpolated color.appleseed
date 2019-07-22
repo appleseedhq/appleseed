@@ -8,6 +8,9 @@
         <search_path>
             ../../../shaders/appleseed
         </search_path>
+        <search_path>
+            shaders
+        </search_path>
     </search_paths>
     <scene>
         <camera name="camera" model="pinhole_camera">
@@ -55,26 +58,7 @@
                 </alpha>
             </color>
             <shader_group name="Material #29_mat_shader_group">
-                <shader type="shader" name="as_disney_material" layer="Material #29_mat">
-                    <parameter name="Bn" value="vector 0 0 0" />
-                    <parameter name="Tn" value="vector 0 0 0" />
-                    <parameter name="in_anisotropy_amount" value="float 0" />
-                    <parameter name="in_anisotropy_angle" value="float 0" />
-                    <parameter name="in_anisotropy_vector_map" value="color 0 0 0" />
-                    <parameter name="in_bump_normal" value="normal 0 0 0" />
-                    <parameter name="in_clear_coat" value="float 0" />
-                    <parameter name="in_clear_coat_glossyness" value="float 1" />
-                    <parameter name="in_enable_matte" value="int 0" />
-                    <parameter name="in_matte_opacity" value="float 0" />
-                    <parameter name="in_matte_opacity_color" value="color 1 1 1" />
-                    <parameter name="in_maximum_ray_depth" value="int 4" />
-                    <parameter name="in_metallic_amount" value="float 0" />
-                    <parameter name="in_roughness" value="float 0.2" />
-                    <parameter name="in_sheen_amount" value="float 0" />
-                    <parameter name="in_sheen_tint" value="float 0.5" />
-                    <parameter name="in_specular_amount" value="float 0" />
-                    <parameter name="in_specular_tint" value="float 0" />
-                    <parameter name="in_subsurface_amount" value="float 0" />
+                <shader type="shader" name="diffuse_vertex_colors" layer="Material #29_mat">
                 </shader>
                 <shader type="shader" name="as_closure2surface" layer="Material #29_mat_closure_2_surface_name">
                 </shader>
