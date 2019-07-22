@@ -19,6 +19,7 @@
 #include <atomic>
 #include <cmath>
 #include <functional>
+#include <memory>
 #include <stack>
 #include <vector>
 
@@ -815,6 +816,147 @@ struct STreeNode {
 };
 
 
+class MySTreeNode {
+  public:
+    MySTreeNode()
+      : m_axis(0)
+      , m_d_tree(new DTreeWrapper)
+    {}
+
+    MySTreeNode(const unsigned int parent_axis, const DTreeWrapper* parent_d_tree)
+      : m_axis((parent_axis + 1) % 3)
+      , m_d_tree(new DTreeWrapper(*parent_d_tree))
+    {
+        m_d_tree->setStatisticalWeightBuilding(m_d_tree->statisticalWeightBuilding() * 0.5f);
+    }
+
+    std::shared_ptr<MySTreeNode> choose_node(foundation::Vector3f &point) const
+    {
+        if (point[m_axis] < 0.5f)
+        {
+            point[m_axis] *= 2.0f;
+            return m_first_node;
+        }
+        else
+        {
+            point[m_axis] = (point[m_axis] - 0.5f) * 2;
+            return m_second_node;
+        }
+    }
+
+    DTreeWrapper* d_tree_wrapper(foundation::Vector3f &point, foundation::Vector3f &size)
+    {
+        assert(point[m_axis] >= 0.0f && point[m_axis] <= 1.0f);
+
+        if(m_d_tree != nullptr)
+            return m_d_tree.get();
+        else
+        {
+            size[m_axis] *= 0.5f;
+            return choose_node(point)->d_tree_wrapper(point, size);
+        }
+    }
+
+    DTreeWrapper* d_tree_wrapper()
+    {
+        return m_d_tree.get();
+    }
+
+    size_t depth(foundation::Vector3f& point) const
+    {
+        assert(point[m_axis] >= 0.0f && point[m_axis] <= 1.0f);
+
+        if(m_d_tree != nullptr)
+            return 1;
+        else
+            return 1 + choose_node(point)->depth(point);
+    }
+
+    size_t depth() const
+    {
+        if(m_d_tree != nullptr)
+            return 1;
+        else
+            return std::max(m_first_node->depth(), m_second_node->depth());
+    }
+
+    void subdivide()
+    {
+        if(m_d_tree != nullptr)
+        {
+            m_first_node.reset(new MySTreeNode(m_axis, m_d_tree.get()));
+            m_second_node.reset(new MySTreeNode(m_axis, m_d_tree.get()));
+            m_d_tree = nullptr;
+        }
+    }
+
+    void subdivide(const size_t required_samples)
+    {
+        if (m_d_tree != nullptr)
+        {
+            if (m_d_tree->statisticalWeightBuilding() > required_samples)
+                subdivide();
+            else
+                return;
+        }
+        
+        m_first_node->subdivide(required_samples);
+        m_second_node->subdivide(required_samples);
+    }
+
+    void forEachDTreeWrapperConst(std::function<void(const DTreeWrapper*)> func) const
+    {
+        if(m_d_tree != nullptr)
+            func(m_d_tree.get());
+        else
+        {
+            m_first_node->forEachDTreeWrapperConst(func);
+            m_second_node->forEachDTreeWrapperConst(func);
+        }
+    }
+
+    void forEachDTreeWrapperParallel(std::function<void(DTreeWrapper*)> func)
+    {
+        if (m_d_tree != nullptr)
+            func(m_d_tree.get());
+        else
+        {
+            m_first_node->forEachDTreeWrapperParallel(func);
+            m_second_node->forEachDTreeWrapperParallel(func);
+        }
+    }
+
+    size_t approximate_memory_footprint() const
+    {
+        if(m_d_tree != nullptr)
+            return m_d_tree->approxMemoryFootprint();
+        else
+        {
+            return m_first_node->approximate_memory_footprint() + m_second_node->approximate_memory_footprint();
+        }
+        
+    }
+
+    // forEachLeaf
+
+    // void forEachDTreeWrapperConstP(std::function<void(const DTreeWrapper *, const foundation::Vector3f &, const foundation::Vector3f &)> func) const
+    // {
+    //     m_nodes[0].forEachLeaf(func, m_aabb.min, m_aabb.max - m_aabb.min, m_nodes);
+    // }
+
+    // computeOverlappingVolume
+
+    // record
+
+private:
+    std::shared_ptr<MySTreeNode> m_first_node, m_second_node;
+
+    // This member is only set if the node is a leaf node and nullptr otherwise.
+    std::unique_ptr<DTreeWrapper> m_d_tree;
+    unsigned int m_axis;
+};
+
+
 
 class STree {
 public:
@@ -823,7 +965,6 @@ public:
      , m_is_built(false)
      , m_is_final_iteration(false)
     {
-        clear();
 
         // Enlarge AABB to turn it into a cube. This has the effect
         // of nicer hierarchical subdivisions.
@@ -833,38 +974,7 @@ public:
     }
 
     void clear() {
-        m_nodes.clear();
-        m_nodes.emplace_back();
-    }
-
-    void subdivideAll() {
-        int nNodes = (int)m_nodes.size();
-        for (int i = 0; i < nNodes; ++i) {
-            if (m_nodes[i].isLeaf) {
-                subdivide(i, m_nodes);
-            }
-        }
-    }
-
-    void subdivide(int nodeIdx, std::vector<STreeNode>& nodes) {
-        // Add 2 child nodes
-        nodes.resize(nodes.size() + 2);
-
-        if (nodes.size() > std::numeric_limits<uint32_t>::max()) {
-            RENDERER_LOG_WARNING("DTreeWrapper hit maximum children count.");
-            return;
-        }
-
-        STreeNode& cur = nodes[nodeIdx];
-        for (int i = 0; i < 2; ++i) {
-            uint32_t idx = (uint32_t)nodes.size() - 2 + i;
-            cur.children[i] = idx;
-            nodes[idx].axis = (cur.axis + 1) % 3;
-            nodes[idx].dTree = cur.dTree;
-            nodes[idx].dTree.setStatisticalWeightBuilding(nodes[idx].dTree.statisticalWeightBuilding() / 2);
-        }
-        cur.isLeaf = false;
-        cur.dTree = {}; // Reset to an empty dtree to save memory.
+        m_node = MySTreeNode();
     }
 
     DTreeWrapper* dTreeWrapper(foundation::Vector3f p, foundation::Vector3f& size) {
@@ -874,7 +984,7 @@ public:
         p.y /= size.y;
         p.z /= size.z;
 
-        return m_nodes[0].dTreeWrapper(p, size, m_nodes);
+        return m_node.d_tree_wrapper(p, size);
     }
 
     DTreeWrapper* dTreeWrapper(foundation::Vector3f p) {
@@ -883,36 +993,29 @@ public:
     }
 
     void forEachDTreeWrapperConst(std::function<void(const DTreeWrapper*)> func) const {
-        for (auto& node : m_nodes) {
-            if (node.isLeaf) {
-                func(&node.dTree);
-            }
-        }
+
+        m_node.forEachDTreeWrapperConst(func);
     }
 
-    void forEachDTreeWrapperConstP(std::function<void(const DTreeWrapper*, const foundation::Vector3f&, const foundation::Vector3f&)> func) const {
-        m_nodes[0].forEachLeaf(func, m_aabb.min, m_aabb.max - m_aabb.min, m_nodes);
-    }
+    // only called by dump()
+    // void forEachDTreeWrapperConstP(std::function<void(const DTreeWrapper*, const foundation::Vector3f&, const foundation::Vector3f&)> func) const {
+    //     m_nodes[0].forEachLeaf(func, m_aabb.min, m_aabb.max - m_aabb.min, m_nodes);
+    // }
 
     void forEachDTreeWrapperParallel(std::function<void(DTreeWrapper*)> func) {
-        int nDTreeWrappers = static_cast<int>(m_nodes.size());
-
-        for (int i = 0; i < nDTreeWrappers; ++i) {
-            if (m_nodes[i].isLeaf) {
-                func(&m_nodes[i].dTree);
-            }
-        }
+        m_node.forEachDTreeWrapperParallel(func);
     }
 
-    void record(const foundation::Vector3f& p, const foundation::Vector3f& dTreeVoxelSize, DTreeRecord rec, EDirectionalFilter directionalFilter, EBsdfSamplingFractionLoss bsdfSamplingFractionLoss) {
-        float volume = 1;
-        for (int i = 0; i < 3; ++i) {
-            volume *= dTreeVoxelSize[i];
-        }
+    // only called by GPTVertex
+    // void record(const foundation::Vector3f& p, const foundation::Vector3f& dTreeVoxelSize, DTreeRecord rec, EDirectionalFilter directionalFilter, EBsdfSamplingFractionLoss bsdfSamplingFractionLoss) {
+    //     float volume = 1;
+    //     for (int i = 0; i < 3; ++i) {
+    //         volume *= dTreeVoxelSize[i];
+    //     }
 
-        rec.statisticalWeight /= volume;
-        m_nodes[0].record(p - dTreeVoxelSize * 0.5f, p + dTreeVoxelSize * 0.5f, m_aabb.min, m_aabb.extent(), rec, directionalFilter, bsdfSamplingFractionLoss, m_nodes);
-    }
+    //     rec.statisticalWeight /= volume;
+    //     m_nodes[0].record(p - dTreeVoxelSize * 0.5f, p + dTreeVoxelSize * 0.5f, m_aabb.min, m_aabb.extent(), rec, directionalFilter, bsdfSamplingFractionLoss, m_nodes);
+    // }
 
     // void dump(BlobWriter& blob) const {
     //     forEachDTreeWrapperConstP([&blob](const DTreeWrapper* dTree, const foundation::Vector3f& p, const foundation::Vector3f& size) {
@@ -922,48 +1025,20 @@ public:
     //     });
     // }
 
-    bool shallSplit(const STreeNode& node, int depth, size_t samplesRequired) {
-        return m_nodes.size() < std::numeric_limits<uint32_t>::max() - 1 && node.dTree.statisticalWeightBuilding() > samplesRequired;
-    }
+    // bool shallSplit(const STreeNode& node, int depth, size_t samplesRequired) {
+    //     return m_nodes.size() < std::numeric_limits<uint32_t>::max() - 1 && node.dTree.statisticalWeightBuilding() > samplesRequired;
+    // }
 
     void refine(size_t sTreeThreshold, int maxMB) {
         if (maxMB >= 0) {
-            size_t approxMemoryFootprint = 0;
-            for (const auto& node : m_nodes) {
-                approxMemoryFootprint += node.dTreeWrapper()->approxMemoryFootprint();
-            }
+            size_t approxMemoryFootprint = m_node.approximate_memory_footprint();
 
             if (approxMemoryFootprint / 1000000 >= (size_t)maxMB) {
                 return;
             }
         }
-        
-        struct StackNode {
-            size_t index;
-            int depth;
-        };
 
-        std::stack<StackNode> nodeIndices;
-        nodeIndices.push({0,  1});
-        while (!nodeIndices.empty()) {
-            StackNode sNode = nodeIndices.top();
-            nodeIndices.pop();
-
-            // Subdivide if needed and leaf
-            if (m_nodes[sNode.index].isLeaf) {
-                if (shallSplit(m_nodes[sNode.index], sNode.depth, sTreeThreshold)) {
-                    subdivide((int)sNode.index, m_nodes);
-                }
-            }
-
-            // Add children to stack if we're not
-            if (!m_nodes[sNode.index].isLeaf) {
-                const STreeNode& node = m_nodes[sNode.index];
-                for (int i = 0; i < 2; ++i) {
-                    nodeIndices.push({node.children[i], sNode.depth + 1});
-                }
-            }
-        }
+        m_node.subdivide(sTreeThreshold);
 
         // Uncomment once memory becomes an issue.
         //m_nodes.shrink_to_fit();
@@ -1072,11 +1147,275 @@ public:
     }
 
 private:
-    std::vector<STreeNode> m_nodes;
+    MySTreeNode m_node;
     foundation::AABB3f m_aabb;
     bool m_is_built;
     bool m_is_final_iteration;
 };
+
+
+
+// class STree {
+// public:
+//     STree(const foundation::AABB3f& aabb)
+//      : m_aabb(aabb)
+//      , m_is_built(false)
+//      , m_is_final_iteration(false)
+//     {
+//         clear();
+
+//         // Enlarge AABB to turn it into a cube. This has the effect
+//         // of nicer hierarchical subdivisions.
+//         foundation::Vector3f size = m_aabb.max - m_aabb.min;
+//         float maxSize = std::max(std::max(size.x, size.y), size.z);
+//         m_aabb.max = m_aabb.min + foundation::Vector3f(maxSize);
+//     }
+
+//     void clear() {
+//         m_nodes.clear();
+//         m_nodes.emplace_back();
+//     }
+
+//     void subdivideAll() {
+//         int nNodes = (int)m_nodes.size();
+//         for (int i = 0; i < nNodes; ++i) {
+//             if (m_nodes[i].isLeaf) {
+//                 subdivide(i, m_nodes);
+//             }
+//         }
+//     }
+
+//     void subdivide(int nodeIdx, std::vector<STreeNode>& nodes) {
+//         // Add 2 child nodes
+//         nodes.resize(nodes.size() + 2);
+
+//         if (nodes.size() > std::numeric_limits<uint32_t>::max()) {
+//             RENDERER_LOG_WARNING("DTreeWrapper hit maximum children count.");
+//             return;
+//         }
+
+//         STreeNode& cur = nodes[nodeIdx];
+//         for (int i = 0; i < 2; ++i) {
+//             uint32_t idx = (uint32_t)nodes.size() - 2 + i;
+//             cur.children[i] = idx;
+//             nodes[idx].axis = (cur.axis + 1) % 3;
+//             nodes[idx].dTree = cur.dTree;
+//             nodes[idx].dTree.setStatisticalWeightBuilding(nodes[idx].dTree.statisticalWeightBuilding() / 2);
+//         }
+//         cur.isLeaf = false;
+//         cur.dTree = {}; // Reset to an empty dtree to save memory.
+//     }
+
+//     DTreeWrapper* dTreeWrapper(foundation::Vector3f p, foundation::Vector3f& size) {
+//         size = m_aabb.extent();
+//         p = foundation::Vector3f(p - m_aabb.min);
+//         p.x /= size.x;
+//         p.y /= size.y;
+//         p.z /= size.z;
+
+//         return m_nodes[0].dTreeWrapper(p, size, m_nodes);
+//     }
+
+//     DTreeWrapper* dTreeWrapper(foundation::Vector3f p) {
+//         foundation::Vector3f size;
+//         return dTreeWrapper(p, size);
+//     }
+
+//     void forEachDTreeWrapperConst(std::function<void(const DTreeWrapper*)> func) const {
+//         for (auto& node : m_nodes) {
+//             if (node.isLeaf) {
+//                 func(&node.dTree);
+//             }
+//         }
+//     }
+
+//     void forEachDTreeWrapperConstP(std::function<void(const DTreeWrapper*, const foundation::Vector3f&, const foundation::Vector3f&)> func) const {
+//         m_nodes[0].forEachLeaf(func, m_aabb.min, m_aabb.max - m_aabb.min, m_nodes);
+//     }
+
+//     void forEachDTreeWrapperParallel(std::function<void(DTreeWrapper*)> func) {
+//         int nDTreeWrappers = static_cast<int>(m_nodes.size());
+
+//         for (int i = 0; i < nDTreeWrappers; ++i) {
+//             if (m_nodes[i].isLeaf) {
+//                 func(&m_nodes[i].dTree);
+//             }
+//         }
+//     }
+
+//     void record(const foundation::Vector3f& p, const foundation::Vector3f& dTreeVoxelSize, DTreeRecord rec, EDirectionalFilter directionalFilter, EBsdfSamplingFractionLoss bsdfSamplingFractionLoss) {
+//         float volume = 1;
+//         for (int i = 0; i < 3; ++i) {
+//             volume *= dTreeVoxelSize[i];
+//         }
+
+//         rec.statisticalWeight /= volume;
+//         m_nodes[0].record(p - dTreeVoxelSize * 0.5f, p + dTreeVoxelSize * 0.5f, m_aabb.min, m_aabb.extent(), rec, directionalFilter, bsdfSamplingFractionLoss, m_nodes);
+//     }
+
+//     // void dump(BlobWriter& blob) const {
+//     //     forEachDTreeWrapperConstP([&blob](const DTreeWrapper* dTree, const foundation::Vector3f& p, const foundation::Vector3f& size) {
+//     //         if (dTree->statisticalWeight() > 0) {
+//     //             dTree->dump(blob, p, size);
+//     //         }
+//     //     });
+//     // }
+
+//     bool shallSplit(const STreeNode& node, int depth, size_t samplesRequired) {
+//         return m_nodes.size() < std::numeric_limits<uint32_t>::max() - 1 && node.dTree.statisticalWeightBuilding() > samplesRequired;
+//     }
+
+//     void refine(size_t sTreeThreshold, int maxMB) {
+//         if (maxMB >= 0) {
+//             size_t approxMemoryFootprint = 0;
+//             for (const auto& node : m_nodes) {
+//                 approxMemoryFootprint += node.dTreeWrapper()->approxMemoryFootprint();
+//             }
+
+//             if (approxMemoryFootprint / 1000000 >= (size_t)maxMB) {
+//                 return;
+//             }
+//         }
+        
+//         struct StackNode {
+//             size_t index;
+//             int depth;
+//         };
+
+//         std::stack<StackNode> nodeIndices;
+//         nodeIndices.push({0,  1});
+//         while (!nodeIndices.empty()) {
+//             StackNode sNode = nodeIndices.top();
+//             nodeIndices.pop();
+
+//             // Subdivide if needed and leaf
+//             if (m_nodes[sNode.index].isLeaf) {
+//                 if (shallSplit(m_nodes[sNode.index], sNode.depth, sTreeThreshold)) {
+//                     subdivide((int)sNode.index, m_nodes);
+//                 }
+//             }
+
+//             // Add children to stack if we're not
+//             if (!m_nodes[sNode.index].isLeaf) {
+//                 const STreeNode& node = m_nodes[sNode.index];
+//                 for (int i = 0; i < 2; ++i) {
+//                     nodeIndices.push({node.children[i], sNode.depth + 1});
+//                 }
+//             }
+//         }
+
+//         // Uncomment once memory becomes an issue.
+//         //m_nodes.shrink_to_fit();
+//     }
+
+//     const foundation::AABB3f& aabb() const {
+//         return m_aabb;
+//     }
+
+//     void resetSDTree(size_t iter, size_t spp_per_pass) {
+//         RENDERER_LOG_INFO("Resetting distributions for sampling.");
+
+//         refine((size_t)(std::sqrt(std::pow(2, iter) * spp_per_pass / 4) * sTreeThreshold), sdTreeMaxMemory);
+//         forEachDTreeWrapperParallel([this](DTreeWrapper* dTree) { dTree->reset(20, dTreeThreshold); });
+//     }
+
+//     void buildSDTree() {
+//         RENDERER_LOG_INFO("Building distributions for sampling.");
+
+//         // Build distributions
+//         forEachDTreeWrapperParallel([](DTreeWrapper* dTree) { dTree->build(); });
+
+//         // Gather statistics
+//         int maxDepth = 0;
+//         int minDepth = std::numeric_limits<int>::max();
+//         float avgDepth = 0;
+//         float maxAvgRadiance = 0;
+//         float minAvgRadiance = std::numeric_limits<float>::max();
+//         float avgAvgRadiance = 0;
+//         size_t maxNodes = 0;
+//         size_t minNodes = std::numeric_limits<size_t>::max();
+//         float avgNodes = 0;
+//         float maxStatisticalWeight = 0;
+//         float minStatisticalWeight = std::numeric_limits<float>::max();
+//         float avgStatisticalWeight = 0;
+
+//         int nPoints = 0;
+//         int nPointsNodes = 0;
+
+//         forEachDTreeWrapperConst([&](const DTreeWrapper* dTree) {
+//             const int depth = dTree->depth();
+//             maxDepth = std::max(maxDepth, depth);
+//             minDepth = std::min(minDepth, depth);
+//             avgDepth += depth;
+
+//             const float avgRadiance = dTree->meanRadiance();
+//             maxAvgRadiance = std::max(maxAvgRadiance, avgRadiance);
+//             minAvgRadiance = std::min(minAvgRadiance, avgRadiance);
+//             avgAvgRadiance += avgRadiance;
+
+//             if (dTree->numNodes() > 1) {
+//                 const size_t nodes = dTree->numNodes();
+//                 maxNodes = std::max(maxNodes, nodes);
+//                 minNodes = std::min(minNodes, nodes);
+//                 avgNodes += nodes;
+//                 ++nPointsNodes;
+//             }
+
+//             const float statisticalWeight = dTree->statisticalWeight();
+//             maxStatisticalWeight = std::max(maxStatisticalWeight, statisticalWeight);
+//             minStatisticalWeight = std::min(minStatisticalWeight, statisticalWeight);
+//             avgStatisticalWeight += statisticalWeight;
+
+//             ++nPoints;
+//         });
+
+//         if (nPoints > 0) {
+//             avgDepth /= nPoints;
+//             avgAvgRadiance /= nPoints;
+
+//             if (nPointsNodes > 0) {
+//                 avgNodes /= nPointsNodes;
+//             }
+
+//             avgStatisticalWeight /= nPoints;
+//         }
+
+//         RENDERER_LOG_INFO(
+//             "Distribution statistics:\n"
+//             "  Depth         = [%s, %s, %s]\n"
+//             "  Mean radiance = [%s, %s, %s]\n"
+//             "  Node count    = [%s, %s, %s]\n"
+//             "  Stat. weight  = [%s, %s, %s]\n",
+//             foundation::pretty_uint(minDepth).c_str(), foundation::pretty_scalar(avgDepth, 5).c_str(), foundation::pretty_uint(maxDepth).c_str(),
+//             foundation::pretty_scalar(minAvgRadiance, 5).c_str(), foundation::pretty_scalar(avgAvgRadiance, 5).c_str(), foundation::pretty_scalar(maxAvgRadiance, 5).c_str(),
+//             foundation::pretty_uint(minNodes).c_str(), foundation::pretty_scalar(avgNodes, 5).c_str(), foundation::pretty_uint(maxNodes).c_str(),
+//             foundation::pretty_scalar(minStatisticalWeight, 5).c_str(), foundation::pretty_scalar(avgStatisticalWeight, 5).c_str(), foundation::pretty_scalar(maxStatisticalWeight, 5).c_str()
+//         );
+
+//         m_is_built = true;
+//     }
+
+//     bool is_built()
+//     {
+//       return m_is_built;
+//     }
+
+//     void start_final_iteration()
+//     {
+//         m_is_final_iteration = true;
+//     }
+
+//     bool is_final_iteration()
+//     {
+//         return m_is_final_iteration;
+//     }
+
+// private:
+//     std::vector<STreeNode> m_nodes;
+//     foundation::AABB3f m_aabb;
+//     bool m_is_built;
+//     bool m_is_final_iteration;
+// };
 
 
 
