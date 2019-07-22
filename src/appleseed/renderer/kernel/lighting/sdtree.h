@@ -830,20 +830,6 @@ class MySTreeNode {
         m_d_tree->setStatisticalWeightBuilding(m_d_tree->statisticalWeightBuilding() * 0.5f);
     }
 
-    std::shared_ptr<MySTreeNode> choose_node(foundation::Vector3f &point) const
-    {
-        if (point[m_axis] < 0.5f)
-        {
-            point[m_axis] *= 2.0f;
-            return m_first_node;
-        }
-        else
-        {
-            point[m_axis] = (point[m_axis] - 0.5f) * 2;
-            return m_second_node;
-        }
-    }
-
     DTreeWrapper* d_tree_wrapper(foundation::Vector3f &point, foundation::Vector3f &size)
     {
         assert(point[m_axis] >= 0.0f && point[m_axis] <= 1.0f);
@@ -949,7 +935,21 @@ class MySTreeNode {
     // record
 
 private:
-    std::shared_ptr<MySTreeNode> m_first_node, m_second_node;
+    MySTreeNode *choose_node(foundation::Vector3f &point) const
+    {
+        if (point[m_axis] < 0.5f)
+        {
+            point[m_axis] *= 2.0f;
+            return m_first_node.get();
+        }
+        else
+        {
+            point[m_axis] = (point[m_axis] - 0.5f) * 2;
+            return m_second_node.get();
+        }
+    }
+
+    std::unique_ptr<MySTreeNode> m_first_node, m_second_node;
 
     // This member is only set if the node is a leaf node and nullptr otherwise.
     std::unique_ptr<DTreeWrapper> m_d_tree;
