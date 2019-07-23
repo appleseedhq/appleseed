@@ -887,7 +887,7 @@ class MySTreeNode {
         {
             m_first_node.reset(new MySTreeNode(m_axis, m_d_tree.get()));
             m_second_node.reset(new MySTreeNode(m_axis, m_d_tree.get()));
-            m_d_tree = nullptr;
+            m_d_tree.reset(nullptr);
         }
     }
 
@@ -903,6 +903,31 @@ class MySTreeNode {
         
         m_first_node->subdivide(required_samples);
         m_second_node->subdivide(required_samples);
+    }
+
+    void record(const foundation::AABB3f& splat_aabb, const foundation::AABB3f& node_aabb, const DTreeRecord& rec, EDirectionalFilter directionalFilter, EBsdfSamplingFractionLoss bsdfSamplingFractionLoss)
+    {
+        const foundation::AABB3f intersection_aabb(foundation::AABB3f::intersect(splat_aabb, node_aabb));
+
+        if(!intersection_aabb.is_valid())
+            return;
+
+        const float intersection_volume = intersection_aabb.volume();
+
+        if(intersection_volume <= 0.0f)
+            return;
+
+        if(m_d_tree != nullptr)
+            m_d_tree->record({rec.d, rec.radiance, rec.product, rec.woPdf, rec.bsdfPdf, rec.dTreePdf, rec.statisticalWeight * intersection_volume, rec.isDelta}, directionalFilter, bsdfSamplingFractionLoss);
+        else
+        {
+            const foundation::Vector3f node_size = node_aabb.extent();
+            foundation::Vector3f offset(0.0f);
+            offset[m_axis] = node_size[m_axis] * 0.5f;
+
+            m_first_node->record(splat_aabb, foundation::AABB3f(node_aabb.min, node_aabb.max - offset), rec, directionalFilter, bsdfSamplingFractionLoss);
+            m_second_node->record(splat_aabb, foundation::AABB3f(node_aabb.min + offset, node_aabb.max), rec, directionalFilter, bsdfSamplingFractionLoss);
+        }
     }
 
     void reset(const size_t max_depth, const float subdiv_threshold)
@@ -986,7 +1011,7 @@ class MySTreeNode {
     // record
 
 private:
-    MySTreeNode *choose_node(foundation::Vector3f &point) const
+    MySTreeNode* choose_node(foundation::Vector3f &point) const
     {
         if (point[m_axis] < 0.5f)
         {
@@ -1049,15 +1074,14 @@ public:
     // }
 
     // only called by GPTVertex
-    // void record(const foundation::Vector3f& p, const foundation::Vector3f& dTreeVoxelSize, DTreeRecord rec, EDirectionalFilter directionalFilter, EBsdfSamplingFractionLoss bsdfSamplingFractionLoss) {
-    //     float volume = 1;
-    //     for (int i = 0; i < 3; ++i) {
-    //         volume *= dTreeVoxelSize[i];
-    //     }
+    void record(const foundation::Vector3f& p, const foundation::Vector3f& dTreeVoxelSize, DTreeRecord rec, EDirectionalFilter directionalFilter, EBsdfSamplingFractionLoss bsdfSamplingFractionLoss) {
+        const foundation::AABB3f splat_aabb(p - dTreeVoxelSize * 0.5f, p + dTreeVoxelSize * 0.5f);
 
-    //     rec.statisticalWeight /= volume;
-    //     m_nodes[0].record(p - dTreeVoxelSize * 0.5f, p + dTreeVoxelSize * 0.5f, m_aabb.min, m_aabb.extent(), rec, directionalFilter, bsdfSamplingFractionLoss, m_nodes);
-    // }
+        assert(splat_aabb.is_valid());
+
+        rec.statisticalWeight /= splat_aabb.volume();
+        m_node.record(foundation::AABB3f(p - dTreeVoxelSize * 0.5f, p + dTreeVoxelSize * 0.5f), m_aabb, rec, directionalFilter, bsdfSamplingFractionLoss);
+    }
 
     // void dump(BlobWriter& blob) const {
     //     forEachDTreeWrapperConstP([&blob](const DTreeWrapper* dTree, const foundation::Vector3f& p, const foundation::Vector3f& size) {
@@ -1081,9 +1105,6 @@ public:
         }
 
         m_node.subdivide(sTreeThreshold);
-
-        // Uncomment once memory becomes an issue.
-        //m_nodes.shrink_to_fit();
     }
 
     const foundation::AABB3f& aabb() const {

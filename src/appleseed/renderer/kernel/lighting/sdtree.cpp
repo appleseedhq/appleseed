@@ -104,7 +104,7 @@ void GPTVertex::record_to_tree(
                 break;
             }
         case ESpatialFilter::EBox:
-            // sd_tree.record(point, dTreeVoxelSize, rec, directional_filter, bsdf_sampling_fraction_loss);
+            sd_tree.record(point, dTreeVoxelSize, rec, directional_filter, bsdf_sampling_fraction_loss);
             break;
     }
 }
