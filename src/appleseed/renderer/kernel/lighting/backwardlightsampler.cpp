@@ -227,8 +227,6 @@ float BackwardLightSampler::evaluate_pdf(
     const ShadingPoint&                 light_shading_point,
     const ShadingPoint&                 surface_shading_point) const
 {
-    assert(light_shading_point.is_triangle_primitive());
-
     const EmittingShapeKey shape_key(
         light_shading_point.get_assembly_instance().get_uid(),
         light_shading_point.get_object_instance_index(),
