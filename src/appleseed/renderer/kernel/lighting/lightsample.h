@@ -57,13 +57,13 @@ class EmittingShapeKey
   public:
     foundation::UniqueID            m_assembly_instance_uid;
     foundation::uint32              m_object_instance_index;
-    foundation::uint32              m_shape_index;
+    foundation::uint32              m_primitive_index;
 
     EmittingShapeKey();
     EmittingShapeKey(
         const foundation::UniqueID  assembly_instance_uid,
         const size_t                object_instance_index,
-        const size_t                shape_index);
+        const size_t                primitive_index);
 
     bool operator==(const EmittingShapeKey& rhs) const;
 };
@@ -128,17 +128,17 @@ inline EmittingShapeKey::EmittingShapeKey()
 inline EmittingShapeKey::EmittingShapeKey(
     const foundation::UniqueID              assembly_instance_uid,
     const size_t                            object_instance_index,
-    const size_t                            shape_index)
+    const size_t                            primitive_index)
   : m_assembly_instance_uid(static_cast<foundation::uint32>(assembly_instance_uid))
   , m_object_instance_index(static_cast<foundation::uint32>(object_instance_index))
-  , m_shape_index(static_cast<foundation::uint32>(shape_index))
+  , m_primitive_index(static_cast<foundation::uint32>(primitive_index))
 {
 }
 
 inline bool EmittingShapeKey::operator==(const EmittingShapeKey& rhs) const
 {
     return
-        m_shape_index == rhs.m_shape_index &&
+        m_primitive_index == rhs.m_primitive_index &&
         m_object_instance_index == rhs.m_object_instance_index &&
         m_assembly_instance_uid == rhs.m_assembly_instance_uid;
 }
@@ -154,7 +154,7 @@ inline size_t EmittingShapeKeyHasher::operator()(const EmittingShapeKey& key) co
         foundation::mix_uint32(
             static_cast<foundation::uint32>(key.m_assembly_instance_uid),
             key.m_object_instance_index,
-            key.m_shape_index);
+            key.m_primitive_index);
 }
 
 
