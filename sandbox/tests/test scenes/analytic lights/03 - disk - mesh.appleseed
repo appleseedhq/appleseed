@@ -4,7 +4,7 @@
     <scene>
         <camera name="Camera" model="pinhole_camera">
             <parameter name="aspect_ratio" value="1.33333" />
-            <parameter name="controller_target" value="0.369288 0.377331 -0.511152" />
+            <parameter name="controller_target" value="-0.228623 0.36241 0.27514" />
             <parameter name="film_dimensions" value="0.02489 0.0186675" />
             <parameter name="focal_length" value="0.035" />
             <parameter name="near_z" value="-0.001" />
@@ -16,9 +16,9 @@
             <parameter name="shutter_open_end_time" value="0" />
             <transform time="0">
                 <matrix>
-                    0.50305050611496005 -0.38997513055801403 0.77127146720886197 4.14921140670776367
-                    0.00000001490116100 0.89240986108779896 0.45122581720352201 2.58874273300170898
-                    -0.86425709724426303 -0.22698937356471999 0.44892716407775901 1.68899416923522994
+                    0.91955202817916903 -0.20739880204200700 0.33378124237060502 1.17938017845153809
+                    0.00000000000000000 0.84938454627990700 0.52777463197708097 2.58874273300170898
+                    -0.39296844601631198 -0.48531627655029302 0.78105306625366200 3.56988739967346191
                     0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
                 </matrix>
             </transform>
@@ -34,7 +34,7 @@
                 <parameter name="exposure" value="0.0" />
                 <parameter name="importance_multiplier" value="1.0" />
                 <parameter name="light_near_start" value="0.0" />
-                <parameter name="radiance" value="2.5" />
+                <parameter name="radiance" value="2.0" />
                 <parameter name="radiance_multiplier" value="1.0" />
             </edf>
             <material name="material1" model="generic_material">
@@ -51,23 +51,16 @@
                 <parameter name="edf" value="edf1" />
                 <parameter name="normal_map_up" value="z" />
             </material>
-            <object name="Sphere.001_obj" model="sphere_object">
+            <object name="disk_obj" model="mesh_object">
+                <parameter name="primitive" value="disk" />
                 <parameter name="radius" value="0.5" />
-            </object>
-            <object name="Sphere.002_obj" model="sphere_object">
-                <parameter name="radius" value="0.5" />
-            </object>
-            <object name="Sphere_obj" model="sphere_object">
-                <parameter name="radius" value="0.5" />
-            </object>
-            <object name="floorShape.001_obj" model="rectangle_object">
-                <parameter name="height" value="0.75" />
-                <parameter name="width" value="1.5" />
+                <parameter name="resolution_u" value="100" />
+                <parameter name="resolution_v" value="100" />
             </object>
             <object name="floorShape_obj" model="mesh_object">
                 <parameter name="filename" value="_geometry/floor.binarymesh" />
             </object>
-            <object_instance name="Sphere" object="Sphere_obj">
+            <object_instance name="disk" object="disk_obj">
                 <parameter name="medium_priority" value="0" />
                 <parameter name="photon_target" value="false" />
                 <parameter name="ray_bias_distance" value="0" />
@@ -84,63 +77,12 @@
                 <transform>
                     <matrix>
                         1.00000000000000000 0.00000000000000000 0.00000000000000000 0.00000000000000000
-                        0.00000000000000000 0.00000000000000000 1.00000000000000000 0.50000000000000000
-                        0.00000000000000000 -1.00000000000000000 0.00000000000000000 -1.00000000000000000
+                        0.00000000000000000 0.00000000000000000 1.00000000000000000 0.55000000000000004
+                        0.00000000000000000 1.00000000000000000 0.00000000000000000 0.00000000000000000
                         0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
                     </matrix>
                 </transform>
-                <assign_material slot="default" side="front" material="material1" />
-                <assign_material slot="default" side="back" material="material1" />
-            </object_instance>
-            <object_instance name="Sphere.001" object="Sphere.001_obj">
-                <parameter name="medium_priority" value="0" />
-                <parameter name="photon_target" value="false" />
-                <parameter name="ray_bias_distance" value="0" />
-                <parameter name="ray_bias_method" value="none" />
-                <parameters name="visibility">
-                    <parameter name="camera" value="true" />
-                    <parameter name="diffuse" value="true" />
-                    <parameter name="glossy" value="true" />
-                    <parameter name="light" value="true" />
-                    <parameter name="shadow" value="true" />
-                    <parameter name="specular" value="true" />
-                    <parameter name="transparency" value="true" />
-                </parameters>
-                <transform>
-                    <matrix>
-                        1.00000000000000000 0.00000000000000000 0.00000000000000000 -1.00000000000000000
-                        0.00000000000000000 0.00000000000000000 1.00000000000000000 0.50000000000000000
-                        0.00000000000000000 -1.00000000000000000 0.00000000000000000 -1.00000000000000000
-                        0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
-                    </matrix>
-                </transform>
-                <assign_material slot="default" side="front" material="material1" />
-                <assign_material slot="default" side="back" material="material1" />
-            </object_instance>
-            <object_instance name="Sphere.002" object="Sphere.002_obj">
-                <parameter name="medium_priority" value="0" />
-                <parameter name="photon_target" value="false" />
-                <parameter name="ray_bias_distance" value="0" />
-                <parameter name="ray_bias_method" value="none" />
-                <parameters name="visibility">
-                    <parameter name="camera" value="true" />
-                    <parameter name="diffuse" value="true" />
-                    <parameter name="glossy" value="true" />
-                    <parameter name="light" value="true" />
-                    <parameter name="shadow" value="true" />
-                    <parameter name="specular" value="true" />
-                    <parameter name="transparency" value="true" />
-                </parameters>
-                <transform>
-                    <matrix>
-                        1.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
-                        0.00000000000000000 0.00000000000000000 1.00000000000000000 0.50000000000000000
-                        0.00000000000000000 -1.00000000000000000 0.00000000000000000 -1.00000000000000000
-                        0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
-                    </matrix>
-                </transform>
-                <assign_material slot="default" side="front" material="material1" />
-                <assign_material slot="default" side="back" material="material1" />
+                <assign_material slot="default" side="front" material="material2" />
             </object_instance>
             <object_instance name="floor" object="floorShape_obj.mesh">
                 <parameter name="medium_priority" value="0" />
@@ -167,31 +109,6 @@
                 <assign_material slot="default" side="front" material="material1" />
                 <assign_material slot="default" side="back" material="material1" />
             </object_instance>
-            <object_instance name="floor.001" object="floorShape.001_obj">
-                <parameter name="medium_priority" value="0" />
-                <parameter name="photon_target" value="false" />
-                <parameter name="ray_bias_distance" value="0" />
-                <parameter name="ray_bias_method" value="none" />
-                <parameters name="visibility">
-                    <parameter name="camera" value="false" />
-                    <parameter name="diffuse" value="false" />
-                    <parameter name="glossy" value="true" />
-                    <parameter name="light" value="true" />
-                    <parameter name="shadow" value="true" />
-                    <parameter name="specular" value="true" />
-                    <parameter name="transparency" value="true" />
-                </parameters>
-                <transform>
-                    <matrix>
-                        1.00000000000000000 0.00000000000000000 0.00000000000000000 0.00000000000000000
-                        0.00000000000000000 0.00000000000000000 1.00000000000000000 0.34999999999999998
-                        0.00000000000000000 1.00000000000000000 0.00000000000000000 0.00000000000000000
-                        0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
-                    </matrix>
-                </transform>
-                <assign_material slot="default" side="front" material="material2" />
-                <assign_material slot="default" side="back" material="material2" />
-            </object_instance>
         </assembly>
         <assembly_instance name="assembly_inst" assembly="assembly">
         </assembly_instance>
@@ -201,17 +118,16 @@
             <parameter name="camera" value="Camera" />
             <parameter name="denoise_scales" value="3" />
             <parameter name="denoiser" value="off" />
-            <parameter name="enable_dithering" value="true" />
             <parameter name="filter" value="blackman-harris" />
             <parameter name="filter_size" value="1.5" />
             <parameter name="mark_invalid_pixels" value="false" />
             <parameter name="noise_seed" value="0" />
-            <parameter name="patch_distance_threshold" value="1.0" />
+            <parameter name="patch_distance_threshold" value="1" />
             <parameter name="prefilter_spikes" value="true" />
             <parameter name="random_pixel_order" value="true" />
             <parameter name="resolution" value="768 576" />
             <parameter name="skip_denoised" value="true" />
-            <parameter name="spike_threshold" value="2.0" />
+            <parameter name="spike_threshold" value="2" />
             <parameter name="tile_size" value="64 64" />
         </frame>
     </output>
@@ -283,6 +199,7 @@
             <parameter name="lighting_engine" value="pt" />
             <parameter name="passes" value="1" />
             <parameter name="pixel_renderer" value="uniform" />
+            <parameter name="rendering_threads" value="1" />
             <parameter name="shading_result_framebuffer" value="ephemeral" />
             <parameter name="spectrum_mode" value="rgb" />
             <parameter name="tile_renderer" value="generic" />
@@ -311,8 +228,8 @@
                 <parameter name="enable_dl" value="true" />
                 <parameter name="enable_ibl" value="true" />
                 <parameter name="ibl_env_samples" value="1.000000" />
-                <parameter name="max_bounces" value="-1" />
-                <parameter name="max_diffuse_bounces" value="0" />
+                <parameter name="max_bounces" value="0" />
+                <parameter name="max_diffuse_bounces" value="-1" />
                 <parameter name="max_glossy_bounces" value="-1" />
                 <parameter name="max_specular_bounces" value="-1" />
                 <parameter name="max_volume_bounces" value="8" />

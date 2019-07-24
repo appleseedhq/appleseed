@@ -54,8 +54,9 @@
             <object name="floorShape_obj" model="mesh_object">
                 <parameter name="filename" value="_geometry/floor.binarymesh" />
             </object>
-            <object name="triangle_obj" model="mesh_object">
-                <parameter name="filename" value="_geometry/triangle.binarymesh" />
+            <object name="rect_obj" model="rectangle_object">
+                <parameter name="height" value="1.0" />
+                <parameter name="width" value="1.0" />
             </object>
             <object_instance name="floor" object="floorShape_obj.mesh">
                 <parameter name="medium_priority" value="0" />
@@ -82,14 +83,14 @@
                 <assign_material slot="default" side="front" material="material1" />
                 <assign_material slot="default" side="back" material="material1" />
             </object_instance>
-            <object_instance name="triangle" object="triangle_obj.mesh">
+            <object_instance name="rect" object="rect_obj">
                 <parameter name="medium_priority" value="0" />
                 <parameter name="photon_target" value="false" />
                 <parameter name="ray_bias_distance" value="0" />
                 <parameter name="ray_bias_method" value="none" />
                 <parameters name="visibility">
                     <parameter name="camera" value="true" />
-                    <parameter name="diffuse" value="false" />
+                    <parameter name="diffuse" value="true" />
                     <parameter name="glossy" value="true" />
                     <parameter name="light" value="true" />
                     <parameter name="shadow" value="true" />
@@ -99,8 +100,8 @@
                 <transform>
                     <matrix>
                         1.00000000000000000 0.00000000000000000 0.00000000000000000 0.00000000000000000
-                        0.00000000000000000 0.00000000000000000 1.00000000000000000 0.00000000000000000
-                        0.00000000000000000 -1.00000000000000000 0.00000000000000000 0.00000000000000000
+                        0.00000000000000000 0.00000000000000000 1.00000000000000000 0.55000000000000004
+                        0.00000000000000000 1.00000000000000000 0.00000000000000000 0.00000000000000000
                         0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
                     </matrix>
                 </transform>

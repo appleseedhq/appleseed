@@ -54,9 +54,12 @@
             <object name="floorShape_obj" model="mesh_object">
                 <parameter name="filename" value="_geometry/floor.binarymesh" />
             </object>
-            <object name="rect_obj" model="rectangle_object">
-                <parameter name="height" value="1" />
-                <parameter name="width" value="1" />
+            <object name="rect_obj" model="mesh_object">
+                <parameter name="height" value="1.0" />
+                <parameter name="primitive" value="grid" />
+                <parameter name="resolution_u" value="1" />
+                <parameter name="resolution_v" value="1" />
+                <parameter name="width" value="1.0" />
             </object>
             <object_instance name="floor" object="floorShape_obj.mesh">
                 <parameter name="medium_priority" value="0" />
@@ -68,7 +71,7 @@
                     <parameter name="diffuse" value="true" />
                     <parameter name="glossy" value="true" />
                     <parameter name="light" value="true" />
-                    <parameter name="shadow" value="false" />
+                    <parameter name="shadow" value="true" />
                     <parameter name="specular" value="true" />
                     <parameter name="transparency" value="true" />
                 </parameters>
@@ -90,7 +93,7 @@
                 <parameter name="ray_bias_method" value="none" />
                 <parameters name="visibility">
                     <parameter name="camera" value="true" />
-                    <parameter name="diffuse" value="false" />
+                    <parameter name="diffuse" value="true" />
                     <parameter name="glossy" value="true" />
                     <parameter name="light" value="true" />
                     <parameter name="shadow" value="true" />

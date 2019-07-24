@@ -64,10 +64,10 @@
                 <parameter name="ray_bias_method" value="none" />
                 <parameters name="visibility">
                     <parameter name="camera" value="true" />
-                    <parameter name="diffuse" value="false" />
+                    <parameter name="diffuse" value="true" />
                     <parameter name="glossy" value="true" />
                     <parameter name="light" value="true" />
-                    <parameter name="shadow" value="false" />
+                    <parameter name="shadow" value="true" />
                     <parameter name="specular" value="true" />
                     <parameter name="transparency" value="true" />
                 </parameters>
