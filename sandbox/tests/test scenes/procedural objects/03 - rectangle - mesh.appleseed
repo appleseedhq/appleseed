@@ -44,9 +44,12 @@
                 <parameter name="displacement_method" value="bump" />
                 <parameter name="normal_map_up" value="z" />
             </material>
-            <object name="ground_grid" model="rectangle_object">
-                <parameter name="height" value="1.0" />
-                <parameter name="width" value="1.0" />
+            <object name="ground_grid" model="mesh_object">
+                <parameter name="height" value="0.6" />
+                <parameter name="primitive" value="grid" />
+                <parameter name="resolution_u" value="1" />
+                <parameter name="resolution_v" value="1" />
+                <parameter name="width" value="0.9" />
             </object>
             <object_instance name="ground_grid_inst" object="ground_grid">
                 <assign_material slot="default" side="front" material="material1" />
