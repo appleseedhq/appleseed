@@ -158,7 +158,7 @@
             </parameters>
             <parameters name="uniform_pixel_renderer">
                 <parameter name="force_antialiasing" value="false" />
-                <parameter name="samples" value="128" />
+                <parameter name="samples" value="32" />
             </parameters>
         </configuration>
         <configuration name="interactive" base="base_interactive">
