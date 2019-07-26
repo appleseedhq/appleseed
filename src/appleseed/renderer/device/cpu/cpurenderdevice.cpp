@@ -76,9 +76,10 @@ CPURenderDevice::CPURenderDevice(
     m_texture_system->attribute("latlong_up", "y");
     m_texture_system->attribute("flip_t", 1);
 
-    m_renderer_services = new RendererServices(
-        project,
-        reinterpret_cast<OIIO::TextureSystem&>(*m_texture_system));
+    m_renderer_services =
+        new RendererServices(
+            project,
+            reinterpret_cast<OIIO::TextureSystem&>(*m_texture_system));
 
     RENDERER_LOG_DEBUG("creating osl shading system...");
     m_shading_system =
@@ -108,6 +109,8 @@ CPURenderDevice::CPURenderDevice(
 
 CPURenderDevice::~CPURenderDevice()
 {
+    m_components.reset();
+
     RENDERER_LOG_DEBUG("destroying osl shading system...");
     get_project().get_scene()->release_optimized_osl_shader_groups();
     m_shading_system->release();
