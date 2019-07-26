@@ -410,66 +410,6 @@ if (WIN32)
     )
 endif ()
 
-set (appleseedpython_sources
-    ../appleseed.python/__init__.py
-    ../appleseed.python/bindaov.cpp
-    ../appleseed.python/bindappleseed.cpp
-    ../appleseed.python/bindassembly.cpp
-    ../appleseed.python/bindbasis.cpp
-    ../appleseed.python/bindbbox.cpp
-    ../appleseed.python/bindbsdf.cpp
-    ../appleseed.python/bindbssrdf.cpp
-    ../appleseed.python/bindcamera.cpp
-    ../appleseed.python/bindcolor.cpp
-    ../appleseed.python/bindcurveobject.cpp
-    ../appleseed.python/binddisplay.cpp
-    ../appleseed.python/bindedf.cpp
-    ../appleseed.python/bindentity.cpp
-    ../appleseed.python/bindentitycontainers.h
-    ../appleseed.python/bindenvironment.cpp
-    ../appleseed.python/bindframe.cpp
-    ../appleseed.python/bindfresnel.cpp
-    ../appleseed.python/bindimage.cpp
-    ../appleseed.python/bindlight.cpp
-    ../appleseed.python/bindlogger.cpp
-    ../appleseed.python/bindmasterrenderer.cpp
-    ../appleseed.python/bindmaterial.cpp
-    ../appleseed.python/bindmatrix.cpp
-    ../appleseed.python/bindmeshobject.cpp
-    ../appleseed.python/bindmurmurhash.cpp
-    ../appleseed.python/bindobject.cpp
-    ../appleseed.python/bindpostprocessingstage.cpp
-    ../appleseed.python/bindproject.cpp
-    ../appleseed.python/bindquaternion.cpp
-    ../appleseed.python/bindrenderercontroller.cpp
-    ../appleseed.python/bindscene.cpp
-    ../appleseed.python/bindshadercompiler.cpp
-    ../appleseed.python/bindshadergroup.cpp
-    ../appleseed.python/bindshaderquery.cpp
-    ../appleseed.python/bindsurfaceshader.cpp
-    ../appleseed.python/bindtexture.cpp
-    ../appleseed.python/bindtilecallback.cpp
-    ../appleseed.python/bindtransform.cpp
-    ../appleseed.python/bindutility.cpp
-    ../appleseed.python/bindvector.cpp
-    ../appleseed.python/bindvolume.cpp
-    ../appleseed.python/dict2dict.cpp
-    ../appleseed.python/dict2dict.h
-    ../appleseed.python/gillocks.h
-    ../appleseed.python/gillocks.cpp
-    ../appleseed.python/logtarget.py
-    ../appleseed.python/metadata.h
-    ../appleseed.python/module.cpp
-    ../appleseed.python/unalignedmatrix44.h
-    ../appleseed.python/unalignedtransform.h
-)
-list (APPEND appleseed.studio_sources
-    ${appleseedpython_sources}
-)
-source_group ("appleseed.python" FILES
-    ${appleseedpython_sources}
-)
-
 
 #--------------------------------------------------------------------------------------------------
 # Generate ui_* files.
@@ -535,6 +475,7 @@ QT5_ADD_RESOURCES (appleseed.studio_resource_files
 
 add_executable (appleseed.studio
     ${appleseed.studio_sources}
+    $<TARGET_OBJECTS:appleseed.py2.obj>
     ${appleseed.studio_generated_ui_files}
     ${appleseed.studio_generated_moc_h_files}
     ${appleseed.studio_resource_files}

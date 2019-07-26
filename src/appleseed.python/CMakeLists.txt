@@ -139,8 +139,12 @@ source_group ("" FILES
 #--------------------------------------------------------------------------------------------------
 
 if (WITH_PYTHON2_BINDINGS)
-    add_library (appleseed.python MODULE
+    add_library (appleseed.py2.obj OBJECT
         ${appleseed.python_sources}
+    )
+
+    add_library (appleseed.python MODULE
+        $<TARGET_OBJECTS:appleseed.py2.obj>
     )
 
     set_target_properties (appleseed.python PROPERTIES FOLDER "Python Bindings")
@@ -192,7 +196,7 @@ include_directories (
 )
 
 if (WITH_PYTHON2_BINDINGS)
-    target_include_directories (appleseed.python PRIVATE ${PYTHON_INCLUDE_DIRS})
+    target_include_directories (appleseed.py2.obj PRIVATE ${PYTHON_INCLUDE_DIRS})
 endif ()
 
 if (WITH_PYTHON3_BINDINGS)
@@ -205,9 +209,9 @@ endif ()
 #--------------------------------------------------------------------------------------------------
 
 if (WITH_PYTHON2_BINDINGS)
-    apply_preprocessor_definitions (appleseed.python)
+    apply_preprocessor_definitions (appleseed.py2.obj)
 
-    append_custom_preprocessor_definitions (appleseed.python
+    append_custom_preprocessor_definitions (appleseed.py2.obj
         APPLESEED_ENABLE_IMATH_INTEROP
     )
 endif ()
