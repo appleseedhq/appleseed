@@ -140,7 +140,8 @@ source_group ("" FILES
 
 if (WITH_PYTHON2_BINDINGS)
     add_library (appleseed.py2.obj OBJECT
-        ${appleseed.python_sources})
+        ${appleseed.python_sources}
+    )
 
     add_library (appleseed.python MODULE
         $<TARGET_OBJECTS:appleseed.py2.obj>
