@@ -52,6 +52,7 @@ set (foundation_array_sources
     foundation/array/array.h
     foundation/array/arrayallocator.h
     foundation/array/arrayref.h
+    foundation/array/arraytraits.cpp
     foundation/array/arraytraits.h
     foundation/array/arrayview.h
     foundation/array/exception.cpp

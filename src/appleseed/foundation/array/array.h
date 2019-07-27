@@ -85,6 +85,9 @@ class APPLESEED_DLLSYMBOL Array
     // Return the number of items in the array.
     size_t size() const;
 
+    // Return the size in bytes of an item in the array.
+    size_t item_size() const;
+
     // Return the capacity of the array.
     size_t capacity() const;
 
@@ -99,6 +102,7 @@ class APPLESEED_DLLSYMBOL Array
 
     // Return a pointer to the elements.
     const void* data() const;
+    void* data();
 
     // Remove excess capacity from the array.
     void shrink_to_fit();

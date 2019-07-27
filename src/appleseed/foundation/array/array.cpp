@@ -226,6 +226,12 @@ size_t Array::size() const
     return m_self->size();
 }
 
+size_t Array::item_size() const
+{
+    assert(!is_moved());
+    return m_self->item_size();
+}
+
 size_t Array::capacity() const
 {
     assert(!is_moved());
@@ -251,6 +257,12 @@ void Array::resize(const size_t n)
 }
 
 const void* Array::data() const
+{
+    assert(!is_moved());
+    return begin();
+}
+
+void* Array::data()
 {
     assert(!is_moved());
     return begin();

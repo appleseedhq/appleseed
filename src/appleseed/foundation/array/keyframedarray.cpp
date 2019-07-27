@@ -43,19 +43,29 @@ namespace foundation
 // KeyFramedArray class implementation.
 //
 
-KeyFramedArray::KeyFramedArray(const ArrayType type, const size_t size)
-  : m_key_count(1)
+KeyFramedArray::KeyFramedArray()
+  : m_keys(nullptr)
+  , m_key_count(0)
 {
-    m_keys = new Array[1];
-    m_keys[0] = Array(type, size);
+}
+
+KeyFramedArray::KeyFramedArray(const ArrayType type, const size_t size, const size_t num_keys)
+  : m_key_count(num_keys)
+{
+    m_keys = new Array[num_keys];
+
+    for (size_t i = 0; i < num_keys; ++i)
+        m_keys[i] = Array(type, size);
 }
 
 KeyFramedArray::KeyFramedArray(Array&& first_key, const size_t num_keys)
   : m_key_count(num_keys)
 {
     m_keys = new Array[num_keys];
+
     for (size_t i = 1; i < num_keys; ++i)
         m_keys[i] = Array(first_key.type(), first_key.size());
+
     m_keys[0] = move(first_key);
 }
 
@@ -75,6 +85,7 @@ KeyFramedArray::KeyFramedArray(KeyFramedArray&& rhs) APPLESEED_NOEXCEPT
   : m_keys(rhs.m_keys)
   , m_key_count(rhs.m_key_count)
 {
+    rhs.m_key_count = 0;
     rhs.m_keys = nullptr;
 }
 
@@ -97,6 +108,12 @@ ArrayType KeyFramedArray::type() const
 {
     assert(!is_moved());
     return m_keys[0].type();
+}
+
+void KeyFramedArray::resize(const size_t size, const size_t keys)
+{
+    KeyFramedArray tmp(Array(type(), size), keys);
+    swap(*this, tmp);
 }
 
 const Array* KeyFramedArray::begin() const
@@ -178,11 +195,11 @@ bool KeyFramedArray::all_keyframes_equal() const
     if (m_key_count > 1)
     {
         // Check that the keyframes are not empty.
-        if (all_of(begin() + 1, end(), [](const Array& x) { return x.empty(); }))
+        if (all_of(begin(), end(), [](const Array& x) { return x.empty(); }))
             return true;
 
         // Check that all the keyframe values are equal to the first.
-        for (size_t i = 0; i < m_key_count; ++i)
+        for (size_t i = 1; i < m_key_count; ++i)
         {
             if (m_keys[i] != m_keys[0])
                 return false;
