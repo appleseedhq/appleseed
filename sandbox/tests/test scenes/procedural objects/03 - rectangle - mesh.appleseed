@@ -104,6 +104,9 @@
                 <parameter name="force_antialiasing" value="false" />
                 <parameter name="samples" value="16" />
             </parameters>
+            <parameters name="generic_sample_renderer">
+                <parameter name="report_self_intersections" value="true" />
+            </parameters>
         </configuration>
         <configuration name="interactive" base="base_interactive">
             <parameter name="lighting_engine" value="pt" />
