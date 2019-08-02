@@ -674,7 +674,7 @@ namespace
                     return;
 
                 const PathGuidedSampler path_guided_sampler(
-                    m_sd_tree->dTreeWrapper(foundation::Vector3f(shading_point.get_point())),
+                    m_sd_tree->get_d_tree(foundation::Vector3f(shading_point.get_point())),
                     m_params.m_bsdf_sampling_fraction,
                     bsdf,
                     bsdf_data,
@@ -725,7 +725,7 @@ namespace
                         m_params.m_ibl_env_sample_count);
 
                 const PathGuidedSampler path_guided_sampler(
-                    m_sd_tree->dTreeWrapper(foundation::Vector3f(shading_point.get_point())),
+                    m_sd_tree->get_d_tree(foundation::Vector3f(shading_point.get_point())),
                     m_params.m_bsdf_sampling_fraction,
                     bsdf,
                     bsdf_data,

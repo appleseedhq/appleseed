@@ -111,14 +111,14 @@ namespace
             const double remaining_time = (elapsed_time / m_rendered_tiles) * (total_tiles - m_rendered_tiles);
 
             // Print a progress message.
-            // if (m_rendered_tiles <= total_tiles)
-            // {
-            //     LOG_INFO(
-            //         m_logger,
-            //         "rendering, %s done; about %s remaining...",
-            //         pretty_percent(m_rendered_pixels, total_pixels).c_str(),
-            //         pretty_time(remaining_time).c_str());
-            // }   
+            if (m_rendered_tiles <= total_tiles)
+            {
+                LOG_INFO(
+                    m_logger,
+                    "rendering, %s done; about %s remaining...",
+                    pretty_percent(m_rendered_pixels, total_pixels).c_str(),
+                    pretty_time(remaining_time).c_str());
+            }   
         }
 
       private:

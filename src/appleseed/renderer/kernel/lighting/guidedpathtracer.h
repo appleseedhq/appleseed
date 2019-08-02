@@ -651,10 +651,9 @@ size_t GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
     if(!m_sd_tree->is_final_iteration())
         guided_path.record_to_tree(
             *m_sd_tree,
-            0.5f, //probably not correct
-            ESpatialFilter::EStochasticBox,
-            EDirectionalFilter::EBox,
-            EBsdfSamplingFractionLoss::ENone,
+            1.0f, //probably not correct
+            SpatialFilter::StochasticBox,
+            DirectionalFilter::Box,
             sampling_context);
 
     return vertex.m_path_length;
@@ -724,7 +723,7 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
         return false;
     
     foundation::Vector3f voxel_size;
-    DTreeWrapper* d_tree = m_sd_tree->dTreeWrapper(foundation::Vector3f(vertex.get_point()), voxel_size);
+    DTree* d_tree = m_sd_tree->get_d_tree(foundation::Vector3f(vertex.get_point()), voxel_size);
     float wo_pdf, bsdf_pdf, d_tree_pdf;
 
     PathGuidedSampler sampler(

@@ -20,7 +20,7 @@ namespace renderer
 {
 
 PathGuidedSampler::PathGuidedSampler(
-    DTreeWrapper*                   d_tree,
+    DTree*                          d_tree,
     const float                     bsdf_sampling_fraction,
     const BSDF&                     bsdf,
     const void*                     bsdf_data,
@@ -163,13 +163,17 @@ bool PathGuidedSampler::guide_path_extension(
             wo_pdf = m_bsdf_sampling_fraction;
             return is_path_guided;
         }
+
+        guided_path_extension_pdf(bsdf_sample, wo_pdf, bsdf_pdf, d_tree_pdf, false);
     }
     else
     {
         is_path_guided = true;
         sample.x = (sample.x - m_bsdf_sampling_fraction) / (1 - m_bsdf_sampling_fraction);
-        const foundation::Vector3f d_tree_dir = m_d_tree->sample(sampling_context);
-        bsdf_sample.m_incoming = foundation::Dual3f(d_tree_dir);
+        DTreeSample d_tree_sample;
+        m_d_tree->sample(sampling_context, d_tree_sample);
+        bsdf_sample.m_incoming = foundation::Dual3f(d_tree_sample.direction);
+        d_tree_pdf = d_tree_sample.pdf;
 
         bsdf_pdf = m_bsdf.evaluate(
             m_bsdf_data,
@@ -184,9 +188,8 @@ bool PathGuidedSampler::guide_path_extension(
         bsdf_sample.set_to_scattering(
             ScatteringMode::has_diffuse(m_bsdf.get_modes()) ? ScatteringMode::Diffuse : ScatteringMode::Glossy,
             bsdf_pdf);
+        guided_path_extension_pdf(bsdf_sample, wo_pdf, bsdf_pdf, d_tree_pdf, true);
     }
-
-    guided_path_extension_pdf(bsdf_sample, wo_pdf, bsdf_pdf, d_tree_pdf);
 
     return is_path_guided;
 }
@@ -195,11 +198,12 @@ void PathGuidedSampler::guided_path_extension_pdf(
     const BSDFSample&               bsdf_sample,
     float&                          wo_pdf,
     float&                          bsdf_pdf,
-    float&                          d_tree_pdf) const
+    float&                          d_tree_pdf,
+    const bool                      d_tree_pdf_is_set) const
 {
-    d_tree_pdf = 0;
-
-    d_tree_pdf = m_d_tree->pdf(bsdf_sample.m_incoming.get_value());
+    if(!d_tree_pdf_is_set)
+        d_tree_pdf = m_d_tree->pdf(bsdf_sample.m_incoming.get_value());
+        
     wo_pdf = m_bsdf_sampling_fraction * bsdf_pdf + (1 - m_bsdf_sampling_fraction) * d_tree_pdf;
 }
 

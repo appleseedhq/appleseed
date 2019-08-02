@@ -19,7 +19,7 @@ class PathGuidedSampler
 {
   public:
     PathGuidedSampler(
-        DTreeWrapper*                   d_tree,
+        DTree*                        d_tree,
         const float                     bsdf_sampling_fraction,
         const BSDF&                     bsdf,
         const void*                     bsdf_data,
@@ -59,7 +59,8 @@ class PathGuidedSampler
         const BSDFSample&               bsdf_sample,
         float&                          wo_pdf,
         float&                          bsdf_pdf,
-        float&                          d_tree_pdf) const;
+        float&                          d_tree_pdf,
+        const bool                      d_tree_pdf_is_set) const;
 
     void guided_bsdf_evaluation(
         const BSDFSample&               bsdf_sample,
@@ -68,7 +69,7 @@ class PathGuidedSampler
         float&                          d_tree_pdf,
         DirectShadingComponents&        value) const;
 
-    DTreeWrapper*                       m_d_tree;
+    DTree*                            m_d_tree;
     const float                         m_bsdf_sampling_fraction;
     const bool                          m_sd_tree_is_built;
 };

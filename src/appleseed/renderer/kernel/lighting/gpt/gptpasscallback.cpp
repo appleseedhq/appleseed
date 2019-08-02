@@ -101,8 +101,7 @@ void GPTPassCallback::on_pass_begin(
     {
         // Clear the frame.
         m_framebuffer->clear();
-        m_sd_tree->buildSDTree();
-        m_sd_tree->resetSDTree(m_iter, m_params.m_samples_per_pass);
+        m_sd_tree->build(m_iter);
     }
 
     ++m_iter;
