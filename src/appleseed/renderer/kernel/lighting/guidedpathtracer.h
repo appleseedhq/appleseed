@@ -715,6 +715,11 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     ShadingRay&                 next_ray,
     GPTVertexPath&              guided_path)
 {
+    foundation::Vector3f voxel_size;
+    DTree *d_tree = m_sd_tree->get_d_tree(foundation::Vector3f(vertex.get_point()), voxel_size);
+    const float sampling_fraction = d_tree->bsdfSamplingFraction();
+    guided_path.set_sampling_fraction(sampling_fraction);
+    
     // Let the path visitor handle the scattering event.
     m_path_visitor.on_scatter(vertex, guided_path);
 
@@ -722,13 +727,11 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     if (vertex.m_scattering_modes == ScatteringMode::None)
         return false;
     
-    foundation::Vector3f voxel_size;
-    DTree* d_tree = m_sd_tree->get_d_tree(foundation::Vector3f(vertex.get_point()), voxel_size);
     float wo_pdf, bsdf_pdf, d_tree_pdf;
 
     PathGuidedSampler sampler(
         d_tree,
-        m_bsdf_sampling_fraction,
+        sampling_fraction,
         *vertex.m_bsdf,
         vertex.m_bsdf_data,
         vertex.m_scattering_modes,

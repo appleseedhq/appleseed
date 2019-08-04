@@ -55,9 +55,97 @@ static void atomic_add(std::atomic<float>& atomic, const float value)
         ;
 }
 
+inline float logistic(float x)
+{
+    return 1 / (1 + std::exp(-x));
+}
+
 foundation::Vector3f cylindrical_to_cartesian(const foundation::Vector2f &cylindrical_direction);
 
 foundation::Vector2f cartesian_to_cylindrical(const foundation::Vector3f &d);
+
+// Implements the stochastic-gradient-based Adam optimizer [Kingma and Ba 2014]
+class AdamOptimizer
+{
+public:
+    AdamOptimizer(float learningRate, int batchSize = 1, float epsilon = 1e-08f, float beta1 = 0.9f, float beta2 = 0.999f)
+    {
+        m_state.iter = 0;
+        m_state.firstMoment = 0;
+        m_state.secondMoment = 0;
+        m_state.variable = 0;
+        m_state.batchAccumulation = 0;
+        m_state.batchGradient = 0;
+        m_hparams = {learningRate, batchSize, epsilon, beta1, beta2};
+    }
+
+    AdamOptimizer &operator=(const AdamOptimizer &arg)
+    {
+        m_state = arg.m_state;
+        m_hparams = arg.m_hparams;
+        return *this;
+    }
+
+    AdamOptimizer(const AdamOptimizer &arg)
+    {
+        *this = arg;
+    }
+
+    void append(float gradient, float statisticalWeight)
+    {
+        m_state.batchGradient += gradient * statisticalWeight;
+        m_state.batchAccumulation += statisticalWeight;
+
+        if (m_state.batchAccumulation > m_hparams.batchSize)
+        {
+            step(m_state.batchGradient / m_state.batchAccumulation);
+
+            m_state.batchGradient = 0;
+            m_state.batchAccumulation = 0;
+        }
+    }
+
+    void step(float gradient)
+    {
+        ++m_state.iter;
+
+        float actualLearningRate = m_hparams.learningRate * std::sqrt(1 - std::pow(m_hparams.beta2, m_state.iter)) / (1 - std::pow(m_hparams.beta1, m_state.iter));
+        m_state.firstMoment = m_hparams.beta1 * m_state.firstMoment + (1 - m_hparams.beta1) * gradient;
+        m_state.secondMoment = m_hparams.beta2 * m_state.secondMoment + (1 - m_hparams.beta2) * gradient * gradient;
+        m_state.variable -= actualLearningRate * m_state.firstMoment / (std::sqrt(m_state.secondMoment) + m_hparams.epsilon);
+
+        // Clamp the variable to the range [-20, 20] as a safeguard to avoid numerical instability:
+        // since the sigmoid involves the exponential of the variable, value of -20 or 20 already yield
+        // in *extremely* small and large results that are pretty much never necessary in practice.
+        m_state.variable = std::min(std::max(m_state.variable, -20.0f), 20.0f);
+    }
+
+    float variable() const
+    {
+        return m_state.variable;
+    }
+
+private:
+    struct State
+    {
+        int iter;
+        float firstMoment;
+        float secondMoment;
+        float variable;
+
+        float batchAccumulation;
+        float batchGradient;
+    } m_state;
+
+    struct Hyperparameters
+    {
+        float learningRate;
+        int batchSize;
+        float epsilon;
+        float beta1;
+        float beta2;
+    } m_hparams;
+};
 
 class QuadTreeNode
 {
@@ -379,14 +467,15 @@ class DTree
       : m_root_node(true)
       , m_current_iter_sample_weight(0.0f)
       , m_previous_iter_sample_weight(0.0f)
+      , bsdfSamplingFractionOptimizer(0.01f)
     {}
 
     DTree(const DTree& other)
       : m_current_iter_sample_weight(other.m_current_iter_sample_weight.load(std::memory_order_relaxed))
       , m_previous_iter_sample_weight(other.m_previous_iter_sample_weight)
       , m_root_node(other.m_root_node)
-    {
-    }
+      , bsdfSamplingFractionOptimizer(other.bsdfSamplingFractionOptimizer)
+    {}
 
     void record(const DTreeRecord& d_tree_record)
     {
@@ -421,6 +510,11 @@ class DTree
         }
         default:
             break;
+        }
+
+        if (d_tree_record.product > 0)
+        {
+            optimizeBsdfSamplingFraction(d_tree_record, 1.0f);
         }
     }
 
@@ -500,10 +594,83 @@ class DTree
         return m_root_node.radiance_sum() * (1.0f / m_previous_iter_sample_weight) * foundation::RcpFourPi<float>();
     }
 
-  private:
+    inline float bsdfSamplingFraction(float variable) const
+    {
+        return logistic(variable);
+    }
+
+    inline float dBsdfSamplingFraction_dVariable(float variable) const
+    {
+        float fraction = bsdfSamplingFraction(variable);
+        return fraction * (1 - fraction);
+    }
+
+    inline float bsdfSamplingFraction() const
+    {
+        return bsdfSamplingFraction(bsdfSamplingFractionOptimizer.variable());
+    }
+
+    void optimizeBsdfSamplingFraction(const DTreeRecord &rec, float ratioPower)
+    {
+        m_lock.lock();
+
+        // GRADIENT COMPUTATION
+        float variable = bsdfSamplingFractionOptimizer.variable();
+        float samplingFraction = bsdfSamplingFraction(variable);
+
+        // Loss gradient w.r.t. sampling fraction
+        float mixPdf = samplingFraction * rec.bsdf_pdf + (1 - samplingFraction) * rec.d_tree_pdf;
+        float ratio = std::pow(rec.product / mixPdf, ratioPower);
+        float dLoss_dSamplingFraction = -ratio / rec.wo_pdf * (rec.bsdf_pdf - rec.d_tree_pdf);
+
+        // Chain rule to get loss gradient w.r.t. trainable variable
+        float dLoss_dVariable = dLoss_dSamplingFraction * dBsdfSamplingFraction_dVariable(variable);
+
+        // We want some regularization such that our parameter does not become too big.
+        // We use l2 regularization, resulting in the following linear gradient.
+        float l2RegGradient = 0.01f * variable;
+
+        float lossGradient = l2RegGradient + dLoss_dVariable;
+
+        // ADAM GRADIENT DESCENT
+        bsdfSamplingFractionOptimizer.append(lossGradient, rec.sample_weight);
+
+        m_lock.unlock();
+    }
+
+private:
     QuadTreeNode m_root_node;
     std::atomic<float> m_current_iter_sample_weight;
     float m_previous_iter_sample_weight;
+
+    AdamOptimizer bsdfSamplingFractionOptimizer;
+
+    class SpinLock
+    {
+    public:
+        SpinLock()
+        {
+            m_mutex.clear(std::memory_order_release);
+        }
+
+        SpinLock(const SpinLock &other) { m_mutex.clear(std::memory_order_release); }
+        SpinLock &operator=(const SpinLock &other) { return *this; }
+
+        void lock()
+        {
+            while (m_mutex.test_and_set(std::memory_order_acquire))
+            {
+            }
+        }
+
+        void unlock()
+        {
+            m_mutex.clear(std::memory_order_release);
+        }
+
+    private:
+        std::atomic_flag m_mutex;
+    } m_lock;
 };
 
 struct DTreeStatistics
@@ -863,6 +1030,17 @@ class GPTVertexPath
                         SamplingContext&          sampling_context);
 
     bool is_full() const;
+
+    void set_sampling_fraction(const float sampling_fraction)
+    {
+        m_sampling_fraction = sampling_fraction;
+    }
+
+    float get_sampling_fraction() const
+    {
+        return m_sampling_fraction;
+    }
+
 
   private:
     std::array<GPTVertex, 32> path;

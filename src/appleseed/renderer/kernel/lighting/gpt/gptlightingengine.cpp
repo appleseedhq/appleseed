@@ -592,7 +592,8 @@ namespace
                             vertex.m_bsdf_data,
                             vertex.m_scattering_modes,
                             vertex_radiance,
-                            m_light_path_stream);
+                            m_light_path_stream,
+                            guided_path.get_sampling_fraction());
                     }
                 }
 
@@ -608,7 +609,8 @@ namespace
                             vertex.m_bsdf_data,
                             vertex.m_scattering_modes,
                             vertex_radiance,
-                            m_light_path_stream);
+                            m_light_path_stream,
+                            guided_path.get_sampling_fraction());
                     }
                 }
 
@@ -661,7 +663,8 @@ namespace
                 const void*                 bsdf_data,
                 const int                   scattering_modes,
                 DirectShadingComponents&    vertex_radiance,
-                LightPathStream*            light_path_stream)
+                LightPathStream*            light_path_stream,
+                const float                 sampling_fraction)
             {
                 DirectShadingComponents dl_radiance;
 
@@ -675,7 +678,7 @@ namespace
 
                 const PathGuidedSampler path_guided_sampler(
                     m_sd_tree->get_d_tree(foundation::Vector3f(shading_point.get_point())),
-                    m_params.m_bsdf_sampling_fraction,
+                    sampling_fraction,
                     bsdf,
                     bsdf_data,
                     scattering_modes,       // bsdf_sampling_modes (unused)
@@ -715,7 +718,8 @@ namespace
                 const void*                 bsdf_data,
                 const int                   scattering_modes,
                 DirectShadingComponents&    vertex_radiance,
-                LightPathStream*            light_path_stream)
+                LightPathStream*            light_path_stream,
+                const float                 sampling_fraction)
             {
                 DirectShadingComponents ibl_radiance;
 
@@ -726,7 +730,7 @@ namespace
 
                 const PathGuidedSampler path_guided_sampler(
                     m_sd_tree->get_d_tree(foundation::Vector3f(shading_point.get_point())),
-                    m_params.m_bsdf_sampling_fraction,
+                    sampling_fraction,
                     bsdf,
                     bsdf_data,
                     scattering_modes, // bsdf_sampling_modes (unused)

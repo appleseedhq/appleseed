@@ -131,7 +131,7 @@ bool PathGuidedSampler::guide_path_extension(
             true, // multiply by |cos(incoming, normal)|
             m_bsdf_sampling_modes,
             bsdf_sample);
-        wo_pdf = bsdf_sample.get_probability();
+        wo_pdf = bsdf_pdf = bsdf_sample.get_probability();
         d_tree_pdf = 0;
         return is_path_guided;
     }
