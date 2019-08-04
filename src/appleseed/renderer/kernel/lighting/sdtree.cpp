@@ -41,7 +41,7 @@ bool isValidSpectrum(const Spectrum& s)
 }
 
 /// Clip point to lie within bounding box.
-foundation::Vector3f clip_vector(const foundation::AABB3f& aabb, const foundation::Vector3f &p)
+foundation::Vector3f clip_vector_to_aabb(const foundation::AABB3f& aabb, const foundation::Vector3f &p)
 {
     foundation::Vector3f result = p;
     for (int i = 0; i < foundation::Vector3f::Dimension; ++i)
@@ -54,47 +54,56 @@ foundation::Vector3f clip_vector(const foundation::AABB3f& aabb, const foundatio
 void GPTVertex::record_to_tree(
     STree&                                      sd_tree,
     float                                       statistical_weight,
-    SpatialFilter                              spatial_filter,
-    DirectionalFilter                          directional_filter,
+    SpatialFilter                               spatial_filter,
+    DirectionalFilter                           directional_filter,
     SamplingContext&                            sampling_context)
 {
-    if (!(woPdf > 0) || !isValidSpectrum(radiance) || !isValidSpectrum(bsdfVal))
+    if (!(wo_pdf > 0) || !isValidSpectrum(radiance) || !isValidSpectrum(bsdf_val))
     {
         return;
     }
 
-    Spectrum localRadiance = Spectrum{0.0f};
-    if (throughput[0] * woPdf > sd_tree_epsilon) localRadiance[0] = radiance[0] / throughput[0];
-    if (throughput[1] * woPdf > sd_tree_epsilon) localRadiance[1] = radiance[1] / throughput[1];
-    if (throughput[2] * woPdf > sd_tree_epsilon) localRadiance[2] = radiance[2] / throughput[2];
-    Spectrum product = localRadiance * bsdfVal;
+    Spectrum incoming_radiance(0.0f);
 
-    DTreeRecord rec{ dir, foundation::average_value(localRadiance), foundation::average_value(product), woPdf, bsdfPdf, dTreePdf, statistical_weight, is_delta, directional_filter };
+    for(size_t i = 0; i < incoming_radiance.size(); ++i)
+    {
+        if(throughput[i] * wo_pdf > SDTreeEpsilon)
+            incoming_radiance[i] = radiance[i] / throughput[i];
+    }
+
+    Spectrum product = incoming_radiance * bsdf_val;
+
+    DTreeRecord dtree_record{dir,
+                    foundation::average_value(incoming_radiance),
+                    wo_pdf,
+                    bsdf_pdf,
+                    dtree_pdf,
+                    statistical_weight,
+                    foundation::average_value(product),
+                    is_delta,
+                    directional_filter};
+
     switch (spatial_filter) {
         case SpatialFilter::Nearest:
-            dTree->record(rec/* , directional_filter, bsdf_sampling_fraction_loss*/);
+            dtree->record(dtree_record);
             break;
+
         case SpatialFilter::StochasticBox:
             {
-                DTree* splatDTree = dTree;
-
-                // Jitter the actual position within the
-                // filter box to perform stochastic filtering.
-                foundation::Vector3f offset = dTreeVoxelSize;
+                foundation::Vector3f offset = dtree_node_size;
 
                 sampling_context.split_in_place(3, 1);
 
                 offset *= (sampling_context.next2<foundation::Vector3f>() - foundation::Vector3f(0.5f));
 
-                foundation::Vector3f origin = clip_vector(sd_tree.aabb(), point + offset);
-                splatDTree = sd_tree.get_d_tree(origin);
-                if (splatDTree) {
-                    splatDTree->record(rec/* , directional_filter, bsdf_sampling_fraction_loss*/);
-                }
+                foundation::Vector3f origin = clip_vector_to_aabb(sd_tree.aabb(), point + offset);
+                DTree* dtree = sd_tree.get_d_tree(origin);
+                dtree->record(dtree_record);
                 break;
             }
+
         case SpatialFilter::Box:
-            sd_tree.record(point, dTreeVoxelSize, rec, directional_filter);
+            sd_tree.record(point, dtree_node_size, dtree_record, directional_filter);
             break;
     }
 }

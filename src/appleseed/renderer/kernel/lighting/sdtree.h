@@ -43,9 +43,9 @@ enum class DirectionalFilter {
     Box,
 };
 
-const float sd_tree_epsilon = 1e-4f;
+const float SDTreeEpsilon = 1e-4f;
 const size_t SpatialSubdivisionThreshold = 12000;
-const float dTreeThreshold = 0.01;
+const float DTreeThreshold = 0.01;
 const size_t DTreeMaxDepth = 20;
 
 static void atomic_add(std::atomic<float>& atomic, const float value)
@@ -240,6 +240,7 @@ class QuadTreeNode
         // TODO: Handle floating point imprecision
 
         float factor = sum_left_half / m_previous_iter_radiance_sum;
+
         if(sample.x < factor)
         {
             sample.x /= factor;
@@ -356,11 +357,11 @@ struct DTreeRecord
 {
     foundation::Vector3f direction;
     float                radiance;
-    float                product;
     float                wo_pdf;
     float                bsdf_pdf;
     float                d_tree_pdf;
     float                sample_weight;
+    float                product;
     bool                 is_delta;
     DirectionalFilter    directional_filter;
 };
@@ -547,14 +548,13 @@ struct DTreeStatistics
 
     void build()
     {
-        if (num_dtrees > 0)
-        {
-            average_max_dtree_depth /= num_dtrees;
-            average_max_stree_depth /= num_dtrees;
-            average_dtree_nodes /= num_dtrees;
-            average_mean_radiance /= num_dtrees;
-            average_sample_weight /= num_dtrees;
-        }
+        assert(num_dtrees > 0);
+
+        average_max_dtree_depth /= num_dtrees;
+        average_max_stree_depth /= num_dtrees;
+        average_dtree_nodes /= num_dtrees;
+        average_mean_radiance /= num_dtrees;
+        average_sample_weight /= num_dtrees;
     }
 };
 
@@ -614,12 +614,13 @@ class STreeNode {
             m_d_tree->record(DTreeRecord{
                                 d_tree_record.direction,
                                 d_tree_record.radiance,
-                                d_tree_record.product,
                                 d_tree_record.wo_pdf,
                                 d_tree_record.bsdf_pdf,
                                 d_tree_record.d_tree_pdf,
                                 d_tree_record.sample_weight * intersection_volume,
-                                d_tree_record.is_delta, directionalFilter});
+                                d_tree_record.product,
+                                d_tree_record.is_delta,
+                                directionalFilter});
         else
         {
             const foundation::Vector3f node_size = node_aabb.extent();
@@ -733,21 +734,21 @@ private:
 
 class STree {
 public:
-    STree(const foundation::AABB3f& aabb, const GPTParameters& parameters)
+    STree(const foundation::AABB3f& scene_aabb, const GPTParameters& parameters)
      : m_parameters(parameters)
-     , m_aabb(aabb)
+     , m_scene_aabb(scene_aabb)
      , m_is_built(false)
      , m_is_final_iteration(false)
     {
         // Grow the AABB into a cube for nicer hierarchical subdivisions.
-        const foundation::Vector3f size = m_aabb.extent();
+        const foundation::Vector3f size = m_scene_aabb.extent();
         const float maxSize = foundation::max_value(size);
-        m_aabb.max = m_aabb.min + foundation::Vector3f(maxSize);
+        m_scene_aabb.max = m_scene_aabb.min + foundation::Vector3f(maxSize);
     }
 
     DTree* get_d_tree(const foundation::Vector3f& point, foundation::Vector3f& d_tree_voxel_size) {
-        d_tree_voxel_size = m_aabb.extent();
-        foundation::Vector3f transformed_point = point - m_aabb.min;
+        d_tree_voxel_size = m_scene_aabb.extent();
+        foundation::Vector3f transformed_point = point - m_scene_aabb.min;
         transformed_point /= d_tree_voxel_size;
 
         return m_root_node.get_d_tree(transformed_point, d_tree_voxel_size);
@@ -758,23 +759,27 @@ public:
         return get_d_tree(point, d_tree_voxel_size);
     }
 
-    void record(const foundation::Vector3f& p, const foundation::Vector3f& dTreeVoxelSize, DTreeRecord rec, DirectionalFilter directionalFilter) {
-        const foundation::AABB3f splat_aabb(p - dTreeVoxelSize * 0.5f, p + dTreeVoxelSize * 0.5f);
+    void record(const foundation::Vector3f& p, const foundation::Vector3f& dtree_node_size, DTreeRecord dtree_record, DirectionalFilter directionalFilter) {
+        const foundation::AABB3f splat_aabb(p - dtree_node_size * 0.5f, p + dtree_node_size * 0.5f);
 
         assert(splat_aabb.is_valid());
 
-        rec.sample_weight /= splat_aabb.volume();
-        m_root_node.record(foundation::AABB3f(p - dTreeVoxelSize * 0.5f, p + dTreeVoxelSize * 0.5f), m_aabb, rec, directionalFilter);
+        dtree_record.sample_weight /= splat_aabb.volume();
+        m_root_node.record(foundation::AABB3f(p - dtree_node_size * 0.5f, p + dtree_node_size * 0.5f), m_scene_aabb, dtree_record, directionalFilter);
     }
 
     const foundation::AABB3f& aabb() const
     {
-        return m_aabb;
+        return m_scene_aabb;
     }
 
     void build(const size_t iteration)
     {
         m_root_node.build();
+
+        const size_t required_samples = std::sqrt(std::pow(2, iteration) * m_parameters.m_samples_per_pass * 0.25f) * SpatialSubdivisionThreshold;
+        m_root_node.subdivide(required_samples);
+        m_root_node.restructure(DTreeThreshold);
 
         DTreeStatistics statistics;
         m_root_node.gather_statistics(statistics);
@@ -792,10 +797,6 @@ public:
             foundation::pretty_scalar(statistics.min_mean_radiance, 4).c_str(), foundation::pretty_scalar(statistics.max_mean_radiance, 4).c_str(), foundation::pretty_scalar(statistics.average_mean_radiance, 4).c_str(),
             foundation::pretty_uint(statistics.min_dtree_nodes).c_str(), foundation::pretty_uint(statistics.max_dtree_nodes).c_str(), foundation::pretty_scalar(statistics.average_dtree_nodes, 4).c_str(),
             foundation::pretty_scalar(statistics.min_sample_weight, 4).c_str(), foundation::pretty_scalar(statistics.max_sample_weight, 4).c_str(), foundation::pretty_scalar(statistics.average_sample_weight, 4).c_str());
-
-        const size_t required_samples = std::sqrt(std::pow(2, iteration) * m_parameters.m_samples_per_pass * 0.25f) * SpatialSubdivisionThreshold;
-        m_root_node.subdivide(required_samples);
-        m_root_node.restructure(dTreeThreshold);
 
         m_is_built = true;
     }
@@ -818,31 +819,33 @@ public:
 private:
     const GPTParameters m_parameters;
     STreeNode m_root_node;
-    foundation::AABB3f m_aabb;
+    foundation::AABB3f m_scene_aabb;
     bool m_is_built;
     bool m_is_final_iteration;
 };
 
 struct GPTVertex
 {
-    DTree *dTree;
-    foundation::Vector3f dTreeVoxelSize;
+    DTree* dtree;
+    foundation::Vector3f dtree_node_size;
     foundation::Vector3f point;
     foundation::Vector3f dir;
 
     renderer::Spectrum throughput;
-    renderer::Spectrum bsdfVal;
+    renderer::Spectrum bsdf_val;
     renderer::Spectrum radiance;
 
-    float woPdf, bsdfPdf, dTreePdf;
-    bool is_delta;
+    float wo_pdf;
+    float bsdf_pdf;
+    float dtree_pdf;
+    bool  is_delta;
 
     void add_radiance(const renderer::Spectrum& r);
     
     void record_to_tree(STree&                    sd_tree,
                         float                     statistical_weight,
-                        SpatialFilter            spatial_filter,
-                        DirectionalFilter        directional_filter,
+                        SpatialFilter             spatial_filter,
+                        DirectionalFilter         directional_filter,
                         SamplingContext&          sampling_context);
 };
 
@@ -855,8 +858,8 @@ class GPTVertexPath
 
     void record_to_tree(STree&                    sd_tree,
                         float                     statistical_weight,
-                        SpatialFilter            spatial_filter,
-                        DirectionalFilter        directional_filter,
+                        SpatialFilter             spatial_filter,
+                        DirectionalFilter         directional_filter,
                         SamplingContext&          sampling_context);
 
     bool is_full() const;
@@ -864,6 +867,7 @@ class GPTVertexPath
   private:
     std::array<GPTVertex, 32> path;
     int index;
+    float m_sampling_fraction;
 };
 
 }
