@@ -717,7 +717,7 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
 {
     foundation::Vector3f voxel_size;
     DTree *d_tree = m_sd_tree->get_d_tree(foundation::Vector3f(vertex.get_point()), voxel_size);
-    const float sampling_fraction = d_tree->bsdfSamplingFraction();
+    const float sampling_fraction = d_tree->bsdf_sampling_fraction();
     guided_path.set_sampling_fraction(sampling_fraction);
     
     // Let the path visitor handle the scattering event.

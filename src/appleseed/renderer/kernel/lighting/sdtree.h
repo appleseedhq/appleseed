@@ -22,6 +22,7 @@
 #include <cmath>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <stack>
 #include <vector>
 
@@ -467,14 +468,20 @@ class DTree
       : m_root_node(true)
       , m_current_iter_sample_weight(0.0f)
       , m_previous_iter_sample_weight(0.0f)
-      , bsdfSamplingFractionOptimizer(0.01f)
+      , t(0)
+      , m(0)
+      , v(0)
+      , theta(0)
     {}
 
     DTree(const DTree& other)
       : m_current_iter_sample_weight(other.m_current_iter_sample_weight.load(std::memory_order_relaxed))
       , m_previous_iter_sample_weight(other.m_previous_iter_sample_weight)
       , m_root_node(other.m_root_node)
-      , bsdfSamplingFractionOptimizer(other.bsdfSamplingFractionOptimizer)
+      , t(other.t)
+      , m(other.m)
+      , v(other.v)
+      , theta(other.theta)
     {}
 
     void record(const DTreeRecord& d_tree_record)
@@ -514,7 +521,7 @@ class DTree
 
         if (d_tree_record.product > 0)
         {
-            optimizeBsdfSamplingFraction(d_tree_record, 1.0f);
+            optimization_step(d_tree_record);
         }
     }
 
@@ -594,48 +601,31 @@ class DTree
         return m_root_node.radiance_sum() * (1.0f / m_previous_iter_sample_weight) * foundation::RcpFourPi<float>();
     }
 
-    inline float bsdfSamplingFraction(float variable) const
+    inline float bsdf_sampling_fraction() const
     {
-        return logistic(variable);
+        return logistic(theta);
     }
 
-    inline float dBsdfSamplingFraction_dVariable(float variable) const
+    void adam_step(const float delta_theta)
     {
-        float fraction = bsdfSamplingFraction(variable);
-        return fraction * (1 - fraction);
+        ++t;
+        const float l = lR * std::sqrt(1.0f - std::pow(beta_1, t)) / (1.0f - std::pow(beta_2, t));
+        m = beta_1 * m + (1.0f - beta_1) * delta_theta;
+        v = beta_2 * v + (1.0f - beta_2) * delta_theta * delta_theta;
+        theta = theta - l * m / (std::sqrt(v) + eps);
     }
 
-    inline float bsdfSamplingFraction() const
+    void optimization_step(const DTreeRecord& rec)
     {
-        return bsdfSamplingFraction(bsdfSamplingFractionOptimizer.variable());
-    }
+        std::lock_guard<std::mutex> lock(optimization_mutex);
 
-    void optimizeBsdfSamplingFraction(const DTreeRecord &rec, float ratioPower)
-    {
-        m_lock.lock();
+        const float alpha = bsdf_sampling_fraction();
+        const float combined_pdf = alpha * rec.bsdf_pdf + (1.0f - alpha) * rec.d_tree_pdf;
+        const float delta_alpha = -rec.product * (rec.bsdf_pdf - rec.d_tree_pdf) / (rec.wo_pdf * combined_pdf);
+        const float delta_theta = delta_alpha * alpha * (1.0f - alpha);
+        const float reg_gradient = reg * theta;
 
-        // GRADIENT COMPUTATION
-        float variable = bsdfSamplingFractionOptimizer.variable();
-        float samplingFraction = bsdfSamplingFraction(variable);
-
-        // Loss gradient w.r.t. sampling fraction
-        float mixPdf = samplingFraction * rec.bsdf_pdf + (1 - samplingFraction) * rec.d_tree_pdf;
-        float ratio = std::pow(rec.product / mixPdf, ratioPower);
-        float dLoss_dSamplingFraction = -ratio / rec.wo_pdf * (rec.bsdf_pdf - rec.d_tree_pdf);
-
-        // Chain rule to get loss gradient w.r.t. trainable variable
-        float dLoss_dVariable = dLoss_dSamplingFraction * dBsdfSamplingFraction_dVariable(variable);
-
-        // We want some regularization such that our parameter does not become too big.
-        // We use l2 regularization, resulting in the following linear gradient.
-        float l2RegGradient = 0.01f * variable;
-
-        float lossGradient = l2RegGradient + dLoss_dVariable;
-
-        // ADAM GRADIENT DESCENT
-        bsdfSamplingFractionOptimizer.append(lossGradient, rec.sample_weight);
-
-        m_lock.unlock();
+        adam_step(delta_theta + reg_gradient);
     }
 
 private:
@@ -643,34 +633,18 @@ private:
     std::atomic<float> m_current_iter_sample_weight;
     float m_previous_iter_sample_weight;
 
-    AdamOptimizer bsdfSamplingFractionOptimizer;
+    std::mutex optimization_mutex;
 
-    class SpinLock
-    {
-    public:
-        SpinLock()
-        {
-            m_mutex.clear(std::memory_order_release);
-        }
+    size_t t;
+    float m;
+    float v;
+    float theta;
 
-        SpinLock(const SpinLock &other) { m_mutex.clear(std::memory_order_release); }
-        SpinLock &operator=(const SpinLock &other) { return *this; }
-
-        void lock()
-        {
-            while (m_mutex.test_and_set(std::memory_order_acquire))
-            {
-            }
-        }
-
-        void unlock()
-        {
-            m_mutex.clear(std::memory_order_release);
-        }
-
-    private:
-        std::atomic_flag m_mutex;
-    } m_lock;
+    const float beta_1 = 0.9f;
+    const float beta_2 = 0.99f;
+    const float eps = 10e-8;
+    const float lR = 0.01f;
+    const float reg = 0.01f;
 };
 
 struct DTreeStatistics
