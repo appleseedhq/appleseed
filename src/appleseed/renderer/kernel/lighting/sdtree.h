@@ -45,9 +45,17 @@ enum class DirectionalFilter {
 };
 
 const float SDTreeEpsilon = 1e-4f;
-const size_t SpatialSubdivisionThreshold = 12000;
+const size_t SpatialSubdivisionThreshold = 4000;
 const float DTreeThreshold = 0.01;
 const size_t DTreeMaxDepth = 20;
+
+// Sampling fraction optimization constants
+
+const float Beta1 = 0.9f;
+const float Beta2 = 0.99f;
+const float OptimizationEpsilon = 10e-8f;
+const float LearningRate = 0.01f;
+const float Regularization = 0.01f;
 
 static void atomic_add(std::atomic<float>& atomic, const float value)
 {
@@ -58,95 +66,12 @@ static void atomic_add(std::atomic<float>& atomic, const float value)
 
 inline float logistic(float x)
 {
-    return 1 / (1 + std::exp(-x));
+    return 1.0f / (1.0f + std::exp(-x));
 }
 
 foundation::Vector3f cylindrical_to_cartesian(const foundation::Vector2f &cylindrical_direction);
 
 foundation::Vector2f cartesian_to_cylindrical(const foundation::Vector3f &d);
-
-// Implements the stochastic-gradient-based Adam optimizer [Kingma and Ba 2014]
-class AdamOptimizer
-{
-public:
-    AdamOptimizer(float learningRate, int batchSize = 1, float epsilon = 1e-08f, float beta1 = 0.9f, float beta2 = 0.999f)
-    {
-        m_state.iter = 0;
-        m_state.firstMoment = 0;
-        m_state.secondMoment = 0;
-        m_state.variable = 0;
-        m_state.batchAccumulation = 0;
-        m_state.batchGradient = 0;
-        m_hparams = {learningRate, batchSize, epsilon, beta1, beta2};
-    }
-
-    AdamOptimizer &operator=(const AdamOptimizer &arg)
-    {
-        m_state = arg.m_state;
-        m_hparams = arg.m_hparams;
-        return *this;
-    }
-
-    AdamOptimizer(const AdamOptimizer &arg)
-    {
-        *this = arg;
-    }
-
-    void append(float gradient, float statisticalWeight)
-    {
-        m_state.batchGradient += gradient * statisticalWeight;
-        m_state.batchAccumulation += statisticalWeight;
-
-        if (m_state.batchAccumulation > m_hparams.batchSize)
-        {
-            step(m_state.batchGradient / m_state.batchAccumulation);
-
-            m_state.batchGradient = 0;
-            m_state.batchAccumulation = 0;
-        }
-    }
-
-    void step(float gradient)
-    {
-        ++m_state.iter;
-
-        float actualLearningRate = m_hparams.learningRate * std::sqrt(1 - std::pow(m_hparams.beta2, m_state.iter)) / (1 - std::pow(m_hparams.beta1, m_state.iter));
-        m_state.firstMoment = m_hparams.beta1 * m_state.firstMoment + (1 - m_hparams.beta1) * gradient;
-        m_state.secondMoment = m_hparams.beta2 * m_state.secondMoment + (1 - m_hparams.beta2) * gradient * gradient;
-        m_state.variable -= actualLearningRate * m_state.firstMoment / (std::sqrt(m_state.secondMoment) + m_hparams.epsilon);
-
-        // Clamp the variable to the range [-20, 20] as a safeguard to avoid numerical instability:
-        // since the sigmoid involves the exponential of the variable, value of -20 or 20 already yield
-        // in *extremely* small and large results that are pretty much never necessary in practice.
-        m_state.variable = std::min(std::max(m_state.variable, -20.0f), 20.0f);
-    }
-
-    float variable() const
-    {
-        return m_state.variable;
-    }
-
-private:
-    struct State
-    {
-        int iter;
-        float firstMoment;
-        float secondMoment;
-        float variable;
-
-        float batchAccumulation;
-        float batchGradient;
-    } m_state;
-
-    struct Hyperparameters
-    {
-        float learningRate;
-        int batchSize;
-        float epsilon;
-        float beta1;
-        float beta2;
-    } m_hparams;
-};
 
 class QuadTreeNode
 {
@@ -386,7 +311,7 @@ class QuadTreeNode
             return foundation::RcpFourPi<float>();
         
         const QuadTreeNode* sub_node = choose_node(direction);
-        const float factor = 4 * sub_node->m_previous_iter_radiance_sum / m_previous_iter_radiance_sum;
+        const float factor = 4.0f * sub_node->m_previous_iter_radiance_sum / m_previous_iter_radiance_sum;
         return factor * sub_node->pdf(direction);
     }
 
@@ -468,20 +393,24 @@ class DTree
       : m_root_node(true)
       , m_current_iter_sample_weight(0.0f)
       , m_previous_iter_sample_weight(0.0f)
-      , t(0)
-      , m(0)
-      , v(0)
-      , theta(0)
+      , m_optimization_step_count(0)
+      , m_first_moment(0.0f)
+      , m_second_moment(0.0f)
+      , m_theta(0.0f)
+      , m_atomic_flag(ATOMIC_FLAG_INIT)
+      , m_is_built(false)
     {}
 
     DTree(const DTree& other)
       : m_current_iter_sample_weight(other.m_current_iter_sample_weight.load(std::memory_order_relaxed))
       , m_previous_iter_sample_weight(other.m_previous_iter_sample_weight)
       , m_root_node(other.m_root_node)
-      , t(other.t)
-      , m(other.m)
-      , v(other.v)
-      , theta(other.theta)
+      , m_optimization_step_count(other.m_optimization_step_count)
+      , m_first_moment(other.m_first_moment)
+      , m_second_moment(other.m_second_moment)
+      , m_theta(other.m_theta)
+      , m_atomic_flag(ATOMIC_FLAG_INIT)
+      , m_is_built(other.m_is_built)
     {}
 
     void record(const DTreeRecord& d_tree_record)
@@ -519,7 +448,7 @@ class DTree
             break;
         }
 
-        if (d_tree_record.product > 0)
+        if (m_is_built && d_tree_record.product > 0.0f)
         {
             optimization_step(d_tree_record);
         }
@@ -541,7 +470,6 @@ class DTree
             const foundation::Vector2f direction = m_root_node.sample(s, d_tree_sample.pdf);
             d_tree_sample.direction = cylindrical_to_cartesian(direction);
         }
-
     }
 
     float pdf(const foundation::Vector3f& direction) const
@@ -586,6 +514,7 @@ class DTree
     {
         m_root_node.restructure(m_root_node.radiance_sum(), subdiv_threshold);
         m_current_iter_sample_weight.store(0.0f, std::memory_order_relaxed);
+        m_is_built = true;
     }
 
     float sample_weight() const
@@ -603,48 +532,63 @@ class DTree
 
     inline float bsdf_sampling_fraction() const
     {
-        return logistic(theta);
-    }
-
-    void adam_step(const float delta_theta)
-    {
-        ++t;
-        const float l = lR * std::sqrt(1.0f - std::pow(beta_1, t)) / (1.0f - std::pow(beta_2, t));
-        m = beta_1 * m + (1.0f - beta_1) * delta_theta;
-        v = beta_2 * v + (1.0f - beta_2) * delta_theta * delta_theta;
-        theta = theta - l * m / (std::sqrt(v) + eps);
-    }
-
-    void optimization_step(const DTreeRecord& rec)
-    {
-        std::lock_guard<std::mutex> lock(optimization_mutex);
-
-        const float alpha = bsdf_sampling_fraction();
-        const float combined_pdf = alpha * rec.bsdf_pdf + (1.0f - alpha) * rec.d_tree_pdf;
-        const float delta_alpha = -rec.product * (rec.bsdf_pdf - rec.d_tree_pdf) / (rec.wo_pdf * combined_pdf);
-        const float delta_theta = delta_alpha * alpha * (1.0f - alpha);
-        const float reg_gradient = reg * theta;
-
-        adam_step(delta_theta + reg_gradient);
+        return logistic(m_theta);
     }
 
 private:
+
+    void acquire_optimization_spin_lock()
+    {
+        while(m_atomic_flag.test_and_set(std::memory_order_acquire))
+            ;
+    }
+
+    void release_optimization_spin_lock()
+    {
+        m_atomic_flag.clear(std::memory_order_release);
+    }
+
+    // BSDF sampling fraction optimization procedure.
+    // Implementation of Algorithm 3 in chapter "Practical Path Guiding in Production" Müller, 2019
+    // released in "Path Guiding in Production" Siggraph Course 2019, Vorba et. al.
+
+    void adam_step(const float d_theta)
+    {
+        ++m_optimization_step_count;
+        const float debiased_learning_rate = LearningRate * std::sqrt(1.0f - std::pow(Beta1, m_optimization_step_count)) /
+                                             (1.0f - std::pow(Beta2, m_optimization_step_count));
+        m_first_moment = Beta1 * m_first_moment + (1.0f - Beta1) * d_theta;
+        m_second_moment = Beta2 * m_second_moment + (1.0f - Beta2) * d_theta * d_theta;
+        m_theta = m_theta - debiased_learning_rate * m_first_moment / (std::sqrt(m_second_moment) + OptimizationEpsilon);
+    }
+
+    void optimization_step(const DTreeRecord& dtree_record)
+    {
+        acquire_optimization_spin_lock();
+
+        const float sampling_fraction = bsdf_sampling_fraction();
+        const float combined_pdf = sampling_fraction * dtree_record.bsdf_pdf + (1.0f - sampling_fraction) * dtree_record.d_tree_pdf;
+        const float d_sampling_fraction = -dtree_record.product * (dtree_record.bsdf_pdf - dtree_record.d_tree_pdf) /
+                                  (dtree_record.wo_pdf * combined_pdf);
+        const float d_theta = d_sampling_fraction * sampling_fraction * (1.0f - sampling_fraction);
+        const float reg_gradient = m_theta * Regularization;
+
+        adam_step(d_theta + reg_gradient);
+
+        release_optimization_spin_lock();
+    }
+
     QuadTreeNode m_root_node;
     std::atomic<float> m_current_iter_sample_weight;
     float m_previous_iter_sample_weight;
+    bool m_is_built;
 
-    std::mutex optimization_mutex;
+    std::atomic_flag m_atomic_flag;
 
-    size_t t;
-    float m;
-    float v;
-    float theta;
-
-    const float beta_1 = 0.9f;
-    const float beta_2 = 0.99f;
-    const float eps = 10e-8;
-    const float lR = 0.01f;
-    const float reg = 0.01f;
+    size_t m_optimization_step_count;
+    float m_first_moment;
+    float m_second_moment;
+    float m_theta;
 };
 
 struct DTreeStatistics
