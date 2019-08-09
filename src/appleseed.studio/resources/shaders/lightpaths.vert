@@ -44,7 +44,10 @@ uniform float u_max_luminance;
 uniform float u_max_thickness;
 uniform float u_min_thickness;
 
-flat out vec3 f_color;
+uniform int u_first_selected;
+uniform int u_last_selected;
+
+flat out vec4 f_color;
 out float f_aa_norm;
 flat out float f_thickness;
 flat out float f_total_thickness;
@@ -105,5 +108,8 @@ void main() {
 
     gl_Position = vec4((curr_screen + expansion) / aspect_vec, curr_proj.z / curr_proj.w, 1.0);
     f_aa_norm = orientation;
-    f_color = v_color;
+
+    bool is_selected = gl_VertexID >= u_first_selected && gl_VertexID < u_last_selected;
+    float a = is_selected ? 1.0 : 0.2;
+    f_color = vec4(v_color, a);
 }

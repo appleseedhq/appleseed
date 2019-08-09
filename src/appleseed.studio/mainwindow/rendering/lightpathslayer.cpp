@@ -190,15 +190,15 @@ void LightPathsLayer::slot_synchronize_camera()
 
 void LightPathsLayer::load_light_paths_data()
 {
-    m_index_offsets.clear();
+    m_path_terminator_vertex_indices.clear();
     m_max_luminance = 0.0f;
     if (!m_light_paths.empty())
     {
-        m_index_offsets.push_back(0);
+        m_path_terminator_vertex_indices.push_back(0);
 
         const auto& light_path_recorder = m_project.get_light_path_recorder();
 
-        GLsizei total_index_count = 0;
+        m_total_triangle_count = 0;
 
         // Vertex count * 4 since we will be adding two vertices for each point along the line and will
         // be adding each point twice for the beginning and end parts of each segment
@@ -301,10 +301,10 @@ void LightPathsLayer::load_light_paths_data()
                     indices_scratch.begin(),
                     indices_scratch.end());
 
-                total_index_count += 6;
+                m_total_triangle_count += 6;
                 prev = vert;
             }
-            m_index_offsets.push_back(total_index_count);
+            m_path_terminator_vertex_indices.push_back(static_cast<GLsizei>(others_buffer.size()));
         }
 
         // Add an empty vertex at the end to serve as last 'next'
@@ -359,6 +359,8 @@ void LightPathsLayer::init_gl(QSurfaceFormat format)
     m_max_luminance_loc = m_gl->glGetUniformLocation(m_shader_program, "u_max_luminance");
     m_max_thickness_loc = m_gl->glGetUniformLocation(m_shader_program, "u_max_thickness");
     m_min_thickness_loc = m_gl->glGetUniformLocation(m_shader_program, "u_min_thickness");
+    m_first_selected_loc = m_gl->glGetUniformLocation(m_shader_program, "u_first_selected");
+    m_last_selected_loc = m_gl->glGetUniformLocation(m_shader_program, "u_last_selected");
 
     const float z_near = 0.01f;
     const float z_far = 1000.0f;
@@ -510,8 +512,22 @@ void LightPathsLayer::render_scene(const GLfloat* gl_view_matrix) const
     if (!m_gl_initialized)
         return;
 
-    if (m_index_offsets.size() > 1)
+    if (m_total_triangle_count > 1)
     {
+        GLint first_selected;
+        GLint last_selected;
+        assert(m_selected_light_path_index >= -1);
+        if (m_selected_light_path_index == -1)
+        {
+            first_selected = 0;
+            last_selected = static_cast<GLint>(m_path_terminator_vertex_indices[m_path_terminator_vertex_indices.size() - 1]);
+        }
+        else
+        {
+            first_selected = static_cast<GLint>(m_path_terminator_vertex_indices[m_selected_light_path_index + 1]);
+            last_selected = static_cast<GLint>(m_path_terminator_vertex_indices[m_selected_light_path_index + 2]);
+        }
+
         m_gl->glUseProgram(m_shader_program);
 
         m_gl->glUniformMatrix4fv(
@@ -537,24 +553,18 @@ void LightPathsLayer::render_scene(const GLfloat* gl_view_matrix) const
             m_res_loc,
             (GLfloat)m_width,
             (GLfloat)m_height);
+        m_gl->glUniform1i(
+            m_first_selected_loc,
+            first_selected);
+        m_gl->glUniform1i(
+            m_last_selected_loc,
+            last_selected);
 
         m_gl->glBindVertexArray(m_light_paths_vao);
 
-        GLint first;
-        GLsizei count;
-        assert(m_selected_light_path_index >= -1);
-        if (m_selected_light_path_index == -1)
-        {
-            first = 0;
-            count = m_index_offsets[m_index_offsets.size() - 1] / 3;
-        }
-        else
-        {
-            first = static_cast<GLint>(m_index_offsets[m_selected_light_path_index]);
-            count = m_index_offsets[m_selected_light_path_index + 1] - first;
-        }
+
         m_gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indices_ebo);
-        m_gl->glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, reinterpret_cast<GLvoid*>(first * sizeof(unsigned int)));
+        m_gl->glDrawElements(GL_TRIANGLES, m_total_triangle_count, GL_UNSIGNED_INT, static_cast<const GLvoid*>(0));
         m_gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 }

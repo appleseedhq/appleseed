@@ -129,7 +129,8 @@ class LightPathsLayer: public QObject
     GLuint                                  m_positions_vbo;
     GLuint                                  m_others_vbo;
     GLuint                                  m_indices_ebo;
-    std::vector<GLsizei>                    m_index_offsets;
+    std::vector<GLsizei>                    m_path_terminator_vertex_indices;
+    GLsizei                                 m_total_triangle_count;
     GLuint                                  m_light_paths_vao;
     GLuint                                  m_shader_program;
     GLint                                   m_view_mat_loc;
@@ -138,6 +139,8 @@ class LightPathsLayer: public QObject
     GLint                                   m_max_luminance_loc;
     GLint                                   m_min_thickness_loc;
     GLint                                   m_max_thickness_loc;
+    GLint                                   m_first_selected_loc;
+    GLint                                   m_last_selected_loc;
     foundation::Matrix4f                    m_gl_render_view_matrix;
     foundation::Matrix4f                    m_gl_view_matrix;
     foundation::Matrix4f                    m_gl_proj_matrix;
