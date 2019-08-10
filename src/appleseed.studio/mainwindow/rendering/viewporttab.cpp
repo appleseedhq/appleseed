@@ -32,7 +32,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/projectexplorer.h"
-#include "mainwindow/rendering/lightpathsviewportmanager.h"
+//#include "mainwindow/rendering/lightpathsviewportmanager.h"
 #include "mainwindow/rendering/renderingmanager.h"
 #include "utility/miscellaneous.h"
 

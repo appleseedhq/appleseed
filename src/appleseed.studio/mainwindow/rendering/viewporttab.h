@@ -31,6 +31,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/cameracontroller.h"
+#include "mainwindow/rendering/lightpathsviewportmanager.h"
 #include "mainwindow/rendering/materialdrophandler.h"
 #include "mainwindow/rendering/pixelcolortracker.h"
 #include "mainwindow/rendering/pixelinspectorhandler.h"
@@ -54,7 +55,6 @@ namespace OCIO = OCIO_NAMESPACE;
 #include <memory>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class LightPathsViewportManager; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace renderer  { class Entity; }
 namespace renderer  { class Project; }
