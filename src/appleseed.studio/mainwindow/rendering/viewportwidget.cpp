@@ -303,7 +303,6 @@ void ViewportWidget::paintGL()
     // Clear the main framebuffers
     GLfloat main_clear[]{ 0.0, 0.0, 0.0, 0.0 };
     m_gl->glClearBufferfv(GL_COLOR, 0, main_clear);
-    GLfloat depth_clear = 1.0;
     m_gl->glClearBufferfi(GL_DEPTH_STENCIL, 0, 1.0, 0);
 
     if (m_active_base_layer == BaseLayer::FinalRender)

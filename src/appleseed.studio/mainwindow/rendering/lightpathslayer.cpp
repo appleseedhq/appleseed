@@ -85,7 +85,6 @@ LightPathsLayer::LightPathsLayer(
     const size_t               height)
   : m_project(project)
   , m_camera(*m_project.get_uncached_active_camera())
-  , m_backface_culling_enabled(false)
   , m_selected_light_path_index(-1)
   , m_gl_initialized(false)
   , m_width(width)
@@ -180,11 +179,6 @@ void LightPathsLayer::slot_display_next_light_path()
 {
     if (m_selected_light_path_index < static_cast<int>(m_light_paths.size()) - 1)
         set_selected_light_path_index(m_selected_light_path_index + 1);
-}
-
-void LightPathsLayer::slot_toggle_backface_culling(const bool checked)
-{
-    m_backface_culling_enabled = checked;
 }
 
 void LightPathsLayer::slot_synchronize_camera()
@@ -515,14 +509,6 @@ void LightPathsLayer::render_scene(const GLfloat* gl_view_matrix) const
 {
     if (!m_gl_initialized)
         return;
-
-    if (m_backface_culling_enabled)
-        m_gl->glEnable(GL_CULL_FACE);
-    else m_gl->glDisable(GL_CULL_FACE);
-
-    m_gl->glDepthMask(GL_TRUE);
-    m_gl->glEnable(GL_DEPTH_TEST);
-    m_gl->glDepthFunc(GL_LEQUAL);
 
     if (m_index_offsets.size() > 1)
     {

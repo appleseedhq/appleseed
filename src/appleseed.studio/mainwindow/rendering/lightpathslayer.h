@@ -108,7 +108,6 @@ class LightPathsLayer: public QObject
     void slot_display_all_light_paths();
     void slot_display_previous_light_path();
     void slot_display_next_light_path();
-    void slot_toggle_backface_culling(const bool checked);
     void slot_synchronize_camera();
 
   private:
@@ -116,8 +115,6 @@ class LightPathsLayer: public QObject
     renderer::Camera&                       m_camera;
     foundation::Matrix4d                    m_camera_matrix;
     foundation::Matrix4d                    m_render_camera_matrix;
-
-    bool                                    m_backface_culling_enabled;
 
     renderer::LightPathArray                m_light_paths;
     int                                     m_selected_light_path_index;    // -1 == display all paths
