@@ -189,7 +189,7 @@ namespace
                 m_sd_tree,
                 path_visitor,
                 volume_visitor,
-                m_params.m_bsdf_sampling_fraction,
+                m_params.m_fixed_bsdf_sampling_fraction,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_bounces == ~size_t(0) ? ~size_t(0) : m_params.m_max_bounces + 1,
                 m_params.m_max_diffuse_bounces == ~size_t(0) ? ~size_t(0) : m_params.m_max_diffuse_bounces + 1,
@@ -978,6 +978,99 @@ Dictionary GPTLightingEngineFactory::get_params_metadata()
     Dictionary metadata;
 
     metadata.dictionaries().insert(
+        "spatial_filter",
+        Dictionary()
+            .insert("type", "enum")
+            .insert("values", "stochastic|box|nearest")
+            .insert("default", "stochastic")
+            .insert("label", "Spatial Filter")
+            .insert("help", "Spatial filtering mode for SD-tree recordings")
+            .insert(
+                "options",
+                Dictionary()
+                    .insert(
+                        "stochastic",
+                        Dictionary()
+                            .insert("label", "Stochastic")
+                            .insert("help", "Randomly offset position of recording"))
+                    .insert(
+                        "box",
+                        Dictionary()
+                            .insert("label", "Box")
+                            .insert("help", "Record radiance in nearby S-tree leaf nodes"))
+                    .insert(
+                        "nearest",
+                        Dictionary()
+                            .insert("label", "Nearest")
+                            .insert("help", "Record radiance to the nearest S-tree leaf node only"))));
+
+    metadata.dictionaries().insert(
+        "directional_filter",
+        Dictionary()
+            .insert("type", "enum")
+            .insert("values", "box|nearest")
+            .insert("default", "box")
+            .insert("label", "Directional Filter")
+            .insert("help", "Directional mode for SD-tree recordings")
+            .insert(
+                "options",
+                Dictionary()
+                    .insert(
+                        "box",
+                        Dictionary()
+                            .insert("label", "Box")
+                            .insert("help", "Record radiance in nearby D-tree leaf nodes"))
+                    .insert(
+                        "nearest",
+                        Dictionary()
+                            .insert("label", "Nearest")
+                            .insert("help", "Record radiance to the nearest D-tree leaf node only"))));
+
+    metadata.dictionaries().insert(
+        "bsdf_sampling_fraction",
+        Dictionary()
+            .insert("type", "enum")
+            .insert("values", "learn|fixed")
+            .insert("default", "learn")
+            .insert("label", "BSDF Sampling Fraction")
+            .insert("help", "BSDF Sampling Fraction Mode")
+            .insert(
+                "options",
+                Dictionary()
+                    .insert(
+                        "learn",
+                        Dictionary()
+                            .insert("label", "Learn BSDF Sampling Fraction")
+                            .insert("help", "Automatically learn the optimal sampling fraction at each spatial leaf node"))
+                    .insert(
+                        "fixed",
+                        Dictionary()
+                            .insert("label", "Fixed BSDF Sampling Fraction")
+                            .insert("help", "Use a fixed sampling fraction"))));
+
+    metadata.dictionaries().insert(
+        "iteration_progression",
+        Dictionary()
+            .insert("type", "enum")
+            .insert("values", "combine|automatic")
+            .insert("default", "combine")
+            .insert("label", "Learning Iteration Progression")
+            .insert("help", "Behavior of the iterative radiance distribution learning")
+            .insert(
+                "options",
+                Dictionary()
+                    .insert(
+                        "combine",
+                        Dictionary()
+                            .insert("label", "Combine Iterations")
+                            .insert("help", "Combine iterations based on their estimated variances"))
+                    .insert(
+                        "automatic",
+                        Dictionary()
+                            .insert("label", "Automatic Final Iteration")
+                            .insert("help", "Initiate a final iteration when projected variance estimate increases"))));
+
+    metadata.dictionaries().insert(
         "samples_per_pass",
         Dictionary()
             .insert("type", "int")
@@ -989,15 +1082,26 @@ Dictionary GPTLightingEngineFactory::get_params_metadata()
             .insert("help", "Number of samples for one path guiding pass"));
 
     metadata.dictionaries().insert(
-        "bsdf_sampling_fraction",
+        "fixed_bsdf_sampling_fraction_value",
         Dictionary()
             .insert("type", "float")
             .insert("default", "0.5")
             .insert("unlimited", "false")
             .insert("min", "0.0")
             .insert("max", "1.0")
-            .insert("label", "BSDF Sampling Fraction")
-            .insert("help", "Fraction of pure BSDF samples for path extension"));
+            .insert("label", "Fixed BSDF Sampling Fraction")
+            .insert("help", "Ratio between BSDF sampling and SD-tree sampling"));
+
+    metadata.dictionaries().insert(
+        "learning_rate",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "0.01")
+            .insert("unlimited", "false")
+            .insert("min", "0.001")
+            .insert("max", "0.5")
+            .insert("label", "BSDF Sampling Fraction Learning Rate")
+            .insert("help", "BSDF Sampling Fraction Learning Rate"));
 
     metadata.dictionaries().insert(
         "dl_light_samples",

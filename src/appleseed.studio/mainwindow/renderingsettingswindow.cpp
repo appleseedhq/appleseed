@@ -1350,6 +1350,8 @@ namespace
     class GuidedPathTracerPanel
       : public LightingEnginePanel
     {
+        Q_OBJECT
+
       public:
         explicit GuidedPathTracerPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingEnginePanel("Guided Path Tracer", parent)
@@ -1399,9 +1401,16 @@ namespace
             create_direct_link("advanced.clamp_roughness",                          "gpt.clamp_roughness");
 
             create_direct_link("guiding.samples_per_pass",                          "gpt.samples_per_pass");
+            create_direct_link("guiding.spatial_filter",                            "gpt.spatial_filter");
+            create_direct_link("guiding.directional_filter",                        "gpt.directional_filter");
             create_direct_link("guiding.bsdf_sampling_fraction",                    "gpt.bsdf_sampling_fraction");
+            create_direct_link("guiding.fixed_bsdf_sampling_fraction_value",        "gpt.fixed_bsdf_sampling_fraction_value");
+            create_direct_link("guiding.learning_rate",                             "gpt.learning_rate");
+            create_direct_link("guiding.iteration_progression",                     "gpt.iteration_progression");
 
             load_directly_linked_values(config);
+
+            slot_changed_bsdf_sampling_fraction_mode(m_sampling_fraction_combobox->currentIndex());
 
             load_global_max_bounce_settings(config, "gpt", "gpt.max_bounces", 8);
             load_separate_bounce_settings(config, "gpt", "diffuse", 3);
@@ -1429,6 +1438,10 @@ namespace
         }
 
       private:
+        QComboBox* m_sampling_fraction_combobox;
+        QDoubleSpinBox* m_bsdf_sampling_fraction_spinbox;
+        QDoubleSpinBox* m_learning_rate_spinbox;
+
         void create_pt_volume_settings(QVBoxLayout* parent)
         {
             QGroupBox* groupbox = new QGroupBox("Participating Media");
@@ -1583,14 +1596,64 @@ namespace
             //samples_per_pass->setValue(4);
             sublayout->addRow("Samples Per Pass:", samples_per_pass);
 
-            QDoubleSpinBox* bsdf_sampling_fraction = 
-                create_double_input("guiding.bsdf_sampling_fraction", 0, 1, 2, 0.02);
-            bsdf_sampling_fraction->setToolTip(
-                m_params_metadata.get_path("gpt.bsdf_sampling_fraction.help"));
+            QComboBox *spatial_filter_combobox = create_combobox("guiding.spatial_filter");
+            spatial_filter_combobox->setToolTip(m_params_metadata.get_path("gpt.spatial_filter.help"));
+            spatial_filter_combobox->addItem("Stochastic", "stochastic");
+            spatial_filter_combobox->addItem("Box", "box");
+            spatial_filter_combobox->addItem("Nearest", "nearest");
+
+            sublayout->addRow("Spatial Filter:", spatial_filter_combobox);
+
+            QComboBox *directional_filter_combobox = create_combobox("guiding.directional_filter");
+            directional_filter_combobox->setToolTip(m_params_metadata.get_path("gpt.directional_filter.help"));
+            directional_filter_combobox->addItem("Box", "box");
+            directional_filter_combobox->addItem("Nearest", "nearest");
+
+            sublayout->addRow("Directional Filter:", directional_filter_combobox);
+
+            m_sampling_fraction_combobox = create_combobox("guiding.bsdf_sampling_fraction");
+            m_sampling_fraction_combobox->setToolTip(m_params_metadata.get_path("gpt.bsdf_sampling_fraction.help"));
+            m_sampling_fraction_combobox->addItem("Learn", "learn");
+            m_sampling_fraction_combobox->addItem("Fixed", "fixed");
+
+            sublayout->addRow("BSDF Sampling Fraction Mode:", m_sampling_fraction_combobox);
+
+            m_bsdf_sampling_fraction_spinbox = 
+                create_double_input("guiding.fixed_bsdf_sampling_fraction_value", 0, 1, 2, 0.02);
+            m_bsdf_sampling_fraction_spinbox->setToolTip(
+                m_params_metadata.get_path("gpt.fixed_bsdf_sampling_fraction_value.help"));
             //bsdf_sampling_fraction->setValue(0.5);
-            set_widget_width_for_text(bsdf_sampling_fraction, "0.50", SpinBoxMargin, SpinBoxMinWidth);
-            sublayout->addRow("BSDF Sampling Fraction:", bsdf_sampling_fraction);
+            set_widget_width_for_text(m_bsdf_sampling_fraction_spinbox, "0.50", SpinBoxMargin, SpinBoxMinWidth);
+            sublayout->addRow("Fixed BSDF Sampling Fraction:", m_bsdf_sampling_fraction_spinbox);
+
+            m_learning_rate_spinbox = 
+                create_double_input("guiding.learning_rate", 0.01, 1.0, 2, 0.01);
+            m_learning_rate_spinbox->setToolTip(
+                m_params_metadata.get_path("gpt.learning_rate.help"));
+            m_learning_rate_spinbox->setValue(0.01);
+            set_widget_width_for_text(m_learning_rate_spinbox, "0.01", SpinBoxMargin, SpinBoxMinWidth);
+            sublayout->addRow("Learning Rate:", m_learning_rate_spinbox);
+
+            connect(
+                m_sampling_fraction_combobox, SIGNAL(currentIndexChanged(int)),
+                SLOT(slot_changed_bsdf_sampling_fraction_mode(const int)));
+
+            QComboBox *iteration_combobox = create_combobox("guiding.iteration_progression");
+            iteration_combobox->setToolTip(m_params_metadata.get_path("gpt.iteration_progression.help"));
+            iteration_combobox->addItem("Combine Iterations", "combine");
+            iteration_combobox->addItem("Automatic Cut-Off", "automatic");
+
+            sublayout->addRow("Iteration Progression:", iteration_combobox);
         }
+
+      private slots:
+          void slot_changed_bsdf_sampling_fraction_mode(const int index)
+          {
+              const QString bsdf_sampling_mode = m_sampling_fraction_combobox->itemData(index).value<QString>();
+
+              m_bsdf_sampling_fraction_spinbox->setEnabled(bsdf_sampling_mode == "fixed");
+              m_learning_rate_spinbox->setEnabled(bsdf_sampling_mode == "learn");
+          }
     };
 
     //

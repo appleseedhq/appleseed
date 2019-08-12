@@ -40,22 +40,9 @@ bool isValidSpectrum(const Spectrum& s)
     return true;
 }
 
-/// Clip point to lie within bounding box.
-foundation::Vector3f clip_vector_to_aabb(const foundation::AABB3f& aabb, const foundation::Vector3f &p)
-{
-    foundation::Vector3f result = p;
-    for (int i = 0; i < foundation::Vector3f::Dimension; ++i)
-    {
-        result[i] = std::min(std::max(result[i], aabb.min[i]), aabb.max[i]);
-    }
-    return result;
-}
-
 void GPTVertex::record_to_tree(
     STree&                                      sd_tree,
     float                                       statistical_weight,
-    SpatialFilter                               spatial_filter,
-    DirectionalFilter                           directional_filter,
     SamplingContext&                            sampling_context)
 {
     if (!(wo_pdf > 0) || !isValidSpectrum(radiance) || !isValidSpectrum(bsdf_val))
@@ -74,38 +61,15 @@ void GPTVertex::record_to_tree(
     Spectrum product = incoming_radiance * bsdf_val;
 
     DTreeRecord dtree_record{dir,
-                    foundation::average_value(incoming_radiance),
-                    wo_pdf,
-                    bsdf_pdf,
-                    dtree_pdf,
-                    statistical_weight,
-                    foundation::average_value(product),
-                    is_delta,
-                    directional_filter};
+                             foundation::average_value(incoming_radiance),
+                             wo_pdf,
+                             bsdf_pdf,
+                             dtree_pdf,
+                             statistical_weight,
+                             foundation::average_value(product),
+                             is_delta};
 
-    switch (spatial_filter) {
-        case SpatialFilter::Nearest:
-            dtree->record(dtree_record);
-            break;
-
-        case SpatialFilter::StochasticBox:
-            {
-                foundation::Vector3f offset = dtree_node_size;
-
-                sampling_context.split_in_place(3, 1);
-
-                offset *= (sampling_context.next2<foundation::Vector3f>() - foundation::Vector3f(0.5f));
-
-                foundation::Vector3f origin = clip_vector_to_aabb(sd_tree.aabb(), point + offset);
-                DTree* dtree = sd_tree.get_d_tree(origin);
-                dtree->record(dtree_record);
-                break;
-            }
-
-        case SpatialFilter::Box:
-            sd_tree.record(point, dtree_node_size, dtree_record, directional_filter);
-            break;
-    }
+    sd_tree.record(dtree, point, dtree_node_size, dtree_record, sampling_context);
 }
 
 GPTVertexPath::GPTVertexPath()
@@ -135,15 +99,11 @@ bool GPTVertexPath::is_full() const
 void GPTVertexPath::record_to_tree(
     STree&                                      sd_tree,
     float                                       statistical_weight,
-    SpatialFilter                              spatial_filter,
-    DirectionalFilter                          directional_filter,
     SamplingContext&                            sampling_context)
 {
     for(int i = 0; i < index; ++i)
         path[i].record_to_tree(sd_tree,
                             statistical_weight,
-                            spatial_filter,
-                            directional_filter,
                             sampling_context);
 }
 

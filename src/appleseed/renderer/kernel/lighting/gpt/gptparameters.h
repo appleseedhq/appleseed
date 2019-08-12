@@ -43,42 +43,74 @@ class ParamArray;
 namespace renderer
 {
 
+enum class SpatialFilter
+{
+  Nearest,
+  Stochastic,
+  Box
+};
+
+enum class DirectionalFilter
+{
+  Nearest,
+  Box
+};
+
+enum class IterationProgression
+{
+  Combine,
+  Automatic
+};
+
+enum class BSDFSamplingFractionMode
+{
+  Learn,
+  Fixed
+};
+
 struct GPTParameters
 {
-  explicit GPTParameters(const ParamArray &params);
+  explicit GPTParameters(const ParamArray& params);
 
   void print() const;
 
-  const size_t    m_samples_per_pass;
-  const float     m_bsdf_sampling_fraction;
-  const bool      m_enable_dl;                    // is direct lighting enabled?
-  const bool      m_enable_ibl;                   // is image-based lighting enabled?
-  const bool      m_enable_caustics;              // are caustics enabled?
+  const size_t                      m_samples_per_pass;
+  const IterationProgression        m_iteration_progression;
+  const SpatialFilter               m_spatial_filter;
+  const DirectionalFilter           m_directional_filter;
+  const BSDFSamplingFractionMode    m_bsdf_sampling_fraction_mode;
+  const float                       m_fixed_bsdf_sampling_fraction;
+  const float                       m_learning_rate;
 
-  const size_t    m_max_bounces;                  // maximum number of bounces, ~0 for unlimited
-  const size_t    m_max_diffuse_bounces;          // maximum number of diffuse bounces, ~0 for unlimited
-  const size_t    m_max_glossy_bounces;           // maximum number of glossy bounces, ~0 for unlimited
-  const size_t    m_max_specular_bounces;         // maximum number of specular bounces, ~0 for unlimited
-  const size_t    m_max_volume_bounces;           // maximum number of volume scattering events, ~0 for unlimited
 
-  const bool      m_clamp_roughness;
+  const bool                        m_enable_dl;                    // is direct lighting enabled?
+  const bool                        m_enable_ibl;                   // is image-based lighting enabled?
+  const bool                        m_enable_caustics;              // are caustics enabled?
 
-  const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
-  const bool      m_next_event_estimation;        // use next event estimation?
+  const size_t                      m_max_bounces;                  // maximum number of bounces, ~0 for unlimited
+  const size_t                      m_max_diffuse_bounces;          // maximum number of diffuse bounces, ~0 for unlimited
+  const size_t                      m_max_glossy_bounces;           // maximum number of glossy bounces, ~0 for unlimited
+  const size_t                      m_max_specular_bounces;         // maximum number of specular bounces, ~0 for unlimited
+  const size_t                      m_max_volume_bounces;           // maximum number of volume scattering events, ~0 for unlimited
 
-  const float     m_dl_light_sample_count;        // number of light samples used to estimate direct illumination
-  const float     m_dl_low_light_threshold;       // light contribution threshold to disable shadow rays
-  const float     m_ibl_env_sample_count;         // number of environment samples used to estimate IBL
-  float           m_rcp_dl_light_sample_count;
-  float           m_rcp_ibl_env_sample_count;
+  const bool                        m_clamp_roughness;
 
-  const bool      m_has_max_ray_intensity;
-  const float     m_max_ray_intensity;
+  const size_t                      m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
+  const bool                        m_next_event_estimation;        // use next event estimation?
 
-  const size_t    m_distance_sample_count;        // number of distance samples for volume rendering
-  const bool      m_enable_equiangular_sampling;  // optimize for lights that are located outside volumes
+  const float                       m_dl_light_sample_count;        // number of light samples used to estimate direct illumination
+  const float                       m_dl_low_light_threshold;       // light contribution threshold to disable shadow rays
+  const float                       m_ibl_env_sample_count;         // number of environment samples used to estimate IBL
+  float                             m_rcp_dl_light_sample_count;
+  float                             m_rcp_ibl_env_sample_count;
 
-  const bool      m_record_light_paths;
+  const bool                        m_has_max_ray_intensity;
+  const float                       m_max_ray_intensity;
+
+  const size_t                      m_distance_sample_count;        // number of distance samples for volume rendering
+  const bool                        m_enable_equiangular_sampling;  // optimize for lights that are located outside volumes
+
+  const bool                        m_record_light_paths;
 
   
 

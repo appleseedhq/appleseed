@@ -45,10 +45,94 @@ using namespace std;
 
 namespace renderer
 {
+SpatialFilter get_spatial_filter(const ParamArray& params)
+  {
+    const std::string name = params.get_required<std::string>("spatial_filter", "stochastic");
+
+    if(name == "nearest")
+    {
+      return SpatialFilter::Nearest;
+    }
+    else if(name == "box")
+    {
+      return SpatialFilter::Box;
+    }
+    else if(name == "stochastic")
+    {
+      return SpatialFilter::Stochastic;
+    }
+    else
+    {
+      RENDERER_LOG_WARNING("Unknown parameter for spatial filter");
+      return SpatialFilter::Stochastic;
+    }
+  }
+
+DirectionalFilter get_directional_filter(const ParamArray& params)
+  {
+    const std::string name = params.get_required<std::string>("directional_filter", "box");
+
+    if(name == "nearest")
+    {
+      return DirectionalFilter::Nearest;
+    }
+    else if(name == "box")
+    {
+      return DirectionalFilter::Box;
+    }
+    else
+    {
+      RENDERER_LOG_WARNING("Unknown parameter for directional filter");
+      return DirectionalFilter::Box;
+    }
+  }
+
+IterationProgression get_iteration_progression(const ParamArray& params)
+  {
+    const std::string name = params.get_required<std::string>("iteration_progression", "combine");
+
+    if(name == "automatic")
+    {
+      return IterationProgression::Automatic;
+    }
+    else if(name == "combine")
+    {
+      return IterationProgression::Combine;
+    }
+    else
+    {
+      RENDERER_LOG_WARNING("Unknown parameter for iteration progression");
+      return IterationProgression::Combine;
+    }
+  }
+
+BSDFSamplingFractionMode get_bsdf_sampling_fraction_mode(const ParamArray& params)
+  {
+    const std::string name = params.get_required<std::string>("bsdf_sampling_fraction", "learn");
+
+    if(name == "fixed")
+    {
+      return BSDFSamplingFractionMode::Fixed;
+    }
+    else if(name == "learn")
+    {
+      return BSDFSamplingFractionMode::Learn;
+    }
+    else
+    {
+      RENDERER_LOG_WARNING("Unknown parameter for bsdf sampling fraction mode");
+      return BSDFSamplingFractionMode::Learn;
+    }
+  }
 
 GPTParameters::GPTParameters(const ParamArray& params)
     : m_samples_per_pass(params.get_optional<int>("samples_per_pass", 4))
-    , m_bsdf_sampling_fraction(params.get_optional<float>("bsdf_sampling_fraction", 0.5f))
+    , m_fixed_bsdf_sampling_fraction(params.get_optional<float>("fixed_bsdf_sampling_fraction_value", 0.5f))
+    , m_learning_rate(params.get_optional<float>("learning_rate", 0.01f))
+    , m_bsdf_sampling_fraction_mode(get_bsdf_sampling_fraction_mode(params))
+    , m_directional_filter(get_directional_filter(params))
+    , m_spatial_filter(get_spatial_filter(params))
+    , m_iteration_progression(get_iteration_progression(params))
     , m_enable_dl(params.get_optional<bool>("enable_dl", true))
     , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
     , m_enable_caustics(params.get_optional<bool>("enable_caustics", false))
@@ -84,10 +168,83 @@ GPTParameters::GPTParameters(const ParamArray& params)
 
 void GPTParameters::print() const
 {
+  std::string bsdf_mode_string = "  bsdf sampling mode            ";
+
+  switch(m_bsdf_sampling_fraction_mode)
+  {
+  case BSDFSamplingFractionMode::Fixed:
+    bsdf_mode_string += "Fixed\n";
+    bsdf_mode_string += "  fixed bsdf sampling fraction  " + pretty_scalar(m_fixed_bsdf_sampling_fraction, 2);
+    break;
+  
+  case BSDFSamplingFractionMode::Learn:
+    bsdf_mode_string += "Learn\n";
+    bsdf_mode_string += "  learning rate                 " + pretty_scalar(m_learning_rate, 2);
+    break;
+
+  default:
+    break;
+  }
+
+  std::string iteration_progression_string = "  iteration progression         ";
+
+  switch(m_iteration_progression)
+  {
+  case IterationProgression::Automatic:
+    iteration_progression_string += "Automatic";
+    break;
+
+  case IterationProgression::Combine:
+    iteration_progression_string += "Combine";
+    break;
+  
+  default:
+    break;
+  }
+
+  std::string directional_filter_string = "  directional filter            ";
+
+  switch(m_directional_filter)
+  {
+  case DirectionalFilter::Nearest:
+      directional_filter_string += "Nearest";
+      break;
+
+  case DirectionalFilter::Box:
+    directional_filter_string += "Box";
+    break;
+  
+  default:
+    break;
+  }
+
+  std::string spatial_filter_string = "  spatial filter                ";
+
+  switch(m_spatial_filter)
+  {
+  case SpatialFilter::Nearest:
+    spatial_filter_string += "Nearest";
+    break;
+
+  case SpatialFilter::Box:
+    spatial_filter_string += "Box";
+    break;
+
+  case SpatialFilter::Stochastic:
+    spatial_filter_string += "Stochastic";
+    break;
+  
+  default:
+    break;
+  }
+
     RENDERER_LOG_INFO(
         "guided path tracer settings:\n"
-        "  bsdf sampling fraction        %s\n"
         "  samples per pass              %s\n"
+        "%s\n"
+        "%s\n"
+        "%s\n"
+        "%s\n"
         "  direct lighting               %s\n"
         "  ibl                           %s\n"
         "  caustics                      %s\n"
@@ -105,8 +262,11 @@ void GPTParameters::print() const
         "  volume distance samples       %s\n"
         "  equiangular sampling          %s\n"
         "  clamp roughness               %s",
-        pretty_scalar(m_bsdf_sampling_fraction).c_str(),
         pretty_uint(m_samples_per_pass).c_str(),
+        iteration_progression_string.c_str(),
+        bsdf_mode_string.c_str(),
+        spatial_filter_string.c_str(),
+        directional_filter_string.c_str(),
         m_enable_dl ? "on" : "off",
         m_enable_ibl ? "on" : "off",
         m_enable_caustics ? "on" : "off",

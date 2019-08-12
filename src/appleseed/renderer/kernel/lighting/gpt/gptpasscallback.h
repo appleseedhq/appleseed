@@ -34,6 +34,12 @@
 #include "renderer/kernel/rendering/ipasscallback.h"
 #include "renderer/kernel/rendering/variancetrackingshadingresultframebufferfactory.h"
 
+// appleseed.foundation headers.
+#include "foundation/image/image.h"
+
+// Standard headers.
+#include <list>
+
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class JobQueue; }
@@ -78,6 +84,12 @@ class GPTPassCallback
         VarianceTrackingShadingResultFrameBufferFactory* framebuffer);
 
   private:
+    void image_to_buffer(
+        const foundation::Image&        image,
+        const float                     inverse_variance);
+
+    void combine_iterations(const Frame&                 frame);
+
     const GPTParameters                                  m_params;
     size_t                                               m_iter;
     size_t                                               m_max_passes;
@@ -91,6 +103,9 @@ class GPTPassCallback
     bool                                                 m_is_final_iter;
     bool                                                 m_var_increase;
     VarianceTrackingShadingResultFrameBufferFactory*     m_framebuffer;
+
+    std::list<foundation::Image>                         m_image_buffer;
+    std::list<float>                                     m_inverse_variance_buffer;
 };
 
 }   // namespace renderer

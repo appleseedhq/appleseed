@@ -652,8 +652,6 @@ size_t GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         guided_path.record_to_tree(
             *m_sd_tree,
             1.0f, //probably not correct
-            SpatialFilter::StochasticBox,
-            DirectionalFilter::Box,
             sampling_context);
 
     return vertex.m_path_length;

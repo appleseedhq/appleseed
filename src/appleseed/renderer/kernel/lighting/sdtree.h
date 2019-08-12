@@ -33,17 +33,6 @@
 
 namespace renderer {
 
-enum class SpatialFilter {
-    Nearest,
-    StochasticBox,
-    Box,
-};
-
-enum class DirectionalFilter {
-    Nearest,
-    Box,
-};
-
 const float SDTreeEpsilon = 1e-4f;
 const size_t SpatialSubdivisionThreshold = 4000;
 const float DTreeThreshold = 0.01;
@@ -54,7 +43,6 @@ const size_t DTreeMaxDepth = 20;
 const float Beta1 = 0.9f;
 const float Beta2 = 0.99f;
 const float OptimizationEpsilon = 10e-8f;
-const float LearningRate = 0.01f;
 const float Regularization = 0.01f;
 
 static void atomic_add(std::atomic<float>& atomic, const float value)
@@ -377,7 +365,6 @@ struct DTreeRecord
     float                sample_weight;
     float                product;
     bool                 is_delta;
-    DirectionalFilter    directional_filter;
 };
 
 struct DTreeSample
@@ -389,8 +376,9 @@ struct DTreeSample
 class DTree
 {
   public:
-    DTree()
-      : m_root_node(true)
+    DTree(const GPTParameters& parameters)
+      : m_parameters(parameters)
+      , m_root_node(true)
       , m_current_iter_sample_weight(0.0f)
       , m_previous_iter_sample_weight(0.0f)
       , m_optimization_step_count(0)
@@ -402,7 +390,8 @@ class DTree
     {}
 
     DTree(const DTree& other)
-      : m_current_iter_sample_weight(other.m_current_iter_sample_weight.load(std::memory_order_relaxed))
+      : m_parameters(other.m_parameters)
+      , m_current_iter_sample_weight(other.m_current_iter_sample_weight.load(std::memory_order_relaxed))
       , m_previous_iter_sample_weight(other.m_previous_iter_sample_weight)
       , m_root_node(other.m_root_node)
       , m_optimization_step_count(other.m_optimization_step_count)
@@ -424,7 +413,7 @@ class DTree
         
         foundation::Vector2f direction = cartesian_to_cylindrical(d_tree_record.direction);
 
-        switch (d_tree_record.directional_filter)
+        switch (m_parameters.m_directional_filter)
         {
         case DirectionalFilter::Nearest:
             m_root_node.add_radiance(direction, radiance);
@@ -448,7 +437,7 @@ class DTree
             break;
         }
 
-        if (m_is_built && d_tree_record.product > 0.0f)
+        if(m_parameters.m_bsdf_sampling_fraction_mode == BSDFSamplingFractionMode::Learn && m_is_built && d_tree_record.product > 0.0f)
         {
             optimization_step(d_tree_record);
         }
@@ -532,7 +521,10 @@ class DTree
 
     inline float bsdf_sampling_fraction() const
     {
-        return logistic(m_theta);
+        if(m_parameters.m_bsdf_sampling_fraction_mode == BSDFSamplingFractionMode::Learn)
+            return logistic(m_theta);
+        else
+            return m_parameters.m_fixed_bsdf_sampling_fraction;
     }
 
 private:
@@ -555,11 +547,14 @@ private:
     void adam_step(const float d_theta)
     {
         ++m_optimization_step_count;
-        const float debiased_learning_rate = LearningRate * std::sqrt(1.0f - std::pow(Beta1, m_optimization_step_count)) /
+        // TODO: square root of Beta1 or Beta2?
+        const float debiased_learning_rate = m_parameters.m_learning_rate * std::sqrt(1.0f - std::pow(Beta1, m_optimization_step_count)) /
                                              (1.0f - std::pow(Beta2, m_optimization_step_count));
         m_first_moment = Beta1 * m_first_moment + (1.0f - Beta1) * d_theta;
         m_second_moment = Beta2 * m_second_moment + (1.0f - Beta2) * d_theta * d_theta;
-        m_theta = m_theta - debiased_learning_rate * m_first_moment / (std::sqrt(m_second_moment) + OptimizationEpsilon);
+        m_theta -= debiased_learning_rate * m_first_moment / (std::sqrt(m_second_moment) + OptimizationEpsilon);
+
+        m_theta = foundation::clamp(m_theta, -20.0f, 20.0f);
     }
 
     void optimization_step(const DTreeRecord& dtree_record)
@@ -573,6 +568,7 @@ private:
         const float d_theta = d_sampling_fraction * sampling_fraction * (1.0f - sampling_fraction);
         const float reg_gradient = m_theta * Regularization;
 
+        // TODO: account for sample weight
         adam_step(d_theta + reg_gradient);
 
         release_optimization_spin_lock();
@@ -589,6 +585,8 @@ private:
     float m_first_moment;
     float m_second_moment;
     float m_theta;
+
+    const GPTParameters& m_parameters;
 };
 
 struct DTreeStatistics
@@ -646,9 +644,9 @@ struct DTreeStatistics
 
 class STreeNode {
   public:
-    STreeNode()
+    STreeNode(const GPTParameters& parameters)
       : m_axis(0)
-      , m_d_tree(new DTree)
+      , m_d_tree(new DTree(parameters))
     {}
 
     STreeNode(const unsigned int parent_axis, const DTree* parent_d_tree)
@@ -683,7 +681,7 @@ class STreeNode {
         m_second_node->subdivide(required_samples);
     }
 
-    void record(const foundation::AABB3f& splat_aabb, const foundation::AABB3f& node_aabb, const DTreeRecord& d_tree_record, DirectionalFilter directionalFilter)
+    void record(const foundation::AABB3f& splat_aabb, const foundation::AABB3f& node_aabb, const DTreeRecord& d_tree_record)
     {
         const foundation::AABB3f intersection_aabb(foundation::AABB3f::intersect(splat_aabb, node_aabb));
 
@@ -704,16 +702,15 @@ class STreeNode {
                                 d_tree_record.d_tree_pdf,
                                 d_tree_record.sample_weight * intersection_volume,
                                 d_tree_record.product,
-                                d_tree_record.is_delta,
-                                directionalFilter});
+                                d_tree_record.is_delta});
         else
         {
             const foundation::Vector3f node_size = node_aabb.extent();
             foundation::Vector3f offset(0.0f);
             offset[m_axis] = node_size[m_axis] * 0.5f;
 
-            m_first_node->record(splat_aabb, foundation::AABB3f(node_aabb.min, node_aabb.max - offset), d_tree_record, directionalFilter);
-            m_second_node->record(splat_aabb, foundation::AABB3f(node_aabb.min + offset, node_aabb.max), d_tree_record, directionalFilter);
+            m_first_node->record(splat_aabb, foundation::AABB3f(node_aabb.min, node_aabb.max - offset), d_tree_record);
+            m_second_node->record(splat_aabb, foundation::AABB3f(node_aabb.min + offset, node_aabb.max), d_tree_record);
         }
     }
 
@@ -825,6 +822,8 @@ public:
      , m_is_built(false)
      , m_is_final_iteration(false)
     {
+        m_root_node.reset(new STreeNode(m_parameters));
+
         // Grow the AABB into a cube for nicer hierarchical subdivisions.
         const foundation::Vector3f size = m_scene_aabb.extent();
         const float maxSize = foundation::max_value(size);
@@ -836,7 +835,7 @@ public:
         foundation::Vector3f transformed_point = point - m_scene_aabb.min;
         transformed_point /= d_tree_voxel_size;
 
-        return m_root_node.get_d_tree(transformed_point, d_tree_voxel_size);
+        return m_root_node->get_d_tree(transformed_point, d_tree_voxel_size);
     }
 
     DTree* get_d_tree(const foundation::Vector3f& point) {
@@ -844,13 +843,32 @@ public:
         return get_d_tree(point, d_tree_voxel_size);
     }
 
-    void record(const foundation::Vector3f& p, const foundation::Vector3f& dtree_node_size, DTreeRecord dtree_record, DirectionalFilter directionalFilter) {
-        const foundation::AABB3f splat_aabb(p - dtree_node_size * 0.5f, p + dtree_node_size * 0.5f);
+    void record(DTree* dtree, const foundation::Vector3f& point, const foundation::Vector3f& dtree_node_size, DTreeRecord dtree_record, SamplingContext& sampling_context)
+    {
+        switch (m_parameters.m_spatial_filter)
+        {
+        case SpatialFilter::Nearest:
+            dtree->record(dtree_record);
+            break;
 
-        assert(splat_aabb.is_valid());
+        case SpatialFilter::Stochastic:
+        {
+            foundation::Vector3f offset = dtree_node_size;
 
-        dtree_record.sample_weight /= splat_aabb.volume();
-        m_root_node.record(foundation::AABB3f(p - dtree_node_size * 0.5f, p + dtree_node_size * 0.5f), m_scene_aabb, dtree_record, directionalFilter);
+            sampling_context.split_in_place(3, 1);
+
+            offset *= (sampling_context.next2<foundation::Vector3f>() - foundation::Vector3f(0.5f));
+
+            foundation::Vector3f origin = clip_vector_to_aabb(m_scene_aabb, point + offset);
+            DTree* stochastic_dtree = get_d_tree(origin);
+            stochastic_dtree->record(dtree_record);
+            break;
+        }
+
+        case SpatialFilter::Box:
+            box_filter_splat(point, dtree_node_size, dtree_record);
+            break;
+        }
     }
 
     const foundation::AABB3f& aabb() const
@@ -860,14 +878,14 @@ public:
 
     void build(const size_t iteration)
     {
-        m_root_node.build();
+        m_root_node->build();
 
         const size_t required_samples = std::sqrt(std::pow(2, iteration) * m_parameters.m_samples_per_pass * 0.25f) * SpatialSubdivisionThreshold;
-        m_root_node.subdivide(required_samples);
-        m_root_node.restructure(DTreeThreshold);
+        m_root_node->subdivide(required_samples);
+        m_root_node->restructure(DTreeThreshold);
 
         DTreeStatistics statistics;
-        m_root_node.gather_statistics(statistics);
+        m_root_node->gather_statistics(statistics);
         statistics.build();
 
         RENDERER_LOG_INFO(
@@ -902,8 +920,29 @@ public:
     }
 
 private:
+    void box_filter_splat(const foundation::Vector3f &p, const foundation::Vector3f &dtree_node_size, DTreeRecord dtree_record)
+    {
+        const foundation::AABB3f splat_aabb(p - dtree_node_size * 0.5f, p + dtree_node_size * 0.5f);
+
+        assert(splat_aabb.is_valid());
+
+        dtree_record.sample_weight /= splat_aabb.volume();
+        m_root_node->record(foundation::AABB3f(p - dtree_node_size * 0.5f, p + dtree_node_size * 0.5f), m_scene_aabb, dtree_record);
+    }
+
+    /// Clip point to lie within bounding box.
+    foundation::Vector3f clip_vector_to_aabb(const foundation::AABB3f &aabb, const foundation::Vector3f &p)
+    {
+        foundation::Vector3f result = p;
+        for (int i = 0; i < foundation::Vector3f::Dimension; ++i)
+        {
+            result[i] = std::min(std::max(result[i], aabb.min[i]), aabb.max[i]);
+        }
+        return result;
+    }
+
     const GPTParameters m_parameters;
-    STreeNode m_root_node;
+    std::unique_ptr<STreeNode> m_root_node;
     foundation::AABB3f m_scene_aabb;
     bool m_is_built;
     bool m_is_final_iteration;
@@ -929,8 +968,6 @@ struct GPTVertex
     
     void record_to_tree(STree&                    sd_tree,
                         float                     statistical_weight,
-                        SpatialFilter             spatial_filter,
-                        DirectionalFilter         directional_filter,
                         SamplingContext&          sampling_context);
 };
 
@@ -943,8 +980,6 @@ class GPTVertexPath
 
     void record_to_tree(STree&                    sd_tree,
                         float                     statistical_weight,
-                        SpatialFilter             spatial_filter,
-                        DirectionalFilter         directional_filter,
                         SamplingContext&          sampling_context);
 
     bool is_full() const;
