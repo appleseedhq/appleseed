@@ -538,7 +538,7 @@ namespace
                 }
             }
 
-            void on_scatter(PathVertex &vertex, GPTVertexPath& guided_path)
+            void on_scatter(PathVertex& vertex, GPTVertexPath& guided_path)
             {
                 assert(vertex.m_scattering_modes != ScatteringMode::None);
 
