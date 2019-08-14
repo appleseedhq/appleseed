@@ -799,7 +799,7 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
                 foundation::Vector3f(vertex.get_point()),
                 sample.m_incoming.get_value(),
                 vertex.m_throughput,
-                sample.m_value.m_beauty,
+                sample.m_value.m_beauty * wo_pdf,
                 renderer::Spectrum(0.0f),
                 wo_pdf,
                 bsdf_pdf,

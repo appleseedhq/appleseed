@@ -41,8 +41,8 @@ const size_t DTreeMaxDepth = 20;
 // Sampling fraction optimization constants
 
 const float Beta1 = 0.9f;
-const float Beta2 = 0.99f;
-const float OptimizationEpsilon = 10e-8f;
+const float Beta2 = 0.999f;
+const float OptimizationEpsilon = 1e-8f;
 const float Regularization = 0.01f;
 
 static void atomic_add(std::atomic<float>& atomic, const float value)
