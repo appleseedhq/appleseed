@@ -47,13 +47,12 @@ bool PathGuidedSampler::sample(
     float&                          pdf) const
 {
     BSDFSample sample(&m_shading_point, Dual3f(outgoing));
-    float wo_pdf, bsdf_pdf, d_tree_pdf;
+    float d_tree_pdf;
 
     bool is_path_guided = guide_path_extension(
         sampling_context,
         sample,
-        wo_pdf,
-        bsdf_pdf,
+        pdf,
         d_tree_pdf
     );
 
@@ -63,7 +62,6 @@ bool PathGuidedSampler::sample(
 
     incoming = sample.m_incoming;
     value = sample.m_value;
-    pdf = wo_pdf;
 
     return true;
 }
@@ -71,15 +69,13 @@ bool PathGuidedSampler::sample(
 bool PathGuidedSampler::sample(
     SamplingContext&                sampling_context,
     BSDFSample&                     bsdf_sample,
-    float&                          wo_pdf,
-    float&                          bsdf_pdf,
+    float&                          wi_pdf,
     float&                          d_tree_pdf) const
 {
     bool is_path_guided = guide_path_extension(
         sampling_context,
         bsdf_sample,
-        wo_pdf,
-        bsdf_pdf,
+        wi_pdf,
         d_tree_pdf
     );
 
@@ -92,19 +88,24 @@ float PathGuidedSampler::evaluate(
     const int                       light_sampling_modes,
     DirectShadingComponents&        value) const
 {
-    BSDFSample sample(&m_shading_point, Dual3f(outgoing));
-    sample.m_incoming = foundation::Dual3f(incoming);
-    float wo_pdf, bsdf_pdf, d_tree_pdf;
+    const float bsdf_pdf = m_bsdf.evaluate(
+        m_bsdf_data,
+        false, // not adjoint
+        true,
+        foundation::Vector3f(m_geometric_normal),
+        foundation::Basis3f(m_shading_basis),
+        outgoing,
+        incoming,
+        m_bsdf_sampling_modes,
+        value);
 
-    guided_bsdf_evaluation(
-        sample,
-        wo_pdf,
-        bsdf_pdf,
-        d_tree_pdf,
-        value
-    );
+    if (!m_sd_tree_is_built || m_bsdf.is_purely_specular())
+    {
+        return bsdf_pdf;
+    }
 
-    return wo_pdf;
+    float d_tree_pdf;
+    return guided_path_extension_pdf(incoming, bsdf_pdf, d_tree_pdf, false);
 }
 
 // This was taken from the Mitsuba implementation of "Practical Path Guiding for
@@ -114,13 +115,11 @@ float PathGuidedSampler::evaluate(
 bool PathGuidedSampler::guide_path_extension(
     SamplingContext&                sampling_context,
     BSDFSample&                     bsdf_sample,
-    float&                          wo_pdf,
-    float&                          bsdf_pdf,
+    float&                          wi_pdf,
     float&                          d_tree_pdf) const
 {
     sampling_context.split_in_place(2, 1);
     foundation::Vector2f sample = sampling_context.next2<foundation::Vector2f>();
-    bool is_path_guided = false;
 
     if (!m_sd_tree_is_built || m_bsdf.is_purely_specular())
     {
@@ -131,9 +130,9 @@ bool PathGuidedSampler::guide_path_extension(
             true, // multiply by |cos(incoming, normal)|
             m_bsdf_sampling_modes,
             bsdf_sample);
-        wo_pdf = bsdf_pdf = bsdf_sample.get_probability();
-        d_tree_pdf = 0;
-        return is_path_guided;
+        wi_pdf = bsdf_sample.get_probability();
+        d_tree_pdf = 0.0f;
+        return false;
     }
 
     if (sample.x < m_bsdf_sampling_fraction)
@@ -149,33 +148,32 @@ bool PathGuidedSampler::guide_path_extension(
 
         if(bsdf_sample.get_mode() == ScatteringMode::None)
         {
-            wo_pdf = bsdf_pdf = d_tree_pdf = 0;
-            return is_path_guided;
+            wi_pdf = d_tree_pdf = 0.0f;
+            return false;
         }
         
-        bsdf_pdf = bsdf_sample.get_probability();
-
         // If we sampled a delta component, then we have a 0 probability
         // of sampling that direction via guiding, thus we can return early.
         if (bsdf_sample.get_mode() == ScatteringMode::Specular)
         {
-            d_tree_pdf = 0;
-            wo_pdf = m_bsdf_sampling_fraction;
-            return is_path_guided;
+            d_tree_pdf = 0.0f;
+            wi_pdf = m_bsdf_sampling_fraction;
+            return false;
         }
 
-        guided_path_extension_pdf(bsdf_sample, wo_pdf, bsdf_pdf, d_tree_pdf, false);
+        wi_pdf = guided_path_extension_pdf(bsdf_sample.m_incoming.get_value(), bsdf_sample.get_probability(), d_tree_pdf, false);
+        
+        return false;
     }
     else
     {
-        is_path_guided = true;
-        sample.x = (sample.x - m_bsdf_sampling_fraction) / (1 - m_bsdf_sampling_fraction);
+        sample.x = (sample.x - m_bsdf_sampling_fraction) / (1.0f - m_bsdf_sampling_fraction);
         DTreeSample d_tree_sample;
         m_d_tree->sample(sampling_context, d_tree_sample);
         bsdf_sample.m_incoming = foundation::Dual3f(d_tree_sample.direction);
         d_tree_pdf = d_tree_sample.pdf;
 
-        bsdf_pdf = m_bsdf.evaluate(
+        const float bsdf_pdf = m_bsdf.evaluate(
             m_bsdf_data,
             false, // not adjoint
             true,  // multiply by |cos(incoming, normal)|
@@ -188,52 +186,22 @@ bool PathGuidedSampler::guide_path_extension(
         bsdf_sample.set_to_scattering(
             ScatteringMode::has_diffuse(m_bsdf.get_modes()) ? ScatteringMode::Diffuse : ScatteringMode::Glossy,
             bsdf_pdf);
-        guided_path_extension_pdf(bsdf_sample, wo_pdf, bsdf_pdf, d_tree_pdf, true);
-    }
+        wi_pdf = guided_path_extension_pdf(bsdf_sample.m_incoming.get_value(), bsdf_pdf, d_tree_pdf, true);
 
-    return is_path_guided;
+        return true;
+    }
 }
 
-void PathGuidedSampler::guided_path_extension_pdf(
-    const BSDFSample&               bsdf_sample,
-    float&                          wo_pdf,
-    float&                          bsdf_pdf,
+float PathGuidedSampler::guided_path_extension_pdf(
+    const foundation::Vector3f&     incoming,
+    const float&                    bsdf_pdf,
     float&                          d_tree_pdf,
     const bool                      d_tree_pdf_is_set) const
 {
     if(!d_tree_pdf_is_set)
-        d_tree_pdf = m_d_tree->pdf(bsdf_sample.m_incoming.get_value());
+        d_tree_pdf = m_d_tree->pdf(incoming);
         
-    wo_pdf = m_bsdf_sampling_fraction * bsdf_pdf + (1 - m_bsdf_sampling_fraction) * d_tree_pdf;
-}
-
-void PathGuidedSampler::guided_bsdf_evaluation(
-const BSDFSample&                   bsdf_sample,
-float&                              wo_pdf,
-float&                              bsdf_pdf,
-float&                              d_tree_pdf,
-DirectShadingComponents&            value) const
-{
-    d_tree_pdf = 0;
-    bsdf_pdf = m_bsdf.evaluate(
-        m_bsdf_data,
-        false, // not adjoint
-        true,
-        foundation::Vector3f(m_geometric_normal),
-        foundation::Basis3f(m_shading_basis),
-        foundation::Vector3f(bsdf_sample.m_outgoing.get_value()),
-        bsdf_sample.m_incoming.get_value(),
-        m_bsdf_sampling_modes,
-        value);
-
-    if (!m_sd_tree_is_built || m_bsdf.is_purely_specular())
-    {
-        wo_pdf = bsdf_pdf;
-        return;
-    }
-
-    d_tree_pdf = m_d_tree->pdf(bsdf_sample.m_incoming.get_value());
-    wo_pdf = m_bsdf_sampling_fraction * bsdf_pdf + (1 - m_bsdf_sampling_fraction) * d_tree_pdf;
+    return m_bsdf_sampling_fraction * bsdf_pdf + (1.0f - m_bsdf_sampling_fraction) * d_tree_pdf;
 }
 
 }    //namespace renderer

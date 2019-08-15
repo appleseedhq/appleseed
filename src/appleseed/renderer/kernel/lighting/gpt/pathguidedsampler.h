@@ -19,7 +19,7 @@ class PathGuidedSampler
 {
   public:
     PathGuidedSampler(
-        DTree*                        d_tree,
+        DTree*                          d_tree,
         const float                     bsdf_sampling_fraction,
         const BSDF&                     bsdf,
         const void*                     bsdf_data,
@@ -37,8 +37,7 @@ class PathGuidedSampler
     bool sample(
         SamplingContext&                sampling_context,
         BSDFSample&                     bsdf_sample,
-        float&                          wo_pdf,
-        float&                          bsdf_pdf,
+        float&                          wi_pdf,
         float&                          d_tree_pdf) const;
 
     float evaluate(
@@ -51,25 +50,16 @@ class PathGuidedSampler
     bool guide_path_extension(
         SamplingContext&                sampling_context,
         BSDFSample&                     bsdf_sample,
-        float&                          wo_pdf,
-        float&                          bsdf_pdf,
+        float&                          wi_pdf,
         float&                          d_tree_pdf) const;
 
-    void guided_path_extension_pdf(
-        const BSDFSample&               bsdf_sample,
-        float&                          wo_pdf,
-        float&                          bsdf_pdf,
+    float guided_path_extension_pdf(
+        const foundation::Vector3f&     incoming,
+        const float&                    bsdf_pdf,
         float&                          d_tree_pdf,
         const bool                      d_tree_pdf_is_set) const;
 
-    void guided_bsdf_evaluation(
-        const BSDFSample&               bsdf_sample,
-        float&                          wo_pdf,
-        float&                          bsdf_pdf,
-        float&                          d_tree_pdf,
-        DirectShadingComponents&        value) const;
-
-    DTree*                            m_d_tree;
+    DTree*                              m_d_tree;
     const float                         m_bsdf_sampling_fraction;
     const bool                          m_sd_tree_is_built;
 };

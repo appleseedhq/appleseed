@@ -725,7 +725,7 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     if (vertex.m_scattering_modes == ScatteringMode::None)
         return false;
     
-    float wo_pdf, bsdf_pdf, d_tree_pdf;
+    float wi_pdf, d_tree_pdf;
 
     PathGuidedSampler sampler(
         d_tree,
@@ -740,8 +740,7 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     bool is_path_guided = sampler.sample(
         sampling_context,
         sample,
-        wo_pdf,
-        bsdf_pdf,
+        wi_pdf,
         d_tree_pdf
     );
 
@@ -778,15 +777,15 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
 
     // Save the scattering properties for MIS at light-emitting vertices.
     vertex.m_prev_mode = sample.get_mode();
-    vertex.m_prev_prob = wo_pdf;
+    vertex.m_prev_prob = wi_pdf;
 
     // Update the AOV scattering mode only for the first bounce.
     if (vertex.m_path_length == 1)
         vertex.m_aov_mode = sample.get_mode();
 
     // Update path throughput.
-    if (wo_pdf != BSDF::DiracDelta)
-        sample.m_value /= wo_pdf;
+    if (wi_pdf != BSDF::DiracDelta)
+        sample.m_value /= wi_pdf;
     vertex.m_throughput *= sample.m_value.m_beauty;
 
     // Add a vertex to the guided path
@@ -799,10 +798,10 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
                 foundation::Vector3f(vertex.get_point()),
                 sample.m_incoming.get_value(),
                 vertex.m_throughput,
-                sample.m_value.m_beauty * wo_pdf,
+                sample.m_value.m_beauty * wi_pdf,
                 renderer::Spectrum(0.0f),
-                wo_pdf,
-                bsdf_pdf,
+                wi_pdf,
+                sample.get_probability(),
                 d_tree_pdf,
                 sample.get_mode() == ScatteringMode::Specular
             }
