@@ -47,12 +47,6 @@ class PathGuidedSampler
         DirectShadingComponents&        value) const override;
 
   private:
-    bool guide_path_extension(
-        SamplingContext&                sampling_context,
-        BSDFSample&                     bsdf_sample,
-        float&                          wi_pdf,
-        float&                          d_tree_pdf) const;
-
     float guided_path_extension_pdf(
         const foundation::Vector3f&     incoming,
         const float&                    bsdf_pdf,

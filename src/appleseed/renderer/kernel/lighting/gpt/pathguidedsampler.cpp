@@ -10,6 +10,9 @@
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/volume/volume.h"
 
+// appleseed.foundation headers.
+#include "foundation/math/scalar.h"
+
 // Standard headers.
 #include <cassert>
 
@@ -46,40 +49,23 @@ bool PathGuidedSampler::sample(
     DirectShadingComponents&        value,
     float&                          pdf) const
 {
-    BSDFSample sample(&m_shading_point, Dual3f(outgoing));
+    BSDFSample bsdf_sample(&m_shading_point, Dual3f(outgoing));
     float d_tree_pdf;
 
-    guide_path_extension(
-                    sampling_context,
-                    sample,
-                    pdf,
-                    d_tree_pdf
-    );
-
-    // Filter scattering modes.
-    if (!(m_bsdf_sampling_modes & sample.get_mode()))
-        return false;
-
-    incoming = sample.m_incoming;
-    value = sample.m_value;
-
-    return true;
-}
-
-bool PathGuidedSampler::sample(
-    SamplingContext&                sampling_context,
-    BSDFSample&                     bsdf_sample,
-    float&                          wi_pdf,
-    float&                          d_tree_pdf) const
-{
-    bool is_path_guided = guide_path_extension(
+    sample(
         sampling_context,
         bsdf_sample,
-        wi_pdf,
-        d_tree_pdf
-    );
+        pdf,
+        d_tree_pdf);
 
-    return is_path_guided;
+    // Filter scattering modes.
+    if (!(m_bsdf_sampling_modes & bsdf_sample.get_mode()))
+        return false;
+
+    incoming = bsdf_sample.m_incoming;
+    value = bsdf_sample.m_value;
+
+    return true;
 }
 
 float PathGuidedSampler::evaluate(
@@ -99,22 +85,17 @@ float PathGuidedSampler::evaluate(
         m_bsdf_sampling_modes,
         value);
 
-    if (!m_sd_tree_is_built || m_bsdf.is_purely_specular())
-    {
-        return bsdf_pdf;
-    }
-
     float d_tree_pdf;
     return guided_path_extension_pdf(incoming, bsdf_pdf, d_tree_pdf, false);
 }
 
-bool PathGuidedSampler::guide_path_extension(
+bool PathGuidedSampler::sample(
     SamplingContext&                sampling_context,
     BSDFSample&                     bsdf_sample,
     float&                          wi_pdf,
     float&                          d_tree_pdf) const
 {
-    if (!m_sd_tree_is_built || m_bsdf.is_purely_specular())
+    if (!m_sd_tree_is_built || m_bsdf.is_purely_specular() || !ScatteringMode::has_diffuse_or_glossy(m_bsdf_sampling_modes))
     {
         m_bsdf.sample(
             sampling_context,
@@ -124,8 +105,7 @@ bool PathGuidedSampler::guide_path_extension(
             m_bsdf_sampling_modes,
             bsdf_sample);
             
-        d_tree_pdf = 0.0f;
-        wi_pdf = bsdf_sample.get_probability();
+        wi_pdf = guided_path_extension_pdf(bsdf_sample.m_incoming.get_value(), bsdf_sample.get_probability(), d_tree_pdf, true);
         return false;
     }
 
@@ -158,6 +138,9 @@ bool PathGuidedSampler::guide_path_extension(
     }
     else
     {
+        if(!ScatteringMode::has_diffuse_or_glossy(m_bsdf_sampling_modes))
+            return true; // bsdf_sample is still set to absorption so path will terminate
+
         DTreeSample d_tree_sample;
         m_d_tree->sample(sampling_context, d_tree_sample);
         bsdf_sample.m_incoming = foundation::Dual3f(d_tree_sample.direction);
@@ -174,8 +157,10 @@ bool PathGuidedSampler::guide_path_extension(
             m_bsdf_sampling_modes,
             bsdf_sample.m_value);
 
+        // Treat path guided samples as diffuse whenever possible and as glossy otherwise.
         bsdf_sample.set_to_scattering(
-            ScatteringMode::has_diffuse(m_bsdf.get_modes()) ? ScatteringMode::Diffuse : ScatteringMode::Glossy, bsdf_pdf);
+            ScatteringMode::has_diffuse(m_bsdf.get_modes() & m_bsdf_sampling_modes) ?
+            ScatteringMode::Diffuse : ScatteringMode::Glossy, bsdf_pdf);
 
         wi_pdf = guided_path_extension_pdf(bsdf_sample.m_incoming.get_value(), bsdf_pdf, d_tree_pdf, true);
 
@@ -189,10 +174,16 @@ float PathGuidedSampler::guided_path_extension_pdf(
     float&                          d_tree_pdf,
     const bool                      d_tree_pdf_is_set) const
 {
+    if(!m_sd_tree_is_built || m_bsdf.is_purely_specular() || !ScatteringMode::has_diffuse_or_glossy(m_bsdf_sampling_modes))
+    {
+        d_tree_pdf = 0.0f;
+        return bsdf_pdf;
+    }
+
     if(!d_tree_pdf_is_set)
         d_tree_pdf = m_d_tree->pdf(incoming);
         
-    return m_bsdf_sampling_fraction * bsdf_pdf + (1.0f - m_bsdf_sampling_fraction) * d_tree_pdf;
+    return lerp(d_tree_pdf, bsdf_pdf, m_bsdf_sampling_fraction);
 }
 
 }    //namespace renderer

@@ -651,7 +651,6 @@ size_t GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
     if(!m_sd_tree->is_final_iteration())
         guided_path.record_to_tree(
             *m_sd_tree,
-            1.0f, //probably not correct
             sampling_context);
 
     return vertex.m_path_length;
@@ -744,10 +743,6 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
         d_tree_pdf
     );
 
-    // Terminate the path if it gets absorbed.
-    if (sample.get_mode() == ScatteringMode::None)
-        return false;
-
     if(!is_path_guided)
     {
         // Above-surface scattering.
@@ -775,6 +770,10 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
             return false;
     }
 
+    // Terminate the path if it gets absorbed.
+    if (sample.get_mode() == ScatteringMode::None)
+        return false;
+
     // Save the scattering properties for MIS at light-emitting vertices.
     vertex.m_prev_mode = sample.get_mode();
     vertex.m_prev_prob = wi_pdf;
@@ -789,7 +788,10 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     vertex.m_throughput *= sample.m_value.m_beauty;
 
     // Add a vertex to the guided path
-    if(!guided_path.is_full() && !m_sd_tree->is_final_iteration())
+    const bool is_delta = sample.get_mode() == ScatteringMode::Specular;
+
+    if(!guided_path.is_full() && !m_sd_tree->is_final_iteration() && (!is_delta ||
+        (m_sd_tree->get_parameters().m_bsdf_sampling_fraction_mode == BSDFSamplingFractionMode::Learn && m_sd_tree->is_built())))
     {
         guided_path.add_vertex(
             GPTVertex{
@@ -798,12 +800,12 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
                 foundation::Vector3f(vertex.get_point()),
                 sample.m_incoming.get_value(),
                 vertex.m_throughput,
-                sample.m_value.m_beauty * wi_pdf,
+                wi_pdf != BSDF::DiracDelta ? sample.m_value.m_beauty * wi_pdf : sample.m_value.m_beauty,
                 renderer::Spectrum(0.0f),
                 wi_pdf,
                 sample.get_probability(),
                 d_tree_pdf,
-                sample.get_mode() == ScatteringMode::Specular
+                is_delta
             }
         );
     }

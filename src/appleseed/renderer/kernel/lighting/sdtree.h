@@ -269,6 +269,11 @@ class STree {
 
     bool is_final_iteration() const;
 
+    inline const GPTParameters& get_parameters() const
+    {
+        return m_parameters;
+    }
+
   private:
     void box_filter_splat(
         const foundation::Vector3f&         point,
@@ -295,7 +300,6 @@ class GPTVertex
     
     void record_to_tree(
         STree&                              sd_tree,
-        float                               statistical_weight,
         SamplingContext&                    sampling_context);
 
 
@@ -324,7 +328,6 @@ class GPTVertexPath
 
     void record_to_tree(
         STree&                              sd_tree,
-        float                               statistical_weight,
         SamplingContext&                    sampling_context);
 
     bool is_full() const;

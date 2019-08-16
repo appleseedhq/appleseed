@@ -431,7 +431,10 @@ DTree::DTree(
 void DTree::record(
     const DTreeRecord&                  d_tree_record)
 {
-    if(d_tree_record.is_delta || !std::isfinite(d_tree_record.sample_weight) || d_tree_record.sample_weight <= 0.0f)
+    if(m_parameters.m_bsdf_sampling_fraction_mode == BSDFSamplingFractionMode::Learn && m_is_built && d_tree_record.product > 0.0f)
+        optimization_step(d_tree_record);
+        
+    if(d_tree_record.is_delta)
         return;
 
     atomic_add(m_current_iter_sample_weight, d_tree_record.sample_weight);
@@ -463,9 +466,6 @@ void DTree::record(
     default:
         break;
     }
-
-    if(m_parameters.m_bsdf_sampling_fraction_mode == BSDFSamplingFractionMode::Learn && m_is_built && d_tree_record.product > 0.0f)
-        optimization_step(d_tree_record);
 }
 
 void DTree::sample(
@@ -879,6 +879,13 @@ void STree::record(
     DTreeRecord                         d_tree_record,
     SamplingContext&                    sampling_context)
 {
+    assert(std::isfinite(d_tree_record.radiance));
+    assert(d_tree_record.radiance >= 0.0f);
+    assert(std::isfinite(d_tree_record.product));
+    assert(d_tree_record.product >= 0.0f);
+    assert(std::isfinite(d_tree_record.sample_weight));
+    assert(d_tree_record.sample_weight >= 0.0f);
+
     switch (m_parameters.m_spatial_filter)
     {
     case SpatialFilter::Nearest:
@@ -996,7 +1003,6 @@ bool isValidSpectrum(
 
 void GPTVertex::record_to_tree(
     STree&                              sd_tree,
-    float                               statistical_weight,
     SamplingContext&                    sampling_context)
 {
     if (!(m_wi_pdf > 0) || !isValidSpectrum(m_radiance) || !isValidSpectrum(m_bsdf_value))
@@ -1014,14 +1020,15 @@ void GPTVertex::record_to_tree(
 
     Spectrum product = incoming_radiance * m_bsdf_value;
 
-    DTreeRecord d_tree_record{m_direction,
-                             average_value(incoming_radiance),
-                             m_wi_pdf,
-                             m_bsdf_pdf,
-                             m_d_tree_pdf,
-                             statistical_weight,
-                             average_value(product),
-                             m_is_delta};
+    DTreeRecord d_tree_record{
+                        m_direction,
+                        average_value(incoming_radiance),
+                        m_wi_pdf,
+                        m_bsdf_pdf,
+                        m_d_tree_pdf,
+                        1.0f,
+                        average_value(product),
+                        m_is_delta};
 
     sd_tree.record(m_d_tree, m_point, m_d_tree_node_size, d_tree_record, sampling_context);
 }
@@ -1052,12 +1059,11 @@ bool GPTVertexPath::is_full() const
 
 void GPTVertexPath::record_to_tree(
     STree&                              sd_tree,
-    float                               statistical_weight,
     SamplingContext&                    sampling_context)
 {
     for(int i = 0; i < m_path_index; ++i)
-        m_path[i].record_to_tree(sd_tree,
-                            statistical_weight,
+        m_path[i].record_to_tree(
+                            sd_tree,
                             sampling_context);
 }
 
