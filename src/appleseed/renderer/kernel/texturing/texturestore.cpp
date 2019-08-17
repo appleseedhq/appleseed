@@ -172,6 +172,21 @@ TextureStore::TileSwapper::TileSwapper(
   , m_peak_memory_size(0)
 {
     gather_assemblies(scene.assemblies());
+    print_settings();
+}
+
+void TextureStore::TileSwapper::print_settings() const
+{
+    RENDERER_LOG_INFO(
+        "texture store settings:\n"
+        "  max store size                %s\n"
+        "  track store size              %s\n"
+        "  track tile loading            %s\n"
+        "  track tile unloading          %s",
+        pretty_size(m_params.m_memory_limit).c_str(),
+        m_params.m_track_store_size ? "on" : "off",
+        m_params.m_track_tile_loading ? "on" : "off",
+        m_params.m_track_tile_unloading ? "on" : "off");
 }
 
 void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
