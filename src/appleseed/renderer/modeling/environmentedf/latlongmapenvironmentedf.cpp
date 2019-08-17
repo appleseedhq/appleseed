@@ -409,7 +409,7 @@ namespace
 
         unique_ptr<ImageImportanceSamplerType> m_importance_sampler;
 
-        void build_importance_map(const Scene& scene, IAbortSwitch*abort_switch)
+        void build_importance_map(const Scene& scene, IAbortSwitch* abort_switch)
         {
             Stopwatch<DefaultWallclockTimer> stopwatch;
             stopwatch.start();
