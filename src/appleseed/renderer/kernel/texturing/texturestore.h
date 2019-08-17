@@ -139,6 +139,9 @@ class TextureStore
             const Scene&        scene,
             const ParamArray&   params);
 
+        // Print tile swapper's settings.
+        void print_settings() const;
+
         // Load a cache line.
         void load(const TileKey& key, TileRecord& record);
 
