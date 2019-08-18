@@ -147,6 +147,7 @@ if (WITH_PYTHON2_BINDINGS)
         $<TARGET_OBJECTS:appleseed.py2.obj>
     )
 
+    set_target_properties (appleseed.py2.obj PROPERTIES FOLDER "Python Bindings")
     set_target_properties (appleseed.python PROPERTIES FOLDER "Python Bindings")
 
     set_target_properties (appleseed.python PROPERTIES
