@@ -715,10 +715,9 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     foundation::Vector3f voxel_size;
     DTree *d_tree = m_sd_tree->get_d_tree(foundation::Vector3f(vertex.get_point()), voxel_size);
     const float sampling_fraction = d_tree->bsdf_sampling_fraction();
-    guided_path.set_sampling_fraction(sampling_fraction);
     
     // Let the path visitor handle the scattering event.
-    m_path_visitor.on_scatter(vertex, guided_path);
+    m_path_visitor.on_scatter(vertex, guided_path, sampling_fraction);
 
     // Terminate the path if all scattering modes are disabled.
     if (vertex.m_scattering_modes == ScatteringMode::None)
@@ -733,8 +732,7 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
         vertex.m_bsdf_data,
         vertex.m_scattering_modes,
         *vertex.m_shading_point,
-        m_sd_tree->is_built()
-    );
+        m_sd_tree->is_built());
 
     bool is_path_guided = sampler.sample(
         sampling_context,
@@ -812,8 +810,10 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
 
     // Update bounce counters.
     ++vertex.m_path_length;
-    m_diffuse_bounces +=  (sample.get_mode() >> ScatteringMode::DiffuseBitShift)  & 1;
-    m_glossy_bounces +=   (sample.get_mode() >> ScatteringMode::GlossyBitShift)   & 1;
+    // Let diffuse and glossy counters only be affected by non path-guided bounces.
+    // Effectively allows unlimited path-guided bounces.
+    m_diffuse_bounces +=  !is_path_guided ? (sample.get_mode() >> ScatteringMode::DiffuseBitShift)  & 1 : 0;
+    m_glossy_bounces +=   !is_path_guided ? (sample.get_mode() >> ScatteringMode::GlossyBitShift)   & 1 : 0;
     m_specular_bounces += (sample.get_mode() >> ScatteringMode::SpecularBitShift) & 1;
 
     // Construct the scattered ray.

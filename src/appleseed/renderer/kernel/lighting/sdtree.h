@@ -69,30 +69,33 @@ class QuadTreeNode
     QuadTreeNode(
         const QuadTreeNode&                 other);
 
-    QuadTreeNode& operator=(const QuadTreeNode& other) = delete; // TODO: is this necessary
+    QuadTreeNode& operator=(const QuadTreeNode& other) = delete;
 
+    // Recursively add radiance unfiltered.
     void add_radiance(
         foundation::Vector2f&               direction,
         const float                         radiance);
 
+    // Recursively add radiance filtered.
     void add_radiance(
         const foundation::AABB2f&           splat_aabb,
         const foundation::AABB2f&           node_aabb,
         const float                         radiance);
 
     size_t max_depth() const;
-
     size_t node_count() const;
-
     float radiance_sum() const;
 
+    // Recursively sum and store each node's children's radiance.
     float build_radiance_sums();
 
+    // Recursively restructure the D-tree based on the directional radiance distribution.
     void restructure(
         const float                         total_radiance_sum,
         const float                         subdiv_threshold,
         const size_t                        depth = 1);
 
+    // Sample a direction in cylindrical coordinates based on the directional radiance distribution.
     const foundation::Vector2f sample(
         foundation::Vector2f&               sample,
         float&                              pdf) const;
@@ -104,20 +107,29 @@ class QuadTreeNode
         foundation::Vector2f&               direction) const;
 
   private:
+      // Recursively sample a direction based on the directional radiance distribution.
+    const foundation::Vector2f sample_recursive(
+        foundation::Vector2f&               sample,
+        float&                              pdf) const;
+
     QuadTreeNode* choose_node(
         foundation::Vector2f&               direction) const;
-
 
     std::unique_ptr<QuadTreeNode>       m_upper_left_node;
     std::unique_ptr<QuadTreeNode>       m_upper_right_node;
     std::unique_ptr<QuadTreeNode>       m_lower_right_node;
     std::unique_ptr<QuadTreeNode>       m_lower_left_node;
 
+    // The active radiance sum for recording incoming light.
     std::atomic<float>                  m_current_iter_radiance_sum;
+
+    // The last completed iteration's radiance sum to guide the direction sampling.
     float                               m_previous_iter_radiance_sum;
     
     bool                                m_is_leaf;
 };
+
+// The D-tree interface.
 
 class DTree
 {
@@ -128,9 +140,11 @@ class DTree
     DTree(
         const DTree&                        other);
 
+    // Record radiance to the D-tree.
     void record(
         const DTreeRecord&                  d_tree_record);
 
+    // Sample a direction based on the directional radiance distribution.
     void sample(
         SamplingContext&                    sampling_context,
         DTreeSample&                        d_tree_sample) const;
@@ -138,47 +152,41 @@ class DTree
     float pdf(
         const foundation::Vector3f&         direction) const;
     
+    // Divide the tree's sample weight by two.
     void halve_sample_weight();
-
     size_t node_count() const;
-
     size_t max_depth() const;
-
     size_t depth(
         const foundation::Vector2f&         direction) const;
 
+    // Recursively sum the directional radiance contributions from leaf to root.
     void build();
 
+    // Recursively restructure the D-tree based on the directional radiance distribution.
     void restructure(
         const float                         subdiv_threshold);
 
     float sample_weight() const;
-
     float mean() const;
-
     float bsdf_sampling_fraction() const;
 
   private:
     void acquire_optimization_spin_lock();
-
     void release_optimization_spin_lock();
 
-    // BSDF sampling fraction optimization procedure.
-    // Implementation of Algorithm 3 in chapter "Practical Path Guiding in Production" [Müller 2019]
-    // released in "Path Guiding in Production" Siggraph Course 2019, [Vorba et. al. 2019]
-
-    void adam_step(
-        const float                         gradient);
-
+    // Perform an bsdf sampling fraction optimization step.
     void optimization_step(
         const DTreeRecord&                  d_tree_record);
 
+    void adam_step(
+        const float                         gradient);
 
     QuadTreeNode                        m_root_node;
     std::atomic<float>                  m_current_iter_sample_weight;
     float                               m_previous_iter_sample_weight;
     bool                                m_is_built;
 
+    // BSDF sampling fraction optimization variables.
     std::atomic_flag                    m_atomic_flag;
     size_t                              m_optimization_step_count;
     float                               m_first_moment;
@@ -187,6 +195,8 @@ class DTree
 
     const GPTParameters&                m_parameters;
 };
+
+// The S-tree node class.
 
 class STreeNode
 {
@@ -198,21 +208,26 @@ class STreeNode
         const unsigned int                  parent_axis,
         const DTree*                        parent_d_tree);
 
+    // Get the D-tree at a scene position.
     DTree* get_d_tree(
         foundation::Vector3f&               point,
         foundation::Vector3f&               size);
 
+    // Recursively refine the spatial resolution.
     void subdivide(
         const size_t                        required_samples);
 
+    // Record radiance box filtered.
     void record(
         const foundation::AABB3f&           splat_aabb,
         const foundation::AABB3f&           node_aabb,
         const DTreeRecord&                  d_tree_record);
 
+    // Refine the D-tree at spatial leaf nodes.
     void restructure(
         const float                         subdiv_threshold);
 
+    // Build the D-tree at spatial leaf nodes.
     void build();
 
     void gather_statistics(
@@ -224,9 +239,7 @@ class STreeNode
         foundation::Vector3f&               point) const;
 
     void subdivide();
-
     bool is_leaf() const;
-
 
     std::unique_ptr<STreeNode>          m_first_node;
     std::unique_ptr<STreeNode>          m_second_node;
@@ -238,19 +251,24 @@ class STreeNode
     unsigned int                        m_axis;
 };
 
+// The root class of the SD-tree.
+
 class STree {
   public:
     STree(
         const foundation::AABB3f&           scene_aabb,
         const GPTParameters&                parameters);
 
+    // Get the D-tree and its size at a scene position.
     DTree* get_d_tree(
         const foundation::Vector3f&         point,
         foundation::Vector3f&               d_tree_voxel_size);
 
+    // Get the D-tree at a scene position.
     DTree* get_d_tree(
         const foundation::Vector3f&         point);
 
+    // Record radiance.
     void record(
         DTree*                              d_tree,
         const foundation::Vector3f&         point,
@@ -260,6 +278,7 @@ class STree {
 
     const foundation::AABB3f& aabb() const;
 
+    // Refine the SD-tree's radiance distribution after an iteration has completed.
     void build(
         const size_t                        iteration);
 
@@ -280,10 +299,9 @@ class STree {
         const foundation::Vector3f&         d_tree_node_size,
         DTreeRecord&                        d_tree_record);
 
-    /// Clip a point to lie within bounding box.
+    /// Clip a point to lie within the scene bounding box.
     foundation::Vector3f clip_vector_to_aabb(
         const foundation::Vector3f&         point);
-
 
     const GPTParameters                 m_parameters;
     std::unique_ptr<STreeNode>          m_root_node;
@@ -292,16 +310,20 @@ class STree {
     bool                                m_is_final_iteration;
 };
 
+// Guided path tracing vertex used for keeping track of information at scattering events along a path.
+
 class GPTVertex
 {
   public:
+
+    // Add radiance conbributions lying further beyond this vertex' scattering event.
     void add_radiance(
         const renderer::Spectrum&           radiance);
     
+    // Record the accumulated radiance to the sd_tree on path completion.
     void record_to_tree(
         STree&                              sd_tree,
         SamplingContext&                    sampling_context);
-
 
     DTree*                              m_d_tree;
     foundation::Vector3f                m_d_tree_node_size;
@@ -316,32 +338,32 @@ class GPTVertex
     bool                                m_is_delta;
 };
 
+// A trail of guided path tracing vertices.
+
 class GPTVertexPath
 {
   public:
     GPTVertexPath();
+
+    // Add a vertex to the path.
     void add_vertex(
         const GPTVertex&                    vertex);
 
+    // Add radiance to all vertices in the path.
     void add_radiance(
         const renderer::Spectrum&           r);
 
+    // Record the accumulated radiance of all vertices in the path to the sd_tree on path completion.
     void record_to_tree(
         STree&                              sd_tree,
         SamplingContext&                    sampling_context);
 
+    // Test if this path has capacity for another vertex.
     bool is_full() const;
 
-    void set_sampling_fraction(
-        const float                         sampling_fraction);
-
-    float get_sampling_fraction() const;
-
-
   private:
-    std::array<GPTVertex, 32>           m_path;
-    int                                 m_path_index;
-    float                               m_sampling_fraction;
+    std::array<GPTVertex, 32>           m_path; // a path can hold 32 vertices
+    int                                 m_path_index; // index into the next free array position
 };
 
 }   // namespace renderer

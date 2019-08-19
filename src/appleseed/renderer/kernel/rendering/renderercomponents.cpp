@@ -225,7 +225,7 @@ bool RendererComponents::create_lighting_engine_factory()
                 m_scene,
                 get_child_and_inherit_globals(m_params, "light_sampler")));
 
-        GPTParameters gpt_parameters(
+        const GPTParameters gpt_parameters(
             get_child_and_inherit_globals(m_params, "gpt"));
 
         m_sd_tree.reset(new STree(m_scene.compute_bbox(), gpt_parameters));
@@ -425,7 +425,7 @@ bool RendererComponents::create_pixel_renderer_factory()
 
         if (lighting_engine_name == "gpt")
         {
-            GPTParameters gpt_parameters(
+            const GPTParameters gpt_parameters(
                 get_child_and_inherit_globals(m_params, "gpt"));
             params.insert("samples", gpt_parameters.m_samples_per_pass);
         }

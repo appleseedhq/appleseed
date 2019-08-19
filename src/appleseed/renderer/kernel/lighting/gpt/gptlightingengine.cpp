@@ -399,7 +399,7 @@ namespace
                 }
             }
 
-            void on_scatter(PathVertex &vertex, GPTVertexPath& guided_path)
+            void on_scatter(PathVertex &vertex, GPTVertexPath& guided_path, const float bsdf_sampling_fraction)
             {
                 // When caustics are disabled, disable glossy and specular components after a diffuse or volume bounce.
                 // Note that accept_scattering() is later going to return false in this case.
@@ -538,7 +538,7 @@ namespace
                 }
             }
 
-            void on_scatter(PathVertex& vertex, GPTVertexPath& guided_path)
+            void on_scatter(PathVertex& vertex, GPTVertexPath& guided_path, const float bsdf_sampling_fraction)
             {
                 assert(vertex.m_scattering_modes != ScatteringMode::None);
 
@@ -593,7 +593,7 @@ namespace
                             vertex.m_scattering_modes,
                             vertex_radiance,
                             m_light_path_stream,
-                            guided_path.get_sampling_fraction());
+                            bsdf_sampling_fraction);
                     }
                 }
 
@@ -610,7 +610,7 @@ namespace
                             vertex.m_scattering_modes,
                             vertex_radiance,
                             m_light_path_stream,
-                            guided_path.get_sampling_fraction());
+                            bsdf_sampling_fraction);
                     }
                 }
 
@@ -664,7 +664,7 @@ namespace
                 const int                   scattering_modes,
                 DirectShadingComponents&    vertex_radiance,
                 LightPathStream*            light_path_stream,
-                const float                 sampling_fraction)
+                const float                 bsdf_sampling_fraction)
             {
                 DirectShadingComponents dl_radiance;
 
@@ -678,7 +678,7 @@ namespace
 
                 const PathGuidedSampler path_guided_sampler(
                     m_sd_tree->get_d_tree(foundation::Vector3f(shading_point.get_point())),
-                    sampling_fraction,
+                    bsdf_sampling_fraction,
                     bsdf,
                     bsdf_data,
                     scattering_modes,       // bsdf_sampling_modes (unused)
@@ -719,7 +719,7 @@ namespace
                 const int                   scattering_modes,
                 DirectShadingComponents&    vertex_radiance,
                 LightPathStream*            light_path_stream,
-                const float                 sampling_fraction)
+                const float                 bsdf_sampling_fraction)
             {
                 DirectShadingComponents ibl_radiance;
 
@@ -730,7 +730,7 @@ namespace
 
                 const PathGuidedSampler path_guided_sampler(
                     m_sd_tree->get_d_tree(foundation::Vector3f(shading_point.get_point())),
-                    sampling_fraction,
+                    bsdf_sampling_fraction,
                     bsdf,
                     bsdf_data,
                     scattering_modes, // bsdf_sampling_modes (unused)

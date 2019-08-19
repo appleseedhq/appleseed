@@ -101,7 +101,7 @@ void GPTPassCallback::on_pass_begin(
     
     if(!m_var_increase && m_iter > 0)
     {
-        // Clear the frame.
+        // Clear the frame and build the tree.
         m_framebuffer->clear();
         m_sd_tree->build(m_iter);
     }
@@ -118,11 +118,10 @@ bool GPTPassCallback::on_pass_end(
     --m_passes_left_curr_iter;
     --m_remaining_passes;
 
-    if(m_passes_rendered >= m_max_passes)
+    if(m_passes_rendered >= m_max_passes || abort_switch.is_aborted())
     {
-        // Do end logic.
         const float variance = m_framebuffer->estimator_variance();
-        RENDERER_LOG_INFO("Final variance estimate: %s", pretty_scalar(variance, 7).c_str());
+        RENDERER_LOG_INFO("Final iteration variance estimate: %s", pretty_scalar(variance, 7).c_str());
 
         if(m_params.m_iteration_progression == IterationProgression::Combine)
         {
@@ -148,7 +147,7 @@ bool GPTPassCallback::on_pass_end(
                     pretty_scalar(m_last_extrapolated_variance, 7).c_str(),
                     pretty_scalar(current_extraplolated_variance, 7).c_str());
 
-        if(m_params.m_iteration_progression == IterationProgression::Automatic && samples_rendered > 256 && // TODO: make this number a user param?
+        if(m_params.m_iteration_progression == IterationProgression::Automatic && samples_rendered > 256 &&
            current_extraplolated_variance > m_last_extrapolated_variance)
         {
             RENDERER_LOG_INFO("Extrapolated variance is increasing, initiating final iteration");
@@ -162,11 +161,6 @@ bool GPTPassCallback::on_pass_end(
     }
 
     return false;
-}
-
-size_t GPTPassCallback::get_samples_per_pass() const
-{
-    return m_params.m_samples_per_pass;
 }
 
 void GPTPassCallback::set_framebuffer(

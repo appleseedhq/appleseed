@@ -78,15 +78,13 @@ class GPTPassCallback
         foundation::JobQueue&                            job_queue,
         foundation::IAbortSwitch&                        abort_switch) override;
 
-    size_t get_samples_per_pass() const;
-
     void set_framebuffer(
         VarianceTrackingShadingResultFrameBufferFactory* framebuffer);
 
   private:
     void image_to_buffer(
-        const foundation::Image&        image,
-        const float                     inverse_variance);
+        const foundation::Image&                         image,
+        const float                                      inverse_variance);
 
     void combine_iterations(const Frame&                 frame);
 

@@ -70,6 +70,8 @@ void atomic_add(
         ;
 }
 
+// Helper functions.
+
 inline float logistic(float x)
 {
     return 1.0f / (1.0f + std::exp(-x));
@@ -78,23 +80,33 @@ inline float logistic(float x)
 Vector3f cylindrical_to_cartesian(
     const Vector2f&                     cylindrical_direction)
 {
+    // We can reuse the uniform sphere sampling procedure to convert from cylindrical directions.
     return sample_sphere_uniform(cylindrical_direction);
 }
 
 Vector2f cartesian_to_cylindrical(
     const Vector3f&                     direction)
 {
-    // TODO: Handle float imprecision
-
     const float cosTheta = direction.y;
     float phi = std::atan2(direction.z, direction.x);
 
     if (phi < 0.0f)
-        phi = std::max(phi + TwoPi<float>(), 0.0f);
+        phi += TwoPi<float>();
 
+    // D-tree directions are stored as 2D [phi, cos(theta)] coordinates to preserve area.
     return Vector2f(phi * RcpTwoPi<float>(), 1.0f - 0.5f * (cosTheta + 1.0f));
 }
 
+bool isValidSpectrum(
+    const Spectrum&                     s)
+{
+    for (int i = 0; i < s.size(); i++)
+        if (!std::isfinite(s[i]) || s[i] < 0.0f)
+            return false;
+    return true;
+}
+
+// QuadTreeNode implementation.
 
 QuadTreeNode::QuadTreeNode(
     const bool                          create_children,
@@ -157,6 +169,7 @@ void QuadTreeNode::add_radiance(
     }
     else
     {
+        // Create each child's AABB and recursively add radiance.
         const Vector2f node_size = node_aabb.extent();
         AABB2f child_aabb(node_aabb.min, node_aabb.min + 0.5f * node_size);
         m_upper_left_node->add_radiance(splat_aabb, child_aabb, radiance);
@@ -217,6 +230,9 @@ float QuadTreeNode::build_radiance_sums()
     return m_previous_iter_radiance_sum;
 }
 
+// Implementation of Algorithm 4 in Practical Path Guiding complementary PDF [Müller et.al. 2017]
+// https://tom94.net/data/publications/mueller17practical/mueller17practical-supp.pdf
+
 void QuadTreeNode::restructure(
     const float                         total_radiance_sum,
     const float                         subdiv_threshold,
@@ -227,10 +243,12 @@ void QuadTreeNode::restructure(
 
     const float fraction = m_previous_iter_radiance_sum / total_radiance_sum;
 
+    // Check if this node satisfies subdivision criterion.
     if(fraction > subdiv_threshold && depth < DTreeMaxDepth)
     {
         if(m_is_leaf)
         {
+            // Create new children.
             m_is_leaf = false;
             const float quarter_sum = 0.25f * m_previous_iter_radiance_sum;
             m_upper_left_node.reset(new QuadTreeNode(false, quarter_sum));
@@ -238,6 +256,8 @@ void QuadTreeNode::restructure(
             m_lower_right_node.reset(new QuadTreeNode(false, quarter_sum));
             m_lower_left_node.reset(new QuadTreeNode(false, quarter_sum));
         }
+
+        // Recursively ensure children satisfy subdivision criterion.
         m_upper_left_node->restructure(total_radiance_sum, subdiv_threshold, depth + 1);
         m_upper_right_node->restructure(total_radiance_sum, subdiv_threshold, depth + 1);
         m_lower_right_node->restructure(total_radiance_sum, subdiv_threshold, depth + 1);
@@ -245,6 +265,8 @@ void QuadTreeNode::restructure(
     }
     else if(!m_is_leaf)
     {
+        // If this interior node does not satisfy the subdivision criterion
+        // revert it into a leaf.
         m_is_leaf = true;
         m_upper_left_node.reset(nullptr);
         m_upper_right_node.reset(nullptr);
@@ -255,13 +277,39 @@ void QuadTreeNode::restructure(
     m_current_iter_radiance_sum.store(0.0f, std::memory_order_relaxed);
 }
 
+// Implementation of Algorithm 2 in Practical Path Guiding complementary PDF [Müller et.al. 2017]
+// https://tom94.net/data/publications/mueller17practical/mueller17practical-supp.pdf
+
+float QuadTreeNode::pdf(
+    Vector2f&                           direction) const
+{
+    if(m_is_leaf)
+        return RcpFourPi<float>();
+    
+    const QuadTreeNode* sub_node = choose_node(direction);
+    const float factor = 4.0f * sub_node->m_previous_iter_radiance_sum / m_previous_iter_radiance_sum;
+    return factor * sub_node->pdf(direction);
+}
+
 const Vector2f QuadTreeNode::sample(
     Vector2f&                           sample,
     float&                              pdf) const
 {
-    assert(sample.x >= 0.0f && sample.x < 1.0f);
-    assert(sample.y >= 0.0f && sample.y < 1.0f);
+    pdf = 1.0f; // initiate to one for recursive sampling routine
+    return sample_recursive(sample, pdf);
+}
 
+// Implementation of Algorithm 1 in Practical Path Guiding complementary pdf [Müller et.al. 2017]
+// https://tom94.net/data/publications/mueller17practical/mueller17practical-supp.pdf
+
+const Vector2f QuadTreeNode::sample_recursive(
+    Vector2f&                           sample,
+    float&                              pdf) const
+{
+    assert(sample.x >= 0.0f && sample.x <= 1.0f);
+    assert(sample.y >= 0.0f && sample.y <= 1.0f);
+
+    // Ensure each sample dimension is < 1.0 after renormalization in previous recursive step.
     if(sample.x >= 1.0f)
         sample.x = std::nextafter(1.0f, 0.0f);
 
@@ -281,10 +329,9 @@ const Vector2f QuadTreeNode::sample(
     const float sum_left_half = upper_left + lower_left;
     const float sum_right_half = upper_right + lower_right;
 
-    // TODO: Handle floating point imprecision
-
     float factor = sum_left_half / m_previous_iter_radiance_sum;
-
+    
+    // Sample child nodes with probability proportional to their energy.
     if(sample.x < factor)
     {
         sample.x /= factor;
@@ -333,17 +380,6 @@ const Vector2f QuadTreeNode::sample(
         pdf *= probability_factor;
         return sampled_direction;
     }
-}
-
-float QuadTreeNode::pdf(
-    Vector2f&                           direction) const
-{
-    if(m_is_leaf)
-        return RcpFourPi<float>();
-    
-    const QuadTreeNode* sub_node = choose_node(direction);
-    const float factor = 4.0f * sub_node->m_previous_iter_radiance_sum / m_previous_iter_radiance_sum;
-    return factor * sub_node->pdf(direction);
 }
 
 size_t QuadTreeNode::depth(
@@ -400,6 +436,8 @@ struct DTreeRecord
     bool                        is_delta;
 };
 
+// DTree implementation.
+
 DTree::DTree(
     const GPTParameters&                parameters)
     : m_parameters(parameters)
@@ -432,7 +470,7 @@ void DTree::record(
     const DTreeRecord&                  d_tree_record)
 {
     if(m_parameters.m_bsdf_sampling_fraction_mode == BSDFSamplingFractionMode::Learn && m_is_built && d_tree_record.product > 0.0f)
-        optimization_step(d_tree_record);
+        optimization_step(d_tree_record); // also optimizes delta records
         
     if(d_tree_record.is_delta)
         return;
@@ -451,9 +489,9 @@ void DTree::record(
 
     case DirectionalFilter::Box:
     {
+        // Determine the node size at the direction.
         const size_t leaf_depth = depth(direction);
         const Vector2f leaf_size(std::pow(0.5f, leaf_depth - 1));
-
         const AABB2f node_aabb(Vector2f(0.0f), Vector2f(1.0f));
         const AABB2f splat_aabb(direction - 0.5f * leaf_size, direction + 0.5f * leaf_size);
 
@@ -482,7 +520,6 @@ void DTree::sample(
     }
     else
     {
-        d_tree_sample.pdf = 1.0f;
         const Vector2f direction = m_root_node.sample(s, d_tree_sample.pdf);
         d_tree_sample.direction = cylindrical_to_cartesian(direction);
     }
@@ -571,21 +608,7 @@ void DTree::release_optimization_spin_lock()
 // BSDF sampling fraction optimization procedure.
 // Implementation of Algorithm 3 in chapter "Practical Path Guiding in Production" [Müller 2019]
 // released in "Path Guiding in Production" Siggraph Course 2019, [Vorba et. al. 2019]
-
-void DTree::adam_step(
-    const float                         gradient)
-{
-    ++m_optimization_step_count;
-    const float debiased_learning_rate = m_parameters.m_learning_rate *
-                                         std::sqrt(1.0f - std::pow(Beta2, m_optimization_step_count)) /
-                                         (1.0f - std::pow(Beta1, m_optimization_step_count));
-
-    m_first_moment = Beta1 * m_first_moment + (1.0f - Beta1) * gradient;
-    m_second_moment = Beta2 * m_second_moment + (1.0f - Beta2) * gradient * gradient;
-    m_theta -= debiased_learning_rate * m_first_moment / (std::sqrt(m_second_moment) + OptimizationEpsilon);
-
-    m_theta = clamp(m_theta, -20.0f, 20.0f);
-}
+// Implements the stochastic-gradient-based Adam optimizer [Kingma and Ba 2014]
 
 void DTree::optimization_step(
     const DTreeRecord&                  d_tree_record)
@@ -608,6 +631,23 @@ void DTree::optimization_step(
 
     release_optimization_spin_lock();
 }
+
+void DTree::adam_step(
+    const float                         gradient)
+{
+    ++m_optimization_step_count;
+    const float debiased_learning_rate = m_parameters.m_learning_rate *
+                                         std::sqrt(1.0f - std::pow(Beta2, m_optimization_step_count)) /
+                                         (1.0f - std::pow(Beta1, m_optimization_step_count));
+
+    m_first_moment = Beta1 * m_first_moment + (1.0f - Beta1) * gradient;
+    m_second_moment = Beta2 * m_second_moment + (1.0f - Beta2) * gradient * gradient;
+    m_theta -= debiased_learning_rate * m_first_moment / (std::sqrt(m_second_moment) + OptimizationEpsilon);
+
+    m_theta = clamp(m_theta, -20.0f, 20.0f);
+}
+
+// Struct used to gather SD-tree statistics.
 
 struct DTreeStatistics
 {
@@ -662,6 +702,8 @@ struct DTreeStatistics
     }
 };
 
+// STreeNode implementation.
+
 STreeNode::STreeNode(
     const GPTParameters&                parameters)
     : m_axis(0)
@@ -690,6 +732,9 @@ DTree* STreeNode::get_d_tree(
     }
 }
 
+// Implementation of Algorithm 3 in Practical Path Guiding complementary pdf [Müller et.al. 2017]
+// https://tom94.net/data/publications/mueller17practical/mueller17practical-supp.pdf
+
 void STreeNode::subdivide(
     const size_t                        required_samples)
 {
@@ -703,6 +748,16 @@ void STreeNode::subdivide(
     
     m_first_node->subdivide(required_samples);
     m_second_node->subdivide(required_samples);
+}
+
+void STreeNode::subdivide()
+{
+    if(is_leaf())
+    {
+        m_first_node.reset(new STreeNode(m_axis, m_d_tree.get()));
+        m_second_node.reset(new STreeNode(m_axis, m_d_tree.get()));
+        m_d_tree.reset(nullptr);
+    }
 }
 
 void STreeNode::record(
@@ -823,20 +878,12 @@ STreeNode* STreeNode::choose_node(
     }
 }
 
-void STreeNode::subdivide()
-{
-    if(is_leaf())
-    {
-        m_first_node.reset(new STreeNode(m_axis, m_d_tree.get()));
-        m_second_node.reset(new STreeNode(m_axis, m_d_tree.get()));
-        m_d_tree.reset(nullptr);
-    }
-}
-
 bool STreeNode::is_leaf() const
 {
     return m_d_tree != nullptr;
 }
+
+// STree implementation.
 
 STree::STree(
     const AABB3f&                       scene_aabb,
@@ -894,9 +941,9 @@ void STree::record(
 
     case SpatialFilter::Stochastic:
     {
+        // Jitter the position of the record.
         sampling_context.split_in_place(3, 1);
 
-        // Jitter the position of the record.
         Vector3f offset = d_tree_node_size;
         offset *= (sampling_context.next2<Vector3f>() - Vector3f(0.5f));
         Vector3f jittered_point = clip_vector_to_aabb(point + offset);
@@ -920,8 +967,10 @@ const AABB3f& STree::aabb() const
 void STree::build(
     const size_t                        iteration)
 {
+    // Build D-tree radiance and sample weight sums first.
     m_root_node->build();
 
+    // First refine the S-tree then refine the D-tree at each spatial leaf.
     const size_t required_samples = std::sqrt(std::pow(2, iteration) * m_parameters.m_samples_per_pass * 0.25f) * SpatialSubdivisionThreshold;
     m_root_node->subdivide(required_samples);
     m_root_node->restructure(DTreeThreshold);
@@ -932,11 +981,11 @@ void STree::build(
 
     RENDERER_LOG_INFO(
         "SD tree statistics: [min, max, avg]\n"
-        "  DTree Depth     = [%s, %s, %s]\n"
-        "  STree Depth     = [%s, %s, %s]\n"
-        "  Mean radiance   = [%s, %s, %s]\n"
-        "  Node count      = [%s, %s, %s]\n"
-        "  Sample weight   = [%s, %s, %s]\n\n",
+        "  D-Tree depth       = [%s, %s, %s]\n"
+        "  S-Tree depth       = [%s, %s, %s]\n"
+        "  Mean radiance      = [%s, %s, %s]\n"
+        "  D-Tree node count  = [%s, %s, %s]\n"
+        "  Sample weight      = [%s, %s, %s]\n\n",
         pretty_uint(statistics.min_max_d_tree_depth).c_str(), pretty_uint(statistics.max_d_tree_depth).c_str(), pretty_scalar(statistics.average_max_d_tree_depth, 2).c_str(),
         pretty_uint(statistics.min_max_s_tree_depth).c_str(), pretty_uint(statistics.max_s_tree_depth).c_str(), pretty_scalar(statistics.average_max_s_tree_depth, 2).c_str(),
         pretty_scalar(statistics.min_mean_radiance, 4).c_str(), pretty_scalar(statistics.max_mean_radiance, 4).c_str(), pretty_scalar(statistics.average_mean_radiance, 4).c_str(),
@@ -974,7 +1023,6 @@ void STree::box_filter_splat(
     m_root_node->record(AABB3f(point - d_tree_node_size * 0.5f, point + d_tree_node_size * 0.5f), m_scene_aabb, d_tree_record);
 }
 
-/// Clip a point to lie within bounding box.
 Vector3f STree::clip_vector_to_aabb(
     const Vector3f&                     point)
 {
@@ -986,26 +1034,19 @@ Vector3f STree::clip_vector_to_aabb(
     return result;
 }
 
+// GPTVertex implementation.
+
 void GPTVertex::add_radiance(
     const renderer::Spectrum&           radiance)
 {
     m_radiance += radiance;
 }
 
-bool isValidSpectrum(
-    const Spectrum&                     s)
-{
-    for (int i = 0; i < s.size(); i++)
-        if (!std::isfinite(s[i]) || s[i] < 0.0f)
-            return false;
-    return true;
-}
-
 void GPTVertex::record_to_tree(
     STree&                              sd_tree,
     SamplingContext&                    sampling_context)
 {
-    if (!(m_wi_pdf > 0) || !isValidSpectrum(m_radiance) || !isValidSpectrum(m_bsdf_value))
+    if (!(m_wi_pdf > 0.0f) || !isValidSpectrum(m_radiance) || !isValidSpectrum(m_bsdf_value))
     {
         return;
     }
@@ -1032,6 +1073,8 @@ void GPTVertex::record_to_tree(
 
     sd_tree.record(m_d_tree, m_point, m_d_tree_node_size, d_tree_record, sampling_context);
 }
+
+// GPTVertexPath implementation.
 
 GPTVertexPath::GPTVertexPath()
   : m_path_index(0)
@@ -1065,17 +1108,6 @@ void GPTVertexPath::record_to_tree(
         m_path[i].record_to_tree(
                             sd_tree,
                             sampling_context);
-}
-
-void GPTVertexPath::set_sampling_fraction(
-    const float                         sampling_fraction)
-{
-    m_sampling_fraction = sampling_fraction;
-}
-
-float GPTVertexPath::get_sampling_fraction() const
-{
-    return m_sampling_fraction;
 }
 
 }   // namespace renderer
