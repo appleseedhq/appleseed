@@ -1080,7 +1080,7 @@ namespace
 
         void load_separate_bounce_settings(
             const Configuration&    config,
-            const string&           widget_key_prefix,
+            const string&           prefix,
             const string&           bounce_type,
             const int               default_max_bounces,
             const bool              allow_unlimited = true)
@@ -1089,12 +1089,12 @@ namespace
             const int DefaultMaxDiffuseBounces = 3;
 
             const int max_bounces =
-                get_config<int>(config, construct_bounce_param_path(bounce_type), default_max_bounces);
+                get_config<int>(config, construct_bounce_param_path(prefix, bounce_type), default_max_bounces);
 
-            const string widget_max_bounce_key = widget_key_prefix + ".bounces.max_" + bounce_type + "_bounces";
+            const string widget_max_bounce_key = prefix + ".bounces.max_" + bounce_type + "_bounces";
 
             if (allow_unlimited)
-                set_widget(widget_key_prefix + ".bounces.unlimited_" + bounce_type + "_bounces", max_bounces == -1);
+                set_widget(prefix + ".bounces.unlimited_" + bounce_type + "_bounces", max_bounces == -1);
             if (bounce_type == "diffuse")
                 set_widget(widget_max_bounce_key, max_bounces == -1 ? DefaultMaxDiffuseBounces : max_bounces);
             else
@@ -1103,25 +1103,25 @@ namespace
 
         void save_separate_bounce_settings(
             Configuration&          config,
-            const string&           widget_key_prefix,
+            const string&           prefix,
             const string&           bounce_type,
             const bool              allow_unlimited = true) const
         {
             const bool unlimited_bounces =
                 allow_unlimited &&
-                get_widget<bool>(widget_key_prefix + ".bounces.unlimited_" + bounce_type + "_bounces");
+                get_widget<bool>(prefix + ".bounces.unlimited_" + bounce_type + "_bounces");
 
             const int max_bounces =
                 !unlimited_bounces
-                    ? get_widget<int>(widget_key_prefix + ".bounces.max_" + bounce_type + "_bounces")
+                    ? get_widget<int>(prefix + ".bounces.max_" + bounce_type + "_bounces")
                     : -1;
 
-            set_config(config, construct_bounce_param_path(bounce_type), max_bounces);
+            set_config(config, construct_bounce_param_path(prefix, bounce_type), max_bounces);
         }
 
-        static string construct_bounce_param_path(const string& bounce_type)
+        static string construct_bounce_param_path(const string& prefix, const string& bounce_type)
         {
-            return "pt.max_" + bounce_type + "_bounces";
+            return prefix + ".max_" + bounce_type + "_bounces";
         }
     };
 
@@ -1433,8 +1433,8 @@ namespace
             save_separate_bounce_settings(config, "gpt", "volume", false);
 
             if (get_widget<bool>("advanced.unlimited_ray_intensity"))
-                config.get_parameters().remove_path("pt.max_ray_intensity");
-            else set_config(config, "pt.max_ray_intensity", get_widget<double>("advanced.max_ray_intensity"));
+                config.get_parameters().remove_path("gpt.max_ray_intensity");
+            else set_config(config, "gpt.max_ray_intensity", get_widget<double>("advanced.max_ray_intensity"));
         }
 
       private:
