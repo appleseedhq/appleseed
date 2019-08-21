@@ -38,6 +38,7 @@
 #include "foundation/utility/string.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cmath>
 
 using namespace foundation;
@@ -53,6 +54,8 @@ const float SDTreeEpsilon = 1e-4f;
 const size_t SpatialSubdivisionThreshold = 4000; // TODO: make this dependent on the filter types
 const float DTreeThreshold = 0.01;
 const size_t DTreeMaxDepth = 20;
+const float DTreeGlossyAreaFraction = 0.1f;
+const float DTreeGlossyEnergyThreshold = 0.4f;
 
 // Sampling fraction optimization constants.
 
@@ -236,11 +239,10 @@ float QuadTreeNode::build_radiance_sums()
 void QuadTreeNode::restructure(
     const float                         total_radiance_sum,
     const float                         subdiv_threshold,
+    std::vector<
+      std::pair<float, float>>&         sorted_energy_ratios,
     const size_t                        depth)
 {   
-    if(total_radiance_sum <= 0.0f) // TODO: Should we still grow?
-        return;
-
     const float fraction = m_previous_iter_radiance_sum / total_radiance_sum;
 
     // Check if this node satisfies subdivision criterion.
@@ -258,10 +260,10 @@ void QuadTreeNode::restructure(
         }
 
         // Recursively ensure children satisfy subdivision criterion.
-        m_upper_left_node->restructure(total_radiance_sum, subdiv_threshold, depth + 1);
-        m_upper_right_node->restructure(total_radiance_sum, subdiv_threshold, depth + 1);
-        m_lower_right_node->restructure(total_radiance_sum, subdiv_threshold, depth + 1);
-        m_lower_left_node->restructure(total_radiance_sum, subdiv_threshold, depth + 1);            
+        m_upper_left_node->restructure(total_radiance_sum, subdiv_threshold, sorted_energy_ratios, depth + 1);
+        m_upper_right_node->restructure(total_radiance_sum, subdiv_threshold, sorted_energy_ratios, depth + 1);
+        m_lower_right_node->restructure(total_radiance_sum, subdiv_threshold, sorted_energy_ratios, depth + 1);
+        m_lower_left_node->restructure(total_radiance_sum, subdiv_threshold, sorted_energy_ratios, depth + 1);            
     }
     else if(!m_is_leaf)
     {
@@ -274,7 +276,27 @@ void QuadTreeNode::restructure(
         m_lower_left_node.reset(nullptr);
     }
 
+    if(m_is_leaf)
+    {
+        const std::pair<float, float> ratio(std::pow(0.25f, depth - 1), fraction);
+
+        auto insert_pos = std::lower_bound(sorted_energy_ratios.cbegin(), sorted_energy_ratios.cend(), ratio);
+        sorted_energy_ratios.insert(insert_pos, ratio);
+    }
+
     m_current_iter_radiance_sum.store(0.0f, std::memory_order_relaxed);
+}
+
+void QuadTreeNode::reset()
+{
+    m_upper_left_node.reset(new QuadTreeNode(false));
+    m_upper_right_node.reset(new QuadTreeNode(false));
+    m_lower_right_node.reset(new QuadTreeNode(false));
+    m_lower_left_node.reset(new QuadTreeNode(false));
+
+    m_is_leaf = false;
+    m_current_iter_radiance_sum.store(0.0f, std::memory_order_relaxed);
+    m_previous_iter_radiance_sum = 0.0f;
 }
 
 // Implementation of Algorithm 2 in Practical Path Guiding complementary PDF [Müller et.al. 2017]
@@ -450,6 +472,7 @@ DTree::DTree(
     , m_theta(0.0f)
     , m_atomic_flag(ATOMIC_FLAG_INIT)
     , m_is_built(false)
+    , m_scattering_mode(ScatteringMode::Diffuse)
 {}
 
 DTree::DTree(
@@ -464,6 +487,7 @@ DTree::DTree(
     , m_theta(other.m_theta)
     , m_atomic_flag(ATOMIC_FLAG_INIT)
     , m_is_built(other.m_is_built)
+    , m_scattering_mode(other.m_scattering_mode)
 {}
 
 void DTree::record(
@@ -491,7 +515,7 @@ void DTree::record(
     {
         // Determine the node size at the direction.
         const size_t leaf_depth = depth(direction);
-        const Vector2f leaf_size(std::pow(0.5f, leaf_depth - 1));
+        const Vector2f leaf_size(std::pow(0.25f, leaf_depth - 1));
         const AABB2f node_aabb(Vector2f(0.0f), Vector2f(1.0f));
         const AABB2f splat_aabb(direction - 0.5f * leaf_size, direction + 0.5f * leaf_size);
 
@@ -508,8 +532,16 @@ void DTree::record(
 
 void DTree::sample(
     SamplingContext&                    sampling_context,
-    DTreeSample&                        d_tree_sample) const
+    DTreeSample&                        d_tree_sample,
+    const int                           modes) const
 {
+    if((modes & m_scattering_mode) == 0)
+    {
+        d_tree_sample.scattering_mode = ScatteringMode::None;
+        d_tree_sample.pdf = 0.0f;
+        return;
+    }
+
     sampling_context.split_in_place(2, 1);
     Vector2f s = sampling_context.next2<Vector2f>();
 
@@ -517,11 +549,13 @@ void DTree::sample(
     {
         d_tree_sample.direction = sample_sphere_uniform(s);
         d_tree_sample.pdf = RcpFourPi<float>();
+        d_tree_sample.scattering_mode = ScatteringMode::Diffuse;
     }
     else
     {
         const Vector2f direction = m_root_node.sample(s, d_tree_sample.pdf);
         d_tree_sample.direction = cylindrical_to_cartesian(direction);
+        d_tree_sample.scattering_mode = m_scattering_mode;
     }
 }
 
@@ -559,6 +593,11 @@ size_t DTree::depth(
     return m_root_node.depth(local_direction);
 }
 
+ScatteringMode::Mode DTree::get_scattering_mode() const
+{
+    return m_scattering_mode;
+}
+
 void DTree::build()
 {
     m_previous_iter_sample_weight = m_current_iter_sample_weight.load(std::memory_order_relaxed);
@@ -568,9 +607,48 @@ void DTree::build()
 void DTree::restructure(
     const float                         subdiv_threshold)
 {
-    m_root_node.restructure(m_root_node.radiance_sum(), subdiv_threshold);
-    m_current_iter_sample_weight.store(0.0f, std::memory_order_relaxed);
     m_is_built = true;
+    m_current_iter_sample_weight.store(0.0f, std::memory_order_relaxed);
+    const float radiance_sum = m_root_node.radiance_sum();
+
+    // Reset D-Trees that did not collect radiance.
+    if(radiance_sum <= 0.0f)
+    {
+        m_root_node.reset();
+        m_scattering_mode = ScatteringMode::Diffuse;
+        m_optimization_step_count = 0;
+        m_first_moment = 0.0f;
+        m_second_moment = 0.0f;
+        m_theta = 0.0f;
+        return;
+    }
+
+    // Determine what ScatteringMode should be assigned to directions sampled from this D-tree.
+    std::vector<std::pair<float, float>> sorted_energy_ratios;
+    m_root_node.restructure(radiance_sum, subdiv_threshold, sorted_energy_ratios);
+
+    float area_fraction_sum = 0.0f;
+    float energy_fraction_sum = 0.0f;
+    bool is_glossy = false;
+    auto itr = sorted_energy_ratios.cbegin();
+
+    while(itr != sorted_energy_ratios.cend() && area_fraction_sum < DTreeGlossyAreaFraction)
+    {
+        area_fraction_sum += itr->first;
+        energy_fraction_sum += itr->second;
+
+        // If a significant part of the energy is stored in a small subset of directions
+        // treat bounces as Glossy, otherwise treat them as Diffuse.
+        if(energy_fraction_sum > DTreeGlossyEnergyThreshold)
+        {
+            is_glossy = true;
+            break;
+        }
+
+        ++itr;
+    }
+
+    m_scattering_mode = is_glossy ? ScatteringMode::Glossy : ScatteringMode::Diffuse;
 }
 
 float DTree::sample_weight() const
@@ -669,6 +747,7 @@ struct DTreeStatistics
       , average_sample_weight(0)
       , num_d_trees(0)
       , num_s_tree_nodes(0)
+      , glossy_d_tree_fraction(0.0f)
     {}
 
     size_t                              max_d_tree_depth;
@@ -688,6 +767,7 @@ struct DTreeStatistics
     float                               average_sample_weight;
     size_t                              num_d_trees;
     size_t                              num_s_tree_nodes;
+    float                               glossy_d_tree_fraction;
 
     void build()
     {
@@ -699,6 +779,7 @@ struct DTreeStatistics
         average_d_tree_nodes /= num_d_trees;
         average_mean_radiance /= num_d_trees;
         average_sample_weight /= num_d_trees;
+        glossy_d_tree_fraction /= num_d_trees;
     }
 };
 
@@ -855,6 +936,9 @@ void STreeNode::gather_statistics(
         statistics.max_sample_weight = std::max(statistics.max_sample_weight, sample_weight);
         statistics.min_sample_weight = std::min(statistics.min_sample_weight, sample_weight);
         statistics.average_sample_weight += sample_weight;
+
+        if(m_d_tree->get_scattering_mode() == ScatteringMode::Glossy)
+            statistics.glossy_d_tree_fraction += 1.0f;
     }
     else
     {
@@ -981,16 +1065,18 @@ void STree::build(
 
     RENDERER_LOG_INFO(
         "SD tree statistics: [min, max, avg]\n"
-        "  D-Tree depth       = [%s, %s, %s]\n"
-        "  S-Tree depth       = [%s, %s, %s]\n"
-        "  Mean radiance      = [%s, %s, %s]\n"
-        "  D-Tree node count  = [%s, %s, %s]\n"
-        "  Sample weight      = [%s, %s, %s]\n\n",
+        "  D-Tree depth           = [%s, %s, %s]\n"
+        "  S-Tree depth           = [%s, %s, %s]\n"
+        "  Mean radiance          = [%s, %s, %s]\n"
+        "  D-Tree node count      = [%s, %s, %s]\n"
+        "  Sample weight          = [%s, %s, %s]\n"
+        "  Glossy D-Tree fraction = %s\n\n",
         pretty_uint(statistics.min_max_d_tree_depth).c_str(), pretty_uint(statistics.max_d_tree_depth).c_str(), pretty_scalar(statistics.average_max_d_tree_depth, 2).c_str(),
         pretty_uint(statistics.min_max_s_tree_depth).c_str(), pretty_uint(statistics.max_s_tree_depth).c_str(), pretty_scalar(statistics.average_max_s_tree_depth, 2).c_str(),
         pretty_scalar(statistics.min_mean_radiance, 4).c_str(), pretty_scalar(statistics.max_mean_radiance, 4).c_str(), pretty_scalar(statistics.average_mean_radiance, 4).c_str(),
         pretty_uint(statistics.min_d_tree_nodes).c_str(), pretty_uint(statistics.max_d_tree_nodes).c_str(), pretty_scalar(statistics.average_d_tree_nodes, 4).c_str(),
-        pretty_scalar(statistics.min_sample_weight, 4).c_str(), pretty_scalar(statistics.max_sample_weight, 4).c_str(), pretty_scalar(statistics.average_sample_weight, 4).c_str());
+        pretty_scalar(statistics.min_sample_weight, 4).c_str(), pretty_scalar(statistics.max_sample_weight, 4).c_str(), pretty_scalar(statistics.average_sample_weight, 4).c_str(),
+        pretty_scalar(statistics.glossy_d_tree_fraction, 4).c_str());
 
     m_is_built = true;
 }

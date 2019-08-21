@@ -53,14 +53,14 @@ bool PathGuidedSampler::sample(
     BSDFSample bsdf_sample(&m_shading_point, Dual3f(outgoing));
     float d_tree_pdf;
 
-    const bool is_path_guided = sample(
+    sample(
         sampling_context,
         bsdf_sample,
         pdf,
         d_tree_pdf);
 
     // Filter scattering modes.
-    if (is_path_guided && !(m_bsdf_sampling_modes & bsdf_sample.get_mode()))
+    if (!(m_bsdf_sampling_modes & bsdf_sample.get_mode()))
         return false;
 
     incoming = bsdf_sample.m_incoming;
@@ -140,7 +140,15 @@ bool PathGuidedSampler::sample(
     else
     {
         DTreeSample d_tree_sample;
-        m_d_tree->sample(sampling_context, d_tree_sample);
+        m_d_tree->sample(sampling_context, d_tree_sample, m_bsdf_sampling_modes);
+
+        if(d_tree_sample.scattering_mode == ScatteringMode::None)
+        {
+            // Terminate.
+            bsdf_sample.set_to_scattering(d_tree_sample.scattering_mode, 0.0f);
+            return true;
+        }
+
         bsdf_sample.m_incoming = foundation::Dual3f(d_tree_sample.direction);
         d_tree_pdf = d_tree_sample.pdf;
 
@@ -155,10 +163,7 @@ bool PathGuidedSampler::sample(
             m_bsdf_sampling_modes,
             bsdf_sample.m_value);
 
-        // Treat path guided samples as diffuse whenever possible and as glossy otherwise.
-        bsdf_sample.set_to_scattering(
-            ScatteringMode::has_diffuse(m_bsdf.get_modes()) ?
-            ScatteringMode::Diffuse : ScatteringMode::Glossy, bsdf_pdf);
+        bsdf_sample.set_to_scattering(d_tree_sample.scattering_mode, bsdf_pdf);
 
         wi_pdf = guided_path_extension_pdf(bsdf_sample.m_incoming.get_value(), bsdf_pdf, d_tree_pdf, true);
 

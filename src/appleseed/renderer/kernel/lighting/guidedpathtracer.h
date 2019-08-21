@@ -810,10 +810,8 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
 
     // Update bounce counters.
     ++vertex.m_path_length;
-    // Let diffuse and glossy counters only be affected by non path-guided bounces.
-    // Effectively allows unlimited path-guided bounces.
-    m_diffuse_bounces +=  !is_path_guided ? (sample.get_mode() >> ScatteringMode::DiffuseBitShift)  & 1 : 0;
-    m_glossy_bounces +=   !is_path_guided ? (sample.get_mode() >> ScatteringMode::GlossyBitShift)   & 1 : 0;
+    m_diffuse_bounces +=  (sample.get_mode() >> ScatteringMode::DiffuseBitShift)  & 1;
+    m_glossy_bounces +=   (sample.get_mode() >> ScatteringMode::GlossyBitShift)   & 1;
     m_specular_bounces += (sample.get_mode() >> ScatteringMode::SpecularBitShift) & 1;
 
     // Construct the scattered ray.

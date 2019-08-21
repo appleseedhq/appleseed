@@ -31,6 +31,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/gpt/gptparameters.h"
+#include "renderer/kernel/lighting/scatteringmode.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
@@ -40,6 +41,8 @@
 #include <array>
 #include <atomic>
 #include <memory>
+#include <utility>
+#include <vector>
 
 //
 // SD-Tree implementation for "Practical Path Guiding for Efficient Light-Transport Simulation" [Müller et al. 2017].
@@ -55,6 +58,7 @@ struct DTreeSample
 {
     foundation::Vector3f                direction;
     float                               pdf;
+    ScatteringMode::Mode                scattering_mode;
 };
 
 // The node type for the D-Tree.
@@ -93,7 +97,12 @@ class QuadTreeNode
     void restructure(
         const float                         total_radiance_sum,
         const float                         subdiv_threshold,
+        std::vector<
+          std::pair<float, float>>&         sorted_energy_ratios,
         const size_t                        depth = 1);
+
+    // Reset to state of an initial root node.
+    void reset();
 
     // Sample a direction in cylindrical coordinates based on the directional radiance distribution.
     const foundation::Vector2f sample(
@@ -147,7 +156,8 @@ class DTree
     // Sample a direction based on the directional radiance distribution.
     void sample(
         SamplingContext&                    sampling_context,
-        DTreeSample&                        d_tree_sample) const;
+        DTreeSample&                        d_tree_sample,
+        const int                           modes) const;
 
     float pdf(
         const foundation::Vector3f&         direction) const;
@@ -169,6 +179,7 @@ class DTree
     float sample_weight() const;
     float mean() const;
     float bsdf_sampling_fraction() const;
+    ScatteringMode::Mode get_scattering_mode() const;
 
   private:
     void acquire_optimization_spin_lock();
@@ -185,6 +196,7 @@ class DTree
     std::atomic<float>                  m_current_iter_sample_weight;
     float                               m_previous_iter_sample_weight;
     bool                                m_is_built;
+    ScatteringMode::Mode                m_scattering_mode;
 
     // BSDF sampling fraction optimization variables.
     std::atomic_flag                    m_atomic_flag;
