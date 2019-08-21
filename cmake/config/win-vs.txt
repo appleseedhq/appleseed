@@ -279,8 +279,8 @@ macro (link_against_oiio target)
             optimized   ${APPLESEED_DEPS_STAGE_DIR}/libjpeg-turbo-release/lib/jpeg-static.lib
             optimized   ${APPLESEED_DEPS_STAGE_DIR}/libpng-release/lib/libpng16_static.lib
             optimized   ${APPLESEED_DEPS_STAGE_DIR}/libtiff-release/lib/libtiff.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/lib/OpenImageIO.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/lib/OpenImageIO_Util.lib
+            optimized   $<IF:$<OR:$<CONFIG:Profile>,$<CONFIG:Ship>>,${APPLESEED_DEPS_STAGE_DIR}/oiio-ship/lib/OpenImageIO.lib,${APPLESEED_DEPS_STAGE_DIR}/oiio-release/lib/OpenImageIO.lib>
+            optimized   $<IF:$<OR:$<CONFIG:Profile>,$<CONFIG:Ship>>,${APPLESEED_DEPS_STAGE_DIR}/oiio-ship/lib/OpenImageIO_Util.lib,${APPLESEED_DEPS_STAGE_DIR}/oiio-release/lib/OpenImageIO_Util.lib>
         )
     endif ()
 endmacro ()
