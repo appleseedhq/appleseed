@@ -349,13 +349,15 @@ struct GenericImageFileWriter::Impl
         for (size_t tile_y = 0; tile_y < props.m_tile_count_y; tile_y++)
         {
             // Loop over the columns of tiles.
+            size_t tile_height = 0;
             for (size_t tile_x = 0; tile_x < props.m_tile_count_x; tile_x++)
             {
                 // Retrieve the (tile_x, tile_y) tile.
                 const Tile& tile = canvas->tile(tile_x, tile_y);
+                tile_height = tile.get_height();
 
                 // Loop over the row pixels of the current tile.
-                for (size_t y = 0; y < tile.get_height(); y++)
+                for (size_t y = 0; y < tile_height; y++)
                 {
                     // Loop over the column pixels of the current tile.
                     for (size_t x = 0; x < tile.get_width(); x++)
@@ -377,7 +379,7 @@ struct GenericImageFileWriter::Impl
 
             // Compute y dimensional scanline border.
             const size_t y_begin = tile_y * props.m_tile_height;
-            const size_t y_end = y_begin + props.m_tile_height;
+            const size_t y_end = y_begin + tile_height;
 
             // Write scanline into the file.
             if (!m_writer->write_scanlines(
