@@ -42,6 +42,7 @@
 namespace renderer  { class Entity; }
 namespace renderer  { class LightPathStream; }
 namespace renderer  { class Project; }
+class QString;
 
 namespace renderer
 {
@@ -115,13 +116,14 @@ class APPLESEED_DLLSYMBOL LightPathRecorder
     // Return the total number of stored vertices in all light paths. `finalize()` must have been called.
     size_t get_vertex_count() const;
 
-    // Retrieve all light paths falling into a region of the render.
+    // Retrieve all light paths falling into a region of the render and which optionally satisfy a given Light Path Expression.
     // All bounds are inclusive. `finalize()` must have been called.
     void query(
         const size_t        x0,
         const size_t        y0,
         const size_t        x1,
         const size_t        y1,
+        const char*         lpe,
         LightPathArray&     result) const;
 
     // Retrieve a given light path vertex. `finalize()` must have been called.

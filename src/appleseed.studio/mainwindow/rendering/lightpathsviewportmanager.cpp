@@ -47,12 +47,16 @@
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
 
+// OSL headers.
+#include "OSL/accum.h"
+
 // Qt headers.
 #include <QApplication>
 #include <QDir>
 #include <QFileInfo>
 #include <QGridLayout>
 #include <QLabel>
+#include <QLineEdit>
 #include <QMenu>
 #include <QScrollArea>
 #include <QSize>
@@ -65,6 +69,7 @@
 #include <cassert>
 
 using namespace foundation;
+using namespace OSL;
 using namespace renderer;
 
 namespace appleseed {
@@ -89,6 +94,8 @@ LightPathsViewportManager::LightPathsViewportManager(
     connect(
         light_paths_layer, SIGNAL(signal_light_path_selection_changed(const int, const int)),
         SLOT(slot_light_path_selection_changed(const int, const int)));
+
+    m_lpe_validator = new LpeValidator();
 
     create_toolbar();
 
@@ -152,11 +159,17 @@ void LightPathsViewportManager::slot_entity_picked(const ScenePicker::PickingRes
 
     set_display_enabled(true);
 
+    QString* lpe = NULL;
+    if (m_lpe_input->hasAcceptableInput() && m_lpe_input->text().size() > 0)
+    {
+        lpe = &m_lpe_input->text();
+    }
     const CanvasProperties& props = m_project->get_frame()->image().properties();
     m_screen_space_paths_picking_handler->pick(
         Vector2i(
             result.m_ndc[0] * static_cast<int>(props.m_canvas_width),
-            result.m_ndc[1] * static_cast<int>(props.m_canvas_height)));
+            result.m_ndc[1] * static_cast<int>(props.m_canvas_height)),
+        lpe);
 }
 
 void LightPathsViewportManager::slot_light_paths_display_toggled(const bool active)
@@ -168,11 +181,17 @@ void LightPathsViewportManager::slot_rectangle_selection(const QRect& rect)
 {
     if (!m_picking_enabled || !m_enabled) return;
 
+    QString* lpe = NULL;
+    if (m_lpe_input->hasAcceptableInput() && m_lpe_input->text().size() > 0)
+    {
+        lpe = &m_lpe_input->text();
+    }
     set_display_enabled(true);
     m_screen_space_paths_picking_handler->pick(
         AABB2i(
             Vector2i(rect.x(), rect.y()),
-            Vector2i(rect.x() + rect.width() - 1, rect.y() + rect.height() - 1)));
+            Vector2i(rect.x() + rect.width() - 1, rect.y() + rect.height() - 1)),
+        lpe);
 }
 
 void LightPathsViewportManager::slot_light_path_selection_changed(
@@ -218,6 +237,19 @@ void LightPathsViewportManager::slot_save_light_paths()
 void LightPathsViewportManager::slot_camera_changed()
 {
     if (!m_enabled) return;
+}
+
+void LightPathsViewportManager::slot_lpe_input_editing_finished()
+{
+    if (!m_enabled) return;
+
+    QString* lpe = NULL;
+    if (m_lpe_input->hasAcceptableInput() && m_lpe_input->text().size() > 0)
+    {
+        lpe = &m_lpe_input->text();
+    }
+    set_display_enabled(true);
+    m_screen_space_paths_picking_handler->pick(lpe);
 }
 
 void LightPathsViewportManager::create_toolbar()
@@ -296,6 +328,20 @@ void LightPathsViewportManager::create_toolbar()
     m_info_label = new QLabel();
     m_info_label->setObjectName("info_label");
     m_toolbar->addWidget(m_info_label);
+
+    // Create a label and text input for light path expression filtering
+    m_lpe_label = new QLabel("Filter by Light Path Expression:");
+    m_lpe_label->setObjectName("lpe_label");
+    m_toolbar->addWidget(m_lpe_label);
+
+    m_lpe_input = new QLineEdit();
+    m_lpe_input->setObjectName("lpe_input");
+    m_lpe_input->setValidator(m_lpe_validator);
+    connect(
+        m_lpe_input, SIGNAL(editingFinished()),
+        this, SLOT(slot_lpe_input_editing_finished())
+    );
+    m_toolbar->addWidget(m_lpe_input);
 
     m_toolbar->setDisabled(true);
     m_toolbar->hide();

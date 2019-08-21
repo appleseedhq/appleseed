@@ -57,6 +57,25 @@ using namespace foundation;
 namespace renderer
 {
 
+namespace {
+    char get_lpe_scattering_mode(int mode) {
+        char scatter_mode;
+        if (ScatteringMode::has_diffuse(mode)) {
+            scatter_mode = 'D';
+        }
+        else if (ScatteringMode::has_glossy(mode)) {
+            scatter_mode = 'G';
+        }
+        else if (ScatteringMode::has_specular(mode)) {
+            scatter_mode = 'S';
+        }
+        else {
+            scatter_mode = '-';
+        }
+        return scatter_mode;
+    }
+}
+
 LightPathStream::LightPathStream(const Project& project)
   : m_scene(*project.get_scene())   // at this time the scene's render data are not available
 {
@@ -111,6 +130,8 @@ void LightPathStream::hit_reflector(const PathVertex& vertex)
     data.m_vertex_position = Vector3f(vertex.get_point());
     data.m_surface_normal = Vector3f(vertex.get_geometric_normal());
     data.m_path_throughput = vertex.m_throughput.to_rgb(g_std_lighting_conditions);
+    char scatter_mode = get_lpe_scattering_mode(vertex.m_scattering_modes);
+    data.m_lpe_tag = { { 'R', scatter_mode } };
     m_hit_reflector_data.push_back(data);
 }
 
@@ -130,6 +151,8 @@ void LightPathStream::hit_emitter(
     data.m_object_instance = &vertex.m_shading_point->get_object_instance();
     data.m_vertex_position = Vector3f(vertex.get_point());
     data.m_surface_normal = Vector3f(vertex.get_geometric_normal());
+    char scatter_mode = get_lpe_scattering_mode(vertex.m_scattering_modes);
+    data.m_lpe_tag = { { 'O', scatter_mode } };
     data.m_path_throughput = vertex.m_throughput.to_rgb(g_std_lighting_conditions);
     data.m_emitted_radiance = emitted_radiance.to_rgb(g_std_lighting_conditions);
     m_hit_emitter_data.push_back(data);
@@ -153,6 +176,7 @@ void LightPathStream::sampled_emitting_shape(
             shape.get_object_instance_index());
     data.m_vertex_position = Vector3f(emission_position);
     data.m_surface_normal = Vector3f(emission_normal);
+    data.m_lpe_tag = { { 'O', '_' } };
     data.m_material_value = material_value.to_rgb(g_std_lighting_conditions);
     data.m_emitted_radiance = emitted_radiance.to_rgb(g_std_lighting_conditions);
     m_sampled_emitter_data.push_back(data);
@@ -174,6 +198,7 @@ void LightPathStream::sampled_non_physical_light(
     data.m_entity = &light;
     data.m_vertex_position = Vector3f(emission_position);
     data.m_surface_normal = Vector3f(emission_normal);
+    data.m_lpe_tag = { { 'L', '_' } };
     data.m_material_value = material_value.to_rgb(g_std_lighting_conditions);
     data.m_emitted_radiance = emitted_radiance.to_rgb(g_std_lighting_conditions);
     m_sampled_emitter_data.push_back(data);
@@ -193,6 +218,7 @@ void LightPathStream::sampled_environment(
     SampledEnvData data;
     data.m_environment_edf = &environment_edf;
     data.m_emission_direction = emission_direction;
+    data.m_lpe_tag = { { 'B', '_' } };
     data.m_material_value = material_value.to_rgb(g_std_lighting_conditions);
     data.m_emitted_radiance = emitted_radiance.to_rgb(g_std_lighting_conditions);
     m_sampled_env_data.push_back(data);
@@ -254,6 +280,7 @@ void LightPathStream::create_path_from_hit_emitter(const size_t emitter_event_in
     emitter_vertex.m_position = hit_emitter_data.m_vertex_position;
     emitter_vertex.m_surface_normal = hit_emitter_data.m_surface_normal;
     emitter_vertex.m_radiance = hit_emitter_data.m_emitted_radiance;
+    emitter_vertex.m_lpe_tag = hit_emitter_data.m_lpe_tag;
     m_vertices.push_back(emitter_vertex);
 
     Color3f current_radiance = hit_emitter_data.m_emitted_radiance;
@@ -274,6 +301,7 @@ void LightPathStream::create_path_from_hit_emitter(const size_t emitter_event_in
             reflector_vertex.m_entity = event_data.m_object_instance;
             reflector_vertex.m_position = event_data.m_vertex_position;
             reflector_vertex.m_surface_normal = event_data.m_surface_normal;
+            reflector_vertex.m_lpe_tag = hit_emitter_data.m_lpe_tag;
             reflector_vertex.m_radiance = current_radiance;
             m_vertices.push_back(reflector_vertex);
 
@@ -299,6 +327,7 @@ void LightPathStream::create_path_from_hit_emitter(const size_t emitter_event_in
     camera_vertex.m_entity = m_camera;
     camera_vertex.m_position = m_camera_vertex_position;
     camera_vertex.m_surface_normal = m_camera_vertex_normal;
+    camera_vertex.m_lpe_tag = { 'C', '_' };
     camera_vertex.m_radiance = current_radiance;
     m_vertices.push_back(camera_vertex);
 
@@ -331,6 +360,7 @@ void LightPathStream::create_path_from_sampled_emitter(const size_t emitter_even
     emitter_vertex.m_entity = sampled_emitter_data.m_entity;
     emitter_vertex.m_position = sampled_emitter_data.m_vertex_position;
     emitter_vertex.m_surface_normal = sampled_emitter_data.m_surface_normal;
+    emitter_vertex.m_lpe_tag = sampled_emitter_data.m_lpe_tag;
     emitter_vertex.m_radiance = sampled_emitter_data.m_emitted_radiance;
     m_vertices.push_back(emitter_vertex);
 
@@ -352,6 +382,7 @@ void LightPathStream::create_path_from_sampled_emitter(const size_t emitter_even
             reflector_vertex.m_entity = event_data.m_object_instance;
             reflector_vertex.m_position = event_data.m_vertex_position;
             reflector_vertex.m_surface_normal = event_data.m_surface_normal;
+            reflector_vertex.m_lpe_tag = event_data.m_lpe_tag;
             reflector_vertex.m_radiance = current_radiance;
             m_vertices.push_back(reflector_vertex);
 
@@ -378,6 +409,7 @@ void LightPathStream::create_path_from_sampled_emitter(const size_t emitter_even
     camera_vertex.m_position = m_camera_vertex_position;
     camera_vertex.m_surface_normal = m_camera_vertex_normal;
     camera_vertex.m_radiance = current_radiance;
+    camera_vertex.m_lpe_tag = { 'C', '_' };
     m_vertices.push_back(camera_vertex);
 
     // Store path.
@@ -409,6 +441,7 @@ void LightPathStream::create_path_from_sampled_environment(const size_t env_even
     emitter_vertex.m_entity = sampled_env_data.m_environment_edf;
     emitter_vertex.m_position = last_reflector_data.m_vertex_position + m_scene_diameter * sampled_env_data.m_emission_direction;
     emitter_vertex.m_surface_normal = -sampled_env_data.m_emission_direction;
+    emitter_vertex.m_lpe_tag = sampled_env_data.m_lpe_tag;
     emitter_vertex.m_radiance = sampled_env_data.m_emitted_radiance;
     m_vertices.push_back(emitter_vertex);
 
@@ -430,6 +463,7 @@ void LightPathStream::create_path_from_sampled_environment(const size_t env_even
             reflector_vertex.m_entity = event_data.m_object_instance;
             reflector_vertex.m_position = event_data.m_vertex_position;
             reflector_vertex.m_surface_normal = event_data.m_surface_normal;
+            reflector_vertex.m_lpe_tag = event_data.m_lpe_tag;
             reflector_vertex.m_radiance = current_radiance;
             m_vertices.push_back(reflector_vertex);
 
@@ -455,6 +489,7 @@ void LightPathStream::create_path_from_sampled_environment(const size_t env_even
     camera_vertex.m_entity = m_camera;
     camera_vertex.m_position = m_camera_vertex_position;
     camera_vertex.m_surface_normal = m_camera_vertex_normal;
+    camera_vertex.m_lpe_tag = { 'C', '_' };
     camera_vertex.m_radiance = current_radiance;
     m_vertices.push_back(camera_vertex);
 
