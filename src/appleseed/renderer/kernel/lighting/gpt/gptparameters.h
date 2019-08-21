@@ -67,6 +67,15 @@ enum class BSDFSamplingFractionMode
 	Fixed
 };
 
+enum class GuidedBounceMode
+{
+	Learn,
+	StrictlyDiffuse,
+	StrictlyGlossy,
+	PreferDiffuse,
+	PreferGlossy
+};
+
 struct GPTParameters
 {
 	explicit GPTParameters(const ParamArray& params);
@@ -78,6 +87,7 @@ struct GPTParameters
 	const SpatialFilter               m_spatial_filter;
 	const DirectionalFilter           m_directional_filter;
 	const BSDFSamplingFractionMode    m_bsdf_sampling_fraction_mode;
+	const GuidedBounceMode			  m_guided_bounce_mode;
 	const float                       m_fixed_bsdf_sampling_fraction;
 	const float                       m_learning_rate;
 
@@ -87,6 +97,7 @@ struct GPTParameters
 	const bool                        m_enable_caustics;              // are caustics enabled?
 
 	const size_t                      m_max_bounces;                  // maximum number of bounces, ~0 for unlimited
+	const size_t                      m_max_guided_bounces;           // maximum number of path guided bounces, ~0 for unlimited
 	const size_t                      m_max_diffuse_bounces;          // maximum number of diffuse bounces, ~0 for unlimited
 	const size_t                      m_max_glossy_bounces;           // maximum number of glossy bounces, ~0 for unlimited
 	const size_t                      m_max_specular_bounces;         // maximum number of specular bounces, ~0 for unlimited

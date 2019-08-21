@@ -125,11 +125,43 @@ BSDFSamplingFractionMode get_bsdf_sampling_fraction_mode(const ParamArray& param
 	}
 }
 
+GuidedBounceMode get_guided_bounce_mode(const ParamArray& params)
+{
+	const std::string name = params.get_required<std::string>("guided_bounce_mode", "learn");
+
+	if(name == "learn")
+	{
+		return GuidedBounceMode::Learn;
+	}
+	else if(name == "strictly_diffuse")
+	{
+		return GuidedBounceMode::StrictlyDiffuse;
+	}
+	else if(name == "strictly_glossy")
+	{
+		return GuidedBounceMode::StrictlyGlossy;
+	}
+	else if(name == "prefer_diffuse")
+	{
+		return GuidedBounceMode::PreferDiffuse;
+	}
+	else if(name == "prefer_glossy")
+	{
+		return GuidedBounceMode::PreferGlossy;
+	}
+	else
+	{
+		RENDERER_LOG_WARNING("Unknown parameter for guided bounce mode");
+		return GuidedBounceMode::Learn;
+	}
+}
+
 GPTParameters::GPTParameters(const ParamArray& params)
   : m_samples_per_pass(params.get_optional<int>("samples_per_pass", 4))
   , m_fixed_bsdf_sampling_fraction(params.get_optional<float>("fixed_bsdf_sampling_fraction_value", 0.5f))
   , m_learning_rate(params.get_optional<float>("learning_rate", 0.01f))
   , m_bsdf_sampling_fraction_mode(get_bsdf_sampling_fraction_mode(params))
+  , m_guided_bounce_mode(get_guided_bounce_mode(params))
   , m_directional_filter(get_directional_filter(params))
   , m_spatial_filter(get_spatial_filter(params))
   , m_iteration_progression(get_iteration_progression(params))
@@ -138,6 +170,7 @@ GPTParameters::GPTParameters(const ParamArray& params)
   , m_enable_caustics(params.get_optional<bool>("enable_caustics", false))
   , m_max_bounces(fixup_bounces(params.get_optional<int>("max_bounces", 8)))
   , m_max_diffuse_bounces(fixup_bounces(params.get_optional<int>("max_diffuse_bounces", 3)))
+  , m_max_guided_bounces(fixup_bounces(params.get_optional<int>("max_guided_bounces", 8)))
   , m_max_glossy_bounces(fixup_bounces(params.get_optional<int>("max_glossy_bounces", 8)))
   , m_max_specular_bounces(fixup_bounces(params.get_optional<int>("max_specular_bounces", 8)))
   , m_max_volume_bounces(fixup_bounces(params.get_optional<int>("max_volume_bounces", 8)))
@@ -238,6 +271,34 @@ void GPTParameters::print() const
 		break;
 	}
 
+	std::string bounce_mode_string;
+
+	switch(m_guided_bounce_mode)
+	{
+	case GuidedBounceMode::Learn:
+		bounce_mode_string = "Learned Distribution";
+		break;
+
+	case GuidedBounceMode::StrictlyDiffuse:
+		bounce_mode_string = "Strictly Diffuse";
+		break;
+
+	case GuidedBounceMode::StrictlyGlossy:
+		bounce_mode_string = "Strictly Glossy";
+		break;
+
+	case GuidedBounceMode::PreferDiffuse:
+		bounce_mode_string = "Prefer Diffuse";
+		break;
+
+	case GuidedBounceMode::PreferGlossy:
+		bounce_mode_string = "Prefer Glossy";
+		break;
+	
+	default:
+		break;
+	}
+
     RENDERER_LOG_INFO(
         "guided path tracer settings:\n"
         "  samples per pass              %s\n"
@@ -245,10 +306,12 @@ void GPTParameters::print() const
         "  %s\n"
         "  spatial filter                %s\n"
         "  directional filter            %s\n"
+        "  guided bounce mode            %s\n"
         "  direct lighting               %s\n"
         "  ibl                           %s\n"
         "  caustics                      %s\n"
         "  max bounces                   %s\n"
+        "  max path guided bounces       %s\n"
         "  max diffuse bounces           %s\n"
         "  max glossy bounces            %s\n"
         "  max specular bounces          %s\n"
@@ -267,10 +330,12 @@ void GPTParameters::print() const
         bsdf_mode_string.c_str(),
         spatial_filter_string.c_str(),
         directional_filter_string.c_str(),
+        bounce_mode_string.c_str(),
         m_enable_dl ? "on" : "off",
         m_enable_ibl ? "on" : "off",
         m_enable_caustics ? "on" : "off",
         m_max_bounces == ~size_t(0) ? "unlimited" : pretty_uint(m_max_bounces).c_str(),
+        m_max_guided_bounces == ~size_t(0) ? "unlimited" : pretty_uint(m_max_guided_bounces).c_str(),
         m_max_diffuse_bounces == ~size_t(0) ? "unlimited" : pretty_uint(m_max_diffuse_bounces).c_str(),
         m_max_glossy_bounces == ~size_t(0) ? "unlimited" : pretty_uint(m_max_glossy_bounces).c_str(),
         m_max_specular_bounces == ~size_t(0) ? "unlimited" : pretty_uint(m_max_specular_bounces).c_str(),

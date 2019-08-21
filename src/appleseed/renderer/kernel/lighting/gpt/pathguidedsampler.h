@@ -19,6 +19,8 @@ class PathGuidedSampler
 {
   public:
     PathGuidedSampler(
+        const bool                      enable_path_guiding,
+        const GuidedBounceMode          guided_bounce_mode,
         DTree*                          d_tree,
         const float                     bsdf_sampling_fraction,
         const BSDF&                     bsdf,
@@ -53,9 +55,14 @@ class PathGuidedSampler
         float&                          d_tree_pdf,
         const bool                      d_tree_pdf_is_set) const;
 
+    ScatteringMode::Mode bounce_mode(
+        const ScatteringMode::Mode      sampled_mode) const;
+
     DTree*                              m_d_tree;
     const float                         m_bsdf_sampling_fraction;
     const bool                          m_sd_tree_is_built;
+    const bool                          m_enable_path_guiding;
+    const GuidedBounceMode              m_guided_bounce_mode;
 };
 
 }   // namespace render

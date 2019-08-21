@@ -535,12 +535,12 @@ void DTree::sample(
     DTreeSample&                        d_tree_sample,
     const int                           modes) const
 {
-    // if((modes & m_scattering_mode) == 0)
-    // {
-    //     d_tree_sample.scattering_mode = ScatteringMode::None;
-    //     d_tree_sample.pdf = 0.0f;
-    //     return;
-    // }
+    if((modes & m_scattering_mode) == 0)
+    {
+        d_tree_sample.scattering_mode = ScatteringMode::None;
+        d_tree_sample.pdf = 0.0f;
+        return;
+    }
 
     sampling_context.split_in_place(2, 1);
     Vector2f s = sampling_context.next2<Vector2f>();

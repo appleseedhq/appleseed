@@ -1374,6 +1374,7 @@ namespace
             sublayout->addWidget(create_checkbox("lighting_components.caustics", "Caustics"));
 
             create_separate_bounce_settings_group(layout, "gpt", "gpt.max_bounces");
+
             create_pt_volume_settings(layout);
             create_pt_advanced_settings(layout);
 
@@ -1407,12 +1408,14 @@ namespace
             create_direct_link("guiding.fixed_bsdf_sampling_fraction_value",        "gpt.fixed_bsdf_sampling_fraction_value");
             create_direct_link("guiding.learning_rate",                             "gpt.learning_rate");
             create_direct_link("guiding.iteration_progression",                     "gpt.iteration_progression");
+            create_direct_link("guiding.guided_bounce_mode",                        "gpt.guided_bounce_mode");
 
             load_directly_linked_values(config);
 
             slot_changed_bsdf_sampling_fraction_mode(m_sampling_fraction_combobox->currentIndex());
 
             load_global_max_bounce_settings(config, "gpt", "gpt.max_bounces", 8);
+            load_separate_bounce_settings(config, "gpt", "guided", 8);
             load_separate_bounce_settings(config, "gpt", "diffuse", 3);
             load_separate_bounce_settings(config, "gpt", "glossy", 8);
             load_separate_bounce_settings(config, "gpt", "specular", 8);
@@ -1427,6 +1430,7 @@ namespace
             save_directly_linked_values(config);
 
             save_bounce_settings(config, "gpt", "gpt.max_bounces");
+            save_separate_bounce_settings(config, "gpt", "guided");
             save_separate_bounce_settings(config, "gpt", "diffuse");
             save_separate_bounce_settings(config, "gpt", "glossy");
             save_separate_bounce_settings(config, "gpt", "specular");
@@ -1644,6 +1648,29 @@ namespace
             iteration_combobox->addItem("Automatic Cut-Off", "automatic");
 
             sublayout->addRow("Iteration Progression:", iteration_combobox);
+
+            QComboBox *bounce_mode_combobox = create_combobox("guiding.guided_bounce_mode");
+            bounce_mode_combobox->setToolTip(m_params_metadata.get_path("gpt.guided_bounce_mode.help"));
+            bounce_mode_combobox->addItem("Learned Distribution", "learn");
+            bounce_mode_combobox->addItem("Strictly Diffuse", "strictly_diffuse");
+            bounce_mode_combobox->addItem("Strictly Glossy", "strictly_glossy");
+            bounce_mode_combobox->addItem("Prefer Diffuse", "prefer_diffuse");
+            bounce_mode_combobox->addItem("Prefer Glossy", "prefer_glossy");
+
+            sublayout->addRow("Guided Bounce Mode:", bounce_mode_combobox);
+            create_guided_bounce_settings(sublayout, "gpt");
+        }
+
+        void create_guided_bounce_settings(QFormLayout* layout, const string& prefix)
+        {
+            const string widget_base_key = prefix + ".bounces.";
+
+            QSpinBox* max_guided_bounces = create_integer_input(widget_base_key + "max_guided_bounces", 0, 100, 1);
+
+            QCheckBox* unlimited_guided_bounces = create_checkbox(widget_base_key + "unlimited_guided_bounces", "Unlimited");
+
+            layout->addRow("Max Guided Bounces:", create_horizontal_group(max_guided_bounces, unlimited_guided_bounces));
+            connect(unlimited_guided_bounces, SIGNAL(toggled(bool)), max_guided_bounces, SLOT(setDisabled(bool)));
         }
 
       private slots:

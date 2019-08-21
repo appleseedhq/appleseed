@@ -105,85 +105,90 @@ class GuidedPathTracer
 {
   public:
     GuidedPathTracer(
-        STree*                  sd_tree,
-        PathVisitor&            path_visitor,
-        VolumeVisitor&          volume_visitor,
-        const float             bsdf_sampling_fraction,
-        const size_t            rr_min_path_length,
-        const size_t            max_bounces,
-        const size_t            max_diffuse_bounces,
-        const size_t            max_glossy_bounces,
-        const size_t            max_specular_bounces,
-        const size_t            max_volume_bounces,
-        const bool              clamp_roughness,
-        const size_t            max_iterations = 1000,
-        const double            near_start = 0.0);          // abort tracing if the first ray is shorter than this
+        STree*                          sd_tree,
+        PathVisitor&                    path_visitor,
+        VolumeVisitor&                  volume_visitor,
+        const BSDFSamplingFractionMode  bsdf_sampling_fraction_mode,
+        const GuidedBounceMode          guided_bounce_mode,
+        const size_t                    rr_min_path_length,
+        const size_t                    max_bounces,
+        const size_t                    max_guided_bounces,
+        const size_t                    max_diffuse_bounces,
+        const size_t                    max_glossy_bounces,
+        const size_t                    max_specular_bounces,
+        const size_t                    max_volume_bounces,
+        const bool                      clamp_roughness,
+        const size_t                    max_iterations = 1000,
+        const double                    near_start = 0.0);          // abort tracing if the first ray is shorter than this
 
     size_t trace(
-        SamplingContext&        sampling_context,
-        const ShadingContext&   shading_context,
-        const ShadingRay&       ray,
-        const ShadingPoint*     parent_shading_point = nullptr,
-        const bool              clear_arena = true);
+        SamplingContext&                sampling_context,
+        const ShadingContext&           shading_context,
+        const ShadingRay&               ray,
+        const ShadingPoint*             parent_shading_point = nullptr,
+        const bool                      clear_arena = true);
 
     size_t trace(
-        SamplingContext&        sampling_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        const bool              clear_arena = true);
+        SamplingContext&                sampling_context,
+        const ShadingContext&           shading_context,
+        const ShadingPoint&             shading_point,
+        const bool                      clear_arena = true);
 
     const ShadingPoint& get_path_vertex(const size_t i) const;
 
   private:
-    STree*                      m_sd_tree;
-    PathVisitor&                m_path_visitor;
-    VolumeVisitor&              m_volume_visitor;
-    const float                 m_bsdf_sampling_fraction;
-    const size_t                m_rr_min_path_length;
-    const size_t                m_max_bounces;
-    const size_t                m_max_diffuse_bounces;
-    const size_t                m_max_glossy_bounces;
-    const size_t                m_max_specular_bounces;
-    const size_t                m_max_volume_bounces;
-    const bool                  m_clamp_roughness;
-    const size_t                m_max_iterations;
-    const double                m_near_start;
-    size_t                      m_diffuse_bounces;
-    size_t                      m_glossy_bounces;
-    size_t                      m_specular_bounces;
-    size_t                      m_volume_bounces;
-    size_t                      m_iterations;
-    foundation::Arena           m_shading_point_arena;
+    STree*                          m_sd_tree;
+    PathVisitor&                    m_path_visitor;
+    VolumeVisitor&                  m_volume_visitor;
+    const BSDFSamplingFractionMode  m_bsdf_sampling_fraction_mode;
+    const GuidedBounceMode          m_guided_bounce_mode;
+    const size_t                    m_rr_min_path_length;
+    const size_t                    m_max_bounces;
+    const size_t                    m_max_guided_bounces;
+    const size_t                    m_max_diffuse_bounces;
+    const size_t                    m_max_glossy_bounces;
+    const size_t                    m_max_specular_bounces;
+    const size_t                    m_max_volume_bounces;
+    const bool                      m_clamp_roughness;
+    const size_t                    m_max_iterations;
+    const double                    m_near_start;
+    size_t                          m_guided_bounces;
+    size_t                          m_diffuse_bounces;
+    size_t                          m_glossy_bounces;
+    size_t                          m_specular_bounces;
+    size_t                          m_volume_bounces;
+    size_t                          m_iterations;
+    foundation::Arena               m_shading_point_arena;
 
     // Determine whether a ray can pass through a surface with a given alpha value.
     static bool pass_through(
-        SamplingContext&        sampling_context,
-        const Alpha             alpha);
+        SamplingContext&                sampling_context,
+        const Alpha                     alpha);
 
     // Use Russian Roulette to cut the path without introducing bias.
     bool continue_path_rr(
-        SamplingContext&        sampling_context,
-        PathVertex&             vertex);
+        SamplingContext&                sampling_context,
+        PathVertex&                     vertex);
 
     // Apply path visitor and sample BSDF in a given path vertex.
     // If all checks are passed, build a bounced ray that continues in the sampled direction
     // and return true, otherwise return false.
     bool process_bounce(
-        SamplingContext&        sampling_context,
-        PathVertex&             vertex,
-        BSDFSample&             sample,
-        ShadingRay&             ray,
-        GPTVertexPath&          guide_vertices);
+        SamplingContext&                sampling_context,
+        PathVertex&                     vertex,
+        BSDFSample&                     sample,
+        ShadingRay&                     ray,
+        GPTVertexPath&                  guide_vertices);
 
     // This method performs raymarching across the volume.
     // Returns whether the path should be continued.
     bool march(
-        SamplingContext&        sampling_context,
-        const ShadingContext&   shading_context,
-        const ShadingRay&       ray,
-        PathVertex&             vertex,
-        ShadingPoint&           shading_point,
-        GPTVertexPath&          guided_path);
+        SamplingContext&                sampling_context,
+        const ShadingContext&           shading_context,
+        const ShadingRay&               ray,
+        PathVertex&                     vertex,
+        ShadingPoint&                   shading_point,
+        GPTVertexPath&                  guided_path);
 };
 
 
@@ -193,25 +198,29 @@ class GuidedPathTracer
 
 template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
 inline GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::GuidedPathTracer(
-    STree*                      sd_tree,
-    PathVisitor&                path_visitor,
-    VolumeVisitor&              volume_visitor,
-    const float                 bsdf_sampling_fraction,
-    const size_t                rr_min_path_length,
-    const size_t                max_bounces,
-    const size_t                max_diffuse_bounces,
-    const size_t                max_glossy_bounces,
-    const size_t                max_specular_bounces,
-    const size_t                max_volume_bounces,
-    const bool                  clamp_roughness,
-    const size_t                max_iterations,
-    const double                near_start)
+    STree*                              sd_tree,
+    PathVisitor&                        path_visitor,
+    VolumeVisitor&                      volume_visitor,
+    const BSDFSamplingFractionMode      bsdf_sampling_fraction_mode,
+    const GuidedBounceMode              guided_bounce_mode,
+    const size_t                        rr_min_path_length,
+    const size_t                        max_bounces,
+    const size_t                        max_guided_bounces,
+    const size_t                        max_diffuse_bounces,
+    const size_t                        max_glossy_bounces,
+    const size_t                        max_specular_bounces,
+    const size_t                        max_volume_bounces,
+    const bool                          clamp_roughness,
+    const size_t                        max_iterations,
+    const double                        near_start)
   : m_sd_tree(sd_tree)
   , m_path_visitor(path_visitor)
   , m_volume_visitor(volume_visitor)
-  , m_bsdf_sampling_fraction(bsdf_sampling_fraction)
+  , m_bsdf_sampling_fraction_mode(bsdf_sampling_fraction_mode)
+  , m_guided_bounce_mode(guided_bounce_mode)
   , m_rr_min_path_length(rr_min_path_length)
   , m_max_bounces(max_bounces)
+  , m_max_guided_bounces(max_guided_bounces)
   , m_max_diffuse_bounces(max_diffuse_bounces)
   , m_max_glossy_bounces(max_glossy_bounces)
   , m_max_specular_bounces(max_specular_bounces)
@@ -224,11 +233,11 @@ inline GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::GuidedPathTracer(
 
 template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
 inline size_t GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
-    SamplingContext&            sampling_context,
-    const ShadingContext&       shading_context,
-    const ShadingRay&           ray,
-    const ShadingPoint*         parent_shading_point,
-    const bool                  clear_arena)
+    SamplingContext&                    sampling_context,
+    const ShadingContext&               shading_context,
+    const ShadingRay&                   ray,
+    const ShadingPoint*                 parent_shading_point,
+    const bool                          clear_arena)
 {
     ShadingPoint shading_point;
     shading_context.get_intersector().trace(ray, shading_point, parent_shading_point);
@@ -243,10 +252,10 @@ inline size_t GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
 template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
 size_t GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
-    SamplingContext&            sampling_context,
-    const ShadingContext&       shading_context,
-    const ShadingPoint&         shading_point,
-    const bool                  clear_arena)
+    SamplingContext&                    sampling_context,
+    const ShadingContext&               shading_context,
+    const ShadingPoint&                 shading_point,
+    const bool                          clear_arena)
 {
     // Terminate the path if the first hit is too close to the origin.
     if (shading_point.hit_surface() && shading_point.get_distance() < m_near_start)
@@ -266,6 +275,7 @@ size_t GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
     // here to silence a gcc warning.
     foundation::Vector3d medium_start(0.0);
 
+    m_guided_bounces = 0;
     m_diffuse_bounces = 0;
     m_glossy_bounces = 0;
     m_specular_bounces = 0;
@@ -658,8 +668,8 @@ size_t GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
 template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
 inline bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::pass_through(
-    SamplingContext&            sampling_context,
-    const Alpha                 alpha)
+    SamplingContext&                    sampling_context,
+    const Alpha                         alpha)
 {
     // Fully opaque: never pass through.
     if (alpha[0] >= 1.0f)
@@ -678,8 +688,8 @@ inline bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::pass_through(
 
 template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
 inline bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::continue_path_rr(
-    SamplingContext&            sampling_context,
-    PathVertex&                 vertex)
+    SamplingContext&                    sampling_context,
+    PathVertex&                         vertex)
 {
     // Don't apply Russian Roulette for the first few bounces.
     if (vertex.m_path_length <= m_rr_min_path_length)
@@ -706,18 +716,19 @@ inline bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::continue_path
 
 template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
 bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
-    SamplingContext&            sampling_context,
-    PathVertex&                 vertex,
-    BSDFSample&                 sample,
-    ShadingRay&                 next_ray,
-    GPTVertexPath&              guided_path)
+    SamplingContext&                    sampling_context,
+    PathVertex&                         vertex,
+    BSDFSample&                         sample,
+    ShadingRay&                         next_ray,
+    GPTVertexPath&                      guided_path)
 {
     foundation::Vector3f voxel_size;
     DTree *d_tree = m_sd_tree->get_d_tree(foundation::Vector3f(vertex.get_point()), voxel_size);
     const float sampling_fraction = d_tree->bsdf_sampling_fraction();
+    const bool enable_path_guiding = m_guided_bounces < m_max_guided_bounces;
     
     // Let the path visitor handle the scattering event.
-    m_path_visitor.on_scatter(vertex, guided_path, sampling_fraction);
+    m_path_visitor.on_scatter(vertex, guided_path, sampling_fraction, enable_path_guiding);
 
     // Terminate the path if all scattering modes are disabled.
     if (vertex.m_scattering_modes == ScatteringMode::None)
@@ -726,6 +737,8 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     float wi_pdf, d_tree_pdf;
 
     PathGuidedSampler sampler(
+        enable_path_guiding,
+        m_guided_bounce_mode,
         d_tree,
         sampling_fraction,
         *vertex.m_bsdf,
@@ -789,7 +802,7 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     const bool is_delta = sample.get_mode() == ScatteringMode::Specular;
 
     if(!guided_path.is_full() && !m_sd_tree->is_final_iteration() && (!is_delta ||
-        (m_sd_tree->get_parameters().m_bsdf_sampling_fraction_mode == BSDFSamplingFractionMode::Learn && m_sd_tree->is_built())))
+        (m_bsdf_sampling_fraction_mode == BSDFSamplingFractionMode::Learn && m_sd_tree->is_built())))
     {
         guided_path.add_vertex(
             GPTVertex{
@@ -810,6 +823,7 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
 
     // Update bounce counters.
     ++vertex.m_path_length;
+    m_guided_bounces +=   is_path_guided ? 1 : 0;
     m_diffuse_bounces +=  (sample.get_mode() >> ScatteringMode::DiffuseBitShift)  & 1;
     m_glossy_bounces +=   (sample.get_mode() >> ScatteringMode::GlossyBitShift)   & 1;
     m_specular_bounces += (sample.get_mode() >> ScatteringMode::SpecularBitShift) & 1;
@@ -838,12 +852,12 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
 
 template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
 bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
-    SamplingContext&            sampling_context,
-    const ShadingContext&       shading_context,
-    const ShadingRay&           ray,
-    PathVertex&                 vertex,
-    ShadingPoint&               exit_point,
-    GPTVertexPath&              guided_path)
+    SamplingContext&                    sampling_context,
+    const ShadingContext&               shading_context,
+    const ShadingRay&                   ray,
+    PathVertex&                         vertex,
+    ShadingPoint&                       exit_point,
+    GPTVertexPath&                      guided_path)
 {
     if (!continue_path_rr(sampling_context, vertex))
         return false;

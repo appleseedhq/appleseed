@@ -23,6 +23,8 @@ namespace renderer
 {
 
 PathGuidedSampler::PathGuidedSampler(
+    const bool                      enable_path_guiding,
+    GuidedBounceMode                guided_bounce_mode,
     DTree*                          d_tree,
     const float                     bsdf_sampling_fraction,
     const BSDF&                     bsdf,
@@ -35,9 +37,11 @@ PathGuidedSampler::PathGuidedSampler(
       bsdf_data,
       bsdf_sampling_modes,
       shading_point)
+  , m_enable_path_guiding(enable_path_guiding)
   , m_d_tree(d_tree)
   , m_bsdf_sampling_fraction(bsdf_sampling_fraction)
   , m_sd_tree_is_built(sd_tree_is_built)
+  , m_guided_bounce_mode(guided_bounce_mode)
 {
     assert(m_d_tree);
     assert(m_bsdf_sampling_fraction >= 0.0f && m_bsdf_sampling_fraction <= 1.0f);
@@ -96,7 +100,7 @@ bool PathGuidedSampler::sample(
     float&                          wi_pdf,
     float&                          d_tree_pdf) const
 {
-    if (!m_sd_tree_is_built || m_bsdf.is_purely_specular())
+    if (!m_sd_tree_is_built || m_bsdf.is_purely_specular() || !m_enable_path_guiding)
     {
         m_bsdf.sample(
             sampling_context,
@@ -141,11 +145,12 @@ bool PathGuidedSampler::sample(
     {
         DTreeSample d_tree_sample;
         m_d_tree->sample(sampling_context, d_tree_sample, m_bsdf_sampling_modes);
+        const ScatteringMode::Mode scattering_mode = bounce_mode(d_tree_sample.scattering_mode);
 
-        if(d_tree_sample.scattering_mode == ScatteringMode::None)
+        if(scattering_mode == ScatteringMode::None)
         {
             // Terminate.
-            bsdf_sample.set_to_scattering(d_tree_sample.scattering_mode, 0.0f);
+            bsdf_sample.set_to_scattering(scattering_mode, 0.0f);
             return true;
         }
 
@@ -163,8 +168,7 @@ bool PathGuidedSampler::sample(
             m_bsdf_sampling_modes,
             bsdf_sample.m_value);
             
-        bsdf_sample.set_to_scattering(
-            ScatteringMode::has_diffuse(m_bsdf.get_modes() & m_bsdf_sampling_modes) ? ScatteringMode::Diffuse : ScatteringMode::Glossy, bsdf_pdf);
+        bsdf_sample.set_to_scattering(scattering_mode, bsdf_pdf);
 
         wi_pdf = guided_path_extension_pdf(bsdf_sample.m_incoming.get_value(), bsdf_pdf, d_tree_pdf, true);
 
@@ -178,7 +182,7 @@ float PathGuidedSampler::guided_path_extension_pdf(
     float&                          d_tree_pdf,
     const bool                      d_tree_pdf_is_set) const
 {
-    if(!m_sd_tree_is_built || m_bsdf.is_purely_specular())
+    if(!m_sd_tree_is_built || m_bsdf.is_purely_specular() || !m_enable_path_guiding)
     {
         d_tree_pdf = 0.0f;
         return bsdf_pdf;
@@ -188,6 +192,43 @@ float PathGuidedSampler::guided_path_extension_pdf(
         d_tree_pdf = m_d_tree->pdf(incoming);
         
     return lerp(d_tree_pdf, bsdf_pdf, m_bsdf_sampling_fraction);
+}
+
+ScatteringMode::Mode PathGuidedSampler::bounce_mode(
+    const ScatteringMode::Mode      sampled_mode) const
+{
+    switch (m_guided_bounce_mode)
+    {
+    case GuidedBounceMode::Learn:
+        return sampled_mode;
+        break;
+    
+    case GuidedBounceMode::StrictlyDiffuse:
+        return ScatteringMode::has_diffuse(m_bsdf_sampling_modes) ?
+                ScatteringMode::Diffuse : ScatteringMode::None;
+        break;
+    
+    case GuidedBounceMode::StrictlyGlossy:
+        return ScatteringMode::has_glossy(m_bsdf_sampling_modes) ?
+                ScatteringMode::Glossy : ScatteringMode::None;
+        break;
+    
+    case GuidedBounceMode::PreferDiffuse:
+        return ScatteringMode::has_diffuse(m_bsdf_sampling_modes) ?
+                ScatteringMode::Diffuse : ScatteringMode::has_glossy(m_bsdf_sampling_modes) ?
+                ScatteringMode::Glossy : ScatteringMode::None;
+        break;
+    
+    case GuidedBounceMode::PreferGlossy:
+            return ScatteringMode::has_glossy(m_bsdf_sampling_modes) ?
+                    ScatteringMode::Glossy : ScatteringMode::has_diffuse(m_bsdf_sampling_modes) ?
+                    ScatteringMode::Diffuse : ScatteringMode::None;
+        break;
+    
+    default:
+        return sampled_mode;
+        break;
+    }
 }
 
 }    //namespace renderer

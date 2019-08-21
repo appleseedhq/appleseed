@@ -189,9 +189,11 @@ namespace
                 m_sd_tree,
                 path_visitor,
                 volume_visitor,
-                m_params.m_fixed_bsdf_sampling_fraction,
+                m_params.m_bsdf_sampling_fraction_mode,
+                m_params.m_guided_bounce_mode,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_bounces == ~size_t(0) ? ~size_t(0) : m_params.m_max_bounces + 1,
+                m_params.m_max_guided_bounces,
                 m_params.m_max_diffuse_bounces == ~size_t(0) ? ~size_t(0) : m_params.m_max_diffuse_bounces + 1,
                 m_params.m_max_glossy_bounces,
                 m_params.m_max_specular_bounces,
@@ -399,7 +401,11 @@ namespace
                 }
             }
 
-            void on_scatter(PathVertex &vertex, GPTVertexPath& guided_path, const float bsdf_sampling_fraction)
+            void on_scatter(
+                PathVertex&                 vertex,
+                GPTVertexPath&              guided_path,
+                const float                 bsdf_sampling_fraction,
+                const bool                  enable_path_guiding)
             {
                 // When caustics are disabled, disable glossy and specular components after a diffuse or volume bounce.
                 // Note that accept_scattering() is later going to return false in this case.
@@ -538,7 +544,11 @@ namespace
                 }
             }
 
-            void on_scatter(PathVertex& vertex, GPTVertexPath& guided_path, const float bsdf_sampling_fraction)
+            void on_scatter(
+                PathVertex&                 vertex,
+                GPTVertexPath&              guided_path,
+                const float                 bsdf_sampling_fraction,
+                const bool                  enable_path_guiding)
             {
                 assert(vertex.m_scattering_modes != ScatteringMode::None);
 
@@ -593,7 +603,8 @@ namespace
                             vertex.m_scattering_modes,
                             vertex_radiance,
                             m_light_path_stream,
-                            bsdf_sampling_fraction);
+                            bsdf_sampling_fraction,
+                            enable_path_guiding);
                     }
                 }
 
@@ -610,7 +621,8 @@ namespace
                             vertex.m_scattering_modes,
                             vertex_radiance,
                             m_light_path_stream,
-                            bsdf_sampling_fraction);
+                            bsdf_sampling_fraction,
+                            enable_path_guiding);
                     }
                 }
 
@@ -664,7 +676,8 @@ namespace
                 const int                   scattering_modes,
                 DirectShadingComponents&    vertex_radiance,
                 LightPathStream*            light_path_stream,
-                const float                 bsdf_sampling_fraction)
+                const float                 bsdf_sampling_fraction,
+                const bool                  enable_path_guiding)
             {
                 DirectShadingComponents dl_radiance;
 
@@ -677,6 +690,8 @@ namespace
                     return;
 
                 const PathGuidedSampler path_guided_sampler(
+                    enable_path_guiding,
+                    m_params.m_guided_bounce_mode,
                     m_sd_tree->get_d_tree(foundation::Vector3f(shading_point.get_point())),
                     bsdf_sampling_fraction,
                     bsdf,
@@ -719,7 +734,8 @@ namespace
                 const int                   scattering_modes,
                 DirectShadingComponents&    vertex_radiance,
                 LightPathStream*            light_path_stream,
-                const float                 bsdf_sampling_fraction)
+                const float                 bsdf_sampling_fraction,
+                const bool                  enable_path_guiding)
             {
                 DirectShadingComponents ibl_radiance;
 
@@ -729,6 +745,8 @@ namespace
                         m_params.m_ibl_env_sample_count);
 
                 const PathGuidedSampler path_guided_sampler(
+                    enable_path_guiding,
+                    m_params.m_guided_bounce_mode,
                     m_sd_tree->get_d_tree(foundation::Vector3f(shading_point.get_point())),
                     bsdf_sampling_fraction,
                     bsdf,
@@ -1071,6 +1089,43 @@ Dictionary GPTLightingEngineFactory::get_params_metadata()
                             .insert("help", "Initiate a final iteration when projected variance estimate increases"))));
 
     metadata.dictionaries().insert(
+        "guided_bounce_mode",
+        Dictionary()
+            .insert("type", "enum")
+            .insert("values", "learn|strictly_diffuse|strictly_glossy|prefer_diffuse|prefer_glossy")
+            .insert("default", "learn")
+            .insert("label", "Scattering Mode for Path Guided Bounces")
+            .insert("help", "How path guided bounces should be treated internally")
+            .insert(
+                "options",
+                Dictionary()
+                    .insert(
+                        "learn",
+                        Dictionary()
+                            .insert("label", "Learned Distribution")
+                            .insert("help", "Guided bounce modes are based on the learned radiance distribution"))
+                    .insert(
+                        "strictly_diffuse",
+                        Dictionary()
+                            .insert("label", "Strictly Diffuse")
+                            .insert("help", "Guided bounces are always treated as Diffuse"))
+                    .insert(
+                        "strictly_glossy",
+                        Dictionary()
+                            .insert("label", "Strictly Glossy")
+                            .insert("help", "Guided bounces are always treated as Glossy"))
+                    .insert(
+                        "prefer_diffuse",
+                        Dictionary()
+                            .insert("label", "Prefer Diffuse")
+                            .insert("help", "Guided bounces are treated as Diffuse if remaining modes allow, Glossy otherwise"))
+                    .insert(
+                        "prefer_glossy",
+                        Dictionary()
+                            .insert("label", "Prefer Glossy")
+                            .insert("help", "Guided bounces are treated as Glossy if remaining modes allow, Diffuse otherwise"))));
+
+    metadata.dictionaries().insert(
         "samples_per_pass",
         Dictionary()
             .insert("type", "int")
@@ -1144,6 +1199,16 @@ Dictionary GPTLightingEngineFactory::get_params_metadata()
             .insert("min", "0")
             .insert("label", "Max Bounces")
             .insert("help", "Maximum number of bounces"));
+
+    metadata.dictionaries().insert(
+        "max_guided_bounces",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "8")
+            .insert("unlimited", "true")
+            .insert("min", "0")
+            .insert("label", "Max Guided Bounces")
+            .insert("help", "Maximum number of path guided bounces"));
 
     metadata.dictionaries().insert(
         "max_diffuse_bounces",
