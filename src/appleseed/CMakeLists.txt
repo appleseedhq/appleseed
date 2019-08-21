@@ -2137,6 +2137,8 @@ set (renderer_utility_sources
     renderer/utility/filesystem.cpp
     renderer/utility/filesystem.h
     renderer/utility/iostreamop.h
+    renderer/utility/lpsortaov.cpp
+    renderer/utility/lpsortaov.h
     renderer/utility/messagecontext.cpp
     renderer/utility/messagecontext.h
     renderer/utility/oiiomaketexture.cpp

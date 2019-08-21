@@ -370,6 +370,8 @@ set (utility_sources
     utility/inputwidgetproxies.cpp
     utility/inputwidgetproxies.h
     utility/interop.h
+    utility/lpevalidator.cpp
+    utility/lpevalidator.h
     utility/miscellaneous.cpp
     utility/miscellaneous.h
     utility/mousecoordinatestracker.cpp

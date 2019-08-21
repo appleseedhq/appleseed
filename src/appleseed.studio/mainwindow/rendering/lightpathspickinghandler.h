@@ -58,13 +58,19 @@ class LightPathsPickingHandler
 
     void set_enabled(const bool enabled);
 
-    void pick(const foundation::Vector2i& pixel) const;
-    void pick(const foundation::AABB2i& rect) const;
+    void pick(const foundation::Vector2i& pixel, QString* lpe);
+    void pick(const foundation::AABB2i& rect, QString* lpe);
+    void pick(QString* lpe);
 
   private:
     ViewportWidget*                         m_viewport_widget;
     const renderer::Project&                m_project;
     bool                                    m_enabled;
+    size_t                                  m_prev_query_x_min;
+    size_t                                  m_prev_query_y_min;
+    size_t                                  m_prev_query_x_max;
+    size_t                                  m_prev_query_y_max;
+    bool                                    m_prev_query_valid;
 };
 
 }   // namespace studio

@@ -33,6 +33,7 @@
 #include "mainwindow/rendering/lightpathspickinghandler.h"
 #include "mainwindow/rendering/renderclipboardhandler.h"
 #include "mainwindow/rendering/viewportwidget.h"
+#include "utility/lpevalidator.h"
 #include "utility/mousecoordinatestracker.h"
 #include "utility/scrollareapanhandler.h"
 #include "utility/widgetzoomhandler.h"
@@ -52,6 +53,7 @@ namespace appleseed { namespace studio { class ViewportTab; } }
 namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
 class QLabel;
+class QLineEdit;
 class QPoint;
 class QRect;
 class QScrollArea;
@@ -99,6 +101,7 @@ class LightPathsViewportManager
         const int               total_light_paths);
     void slot_save_light_paths();
     void slot_camera_changed();
+    void slot_lpe_input_editing_finished();
 
   private:
     bool                                        m_enabled;
@@ -112,6 +115,10 @@ class LightPathsViewportManager
     QToolButton*                                m_prev_path_button;
     QToolButton*                                m_next_path_button;
     QLabel*                                     m_info_label;
+    QLabel*                                     m_lpe_label;
+    QLineEdit*                                  m_lpe_input;
+
+    LpeValidator*                               m_lpe_validator;
 
     std::unique_ptr<ScrollAreaPanHandler>       m_pan_handler;
     std::unique_ptr<MouseCoordinatesTracker>    m_mouse_tracker;

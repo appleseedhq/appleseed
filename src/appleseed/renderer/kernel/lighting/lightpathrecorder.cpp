@@ -35,6 +35,7 @@
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/entity/entity.h"
+#include "renderer/utility/lpsortaov.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionioerror.h"
@@ -47,6 +48,9 @@
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 
+// OSL headers.
+#include "OSL/accum.h"
+
 // Standard headers.
 #include <algorithm>
 #include <cassert>
@@ -57,6 +61,7 @@
 #include <vector>
 
 using namespace foundation;
+using namespace OSL;
 using namespace std;
 
 namespace renderer
@@ -208,19 +213,28 @@ void LightPathRecorder::finalize(
         // Retrieve index entry.
         const auto& path = stream->m_paths[i];
         const auto x = path.m_pixel_coords.x;
-        const auto y = path.m_pixel_coords.y;
-        auto& index_entry = impl->m_index[y * render_width + x];
+const auto y = path.m_pixel_coords.y;
+auto& index_entry = impl->m_index[y * render_width + x];
 
-        // Initialize index entry if this is the first path for that pixel.
-        if (index_entry.m_begin_path == ~uint64(0))
-        {
-            index_entry.m_begin_path = i;
-            index_entry.m_end_path = i;
-        }
+// Initialize index entry if this is the first path for that pixel.
+if (index_entry.m_begin_path == ~uint64(0))
+{
+    index_entry.m_begin_path = i;
+    index_entry.m_end_path = i;
+}
 
-        // One more path for that pixel.
-        ++index_entry.m_end_path;
+// One more path for that pixel.
+++index_entry.m_end_path;
     }
+}
+
+namespace {
+
+    struct LpePath {
+        std::vector<std::array<ustring, 2>>    lpe_events;
+        size_t                  idx;
+    };
+
 }
 
 void LightPathRecorder::query(
@@ -228,31 +242,122 @@ void LightPathRecorder::query(
     const size_t        y0,
     const size_t        x1,
     const size_t        y1,
+    const char*         lpe,
     LightPathArray&     result) const
 {
     assert(impl->m_streams.size() == 1);
     const LightPathStream* stream = impl->m_streams[0].get();
 
-    for (size_t y = y0; y <= y1; ++y)
+    if (lpe == NULL)
     {
-        for (size_t x = x0; x <= x1; ++x)
+        for (size_t y = y0; y <= y1; ++y)
         {
-            const auto& index_entry = impl->m_index[y * impl->m_render_width + x];
-
-            for (size_t p = index_entry.m_begin_path; p < index_entry.m_end_path; ++p)
+            for (size_t x = x0; x <= x1; ++x)
             {
-                const auto& source_path = stream->m_paths[p];
+                const auto& index_entry = impl->m_index[y * impl->m_render_width + x];
 
-                LightPath path;
-                path.m_pixel_coords[0] = source_path.m_pixel_coords[0];
-                path.m_pixel_coords[1] = source_path.m_pixel_coords[1];
-                path.m_sample_position[0] = source_path.m_sample_position[0];
-                path.m_sample_position[1] = source_path.m_sample_position[1];
-                path.m_vertex_begin_index = source_path.m_vertex_begin_index;
-                path.m_vertex_end_index = source_path.m_vertex_end_index;
+                for (size_t p = index_entry.m_begin_path; p < index_entry.m_end_path; ++p)
+                {
+                    const auto& source_path = stream->m_paths[p];
 
-                result.push_back(path);
+                    LightPath path;
+                    path.m_pixel_coords[0] = source_path.m_pixel_coords[0];
+                    path.m_pixel_coords[1] = source_path.m_pixel_coords[1];
+                    path.m_sample_position[0] = source_path.m_sample_position[0];
+                    path.m_sample_position[1] = source_path.m_sample_position[1];
+                    path.m_vertex_begin_index = source_path.m_vertex_begin_index;
+                    path.m_vertex_end_index = source_path.m_vertex_end_index;
+
+                    result.push_back(path);
+                }
             }
+        }
+    }
+    else
+    {
+        std::vector<LpePath> possible_paths;
+
+        assert(impl->m_streams.size() == 1);
+        const LightPathStream* stream = impl->m_streams[0].get();
+
+        for (size_t y = y0; y <= y1; ++y)
+        {
+            for (size_t x = x0; x <= x1; ++x)
+            {
+                const auto& index_entry = impl->m_index[y * impl->m_render_width + x];
+
+                for (size_t p = index_entry.m_begin_path; p < index_entry.m_end_path; ++p)
+                {
+                    const auto& source_path = stream->m_paths[p];
+
+                    std::vector<std::array<ustring, 2>> lpe_events;
+                    for (size_t vertex_idx = source_path.m_vertex_begin_index; vertex_idx < source_path.m_vertex_end_index; vertex_idx++)
+                    {
+                        assert(vertex_idx < stream->m_vertices.size());
+                        const auto& source_vertex = stream->m_vertices[vertex_idx];
+                        std::array<ustring, 2> tag = {
+                            ustring(&source_vertex.m_lpe_tag[0], 1),
+                            ustring(&source_vertex.m_lpe_tag[1], 1)
+                        };
+                        lpe_events.insert(lpe_events.begin(), tag);
+                    }
+
+                    LpePath path;
+                    path.idx = p;
+                    path.lpe_events = lpe_events;
+
+                    possible_paths.push_back(path);
+                }
+            }
+        }
+
+        AccumAutomata automata;
+        if (!automata.addRule(lpe, 0))
+        {
+            RENDERER_LOG_INFO("LPE rule compilation failed");
+        }
+        automata.compile();
+
+        LPSortAov* lp_sort_aov = new LPSortAov();
+
+        Accumulator accum(&automata);
+        accum.setAov(0, lp_sort_aov, false, false);
+
+        for (size_t i = 0; i < possible_paths.size(); i++) {
+            accum.begin();
+            accum.pushState();
+            LpePath path = possible_paths[i];
+            // for each ray stop in the path
+            for (size_t j = 0; j < path.lpe_events.size(); j++) {
+                // for each label in this hit
+                std::array<ustring, 2> tag = path.lpe_events[j];
+                accum.move(tag[0]);
+                accum.move(tag[1]);
+                // always finish the hit with a stop label
+                accum.move(Labels::STOP);
+            }
+            // Here is were we have reached a light, accumulate color
+            accum.accum(Color3(1, 1, 1));
+            // Restore state and flush path index to store in our sorting Aov
+            accum.popState();
+            accum.end((void *)(size_t)path.idx);
+        }
+
+        const auto path_indices = lp_sort_aov->get_received();
+        for (size_t i = 0; i < path_indices.size(); i++)
+        {
+            size_t p = path_indices[i];
+            const auto& source_path = stream->m_paths[p];
+
+            LightPath path;
+            path.m_pixel_coords[0] = source_path.m_pixel_coords[0];
+            path.m_pixel_coords[1] = source_path.m_pixel_coords[1];
+            path.m_sample_position[0] = source_path.m_sample_position[0];
+            path.m_sample_position[1] = source_path.m_sample_position[1];
+            path.m_vertex_begin_index = source_path.m_vertex_begin_index;
+            path.m_vertex_end_index = source_path.m_vertex_end_index;
+
+            result.push_back(path);
         }
     }
 }
