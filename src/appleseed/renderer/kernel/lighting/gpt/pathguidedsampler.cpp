@@ -162,8 +162,9 @@ bool PathGuidedSampler::sample(
             bsdf_sample.m_incoming.get_value(),
             m_bsdf_sampling_modes,
             bsdf_sample.m_value);
-
-        bsdf_sample.set_to_scattering(d_tree_sample.scattering_mode, bsdf_pdf);
+            
+        bsdf_sample.set_to_scattering(
+            ScatteringMode::has_diffuse(m_bsdf.get_modes() & m_bsdf_sampling_modes) ? ScatteringMode::Diffuse : ScatteringMode::Glossy, bsdf_pdf);
 
         wi_pdf = guided_path_extension_pdf(bsdf_sample.m_incoming.get_value(), bsdf_pdf, d_tree_pdf, true);
 
