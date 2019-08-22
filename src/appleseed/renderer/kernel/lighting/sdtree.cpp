@@ -495,12 +495,12 @@ void DTree::record(
     if(m_parameters.m_bsdf_sampling_fraction_mode == BSDFSamplingFractionMode::Learn && m_is_built && d_tree_record.product > 0.0f)
         optimization_step(d_tree_record); // also optimizes delta records
         
-    if(d_tree_record.is_delta)
+    if(d_tree_record.is_delta || d_tree_record.wi_pdf <= 0.0f)
         return;
 
     atomic_add(m_current_iter_sample_weight, d_tree_record.sample_weight);
 
-    const float radiance = d_tree_record.radiance * d_tree_record.sample_weight;
+    const float radiance = d_tree_record.radiance / d_tree_record.wi_pdf * d_tree_record.sample_weight;
     
     Vector2f direction = cartesian_to_cylindrical(d_tree_record.direction);
 
@@ -1147,15 +1147,14 @@ void GPTVertex::record_to_tree(
     STree&                              sd_tree,
     SamplingContext&                    sampling_context)
 {
-    if (m_wi_pdf <= 0.0f || !is_valid_spectrum(m_radiance) || !is_valid_spectrum(m_bsdf_value))
+    if (!is_valid_spectrum(m_radiance) || !is_valid_spectrum(m_bsdf_value))
         return;
 
     Spectrum incoming_radiance(0.0f);
 
     for(size_t i = 0; i < incoming_radiance.size(); ++i)
     {
-        const float factor = m_throughput[i] * m_wi_pdf;
-        const float rcp_factor = factor == 0.0f ? 0.0f : 1.0f / factor;
+        const float rcp_factor = m_throughput[i] == 0.0f ? 0.0f : 1.0f / m_throughput[i];
         incoming_radiance[i] = m_radiance[i] * rcp_factor;
     }
 
