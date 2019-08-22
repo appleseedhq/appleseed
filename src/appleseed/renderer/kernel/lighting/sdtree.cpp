@@ -50,7 +50,6 @@ namespace renderer
 // SD-Tree implementation for "Practical Path Guiding for Efficient Light-Transport Simulation" [Müller et al. 2017].
 //
 
-const float SDTreeEpsilon = 1e-4f;
 const size_t SpatialSubdivisionThreshold = 4000; // TODO: make this dependent on the filter types
 const float DTreeThreshold = 0.01;
 const size_t DTreeMaxDepth = 20;
@@ -100,7 +99,7 @@ Vector2f cartesian_to_cylindrical(
     return Vector2f(phi * RcpTwoPi<float>(), 1.0f - 0.5f * (cosTheta + 1.0f));
 }
 
-bool isValidSpectrum(
+bool is_valid_spectrum(
     const Spectrum&                     s)
 {
     for (int i = 0; i < s.size(); i++)
@@ -501,7 +500,7 @@ void DTree::record(
 
     atomic_add(m_current_iter_sample_weight, d_tree_record.sample_weight);
 
-    const float radiance = d_tree_record.radiance / d_tree_record.wi_pdf * d_tree_record.sample_weight;
+    const float radiance = d_tree_record.radiance * d_tree_record.sample_weight;
     
     Vector2f direction = cartesian_to_cylindrical(d_tree_record.direction);
 
@@ -772,6 +771,7 @@ struct DTreeStatistics
     size_t                              num_d_trees;
     size_t                              num_s_tree_nodes;
     float                               glossy_d_tree_fraction;
+    float                               mean_sampling_fraction;
 
     void build()
     {
@@ -784,6 +784,7 @@ struct DTreeStatistics
         average_mean_radiance /= num_d_trees;
         average_sample_weight /= num_d_trees;
         glossy_d_tree_fraction /= num_d_trees;
+        mean_sampling_fraction /= num_d_trees;
     }
 };
 
@@ -862,15 +863,16 @@ void STreeNode::record(
 
     if(is_leaf())
     {
-        m_d_tree->record(DTreeRecord{
-                            d_tree_record.direction,
-                            d_tree_record.radiance,
-                            d_tree_record.wi_pdf,
-                            d_tree_record.bsdf_pdf,
-                            d_tree_record.d_tree_pdf,
-                            d_tree_record.sample_weight * intersection_volume,
-                            d_tree_record.product,
-                            d_tree_record.is_delta});
+        m_d_tree->record(
+            DTreeRecord{
+                d_tree_record.direction,
+                d_tree_record.radiance,
+                d_tree_record.wi_pdf,
+                d_tree_record.bsdf_pdf,
+                d_tree_record.d_tree_pdf,
+                d_tree_record.sample_weight * intersection_volume,
+                d_tree_record.product,
+                d_tree_record.is_delta});
     }
     else
     {
@@ -943,6 +945,8 @@ void STreeNode::gather_statistics(
 
         if(m_d_tree->get_scattering_mode() == ScatteringMode::Glossy)
             statistics.glossy_d_tree_fraction += 1.0f;
+        
+        statistics.mean_sampling_fraction += m_d_tree->bsdf_sampling_fraction();
     }
     else
     {
@@ -1011,7 +1015,7 @@ void STree::record(
     DTree*                              d_tree,
     const Vector3f&                     point,
     const Vector3f&                     d_tree_node_size,
-    DTreeRecord                         d_tree_record,
+    DTreeRecord&                        d_tree_record,
     SamplingContext&                    sampling_context)
 {
     assert(std::isfinite(d_tree_record.radiance));
@@ -1047,11 +1051,6 @@ void STree::record(
     }
 }
 
-const AABB3f& STree::aabb() const
-{
-    return m_scene_aabb;
-}
-
 void STree::build(
     const size_t                        iteration)
 {
@@ -1069,18 +1068,30 @@ void STree::build(
 
     RENDERER_LOG_INFO(
         "SD tree statistics: [min, max, avg]\n"
-        "  D-Tree depth           = [%s, %s, %s]\n"
-        "  S-Tree depth           = [%s, %s, %s]\n"
-        "  Mean radiance          = [%s, %s, %s]\n"
-        "  D-Tree node count      = [%s, %s, %s]\n"
-        "  Sample weight          = [%s, %s, %s]\n"
-        "  Glossy D-Tree fraction = %s\n\n",
-        pretty_uint(statistics.min_max_d_tree_depth).c_str(), pretty_uint(statistics.max_d_tree_depth).c_str(), pretty_scalar(statistics.average_max_d_tree_depth, 2).c_str(),
-        pretty_uint(statistics.min_max_s_tree_depth).c_str(), pretty_uint(statistics.max_s_tree_depth).c_str(), pretty_scalar(statistics.average_max_s_tree_depth, 2).c_str(),
-        pretty_scalar(statistics.min_mean_radiance, 4).c_str(), pretty_scalar(statistics.max_mean_radiance, 4).c_str(), pretty_scalar(statistics.average_mean_radiance, 4).c_str(),
-        pretty_uint(statistics.min_d_tree_nodes).c_str(), pretty_uint(statistics.max_d_tree_nodes).c_str(), pretty_scalar(statistics.average_d_tree_nodes, 4).c_str(),
-        pretty_scalar(statistics.min_sample_weight, 4).c_str(), pretty_scalar(statistics.max_sample_weight, 4).c_str(), pretty_scalar(statistics.average_sample_weight, 4).c_str(),
-        pretty_scalar(statistics.glossy_d_tree_fraction, 4).c_str());
+        "  D-Tree depth                 = [%s, %s, %s]\n"
+        "  S-Tree depth                 = [%s, %s, %s]\n"
+        "  Mean radiance                = [%s, %s, %s]\n"
+        "  D-Tree node count            = [%s, %s, %s]\n"
+        "  Sample weight                = [%s, %s, %s]\n"
+        "  Glossy D-Tree fraction       = %s\n"
+        "  Mean BSDF sampling fraction  = %s\n\n",
+        pretty_uint(statistics.min_max_d_tree_depth).c_str(),
+        pretty_uint(statistics.max_d_tree_depth).c_str(),
+        pretty_scalar(statistics.average_max_d_tree_depth, 2).c_str(),
+        pretty_uint(statistics.min_max_s_tree_depth).c_str(),
+        pretty_uint(statistics.max_s_tree_depth).c_str(),
+        pretty_scalar(statistics.average_max_s_tree_depth, 2).c_str(),
+        pretty_scalar(statistics.min_mean_radiance, 3).c_str(),
+        pretty_scalar(statistics.max_mean_radiance, 3).c_str(),
+        pretty_scalar(statistics.average_mean_radiance, 4).c_str(),
+        pretty_uint(statistics.min_d_tree_nodes).c_str(),
+        pretty_uint(statistics.max_d_tree_nodes).c_str(),
+        pretty_scalar(statistics.average_d_tree_nodes, 3).c_str(),
+        pretty_scalar(statistics.min_sample_weight, 3).c_str(),
+        pretty_scalar(statistics.max_sample_weight, 3).c_str(),
+        pretty_scalar(statistics.average_sample_weight, 3).c_str(),
+        pretty_scalar(statistics.glossy_d_tree_fraction, 3).c_str(),
+        pretty_scalar(statistics.mean_sampling_fraction, 3).c_str());
 
     m_is_built = true;
 }
@@ -1107,7 +1118,7 @@ void STree::box_filter_splat(
 {
     const AABB3f splat_aabb(point - d_tree_node_size * 0.5f, point + d_tree_node_size * 0.5f);
 
-    assert(splat_aabb.is_valid());
+    assert(splat_aabb.is_valid() && splat_aabb.volume() > 0.0f);
 
     d_tree_record.sample_weight /= splat_aabb.volume();
     m_root_node->record(AABB3f(point - d_tree_node_size * 0.5f, point + d_tree_node_size * 0.5f), m_scene_aabb, d_tree_record);
@@ -1136,30 +1147,29 @@ void GPTVertex::record_to_tree(
     STree&                              sd_tree,
     SamplingContext&                    sampling_context)
 {
-    if (!(m_wi_pdf > 0.0f) || !isValidSpectrum(m_radiance) || !isValidSpectrum(m_bsdf_value))
-    {
+    if (m_wi_pdf <= 0.0f || !is_valid_spectrum(m_radiance) || !is_valid_spectrum(m_bsdf_value))
         return;
-    }
 
     Spectrum incoming_radiance(0.0f);
 
     for(size_t i = 0; i < incoming_radiance.size(); ++i)
     {
-        if(m_throughput[i] * m_wi_pdf > SDTreeEpsilon)
-            incoming_radiance[i] = m_radiance[i] / m_throughput[i];
+        const float factor = m_throughput[i] * m_wi_pdf;
+        const float rcp_factor = factor == 0.0f ? 0.0f : 1.0f / factor;
+        incoming_radiance[i] = m_radiance[i] * rcp_factor;
     }
 
     Spectrum product = incoming_radiance * m_bsdf_value;
 
     DTreeRecord d_tree_record{
-                        m_direction,
-                        average_value(incoming_radiance),
-                        m_wi_pdf,
-                        m_bsdf_pdf,
-                        m_d_tree_pdf,
-                        1.0f,
-                        average_value(product),
-                        m_is_delta};
+        m_direction,
+        average_value(incoming_radiance),
+        m_wi_pdf,
+        m_bsdf_pdf,
+        m_d_tree_pdf,
+        1.0f,
+        average_value(product),
+        m_is_delta};
 
     sd_tree.record(m_d_tree, m_point, m_d_tree_node_size, d_tree_record, sampling_context);
 }

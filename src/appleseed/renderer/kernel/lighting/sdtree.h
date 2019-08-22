@@ -286,10 +286,8 @@ class STree {
         DTree*                              d_tree,
         const foundation::Vector3f&         point,
         const foundation::Vector3f&         d_tree_node_size,
-        DTreeRecord                         d_tree_record,
+        DTreeRecord&                        d_tree_record,
         SamplingContext&                    sampling_context);
-
-    const foundation::AABB3f& aabb() const;
 
     // Refine the SD-tree's radiance distribution after an iteration has completed.
     void build(
