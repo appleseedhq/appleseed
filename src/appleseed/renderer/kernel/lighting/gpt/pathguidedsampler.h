@@ -55,7 +55,10 @@ class PathGuidedSampler
         float&                          d_tree_pdf,
         const bool                      d_tree_pdf_is_set) const;
 
-    ScatteringMode::Mode bounce_mode(
+    const int enable_modes_before_sampling(
+        const int                       sample_modes) const;
+
+    ScatteringMode::Mode set_mode_after_sampling(
         const ScatteringMode::Mode      sampled_mode) const;
 
     DTree*                              m_d_tree;

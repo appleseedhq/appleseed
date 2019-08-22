@@ -160,7 +160,8 @@ class DTree
         const int                           modes) const;
 
     float pdf(
-        const foundation::Vector3f&         direction) const;
+        const foundation::Vector3f&         direction,
+        const int                           modes) const;
     
     // Divide the tree's sample weight by two.
     void halve_sample_weight();

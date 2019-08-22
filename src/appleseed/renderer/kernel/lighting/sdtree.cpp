@@ -560,8 +560,12 @@ void DTree::sample(
 }
 
 float DTree::pdf(
-    const Vector3f&                     direction) const
+    const Vector3f&                     direction,
+    const int                           modes) const
 {
+    if ((modes & m_scattering_mode) == 0)
+        return 0.0f;
+
     if(m_previous_iter_sample_weight <= 0.0f || m_root_node.radiance_sum() <= 0.0f)
         return RcpFourPi<float>();
 

@@ -144,8 +144,8 @@ bool PathGuidedSampler::sample(
     else
     {
         DTreeSample d_tree_sample;
-        m_d_tree->sample(sampling_context, d_tree_sample, m_bsdf_sampling_modes);
-        const ScatteringMode::Mode scattering_mode = bounce_mode(d_tree_sample.scattering_mode);
+        m_d_tree->sample(sampling_context, d_tree_sample, enable_modes_before_sampling(m_bsdf_sampling_modes));
+        const ScatteringMode::Mode scattering_mode = set_mode_after_sampling(d_tree_sample.scattering_mode);
 
         if(scattering_mode == ScatteringMode::None)
         {
@@ -189,12 +189,21 @@ float PathGuidedSampler::guided_path_extension_pdf(
     }
 
     if(!d_tree_pdf_is_set)
-        d_tree_pdf = m_d_tree->pdf(incoming);
+        d_tree_pdf = m_d_tree->pdf(incoming, enable_modes_before_sampling(m_bsdf_sampling_modes));
         
     return lerp(d_tree_pdf, bsdf_pdf, m_bsdf_sampling_fraction);
 }
 
-ScatteringMode::Mode PathGuidedSampler::bounce_mode(
+const int PathGuidedSampler::enable_modes_before_sampling(
+    const int                       modes) const
+{
+    if(m_guided_bounce_mode == GuidedBounceMode::Learn)
+        return modes;
+    else
+        return ScatteringMode::Diffuse | ScatteringMode::Glossy;
+}
+
+ScatteringMode::Mode PathGuidedSampler::set_mode_after_sampling(
     const ScatteringMode::Mode      sampled_mode) const
 {
     switch (m_guided_bounce_mode)
