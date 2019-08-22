@@ -192,28 +192,44 @@ void GPTPassCallback::combine_iterations(const Frame& frame)
         total_inverse_variances += var;
     }
 
+    if (total_inverse_variances <= 0.0f)
+        return;
+
     CanvasProperties image_properties = frame.image().properties();
+
+    // Arrays to store pixel channels.
+    std::unique_ptr<float> final_pixel(new float[image_properties.m_channel_count]);
+    std::unique_ptr<float> temp_pixel(new float[image_properties.m_channel_count]);
 
     for (size_t y = 0; y < image_properties.m_canvas_height; ++y)
         for (size_t x = 0; x < image_properties.m_canvas_width; ++x)
         {
-            Color4f final_color(0.0f);
-
             auto image_iterator = m_image_buffer.cbegin();
             auto variance_iterator = m_inverse_variance_buffer.cbegin();
 
+            // Clear the final pixel receiver.
+            float* channel = final_pixel.get();
+            for (size_t c = 0; c < image_properties.m_channel_count; ++c)
+                channel[c] = 0.0f;
+
+            // Iterate over the stored images.
             for (size_t i = 0; i < m_image_buffer.size(); ++i)
             {
-                // TODO: Combine all channels
-                Color4f image_color;
-                image_iterator->get_pixel(x, y, image_color);
-                final_color += image_color * (*variance_iterator / total_inverse_variances);
+                // Get image's pixel data.
+                image_iterator->get_pixel(x, y, temp_pixel.get(), image_properties.m_channel_count);
+
+                // Add inverse variance weighted channels to final pixel.
+                float* final_channel = final_pixel.get();
+                float* temp_channel = temp_pixel.get();
+                for (size_t c = 0; c < image_properties.m_channel_count; ++c)
+                    final_channel[c] += temp_channel[c] * (*variance_iterator / total_inverse_variances);
 
                 ++image_iterator;
                 ++variance_iterator;
             }
 
-            frame.image().set_pixel(x, y, final_color);
+            // Set the final pixel in the frame.
+            frame.image().set_pixel(x, y, final_pixel.get(), image_properties.m_channel_count);
         }
 }
 
