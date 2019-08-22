@@ -52,6 +52,7 @@ set (foundation_array_sources
     foundation/array/array.h
     foundation/array/arrayallocator.h
     foundation/array/arrayref.h
+    foundation/array/arraytraits.cpp
     foundation/array/arraytraits.h
     foundation/array/arrayview.h
     foundation/array/exception.cpp
@@ -581,6 +582,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_vector.cpp
     foundation/meta/tests/test_voxelgrid.cpp
     foundation/meta/tests/test_windows.cpp
+    foundation/meta/tests/test_z85.cpp
     foundation/meta/tests/test_zip.cpp
 )
 if (WITH_DISNEY_MATERIAL)
@@ -958,6 +960,8 @@ set (foundation_utility_sources
     foundation/utility/xercesc.cpp
     foundation/utility/xercesc.h
     foundation/utility/xmlelement.h
+    foundation/utility/z85.cpp
+    foundation/utility/z85.h
     foundation/utility/zip.cpp
     foundation/utility/zip.h
 )

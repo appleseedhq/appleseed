@@ -43,7 +43,6 @@
 #include "foundation/image/tile.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
@@ -93,7 +92,6 @@ StatisticsVector TextureStore::get_statistics() const
 {
     Statistics stats = make_single_stage_cache_stats(m_tile_cache);
     stats.insert_size("peak size", m_tile_swapper.get_peak_memory_size());
-
     return StatisticsVector::make("texture store statistics", stats);
 }
 
@@ -172,6 +170,21 @@ TextureStore::TileSwapper::TileSwapper(
   , m_peak_memory_size(0)
 {
     gather_assemblies(scene.assemblies());
+    print_settings();
+}
+
+void TextureStore::TileSwapper::print_settings() const
+{
+    RENDERER_LOG_INFO(
+        "texture store settings:\n"
+        "  max store size                %s\n"
+        "  track store size              %s\n"
+        "  track tile loading            %s\n"
+        "  track tile unloading          %s",
+        pretty_size(m_params.m_memory_limit).c_str(),
+        m_params.m_track_store_size ? "on" : "off",
+        m_params.m_track_tile_loading ? "on" : "off",
+        m_params.m_track_tile_unloading ? "on" : "off");
 }
 
 void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
@@ -225,7 +238,7 @@ void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
         if (m_memory_size > m_params.m_memory_limit)
         {
             RENDERER_LOG_DEBUG(
-                "texture store size is %s, exceeding capacity %s by %s",
+                "texture store size is %s, exceeding capacity %s by %s.",
                 pretty_size(m_memory_size).c_str(),
                 pretty_size(m_params.m_memory_limit).c_str(),
                 pretty_size(m_memory_size - m_params.m_memory_limit).c_str());
@@ -233,7 +246,7 @@ void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
         else
         {
             RENDERER_LOG_DEBUG(
-                "texture store size is %s, below capacity %s by %s",
+                "texture store size is %s, below capacity %s by %s.",
                 pretty_size(m_memory_size).c_str(),
                 pretty_size(m_params.m_memory_limit).c_str(),
                 pretty_size(m_params.m_memory_limit - m_memory_size).c_str());
@@ -280,10 +293,10 @@ bool TextureStore::TileSwapper::unload(const TileKey& key, TileRecord& record)
 
 void TextureStore::TileSwapper::gather_assemblies(const AssemblyContainer& assemblies)
 {
-    for (const_each<AssemblyContainer> i = assemblies; i; ++i)
+    for (const Assembly& assembly : assemblies)
     {
-        m_assemblies[i->get_uid()] = &*i;
-        gather_assemblies(i->assemblies());
+        m_assemblies[assembly.get_uid()] = &assembly;
+        gather_assemblies(assembly.assemblies());
     }
 }
 
@@ -293,7 +306,7 @@ void TextureStore::TileSwapper::gather_assemblies(const AssemblyContainer& assem
 //
 
 TextureStore::TileSwapper::Parameters::Parameters(const ParamArray& params)
-  : m_memory_limit(params.get_optional<size_t>("max_size", 256 * 1024 * 1024))
+  : m_memory_limit(params.get_optional<size_t>("max_size", TextureStore::get_default_size()))
   , m_track_tile_loading(params.get_optional<bool>("track_tile_loading", false))
   , m_track_tile_unloading(params.get_optional<bool>("track_tile_unloading", false))
   , m_track_store_size(params.get_optional<bool>("track_store_size", false))

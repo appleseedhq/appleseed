@@ -34,6 +34,9 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 namespace foundation
 {
 
@@ -47,8 +50,12 @@ enum ArrayType
     Vector3fType,
     CompressedUnitVectorType,
     Color3fType,
-    ArrayTypeCount
+    ArrayTypeCount,
+    InvalidArrayType = ArrayTypeCount
 };
+
+APPLESEED_DLLSYMBOL const char* array_type_to_string(const ArrayType type);
+APPLESEED_DLLSYMBOL ArrayType string_to_array_type(const char* str);
 
 template <typename T>
 struct ArrayTraits

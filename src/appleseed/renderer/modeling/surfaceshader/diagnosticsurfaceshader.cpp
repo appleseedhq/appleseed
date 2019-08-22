@@ -242,14 +242,14 @@ namespace
 
 #ifdef SHADE_VECTORS_USING_3DSMAX_CONVENTIONS
         return Color3f(
-            static_cast<float>(( vec[0] + T(1.0)) * T(0.5)),
-            static_cast<float>((-vec[2] + T(1.0)) * T(0.5)),
-            static_cast<float>(( vec[1] + T(1.0)) * T(0.5)));
+            saturate(( static_cast<float>(vec[0]) + 1.0f) * 0.5f),
+            saturate((-static_cast<float>(vec[2]) + 1.0f) * 0.5f),
+            saturate(( static_cast<float>(vec[1]) + 1.0f) * 0.5f));
 #else
         return Color3f(
-            static_cast<float>((vec[0] + T(1.0)) * T(0.5)),
-            static_cast<float>((vec[1] + T(1.0)) * T(0.5)),
-            static_cast<float>((vec[2] + T(1.0)) * T(0.5)));
+            saturate((static_cast<float>(vec[0]) + 1.0f) * 0.5f),
+            saturate((static_cast<float>(vec[1]) + 1.0f) * 0.5f),
+            saturate((static_cast<float>(vec[2]) + 1.0f) * 0.5f));
 #endif
     }
 

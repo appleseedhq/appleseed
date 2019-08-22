@@ -51,8 +51,11 @@
                 <parameter name="edf" value="edf1" />
                 <parameter name="normal_map_up" value="z" />
             </material>
-            <object name="disk_obj" model="disk_object">
+            <object name="disk_obj" model="mesh_object">
+                <parameter name="primitive" value="disk" />
                 <parameter name="radius" value="0.5" />
+                <parameter name="resolution_u" value="100" />
+                <parameter name="resolution_v" value="100" />
             </object>
             <object name="floorShape_obj" model="mesh_object">
                 <parameter name="filename" value="_geometry/floor.binarymesh" />
@@ -64,10 +67,10 @@
                 <parameter name="ray_bias_method" value="none" />
                 <parameters name="visibility">
                     <parameter name="camera" value="true" />
-                    <parameter name="diffuse" value="false" />
+                    <parameter name="diffuse" value="true" />
                     <parameter name="glossy" value="true" />
                     <parameter name="light" value="true" />
-                    <parameter name="shadow" value="false" />
+                    <parameter name="shadow" value="true" />
                     <parameter name="specular" value="true" />
                     <parameter name="transparency" value="true" />
                 </parameters>

@@ -784,8 +784,11 @@ int main(int argc, char* argv[])
         else success = success && render(project_filename);
     }
 
+    const int return_code = success ? 0 : 1;
+    LOG_DEBUG(g_logger, "returning code %d.", return_code);
+
     if (is_debugger_attached())
         Console::pause();
 
-    return success ? 0 : 1;
+    return return_code;
 }

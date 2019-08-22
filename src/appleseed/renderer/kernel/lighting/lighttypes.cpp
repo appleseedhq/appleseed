@@ -301,12 +301,10 @@ void EmittingShape::sample_uniform(
         const Vector2f param_coords = sample_disk_uniform(s);
 
         // Compute the world space position of the sample.
-        Vector3d p =
+        light_sample.m_point =
             m_geom.m_disk.m_center +
             static_cast<double>(param_coords[0]) * m_geom.m_disk.m_x +
             static_cast<double>(param_coords[1]) * m_geom.m_disk.m_y;
-
-        light_sample.m_point = p;
 
         // Set the parametric coordinates.
         light_sample.m_param_coords = param_coords;

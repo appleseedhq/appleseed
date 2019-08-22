@@ -463,23 +463,23 @@ Vector3f GGXMDF::sample(
 
     // Build an orthonormal basis.
     const Vector3f t1 =
-        (v.y < 0.9999f)
+        v.y < 0.9999f
             ? normalize(cross(stretched, Vector3f(0.0f, 1.0f, 0.0f)))
             : Vector3f(1.0f, 0.0f, 0.0f);
     const Vector3f t2 = cross(t1, stretched);
 
-    // Sample point with polar coordinates (r, phi)
+    // Sample point with polar coordinates (r, phi).
     const float a = 1.0f / (1.0f + stretched.y);
     const float r = sqrt(s[0]);
     const float phi =
-        (s[1] < a)
+        s[1] < a
             ? s[1] / a * Pi<float>()
             : Pi<float>() + (s[1] - a) / (1.0f - a) * Pi<float>();
 
     const float p1 = r * cos(phi);
-    const float p2 = r * sin(phi) * ((s[1] < a) ? 1.0f : stretched.y);
+    const float p2 = r * sin(phi) * (s[1] < a ? 1.0f : stretched.y);
 
-    // Compute normal
+    // Compute normal.
     const Vector3f h =
         p1 * t1 + p2 * t2 + sqrt(max(0.0f, 1.0f - p1 * p1 - p2 * p2)) * stretched;
 

@@ -113,7 +113,7 @@ inline bool ScatteringMode::has_diffuse_and_glossy(const int modes)
 
 inline bool ScatteringMode::has_diffuse_or_volume(const int modes)
 {
-    return (modes & (Diffuse | Volume)) == (Diffuse | Volume);
+    return (modes & (Diffuse | Volume)) != 0;
 }
 
 inline bool ScatteringMode::has_glossy_or_specular(const int modes)

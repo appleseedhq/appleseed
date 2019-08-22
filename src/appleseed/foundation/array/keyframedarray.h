@@ -52,7 +52,10 @@ class APPLESEED_DLLSYMBOL KeyFramedArray
 {
   public:
     // Constructor.
-    explicit KeyFramedArray(const ArrayType type, const size_t size = 0);
+    KeyFramedArray();
+
+    // Constructor.
+    explicit KeyFramedArray(const ArrayType type, const size_t size = 0, const size_t num_keys = 1);
 
     // Destructor.
     ~KeyFramedArray();
@@ -71,6 +74,9 @@ class APPLESEED_DLLSYMBOL KeyFramedArray
 
     // Return the type of the array elements.
     ArrayType type() const;
+
+    // Resize the array. The previous contents of the array is lost.
+    void resize(const size_t size, const size_t keys = 1);
 
     // Const iterators.
     const Array* begin() const;

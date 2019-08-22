@@ -21,8 +21,6 @@
             </transform>
         </camera>
         <color name="environment_exitance">
-            <parameter name="alpha" value="1" />
-            <parameter name="color" value="1 1 1" />
             <parameter name="color_space" value="linear_rgb" />
             <parameter name="multiplier" value="0.9" />
             <parameter name="wavelength_range" value="400.0 700.0" />

@@ -70,8 +70,9 @@ ColorSource::ColorSource(const ColorEntity& color_entity)
     m_spectrum *= multiplier;
 
     // Store the alpha values.
+    // In the case of multiple alpha values, we keep the first one.
     const ColorValueArray& alpha = color_entity.get_alpha();
-    m_alpha[0] = alpha.size() == 1 ? alpha[0] : 0.0f;
+    m_alpha[0] = alpha.size() >= 1 ? alpha[0] : 0.0f;
 }
 
 uint64 ColorSource::compute_signature() const

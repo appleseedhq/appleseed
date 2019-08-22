@@ -9,13 +9,13 @@
     <scene>
         <camera name="camera" model="pinhole_camera">
             <parameter name="autofocus_enabled" value="false" />
-            <parameter name="controller_target" value="0.0 0.0 0.0" />
+            <parameter name="controller_target" value="-0.126723 0.0520652 0.0284738" />
             <parameter name="film_dimensions" value="0.024892 0.018669" />
             <parameter name="focal_length" value="0.035" />
             <transform time="0">
                 <matrix>
                     1.00000000000000000 0.00000000000000000 0.00000000000000000 0.00000000000000000
-                    0.00000000000000000 0.00000000000000000 1.00000000000000000 4.00000000000000000
+                    0.00000000000000000 0.00000000000000000 1.00000000000000000 2.00000000000000000
                     0.00000000000000000 -1.00000000000000000 0.00000000000000000 0.00000000000000000
                     0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
                 </matrix>
@@ -33,29 +33,25 @@
                 <parameter name="filename" value="UVCheckerMap03-512.exr" />
             </texture>
             <texture_instance name="UVCheckerMap03-512_inst" texture="UVCheckerMap03-512">
-                <transform>
-                    <matrix>
-                        0.25000000000000000 0.00000000000000000 0.00000000000000000 0.00000000000000000
-                        0.00000000000000000 1.00000000000000000 0.00000000000000000 0.00000000000000000
-                        0.00000000000000000 0.00000000000000000 0.50000000000000000 0.00000000000000000
-                        0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
-                    </matrix>
-                </transform>
             </texture_instance>
             <bsdf name="bsdf1" model="lambertian_brdf">
                 <parameter name="reflectance" value="UVCheckerMap03-512_inst" />
-                <parameter name="reflectance_multiplier" value="1" />
+                <parameter name="reflectance_multiplier" value="1.0" />
             </bsdf>
             <material name="material1" model="generic_material">
                 <parameter name="bsdf" value="bsdf1" />
                 <parameter name="bump_amplitude" value="1.0" />
                 <parameter name="displacement_method" value="bump" />
-                <parameter name="normal_map_up" value="y" />
+                <parameter name="normal_map_up" value="z" />
             </material>
-            <object name="disk" model="disk_object">
-                <parameter name="radius" value="1.0" />
+            <object name="ground_grid" model="mesh_object">
+                <parameter name="height" value="0.6" />
+                <parameter name="primitive" value="grid" />
+                <parameter name="resolution_u" value="1" />
+                <parameter name="resolution_v" value="1" />
+                <parameter name="width" value="0.9" />
             </object>
-            <object_instance name="disk_inst" object="disk">
+            <object_instance name="ground_grid_inst" object="ground_grid">
                 <assign_material slot="default" side="front" material="material1" />
             </object_instance>
         </assembly>
@@ -107,6 +103,9 @@
             <parameters name="uniform_pixel_renderer">
                 <parameter name="force_antialiasing" value="false" />
                 <parameter name="samples" value="16" />
+            </parameters>
+            <parameters name="generic_sample_renderer">
+                <parameter name="report_self_intersections" value="true" />
             </parameters>
         </configuration>
         <configuration name="interactive" base="base_interactive">

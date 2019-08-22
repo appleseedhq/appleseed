@@ -138,9 +138,7 @@
         <configuration name="final" base="base_final">
             <parameter name="lighting_engine" value="pt" />
             <parameter name="pixel_renderer" value="uniform" />
-            <parameters name="generic_tile_renderer">
-                <parameter name="quality" value="3" />
-            </parameters>
+            <parameters name="generic_tile_renderer" />
             <parameters name="pt">
                 <parameter name="dl_bsdf_samples" value="1" />
                 <parameter name="dl_light_samples" value="1" />
