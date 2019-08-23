@@ -98,7 +98,7 @@ class QuadTreeNode
         const float                         total_radiance_sum,
         const float                         subdiv_threshold,
         std::vector<
-          std::pair<float, float>>&         sorted_energy_ratios,
+          std::pair<float, float>>*         sorted_energy_ratios,
         const size_t                        depth = 1);
 
     // Reset to state of an initial root node.

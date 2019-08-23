@@ -239,7 +239,7 @@ void QuadTreeNode::restructure(
     const float                         total_radiance_sum,
     const float                         subdiv_threshold,
     std::vector<
-      std::pair<float, float>>&         sorted_energy_ratios,
+      std::pair<float, float>>*         sorted_energy_ratios,
     const size_t                        depth)
 {   
     const float fraction = m_previous_iter_radiance_sum / total_radiance_sum;
@@ -275,12 +275,14 @@ void QuadTreeNode::restructure(
         m_lower_left_node.reset(nullptr);
     }
 
-    if(m_is_leaf)
+    if(sorted_energy_ratios != nullptr && !m_is_leaf && m_upper_left_node->m_is_leaf)
     {
-        const std::pair<float, float> ratio(std::pow(0.25f, depth - 1), fraction);
+        const std::pair<float, float> ratio(
+            std::pow(0.25f, depth - 1),
+            4.0f * m_upper_left_node->radiance_sum() / total_radiance_sum);
 
-        auto insert_pos = std::lower_bound(sorted_energy_ratios.cbegin(), sorted_energy_ratios.cend(), ratio);
-        sorted_energy_ratios.insert(insert_pos, ratio);
+        auto insert_pos = std::lower_bound(sorted_energy_ratios->cbegin(), sorted_energy_ratios->cend(), ratio);
+        sorted_energy_ratios->insert(insert_pos, ratio);
     }
 
     m_current_iter_radiance_sum.store(0.0f, std::memory_order_relaxed);
@@ -626,32 +628,38 @@ void DTree::restructure(
         return;
     }
 
-    // Determine what ScatteringMode should be assigned to directions sampled from this D-tree.
     std::vector<std::pair<float, float>> sorted_energy_ratios;
-    m_root_node.restructure(radiance_sum, subdiv_threshold, sorted_energy_ratios);
+    m_root_node.restructure(
+        radiance_sum, subdiv_threshold,
+        m_parameters.m_guided_bounce_mode == GuidedBounceMode::Learn ?
+            &sorted_energy_ratios : nullptr);
 
-    float area_fraction_sum = 0.0f;
-    float energy_fraction_sum = 0.0f;
-    bool is_glossy = false;
-    auto itr = sorted_energy_ratios.cbegin();
-
-    while(itr != sorted_energy_ratios.cend() && area_fraction_sum < DTreeGlossyAreaFraction)
+    // Determine what ScatteringMode should be assigned to directions sampled from this D-tree.
+    if(m_parameters.m_guided_bounce_mode == GuidedBounceMode::Learn)
     {
-        area_fraction_sum += itr->first;
-        energy_fraction_sum += itr->second;
+        float area_fraction_sum = 0.0f;
+        float energy_fraction_sum = 0.0f;
+        bool is_glossy = false;
+        auto itr = sorted_energy_ratios.cbegin();
 
-        // If a significant part of the energy is stored in a small subset of directions
-        // treat bounces as Glossy, otherwise treat them as Diffuse.
-        if(energy_fraction_sum > DTreeGlossyEnergyThreshold)
+        while(itr != sorted_energy_ratios.cend() && area_fraction_sum + itr->first < DTreeGlossyAreaFraction)
         {
-            is_glossy = true;
-            break;
+            area_fraction_sum += itr->first;
+            energy_fraction_sum += itr->second;
+
+            // If a significant part of the energy is stored in a small subset of directions
+            // treat bounces as Glossy, otherwise treat them as Diffuse.
+            if(energy_fraction_sum > DTreeGlossyEnergyThreshold)
+            {
+                is_glossy = true;
+                break;
+            }
+
+            ++itr;
         }
 
-        ++itr;
+        m_scattering_mode = is_glossy ? ScatteringMode::Glossy : ScatteringMode::Diffuse;
     }
-
-    m_scattering_mode = is_glossy ? ScatteringMode::Glossy : ScatteringMode::Diffuse;
 }
 
 float DTree::sample_weight() const
