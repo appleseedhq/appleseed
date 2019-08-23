@@ -278,7 +278,7 @@ void QuadTreeNode::restructure(
     if(sorted_energy_ratios != nullptr && !m_is_leaf && m_upper_left_node->m_is_leaf)
     {
         const std::pair<float, float> ratio(
-            std::pow(0.25f, depth - 1),
+            std::pow(0.25f, static_cast<float>(depth - 1)),
             4.0f * m_upper_left_node->radiance_sum() / total_radiance_sum);
 
         auto insert_pos = std::lower_bound(sorted_energy_ratios->cbegin(), sorted_energy_ratios->cend(), ratio);
@@ -518,7 +518,7 @@ void DTree::record(
     {
         // Determine the node size at the direction.
         const size_t leaf_depth = depth(direction);
-        const Vector2f leaf_size(std::pow(0.25f, static_cast<int>(leaf_depth - 1)));
+        const Vector2f leaf_size(std::pow(0.25f, static_cast<float>(leaf_depth - 1)));
         const AABB2f node_aabb(Vector2f(0.0f), Vector2f(1.0f));
         const AABB2f splat_aabb(direction - 0.5f * leaf_size, direction + 0.5f * leaf_size);
 
@@ -728,8 +728,8 @@ void DTree::adam_step(
 {
     ++m_optimization_step_count;
     const float debiased_learning_rate = m_parameters.m_learning_rate *
-                                         std::sqrt(1.0f - std::pow(Beta2, static_cast<int>(m_optimization_step_count))) /
-                                         (1.0f - std::pow(Beta1, m_optimization_step_count));
+                                         std::sqrt(1.0f - std::pow(Beta2, static_cast<float>(m_optimization_step_count))) /
+                                         (1.0f - std::pow(Beta1, static_cast<float>(m_optimization_step_count)));
 
     m_first_moment = Beta1 * m_first_moment + (1.0f - Beta1) * gradient;
     m_second_moment = Beta2 * m_second_moment + (1.0f - Beta2) * gradient * gradient;
@@ -1069,7 +1069,7 @@ void STree::build(
 
     // First refine the S-tree then refine the D-tree at each spatial leaf.
     const size_t required_samples =
-        static_cast<size_t>(std::sqrt(std::pow(2, static_cast<int>(iteration)) *
+        static_cast<size_t>(std::sqrt(std::pow(2.0f, static_cast<float>(iteration)) *
         m_parameters.m_samples_per_pass * 0.25f) * SpatialSubdivisionThreshold);
 
     m_root_node->subdivide(required_samples);
