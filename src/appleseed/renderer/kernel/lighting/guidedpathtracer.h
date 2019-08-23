@@ -658,7 +658,7 @@ size_t GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         vertex.m_shading_point = next_shading_point;
     }
 
-    if(!m_sd_tree->is_final_iteration())
+    if (!m_sd_tree->is_final_iteration())
         guided_path.record_to_tree(
             *m_sd_tree,
             sampling_context);
@@ -754,7 +754,7 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
         d_tree_pdf
     );
 
-    if(!is_path_guided)
+    if (!is_path_guided)
     {
         // Above-surface scattering.
         if (vertex.m_bssrdf == nullptr)
@@ -801,7 +801,7 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     // Add a vertex to the guided path
     const bool is_delta = sample.get_mode() == ScatteringMode::Specular;
 
-    if(!guided_path.is_full() && !m_sd_tree->is_final_iteration() && (!is_delta ||
+    if (!guided_path.is_full() && !m_sd_tree->is_final_iteration() && (!is_delta ||
         (m_bsdf_sampling_fraction_mode == BSDFSamplingFractionMode::Learn && m_sd_tree->is_built())))
     {
         guided_path.add_vertex(

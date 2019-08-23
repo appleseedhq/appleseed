@@ -206,7 +206,7 @@ bool RendererComponents::create_lighting_engine_factory()
     {
         const string pixel_renderer_name = m_params.get_optional<string>("pixel_renderer", "");
 
-        if(pixel_renderer_name != "uniform")
+        if (pixel_renderer_name != "uniform")
         {
             RENDERER_LOG_ERROR("cannot use guided path tracing with pixel renderer other than uniform pixel renderer.");
             return false;
@@ -486,9 +486,11 @@ bool RendererComponents::create_shading_result_framebuffer_factory()
     const string name = m_params.get_optional<string>("shading_result_framebuffer", "ephemeral");
     GPTPassCallback *gpt_pass_callback = dynamic_cast<GPTPassCallback *>(m_pass_callback.get());
 
-    if(gpt_pass_callback != nullptr)
+    if (gpt_pass_callback != nullptr)
     {
-        VarianceTrackingShadingResultFrameBufferFactory *framebuffer_factory = new VarianceTrackingShadingResultFrameBufferFactory(m_frame);
+        VarianceTrackingShadingResultFrameBufferFactory *framebuffer_factory =
+            new VarianceTrackingShadingResultFrameBufferFactory(m_frame);
+            
         m_shading_result_framebuffer_factory.reset(
             framebuffer_factory);
         gpt_pass_callback->set_framebuffer(framebuffer_factory);

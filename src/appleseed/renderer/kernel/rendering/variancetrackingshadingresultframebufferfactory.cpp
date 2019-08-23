@@ -96,9 +96,9 @@ void VarianceTrackingShadingResultFrameBufferFactory::destroy(
 
 void VarianceTrackingShadingResultFrameBufferFactory::clear()
 {
-    for(auto framebuffer : m_framebuffers)
+    for (auto framebuffer : m_framebuffers)
     {
-        if(framebuffer != nullptr)
+        if (framebuffer != nullptr)
             framebuffer->clear();
     }
 }
@@ -115,9 +115,9 @@ float VarianceTrackingShadingResultFrameBufferFactory::estimator_variance() cons
     float variance = 0.0f;
     size_t buffer_count = 0;
 
-    for(const auto framebuffer : m_framebuffers)
+    for (const auto framebuffer : m_framebuffers)
     {
-        if(framebuffer == nullptr)
+        if (framebuffer == nullptr)
             continue;
             
         variance += framebuffer->estimator_variance();
@@ -136,8 +136,8 @@ float VarianceTrackingShadingResultFrameBufferFactory::estimator_variance_to_ima
     float variance = 0.0f;
     size_t buffer_count = 0;
 
-    for(size_t tile_y = 0; tile_y < tile_count_y; ++tile_y)
-        for(size_t tile_x = 0; tile_x < tile_count_x; ++tile_x)
+    for (size_t tile_y = 0; tile_y < tile_count_y; ++tile_y)
+        for (size_t tile_x = 0; tile_x < tile_count_x; ++tile_x)
         {
             Tile &tile = image.tile(tile_x, tile_y);
             const size_t index = tile_y * tile_count_x + tile_x;

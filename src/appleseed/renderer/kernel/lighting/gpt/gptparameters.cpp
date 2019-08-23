@@ -49,15 +49,15 @@ SpatialFilter get_spatial_filter(const ParamArray& params)
 {
     const std::string name = params.get_required<std::string>("spatial_filter", "stochastic");
 
-    if(name == "nearest")
+    if (name == "nearest")
     {
       return SpatialFilter::Nearest;
     }
-    else if(name == "box")
+    else if (name == "box")
     {
       return SpatialFilter::Box;
     }
-    else if(name == "stochastic")
+    else if (name == "stochastic")
     {
       return SpatialFilter::Stochastic;
     }
@@ -72,11 +72,11 @@ DirectionalFilter get_directional_filter(const ParamArray& params)
 {
     const std::string name = params.get_required<std::string>("directional_filter", "box");
 
-    if(name == "nearest")
+    if (name == "nearest")
     {
       return DirectionalFilter::Nearest;
     }
-    else if(name == "box")
+    else if (name == "box")
     {
       return DirectionalFilter::Box;
     }
@@ -91,11 +91,11 @@ IterationProgression get_iteration_progression(const ParamArray& params)
 {
 	const std::string name = params.get_required<std::string>("iteration_progression", "combine");
 
-	if(name == "automatic")
+	if (name == "automatic")
 	{
 		return IterationProgression::Automatic;
 	}
-	else if(name == "combine")
+	else if (name == "combine")
 	{
 		return IterationProgression::Combine;
 	}
@@ -110,11 +110,11 @@ BSDFSamplingFractionMode get_bsdf_sampling_fraction_mode(const ParamArray& param
 {
 	const std::string name = params.get_required<std::string>("bsdf_sampling_fraction", "learn");
 
-	if(name == "fixed")
+	if (name == "fixed")
 	{
 		return BSDFSamplingFractionMode::Fixed;
 	}
-	else if(name == "learn")
+	else if (name == "learn")
 	{
 		return BSDFSamplingFractionMode::Learn;
 	}
@@ -129,23 +129,23 @@ GuidedBounceMode get_guided_bounce_mode(const ParamArray& params)
 {
 	const std::string name = params.get_required<std::string>("guided_bounce_mode", "learn");
 
-	if(name == "learn")
+	if (name == "learn")
 	{
 		return GuidedBounceMode::Learn;
 	}
-	else if(name == "strictly_diffuse")
+	else if (name == "strictly_diffuse")
 	{
 		return GuidedBounceMode::StrictlyDiffuse;
 	}
-	else if(name == "strictly_glossy")
+	else if (name == "strictly_glossy")
 	{
 		return GuidedBounceMode::StrictlyGlossy;
 	}
-	else if(name == "prefer_diffuse")
+	else if (name == "prefer_diffuse")
 	{
 		return GuidedBounceMode::PreferDiffuse;
 	}
-	else if(name == "prefer_glossy")
+	else if (name == "prefer_glossy")
 	{
 		return GuidedBounceMode::PreferGlossy;
 	}
@@ -203,7 +203,7 @@ void GPTParameters::print() const
 {
 	std::string bsdf_mode_string = "bsdf sampling mode            ";
 
-	switch(m_bsdf_sampling_fraction_mode)
+	switch (m_bsdf_sampling_fraction_mode)
 	{
 	case BSDFSamplingFractionMode::Fixed:
 		bsdf_mode_string += "Fixed\n";
@@ -221,7 +221,7 @@ void GPTParameters::print() const
 
 	std::string iteration_progression_string;
 
-	switch(m_iteration_progression)
+	switch (m_iteration_progression)
 	{
 	case IterationProgression::Automatic:
 		iteration_progression_string = "Automatic";
@@ -237,7 +237,7 @@ void GPTParameters::print() const
 
 	std::string directional_filter_string;
 
-	switch(m_directional_filter)
+	switch (m_directional_filter)
 	{
 	case DirectionalFilter::Nearest:
 		directional_filter_string = "Nearest";
@@ -253,7 +253,7 @@ void GPTParameters::print() const
 
 	std::string spatial_filter_string;
 
-	switch(m_spatial_filter)
+	switch (m_spatial_filter)
 	{
 	case SpatialFilter::Nearest:
 		spatial_filter_string = "Nearest";
@@ -273,7 +273,7 @@ void GPTParameters::print() const
 
 	std::string bounce_mode_string;
 
-	switch(m_guided_bounce_mode)
+	switch (m_guided_bounce_mode)
 	{
 	case GuidedBounceMode::Learn:
 		bounce_mode_string = "Learned Distribution";
