@@ -51,7 +51,7 @@ namespace renderer
 //
 
 const size_t SpatialSubdivisionThreshold = 4000; // TODO: make this dependent on the filter types
-const float DTreeThreshold = 0.01;
+const float DTreeThreshold = 0.01f;
 const size_t DTreeMaxDepth = 20;
 const float DTreeGlossyAreaFraction = 0.1f;
 const float DTreeGlossyEnergyThreshold = 0.4f;
@@ -471,10 +471,11 @@ DTree::DTree(
     , m_first_moment(0.0f)
     , m_second_moment(0.0f)
     , m_theta(0.0f)
-    , m_atomic_flag(ATOMIC_FLAG_INIT)
     , m_is_built(false)
     , m_scattering_mode(ScatteringMode::Diffuse)
-{}
+{
+    m_atomic_flag.clear(std::memory_order_release);
+}
 
 DTree::DTree(
     const DTree&                        other)
@@ -486,10 +487,11 @@ DTree::DTree(
     , m_first_moment(other.m_first_moment)
     , m_second_moment(other.m_second_moment)
     , m_theta(other.m_theta)
-    , m_atomic_flag(ATOMIC_FLAG_INIT)
     , m_is_built(other.m_is_built)
     , m_scattering_mode(other.m_scattering_mode)
-{}
+{
+    m_atomic_flag.clear(std::memory_order_release);
+}
 
 void DTree::record(
     const DTreeRecord&                  d_tree_record)
@@ -516,7 +518,7 @@ void DTree::record(
     {
         // Determine the node size at the direction.
         const size_t leaf_depth = depth(direction);
-        const Vector2f leaf_size(std::pow(0.25f, leaf_depth - 1));
+        const Vector2f leaf_size(std::pow(0.25f, static_cast<int>(leaf_depth - 1)));
         const AABB2f node_aabb(Vector2f(0.0f), Vector2f(1.0f));
         const AABB2f splat_aabb(direction - 0.5f * leaf_size, direction + 0.5f * leaf_size);
 
@@ -726,7 +728,7 @@ void DTree::adam_step(
 {
     ++m_optimization_step_count;
     const float debiased_learning_rate = m_parameters.m_learning_rate *
-                                         std::sqrt(1.0f - std::pow(Beta2, m_optimization_step_count)) /
+                                         std::sqrt(1.0f - std::pow(Beta2, static_cast<int>(m_optimization_step_count))) /
                                          (1.0f - std::pow(Beta1, m_optimization_step_count));
 
     m_first_moment = Beta1 * m_first_moment + (1.0f - Beta1) * gradient;
@@ -1066,7 +1068,10 @@ void STree::build(
     m_root_node->build();
 
     // First refine the S-tree then refine the D-tree at each spatial leaf.
-    const size_t required_samples = std::sqrt(std::pow(2, iteration) * m_parameters.m_samples_per_pass * 0.25f) * SpatialSubdivisionThreshold;
+    const size_t required_samples =
+        static_cast<size_t>(std::sqrt(std::pow(2, static_cast<int>(iteration)) *
+        m_parameters.m_samples_per_pass * 0.25f) * SpatialSubdivisionThreshold);
+
     m_root_node->subdivide(required_samples);
     m_root_node->restructure(DTreeThreshold);
 
