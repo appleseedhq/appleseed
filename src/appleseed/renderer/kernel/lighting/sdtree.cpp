@@ -761,6 +761,9 @@ struct DTreeStatistics
       , num_d_trees(0)
       , num_s_tree_nodes(0)
       , glossy_d_tree_fraction(0.0f)
+      , mean_sampling_fraction(0.0f)
+      , min_sampling_fraction(std::numeric_limits<float>::max())
+      , max_sampling_fraction(0.0f)
     {}
 
     size_t                              max_d_tree_depth;
@@ -782,6 +785,8 @@ struct DTreeStatistics
     size_t                              num_s_tree_nodes;
     float                               glossy_d_tree_fraction;
     float                               mean_sampling_fraction;
+    float                               min_sampling_fraction;
+    float                               max_sampling_fraction;
 
     void build()
     {
@@ -956,7 +961,10 @@ void STreeNode::gather_statistics(
         if(m_d_tree->get_scattering_mode() == ScatteringMode::Glossy)
             statistics.glossy_d_tree_fraction += 1.0f;
         
-        statistics.mean_sampling_fraction += m_d_tree->bsdf_sampling_fraction();
+        const float bsdf_sampling_fraction = m_d_tree->bsdf_sampling_fraction();
+        statistics.min_sampling_fraction = std::min(statistics.min_sampling_fraction, bsdf_sampling_fraction);
+        statistics.max_sampling_fraction = std::max(statistics.max_sampling_fraction, bsdf_sampling_fraction);
+        statistics.mean_sampling_fraction += bsdf_sampling_fraction;
     }
     else
     {
@@ -1084,8 +1092,9 @@ void STree::build(
         "  Mean radiance                = [%s, %s, %s]\n"
         "  D-Tree node count            = [%s, %s, %s]\n"
         "  Sample weight                = [%s, %s, %s]\n"
+        "  BSDF sampling fraction       = [%s, %s, %s]\n"
         "  Glossy D-Tree fraction       = %s\n"
-        "  Mean BSDF sampling fraction  = %s\n\n",
+        "  Num D-Trees                  = %s\n\n",
         pretty_uint(statistics.min_max_d_tree_depth).c_str(),
         pretty_uint(statistics.max_d_tree_depth).c_str(),
         pretty_scalar(statistics.average_max_d_tree_depth, 2).c_str(),
@@ -1101,8 +1110,11 @@ void STree::build(
         pretty_scalar(statistics.min_sample_weight, 3).c_str(),
         pretty_scalar(statistics.max_sample_weight, 3).c_str(),
         pretty_scalar(statistics.average_sample_weight, 3).c_str(),
+        pretty_scalar(statistics.min_sampling_fraction, 3).c_str(),
+        pretty_scalar(statistics.max_sampling_fraction, 3).c_str(),
+        pretty_scalar(statistics.mean_sampling_fraction, 3).c_str(),
         pretty_scalar(statistics.glossy_d_tree_fraction, 3).c_str(),
-        pretty_scalar(statistics.mean_sampling_fraction, 3).c_str());
+        pretty_uint(statistics.num_d_trees).c_str());
 
     m_is_built = true;
 }
