@@ -1067,11 +1067,9 @@ void STree::build(
     // Build D-tree radiance and sample weight sums first.
     m_root_node->build();
 
-    // First refine the S-tree then refine the D-tree at each spatial leaf.
-    const size_t required_samples =
-        static_cast<size_t>(std::sqrt(std::pow(2.0f, static_cast<float>(iteration)) *
-        m_parameters.m_samples_per_pass * 0.25f) * SpatialSubdivisionThreshold);
+    const size_t required_samples = static_cast<size_t>(SpatialSubdivisionThreshold * std::pow(2.0f, iteration * 0.5f));
 
+    // First refine the S-tree then refine the D-tree at each spatial leaf.
     m_root_node->subdivide(required_samples);
     m_root_node->restructure(DTreeThreshold);
 
