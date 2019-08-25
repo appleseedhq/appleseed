@@ -501,7 +501,11 @@ namespace
                     vertex.m_aov_mode,
                     env_radiance);
 
-                guided_path.add_radiance(env_radiance);
+                if(!m_params.m_enable_ibl)
+                    guided_path.add_radiance(env_radiance);
+                else
+                    guided_path.add_indirect_radiance(env_radiance);
+
             }
 
             void on_hit(const PathVertex& vertex, GPTVertexPath& guided_path)
@@ -534,7 +538,7 @@ namespace
                         vertex.m_aov_mode,
                         emitted_radiance);
                     
-                    guided_path.add_radiance(emitted_radiance);
+                    guided_path.add_indirect_radiance(emitted_radiance);
                 }
                 else
                 {

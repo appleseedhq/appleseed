@@ -359,6 +359,10 @@ class GPTVertexPath
     void add_radiance(
         const renderer::Spectrum&           r);
 
+    // Add radiance to all but the last vertex in the path.
+    void add_indirect_radiance(
+        const renderer::Spectrum&           r);
+
     // Record the accumulated radiance of all vertices in the path to the sd_tree on path completion.
     void record_to_tree(
         STree&                              sd_tree,

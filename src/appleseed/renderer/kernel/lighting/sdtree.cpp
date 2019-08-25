@@ -54,7 +54,7 @@ const size_t SpatialSubdivisionThreshold = 4000; // TODO: make this dependent on
 const float DTreeThreshold = 0.01f;
 const size_t DTreeMaxDepth = 20;
 const float DTreeGlossyAreaFraction = 0.1f;
-const float DTreeGlossyEnergyThreshold = 0.4f;
+const float DTreeGlossyEnergyThreshold = 0.7f;
 
 // Sampling fraction optimization constants.
 
@@ -940,7 +940,7 @@ void STreeNode::gather_statistics(
 
         const float mean_radiance = m_d_tree->mean();
         statistics.max_mean_radiance = std::max(statistics.max_mean_radiance, mean_radiance);
-        statistics.min_mean_radiance = std::min(statistics.max_mean_radiance, mean_radiance);
+        statistics.min_mean_radiance = std::min(statistics.min_mean_radiance, mean_radiance);
         statistics.average_mean_radiance += mean_radiance;
 
         const size_t node_count = m_d_tree->node_count();
@@ -1204,6 +1204,13 @@ void GPTVertexPath::add_radiance(
     const renderer::Spectrum&           r)
 {
     for(int i = 0; i < m_path_index; ++i)
+        m_path[i].add_radiance(r);
+}
+
+void GPTVertexPath::add_indirect_radiance(
+    const renderer::Spectrum&           r)
+{
+    for(int i = 0; i < m_path_index - 1; ++i)
         m_path[i].add_radiance(r);
 }
 
