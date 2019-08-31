@@ -37,7 +37,7 @@
 
 // Embree headers.
 #ifdef APPLESEED_WITH_EMBREE
-#include <embree3/rtcore_version.h>
+#include <embree3/rtcore.h>
 #endif
 
 // IlmBase headers.
