@@ -140,11 +140,11 @@ struct CommandLineHandlerBase::Impl
         LOG_INFO(
             logger,
             "library features:\n"
-            "  Instruction sets                         %s\n"
-            "  Disney material with SeExpr support      %s\n"
-            "  Embree                                   %s\n"
-            "  Spectral support                         %s\n"
-            "  GPU support                              %s",
+            "  Instruction sets              %s\n"
+            "  Disney material with SeExpr   %s\n"
+            "  Embree                        %s\n"
+            "  Spectral support              %s\n"
+            "  GPU support                   %s",
             Appleseed::get_lib_cpu_features(),
             to_enabled_disabled(WithDisneyMaterial),
             to_enabled_disabled(WithEmbree),
