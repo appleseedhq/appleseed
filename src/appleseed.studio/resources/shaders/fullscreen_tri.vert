@@ -1,11 +1,10 @@
-
 //
 // This source file is part of appleseed.
 // Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Gray Olson, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,46 +25,24 @@
 // THE SOFTWARE.
 //
 
-#pragma once
+#version 410
 
-// appleseed.foundation headers.
-#include "foundation/math/aabb.h"
-#include "foundation/math/vector.h"
+const vec2 verts[3] = vec2[](
+    vec2(3.0, 1.0),
+    vec2(-1.0, -3.0),
+    vec2(-1.0, 1.0)
+);
 
-// Qt headers.
-#include <QObject>
+const vec2 uvs[3] = vec2[](
+    vec2(2.0, 0.0),
+    vec2(0.0, 2.0),
+    vec2(0.0, 0.0)
+);
 
-// Forward declarations.
-namespace appleseed { namespace studio { class LightPathsLayer; } }
-namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
-namespace appleseed { namespace studio { class ViewportWidget; } }
-namespace renderer  { class Project; }
-class QEvent;
+out vec2 f_uv;
 
-namespace appleseed {
-namespace studio {
-
-class LightPathsPickingHandler
-  : public QObject
+void main() 
 {
-    Q_OBJECT
-
-  public:
-    LightPathsPickingHandler(
-        ViewportWidget*                     viewport_widget,
-        const MouseCoordinatesTracker&      mouse_tracker,
-        const renderer::Project&            project);
-
-    void set_enabled(const bool enabled);
-
-    void pick(const foundation::Vector2i& pixel) const;
-    void pick(const foundation::AABB2i& rect) const;
-
-  private:
-    ViewportWidget*                         m_viewport_widget;
-    const renderer::Project&                m_project;
-    bool                                    m_enabled;
-};
-
-}   // namespace studio
-}   // namespace appleseed
+    f_uv = uvs[gl_VertexID];
+    gl_Position = vec4(verts[gl_VertexID], 0.0, 1.0);
+}

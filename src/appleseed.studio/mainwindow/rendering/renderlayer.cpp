@@ -28,7 +28,7 @@
 //
 
 // Interface header.
-#include "renderwidget.h"
+#include "renderlayer.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
@@ -40,6 +40,7 @@
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/types.h"
+#include "utility/gl.h"
 
 // Qt headers.
 #include <QColor>
@@ -48,6 +49,9 @@
 #include <QDropEvent>
 #include <QMimeData>
 #include <QMutexLocker>
+#include <QOpenGLFunctions_4_1_Core>
+#include <QOpenGLTexture>
+#include <QRect>
 #include <Qt>
 
 // Standard headers.
@@ -62,10 +66,10 @@ namespace appleseed {
 namespace studio {
 
 //
-// RenderWidget class implementation.
+// RenderLayer class implementation.
 //
 
-RenderWidget::RenderWidget(
+RenderLayer::RenderLayer(
     const size_t            width,
     const size_t            height,
     OCIO::ConstConfigRcPtr  ocio_config,
@@ -73,10 +77,13 @@ RenderWidget::RenderWidget(
   : QWidget(parent)
   , m_mutex(QMutex::Recursive)
   , m_ocio_config(ocio_config)
+  , m_gl_initialized(false)
 {
     setFocusPolicy(Qt::StrongFocus);
     setAutoFillBackground(false);
     setAttribute(Qt::WA_OpaquePaintEvent, true);
+
+    m_gl_tex = new QOpenGLTexture(QOpenGLTexture::Target2D);
 
     resize(width, height);
 
@@ -87,14 +94,77 @@ RenderWidget::RenderWidget(
     setAcceptDrops(true);
 }
 
-QImage RenderWidget::capture()
+void RenderLayer::draw(GLuint empty_vao, bool paths_display_active)
+{
+    QMutexLocker locker(&m_mutex);
+
+    if (m_gl_tex->width() != m_image.width() || m_gl_tex->height() != m_image.height())
+    {
+        if (m_gl_tex->isCreated())
+            m_gl_tex->destroy();
+
+        m_gl_tex->create();
+        m_gl_tex->setSize(m_image.width(), m_image.height());
+        m_gl_tex->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Nearest);
+    }
+
+    m_gl_tex->setData(m_image, QOpenGLTexture::MipMapGeneration::DontGenerateMipMaps);
+
+    m_gl->glUseProgram(m_shader_program);
+
+    GLfloat mult = paths_display_active ? 0.6 : 1.0;
+    m_gl->glUniform1f(m_mult_loc, mult);
+
+    m_gl->glActiveTexture(GL_TEXTURE0);
+    m_gl_tex->bind();
+    m_gl->glDisable(GL_DEPTH_TEST);
+    m_gl->glDepthMask(GL_FALSE);
+    m_gl->glBindVertexArray(empty_vao);
+    m_gl->glDrawArrays(GL_TRIANGLES, 0, 3);
+    m_gl->glDepthMask(GL_TRUE);
+}
+
+
+void RenderLayer::init_gl(QSurfaceFormat format)
+{
+    if (!m_gl)
+    {
+        RENDERER_LOG_ERROR("Attempted to initialize GL without first setting GL functions");
+        return;
+    }
+
+    auto vertex_shader = load_gl_shader("fullscreen_tri.vert");
+    auto fragment_shader = load_gl_shader("final_render.frag");
+
+    create_shader_program(
+        m_gl,
+        m_shader_program,
+        &vertex_shader,
+        &fragment_shader);
+
+    m_mult_loc = m_gl->glGetUniformLocation(m_shader_program, "u_mult");
+
+    m_gl_initialized = true;
+}
+
+void RenderLayer::set_gl_functions(QOpenGLFunctions_4_1_Core* functions)
+{
+    m_gl = functions;
+}
+
+QImage RenderLayer::capture()
 {
     QMutexLocker locker(&m_mutex);
 
     return m_image.copy();
 }
 
-void RenderWidget::resize(
+void RenderLayer::darken()
+{
+    multiply(0.2f);
+}
+
+void RenderLayer::resize(
     const size_t    width,
     const size_t    height)
 {
@@ -112,7 +182,7 @@ void RenderWidget::resize(
     clear();
 }
 
-void RenderWidget::clear()
+void RenderLayer::clear()
 {
     QMutexLocker locker(&m_mutex);
 
@@ -137,14 +207,14 @@ namespace
     }
 }
 
-void RenderWidget::start_render()
+void RenderLayer::start_render()
 {
     // Clear the image storage.
     if (m_image_storage)
         m_image_storage->clear(Color4f(0.0f));
 }
 
-void RenderWidget::multiply(const float multiplier)
+void RenderLayer::multiply(const float multiplier)
 {
     QMutexLocker locker(&m_mutex);
 
@@ -200,7 +270,7 @@ namespace
     }
 }
 
-void RenderWidget::highlight_tile(
+void RenderLayer::highlight_tile(
     const Frame&    frame,
     const size_t    tile_x,
     const size_t    tile_y)
@@ -243,7 +313,7 @@ void RenderWidget::highlight_tile(
         sizeof(BracketColor));
 }
 
-void RenderWidget::blit_tile(
+void RenderLayer::blit_tile(
     const Frame&    frame,
     const size_t    tile_x,
     const size_t    tile_y)
@@ -256,7 +326,7 @@ void RenderWidget::blit_tile(
     update_tile_no_lock(tile_x, tile_y);
 }
 
-void RenderWidget::blit_frame(const Frame& frame)
+void RenderLayer::blit_frame(const Frame& frame)
 {
     QMutexLocker locker(&m_mutex);
 
@@ -274,7 +344,7 @@ void RenderWidget::blit_frame(const Frame& frame)
     }
 }
 
-void RenderWidget::slot_display_transform_changed(const QString& transform)
+void RenderLayer::slot_display_transform_changed(const QString& transform)
 {
     {
         QMutexLocker locker(&m_mutex);
@@ -321,7 +391,7 @@ namespace
     }
 }
 
-void RenderWidget::allocate_working_storage(const CanvasProperties& frame_props)
+void RenderLayer::allocate_working_storage(const CanvasProperties& frame_props)
 {
     if (!m_image_storage || !is_compatible(*m_image_storage, frame_props))
     {
@@ -356,7 +426,7 @@ void RenderWidget::allocate_working_storage(const CanvasProperties& frame_props)
     }
 }
 
-void RenderWidget::blit_tile_no_lock(
+void RenderLayer::blit_tile_no_lock(
     const Frame&    frame,
     const size_t    tile_x,
     const size_t    tile_y)
@@ -369,7 +439,7 @@ void RenderWidget::blit_tile_no_lock(
     dst_tile.copy_from(src_tile);
 }
 
-void RenderWidget::update_tile_no_lock(const size_t tile_x, const size_t tile_y)
+void RenderLayer::update_tile_no_lock(const size_t tile_x, const size_t tile_y)
 {
     // Retrieve the source tile.
     const Tile& src_tile = m_image_storage->tile(tile_x, tile_y);
@@ -417,41 +487,6 @@ void RenderWidget::update_tile_no_lock(const size_t tile_x, const size_t tile_y)
 
     // Blit the tile to the destination image.
     NativeDrawing::blit(dest, dest_stride, uint8_rgb_tile);
-}
-
-void RenderWidget::paintEvent(QPaintEvent* event)
-{
-    QMutexLocker locker(&m_mutex);
-
-    m_painter.begin(this);
-    m_painter.drawImage(rect(), m_image);
-    m_painter.end();
-}
-
-void RenderWidget::dragEnterEvent(QDragEnterEvent* event)
-{
-    if (event->mimeData()->hasFormat("text/plain"))
-        event->acceptProposedAction();
-}
-
-void RenderWidget::dragMoveEvent(QDragMoveEvent* event)
-{
-    if (pos().x() <= event->pos().x() && pos().y() <= event->pos().y()
-        && event->pos().x() < pos().x() + width() && event->pos().y() < pos().y() + height())
-    {
-        event->accept();
-    }
-    else
-        event->ignore();
-}
-
-void RenderWidget::dropEvent(QDropEvent* event)
-{
-    emit signal_material_dropped(
-        Vector2d(
-            static_cast<double>(event->pos().x()) / width(),
-            static_cast<double>(event->pos().y()) / height()),
-        event->mimeData()->text());
 }
 
 }   // namespace studio

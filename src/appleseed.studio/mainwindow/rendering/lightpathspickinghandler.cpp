@@ -30,7 +30,8 @@
 #include "lightpathspickinghandler.h"
 
 // appleseed.studio headers.
-#include "mainwindow/rendering/lightpathswidget.h"
+#include "mainwindow/rendering/lightpathslayer.h"
+#include "mainwindow/rendering/viewportwidget.h"
 #include "utility/mousecoordinatestracker.h"
 
 // appleseed.renderer headers.
@@ -57,20 +58,13 @@ namespace appleseed {
 namespace studio {
 
 LightPathsPickingHandler::LightPathsPickingHandler(
-    LightPathsWidget*               light_paths_widget,
+    ViewportWidget*                 viewport_widget,
     const MouseCoordinatesTracker&  mouse_tracker,
     const Project&                  project)
-  : m_light_paths_widget(light_paths_widget)
-  , m_mouse_tracker(mouse_tracker)
-  , m_project(project)
+  : m_project(project)
   , m_enabled(true)
+  , m_viewport_widget(viewport_widget)
 {
-    m_light_paths_widget->installEventFilter(this);
-}
-
-LightPathsPickingHandler::~LightPathsPickingHandler()
-{
-    m_light_paths_widget->removeEventFilter(this);
 }
 
 void LightPathsPickingHandler::set_enabled(const bool enabled)
@@ -108,8 +102,8 @@ void LightPathsPickingHandler::pick(const Vector2i& pixel) const
                 pixel.y);
         }
 
-        m_light_paths_widget->set_light_paths(light_paths);
-        m_light_paths_widget->update();
+        m_viewport_widget->get_light_paths_layer()->set_light_paths(light_paths);
+        m_viewport_widget->update();
     }
 }
 
@@ -156,30 +150,9 @@ void LightPathsPickingHandler::pick(const AABB2i& rect) const
                 final_rect.max.y);
         }
 
-        m_light_paths_widget->set_light_paths(light_paths);
-        m_light_paths_widget->update();
+        m_viewport_widget->get_light_paths_layer()->set_light_paths(light_paths);
+        m_viewport_widget->update();
     }
-}
-
-bool LightPathsPickingHandler::eventFilter(QObject* object, QEvent* event)
-{
-    if (m_enabled)
-    {
-        if (event->type() == QEvent::MouseButtonPress)
-        {
-            const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
-            if (!(mouse_event->modifiers() & (Qt::AltModifier | Qt::ShiftModifier | Qt::ControlModifier)))
-            {
-                if (mouse_event->button() == Qt::LeftButton)
-                {
-                    pick(m_mouse_tracker.widget_to_pixel(mouse_event->pos()));
-                    return true;
-                }
-            }
-        }
-    }
-
-    return QObject::eventFilter(object, event);
 }
 
 }   // namespace studio

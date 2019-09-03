@@ -28,11 +28,13 @@
 //
 
 // Interface header.
-#include "rendertab.h"
+#include "viewporttab.h"
 
 // appleseed.studio headers.
 #include "mainwindow/project/projectexplorer.h"
-#include "mainwindow/rendering/renderwidget.h"
+#include "mainwindow/rendering/lightpathsviewportmanager.h"
+#include "mainwindow/rendering/renderingmanager.h"
+#include "mainwindow/rendering/viewportwidget.h"
 #include "utility/miscellaneous.h"
 
 // appleseed.renderer headers.
@@ -70,15 +72,17 @@ namespace appleseed {
 namespace studio {
 
 //
-// RenderTab class implementation.
+// ViewportTab class implementation.
 //
 
-RenderTab::RenderTab(
+ViewportTab::ViewportTab(
     ProjectExplorer&        project_explorer,
     Project&                project,
     RenderingManager&       rendering_manager,
-    OCIO::ConstConfigRcPtr  ocio_config)
-  : m_project_explorer(project_explorer)
+    OCIO::ConstConfigRcPtr  ocio_config,
+    renderer::ParamArray    application_settings)
+  : m_application_settings(application_settings)
+  , m_project_explorer(project_explorer)
   , m_project(project)
   , m_rendering_manager(rendering_manager)
   , m_ocio_config(ocio_config)
@@ -88,77 +92,76 @@ RenderTab::RenderTab(
     layout()->setSpacing(0);
     layout()->setMargin(0);
 
-    create_render_widget();
+    create_viewport_widget();
+    create_light_paths_manager(m_application_settings);
     create_toolbar();
     create_scrollarea();
 
     layout()->addWidget(m_toolbar);
+    layout()->addWidget(m_light_paths_manager->toolbar());
     layout()->addWidget(m_scroll_area);
 
     recreate_handlers();
 }
 
-RenderWidget* RenderTab::get_render_widget() const
+ViewportWidget* ViewportTab::get_viewport_widget() const
 {
-    return m_render_widget;
+    return m_viewport_widget;
 }
 
-CameraController* RenderTab::get_camera_controller() const
+CameraController* ViewportTab::get_camera_controller() const
 {
     return m_camera_controller.get();
 }
 
-ScenePickingHandler* RenderTab::get_scene_picking_handler() const
+ScenePickingHandler* ViewportTab::get_scene_picking_handler() const
 {
     return m_scene_picking_handler.get();
 }
 
-void RenderTab::set_clear_frame_button_enabled(const bool enabled)
+void ViewportTab::set_clear_frame_button_enabled(const bool enabled)
 {
     m_clear_frame_button->setEnabled(enabled);
 }
 
-void RenderTab::set_render_region_buttons_enabled(const bool enabled)
+void ViewportTab::set_render_region_buttons_enabled(const bool enabled)
 {
     m_set_render_region_button->setEnabled(enabled);
     m_clear_render_region_button->setEnabled(enabled);
 }
 
-void RenderTab::clear()
+void ViewportTab::render_began()
 {
-    m_render_widget->clear();
-    m_render_widget->repaint();
+    m_viewport_widget->get_render_layer()->darken();
+    m_viewport_widget->get_light_paths_layer()->update_render_camera_transform();
+    set_light_paths_enabled(false);
+    update();
 }
 
-void RenderTab::darken()
-{
-    m_render_widget->multiply(0.2f);
-}
-
-void RenderTab::reset_zoom()
+void ViewportTab::reset_zoom()
 {
     m_zoom_handler->reset_zoom();
 }
 
-void RenderTab::update()
+void ViewportTab::update()
 {
-    m_render_widget->update();
+    m_viewport_widget->update();
 }
 
-void RenderTab::update_size()
+void ViewportTab::update_size()
 {
     m_set_render_region_button->setChecked(false);
 
     const CanvasProperties& props = m_project.get_frame()->image().properties();
 
-    m_render_widget->resize(
+    m_viewport_widget->resize(
         props.m_canvas_width,
         props.m_canvas_height);
 
     recreate_handlers();
 }
 
-RenderTab::State RenderTab::save_state() const
+ViewportTab::State ViewportTab::save_state() const
 {
     State state;
     state.m_zoom_handler_state = m_zoom_handler->save_state();
@@ -166,64 +169,145 @@ RenderTab::State RenderTab::save_state() const
     return state;
 }
 
-void RenderTab::load_state(const State& state)
+void ViewportTab::load_state(const State& state)
 {
     // The order matters here.
     m_zoom_handler->load_state(state.m_zoom_handler_state);
     m_pan_handler->load_state(state.m_pan_handler_state);
 }
 
-void RenderTab::slot_render_widget_context_menu(const QPoint& point)
+void ViewportTab::set_light_paths_enabled(const bool enabled)
 {
-    emit signal_render_widget_context_menu(m_render_widget->mapToGlobal(point));
+    m_light_paths_toggle_button->setDisabled(!enabled);
+    m_light_paths_manager->set_enabled(enabled);
 }
 
-void RenderTab::slot_toggle_render_region(const bool checked)
+void ViewportTab::slot_base_layer_changed(int index)
+{
+    assert(index < ViewportWidget::BaseLayer::BASE_LAYER_MAX_VALUE);
+    auto base_layer = static_cast<ViewportWidget::BaseLayer>(index);
+
+    switch (base_layer)
+    {
+        case ViewportWidget::BaseLayer::FinalRender:
+            if (m_rendering_manager.is_rendering()
+                && m_rendering_manager.get_rendering_mode() == RenderingManager::RenderingMode::InteractiveRendering)
+                m_camera_controller.get()->set_enabled(true);
+            else
+                m_camera_controller.get()->set_enabled(false);
+            break;
+
+        case ViewportWidget::BaseLayer::OpenGL:
+            m_camera_controller.get()->set_enabled(true);
+            break;
+    }
+}
+
+void ViewportTab::slot_camera_changed()
+{
+
+    m_viewport_widget->get_light_paths_layer()->set_transform(get_camera_controller()->get_transform());
+    m_viewport_widget->get_gl_scene_layer()->set_transform(get_camera_controller()->get_transform());
+    update();
+}
+
+void ViewportTab::slot_toggle_render_region(const bool checked)
 {
     m_scene_picking_handler->set_enabled(!checked);
-    m_render_region_handler->set_mode(
+    m_viewport_selection_handler->set_mode(
         checked
-            ? RenderRegionHandler::RenderRegionMode
-            : RenderRegionHandler::RectangleSelectionMode);
+            ? ViewportRegionSelectionHandler::RenderRegionMode
+            : ViewportRegionSelectionHandler::RectangleSelectionMode);
 }
 
-void RenderTab::slot_set_render_region(const QRect& rect)
+void ViewportTab::slot_set_render_region(const QRect& rect)
 {
     m_set_render_region_button->setChecked(false);
     emit signal_set_render_region(rect);
 }
 
-void RenderTab::slot_toggle_pixel_inspector(const bool checked)
+void ViewportTab::slot_toggle_pixel_inspector(const bool checked)
 {
     m_pixel_inspector_handler->set_enabled(checked);
     m_pixel_inspector_handler->update_tooltip_visibility();
 }
 
-void RenderTab::create_render_widget()
+void ViewportTab::slot_viewport_widget_context_menu(const QPoint& point)
+{
+    emit signal_viewport_widget_context_menu(m_viewport_widget->mapToGlobal(point));
+}
+
+void ViewportTab::create_viewport_widget()
 {
     const CanvasProperties& props = m_project.get_frame()->image().properties();
 
-    m_render_widget =
-        new RenderWidget(
+    m_viewport_widget =
+        new ViewportWidget(
+            m_project,
             props.m_canvas_width,
             props.m_canvas_height,
-            m_ocio_config);
+            m_ocio_config,
+            this);
 
-    m_render_widget->setContextMenuPolicy(Qt::CustomContextMenu);
+    m_viewport_widget->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(
-        m_render_widget, SIGNAL(customContextMenuRequested(const QPoint&)),
-        SLOT(slot_render_widget_context_menu(const QPoint&)));
+        m_viewport_widget, SIGNAL(customContextMenuRequested(const QPoint&)),
+        SLOT(slot_viewport_widget_context_menu(const QPoint&)));
 
-    m_render_widget->setMouseTracking(true);
+    m_viewport_widget->setMouseTracking(true);
 }
 
-void RenderTab::create_toolbar()
+void ViewportTab::create_light_paths_manager(renderer::ParamArray application_settings)
+{
+    m_light_paths_manager = new LightPathsViewportManager(
+        this,
+        m_project,
+        application_settings);
+}
+
+void ViewportTab::create_toolbar()
 {
     // Create the render toolbar.
     m_toolbar = new QToolBar();
     m_toolbar->setObjectName("render_toolbar");
     m_toolbar->setIconSize(QSize(18, 18));
+
+    // Create the label preceding the scene display combo box
+    QLabel* scene_layer_label = new QLabel("Scene Display Mode:");
+    scene_layer_label->setObjectName("display_mode_label");
+    m_toolbar->addWidget(scene_layer_label);
+
+    // Create the scene base layer combo box
+    m_base_layer_combo = new QComboBox();
+    m_base_layer_combo->setObjectName("base_layer_combo");
+    for (int i = 0; i < ViewportWidget::BaseLayer::BASE_LAYER_MAX_VALUE; i++) {
+        m_base_layer_combo->addItem(ViewportWidget::base_layer_string(static_cast<ViewportWidget::BaseLayer>(i)));
+    }
+    m_toolbar->addWidget(m_base_layer_combo);
+    connect(
+        m_base_layer_combo, SIGNAL(activated(int)),
+        m_viewport_widget, SLOT(slot_base_layer_changed(int))
+    );
+    connect(
+        m_base_layer_combo, SIGNAL(activated(int)),
+        SLOT(slot_base_layer_changed(int))
+    );
+
+    m_light_paths_toggle_button = new QToolButton();
+    m_light_paths_toggle_button->setText("Display Light Paths Overlay");
+    m_light_paths_toggle_button->setCheckable(true);
+    m_toolbar->addWidget(m_light_paths_toggle_button);
+    connect(
+        m_light_paths_toggle_button, SIGNAL(toggled(bool)),
+        m_viewport_widget, SLOT(slot_light_paths_toggled(bool))
+    );
+    connect(
+        m_light_paths_toggle_button, SIGNAL(toggled(bool)),
+        m_light_paths_manager, SLOT(slot_light_paths_display_toggled(bool))
+    );
+
+    m_toolbar->addSeparator();
 
     // Save Frame and AOVs button.
     QToolButton* save_aovs_button = new QToolButton();
@@ -318,12 +402,12 @@ void RenderTab::create_toolbar()
     m_toolbar->addSeparator();
 
     // Create the label preceding the display combobox.
-    QLabel* display_label = new QLabel("Display:");
+    QLabel* display_label = new QLabel("Display Transform:");
     display_label->setObjectName("display_label");
     m_toolbar->addWidget(display_label);
 
     // Create the display combobox.
-    QComboBox* m_display_transform_combo = new QComboBox();
+    m_display_transform_combo = new QComboBox();
     m_display_transform_combo->setObjectName("display_combo");
     {
         const char* display_name = m_ocio_config->getDefaultDisplay();
@@ -344,7 +428,7 @@ void RenderTab::create_toolbar()
     m_toolbar->addWidget(m_display_transform_combo);
     connect(
         m_display_transform_combo, SIGNAL(currentIndexChanged(QString)),
-        m_render_widget, SLOT(slot_display_transform_changed(QString)));
+        m_viewport_widget->get_render_layer(), SLOT(slot_display_transform_changed(QString)));
 
     // Add stretchy spacer.
     // This places interactive widgets on the left and info on the right.
@@ -382,7 +466,7 @@ void RenderTab::create_toolbar()
     m_toolbar->addWidget(m_a_label);
 }
 
-void RenderTab::create_scrollarea()
+void ViewportTab::create_scrollarea()
 {
     // Encapsulate the render widget into another widget that adds a margin around it.
     QWidget* render_widget_wrapper = new QWidget();
@@ -390,7 +474,7 @@ void RenderTab::create_scrollarea()
     render_widget_wrapper->setLayout(new QGridLayout());
     render_widget_wrapper->layout()->setSizeConstraint(QLayout::SetFixedSize);
     render_widget_wrapper->layout()->setContentsMargins(20, 20, 20, 20);
-    render_widget_wrapper->layout()->addWidget(m_render_widget);
+    render_widget_wrapper->layout()->addWidget(m_viewport_widget);
 
     // Wrap the render widget in a scroll area.
     m_scroll_area = new QScrollArea();
@@ -399,13 +483,13 @@ void RenderTab::create_scrollarea()
     m_scroll_area->setWidget(render_widget_wrapper);
 }
 
-void RenderTab::recreate_handlers()
+void ViewportTab::recreate_handlers()
 {
     // Handler for zooming the render widget in and out with the keyboard or the mouse wheel.
     m_zoom_handler.reset(
         new WidgetZoomHandler(
             m_scroll_area,
-            m_render_widget));
+            m_viewport_widget));
 
     // Handler for panning the render widget with the mouse.
     m_pan_handler.reset(
@@ -415,13 +499,13 @@ void RenderTab::recreate_handlers()
     // Handler for tracking and displaying mouse coordinates.
     m_mouse_tracker.reset(
         new MouseCoordinatesTracker(
-            m_render_widget,
+            m_viewport_widget,
             m_info_label));
 
-    // Handle for tracking and displaying the color of the pixel under the mouse cursor.
+    // Handler for tracking and displaying the color of the pixel under the mouse cursor.
     m_pixel_color_tracker.reset(
         new PixelColorTracker(
-            m_render_widget,
+            m_viewport_widget,
             m_r_label,
             m_g_label,
             m_b_label,
@@ -432,14 +516,14 @@ void RenderTab::recreate_handlers()
     // Handler for pixel inspection in the render widget.
     m_pixel_inspector_handler.reset(
         new PixelInspectorHandler(
-            m_render_widget,
+            m_viewport_widget,
             *m_mouse_tracker.get(),
             m_project));
 
     // Camera handler.
     m_camera_controller.reset(
         new CameraController(
-            m_render_widget,
+            m_viewport_widget,
             m_project));
     connect(
         m_camera_controller.get(), SIGNAL(signal_camera_change_begin()),
@@ -451,13 +535,16 @@ void RenderTab::recreate_handlers()
         m_camera_controller.get(), SIGNAL(signal_camera_changed()),
         SIGNAL(signal_camera_changed()));
     connect(
+        m_camera_controller.get(), SIGNAL(signal_camera_changed()),
+        SLOT(slot_camera_changed()));
+    connect(
         &m_project_explorer, SIGNAL(signal_frame_modified()),
         m_camera_controller.get(), SLOT(slot_frame_modified()));
 
     // Handler for picking scene entities in the render widget.
     m_scene_picking_handler.reset(
         new ScenePickingHandler(
-            m_render_widget,
+            m_viewport_widget,
             m_picking_mode_combo,
             *m_mouse_tracker.get(),
             m_project_explorer,
@@ -468,21 +555,27 @@ void RenderTab::recreate_handlers()
     connect(
         m_scene_picking_handler.get(), SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
         m_camera_controller.get(), SLOT(slot_entity_picked(renderer::ScenePicker::PickingResult)));
+    connect(
+        m_scene_picking_handler.get(), SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
+        m_light_paths_manager, SLOT(slot_entity_picked(renderer::ScenePicker::PickingResult)));
 
     // Handler for setting render regions with the mouse.
-    m_render_region_handler.reset(
-        new RenderRegionHandler(
-            m_render_widget,
+    m_viewport_selection_handler.reset(
+        new ViewportRegionSelectionHandler(
+            m_viewport_widget,
             *m_mouse_tracker.get()));
     connect(
-        m_render_region_handler.get(), SIGNAL(signal_rectangle_selection(const QRect&)),
+        m_viewport_selection_handler.get(), SIGNAL(signal_rectangle_selection(const QRect&)),
         SIGNAL(signal_rectangle_selection(const QRect&)));
     connect(
-        m_render_region_handler.get(), SIGNAL(signal_render_region(const QRect&)),
+        m_viewport_selection_handler.get(), SIGNAL(signal_rectangle_selection(const QRect&)),
+        m_light_paths_manager, SLOT(slot_rectangle_selection(const QRect&)));
+    connect(
+        m_viewport_selection_handler.get(), SIGNAL(signal_render_region(const QRect&)),
         SLOT(slot_set_render_region(const QRect&)));
 
     // Clipboard handler.
-    m_clipboard_handler.reset(new RenderClipboardHandler(m_render_widget, m_render_widget));
+    m_clipboard_handler.reset(new RenderClipboardHandler(m_viewport_widget, m_viewport_widget));
 
     // Set initial state.
     m_pixel_inspector_handler->set_enabled(false);
@@ -496,7 +589,7 @@ void RenderTab::recreate_handlers()
             m_rendering_manager));
 
     connect(
-        m_render_widget,
+        m_viewport_widget,
         SIGNAL(signal_material_dropped(
             const foundation::Vector2d&,
             const QString&)),
@@ -509,4 +602,4 @@ void RenderTab::recreate_handlers()
 }   // namespace studio
 }   // namespace appleseed
 
-#include "mainwindow/rendering/moc_cpp_rendertab.cxx"
+#include "mainwindow/rendering/moc_cpp_viewporttab.cxx"
