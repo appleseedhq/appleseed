@@ -174,8 +174,8 @@ cmake \
     -DOSL_QUERY_LIBRARY=$THISDIR/lib/liboslquery.dylib \
     -DOSL_COMPILER=$THISDIR/bin/oslc \
     -DOSL_QUERY_INFO=$THISDIR/bin/oslinfo \
-    -DPYTHON_INCLUDE_DIR=/usr/local/Cellar/python@2/2.7.16/Frameworks/Python.framework/Versions/2.7/include/python2.7/ \
-    -DPYTHON_LIBRARY=/usr/local/Cellar/python@2/2.7.16/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
+    -DPYTHON_INCLUDE_DIR=/usr/local/opt/python@2/Frameworks/Python.framework/Versions/2.7/include/python2.7/ \
+    -DPYTHON_LIBRARY=/usr/local/opt/python@2/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
     -DSEEXPR_INCLUDE_DIR=$THISDIR/include \
     -DSEEXPR_LIBRARY=$THISDIR/lib/libSeExpr.dylib \
     -DSEEXPREDITOR_INCLUDE_DIR=$THISDIR/include \
