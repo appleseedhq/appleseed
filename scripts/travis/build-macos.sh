@@ -69,7 +69,7 @@ brew upgrade python@2
 brew link python@2
 brew info python@2
 
-brew install boost boost-python embree llvm@5 lz4 openimageio qt xerces-c zlib
+brew install boost@1.71 boost-python@1.71 embree llvm@5 lz4 openimageio qt xerces-c zlib
 
 mkdir -p $HOME/Library/Python/2.7/lib/python/site-packages
 echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' \
