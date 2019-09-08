@@ -165,6 +165,7 @@ cmake \
     -DCMAKE_PREFIX_PATH=/usr/local/opt/qt \
     -DWITH_DISNEY_MATERIAL=ON \
     -DWITH_EMBREE=ON \
+    -DUSE_SSE42=ON \
     -DUSE_STATIC_BOOST=OFF \
     -DBoost_PYTHON_LIBRARY=/usr/local/lib/libboost_python27.dylib \
     -DOSL_INCLUDE_DIR=$THISDIR/include \
