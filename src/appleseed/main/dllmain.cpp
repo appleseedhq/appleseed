@@ -40,8 +40,6 @@
 #include <fcntl.h>
 #include <io.h>
 
-using namespace std;
-
 namespace
 {
     void redirect(FILE* fp, const char* mode, const DWORD std_device)

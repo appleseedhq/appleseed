@@ -38,7 +38,6 @@
 
 using namespace appleseed::shared;
 using namespace foundation;
-using namespace std;
 
 namespace appleseed {
 namespace convertmeshfile {

@@ -43,7 +43,6 @@
 #endif
 
 using namespace foundation;
-using namespace std;
 
 namespace appleseed {
 namespace shared {
