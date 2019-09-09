@@ -39,7 +39,6 @@
 #include <string>
 
 using namespace renderer;
-using namespace std;
 
 TEST_SUITE(Renderer_Modeling_Input_InputArray)
 {
@@ -50,7 +49,7 @@ TEST_SUITE(Renderer_Modeling_Input_InputArray)
 
         const InputArray::const_iterator i = inputs.find("x");
 
-        EXPECT_EQ("x", string(i.name()));
+        EXPECT_EQ("x", std::string(i.name()));
     }
 
     TEST_CASE(Find_GivenNameOfNonExistingInput_ReturnsEndIterator)

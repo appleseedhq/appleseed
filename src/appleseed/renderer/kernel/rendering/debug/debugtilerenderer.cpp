@@ -48,7 +48,6 @@
 namespace foundation    { class IAbortSwitch; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {

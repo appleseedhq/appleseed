@@ -73,7 +73,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 using OSL::TypeDesc;
 
@@ -1348,7 +1347,7 @@ namespace
             }
             else
             {
-                string msg = "unknown subsurface profile: ";
+                std::string msg = "unknown subsurface profile: ";
                 msg += p->profile.c_str();
                 throw ExceptionOSLRuntimeError(msg.c_str());
             }

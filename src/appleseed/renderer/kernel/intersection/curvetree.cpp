@@ -60,7 +60,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -89,7 +88,7 @@ CurveTree::CurveTree(const Arguments& arguments)
     const MessageContext message_context(
         format("while building curve tree for assembly \"{0}\"", m_arguments.m_assembly.get_path()));
     const ParamArray& params = m_arguments.m_assembly.get_parameters().child("acceleration_structure");
-    const string algorithm = params.get_optional<string>("algorithm", "bvh", make_vector("bvh", "sbvh"), message_context);
+    const std::string algorithm = params.get_optional<std::string>("algorithm", "bvh", make_vector("bvh", "sbvh"), message_context);
     const double time = params.get_optional<double>("time", 0.5);
 
     // Start stopwatch.
@@ -111,7 +110,7 @@ CurveTree::CurveTree(const Arguments& arguments)
             statistics).to_string().c_str());
 }
 
-void CurveTree::collect_curves(vector<GAABB3>& curve_bboxes)
+void CurveTree::collect_curves(std::vector<GAABB3>& curve_bboxes)
 {
     const ObjectInstanceContainer& object_instances = m_arguments.m_assembly.object_instances();
 
@@ -186,7 +185,7 @@ void CurveTree::build_bvh(
         "collecting geometry for curve tree #" FMT_UNIQUE_ID " from assembly \"%s\"...",
         m_arguments.m_curve_tree_uid,
         m_arguments.m_assembly.get_path().c_str());
-    vector<GAABB3> curve_bboxes;
+    std::vector<GAABB3> curve_bboxes;
     collect_curves(curve_bboxes);
 
     // Print statistics about the input geometry.
@@ -197,7 +196,7 @@ void CurveTree::build_bvh(
         plural(m_curve_keys.size(), "curve").c_str());
 
     // Create the partitioner.
-    typedef bvh::SAHPartitioner<vector<GAABB3>> Partitioner;
+    typedef bvh::SAHPartitioner<std::vector<GAABB3>> Partitioner;
     Partitioner partitioner(
         curve_bboxes,
         CurveTreeDefaultMaxLeafSize,
@@ -218,23 +217,23 @@ void CurveTree::build_bvh(
     // Reorder the curve keys based on the nodes ordering.
     if (!m_curves1.empty() || !m_curves3.empty())
     {
-        const vector<size_t>& ordering = partitioner.get_item_ordering();
+        const std::vector<size_t>& ordering = partitioner.get_item_ordering();
         reorder_curve_keys(ordering);
         reorder_curves(ordering);
         reorder_curve_keys_in_leaf_nodes();
     }
 }
 
-void CurveTree::reorder_curve_keys(const vector<size_t>& ordering)
+void CurveTree::reorder_curve_keys(const std::vector<size_t>& ordering)
 {
-    vector<CurveKey> temp_keys(m_curve_keys.size());
+    std::vector<CurveKey> temp_keys(m_curve_keys.size());
     small_item_reorder(&m_curve_keys[0], &temp_keys[0], &ordering[0], ordering.size());
 }
 
-void CurveTree::reorder_curves(const vector<size_t>& ordering)
+void CurveTree::reorder_curves(const std::vector<size_t>& ordering)
 {
-    vector<Curve1Type> new_curves1(m_curves1.size());
-    vector<Curve3Type> new_curves3(m_curves3.size());
+    std::vector<Curve1Type> new_curves1(m_curves1.size());
+    std::vector<Curve3Type> new_curves3(m_curves3.size());
 
     size_t curve1_index = 0;
     size_t curve3_index = 0;
@@ -276,8 +275,8 @@ void CurveTree::reorder_curve_keys_in_leaf_nodes()
         const size_t item_count = m_nodes[i].get_item_count();
 
         // Collect the curve keys for this leaf node.
-        vector<CurveKey> curve1_keys;
-        vector<CurveKey> curve3_keys;
+        std::vector<CurveKey> curve1_keys;
+        std::vector<CurveKey> curve3_keys;
         for (size_t j = 0; j < item_count; ++j)
         {
             const CurveKey& key = m_curve_keys[item_index + j];
@@ -312,9 +311,9 @@ CurveTreeFactory::CurveTreeFactory(const CurveTree::Arguments& arguments)
 {
 }
 
-unique_ptr<CurveTree> CurveTreeFactory::create()
+std::unique_ptr<CurveTree> CurveTreeFactory::create()
 {
-    return unique_ptr<CurveTree>(new CurveTree(m_arguments));
+    return std::unique_ptr<CurveTree>(new CurveTree(m_arguments));
 }
 
 }   // namespace renderer

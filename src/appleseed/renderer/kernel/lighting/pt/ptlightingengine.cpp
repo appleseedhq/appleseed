@@ -75,7 +75,6 @@ namespace renderer  { class PixelContext; }
 namespace renderer  { class TextureCache; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {

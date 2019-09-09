@@ -43,7 +43,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -65,8 +64,8 @@ namespace
         const char*         name,
         const char*         default_value)
     {
-        const string value =
-            params.get_optional<string>(
+        const std::string value =
+            params.get_optional<std::string>(
                 name,
                 default_value,
                 make_vector("mono", "poly"));
@@ -82,8 +81,8 @@ namespace
         const char*         name,
         const char*         default_value)
     {
-        const string value =
-            params.get_optional<string>(
+        const std::string value =
+            params.get_optional<std::string>(
                 name,
                 default_value,
                 make_vector("sppm", "rt", "off"));

@@ -66,7 +66,6 @@
 
 using namespace foundation;
 using namespace OIIO;
-using namespace std;
 
 namespace renderer
 {
@@ -175,7 +174,7 @@ bool RendererComponents::on_frame_begin(
 
 bool RendererComponents::create_lighting_engine_factory()
 {
-    const string name = m_params.get_required<string>("lighting_engine", "pt");
+    const std::string name = m_params.get_required<std::string>("lighting_engine", "pt");
 
     if (name.empty())
     {
@@ -258,7 +257,7 @@ bool RendererComponents::create_lighting_engine_factory()
 
 bool RendererComponents::create_sample_renderer_factory()
 {
-    const string name = m_params.get_required<string>("sample_renderer", "generic");
+    const std::string name = m_params.get_required<std::string>("sample_renderer", "generic");
 
     if (name.empty())
     {
@@ -300,7 +299,7 @@ bool RendererComponents::create_sample_renderer_factory()
 
 bool RendererComponents::create_sample_generator_factory()
 {
-    const string name = m_params.get_optional<string>("sample_generator", "");
+    const std::string name = m_params.get_optional<std::string>("sample_generator", "");
 
     if (name.empty())
     {
@@ -353,7 +352,7 @@ bool RendererComponents::create_sample_generator_factory()
 
 bool RendererComponents::create_pixel_renderer_factory()
 {
-    const string name = m_params.get_optional<string>("pixel_renderer", "");
+    const std::string name = m_params.get_optional<std::string>("pixel_renderer", "");
 
     if (name.empty())
     {
@@ -384,7 +383,7 @@ bool RendererComponents::create_pixel_renderer_factory()
         }
 
         ParamArray tex_sampler_params = get_child_and_inherit_globals(m_params, "texture_controlled_pixel_renderer");
-        const string tex_path = tex_sampler_params.get_optional<string>("file_path", "");
+        const std::string tex_path = tex_sampler_params.get_optional<std::string>("file_path", "");
 
         if (tex_path.empty())
         {
@@ -420,7 +419,7 @@ bool RendererComponents::create_pixel_renderer_factory()
 
 bool RendererComponents::create_shading_result_framebuffer_factory()
 {
-    const string name = m_params.get_optional<string>("shading_result_framebuffer", "ephemeral");
+    const std::string name = m_params.get_optional<std::string>("shading_result_framebuffer", "ephemeral");
 
     if (name.empty())
     {
@@ -449,7 +448,7 @@ bool RendererComponents::create_shading_result_framebuffer_factory()
 
 bool RendererComponents::create_tile_renderer_factory()
 {
-    const string name = m_params.get_optional<string>("tile_renderer", "");
+    const std::string name = m_params.get_optional<std::string>("tile_renderer", "");
 
     if (name.empty())
     {
@@ -522,7 +521,7 @@ bool RendererComponents::create_tile_renderer_factory()
 
 bool RendererComponents::create_frame_renderer_factory()
 {
-    const string name = m_params.get_required<string>("frame_renderer", "generic");
+    const std::string name = m_params.get_required<std::string>("frame_renderer", "generic");
 
     if (name.empty())
     {

@@ -34,7 +34,6 @@
 #include <list>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -45,7 +44,7 @@ namespace
       : public ITileCallback
     {
       public:
-        explicit TileCallbackCollection(list<ITileCallbackFactory*> factories)
+        explicit TileCallbackCollection(std::list<ITileCallbackFactory*> factories)
         {
             for (auto i : factories)
                 m_callbacks.push_back(i->create());
@@ -94,7 +93,7 @@ namespace
         }
 
       private:
-        list<ITileCallback*> m_callbacks;
+        std::list<ITileCallback*> m_callbacks;
     };
 }
 
@@ -105,7 +104,7 @@ namespace
 
 struct TileCallbackCollectionFactory::Impl
 {
-    typedef list<ITileCallbackFactory*> TileCallbackFactoryContainer;
+    typedef std::list<ITileCallbackFactory*> TileCallbackFactoryContainer;
 
     TileCallbackFactoryContainer m_factories;
 };

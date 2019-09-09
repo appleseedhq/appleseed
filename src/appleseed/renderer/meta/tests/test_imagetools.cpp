@@ -49,7 +49,6 @@
 #include <utility>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(ImageTools)
 {
@@ -63,7 +62,7 @@ TEST_SUITE(ImageTools)
         const size_t W = 256;
         const size_t H = 256;
 
-        unique_ptr<Image> output(new Image(W, H, 32, 32, 3, PixelFormatFloat));
+        std::unique_ptr<Image> output(new Image(W, H, 32, 32, 3, PixelFormatFloat));
 
         MersenneTwister rng;
 
@@ -198,14 +197,14 @@ TEST_SUITE(ImageTools)
         }
     };
 
-    unique_ptr<Image> apply(const Image& image, const IOnePixelOp& op)
+    std::unique_ptr<Image> apply(const Image& image, const IOnePixelOp& op)
     {
         const CanvasProperties& props = image.properties();
 
         if (props.m_channel_count != 4)
             throw ExceptionUnsupportedChannelCount();
 
-        unique_ptr<Image> output(new Image(props));
+        std::unique_ptr<Image> output(new Image(props));
 
         for (size_t y = 0; y < props.m_canvas_height; ++y)
         {
@@ -225,7 +224,7 @@ TEST_SUITE(ImageTools)
         return output;
     }
 
-    unique_ptr<Image> apply(const Image& lhs, const Image& rhs, const ITwoPixelOp& op)
+    std::unique_ptr<Image> apply(const Image& lhs, const Image& rhs, const ITwoPixelOp& op)
     {
         const CanvasProperties& lhs_props = lhs.properties();
         const CanvasProperties& rhs_props = rhs.properties();
@@ -238,7 +237,7 @@ TEST_SUITE(ImageTools)
         if (lhs_props.m_channel_count != 4)
             throw ExceptionUnsupportedChannelCount();
 
-        unique_ptr<Image> output(new Image(lhs));
+        std::unique_ptr<Image> output(new Image(lhs));
 
         for (size_t y = 0; y < lhs_props.m_canvas_height; ++y)
         {

@@ -45,7 +45,6 @@
 #include <exception>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -148,7 +147,7 @@ void TileJob::execute(const size_t thread_index)
             m_pass_hash,
             m_abort_switch);
     }
-    catch (const exception&)
+    catch (const std::exception&)
     {
         // Call the post-render tile callback.
         if (tile_callback)

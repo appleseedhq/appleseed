@@ -51,7 +51,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace bf = boost::filesystem;
 
@@ -61,13 +60,13 @@ namespace renderer
 struct PluginStore::Impl
 {
     typedef PluginStore::PluginHandlerType PluginHandlerType;
-    typedef map<string, PluginHandlerType> PluginHandlerMap;
+    typedef std::map<std::string, PluginHandlerType> PluginHandlerMap;
 
     struct PluginDeleter;
-    typedef unique_ptr<Plugin, PluginDeleter> PluginUniquePtr;
+    typedef std::unique_ptr<Plugin, PluginDeleter> PluginUniquePtr;
 
-    typedef map<string, PluginUniquePtr> PluginMap;
-    typedef map<Plugin*, PluginMap::const_iterator> PluginInverseMap;
+    typedef std::map<std::string, PluginUniquePtr> PluginMap;
+    typedef std::map<Plugin*, PluginMap::const_iterator> PluginInverseMap;
 
     struct PluginDeleter
     {
@@ -145,7 +144,7 @@ struct PluginStore::Impl
             // Invoke plugin handlers.
             for (const auto& plugin_handler_item : m_plugin_handlers)
             {
-                const string& entry_point_name = plugin_handler_item.first;
+                const std::string& entry_point_name = plugin_handler_item.first;
                 const PluginHandlerType& plugin_handler = plugin_handler_item.second;
 
                 // If the plugin exposes the expected entry point then pass it to the plugin handler.

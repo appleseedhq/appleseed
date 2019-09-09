@@ -68,7 +68,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 {
@@ -386,7 +385,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         const ComputeRdBetterDipole better_rd_fun(Eta);
 
         const size_t PointCount = 1000;
-        vector<Vector2d> std_points, better_points;
+        std::vector<Vector2d> std_points, better_points;
 
         for (size_t i = 0; i < PointCount; ++i)
         {
@@ -429,7 +428,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         auto_release_ptr<Project> project(ProjectFactory::create("project"));
 
         const ComputeRdStandardDipole rd_fun(1.0f);
-        vector<Vector2d> ai_points, ni_points;
+        std::vector<Vector2d> ai_points, ni_points;
 
         for (size_t i = 0; i < PointCount; ++i)
         {
@@ -477,7 +476,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         auto_release_ptr<Project> project(ProjectFactory::create("project"));
 
         const ComputeRdBetterDipole rd_fun(1.0f);
-        vector<Vector2d> ai_points, ni_points;
+        std::vector<Vector2d> ai_points, ni_points;
 
         for (size_t i = 0; i < PointCount; ++i)
         {
@@ -634,8 +633,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         //
 
         const size_t SampleCount = 1000;
-        vector<Vector2d> points_low_albedo;
-        vector<Vector2d> points_high_albedo;
+        std::vector<Vector2d> points_low_albedo;
+        std::vector<Vector2d> points_high_albedo;
 
         GnuplotFile plotfile;
         plotfile.set_title("Approximations for diffusion length");
@@ -671,9 +670,9 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         const size_t MaxIterations = 50;
         size_t transmitted_count_classical = 0;
         size_t transmitted_count_dwivedi = 0;
-        vector<size_t> iterations_hist_classical(MaxIterations, 0);
-        vector<size_t> iterations_hist_dwivedi(MaxIterations, 0);
-        vector<Vector2d> points;
+        std::vector<size_t> iterations_hist_classical(MaxIterations, 0);
+        std::vector<size_t> iterations_hist_dwivedi(MaxIterations, 0);
+        std::vector<Vector2d> points;
 
         GnuplotFile plotfile;
         plotfile.set_title("Histogram of randomwalk iterations");
@@ -768,7 +767,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_yrange(0.0, 6.0);
 
         const size_t N = 1000;
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
 
         for (size_t i = 0; i < N; ++i)
         {
@@ -791,7 +790,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_yrange(0.0, 20.0);
 
         const size_t N = 1000;
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
 
         for (size_t i = 0; i < N; ++i)
         {
@@ -820,7 +819,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const float s = normalized_diffusion_s_mfp(a);
 
             const size_t N = 1000;
-            vector<Vector2d> points;
+            std::vector<Vector2d> points;
 
             for (size_t j = 0; j < N; ++j)
             {
@@ -868,7 +867,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const float s = normalized_diffusion_s_dmfp(a);
 
             const size_t N = 1000;
-            vector<Vector2d> points;
+            std::vector<Vector2d> points;
 
             for (size_t j = 0; j < N; ++j)
             {
@@ -910,7 +909,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_yrange(0.0, 1.0);
 
         const size_t N = 1000;
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
 
         for (size_t i = 0; i < N; ++i)
         {
@@ -1006,7 +1005,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         auto_release_ptr<Project> project(ProjectFactory::create("project"));
 
         const size_t N = 200;
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
         MersenneTwister rng;
 
         for (size_t i = 0; i < N; ++i)
@@ -1075,7 +1074,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         auto_release_ptr<Project> project(ProjectFactory::create("project"));
 
         const size_t N = 200;
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
         MersenneTwister rng;
 
         for (size_t i = 0; i < N; ++i)
@@ -1154,7 +1153,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         bssrdf_eval.set_values_from_sigmas(sigma_a, sigma_s);
 
         const size_t N = 1000;
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
 
         for (size_t i = 0; i < N; ++i)
         {

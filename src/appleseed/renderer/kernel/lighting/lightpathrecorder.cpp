@@ -57,7 +57,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -66,10 +65,10 @@ APPLESEED_DEFINE_APIARRAY(LightPathArray);
 
 struct LightPathRecorder::Impl
 {
-    const Project&                      m_project;
+    const Project&                                m_project;
 
-    boost::mutex                        m_mutex;
-    vector<unique_ptr<LightPathStream>> m_streams;
+    boost::mutex                                  m_mutex;
+    std::vector<std::unique_ptr<LightPathStream>> m_streams;
 
     // One entry in the index = one pixel in the frame.
     struct IndexEntry
@@ -78,9 +77,9 @@ struct LightPathRecorder::Impl
         size_t  m_end_path;             // index of one path past the last one
     };
 
-    size_t                              m_render_width;
-    size_t                              m_render_height;
-    vector<IndexEntry>                  m_index;
+    size_t                                   m_render_width;
+    size_t                                   m_render_height;
+    std::vector<IndexEntry>                  m_index;
 
     explicit Impl(const Project& project)
       : m_project(project)
@@ -129,7 +128,7 @@ LightPathStream* LightPathRecorder::create_stream()
     boost::mutex::scoped_lock lock(impl->m_mutex);
 
     auto stream = new LightPathStream(impl->m_project);
-    impl->m_streams.push_back(unique_ptr<LightPathStream>(stream));
+    impl->m_streams.push_back(std::unique_ptr<LightPathStream>(stream));
 
     return stream;
 }
@@ -329,7 +328,7 @@ bool LightPathRecorder::write(const char* filename) const
         };
 
         // Initialize index.
-        vector<StoredIndexEntry> stored_index(impl->m_render_width * impl->m_render_height);
+        std::vector<StoredIndexEntry> stored_index(impl->m_render_width * impl->m_render_height);
         for (auto& index_entry : stored_index)
         {
             index_entry.m_start_offset = ~uint64(0);
@@ -349,8 +348,8 @@ bool LightPathRecorder::write(const char* filename) const
         }
 
         // Collect entity names and build (entity name -> name index) dictionary.
-        vector<string> entity_names;
-        map<const Entity*, uint16> entity_name_to_index;
+        std::vector<std::string> entity_names;
+        std::map<const Entity*, uint16> entity_name_to_index;
         for (const auto& vertex : stream->m_vertices)
         {
             if (entity_name_to_index.find(vertex.m_entity) == entity_name_to_index.end())
@@ -358,7 +357,7 @@ bool LightPathRecorder::write(const char* filename) const
                 // Insert a new (entity name -> name index) entry into the dictionary.
                 assert(entity_names.size() < 65536);
                 entity_name_to_index.insert(
-                    make_pair(
+                    std::make_pair(
                         vertex.m_entity,
                         static_cast<uint16>(entity_names.size())));
 

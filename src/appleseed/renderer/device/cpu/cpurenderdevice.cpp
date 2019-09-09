@@ -51,7 +51,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -116,8 +115,8 @@ CPURenderDevice::~CPURenderDevice()
     m_shading_system->release();
     delete m_renderer_services;
 
-    const string stats = m_texture_system->getstats();
-    const string modified_stats = prefix_all_lines(trim_both(stats), "oiio: ");
+    const std::string stats = m_texture_system->getstats();
+    const std::string modified_stats = prefix_all_lines(trim_both(stats), "oiio: ");
     RENDERER_LOG_DEBUG("%s", modified_stats.c_str());
 
     RENDERER_LOG_DEBUG("destroying oiio texture system...");
@@ -134,7 +133,7 @@ bool CPURenderDevice::initialize(
     IAbortSwitch&           abort_switch)
 {
     // Construct a search paths string from the project's search paths.
-    const string project_search_paths =
+    const std::string project_search_paths =
         to_string(get_project().search_paths().to_string_reversed(SearchPaths::osl_path_separator()));
 
     // Initialize OIIO.
@@ -150,7 +149,7 @@ bool CPURenderDevice::initialize(
     m_texture_system->attribute("max_memory_MB", texture_cache_size_mb);
 
     // Set OIIO search paths.
-    string prev_oiio_search_path;
+    std::string prev_oiio_search_path;
     m_texture_system->getattribute("searchpath", prev_oiio_search_path);
     if (prev_oiio_search_path != project_search_paths)
     {
@@ -176,7 +175,7 @@ bool CPURenderDevice::initialize(
             *m_shading_system));
 
     // Set OSL search paths.
-    string prev_osl_search_paths;
+    std::string prev_osl_search_paths;
     m_shading_system->getattribute("searchpath:shader", prev_osl_search_paths);
     if (prev_osl_search_paths != project_search_paths)
     {

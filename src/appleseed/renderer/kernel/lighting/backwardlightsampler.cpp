@@ -44,7 +44,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -90,7 +89,7 @@ BackwardLightSampler::BackwardLightSampler(
   : LightSamplerBase(params)
 {
     // Read which sampling algorithm should be used.
-    m_use_light_tree = params.get_optional<string>("algorithm", "cdf") == "lighttree";
+    m_use_light_tree = params.get_optional<std::string>("algorithm", "cdf") == "lighttree";
 
     RENDERER_LOG_INFO("collecting light emitters...");
 
@@ -170,7 +169,7 @@ BackwardLightSampler::BackwardLightSampler(
         m_light_tree.reset(new LightTree(m_light_tree_lights, m_emitting_shapes));
 
         // Build the light tree.
-        const vector<size_t> tri_index_to_node_index = m_light_tree->build();
+        const std::vector<size_t> tri_index_to_node_index = m_light_tree->build();
         assert(tri_index_to_node_index.size() == m_emitting_shapes.size());
 
         // Associate light tree nodes to emitting shapes.

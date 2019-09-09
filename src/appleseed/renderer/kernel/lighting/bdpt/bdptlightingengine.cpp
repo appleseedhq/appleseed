@@ -47,7 +47,6 @@
 #include "foundation/utility/statistics.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {

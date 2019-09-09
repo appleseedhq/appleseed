@@ -39,7 +39,6 @@
 #include "renderer/modeling/volume/volume.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {

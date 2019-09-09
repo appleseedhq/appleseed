@@ -54,7 +54,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace renderer
 {
@@ -279,7 +278,7 @@ EmbreeScene::EmbreeScene(const EmbreeScene::Arguments& arguments)
         RTCGeometry geometry_handle;
 
         // Set per instance data.
-        unique_ptr<EmbreeGeometryData> geometry_data(new EmbreeGeometryData());
+        std::unique_ptr<EmbreeGeometryData> geometry_data(new EmbreeGeometryData());
         geometry_data->m_object_instance_idx = instance_idx;
         geometry_data->m_vis_flags = object_instance->get_vis_flags();
 
@@ -508,9 +507,9 @@ EmbreeSceneFactory::EmbreeSceneFactory(const EmbreeScene::Arguments& arguments)
 {
 }
 
-unique_ptr<EmbreeScene> EmbreeSceneFactory::create()
+std::unique_ptr<EmbreeScene> EmbreeSceneFactory::create()
 {
-    return unique_ptr<EmbreeScene>(new EmbreeScene(m_arguments));
+    return std::unique_ptr<EmbreeScene>(new EmbreeScene(m_arguments));
 }
 
 }   // namespace renderer
