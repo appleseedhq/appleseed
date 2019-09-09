@@ -57,7 +57,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -84,11 +83,11 @@ namespace
             const EntityDefMessageContext context("texture", this);
 
             // Establish and store the qualified path to the texture file.
-            m_filepath = to_string(search_paths.qualify(m_params.get_required<string>("filename", "")));
+            m_filepath = to_string(search_paths.qualify(m_params.get_required<std::string>("filename", "")));
 
             // Retrieve the color space.
-            const string color_space =
-                m_params.get_required<string>(
+            const std::string color_space =
+                m_params.get_required<std::string>(
                     "color_space",
                     "linear_rgb",
                     make_vector("linear_rgb", "srgb", "ciexyz"),
@@ -175,7 +174,7 @@ namespace
         }
 
       private:
-        string                              m_filepath;
+        std::string                         m_filepath;
         ColorSpace                          m_color_space;
 
         mutable boost::mutex                m_mutex;

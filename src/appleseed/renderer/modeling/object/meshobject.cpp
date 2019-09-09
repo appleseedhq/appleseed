@@ -48,7 +48,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -65,7 +64,7 @@ namespace
 struct MeshObject::Impl
 {
     StaticTriangleTess          m_tess;
-    vector<string>              m_material_slots;
+    std::vector<std::string>    m_material_slots;
 };
 
 MeshObject::MeshObject(

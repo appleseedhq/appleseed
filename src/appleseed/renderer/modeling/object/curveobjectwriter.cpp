@@ -53,7 +53,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -120,12 +119,12 @@ namespace
         const CurveObject&  m_object;
 
         // Curve parameters for writing.
-        size_t              m_curve_count;
-        vector<size_t>      m_vertex_counts;
-        vector<GVector3>    m_vertices;
-        vector<GScalar>     m_widths;
-        vector<GScalar>     m_opacities;
-        vector<Color3f>     m_colors;
+        size_t                   m_curve_count;
+        std::vector<size_t>      m_vertex_counts;
+        std::vector<GVector3>    m_vertices;
+        std::vector<GScalar>     m_widths;
+        std::vector<GScalar>     m_opacities;
+        std::vector<Color3f>     m_colors;
 
         // Global stats.
         size_t              m_total_vertex_count;
@@ -235,7 +234,7 @@ bool CurveObjectWriter::write(
     {
         writer.write(walker);
     }
-    catch (const exception& e)
+    catch (const std::exception& e)
     {
         RENDERER_LOG_ERROR("failed to write curve file %s: %s.", filepath, e.what());
         return false;

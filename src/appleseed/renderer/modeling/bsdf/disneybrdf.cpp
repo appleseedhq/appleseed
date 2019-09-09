@@ -60,7 +60,6 @@ namespace renderer      { class Project; }
 namespace renderer      { class ShadingPoint; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {

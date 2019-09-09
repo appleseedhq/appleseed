@@ -56,7 +56,6 @@ namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class OnRenderBeginRecorder; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -146,7 +145,7 @@ namespace
             if (!PerspectiveCamera::on_render_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            const string projection_type = m_params.get_required<string>("projection_type", "equisolid_angle");
+            const std::string projection_type = m_params.get_required<std::string>("projection_type", "equisolid_angle");
 
             if (projection_type == "equisolid_angle")
                  m_projection_type = Projection::EquisolidAngle;

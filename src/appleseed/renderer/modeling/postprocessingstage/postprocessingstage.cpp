@@ -34,7 +34,6 @@
 #include "renderer/utility/paramarray.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {

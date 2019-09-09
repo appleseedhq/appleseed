@@ -98,7 +98,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -522,8 +521,8 @@ namespace
 
                 ParamArray& params = bsdf.get_parameters();
 
-                const string mdf = params.get_optional<string>("mdf", "");
-                const string mdf_param = params.get_optional<string>("mdf_parameter", "");
+                const std::string mdf = params.get_optional<std::string>("mdf", "");
+                const std::string mdf_param = params.get_optional<std::string>("mdf_parameter", "");
 
                 if (mdf_param.empty())
                     continue;
@@ -599,7 +598,7 @@ namespace
             }
         }
 
-        static bool try_parse_scalar(const string& s, float& value)
+        static bool try_parse_scalar(const std::string& s, float& value)
         {
             try
             {
@@ -612,7 +611,7 @@ namespace
             }
         }
 
-        static ColorEntity* find_color_entity(const Assembly& assembly, const string& name)
+        static ColorEntity* find_color_entity(const Assembly& assembly, const std::string& name)
         {
             for (each<ColorContainer> i = assembly.colors(); i; ++i)
             {
@@ -631,7 +630,7 @@ namespace
             return find_color_entity(*parent_scene, name);
         }
 
-        static ColorEntity* find_color_entity(const Scene& scene, const string& name)
+        static ColorEntity* find_color_entity(const Scene& scene, const std::string& name)
         {
             for (each<ColorContainer> i = scene.colors(); i; ++i)
             {
@@ -642,7 +641,7 @@ namespace
             return nullptr;
         }
 
-        static bool mdf_param_to_glossiness(const string& mdf, const float mdf_param, float& glossiness)
+        static bool mdf_param_to_glossiness(const std::string& mdf, const float mdf_param, float& glossiness)
         {
             if (mdf == "blinn")
             {
@@ -718,18 +717,18 @@ namespace
 
             if (object && object->get_material_slot_count() == 1)
             {
-                const string slot_name = object->get_material_slot(0);
+                const std::string slot_name = object->get_material_slot(0);
 
                 rebuild_material_mappings(object_instance.get_front_material_mappings(), slot_name);
                 rebuild_material_mappings(object_instance.get_back_material_mappings(), slot_name);
             }
         }
 
-        static void rebuild_material_mappings(StringDictionary& mappings, const string& slot_name)
+        static void rebuild_material_mappings(StringDictionary& mappings, const std::string& slot_name)
         {
             if (!mappings.empty())
             {
-                const string material_name = mappings.begin().value();
+                const std::string material_name = mappings.begin().value();
 
                 mappings.clear();
                 mappings.insert(slot_name, material_name);
@@ -812,23 +811,23 @@ namespace
       private:
         struct MaterialInfo
         {
-            bool        m_updated;
-            Material*   m_material;
-            BSDF*       m_bsdf;
-            string      m_bsdf_reflectance;
-            string      m_bsdf_reflectance_multiplier;
-            string      m_bsdf_transmittance;
-            string      m_bsdf_transmittance_multiplier;
-            string      m_bsdf_fresnel_multiplier;
-            float       m_bsdf_from_ior;
-            float       m_bsdf_to_ior;
-            string      m_bssrdf;
-            string      m_edf;
-            string      m_alpha_map;
-            string      m_displacement_map;
-            string      m_displacement_method;
-            string      m_bump_amplitude;
-            string      m_normal_map_up;
+            bool          m_updated;
+            Material*     m_material;
+            BSDF*         m_bsdf;
+            std::string   m_bsdf_reflectance;
+            std::string   m_bsdf_reflectance_multiplier;
+            std::string   m_bsdf_transmittance;
+            std::string   m_bsdf_transmittance_multiplier;
+            std::string   m_bsdf_fresnel_multiplier;
+            float         m_bsdf_from_ior;
+            float         m_bsdf_to_ior;
+            std::string   m_bssrdf;
+            std::string   m_edf;
+            std::string   m_alpha_map;
+            std::string   m_displacement_map;
+            std::string   m_displacement_method;
+            std::string   m_bump_amplitude;
+            std::string   m_normal_map_up;
         };
 
         static void visit(AssemblyContainer& assemblies)
@@ -845,15 +844,15 @@ namespace
 
         static void update(Assembly& assembly)
         {
-            vector<MaterialInfo> materials;
+            std::vector<MaterialInfo> materials;
             collect_refractive_materials(assembly, materials);
 
-            for (each<vector<MaterialInfo>> i = materials; i; ++i)
+            for (each<std::vector<MaterialInfo>> i = materials; i; ++i)
             {
                 if (i->m_updated)
                     continue;
 
-                for (each<vector<MaterialInfo>> j = succ(i); j; ++j)
+                for (each<std::vector<MaterialInfo>> j = succ(i); j; ++j)
                 {
                     if (j->m_updated)
                         continue;
@@ -878,7 +877,7 @@ namespace
                         assembly.bsdfs().insert(bsdf_owner);
 
                         // Rename mat1.
-                        const string old_mat1_name = mat1.m_material->get_name();
+                        const std::string old_mat1_name = mat1.m_material->get_name();
                         cleanup_entity_name(*mat1.m_material);
                         update_material_mappings(
                             assembly.object_instances(),
@@ -920,7 +919,7 @@ namespace
             }
         }
 
-        static void collect_refractive_materials(Assembly& assembly, vector<MaterialInfo>& materials)
+        static void collect_refractive_materials(Assembly& assembly, std::vector<MaterialInfo>& materials)
         {
             for (each<MaterialContainer> i = assembly.materials(); i; ++i)
             {
@@ -934,7 +933,7 @@ namespace
                 if (!material_params.strings().exist("bsdf"))
                     continue;
 
-                const string bsdf_name = material_params.get<string>("bsdf");
+                const std::string bsdf_name = material_params.get<std::string>("bsdf");
                 BSDF* bsdf = assembly.bsdfs().get_by_name(bsdf_name.c_str());
 
                 if (bsdf == nullptr)
@@ -957,20 +956,20 @@ namespace
                 info.m_updated = false;
                 info.m_material = &material;
                 info.m_bsdf = bsdf;
-                info.m_bsdf_reflectance = bsdf_params.get<string>("reflectance");
-                info.m_bsdf_reflectance_multiplier = bsdf_params.get_optional<string>("reflectance_multiplier", "1.0");
-                info.m_bsdf_transmittance = bsdf_params.get<string>("transmittance");
-                info.m_bsdf_transmittance_multiplier = bsdf_params.get_optional<string>("transmittance_multiplier", "1.0");
-                info.m_bsdf_fresnel_multiplier = bsdf_params.get_optional<string>("fresnel_multiplier", "1.0");
+                info.m_bsdf_reflectance = bsdf_params.get<std::string>("reflectance");
+                info.m_bsdf_reflectance_multiplier = bsdf_params.get_optional<std::string>("reflectance_multiplier", "1.0");
+                info.m_bsdf_transmittance = bsdf_params.get<std::string>("transmittance");
+                info.m_bsdf_transmittance_multiplier = bsdf_params.get_optional<std::string>("transmittance_multiplier", "1.0");
+                info.m_bsdf_fresnel_multiplier = bsdf_params.get_optional<std::string>("fresnel_multiplier", "1.0");
                 info.m_bsdf_from_ior = bsdf_params.get<float>("from_ior");
                 info.m_bsdf_to_ior = bsdf_params.get<float>("to_ior");
-                info.m_bssrdf = material_params.get_optional<string>("bssrdf", "");
-                info.m_edf = material_params.get_optional<string>("edf", "");
-                info.m_alpha_map = material_params.get_optional<string>("alpha_map", "");
-                info.m_displacement_map = material_params.get_optional<string>("displacement_map", "");
-                info.m_displacement_method = material_params.get_optional<string>("displacement_method", "");
-                info.m_bump_amplitude = material_params.get_optional<string>("bump_amplitude", "");
-                info.m_normal_map_up = material_params.get_optional<string>("normal_map_up", "");
+                info.m_bssrdf = material_params.get_optional<std::string>("bssrdf", "");
+                info.m_edf = material_params.get_optional<std::string>("edf", "");
+                info.m_alpha_map = material_params.get_optional<std::string>("alpha_map", "");
+                info.m_displacement_map = material_params.get_optional<std::string>("displacement_map", "");
+                info.m_displacement_method = material_params.get_optional<std::string>("displacement_method", "");
+                info.m_bump_amplitude = material_params.get_optional<std::string>("bump_amplitude", "");
+                info.m_normal_map_up = material_params.get_optional<std::string>("normal_map_up", "");
 
                 materials.push_back(info);
             }
@@ -999,7 +998,7 @@ namespace
 
         static void cleanup_entity_name(Entity& entity)
         {
-            string name = entity.get_name();
+            std::string name = entity.get_name();
             name = replace(name, "_front_", "");
             name = replace(name, "_front", "");
             name = replace(name, "front_", "");
@@ -1425,7 +1424,7 @@ namespace
         {
             ParamArray& params = configuration.get_parameters();
 
-            if (params.get_optional<string>("lighting_engine") == "drt")
+            if (params.get_optional<std::string>("lighting_engine") == "drt")
             {
                 // The project was using DRT: switch to PT.
                 params.insert_path("lighting_engine", "pt");
@@ -1815,7 +1814,7 @@ namespace
                 // There cannot be any other post-processing stage at this point.
                 assert(frame.post_processing_stages().empty());
 
-                const string format_string = params.get_optional<string>("render_stamp_format");
+                const std::string format_string = params.get_optional<std::string>("render_stamp_format");
                 frame.post_processing_stages().insert(
                     RenderStampPostProcessingStageFactory().create(
                         "render_stamp",
@@ -1966,7 +1965,7 @@ namespace
                     ParamArray& params = stage.get_parameters();
                     if (params.strings().exist("format_string"))
                     {
-                        string format_string = params.get<string>("format_string");
+                        std::string format_string = params.get<std::string>("format_string");
                         format_string = replace(format_string, "{lib-variant}", "{lib-cpu-features}");
                         params.set("format_string", format_string);
                     }
@@ -2004,7 +2003,7 @@ namespace
             const char* DefaultFilterName = "blackman-harris";
 
             ParamArray& params = frame.get_parameters();
-            const string filter_name = params.get_optional<string>("filter", DefaultFilterName);
+            const std::string filter_name = params.get_optional<std::string>("filter", DefaultFilterName);
 
             const bool update_filter =
                 filter_name == "mitchell" ||
@@ -2111,7 +2110,7 @@ namespace
                         const uint64 max_samples = pfr.strings().get<uint64>("max_samples");
                         pfr.strings().remove("max_samples");
 
-                        if (max_samples < numeric_limits<uint64>::max())
+                        if (max_samples < std::numeric_limits<uint64>::max())
                         {
                             Frame* frame = m_project.get_frame();
                             if (frame)
@@ -2160,7 +2159,7 @@ namespace
 
             if (params.strings().exist("mdf"))
             {
-                const string mdf = params.strings().get<string>("mdf");
+                const std::string mdf = params.strings().get<std::string>("mdf");
                 params.strings().remove("mdf");
                 if (mdf != "ggx")
                 {

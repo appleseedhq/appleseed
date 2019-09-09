@@ -55,7 +55,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -170,17 +169,17 @@ namespace
             }
         };
 
-        unique_ptr<DummyTexture>    m_dummy_texture;
-        auto_release_ptr<Image>     m_image;
-        ColorSpace                  m_color_space;
+        std::unique_ptr<DummyTexture>    m_dummy_texture;
+        auto_release_ptr<Image>          m_image;
+        ColorSpace                       m_color_space;
 
         void extract_parameters()
         {
             const EntityDefMessageContext context("texture", this);
 
             // Retrieve the color space.
-            const string color_space =
-                m_params.get_required<string>(
+            const std::string color_space =
+                m_params.get_required<std::string>(
                     "color_space",
                     "linear_rgb",
                     make_vector("linear_rgb", "srgb", "ciexyz"),

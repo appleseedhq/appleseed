@@ -77,7 +77,6 @@ namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class OnRenderBeginRecorder; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -417,10 +416,10 @@ namespace
         double              m_rcp_focal_ratio;          // focal length / focal distance
 
         // Vertices of the diaphragm polygon.
-        vector<Vector2d>    m_diaphragm_vertices;
+        std::vector<Vector2d>    m_diaphragm_vertices;
 
         // Importance sampler to sample the diaphragm map.
-        unique_ptr<ImageImportanceSamplerType>
+        std::unique_ptr<ImageImportanceSamplerType>
                             m_importance_sampler;
 
         void extract_diaphragm_blade_count()
@@ -534,7 +533,7 @@ namespace
             ray.m_org = transform.get_local_to_parent().extract_translation();
             ray.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(m_autofocus_target)));
             ray.m_tmin = 0.0;
-            ray.m_tmax = numeric_limits<double>::max();
+            ray.m_tmax = std::numeric_limits<double>::max();
             ray.m_time =
                 ShadingRay::Time::create_with_normalized_time(
                     0.5f,

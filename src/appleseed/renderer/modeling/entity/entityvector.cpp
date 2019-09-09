@@ -39,16 +39,15 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
 
 struct EntityVector::Impl
 {
-    typedef vector<Entity*> Storage;
-    typedef map<UniqueID, size_t> IDIndex;
-    typedef map<string, size_t> NameIndex;
+    typedef std::vector<Entity*> Storage;
+    typedef std::map<UniqueID, size_t> IDIndex;
+    typedef std::map<std::string, size_t> NameIndex;
 
     Storage     m_storage;
     IDIndex     m_id_index;

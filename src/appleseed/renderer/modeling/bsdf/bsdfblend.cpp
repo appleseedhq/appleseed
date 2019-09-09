@@ -61,7 +61,6 @@ namespace renderer      { class Project; }
 namespace renderer      { class ShadingPoint; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -114,13 +113,13 @@ namespace
             if (m_bsdf[0] == nullptr)
             {
                 RENDERER_LOG_ERROR("while preparing bsdf \"%s\": cannot find bsdf \"%s\".",
-                    get_path().c_str(), m_params.get_optional<string>("bsdf0", "").c_str());
+                    get_path().c_str(), m_params.get_optional<std::string>("bsdf0", "").c_str());
             }
 
             if (m_bsdf[1] == nullptr)
             {
                 RENDERER_LOG_ERROR("while preparing bsdf \"%s\": cannot find bsdf \"%s\".",
-                    get_path().c_str(), m_params.get_optional<string>("bsdf1", "").c_str());
+                    get_path().c_str(), m_params.get_optional<std::string>("bsdf1", "").c_str());
             }
 
             if (m_bsdf[0] == nullptr || m_bsdf[1] == nullptr)

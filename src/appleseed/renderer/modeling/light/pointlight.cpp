@@ -52,7 +52,6 @@ namespace renderer      { class Project; }
 namespace renderer      { class ShadingContext; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {

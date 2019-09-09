@@ -52,7 +52,6 @@
 #include <utility>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {

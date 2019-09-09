@@ -66,7 +66,6 @@ namespace renderer  { class BSSRDFSample; }
 namespace renderer  { class ShadingContext; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -110,7 +109,7 @@ namespace
             m_inputs.declare("volume_anisotropy", InputFormatFloat, "0.0");
             m_inputs.declare("surface_roughness", InputFormatFloat, "0.01");
 
-            const string lambertian_brdf_name = string(name) + "_lambertian_brdf";
+            const std::string lambertian_brdf_name = std::string(name) + "_lambertian_brdf";
             m_lambertian_brdf = LambertianBRDFFactory().create(lambertian_brdf_name.c_str(), ParamArray());
             m_lambertian_brdf_data.m_reflectance.set(1.0f);
             m_lambertian_brdf_data.m_reflectance_multiplier = 1.0f;
@@ -139,8 +138,8 @@ namespace
 
             const OnFrameBeginMessageContext context("bssrdf", this);
 
-            const string surface_bsdf =
-                m_params.get_optional<string>(
+            const std::string surface_bsdf =
+                m_params.get_optional<std::string>(
                     "surface_bsdf_model",
                     "diffuse",
                     make_vector("diffuse", "glass"),
@@ -452,7 +451,7 @@ namespace
             const char*             bssrdf_name,
             const char*             mdf_name)
         {
-            const string glass_bsdf_name = string(bssrdf_name) + "_glass_bsdf_" + mdf_name;
+            const std::string glass_bsdf_name = std::string(bssrdf_name) + "_glass_bsdf_" + mdf_name;
 
             auto_release_ptr<BSDF> bsdf =
                 GlassBSDFFactory().create(

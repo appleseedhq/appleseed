@@ -68,7 +68,6 @@
 namespace foundation    { class IAbortSwitch; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -513,27 +512,27 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            Spectrum            m_rm;                           // matte reflectance of the substrate
-            float               m_rm_multiplier;                // matte reflectance multiplier
-            Spectrum            m_rs;                           // specular reflectance at normal incidence
-            float               m_rs_multiplier;                // specular reflectance multiplier
-            float               m_roughness;                    // technically, root-mean-square of the microfacets slopes
+            Spectrum                 m_rm;                           // matte reflectance of the substrate
+            float                    m_rm_multiplier;                // matte reflectance multiplier
+            Spectrum                 m_rs;                           // specular reflectance at normal incidence
+            float                    m_rs_multiplier;                // specular reflectance multiplier
+            float                    m_roughness;                    // technically, root-mean-square of the microfacets slopes
         };
 
         typedef WardMDFAdapter MDFType;
 
-        unique_ptr<MDFType>     m_mdf;                          // Microfacet Distribution Function
-        Spectrum                m_a_spec[AlbedoTableSize];      // albedo of the specular component as V varies
-        Spectrum                m_s;                            // normalization constant for the matte component
+        std::unique_ptr<MDFType>     m_mdf;                          // Microfacet Distribution Function
+        Spectrum                     m_a_spec[AlbedoTableSize];      // albedo of the specular component as V varies
+        Spectrum                     m_s;                            // normalization constant for the matte component
 
         // Evaluate the specular component of the BRDF (equation 3).
         template <typename MDF>
         static void evaluate_fr_spec(
-            const MDF&          mdf,
-            const Spectrum&     rs,
-            const float         dot_HL,     // cos_beta in the paper
-            const float         dot_HN,
-            Spectrum&           fr_spec)
+            const MDF&               mdf,
+            const Spectrum&          rs,
+            const float              dot_HL,     // cos_beta in the paper
+            const float              dot_HN,
+            Spectrum&                fr_spec)
         {
             assert(dot_HL >  0.0f);
             assert(dot_HN >= 0.0f);
@@ -688,7 +687,7 @@ namespace
 
         template <typename MDF>
         static void generate_specular_albedo_plot_data(
-            const string&       mdf_name,
+            const std::string&  mdf_name,
             const float         m,
             const MDF&          mdf,
             const Spectrum&     rs)
@@ -696,7 +695,7 @@ namespace
             Spectrum a_spec[AlbedoTableSize];
             compute_specular_albedo(mdf, rs, a_spec);
 
-            vector<Vector2f> tabulated_albedos(AlbedoTableSize);
+            std::vector<Vector2f> tabulated_albedos(AlbedoTableSize);
 
             for (size_t i = 0; i < AlbedoTableSize; ++i)
             {
@@ -707,7 +706,7 @@ namespace
             }
 
             const size_t PointCount = 256;
-            vector<Vector2f> reconstructed_albedos(PointCount);
+            std::vector<Vector2f> reconstructed_albedos(PointCount);
 
             for (size_t i = 0; i < PointCount; ++i)
             {
@@ -738,7 +737,7 @@ namespace
                 .set_style("lines")
                 .set_color("blue");
 
-            stringstream filename;
+            std::stringstream filename;
             filename << "kelemen_albedo";
             filename << "_" << lower_case(mdf_name);
             filename << "_" << replace(to_string(m), ".", "_");

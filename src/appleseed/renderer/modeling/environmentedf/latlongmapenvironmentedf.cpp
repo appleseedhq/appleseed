@@ -76,7 +76,6 @@ namespace renderer  { class OnFrameBeginRecorder; }
 namespace renderer  { class OnRenderBeginRecorder; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -407,7 +406,7 @@ namespace
         float   m_rcp_importance_map_height;
         float   m_probability_scale;
 
-        unique_ptr<ImageImportanceSamplerType> m_importance_sampler;
+        std::unique_ptr<ImageImportanceSamplerType> m_importance_sampler;
 
         void build_importance_map(const Scene& scene, IAbortSwitch* abort_switch)
         {

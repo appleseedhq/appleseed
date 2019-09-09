@@ -59,7 +59,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -249,8 +248,8 @@ IBasisModifier* Material::create_basis_modifier(const MessageContext& context) c
     }
 
     // Retrieve the displacement method.
-    const string displacement_method =
-        m_params.get_required<string>(
+    const std::string displacement_method =
+        m_params.get_required<std::string>(
             "displacement_method",
             "bump",
             make_vector("bump", "normal"),
@@ -266,7 +265,7 @@ IBasisModifier* Material::create_basis_modifier(const MessageContext& context) c
     else
     {
         const NormalMappingModifier::UpVector up_vector =
-            m_params.get_optional<string>("normal_map_up", "z", make_vector("y", "z"), context) == "y"
+            m_params.get_optional<std::string>("normal_map_up", "z", make_vector("y", "z"), context) == "y"
                 ? NormalMappingModifier::UpVectorY
                 : NormalMappingModifier::UpVectorZ;
         return new NormalMappingModifier(displacement_source, up_vector);

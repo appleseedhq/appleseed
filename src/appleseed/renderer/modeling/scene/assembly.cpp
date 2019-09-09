@@ -55,7 +55,6 @@
 #include "foundation/utility/job/abortswitch.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -299,7 +298,7 @@ bool Assembly::on_frame_begin(
         const ObjectInstance* object_instance = object_instances().get_by_index(i);
         const Object& object = object_instance->get_object();
         if (dynamic_cast<const ProceduralObject*>(&object) != nullptr)
-            m_render_data.m_procedural_object_instances.push_back(make_pair(object_instance, i));
+            m_render_data.m_procedural_object_instances.push_back(std::make_pair(object_instance, i));
     }
     m_has_render_data = true;
 

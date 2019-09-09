@@ -45,7 +45,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -135,7 +134,7 @@ void ColorEntity::extract_parameters()
     // Retrieve the color space.
     const ColorSpace DefaultColorSpace = ColorSpaceSRGB;
     const char* DefaultColorSpaceName = color_space_name(DefaultColorSpace);
-    const string color_space = m_params.get_required<string>("color_space", DefaultColorSpaceName);
+    const std::string color_space = m_params.get_required<std::string>("color_space", DefaultColorSpaceName);
     if (color_space == "linear_rgb")
         impl->m_color_space = ColorSpaceLinearRGB;
     else if (color_space == "srgb")

@@ -49,7 +49,6 @@
 namespace foundation    { class Arena; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {

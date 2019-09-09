@@ -49,7 +49,6 @@
 #include <limits>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -179,7 +178,7 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
     ShadingRay ray;
     ray.m_org = original_ray.m_org;
     ray.m_tmin = original_ray.m_tmin;
-    ray.m_tmax = numeric_limits<double>::max();
+    ray.m_tmax = std::numeric_limits<double>::max();
     ray.m_time = original_ray.m_time;
     ray.m_flags = VisibilityFlags::ProbeRay;
     ray.m_depth = original_ray.m_depth;

@@ -60,7 +60,6 @@
 namespace renderer  { class Material; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -343,7 +342,7 @@ SeparableBSSRDF::SeparableBSSRDF(
     const ParamArray&       params)
   : BSSRDF(name, params)
 {
-    const string brdf_name = string(name) + "_brdf";
+    const std::string brdf_name = std::string(name) + "_brdf";
     m_brdf = LambertianBRDFFactory().create(brdf_name.c_str(), ParamArray()).release();
     m_brdf_data.m_reflectance.set(1.0f);
     m_brdf_data.m_reflectance_multiplier = 1.0f;
