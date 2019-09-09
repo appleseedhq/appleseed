@@ -39,7 +39,6 @@
 
 namespace bpy = boost::python;
 using namespace foundation;
-using namespace std;
 
 namespace
 {
@@ -52,7 +51,7 @@ namespace
             bpy::throw_error_already_set();
         }
 
-        unique_ptr<UnalignedMatrix44<T>> r(new UnalignedMatrix44<T>());
+        std::unique_ptr<UnalignedMatrix44<T>> r(new UnalignedMatrix44<T>());
 
         for (size_t i = 0; i < 4 * 4; ++i)
         {

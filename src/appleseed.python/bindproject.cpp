@@ -63,7 +63,6 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 // Work around a regression in Visual Studio 2015 Update 3.
 #if defined(_MSC_VER) && _MSC_VER == 1900
@@ -76,7 +75,7 @@ namespace boost
 
 namespace
 {
-    auto_release_ptr<Project> create_project(const string& name)
+    auto_release_ptr<Project> create_project(const std::string& name)
     {
         return ProjectFactory::create(name.c_str());
     }
@@ -160,13 +159,13 @@ namespace
         return ProjectFileWriter::write(*project, filepath, opts, extra_comments);
     }
 
-    auto_release_ptr<Configuration> create_config(const string& name)
+    auto_release_ptr<Configuration> create_config(const std::string& name)
     {
         return ConfigurationFactory::create(name.c_str());
     }
 
     auto_release_ptr<Configuration> create_config_with_params(
-        const string&                       name,
+        const std::string&                  name,
         const bpy::dict&                    params)
     {
         return ConfigurationFactory::create(name.c_str(), bpy_dict_to_param_array(params));
@@ -282,10 +281,10 @@ namespace
         return bpy::object(project);
     }
 
-    string qualify_path(const Project* project, const char* filepath)
+    std::string qualify_path(const Project* project, const char* filepath)
     {
         const SearchPaths& search_paths = project->search_paths();
-        return string(search_paths.qualify(filepath).c_str());
+        return std::string(search_paths.qualify(filepath).c_str());
     }
 }
 

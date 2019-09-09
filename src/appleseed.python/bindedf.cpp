@@ -41,7 +41,6 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 // Work around a regression in Visual Studio 2015 Update 3.
 #if defined(_MSC_VER) && _MSC_VER == 1900
@@ -56,9 +55,9 @@ namespace boost
 namespace
 {
     auto_release_ptr<EDF> create_edf(
-        const string&      model,
-        const string&      name,
-        const bpy::dict&   params)
+        const std::string&    model,
+        const std::string&    name,
+        const bpy::dict&      params)
     {
         EDFFactoryRegistrar factories;
         const IEDFFactory* factory = factories.lookup(model.c_str());

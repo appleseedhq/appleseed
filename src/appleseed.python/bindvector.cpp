@@ -39,7 +39,6 @@
 
 namespace bpy = boost::python;
 using namespace foundation;
-using namespace std;
 
 namespace
 {
@@ -52,7 +51,7 @@ namespace
             bpy::throw_error_already_set();
         }
 
-        unique_ptr<Vector<T, N>> r(new Vector<T, N>());
+        std::unique_ptr<Vector<T, N>> r(new Vector<T, N>());
 
         for (size_t i = 0; i < N; ++i)
         {

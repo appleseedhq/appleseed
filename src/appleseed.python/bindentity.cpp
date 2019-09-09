@@ -49,7 +49,6 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 // Work around a regression in Visual Studio 2015 Update 3.
 #if defined(_MSC_VER) && _MSC_VER == 1900

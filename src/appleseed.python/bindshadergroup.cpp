@@ -46,7 +46,6 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 // Work around a regression in Visual Studio 2015 Update 3.
 #if defined(_MSC_VER) && _MSC_VER == 1900
@@ -58,28 +57,28 @@ namespace boost
 
 namespace
 {
-    auto_release_ptr<ShaderGroup> create_shader_group(const string& name)
+    auto_release_ptr<ShaderGroup> create_shader_group(const std::string& name)
     {
         return ShaderGroupFactory::create(name.c_str());
     }
 
     void add_shader(
-        ShaderGroup*   sg,
-        const string&  type,
-        const string&  name,
-        const string&  layer,
-        bpy::dict      params)
+        ShaderGroup*        sg,
+        const std::string&  type,
+        const std::string&  name,
+        const std::string&  layer,
+        bpy::dict           params)
     {
         sg->add_shader(type.c_str(), name.c_str(), layer.c_str(), bpy_dict_to_param_array(params));
     }
 
     void add_source_shader(
-        ShaderGroup*   sg,
-        const string&  type,
-        const string&  name,
-        const string&  layer,
-        const string&  source,
-        bpy::dict      params)
+        ShaderGroup*        sg,
+        const std::string&  type,
+        const std::string&  name,
+        const std::string&  layer,
+        const std::string&  source,
+        bpy::dict           params)
     {
         sg->add_source_shader(type.c_str(), name.c_str(), layer.c_str(), source.c_str(), bpy_dict_to_param_array(params));
     }
