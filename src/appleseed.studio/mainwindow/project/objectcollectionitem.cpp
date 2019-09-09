@@ -64,7 +64,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace appleseed {
@@ -137,7 +136,7 @@ void ObjectCollectionItem::slot_import_objects()
         return;
 
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        unique_ptr<RenderingManager::IScheduledAction>(
+        std::unique_ptr<RenderingManager::IScheduledAction>(
             new ImportObjectsAction(this, filepaths)));
 }
 
@@ -147,9 +146,9 @@ void ObjectCollectionItem::import_objects(const QStringList& filepaths)
         insert_objects(QDir::toNativeSeparators(filepaths[i]).toStdString());
 }
 
-void ObjectCollectionItem::insert_objects(const string& path) const
+void ObjectCollectionItem::insert_objects(const std::string& path) const
 {
-    const string base_object_name =
+    const std::string base_object_name =
         bf::path(path).replace_extension().filename().string();
 
     ParamArray params;
@@ -173,7 +172,7 @@ void ObjectCollectionItem::insert_objects(const string& path) const
 
         m_parent.objects().insert(auto_release_ptr<Object>(object));
 
-        const string object_instance_name = string(object->get_name()) + "_inst";
+        const std::string object_instance_name = std::string(object->get_name()) + "_inst";
 
         auto_release_ptr<ObjectInstance> object_instance(
             ObjectInstanceFactory::create(

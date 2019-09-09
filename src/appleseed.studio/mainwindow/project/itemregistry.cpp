@@ -42,7 +42,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -54,9 +53,9 @@ void ItemRegistry::insert(
     QMutexLocker locker(&m_mutex);
 
 #ifndef NDEBUG
-    const pair<RegistryType::iterator, bool> result =
+    const std::pair<RegistryType::iterator, bool> result =
 #endif
-    m_registry.insert(make_pair(uid, item));
+    m_registry.insert(std::make_pair(uid, item));
 
     assert(result.second);
 }

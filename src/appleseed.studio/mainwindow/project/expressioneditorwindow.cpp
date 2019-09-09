@@ -80,7 +80,6 @@
 using namespace appleseed::shared;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace appleseed {
@@ -90,7 +89,7 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     const Project&  project,
     ParamArray&     settings,
     const QString&  widget_name,
-    const string&   expression,
+    const std::string&   expression,
     QWidget*        parent)
   : WindowBase(parent, "expression_editor_window")
   , m_ui(new Ui::ExpressionEditorWindow())
@@ -171,7 +170,7 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     // Expression browser.
     m_browser = new SeExprEdBrowser(nullptr, m_editor);
     const bf::path root_path(Application::get_root_path());
-    const string scripts_path = (root_path / "seexpr").string();
+    const std::string scripts_path = (root_path / "seexpr").string();
     m_browser->addPath("Examples", scripts_path);
     m_browser->update();
     m_browser->hide();
@@ -202,7 +201,7 @@ ExpressionEditorWindow::~ExpressionEditorWindow()
 
 void ExpressionEditorWindow::apply_expression()
 {
-    const string expression = m_editor->getExpr();
+    const std::string expression = m_editor->getExpr();
     const SeExpression expr(expression);
 
     if (expr.isValid())
@@ -303,7 +302,7 @@ void ExpressionEditorWindow::slot_load_script()
         }
 
         // Read script file into memory.
-        stringstream script_buffer;
+        std::stringstream script_buffer;
         script_buffer << script_file.rdbuf();
         script_file.close();
 

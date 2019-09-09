@@ -46,7 +46,6 @@
 #include <algorithm>
 
 using namespace foundation;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -173,18 +172,18 @@ void WidgetZoomHandler::reset_zoom()
 void WidgetZoomHandler::compute_min_max_scale_factors()
 {
     m_min_scale_factor =
-        max(
-            MinScaleFactor,
-            max(
-                MinWidgetSize / m_content_width,
-                MinWidgetSize / m_content_height));
+        std::max(
+                 MinScaleFactor,
+                 std::max(
+                          MinWidgetSize / m_content_width,
+                          MinWidgetSize / m_content_height));
 
     m_max_scale_factor =
-        min(
-            MaxScaleFactor,
-            min(
-                MaxWidgetSize / m_content_width,
-                MaxWidgetSize / m_content_height));
+        std::min(
+                 MaxScaleFactor,
+                 std::min(
+                          MaxWidgetSize / m_content_width,
+                          MaxWidgetSize / m_content_height));
 }
 
 void WidgetZoomHandler::multiply_scale_factor(const double multiplier)

@@ -62,7 +62,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -92,12 +91,12 @@ LineEditProxy::LineEditProxy(QLineEdit* line_edit)
     connect(m_line_edit, SIGNAL(returnPressed()), SIGNAL(signal_changed()));
 }
 
-void LineEditProxy::set(const string& value)
+void LineEditProxy::set(const std::string& value)
 {
     m_line_edit->setText(QString::fromStdString(value));
 }
 
-string LineEditProxy::get() const
+std::string LineEditProxy::get() const
 {
     return m_line_edit->text().toStdString();
 }
@@ -113,12 +112,12 @@ SpinBoxProxy::SpinBoxProxy(QSpinBox* spinbox)
     connect(m_spinbox, SIGNAL(valueChanged(int)), SIGNAL(signal_changed()));
 }
 
-void SpinBoxProxy::set(const string& value)
+void SpinBoxProxy::set(const std::string& value)
 {
     m_spinbox->setValue(from_string<int>(value));
 }
 
-string SpinBoxProxy::get() const
+std::string SpinBoxProxy::get() const
 {
     return to_string(m_spinbox->value());
 }
@@ -134,12 +133,12 @@ DoubleSpinBoxProxy::DoubleSpinBoxProxy(QDoubleSpinBox* spinbox)
     connect(m_spinbox, SIGNAL(valueChanged(double)), SIGNAL(signal_changed()));
 }
 
-void DoubleSpinBoxProxy::set(const string& value)
+void DoubleSpinBoxProxy::set(const std::string& value)
 {
     m_spinbox->setValue(from_string<double>(value));
 }
 
-string DoubleSpinBoxProxy::get() const
+std::string DoubleSpinBoxProxy::get() const
 {
     return to_string(m_spinbox->value());
 }
@@ -155,12 +154,12 @@ CheckBoxProxy::CheckBoxProxy(QCheckBox* checkbox)
     connect(m_checkbox, SIGNAL(stateChanged(int)), SIGNAL(signal_changed()));
 }
 
-void CheckBoxProxy::set(const string& value)
+void CheckBoxProxy::set(const std::string& value)
 {
     m_checkbox->setChecked(from_string<bool>(value));
 }
 
-string CheckBoxProxy::get() const
+std::string CheckBoxProxy::get() const
 {
     return to_string(m_checkbox->isChecked());
 }
@@ -176,12 +175,12 @@ GroupBoxProxy::GroupBoxProxy(QGroupBox* groupbox)
     connect(m_groupbox, SIGNAL(clicked(bool)), SIGNAL(signal_changed()));
 }
 
-void GroupBoxProxy::set(const string& value)
+void GroupBoxProxy::set(const std::string& value)
 {
     m_groupbox->setChecked(from_string<bool>(value));
 }
 
-string GroupBoxProxy::get() const
+std::string GroupBoxProxy::get() const
 {
     return to_string(m_groupbox->isChecked());
 }
@@ -197,12 +196,12 @@ RadioButtonProxy::RadioButtonProxy(QRadioButton* radio_button)
     connect(m_radio_button, SIGNAL(toggled(bool)), SIGNAL(signal_changed()));
 }
 
-void RadioButtonProxy::set(const string& value)
+void RadioButtonProxy::set(const std::string& value)
 {
     m_radio_button->setChecked(from_string<bool>(value));
 }
 
-string RadioButtonProxy::get() const
+std::string RadioButtonProxy::get() const
 {
     return to_string(m_radio_button->isChecked());
 }
@@ -218,12 +217,12 @@ ComboBoxProxy::ComboBoxProxy(QComboBox* combobox)
     connect(m_combobox, SIGNAL(currentIndexChanged(int)), SIGNAL(signal_changed()));
 }
 
-void ComboBoxProxy::set(const string& value)
+void ComboBoxProxy::set(const std::string& value)
 {
     m_combobox->setCurrentIndex(m_combobox->findData(QString::fromStdString(value)));
 }
 
-string ComboBoxProxy::get() const
+std::string ComboBoxProxy::get() const
 {
     const QVariant data = m_combobox->itemData(m_combobox->currentIndex());
     return data.value<QString>().toStdString();
@@ -254,7 +253,7 @@ namespace
     }
 }
 
-void ColorPickerProxy::set(const string& value)
+void ColorPickerProxy::set(const std::string& value)
 {
     m_line_edit->setText(QString::fromStdString(value));
 
@@ -264,7 +263,7 @@ void ColorPickerProxy::set(const string& value)
             get_color_from_string(value)));
 }
 
-void ColorPickerProxy::set(const string& value, const string& wavelength_range)
+void ColorPickerProxy::set(const std::string& value, const std::string& wavelength_range)
 {
     m_line_edit->setText(QString::fromStdString(value));
 
@@ -274,7 +273,7 @@ void ColorPickerProxy::set(const string& value, const string& wavelength_range)
             get_color_from_string(value, wavelength_range)));
 }
 
-string ColorPickerProxy::get() const
+std::string ColorPickerProxy::get() const
 {
     return m_line_edit->text().toStdString();
 }
@@ -282,13 +281,13 @@ string ColorPickerProxy::get() const
 namespace
 {
     Color3f do_get_color_from_string(
-        const string&   s,
-        const float     low_wavelength,
-        const float     high_wavelength)
+        const std::string&   s,
+        const float          low_wavelength,
+        const float          high_wavelength)
     {
         try
         {
-            vector<float> values;
+            std::vector<float> values;
             tokenize(s, Blanks, values);
 
             if (values.empty())
@@ -321,16 +320,16 @@ namespace
     }
 }
 
-Color3d ColorPickerProxy::get_color_from_string(const string& s)
+Color3d ColorPickerProxy::get_color_from_string(const std::string& s)
 {
     return Color3d(do_get_color_from_string(s, LowWavelength, HighWavelength));
 }
 
-Color3d ColorPickerProxy::get_color_from_string(const string& s, const string& wavelength_range)
+Color3d ColorPickerProxy::get_color_from_string(const std::string& s, const std::string& wavelength_range)
 {
     try
     {
-        vector<float> range;
+        std::vector<float> range;
         tokenize(wavelength_range, Blanks, range);
 
         return Color3d(do_get_color_from_string(s, range[0], range[1]));
@@ -353,7 +352,7 @@ ColorExpressionProxy::ColorExpressionProxy(QLineEdit* line_edit, QToolButton* pi
     connect(m_line_edit, SIGNAL(returnPressed()), SIGNAL(signal_changed()));
 }
 
-void ColorExpressionProxy::set(const string& value)
+void ColorExpressionProxy::set(const std::string& value)
 {
     m_line_edit->setText(QString::fromStdString(value));
 
@@ -362,12 +361,12 @@ void ColorExpressionProxy::set(const string& value)
         expression_to_qcolor(value));
 }
 
-string ColorExpressionProxy::get() const
+std::string ColorExpressionProxy::get() const
 {
     return m_line_edit->text().toStdString();
 }
 
-string ColorExpressionProxy::qcolor_to_expression(const QColor& color)
+std::string ColorExpressionProxy::qcolor_to_expression(const QColor& color)
 {
     const Color3f srgb_color = qcolor_to_color<Color3f>(color);
     const QString color_expression =
@@ -378,9 +377,9 @@ string ColorExpressionProxy::qcolor_to_expression(const QColor& color)
     return color_expression.toStdString();
 }
 
-QColor ColorExpressionProxy::expression_to_qcolor(const string& color)
+QColor ColorExpressionProxy::expression_to_qcolor(const std::string& color)
 {
-    vector<string> color_components;
+    std::vector<std::string> color_components;
     tokenize(color, ",[] ", color_components);
 
     if (color_components.size() < 3)
@@ -419,13 +418,13 @@ void InputWidgetProxyCollection::clear()
 }
 
 void InputWidgetProxyCollection::insert(
-    const string&                   key,
-    unique_ptr<IInputWidgetProxy>   proxy)
+    const std::string&                   key,
+    std::unique_ptr<IInputWidgetProxy>   proxy)
 {
     m_proxies[key] = proxy.release();
 }
 
-IInputWidgetProxy* InputWidgetProxyCollection::get(const string& key) const
+IInputWidgetProxy* InputWidgetProxyCollection::get(const std::string& key) const
 {
     const ProxyCollection::const_iterator i = m_proxies.find(key);
     return i != m_proxies.end() ? i->second : nullptr;
@@ -437,7 +436,7 @@ Dictionary InputWidgetProxyCollection::get_values() const
 
     for (const_each<ProxyCollection> i = m_proxies; i; ++i)
     {
-        const string value = i->second->get();
+        const std::string value = i->second->get();
 
         if (!value.empty())
             values.insert(i->first, value);

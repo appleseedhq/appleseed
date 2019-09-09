@@ -70,7 +70,6 @@
 using namespace appleseed::shared;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace appleseed {
@@ -296,12 +295,12 @@ void RenderingManager::resume_rendering()
     m_renderer_controller.set_status(IRendererController::ContinueRendering);
 }
 
-void RenderingManager::schedule(unique_ptr<IScheduledAction> action)
+void RenderingManager::schedule(std::unique_ptr<IScheduledAction> action)
 {
     m_scheduled_actions.push_back(action.release());
 }
 
-void RenderingManager::schedule_or_execute(unique_ptr<IScheduledAction> action)
+void RenderingManager::schedule_or_execute(std::unique_ptr<IScheduledAction> action)
 {
     if (is_rendering())
     {
@@ -333,8 +332,8 @@ void RenderingManager::clear_scheduled_actions()
 }
 
 void RenderingManager::set_sticky_action(
-    const string&               key,
-    unique_ptr<IStickyAction>   action)
+    const std::string&               key,
+    std::unique_ptr<IStickyAction>   action)
 {
     m_sticky_actions[key] = action.release();
 }
@@ -365,7 +364,7 @@ void RenderingManager::slot_reinitialize_rendering()
 void RenderingManager::print_final_rendering_time()
 {
     const double rendering_time = m_rendering_timer.get_seconds();
-    const string rendering_time_string = pretty_time(rendering_time, 3);
+    const std::string rendering_time_string = pretty_time(rendering_time, 3);
 
     RENDERER_LOG_INFO("rendering finished in %s.", rendering_time_string.c_str());
 

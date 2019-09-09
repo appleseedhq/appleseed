@@ -59,7 +59,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -88,12 +87,12 @@ QMenu* TextureItem::get_single_item_context_menu() const
 
 void TextureItem::slot_instantiate()
 {
-    const string instance_name_suggestion =
+    const std::string instance_name_suggestion =
         make_unique_name(
-            string(m_entity->get_name()) + "_inst",
+            std::string(m_entity->get_name()) + "_inst",
             m_parent.texture_instances());
 
-    const string instance_name =
+    const std::string instance_name =
         get_entity_name_dialog(
             treeWidget(),
             "Instantiate Texture",
@@ -103,12 +102,12 @@ void TextureItem::slot_instantiate()
     if (!instance_name.empty())
     {
         m_editor_context.m_rendering_manager.schedule_or_execute(
-            unique_ptr<RenderingManager::IScheduledAction>(
+            std::unique_ptr<RenderingManager::IScheduledAction>(
                 new EntityInstantiationAction<TextureItem>(this, instance_name)));
     }
 }
 
-void TextureItem::do_instantiate(const string& name)
+void TextureItem::do_instantiate(const std::string& name)
 {
     auto_release_ptr<TextureInstance> texture_instance(
         TextureInstanceFactory::create(
@@ -128,18 +127,18 @@ void TextureItem::do_instantiate(const string& name)
 void TextureItem::delete_multiple(const QList<ItemBase*>& items)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        unique_ptr<RenderingManager::IScheduledAction>(
+        std::unique_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<TextureItem>(
                 qlist_static_cast<TextureItem*>(items))));
 }
 
 namespace
 {
-    vector<UniqueID> collect_texture_instances(
+    std::vector<UniqueID> collect_texture_instances(
         const TextureInstanceContainer&     texture_instances,
         const UniqueID                      texture_uid)
     {
-        vector<UniqueID> collected;
+        std::vector<UniqueID> collected;
 
         for (const_each<TextureInstanceContainer> i = texture_instances; i; ++i)
         {
@@ -160,11 +159,11 @@ namespace
         TextureInstanceContainer& texture_instances = base_group.texture_instances();
 
         // Collect the texture instances to remove.
-        const vector<UniqueID> remove_list =
+        const std::vector<UniqueID> remove_list =
             collect_texture_instances(texture_instances, texture_uid);
 
         // Remove texture instances and their corresponding project items.
-        for (const_each<vector<UniqueID>> i = remove_list; i; ++i)
+        for (const_each<std::vector<UniqueID>> i = remove_list; i; ++i)
         {
             texture_instances.remove(texture_instances.get_by_uid(*i));
             delete item_registry.get_item(*i);

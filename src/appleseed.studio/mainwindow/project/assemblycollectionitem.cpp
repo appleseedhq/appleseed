@@ -54,7 +54,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -88,7 +87,7 @@ QMenu* AssemblyCollectionItem::get_single_item_context_menu() const
 
 void AssemblyCollectionItem::slot_create()
 {
-    const string assembly_name =
+    const std::string assembly_name =
         get_entity_name_dialog(
             treeWidget(),
             "Create Assembly",
@@ -106,7 +105,7 @@ void AssemblyCollectionItem::slot_create()
 
         m_parent.assemblies().insert(assembly);
 
-        const string assembly_instance_name =
+        const std::string assembly_instance_name =
             make_unique_name(
                 assembly_name + "_inst",
                 m_parent.assembly_instances());

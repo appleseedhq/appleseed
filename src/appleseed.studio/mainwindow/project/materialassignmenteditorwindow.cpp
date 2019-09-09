@@ -71,7 +71,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -119,9 +118,9 @@ MaterialAssignmentEditorWindow::~MaterialAssignmentEditorWindow()
 
 namespace
 {
-    set<string> get_slot_names_from_material_mappings(const ObjectInstance& object_instance)
+    std::set<std::string> get_slot_names_from_material_mappings(const ObjectInstance& object_instance)
     {
-        set<string> slot_names;
+        std::set<std::string> slot_names;
 
         for (const_each<StringDictionary> i = object_instance.get_front_material_mappings(); i; ++i)
             slot_names.insert(i->key());
@@ -154,11 +153,11 @@ void MaterialAssignmentEditorWindow::create_widgets()
         return;
     }
 
-    const set<string> slot_names = get_slot_names_from_material_mappings(m_object_instance);
+    const std::set<std::string> slot_names = get_slot_names_from_material_mappings(m_object_instance);
 
     if (!slot_names.empty())
     {
-        for (const_each<set<string>> i = slot_names; i; ++i)
+        for (const_each<std::set<std::string>> i = slot_names; i; ++i)
             create_widgets_for_slot(layout, i->c_str());
         return;
     }
@@ -221,7 +220,7 @@ void MaterialAssignmentEditorWindow::create_widgets_for_side(
             group->setEnabled(false);
         }
         else if (front_mappings.exist(slot_name) &&
-                 front_mappings.get<string>(slot_name) == back_mappings.get<string>(slot_name))
+                 front_mappings.get<std::string>(slot_name) == back_mappings.get<std::string>(slot_name))
         {
             combo_box->setCurrentIndex(combo_box->findData("same"));
             group->setEnabled(false);
@@ -309,7 +308,7 @@ MaterialAssignmentEditorWindow::SlotValue MaterialAssignmentEditorWindow::get_sl
     {
         const StringDictionary& front_mappings = m_object_instance.get_front_material_mappings();
         if (front_mappings.exist(slot_info.m_slot_name))
-            slot_value.m_material_name = front_mappings.get<string>(slot_info.m_slot_name);
+            slot_value.m_material_name = front_mappings.get<std::string>(slot_info.m_slot_name);
     }
 
     return slot_value;
@@ -354,7 +353,7 @@ void MaterialAssignmentEditorWindow::assign_materials(const SlotValueCollection&
     const StringDictionary old_back_mappings = m_object_instance.get_back_material_mappings();
 
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        unique_ptr<RenderingManager::IScheduledAction>(
+        std::unique_ptr<RenderingManager::IScheduledAction>(
             new AssignMaterialsAction(
                 m_object_instance,
                 m_object_instance_item,
@@ -412,7 +411,7 @@ void MaterialAssignmentEditorWindow::slot_open_entity_browser()
     EntityBrowser<Assembly> entity_browser(
         *static_cast<const Assembly*>(m_object_instance.get_parent()));
 
-    stringstream window_title;
+    std::stringstream window_title;
     window_title << slot_info.m_slot_name;
     window_title << " (" << (slot_info.m_side == ObjectInstance::FrontSide ? "Front" : "Back") << ")";
 

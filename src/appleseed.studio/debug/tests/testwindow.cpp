@@ -56,7 +56,6 @@
 #include <utility>
 
 using namespace foundation;
-using namespace std;
 
 Q_DECLARE_METATYPE(ITestCaseFactory*);
 Q_DECLARE_METATYPE(TestSuite*);

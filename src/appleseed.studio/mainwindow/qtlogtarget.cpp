@@ -42,7 +42,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -96,10 +95,10 @@ void QtLogTarget::write(
     const QColor color = get_text_color_for_category(category);
     const QString header_string(header);
 
-    vector<QString> lines;
+    std::vector<QString> lines;
     split(message, "\n", lines);
 
-    for (const_each<vector<QString>> i = lines; i; ++i)
+    for (const_each<std::vector<QString>> i = lines; i; ++i)
     {
         const QString line = header_string + *i + "\n";
         emit signal_append_item(color, line);

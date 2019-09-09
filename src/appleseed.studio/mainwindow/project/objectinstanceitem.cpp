@@ -67,13 +67,12 @@
 using namespace appleseed::studio;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace
 {
     struct MaterialAssignmentData
     {
-        string                      m_slot;
+        std::string                 m_slot;
         int                         m_sides;
         QList<ItemBase*>            m_items;
 
@@ -374,7 +373,7 @@ namespace
 void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QString entity_name, QVariant data)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        unique_ptr<RenderingManager::IScheduledAction>(
+        std::unique_ptr<RenderingManager::IScheduledAction>(
             new AssignMaterialAction(this, page_name, entity_name, data)));
 
     qobject_cast<QWidget*>(sender()->parent())->close();
@@ -385,7 +384,7 @@ void ObjectInstanceItem::assign_material(
     const QString&                  entity_name,
     const QVariant&                 untyped_data)
 {
-    const string material_name = entity_name.toStdString();
+    const std::string material_name = entity_name.toStdString();
     const MaterialAssignmentData data = untyped_data.value<MaterialAssignmentData>();
 
     if (data.m_items.empty())
@@ -431,7 +430,7 @@ void ObjectInstanceItem::slot_clear_material()
     const QVariant data = qobject_cast<QAction*>(sender())->data();
 
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        unique_ptr<RenderingManager::IScheduledAction>(
+        std::unique_ptr<RenderingManager::IScheduledAction>(
             new ClearMaterialAction(this, data)));
 }
 
@@ -454,7 +453,7 @@ void ObjectInstanceItem::clear_material(const QVariant& untyped_data)
 void ObjectInstanceItem::delete_multiple(const QList<ItemBase*>& items)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        unique_ptr<RenderingManager::IScheduledAction>(
+        std::unique_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<ObjectInstanceItem>(
                 qlist_static_cast<ObjectInstanceItem*>(items))));
 }

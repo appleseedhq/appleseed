@@ -71,7 +71,6 @@
 using namespace appleseed::shared;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace appleseed {
@@ -190,8 +189,8 @@ void MaterialCollectionItem::slot_import_disney()
             return;
         }
 
-        string name = parameters.get("__name");
-        const string model = parameters.get("__model");
+        std::string name = parameters.get("__name");
+        const std::string model = parameters.get("__model");
         parameters.strings().remove("__name");
         parameters.strings().remove("__model");
 
@@ -236,27 +235,27 @@ void MaterialCollectionItem::do_create_material(const char* model)
 {
     typedef EntityTraits<Material> EntityTraits;
 
-    const string window_title =
-        string("Create ") +
+    const std::string window_title =
+        std::string("Create ") +
         EntityTraits::get_human_readable_entity_type_name();
 
-    const string name_suggestion =
+    const std::string name_suggestion =
         make_unique_name(
             EntityTraits::get_entity_type_name(),
             EntityTraits::get_entity_container(Base::m_parent));
 
     typedef EntityTraits::FactoryRegistrarType FactoryRegistrarType;
 
-    unique_ptr<EntityEditor::IFormFactory> form_factory(
+    std::unique_ptr<EntityEditor::IFormFactory> form_factory(
         new FixedModelEntityEditorFormFactory<FactoryRegistrarType>(
             m_editor_context.m_project.get_factory_registrar<Material>(),
             name_suggestion,
             model));
 
-    unique_ptr<EntityEditor::IEntityBrowser> entity_browser(
+    std::unique_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<Assembly>(Base::m_parent));
 
-    unique_ptr<CustomEntityUI> custom_entity_ui;
+    std::unique_ptr<CustomEntityUI> custom_entity_ui;
 
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
     if (strcmp(model, "disney_material") == 0)
@@ -273,9 +272,9 @@ void MaterialCollectionItem::do_create_material(const char* model)
         window_title,
         m_editor_context.m_project,
         m_editor_context.m_settings,
-        move(form_factory),
-        move(entity_browser),
-        move(custom_entity_ui),
+        std::move(form_factory),
+        std::move(entity_browser),
+        std::move(custom_entity_ui),
         Dictionary(),
         this,
         SLOT(slot_create_applied(foundation::Dictionary)),

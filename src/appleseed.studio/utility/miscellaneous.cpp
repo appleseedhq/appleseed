@@ -76,7 +76,6 @@
 using namespace appleseed::shared;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -85,9 +84,9 @@ const QString g_qt_image_files_filter = "Bitmap Files (*.bmp *.jpg *.png *.tif);
 
 namespace
 {
-    string join_exts(const vector<string>& exts)
+    std::string join_exts(const std::vector<std::string>& exts)
     {
-        stringstream sstr;
+        std::stringstream sstr;
 
         for (size_t i = 0, e = exts.size(); i < e; ++i)
         {
@@ -109,18 +108,18 @@ QString get_oiio_image_files_filter()
 
     if (filter.isEmpty())
     {
-        stringstream sstr;
+        std::stringstream sstr;
 
         // Retrieve the extension list as a string of the form "bmp:bmp;openexr:exr,sxr,mxr;png:png".
-        string extension_list;
+        std::string extension_list;
         OIIO::getattribute("extension_list", extension_list);
 
         // Split the extension list into an array of the form [ "bmp:bmp", "openexr:exr,sxr,mxr", "png:png" ].
-        vector<string> formats;
+        std::vector<std::string> formats;
         split(extension_list, ";", formats);
 
         // Collect all extensions into an array of the form [ "bmp", "exr", "png" ].
-        vector<string> all_exts;
+        std::vector<std::string> all_exts;
         for (const auto& format : formats)
         {
             const auto sep = format.find_first_of(':');
@@ -137,7 +136,7 @@ QString get_oiio_image_files_filter()
             const auto sep = format.find_first_of(':');
             const auto name = format.substr(0, sep);
             const auto extlist = format.substr(sep + 1);
-            vector<string> exts;
+            std::vector<std::string> exts;
             split(extlist, ",", exts);
             sstr << upper_case(name) << " Files (" << join_exts(exts) << ");;";
         }

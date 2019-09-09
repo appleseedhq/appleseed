@@ -65,7 +65,6 @@
 using namespace appleseed::shared;
 using namespace boost;
 using namespace foundation;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace appleseed {
@@ -197,9 +196,9 @@ namespace
             const uint64 date_microseconds = static_cast<uint64>(point.x);
             const posix_time::ptime date =
                 BenchmarkDataPoint::microseconds_to_ptime(date_microseconds);
-            const string date_string = posix_time::to_simple_string(date);
+            const std::string date_string = posix_time::to_simple_string(date);
 
-            const string ticks_string =
+            const std::string ticks_string =
                 pretty_scalar(point.y) + " " +
                 plural(point.y, "tick");
 
@@ -211,11 +210,11 @@ namespace
     };
 }
 
-unique_ptr<ChartBase> BenchmarkWindow::create_chart(
+std::unique_ptr<ChartBase> BenchmarkWindow::create_chart(
     const UniqueID      case_uid,
     const size_t        chart_index) const
 {
-    unique_ptr<LineChart> chart(new LineChart());
+    std::unique_ptr<LineChart> chart(new LineChart());
 
     chart->set_equidistant(m_ui->checkbox_equidistant->isChecked());
 
@@ -235,7 +234,7 @@ unique_ptr<ChartBase> BenchmarkWindow::create_chart(
 
     chart->set_curve_brush(QBrush(CurveColors[chart_index % COUNT_OF(CurveColors)]));
 
-    unique_ptr<IToolTipFormatter> formatter(new ToolTipFormatter());
+    std::unique_ptr<IToolTipFormatter> formatter(new ToolTipFormatter());
     chart->set_tooltip_formatter(std::move(formatter));
 
     const BenchmarkSeries& series = m_benchmark_aggregator.get_series(case_uid);
@@ -251,7 +250,7 @@ unique_ptr<ChartBase> BenchmarkWindow::create_chart(
         chart->add_point(x, point.get_ticks());
     }
 
-    return unique_ptr<ChartBase>(std::move(chart));
+    return std::unique_ptr<ChartBase>(std::move(chart));
 }
 
 void BenchmarkWindow::slot_run_benchmarks()

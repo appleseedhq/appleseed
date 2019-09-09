@@ -78,7 +78,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -251,21 +250,21 @@ AssemblyItem::ObjectInstanceCollectionItem& AssemblyItem::get_object_instance_co
     return *m_object_instance_collection_item;
 }
 
-void AssemblyItem::instantiate(const string& name)
+void AssemblyItem::instantiate(const std::string& name)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        unique_ptr<RenderingManager::IScheduledAction>(
+        std::unique_ptr<RenderingManager::IScheduledAction>(
             new EntityInstantiationAction<AssemblyItem>(this, name)));
 }
 
 void AssemblyItem::slot_instantiate()
 {
-    const string instance_name_suggestion =
+    const std::string instance_name_suggestion =
         make_unique_name(
-            string(m_assembly.get_name()) + "_inst",
+            std::string(m_assembly.get_name()) + "_inst",
             m_parent.assembly_instances());
 
-    const string instance_name =
+    const std::string instance_name =
         get_entity_name_dialog(
             treeWidget(),
             "Instantiate Assembly",
@@ -276,7 +275,7 @@ void AssemblyItem::slot_instantiate()
         instantiate(instance_name);
 }
 
-void AssemblyItem::do_instantiate(const string& name)
+void AssemblyItem::do_instantiate(const std::string& name)
 {
     auto_release_ptr<AssemblyInstance> assembly_instance(
         AssemblyInstanceFactory::create(
@@ -340,11 +339,11 @@ namespace
 
 namespace
 {
-    vector<UniqueID> collect_assembly_instances(
+    std::vector<UniqueID> collect_assembly_instances(
         const AssemblyInstanceContainer&    assembly_instances,
         const UniqueID                      assembly_uid)
     {
-        vector<UniqueID> collected;
+        std::vector<UniqueID> collected;
 
         for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
         {
@@ -365,11 +364,11 @@ namespace
         AssemblyInstanceContainer& assembly_instances = base_group.assembly_instances();
 
         // Collect the assembly instances to remove.
-        const vector<UniqueID> remove_list =
+        const std::vector<UniqueID> remove_list =
             collect_assembly_instances(assembly_instances, assembly_uid);
 
         // Remove assembly instances and their corresponding project items.
-        for (const_each<vector<UniqueID>> i = remove_list; i; ++i)
+        for (const_each<std::vector<UniqueID>> i = remove_list; i; ++i)
         {
             assembly_instances.remove(*i);
             delete item_registry.get_item(*i);
@@ -384,7 +383,7 @@ namespace
 void AssemblyItem::delete_multiple(const QList<ItemBase*>& items)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        unique_ptr<RenderingManager::IScheduledAction>(
+        std::unique_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<AssemblyItem>(
                 qlist_static_cast<AssemblyItem*>(items))));
 }
