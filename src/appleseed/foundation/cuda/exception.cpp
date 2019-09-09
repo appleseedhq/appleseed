@@ -32,8 +32,6 @@
 // Standard headers.
 #include <string>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -43,7 +41,7 @@ namespace foundation
 
 ExceptionCUDAError::ExceptionCUDAError(const CUresult error)
 {
-    string err;
+    std::string err;
     const char* error_string;
 
     if (cuGetErrorString(error, &error_string) == CUDA_SUCCESS)

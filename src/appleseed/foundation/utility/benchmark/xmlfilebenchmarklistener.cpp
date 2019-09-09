@@ -42,7 +42,6 @@
 #include <cassert>
 #include <cstdio>
 
-using namespace std;
 
 namespace foundation
 {

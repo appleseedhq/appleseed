@@ -35,7 +35,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Utility_KVPair)
 {
@@ -55,7 +54,7 @@ TEST_SUITE(Foundation_Utility_KVPair)
 
         ASSERT_NEQ(0, kvpair);
 
-        EXPECT_EQ(string("Green"), kvpair->m_value);
+        EXPECT_EQ(std::string("Green"), kvpair->m_value);
     }
 
     TEST_CASE(FoundationLookupKVPairArray_GivenKeyOfNonExistingEntry_ReturnsNullPointer)

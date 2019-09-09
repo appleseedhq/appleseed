@@ -40,7 +40,6 @@
 #include <fstream>
 
 using namespace foundation;
-using namespace std;
 
 namespace
 {
@@ -51,7 +50,7 @@ namespace
         const size_t    sample_count,
         const char*     filename)
     {
-        ofstream ofs(filename);
+        std::ofstream ofs(filename);
         Xoroshiro128plus rng;
 
         // Generate samples using the table.

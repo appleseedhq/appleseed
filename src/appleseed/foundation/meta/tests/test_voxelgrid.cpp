@@ -43,7 +43,6 @@
 #include <cstddef>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Math_VoxelGrid3)
 {
@@ -404,8 +403,8 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
 
                 const size_t tx0 = truncate<size_t>(fx);
                 const size_t ty0 = truncate<size_t>(fy);
-                const size_t tx1 = min<size_t>(tx0 + 1, SourceWidth - 1);
-                const size_t ty1 = min<size_t>(ty0 + 1, SourceHeight - 1);
+                const size_t tx1 = std::min<size_t>(tx0 + 1, SourceWidth - 1);
+                const size_t ty1 = std::min<size_t>(ty0 + 1, SourceHeight - 1);
 
                 const float wx1 = fx - tx0;
                 const float wy1 = fy - ty0;

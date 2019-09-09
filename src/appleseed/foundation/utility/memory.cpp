@@ -36,7 +36,6 @@
 // Standard headers.
 #include <cstdlib>
 
-using namespace std;
 
 namespace foundation
 {

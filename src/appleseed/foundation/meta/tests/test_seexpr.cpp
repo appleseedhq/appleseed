@@ -34,7 +34,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Utility_SeExpr_SeExprFilePathExtractor)
 {
@@ -99,7 +98,7 @@ TEST_SUITE(Foundation_Utility_SeExpr_SeExprFilePathExtractor)
         SeExprFilePathExtractor::MappingCollection mappings;
         mappings["/path/to/file.exr"] = "/bruce/lee.exr";
 
-        const string result =
+        const std::string result =
             extractor.replace_paths("texture(\"/path/to/file.exr\", $u, $v)", mappings);
 
         ASSERT_EQ("texture(\"/bruce/lee.exr\", $u, $v)", result);
@@ -111,7 +110,7 @@ TEST_SUITE(Foundation_Utility_SeExpr_SeExprFilePathExtractor)
         SeExprFilePathExtractor::MappingCollection mappings;
         mappings["/path/to/file.exr"] = "/bruce/lee.exr";
 
-        const string result =
+        const std::string result =
             extractor.replace_paths("texture(\"/path/to/file.exr\", $u, $v) * texture(\"/path/to/file.exr\", $u, $v)", mappings);
 
         ASSERT_EQ("texture(\"/bruce/lee.exr\", $u, $v) * texture(\"/bruce/lee.exr\", $u, $v)", result);

@@ -37,7 +37,6 @@
 #include <limits>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Math_Scalar)
 {
@@ -534,12 +533,12 @@ TEST_SUITE(Foundation_Math_Scalar)
 
     TEST_CASE(Feq_ScalarScalar_Overflows)
     {
-        EXPECT_FALSE(feq(0.5 * numeric_limits<double>::max(), 0.1));
+        EXPECT_FALSE(feq(0.5 * std::numeric_limits<double>::max(), 0.1));
     }
 
     TEST_CASE(Feq_ScalarScalar_Underflows)
     {
-        EXPECT_FALSE(feq(2.0 * numeric_limits<double>::min(), 10.0));
+        EXPECT_FALSE(feq(2.0 * std::numeric_limits<double>::min(), 10.0));
     }
 
     TEST_CASE(Fz_Scalar_ReturnsTrue)

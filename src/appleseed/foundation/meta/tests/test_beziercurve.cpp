@@ -45,7 +45,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Math_BezierCurveIntersector)
 {
@@ -101,7 +100,7 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
                     // Draw the curve.
                     MatrixType curve_transform;
                     make_curve_projection_transform(curve_transform, ray);
-                    ValueType u, v, t = numeric_limits<ValueType>::max();
+                    ValueType u, v, t = std::numeric_limits<ValueType>::max();
                     if (textured)
                     {
                         if (BezierCurveIntersectorType::intersect(curve, ray, curve_transform, u, v, t))
@@ -600,7 +599,7 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
         // of control points. See http://stackoverflow.com/a/3516110/393756 for details.
         //
 
-        vector<Vector3f> new_points;
+        std::vector<Vector3f> new_points;
 
         for (size_t i = 0; i < countof(ControlPoints); ++i)
         {
@@ -613,7 +612,7 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
             }
         }
 
-        vector<BezierCurve3f> curves;
+        std::vector<BezierCurve3f> curves;
 
         for (size_t i = 0, e = new_points.size(); i + 3 < e; i += 3)
             curves.emplace_back(&new_points[i], 0.05f, 1.0f, Color3f(0.2f, 0.0f, 0.7f));
@@ -636,7 +635,7 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
         Matrix4f xfm_matrix;
         make_curve_projection_transform(xfm_matrix, ray);
 
-        float u, v, t = numeric_limits<float>::max();
+        float u, v, t = std::numeric_limits<float>::max();
         const bool hit = BezierCurveIntersector<BezierCurve1f>::intersect(Curves[0], ray, xfm_matrix, u, v, t);
 
         ASSERT_TRUE(hit);
@@ -655,7 +654,7 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
         Matrix4f xfm_matrix;
         make_curve_projection_transform(xfm_matrix, ray);
 
-        float u, v, t = numeric_limits<float>::max();
+        float u, v, t = std::numeric_limits<float>::max();
         const bool hit = BezierCurveIntersector<BezierCurve1f>::intersect(Curves[0], ray, xfm_matrix, u, v, t);
 
         ASSERT_TRUE(hit);
@@ -674,7 +673,7 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
         Matrix4f xfm_matrix;
         make_curve_projection_transform(xfm_matrix, ray);
 
-        float u, v, t = numeric_limits<float>::max();
+        float u, v, t = std::numeric_limits<float>::max();
         const bool hit = BezierCurveIntersector<BezierCurve1f>::intersect(Curves[0], ray, xfm_matrix, u, v, t);
 
         ASSERT_TRUE(hit);
@@ -693,7 +692,7 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
         Matrix4f xfm_matrix;
         make_curve_projection_transform(xfm_matrix, ray);
 
-        float u, v, t = numeric_limits<float>::max();
+        float u, v, t = std::numeric_limits<float>::max();
         const bool hit = BezierCurveIntersector<BezierCurve1f>::intersect(Curve, ray, xfm_matrix, u, v, t);
 
         ASSERT_TRUE(hit);

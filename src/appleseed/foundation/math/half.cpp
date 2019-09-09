@@ -32,8 +32,6 @@
 // Standard headers.
 #include <cmath>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -8353,7 +8351,7 @@ uint16 Half::float_to_half_except(const uint32 i)
         u.i = i;
 
         return static_cast<uint16>(
-            s | static_cast<int>(abs(u.f) * 1.6777216e7 + 0.5));
+            s | static_cast<int>(std::abs(u.f) * 1.6777216e7 + 0.5));
     }
 
     if (e == 0x23c00)

@@ -35,7 +35,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Utility_StringDictionary)
 {
@@ -130,7 +129,7 @@ TEST_SUITE(Foundation_Utility_StringDictionary)
 
         EXPECT_EXCEPTION(ExceptionDictionaryKeyNotFound,
         {
-            APPLESEED_UNUSED const int item = sd.get<int>(string("key"));
+            APPLESEED_UNUSED const int item = sd.get<int>(std::string("key"));
         });
     }
 
@@ -149,7 +148,7 @@ TEST_SUITE(Foundation_Utility_StringDictionary)
         StringDictionary sd;
         sd.insert("key", "value");
 
-        sd.remove(string("key"));
+        sd.remove(std::string("key"));
 
         EXPECT_FALSE(sd.exist("key"));
     }
@@ -216,7 +215,7 @@ TEST_SUITE(Foundation_Utility_Dictionary)
 
         Dictionary copy(dic);
 
-        EXPECT_EQ("value", copy.get<string>("key"));
+        EXPECT_EQ("value", copy.get<std::string>("key"));
     }
 
     TEST_CASE(CopyConstructor_GivenSourceDictionaryWithOneDictionaryItem_CopiesDictionaryItem)
@@ -229,7 +228,7 @@ TEST_SUITE(Foundation_Utility_Dictionary)
 
         Dictionary copy(dic);
 
-        EXPECT_EQ("value", copy.dictionary("child").get<string>("key"));
+        EXPECT_EQ("value", copy.dictionary("child").get<std::string>("key"));
     }
 
     TEST_CASE(AssignmentOperator_GivenSourceDictionaryWithOneStringItem_CopiesStringItem)
@@ -240,7 +239,7 @@ TEST_SUITE(Foundation_Utility_Dictionary)
         Dictionary other;
         other = dic;
 
-        EXPECT_EQ("value", other.get<string>("key"));
+        EXPECT_EQ("value", other.get<std::string>("key"));
     }
 
     TEST_CASE(AssignmentOperator_GivenSourceDictionaryWithOneDictionaryItem_CopiesDictionaryItem)
@@ -254,7 +253,7 @@ TEST_SUITE(Foundation_Utility_Dictionary)
         Dictionary other;
         other = dic;
 
-        EXPECT_EQ("value", other.dictionary("child").get<string>("key"));
+        EXPECT_EQ("value", other.dictionary("child").get<std::string>("key"));
     }
 
     TEST_CASE(Clear_GivenDictionaryWithOneStringItem_RemovesItem)
@@ -287,18 +286,18 @@ TEST_SUITE(Foundation_Utility_Dictionary)
 
         EXPECT_EQ(1, dic.size());
         EXPECT_FALSE(dic.empty());
-        EXPECT_EQ("value", dic.get<string>("key"));
+        EXPECT_EQ("value", dic.get<std::string>("key"));
     }
 
     TEST_CASE(Insert_GivenCStringKeyAndStdStringValue_InsertsValue)
     {
         Dictionary dic;
 
-        dic.insert("key", string("value"));
+        dic.insert("key", std::string("value"));
 
         EXPECT_EQ(1, dic.size());
         EXPECT_FALSE(dic.empty());
-        EXPECT_EQ("value", dic.get<string>("key"));
+        EXPECT_EQ("value", dic.get<std::string>("key"));
     }
 
     TEST_CASE(Insert_GivenCStringKeyAndIntegerValue_InsertsValue)
@@ -316,18 +315,18 @@ TEST_SUITE(Foundation_Utility_Dictionary)
     {
         Dictionary dic;
 
-        dic.insert(string("key"), "value");
+        dic.insert(std::string("key"), "value");
 
         EXPECT_EQ(1, dic.size());
         EXPECT_FALSE(dic.empty());
-        EXPECT_EQ("value", dic.get<string>("key"));
+        EXPECT_EQ("value", dic.get<std::string>("key"));
     }
 
     TEST_CASE(Insert_GivenStdStringKeyAndIntegerValue_InsertsValue)
     {
         Dictionary dic;
 
-        dic.insert(string("key"), 42);
+        dic.insert(std::string("key"), 42);
 
         EXPECT_EQ(1, dic.size());
         EXPECT_FALSE(dic.empty());
@@ -368,7 +367,7 @@ TEST_SUITE(Foundation_Utility_Dictionary)
 
         EXPECT_EXCEPTION(ExceptionDictionaryKeyNotFound,
         {
-            APPLESEED_UNUSED const int item = dic.get<int>(string("key"));
+            APPLESEED_UNUSED const int item = dic.get<int>(std::string("key"));
         });
     }
 

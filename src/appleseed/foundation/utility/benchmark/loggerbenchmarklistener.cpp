@@ -48,16 +48,15 @@
 #include <string>
 #include <vector>
 
-using namespace std;
 
 namespace foundation
 {
 
 namespace
 {
-    string pretty_callrate(
+    std::string pretty_callrate(
         const TimingResult& timing_result,
-        const streamsize    precision = 1)
+        const std::streamsize    precision = 1)
     {
         assert(timing_result.m_ticks > 0.0);
 
@@ -96,7 +95,7 @@ namespace
 
     TEST_SUITE(Foundation_Utility_Benchmark)
     {
-        string pretty_callrate_helper(const double rate)
+        std::string pretty_callrate_helper(const double rate)
         {
             TimingResult result;
             result.m_ticks = 1.0;
@@ -162,11 +161,11 @@ namespace
                 line);
 
             // Split the message into multiple components, one for each line.
-            vector<string> tokens;
+            std::vector<std::string> tokens;
             split(message, "\n", tokens);
 
             // Print the message.
-            for (const_each<vector<string>> i = tokens; i; ++i)
+            for (const_each<std::vector<std::string>> i = tokens; i; ++i)
                 LOG_ERROR(m_logger, "    %s", i->c_str());
         }
 
@@ -177,7 +176,7 @@ namespace
             const size_t            line,
             const TimingResult&     timing_result) override
         {
-            string callrate_string;
+            std::string callrate_string;
 
             if (timing_result.m_ticks > 0.0)
             {

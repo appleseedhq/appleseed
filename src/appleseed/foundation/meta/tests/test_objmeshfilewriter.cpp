@@ -43,7 +43,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Mesh_OBJMeshFileWriter)
 {
@@ -54,15 +53,15 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileWriter)
 
     struct Mesh
     {
-        string              m_name;
-        vector<Vector3d>    m_vertices;
-        vector<Face>        m_faces;
+        std::string              m_name;
+        std::vector<Vector3d>    m_vertices;
+        std::vector<Face>        m_faces;
     };
 
     struct MeshBuilder
       : public MeshBuilderBase
     {
-        vector<Mesh> m_meshes;
+        std::vector<Mesh> m_meshes;
 
         void begin_mesh(const char* name) override
         {
@@ -178,7 +177,7 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileWriter)
         }
     };
 
-    Mesh create_mesh(const string& name)
+    Mesh create_mesh(const std::string& name)
     {
         Mesh mesh;
         mesh.m_name = name;

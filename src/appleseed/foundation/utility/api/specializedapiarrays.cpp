@@ -35,7 +35,6 @@
 #include <string>
 #include <vector>
 
-using namespace std;
 
 namespace foundation
 {
@@ -50,7 +49,7 @@ APPLESEED_DEFINE_APIARRAY(DictionaryArray);
 //
 
 struct StringArray::Impl
-  : public vector<string>
+  : public std::vector<std::string>
 {
 };
 

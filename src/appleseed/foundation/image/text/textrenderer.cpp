@@ -43,8 +43,6 @@
 #include <cstddef>
 #include <vector>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -124,7 +122,7 @@ float TextRenderer::compute_string_width(
         }
     }
 
-    return max(width, max_width);
+    return std::max(width, max_width);
 }
     
 float TextRenderer::compute_string_height(
@@ -247,7 +245,7 @@ void TextRenderer::draw_string(
     const float baseline = ascent * scale;
 
     // Bitmap inside which glyphs will be rendered.
-    vector<uint8> glyph_bitmap(32 * 32, 0);
+    std::vector<uint8> glyph_bitmap(32 * 32, 0);
 
     float x = origin_x;
     float y = origin_y;

@@ -36,8 +36,6 @@
 // Standard headers.
 #include <algorithm>
 
-using namespace std;
-
 namespace foundation
 {
 namespace

@@ -33,7 +33,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/string.h"
 
-using namespace std;
 
 namespace foundation
 {
@@ -41,18 +40,18 @@ namespace foundation
 namespace cache_impl
 {
     CacheStatisticsEntry::CacheStatisticsEntry(
-        const string&   name,
-        const uint64    hit_count,
-        const uint64    miss_count)
+        const std::string&   name,
+        const uint64         hit_count,
+        const uint64         miss_count)
       : Statistics::Entry(name)
     {
         m_hit_count = hit_count;
         m_miss_count = miss_count;
     }
 
-    unique_ptr<Statistics::Entry> CacheStatisticsEntry::clone() const
+    std::unique_ptr<Statistics::Entry> CacheStatisticsEntry::clone() const
     {
-        return unique_ptr<Entry>(new CacheStatisticsEntry(*this));
+        return std::unique_ptr<Entry>(new CacheStatisticsEntry(*this));
     }
 
     void CacheStatisticsEntry::merge(const Entry* other)
@@ -63,7 +62,7 @@ namespace cache_impl
         m_miss_count += typed_other->m_miss_count;
     }
 
-    string CacheStatisticsEntry::to_string() const
+    std::string CacheStatisticsEntry::to_string() const
     {
         const uint64 accesses = m_hit_count + m_miss_count;
 

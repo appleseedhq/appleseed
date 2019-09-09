@@ -41,7 +41,6 @@
 #include <cstdio>
 #include <iostream>
 
-using namespace std;
 
 namespace foundation
 {
@@ -63,7 +62,7 @@ void Console::wait_for_enter_keypress()
 
 void Console::pause()
 {
-    cout << "Press Enter to continue..." << endl;
+    std::cout << "Press Enter to continue..." << std::endl;
     wait_for_enter_keypress();
 }
 

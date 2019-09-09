@@ -36,7 +36,6 @@
 // Standard headers.
 #include <string>
 
-using namespace std;
 namespace bf = boost::filesystem;
 
 TEST_SUITE(Boost_Path)
@@ -62,12 +61,12 @@ TEST_SUITE(Boost_Path)
 
     TEST_CASE(String_GivenPathWithSlashes)
     {
-        const string s = bf::path("dir/file.txt").string();
+        const std::string s = bf::path("dir/file.txt").string();
     }
 
     TEST_CASE(String_GivenPathWithBackSlashes)
     {
-        const string s = bf::path("dir\\file.txt").string();
+        const std::string s = bf::path("dir\\file.txt").string();
     }
 
     TEST_CASE(Native_GivenPathWithSlashes)
@@ -82,21 +81,21 @@ TEST_SUITE(Boost_Path)
 
     TEST_CASE(GenericString_GivenPathWithSlashes)
     {
-        const string s = bf::path("dir/file.txt").generic_string();
+        const std::string s = bf::path("dir/file.txt").generic_string();
     }
 
     TEST_CASE(GenericString_GivenPathWithBackSlashes)
     {
-        const string s = bf::path("dir\\file.txt").generic_string();
+        const std::string s = bf::path("dir\\file.txt").generic_string();
     }
 
     TEST_CASE(MakePreferred_GivenPathWithSlashes)
     {
-        const string s = bf::path("dir/file.txt").make_preferred().string();
+        const std::string s = bf::path("dir/file.txt").make_preferred().string();
     }
 
     TEST_CASE(MakePreferred_GivenPathWithBackSlashes)
     {
-        const string s = bf::path("dir\\file.txt").make_preferred().string();
+        const std::string s = bf::path("dir\\file.txt").make_preferred().string();
     }
 }

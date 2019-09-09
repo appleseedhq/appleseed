@@ -43,7 +43,6 @@
 #include <limits>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Math_RNG)
 {
@@ -276,7 +275,7 @@ TEST_SUITE(Foundation_Math_RNG)
 
         const float value = rand_float3(rng);
 
-        EXPECT_EQ(numeric_limits<float>::epsilon(), value);
+        EXPECT_EQ(std::numeric_limits<float>::epsilon(), value);
     }
 
     TEST_CASE(RandFloat3_Given0xFFFFFFFF_ReturnsAlmostOne)
@@ -316,7 +315,7 @@ TEST_SUITE(Foundation_Math_RNG)
 
         const double value = rand_double3(rng);
 
-        EXPECT_EQ(numeric_limits<double>::epsilon(), value);
+        EXPECT_EQ(std::numeric_limits<double>::epsilon(), value);
     }
 
     TEST_CASE(RandDouble3_Given0xFFFFFFFF_ReturnsAlmostOne)

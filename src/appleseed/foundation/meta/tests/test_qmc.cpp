@@ -54,7 +54,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Math_QMC)
 {
@@ -216,7 +215,7 @@ TEST_SUITE(Foundation_Math_QMC)
 
     TEST_CASE(Generate2DRandomSequenceImage)
     {
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
         MersenneTwister rng;
 
         for (size_t i = 0; i < PointCount; ++i)
@@ -231,9 +230,9 @@ TEST_SUITE(Foundation_Math_QMC)
     }
 
     void apply_permutation(
-        const string&   permutation,
-        const size_t    size,
-        size_t          perm[])
+        const std::string&   permutation,
+        const size_t         size,
+        size_t               perm[])
     {
         if (permutation == "identity")
             identity_permutation(size, perm);
@@ -245,10 +244,10 @@ TEST_SUITE(Foundation_Math_QMC)
     }
 
     void generate_halton_sequence_image(
-        const size_t    b0,
-        const size_t    b1,
-        const string&   permutation,
-        const size_t    initial_instance = 0)
+        const size_t         b0,
+        const size_t         b1,
+        const std::string&   permutation,
+        const size_t         initial_instance = 0)
     {
         const size_t bases[2] = { b0, b1 };
 
@@ -256,12 +255,12 @@ TEST_SUITE(Foundation_Math_QMC)
         apply_permutation(permutation, b0, perms);
         apply_permutation(permutation, b1, perms + b0);
 
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
 
         for (size_t i = 0; i < PointCount; ++i)
             points.push_back(halton_sequence<double, 2>(bases, perms, initial_instance + i));
 
-        const string filename =
+        const std::string filename =
               "unit tests/outputs/test_qmc_halton_" + permutation + "_permuted_"
             + to_string(b0) + "_" + to_string(b1) + "_"
             + (initial_instance > 0 ? to_string(initial_instance) : "")
@@ -300,15 +299,15 @@ TEST_SUITE(Foundation_Math_QMC)
     }
 
     void generate_hammersley_sequence_image(
-        const size_t    b,
-        const string&   permutation)
+        const size_t         b,
+        const std::string&   permutation)
     {
         const size_t bases[1] = { b };
 
         size_t perms[100];
         apply_permutation(permutation, b, perms);
 
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
 
         for (size_t i = 0; i < PointCount; ++i)
             points.push_back(hammersley_sequence<double, 2>(bases, perms, PointCount, i));
@@ -348,7 +347,7 @@ TEST_SUITE(Foundation_Math_QMC)
     {
         const size_t bases[1] = { b };
 
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
 
         for (size_t i = 0; i < PointCount; ++i)
             points.push_back(hammersley_zaremba_sequence<double, 2>(bases, PointCount, i));
@@ -386,7 +385,7 @@ TEST_SUITE(Foundation_Math_QMC)
         // is scrambled with a distinct random value: the resulting sample set is
         // indistinguishable from what would be obtained using pure random sampling.
 
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
         MersenneTwister rng;
 
         for (size_t i = 0; i < PointCount; ++i)
@@ -538,8 +537,8 @@ TEST_SUITE(Foundation_Math_QMC)
         double rng_area = 0.0;
         double qmc_area = 0.0;
 
-        vector<Vector2d> rng_rmsd(SampleCount);
-        vector<Vector2d> qmc_rmsd(SampleCount);
+        std::vector<Vector2d> rng_rmsd(SampleCount);
+        std::vector<Vector2d> qmc_rmsd(SampleCount);
 
         for (size_t i = 0; i < SampleCount; ++i)
         {

@@ -37,8 +37,6 @@
 #include <cassert>
 #include <cmath>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -138,7 +136,7 @@ float BlinnMDF::G(
     const float         alpha_x,
     const float         alpha_y)
 {
-    return min(
+    return std::min(
         G1(wi, m, alpha_x, alpha_y),
         G1(wo, m, alpha_x, alpha_y));
 }
@@ -153,7 +151,7 @@ float BlinnMDF::G1(
     if (cos_vm == 0.0f)
         return 0.0f;
 
-    return min(1.0f, 2.0f * abs(m.y * v.y / cos_vm));
+    return std::min(1.0f, 2.0f * abs(m.y * v.y / cos_vm));
 }
 
 Vector3f BlinnMDF::sample(
@@ -163,7 +161,7 @@ Vector3f BlinnMDF::sample(
     const float         alpha_y)
 {
     const float cos_theta = pow(1.0f - s[0], 1.0f / (alpha_x + 2.0f));
-    const float sin_theta = sqrt(max(0.0f, 1.0f - square(cos_theta)));
+    const float sin_theta = sqrt(std::max(0.0f, 1.0f - square(cos_theta)));
 
     float cos_phi, sin_phi;
     sample_phi(s[1], cos_phi, sin_phi);
@@ -195,7 +193,7 @@ float BeckmannMDF::D(
         return 0.0f;
 
     const float cos_theta_2 = square(cos_theta);
-    const float sin_theta = sqrt(max(0.0f, 1.0f - cos_theta_2));
+    const float sin_theta = sqrt(std::max(0.0f, 1.0f - cos_theta_2));
     const float cos_theta_4 = square(cos_theta_2);
     const float tan_theta_2 = (1.0f - cos_theta_2) / cos_theta_2;
 
@@ -237,7 +235,7 @@ float BeckmannMDF::lambda(
     if (cos_theta == 0.0f)
         return 0.0f;
 
-    const float sin_theta = sqrt(max(0.0f, 1.0f - square(cos_theta)));
+    const float sin_theta = sqrt(std::max(0.0f, 1.0f - square(cos_theta)));
 
     // Normal incidence. No shadowing.
     if (sin_theta == 0.0f)
@@ -321,7 +319,7 @@ Vector2f BeckmannMDF::sample_slope(
         return slope;
     }
 
-    const float ct = max(cos_theta, threshold);
+    const float ct = std::max(cos_theta, threshold);
     const float tan_theta = sqrt(1.0f - square(ct)) / ct;
     const float cot_theta = 1.0f / tan_theta;
 
@@ -386,7 +384,7 @@ float GGXMDF::D(
         return square(alpha_x) * RcpPi<float>();
 
     const float cos_theta_2 = square(cos_theta);
-    const float sin_theta = sqrt(max(0.0f, 1.0f - cos_theta_2));
+    const float sin_theta = sqrt(std::max(0.0f, 1.0f - cos_theta_2));
     const float cos_theta_4 = square(cos_theta_2);
     const float tan_theta_2 = (1.0f - cos_theta_2) / cos_theta_2;
 
@@ -430,7 +428,7 @@ float GGXMDF::lambda(
         return 0.0f;
 
     const float cos_theta_2 = square(cos_theta);
-    const float sin_theta = sqrt(max(0.0f, 1.0f - cos_theta_2));
+    const float sin_theta = sqrt(std::max(0.0f, 1.0f - cos_theta_2));
 
     const float alpha =
         projected_roughness(
@@ -481,12 +479,12 @@ Vector3f GGXMDF::sample(
 
     // Compute normal.
     const Vector3f h =
-        p1 * t1 + p2 * t2 + sqrt(max(0.0f, 1.0f - p1 * p1 - p2 * p2)) * stretched;
+        p1 * t1 + p2 * t2 + sqrt(std::max(0.0f, 1.0f - p1 * p1 - p2 * p2)) * stretched;
 
     // Unstretch and normalize.
     const Vector3f m(
         h.x * alpha_x,
-        max(0.0f, h.y),
+        std::max(0.0f, h.y),
         h.z * alpha_y);
     return normalize(m);
 }
@@ -544,7 +542,7 @@ float GGXMDF::lambda(
         return 0.0f;
 
     const float cos_theta_2 = square(cos_theta);
-    const float sin_theta = sqrt(max(0.0f, 1.0f - cos_theta_2));
+    const float sin_theta = sqrt(std::max(0.0f, 1.0f - cos_theta_2));
 
     const float tan_theta_2 = square(sin_theta) / cos_theta_2;
     const float a2_rcp = square(alpha) * tan_theta_2;
@@ -607,7 +605,7 @@ float WardMDF::G(
     const float         alpha_x,
     const float         alpha_y)
 {
-    return min(
+    return std::min(
         G1(wi, m, alpha_x, alpha_y),
         G1(wo, m, alpha_x, alpha_y));
 }
@@ -628,7 +626,7 @@ float WardMDF::G1(
     if (cos_vm == 0.0f)
         return 0.0f;
 
-    return min(1.0f, 2.0f * abs(m.y * v.y) / cos_vm);
+    return std::min(1.0f, 2.0f * abs(m.y * v.y) / cos_vm);
 }
 
 Vector3f WardMDF::sample(
@@ -701,7 +699,7 @@ float GTR1MDF::lambda(
 
     // [2] section 3.2.
     const float cos_theta_2 = square(cos_theta);
-    const float sin_theta = sqrt(max(0.0f, 1.0f - cos_theta_2));
+    const float sin_theta = sqrt(std::max(0.0f, 1.0f - cos_theta_2));
 
     // Normal incidence. No shadowing.
     if (sin_theta == 0.0f)
@@ -731,7 +729,7 @@ Vector3f GTR1MDF::sample(
     const float a = 1.0f - pow(alpha_2, 1.0f - s[0]);
     const float cos_theta_2 = a / (1.0f - alpha_2);
     const float cos_theta = sqrt(cos_theta_2);
-    const float sin_theta = sqrt(max(0.0f, 1.0f - cos_theta_2));
+    const float sin_theta = sqrt(std::max(0.0f, 1.0f - cos_theta_2));
 
     float cos_phi, sin_phi;
     sample_phi(s[1], cos_phi, sin_phi);
@@ -763,7 +761,7 @@ float StdMDF::D(
         return 0.0;
 
     const float cos_theta_2 = square(cos_theta);
-    const float sin_theta = sqrt(max(0.0f, 1.0f - cos_theta_2));
+    const float sin_theta = sqrt(std::max(0.0f, 1.0f - cos_theta_2));
     const float cos_theta_4 = square(cos_theta_2);
     const float tan_theta_2 = (1.0f - cos_theta_2) / cos_theta_2;
 
@@ -819,7 +817,7 @@ float StdMDF::lambda(
     if (cos_theta == 0.0f)
         return 0.0f;
 
-    const float sin_theta = sqrt(max(0.0f, 1.0f - square(cos_theta)));
+    const float sin_theta = sqrt(std::max(0.0f, 1.0f - square(cos_theta)));
 
     // Normal incidence. No shadowing.
     if (sin_theta == 0.0f)

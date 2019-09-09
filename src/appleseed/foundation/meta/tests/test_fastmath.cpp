@@ -46,7 +46,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Math_FastMath)
 {
@@ -118,14 +117,14 @@ TEST_SUITE(Foundation_Math_FastMath)
     template <typename Function>
     struct FuncDef
     {
-        string      m_title;
-        string      m_color;
-        Function    m_function;
+        std::string      m_title;
+        std::string      m_color;
+        Function         m_function;
     };
 
     template <typename T, typename Function>
     void plot_functions(
-        const string&           filepath,
+        const std::string&           filepath,
         const FuncDef<Function> functions[],
         const size_t            function_count,
         const T                 low,
@@ -136,7 +135,7 @@ TEST_SUITE(Foundation_Math_FastMath)
 
         for (size_t f = 0; f < function_count; ++f)
         {
-            vector<Vector<T, 2>> points(step_count);
+            std::vector<Vector<T, 2>> points(step_count);
 
             for (size_t i = 0; i < step_count; ++i)
             {
@@ -446,7 +445,7 @@ TEST_SUITE(Foundation_Math_FastMath)
     {
         const float error =
             compute_avg_relative_error_scalar<float, float (*)(float)>(
-                log,
+                std::log,
                 fast_log,
                 1.0e-2f,
                 1.0f,
@@ -459,7 +458,7 @@ TEST_SUITE(Foundation_Math_FastMath)
     {
         const float error =
             compute_avg_relative_error_scalar<float, float (*)(float)>(
-                log,
+                std::log,
                 faster_log,
                 1.0e-2f,
                 1.0f,
@@ -498,7 +497,7 @@ TEST_SUITE(Foundation_Math_FastMath)
     {
         const FuncDef<float (*)(float)> functions[] =
         {
-            { "std::log", "black", log },
+            { "std::log", "black", std::log },
             { "foundation::fast_log", "green", fast_log },
             { "foundation::faster_log", "red", faster_log }
         };
@@ -526,7 +525,7 @@ TEST_SUITE(Foundation_Math_FastMath)
     {
         const float error =
             compute_avg_relative_error_scalar<float, float (*)(float)>(
-                exp,
+                std::exp,
                 fast_exp,
                 0.0f,
                 1.0f,
@@ -539,7 +538,7 @@ TEST_SUITE(Foundation_Math_FastMath)
     {
         const float error =
             compute_avg_relative_error_scalar<float, float (*)(float)>(
-                exp,
+                std::exp,
                 faster_exp,
                 0.0f,
                 1.0f,
@@ -578,7 +577,7 @@ TEST_SUITE(Foundation_Math_FastMath)
     {
         const FuncDef<float (*)(float)> functions[] =
         {
-            { "std::exp", "black", exp },
+            { "std::exp", "black", std::exp },
             { "foundation::fast_exp", "green", fast_exp },
             { "foundation::faster_exp", "red", faster_exp }
         };
@@ -634,7 +633,7 @@ TEST_SUITE(Foundation_Math_FastMath)
     {
         const float error =
             compute_avg_relative_error_scalar<float, float (*)(float)>(
-                sqrt,
+                std::sqrt,
                 fast_sqrt,
                 0.0f,
                 1.0f,
@@ -647,7 +646,7 @@ TEST_SUITE(Foundation_Math_FastMath)
     {
         const FuncDef<float (*)(float)> functions[] =
         {
-            { "std::sqrt", "black", sqrt },
+            { "std::sqrt", "black", std::sqrt },
             { "foundation::fast_sqrt", "green", fast_sqrt }
         };
 

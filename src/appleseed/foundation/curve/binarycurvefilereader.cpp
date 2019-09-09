@@ -41,8 +41,6 @@
 #include <cstring>
 #include <memory>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -50,7 +48,7 @@ namespace foundation
 // BinaryCurveFileReader class implementation.
 //
 
-BinaryCurveFileReader::BinaryCurveFileReader(const string& filename)
+BinaryCurveFileReader::BinaryCurveFileReader(const std::string& filename)
   : m_filename(filename)
 {
 }
@@ -70,7 +68,7 @@ void BinaryCurveFileReader::read(ICurveBuilder& builder)
     uint16 version;
     checked_read(file, version);
 
-    unique_ptr<ReaderAdapter> reader;
+    std::unique_ptr<ReaderAdapter> reader;
 
     switch (version)
     {

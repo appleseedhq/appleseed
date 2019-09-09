@@ -38,7 +38,6 @@
 #include <algorithm>
 
 using namespace foundation;
-using namespace std;
 
 namespace foundation
 {
@@ -48,7 +47,7 @@ namespace foundation
 //
 
 void linear_ordering(
-    vector<size_t>&     ordering,
+    std::vector<size_t>&     ordering,
     const size_t        size)
 {
     assert(ordering.empty());
@@ -60,7 +59,7 @@ void linear_ordering(
 }
 
 void spiral_ordering(
-    vector<size_t>&     ordering,
+    std::vector<size_t>&     ordering,
     const size_t        size_x,
     const size_t        size_y)
 {
@@ -71,7 +70,7 @@ void spiral_ordering(
     const int size = static_cast<int>(size_x * size_y);
     const int tw = static_cast<int>(size_x);
     const int th = static_cast<int>(size_y);
-    const int center = (min(tw, th) - 1) / 2;
+    const int center = (std::min(tw, th) - 1) / 2;
 
     for (int i = 0; i < size; ++i)
     {
@@ -84,7 +83,7 @@ void spiral_ordering(
             ty--;
         }
 
-        const int mintxty = min(tx, ty);
+        const int mintxty = std::min(tx, ty);
         const int txty = tx * ty;
         int x = center;
         int y = center;
@@ -130,7 +129,7 @@ void spiral_ordering(
 namespace
 {
     void hilbert(
-        vector<size_t>& ordering,
+        std::vector<size_t>& ordering,
         const int       size_x,
         const int       size_y,
         Vector2i        point,
@@ -163,7 +162,7 @@ namespace
 }
 
 void hilbert_ordering(
-    vector<size_t>&     ordering,
+    std::vector<size_t>&     ordering,
     const size_t        size_x,
     const size_t        size_y)
 {
@@ -172,7 +171,7 @@ void hilbert_ordering(
     ordering.reserve(size_x * size_y);
 
     // This Hilbert curve generator only works on a square grid whose size is a power of two.
-    const size_t root_size = next_pow2(max(size_x, size_y));
+    const size_t root_size = next_pow2(std::max(size_x, size_y));
 
     hilbert(
         ordering,

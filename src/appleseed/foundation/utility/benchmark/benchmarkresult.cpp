@@ -40,7 +40,6 @@
 #include <cstdarg>
 #include <list>
 
-using namespace std;
 
 namespace foundation
 {
@@ -51,7 +50,7 @@ namespace foundation
 
 struct BenchmarkResult::Impl
 {
-    typedef list<IBenchmarkListener*> BenchmarkListenerContainer;
+    typedef std::list<IBenchmarkListener*> BenchmarkListenerContainer;
 
     BenchmarkListenerContainer  m_listeners;
     size_t                      m_suite_execution_count;

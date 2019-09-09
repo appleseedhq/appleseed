@@ -43,8 +43,6 @@
 #include <utility>
 #include <vector>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -59,30 +57,30 @@ namespace
 
 struct OBJMeshFileReader::Impl
 {
-    const int               m_options;
-    IMeshBuilder&           m_builder;
-    OBJMeshFileLexer        m_lexer;
+    const int                         m_options;
+    IMeshBuilder&                     m_builder;
+    OBJMeshFileLexer                  m_lexer;
 
     // Current state.
-    bool                    m_inside_mesh_def;              // currently inside a mesh definition?
-    string                  m_current_mesh_name;            // name of the current mesh
-    map<string, size_t>     m_material_slots;               // material slots for the current mesh
-    size_t                  m_current_material_slot_index;  // index of the current material slot
+    bool                              m_inside_mesh_def;              // currently inside a mesh definition?
+    std::string                       m_current_mesh_name;            // name of the current mesh
+    std::map<std::string, size_t>     m_material_slots;               // material slots for the current mesh
+    size_t                            m_current_material_slot_index;  // index of the current material slot
 
     // Features defined in the file.
-    vector<Vector3d>        m_vertices;
-    vector<Vector2d>        m_tex_coords;
-    vector<Vector3d>        m_normals;
+    std::vector<Vector3d>             m_vertices;
+    std::vector<Vector2d>             m_tex_coords;
+    std::vector<Vector3d>             m_normals;
 
     // Mappings between internal indices and mesh indices.
-    vector<size_t>          m_vertex_index_mapping;
-    vector<size_t>          m_tex_coord_index_mapping;
-    vector<size_t>          m_normal_index_mapping;
+    std::vector<size_t>               m_vertex_index_mapping;
+    std::vector<size_t>               m_tex_coord_index_mapping;
+    std::vector<size_t>               m_normal_index_mapping;
 
     // Temporary vectors for collecting indices while parsing face statements.
-    vector<size_t>          m_face_vertex_indices;
-    vector<size_t>          m_face_tex_coord_indices;
-    vector<size_t>          m_face_normal_indices;
+    std::vector<size_t>               m_face_vertex_indices;
+    std::vector<size_t>               m_face_tex_coord_indices;
+    std::vector<size_t>               m_face_normal_indices;
 
     // Constructor.
     Impl(
@@ -408,8 +406,8 @@ struct OBJMeshFileReader::Impl
     }
 
     static void translate_indices(
-        vector<size_t>&         indices,
-        const vector<size_t>&   mapping)
+        std::vector<size_t>&         indices,
+        const std::vector<size_t>&   mapping)
     {
         const size_t count = indices.size();
 
@@ -420,7 +418,7 @@ struct OBJMeshFileReader::Impl
     void parse_o_g_statement()
     {
         // Retrieve the name of the upcoming mesh.
-        const string upcoming_mesh_name = parse_compound_identifier();
+        const std::string upcoming_mesh_name = parse_compound_identifier();
 
         // Start a new mesh only if the name of the object or group actually changes.
         if (upcoming_mesh_name != m_current_mesh_name)
@@ -440,9 +438,9 @@ struct OBJMeshFileReader::Impl
         }
     }
 
-    string parse_compound_identifier()
+    std::string parse_compound_identifier()
     {
-        string identifier;
+        std::string identifier;
 
         m_lexer.eat_blanks();
 
@@ -524,10 +522,10 @@ struct OBJMeshFileReader::Impl
         ensure_mesh_def();
 
         // Retrieve the name of the material slot.
-        const string material_slot_name = parse_compound_identifier();
+        const std::string material_slot_name = parse_compound_identifier();
 
         // Check whether this material slot has already been defined for this mesh.
-        const map<string, size_t>::const_iterator& it =
+        const std::map<std::string, size_t>::const_iterator& it =
             m_material_slots.find(material_slot_name);
 
         if (it != m_material_slots.end())
@@ -539,7 +537,7 @@ struct OBJMeshFileReader::Impl
         {
             // It hasn't: insert it into the mesh and make it the active material slot.
             m_current_material_slot_index = m_builder.push_material_slot(material_slot_name.c_str());
-            m_material_slots.insert(make_pair(material_slot_name, m_current_material_slot_index));
+            m_material_slots.insert(std::make_pair(material_slot_name, m_current_material_slot_index));
         }
     }
 
@@ -559,8 +557,8 @@ struct OBJMeshFileReader::Impl
 };
 
 OBJMeshFileReader::OBJMeshFileReader(
-    const string&   filename,
-    const int       options)
+    const std::string&   filename,
+    const int            options)
   : m_filename(filename)
   , m_options(options)
 {

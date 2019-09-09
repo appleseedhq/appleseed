@@ -32,8 +32,6 @@
 // Standard headers.
 #include <cstring>
 
-using namespace std;
-
 /*
     Copyright (c) 2006,2007 Mutsuo Saito, Makoto Matsumoto and Hiroshima
     University.

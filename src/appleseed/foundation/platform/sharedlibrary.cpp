@@ -37,7 +37,6 @@
 #include <dlfcn.h>
 #endif
 
-using namespace std;
 
 namespace foundation
 {
@@ -50,7 +49,7 @@ ExceptionCannotLoadSharedLib::ExceptionCannotLoadSharedLib(
     const char* path,
     const char* error_msg)
 {
-    string err("Cannot load shared library ");
+    std::string err("Cannot load shared library ");
     err += path;
     err += ": ";
     err += error_msg;
@@ -66,7 +65,7 @@ ExceptionSharedLibCannotGetSymbol::ExceptionSharedLibCannotGetSymbol(
     const char* symbol_name,
     const char* error_msg)
 {
-    string err("Cannot get symbol ");
+    std::string err("Cannot get symbol ");
     err += symbol_name;
     err += ": ";
     err += error_msg;
@@ -80,7 +79,7 @@ ExceptionSharedLibCannotGetSymbol::ExceptionSharedLibCannotGetSymbol(
 
 ExceptionSharedLibNotFound::ExceptionSharedLibNotFound(const char* error_msg)
 {
-    string err("Cannot find shared library ");
+    std::string err("Cannot find shared library ");
     err += ". Error = ";
     err += error_msg;
     set_what(err.c_str());
@@ -93,7 +92,7 @@ ExceptionSharedLibNotFound::ExceptionSharedLibNotFound(const char* error_msg)
 
 namespace
 {
-    string get_last_error_message()
+    std::string get_last_error_message()
     {
 #ifdef _WIN32
         return get_last_windows_error_message();

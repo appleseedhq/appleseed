@@ -35,7 +35,6 @@
 #include <utility>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Array_KeyframedArray)
 {
@@ -89,7 +88,7 @@ TEST_SUITE(Foundation_Array_KeyframedArray)
         const float items[] = {1.0f, 5.0f, 7.0f, 11.0f};
         set_keyframes(2, items, items + countof(items), k);
 
-        KeyFramedArray kmoved(move(k));
+        KeyFramedArray kmoved(std::move(k));
         EXPECT_TRUE(k.is_moved());
     }
 

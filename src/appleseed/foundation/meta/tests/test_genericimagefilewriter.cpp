@@ -47,7 +47,6 @@
 #include <memory>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Image_GenericImageFileWriter)
 {
@@ -66,7 +65,7 @@ TEST_SUITE(Foundation_Image_GenericImageFileWriter)
 
         {
             GenericImageFileReader reader;
-            unique_ptr<Image> image(reader.read(ImageFilePath));
+            std::unique_ptr<Image> image(reader.read(ImageFilePath));
 
             for (size_t y = 0; y < 2; ++y)
             {
@@ -107,9 +106,9 @@ TEST_SUITE(Foundation_Image_GenericImageFileWriter)
             ImageAttributes attrs;
 
             GenericImageFileReader reader;
-            unique_ptr<Image> image(reader.read(ImageFilePath, &attrs));
+            std::unique_ptr<Image> image(reader.read(ImageFilePath, &attrs));
 
-            EXPECT_EQ(string("something"), attrs.get<string>("appleseed:test:StringAttr"));
+            EXPECT_EQ(std::string("something"), attrs.get<std::string>("appleseed:test:StringAttr"));
             EXPECT_EQ(47, attrs.get<int>("appleseed:test:StringButIntAttr"));
             EXPECT_EQ(47.5f, attrs.get<float>("appleseed:test:StringButFloatAttr"));
             EXPECT_EQ(32.0f, attrs.get<float>("appleseed:test:FloatAttr"));

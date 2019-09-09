@@ -49,7 +49,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Math_Hash)
 {
@@ -99,7 +98,7 @@ TEST_SUITE(Foundation_Math_Hash)
 
         void plot_histogram(const char* filename, const char* title) const
         {
-            vector<Vector2d> points;
+            std::vector<Vector2d> points;
             points.reserve(BinCount);
 
             for (size_t i = 0; i < BinCount; ++i)
@@ -242,7 +241,7 @@ TEST_SUITE(Foundation_Math_Hash)
             const size_t    trials,
             Hash            hash)
         {
-            constexpr size_t N = numeric_limits<UInt>::digits;
+            constexpr size_t N = std::numeric_limits<UInt>::digits;
 
             // y = input bit, x = output bit
             size_t counters[N * N];

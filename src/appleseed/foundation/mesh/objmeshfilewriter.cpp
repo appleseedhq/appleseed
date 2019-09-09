@@ -38,8 +38,6 @@
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/string.h"
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -47,7 +45,7 @@ namespace foundation
 // OBJMeshFileWriter class implementation.
 //
 
-OBJMeshFileWriter::OBJMeshFileWriter(const string& filename)
+OBJMeshFileWriter::OBJMeshFileWriter(const std::string& filename)
   : m_filename(filename)
   , m_file(nullptr)
   , m_base_vertex_index(1)

@@ -42,8 +42,6 @@
 #include <cstring>
 #include <memory>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -51,7 +49,7 @@ namespace foundation
 // BinaryMeshFileReader class implementation.
 //
 
-BinaryMeshFileReader::BinaryMeshFileReader(const string& filename)
+BinaryMeshFileReader::BinaryMeshFileReader(const std::string& filename)
   : m_filename(filename)
 {
 }
@@ -120,12 +118,12 @@ void BinaryMeshFileReader::read_and_check_signature(BufferedFile& file)
         throw ExceptionIOError("invalid binarymesh format signature");
 }
 
-string BinaryMeshFileReader::read_string(ReaderAdapter& reader)
+std::string BinaryMeshFileReader::read_string(ReaderAdapter& reader)
 {
     uint16 length;
     checked_read(reader, length);
 
-    string s;
+    std::string s;
     s.resize(length);
     checked_read(reader, &s[0], length);
 
@@ -140,7 +138,7 @@ void BinaryMeshFileReader::read_meshes(ReaderAdapter& reader, IMeshBuilder& buil
         while (true)
         {
             // Read the name of the next mesh.
-            string mesh_name;
+            std::string mesh_name;
             try
             {
                 mesh_name = read_string(reader);
@@ -217,7 +215,7 @@ void BinaryMeshFileReader::read_material_slots(ReaderAdapter& reader, IMeshBuild
 
     for (uint16 i = 0; i < count; ++i)
     {
-        const string material_slot = read_string(reader);
+        const std::string material_slot = read_string(reader);
         builder.push_material_slot(material_slot.c_str());
     }
 }

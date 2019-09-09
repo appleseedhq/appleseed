@@ -52,7 +52,6 @@
 #include <unistd.h>
 #endif
 
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace foundation

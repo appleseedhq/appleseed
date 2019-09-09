@@ -39,8 +39,6 @@
 #include <cassert>
 #include <limits>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -99,8 +97,8 @@ void ColorMap::find_min_max_red_channel(
     float&          min_value,
     float&          max_value)
 {
-    min_value = +numeric_limits<float>::max();
-    max_value = -numeric_limits<float>::max();
+    min_value = +std::numeric_limits<float>::max();
+    max_value = -std::numeric_limits<float>::max();
 
     for_each_pixel(image, crop_window, [&min_value, &max_value](const Color3f& color)
     {
@@ -127,8 +125,8 @@ void ColorMap::find_min_max_relative_luminance(
     float&          min_luminance,
     float&          max_luminance)
 {
-    min_luminance = +numeric_limits<float>::max();
-    max_luminance = -numeric_limits<float>::max();
+    min_luminance = +std::numeric_limits<float>::max();
+    max_luminance = -std::numeric_limits<float>::max();
 
     for_each_pixel(image, crop_window, [&min_luminance, &max_luminance](const Color3f& color)
     {

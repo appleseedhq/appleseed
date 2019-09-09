@@ -34,8 +34,6 @@
 #include <cassert>
 #include <utility>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -66,7 +64,7 @@ KeyFramedArray::KeyFramedArray(Array&& first_key, const size_t num_keys)
     for (size_t i = 1; i < num_keys; ++i)
         m_keys[i] = Array(first_key.type(), first_key.size());
 
-    m_keys[0] = move(first_key);
+    m_keys[0] = std::move(first_key);
 }
 
 KeyFramedArray::~KeyFramedArray()
@@ -78,7 +76,7 @@ KeyFramedArray::KeyFramedArray(const KeyFramedArray& rhs)
 {
     m_key_count = rhs.m_key_count;
     m_keys = new Array[m_key_count];
-    copy(rhs.begin(), rhs.end(), begin());
+    std::copy(rhs.begin(), rhs.end(), begin());
 }
 
 KeyFramedArray::KeyFramedArray(KeyFramedArray&& rhs) APPLESEED_NOEXCEPT
@@ -92,14 +90,14 @@ KeyFramedArray::KeyFramedArray(KeyFramedArray&& rhs) APPLESEED_NOEXCEPT
 KeyFramedArray& KeyFramedArray::operator=(const KeyFramedArray& rhs)
 {
     KeyFramedArray tmp(rhs);
-    swap(*this, tmp);
+    std::swap(*this, tmp);
     return *this;
 }
 
 KeyFramedArray& KeyFramedArray::operator=(KeyFramedArray&& rhs) APPLESEED_NOEXCEPT
 {
-    KeyFramedArray tmp(move(rhs));
-    swap(m_keys, tmp.m_keys);
+    KeyFramedArray tmp(std::move(rhs));
+    std::swap(m_keys, tmp.m_keys);
     m_key_count = tmp.m_key_count;
     return *this;
 }
@@ -113,7 +111,7 @@ ArrayType KeyFramedArray::type() const
 void KeyFramedArray::resize(const size_t size, const size_t keys)
 {
     KeyFramedArray tmp(Array(type(), size), keys);
-    swap(*this, tmp);
+    std::swap(*this, tmp);
 }
 
 const Array* KeyFramedArray::begin() const
@@ -146,8 +144,8 @@ void KeyFramedArray::set_key_count(const size_t keys)
 {
     assert(keys > 0);
     assert(!is_moved());
-    KeyFramedArray tmp(move(m_keys[0]), keys);
-    swap(*this, tmp);
+    KeyFramedArray tmp(std::move(m_keys[0]), keys);
+    std::swap(*this, tmp);
 }
 
 const Array& KeyFramedArray::get_key(const size_t i) const
@@ -195,7 +193,7 @@ bool KeyFramedArray::all_keyframes_equal() const
     if (m_key_count > 1)
     {
         // Check that the keyframes are not empty.
-        if (all_of(begin(), end(), [](const Array& x) { return x.empty(); }))
+        if (std::all_of(begin(), end(), [](const Array& x) { return x.empty(); }))
             return true;
 
         // Check that all the keyframe values are equal to the first.
@@ -217,7 +215,7 @@ bool KeyFramedArray::operator==(const KeyFramedArray& rhs) const
     if (m_key_count != rhs.m_key_count)
         return false;
 
-    return equal(begin(), end(), rhs.begin());
+    return std::equal(begin(), end(), rhs.begin());
 }
 
 bool KeyFramedArray::operator!=(const KeyFramedArray& rhs) const

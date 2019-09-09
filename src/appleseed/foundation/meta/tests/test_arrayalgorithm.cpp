@@ -33,7 +33,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Array_Algorithm)
 {
@@ -78,7 +77,7 @@ TEST_SUITE(Foundation_Array_Algorithm)
         const ArrayView<uint16> src_view(src);
         const ArrayView<uint8> dst_view(array);
 
-        EXPECT_TRUE(equal(src_view.begin(), src_view.end(), dst_view.begin()));
+        EXPECT_TRUE(std::equal(src_view.begin(), src_view.end(), dst_view.begin()));
     }
 
     TEST_CASE(ConvertToSmallestType32to8)
@@ -95,7 +94,7 @@ TEST_SUITE(Foundation_Array_Algorithm)
         const ArrayView<uint32> src_view(src);
         const ArrayView<uint8> dst_view(array);
 
-        EXPECT_TRUE(equal(src_view.begin(), src_view.end(), dst_view.begin()));
+        EXPECT_TRUE(std::equal(src_view.begin(), src_view.end(), dst_view.begin()));
     }
 
     TEST_CASE(ConvertToSmallestType32to16)
@@ -112,7 +111,7 @@ TEST_SUITE(Foundation_Array_Algorithm)
         const ArrayView<uint32> src_view(src);
         const ArrayView<uint16> dst_view(array);
 
-        EXPECT_TRUE(equal(src_view.begin(), src_view.end(), dst_view.begin()));
+        EXPECT_TRUE(std::equal(src_view.begin(), src_view.end(), dst_view.begin()));
     }
 
     TEST_CASE(ConvertToSmallestType32NoOp)
@@ -129,6 +128,6 @@ TEST_SUITE(Foundation_Array_Algorithm)
         const ArrayView<uint32> src_view(src);
         const ArrayView<uint32> dst_view(array);
 
-        EXPECT_TRUE(equal(src_view.begin(), src_view.end(), dst_view.begin()));
+        EXPECT_TRUE(std::equal(src_view.begin(), src_view.end(), dst_view.begin()));
     }
 }

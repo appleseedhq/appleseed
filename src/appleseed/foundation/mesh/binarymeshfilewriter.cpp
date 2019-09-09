@@ -39,8 +39,6 @@
 // Standard headers.
 #include <cstring>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -54,7 +52,7 @@ namespace
     const uint16 Version = 4;
 }
 
-BinaryMeshFileWriter::BinaryMeshFileWriter(const string& filename)
+BinaryMeshFileWriter::BinaryMeshFileWriter(const std::string& filename)
   : m_filename(filename)
   , m_writer(m_file, 256 * 1024)
 {

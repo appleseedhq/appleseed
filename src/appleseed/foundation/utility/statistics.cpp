@@ -33,7 +33,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
 
-using namespace std;
 
 namespace foundation
 {
@@ -95,25 +94,25 @@ void Statistics::merge(const Statistics& other)
     }
 }
 
-string Statistics::to_string(const size_t max_header_length) const
+std::string Statistics::to_string(const size_t max_header_length) const
 {
     if (m_entries.empty())
         return "  no statistics";
 
-    stringstream sstr;
+    std::stringstream sstr;
 
     for (const_each<EntryVector> i = m_entries; i; ++i)
     {
         const Entry* entry = *i;
 
         if (i.it() > m_entries.begin())
-            sstr << endl;
+            sstr << std::endl;
 
         sstr << "  ";
 
         if (entry->m_name.size() > max_header_length)
             sstr << entry->m_name.substr(0, max_header_length);
-        else sstr << entry->m_name << string(max_header_length - entry->m_name.size(), ' ');
+        else sstr << entry->m_name << std::string(max_header_length - entry->m_name.size(), ' ');
 
         sstr << entry->to_string();
     }
@@ -146,14 +145,14 @@ Statistics::ExceptionTypeMismatch::ExceptionTypeMismatch(const char* name)
 // Statistics::Entry class implementation.
 //
 
-Statistics::Entry::Entry(const string& name)
+Statistics::Entry::Entry(const std::string& name)
   : m_name(name)
 {
 }
 
 Statistics::Entry::Entry(
-    const string&               name,
-    const string&               unit)
+    const std::string&          name,
+    const std::string&          unit)
   : m_name(name)
   , m_unit(unit)
 {
@@ -165,17 +164,17 @@ Statistics::Entry::Entry(
 //
 
 Statistics::IntegerEntry::IntegerEntry(
-    const string&               name,
-    const string&               unit,
+    const std::string&          name,
+    const std::string&          unit,
     const int64                 value)
   : Entry(name, unit)
   , m_value(value)
 {
 }
 
-unique_ptr<Statistics::Entry> Statistics::IntegerEntry::clone() const
+std::unique_ptr<Statistics::Entry> Statistics::IntegerEntry::clone() const
 {
-    return unique_ptr<Entry>(new IntegerEntry(*this));
+    return std::unique_ptr<Entry>(new IntegerEntry(*this));
 }
 
 void Statistics::IntegerEntry::merge(const Entry* other)
@@ -183,7 +182,7 @@ void Statistics::IntegerEntry::merge(const Entry* other)
     m_value += cast<IntegerEntry>(other)->m_value;
 }
 
-string Statistics::IntegerEntry::to_string() const
+std::string Statistics::IntegerEntry::to_string() const
 {
     return pretty_int(m_value);
 }
@@ -194,17 +193,17 @@ string Statistics::IntegerEntry::to_string() const
 //
 
 Statistics::UnsignedIntegerEntry::UnsignedIntegerEntry(
-    const string&               name,
-    const string&               unit,
+    const std::string&          name,
+    const std::string&          unit,
     const uint64                value)
   : Entry(name, unit)
   , m_value(value)
 {
 }
 
-unique_ptr<Statistics::Entry> Statistics::UnsignedIntegerEntry::clone() const
+std::unique_ptr<Statistics::Entry> Statistics::UnsignedIntegerEntry::clone() const
 {
-    return unique_ptr<Entry>(new UnsignedIntegerEntry(*this));
+    return std::unique_ptr<Entry>(new UnsignedIntegerEntry(*this));
 }
 
 void Statistics::UnsignedIntegerEntry::merge(const Entry* other)
@@ -212,7 +211,7 @@ void Statistics::UnsignedIntegerEntry::merge(const Entry* other)
     m_value += cast<UnsignedIntegerEntry>(other)->m_value;
 }
 
-string Statistics::UnsignedIntegerEntry::to_string() const
+std::string Statistics::UnsignedIntegerEntry::to_string() const
 {
     return pretty_uint(m_value);
 }
@@ -223,17 +222,17 @@ string Statistics::UnsignedIntegerEntry::to_string() const
 //
 
 Statistics::FloatingPointEntry::FloatingPointEntry(
-    const string&               name,
-    const string&               unit,
+    const std::string&          name,
+    const std::string&          unit,
     const double                value)
   : Entry(name, unit)
   , m_value(value)
 {
 }
 
-unique_ptr<Statistics::Entry> Statistics::FloatingPointEntry::clone() const
+std::unique_ptr<Statistics::Entry> Statistics::FloatingPointEntry::clone() const
 {
-    return unique_ptr<Entry>(new FloatingPointEntry(*this));
+    return std::unique_ptr<Entry>(new FloatingPointEntry(*this));
 }
 
 void Statistics::FloatingPointEntry::merge(const Entry* other)
@@ -241,7 +240,7 @@ void Statistics::FloatingPointEntry::merge(const Entry* other)
     m_value += cast<FloatingPointEntry>(other)->m_value;
 }
 
-string Statistics::FloatingPointEntry::to_string() const
+std::string Statistics::FloatingPointEntry::to_string() const
 {
     return pretty_scalar(m_value);
 }
@@ -252,17 +251,17 @@ string Statistics::FloatingPointEntry::to_string() const
 //
 
 Statistics::StringEntry::StringEntry(
-    const string&               name,
-    const string&               unit,
-    const string&               value)
+    const std::string&               name,
+    const std::string&               unit,
+    const std::string&               value)
   : Entry(name, unit)
   , m_value(value)
 {
 }
 
-unique_ptr<Statistics::Entry> Statistics::StringEntry::clone() const
+std::unique_ptr<Statistics::Entry> Statistics::StringEntry::clone() const
 {
-    return unique_ptr<Entry>(new StringEntry(*this));
+    return std::unique_ptr<Entry>(new StringEntry(*this));
 }
 
 void Statistics::StringEntry::merge(const Entry* other)
@@ -270,7 +269,7 @@ void Statistics::StringEntry::merge(const Entry* other)
     // String statistics are not merged.
 }
 
-string Statistics::StringEntry::to_string() const
+std::string Statistics::StringEntry::to_string() const
 {
     return m_value;
 }
@@ -281,7 +280,7 @@ string Statistics::StringEntry::to_string() const
 //
 
 StatisticsVector StatisticsVector::make(
-    const string&               name,
+    const std::string&          name,
     const Statistics&           stats)
 {
     StatisticsVector vec;
@@ -290,7 +289,7 @@ StatisticsVector StatisticsVector::make(
 }
 
 void StatisticsVector::insert(
-    const string&               name,
+    const std::string&          name,
     const Statistics&           stats)
 {
     NamedStatistics named_stats;
@@ -319,16 +318,16 @@ void StatisticsVector::merge(const NamedStatistics& other)
     m_stats.push_back(other);
 }
 
-string StatisticsVector::to_string(const size_t max_header_length) const
+std::string StatisticsVector::to_string(const size_t max_header_length) const
 {
-    stringstream sstr;
+    std::stringstream sstr;
 
     for (const_each<NamedStatisticsVector> i = m_stats; i; ++i)
     {
         if (i.it() > m_stats.begin())
-            sstr << endl;
+            sstr << std::endl;
 
-        sstr << i->m_name << ":" << endl;
+        sstr << i->m_name << ":" << std::endl;
         sstr << i->m_stats.to_string(max_header_length);
     }
 

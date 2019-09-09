@@ -49,7 +49,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Math_Quaternion)
 {
@@ -156,7 +155,7 @@ TEST_SUITE(Foundation_Math_Quaternion)
         const Quaterniond q2 = Quaterniond::make_rotation(Vector3d(0.0, 0.0, 1.0), Pi<double>());
 
         const size_t PointCount = 1000;
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
 
         for (size_t i = 0; i < PointCount; ++i)
         {

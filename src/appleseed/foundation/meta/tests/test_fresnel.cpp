@@ -45,7 +45,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Math_Fresnel)
 {
@@ -130,7 +129,7 @@ TEST_SUITE(Foundation_Math_Fresnel)
 
         const double Eta = 1.0 / 1.5;
         const size_t PointCount = 256;
-        vector<Vector2d> reflectance_points, transmittance_points;
+        std::vector<Vector2d> reflectance_points, transmittance_points;
 
         for (size_t i = 0; i < PointCount; ++i)
         {
@@ -175,7 +174,7 @@ TEST_SUITE(Foundation_Math_Fresnel)
 
         const double Eta = 1.0 / 1.5;
         const size_t PointCount = 256;
-        vector<Vector2d> ref_refl_points, schlick_refl_points;
+        std::vector<Vector2d> ref_refl_points, schlick_refl_points;
 
         for (size_t i = 0; i < PointCount; ++i)
         {
@@ -265,7 +264,7 @@ TEST_SUITE(Foundation_Math_Fresnel)
         plotfile.set_ylabel("Fdr");
 
         const size_t PointCount = 256;
-        vector<Vector2d> integral_points, approx_points;
+        std::vector<Vector2d> integral_points, approx_points;
 
         for (size_t i = 0; i < PointCount; ++i)
         {
@@ -363,7 +362,7 @@ TEST_SUITE(Foundation_Math_Fresnel)
         plotfile.set_yrange(0.3, 1.0);
 
         const size_t PointCount = 256;
-        vector<Vector2d> red_points, green_points, blue_points;
+        std::vector<Vector2d> red_points, green_points, blue_points;
 
         for (size_t i = 0; i < PointCount; ++i)
         {
@@ -476,7 +475,7 @@ TEST_SUITE(Foundation_Math_Fresnel)
         static const double edge_tint[3] = {1.0, 0.5, 0.1};
 
         const size_t PointCount = 256;
-        vector<Vector2d> red_points, green_points, blue_points;
+        std::vector<Vector2d> red_points, green_points, blue_points;
 
         for (size_t i = 0; i < PointCount; ++i)
         {

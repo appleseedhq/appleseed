@@ -45,7 +45,6 @@
 #include <limits>
 
 using namespace foundation;
-using namespace std;
 
 namespace
 {
@@ -158,7 +157,7 @@ BENCHMARK_SUITE(Foundation_Math_Intersection_RayAABB)
         for (size_t i = 0; i < RayCount; ++i)
         {
             m_ray[i].m_tmin = 0.0f;
-            m_ray[i].m_tmax = numeric_limits<float>::max();
+            m_ray[i].m_tmax = std::numeric_limits<float>::max();
 
             m_hit ^= clip(m_ray[i], m_ray_info[i], m_aabb);
         }
@@ -169,7 +168,7 @@ BENCHMARK_SUITE(Foundation_Math_Intersection_RayAABB)
         for (size_t i = 0; i < RayCount; ++i)
         {
             m_ray[i].m_tmin = 0.0;
-            m_ray[i].m_tmax = numeric_limits<double>::max();
+            m_ray[i].m_tmax = std::numeric_limits<double>::max();
 
             m_hit ^= clip(m_ray[i], m_ray_info[i], m_aabb);
         }

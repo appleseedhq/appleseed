@@ -36,7 +36,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Array_ApplyVisitor)
 {
@@ -66,7 +65,7 @@ TEST_SUITE(Foundation_Array_ApplyVisitor)
         }
 
       private:
-        vector<size_t> m_applies;
+        std::vector<size_t> m_applies;
     };
 
     TEST_CASE(ApplyConst)
