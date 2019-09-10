@@ -113,7 +113,7 @@ TEST_SUITE(Foundation_Platform_Snprintf)
         char buf[100];
         const int result = portable_snprintf(buf, sizeof(buf), "%Iu", MaxSizeTValue);
 
-        EXPECT_EQ(MaxSizeTValueString, string(buf));
+        EXPECT_EQ(MaxSizeTValueString, std::string(buf));
     }
 
 #endif

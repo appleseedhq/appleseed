@@ -60,7 +60,7 @@ TEST_SUITE(Foundation_Utility_SearchPaths)
         const SearchPaths search_paths(TestEnvVarName, ';');
 
         const APIString result = search_paths.to_string(';');
-        EXPECT_EQ("", std::to_string(result));
+        EXPECT_EQ("", to_string(result));
     }
 
     TEST_CASE(Constructor_NonEmptyEnvironmentVariable)
@@ -70,7 +70,7 @@ TEST_SUITE(Foundation_Utility_SearchPaths)
         const SearchPaths search_paths(TestEnvVarName, ';');
 
         const APIString result = search_paths.to_string(';');
-        EXPECT_EQ("C:\\Windows\\System32;C:\\Windows;C:\\Program Files", std::to_string(result));
+        EXPECT_EQ("C:\\Windows\\System32;C:\\Windows;C:\\Program Files", to_string(result));
     }
 
     TEST_CASE(ClearExplicitPaths)
@@ -84,7 +84,7 @@ TEST_SUITE(Foundation_Utility_SearchPaths)
         search_paths.clear_explicit_paths();
 
         const APIString result = search_paths.to_string(';');
-        EXPECT_EQ("C:\\Some\\Root\\Path;C:\\Windows\\System32;C:\\Windows;C:\\Program Files", std::to_string(result));
+        EXPECT_EQ("C:\\Some\\Root\\Path;C:\\Windows\\System32;C:\\Windows;C:\\Program Files", to_string(result));
     }
 
     TEST_CASE(ToString)
@@ -96,7 +96,7 @@ TEST_SUITE(Foundation_Utility_SearchPaths)
 
         const APIString result = search_paths.to_string(';');
 
-        EXPECT_EQ("C:\\Windows\\System32;C:\\Windows;C:\\Program Files", std::to_string(result));
+        EXPECT_EQ("C:\\Windows\\System32;C:\\Windows;C:\\Program Files", to_string(result));
     }
 
     TEST_CASE(ToStringReversed)
@@ -108,7 +108,7 @@ TEST_SUITE(Foundation_Utility_SearchPaths)
 
         const APIString result = search_paths.to_string_reversed(';');
 
-        EXPECT_EQ("C:\\Program Files;C:\\Windows;C:\\Windows\\System32", std::to_string(result));
+        EXPECT_EQ("C:\\Program Files;C:\\Windows;C:\\Windows\\System32", to_string(result));
     }
 
 #else
