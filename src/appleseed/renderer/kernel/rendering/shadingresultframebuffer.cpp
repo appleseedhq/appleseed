@@ -41,6 +41,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <typeinfo>
 
 using namespace foundation;
 using namespace std;
@@ -107,6 +108,7 @@ void ShadingResultFrameBuffer::merge(
     const size_t                    source_y,
     const float                     scaling)
 {
+    assert(typeid(this) == typeid(source));
     assert(m_channel_count == source.m_channel_count);
 
     const float* APPLESEED_RESTRICT source_ptr = source.pixel(source_x, source_y);

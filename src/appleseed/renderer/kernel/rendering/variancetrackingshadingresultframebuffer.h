@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Stephen Agyemang, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,14 +28,16 @@
 
 #pragma once
 
+// appleseed.renderer headers.
+#include "renderer/kernel/rendering/shadingresultframebuffer.h"
+
 // appleseed.foundation headers.
-#include "foundation/image/accumulatortile.h"
+#include "foundation/image/image.h"
+#include "foundation/image/tile.h"
 #include "foundation/math/aabb.h"
-#include "foundation/math/vector.h"
 
 // Standard headers.
 #include <cstddef>
-#include <vector>
 
 // Forward declarations.
 namespace foundation    { class Tile; }
@@ -46,52 +47,49 @@ namespace renderer      { class TileStack; }
 namespace renderer
 {
 
-class ShadingResultFrameBuffer
-  : public foundation::AccumulatorTile
+class VarianceTrackingShadingResultFrameBuffer
+  : public ShadingResultFrameBuffer
 {
   public:
-    ShadingResultFrameBuffer(
+    VarianceTrackingShadingResultFrameBuffer(
         const size_t                    width,
         const size_t                    height,
         const size_t                    aov_count);
 
-    ShadingResultFrameBuffer(
+    VarianceTrackingShadingResultFrameBuffer(
         const size_t                    width,
         const size_t                    height,
         const size_t                    aov_count,
         const foundation::AABB2u&       crop_window);
 
-    virtual ~ShadingResultFrameBuffer() {};
+    ~VarianceTrackingShadingResultFrameBuffer() override {}
 
-    static size_t get_total_channel_count(const size_t aov_count);
+    static size_t get_total_channel_count(
+        const size_t                    aov_count);
 
-    virtual void add(
+    void add(
         const foundation::Vector2u&     pi,
-        const ShadingResult&            sample);
-
-    void merge(
-        const size_t                    dest_x,
-        const size_t                    dest_y,
-        const ShadingResultFrameBuffer& source,
-        const size_t                    source_x,
-        const size_t                    source_y,
-        const float                     scaling);
+        const ShadingResult&            sample) override;
 
     virtual void develop_to_tile(
         foundation::Tile&               tile,
-        TileStack&                      aov_tiles) const;
+        TileStack&                      aov_tiles) const override;
 
-  protected:
-    std::vector<float>                  m_scratch;
+    // Return estimate of the mean pixel variance.
+    float estimator_variance() const;
 
+    // Transfer pixel variance estimates to tile and return estimate of the mean pixel variance.
+    float estimator_variance_to_tile(
+        foundation::Tile&               tile) const;
+  
   private:
     const size_t                        m_aov_count;
 };
 
-inline size_t ShadingResultFrameBuffer::get_total_channel_count(const size_t aov_count)
+inline size_t VarianceTrackingShadingResultFrameBuffer::get_total_channel_count(const size_t aov_count)
 {
-    // The main image plus a number of AOVs, all RGBA.
-    return (1 + aov_count) * 4;
+    // The squared sample sum plus all channels of the ShadingResultFramebuffer.
+    return 4 + ShadingResultFrameBuffer::get_total_channel_count(aov_count);
 }
 
 }   // namespace renderer

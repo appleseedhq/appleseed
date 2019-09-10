@@ -1383,6 +1383,10 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/tilecallbackcollection.h
     renderer/kernel/rendering/timedrenderercontroller.cpp
     renderer/kernel/rendering/timedrenderercontroller.h
+    renderer/kernel/rendering/variancetrackingshadingresultframebuffer.cpp
+    renderer/kernel/rendering/variancetrackingshadingresultframebuffer.h
+    renderer/kernel/rendering/variancetrackingshadingresultframebufferfactory.cpp
+    renderer/kernel/rendering/variancetrackingshadingresultframebufferfactory.h
 )
 list (APPEND appleseed_sources
     ${renderer_kernel_rendering_sources}
