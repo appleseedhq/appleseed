@@ -60,22 +60,6 @@ shader as_metal
         string page = "Fresnel",
         string help = "Reflectance at grazing incidence."
     ]],
-    int in_distribution = 0
-    [[
-        string as_maya_attribute_name = "distribution",
-        string as_maya_attribute_short_name = "mdf",
-        string widget = "mapper",
-        string options = "Beckmann:0|GGX:1",
-        string label = "Distribution",
-        string page = "Specular",
-        int as_maya_attribute_connectable = 0,
-        int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1,
-        int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0,
-        int divider = 1,
-        int as_deprecated = 1
-    ]],
     float in_roughness = 0.25
     [[
         string as_maya_attribute_name = "roughness",
@@ -326,26 +310,6 @@ shader as_metal
     if (!status || ray_depth > in_maximum_ray_depth)
     {
         return;
-    }
-
-    string distribution;
-
-    if (in_distribution == 0)
-    {
-        distribution = "beckmann";
-    }
-    else if (in_distribution == 1)
-    {
-        distribution = "ggx";
-    }
-    else
-    {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-        warning("[WARNING]: Invalid MDF in %s,\t%s:%d\n",
-                shadername, __FILE__, __LINE__);
-#endif
     }
 
     // Layer EDF later, but eta+k must change with temperature.

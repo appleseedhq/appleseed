@@ -180,18 +180,6 @@ shader as_standard_surface
         string label = "Specular Roughness",
         string page = "Specular"
     ]],
-    float in_specular_spread = 0.25
-    [[
-        string as_maya_attribute_name = "specularSpread",
-        string as_maya_attribute_short_name = "sps",
-        float min = 0.0,
-        float max = 1.0,
-        string label = "Specular Spread",
-        string page = "Specular",
-        string help = "Specular spread, controls the tails of the highlights.",
-        int divider = 1,
-        int as_deprecated = 1
-    ]],
     int in_fresnel_type = 0
     [[
         string as_maya_attribute_name = "fresnelType",
@@ -437,7 +425,7 @@ shader as_standard_surface
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
-    int in_tonemap_edf = 1
+    int in_tonemap_edf = 0
     [[
         string as_maya_attribute_name = "toneMapEDF",
         string as_maya_attribute_short_name = "tme",
