@@ -505,27 +505,27 @@ namespace
 
 _Ret_notnull_ _Post_writable_byte_size_(size)
 void* operator new(size_t size)
-  throw(bad_alloc)
+  throw(std::bad_alloc)
 {
     return new_impl(size);
 }
 
 _Ret_notnull_ _Post_writable_byte_size_(size)
 void* operator new[](size_t size)
-  throw(bad_alloc)
+  throw(std::bad_alloc)
 {
     return new_impl(size);
 }
 
 _Ret_maybenull_ _Post_writable_byte_size_(size)
-void* operator new(size_t size, const nothrow_t&)
+void* operator new(size_t size, const std::nothrow_t&)
   throw()
 {
     return new_impl(size);
 }
 
 _Ret_maybenull_ _Post_writable_byte_size_(size)
-void* operator new[](size_t size, const nothrow_t&)
+void* operator new[](size_t size, const std::nothrow_t&)
   throw()
 {
     return new_impl(size);
@@ -541,12 +541,12 @@ void operator delete[](void* ptr)
     delete_impl(ptr);
 }
 
-void operator delete(void* ptr, const nothrow_t&)
+void operator delete(void* ptr, const std::nothrow_t&)
 {
     delete_impl(ptr);
 }
 
-void operator delete[](void* ptr, const nothrow_t&)
+void operator delete[](void* ptr, const std::nothrow_t&)
 {
     delete_impl(ptr);
 }
