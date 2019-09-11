@@ -47,7 +47,7 @@ if (WITH_PYTHON3_BINDINGS)
     find_package (OpenGL REQUIRED)
 
     if (Boost_VERSION GREATER_EQUAL 106700)
-        set (BOOST_NEEDED_LIBS ${BOOST_NEEDED_LIBS} python35)
+        set (BOOST_NEEDED_LIBS ${BOOST_NEEDED_LIBS} python37)
     else ()
         set (BOOST_NEEDED_LIBS ${BOOST_NEEDED_LIBS} python3)
     endif ()
