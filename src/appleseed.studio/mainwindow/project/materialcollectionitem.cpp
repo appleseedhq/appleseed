@@ -95,7 +95,7 @@ MaterialCollectionItem::MaterialCollectionItem(
 
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
 
-const Material& MaterialCollectionItem::create_default_disney_material(const string& material_name)
+const Material& MaterialCollectionItem::create_default_disney_material(const std::string& material_name)
 {
     auto_release_ptr<Material> material =
         DisneyMaterialFactory().create(material_name.c_str(), ParamArray());
