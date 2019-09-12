@@ -75,9 +75,9 @@ namespace
         }
     };
 
-    std::std::vector<Dictionary> collect_layer_definitions(const Dictionary& values)
+    std::vector<Dictionary> collect_layer_definitions(const Dictionary& values)
     {
-        vector<Dictionary> layer_definitions;
+        std::vector<Dictionary> layer_definitions;
 
         for (const_each<DictionaryDictionary> i = values.dictionaries(); i; ++i)
             layer_definitions.push_back(i->value());
@@ -139,7 +139,7 @@ Dictionary DisneyMaterialCustomUI::get_values() const
         Dictionary layer_values = m_layers[i]->get_values();
 
         values.insert(
-            layer_values.get<string>("layer_name"),
+            layer_values.get<std::string>("layer_name"),
             layer_values.insert("layer_number", i));
     }
 

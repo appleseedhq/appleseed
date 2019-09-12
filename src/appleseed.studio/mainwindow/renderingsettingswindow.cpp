@@ -395,7 +395,7 @@ class RenderSettingsPanel
 
     template <typename T>
     void set_widget(
-        const std::string&           widget_key,
+        const std::string&      widget_key,
         const T&                value)
     {
         assert(m_widget_proxies.find(widget_key) != m_widget_proxies.end());
@@ -405,7 +405,7 @@ class RenderSettingsPanel
     template <typename T>
     static T get_config(
         const Configuration&    configuration,
-        const std::string&           param_path,
+        const std::string&      param_path,
         const T&                default_value)
     {
         return configuration.get_inherited_parameters().
@@ -415,7 +415,7 @@ class RenderSettingsPanel
     template <typename T>
     static void set_config(
         Configuration&          configuration,
-        const std::string&           param_path,
+        const std::string&      param_path,
         const T&                value)
     {
         configuration.get_parameters().insert_path(param_path, value);

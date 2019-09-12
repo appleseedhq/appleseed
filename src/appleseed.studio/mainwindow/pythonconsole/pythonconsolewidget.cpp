@@ -321,7 +321,7 @@ void PythonConsoleWidget::open_file(const std::string& filepath)
     while (!file.eof())
     {
         std::string str;
-        getline(file, str);
+        std::getline(file, str);
         m_input->appendPlainText(str.c_str());
     }
 
