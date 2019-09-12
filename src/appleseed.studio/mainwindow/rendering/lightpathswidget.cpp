@@ -90,7 +90,7 @@ namespace {
       : public ObjectRasterizer
     {
         std::vector<float>   m_buffer;
-        size_t          m_prim_count;
+        size_t               m_prim_count;
 
         void begin_object(const size_t triangle_count_hint) override
         {
