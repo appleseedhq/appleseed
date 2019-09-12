@@ -113,9 +113,9 @@ namespace
     }
 
     auto_release_ptr<TextureInstance> create_texture_instance(
-        const std::string&                   name,
+        const std::string&              name,
         const bpy::dict&                params,
-        const std::string&                   texture_name,
+        const std::string&              texture_name,
         const UnalignedTransformf&      transform)
     {
         return

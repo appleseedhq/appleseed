@@ -59,7 +59,7 @@ namespace
     auto_release_ptr<Volume> create_volume(
         const std::string&    model,
         const std::string&    name,
-        const bpy::dict& params)
+        const bpy::dict&      params)
     {
         VolumeFactoryRegistrar factories;
         const IVolumeFactory* factory = factories.lookup(model.c_str());
