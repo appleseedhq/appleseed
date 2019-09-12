@@ -45,7 +45,6 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 // Work around a regression in Visual Studio 2015 Update 3.
 #if defined(_MSC_VER) && _MSC_VER == 1900
@@ -60,9 +59,9 @@ namespace boost
 namespace
 {
     auto_release_ptr<Camera> create_camera(
-        const string&       model,
-        const string&       name,
-        const bpy::dict&    params)
+        const std::string&    model,
+        const std::string&    name,
+        const bpy::dict&      params)
     {
         CameraFactoryRegistrar factories;
         const ICameraFactory* factory = factories.lookup(model.c_str());
@@ -96,9 +95,9 @@ namespace
         camera->transform_sequence() = seq;
     }
 
-    shared_ptr<ProjectPoints> create_project_points(auto_release_ptr<Camera> camera, const Vector2u& resolution)
+    std::shared_ptr<ProjectPoints> create_project_points(auto_release_ptr<Camera> camera, const Vector2u& resolution)
     {
-        return make_shared<ProjectPoints>(camera, resolution);
+        return std::make_shared<ProjectPoints>(camera, resolution);
     }
 
     bpy::object project_point(const ProjectPoints* proj, const float time, const Vector3d& point)
@@ -146,7 +145,7 @@ void bind_camera()
     bpy::class_<CameraFactoryRegistrar, boost::noncopyable>("CameraFactoryRegistrar", bpy::no_init)
         .def("lookup", &CameraFactoryRegistrar::lookup, bpy::return_value_policy<bpy::reference_existing_object>());
 
-    bpy::class_<ProjectPoints, shared_ptr<ProjectPoints>, boost::noncopyable>("ProjectPoints", bpy::no_init)
+    bpy::class_<ProjectPoints, std::shared_ptr<ProjectPoints>, boost::noncopyable>("ProjectPoints", bpy::no_init)
         .def("__init__", bpy::make_constructor(create_project_points))
         .def("is_initialized", &ProjectPoints::is_initialized)
         .def("project_point", project_point)

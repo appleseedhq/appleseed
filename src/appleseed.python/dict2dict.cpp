@@ -44,7 +44,6 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace
 {
@@ -202,7 +201,7 @@ namespace
         return result;
     }
 
-    bpy::object obj_from_string(const string& str)
+    bpy::object obj_from_string(const std::string& str)
     {
         // Try to guess the type of the value represented by str.
 

@@ -43,7 +43,6 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 // Work around a regression in Visual Studio 2015 Update 3.
 #if defined(_MSC_VER) && _MSC_VER == 1900
@@ -57,16 +56,16 @@ namespace boost
 namespace
 {
     auto_release_ptr<Frame> create_frame(
-        const string&       name,
-        const bpy::dict&    params)
+        const std::string&    name,
+        const bpy::dict&      params)
     {
         return FrameFactory::create(name.c_str(), bpy_dict_to_param_array(params));
     }
 
     auto_release_ptr<Frame> create_frame_with_aovs(
-        const string&       name,
-        const bpy::dict&    params,
-        const AOVContainer& aovs)
+        const std::string&    name,
+        const bpy::dict&      params,
+        const AOVContainer&   aovs)
     {
         return FrameFactory::create(name.c_str(), bpy_dict_to_param_array(params), aovs);
     }
