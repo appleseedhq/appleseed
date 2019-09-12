@@ -329,7 +329,7 @@ int main(int argc, char* argv[])
     // Set default surface format before creating application instance. This is
     // required on macOS in order to use an OpenGL Core profile context.
     QSurfaceFormat default_format;
-    default_format.setVersion(3, 3);
+    default_format.setVersion(4, 1);
     default_format.setProfile(QSurfaceFormat::CoreProfile);
     QSurfaceFormat::setDefaultFormat(default_format);
 

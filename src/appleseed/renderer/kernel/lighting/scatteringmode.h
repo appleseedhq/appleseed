@@ -32,6 +32,7 @@
 #include "renderer/modeling/scene/visibilityflags.h"
 
 // Standard headers.
+#include <array>
 #include <cassert>
 
 namespace renderer
@@ -139,5 +140,9 @@ inline VisibilityFlags::Type ScatteringMode::get_vis_flags(const Mode mode)
         return VisibilityFlags::DiffuseRay;
     }
 }
+
+// A tag for a light path expression event which contains two characters, corresponding
+// to the event type and scattering mode.
+typedef std::array<char, 2> lpe_event_tag;
 
 }   // namespace renderer

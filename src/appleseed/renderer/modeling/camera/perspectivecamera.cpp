@@ -54,6 +54,18 @@ namespace renderer
 PerspectiveCamera::PerspectiveCamera(const char* name, const ParamArray& params)
   : Camera(name, params)
 {
+    // Extract the film dimensions from the camera parameters.
+    m_film_dimensions = extract_film_dimensions();
+
+    // Extract the focal length from the camera parameters.
+    m_focal_length = extract_focal_length(m_film_dimensions[0]);
+    // Extract the abscissa of the near plane from the camera parameters.
+    m_near_z = extract_near_z();
+    // Extract the shift from the camera parameters.
+    m_shift = extract_shift();
+    // Precompute reciprocals of film dimensions.
+    m_rcp_film_width = 1.0 / m_film_dimensions[0];
+    m_rcp_film_height = 1.0 / m_film_dimensions[1];
 }
 
 const foundation::Vector2d& PerspectiveCamera::get_film_dimensions() const
@@ -79,22 +91,6 @@ bool PerspectiveCamera::on_render_begin(
 {
     if (!Camera::on_render_begin(project, parent, recorder, abort_switch))
         return false;
-
-    // Extract the film dimensions from the camera parameters.
-    m_film_dimensions = extract_film_dimensions();
-
-    // Extract the focal length from the camera parameters.
-    m_focal_length = extract_focal_length(m_film_dimensions[0]);
-
-    // Extract the abscissa of the near plane from the camera parameters.
-    m_near_z = extract_near_z();
-
-    // Extract the shift from the camera parameters.
-    m_shift = extract_shift();
-
-    // Precompute reciprocals of film dimensions.
-    m_rcp_film_width = 1.0 / m_film_dimensions[0];
-    m_rcp_film_height = 1.0 / m_film_dimensions[1];
 
     // Precompute pixel area.
     const size_t pixel_count = project.get_frame()->image().properties().m_pixel_count;

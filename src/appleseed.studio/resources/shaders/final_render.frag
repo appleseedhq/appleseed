@@ -1,12 +1,10 @@
-
 //
 // This source file is part of appleseed.
 // Visit https://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Gray Olson, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,36 +25,17 @@
 // THE SOFTWARE.
 //
 
-#pragma once
+#version 410
 
-// appleseed.renderer headers.
-#include "renderer/api/rendering.h"
+in vec2 f_uv;
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+uniform sampler2D u_render_tex;
+uniform float u_mult;
 
-// Forward declarations.
-namespace appleseed { namespace studio { class ViewportWidget; } }
+out vec4 Target0;
 
-namespace appleseed {
-namespace studio {
-
-class QtTileCallbackFactory
-  : public renderer::ITileCallbackFactory
-{
-  public:
-    // Constructor.
-    explicit QtTileCallbackFactory(ViewportWidget* viewport_widget);
-
-    // Delete this instance.
-    void release() override;
-
-    // Return a new instance of the class.
-    renderer::ITileCallback* create() override;
-
-  private:
-    ViewportWidget* m_viewport_widget;
-};
-
-}   // namespace studio
-}   // namespace appleseed
+void main() {
+    vec3 col = texture(u_render_tex, f_uv, 0).rgb;
+ 
+    Target0 = vec4(col * u_mult, 1.0);
+}

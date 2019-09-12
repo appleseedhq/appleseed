@@ -28,7 +28,7 @@
 //
 
 // Interface header.
-#include "renderregionhandler.h"
+#include "viewportregionselectionhandler.h"
 
 // appleseed.studio headers.
 #include "utility/mousecoordinatestracker.h"
@@ -54,7 +54,7 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
-RenderRegionHandler::RenderRegionHandler(
+ViewportRegionSelectionHandler::ViewportRegionSelectionHandler(
     QWidget*                        widget,
     const MouseCoordinatesTracker&  mouse_tracker)
   : m_widget(widget)
@@ -66,22 +66,22 @@ RenderRegionHandler::RenderRegionHandler(
     m_widget->installEventFilter(this);
 }
 
-RenderRegionHandler::~RenderRegionHandler()
+ViewportRegionSelectionHandler::~ViewportRegionSelectionHandler()
 {
     m_widget->removeEventFilter(this);
 }
 
-void RenderRegionHandler::set_enabled(const bool enabled)
+void ViewportRegionSelectionHandler::set_enabled(const bool enabled)
 {
     m_enabled = enabled;
 }
 
-void RenderRegionHandler::set_mode(const Mode mode)
+void ViewportRegionSelectionHandler::set_mode(const Mode mode)
 {
     m_mode = mode;
 }
 
-bool RenderRegionHandler::eventFilter(QObject* object, QEvent* event)
+bool ViewportRegionSelectionHandler::eventFilter(QObject* object, QEvent* event)
 {
     if (m_enabled)
     {
