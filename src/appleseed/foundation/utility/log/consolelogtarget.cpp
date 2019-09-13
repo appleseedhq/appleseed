@@ -39,7 +39,6 @@
 // Standard headers.
 #include <cstddef>
 
-
 namespace foundation
 {
 

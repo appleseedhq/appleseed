@@ -37,7 +37,6 @@
 // Standard headers.
 #include <sstream>
 
-
 namespace foundation
 {
 

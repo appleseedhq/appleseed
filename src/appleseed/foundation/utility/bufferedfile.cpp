@@ -41,7 +41,6 @@
 #include <algorithm>
 #include <cstring>
 
-
 namespace foundation
 {
 

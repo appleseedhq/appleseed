@@ -34,7 +34,6 @@
 // Windows headers.
 #include <crtdbg.h>
 
-
 namespace foundation
 {
 

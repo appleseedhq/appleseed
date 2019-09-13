@@ -39,7 +39,6 @@
 #include <string>
 #include <vector>
 
-
 namespace foundation
 {
 

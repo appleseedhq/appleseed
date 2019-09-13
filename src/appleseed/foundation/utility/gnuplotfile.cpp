@@ -36,7 +36,6 @@
 #include <cstddef>
 #include <iostream>
 
-
 namespace foundation
 {
 

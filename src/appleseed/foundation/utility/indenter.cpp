@@ -34,7 +34,6 @@
 #include <cassert>
 #include <string>
 
-
 namespace foundation
 {
 

@@ -37,7 +37,6 @@
 #include <dlfcn.h>
 #endif
 
-
 namespace foundation
 {
 

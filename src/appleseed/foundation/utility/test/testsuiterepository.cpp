@@ -39,7 +39,6 @@
 #include <cassert>
 #include <vector>
 
-
 namespace foundation
 {
 

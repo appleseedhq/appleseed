@@ -49,8 +49,8 @@ namespace foundation
 struct GenericCurveFileReader::Impl
 {
     std::string  m_filename;
-    float   m_radius;
-    size_t  m_degree;
+    float        m_radius;
+    size_t       m_degree;
 };
 
 GenericCurveFileReader::GenericCurveFileReader(const char* filename, const float radius, const size_t degree)

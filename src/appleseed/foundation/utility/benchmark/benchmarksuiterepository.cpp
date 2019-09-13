@@ -40,7 +40,6 @@
 #include <cstddef>
 #include <vector>
 
-
 namespace foundation
 {
 

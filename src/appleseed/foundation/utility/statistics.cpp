@@ -33,7 +33,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
 
-
 namespace foundation
 {
 

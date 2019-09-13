@@ -48,14 +48,13 @@
 #include <string>
 #include <vector>
 
-
 namespace foundation
 {
 
 namespace
 {
     std::string pretty_callrate(
-        const TimingResult& timing_result,
+        const TimingResult&      timing_result,
         const std::streamsize    precision = 1)
     {
         assert(timing_result.m_ticks > 0.0);

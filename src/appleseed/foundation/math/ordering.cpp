@@ -48,7 +48,7 @@ namespace foundation
 
 void linear_ordering(
     std::vector<size_t>&     ordering,
-    const size_t        size)
+    const size_t             size)
 {
     assert(ordering.empty());
     assert(size > 0);
@@ -60,8 +60,8 @@ void linear_ordering(
 
 void spiral_ordering(
     std::vector<size_t>&     ordering,
-    const size_t        size_x,
-    const size_t        size_y)
+    const size_t             size_x,
+    const size_t             size_y)
 {
     assert(ordering.empty());
 
@@ -130,12 +130,12 @@ namespace
 {
     void hilbert(
         std::vector<size_t>& ordering,
-        const int       size_x,
-        const int       size_y,
-        Vector2i        point,
-        int             size,
-        const Vector2i& dx,
-        const Vector2i& dy)
+        const int            size_x,
+        const int            size_y,
+        Vector2i             point,
+        int                  size,
+        const Vector2i&      dx,
+        const Vector2i&      dy)
     {
         if (size > 1)
         {
@@ -163,8 +163,8 @@ namespace
 
 void hilbert_ordering(
     std::vector<size_t>&     ordering,
-    const size_t        size_x,
-    const size_t        size_y)
+    const size_t             size_x,
+    const size_t             size_y)
 {
     assert(ordering.empty());
 

@@ -140,7 +140,7 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulat
     void shade(
         const SamplingContext&      context,
         const size_t                light_sample_count,
-        std::vector<Vector2d>&           light_samples)
+        std::vector<Vector2d>&      light_samples)
     {
         SamplingContext child_context = context.split(2, light_sample_count);
 

@@ -37,7 +37,6 @@
 // Standard headers.
 #include <cstdio>
 
-
 namespace foundation
 {
 

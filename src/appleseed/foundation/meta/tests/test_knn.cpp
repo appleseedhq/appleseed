@@ -284,7 +284,7 @@ TEST_SUITE(Foundation_Math_Knn_Query)
 
     void generate_random_points(
         MersenneTwister&            rng,
-        std::vector<Vector3d>&           points,
+        std::vector<Vector3d>&      points,
         const size_t                count)
     {
         assert(points.empty());

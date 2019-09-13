@@ -48,10 +48,10 @@ BENCHMARK_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
         typedef ImageImportanceSampler<ImageSampler::Payload, float> ImportanceSamplerType;
 
         std::unique_ptr<ImportanceSamplerType>   m_importance_sampler;
-        Xorshift32                          m_rng;
+        Xorshift32                               m_rng;
 
-        Vector2u                            m_texel_coords_sum;
-        float                               m_texel_prob_sum;
+        Vector2u                                 m_texel_coords_sum;
+        float                                    m_texel_prob_sum;
 
         Fixture()
           : m_texel_coords_sum(0, 0)

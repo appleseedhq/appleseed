@@ -45,7 +45,6 @@
 #include <fstream>
 #include <sstream>
 
-
 namespace foundation
 {
 

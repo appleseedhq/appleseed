@@ -37,7 +37,6 @@
 #include <cassert>
 #include <map>
 
-
 namespace foundation
 {
 

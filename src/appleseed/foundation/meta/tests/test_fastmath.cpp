@@ -124,7 +124,7 @@ TEST_SUITE(Foundation_Math_FastMath)
 
     template <typename T, typename Function>
     void plot_functions(
-        const std::string&           filepath,
+        const std::string&      filepath,
         const FuncDef<Function> functions[],
         const size_t            function_count,
         const T                 low,
