@@ -162,7 +162,7 @@ namespace
         }
 
         void set_image_channels(
-            const size_t            channel_count,
+            const size_t                      channel_count,
             const std::vector<std::string>&   channel_names)
         {
             m_spec.nchannels = static_cast<int>(channel_count);
@@ -566,7 +566,7 @@ namespace
             const AOVComponents&        aov_components,
             ShadingResult&              shading_result) override
         {
-            uint32 m3hash = 0;
+            uint32      m3hash = 0;
             std::string obj_name;
 
             if (shading_point.hit_surface())

@@ -402,25 +402,25 @@ namespace
 
       private:
         // Parameters.
-        double              m_f_number;                 // F-number
-        bool                m_autofocus_enabled;        // is autofocus enabled?
-        Vector2d            m_autofocus_target;         // autofocus target on film plane, in NDC
-        double              m_focal_distance;           // focal distance in camera space
-        bool                m_diaphragm_map_bound;      // is a diaphragm map bound to the camera
-        size_t              m_diaphragm_blade_count;    // number of blades of the diaphragm, 0 for round aperture
-        double              m_diaphragm_tilt_angle;     // tilt angle of the diaphragm in radians
+        double                   m_f_number;                 // F-number
+        bool                     m_autofocus_enabled;        // is autofocus enabled?
+        Vector2d                 m_autofocus_target;         // autofocus target on film plane, in NDC
+        double                   m_focal_distance;           // focal distance in camera space
+        bool                     m_diaphragm_map_bound;      // is a diaphragm map bound to the camera
+        size_t                   m_diaphragm_blade_count;    // number of blades of the diaphragm, 0 for round aperture
+        double                   m_diaphragm_tilt_angle;     // tilt angle of the diaphragm in radians
 
         // Precomputed values.
-        double              m_lens_radius;              // radius of the lens in camera space
-        double              m_focal_ratio;              // focal distance / focal length
-        double              m_rcp_focal_ratio;          // focal length / focal distance
+        double                   m_lens_radius;              // radius of the lens in camera space
+        double                   m_focal_ratio;              // focal distance / focal length
+        double                   m_rcp_focal_ratio;          // focal length / focal distance
 
         // Vertices of the diaphragm polygon.
         std::vector<Vector2d>    m_diaphragm_vertices;
 
         // Importance sampler to sample the diaphragm map.
         std::unique_ptr<ImageImportanceSamplerType>
-                            m_importance_sampler;
+                                 m_importance_sampler;
 
         void extract_diaphragm_blade_count()
         {
