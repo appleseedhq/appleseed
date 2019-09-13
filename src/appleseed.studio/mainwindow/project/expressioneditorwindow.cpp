@@ -235,7 +235,7 @@ void ExpressionEditorWindow::slot_cancel()
 
 void ExpressionEditorWindow::slot_clear_expression()
 {
-    m_editor->setExpr(string());
+    m_editor->setExpr(std::string());
 }
 
 void ExpressionEditorWindow::slot_save_script()
@@ -262,7 +262,7 @@ void ExpressionEditorWindow::slot_save_script()
 
     if (!m_script_filepath.empty())
     {
-        ofstream script_file(m_script_filepath.c_str());
+        std::ofstream script_file(m_script_filepath.c_str());
 
         if (!script_file.is_open())
         {
@@ -292,7 +292,7 @@ void ExpressionEditorWindow::slot_load_script()
         filepath = QDir::toNativeSeparators(filepath);
 
         // Open script file.
-        ifstream script_file(filepath.toStdString().c_str());
+        std::ifstream script_file(filepath.toStdString().c_str());
         if (!script_file.is_open())
         {
             show_error_message_box(
