@@ -165,8 +165,8 @@ void DisneyMaterialLayerUI::create_input_widgets(const Dictionary& values)
         const std::string input_type = im.get<std::string>("type");
 
         im.insert("value",
-            values.strings().exist(input_name) ? values.get<string>(input_name) :
-            im.strings().exist("default") ? im.get<string>("default") :
+            values.strings().exist(input_name) ? values.get<std::string>(input_name) :
+            im.strings().exist("default") ? im.get<std::string>("default") :
             "");
 
         std::unique_ptr<IInputWidgetProxy> widget_proxy =
@@ -513,7 +513,7 @@ namespace
     {
         for (size_t i = 0; i < input_metadata.size(); ++i)
         {
-            if (input_metadata[i].get<string>("name") == "layer_name")
+            if (input_metadata[i].get<std::string>("name") == "layer_name")
                 return input_metadata[i].get<QString>("label") + ":";
         }
 
