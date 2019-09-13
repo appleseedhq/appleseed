@@ -109,7 +109,7 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
     if (strcmp(m_entity->get_model(), "disney_material") == 0)
     {
         custom_entity_ui =
-            unique_ptr<CustomEntityUI>(
+            std::unique_ptr<CustomEntityUI>(
                 new DisneyMaterialCustomUI(
                     m_editor_context.m_project,
                     m_editor_context.m_settings));

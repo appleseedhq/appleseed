@@ -202,9 +202,9 @@ class AssignNewDisneyMaterialAction
         const Assembly& assembly = object_instance_item->m_parent;
 
         // Name the material after the name of the object instance.
-        const string material_name =
+        const std::string material_name =
             make_unique_name(
-                string(object_instance.get_name()) + "_material",
+                std::string(object_instance.get_name()) + "_material",
                 assembly.materials());
 
         // Create the material and insert it into the assembly.
@@ -252,7 +252,7 @@ void ObjectInstanceItem::slot_assign_new_disney_material()
 {
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        unique_ptr<RenderingManager::IScheduledAction>(
+        std::unique_ptr<RenderingManager::IScheduledAction>(
             new AssignNewDisneyMaterialAction(
                 m_editor_context,
                 get_action_items<ObjectInstanceItem>())));
