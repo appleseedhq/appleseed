@@ -48,7 +48,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -68,7 +67,7 @@ AssemblyInstanceItem::AssemblyInstanceItem(
 void AssemblyInstanceItem::delete_multiple(const QList<ItemBase*>& items)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        unique_ptr<RenderingManager::IScheduledAction>(
+        std::unique_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<AssemblyInstanceItem>(
                 qlist_static_cast<AssemblyInstanceItem*>(items))));
 }

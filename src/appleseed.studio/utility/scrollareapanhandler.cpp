@@ -40,8 +40,6 @@
 // Standard headers.
 #include <cassert>
 
-using namespace std;
-
 namespace appleseed {
 namespace studio {
 

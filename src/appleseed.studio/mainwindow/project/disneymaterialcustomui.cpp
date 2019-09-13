@@ -49,7 +49,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -76,14 +75,14 @@ namespace
         }
     };
 
-    vector<Dictionary> collect_layer_definitions(const Dictionary& values)
+    std::vector<Dictionary> collect_layer_definitions(const Dictionary& values)
     {
-        vector<Dictionary> layer_definitions;
+        std::vector<Dictionary> layer_definitions;
 
         for (const_each<DictionaryDictionary> i = values.dictionaries(); i; ++i)
             layer_definitions.push_back(i->value());
 
-        sort(
+        std::sort(
             layer_definitions.begin(),
             layer_definitions.end(),
             LayerDefinitionOrderPredicate());
@@ -117,7 +116,7 @@ void DisneyMaterialCustomUI::create_widgets(
     // Stretcher at the bottom.
     m_layout->addStretch(1);
 
-    const vector<Dictionary> layer_definitions = collect_layer_definitions(values);
+    const std::vector<Dictionary> layer_definitions = collect_layer_definitions(values);
 
     if (layer_definitions.empty())
     {
@@ -126,7 +125,7 @@ void DisneyMaterialCustomUI::create_widgets(
     }
     else
     {
-        for (const_each<vector<Dictionary>> i = layer_definitions; i; ++i)
+        for (const_each<std::vector<Dictionary>> i = layer_definitions; i; ++i)
             append_new_layer(*i);
     }
 }
@@ -140,7 +139,7 @@ Dictionary DisneyMaterialCustomUI::get_values() const
         Dictionary layer_values = m_layers[i]->get_values();
 
         values.insert(
-            layer_values.get<string>("layer_name"),
+            layer_values.get<std::string>("layer_name"),
             layer_values.insert("layer_number", i));
     }
 
@@ -160,7 +159,7 @@ void DisneyMaterialCustomUI::slot_move_layer_up(QWidget* layer_widget)
 
     if (layer_index > 0)
     {
-        swap(m_layers[layer_index], m_layers[layer_index - 1]);
+        std::swap(m_layers[layer_index], m_layers[layer_index - 1]);
 
         const int layer_widget_index = m_layout->indexOf(layer_widget);
         m_layout->takeAt(layer_widget_index);
@@ -176,7 +175,7 @@ void DisneyMaterialCustomUI::slot_move_layer_down(QWidget* layer_widget)
 
     if (layer_index < m_layers.size() - 1)
     {
-        swap(m_layers[layer_index], m_layers[layer_index + 1]);
+        std::swap(m_layers[layer_index], m_layers[layer_index + 1]);
 
         const int layer_widget_index = m_layout->indexOf(layer_widget);
         m_layout->takeAt(layer_widget_index);
@@ -210,12 +209,12 @@ size_t DisneyMaterialCustomUI::find_layer_index_by_widget(const QWidget* layer_w
     return ~size_t(0);
 }
 
-vector<string> DisneyMaterialCustomUI::collect_layer_names() const
+std::vector<std::string> DisneyMaterialCustomUI::collect_layer_names() const
 {
-    vector<string> names;
+    std::vector<std::string> names;
 
     for (size_t i = 0; i < m_layers.size(); ++i)
-        names.push_back(m_layers[i]->get_values().get<string>("layer_name"));
+        names.push_back(m_layers[i]->get_values().get<std::string>("layer_name"));
 
     return names;
 }

@@ -44,7 +44,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -99,7 +98,7 @@ namespace
 {
     QString time_to_qstring(const double time)
     {
-        const string s = pretty_time(time);
+        const std::string s = pretty_time(time);
         return QString::fromStdString(s);
     }
 

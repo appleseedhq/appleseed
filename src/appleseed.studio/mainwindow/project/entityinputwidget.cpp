@@ -50,7 +50,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -147,12 +146,12 @@ EntityInputProxy::EntityInputProxy(EntityInputWidget* input_widget)
     connect(input_widget, SIGNAL(signal_changed()), SIGNAL(signal_changed()));
 }
 
-void EntityInputProxy::set(const string& value)
+void EntityInputProxy::set(const std::string& value)
 {
     m_input_widget->set_value(QString::fromStdString(value));
 }
 
-string EntityInputProxy::get() const
+std::string EntityInputProxy::get() const
 {
     return m_input_widget->get_value().toStdString();
 }
@@ -278,12 +277,12 @@ ColorMapInputProxy::ColorMapInputProxy(ColorMapInputWidget* input_widget)
     connect(input_widget, SIGNAL(signal_changed()), SIGNAL(signal_changed()));
 }
 
-void ColorMapInputProxy::set(const string& value)
+void ColorMapInputProxy::set(const std::string& value)
 {
     m_input_widget->set_value(QString::fromStdString(value));
 }
 
-string ColorMapInputProxy::get() const
+std::string ColorMapInputProxy::get() const
 {
     return m_input_widget->get_value().toStdString();
 }

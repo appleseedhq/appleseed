@@ -49,7 +49,6 @@
 
 using namespace appleseed::shared;
 using namespace foundation;
-using namespace std;
 namespace bpy = boost::python;
 namespace bf = boost::filesystem;
 
@@ -244,13 +243,13 @@ void PythonInterpreter::load_plugins()
             compute_bundled_plugins_path().string()));
 }
 
-bpy::object PythonInterpreter::execute(const string& command, const bool notify)
+bpy::object PythonInterpreter::execute(const std::string& command, const bool notify)
 {
     bpy::object result;
 
     try
     {
-        const string escaped_command = replace(command, "\\", "\\\\");
+        const std::string escaped_command = replace(command, "\\", "\\\\");
         result = bpy::exec(escaped_command.c_str(), m_main_namespace, m_main_namespace);
     }
     catch (const bpy::error_already_set&)

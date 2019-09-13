@@ -46,7 +46,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -135,7 +134,7 @@ void QtTestListener::end_case(
 
 namespace
 {
-    string build_message_string(
+    std::string build_message_string(
         const TestSuite&        test_suite,
         const char*             test_case_name,
         const char*             file,
@@ -143,18 +142,18 @@ namespace
         const TestMessage::Type message_type,
         const char*             message)
     {
-        stringstream sstr;
+        std::stringstream sstr;
 
         // Print the message header.
-        sstr << TestMessage::name(message_type) << ":" << endl;
+        sstr << TestMessage::name(message_type) << ":" << std::endl;
 
         // Split the message into multiple components, one for each line.
-        vector<string> tokens;
+        std::vector<std::string> tokens;
         split(message, "\n", tokens);
 
         // Print the message.
-        for (const_each<vector<string>> i = tokens; i; ++i)
-            sstr << "  " << *i << endl;
+        for (const_each<std::vector<std::string>> i = tokens; i; ++i)
+            sstr << "  " << *i << std::endl;
 
         // Print the message footer.
         sstr << file << ", line " << line;
@@ -171,7 +170,7 @@ void QtTestListener::write(
     const TestMessage::Type message_type,
     const char*             message)
 {
-    const string message_string =
+    const std::string message_string =
         build_message_string(
             test_suite,
             test_case_name,

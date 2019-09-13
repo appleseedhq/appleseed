@@ -41,7 +41,6 @@
 
 using namespace appleseed::studio;
 using namespace renderer;
-using namespace std;
 
 TEST_SUITE(Studio_ProjectManager)
 {
@@ -140,7 +139,7 @@ TEST_SUITE(Studio_ProjectManager)
         ProjectManager manager;
         manager.create_project();
 
-        const string name = manager.get_project_display_name();
+        const std::string name = manager.get_project_display_name();
 
         EXPECT_EQ("Untitled", name);
     }
@@ -151,7 +150,7 @@ TEST_SUITE(Studio_ProjectManager)
         manager.create_project();
         manager.get_project()->set_path("directory/filename.ext");
 
-        const string name = manager.get_project_display_name();
+        const std::string name = manager.get_project_display_name();
 
         EXPECT_EQ("filename.ext", name);
     }

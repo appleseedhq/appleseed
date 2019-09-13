@@ -34,13 +34,12 @@
 #include "foundation/utility/containers/dictionary.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
 
 SingleModelEntityEditorFormFactory::SingleModelEntityEditorFormFactory(
-    const string&               entity_name,
+    const std::string&               entity_name,
     const DictionaryArray&      entity_widgets)
   : EntityEditorFormFactoryBase(entity_name)
   , m_entity_widgets(entity_widgets)

@@ -53,7 +53,6 @@
 // Standard headers.
 #include <fstream>
 
-using namespace std;
 using namespace renderer;
 
 namespace appleseed {
@@ -307,9 +306,9 @@ bool PythonConsoleWidget::has_file_path()
     return !m_opened_filepath.empty();
 }
 
-void PythonConsoleWidget::open_file(const string& filepath)
+void PythonConsoleWidget::open_file(const std::string& filepath)
 {
-    fstream file(filepath, fstream::in);
+    std::fstream file(filepath, std::fstream::in);
     if (file.bad())
     {
         RENDERER_LOG_ERROR("cannot open Python script \"%s\" for reading.", filepath.c_str());
@@ -321,32 +320,32 @@ void PythonConsoleWidget::open_file(const string& filepath)
 
     while (!file.eof())
     {
-        string str;
-        getline(file, str);
+        std::string str;
+        std::getline(file, str);
         m_input->appendPlainText(str.c_str());
     }
 
     m_is_file_dirty = false;
 }
 
-void PythonConsoleWidget::save_file(string filepath)
+void PythonConsoleWidget::save_file(std::string filepath)
 {
     const size_t extension_start = filepath.rfind('.') + 1;
-    string extension = "";
-    if (extension_start != string::npos)
+    std::string extension = "";
+    if (extension_start != std::string::npos)
         extension = filepath.substr(extension_start);
 
     if (extension != "py")
         filepath += ".py";
 
-    fstream file(filepath, fstream::out);
+    std::fstream file(filepath, std::fstream::out);
     if (file.bad())
     {
         RENDERER_LOG_ERROR("cannot open Python script \"%s\" for writing.", filepath.c_str());
         return;
     }
 
-    string text = m_input->toPlainText().toStdString();
+    std::string text = m_input->toPlainText().toStdString();
     file.write(text.c_str(), text.size());
 
     m_opened_filepath = filepath;

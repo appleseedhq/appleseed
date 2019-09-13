@@ -34,7 +34,6 @@
 #include "foundation/utility/string.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -49,7 +48,7 @@ StatusBar::StatusBar()
 {
 }
 
-void StatusBar::set_text(const string& text)
+void StatusBar::set_text(const std::string& text)
 {
     setText(QString::fromStdString(text));
 }
@@ -85,7 +84,7 @@ void StatusBar::timerEvent(QTimerEvent* event)
     m_rendering_timer->measure();
 
     const double rendering_time = m_rendering_timer->get_seconds();
-    const string rendering_time_string = pretty_time(rendering_time, 0);
+    const std::string rendering_time_string = pretty_time(rendering_time, 0);
 
     set_text("Rendering time: " + rendering_time_string);
 }

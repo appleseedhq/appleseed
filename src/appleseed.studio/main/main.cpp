@@ -74,7 +74,6 @@
 using namespace appleseed::studio;
 using namespace appleseed::shared;
 using namespace foundation;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace
@@ -146,7 +145,7 @@ namespace
 
             if (bf::is_directory(python_path))
             {
-                const string python_path_str = safe_canonical(python_path).string();
+                const std::string python_path_str = safe_canonical(python_path).string();
 
                 // The C string below must be declared static because Python just keeps a pointer to it.
                 static char python_home[FOUNDATION_MAX_PATH_LENGTH + 1];
@@ -163,7 +162,7 @@ namespace
             }
             else
             {
-                const string python_path_str = python_path.make_preferred().string();
+                const std::string python_path_str = python_path.make_preferred().string();
 
                 QMessageBox msgbox;
                 msgbox.setWindowTitle("Python 2.7 Installation Not Found");
@@ -181,21 +180,21 @@ namespace
         }
     }
 
-    bool load_file(const string& filename, string& contents)
+    bool load_file(const std::string& filename, std::string& contents)
     {
-        ifstream file(filename.c_str());
+        std::ifstream file(filename.c_str());
 
         if (!file.is_open())
             return false;
 
-        stringstream sstr;
+        std::stringstream sstr;
         sstr << file.rdbuf();
         contents = sstr.str();
 
         return true;
     }
 
-    bool load_stylesheet(const string& stylesheet_path, string& stylesheet)
+    bool load_stylesheet(const std::string& stylesheet_path, std::string& stylesheet)
     {
         if (!load_file(stylesheet_path, stylesheet))
         {
@@ -264,7 +263,7 @@ namespace
             / "default.qss";
 
         // Load and apply the stylesheet.
-        string stylesheet;
+        std::string stylesheet;
         if (load_stylesheet(stylesheet_path.string(), stylesheet))
         {
             application.setStyle("plastique");

@@ -74,7 +74,6 @@
 using namespace boost;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -162,22 +161,22 @@ void DisneyMaterialLayerUI::create_input_widgets(const Dictionary& values)
     for (size_t i = 0, e = m_input_metadata.size(); i < e; ++i)
     {
         Dictionary im = m_input_metadata[i];
-        const string input_name = im.get<string>("name");
-        const string input_type = im.get<string>("type");
+        const std::string input_name = im.get<std::string>("name");
+        const std::string input_type = im.get<std::string>("type");
 
         im.insert("value",
-            values.strings().exist(input_name) ? values.get<string>(input_name) :
-            im.strings().exist("default") ? im.get<string>("default") :
+            values.strings().exist(input_name) ? values.get<std::string>(input_name) :
+            im.strings().exist("default") ? im.get<std::string>("default") :
             "");
 
-        unique_ptr<IInputWidgetProxy> widget_proxy =
+        std::unique_ptr<IInputWidgetProxy> widget_proxy =
             input_type == "colormap" ?
                 im.dictionaries().exist("entity_types") &&
                 im.dictionaries().get("entity_types").strings().exist("color")
                     ? create_color_input_widgets(im)
                     : create_colormap_input_widgets(im) :
             input_type == "text" ? create_text_input_widgets(im) :
-            unique_ptr<IInputWidgetProxy>(nullptr);
+            std::unique_ptr<IInputWidgetProxy>(nullptr);
 
         assert(widget_proxy.get());
         connect(widget_proxy.get(), SIGNAL(signal_changed()), SIGNAL(signal_apply()));
@@ -224,7 +223,7 @@ void DisneyMaterialLayerUI::slot_open_color_picker(const QString& widget_name)
 {
     IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
 
-    const string color_expression = widget_proxy->get();
+    const std::string color_expression = widget_proxy->get();
     const QColor initial_color = ColorExpressionProxy::expression_to_qcolor(widget_proxy->get());
 
     QColorDialog* dialog = new QColorDialog(initial_color, m_content_widget);
@@ -320,7 +319,7 @@ namespace
         return filename;
     }
 
-    string texture_to_expression(const SearchPaths& search_paths, const QString& path)
+    std::string texture_to_expression(const SearchPaths& search_paths, const QString& path)
     {
         const QString relative_path = find_path_in_search_paths(search_paths, path);
         const QString texture_expression = QString("texture(\"%1\", $u, $v)").arg(relative_path);
@@ -403,7 +402,7 @@ namespace
     }
 }
 
-unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_text_input_widgets(const Dictionary& metadata)
+std::unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_text_input_widgets(const Dictionary& metadata)
 {
     QLineEdit* line_edit = new QLineEdit(m_content_widget);
 
@@ -415,19 +414,19 @@ unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_text_input_widgets(c
 
     m_content_layout->addRow(create_label(metadata), line_edit);
 
-    unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
-    widget_proxy->set(metadata.strings().get<string>("value"));
+    std::unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
+    widget_proxy->set(metadata.strings().get<std::string>("value"));
 
     return widget_proxy;
 }
 
-unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_color_input_widgets(const Dictionary& metadata)
+std::unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_color_input_widgets(const Dictionary& metadata)
 {
     QLineEdit* line_edit = new QLineEdit(m_content_widget);
 
     QToolButton* picker_button = new QToolButton(m_content_widget);
     picker_button->setObjectName("color_picker");
-    const string name = metadata.get<string>("name");
+    const std::string name = metadata.get<std::string>("name");
     connect(picker_button, &QToolButton::clicked, [=]() { emit slot_open_color_picker(QString::fromStdString(name)); });
 
     if (should_be_focused(metadata))
@@ -444,13 +443,13 @@ unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_color_input_widgets(
     layout->addWidget(create_expression_button(name));
     m_content_layout->addRow(create_label(metadata), layout);
 
-    unique_ptr<IInputWidgetProxy> widget_proxy(new ColorExpressionProxy(line_edit, picker_button));
-    widget_proxy->set(metadata.strings().get<string>("value"));
+    std::unique_ptr<IInputWidgetProxy> widget_proxy(new ColorExpressionProxy(line_edit, picker_button));
+    widget_proxy->set(metadata.strings().get<std::string>("value"));
 
     return widget_proxy;
 }
 
-unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_colormap_input_widgets(const Dictionary& metadata)
+std::unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_colormap_input_widgets(const Dictionary& metadata)
 {
     QLineEdit* line_edit = new QLineEdit(m_content_widget);
     line_edit->setMaximumWidth(120);
@@ -468,7 +467,7 @@ unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_colormap_input_widge
         line_edit->setFocus();
     }
 
-    const string name = metadata.get<string>("name");
+    const std::string name = metadata.get<std::string>("name");
 
     QHBoxLayout* layout = new QHBoxLayout();
     layout->setSpacing(6);
@@ -478,13 +477,13 @@ unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_colormap_input_widge
     layout->addWidget(create_expression_button(name));
     m_content_layout->addRow(create_label(metadata), layout);
 
-    unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
-    widget_proxy->set(metadata.strings().get<string>("value"));
+    std::unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
+    widget_proxy->set(metadata.strings().get<std::string>("value"));
 
     return widget_proxy;
 }
 
-QWidget* DisneyMaterialLayerUI::create_texture_button(const string& name)
+QWidget* DisneyMaterialLayerUI::create_texture_button(const std::string& name)
 {
     QToolButton* texture_button = new QToolButton(m_content_widget);
     texture_button->setIcon(load_icons("disney_texture"));
@@ -496,7 +495,7 @@ QWidget* DisneyMaterialLayerUI::create_texture_button(const string& name)
     return texture_button;
 }
 
-QWidget* DisneyMaterialLayerUI::create_expression_button(const string& name)
+QWidget* DisneyMaterialLayerUI::create_expression_button(const std::string& name)
 {
     QToolButton* expression_button = new QToolButton(m_content_widget);
     expression_button->setIcon(load_icons("disney_expression"));
@@ -514,7 +513,7 @@ namespace
     {
         for (size_t i = 0; i < input_metadata.size(); ++i)
         {
-            if (input_metadata[i].get<string>("name") == "layer_name")
+            if (input_metadata[i].get<std::string>("name") == "layer_name")
                 return input_metadata[i].get<QString>("label") + ":";
         }
 

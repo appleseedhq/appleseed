@@ -107,7 +107,6 @@
 using namespace appleseed::shared;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace appleseed {
@@ -483,8 +482,8 @@ void MainWindow::update_override_shading_menu_item()
 
     if (shading_engine_params.dictionaries().exist("override_shading"))
     {
-        const string shading_mode =
-            shading_engine_params.child("override_shading").get_optional<string>("mode", "coverage");
+        const std::string shading_mode =
+            shading_engine_params.child("override_shading").get_optional<std::string>("mode", "coverage");
 
         for (const_each<QList<QAction*>> i = m_ui->menu_diagnostics_override_shading->actions(); i; ++i)
         {
@@ -1286,7 +1285,7 @@ void MainWindow::apply_false_colors_settings()
         // todo: creating a frame with denoising enabled is very expensive, see benchmark_frame.cpp.
         auto_release_ptr<Frame> working_frame =
             FrameFactory::create(
-                (string(frame->get_name()) + "_copy").c_str(),
+                (std::string(frame->get_name()) + "_copy").c_str(),
                 frame->get_parameters()
                     .remove_path("denoiser"));
         working_frame->image().copy_from(frame->image());
@@ -1579,7 +1578,7 @@ void MainWindow::initialize_ocio()
 
     // Try the bundled default OCIO config.
     const bf::path root_path(Application::get_root_path());
-    const string default_ocio_config = (root_path / "ocio" / "config.ocio").string();
+    const std::string default_ocio_config = (root_path / "ocio" / "config.ocio").string();
 
     try
     {
@@ -1758,7 +1757,7 @@ namespace
       : public RenderingManager::IStickyAction
     {
       public:
-        explicit SetShadingOverrideAction(const string& shading_mode)
+        explicit SetShadingOverrideAction(const std::string& shading_mode)
           : m_shading_mode(shading_mode)
         {
         }
@@ -1774,7 +1773,7 @@ namespace
         }
 
       private:
-        const string m_shading_mode;
+        const std::string m_shading_mode;
     };
 }
 
@@ -1782,7 +1781,7 @@ void MainWindow::slot_clear_shading_override()
 {
     m_rendering_manager.set_sticky_action(
         "override_shading",
-        unique_ptr<RenderingManager::IStickyAction>(
+        std::unique_ptr<RenderingManager::IStickyAction>(
             new ClearShadingOverrideAction()));
 
     m_rendering_manager.reinitialize_rendering();
@@ -1791,11 +1790,11 @@ void MainWindow::slot_clear_shading_override()
 void MainWindow::slot_set_shading_override()
 {
     QAction* action = qobject_cast<QAction*>(sender());
-    const string shading_mode = action->data().toString().toStdString();
+    const std::string shading_mode = action->data().toString().toStdString();
 
     m_rendering_manager.set_sticky_action(
         "override_shading",
-        unique_ptr<RenderingManager::IStickyAction>(
+        std::unique_ptr<RenderingManager::IStickyAction>(
             new SetShadingOverrideAction(shading_mode)));
 
     m_rendering_manager.reinitialize_rendering();
@@ -1904,7 +1903,7 @@ namespace
 
 void MainWindow::slot_clear_render_region()
 {
-    unique_ptr<RenderingManager::IScheduledAction> clear_render_region_action(
+    std::unique_ptr<RenderingManager::IScheduledAction> clear_render_region_action(
         new ClearRenderRegionAction(m_attribute_editor));
 
     if (m_rendering_manager.is_rendering())
@@ -1916,7 +1915,7 @@ void MainWindow::slot_clear_render_region()
 
 void MainWindow::slot_set_render_region(const QRect& rect)
 {
-    unique_ptr<RenderingManager::IScheduledAction> set_render_region_action(
+    std::unique_ptr<RenderingManager::IScheduledAction> set_render_region_action(
         new SetRenderRegionAction(rect, m_attribute_editor));
 
     if (!m_rendering_manager.is_rendering())
@@ -2141,7 +2140,7 @@ void MainWindow::slot_check_fullscreen()
 {
     const QList<QDockWidget*> dock_widgets = findChildren<QDockWidget*>();
 
-    const bool is_fullscreen = all_of(dock_widgets.cbegin(),
+    const bool is_fullscreen = std::all_of(dock_widgets.cbegin(),
                                       dock_widgets.cend(),
                                       [](QDockWidget* dock) {return dock->isHidden();});
 

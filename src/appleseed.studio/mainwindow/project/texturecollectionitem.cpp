@@ -62,7 +62,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace appleseed {
@@ -97,9 +96,9 @@ QMenu* TextureCollectionItem::get_single_item_context_menu() const
 
 namespace
 {
-    auto_release_ptr<Texture> create_texture(const string& path)
+    auto_release_ptr<Texture> create_texture(const std::string& path)
     {
-        const string texture_name =
+        const std::string texture_name =
             bf::path(path).replace_extension().filename().string();
 
         ParamArray texture_params;
@@ -113,9 +112,9 @@ namespace
                 SearchPaths());
     }
 
-    auto_release_ptr<TextureInstance> create_texture_instance(const string& texture_name)
+    auto_release_ptr<TextureInstance> create_texture_instance(const std::string& texture_name)
     {
-        const string texture_instance_name = texture_name + "_inst";
+        const std::string texture_instance_name = texture_name + "_inst";
 
         return
             TextureInstanceFactory::create(
@@ -145,7 +144,7 @@ void TextureCollectionItem::slot_import_textures()
     // todo: schedule creation of texture and texture instances when rendering.
     for (int i = 0; i < filepaths.size(); ++i)
     {
-        const string filepath = QDir::toNativeSeparators(filepaths[i]).toStdString();
+        const std::string filepath = QDir::toNativeSeparators(filepaths[i]).toStdString();
 
         auto_release_ptr<Texture> texture = create_texture(filepath);
         auto_release_ptr<TextureInstance> texture_instance = create_texture_instance(texture->get_name());

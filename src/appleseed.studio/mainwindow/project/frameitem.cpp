@@ -59,7 +59,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -100,7 +99,7 @@ void FrameItem::add_item(PostProcessingStage* stage)
 
 void FrameItem::slot_edit(AttributeEditor* attribute_editor)
 {
-    unique_ptr<EntityEditor::IFormFactory> form_factory(
+    std::unique_ptr<EntityEditor::IFormFactory> form_factory(
         new SingleModelEntityEditorFormFactory(
             m_frame->get_name(),
             FrameFactory::get_input_metadata()));
@@ -112,9 +111,9 @@ void FrameItem::slot_edit(AttributeEditor* attribute_editor)
     if (attribute_editor)
     {
         attribute_editor->edit(
-            move(form_factory),
-            move(entity_browser),
-            unique_ptr<CustomEntityUI>(),
+            std::move(form_factory),
+            std::move(entity_browser),
+            std::unique_ptr<CustomEntityUI>(),
             m_frame->get_parameters(),
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)));
@@ -126,8 +125,8 @@ void FrameItem::slot_edit(AttributeEditor* attribute_editor)
             "Edit Frame",
             m_editor_context.m_project,
             m_editor_context.m_settings,
-            move(form_factory),
-            move(entity_browser),
+            std::move(form_factory),
+            std::move(entity_browser),
             m_frame->get_parameters(),
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)),
@@ -141,7 +140,7 @@ void FrameItem::slot_edit_accepted(Dictionary values)
     if (m_editor_context.m_rendering_manager.is_rendering())
     {
         m_editor_context.m_rendering_manager.schedule(
-            unique_ptr<RenderingManager::IScheduledAction>(
+            std::unique_ptr<RenderingManager::IScheduledAction>(
                 new EntityEditionAction<FrameItem>(this, values)));
 
         m_editor_context.m_rendering_manager.reinitialize_rendering();
