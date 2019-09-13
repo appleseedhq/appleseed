@@ -139,15 +139,14 @@ float gamma_fraction(const float num, const float denom)
 //   https://archive.lib.msu.edu/crcmath/math/math/m/m309.htm
 //   Modified Bessel functions of the first kind.
 // 
-//
 
 float bessel(const float x)
 {
-    float x2 = x * x;
-    float val = 1.f + 0.25f * x2;
+    const float x2 = x * x;
+    float val = 1.0f + 0.25f * x2;
     float x_pow_2i = x2 * x2;
-    float fact_i = 1;
-    int64_t i4 = 16;
+    float fact_i = 1.0f;
+    std::int64_t i4 = 16;
     for (int i = 2; i < 10; ++i)
     {
         fact_i *= i;
@@ -160,11 +159,10 @@ float bessel(const float x)
 
 float log_bessel(const float x)
 {
-    const float pi = 3.1415926535897932f;
     // Log of Bessel function is not stable for large arguments
     // https://publons.com/review/414383/
     if (x > 12)
-        return x + 0.5f * (-std::log(2.f * pi) + std::log(1 / x) + 1.f / (8.f * x));
+        return x + 0.5f * (-std::log(2.0f * Pi<float>()) + std::log(1 / x) + 1.0f / (8.0f * x));
     else
         return std::log(bessel(x));
 }
@@ -177,9 +175,9 @@ float log_bessel(const float x)
 
 float logistic(const float mean, const float scale)
 {
-    float loc = std::abs(mean);
-    float den = (1.f + std::exp(-loc / scale)) * (1.f + std::exp(-loc / scale));
-    float num = -loc / scale;
+    const float loc = std::abs(mean);
+    const float den = (1.0f + std::exp(-loc / scale)) * (1.0f + std::exp(-loc / scale));
+    const float num = -loc / scale;
     return std::exp(num) / (scale * den);
 }
 

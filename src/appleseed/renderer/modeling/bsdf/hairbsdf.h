@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_HAIRBSDF_H
-#define APPLESEED_HAIRBSDF_H
+#pragma once
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -35,7 +34,6 @@
 #include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
@@ -70,6 +68,9 @@ APPLESEED_DECLARE_INPUT_VALUES(HairBSDFInputValues)
         float       m_h;
         float       m_v;
         float       m_s;
+        float       m_angle_R;
+        float       m_angle_TT;
+        float       m_angle_TRT;
     };
 
     Precomputed m_precomputed;
@@ -104,4 +105,3 @@ class APPLESEED_DLLSYMBOL HairBSDFFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_HAIRBSDF_H

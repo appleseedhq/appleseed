@@ -99,6 +99,7 @@ namespace
                     "glass_bsdf",
                     ParamArray().insert("volume_parameterization", "transmittance"));
             m_glossy_brdf = create_and_register_bsdf(GlossyID, "glossy_brdf");
+            m_hair_bsdf = create_and_register_bsdf(HairID, "hair_bsdf");
             m_metal_brdf = create_and_register_bsdf(MetalID, "metal_brdf");
             m_orennayar_brdf = create_and_register_bsdf(OrenNayarID, "orennayar_brdf");
             m_plastic_brdf = create_and_register_bsdf(PlasticID, "plastic_brdf");
@@ -402,6 +403,7 @@ namespace
         auto_release_ptr<BSDF>      m_disney_brdf;
         auto_release_ptr<BSDF>      m_glass_bsdf;
         auto_release_ptr<BSDF>      m_glossy_brdf;
+        auto_release_ptr<BSDF>      m_hair_bsdf;
         auto_release_ptr<BSDF>      m_metal_brdf;
         auto_release_ptr<BSDF>      m_orennayar_brdf;
         auto_release_ptr<BSDF>      m_plastic_brdf;

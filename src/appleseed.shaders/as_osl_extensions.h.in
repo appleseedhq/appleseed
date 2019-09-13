@@ -143,6 +143,15 @@ closure color as_disney(
     float       clearcoat,
     float       clearcoat_gloss) BUILTIN;
 
+closure color as_hair(
+    color       reflectance,
+    float       melanin,
+    float       melanin_redness,
+    float       eta,
+    float       beta_M,
+    float       beta_N,
+    float       alpha) BUILTIN;
+
 closure color as_plastic(
     normal      N,
     color       specular_color,

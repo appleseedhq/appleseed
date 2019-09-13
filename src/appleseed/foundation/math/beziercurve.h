@@ -1205,9 +1205,9 @@ bool BezierCurveIntersector<BezierCurveType>::converge(
             const ValueType pt_curve_dist = std::sqrt(dotxy(p, p));
 
             // Compute u parameter
-            u = (vert_proj > 0) ?
-                0.5f + pt_curve_dist / width :
-                0.5f - pt_curve_dist / width;
+            u = vert_proj > ValueType(0.0) ?
+                ValueType(0.5) + pt_curve_dist / width :
+                ValueType(0.5) - pt_curve_dist / width;
         }
 
         return true;

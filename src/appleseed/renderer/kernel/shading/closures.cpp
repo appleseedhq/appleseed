@@ -39,6 +39,7 @@
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/bsdf/glassbsdf.h"
 #include "renderer/modeling/bsdf/glossybrdf.h"
+#include "renderer/modeling/bsdf/hairbsdf.h"
 #include "renderer/modeling/bsdf/metalbrdf.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
@@ -724,6 +725,80 @@ namespace
                 average_fresnel_reflectance_dielectric(ior),
                 fresnel_weight);
             return eavg * favg;
+        }
+    };
+
+    struct HairClosure
+    {
+        struct Params
+        {
+            OSL::Color3     reflectance;
+            float           melanin;
+            float           melanin_redness;
+            float           eta;
+            float           beta_M;
+            float           beta_N;
+            float           alpha;
+        };
+
+        static const char* name()
+        {
+            return "as_hair";
+        }
+
+        static ClosureID id()
+        {
+            return HairID;
+        }
+
+        static int modes()
+        {
+            return ScatteringMode::Glossy;
+        }
+
+        static void register_closure(OSLShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_COLOR_PARAM(Params, reflectance),
+                CLOSURE_FLOAT_PARAM(Params, melanin),
+                CLOSURE_FLOAT_PARAM(Params, melanin_redness),
+                CLOSURE_FLOAT_PARAM(Params, eta),
+                CLOSURE_FLOAT_PARAM(Params, beta_M),
+                CLOSURE_FLOAT_PARAM(Params, beta_N),
+                CLOSURE_FLOAT_PARAM(Params, alpha),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
+            g_closure_convert_funs[id()] = &convert_closure;
+            g_closure_get_modes_funs[id()] = &modes;
+        }
+
+        static void convert_closure(
+            CompositeSurfaceClosure&    composite_closure,
+            const Basis3f&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight,
+            Arena&                      arena)
+        {
+            const Params* p = static_cast<const Params*>(osl_params);
+
+            HairBSDFInputValues* values =
+                composite_closure.add_closure<HairBSDFInputValues>(
+                    id(),
+                    shading_basis,
+                    weight,
+                    Vector3f(0.0f),
+                    arena);
+
+            values->m_reflectance.set(Color3f(p->reflectance), g_std_lighting_conditions, Spectrum::Reflectance);
+            values->m_melanin = saturate(p->melanin);
+            values->m_melanin_redness = saturate(p->melanin_redness);
+            values->m_eta = max(p->eta, 0.001f);
+            values->m_beta_M = p->beta_M;
+            values->m_beta_N = p->beta_N;
+            values->m_alpha = p->alpha;
         }
     };
 
@@ -2387,6 +2462,7 @@ void register_closures(OSLShadingSystem& shading_system)
     register_closure<EmissionClosure>(shading_system);
     register_closure<GlassClosure>(shading_system);
     register_closure<GlossyClosure>(shading_system);
+    register_closure<HairClosure>(shading_system);
     register_closure<HoldoutClosure>(shading_system);
     register_closure<MatteClosure>(shading_system);
     register_closure<MetalClosure>(shading_system);

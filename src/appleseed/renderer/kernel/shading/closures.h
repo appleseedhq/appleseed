@@ -68,6 +68,7 @@ enum ClosureID
     BlinnID,
     DiffuseID,
     DisneyID,
+    HairID,
     OrenNayarID,
     PhongID,
     ReflectionID,
