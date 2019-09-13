@@ -442,10 +442,10 @@ void ShadingPoint::refine_and_offset() const
 
             assert(is_curve_primitive());
 
-            const Vector3d x = normalize(get_dpdu(0));
-            const Vector3d& sn_curve = normalize(-refine_space_ray.m_dir);
-            const Vector3d z = normalize(cross(sn_curve, x));
-            m_refine_space_geo_normal = normalize(cross(z, x));
+            const Vector3d x = get_dpdu(0);
+            const Vector3d& sn_curve = -refine_space_ray.m_dir;
+            const Vector3d z = cross(sn_curve, x);
+            m_refine_space_geo_normal = cross(z, x);
 
             // todo: this does not look correct, considering the flat ribbon nature of curves.
             const double Eps = 1.0e-6;
@@ -568,8 +568,9 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
                     ? curves->get_curve1(m_primitive_index).evaluate_tangent(v)
                     : curves->get_curve3(m_primitive_index).evaluate_tangent(v);
 
-            m_dpdu = normalize(Vector3d(tangent));
             const Vector3d& sn = get_original_shading_normal();
+
+            m_dpdu = normalize(Vector3d(tangent));
             m_dpdv = normalize(cross(sn, m_dpdu));
             m_dndu = m_dndv = Vector3d(0.0);
         }
@@ -810,13 +811,12 @@ void ShadingPoint::compute_shading_basis() const
         tangent = m_assembly_instance_transform.vector_to_parent(tangent);
     }
 
-
     if (m_primitive_type == PrimitiveCurve3)
     {
-        // Shading basis for hair BSDF.
-        // todo: add primitive flag to differential curves from hair.
+        // Contruct shading basis for hair BSDF.
+        // todo: add flag to differentiate curves from hair.
         const Vector3d x = normalize(get_dpdu(0));
-        const Vector3d sn_curve = normalize(get_original_shading_normal());
+        const Vector3d sn_curve = get_original_shading_normal();
         const Vector3d z = normalize(cross(sn_curve, x));
         const Vector3d y = cross(z, x);
         m_shading_basis.build(y, x, z);
@@ -838,7 +838,6 @@ void ShadingPoint::compute_shading_basis() const
             // Fall back to arbitrary tangents if the tangent and the shading normal are colinear.
             m_shading_basis.build(sn);
         }
-
     }
     // Apply the basis modifier if the material has one.
     if (material != nullptr)

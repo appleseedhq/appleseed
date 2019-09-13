@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_SPECIAL_FUNCTIONS_H
-#define APPLESEED_FOUNDATION_MATH_SPECIAL_FUNCTIONS_H
+#pragma once
 
 namespace foundation
 {
@@ -51,5 +50,3 @@ float logistic(const float location, const float scale);
 float logistic_cdf(const float location, const float scale);
 
 }       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_SPECIAL_FUNCTIONS_H

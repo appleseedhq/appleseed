@@ -279,6 +279,7 @@ set (src_appleseed_sources
      src/appleseed/as_fresnel.osl
      src/appleseed/as_glass.osl
      src/appleseed/as_globals.osl
+     src/appleseed/as_hair_material.osl
      src/appleseed/as_id_manifold.osl
      src/appleseed/as_invert_color.osl
      src/appleseed/as_luminance.osl

@@ -57,9 +57,10 @@
 
 // Standard headers.
 #include <algorithm>
+#include <array>
 #include <cmath>
-#include <numeric>
 #include <cstddef>
+#include <numeric>
 #include <string>
 
 // Forward declarations.
@@ -75,16 +76,15 @@ namespace renderer
 
 namespace
 {
-    static const float pi = static_cast<float>(M_PI);
 
     //
     // Normalized logistic function over the range [-pi, pi].
     //
 
-    inline float trimmed_logistic_func(float value, float scale)
+    inline float trimmed_logistic_func(const float value, const float scale)
     {
-        float num = logistic(value, scale);
-        float den = 1.f - 2.f * logistic_cdf(-pi, scale);
+        const float num = logistic(value, scale);
+        const float den = 1.0f - 2.0f * logistic_cdf(-Pi<float>(), scale);
         assert(den != 0);
         return num / den;
     }
@@ -94,20 +94,20 @@ namespace
     // using random sample in [0, 1].
     //
 
-    inline float sample_trimmed_logistic(float sample, float scale)
+    inline float sample_trimmed_logistic(const float sample, const float scale)
     {
-        float trimmed_log_cdf = 1.f - 2.f * logistic_cdf(-pi, scale);
-        float x = -scale * std::log(1.f / (sample * trimmed_log_cdf + logistic_cdf(-pi, scale)) - 1.0f);
-        return clamp(x, -pi, pi);
+        const float trimmed_log_cdf = 1.0f - 2.0f * logistic_cdf(-Pi<float>(), scale);
+        const float x = -scale * std::log(1.0f / (sample * trimmed_log_cdf + logistic_cdf(-Pi<float>(), scale)) - 1.0f);
+        return clamp(x, -Pi<float>(), Pi<float>());
     }
 
     //
     // Computes the total azimuthal angle difference for each component of scattering.
     //
 
-    inline float calc_phi(int p, float gamma_o, float gamma_t)
+    inline float calc_phi(const int p, const float gamma_o, const float gamma_t)
     {
-        return (2.f * static_cast<float> (p) * gamma_t - 2.f * gamma_o + static_cast<float> (p * pi));
+        return (2.0f * static_cast<float> (p) * gamma_t - 2.0f * gamma_o + static_cast<float> (p * Pi<float>()));
     }
 
     //
@@ -116,11 +116,11 @@ namespace
 
     inline float wrap_to_pi(float angle)
     {
-        while (angle > pi)
-            angle -= 2.f * pi;
+        while (angle > Pi<float>())
+            angle -= TwoPi<float>();
 
-        while (angle < -pi)
-            angle += 2.f * pi;
+        while (angle < -Pi<float>())
+            angle += TwoPi<float>();
 
         return angle;
     }
@@ -129,18 +129,18 @@ namespace
     // Longitudinal scattering function.
     //
 
-    static float longitudinal(
-        float cos_theta_i,
-        float cos_theta_o,
-        float sin_theta_i,
-        float sin_theta_o,
-        float v)
+    float longitudinal(
+        const float cos_theta_i,
+        const float cos_theta_o,
+        const float sin_theta_i,
+        const float sin_theta_o,
+        const float v)
     {
-        float bessel_arg = cos_theta_i * cos_theta_o / v;
-        float exp_arg = sin_theta_i * sin_theta_o / v;
+        const float bessel_arg = cos_theta_i * cos_theta_o / v;
+        const float exp_arg = sin_theta_i * sin_theta_o / v;
 
         // Low roughness values lead to precision issues
-        // in the longitudinal integral 
+        // in the longitudinal integral. 
         // https://publons.com/review/414383/
 
         if (v <= 0.1f)
@@ -148,13 +148,13 @@ namespace
             return
                 (std::exp(log_bessel(bessel_arg) -
                 exp_arg - (1.0f / v) +
-                0.6931f + std::log(1.0f / (2 * v))));
+                0.6931f + std::log(1.0f / (2.0f * v))));
         }
         else
         {
             return
                 (std::exp(-exp_arg) * bessel(bessel_arg)) /
-                (std::sinh(1.0f / v) * 2 * v);
+                (std::sinh(1.0f / v) * 2.0f * v);
         }
     }
 
@@ -162,13 +162,13 @@ namespace
     // Sampling function for longitudinal scattering. 
     //
 
-    static float sample_longitudinal(float sin_tilt, float cos_tilt, float v, Vector2f sample_M)
+    float sample_longitudinal(const float sin_tilt, const float cos_tilt, const float v, const Vector2f sample_M)
     {
-        float cos_theta =
-            1.f + v * std::log(sample_M[0] +
-            (1.f - sample_M[0]) * std::exp(-2.f / v));
-        float sin_theta = static_cast<float>(std::sqrt(std::max(0.0f, 1 - cos_theta * cos_theta)));
-        float cos_phi = std::cos(2.0f * pi * sample_M[1]);
+        const float cos_theta =
+            1.0f + v * std::log(sample_M[0] +
+            (1.0f - sample_M[0]) * std::exp(-2.0f / v));
+        const float sin_theta = static_cast<float>(std::sqrt(std::max(0.0f, 1 - cos_theta * cos_theta)));
+        const float cos_phi = std::cos(TwoPi<float>() * sample_M[1]);
         return (-cos_theta * sin_tilt + sin_theta * cos_phi * cos_tilt);
     }
 
@@ -178,7 +178,7 @@ namespace
 
     static float sum_luminance(const std::array<Spectrum, 4>& retAp)
     {
-        return std::accumulate(retAp.begin(), retAp.end(), 0.f, [](float s, const Spectrum& ap)
+        return std::accumulate(retAp.begin(), retAp.end(), 0.0f, [](float s, const Spectrum& ap)
         {
             return s + luminance(ap.to_rgb(g_std_lighting_conditions));
         });
@@ -188,56 +188,237 @@ namespace
     // Attenuation function for each component of scattering.
     //
 
-    static std::array<Spectrum, 4> attenuation(float cos_theta_o, float eta, float h, const Spectrum& T)
+    void attenuation(
+        const float                 cos_theta_o,
+        const float                 eta,
+        const float                 h,
+        const Spectrum&             T,
+        std::array<Spectrum, 4>&    ret)
     {
-        std::array<Spectrum, 4> ret;
-
-        // R(Primary Specular) 
-        float cosGammaO = std::sqrt(std::max(0.0f, 1.0f - h * h));
-        float cosTheta = cosGammaO * cos_theta_o;
+        
+        // R(Primary Specular). 
+        const float cosGammaO = std::sqrt(std::max(0.0f, 1.0f - h * h));
+        const float cosTheta = cosGammaO * cos_theta_o;
         float f;
-        fresnel_reflectance_dielectric(f, 1.f / eta, cosTheta);
+        fresnel_reflectance_dielectric(f, 1.0f / eta, cosTheta);
         ret[0] = Spectrum(f);
 
-        // TT(Transmitted component) 
+        // TT(Transmitted component). 
         ret[1] = (1.0f - f) * (1.0f - f) * T;
 
-        // TRT(Total internally reflected component) 
+        // TRT(Total internally reflected component). 
         ret[2] = ret[1] * T * f;
 
-        // Higher orders of scattering 
+        // Higher orders of scattering. 
         ret[3] = ret[2] * f * T / (Spectrum(1.0f) - T * f);
 
-        // return the values
-        return ret;
     }
 
     //
     // Method to compute a discrete pdf based on the attenuation function.
     //
 
-    std::array<float, 4> attenuation_pdf(float cos_theta_o, float eta, float h, const Spectrum& T)
+    void attenuation_pdf(
+        const float             cos_theta_o,
+        const float             eta,
+        const float             h,
+        const Spectrum&         T,
+        std::array<float, 4>&   ret)
     {
-        std::array<float, 4> ret;
 
-        std::array<Spectrum, 4> retAp = attenuation(cos_theta_o, eta, h, T);
+        std::array<Spectrum, 4> retAp;
+        attenuation(cos_theta_o, eta, h, T, retAp);
 
-        float sumY = sum_luminance(retAp);
+        const float sumY = sum_luminance(retAp);
         for (int i = 0; i <= 3; i++)
             ret[i] = luminance(retAp[i].to_rgb(g_std_lighting_conditions)) / sumY;
-        return ret;
     }
 
     //
     // Azimuthal scattering function.
     //
 
-    inline float azimuthal(float phi, int p, float s, float gamma_o, float gamma_t)
+    inline float azimuthal(const float phi, const int p, const float s, const float gamma_o, const float gamma_t)
     {
-        float dphi = wrap_to_pi(phi - calc_phi(p, gamma_o, gamma_t));
+        const float dphi = wrap_to_pi(phi - calc_phi(p, gamma_o, gamma_t));
         return trimmed_logistic_func(dphi, s);
     }
 
+    //
+    // BSDF computation function.
+    //
+
+    void calc_bsdf(
+        const float                 cos_theta_i,
+        const float                 sin_theta_i,
+        const float                 cos_theta_o,
+        const float                 sin_theta_o,
+        const float                 cos_theta_o_R,
+        const float                 sin_theta_o_R,
+        const float                 cos_theta_o_TT,
+        const float                 sin_theta_o_TT,
+        const float                 cos_theta_o_TRT,
+        const float                 sin_theta_o_TRT,
+        const float                 v,
+        const float                 dphi,
+        const float                 s,
+        const float                 gamma_o,
+        const float                 gamma_t,
+        std::array<Spectrum, 4>&    ap,
+        Spectrum&                   bsdf_f)
+    {
+
+        // RR contribution of scattering.
+        bsdf_f +=
+            ap[0] *
+            longitudinal(
+                cos_theta_i,
+                cos_theta_o_R,
+                sin_theta_i,
+                sin_theta_o_R,
+                v) *
+            azimuthal(dphi, 0, s, gamma_o, gamma_t);
+
+        // TT contribution of scattering.
+        bsdf_f +=
+            ap[1] *
+            longitudinal(
+                cos_theta_i,
+                cos_theta_o_TT,
+                sin_theta_i,
+                sin_theta_o_TT,
+                v * 0.25f) *
+            azimuthal(dphi, 1, s, gamma_o, gamma_t);
+
+
+        // TRT contribution of scattering.
+        bsdf_f +=
+            ap[2] *
+            longitudinal(
+                cos_theta_i,
+                cos_theta_o_TRT,
+                sin_theta_i,
+                sin_theta_o_TRT,
+                v * 4.0f) *
+            azimuthal(dphi, 2, s, gamma_o, gamma_t);
+
+        // TRRT+ contribution of scattering.
+        bsdf_f +=
+            ap[3] * 
+            longitudinal(
+                cos_theta_i,
+                cos_theta_o,
+                sin_theta_i,
+                sin_theta_o,
+                v * 4.0f) *
+            RcpTwoPi<float>();
+
+
+    }
+
+    //
+    // PDF computation function.
+    //
+
+    void calc_pdf(
+        const float             cos_theta_i,
+        const float             sin_theta_i,
+        const float             cos_theta_o,
+        const float             sin_theta_o,
+        const float             cos_theta_o_R,
+        const float             sin_theta_o_R,
+        const float             cos_theta_o_TT,
+        const float             sin_theta_o_TT,
+        const float             cos_theta_o_TRT,
+        const float             sin_theta_o_TRT,
+        const float             v,
+        const float             dphi,
+        const float             s,
+        const float             gamma_o,
+        const float             gamma_t,
+        std::array<float, 4>&   ap_pdf,
+        float&                  bsdf_pdf)
+    {
+
+        // RR contribution of scattering.
+        bsdf_pdf +=
+            ap_pdf[0] *
+            longitudinal(
+                cos_theta_i,
+                cos_theta_o_R,
+                sin_theta_i,
+                sin_theta_o_R,
+                v) *
+            azimuthal(dphi, 0, s, gamma_o, gamma_t);
+
+        // TT contribution of scattering.
+        bsdf_pdf +=
+            ap_pdf[1] *
+            longitudinal(
+                cos_theta_i,
+                cos_theta_o_TT,
+                sin_theta_i,
+                sin_theta_o_TT,
+                v * 0.25f) *
+            azimuthal(dphi, 1, s, gamma_o, gamma_t);
+
+
+        // TRT contribution of scattering.
+        bsdf_pdf +=
+            ap_pdf[2] *
+            longitudinal(
+                cos_theta_i,
+                cos_theta_o_TRT,
+                sin_theta_i,
+                sin_theta_o_TRT,
+                v * 4.0f) *
+            azimuthal(dphi, 2, s, gamma_o, gamma_t);
+
+        // TRRT+ contribution of scattering.
+        bsdf_pdf +=
+            ap_pdf[3] *
+            longitudinal(
+                cos_theta_i,
+                cos_theta_o,
+                sin_theta_i,
+                sin_theta_o,
+                v * 4.0f) *
+            RcpTwoPi<float>();
+    }
+
+    //
+    // Computes absorption coefficient based on eumelanin and pheomelanin concentrations.
+    //
+
+    Spectrum sigma_a_from_melanin(float melanin_conc, const float melanin_ratio)
+    {
+        const float melanin = -std::log(std::max(1.0f - melanin_conc, 0.0001f));
+        const float ce = melanin * (1.0f - melanin_ratio);
+        const float cp = melanin * melanin_ratio;
+        const Color3f eumelanin_sigma_a(0.506f, 0.841f, 1.653f);
+        const Color3f pheomelanin_sigma_a(0.343f, 0.733f, 1.924f);
+        const Color3f sigma_a = (ce * eumelanin_sigma_a + cp * pheomelanin_sigma_a);
+        Spectrum ret;
+        ret.set(sigma_a, g_std_lighting_conditions, Spectrum::Intent::Reflectance);
+        return ret;
+    }
+
+    //
+    // Computes absorption coefficient based on azimuthal roughness and surface reflectance.
+    //
+
+    Spectrum sigma_a_from_rgb(const Spectrum& reflectance, const float beta_n)
+    {
+        Spectrum sigma_a;
+        for (std::size_t i = 0, e = reflectance.size(); i < e; ++i)
+        {
+            float s = std::log(reflectance[i]) /
+                (5.969f - 0.215f * beta_n + 2.532f * beta_n * beta_n -
+                    10.73f * pow_int(beta_n, 3) + 5.574f * pow_int(beta_n, 4) + 0.245f * pow_int(beta_n, 5));
+            sigma_a[i] = s * s;
+        }
+        return sigma_a;
+    }
 
     //
     // Hair BSDF.
@@ -274,7 +455,7 @@ namespace
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("melanin", InputFormatFloat, "0.3");
             m_inputs.declare("melanin_redness", InputFormatFloat, "0.0");
-            m_inputs.declare("eta", InputFormatFloat, "1,55");
+            m_inputs.declare("eta", InputFormatFloat, "1.55");
             m_inputs.declare("beta_M", InputFormatFloat, "0.3");
             m_inputs.declare("beta_N", InputFormatFloat, "0.3");
             m_inputs.declare("alpha", InputFormatFloat, "2.0");
@@ -304,7 +485,7 @@ namespace
 
             new (&values->m_precomputed) InputValues::Precomputed();
 
-            values->m_precomputed.m_h = -1.f + 2.f * shading_point.get_bary()[0];
+            values->m_precomputed.m_h = -1.0f + 2.0f * shading_point.get_bary()[0];
             if (is_zero(values->m_reflectance))
                 values->m_precomputed.m_sigma_a =
                 sigma_a_from_melanin(values->m_melanin, values->m_melanin_redness);
@@ -312,19 +493,23 @@ namespace
                 values->m_precomputed.m_sigma_a =
                 sigma_a_from_rgb(values->m_reflectance, values->m_beta_N);
 
-            // Longitudinal roughness parameter
+            // Longitudinal roughness parameter.
             values->m_precomputed.m_v =
                 0.726f * values->m_beta_M +
                 0.812f * values->m_beta_M * values->m_beta_M +
                 3.7f * pow_int(values->m_beta_M, 20);
             values->m_precomputed.m_v *= values->m_precomputed.m_v;
 
-            // Scale factor to convert logistic function to gaussian
+            // Scale factor to convert logistic function to gaussian.
             values->m_precomputed.m_s =
                 0.626657069f * (0.265f * values->m_beta_N +
                 1.194f * values->m_beta_N * values->m_beta_N +
                 5.372f * pow_int(values->m_beta_N, 22));
 
+            const float ang_in_radians = deg_to_rad<float>(values->m_alpha);
+            values->m_precomputed.m_angle_R = -2.0f * ang_in_radians;
+            values->m_precomputed.m_angle_TT = ang_in_radians;
+            values->m_precomputed.m_angle_TRT = 4.0f * ang_in_radians;
         }
 
         void sample(
@@ -332,148 +517,157 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
+            const LocalGeometry&        local_geometry,
+            const Dual3f&               outgoing,
             const int                   modes,
             BSDFSample&                 sample) const override
         {
             if (!ScatteringMode::has_glossy(modes))
                 return;
 
-            const HairBSDFInputValues* values = static_cast<const HairBSDFInputValues*>(data);
-            Vector3f outgoing = sample.m_outgoing.get_value();
-            const Vector3f wo = sample.m_shading_basis.transform_to_local(outgoing);
+            const InputValues* values = static_cast<const InputValues*>(data);
+            Vector3f out = outgoing.get_value();
+            const Vector3f wo = local_geometry.m_shading_basis.transform_to_local(out);
 
             sampling_context.split_in_place(2, 1);
             Vector2f sample_M = sampling_context.next2<Vector2f>();
+            sampling_context.split_in_place(2, 1);
             Vector2f sample_N = sampling_context.next2<Vector2f>();
 
-            float sin_theta_o = wo.x;
-            float cos_theta_o = std::sqrt(std::max(0.0f, 1.0f - sin_theta_o * sin_theta_o));
-            float phi_o = std::atan2(wo.y, wo.z);
+            const float sin_theta_o = wo.x;
+            const float cos_theta_o = std::sqrt(std::max(0.0f, 1.0f - sin_theta_o * sin_theta_o));
+            const float phi_o = std::atan2(wo.y, wo.z);
 
-            float sin_theta_t = sin_theta_o / values->m_eta;
-            float cos_theta_t = std::sqrt(std::max(0.0f, 1.0f - sin_theta_t * sin_theta_t));
+            const float sin_theta_t = sin_theta_o / values->m_eta;
+            const float cos_theta_t = std::sqrt(std::max(0.0f, 1.0f - sin_theta_t * sin_theta_t));
 
-            float eta_p = std::sqrt(values->m_eta * values->m_eta - sin_theta_o * sin_theta_o) / cos_theta_o;
-            float sin_gamma_t = values->m_precomputed.m_h / eta_p;
-            float cos_gamma_t = std::sqrt(std::max(0.0f, 1.0f - sin_gamma_t * sin_gamma_t));
-            float gamma_t = std::asin(clamp(sin_gamma_t, -1.0f, 1.0f));
-            float gamma_o = std::asin(clamp(values->m_precomputed.m_h, -1.0f, 1.0f));
+            const float eta_p = std::sqrt(values->m_eta * values->m_eta - sin_theta_o * sin_theta_o) / cos_theta_o;
+            const float sin_gamma_t = values->m_precomputed.m_h / eta_p;
+            const float cos_gamma_t = std::sqrt(std::max(0.0f, 1.0f - sin_gamma_t * sin_gamma_t));
+            const float gamma_t = std::asin(clamp(sin_gamma_t, -1.0f, 1.0f));
+            const float gamma_o = std::asin(clamp(values->m_precomputed.m_h, -1.0f, 1.0f));
 
-            // Compute attenuation for the single path through the hair cylinder
-            Spectrum T = exp(-values->m_precomputed.m_sigma_a * (( 2.f * cos_gamma_t) / cos_theta_t));
+            // Compute attenuation for the single path through the hair cylinder.
+            const Spectrum T = exp(-values->m_precomputed.m_sigma_a * (( 2.0f * cos_gamma_t) / cos_theta_t));
 
-            // Determine which scattering component to sample for hair scattering
-            std::array<Spectrum, 4> ap = attenuation(cos_theta_o, values->m_eta, values->m_precomputed.m_h, T);
-            std::array<float, 4> ap_pdf = attenuation_pdf(cos_theta_o, values->m_eta, values->m_precomputed.m_h, T);
+            // Determine which scattering component to sample for hair scattering.
+            std::array<Spectrum, 4> ap;
+            attenuation(cos_theta_o, values->m_eta, values->m_precomputed.m_h, T, ap);
+            std::array<float, 4> ap_pdf;
+            attenuation_pdf(cos_theta_o, values->m_eta, values->m_precomputed.m_h, T, ap_pdf);
             int p;
-            for (p = 0; p < 3; ++p) {
-                if (sample_N[0] < ap_pdf[p]) break;
+            for (p = 0; p < 3; ++p)
+            {
+                if (sample_N[0] < ap_pdf[p])
+                    break;
                 sample_N[0] -= ap_pdf[p];
             }
 
             sample_M[0] = std::max(sample_M[0], float(1e-5));
-            float theta_o = std::asin(clamp(sin_theta_o, -1.0f, 1.0f));
+            const float theta_o = std::asin(clamp(sin_theta_o, -1.0f, 1.0f));
 
-            // Deviation of outgoing angle due to cuticular scales
+            // Deviation of outgoing angle due to cuticular scales.
+            const float theta_o_R = theta_o + values->m_precomputed.m_angle_R;
+            const float theta_o_TT = theta_o + values->m_precomputed.m_angle_TT;
+            const float theta_o_TRT = theta_o + values->m_precomputed.m_angle_TRT;
 
-            float theta_o_R = theta_o - 2.0f * deg_to_rad(values->m_alpha);
-            float theta_o_TT = theta_o + deg_to_rad(values->m_alpha);
-            float theta_o_TRT = theta_o + 4.0f * deg_to_rad(values->m_alpha);
-
-            // Sample longitudinal function for given component of scattering
+            // Sample longitudinal function for given component of scattering.
 
             float sin_theta_i;
-            if (p == 0) {
+            if (p == 0)
+            {
                 sin_theta_i = sample_longitudinal(
                     std::sin(theta_o_R),
                     std::cos(theta_o_R),
                     values->m_precomputed.m_v,
                     sample_M);
             }
-            if (p == 1) {
+            if (p == 1)
+            {
                 sin_theta_i = sample_longitudinal(
                     std::sin(theta_o_TT),
                     std::cos(theta_o_TT),
-                    values->m_precomputed.m_v * .25f,
+                    values->m_precomputed.m_v * 0.25f,
                     sample_M);
             }
-            if (p == 2) {
+            if (p == 2)
+            {
                 sin_theta_i = sample_longitudinal(
                     std::sin(theta_o_TRT),
                     std::cos(theta_o_TRT),
-                    values->m_precomputed.m_v * 4.f,
+                    values->m_precomputed.m_v * 4.0f,
                     sample_M);
             }
-            float cos_theta_i = std::sqrt(std::max(0.0f, 1.f - sin_theta_i * sin_theta_i));
+            const float cos_theta_i = std::sqrt(std::max(0.0f, 1.0f - sin_theta_i * sin_theta_i));
 
-
-            // Sample azimuthal scattering function to compute change in azimuthal direction
+            // Sample azimuthal scattering function to compute change in azimuthal direction.
             float dphi;
             dphi = calc_phi(p, gamma_o, gamma_t) +
             sample_trimmed_logistic(sample_N[1], values->m_precomputed.m_s);
             
-            // Compute wi from sampled hair scattering angles
-            float phi_i = phi_o + dphi;
-            Vector3f wi = Vector3f(sin_theta_i, cos_theta_i * std::sin(phi_i), cos_theta_i * std::cos(phi_i));
+            // Compute wi from sampled hair scattering angles.
+            const float phi_i = phi_o + dphi;
+            const Vector3f wi = Vector3f(sin_theta_i, cos_theta_i * std::sin(phi_i), cos_theta_i * std::cos(phi_i));
 
-            Spectrum bsdf_f(0.f);
-            float bsdf_pdf(0.f);
+            Spectrum bsdf_f(0.0f);
+            float bsdf_pdf(0.0f);
 
-            // RR contribution of scattering
-            bsdf_f +=
-                longitudinal(cos_theta_i, std::abs(std::cos(theta_o_R)),
-                    sin_theta_i, std::sin(theta_o_R), values->m_precomputed.m_v) *
-                ap[0] * azimuthal(dphi, 0, values->m_precomputed.m_s, gamma_o, gamma_t);
-            bsdf_pdf +=
-                longitudinal(cos_theta_i, std::abs(std::cos(theta_o_R)),
-                    sin_theta_i, std::sin(theta_o_R), values->m_precomputed.m_v) *
-                ap_pdf[0] * azimuthal(dphi, 0, values->m_precomputed.m_s, gamma_o, gamma_t);
+            calc_bsdf(
+                cos_theta_i,
+                sin_theta_i,
+                cos_theta_o,
+                sin_theta_o,
+                std::abs(std::cos(theta_o_R)),
+                std::sin(theta_o_R),
+                std::abs(std::cos(theta_o_TT)),
+                std::sin(theta_o_TT),
+                std::abs(std::cos(theta_o_TRT)),
+                std::sin(theta_o_TRT),
+                values->m_precomputed.m_v,
+                dphi,
+                values->m_precomputed.m_s,
+                gamma_o,
+                gamma_t,
+                ap,
+                bsdf_f);
 
-            // TT contribution of scattering
-            bsdf_f +=
-                longitudinal(cos_theta_i, std::abs(std::cos(theta_o_TT)), sin_theta_i,
-                    std::sin(theta_o_TT), values->m_precomputed.m_v * .25f) *
-                ap[1] * azimuthal(dphi, 1, values->m_precomputed.m_s, gamma_o, gamma_t);
-            bsdf_pdf +=
-                longitudinal(cos_theta_i, std::abs(std::cos(theta_o_TT)), sin_theta_i,
-                    std::sin(theta_o_TT), values->m_precomputed.m_v * .25f) *
-                ap_pdf[1] * azimuthal(dphi, 1, values->m_precomputed.m_s, gamma_o, gamma_t);
+            calc_pdf(
+                cos_theta_i,
+                sin_theta_i,
+                cos_theta_o,
+                sin_theta_o,
+                std::abs(std::cos(theta_o_R)),
+                std::sin(theta_o_R),
+                std::abs(std::cos(theta_o_TT)),
+                std::sin(theta_o_TT),
+                std::abs(std::cos(theta_o_TRT)),
+                std::sin(theta_o_TRT),
+                values->m_precomputed.m_v,
+                dphi,
+                values->m_precomputed.m_s,
+                gamma_o,
+                gamma_t,
+                ap_pdf,
+                bsdf_pdf);
 
-            // TRT contribution of scattering
-            bsdf_f +=
-                longitudinal(cos_theta_i, std::abs(std::cos(theta_o_TRT)), sin_theta_i,
-                    std::sin(theta_o_TRT), values->m_precomputed.m_v * 4.f) *
-                ap[2] * azimuthal(dphi, 2, values->m_precomputed.m_s, gamma_o, gamma_t);
-            bsdf_pdf +=
-                longitudinal(cos_theta_i, std::abs(std::cos(theta_o_TRT)), sin_theta_i,
-                    std::sin(theta_o_TRT), values->m_precomputed.m_v * 4.f) *
-                ap_pdf[2] * azimuthal(dphi, 2, values->m_precomputed.m_s, gamma_o, gamma_t);
+            const float angle_bsdf = std::abs(wi.y);
 
-            // TRRT+ contribution of scattering
-            bsdf_f +=
-                longitudinal(cos_theta_i, cos_theta_o, sin_theta_i, sin_theta_o, values->m_precomputed.m_v * 4.f) *
-                ap[3] / static_cast<float>(2.0f * pi);
-            bsdf_pdf += longitudinal(cos_theta_i, cos_theta_o, sin_theta_i, sin_theta_o, values->m_precomputed.m_v * 4.f) *
-                ap_pdf[3] / (2.0f * pi);
-
-            if (std::abs(wi.y) > 0)
-                bsdf_f /= std::abs(wi.y);
+            if (angle_bsdf > 0)
+                bsdf_f /= angle_bsdf;
 
             sample.set_to_scattering(ScatteringMode::Glossy, bsdf_pdf);
 
             sample.m_value.m_glossy = bsdf_f;
             sample.m_value.m_beauty = bsdf_f;
 
-            sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
-
+            sample.m_incoming = Dual3f(local_geometry.m_shading_basis.transform_to_parent(wi));
         }
 
         float evaluate(
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes,
@@ -483,99 +677,103 @@ namespace
                 return 0.0f;
 
             // Compute the BRDF value.
-            const HairBSDFInputValues* values = static_cast<const HairBSDFInputValues*>(data);
+            const InputValues* values = static_cast<const InputValues*>(data);
 
-            const Vector3f wo = shading_basis.transform_to_local(outgoing);
-            const Vector3f wi = shading_basis.transform_to_local(incoming);
+            const Vector3f wo = local_geometry.m_shading_basis.transform_to_local(outgoing);
+            const Vector3f wi = local_geometry.m_shading_basis.transform_to_local(incoming);
 
-            // Compute outgoing terms
-            float sin_theta_o = wo.x;
-            float cos_theta_o = std::sqrt(std::max(0.0f, 1.0f - sin_theta_o * sin_theta_o));
-            float phi_o = std::atan2(wo.y, wo.z);
-            float gamma_o = std::asin(clamp(values->m_precomputed.m_h, -1.0f, 1.0f));
+            // Compute outgoing terms.
+            const float sin_theta_o = wo.x;
+            const float cos_theta_o = std::sqrt(std::max(0.0f, 1.0f - sin_theta_o * sin_theta_o));
+            const float phi_o = std::atan2(wo.y, wo.z);
+            const float gamma_o = std::asin(clamp(values->m_precomputed.m_h, -1.0f, 1.0f));
 
-            // Compute incoming terms
-            float sin_theta_i = wi.x;
-            float cos_theta_i = std::sqrt(std::max(0.0f, 1.0f - sin_theta_i * sin_theta_i));
-            float phi_i = std::atan2(wi.y, wi.z);
+            // Compute incoming terms.
+            const float sin_theta_i = wi.x;
+            const float cos_theta_i = std::sqrt(std::max(0.0f, 1.0f - sin_theta_i * sin_theta_i));
+            const float phi_i = std::atan2(wi.y, wi.z);
 
-            // Compute terms for the refracted ray
-            float sin_theta_t = sin_theta_o / values->m_eta;
-            float cos_theta_t = std::sqrt(std::max(0.0f, 1.0f - sin_theta_t * sin_theta_t));
+            // Compute terms for the refracted ray.
+            const float sin_theta_t = sin_theta_o / values->m_eta;
+            const float cos_theta_t = std::sqrt(std::max(0.0f, 1.0f - sin_theta_t * sin_theta_t));
 
-            // Compute the modified refraction coefficient
-            float eta_p = std::sqrt(values->m_eta * values->m_eta - sin_theta_o * sin_theta_o) / cos_theta_o;
-            float sin_gamma_t = values->m_precomputed.m_h / eta_p;
-            float cos_gamma_t = std::sqrt(std::max(0.0f, 1.0f - sin_gamma_t * sin_gamma_t));
-            float gamma_t = std::asin(clamp(sin_gamma_t, -1.0f, 1.0f));
-            float theta_o = std::asin(clamp(sin_theta_o, -1.0f, 1.0f));
+            // Compute the modified refraction coefficient.
+            const float eta_p = std::sqrt(values->m_eta * values->m_eta - sin_theta_o * sin_theta_o) / cos_theta_o;
+            const float sin_gamma_t = values->m_precomputed.m_h / eta_p;
+            const float cos_gamma_t = std::sqrt(std::max(0.0f, 1.0f - sin_gamma_t * sin_gamma_t));
+            const float gamma_t = std::asin(clamp(sin_gamma_t, -1.0f, 1.0f));
+            const float theta_o = std::asin(clamp(sin_theta_o, -1.0f, 1.0f));
 
-            // Deviation of outgoing angle due to cuticular scales
-            float theta_o_R = theta_o - 2.0f * deg_to_rad(values->m_alpha);
-            float theta_o_TT = theta_o + deg_to_rad(values->m_alpha);
-            float theta_o_TRT = theta_o + 4.0f * deg_to_rad(values->m_alpha);
+            // Deviation of outgoing angle due to cuticular scales.
+            const float theta_o_R = theta_o + values->m_precomputed.m_angle_R;
+            const float theta_o_TT = theta_o + values->m_precomputed.m_angle_TT;
+            const float theta_o_TRT = theta_o + values->m_precomputed.m_angle_TRT;
 
-            // Compute Attenuation for the single path through the hair cylinder
-            Spectrum T = exp(-values->m_precomputed.m_sigma_a * ((2.f * cos_gamma_t) / cos_theta_t));
+            // Compute attenuation for the single path through the hair cylinder.
+            const Spectrum T = exp(-values->m_precomputed.m_sigma_a * ((2.0f * cos_gamma_t) / cos_theta_t));
 
-            float phi = phi_i - phi_o;
-            std::array<Spectrum, 4> ap = attenuation(cos_theta_o, values->m_eta, values->m_precomputed.m_h, T);
-            std::array<float, 4> ap_pdf = attenuation_pdf(cos_theta_o, values->m_eta, values->m_precomputed.m_h, T);
+            const float dphi = phi_i - phi_o;
+            std::array<Spectrum, 4> ap;
+            attenuation(cos_theta_o, values->m_eta, values->m_precomputed.m_h, T, ap);
+            std::array<float, 4> ap_pdf;
+            attenuation_pdf(cos_theta_o, values->m_eta, values->m_precomputed.m_h, T, ap_pdf);
 
-            Spectrum bsdf_f(0.f);
-            float bsdf_pdf = 0.f;
-            // RR contribution of scattering
-            bsdf_f +=
-                longitudinal(cos_theta_i, std::abs(std::cos(theta_o_R)),
-                    sin_theta_i, std::sin(theta_o_R), values->m_precomputed.m_v) *
-                ap[0] * azimuthal(phi, 0, values->m_precomputed.m_s, gamma_o, gamma_t);
-            bsdf_pdf +=
-                longitudinal(cos_theta_i, std::abs(std::cos(theta_o_R)),
-                    sin_theta_i, std::sin(theta_o_R), values->m_precomputed.m_v) *
-                ap_pdf[0] * azimuthal(phi, 0, values->m_precomputed.m_s, gamma_o, gamma_t);
+            Spectrum bsdf_f(0.0f);
+            float bsdf_pdf = 0.0f;
 
-            // TT contribution of scattering
-            bsdf_f +=
-                longitudinal(cos_theta_i, std::abs(std::cos(theta_o_TT)), sin_theta_i,
-                    std::sin(theta_o_TT), values->m_precomputed.m_v * .25f) *
-                ap[1] * azimuthal(phi, 1, values->m_precomputed.m_s, gamma_o, gamma_t);
-            bsdf_pdf +=
-                longitudinal(cos_theta_i, std::abs(std::cos(theta_o_TT)), sin_theta_i,
-                    std::sin(theta_o_TT), values->m_precomputed.m_v * .25f) *
-                ap_pdf[1] * azimuthal(phi, 1, values->m_precomputed.m_s, gamma_o, gamma_t);
+            calc_bsdf(
+                cos_theta_i,
+                sin_theta_i,
+                cos_theta_o,
+                sin_theta_o,
+                std::abs(std::cos(theta_o_R)),
+                std::sin(theta_o_R),
+                std::abs(std::cos(theta_o_TT)),
+                std::sin(theta_o_TT),
+                std::abs(std::cos(theta_o_TRT)),
+                std::sin(theta_o_TRT),
+                values->m_precomputed.m_v,
+                dphi,
+                values->m_precomputed.m_s,
+                gamma_o,
+                gamma_t,
+                ap,
+                bsdf_f);
 
-            // TRT contribution of scattering
-            bsdf_f +=
-                longitudinal(cos_theta_i, std::abs(std::cos(theta_o_TRT)), sin_theta_i,
-                    std::sin(theta_o_TRT), values->m_precomputed.m_v * 4.f) *
-                ap[2] * azimuthal(phi, 2, values->m_precomputed.m_s, gamma_o, gamma_t);
-            bsdf_pdf +=
-                longitudinal(cos_theta_i, std::abs(std::cos(theta_o_TRT)), sin_theta_i,
-                    std::sin(theta_o_TRT), values->m_precomputed.m_v * 4.f) *
-                ap_pdf[2] * azimuthal(phi, 2, values->m_precomputed.m_s, gamma_o, gamma_t);
+            calc_pdf(
+                cos_theta_i,
+                sin_theta_i,
+                cos_theta_o,
+                sin_theta_o,
+                std::abs(std::cos(theta_o_R)),
+                std::sin(theta_o_R),
+                std::abs(std::cos(theta_o_TT)),
+                std::sin(theta_o_TT),
+                std::abs(std::cos(theta_o_TRT)),
+                std::sin(theta_o_TRT),
+                values->m_precomputed.m_v,
+                dphi,
+                values->m_precomputed.m_s,
+                gamma_o,
+                gamma_t,
+                ap_pdf,
+                bsdf_pdf);
+            
+            const float angle_bsdf = std::abs(wi.y);
 
-            // TRRT+ contribution of scattering
-            bsdf_f +=
-                longitudinal(cos_theta_i, cos_theta_o, sin_theta_i, sin_theta_o, values->m_precomputed.m_v * 4.f) *
-                ap[3] / static_cast<float>(2.0f * pi);
-            bsdf_pdf += longitudinal(cos_theta_i, cos_theta_o, sin_theta_i, sin_theta_o, values->m_precomputed.m_v * 4.f) *
-                ap_pdf[3] / (2.0f * pi);
-
-            if (std::abs(wi.y) > 0)
-                bsdf_f /= std::abs(wi.y);
+            if (angle_bsdf > 0)
+                bsdf_f /= angle_bsdf;
 
             value.m_glossy = bsdf_f;
             value.m_beauty = bsdf_f;
 
             return bsdf_pdf;
-
         }
 
         float evaluate_pdf(
             const void*                 data,
             const bool                  adjoint,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes) const override
@@ -584,102 +782,67 @@ namespace
                 return 0.0f;
 
             // Compute the BRDF value.
-            const HairBSDFInputValues* values = static_cast<const HairBSDFInputValues*>(data);
+            const InputValues* values = static_cast<const InputValues*>(data);
 
-            const Vector3f wo = shading_basis.transform_to_local(outgoing);
-            const Vector3f wi = shading_basis.transform_to_local(incoming);
+            const Vector3f wo = local_geometry.m_shading_basis.transform_to_local(outgoing);
+            const Vector3f wi = local_geometry.m_shading_basis.transform_to_local(incoming);
 
-            // Compute outgoing terms
-            float sin_theta_o = wo.x;
-            float cos_theta_o = std::sqrt(std::max(0.0f, 1.0f - sin_theta_o * sin_theta_o));
-            float phi_o = std::atan2(wo.y, wo.z);
-            float gamma_o = std::asin(clamp(values->m_precomputed.m_h, -1.0f, 1.0f));
+            // Compute outgoing terms.
+            const float sin_theta_o = wo.x;
+            const float cos_theta_o = std::sqrt(std::max(0.0f, 1.0f - sin_theta_o * sin_theta_o));
+            const float phi_o = std::atan2(wo.y, wo.z);
+            const float gamma_o = std::asin(clamp(values->m_precomputed.m_h, -1.0f, 1.0f));
 
-            // Compute incoming terms
-            float sin_theta_i = wi.x;
-            float cos_theta_i = std::sqrt(std::max(0.0f, 1.0f - sin_theta_i * sin_theta_i));
-            float phi_i = std::atan2(wi.y, wi.z);
+            // Compute incoming terms.
+            const float sin_theta_i = wi.x;
+            const float cos_theta_i = std::sqrt(std::max(0.0f, 1.0f - sin_theta_i * sin_theta_i));
+            const float phi_i = std::atan2(wi.y, wi.z);
 
-            // Compute terms for the refracted ray
-            float sin_theta_t = sin_theta_o / values->m_eta;
-            float cos_theta_t = std::sqrt(std::max(0.0f, 1.0f - sin_theta_t * sin_theta_t));
+            // Compute terms for the refracted ray.
+            const float sin_theta_t = sin_theta_o / values->m_eta;
+            const float cos_theta_t = std::sqrt(std::max(0.0f, 1.0f - sin_theta_t * sin_theta_t));
 
-            // Compute the modified refraction coefficient
-            float eta_p = std::sqrt(values->m_eta * values->m_eta - sin_theta_o * sin_theta_o) / cos_theta_o;
-            float sin_gamma_t = values->m_precomputed.m_h / eta_p;
-            float cos_gamma_t = std::sqrt(std::max(0.0f, 1.0f - sin_gamma_t * sin_gamma_t));
-            float gamma_t = std::asin(clamp(sin_gamma_t, -1.0f, 1.0f));
-            float theta_o = std::asin(clamp(sin_theta_o, -1.0f, 1.0f));
+            // Compute the modified refraction coefficient.
+            const float eta_p = std::sqrt(values->m_eta * values->m_eta - sin_theta_o * sin_theta_o) / cos_theta_o;
+            const float sin_gamma_t = values->m_precomputed.m_h / eta_p;
+            const float cos_gamma_t = std::sqrt(std::max(0.0f, 1.0f - sin_gamma_t * sin_gamma_t));
+            const float gamma_t = std::asin(clamp(sin_gamma_t, -1.0f, 1.0f));
+            const float theta_o = std::asin(clamp(sin_theta_o, -1.0f, 1.0f));
 
-            // Deviation of outgoing angle due to cuticular scales
-            float theta_o_R = theta_o - 2.0f * deg_to_rad(values->m_alpha);
-            float theta_o_TT = theta_o + deg_to_rad(values->m_alpha);
-            float theta_o_TRT = theta_o + 4.0f * deg_to_rad(values->m_alpha);
+            // Deviation of outgoing angle due to cuticular scales.
+            const float theta_o_R = theta_o + values->m_precomputed.m_angle_R;
+            const float theta_o_TT = theta_o + values->m_precomputed.m_angle_TT;
+            const float theta_o_TRT = theta_o + values->m_precomputed.m_angle_TRT;
 
-            // Compute Attenuation for the single path through the hair cylinder
-            Spectrum T = exp(-values->m_precomputed.m_sigma_a * ((2.f * cos_gamma_t) / cos_theta_t));
+            // Compute attenuation for the single path through the hair cylinder.
+            const Spectrum T = exp(-values->m_precomputed.m_sigma_a * ((2.0f * cos_gamma_t) / cos_theta_t));
 
-            float phi = phi_i - phi_o;
-            std::array<float, 4> ap_pdf = attenuation_pdf(cos_theta_o, values->m_eta, values->m_precomputed.m_h, T);
+            const float dphi = phi_i - phi_o;
+            std::array<float, 4> ap_pdf;
+            attenuation_pdf(cos_theta_o, values->m_eta, values->m_precomputed.m_h, T, ap_pdf);
 
-            float bsdf_pdf = 0.f;
-            // RR contribution of scattering
-            bsdf_pdf +=
-                longitudinal(cos_theta_i, std::abs(std::cos(theta_o_R)),
-                    sin_theta_i, std::sin(theta_o_R), values->m_precomputed.m_v) *
-                ap_pdf[0] * azimuthal(phi, 0, values->m_precomputed.m_s, gamma_o, gamma_t);
+            float bsdf_pdf = 0.0f;
 
-            // TT contribution of scattering
-            bsdf_pdf +=
-                longitudinal(cos_theta_i, std::abs(std::cos(theta_o_TT)), sin_theta_i,
-                    std::sin(theta_o_TT), values->m_precomputed.m_v * .25f) *
-                ap_pdf[1] * azimuthal(phi, 1, values->m_precomputed.m_s, gamma_o, gamma_t);
-
-            // TRT contribution of scattering
-            bsdf_pdf +=
-                longitudinal(cos_theta_i, std::abs(std::cos(theta_o_TRT)), sin_theta_i,
-                    std::sin(theta_o_TRT), values->m_precomputed.m_v * 4.f) *
-                ap_pdf[2] * azimuthal(phi, 2, values->m_precomputed.m_s, gamma_o, gamma_t);
-
-            // TRRT+ contribution of scattering
-            bsdf_pdf += longitudinal(cos_theta_i, cos_theta_o, sin_theta_i, sin_theta_o, values->m_precomputed.m_v * 4.f) *
-                ap_pdf[3] / (2.0f * pi);
+            calc_pdf(
+                cos_theta_i,
+                sin_theta_i,
+                cos_theta_o,
+                sin_theta_o,
+                std::abs(std::cos(theta_o_R)),
+                std::sin(theta_o_R),
+                std::abs(std::cos(theta_o_TT)),
+                std::sin(theta_o_TT),
+                std::abs(std::cos(theta_o_TRT)),
+                std::sin(theta_o_TRT),
+                values->m_precomputed.m_v,
+                dphi,
+                values->m_precomputed.m_s,
+                gamma_o,
+                gamma_t,
+                ap_pdf,
+                bsdf_pdf);
 
             return bsdf_pdf;
-        }
-
-        //
-        // Computes absorption coefficient based on eumelanin and pheomelanin concentrations.
-        //
-
-        Spectrum sigma_a_from_melanin(float melanin_conc, float melanin_ratio) const
-        {
-            float melanin = -std::log(std::max(1.f - melanin_conc, 0.0001f));
-            float ce = melanin * (1.f - melanin_ratio);
-            float cp = melanin * melanin_ratio;
-            Vector3f eumelanin_sigma_a = Vector3f(0.506f, 0.841f, 1.653f);
-            Vector3f pheomelanin_sigma_a = Vector3f(0.343f, 0.733f, 1.924f);
-            Vector3f sigma_a = (ce * eumelanin_sigma_a + cp * pheomelanin_sigma_a);
-            Spectrum ret(0.f);
-            ret.set(Color3f(sigma_a[0], sigma_a[1], sigma_a[2]), g_std_lighting_conditions, Spectrum::Intent::Reflectance);
-            return ret;
-        }
-
-        //
-        // Computes absorption coefficient based on azimuthal roughness and surface reflectance.
-        //
-
-        Spectrum sigma_a_from_rgb(const Spectrum& reflectance, float beta_n) const
-        {
-            Spectrum sigma_a(0.f);
-            for (int i = 0; i < reflectance.size(); i++)
-            {
-                float s = std::log(reflectance[i]) /
-                          (5.969f - 0.215f * beta_n + 2.532f * beta_n * beta_n -
-                           10.73f * pow_int(beta_n, 3) + 5.574f * pow_int(beta_n, 4) + 0.245f * pow_int(beta_n, 5));
-                sigma_a[i] = s * s;
-            }
-            return sigma_a;
         }
 
 
@@ -727,13 +890,13 @@ DictionaryArray HairBSDFFactory::get_input_metadata() const
                         .insert("color", "Colors")
                         .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "0.00"));
+            .insert("default", "0.0"));
 
 
     metadata.push_back(
         Dictionary()
             .insert("name", "melanin")
-            .insert("label", "Melanin concentration")
+            .insert("label", "Melanin Concentration")
             .insert("type", "numeric")
             .insert("min",
                     Dictionary()
@@ -744,7 +907,7 @@ DictionaryArray HairBSDFFactory::get_input_metadata() const
                         .insert("value", "1.0")
                         .insert("type", "hard"))
             .insert("use", "optional")
-            .insert("default", "0.0"));
+            .insert("default", "0.3"));
 
     metadata.push_back(
         Dictionary()
@@ -813,7 +976,7 @@ DictionaryArray HairBSDFFactory::get_input_metadata() const
     metadata.push_back(
         Dictionary()
             .insert("name", "alpha")
-            .insert("label", "Cuticle scale angle")
+            .insert("label", "Cuticle Scale Angle")
             .insert("type", "numeric")
             .insert("min",
                     Dictionary()
