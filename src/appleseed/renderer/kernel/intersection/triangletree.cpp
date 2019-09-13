@@ -755,7 +755,7 @@ std::vector<GAABB3> TriangleTree::compute_motion_bboxes(
     const std::vector<size_t>&               triangle_indices,
     const std::vector<TriangleVertexInfo>&   triangle_vertex_infos,
     const std::vector<GVector3>&             triangle_vertices,
-    const size_t                        node_index)
+    const size_t                             node_index)
 {
     NodeType& node = m_nodes[node_index];
 
