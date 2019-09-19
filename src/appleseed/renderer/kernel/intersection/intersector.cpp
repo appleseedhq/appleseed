@@ -224,13 +224,27 @@ namespace
         const ShadingPoint&         shading_point,
         const ShadingPoint*         parent_shading_point)
     {
+        static const size_t MaxWarningsPerThread = 100;
+        static size_t warnings_count = 0;
+
         if (shading_point.hit_surface() &&
             parent_shading_point &&
             same_triangle(*parent_shading_point, shading_point))
         {
-            RENDERER_LOG_WARNING(
-                "self-intersection detected, distance %e.",
-                shading_point.get_distance());
+            if (warnings_count < MaxWarningsPerThread)
+            {
+                RENDERER_LOG_WARNING(
+                    "self-intersection detected, distance %e.",
+                    shading_point.get_distance());
+
+                warnings_count += 1;
+            }
+            else if (warnings_count == MaxWarningsPerThread)
+            {
+                RENDERER_LOG_WARNING("more self-intersections detected, omitting warning messages for brevity.");
+
+                warnings_count += 1;
+            }
         }
     }
 }
