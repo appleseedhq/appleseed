@@ -26,6 +26,7 @@
 #include <memory>
 #include <string>
 
+using namespace std;
 using namespace bcd;
 
 static const char* g_pProgramPath;
@@ -48,7 +49,7 @@ class ProgramArguments
     {
     }
 
-    std::string m_denoisedOutputFilePath; // File path to the denoised image output
+    string m_denoisedOutputFilePath; // File path to the denoised image output
     Deepimf m_colorImage; // Pixel color values
     Deepimf m_nbOfSamplesImage; // Pixel number of samples
     Deepimf m_histogramImage; // Pixel histograms
@@ -85,22 +86,22 @@ class Callbacks
   private:
     void logInfo(const char* msg) const override
     {
-        std::cout << "Info: " << msg << std::endl;
+        cout << "Info: " << msg << std::endl;
     }
 
     void logWarning(const char* msg) const override
     {
-        std::cout << "Warning: " << msg << std::endl;
+        cout << "Warning: " << msg << std::endl;
     }
 
     void logError(const char* msg) const override
     {
-        std::cout << "Error: " << msg << std::endl;
+        cout << "Error: " << msg << std::endl;
     }
 
     void logDebug(const char* msg) const override
     {
-        std::cout << "Debug: " << msg << std::endl;
+        cout << "Debug: " << msg << std::endl;
     }
 };
 
@@ -114,32 +115,32 @@ void initializeRandomSeed()
 static void printUsage()
 {
     ProgramArguments defaultProgramArgs;
-    std::cout << "Bayesian Collaborative Denoising"<< std::endl << std::endl;
-    std::cout << "Usage: " << g_pProgramPath << " <arguments list>" << std::endl;
-    std::cout << "Only EXR images are supported." << std::endl << std::endl;
-    std::cout << "Required arguments list:" << std::endl;
-    std::cout << "    -o <output>          The file path to the output image" << std::endl;
-    std::cout << "    -i <input>           The file path to the input image" << std::endl;
-    std::cout << "    -h <hist>            The file path to the input histograms buffer" << std::endl;
-    std::cout << "    -c <cov>             The file path to the input covariance matrices buffer" << std::endl;
-    std::cout << "Optional arguments list:" << std::endl;
-    std::cout << "    -d <float>           Histogram patch distance threshold (default: " << defaultProgramArgs.m_histogramPatchDistanceThreshold << ")" << std::endl;
-    std::cout << "    -b <int>             Radius of search windows (default: " << defaultProgramArgs.m_searchWindowRadius << ")" << std::endl;
-    std::cout << "    -w <int>             Radius of patches (default: " << defaultProgramArgs.m_patchRadius << ")" << std::endl;
-    std::cout << "    -r <0/1>             1 for random pixel order (in case of grid artifacts) (default: " << (defaultProgramArgs.m_useRandomPixelOrder ? 1 : 0) << ")" << std::endl;
-    std::cout << "    -p <0/1>             1 for a spike removal prefiltering (default: " << (defaultProgramArgs.m_prefilterSpikes ? 1 : 0) << ")" << std::endl;
-    std::cout << "    --p-factor <float>   Factor that is multiplied by standard deviation to get the threshold for classifying spikes during prefiltering. Put lower value to remove more spikes (default: " << defaultProgramArgs.m_prefilterThresholdStDevFactor << ")" << std::endl;
-    std::cout << "    -m <float in [0,1]>  Probability of skipping marked centers of denoised patches. 1 accelerates a lot the computations. 0 helps removing potential grid artifacts (default: " << defaultProgramArgs.m_markedPixelsSkippingProbability << ")" << std::endl;
-    std::cout << "    -s <int>             Number of Scales for Multi-Scaling (default: " << defaultProgramArgs.m_nbOfScales << ")" << std::endl;
-    std::cout << "    --ncores <nbOfCores> Number of cores used by OpenMP (default: environment variable OMP_NUM_THREADS)" << std::endl;
-    std::cout << "    -e <float>           Minimum eigen value for matrix inversion (default: " << defaultProgramArgs.m_minEigenValue << ")" << std::endl;
+    cout << "Bayesian Collaborative Denoising"<< endl << endl;
+    cout << "Usage: " << g_pProgramPath << " <arguments list>" << endl;
+    cout << "Only EXR images are supported." << endl << endl;
+    cout << "Required arguments list:" << endl;
+    cout << "    -o <output>          The file path to the output image" << endl;
+    cout << "    -i <input>           The file path to the input image" << endl;
+    cout << "    -h <hist>            The file path to the input histograms buffer" << endl;
+    cout << "    -c <cov>             The file path to the input covariance matrices buffer" << endl;
+    cout << "Optional arguments list:" << endl;
+    cout << "    -d <float>           Histogram patch distance threshold (default: " << defaultProgramArgs.m_histogramPatchDistanceThreshold << ")" << endl;
+    cout << "    -b <int>             Radius of search windows (default: " << defaultProgramArgs.m_searchWindowRadius << ")" << endl;
+    cout << "    -w <int>             Radius of patches (default: " << defaultProgramArgs.m_patchRadius << ")" << endl;
+    cout << "    -r <0/1>             1 for random pixel order (in case of grid artifacts) (default: " << (defaultProgramArgs.m_useRandomPixelOrder ? 1 : 0) << ")" << endl;
+    cout << "    -p <0/1>             1 for a spike removal prefiltering (default: " << (defaultProgramArgs.m_prefilterSpikes ? 1 : 0) << ")" << endl;
+    cout << "    --p-factor <float>   Factor that is multiplied by standard deviation to get the threshold for classifying spikes during prefiltering. Put lower value to remove more spikes (default: " << defaultProgramArgs.m_prefilterThresholdStDevFactor << ")" << endl;
+    cout << "    -m <float in [0,1]>  Probability of skipping marked centers of denoised patches. 1 accelerates a lot the computations. 0 helps removing potential grid artifacts (default: " << defaultProgramArgs.m_markedPixelsSkippingProbability << ")" << endl;
+    cout << "    -s <int>             Number of Scales for Multi-Scaling (default: " << defaultProgramArgs.m_nbOfScales << ")" << endl;
+    cout << "    --ncores <nbOfCores> Number of cores used by OpenMP (default: environment variable OMP_NUM_THREADS)" << endl;
+    cout << "    -e <float>           Minimum eigen value for matrix inversion (default: " << defaultProgramArgs.m_minEigenValue << ")" << endl;
 }
 
 bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rProgramArguments)
 {
     int argIndex = 0;
     bool missingColor = true, missingHist = true, missingCov = true, missingOutput = true;
-    std::string inputColorFilePath;
+    string inputColorFilePath;
     while (++argIndex < argc)
     {
         if (strcmp(argv[argIndex], "-o") == 0)
@@ -147,14 +148,14 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                std::cout << "Error in program arguments: expecting file path to the output image after '-o'" << std::endl;
+                cout << "Error in program arguments: expecting file path to the output image after '-o'" << endl;
                 return false;
             }
-            o_rProgramArguments.m_denoisedOutputFilePath = std::string(argv[argIndex]);
-            std::ofstream outputFile(o_rProgramArguments.m_denoisedOutputFilePath, std::ofstream::out | std::ofstream::app);
+            o_rProgramArguments.m_denoisedOutputFilePath = string(argv[argIndex]);
+            ofstream outputFile(o_rProgramArguments.m_denoisedOutputFilePath, ofstream::out | ofstream::app);
             if(!outputFile)
             {
-                std::cout << "Error in program arguments: cannot write output file '" << o_rProgramArguments.m_denoisedOutputFilePath << "'" << std::endl;
+                cout << "Error in program arguments: cannot write output file '" << o_rProgramArguments.m_denoisedOutputFilePath << "'" << endl;
                 return false;
             }
             missingOutput = false;
@@ -164,13 +165,13 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                std::cout << "Error in program arguments: expecting file path to the input color image after '-i'" << std::endl;
+                cout << "Error in program arguments: expecting file path to the input color image after '-i'" << endl;
                 return false;
             }
             inputColorFilePath = argv[argIndex];
             if (!ImageIO::loadEXR(o_rProgramArguments.m_colorImage, argv[argIndex]))
             {
-                std::cout << "Error in program arguments: couldn't load input color image file '" << argv[argIndex] << "'" << std::endl;
+                cout << "Error in program arguments: couldn't load input color image file '" << argv[argIndex] << "'" << endl;
                 return false;
             }
             missingColor = false;
@@ -180,13 +181,13 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                std::cout << "Error in program arguments: expecting file path to the input histogram image after '-h'" << std::endl;
+                cout << "Error in program arguments: expecting file path to the input histogram image after '-h'" << endl;
                 return false;
             }
             Deepimf histAndNbOfSamplesImage;
             if (!ImageIO::loadMultiChannelsEXR(histAndNbOfSamplesImage, argv[argIndex]))
             {
-                std::cout << "Error in program arguments: couldn't load input histogram image file '" << argv[argIndex] << "'" << std::endl;
+                cout << "Error in program arguments: couldn't load input histogram image file '" << argv[argIndex] << "'" << endl;
                 return false;
             }
             Utils::separateNbOfSamplesFromHistogram(o_rProgramArguments.m_histogramImage, o_rProgramArguments.m_nbOfSamplesImage, histAndNbOfSamplesImage);
@@ -197,12 +198,12 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                std::cout << "Error in program arguments: expecting file path to the input covariance matrix image after '-c'" << std::endl;
+                cout << "Error in program arguments: expecting file path to the input covariance matrix image after '-c'" << endl;
                 return false;
             }
             if (!ImageIO::loadMultiChannelsEXR(o_rProgramArguments.m_covarianceImage, argv[argIndex]))
             {
-                std::cout << "Error in program arguments: couldn't load input covariance matrix image file '" << argv[argIndex] << "'" << std::endl;
+                cout << "Error in program arguments: couldn't load input covariance matrix image file '" << argv[argIndex] << "'" << endl;
                 return false;
             }
             missingCov = false;
@@ -212,10 +213,10 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                std::cout << "Error in program arguments: expecting histogram patch distance threshold after '-d'" << std::endl;
+                cout << "Error in program arguments: expecting histogram patch distance threshold after '-d'" << endl;
                 return false;
             }
-            std::istringstream iss(argv[argIndex]);
+            istringstream iss(argv[argIndex]);
             iss >> o_rProgramArguments.m_histogramPatchDistanceThreshold;
         }
         else if (strcmp(argv[argIndex], "-b") == 0)
@@ -223,10 +224,10 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                std::cout << "Error in program arguments: expecting radius of search window after '-b'" << std::endl;
+                cout << "Error in program arguments: expecting radius of search window after '-b'" << endl;
                 return false;
             }
-            std::istringstream iss(argv[argIndex]);
+            istringstream iss(argv[argIndex]);
             iss >> o_rProgramArguments.m_searchWindowRadius;
         }
         else if (strcmp(argv[argIndex], "-w") == 0)
@@ -234,10 +235,10 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                std::cout << "Error in program arguments: expecting radius of patch after '-w'" << std::endl;
+                cout << "Error in program arguments: expecting radius of patch after '-w'" << endl;
                 return false;
             }
-            std::istringstream iss(argv[argIndex]);
+            istringstream iss(argv[argIndex]);
             iss >> o_rProgramArguments.m_patchRadius;
         }
         else if (strcmp(argv[argIndex], "-e") == 0)
@@ -245,10 +246,10 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                std::cout << "Error in program arguments: expecting minimum eigen value after '-e'" << std::endl;
+                cout << "Error in program arguments: expecting minimum eigen value after '-e'" << endl;
                 return false;
             }
-            std::istringstream iss(argv[argIndex]);
+            istringstream iss(argv[argIndex]);
             iss >> o_rProgramArguments.m_minEigenValue;
         }
         else if (strcmp(argv[argIndex], "-r") == 0)
@@ -256,15 +257,15 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                std::cout << "Error in program arguments: expecting 0 or 1 after '-r'" << std::endl;
+                cout << "Error in program arguments: expecting 0 or 1 after '-r'" << endl;
                 return false;
             }
-            std::istringstream iss(argv[argIndex]);
+            istringstream iss(argv[argIndex]);
             int useRandomPixelOrder;
             iss >> useRandomPixelOrder;
             if(useRandomPixelOrder != 0 && useRandomPixelOrder != 1)
             {
-                std::cout << "Error in program arguments: expecting 0 or 1 after '-r'" << std::endl;
+                cout << "Error in program arguments: expecting 0 or 1 after '-r'" << endl;
                 return false;
             }
             o_rProgramArguments.m_useRandomPixelOrder = (useRandomPixelOrder==1);
@@ -274,15 +275,15 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                std::cout << "Error in program arguments: expecting 0 or 1 after '-p'" << std::endl;
+                cout << "Error in program arguments: expecting 0 or 1 after '-p'" << endl;
                 return false;
             }
-            std::istringstream iss(argv[argIndex]);
+            istringstream iss(argv[argIndex]);
             int prefilterSpikes;
             iss >> prefilterSpikes;
             if(prefilterSpikes != 0 && prefilterSpikes != 1)
             {
-                std::cout << "Error in program arguments: expecting 0 or 1 after '-p'" << std::endl;
+                cout << "Error in program arguments: expecting 0 or 1 after '-p'" << endl;
                 return false;
             }
             o_rProgramArguments.m_prefilterSpikes = (prefilterSpikes==1);
@@ -292,10 +293,10 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                std::cout << "Error in program arguments: expecting standard deviation factor for spike prefiltering threshold after '--p-factor'" << std::endl;
+                cout << "Error in program arguments: expecting standard deviation factor for spike prefiltering threshold after '--p-factor'" << endl;
                 return false;
             }
-            std::istringstream iss(argv[argIndex]);
+            istringstream iss(argv[argIndex]);
             iss >> o_rProgramArguments.m_prefilterThresholdStDevFactor;
         }
         else if(strcmp(argv[argIndex], "-m") == 0)
@@ -303,15 +304,15 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if(argIndex == argc)
             {
-                std::cout << "Error in program arguments: expecting float in [0,1] after '-m'" << std::endl;
+                cout << "Error in program arguments: expecting float in [0,1] after '-m'" << endl;
                 return false;
             }
-            std::istringstream iss(argv[argIndex]);
+            istringstream iss(argv[argIndex]);
             float markedPixelsSkippingProbability;
             iss >> markedPixelsSkippingProbability;
             if(markedPixelsSkippingProbability < 0 || markedPixelsSkippingProbability > 1)
             {
-                std::cout << "Error in program arguments: expecting float in [0,1] after '-m'" << std::endl;
+                cout << "Error in program arguments: expecting float in [0,1] after '-m'" << endl;
                 return false;
             }
             o_rProgramArguments.m_markedPixelsSkippingProbability = markedPixelsSkippingProbability;
@@ -321,10 +322,10 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                std::cout << "Error in program arguments: expecting number of scales after '-s'" << std::endl;
+                cout << "Error in program arguments: expecting number of scales after '-s'" << endl;
                 return false;
             }
-            std::istringstream iss(argv[argIndex]);
+            istringstream iss(argv[argIndex]);
             iss >> o_rProgramArguments.m_nbOfScales;
         }
         else if (strcmp(argv[argIndex], "--ncores") == 0)
@@ -332,10 +333,10 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                std::cout << "Error in program arguments: expecting number of cores for OpenMP after '--ncores'" << std::endl;
+                cout << "Error in program arguments: expecting number of cores for OpenMP after '--ncores'" << endl;
                 return false;
             }
-            std::istringstream iss(argv[argIndex]);
+            istringstream iss(argv[argIndex]);
             iss >> o_rProgramArguments.m_nbOfCores;
         }
     }
@@ -343,12 +344,12 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
     {
         if(missingHist)
         {
-            std::string inputHistFilePath = inputColorFilePath.substr(0, inputColorFilePath.length() - 4) + "_hist.exr"; // "-4" for removing extension .exr
-            std::cout << "Warning: input histogram file not provided by -h argument: assuming '" + inputHistFilePath + "'" << std::endl;
+            string inputHistFilePath = inputColorFilePath.substr(0, inputColorFilePath.length() - 4) + "_hist.exr"; // "-4" for removing extension .exr
+            cout << "Warning: input histogram file not provided by -h argument: assuming '" + inputHistFilePath + "'" << endl;
             Deepimf histAndNbOfSamplesImage;
             if (!ImageIO::loadMultiChannelsEXR(histAndNbOfSamplesImage, inputHistFilePath.c_str()))
             {
-                std::cout << "Error in program arguments: couldn't load input histogram image file '" << inputHistFilePath << "'" << std::endl;
+                cout << "Error in program arguments: couldn't load input histogram image file '" << inputHistFilePath << "'" << endl;
                 return false;
             }
             Utils::separateNbOfSamplesFromHistogram(o_rProgramArguments.m_histogramImage, o_rProgramArguments.m_nbOfSamplesImage, histAndNbOfSamplesImage);
@@ -356,11 +357,11 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
         }
         if(missingCov)
         {
-            std::string inputCovFilePath = inputColorFilePath.substr(0, inputColorFilePath.length() - 4) + "_cov.exr"; // "-4" for removing extension .exr
-            std::cout << "Warning: input covariance file not provided by -c argument: assuming '" + inputCovFilePath + "'" << std::endl;
+            string inputCovFilePath = inputColorFilePath.substr(0, inputColorFilePath.length() - 4) + "_cov.exr"; // "-4" for removing extension .exr
+            cout << "Warning: input covariance file not provided by -c argument: assuming '" + inputCovFilePath + "'" << endl;
             if (!ImageIO::loadMultiChannelsEXR(o_rProgramArguments.m_covarianceImage, inputCovFilePath.c_str()))
             {
-                std::cout << "Error in program arguments: couldn't load input covariance matrix image file '" << inputCovFilePath << "'" << std::endl;
+                cout << "Error in program arguments: couldn't load input covariance matrix image file '" << inputCovFilePath << "'" << endl;
                 return false;
             }
             missingCov = false;
@@ -368,16 +369,16 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
     }
     if (missingColor || missingHist || missingCov || missingOutput)
     {
-        std::cout << "Error: Missing required program argument(s):";
+        cout << "Error: Missing required program argument(s):";
         if (missingColor)
-            std::cout << " -i";
+            cout << " -i";
         if (missingHist)
-            std::cout << " -h";
+            cout << " -h";
         if (missingCov)
-            std::cout << " -c";
+            cout << " -c";
         if (missingOutput)
-            std::cout << " -o";
-        std::cout << std::endl << std::endl;
+            cout << " -o";
+        cout << endl << endl;
         printUsage();
         return false;
     }
@@ -418,7 +419,7 @@ int launchBayesianCollaborativeDenoising(int argc, const char** argv)
     parameters.m_markedPixelsSkippingProbability = programArgs.m_markedPixelsSkippingProbability;
     parameters.m_nbOfCores = programArgs.m_nbOfCores;
 
-    std::unique_ptr<IDenoiser> uDenoiser = nullptr;
+    unique_ptr<IDenoiser> uDenoiser = nullptr;
 
     if(programArgs.m_nbOfScales > 1)
         uDenoiser.reset(new MultiscaleDenoiser(programArgs.m_nbOfScales));
@@ -438,7 +439,7 @@ int launchBayesianCollaborativeDenoising(int argc, const char** argv)
 
     ImageIO::writeEXR(outputDenoisedColorImage, programArgs.m_denoisedOutputFilePath.c_str());
 
-    std::cout << "Written denoised output in file " << programArgs.m_denoisedOutputFilePath.c_str() << std::endl;
+    cout << "Written denoised output in file " << programArgs.m_denoisedOutputFilePath.c_str() << std::endl;
 
     return 0;
 }
