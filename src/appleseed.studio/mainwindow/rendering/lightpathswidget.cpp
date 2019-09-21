@@ -64,25 +64,31 @@ using namespace renderer;
 namespace appleseed {
 namespace studio {
 
-namespace {
+namespace
+{
     // Number of floats per OpenGL vertex for a piece of scene geometry
     // Vector3 position and Vector3 normal.
     const size_t SceneVertexFloatStride = 6;
+
     // Number of bytes per OpenGL vertex for a piece of scene geometry.
     const size_t SceneVertexByteStride = SceneVertexFloatStride * sizeof(float);
+
     // Number of floats per triangle for a piece of scene geometry.
     const size_t SceneTriangleFloatStride = SceneVertexFloatStride * 3;
 
     // Number of floats per OpenGL vertex for a light path
     // Vector3 position and Vector3 color.
     const size_t LightPathVertexFloatStride = 6;
+
     // Number of bytes per OpenGL vertex for a piece of scene geometry.
     const size_t LightPathVertexByteStride = LightPathVertexFloatStride * sizeof(float);
+
     // Number of floats per line for a light path.
     const size_t LightPathVertexLineFloatStride = LightPathVertexFloatStride * 2;
 
     // Number of floats per OpenGL transform matrix.
     const size_t TransformFloatStride = 16;
+
     // Number of bytes per OpenGL transform matrix.
     const size_t TransformByteStride = TransformFloatStride * sizeof(float);
 
@@ -482,16 +488,18 @@ void LightPathsWidget::load_light_paths_data()
     }
 }
 
-namespace {
-    const std::string shader_kind_to_string(const GLint shader_kind)
+namespace
+{
+    std::string shader_kind_to_string(const GLint shader_kind)
     {
-        switch (shader_kind) {
-            case GL_VERTEX_SHADER:
-                return "Vertex";
-            case GL_FRAGMENT_SHADER:
-                return "Fragment";
-            default:
-                return "Unknown Kind";
+        switch (shader_kind)
+        {
+          case GL_VERTEX_SHADER:
+            return "Vertex";
+          case GL_FRAGMENT_SHADER:
+            return "Fragment";
+          default:
+            return "Unknown Kind";
         }
     }
 
@@ -514,7 +522,7 @@ namespace {
 
             GLint shader_kind;
             f->glGetShaderiv(shader, GL_SHADER_TYPE, &shader_kind);
-            std::string shader_kind_string = shader_kind_to_string(shader_kind);
+            const std::string shader_kind_string = shader_kind_to_string(shader_kind);
 
             RENDERER_LOG_ERROR("opengl: %s shader compilation failed:\n%s", shader_kind_string.c_str(), info_log);
         }
