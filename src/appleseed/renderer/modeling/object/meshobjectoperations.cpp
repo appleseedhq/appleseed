@@ -68,8 +68,14 @@ void compute_smooth_vertex_normals_base_pose(MeshObject& object)
         const GVector3& v0 = object.get_vertex(triangle.m_v0);
         const GVector3& v1 = object.get_vertex(triangle.m_v1);
         const GVector3& v2 = object.get_vertex(triangle.m_v2);
-        const GVector3 normal = normalize(compute_triangle_normal(v0, v1, v2));
 
+        GVector3 normal = compute_triangle_normal(v0, v1, v2);
+        const GScalar normal_norm = norm(normal);
+
+        if (normal_norm == GScalar(0.0))
+            continue;
+
+        normal /= normal_norm;
         normals[triangle.m_v0] += normal;
         normals[triangle.m_v1] += normal;
         normals[triangle.m_v2] += normal;
@@ -95,8 +101,14 @@ void compute_smooth_vertex_normals_pose(MeshObject& object, const size_t motion_
         const GVector3& v0 = object.get_vertex_pose(triangle.m_v0, motion_segment_index);
         const GVector3& v1 = object.get_vertex_pose(triangle.m_v1, motion_segment_index);
         const GVector3& v2 = object.get_vertex_pose(triangle.m_v2, motion_segment_index);
-        const GVector3 normal = normalize(compute_triangle_normal(v0, v1, v2));
 
+        GVector3 normal = compute_triangle_normal(v0, v1, v2);
+        const GScalar normal_norm = norm(normal);
+
+        if (normal_norm == GScalar(0.0))
+            continue;
+
+        normal /= normal_norm;
         normals[triangle.m_v0] += normal;
         normals[triangle.m_v1] += normal;
         normals[triangle.m_v2] += normal;
@@ -110,7 +122,7 @@ void compute_smooth_vertex_normals(MeshObject& object)
 {
     compute_smooth_vertex_normals_base_pose(object);
 
-    for (size_t i = 0; i < object.get_motion_segment_count(); ++i)
+    for (size_t i = 0, e = object.get_motion_segment_count(); i < e; ++i)
         compute_smooth_vertex_normals_pose(object, i);
 }
 
@@ -219,7 +231,7 @@ void compute_smooth_vertex_tangents(MeshObject& object)
 {
     compute_smooth_vertex_tangents_base_pose(object);
 
-    for (size_t i = 0; i < object.get_motion_segment_count(); ++i)
+    for (size_t i = 0, e = object.get_motion_segment_count(); i < e; ++i)
         compute_smooth_vertex_tangents_pose(object, i);
 }
 
