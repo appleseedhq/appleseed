@@ -231,7 +231,7 @@ namespace
             parent_shading_point &&
             same_triangle(*parent_shading_point, shading_point))
         {
-            if (warnings_count < MaxWarningsPerThread)
+            if (warning_count < MaxWarningsPerThread)
             {
                 RENDERER_LOG_WARNING(
                     "self-intersection detected, distance %e.",
@@ -239,7 +239,7 @@ namespace
 
                 ++warning_count;
             }
-            else if (warnings_count == MaxWarningsPerThread)
+            else if (warning_count == MaxWarningsPerThread)
             {
                 RENDERER_LOG_WARNING("more self-intersections detected, omitting warning messages for brevity.");
 
