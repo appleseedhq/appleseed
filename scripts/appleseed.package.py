@@ -51,8 +51,9 @@ import zipfile
 # Constants.
 # -------------------------------------------------------------------------------------------------
 
-VERSION = "2.7.0"
+VERSION = "2.7.2"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
+VERBOSE = False
 
 
 # -------------------------------------------------------------------------------------------------
@@ -64,7 +65,8 @@ RED_CROSSMARK = u"{0}\u2717{1}".format(colorama.Style.BRIGHT + colorama.Fore.RED
 
 
 def trace(message):
-    print(u"  {0}{1}{2}".format(colorama.Style.DIM + colorama.Fore.WHITE, message, colorama.Style.RESET_ALL))
+    if VERBOSE:
+        print(u"  {0}{1}{2}".format(colorama.Style.DIM + colorama.Fore.WHITE, message, colorama.Style.RESET_ALL))
 
 
 def info(message):
@@ -399,11 +401,10 @@ class PackageBuilder:
         visited_libs = set()
         self.get_recursive_dependencies_for_files(all_libs, visited_libs, root_libs)
 
-        if True:
-            # Print dependencies.
-            trace("  === Final list of all dependencies: ===")
-            for lib in all_libs:
-                trace("      {0}".format(lib))
+        # Print final list of dependencies.
+        trace("  === Final list of all dependencies: ===")
+        for lib in all_libs:
+            trace("      {0}".format(lib))
 
         # Copy needed libs to lib directory.
         dest_dir = os.path.join("appleseed", "lib/")
@@ -500,6 +501,8 @@ class PackageBuilder:
         os.system(cmdline)
 
     def run_subprocess(self, cmdline):
+        if VERBOSE:
+            trace("Invoking: {0}".format(cmdline))
         p = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
         return p.returncode, out, err
@@ -526,11 +529,11 @@ class WindowsPackageBuilder(PackageBuilder):
 
         # Qt platform plugins.
         safe_make_directory("appleseed/bin/platforms")
-        qt_pltform_plugins_path = os.path.join(self.settings.qt_runtime_path, "plugins", "platforms")
-        shutil.copy(os.path.join(qt_pltform_plugins_path, "qdirect2d.dll"), "appleseed/bin/platforms")
-        shutil.copy(os.path.join(qt_pltform_plugins_path, "qminimal.dll"), "appleseed/bin/platforms")
-        shutil.copy(os.path.join(qt_pltform_plugins_path, "qoffscreen.dll"), "appleseed/bin/platforms")
-        shutil.copy(os.path.join(qt_pltform_plugins_path, "qwindows.dll"), "appleseed/bin/platforms")
+        qt_platform_plugins_path = os.path.join(self.settings.qt_runtime_path, "plugins", "platforms")
+        shutil.copy(os.path.join(qt_platform_plugins_path, "qdirect2d.dll"), "appleseed/bin/platforms")
+        shutil.copy(os.path.join(qt_platform_plugins_path, "qminimal.dll"), "appleseed/bin/platforms")
+        shutil.copy(os.path.join(qt_platform_plugins_path, "qoffscreen.dll"), "appleseed/bin/platforms")
+        shutil.copy(os.path.join(qt_platform_plugins_path, "qwindows.dll"), "appleseed/bin/platforms")
 
         # Platform runtime files.
         copy_glob(os.path.join(self.settings.platform_runtime_path, "*"), "appleseed/bin/")
@@ -603,11 +606,11 @@ class MacPackageBuilder(PackageBuilder):
 
         # Qt platform plugins.
         safe_make_directory("appleseed/bin/platforms")
-        qt_pltform_plugins_path = os.path.join(self.settings.qt_runtime_path, "plugins", "platforms")
-        shutil.copy(os.path.join(qt_pltform_plugins_path, "libqcocoa.dylib"), "appleseed/bin/platforms")
-        shutil.copy(os.path.join(qt_pltform_plugins_path, "libqminimal.dylib"), "appleseed/bin/platforms")
-        shutil.copy(os.path.join(qt_pltform_plugins_path, "libqoffscreen.dylib"), "appleseed/bin/platforms")
-        shutil.copy(os.path.join(qt_pltform_plugins_path, "libqwebgl.dylib"), "appleseed/bin/platforms")
+        qt_platform_plugins_path = os.path.join(self.settings.qt_runtime_path, "plugins", "platforms")
+        shutil.copy(os.path.join(qt_platform_plugins_path, "libqcocoa.dylib"), "appleseed/bin/platforms")
+        shutil.copy(os.path.join(qt_platform_plugins_path, "libqminimal.dylib"), "appleseed/bin/platforms")
+        shutil.copy(os.path.join(qt_platform_plugins_path, "libqoffscreen.dylib"), "appleseed/bin/platforms")
+        shutil.copy(os.path.join(qt_platform_plugins_path, "libqwebgl.dylib"), "appleseed/bin/platforms")
 
         self.add_unix_dependencies_to_stage(self.get_paths_to_binaries())
 
@@ -838,33 +841,34 @@ class LinuxPackageBuilder(PackageBuilder):
     SHARED_LIB_EXT = ".so"
 
     SYSTEM_LIBS_PREFIXES = [
-        "linux",
-        "librt",
-        "libpthread",
-        "libGL",
-        "libX",
-        "libselinux",
-        "libICE",
-        "libSM",
-        "libdl",
-        "libm.so",
-        "libgcc",
-        "libc.so",
         "/lib64/ld-linux-",
-        "libstdc++",
-        "libxcb",
+        "libc.so",
+        "libdl",
         "libdrm",
-        "libnsl",
-        "libuuid",
-        "libgthread",
-        "libglib",
-        "libgobject",
-        "libglapi",
         "libffi",
         "libfontconfig",
-        "libutil",
+        "libfreetype",
+        "libgcc",
+        "libGL",
+        "libglapi",
+        "libglib",
+        "libgobject",
+        "libgthread",
+        "libICE",
+        "libm.so",
+        "libnsl",
+        "libpthread",
         "libpython",
-        "libxshmfence.so"
+        "librt",
+        "libselinux",
+        "libSM",
+        "libstdc++",
+        "libutil",
+        "libuuid",
+        "libX",
+        "libxcb",
+        "libxshmfence.so",
+        "linux"
     ]
 
     def postprocess_stage(self):
@@ -874,8 +878,9 @@ class LinuxPackageBuilder(PackageBuilder):
         self.__make_executable(os.path.join("appleseed/bin", "oslc"))
         self.__make_executable(os.path.join("appleseed/bin", "oslinfo"))
         self.__add_dependencies_to_stage()
-        self.__set_runtime_paths_on_binaries()
-        self.__clear_runtime_paths_on_libraries()
+        self.__set_runtime_paths_on_binaries("appleseed/bin/", "$ORIGIN/../lib")
+        self.__set_runtime_paths_on_libraries("appleseed/bin/", "$ORIGIN/../../lib")  # Qt plugins
+        self.__set_runtime_paths_on_libraries("appleseed/lib/", "$ORIGIN/../lib")
         self.__add_python_to_stage()  # must be last
 
     def __make_executable(self, filepath):
@@ -885,22 +890,37 @@ class LinuxPackageBuilder(PackageBuilder):
 
     def __add_dependencies_to_stage(self):
         progress("Linux-specific: Adding dependencies to staging directory")
+
+        # Qt platform plugins.
+        safe_make_directory("appleseed/bin/platforms")
+        qt_platform_plugins_path = os.path.join(self.settings.qt_runtime_path, "plugins", "platforms")
+        shutil.copy(os.path.join(qt_platform_plugins_path, "libqeglfs.so"), "appleseed/bin/platforms")
+        shutil.copy(os.path.join(qt_platform_plugins_path, "libqminimalegl.so"), "appleseed/bin/platforms")
+        shutil.copy(os.path.join(qt_platform_plugins_path, "libqminimal.so"), "appleseed/bin/platforms")
+        shutil.copy(os.path.join(qt_platform_plugins_path, "libqoffscreen.so"), "appleseed/bin/platforms")
+        shutil.copy(os.path.join(qt_platform_plugins_path, "libqvnc.so"), "appleseed/bin/platforms")
+        shutil.copy(os.path.join(qt_platform_plugins_path, "libqxcb.so"), "appleseed/bin/platforms")
+
         self.add_unix_dependencies_to_stage(self.get_paths_to_binaries())
 
-    def __set_runtime_paths_on_binaries(self):
-        progress("Linux-specific: Setting runtime paths on binaries")
-        for dirpath, dirnames, filenames in os.walk("appleseed/bin"):
+    def __set_runtime_paths_on_binaries(self, root_path, rpath):
+        progress("Linux-specific: Setting runtime paths on binaries in {0}".format(root_path))
+        for dirpath, dirnames, filenames in os.walk(root_path):
             for filename in filenames:
                 ext = os.path.splitext(filename)[1]
-                if ext != ".py" and ext != ".conf":
-                    self.run("chrpath -r \$ORIGIN/../lib {0}".format(os.path.join("appleseed/bin", filename)))
+                if ext != ".py" and ext != ".conf" and not self.__is_shared_lib(filename):  # need to skip shared libs because we don't want to patch Qt plugins
+                    self.run("patchelf --set-rpath '{0}' {1}".format(rpath, os.path.join(dirpath, filename)))
+                else:
+                    trace("  Skipping {0}".format(filename))
 
-    def __clear_runtime_paths_on_libraries(self):
-        progress("Linux-specific: Clearing runtime paths on libraries")
-        for dirpath, dirnames, filenames in os.walk("appleseed/lib"):
+    def __set_runtime_paths_on_libraries(self, root_path, rpath):
+        progress("Linux-specific: Setting runtime paths on libraries in {0}".format(root_path))
+        for dirpath, dirnames, filenames in os.walk(root_path):
             for filename in filenames:
-                if os.path.splitext(filename)[1] == ".so":
-                    self.run("chrpath -d {0}".format(os.path.join(dirpath, filename)))
+                if self.__is_shared_lib(filename):
+                    self.run("patchelf --set-rpath '{0}' {1}".format(rpath, os.path.join(dirpath, filename)))
+                else:
+                    trace("  Skipping {0}".format(filename))
 
     def get_dependencies_for_file(self, filepath):
         returncode, out, err = self.run_subprocess(["ldd", filepath])
@@ -916,13 +936,27 @@ class LinuxPackageBuilder(PackageBuilder):
             if len(line) == 0:
                 continue
 
+            # Ignore libs without any dyanmic dependencies.
+            if "statically linked" in line:
+                continue
+
             # Ignore system libs.
             if self.__is_system_lib(line):
                 continue
 
             libs.add(line.split()[2])
 
+        if libs:
+            trace("  Dependencies for {0}:".format(filepath))
+            for lib in libs:
+                trace("      {0}".format(lib))
+        else:
+            trace("  Dependencies for {0}: None".format(filepath))
+
         return libs
+
+    def __is_shared_lib(self, filename):
+        return filename.endswith(".so") or ".so." in filename
 
     def __is_system_lib(self, lib):
         for prefix in self.SYSTEM_LIBS_PREFIXES:
@@ -932,8 +966,6 @@ class LinuxPackageBuilder(PackageBuilder):
 
     def __add_python_to_stage(self):
         progress("Linux-specific: Adding Python 2.7 to staging directory")
-
-        merge_tree(os.path.join(self.settings.python_path, "bin"), "appleseed/bin", symlinks=True)
         merge_tree(os.path.join(self.settings.python_path, "lib"), "appleseed/lib", symlinks=True)
         merge_tree(os.path.join(self.settings.python_path, "include"), "appleseed/include", symlinks=True)
 
@@ -958,8 +990,9 @@ def main():
 
     print("VERY IMPORTANT:")
     print("")
-    print("  - You may need to run this tool with sudo on Linux and macOS")
     print("  - Make sure there are no obsolete binaries in sandbox/bin/ and sandbox/lib/")
+    print("  - You may need to run this tool with sudo on Linux and macOS")
+    print("  - On Linux, you may need to set $LD_LIBRARY_PATH to allow ldd(1) to find third party shared libraries")
     print("")
 
     settings = Settings()
