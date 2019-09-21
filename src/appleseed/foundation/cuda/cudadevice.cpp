@@ -37,8 +37,6 @@
 #include <cassert>
 #include <vector>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -79,8 +77,8 @@ CUDADevice::CUDADevice(const CUdevice device_number)
 
 struct CUDADeviceList::Impl
 {
-    vector<CUDADevice>         m_devices;
-    mutable vector<CUcontext>  m_contexts;
+    std::vector<CUDADevice>         m_devices;
+    mutable std::vector<CUcontext>  m_contexts;
 
     Impl()
     {

@@ -38,7 +38,6 @@
 #include <cstring>
 
 using namespace foundation;
-using namespace std;
 
 BENCHMARK_SUITE(Foundation_Math_Permutation)
 {

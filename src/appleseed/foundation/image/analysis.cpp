@@ -43,8 +43,6 @@
 #include <cmath>
 #include <cstddef>
 
-using namespace std;
-
 namespace foundation
 {
 

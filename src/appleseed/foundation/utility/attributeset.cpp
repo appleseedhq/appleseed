@@ -33,8 +33,6 @@
 // Standard headers.
 #include <cstring>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -49,9 +47,9 @@ AttributeSet::~AttributeSet()
 }
 
 AttributeSet::ChannelID AttributeSet::create_channel(
-    const string&       name,
-    const NumericTypeID type,
-    const size_t        dimension)
+    const std::string&       name,
+    const NumericTypeID      type,
+    const size_t             dimension)
 {
     assert(dimension > 0);
 

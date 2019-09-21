@@ -44,7 +44,6 @@
 #include <cstddef>
 
 using namespace foundation;
-using namespace std;
 
 BENCHMARK_SUITE(SameSign)
 {

@@ -36,7 +36,6 @@
 #include <utility>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Array_Array)
 {
@@ -76,7 +75,7 @@ TEST_SUITE(Foundation_Array_Array)
         xref.assign(items, items + countof(items));
 
         Array y(x);
-        Array z(move(y));
+        Array z(std::move(y));
 
         EXPECT_TRUE(y.is_moved());
         EXPECT_TRUE(x == z);

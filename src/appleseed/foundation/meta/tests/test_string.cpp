@@ -47,7 +47,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Utility_String)
 {
@@ -403,22 +402,22 @@ TEST_SUITE(Foundation_Utility_String)
         EXPECT_TRUE(ends_with("world", "world"));
     }
 
-    vector<string> tokenize_wrapper(
-        const string&   s,
-        const string&   delimiters)
+    std::vector<std::string> tokenize_wrapper(
+        const std::string&   s,
+        const std::string&   delimiters)
     {
-        vector<string> vec;
+        std::vector<std::string> vec;
         tokenize(s, delimiters, vec);
         return vec;
     }
 
     TEST_CASE(TestTokenize)
     {
-        EXPECT_EQ(vector<string>(), tokenize_wrapper("", "\n"));
+        EXPECT_EQ(std::vector<std::string>(), tokenize_wrapper("", "\n"));
 
-        EXPECT_EQ(vector<string>(), tokenize_wrapper("\n", "\n"));
-        EXPECT_EQ(vector<string>(), tokenize_wrapper("\n\n", "\n"));
-        EXPECT_EQ(vector<string>(), tokenize_wrapper("\n\n\n", "\n"));
+        EXPECT_EQ(std::vector<std::string>(), tokenize_wrapper("\n", "\n"));
+        EXPECT_EQ(std::vector<std::string>(), tokenize_wrapper("\n\n", "\n"));
+        EXPECT_EQ(std::vector<std::string>(), tokenize_wrapper("\n\n\n", "\n"));
 
         EXPECT_EQ(make_vector("hello"), tokenize_wrapper("hello", "\n"));
         EXPECT_EQ(make_vector("hello"), tokenize_wrapper("hello\n", "\n"));
@@ -435,11 +434,11 @@ TEST_SUITE(Foundation_Utility_String)
         EXPECT_EQ(make_vector("1", "2", "3"), tokenize_wrapper("  [1, 2 ,3 ] ", ",[] "));
     }
 
-    vector<string> split_wrapper(
-        const string&   s,
-        const string&   delimiters)
+    std::vector<std::string> split_wrapper(
+        const std::string&   s,
+        const std::string&   delimiters)
     {
-        vector<string> vec;
+        std::vector<std::string> vec;
         split(s, delimiters, vec);
         return vec;
     }
@@ -467,77 +466,77 @@ TEST_SUITE(Foundation_Utility_String)
 
     TEST_CASE(Replace_GivenEmptyString_ReturnsEmptyString)
     {
-        const string result = replace("", "aa", "bbb");
+        const std::string result = replace("", "aa", "bbb");
 
         EXPECT_EQ("", result);
     }
 
     TEST_CASE(Replace_GivenNonMatchingString_ReturnsInputString)
     {
-        const string result = replace("xyz", "aa", "bbb");
+        const std::string result = replace("xyz", "aa", "bbb");
 
         EXPECT_EQ("xyz", result);
     }
 
     TEST_CASE(Replace_GivenPartiallyMatchingString_ReturnsInputString)
     {
-        const string result = replace("axyz", "aa", "bbb");
+        const std::string result = replace("axyz", "aa", "bbb");
 
         EXPECT_EQ("axyz", result);
     }
 
     TEST_CASE(Replace_GivenStringWithSingleMatch_ReplacesMatch)
     {
-        const string result = replace("xyaaz", "aa", "bbb");
+        const std::string result = replace("xyaaz", "aa", "bbb");
 
         EXPECT_EQ("xybbbz", result);
     }
 
     TEST_CASE(Replace_GivenStringWithMultipleMatches_ReplacesMatches)
     {
-        const string result = replace("xaayaaz", "aa", "bbb");
+        const std::string result = replace("xaayaaz", "aa", "bbb");
 
         EXPECT_EQ("xbbbybbbz", result);
     }
 
     TEST_CASE(Replace_GivenStringWithMatchAtTheBeginning_ReplacesMatch)
     {
-        const string result = replace("aaxyz", "aa", "bbb");
+        const std::string result = replace("aaxyz", "aa", "bbb");
 
         EXPECT_EQ("bbbxyz", result);
     }
 
     TEST_CASE(Replace_GivenStringWithMatchAtTheEnd_ReplacesMatch)
     {
-        const string result = replace("xyzaa", "aa", "bbb");
+        const std::string result = replace("xyzaa", "aa", "bbb");
 
         EXPECT_EQ("xyzbbb", result);
     }
 
     TEST_CASE(Format_GivenStringWithoutPlaceholders_ReturnsString)
     {
-        const string result = format("hello", "world");
+        const std::string result = format("hello", "world");
 
         EXPECT_EQ("hello", result);
     }
 
     TEST_CASE(Format_GivenStringWithSinglePlaceholder_ReturnsFormattedString)
     {
-        const string result = format("hello {0}", "world");
+        const std::string result = format("hello {0}", "world");
 
         EXPECT_EQ("hello world", result);
     }
 
     TEST_CASE(Format_GivenStringWithSinglePlaceholderRepeatedTwice_ReturnsFormattedString)
     {
-        const string result = format("{0} hello {0}", "yay");
+        const std::string result = format("{0} hello {0}", "yay");
 
         EXPECT_EQ("yay hello yay", result);
     }
 
     TEST_CASE(Format_GivenStringWithFourPlaceholders_ReturnsFormattedString)
     {
-        const string result = format("{3} {2} {1} {0} {1} {2} {3}", "a", "b", "c", "d");
+        const std::string result = format("{3} {2} {1} {0} {1} {2} {3}", "a", "b", "c", "d");
 
         EXPECT_EQ("d c b a b c d", result);
     }
@@ -579,84 +578,84 @@ TEST_SUITE(Foundation_Utility_String)
 
     TEST_CASE(GetNumberedString_GivenEmptyPattern_ReturnsEmptyString)
     {
-        const string result = get_numbered_string("", 12);
+        const std::string result = get_numbered_string("", 12);
 
         EXPECT_EQ("", result);
     }
 
     TEST_CASE(GetNumberedString_GivenPatternWithoutHashes_ReturnsPatternUnmodified)
     {
-        const string result = get_numbered_string("hello", 12);
+        const std::string result = get_numbered_string("hello", 12);
 
         EXPECT_EQ("hello", result);
     }
 
     TEST_CASE(GetNumberedString_GivenPatternWithSingleHashAtTheBeginning_GivenSingleDigitValue_ReplacesHashByValue)
     {
-        const string result = get_numbered_string("#hello", 5);
+        const std::string result = get_numbered_string("#hello", 5);
 
         EXPECT_EQ("5hello", result);
     }
 
     TEST_CASE(GetNumberedString_GivenPatternWithSingleHashInTheMiddle_GivenSingleDigitValue_ReplacesHashByValue)
     {
-        const string result = get_numbered_string("he#llo", 5);
+        const std::string result = get_numbered_string("he#llo", 5);
 
         EXPECT_EQ("he5llo", result);
     }
 
     TEST_CASE(GetNumberedString_GivenPatternWithSingleHashAtTheEnd_GivenSingleDigitValue_ReplacesHashByValue)
     {
-        const string result = get_numbered_string("hello#", 5);
+        const std::string result = get_numbered_string("hello#", 5);
 
         EXPECT_EQ("hello5", result);
     }
 
     TEST_CASE(GetNumberedString_GivenPatternWithThreeHashes_GivenSingleDigitValue_ReplacesHashesByValue)
     {
-        const string result = get_numbered_string("hel###lo", 5);
+        const std::string result = get_numbered_string("hel###lo", 5);
 
         EXPECT_EQ("hel005lo", result);
     }
 
     TEST_CASE(GetNumberedString_GivenPatternWithThreeHashes_GivenTwoDigitsValue_ReplacesHashesByValue)
     {
-        const string result = get_numbered_string("hello###", 12);
+        const std::string result = get_numbered_string("hello###", 12);
 
         EXPECT_EQ("hello012", result);
     }
 
     TEST_CASE(GetNumberedString_GivenPatternWithThreeHashes_GivenFourDigitsValue_ReplacesHashesByValue)
     {
-        const string result = get_numbered_string("hello###", 1234);
+        const std::string result = get_numbered_string("hello###", 1234);
 
         EXPECT_EQ("hello1234", result);
     }
 
     TEST_CASE(ReplaceSpecialXMLCharacters_GivenEmptyString_ReturnsEmptyString)
     {
-        const string result = replace_special_xml_characters("");
+        const std::string result = replace_special_xml_characters("");
 
         EXPECT_EQ("", result);
     }
 
     TEST_CASE(ReplaceSpecialXMLCharacters_GivenStringWithAmpersand_ReplacesAmpersandByEntity)
     {
-        const string result = replace_special_xml_characters("aa&bb");
+        const std::string result = replace_special_xml_characters("aa&bb");
 
         EXPECT_EQ("aa&amp;bb", result);
     }
 
     TEST_CASE(ReplaceSpecialXMLCharacters_GivenStringWithQuoteThenAmpersand_ReplacesQuoteAndAmpersandByEntities)
     {
-        const string result = replace_special_xml_characters("aa\"&bb");
+        const std::string result = replace_special_xml_characters("aa\"&bb");
 
         EXPECT_EQ("aa&quot;&amp;bb", result);
     }
 
     TEST_CASE(ReplaceSpecialXMLCharacters_GivenStringWithXMLEntity_ReplacesAmpersandByEntity)
     {
-        const string result = replace_special_xml_characters("aa&amp;bb");
+        const std::string result = replace_special_xml_characters("aa&amp;bb");
 
         EXPECT_EQ("aa&amp;amp;bb", result);
     }
@@ -783,56 +782,56 @@ TEST_SUITE(Foundation_Utility_String)
 
     TEST_CASE(MakeSafeFilename_GivenSafeFilename_ReturnsFilenameUnchanged)
     {
-        const string result = make_safe_filename("hello-world_42.txt");
+        const std::string result = make_safe_filename("hello-world_42.txt");
 
         EXPECT_EQ("hello-world_42.txt", result);
     }
 
     TEST_CASE(MakeSafeFilename_GivenUnsafeFilename_ReturnsSafeFilename)
     {
-        const string result = make_safe_filename("hello/world !.txt");
+        const std::string result = make_safe_filename("hello/world !.txt");
 
         EXPECT_EQ("hello_world__.txt", result);
     }
 
     TEST_CASE(Capitalize_GivenEmptyString_ReturnsEmptyString)
     {
-        const string result = capitalize("");
+        const std::string result = capitalize("");
 
         EXPECT_EQ("", result);
     }
 
     TEST_CASE(Capitalize_GivenBlankString_ReturnsInputString)
     {
-        const string result = capitalize(" ");
+        const std::string result = capitalize(" ");
 
         EXPECT_EQ(" ", result);
     }
 
     TEST_CASE(Capitalize_GivenSingleWord_ReturnsCapitalizedWord)
     {
-        const string result = capitalize("aB");
+        const std::string result = capitalize("aB");
 
         EXPECT_EQ("Ab", result);
     }
 
     TEST_CASE(Capitalize_GivenTwoWords_ReturnsCapitalizedWords)
     {
-        const string result = capitalize("aB c");
+        const std::string result = capitalize("aB c");
 
         EXPECT_EQ("Ab C", result);
     }
 
     TEST_CASE(Capitalize_GivenSingleWordSurroundedByBlanks_ReturnsInputStringWithCapitalizedWord)
     {
-        const string result = capitalize(" heLLo ");
+        const std::string result = capitalize(" heLLo ");
 
         EXPECT_EQ(" Hello ", result);
     }
 
     TEST_CASE(Capitalize_GivenTwoWordsSurroundedByBlanks_ReturnsInputStringWithCapitalizedWords)
     {
-        const string result = capitalize(" hello CUTE carrot ");
+        const std::string result = capitalize(" hello CUTE carrot ");
 
         EXPECT_EQ(" Hello Cute Carrot ", result);
     }

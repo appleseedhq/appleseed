@@ -46,7 +46,6 @@
 #include <utility>
 
 using namespace foundation;
-using namespace std;
 
 namespace
 {
@@ -410,7 +409,7 @@ TEST_SUITE(Foundation_Utility_Job_WorkerThread)
     {
         void execute(const size_t thread_index) override
         {
-            throw bad_alloc();
+            throw std::bad_alloc();
         }
     };
 

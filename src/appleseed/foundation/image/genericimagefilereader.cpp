@@ -40,8 +40,6 @@
 #include <cstddef>
 #include <memory>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -62,7 +60,7 @@ Image* GenericImageFileReader::read(
     if (image_attributes)
         reader.read_image_attributes(*image_attributes);
 
-    unique_ptr<Image> image(
+    std::unique_ptr<Image> image(
         new Image(
             props.m_canvas_width,
             props.m_canvas_height,
@@ -75,7 +73,7 @@ Image* GenericImageFileReader::read(
     {
         for (size_t tile_x = 0; tile_x < props.m_tile_count_x; ++tile_x)
         {
-            unique_ptr<Tile> tile(reader.read_tile(tile_x, tile_y));
+            std::unique_ptr<Tile> tile(reader.read_tile(tile_x, tile_y));
             image->set_tile(tile_x, tile_y, tile.release());
         }
     }

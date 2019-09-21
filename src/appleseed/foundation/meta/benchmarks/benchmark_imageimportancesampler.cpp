@@ -40,7 +40,6 @@
 #include <memory>
 
 using namespace foundation;
-using namespace std;
 
 BENCHMARK_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
 {
@@ -48,18 +47,18 @@ BENCHMARK_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
     {
         typedef ImageImportanceSampler<ImageSampler::Payload, float> ImportanceSamplerType;
 
-        unique_ptr<ImportanceSamplerType>   m_importance_sampler;
-        Xorshift32                          m_rng;
+        std::unique_ptr<ImportanceSamplerType>   m_importance_sampler;
+        Xorshift32                               m_rng;
 
-        Vector2u                            m_texel_coords_sum;
-        float                               m_texel_prob_sum;
+        Vector2u                                 m_texel_coords_sum;
+        float                                    m_texel_prob_sum;
 
         Fixture()
           : m_texel_coords_sum(0, 0)
           , m_texel_prob_sum(0.0f)
         {
             GenericImageFileReader reader;
-            unique_ptr<Image> image(reader.read("unit tests/inputs/test_imageimportancesampler_doge2.exr"));
+            std::unique_ptr<Image> image(reader.read("unit tests/inputs/test_imageimportancesampler_doge2.exr"));
 
             const size_t width = image->properties().m_canvas_width;
             const size_t height = image->properties().m_canvas_height;

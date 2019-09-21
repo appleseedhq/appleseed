@@ -34,16 +34,14 @@
 #include <cassert>
 #include <string>
 
-using namespace std;
-
 namespace foundation
 {
 
 struct Indenter::Impl
 {
-    size_t          m_tab_size;
-    char            m_tab_char;
-    string          m_str;
+    size_t               m_tab_size;
+    char                 m_tab_char;
+    std::string          m_str;
 };
 
 Indenter::Indenter(

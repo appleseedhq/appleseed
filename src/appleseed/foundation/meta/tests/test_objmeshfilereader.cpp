@@ -40,28 +40,27 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Mesh_OBJMeshFileReader)
 {
     struct Face
     {
-        vector<size_t>      m_vertices;
+        std::vector<size_t>      m_vertices;
     };
 
     struct Mesh
     {
-        string              m_name;
-        vector<Vector3d>    m_vertices;
-        vector<Vector3d>    m_vertex_normals;
-        vector<Vector2d>    m_tex_coords;
-        vector<Face>        m_faces;
+        std::string              m_name;
+        std::vector<Vector3d>    m_vertices;
+        std::vector<Vector3d>    m_vertex_normals;
+        std::vector<Vector2d>    m_tex_coords;
+        std::vector<Face>        m_faces;
     };
 
     struct MeshBuilder
       : public MeshBuilderBase
     {
-        vector<Mesh>        m_meshes;
+        std::vector<Mesh>        m_meshes;
 
         void begin_mesh(const char* name) override
         {

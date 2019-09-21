@@ -35,13 +35,12 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Utility_Preprocessor)
 {
     TEST_CASE(Process_GivenEmptyString_ReturnsEmptyString)
     {
-        const string InputText = "";
+        const std::string InputText = "";
 
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
@@ -52,7 +51,7 @@ TEST_SUITE(Foundation_Utility_Preprocessor)
 
     TEST_CASE(Process_GivenPlainString_ReturnsInputString)
     {
-        const string InputText = "hello world";
+        const std::string InputText = "hello world";
 
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
@@ -63,7 +62,7 @@ TEST_SUITE(Foundation_Utility_Preprocessor)
 
     TEST_CASE(Process_GivenPlainMultilineString_ReturnsInputString)
     {
-        const string InputText =
+        const std::string InputText =
             "hello\n"
             "world";
 
@@ -76,7 +75,7 @@ TEST_SUITE(Foundation_Utility_Preprocessor)
 
     TEST_CASE(Process_GivenPlainStringWithLeadingEOL_ReturnsInputString)
     {
-        const string InputText = "\nhello world";
+        const std::string InputText = "\nhello world";
 
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
@@ -87,7 +86,7 @@ TEST_SUITE(Foundation_Utility_Preprocessor)
 
     TEST_CASE(Process_GivenPlainStringWithTrailingEOL_ReturnsInputString)
     {
-        const string InputText = "hello world\n";
+        const std::string InputText = "hello world\n";
 
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
@@ -98,7 +97,7 @@ TEST_SUITE(Foundation_Utility_Preprocessor)
 
     TEST_CASE(Process_GivenStringWithEOLOnly_ReturnsInputString)
     {
-        const string InputText = "\n\n\n";
+        const std::string InputText = "\n\n\n";
 
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
@@ -109,13 +108,13 @@ TEST_SUITE(Foundation_Utility_Preprocessor)
 
     TEST_CASE(Process_IfdefWithUndefinedSymbol_SkipsIfdefSection)
     {
-        const string InputText =
+        const std::string InputText =
             "#ifdef X\n"
             "ignore\n"
             "#endif\n"
             "more\n";
 
-        const string ExpectedText = "more\n";
+        const std::string ExpectedText = "more\n";
 
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
@@ -126,13 +125,13 @@ TEST_SUITE(Foundation_Utility_Preprocessor)
 
     TEST_CASE(Process_IfdefWithPredefinedSymbol_KeepsIfdefSection)
     {
-        const string InputText =
+        const std::string InputText =
             "#ifdef X\n"
             "keep\n"
             "#endif\n"
             "more\n";
 
-        const string ExpectedText =
+        const std::string ExpectedText =
             "keep\n"
             "more\n";
 
@@ -146,14 +145,14 @@ TEST_SUITE(Foundation_Utility_Preprocessor)
 
     TEST_CASE(Process_IfdefWithDefinedSymbol_KeepsIfdefSection)
     {
-        const string InputText =
+        const std::string InputText =
             "#define X\n"
             "#ifdef X\n"
             "keep\n"
             "#endif\n"
             "more\n";
 
-        const string ExpectedText =
+        const std::string ExpectedText =
             "keep\n"
             "more\n";
 
@@ -166,14 +165,14 @@ TEST_SUITE(Foundation_Utility_Preprocessor)
 
     TEST_CASE(Process_IfdefWithValuedSymbol_KeepsIfdefSection)
     {
-        const string InputText =
+        const std::string InputText =
             "#define X 42\n"
             "#ifdef X\n"
             "keep\n"
             "#endif\n"
             "more\n";
 
-        const string ExpectedText =
+        const std::string ExpectedText =
             "keep\n"
             "more\n";
 
@@ -186,13 +185,13 @@ TEST_SUITE(Foundation_Utility_Preprocessor)
 
     TEST_CASE(Process_SymbolDefinitionGuardedByIfDefWithFalseCondition_SymbolIsNotDefined)
     {
-        const string InputText =
+        const std::string InputText =
             "#ifdef X\n"
             "#define Y 42\n"
             "#endif\n"
             "Y";
 
-        const string ExpectedText = "Y";
+        const std::string ExpectedText = "Y";
 
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
@@ -203,19 +202,19 @@ TEST_SUITE(Foundation_Utility_Preprocessor)
 
     TEST_CASE(Process_UnknownKeyword_GeneratesError)
     {
-        const string InputText = "#stuff X Y";
+        const std::string InputText = "#stuff X Y";
 
         Preprocessor preprocessor;
         preprocessor.process(InputText.c_str());
 
         ASSERT_FALSE(preprocessor.succeeded());
-        EXPECT_EQ(string("Unknown directive: #stuff"), preprocessor.get_error_message());
+        EXPECT_EQ(std::string("Unknown directive: #stuff"), preprocessor.get_error_message());
         EXPECT_EQ(1, preprocessor.get_error_location());
     }
 
     TEST_CASE(Process_MissingEndIf_GeneratesError)
     {
-        const string InputText =
+        const std::string InputText =
             "#ifdef X\n"
             "keep\n";
 
@@ -223,18 +222,18 @@ TEST_SUITE(Foundation_Utility_Preprocessor)
         preprocessor.process(InputText.c_str());
 
         ASSERT_FALSE(preprocessor.succeeded());
-        EXPECT_EQ(string("Expected directive: #endif"), preprocessor.get_error_message());
+        EXPECT_EQ(std::string("Expected directive: #endif"), preprocessor.get_error_message());
         EXPECT_EQ(3, preprocessor.get_error_location());
     }
 
     TEST_CASE(Process_GivenSymbolsDefinitions_SubstitutesSymbolsWithValues)
     {
-        const string InputText =
+        const std::string InputText =
             "#define X 42\n"
             "#define Y bun\n"
             "foo X bar X Y Y\n";
 
-        const string ExpectedText =
+        const std::string ExpectedText =
             "foo 42 bar 42 bun bun\n";
 
         Preprocessor preprocessor;
@@ -246,11 +245,11 @@ TEST_SUITE(Foundation_Utility_Preprocessor)
 
     TEST_CASE(Process_GivenSymbolDefinition_OnySubstitutesSymbolsSurroundedByDelimiters)
     {
-        const string InputText =
+        const std::string InputText =
             "#define X 42\n"
             "X fooX\n";
 
-        const string ExpectedText =
+        const std::string ExpectedText =
             "42 fooX\n";
 
         Preprocessor preprocessor;
@@ -262,12 +261,12 @@ TEST_SUITE(Foundation_Utility_Preprocessor)
 
     TEST_CASE(Process_GivenSymbolDefinitionUsingAnotherSymbol_SubstitutesInChain)
     {
-        const string InputText =
+        const std::string InputText =
             "#define X 42\n"
             "#define Y X\n"
             "Y\n";
 
-        const string ExpectedText =
+        const std::string ExpectedText =
             "42\n";
 
         Preprocessor preprocessor;

@@ -40,7 +40,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace
 {
@@ -87,14 +86,14 @@ namespace
     }
 
     template <typename Filter2>
-    vector<Vector2d> make_points(const Filter2& filter)
+    std::vector<Vector2d> make_points(const Filter2& filter)
     {
         typedef typename Filter2::ValueType T;
 
         const T r = filter.get_xradius();
 
         const size_t PointCount = 256;
-        vector<Vector2d> points(PointCount);
+        std::vector<Vector2d> points(PointCount);
 
         for (size_t i = 0; i < PointCount; ++i)
         {
@@ -108,9 +107,9 @@ namespace
 
     template <typename Filter2>
     void plot(
-        const string&       filepath,
-        const string&       plot_title,
-        const Filter2&      filter)
+        const std::string&       filepath,
+        const std::string&       plot_title,
+        const Filter2&           filter)
     {
         GnuplotFile plotfile;
         plotfile.set_title(plot_title + ", radius=" + pretty_scalar(filter.get_xradius(), 1));
@@ -120,12 +119,12 @@ namespace
 
     template <typename Filter2T, typename Filter2U>
     void plot(
-        const string&       filepath,
-        const string&       plot_title,
-        const string&       filter1_name,
-        const Filter2T&     filter1,
-        const string&       filter2_name,
-        const Filter2U&     filter2)
+        const std::string&       filepath,
+        const std::string&       plot_title,
+        const std::string&       filter1_name,
+        const Filter2T&          filter1,
+        const std::string&       filter2_name,
+        const Filter2U&          filter2)
     {
         GnuplotFile plotfile;
         plotfile.set_title(plot_title + ", radius=" + pretty_scalar(filter1.get_xradius(), 1));

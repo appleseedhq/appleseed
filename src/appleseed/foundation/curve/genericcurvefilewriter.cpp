@@ -40,7 +40,6 @@
 // Standard headers.
 #include <string>
 
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace foundation
@@ -49,7 +48,7 @@ namespace foundation
 GenericCurveFileWriter::GenericCurveFileWriter(const char* filename)
 {
     const bf::path filepath(filename);
-    const string extension = lower_case(filepath.extension().string());
+    const std::string extension = lower_case(filepath.extension().string());
 
     if (extension == ".binarycurve")
         m_writer = new BinaryCurveFileWriter(filename);

@@ -39,13 +39,12 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Math_Spline)
 {
-    vector<Vector2d> zip(const double x[], const double y[], const size_t count)
+    std::vector<Vector2d> zip(const double x[], const double y[], const size_t count)
     {
-        vector<Vector2d> points(count);
+        std::vector<Vector2d> points(count);
 
         for (size_t i = 0; i < count; ++i)
         {
@@ -59,7 +58,7 @@ TEST_SUITE(Foundation_Math_Spline)
     TEST_CASE(GeneratePlotFiles)
     {
         // Define knots.
-        vector<double> knot_x, knot_y;
+        std::vector<double> knot_x, knot_y;
         knot_x.push_back(  0.0);  knot_y.push_back(0.0);
         knot_x.push_back( 50.0);  knot_y.push_back(1.0);
         knot_x.push_back(100.0);  knot_y.push_back(0.0);
@@ -68,7 +67,7 @@ TEST_SUITE(Foundation_Math_Spline)
         const size_t N = 1000;
         const double b = knot_x.front();
         const double e = knot_x.back();
-        vector<double> point_x;
+        std::vector<double> point_x;
         for (size_t i = 0; i < N; ++i)
             point_x.push_back(fit<size_t, double>(i, 0, N - 1, b, e));
 
@@ -91,8 +90,8 @@ TEST_SUITE(Foundation_Math_Spline)
 
         // Tension = 0.0
         {
-            vector<double> knot_d(knot_x.size());
-            vector<double> point_y(point_x.size());
+            std::vector<double> knot_d(knot_x.size());
+            std::vector<double> point_y(point_x.size());
 
             compute_cardinal_spline_tangents(
                 knot_x.size(),
@@ -119,8 +118,8 @@ TEST_SUITE(Foundation_Math_Spline)
 
         // Tension = 0.5
         {
-            vector<double> knot_d(knot_x.size());
-            vector<double> point_y(point_x.size());
+            std::vector<double> knot_d(knot_x.size());
+            std::vector<double> point_y(point_x.size());
 
             compute_cardinal_spline_tangents(
                 knot_x.size(),
@@ -147,8 +146,8 @@ TEST_SUITE(Foundation_Math_Spline)
 
         // Tension = 1.0
         {
-            vector<double> knot_d(knot_x.size());
-            vector<double> point_y(point_x.size());
+            std::vector<double> knot_d(knot_x.size());
+            std::vector<double> point_y(point_x.size());
 
             compute_cardinal_spline_tangents(
                 knot_x.size(),

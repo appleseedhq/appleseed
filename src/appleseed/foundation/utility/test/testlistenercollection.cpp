@@ -37,8 +37,6 @@
 #include <cassert>
 #include <list>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -48,7 +46,7 @@ namespace foundation
 
 struct TestListenerCollection::Impl
 {
-    typedef list<ITestListener*> TestListenerContainer;
+    typedef std::list<ITestListener*> TestListenerContainer;
 
     TestListenerContainer m_listeners;
 };

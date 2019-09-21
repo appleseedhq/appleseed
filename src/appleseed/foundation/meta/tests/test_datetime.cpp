@@ -41,7 +41,6 @@
 
 using namespace boost;
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Platform_DateTime)
 {
@@ -63,7 +62,7 @@ TEST_SUITE(Foundation_Platform_DateTime)
         using namespace posix_time;
 
         const ptime time(date(2010, Jun, 22), time_duration(17, 45, 31));
-        const string result = to_string(time);
+        const std::string result = to_string(time);
 
         EXPECT_EQ("20100622T174531", result);
     }

@@ -42,7 +42,6 @@
 // Standard headers.
 #include <string>
 
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace foundation
@@ -50,8 +49,8 @@ namespace foundation
 
 struct GenericMeshFileReader::Impl
 {
-    string  m_filename;
-    int     m_obj_options;
+    std::string  m_filename;
+    int          m_obj_options;
 };
 
 GenericMeshFileReader::GenericMeshFileReader(const char* filename)
@@ -79,7 +78,7 @@ void GenericMeshFileReader::set_obj_options(const int obj_options)
 void GenericMeshFileReader::read(IMeshBuilder& builder)
 {
     const bf::path filepath(impl->m_filename);
-    const string extension = lower_case(filepath.extension().string());
+    const std::string extension = lower_case(filepath.extension().string());
 
     if (extension == ".obj")
     {

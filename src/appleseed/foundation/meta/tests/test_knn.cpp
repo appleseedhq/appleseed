@@ -47,7 +47,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Math_Knn_Tree)
 {
@@ -285,7 +284,7 @@ TEST_SUITE(Foundation_Math_Knn_Query)
 
     void generate_random_points(
         MersenneTwister&            rng,
-        vector<Vector3d>&           points,
+        std::vector<Vector3d>&      points,
         const size_t                count)
     {
         assert(points.empty());
@@ -305,7 +304,7 @@ TEST_SUITE(Foundation_Math_Knn_Query)
 
         MersenneTwister rng;
 
-        vector<Vector3d> points;
+        std::vector<Vector3d> points;
         generate_random_points(rng, points, PointCount);
 
         knn::Tree3d tree;
@@ -344,12 +343,12 @@ TEST_SUITE(Foundation_Math_Knn_Query)
 
     struct SortPointByDistancePredicate
     {
-        const vector<Vector3d>&     m_points;
-        const Vector3d&             m_q;
+        const std::vector<Vector3d>&     m_points;
+        const Vector3d&                  m_q;
 
         SortPointByDistancePredicate(
-            const vector<Vector3d>& points,
-            const Vector3d&         q)
+            const std::vector<Vector3d>& points,
+            const Vector3d&              q)
           : m_points(points)
           , m_q(q)
         {
@@ -364,21 +363,21 @@ TEST_SUITE(Foundation_Math_Knn_Query)
     };
 
     void naive_query(
-        const vector<Vector3d>&     points,
-        const Vector3d&             q,
-        vector<size_t>&             indices)
+        const std::vector<Vector3d>&     points,
+        const Vector3d&                  q,
+        std::vector<size_t>&             indices)
     {
         assert(indices.size() == points.size());
 
         SortPointByDistancePredicate pred(points, q);
-        sort(indices.begin(), indices.end(), pred);
+        std::sort(indices.begin(), indices.end(), pred);
     }
 
     bool do_results_match_naive_algorithm(
-        const vector<Vector3d>&     points,
-        const size_t                answer_size,
-        const size_t                query_count,
-        function<Vector3d()>        make_query_point)
+        const std::vector<Vector3d>&     points,
+        const size_t                     answer_size,
+        const size_t                     query_count,
+        std::function<Vector3d()>        make_query_point)
     {
         knn::Tree3d tree;
         knn::Builder3d builder(tree);
@@ -387,7 +386,7 @@ TEST_SUITE(Foundation_Math_Knn_Query)
         knn::Answer<double> answer(answer_size);
         knn::Query3d query(tree, answer);
 
-        vector<size_t> ref_answer(points.size());
+        std::vector<size_t> ref_answer(points.size());
         identity_permutation(ref_answer.size(), &ref_answer[0]);
 
         for (size_t i = 0; i < query_count; ++i)
@@ -420,7 +419,7 @@ TEST_SUITE(Foundation_Math_Knn_Query)
 
         MersenneTwister rng;
 
-        vector<Vector3d> points;
+        std::vector<Vector3d> points;
         generate_random_points(rng, points, PointCount);
 
         auto make_query_point = [&rng]() { return rand_vector1<Vector3d>(rng); };
@@ -435,7 +434,7 @@ TEST_SUITE(Foundation_Math_Knn_Query)
 
         MersenneTwister rng;
 
-        vector<Vector3d> points;
+        std::vector<Vector3d> points;
         generate_random_points(rng, points, PointCount);
 
         points[0] = Vector3d(0.0);
@@ -455,7 +454,7 @@ TEST_SUITE(Foundation_Math_Knn_Query)
 
         MersenneTwister rng;
 
-        vector<Vector3d> points;
+        std::vector<Vector3d> points;
         generate_random_points(rng, points, PointCount);
 
         auto make_query_point = [&rng, &points]() { return points[rand_int1(rng, 0, static_cast<int32>(points.size()) - 1)]; };

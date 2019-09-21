@@ -45,7 +45,6 @@
 #include <iterator>
 #include <vector>
 
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace foundation
@@ -71,7 +70,7 @@ const char SearchPaths::osl_path_separator()
 
 struct SearchPaths::Impl
 {
-    typedef vector<string> PathCollection;
+    typedef std::vector<std::string> PathCollection;
 
     bf::path        m_root_path;
     PathCollection  m_environment_paths;
@@ -89,10 +88,10 @@ SearchPaths::SearchPaths(const char* envvar, const char separator)
 {
     if (const char* value = getenv(envvar))
     {
-        vector<string> paths;
-        split(value, string(&separator, 1), paths);
+        std::vector<std::string> paths;
+        split(value, std::string(&separator, 1), paths);
 
-        for (const string& path : paths)
+        for (const std::string& path : paths)
         {
             // Ignore empty paths.
             if (path.empty())
@@ -302,7 +301,7 @@ APIString SearchPaths::do_to_string(const char separator, const bool reversed) c
     if (reversed)
         reverse(paths.begin(), paths.end());
 
-    string paths_str;
+    std::string paths_str;
 
     for (size_t i = 0, e = paths.size(); i < e; ++i)
     {

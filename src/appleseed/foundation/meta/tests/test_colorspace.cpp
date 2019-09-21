@@ -42,7 +42,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Image_ColorSpace)
 {
@@ -550,9 +549,9 @@ TEST_SUITE(Foundation_Image_ColorSpace)
             1.0e-6f);
     }
 
-    vector<Vector2d> zip(const double x[], const double y[], const size_t count)
+    std::vector<Vector2d> zip(const double x[], const double y[], const size_t count)
     {
-        vector<Vector2d> points(count);
+        std::vector<Vector2d> points(count);
 
         for (size_t i = 0; i < count; ++i)
         {

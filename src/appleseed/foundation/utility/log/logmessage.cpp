@@ -34,8 +34,6 @@
 #include <cassert>
 #include <cstring>
 
-using namespace std;
-
 namespace foundation
 {
 

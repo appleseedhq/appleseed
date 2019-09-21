@@ -40,8 +40,6 @@
 #include <cstddef>
 #include <vector>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -51,7 +49,7 @@ namespace foundation
 
 struct BenchmarkSuiteRepository::Impl
 {
-    vector<BenchmarkSuite*> m_suites;
+    std::vector<BenchmarkSuite*> m_suites;
 };
 
 BenchmarkSuiteRepository::BenchmarkSuiteRepository()

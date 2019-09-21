@@ -37,7 +37,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Platform_Snprintf)
 {
@@ -101,7 +100,7 @@ TEST_SUITE(Foundation_Platform_Snprintf)
         char buf[100];
         portable_snprintf(buf, sizeof(buf), "%zu", MaxSizeTValue);
 
-        EXPECT_EQ(MaxSizeTValueString, string(buf));
+        EXPECT_EQ(MaxSizeTValueString, std::string(buf));
     }
 
 #ifdef _MSC_VER
@@ -114,7 +113,7 @@ TEST_SUITE(Foundation_Platform_Snprintf)
         char buf[100];
         const int result = portable_snprintf(buf, sizeof(buf), "%Iu", MaxSizeTValue);
 
-        EXPECT_EQ(MaxSizeTValueString, string(buf));
+        EXPECT_EQ(MaxSizeTValueString, std::string(buf));
     }
 
 #endif

@@ -40,7 +40,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Utility_Memory)
 {
@@ -162,7 +161,7 @@ TEST_SUITE(Foundation_Utility_Memory)
 
     TEST_CASE(EnsureMinimumSize_GivenEmptyVector_ResizesVectorByInsertingDefaultValue)
     {
-        vector<int> v;
+        std::vector<int> v;
 
         ensure_minimum_size(v, 2);
 
@@ -171,7 +170,7 @@ TEST_SUITE(Foundation_Utility_Memory)
 
     TEST_CASE(EnsureMinimumSize_GivenEmptyVector_ResizesVectorByInsertingProvidedValue)
     {
-        vector<int> v;
+        std::vector<int> v;
 
         ensure_minimum_size(v, 2, 42);
 
@@ -182,7 +181,7 @@ TEST_SUITE(Foundation_Utility_Memory)
 
     TEST_CASE(EnsureMinimumSize_GivenMinimumSizeSmallerThanCurrentVectorSize_DoesNothing)
     {
-        vector<int> v(12);
+        std::vector<int> v(12);
 
         ensure_minimum_size(v, 3);
 
@@ -191,7 +190,7 @@ TEST_SUITE(Foundation_Utility_Memory)
 
     TEST_CASE(ClearReleaseMemory_GivenVectorWithThousandElements_ClearsVector)
     {
-        vector<int> v(1000);
+        std::vector<int> v(1000);
 
         clear_release_memory(v);
 
@@ -200,7 +199,7 @@ TEST_SUITE(Foundation_Utility_Memory)
 
     TEST_CASE(ClearReleaseMemory_GivenVectorWithThousandElements_ResetsVectorCapacityToDefaultValue)
     {
-        vector<int> v;
+        std::vector<int> v;
         const size_t default_capacity = v.capacity();
 
         v.resize(1000);
@@ -214,7 +213,7 @@ TEST_SUITE(Foundation_Utility_Memory)
     {
         typedef AlignedAllocator<int> Allocator;
 
-        vector<int, AlignedAllocator<int>> v(Allocator(32));
+        std::vector<int, AlignedAllocator<int>> v(Allocator(32));
         const size_t default_capacity = v.capacity();
 
         v.resize(1000);
@@ -226,7 +225,7 @@ TEST_SUITE(Foundation_Utility_Memory)
 
     TEST_CASE(ClearKeepMemory_GivenVectorWithThousandElements_ClearsVector)
     {
-        vector<int> v(1000);
+        std::vector<int> v(1000);
 
         clear_keep_memory(v);
 
@@ -235,7 +234,7 @@ TEST_SUITE(Foundation_Utility_Memory)
 
     TEST_CASE(ClearKeepMemory_GivenVectorWithThousandElements_RetainsVectorCapacity)
     {
-        vector<int> v(1000);
+        std::vector<int> v(1000);
 
         const size_t old_capacity = v.capacity();
 

@@ -44,7 +44,6 @@
 #include <utility>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Math_MinMax)
 {
@@ -68,18 +67,18 @@ TEST_SUITE(Foundation_Math_MinMax)
         EXPECT_EQ(2, max(2, 1, 0));
     }
 
-    pair<int, int> minmax_pair(const int a, const int b)
+    std::pair<int, int> minmax_pair(const int a, const int b)
     {
         int min, max;
         minmax(a, b, min, max);
-        return make_pair(min, max);
+        return std::make_pair(min, max);
     }
 
-    pair<int, int> minmax_pair(const int a, const int b, const int c)
+    std::pair<int, int> minmax_pair(const int a, const int b, const int c)
     {
         int min, max;
         minmax(a, b, c, min, max);
-        return make_pair(min, max);
+        return std::make_pair(min, max);
     }
 
     TEST_CASE(MinMax_TwoArguments)
@@ -138,7 +137,7 @@ TEST_SUITE(Foundation_Math_MinMax)
 
         const size_t N = countof(Values);
 
-        sort(&Values[0], &Values[N]);
+        std::sort(&Values[0], &Values[N]);
 
         UInt* first = &Values[0];
         UInt* middle = &Values[2];

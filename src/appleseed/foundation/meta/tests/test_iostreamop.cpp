@@ -42,13 +42,12 @@
 namespace foundation    { class ExceptionStringConversionError; }
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Utility_IOStreamOp)
 {
     TEST_CASE(ReadFloatArray_GivenEmptyStream_ReturnsEmptyArray)
     {
-        stringstream sstr;
+        std::stringstream sstr;
 
         FloatArray array;
         sstr >> array;
@@ -58,7 +57,7 @@ TEST_SUITE(Foundation_Utility_IOStreamOp)
 
     TEST_CASE(ReadFloatArray_GivenThreeFloatValues_ReturnsValues)
     {
-        stringstream sstr;
+        std::stringstream sstr;
         sstr << "1 -2.2 3e-1";
 
         FloatArray array;
@@ -72,7 +71,7 @@ TEST_SUITE(Foundation_Utility_IOStreamOp)
 
     TEST_CASE(ReadFloatArray_GivenInvalidValue_ThrowsExceptionStringConversionError)
     {
-        stringstream sstr;
+        std::stringstream sstr;
         sstr << "1.1 hello";
 
         FloatArray array;
@@ -85,7 +84,7 @@ TEST_SUITE(Foundation_Utility_IOStreamOp)
 
     TEST_CASE(ReadFloatArray_GivenEmptyStream_DoNotSetFailBitOnStream)
     {
-        stringstream sstr;
+        std::stringstream sstr;
 
         FloatArray array;
         sstr >> array;
@@ -95,7 +94,7 @@ TEST_SUITE(Foundation_Utility_IOStreamOp)
 
     TEST_CASE(ReadFloatArray_GivenThreeFloatValues_DoNotSetFailBitOnStream)
     {
-        stringstream sstr;
+        std::stringstream sstr;
         sstr << "1 -2.2 3e-1";
 
         FloatArray array;
@@ -106,7 +105,7 @@ TEST_SUITE(Foundation_Utility_IOStreamOp)
 
     TEST_CASE(ReadFloatArray_GivenInvalidValue_DoNotSetFailBitOnStream)
     {
-        stringstream sstr;
+        std::stringstream sstr;
         sstr << "1.1 hello";
 
         try
@@ -124,7 +123,7 @@ TEST_SUITE(Foundation_Utility_IOStreamOp)
 
     TEST_CASE(ReadDoubleArray_GivenEmptyStream_ReturnsEmptyArray)
     {
-        stringstream sstr;
+        std::stringstream sstr;
 
         DoubleArray array;
         sstr >> array;
@@ -134,7 +133,7 @@ TEST_SUITE(Foundation_Utility_IOStreamOp)
 
     TEST_CASE(ReadDoubleArray_GivenThreeDoubleValues_ReturnsValues)
     {
-        stringstream sstr;
+        std::stringstream sstr;
         sstr << "1 -2.2 3e-1";
 
         DoubleArray array;
@@ -148,7 +147,7 @@ TEST_SUITE(Foundation_Utility_IOStreamOp)
 
     TEST_CASE(ReadDoubleArray_GivenInvalidValue_ThrowsExceptionStringConversionError)
     {
-        stringstream sstr;
+        std::stringstream sstr;
         sstr << "1.1 hello";
 
         DoubleArray array;
@@ -161,8 +160,8 @@ TEST_SUITE(Foundation_Utility_IOStreamOp)
 
     TEST_CASE(Write3DAABBToStream)
     {
-        stringstream sstr;
-        sstr << fixed << setprecision(1);
+        std::stringstream sstr;
+        sstr << std::fixed << std::setprecision(1);
         sstr << AABB3d(Vector3d(-1.0, -2.0, -3.0), Vector3d(1.0, 2.0, 3.0));
 
         EXPECT_EQ("-1.0 -2.0 -3.0 1.0 2.0 3.0", sstr.str());
@@ -170,7 +169,7 @@ TEST_SUITE(Foundation_Utility_IOStreamOp)
 
     TEST_CASE(Read3DAABBFromStream)
     {
-        stringstream sstr;
+        std::stringstream sstr;
         sstr << "-1.0 -2.0 -3.0 1.0 2.0 3.0";
 
         AABB3d aabb;

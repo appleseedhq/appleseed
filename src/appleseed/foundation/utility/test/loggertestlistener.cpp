@@ -46,8 +46,6 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -150,11 +148,11 @@ namespace
             }
 
             // Split the message into multiple components, one for each line.
-            vector<string> tokens;
+            std::vector<std::string> tokens;
             split(message, "\n", tokens);
 
             // Print the message.
-            for (const_each<vector<string>> i = tokens; i; ++i)
+            for (const_each<std::vector<std::string>> i = tokens; i; ++i)
                 LOG_ERROR(m_logger, "      %s", i->c_str());
         }
 

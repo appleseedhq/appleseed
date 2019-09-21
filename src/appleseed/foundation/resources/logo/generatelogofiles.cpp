@@ -49,7 +49,6 @@
 
 namespace bf = boost::filesystem;
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Resources_Logos)
 {

@@ -106,7 +106,6 @@
 
 #endif
 
-using namespace std;
 
 namespace foundation
 {
@@ -974,7 +973,7 @@ void System::print_information(Logger& logger)
     X86CPUFeatures features;
     detect_x86_cpu_features(features);
 
-    stringstream isabuilder;
+    std::stringstream isabuilder;
     if (features.m_hw_sse) isabuilder << "SSE ";
     if (features.m_hw_sse2) isabuilder << "SSE2 ";
     if (features.m_hw_sse3) isabuilder << "SSE3 ";
@@ -987,12 +986,12 @@ void System::print_information(Logger& logger)
     if (features.m_hw_fma3) isabuilder << "FMA3 ";
     if (features.m_hw_f16c) isabuilder << "F16C ";
 
-    const string isa =
+    const std::string isa =
         isabuilder.str().empty()
             ? "base instruction set"
             : trim_right(isabuilder.str());
 #else
-    const string isa = "base instruction set";
+    const std::string isa = "base instruction set";
 #endif
 
     // Can't use LOG_INFO() here because of the #ifdefs.
@@ -1100,7 +1099,7 @@ namespace
         return (xcr_feature_mask & 0xe6) == 0xe6;
     }
 
-    string get_vendor_string()
+    std::string get_vendor_string()
     {
         char vendor[13];
 
@@ -1126,7 +1125,7 @@ void System::detect_x86_cpu_features(X86CPUFeatures& features)
     memset(&features, 0, sizeof(features));
 
     // CPU vendor.
-    const string vendor = get_vendor_string();
+    const std::string vendor = get_vendor_string();
     features.m_vendor =
         vendor == "GenuineIntel" ? X86CPUFeatures::Vendor::Intel :
         vendor == "AuthenticAMD" ? X86CPUFeatures::Vendor::AMD :

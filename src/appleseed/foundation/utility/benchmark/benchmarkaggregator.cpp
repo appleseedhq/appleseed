@@ -57,7 +57,6 @@
 #include <vector>
 
 using namespace boost;
-using namespace std;
 using namespace xercesc;
 namespace bf = boost::filesystem;
 
@@ -66,7 +65,7 @@ namespace foundation
 
 namespace
 {
-    Dictionary& push(Dictionary& dictionary, const string& name)
+    Dictionary& push(Dictionary& dictionary, const std::string& name)
     {
         if (!dictionary.dictionaries().exist(name))
             dictionary.dictionaries().insert(name, Dictionary());
@@ -90,7 +89,7 @@ struct BenchmarkAggregator::Impl
 
     const regex         m_filename_regex;
 
-    typedef map<UniqueID, BenchmarkSeries> SeriesMap;
+    typedef std::map<UniqueID, BenchmarkSeries> SeriesMap;
 
     Dictionary          m_benchmarks;
     SeriesMap           m_series;
@@ -117,7 +116,7 @@ struct BenchmarkAggregator::Impl
 
         const DOMNamedNodeMap* attributes = node->getAttributes();
         const DOMNode* config_attribute = attributes->getNamedItem(transcode("configuration").c_str());
-        const string config = transcode(config_attribute->getNodeValue());
+        const std::string config = transcode(config_attribute->getNodeValue());
 
         Dictionary& suites_dic = push(m_benchmarks, config);
 
@@ -143,7 +142,7 @@ struct BenchmarkAggregator::Impl
                 {
                     const DOMNamedNodeMap* attributes = node->getAttributes();
                     const DOMNode* name_attribute = attributes->getNamedItem(transcode("name").c_str());
-                    const string name = transcode(name_attribute->getNodeValue());
+                    const std::string name = transcode(name_attribute->getNodeValue());
 
                     Dictionary& cases_dic = push(suites_dic, name);
 
@@ -172,7 +171,7 @@ struct BenchmarkAggregator::Impl
                 {
                     const DOMNamedNodeMap* attributes = node->getAttributes();
                     const DOMNode* name_attribute = attributes->getNamedItem(transcode("name").c_str());
-                    const string name = transcode(name_attribute->getNodeValue());
+                    const std::string name = transcode(name_attribute->getNodeValue());
 
                     UniqueID series_uid;
 
@@ -219,7 +218,7 @@ struct BenchmarkAggregator::Impl
 
                     if (node->getNodeType() == DOMNode::TEXT_NODE)
                     {
-                        const string text = transcode(node->getTextContent());
+                        const std::string text = transcode(node->getTextContent());
                         const double ticks = from_string<double>(text);
                         series.push_back(BenchmarkDataPoint(date, ticks));
                     }
@@ -259,16 +258,16 @@ bool BenchmarkAggregator::scan_file(const char* path)
     if (!bf::is_regular_file(path))
         return false;
 
-    const string filename = bf::path(path).filename().string();
+    const std::string filename = bf::path(path).filename().string();
 
     smatch match;
 
     if (!regex_match(filename, match, impl->m_filename_regex))
         return false;
 
-    const string date_string = match[1].str();
-    const string time_string = match[2].str();
-    const string iso_string = date_string + "T" + time_string;
+    const std::string date_string = match[1].str();
+    const std::string time_string = match[2].str();
+    const std::string iso_string = date_string + "T" + time_string;
     const posix_time::ptime date = posix_time::from_iso_string(iso_string);
 
     try
@@ -318,7 +317,7 @@ void BenchmarkAggregator::sort_series()
         if (i->second.empty())
             continue;
 
-        sort(&i->second[0], &i->second[0] + i->second.size());
+        std::sort(&i->second[0], &i->second[0] + i->second.size());
     }
 }
 

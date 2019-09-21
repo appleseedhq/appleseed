@@ -35,7 +35,6 @@
 #include <memory>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Utility_StampedPtr)
 {
@@ -53,7 +52,7 @@ TEST_SUITE(Foundation_Utility_StampedPtr)
 
     TEST_CASE(TestWithHeapPointer)
     {
-        const unique_ptr<int> ptr(new int(11));
+        const std::unique_ptr<int> ptr(new int(11));
         const uint16 stamp = 7;
 
         stamped_ptr<const int> x(ptr.get(), stamp);

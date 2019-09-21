@@ -38,8 +38,6 @@
 #include <sstream>
 #include <string>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -95,11 +93,11 @@ namespace
 {
     struct LibCPUFeaturesString
     {
-        string m_value;
+        std::string m_value;
 
         LibCPUFeaturesString()
         {
-            stringstream sstr;
+            std::stringstream sstr;
 
 #ifdef APPLESEED_USE_SSE
             sstr << "SSE SSE2 ";
@@ -136,11 +134,11 @@ namespace
 {
     struct SyntheticVersionString
     {
-        string m_value;
+        std::string m_value;
 
         SyntheticVersionString()
         {
-            stringstream sstr;
+            std::stringstream sstr;
 
             sstr << Appleseed::get_lib_name();
             sstr << " version ";
