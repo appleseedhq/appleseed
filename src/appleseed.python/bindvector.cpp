@@ -43,7 +43,7 @@ using namespace foundation;
 namespace
 {
     template <typename T, size_t N>
-    Vector<T, N>* construct_vec_from_list(bpy::list l)
+    Vector<T, N>* construct_vec_from_list(const bpy::list& l)
     {
         if (bpy::len(l) != N)
         {

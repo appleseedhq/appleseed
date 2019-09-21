@@ -46,21 +46,21 @@ using namespace renderer;
 
 namespace
 {
-    void bind_typed_transform_extra(bpy::class_<UnalignedTransformf>& X)
+    void bind_typed_transform_extra(bpy::class_<UnalignedTransformf>& x)
     {
-        X.def(bpy::init<const UnalignedTransformd&>());
+        x.def(bpy::init<const UnalignedTransformd&>());
     }
 
-    void bind_typed_transform_extra(bpy::class_<UnalignedTransformd>& X)
+    void bind_typed_transform_extra(bpy::class_<UnalignedTransformd>& x)
     {
-        X.def(bpy::init<const UnalignedTransformf&>());
+        x.def(bpy::init<const UnalignedTransformf&>());
     }
 
     template <typename T>
     void bind_typed_transform(const char* class_name)
     {
-        bpy::class_<UnalignedTransform<T>> X(class_name);
-        X.def(bpy::init<const UnalignedMatrix44<T>&>())
+        bpy::class_<UnalignedTransform<T>> x(class_name);
+        x.def(bpy::init<const UnalignedMatrix44<T>&>())
             .def(bpy::init<const UnalignedMatrix44<T>&>())
             .def(bpy::init<const UnalignedMatrix44<T>&, const UnalignedMatrix44<T>&>())
 
@@ -82,7 +82,7 @@ namespace
             .def(bpy::self_ns::str(bpy::self))
             .def(bpy::self_ns::repr(bpy::self));
 
-        bind_typed_transform_extra(X);
+        bind_typed_transform_extra(x);
     }
 
     void transform_seq_set_transform(

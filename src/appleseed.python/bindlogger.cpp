@@ -47,42 +47,41 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-struct ILogTargetWrap
-  : public ILogTarget
-  , public bpy::wrapper<ILogTarget>
-{
-    ILogTargetWrap() {}
-    ~ILogTargetWrap() override {}
-
-    void release() override
-    {
-        delete this;
-    }
-
-    void write(
-        const LogMessage::Category  category,
-        const char*                 file,
-        const size_t                line,
-        const char*                 header,
-        const char*                 message) override
-    {
-        // Because this can be called from multiple threads
-        // we need to lock Python here.
-        ScopedGILLock lock;
-
-        try
-        {
-            this->get_override("write")(category, file, line, header, message);
-        }
-        catch (bpy::error_already_set)
-        {
-            PyErr_Print();
-        }
-    }
-};
-
 namespace
 {
+    struct ILogTargetWrap
+      : public ILogTarget
+      , public bpy::wrapper<ILogTarget>
+    {
+        ILogTargetWrap() {}
+        ~ILogTargetWrap() override {}
+
+        void release() override
+        {
+            delete this;
+        }
+
+        void write(
+            const LogMessage::Category  category,
+            const char*                 file,
+            const size_t                line,
+            const char*                 header,
+            const char*                 message) override
+        {
+            // Because this can be called from multiple threads
+            // we need to lock Python here.
+            ScopedGILLock lock;
+
+            try
+            {
+                this->get_override("write")(category, file, line, header, message);
+            }
+            catch (bpy::error_already_set)
+            {
+                PyErr_Print();
+            }
+        }
+    };
 
     Logger* get_global_logger()
     {

@@ -45,25 +45,24 @@ using namespace renderer;
 
 namespace
 {
+    void make_texture(
+        const std::string&   in_filename,
+        const std::string&   out_filename,
+        const std::string&   in_colorspace,
+        const std::string&   out_depth)
+    {
+        APIString error_msg;
+        const bool success =
+            oiio_make_texture(
+                in_filename.c_str(),
+                out_filename.c_str(),
+                in_colorspace.c_str(),
+                out_depth.c_str(),
+                error_msg);
 
-void make_texture(
-    const std::string&   in_filename,
-    const std::string&   out_filename,
-    const std::string&   in_colorspace,
-    const std::string&   out_depth)
-{
-    APIString error_msg;
-    const bool success = oiio_make_texture(
-        in_filename.c_str(),
-        out_filename.c_str(),
-        in_colorspace.c_str(),
-        out_depth.c_str(),
-        error_msg);
-
-    if (!success)
-        PyErr_SetString(PyExc_RuntimeError, error_msg.c_str());
-}
-
+        if (!success)
+            PyErr_SetString(PyExc_RuntimeError, error_msg.c_str());
+    }
 }
 
 void bind_utility()

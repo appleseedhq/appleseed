@@ -87,7 +87,8 @@ namespace
     //
     // Reference:
     //
-    //   http://www.cs.virginia.edu/~gfx/courses/2007/ImageSynthesis/assignments/envsample.pdf
+    //   Monte Carlo Rendering with Natural Illumination
+    //   http://web.cs.wpi.edu/~emmanuel/courses/cs563/S07/projects/envsample.pdf
     //
     // Light probes:
     //

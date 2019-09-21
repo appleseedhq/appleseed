@@ -29,15 +29,15 @@
 
 #pragma once
 
-#ifdef __GNUC__
+// See https://gcc.gnu.org/wiki/Visibility for details.
+
+#if defined __GNUC__
     #define APPLESEED_DLL_EXPORT __attribute__((visibility("default")))
     #define APPLESEED_DLL_IMPORT __attribute__((visibility("default")))
+#elif defined _WIN32
+    #define APPLESEED_DLL_EXPORT __declspec(dllexport)
+    #define APPLESEED_DLL_IMPORT __declspec(dllimport)
 #else
-    #ifdef _WIN32
-        #define APPLESEED_DLL_EXPORT __declspec(dllexport)
-        #define APPLESEED_DLL_IMPORT __declspec(dllimport)
-    #else
-        #define APPLESEED_DLL_EXPORT
-        #define APPLESEED_DLL_IMPORT
-    #endif
+    #define APPLESEED_DLL_EXPORT
+    #define APPLESEED_DLL_IMPORT
 #endif

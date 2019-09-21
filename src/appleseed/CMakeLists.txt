@@ -2208,7 +2208,6 @@ set_source_files_properties (${appleseed_schema_files} PROPERTIES
 #--------------------------------------------------------------------------------------------------
 
 if (WITH_GPU)
-
     # Build lists of absolute paths to kernel header files.
     foreach (cuda_header ${appleseed_cuda_headers})
         list (APPEND abs_cuda_headers_sources ${PROJECT_SOURCE_DIR}/src/appleseed/${cuda_header})
@@ -2217,10 +2216,7 @@ if (WITH_GPU)
     # Build the sandbox destination directory path.
     set (kernels_dir "${PROJECT_SOURCE_DIR}/sandbox/kernels")
 
-    #
     # Compile PTX into the sandbox.
-    #
-
     foreach (ptx_source ${appleseed_ptx_sources})
         # Build the .ptx destination file name.
         get_filename_component (ptx_source_we ${ptx_source} NAME_WE)
@@ -2245,10 +2241,7 @@ if (WITH_GPU)
         list (APPEND appleseed_ptx_files ${kernels_dir}/${ptx_filename})
     endforeach ()
 
-    #
     # Compile CUDA kernels into the sandbox.
-    #
-
     foreach (cuda_source ${appleseed_cuda_sources})
         # Build the .cu destination file name.
         get_filename_component (cuda_source_we ${cuda_source} NAME_WE)

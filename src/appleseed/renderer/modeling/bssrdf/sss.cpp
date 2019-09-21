@@ -208,7 +208,7 @@ namespace
         }
     };
 
-    InitializeNDCDFTable initialize_nd_cdf_table;
+    InitializeNDCDFTable g_initialize_nd_cdf_table;
 
     struct NDCDFFun
     {
@@ -267,15 +267,16 @@ float normalized_diffusion_sample(
     const float rmin = fit<size_t, float>(i - 1, 0, NDCDFTableSize - 1, 0.0f, NDCDFTableRmax) * d;
     const float rmax = fit<size_t, float>(i,     0, NDCDFTableSize - 1, 0.0f, NDCDFTableRmax) * d;
 
-    return invert_cdf_function(
-        NDCDFFun(d),
-        NDPDFFun(d),
-        u,
-        rmin,
-        rmax,
-        (rmin + rmax) * 0.5f,
-        eps,
-        max_iterations);
+    return
+        invert_cdf_function(
+            NDCDFFun(d),
+            NDPDFFun(d),
+            u,
+            rmin,
+            rmax,
+            (rmin + rmax) * 0.5f,
+            eps,
+            max_iterations);
 }
 
 float normalized_diffusion_cdf(
