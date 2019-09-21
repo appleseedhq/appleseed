@@ -40,7 +40,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 TEST_SUITE(Renderer_Kernel_Rendering_Final_PixelSampler)
 {

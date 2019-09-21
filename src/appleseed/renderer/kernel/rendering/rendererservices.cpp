@@ -50,7 +50,6 @@
 #include <limits>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -814,7 +813,7 @@ IMPLEMENT_ATTR_GETTER(camera_clip)
     if (type == g_float_array2_typedesc)
     {
         reinterpret_cast<float*>(val)[0] = 0.0f;
-        reinterpret_cast<float*>(val)[1] = numeric_limits<float>::max();
+        reinterpret_cast<float*>(val)[1] = std::numeric_limits<float>::max();
 
         if (derivs)
             clear_derivatives(type, val);
@@ -844,7 +843,7 @@ IMPLEMENT_ATTR_GETTER(camera_clip_far)
 {
     if (type == OIIO::TypeDesc::TypeFloat)
     {
-        reinterpret_cast<float*>(val)[0] = numeric_limits<float>::max();
+        reinterpret_cast<float*>(val)[0] = std::numeric_limits<float>::max();
 
         if (derivs)
             clear_derivatives(type, val);

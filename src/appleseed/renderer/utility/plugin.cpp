@@ -37,7 +37,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -48,8 +47,8 @@ namespace renderer
 
 struct Plugin::Impl
 {
-    const string                m_filepath;
-    unique_ptr<SharedLibrary>   m_shared_library;
+    const std::string                m_filepath;
+    std::unique_ptr<SharedLibrary>   m_shared_library;
 
     explicit Impl(const char* filepath)
       : m_filepath(filepath)

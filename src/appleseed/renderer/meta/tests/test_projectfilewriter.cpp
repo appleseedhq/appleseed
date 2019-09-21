@@ -56,7 +56,6 @@ using namespace boost;
 using namespace boost::filesystem;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
 {
@@ -171,14 +170,14 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
 
         // Check the search paths.
         EXPECT_EQ(2, m_project->search_paths().get_explicit_path_count());
-        EXPECT_EQ(string("subdirectory"), m_project->search_paths().get_explicit_path(0));
+        EXPECT_EQ(std::string("subdirectory"), m_project->search_paths().get_explicit_path(0));
         EXPECT_EQ(canonical(m_input_directory / "setup/alternate/subdirectory").string(), m_project->search_paths().get_explicit_path(1));
 
         // Check the asset paths.
-        EXPECT_EQ(string("asset1.obj"),                                        get_mesh_object_filename("asset1"));
-        EXPECT_EQ(string("asset2.obj"),                                        get_mesh_object_filename("asset2"));
-        EXPECT_EQ(string("asset3.obj"),                                        get_mesh_object_filename("asset3"));
-        EXPECT_EQ(string("subdirectory/asset4.obj"),                           get_mesh_object_filename("asset4"));
+        EXPECT_EQ(std::string("asset1.obj"),                                   get_mesh_object_filename("asset1"));
+        EXPECT_EQ(std::string("asset2.obj"),                                   get_mesh_object_filename("asset2"));
+        EXPECT_EQ(std::string("asset3.obj"),                                   get_mesh_object_filename("asset3"));
+        EXPECT_EQ(std::string("subdirectory/asset4.obj"),                      get_mesh_object_filename("asset4"));
         EXPECT_EQ(canonical(project_directory / "asset5.obj"),                 get_mesh_object_filename("asset5"));
         EXPECT_EQ(canonical(m_input_directory / "setup/alternate/asset6.obj"), get_mesh_object_filename("asset6"));
         EXPECT_EQ(canonical(m_input_directory / "setup/alternate/asset7.obj"), get_mesh_object_filename("asset7"));
@@ -217,16 +216,16 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
 
         // Check the search paths.
         EXPECT_EQ(1, m_project->search_paths().get_explicit_path_count());
-        EXPECT_EQ(string("subdirectory"), m_project->search_paths().get_explicit_path(0));
+        EXPECT_EQ(std::string("subdirectory"), m_project->search_paths().get_explicit_path(0));
 
         // Check the asset paths.
-        EXPECT_EQ(string("asset1.obj"),              get_mesh_object_filename("asset1"));
-        EXPECT_EQ(string("asset2.obj"),              get_mesh_object_filename("asset2"));
-        EXPECT_EQ(string("assets/asset3.obj"),       get_mesh_object_filename("asset3"));
-        EXPECT_EQ(string("subdirectory/asset4.obj"), get_mesh_object_filename("asset4"));
-        EXPECT_EQ(string("assets/asset5.obj"),       get_mesh_object_filename("asset5"));
-        EXPECT_EQ(string("assets/asset6.obj"),       get_mesh_object_filename("asset6"));
-        EXPECT_EQ(string("assets/asset7.obj"),       get_mesh_object_filename("asset7"));
+        EXPECT_EQ(std::string("asset1.obj"),              get_mesh_object_filename("asset1"));
+        EXPECT_EQ(std::string("asset2.obj"),              get_mesh_object_filename("asset2"));
+        EXPECT_EQ(std::string("assets/asset3.obj"),       get_mesh_object_filename("asset3"));
+        EXPECT_EQ(std::string("subdirectory/asset4.obj"), get_mesh_object_filename("asset4"));
+        EXPECT_EQ(std::string("assets/asset5.obj"),       get_mesh_object_filename("asset5"));
+        EXPECT_EQ(std::string("assets/asset6.obj"),       get_mesh_object_filename("asset6"));
+        EXPECT_EQ(std::string("assets/asset7.obj"),       get_mesh_object_filename("asset7"));
     }
 
     TEST_CASE_F(Write_MeshObjectWithMultivaluedFilenameParameter_DoesNotAddAnotherFilenameParameter, Fixture)
@@ -267,7 +266,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
         ASSERT_TRUE(success);
         EXPECT_TRUE(exists(m_output_directory / "curve_object.binarycurve"));
         EXPECT_EQ(
-            string("curve_object.binarycurve"),
+            std::string("curve_object.binarycurve"),
             get_assembly()->objects().get_by_name("curve_object")->get_parameters().get("filepath"));
     }
 
@@ -287,7 +286,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
         ASSERT_TRUE(success);
         EXPECT_FALSE(exists(m_output_directory / "curve_object.binarycurve"));
         EXPECT_EQ(
-            string("curve_object.binarycurve"),
+            std::string("curve_object.binarycurve"),
             get_assembly()->objects().get_by_name("curve_object")->get_parameters().get("filepath"));
     }
 

@@ -70,7 +70,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -117,7 +116,7 @@ struct MasterRenderer::Impl
     SerialRendererController*           m_serial_renderer_controller;
     ITileCallbackFactory*               m_serial_tile_callback_factory;
 
-    unique_ptr<IRenderDevice>           m_render_device;
+    std::unique_ptr<IRenderDevice>      m_render_device;
 
     Stopwatch<DefaultWallclockTimer>    m_stopwatch;
 
@@ -184,7 +183,7 @@ struct MasterRenderer::Impl
             return result;
 
         // Update the render device if needed.
-        const string device_name = get_render_device(m_params);
+        const std::string device_name = get_render_device(m_params);
         if (device_name == "cpu")
         {
             if (dynamic_cast<const CPURenderDevice*>(m_render_device.get()) == nullptr)
@@ -240,14 +239,14 @@ struct MasterRenderer::Impl
             result.m_post_processing_time = m_stopwatch.get_seconds();
             render_info.insert("post_processing_time", result.m_post_processing_time);
         }
-        catch (const bad_alloc&)
+        catch (const std::bad_alloc&)
         {
             renderer_controller.on_rendering_abort();
             RENDERER_LOG_ERROR("rendering failed (ran out of memory).");
             result.m_status = RenderingResult::Failed;
         }
 #ifdef NDEBUG
-        catch (const exception& e)
+        catch (const std::exception& e)
         {
             renderer_controller.on_rendering_abort();
             RENDERER_LOG_ERROR("rendering failed (%s).", e.what());
@@ -497,13 +496,13 @@ struct MasterRenderer::Impl
             return;
 
         // Collect post-processing stages.
-        vector<PostProcessingStage*> ordered_stages;
+        std::vector<PostProcessingStage*> ordered_stages;
         ordered_stages.reserve(frame->post_processing_stages().size());
         for (auto& stage : frame->post_processing_stages())
             ordered_stages.push_back(&stage);
 
         // Sort post-processing stages in increasing order.
-        sort(
+        std::sort(
             ordered_stages.begin(),
             ordered_stages.end(),
             [](PostProcessingStage* lhs, PostProcessingStage* rhs)

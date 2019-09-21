@@ -53,7 +53,6 @@
 #include <limits>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -63,8 +62,8 @@ namespace renderer
 //
 
 LightTree::LightTree(
-    const vector<NonPhysicalLightInfo>&      non_physical_lights,
-    const vector<EmittingShape>&             emitting_shapes)
+    const std::vector<NonPhysicalLightInfo>&      non_physical_lights,
+    const std::vector<EmittingShape>&             emitting_shapes)
   : m_non_physical_lights(non_physical_lights)
   , m_emitting_shapes(emitting_shapes)
   , m_tree_depth(0)
@@ -72,7 +71,7 @@ LightTree::LightTree(
 {
 }
 
-vector<size_t> LightTree::build()
+std::vector<size_t> LightTree::build()
 {
     AABBVector light_bboxes;
 
@@ -125,7 +124,7 @@ vector<size_t> LightTree::build()
     {
         m_is_built = true;
 
-        const vector<size_t>& ordering = partitioner.get_item_ordering();
+        const std::vector<size_t>& ordering = partitioner.get_item_ordering();
         assert(m_items.size() == ordering.size());
 
         // Reorder items according to the tree ordering.
@@ -212,7 +211,7 @@ float LightTree::recursive_node_update(
             // we can't compute the max_contribution easily (ex: textured lights)
             // In such cases, we can use a default importance value of 1.0 to avoid
             // infinite importance values in the light tree nodes.
-            if (max_contribution == numeric_limits<float>::max())
+            if (max_contribution == std::numeric_limits<float>::max())
                 importance = 1.0f;
             else
                 importance = max_contribution * edf->get_uncached_importance_multiplier();
@@ -440,9 +439,9 @@ void LightTree::child_node_probabilites(
 }
 
 void LightTree::draw_tree_structure(
-    const string&       filename_base,
-    const AABB3d&       root_bbox,
-    const bool          separate_by_levels) const
+    const std::string&       filename_base,
+    const AABB3d&            root_bbox,
+    const bool               separate_by_levels) const
 {
     // todo: add a possibility to shift each level of bboxes along the z-axis.
 

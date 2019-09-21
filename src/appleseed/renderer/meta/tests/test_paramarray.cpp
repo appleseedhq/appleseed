@@ -39,7 +39,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 TEST_SUITE(Renderer_Utility_ParamArray)
 {
@@ -50,7 +49,7 @@ TEST_SUITE(Renderer_Utility_ParamArray)
 
         const char* value = params.strings().get("x");
 
-        EXPECT_EQ("42", string(value));
+        EXPECT_EQ("42", std::string(value));
     }
 
     TEST_CASE(InsertPath_GivenParentNameAndItemName_InsertsItem)
@@ -60,7 +59,7 @@ TEST_SUITE(Renderer_Utility_ParamArray)
 
         const char* value = params.dictionaries().get("parent").strings().get("x");
 
-        EXPECT_EQ("42", string(value));
+        EXPECT_EQ("42", std::string(value));
     }
 
     TEST_CASE(ExistPath_GivenNameOfExistingItem_ReturnsTrue)
@@ -110,7 +109,7 @@ TEST_SUITE(Renderer_Utility_ParamArray)
 
         const char* value = params.get_path("x");
 
-        EXPECT_EQ("42", string(value));
+        EXPECT_EQ("42", std::string(value));
     }
 
     TEST_CASE(GetPath_GivenParentNameAndItemName_ReturnsItemValue)
@@ -120,7 +119,7 @@ TEST_SUITE(Renderer_Utility_ParamArray)
 
         const char* value = params.get_path("parent.x");
 
-        EXPECT_EQ("42", string(value));
+        EXPECT_EQ("42", std::string(value));
     }
 
     TEST_CASE(GetPath_GivenInvalidItemName_ThrowsExceptionDictionaryKeyNotFound)

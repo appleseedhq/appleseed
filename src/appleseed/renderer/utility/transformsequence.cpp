@@ -43,7 +43,6 @@
 #include <cstring>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -90,8 +89,8 @@ TransformSequence& TransformSequence::operator=(TransformSequence&& rhs) APPLESE
 {
     m_capacity = rhs.m_capacity;
     m_size = rhs.m_size;
-    swap(m_keys, rhs.m_keys);
-    swap(m_interpolators, rhs.m_interpolators);
+    std::swap(m_keys, rhs.m_keys);
+    std::swap(m_interpolators, rhs.m_interpolators);
     m_can_swap_handedness = rhs.m_can_swap_handedness;
     m_all_swap_handedness = rhs.m_all_swap_handedness;
     rhs.clear();
@@ -212,7 +211,7 @@ bool TransformSequence::prepare()
 
     if (m_size > 1)
     {
-        sort(m_keys, m_keys + m_size);
+        std::sort(m_keys, m_keys + m_size);
 
         m_interpolators = new TransformInterpolatord[m_size - 1];
 

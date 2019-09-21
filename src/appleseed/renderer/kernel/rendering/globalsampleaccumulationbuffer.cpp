@@ -46,7 +46,6 @@
 #include "boost/chrono/duration.hpp"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {

@@ -52,7 +52,6 @@
 #include <cmath>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {

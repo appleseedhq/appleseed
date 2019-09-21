@@ -83,7 +83,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
 {
@@ -155,7 +154,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
 
       private:
         const CanvasProperties  m_props;
-        unique_ptr<Tile>        m_tile;
+        std::unique_ptr<Tile>   m_tile;
 
         void create_horizontal_gradient()
         {

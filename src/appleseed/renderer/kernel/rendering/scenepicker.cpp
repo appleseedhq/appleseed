@@ -58,7 +58,6 @@
 #include <limits>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -99,7 +98,7 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
 
     result.m_hit = false;
     result.m_primitive_type = ShadingPoint::PrimitiveNone;
-    result.m_distance = numeric_limits<double>::max();
+    result.m_distance = std::numeric_limits<double>::max();
 
     result.m_bary = Vector2f(0.0);
     result.m_uv = Vector2f(0.0);

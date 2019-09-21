@@ -58,7 +58,6 @@
 #include <cassert>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -93,7 +92,7 @@ AOVoxelTree::AOVoxelTree(
     tree_stats.print(global_logger());
 }
 
-void AOVoxelTree::dump_solid_leaves_to_disk(const string& filename) const
+void AOVoxelTree::dump_solid_leaves_to_disk(const std::string& filename) const
 {
     RENDERER_LOG_INFO(
         "writing ambient occlusion voxel tree file %s...",
@@ -113,7 +112,7 @@ void AOVoxelTree::dump_solid_leaves_to_disk(const string& filename) const
     }
 }
 
-void AOVoxelTree::dump_tree_to_disk(const string& filename) const
+void AOVoxelTree::dump_tree_to_disk(const std::string& filename) const
 {
     RENDERER_LOG_INFO(
         "writing ambient occlusion voxel tree file %s...",

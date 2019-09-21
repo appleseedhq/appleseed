@@ -41,7 +41,6 @@
 
 using namespace foundation;
 using namespace OIIO;
-using namespace std;
 
 namespace renderer
 {
@@ -53,7 +52,7 @@ bool oiio_make_texture(
     const char* out_depth,
     APIString&  error_msg)
 {
-    std::unordered_map<string, TypeDesc> out_depth_map;
+    std::unordered_map<std::string, TypeDesc> out_depth_map;
     out_depth_map["sint8"] = TypeDesc::INT8;
     out_depth_map["uint8"] = TypeDesc::UINT8;
     out_depth_map["uint16"] = TypeDesc::UINT16;
@@ -77,7 +76,7 @@ bool oiio_make_texture(
 
     const ImageBufAlgo::MakeTextureMode mode = ImageBufAlgo::MakeTxTexture;
 
-    stringstream s;
+    std::stringstream s;
     const bool success = ImageBufAlgo::make_texture(mode, in_filename, out_filename, spec, &s);
 
     if (!success)

@@ -69,7 +69,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -234,7 +233,7 @@ namespace
         auto_release_ptr<IPixelRenderer>    m_pixel_renderer;
         AOVAccumulatorContainer             m_aov_accumulators;
         IShadingResultFrameBufferFactory*   m_framebuffer_factory;
-        vector<Vector<int16, 2>>            m_pixel_ordering;
+        std::vector<Vector<int16, 2>>       m_pixel_ordering;
 
         void compute_pixel_ordering(const Frame& frame)
         {
@@ -245,7 +244,7 @@ namespace
             const size_t pixel_count = tile_width * tile_height;
 
             // Generate the pixel ordering inside the tile.
-            vector<size_t> ordering;
+            std::vector<size_t> ordering;
             ordering.reserve(pixel_count);
             hilbert_ordering(ordering, tile_width, tile_height);
             assert(ordering.size() == pixel_count);

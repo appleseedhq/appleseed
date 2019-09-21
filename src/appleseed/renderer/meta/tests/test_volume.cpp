@@ -65,7 +65,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 TEST_SUITE(Renderer_Modeling_Volume)
 {
@@ -78,16 +77,16 @@ TEST_SUITE(Renderer_Modeling_Volume)
         // Number of samples for plots.
         static const size_t NumberOfSamplesPlot = 100;
 
-        TextureStore                    m_texture_store;
-        TextureCache                    m_texture_cache;
-        shared_ptr<OIIOTextureSystem>   m_texture_system;
-        RendererServices                m_renderer_services;
-        shared_ptr<OSLShadingSystem>    m_shading_system;
-        Intersector                     m_intersector;
-        Arena                           m_arena;
-        OSLShaderGroupExec              m_sg_exec;
-        Tracer                          m_tracer;
-        ShadingContext                  m_shading_context;
+        TextureStore                         m_texture_store;
+        TextureCache                         m_texture_cache;
+        std::shared_ptr<OIIOTextureSystem>   m_texture_system;
+        RendererServices                     m_renderer_services;
+        std::shared_ptr<OSLShadingSystem>    m_shading_system;
+        Intersector                          m_intersector;
+        Arena                                m_arena;
+        OSLShaderGroupExec                   m_sg_exec;
+        Tracer                               m_tracer;
+        ShadingContext                       m_shading_context;
 
         explicit VolumeTestSceneContext(TestSceneBase& base)
           : TestSceneContext(base)
@@ -192,7 +191,7 @@ TEST_SUITE(Renderer_Modeling_Volume)
             return bias.x / NumberOfSamples;
         }
 
-        vector<Vector2f> generate_samples_for_plot(const Volume& volume)
+        std::vector<Vector2f> generate_samples_for_plot(const Volume& volume)
         {
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
@@ -204,7 +203,7 @@ TEST_SUITE(Renderer_Modeling_Volume)
             SamplingContext::RNGType rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
 
-            vector<Vector2f> points;
+            std::vector<Vector2f> points;
             points.reserve(NumberOfSamples);
             for (size_t i = 0; i < NumberOfSamplesPlot; ++i)
             {
@@ -340,7 +339,7 @@ TEST_SUITE(Renderer_Modeling_Volume)
             test_scene.m_scene.assemblies().insert(assembly);
 
             VolumeTestSceneContext context(test_scene);
-            const vector<Vector2f> points = context.generate_samples_for_plot(volume_ref);
+            const std::vector<Vector2f> points = context.generate_samples_for_plot(volume_ref);
 
             plotfile
                 .new_plot()
