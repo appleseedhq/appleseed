@@ -44,7 +44,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace appleseed {
@@ -154,7 +153,7 @@ namespace
 
     void copy_directory_path_to_buffer(const bf::path& path, char* output)
     {
-        const string path_string = path.string();
+        const std::string path_string = path.string();
 
         assert(path_string.size() <= FOUNDATION_MAX_PATH_LENGTH);
 
@@ -285,7 +284,7 @@ bool Application::load_settings(
     }
 
     // As a fallback, try to read settings from appleseed's installation directory.
-    const string settings_file_path = safe_canonical(root_path / "settings" / filename).string();
+    const std::string settings_file_path = safe_canonical(root_path / "settings" / filename).string();
     if (reader.read(
             settings_file_path.c_str(),
             schema_file_path.string().c_str(),
@@ -315,7 +314,7 @@ bool Application::save_settings(
             const bf::path user_settings_path(user_path);
             bf::create_directories(user_settings_path);
 
-            const string user_settings_file_path = safe_canonical(user_settings_path / filename).string();
+            const std::string user_settings_file_path = safe_canonical(user_settings_path / filename).string();
             if (writer.write(user_settings_file_path.c_str(), settings))
             {
                 LOG(logger, category, "successfully saved settings to %s.", user_settings_file_path.c_str());
@@ -329,7 +328,7 @@ bool Application::save_settings(
 
     // As a fallback, try to write settings to appleseed's installation directory.
     const bf::path root_path(get_root_path());
-    const string settings_file_path = safe_canonical(root_path / "settings" / filename).string();
+    const std::string settings_file_path = safe_canonical(root_path / "settings" / filename).string();
     if (writer.write(settings_file_path.c_str(), settings))
     {
         LOG(logger, category, "successfully saved settings to %s.", settings_file_path.c_str());

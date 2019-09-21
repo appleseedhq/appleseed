@@ -49,7 +49,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace shared {
@@ -138,7 +137,7 @@ namespace
 
 struct ProgressTileCallbackFactory::Impl
 {
-    unique_ptr<ITileCallback> m_callback;
+    std::unique_ptr<ITileCallback> m_callback;
 };
 
 ProgressTileCallbackFactory::ProgressTileCallbackFactory(
@@ -146,7 +145,7 @@ ProgressTileCallbackFactory::ProgressTileCallbackFactory(
     const size_t    pass_count)
   : impl(new Impl())
 {
-    impl->m_callback = unique_ptr<ITileCallback>(
+    impl->m_callback = std::unique_ptr<ITileCallback>(
         new ProgressTileCallback(logger, pass_count));
 }
 
