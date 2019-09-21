@@ -44,15 +44,6 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-// Work around a regression in Visual Studio 2015 Update 3.
-#if defined(_MSC_VER) && _MSC_VER == 1900
-namespace boost
-{
-    template <> Image const volatile* get_pointer<Image const volatile>(Image const volatile* p) { return p; }
-    template <> Frame const volatile* get_pointer<Frame const volatile>(Frame const volatile* p) { return p; }
-}
-#endif
-
 namespace
 {
     auto_release_ptr<Frame> create_frame(

@@ -44,16 +44,6 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-// Work around a regression in Visual Studio 2015 Update 3.
-#if defined(_MSC_VER) && _MSC_VER == 1900
-namespace boost
-{
-    template <> BSSRDF const volatile* get_pointer<BSSRDF const volatile>(BSSRDF const volatile* p) { return p; }
-    template <> IBSSRDFFactory const volatile* get_pointer<IBSSRDFFactory const volatile>(IBSSRDFFactory const volatile* p) { return p; }
-    template <> BSSRDFFactoryRegistrar const volatile* get_pointer<BSSRDFFactoryRegistrar const volatile>(BSSRDFFactoryRegistrar const volatile* p) { return p; }
-}
-#endif
-
 namespace
 {
     auto_release_ptr<BSSRDF> create_bssrdf(

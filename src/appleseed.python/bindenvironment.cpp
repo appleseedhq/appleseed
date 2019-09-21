@@ -1,4 +1,4 @@
-﻿
+
 //
 // This source file is part of appleseed.
 // Visit https://appleseedhq.net/ for additional information and resources.
@@ -43,19 +43,6 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
-
-// Work around a regression in Visual Studio 2015 Update 3.
-#if defined(_MSC_VER) && _MSC_VER == 1900
-namespace boost
-{
-    template <> EnvironmentEDF const volatile* get_pointer<EnvironmentEDF const volatile>(EnvironmentEDF const volatile* p) { return p; }
-    template <> IEnvironmentEDFFactory const volatile* get_pointer<IEnvironmentEDFFactory const volatile>(IEnvironmentEDFFactory const volatile* p) { return p; }
-    template <> EnvironmentEDFFactoryRegistrar const volatile* get_pointer<EnvironmentEDFFactoryRegistrar const volatile>(EnvironmentEDFFactoryRegistrar const volatile* p) { return p; }
-    template <> EnvironmentShader const volatile* get_pointer<EnvironmentShader const volatile>(EnvironmentShader const volatile* p) { return p; }
-    template <> EnvironmentShaderFactoryRegistrar const volatile* get_pointer<EnvironmentShaderFactoryRegistrar const volatile>(EnvironmentShaderFactoryRegistrar const volatile* p) { return p; }
-    template <> Environment const volatile* get_pointer<Environment const volatile>(Environment const volatile* p) { return p; }
-}
-#endif
 
 namespace
 {
