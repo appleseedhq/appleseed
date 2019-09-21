@@ -172,6 +172,7 @@ inline void CDF<Item, Weight>::clear()
 {
     m_items.clear();
     m_weight_sum = Weight(0.0);
+    m_densities.clear();
 }
 
 template <typename Item, typename Weight>
