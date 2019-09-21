@@ -34,7 +34,6 @@
 #include "foundation/utility/api/apistring.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -45,7 +44,7 @@ namespace renderer
 
 namespace
 {
-    string build_message(
+    std::string build_message(
         const char*     entity_name,
         const Entity*   context)
     {
@@ -66,7 +65,7 @@ ExceptionUnknownEntity::ExceptionUnknownEntity(
 {
 }
 
-const string& ExceptionUnknownEntity::get_context_path() const
+const std::string& ExceptionUnknownEntity::get_context_path() const
 {
     return m_context_path;
 }

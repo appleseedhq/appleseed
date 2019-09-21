@@ -63,7 +63,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -128,11 +127,11 @@ struct ProjectTracker::Impl
         EntityMap*      m_map;              // or this is, but never both
     };
 
-    typedef vector<IncomingRef> IncomingRefVec;
-    typedef vector<OutgoingRef> OutgoingRefVec;
+    typedef std::vector<IncomingRef> IncomingRefVec;
+    typedef std::vector<OutgoingRef> OutgoingRefVec;
 
-    typedef map<Entity*, IncomingRefVec> IncomingRefs;
-    typedef map<Entity*, OutgoingRefVec> OutgoingRefs;
+    typedef std::map<Entity*, IncomingRefVec> IncomingRefs;
+    typedef std::map<Entity*, OutgoingRefVec> OutgoingRefs;
 
     Project&            m_project;
     InputBinder         m_input_binder;
@@ -243,7 +242,7 @@ struct ProjectTracker::Impl
 
     void collect_relations_from_entity(ObjectInstance& object_instance)
     {
-        set<string> material_names;
+        std::set<std::string> material_names;
 
         for (const auto& kv : object_instance.get_front_material_mappings())
             material_names.insert(kv.value());
@@ -330,15 +329,15 @@ struct ProjectTracker::Impl
 
     void print_incoming_references(Logger& logger) const
     {
-        typedef pair<Entity*, IncomingRefVec> IncomingRefItem;
+        typedef std::pair<Entity*, IncomingRefVec> IncomingRefItem;
 
-        vector<IncomingRefItem> sorted_incoming_refs;
+        std::vector<IncomingRefItem> sorted_incoming_refs;
         sorted_incoming_refs.reserve(m_incoming_refs.size());
 
         for (const auto& kv : m_incoming_refs)
             sorted_incoming_refs.emplace_back(kv.first, kv.second);
 
-        sort(
+        std::sort(
             sorted_incoming_refs.begin(),
             sorted_incoming_refs.end(),
             [](const IncomingRefItem& lhs, const IncomingRefItem& rhs)
@@ -377,15 +376,15 @@ struct ProjectTracker::Impl
 
     void print_outgoing_references(Logger& logger) const
     {
-        typedef pair<Entity*, OutgoingRefVec> OutgoingRefItem;
+        typedef std::pair<Entity*, OutgoingRefVec> OutgoingRefItem;
 
-        vector<OutgoingRefItem> sorted_outgoing_refs;
+        std::vector<OutgoingRefItem> sorted_outgoing_refs;
         sorted_outgoing_refs.reserve(m_outgoing_refs.size());
 
         for (const auto& kv : m_outgoing_refs)
             sorted_outgoing_refs.emplace_back(kv.first, kv.second);
 
-        sort(
+        std::sort(
             sorted_outgoing_refs.begin(),
             sorted_outgoing_refs.end(),
             [](const OutgoingRefItem& lhs, const OutgoingRefItem& rhs)
@@ -480,7 +479,7 @@ struct ProjectTracker::Impl
     {
         typedef typename EntityCollection::value_type EntityType;
 
-        vector<EntityType*> to_remove;
+        std::vector<EntityType*> to_remove;
 
         for (auto& entity : entities)
         {

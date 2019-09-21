@@ -68,7 +68,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -114,7 +113,7 @@ struct Project::Impl
 
     // Project metadata.
     size_t                              m_format_revision;
-    string                              m_path;
+    std::string                         m_path;
     SearchPaths                         m_search_paths;
 
     // Scene description.
@@ -125,7 +124,7 @@ struct Project::Impl
 
     // Project-specific components.
     LightPathRecorder                   m_light_path_recorder;
-    unique_ptr<TraceContext>            m_trace_context;
+    std::unique_ptr<TraceContext>       m_trace_context;
 
     explicit Impl(const Project& project)
       : m_format_revision(ProjectFormatRevision)
@@ -441,7 +440,7 @@ namespace
     {
         typedef typename EntityFactoryRegistrarType::EntityType EntityType;
 
-        const string entry_point_name =
+        const std::string entry_point_name =
             format("appleseed_create_{0}_factory", EntityTraits<EntityType>::get_entity_type_name());
 
         plugin_store.register_plugin_handler(

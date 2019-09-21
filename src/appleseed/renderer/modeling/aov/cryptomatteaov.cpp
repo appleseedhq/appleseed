@@ -81,7 +81,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace
@@ -98,7 +97,7 @@ namespace
 
             if (m_writer == nullptr)
             {
-                const string msg = OIIO::geterror();
+                const std::string msg = OIIO::geterror();
                 throw ExceptionIOError(msg.c_str());
             }
 
@@ -122,7 +121,7 @@ namespace
 
             if (!m_writer->open(m_filename, m_spec))
             {
-                const string msg = m_writer->geterror();
+                const std::string msg = m_writer->geterror();
                 throw ExceptionIOError(msg.c_str());
             }
 
@@ -135,8 +134,8 @@ namespace
             for (const auto& attribute : image_attributes)
             {
                 // Fetch the name and the value of the attribute.
-                const string attr_name = attribute.key();
-                const string attr_value = attribute.value<string>();
+                const std::string attr_name = attribute.key();
+                const std::string attr_value = attribute.value<std::string>();
 
                 if (attr_name == "software")
                     m_spec.attribute("Software", attr_value.c_str());
@@ -163,8 +162,8 @@ namespace
         }
 
         void set_image_channels(
-            const size_t            channel_count,
-            const vector<string>&   channel_names)
+            const size_t                      channel_count,
+            const std::vector<std::string>&   channel_names)
         {
             m_spec.nchannels = static_cast<int>(channel_count);
 
@@ -178,7 +177,7 @@ namespace
         const ICanvas*                      m_canvas;
         OIIO::ImageSpec                     m_spec;
 #if OIIO_VERSION >= 20000
-        unique_ptr<OIIO::ImageOutput>       m_writer;
+        std::unique_ptr<OIIO::ImageOutput>  m_writer;
 #else
         OIIO::ImageOutput*                  m_writer;
 #endif
@@ -189,7 +188,7 @@ namespace
             // Close the image file.
             if (!m_writer->close())
             {
-                const string msg = m_writer->geterror();
+                const std::string msg = m_writer->geterror();
                 throw ExceptionIOError(msg.c_str());
             }
         }
@@ -258,7 +257,7 @@ namespace
                             xstride,
                             ystride))
                     {
-                        const string msg = m_writer->geterror();
+                        const std::string msg = m_writer->geterror();
                         close_file();
                         throw ExceptionIOError(msg.c_str());
                     }
@@ -403,7 +402,7 @@ namespace renderer
 namespace
 {
 
-    typedef map<uint32, string> NameMap;
+    typedef std::map<uint32, std::string> NameMap;
 
 
     //
@@ -416,7 +415,7 @@ namespace
       public:
         CryptomatteAOVAccumulator(
             Image&                              aov_image,
-            vector<WeightMap>&                  pixel_samples,
+            std::vector<WeightMap>&             pixel_samples,
             NameMap*                            tile_name_array,
             size_t                              num_layers,
             CryptomatteAOV::CryptomatteType     layer_type)
@@ -464,9 +463,9 @@ namespace
             const size_t                tile_x,
             const size_t                tile_y) override
         {
-            vector<pair<float, uint32>> ranked_vector;
-            vector<float> pixel_values;
-            const float uint32_max_rcp = 1.0f / numeric_limits<uint32>::max();
+            std::vector<std::pair<float, uint32>> ranked_vector;
+            std::vector<float> pixel_values;
+            const float uint32_max_rcp = 1.0f / std::numeric_limits<uint32>::max();
 
             for (size_t ry = m_tile_origin_y; ry <= m_tile_end_y; ++ry)
             {
@@ -487,10 +486,10 @@ namespace
                             total_weight = 1.0f;
 
                         for (const auto& item : weight_map)
-                            ranked_vector.push_back(make_pair(item.value, item.key));
+                            ranked_vector.push_back(std::make_pair(item.value, item.key));
 
                         sort(ranked_vector.begin(), ranked_vector.end(),
-                            [](pair<float, uint32> const& a, pair<float, uint32> const& b)
+                            [](std::pair<float, uint32> const& a, std::pair<float, uint32> const& b)
                             {
                                 return a.first > b.first;
                             });
@@ -567,8 +566,8 @@ namespace
             const AOVComponents&        aov_components,
             ShadingResult&              shading_result) override
         {
-            uint32 m3hash = 0;
-            string obj_name;
+            uint32      m3hash = 0;
+            std::string obj_name;
 
             if (shading_point.hit_surface())
             {
@@ -620,7 +619,7 @@ namespace
         AABB2u                          m_crop_window;
         Image&                          m_aov_image;
         size_t                          m_num_layers;
-        vector<WeightMap>&              m_pixel_samples;
+        std::vector<WeightMap>&         m_pixel_samples;
         NameMap*                        m_tile_name_array;
         CryptomatteAOV::CryptomatteType m_layer_type;
     };
@@ -636,9 +635,9 @@ namespace
 
 struct CryptomatteAOV::Impl
 {
-    vector<WeightMap>                   m_pixel_samples;
+    std::vector<WeightMap>              m_pixel_samples;
     NameMap*                            m_tile_name_array;
-    unique_ptr<Image>                   m_image;
+    std::unique_ptr<Image>              m_image;
     size_t                              m_num_layers;
     CryptomatteAOV::CryptomatteType     m_layer_type;
 
@@ -652,7 +651,7 @@ CryptomatteAOV::CryptomatteAOV(const ParamArray& params)
   : AOV("cryptomatte", params)
   , impl(new Impl())
 {
-    const string cryptomatte_type = params.get_optional<string>("cryptomatte_type", "object_names", make_vector("object_names" , "material_names"));
+    const std::string cryptomatte_type = params.get_optional<std::string>("cryptomatte_type", "object_names", make_vector("object_names" , "material_names"));
 
     if (cryptomatte_type == "object_names")
     {
@@ -733,7 +732,7 @@ void CryptomatteAOV::clear_image()
     const auto& image_props = impl->m_image->properties();
 
     const size_t num_channels = (impl->m_num_layers * 2) + 3;
-    const vector<float> pixel_values(num_channels, 0.0f);
+    const std::vector<float> pixel_values(num_channels, 0.0f);
     for (size_t ry = 0, ey = image_props.m_canvas_height; ry < ey; ++ry)
     {
         for (size_t rx = 0, ex = image_props.m_canvas_width; rx < ex; ++rx)
@@ -761,13 +760,13 @@ bool CryptomatteAOV::write_images(
 {
     const bf::path boost_file_path(file_path);
     const bf::path directory = boost_file_path.parent_path();
-    const string base_file_name = boost_file_path.stem().string();
-    const string extension = boost_file_path.extension().string();
+    const std::string base_file_name = boost_file_path.stem().string();
+    const std::string extension = boost_file_path.extension().string();
 
-    const string exr_file_name = base_file_name + ".cryptomatte" + extension;
-    const string exr_file_path = (directory / exr_file_name).string();
+    const std::string exr_file_name = base_file_name + ".cryptomatte" + extension;
+    const std::string exr_file_path = (directory / exr_file_name).string();
 
-    string layer_name;
+    std::string layer_name;
 
     switch (impl->m_layer_type)
     {
@@ -791,8 +790,8 @@ bool CryptomatteAOV::write_images(
     ImageAttributes image_attributes_copy(image_attributes);
     image_attributes_copy.insert("color_space", "linear");
 
-    string layer_prefix("cryptomatte/");
-    layer_prefix.append(string(type_name_hex).erase(7));
+    std::string layer_prefix("cryptomatte/");
+    layer_prefix.append(std::string(type_name_hex).erase(7));
     image_attributes_copy.insert(layer_prefix + "/conversion", "uint32_to_float32");
     image_attributes_copy.insert(layer_prefix + "/hash", "MurmurHash3_32");
     image_attributes_copy.insert(layer_prefix + "/name", layer_name);
@@ -811,7 +810,7 @@ bool CryptomatteAOV::write_images(
         }
     }
 
-    stringstream manifest_str;
+    std::stringstream manifest_str;
     manifest_str << "{";
 
     for (const auto& hash : name_map)
@@ -829,7 +828,7 @@ bool CryptomatteAOV::write_images(
     image_attributes_copy.insert(layer_prefix + "/manifest", manifest_str.str());
 
     const size_t num_channels = (impl->m_num_layers * 2) + 3;
-    vector<string> channel_names;
+    std::vector<std::string> channel_names;
     channel_names.reserve(num_channels);
     channel_names.push_back("R");
     channel_names.push_back("G");
@@ -838,7 +837,7 @@ bool CryptomatteAOV::write_images(
     const size_t num_exr_layers = truncate<size_t>(ceil(impl->m_num_layers / 2.0));
     for (size_t i = 0; i < num_exr_layers; ++i)
     {
-        const string layer_number = get_numbered_string("##", i);
+        const std::string layer_number = get_numbered_string("##", i);
         channel_names.push_back(format("{0}{1}.R", layer_name, layer_number));
         channel_names.push_back(format("{0}{1}.G", layer_name, layer_number));
         channel_names.push_back(format("{0}{1}.B", layer_name, layer_number));
@@ -854,7 +853,7 @@ bool CryptomatteAOV::write_images(
         writer.set_image_attributes(image_attributes_copy);
         writer.write();
     }
-    catch (const exception& e)
+    catch (const std::exception& e)
     {
         RENDERER_LOG_ERROR(
             "failed to write cryptomatte file %s: %s.",

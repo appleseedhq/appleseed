@@ -38,15 +38,14 @@
 #include <map>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
 
 struct EntityMap::Impl
 {
-    typedef map<UniqueID, Entity*> Storage;
-    typedef map<string, Entity*> Index;
+    typedef std::map<UniqueID, Entity*> Storage;
+    typedef std::map<std::string, Entity*> Index;
 
     Storage m_storage;
     Index   m_index;

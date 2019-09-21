@@ -50,7 +50,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -103,8 +102,8 @@ bool ArchiveAssembly::do_expand_contents(
     {
         // Establish and store the qualified path to the archive project.
         const SearchPaths& search_paths = project.search_paths();
-        const string filepath =
-            to_string(search_paths.qualify(m_params.get_required<string>("filename", "")));
+        const std::string filepath =
+            to_string(search_paths.qualify(m_params.get_required<std::string>("filename", "")));
 
         ProjectFileReader reader;
         auto_release_ptr<Assembly> assembly =

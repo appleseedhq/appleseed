@@ -42,7 +42,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -63,7 +62,7 @@ UniqueID AssemblyInstance::get_class_uid()
 
 struct AssemblyInstance::Impl
 {
-    string m_assembly_name;
+    std::string m_assembly_name;
 };
 
 AssemblyInstance::AssemblyInstance(

@@ -45,7 +45,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -57,7 +56,7 @@ void compute_smooth_vertex_normals_base_pose(MeshObject& object)
     const size_t vertex_count = object.get_vertex_count();
     const size_t triangle_count = object.get_triangle_count();
 
-    vector<GVector3> normals(vertex_count, GVector3(0.0));
+    std::vector<GVector3> normals(vertex_count, GVector3(0.0));
 
     for (size_t i = 0; i < triangle_count; ++i)
     {
@@ -87,7 +86,7 @@ void compute_smooth_vertex_normals_pose(MeshObject& object, const size_t motion_
     const size_t vertex_count = object.get_vertex_count();
     const size_t triangle_count = object.get_triangle_count();
 
-    vector<GVector3> normals(vertex_count, GVector3(0.0));
+    std::vector<GVector3> normals(vertex_count, GVector3(0.0));
 
     for (size_t i = 0; i < triangle_count; ++i)
     {
@@ -123,7 +122,7 @@ void compute_smooth_vertex_tangents_base_pose(MeshObject& object)
     const size_t vertex_count = object.get_vertex_count();
     const size_t triangle_count = object.get_triangle_count();
 
-    vector<GVector3> tangents(vertex_count, GVector3(0.0));
+    std::vector<GVector3> tangents(vertex_count, GVector3(0.0));
 
     for (size_t i = 0; i < triangle_count; ++i)
     {
@@ -174,7 +173,7 @@ void compute_smooth_vertex_tangents_pose(MeshObject& object, const size_t motion
     const size_t vertex_count = object.get_vertex_count();
     const size_t triangle_count = object.get_triangle_count();
 
-    vector<GVector3> tangents(vertex_count, GVector3(0.0));
+    std::vector<GVector3> tangents(vertex_count, GVector3(0.0));
 
     for (size_t i = 0; i < triangle_count; ++i)
     {

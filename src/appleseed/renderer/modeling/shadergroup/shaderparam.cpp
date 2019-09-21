@@ -42,7 +42,6 @@
 #include <sstream>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -58,13 +57,13 @@ namespace
 
 struct ShaderParam::Impl
 {
-    OSL::TypeDesc   m_type_desc;
-    int             m_int_value;
-    float           m_float_value[16];
-    string          m_string_storage;
-    const char*     m_string_value;
-    vector<float>   m_float_array_value;
-    vector<int>     m_int_array_value;
+    OSL::TypeDesc        m_type_desc;
+    int                  m_int_value;
+    float                m_float_value[16];
+    std::string          m_string_storage;
+    const char*          m_string_value;
+    std::vector<float>   m_float_array_value;
+    std::vector<int>     m_int_array_value;
 };
 
 ShaderParam::ShaderParam(const char* name)
@@ -99,9 +98,9 @@ const void* ShaderParam::get_value() const
     return &impl->m_float_value;
 }
 
-string ShaderParam::get_value_as_string() const
+std::string ShaderParam::get_value_as_string() const
 {
-    stringstream ss;
+    std::stringstream ss;
 
     if (!impl->m_float_array_value.empty())
     {

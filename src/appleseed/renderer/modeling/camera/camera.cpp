@@ -51,7 +51,6 @@
 #include <limits>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -491,7 +490,7 @@ void Camera::initialize_ray(
     ShadingRay&             ray) const
 {
     ray.m_tmin = 0.0;
-    ray.m_tmax = numeric_limits<double>::max();
+    ray.m_tmax = std::numeric_limits<double>::max();
     ray.m_flags = VisibilityFlags::CameraRay;
     ray.m_depth = 0;
 

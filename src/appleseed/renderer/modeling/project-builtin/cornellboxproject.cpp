@@ -69,7 +69,6 @@
 #include <cstddef>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {

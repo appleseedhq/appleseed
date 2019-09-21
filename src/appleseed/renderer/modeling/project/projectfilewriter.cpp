@@ -100,7 +100,6 @@
 
 using namespace boost;
 using namespace foundation;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace renderer
@@ -159,19 +158,19 @@ namespace
 
         // Return a lexicographically-sorted vector of references to entities.
         template <typename Collection>
-        vector<std::reference_wrapper<const typename Collection::value_type>> sorted(const Collection& collection)
+        std::vector<std::reference_wrapper<const typename Collection::value_type>> sorted(const Collection& collection)
         {
             return sorted_impl<const typename Collection::value_type>(collection.begin(), collection.end());
         }
         template <typename Collection>
-        vector<std::reference_wrapper<typename Collection::value_type>> sorted(Collection& collection)
+        std::vector<std::reference_wrapper<typename Collection::value_type>> sorted(Collection& collection)
         {
             return sorted_impl<typename Collection::value_type>(collection.begin(), collection.end());
         }
         template <typename ValueType, typename Iterator>
-        vector<std::reference_wrapper<ValueType>> sorted_impl(Iterator input_begin, Iterator input_end)
+        std::vector<std::reference_wrapper<ValueType>> sorted_impl(Iterator input_begin, Iterator input_end)
         {
-            vector<std::reference_wrapper<ValueType>> result;
+            std::vector<std::reference_wrapper<ValueType>> result;
             result.reserve(std::distance(input_begin, input_end));
 
             for (Iterator it = input_begin; it != input_end; ++it)
@@ -416,9 +415,9 @@ namespace
 
         // Write an <assign_material> element.
         void write_assign_material(
-            const string&               slot,
-            const string&               side,
-            const string&               name)
+            const std::string&               slot,
+            const std::string&               side,
+            const std::string&               name)
         {
             XMLElement element("assign_material", m_file, m_indenter);
             element.add_attribute("slot", slot);
@@ -432,10 +431,10 @@ namespace
             const ObjectInstance::Side  side,
             const StringDictionary&     material_mappings)
         {
-            const string side_string = side == ObjectInstance::FrontSide ? "front" : "back";
+            const std::string side_string = side == ObjectInstance::FrontSide ? "front" : "back";
 
             for (const_each<StringDictionary> i = material_mappings; i; ++i)
-                write_assign_material(i->key(), side_string, i->value<string>());
+                write_assign_material(i->key(), side_string, i->value<std::string>());
         }
 
         // Write a <bsdf> element.
@@ -606,7 +605,7 @@ namespace
         // Write a collection of <object> elements.
         void write_object_collection(ObjectContainer& objects)
         {
-            set<string> groups;
+            std::set<std::string> groups;
 
             for (Object& object : sorted(objects))
             {
@@ -619,7 +618,7 @@ namespace
         }
 
         // Write a mesh object.
-        void write_mesh_object(MeshObject& object, set<string>& groups)
+        void write_mesh_object(MeshObject& object, std::set<std::string>& groups)
         {
             ParamArray& params = object.get_parameters();
 
@@ -637,7 +636,7 @@ namespace
             if (params.strings().exist("__base_object_name"))
             {
                 // This object belongs to a group of objects.
-                const string group_name = params.get<string>("__base_object_name");
+                const std::string group_name = params.get<std::string>("__base_object_name");
                 if (groups.find(group_name) == groups.end())
                 {
                     // This is the first time we encounter this group of objects.
@@ -662,11 +661,11 @@ namespace
         }
 
         // Object name mapping established by do_write_orphan_mesh_object().
-        typedef map<string, string> ObjectNameMapping;
+        typedef std::map<std::string, std::string> ObjectNameMapping;
         ObjectNameMapping m_object_name_mapping;
 
         // Get the new name of an object, given its old name.
-        string translate_object_name(const string& old_name) const
+        std::string translate_object_name(const std::string& old_name) const
         {
             const ObjectNameMapping::const_iterator i = m_object_name_mapping.find(old_name);
             return i == m_object_name_mapping.end() ? old_name : i->second;
@@ -676,13 +675,13 @@ namespace
         void write_orphan_mesh_object(const MeshObject& object)
         {
             // Construct the name of the mesh file.
-            const string object_name = object.get_name();
-            const string filename = object_name + ".binarymesh";
+            const std::string object_name = object.get_name();
+            const std::string filename = object_name + ".binarymesh";
 
             if (!(m_options & ProjectFileWriter::OmitWritingGeometryFiles))
             {
                 // Write the mesh file to disk.
-                const string filepath = (m_project_new_root_dir / filename).string();
+                const std::string filepath = (m_project_new_root_dir / filename).string();
                 MeshObjectWriter::write(object, object_name.c_str(), filepath.c_str());
             }
 
@@ -708,13 +707,13 @@ namespace
 
             if (!params.strings().exist("filepath"))
             {
-                const string object_name = object.get_name();
-                const string filename = object_name + ".binarycurve";
+                const std::string object_name = object.get_name();
+                const std::string filename = object_name + ".binarycurve";
 
                 if (!(m_options & ProjectFileWriter::OmitWritingGeometryFiles))
                 {
                     // Write the curve file to disk.
-                    const string filepath = (m_project_new_root_dir / filename).string();
+                    const std::string filepath = (m_project_new_root_dir / filename).string();
                     CurveObjectWriter::write(object, filepath.c_str());
                 }
 
@@ -981,7 +980,7 @@ bool ProjectFileWriter::write_plain_project_file(
         // Write any optional comments.
         if (extra_comments)
         {
-            vector<string> lines;
+            std::vector<std::string> lines;
             split(extra_comments, "\n", lines);
 
             for (const auto& line : lines)

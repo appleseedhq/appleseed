@@ -69,7 +69,6 @@ namespace renderer      { class Assembly; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
-using namespace std;
 
 namespace bfs = boost::filesystem;
 
@@ -194,8 +193,8 @@ namespace
 
             const OnFrameBeginMessageContext context("bsdf", this);
 
-            const string volume_parameterization =
-                m_params.get_required<string>(
+            const std::string volume_parameterization =
+                m_params.get_required<std::string>(
                     "volume_parameterization",
                     "transmittance",
                     make_vector("transmittance", "absorption"),

@@ -66,7 +66,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace renderer
@@ -84,7 +83,7 @@ namespace
       public:
         CurveObjectBuilder(
             const ParamArray& params,
-            const string& name)
+            const std::string& name)
           : m_params(params)
           , m_name(name)
           , m_split_count(0)
@@ -275,16 +274,16 @@ namespace
         }
 
       private:
-        const ParamArray    m_params;
-        const string        m_name;
-        CurveObject*        m_object;
-        size_t              m_split_count;
+        const ParamArray         m_params;
+        const std::string        m_name;
+        CurveObject*             m_object;
+        size_t                   m_split_count;
 
         // Curve attributes and statistics.
-        vector<GVector3>    m_vertices;
-        vector<GScalar>     m_widths;
-        vector<GScalar>     m_opacities;
-        vector<Color3f>     m_colors;
+        std::vector<GVector3>    m_vertices;
+        std::vector<GScalar>     m_widths;
+        std::vector<GScalar>     m_opacities;
+        std::vector<Color3f>     m_colors;
 
         // Global statistics.
         size_t              m_total_vertex_count;
@@ -348,7 +347,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::read(
 {
     CurveObjectBuilder builder(params, name);
 
-    const string filepath = params.get<string>("filepath");
+    const std::string filepath = params.get<std::string>("filepath");
 
     if (filepath == "builtin:hairball")
         return builder.create_hair_ball();
@@ -381,7 +380,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::read(
     {
         reader.read(builder);
     }
-    catch (const exception& e)
+    catch (const std::exception& e)
     {
         RENDERER_LOG_ERROR("failed to load curve file %s: %s.", filepath.c_str(), e.what());
         return auto_release_ptr<CurveObject>(nullptr);

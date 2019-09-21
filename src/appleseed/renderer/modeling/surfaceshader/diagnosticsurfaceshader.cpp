@@ -72,7 +72,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -154,7 +153,7 @@ struct DiagnosticSurfaceShader::Impl
     explicit Impl(const ParamArray& params)
     {
         // Retrieve shading mode.
-        const string mode_string = params.get_required<string>("mode", "coverage");
+        const std::string mode_string = params.get_required<std::string>("mode", "coverage");
         const KeyValuePair<const char*, ShadingMode>* mode_pair =
             lookup_kvpair_array(ShadingModeValues, ShadingModeCount, mode_string);
         if (mode_pair != nullptr)

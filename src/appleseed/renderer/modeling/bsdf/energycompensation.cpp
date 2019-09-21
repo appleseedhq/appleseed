@@ -46,7 +46,6 @@
 #include <iomanip>
 
 using namespace foundation;
-using namespace std;
 
 namespace bfs = boost::filesystem;
 
@@ -68,11 +67,11 @@ namespace
         assert(array_size % num_columns == 0);
 
         bfs::ofstream of(filename);
-        of << setprecision(6) << fixed;
+        of << std::setprecision(6) << std::fixed;
 
-        of << "extern const float " << array_name << "[" << array_size << "] = " << endl;
-        of << "{" << endl;
-        of << "    // Directional albedo." << endl;
+        of << "extern const float " << array_name << "[" << array_size << "] = " << std::endl;
+        of << "{" << std::endl;
+        of << "    // Directional albedo." << std::endl;
 
         size_t i = 0;
         const float* p = dir_table;
@@ -87,10 +86,10 @@ namespace
                 ++i;
             }
 
-            of << endl;
+            of << std::endl;
         }
 
-        of << "    // Average albedo." << endl;
+        of << "    // Average albedo." << std::endl;
 
         i = 0;
         p = avg_table;
@@ -108,10 +107,10 @@ namespace
                 ++i;
             }
 
-            of << endl;
+            of << std::endl;
         }
 
-        of << "};" << endl;
+        of << "};" << std::endl;
     }
 }
 
@@ -163,8 +162,8 @@ float AlbedoTable2D::get_directional_albedo(const float cos_theta, const float r
     const float s = floor_frac(x, i);
     const float t = floor_frac(y, j);
 
-    const size_t i1 = min(i + 1, TableSize - 1);
-    const size_t j1 = min(j + 1, TableSize - 1);
+    const size_t i1 = std::min(i + 1, TableSize - 1);
+    const size_t j1 = std::min(j + 1, TableSize - 1);
 
     // Fetch the values.
     const float a = dir_table(i , j );
@@ -186,7 +185,7 @@ float AlbedoTable2D::get_average_albedo(const float roughness) const
 
     size_t i;
     const float t = floor_frac(x, i);
-    const size_t i1 = min(i + 1, TableSize - 1);
+    const size_t i1 = std::min(i + 1, TableSize - 1);
 
     // Fetch the values.
     const float a = avg_table(i );
@@ -319,9 +318,9 @@ float AlbedoTable3D::get_directional_albedo(const float eta, const float roughne
     const float t = floor_frac(y, iy);
     const float u = floor_frac(z, iz);
 
-    const size_t ix1 = min(ix + 1, TableSize - 1);
-    const size_t iy1 = min(iy + 1, TableSize - 1);
-    const size_t iz1 = min(iz + 1, TableSize - 1);
+    const size_t ix1 = std::min(ix + 1, TableSize - 1);
+    const size_t iy1 = std::min(iy + 1, TableSize - 1);
+    const size_t iz1 = std::min(iz + 1, TableSize - 1);
 
     // Fetch the values.
     const float a = dir_table(ix , iy , iz);
@@ -355,8 +354,8 @@ float AlbedoTable3D::get_average_albedo(const float eta, const float roughness) 
     const float s = floor_frac(x, ix);
     const float t = floor_frac(y, iy);
 
-    const size_t ix1 = min(ix + 1, TableSize - 1);
-    const size_t iy1 = min(iy + 1, TableSize - 1);
+    const size_t ix1 = std::min(ix + 1, TableSize - 1);
+    const size_t iy1 = std::min(iy + 1, TableSize - 1);
 
     // Fetch the values.
     const float a = avg_table(ix , iy );
@@ -485,7 +484,7 @@ float average_albedo(
     }
 
     avg /= table_size;
-    return min(2.0f * avg, 1.0f);
+    return std::min(2.0f * avg, 1.0f);
 }
 
 }   // namespace renderer

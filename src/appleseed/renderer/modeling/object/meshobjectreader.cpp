@@ -69,7 +69,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -91,11 +90,11 @@ namespace
       : public IMeshBuilder
     {
       public:
-        typedef vector<MeshObject*> MeshObjectVector;
+        typedef std::vector<MeshObject*> MeshObjectVector;
 
         MeshObjectBuilder(
             const ParamArray&   params,
-            const string&       base_object_name)
+            const std::string&  base_object_name)
           : m_params(params)
           , m_ignore_vertex_normals(m_params.get_optional<bool>("ignore_vertex_normals"))
           , m_base_object_name(base_object_name)
@@ -127,7 +126,7 @@ namespace
         void begin_mesh(const char* mesh_name) override
         {
             // Construct the object name.
-            const string object_name = m_base_object_name + "." + make_unique_mesh_name(mesh_name);
+            const std::string object_name = m_base_object_name + "." + make_unique_mesh_name(mesh_name);
 
             // Create an empty mesh object.
             m_objects.push_back(
@@ -292,37 +291,37 @@ namespace
         }
 
       private:
-        const ParamArray        m_params;
-        const bool              m_ignore_vertex_normals;
-        const string            m_base_object_name;
+        const ParamArray                  m_params;
+        const bool                        m_ignore_vertex_normals;
+        const std::string                 m_base_object_name;
 
-        MeshObjectVector        m_objects;
+        MeshObjectVector                  m_objects;
 
         // Support data for untitled meshes.
-        size_t                  m_untitled_mesh_counter;
-        map<string, size_t>     m_mesh_counters;
+        size_t                            m_untitled_mesh_counter;
+        std::map<std::string, size_t>     m_mesh_counters;
 
         // Face definition.
-        size_t                  m_vertex_count;
-        vector<uint32>          m_face_vertices;
-        vector<uint32>          m_face_normals;
-        vector<uint32>          m_face_tex_coords;
-        uint32                  m_face_material;
+        size_t                            m_vertex_count;
+        std::vector<uint32>               m_face_vertices;
+        std::vector<uint32>               m_face_normals;
+        std::vector<uint32>               m_face_tex_coords;
+        uint32                            m_face_material;
 
         // Support data for face triangulation.
-        Triangulator<double>    m_triangulator;
-        vector<Vector3d>        m_polygon;
-        vector<size_t>          m_triangles;
+        Triangulator<double>              m_triangulator;
+        std::vector<Vector3d>             m_polygon;
+        std::vector<size_t>               m_triangles;
 
         // Mesh statistics.
-        size_t                  m_normal_count;
-        size_t                  m_face_count;
-        size_t                  m_triangulation_error_count;
-        size_t                  m_null_normal_vector_count;
+        size_t                            m_normal_count;
+        size_t                            m_face_count;
+        size_t                            m_triangulation_error_count;
+        size_t                            m_null_normal_vector_count;
 
         // Global statistics.
-        size_t                  m_total_vertex_count;
-        size_t                  m_total_triangle_count;
+        size_t                            m_total_vertex_count;
+        size_t                            m_total_triangle_count;
 
         void reset_mesh_stats()
         {
@@ -332,7 +331,7 @@ namespace
             m_null_normal_vector_count = 0;
         }
 
-        string make_unique_mesh_name(string mesh_name)
+        std::string make_unique_mesh_name(std::string mesh_name)
         {
             if (mesh_name.empty())
                 mesh_name = to_string(m_untitled_mesh_counter++);
@@ -402,7 +401,7 @@ namespace
     {
         GenericMeshFileReader reader(filename);
 
-        const string obj_parsing_mode = params.get_optional<string>("obj_parsing_mode", "fast");
+        const std::string obj_parsing_mode = params.get_optional<std::string>("obj_parsing_mode", "fast");
 
         if (obj_parsing_mode == "fast")
         {
@@ -454,7 +453,7 @@ namespace
 
             return false;
         }
-        catch (const exception& e)
+        catch (const std::exception& e)
         {
             RENDERER_LOG_ERROR(
                 "failed to load mesh file %s: %s.",
@@ -579,12 +578,12 @@ namespace
 
     struct MeshObjectKeyFrame
     {
-        double  m_key;
-        string  m_filename;
+        double       m_key;
+        std::string  m_filename;
 
         MeshObjectKeyFrame() {}
 
-        MeshObjectKeyFrame(const double key, const string& filename)
+        MeshObjectKeyFrame(const double key, const std::string& filename)
           : m_key(key)
           , m_filename(filename)
         {
@@ -668,13 +667,13 @@ namespace
 
     void unshare_normals(MeshObject& object)
     {
-        vector<GVector3> old_normals(object.get_vertex_normal_count());
+        std::vector<GVector3> old_normals(object.get_vertex_normal_count());
         for (size_t i = 0, e = object.get_vertex_normal_count(); i < e; ++i)
             old_normals[i] = object.get_vertex_normal(i);
 
         const size_t triangle_count = object.get_triangle_count();
 
-        vector<Triangle> old_triangles(triangle_count);
+        std::vector<Triangle> old_triangles(triangle_count);
         for (size_t i = 0, e = triangle_count; i < e; ++i)
             old_triangles[i] = object.get_triangle(i);
 
@@ -705,13 +704,13 @@ namespace
     {
         assert(filenames.size() >= 2);
 
-        vector<MeshObjectKeyFrame> key_frames;
+        std::vector<MeshObjectKeyFrame> key_frames;
         key_frames.reserve(filenames.size());
 
         for (const_each<StringDictionary> i = filenames; i; ++i)
         {
             const double key = from_string<double>(i->key());
-            const string filename = i->value<string>();
+            const std::string filename = i->value<std::string>();
             key_frames.emplace_back(key, filename);
         }
 
@@ -735,7 +734,7 @@ namespace
 
         for (size_t i = 1; i < key_frames.size(); ++i)
         {
-            const string& filename = key_frames[i].m_filename;
+            const std::string& filename = key_frames[i].m_filename;
 
             MeshObjectArray poses;
 
@@ -832,7 +831,7 @@ bool MeshObjectReader::read(
 
         // Single-pose object.
         if (!read_mesh_object(
-                search_paths.qualify(params.strings().get<string>("filename")).c_str(),
+                search_paths.qualify(params.strings().get<std::string>("filename")).c_str(),
                 base_object_name,
                 completed_params,
                 objects))

@@ -40,7 +40,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -56,10 +55,10 @@ namespace
 
 struct ShaderConnection::Impl
 {
-    string m_src_layer;
-    string m_src_param;
-    string m_dst_layer;
-    string m_dst_param;
+    std::string m_src_layer;
+    std::string m_src_param;
+    std::string m_dst_layer;
+    std::string m_dst_param;
 };
 
 ShaderConnection::ShaderConnection(
@@ -75,8 +74,8 @@ ShaderConnection::ShaderConnection(
     impl->m_dst_layer = dst_layer;
     impl->m_dst_param = dst_param;
 
-    const string entity_name =
-        string(get_src_layer()) + ":" + get_src_param() + "->" + get_dst_layer() + ":" + get_dst_param();
+    const std::string entity_name =
+        std::string(get_src_layer()) + ":" + get_src_param() + "->" + get_dst_layer() + ":" + get_dst_param();
 
     set_name(entity_name.c_str());
 }

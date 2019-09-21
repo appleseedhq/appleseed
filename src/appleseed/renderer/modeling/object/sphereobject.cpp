@@ -44,7 +44,6 @@
 #include "foundation/utility/string.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {

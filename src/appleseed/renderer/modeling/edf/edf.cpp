@@ -46,7 +46,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -137,7 +136,7 @@ float EDF::get_max_contribution_scalar(const Source* source) const
     assert(source);
 
     if (!source->is_uniform())
-        return numeric_limits<float>::max();
+        return std::numeric_limits<float>::max();
 
     float value;
     source->evaluate_uniform(value);
@@ -150,7 +149,7 @@ float EDF::get_max_contribution_spectrum(const Source* source) const
     assert(source);
 
     if (!source->is_uniform())
-        return numeric_limits<float>::max();
+        return std::numeric_limits<float>::max();
 
     Spectrum spectrum;
     source->evaluate_uniform(spectrum);
@@ -165,18 +164,18 @@ float EDF::get_max_contribution(
 {
     const float max_contribution_input = get_max_contribution_spectrum(input);
 
-    if (max_contribution_input == numeric_limits<float>::max())
-        return numeric_limits<float>::max();
+    if (max_contribution_input == std::numeric_limits<float>::max())
+        return std::numeric_limits<float>::max();
 
     const float max_contribution_multiplier = get_max_contribution_scalar(multiplier);
 
-    if (max_contribution_multiplier == numeric_limits<float>::max())
-        return numeric_limits<float>::max();
+    if (max_contribution_multiplier == std::numeric_limits<float>::max())
+        return std::numeric_limits<float>::max();
 
     const float max_contribution_exposure = get_max_contribution_scalar(exposure);
 
-    if (max_contribution_exposure == numeric_limits<float>::max())
-        return numeric_limits<float>::max();
+    if (max_contribution_exposure == std::numeric_limits<float>::max())
+        return std::numeric_limits<float>::max();
 
     return max_contribution_input * max_contribution_multiplier * pow(2.0f, max_contribution_exposure);
 }

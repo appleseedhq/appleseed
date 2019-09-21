@@ -36,7 +36,6 @@
 #include <cassert>
 #include <stack>
 
-using namespace std;
 
 namespace renderer
 {
@@ -49,7 +48,7 @@ struct OnRenderBeginRecorder::Impl
         const BaseGroup*    m_parent;
     };
 
-    stack<Record> m_records;
+    std::stack<Record> m_records;
 };
 
 OnRenderBeginRecorder::OnRenderBeginRecorder()

@@ -147,7 +147,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 using namespace xercesc;
 namespace bf = boost::filesystem;
 
@@ -170,7 +169,7 @@ namespace
     {
       public:
         ErrorLoggerAndCounter(
-            const string&   input_filepath,
+            const std::string&   input_filepath,
             EventCounters&  event_counters)
           : ErrorLogger(global_logger(), input_filepath)
           , m_event_counters(event_counters)
@@ -252,7 +251,7 @@ namespace
 
     template <typename T>
     T get_scalar(
-        const string&       text,
+        const std::string&  text,
         ParseContext&       context)
     {
         try
@@ -268,7 +267,7 @@ namespace
     }
 
     Vector3d get_vector3(
-        const string&       text,
+        const std::string&  text,
         ParseContext&       context)
     {
         Vector3d vec;
@@ -304,7 +303,7 @@ namespace
 
     template <typename Vec>
     void get_vector(
-        const string&       text,
+        const std::string&  text,
         Vec&                values,
         ParseContext&       context)
     {
@@ -323,9 +322,9 @@ namespace
     template <typename Entity, typename EntityFactoryRegistrar>
     auto_release_ptr<Entity> create_entity(
         const EntityFactoryRegistrar&   registrar,
-        const string&                   type,
-        const string&                   model,
-        const string&                   name,
+        const std::string&              type,
+        const std::string&              model,
+        const std::string&              name,
         const ParamArray&               params,
         ParseContext&                   context)
     {
@@ -452,7 +451,7 @@ namespace
             const XMLCh* const  chars,
             const XMLSize_t     length) override
         {
-            const string inner_value = transcode(chars);
+            const std::string inner_value = transcode(chars);
             if (!m_value.empty() && !inner_value.empty())
             {
                 RENDERER_LOG_ERROR(
@@ -465,20 +464,20 @@ namespace
             }
         }
 
-        const string& get_name() const
+        const std::string& get_name() const
         {
             return m_name;
         }
 
-        const string& get_value() const
+        const std::string& get_value() const
         {
             return m_value;
         }
 
       private:
         ParseContext&   m_context;
-        string          m_name;
-        string          m_value;
+        std::string     m_name;
+        std::string     m_value;
     };
 
 
@@ -522,7 +521,7 @@ namespace
             m_name = get_value(attrs, "name");
         }
 
-        const string& get_name() const
+        const std::string& get_name() const
         {
             return m_name;
         }
@@ -533,7 +532,7 @@ namespace
         }
 
       private:
-        string m_name;
+        std::string m_name;
     };
 
 
@@ -678,9 +677,9 @@ namespace
         }
 
       private:
-        ParseContext&   m_context;
-        Matrix4d        m_matrix;
-        vector<double>  m_values;
+        ParseContext&        m_context;
+        Matrix4d             m_matrix;
+        std::vector<double>  m_values;
     };
 
 
@@ -946,7 +945,7 @@ namespace
         }
 
       private:
-        typedef map<float, Transformd> TransformMap;
+        typedef std::map<float, Transformd> TransformMap;
 
         TransformMap m_transforms;
 
@@ -1089,7 +1088,7 @@ namespace
       private:
         ParseContext&                   m_context;
         auto_release_ptr<ColorEntity>   m_color_entity;
-        string                          m_name;
+        std::string                     m_name;
         ColorValueArray                 m_values;
         ColorValueArray                 m_alpha;
     };
@@ -1104,7 +1103,7 @@ namespace
       : public Base
     {
       public:
-        EntityElementHandler(const string& entity_type, ParseContext& context)
+        EntityElementHandler(const std::string& entity_type, ParseContext& context)
           : m_context(context)
           , m_entity_type(entity_type)
         {
@@ -1141,10 +1140,10 @@ namespace
 
       protected:
         ParseContext&                   m_context;
-        const string                    m_entity_type;
+        const std::string               m_entity_type;
         auto_release_ptr<Entity>        m_entity;
-        string                          m_name;
-        string                          m_model;
+        std::string                     m_name;
+        std::string                     m_model;
     };
 
 
@@ -1216,8 +1215,8 @@ namespace
         const TextureFactoryRegistrar   m_texture_factory_registrar;
         ParseContext&                   m_context;
         auto_release_ptr<Texture>       m_texture;
-        string                          m_name;
-        string                          m_model;
+        std::string                     m_name;
+        std::string                     m_model;
     };
 
 
@@ -1279,8 +1278,8 @@ namespace
 
         ParseContext&                       m_context;
         auto_release_ptr<TextureInstance>   m_texture_instance;
-        string                              m_name;
-        string                              m_texture;
+        std::string                         m_name;
+        std::string                         m_texture;
     };
 
 
@@ -1406,8 +1405,8 @@ namespace
       private:
         ParseContext&                       m_context;
         auto_release_ptr<Environment>       m_environment;
-        string                              m_name;
-        string                              m_model;
+        std::string                         m_name;
+        std::string                         m_model;
     };
 
 
@@ -1527,7 +1526,7 @@ namespace
       : public ParametrizedElementHandler
     {
       public:
-        typedef vector<Object*> ObjectVector;
+        typedef std::vector<Object*> ObjectVector;
 
         explicit ObjectElementHandler(ParseContext& context)
           : m_context(context)
@@ -1609,8 +1608,8 @@ namespace
       private:
         ParseContext&   m_context;
         ObjectVector    m_objects;
-        string          m_name;
-        string          m_model;
+        std::string     m_name;
+        std::string     m_model;
     };
 
 
@@ -1643,26 +1642,26 @@ namespace
             }
         }
 
-        const string& get_material_slot() const
+        const std::string& get_material_slot() const
         {
             return m_slot;
         }
 
-        const string& get_material_side() const
+        const std::string& get_material_side() const
         {
             return m_side;
         }
 
-        const string& get_material_name() const
+        const std::string& get_material_name() const
         {
             return m_material;
         }
 
       private:
         ParseContext&           m_context;
-        string                  m_slot;
-        string                  m_side;
-        string                  m_material;
+        std::string             m_slot;
+        std::string             m_side;
+        std::string             m_material;
     };
 
 
@@ -1715,9 +1714,9 @@ namespace
                     AssignMaterialElementHandler* assign_mat_handler =
                         static_cast<AssignMaterialElementHandler*>(handler);
 
-                    const string& material_slot = assign_mat_handler->get_material_slot();
-                    const string& material_side = assign_mat_handler->get_material_side();
-                    const string& material_name = assign_mat_handler->get_material_name();
+                    const std::string& material_slot = assign_mat_handler->get_material_slot();
+                    const std::string& material_side = assign_mat_handler->get_material_side();
+                    const std::string& material_name = assign_mat_handler->get_material_name();
 
                     if (material_side == "front")
                         m_front_material_mappings.insert(material_slot, material_name);
@@ -1748,8 +1747,8 @@ namespace
         auto_release_ptr<ObjectInstance>    m_object_instance;
         StringDictionary                    m_front_material_mappings;
         StringDictionary                    m_back_material_mappings;
-        string                              m_name;
-        string                              m_object;
+        std::string                         m_name;
+        std::string                         m_object;
     };
 
 
@@ -1797,8 +1796,8 @@ namespace
         typedef TransformSequenceElementHandler<ParametrizedElementHandler> Base;
 
         auto_release_ptr<AssemblyInstance>  m_assembly_instance;
-        string                              m_name;
-        string                              m_assembly;
+        std::string                         m_name;
+        std::string                         m_assembly;
     };
 
 
@@ -1821,13 +1820,13 @@ namespace
             m_code = trim_both(transcode(chars));
         }
 
-        const string& get_code() const
+        const std::string& get_code() const
         {
             return m_code;
         }
 
       private:
-        string  m_code;
+        std::string  m_code;
     };
 
 
@@ -1871,22 +1870,22 @@ namespace
             }
         }
 
-        const string& get_type() const
+        const std::string& get_type() const
         {
             return m_type;
         }
 
-        const string& get_name() const
+        const std::string& get_name() const
         {
             return m_name;
         }
 
-        const string& get_layer() const
+        const std::string& get_layer() const
         {
             return m_layer;
         }
 
-        const string& get_code() const
+        const std::string& get_code() const
         {
             return m_code;
         }
@@ -1897,10 +1896,10 @@ namespace
         }
 
       private:
-        string  m_type;
-        string  m_name;
-        string  m_layer;
-        string  m_code;
+        std::string  m_type;
+        std::string  m_name;
+        std::string  m_layer;
+        std::string  m_code;
     };
 
 
@@ -1924,31 +1923,31 @@ namespace
             m_dst_param = get_value(attrs, "dst_param");
         }
 
-        const string& src_layer()
+        const std::string& src_layer()
         {
             return m_src_layer;
         }
 
-        const string& src_param()
+        const std::string& src_param()
         {
             return m_src_param;
         }
 
-        const string& dst_layer()
+        const std::string& dst_layer()
         {
             return m_dst_layer;
         }
 
-        const string& dst_param()
+        const std::string& dst_param()
         {
             return m_dst_param;
         }
 
       private:
-        string m_src_layer;
-        string m_src_param;
-        string m_dst_layer;
-        string m_dst_param;
+        std::string m_src_layer;
+        std::string m_src_param;
+        std::string m_dst_layer;
+        std::string m_dst_param;
     };
 
 
@@ -2021,7 +2020,7 @@ namespace
         }
 
       private:
-        string                          m_name;
+        std::string                     m_name;
         auto_release_ptr<ShaderGroup>   m_shader_group;
     };
 
@@ -2246,8 +2245,8 @@ namespace
 
       private:
         auto_release_ptr<Assembly>  m_assembly;
-        string                      m_name;
-        string                      m_model;
+        std::string                 m_name;
+        std::string                 m_model;
         AssemblyContainer           m_assemblies;
         AssemblyInstanceContainer   m_assembly_instances;
         BSDFContainer               m_bsdfs;
@@ -2471,7 +2470,7 @@ namespace
       protected:
         ParseContext&           m_context;
         auto_release_ptr<AOV>   m_aov;
-        string                  m_model;
+        std::string             m_model;
     };
 
 
@@ -2699,7 +2698,7 @@ namespace
       private:
         ParseContext&                   m_context;
         auto_release_ptr<Frame>         m_frame;
-        string                          m_name;
+        std::string                     m_name;
         AOVContainer                    m_aovs;
         PostProcessingStageContainer    m_post_processing_stages;
     };
@@ -2800,8 +2799,8 @@ namespace
       private:
         ParseContext&                   m_context;
         auto_release_ptr<Configuration> m_configuration;
-        string                          m_name;
-        string                          m_base_name;
+        std::string                     m_name;
+        std::string                     m_base_name;
     };
 
 
@@ -2862,13 +2861,13 @@ namespace
             m_path = trim_both(transcode(chars));
         }
 
-        const string& get_path() const
+        const std::string& get_path() const
         {
             return m_path;
         }
 
       private:
-        string          m_path;
+        std::string          m_path;
     };
 
 
@@ -2899,7 +2898,7 @@ namespace
 
                     SearchPathElementHandler* path_handler =
                         static_cast<SearchPathElementHandler*>(handler);
-                    const string& path = path_handler->get_path();
+                    const std::string& path = path_handler->get_path();
                     if (!path.empty())
                         m_context.get_project().search_paths().push_back_explicit_path(path);
                 }
@@ -2941,7 +2940,7 @@ namespace
 
       private:
         ParseContext&   m_context;
-        string          m_name;
+        std::string     m_name;
     };
 
 
@@ -3074,10 +3073,10 @@ namespace
             register_factory_helper<ValuesElementHandler>("values", ElementValues);
             register_factory_helper<VolumeElementHandler>("volume", ElementVolume);
 
-            unique_ptr<IElementHandlerFactory<ProjectElementID>> factory(
+            std::unique_ptr<IElementHandlerFactory<ProjectElementID>> factory(
                 new ProjectElementHandlerFactory(m_context));
 
-            register_factory("project", ElementProject, move(factory));
+            register_factory("project", ElementProject, std::move(factory));
         }
 
       private:
@@ -3093,9 +3092,9 @@ namespace
             {
             }
 
-            unique_ptr<ElementHandlerType> create() override
+            std::unique_ptr<ElementHandlerType> create() override
             {
-                return unique_ptr<ElementHandlerType>(new ProjectElementHandler(m_context));
+                return std::unique_ptr<ElementHandlerType>(new ProjectElementHandler(m_context));
             }
         };
 
@@ -3110,16 +3109,16 @@ namespace
             {
             }
 
-            unique_ptr<ElementHandlerType> create() override
+            std::unique_ptr<ElementHandlerType> create() override
             {
-                return unique_ptr<ElementHandlerType>(new ElementHandler(m_context));
+                return std::unique_ptr<ElementHandlerType>(new ElementHandler(m_context));
             }
         };
 
         template <typename ElementHandler>
-        void register_factory_helper(const string& name, const ProjectElementID id)
+        void register_factory_helper(const std::string& name, const ProjectElementID id)
         {
-            unique_ptr<IElementHandlerFactory<ProjectElementID>> factory(
+            std::unique_ptr<IElementHandlerFactory<ProjectElementID>> factory(
                 new GenericElementHandlerFactory<ElementHandler>(m_context));
 
             register_factory(name, id, move(factory));
@@ -3129,9 +3128,9 @@ namespace
 
 namespace
 {
-    bool is_builtin_project(const string& project_filepath, string& project_name)
+    bool is_builtin_project(const std::string& project_filepath, std::string& project_name)
     {
-        const string BuiltInPrefix = "builtin:";
+        const std::string BuiltInPrefix = "builtin:";
 
         if (starts_with(project_filepath, BuiltInPrefix))
         {
@@ -3145,17 +3144,17 @@ namespace
     // Return the name of the single .appleseed file inside a given archive file.
     // If there are zero or more than one .appleseed file inside the archive, an
     // empty string is returned (i.e. the archive is not a valid packed project).
-    string get_project_filename_from_archive(const char* project_filepath)
+    std::string get_project_filename_from_archive(const char* project_filepath)
     {
-        const vector<string> files =
+        const std::vector<std::string> files =
             get_filenames_with_extension_from_zip(project_filepath, ".appleseed");
 
-        return files.size() == 1 ? files[0] : string();
+        return files.size() == 1 ? files[0] : std::string();
     }
 
-    string unpack_project(
-        const string& project_filepath,
-        const string& project_name,
+    std::string unpack_project(
+        const std::string& project_filepath,
+        const std::string& project_name,
         const bf::path& unpacked_project_directory)
     {
         if (bf::exists(unpacked_project_directory))
@@ -3175,15 +3174,15 @@ auto_release_ptr<Project> ProjectFileReader::read(
     assert(project_filepath);
 
     // Handle built-in projects.
-    string project_name;
+    std::string project_name;
     if (is_builtin_project(project_filepath, project_name))
         return load_builtin(project_name.c_str());
 
     // Handle packed projects.
-    string actual_project_filepath;
+    std::string actual_project_filepath;
     if (is_zip_file(project_filepath))
     {
-        const string project_filename = get_project_filename_from_archive(project_filepath);
+        const std::string project_filename = get_project_filename_from_archive(project_filepath);
         if (project_filename.empty())
         {
             RENDERER_LOG_ERROR(
@@ -3192,7 +3191,7 @@ auto_release_ptr<Project> ProjectFileReader::read(
             return auto_release_ptr<Project>(nullptr);
         }
 
-        const string unpacked_project_directory =
+        const std::string unpacked_project_directory =
             bf::path(project_filepath).replace_extension(".unpacked").string();
 
         RENDERER_LOG_INFO(
@@ -3254,10 +3253,10 @@ auto_release_ptr<Assembly> ProjectFileReader::read_archive(
     assert(archive_filepath);
 
     // Handle packed archives.
-    string actual_archive_filepath;
+    std::string actual_archive_filepath;
     if (is_zip_file(archive_filepath))
     {
-        const string archive_name = get_project_filename_from_archive(archive_filepath);
+        const std::string archive_name = get_project_filename_from_archive(archive_filepath);
         if (archive_name.empty())
         {
             RENDERER_LOG_ERROR(
@@ -3266,7 +3265,7 @@ auto_release_ptr<Assembly> ProjectFileReader::read_archive(
             return auto_release_ptr<Assembly>(nullptr);
         }
 
-        const string unpacked_archive_directory =
+        const std::string unpacked_archive_directory =
             bf::path(archive_filepath).replace_extension(".unpacked").string();
 
         actual_archive_filepath =
@@ -3381,20 +3380,20 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
     }
 
     // Create the error handler.
-    unique_ptr<ErrorLogger> error_handler(
+    std::unique_ptr<ErrorLogger> error_handler(
         new ErrorLoggerAndCounter(
             project_filepath,
             event_counters));
 
     // Create the content handler.
     ParseContext context(project.ref(), options, event_counters);
-    unique_ptr<ContentHandler> content_handler(
+    std::unique_ptr<ContentHandler> content_handler(
         new ContentHandler(
             project.get(),
             context));
 
     // Create the parser.
-    unique_ptr<SAX2XMLReader> parser(XMLReaderFactory::createXMLReader());
+    std::unique_ptr<SAX2XMLReader> parser(XMLReaderFactory::createXMLReader());
     parser->setFeature(XMLUni::fgSAX2CoreNameSpaces, true);         // perform namespace processing
 
     if (!(options & OmitProjectSchemaValidation))
