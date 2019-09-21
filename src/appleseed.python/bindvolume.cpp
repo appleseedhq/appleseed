@@ -44,16 +44,6 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-// Work around a regression in Visual Studio 2015 Update 3.
-#if defined(_MSC_VER) && _MSC_VER == 1900
-namespace boost
-{
-    template <> Volume const volatile* get_pointer<Volume const volatile>(Volume const volatile* p) { return p; }
-    template <> IVolumeFactory const volatile* get_pointer<IVolumeFactory const volatile>(IVolumeFactory const volatile* p) { return p; }
-    template <> VolumeFactoryRegistrar const volatile* get_pointer<VolumeFactoryRegistrar const volatile>(VolumeFactoryRegistrar const volatile* p) { return p; }
-}
-#endif
-
 namespace
 {
     auto_release_ptr<Volume> create_volume(

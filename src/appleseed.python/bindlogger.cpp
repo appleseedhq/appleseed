@@ -81,15 +81,6 @@ struct ILogTargetWrap
     }
 };
 
-// Work around a regression in Visual Studio 2015 Update 3.
-#if defined(_MSC_VER) && _MSC_VER == 1900
-namespace boost
-{
-    template <> ILogTargetWrap const volatile* get_pointer<ILogTargetWrap const volatile>(ILogTargetWrap const volatile* p) { return p; }
-    template <> Logger const volatile* get_pointer<Logger const volatile>(Logger const volatile* p) { return p; }
-}
-#endif
-
 namespace
 {
 
