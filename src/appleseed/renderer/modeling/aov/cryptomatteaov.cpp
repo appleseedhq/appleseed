@@ -48,6 +48,7 @@
 #include "foundation/math/aabb.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
@@ -55,6 +56,7 @@
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/otherwise.h"
+#include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 
 // Boost headers.
@@ -85,6 +87,13 @@ namespace bf = boost::filesystem;
 
 namespace
 {
+    //
+    // Reference:
+    //
+    //   Cryptomatte Specification
+    //   https://github.com/Psyop/Cryptomatte/blob/master/specification/cryptomatte_specification.pdf
+    //
+
     class MultiChannelExrFileWriter
       : public IImageFileWriter
     {
@@ -168,9 +177,7 @@ namespace
             m_spec.nchannels = static_cast<int>(channel_count);
 
             for (size_t i = 0; i < channel_count; i++)
-            {
                 m_spec.channelnames.push_back(channel_names[i]);
-            }
         }
 
       private:
@@ -295,9 +302,7 @@ namespace
         {
             m_map = new Entry[m_size];
             for (size_t i = 0; i < m_index; ++i)
-            {
                 m_map[i] = other.m_map[i];
-            }
         }
 
         WeightMap& operator=(const WeightMap& rhs)
@@ -311,9 +316,8 @@ namespace
             m_size = rhs.m_size;
             m_index = rhs.m_size;
             for (size_t i = 0; i < m_index; ++i)
-            {
                 m_map[i] = rhs.m_map[i];
-            }
+
             return *this;
         }
 
@@ -382,12 +386,12 @@ namespace
         Entry*  m_map;
     };
 
-    // Code taken from Cryptomatte specification: https://github.com/Psyop/Cryptomatte/blob/master/specification/cryptomatte_specification.pdf
+    // Code taken from Cryptomatte specification.
     float hash_to_float(uint32 hash)
     {
         // if all exponent bits are 0 (subnormals, +zero, -zero) set exponent to 1
         // if all exponent bits are 1 (NaNs, +inf, -inf) set exponent to 254
-        uint32 exponent = hash >> 23 & 255; // extract exponent (8 bits)
+        const uint32 exponent = hash >> 23 & 255; // extract exponent (8 bits)
         if (exponent == 0 || exponent == 255)
             hash ^= 1 << 23; // toggle bit
         float f;
@@ -401,7 +405,6 @@ namespace renderer
 
 namespace
 {
-
     typedef std::map<uint32, std::string> NameMap;
 
 
@@ -422,7 +425,7 @@ namespace
           : m_aov_image(aov_image)
           , m_num_layers(num_layers)
           , m_pixel_samples(pixel_samples)
-          , m_tile_name_array(tile_name_array)
+          , m_tile_name_maps(tile_name_array)
           , m_layer_type(layer_type)
         {
         }
@@ -465,7 +468,7 @@ namespace
         {
             std::vector<std::pair<float, uint32>> ranked_vector;
             std::vector<float> pixel_values;
-            const float uint32_max_rcp = 1.0f / std::numeric_limits<uint32>::max();
+            constexpr float uint32_max_rcp = 1.0f / std::numeric_limits<uint32>::max();
 
             for (size_t ry = m_tile_origin_y; ry <= m_tile_end_y; ++ry)
             {
@@ -597,7 +600,7 @@ namespace
             if (!m_crop_window.contains(pixel_pos))
                 return;
 
-            m_tile_name_array[m_tile_index][m3hash] = obj_name;
+            m_tile_name_maps[m_tile_index][m3hash] = obj_name;
 
             const size_t x = pixel_pos.x - m_tile_origin_x;
             const size_t y = pixel_pos.y - m_tile_origin_y;
@@ -620,12 +623,9 @@ namespace
         Image&                          m_aov_image;
         size_t                          m_num_layers;
         std::vector<WeightMap>&         m_pixel_samples;
-        NameMap*                        m_tile_name_array;
+        NameMap*                        m_tile_name_maps;
         CryptomatteAOV::CryptomatteType m_layer_type;
     };
-
-    const char* CryptomatteObjectAOVModel = "cryptomatte_object_aov";
-    const char* CryptomatteMaterialAOVModel = "cryptomatte_material_aov";
 }
 
 
@@ -633,17 +633,89 @@ namespace
 // CryptomatteAOV class implementation.
 //
 
+namespace
+{
+    const char* CryptomatteObjectAOVModel = "cryptomatte_object_aov";
+    const char* CryptomatteMaterialAOVModel = "cryptomatte_material_aov";
+}
+
 struct CryptomatteAOV::Impl
 {
     std::vector<WeightMap>              m_pixel_samples;
-    NameMap*                            m_tile_name_array;
+    NameMap*                            m_tile_name_maps;
     std::unique_ptr<Image>              m_image;
     size_t                              m_num_layers;
     CryptomatteAOV::CryptomatteType     m_layer_type;
 
-    Impl()
-      : m_tile_name_array(nullptr)
+    static std::string make_manifest(const NameMap& name_map)
     {
+        std::stringstream sstr;
+        sstr << "{";
+
+        for (const auto& entry : name_map)
+        {
+            char hash_hex[9];
+            sprintf(hash_hex, "%08x", entry.first);
+            sstr << "\"" << entry.second << "\":\"" << hash_hex << "\",";
+        }
+
+        // Remove trailing comma.
+        if (!name_map.empty())
+            sstr.seekp(-1, sstr.end);
+
+        sstr << "}";
+        return sstr.str();
+    }
+
+    NameMap make_name_map() const
+    {
+        NameMap name_map;
+
+        for (size_t i = 0, e = m_image->properties().m_tile_count; i < e; ++i)
+        {
+            for (const auto& entry : m_tile_name_maps[i])
+            {
+                if (entry.first != 0)
+                    name_map[entry.first] = entry.second;
+            }
+        }
+
+        return name_map;
+    }
+
+    std::vector<std::string> make_channel_names(const std::string& layer_name) const
+    {
+        std::vector<std::string> channel_names;
+        channel_names.reserve(get_channel_count());
+
+        channel_names.push_back("R");
+        channel_names.push_back("G");
+        channel_names.push_back("B");
+
+        const size_t exr_layer_count = truncate<size_t>(ceil(m_num_layers / 2.0));
+        for (size_t i = 0; i < exr_layer_count; ++i)
+        {
+            const std::string layer_number = get_numbered_string("##", i);
+            channel_names.push_back(format("{0}{1}.R", layer_name, layer_number));
+            channel_names.push_back(format("{0}{1}.G", layer_name, layer_number));
+            channel_names.push_back(format("{0}{1}.B", layer_name, layer_number));
+            channel_names.push_back(format("{0}{1}.A", layer_name, layer_number));
+        }
+
+        return channel_names;
+    }
+
+    Impl()
+      : m_tile_name_maps(nullptr)
+    {
+    }
+
+    size_t get_channel_count() const
+    {
+        // Each object layer ("rank" in Cryptomatte specification) requires two image channels: ID and Coverage.
+        // The total number of image channels is equal to three preview channels (R, G, B) plus ID and Coverage
+        // channels for each object layer.
+        return 3 + (m_num_layers * 2);
     }
 };
 
@@ -651,7 +723,11 @@ CryptomatteAOV::CryptomatteAOV(const ParamArray& params)
   : AOV("cryptomatte", params)
   , impl(new Impl())
 {
-    const std::string cryptomatte_type = params.get_optional<std::string>("cryptomatte_type", "object_names", make_vector("object_names" , "material_names"));
+    const std::string cryptomatte_type =
+        params.get_optional<std::string>(
+            "cryptomatte_type",
+            "object_names",
+            make_vector("object_names" , "material_names"));
 
     if (cryptomatte_type == "object_names")
     {
@@ -669,7 +745,7 @@ CryptomatteAOV::CryptomatteAOV(const ParamArray& params)
 
 CryptomatteAOV::~CryptomatteAOV()
 {
-    delete[] impl->m_tile_name_array;
+    delete[] impl->m_tile_name_maps;
     delete impl;
 }
 
@@ -709,21 +785,18 @@ void CryptomatteAOV::create_image(
     ImageStack&     aov_images)
 {
     // Create underlying images.
-    // Each object layer ("rank" in Cryptomatte specification) requires two image channels: ID and Coverage.
-    // The total number of image channels is equal to three preview channels (R, G, B) plus ID and Coverage
-    // channels for each object layer.
-    const size_t num_channels = (impl->m_num_layers * 2) + 3;
+    const size_t channel_count = impl->get_channel_count();
     impl->m_image.reset(
         new Image(
             canvas_width,
             canvas_height,
             tile_width,
             tile_height,
-            num_channels,
+            channel_count,
             PixelFormatFloat));
     impl->m_pixel_samples.resize(canvas_width * canvas_height, WeightMap(impl->m_num_layers));
     const auto& image_props = impl->m_image->properties();
-    impl->m_tile_name_array = new NameMap[image_props.m_tile_count];
+    impl->m_tile_name_maps = new NameMap[image_props.m_tile_count];
     clear_image();
 }
 
@@ -731,33 +804,38 @@ void CryptomatteAOV::clear_image()
 {
     const auto& image_props = impl->m_image->properties();
 
-    const size_t num_channels = (impl->m_num_layers * 2) + 3;
-    const std::vector<float> pixel_values(num_channels, 0.0f);
-    for (size_t ry = 0, ey = image_props.m_canvas_height; ry < ey; ++ry)
+    const size_t channel_count = impl->get_channel_count();
+    const std::vector<float> pixel_values(channel_count, 0.0f);
+
+    for (size_t y = 0, h = image_props.m_canvas_height; y < h; ++y)
     {
-        for (size_t rx = 0, ex = image_props.m_canvas_width; rx < ex; ++rx)
-            impl->m_image->set_pixel(rx, ry, pixel_values.data(), pixel_values.size());
+        for (size_t x = 0, w = image_props.m_canvas_width; x < w; ++x)
+            impl->m_image->set_pixel(x, y, pixel_values.data(), pixel_values.size());
     }
 
     for (size_t i = 0, e = image_props.m_tile_count; i < e; ++i)
-        impl->m_tile_name_array[i].clear();
+        impl->m_tile_name_maps[i].clear();
 }
 
 auto_release_ptr<AOVAccumulator> CryptomatteAOV::create_accumulator() const
 {
-    return auto_release_ptr<AOVAccumulator>(
-        new CryptomatteAOVAccumulator(
-            *impl->m_image,
-            impl->m_pixel_samples,
-            impl->m_tile_name_array,
-            impl->m_num_layers,
-            impl->m_layer_type));
+    return
+        auto_release_ptr<AOVAccumulator>(
+            new CryptomatteAOVAccumulator(
+                *impl->m_image,
+                impl->m_pixel_samples,
+                impl->m_tile_name_maps,
+                impl->m_num_layers,
+                impl->m_layer_type));
 }
 
 bool CryptomatteAOV::write_images(
     const char*             file_path,
     const ImageAttributes&  image_attributes) const
 {
+    Stopwatch<DefaultWallclockTimer> stopwatch;
+    stopwatch.start();
+
     const bf::path boost_file_path(file_path);
     const bf::path directory = boost_file_path.parent_path();
     const std::string base_file_name = boost_file_path.stem().string();
@@ -767,7 +845,6 @@ bool CryptomatteAOV::write_images(
     const std::string exr_file_path = (directory / exr_file_name).string();
 
     std::string layer_name;
-
     switch (impl->m_layer_type)
     {
       case CryptomatteType::ObjectNames:
@@ -785,83 +862,47 @@ bool CryptomatteAOV::write_images(
     MurmurHash3_x86_32(reinterpret_cast<const unsigned char*>(layer_name.c_str()), static_cast<int>(layer_name.size()), 0, &type_name_hash);
 
     char type_name_hex[9];
-    sprintf(type_name_hex, "%08x", type_name_hash);
+    std::sprintf(type_name_hex, "%08x", type_name_hash);
+    const std::string layer_prefix = format("cryptomatte/{0}", std::string(type_name_hex).substr(0, 7));
+
+    const NameMap name_map = impl->make_name_map();
+    const std::string manifest = Impl::make_manifest(name_map);
 
     ImageAttributes image_attributes_copy(image_attributes);
     image_attributes_copy.insert("color_space", "linear");
-
-    std::string layer_prefix("cryptomatte/");
-    layer_prefix.append(std::string(type_name_hex).erase(7));
-    image_attributes_copy.insert(layer_prefix + "/conversion", "uint32_to_float32");
-    image_attributes_copy.insert(layer_prefix + "/hash", "MurmurHash3_32");
     image_attributes_copy.insert(layer_prefix + "/name", layer_name);
+    image_attributes_copy.insert(layer_prefix + "/hash", "MurmurHash3_32");
+    image_attributes_copy.insert(layer_prefix + "/conversion", "uint32_to_float32");
+    image_attributes_copy.insert(layer_prefix + "/manifest", manifest);
 
-    NameMap name_map;
-    const auto& image_props = impl->m_image->properties();
-    for (size_t i = 0, e = image_props.m_tile_count; i < e; ++i)
-    {
-        const NameMap& tile_name_map = impl->m_tile_name_array[i];
-
-        for (const auto& hash : tile_name_map)
-        {
-            if (hash.first == 0)
-                continue;
-            name_map[hash.first] = hash.second;
-        }
-    }
-
-    std::stringstream manifest_str;
-    manifest_str << "{";
-
-    for (const auto& hash : name_map)
-    {
-        char hash_hex[9];
-        sprintf(hash_hex, "%08x", hash.first);
-        manifest_str << "\"" << hash.second << "\":\"" << hash_hex << "\",";
-    }
-
-    if (!name_map.empty())
-        manifest_str.seekp(-1, manifest_str.end);
-
-    manifest_str << "}";
-
-    image_attributes_copy.insert(layer_prefix + "/manifest", manifest_str.str());
-
-    const size_t num_channels = (impl->m_num_layers * 2) + 3;
-    std::vector<std::string> channel_names;
-    channel_names.reserve(num_channels);
-    channel_names.push_back("R");
-    channel_names.push_back("G");
-    channel_names.push_back("B");
-
-    const size_t num_exr_layers = truncate<size_t>(ceil(impl->m_num_layers / 2.0));
-    for (size_t i = 0; i < num_exr_layers; ++i)
-    {
-        const std::string layer_number = get_numbered_string("##", i);
-        channel_names.push_back(format("{0}{1}.R", layer_name, layer_number));
-        channel_names.push_back(format("{0}{1}.G", layer_name, layer_number));
-        channel_names.push_back(format("{0}{1}.B", layer_name, layer_number));
-        channel_names.push_back(format("{0}{1}.A", layer_name, layer_number));
-    }
-
-    const Image& image = *impl->m_image;
+    const size_t channel_count = impl->get_channel_count();
+    const std::vector<std::string> channel_names = impl->make_channel_names(layer_name);
 
     try
     {
-        MultiChannelExrFileWriter writer(exr_file_path.c_str(), &image);
-        writer.set_image_channels(num_channels, channel_names);
+        MultiChannelExrFileWriter writer(exr_file_path.c_str(), impl->m_image.get());
+        writer.set_image_channels(channel_count, channel_names);
         writer.set_image_attributes(image_attributes_copy);
         writer.write();
     }
     catch (const std::exception& e)
     {
         RENDERER_LOG_ERROR(
-            "failed to write cryptomatte file %s: %s.",
+            "failed to write cryptomatte file %s for aov \"%s\": %s.",
             exr_file_path.c_str(),
+            get_path().c_str(),
             e.what());
 
         return false;
     }
+
+    stopwatch.measure();
+
+    RENDERER_LOG_INFO(
+        "wrote image file %s for aov \"%s\" in %s.",
+        file_path,
+        get_path().c_str(),
+        pretty_time(stopwatch.get_seconds()).c_str());
 
     return true;
 }
@@ -908,8 +949,7 @@ DictionaryArray CryptomatteAOVFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<AOV> CryptomatteAOVFactory::create(
-    const ParamArray&           params) const
+auto_release_ptr<AOV> CryptomatteAOVFactory::create(const ParamArray& params) const
 {
     ParamArray new_params(params);
 
