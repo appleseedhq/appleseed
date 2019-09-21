@@ -549,22 +549,24 @@ APPLESEED_FORCE_INLINE std::string convert_to_std_string(const char* s)
 inline std::string lower_case(const std::string& s)
 {
     std::string result;
+    result.reserve(s.size());
     std::transform(
         s.begin(),
         s.end(),
         std::back_inserter(result),
-        static_cast<int(*)(int)>(std::tolower));
+        [](const unsigned char c) { return static_cast<char>(std::tolower(static_cast<unsigned char>(c))); });
     return result;
 }
 
 inline std::string upper_case(const std::string& s)
 {
     std::string result;
+    result.reserve(s.size());
     std::transform(
         s.begin(),
         s.end(),
         std::back_inserter(result),
-        static_cast<int(*)(int)>(std::toupper));
+        [](const unsigned char c) { return static_cast<char>(std::toupper(static_cast<unsigned char>(c))); });
     return result;
 }
 
