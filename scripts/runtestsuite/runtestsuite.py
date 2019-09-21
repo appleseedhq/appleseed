@@ -43,9 +43,6 @@ import urllib
 # Constants.
 # --------------------------------------------------------------------------------------------------
 
-DEFAULT_TOOL_FILEPATH = "..\\..\\sandbox\\bin\\Release\\appleseed.cli.exe" if os.name == "nt" else \
-                        "../../sandbox/bin/Release/appleseed.cli"
-
 APPLESEED_BASE_ARGS = ""
 
 VALUE_THRESHOLD = 2                 # max allowed absolute diff between two pixel components, in [0, 255]
@@ -482,7 +479,7 @@ def main():
     colorama.init()
 
     parser = argparse.ArgumentParser(description="run the functional test suite.")
-    parser.add_argument("-t", "--tool-path", metavar="tool-path",
+    parser.add_argument("-t", "--tool-path", required=True, metavar="tool-path",
                         help="set the path to the appleseed.cli tool")
     parser.add_argument("-r", "--recursive", action='store_true', dest="recursive",
                         help="scan the specified directory and all its subdirectories")
@@ -494,9 +491,6 @@ def main():
     args = parser.parse_args()
 
     script_directory = os.path.dirname(os.path.realpath(__file__))
-
-    if args.tool_path is None:
-        args.tool_path = os.path.join(script_directory, DEFAULT_TOOL_FILEPATH)
 
     appleseed_args = APPLESEED_BASE_ARGS
     if args.args:
