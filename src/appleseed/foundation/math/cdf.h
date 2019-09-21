@@ -111,7 +111,6 @@ size_t sample_pdf_linear_search(
 template <typename T>
 size_t sample_cdf_linear_search(
     const T*            cdf,
-    const size_t        size,
     const T             x);
 
 template <typename RandomAccessIter, typename Weight>
