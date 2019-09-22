@@ -30,21 +30,33 @@
 #include "bdptlightingengine.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/forwardlightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/tracer.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
+#include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingray.h"
+#include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/project/project.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/fp.h"
+#include "foundation/math/basis.h"
+#include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
 #include "foundation/math/population.h"
-#include "foundation/utility/arena.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/statistics.h"
+
+// Standard headers.
+#include <cassert>
+#include <cmath>
+#include <cstddef>
 
 using namespace foundation;
 
@@ -110,32 +122,41 @@ namespace
             const Vector3d w = next.m_position - m_position;
             const double dist2 = square_norm(w);
             if (dist2 == 0.0)
-                return 0.0;
+                return 0.0f;
+
             const double rcp_dist2 = 1.0 / dist2;
-            pdf *= std::abs(dot(next.m_geometric_normal, w * sqrt(rcp_dist2)));
+            pdf *= std::abs(dot(next.m_geometric_normal, w)) * std::sqrt(rcp_dist2);
             return static_cast<float>(pdf * rcp_dist2);
         }
 
-        float pdf_light(const BDPTVertex* vertex)
+        float pdf_light(const BDPTVertex* vertex) const
         {
+            assert(vertex != nullptr);
+
             // TODO: Fix; this assumes diffuse light source.
-            float pdf_w = static_cast<float>(std::abs(dot(normalize(vertex->m_position - m_position), m_geometric_normal))) * RcpPi<float>();
+            const float pdf_w =
+                static_cast<float>(
+                    std::abs(dot(normalize(vertex->m_position - m_position), m_geometric_normal)))
+                * RcpPi<float>();
             return convert_density(pdf_w, *vertex);
         }
 
-        float pdf(const BDPTVertex* prev, const BDPTVertex* next, const bool adjoint)
+        float pdf(const BDPTVertex* prev, const BDPTVertex* next, const bool adjoint) const
         {
-            if (m_is_light_vertex && adjoint) return pdf_light(next);
+            if (m_is_light_vertex && adjoint)
+                return pdf_light(next);
 
-            Vector3f wp = static_cast<Vector3f>(prev ? normalize(prev->m_position - m_position) : m_dir_to_prev_vertex);
-            float pdf_w = m_bsdf->evaluate_pdf(
-                m_bsdf_data,
-                adjoint,
-                static_cast<Vector3f>(m_geometric_normal),
-                m_shading_basis,
-                static_cast<Vector3f>(normalize(next->m_position - m_position)),
-                wp,
-                ScatteringMode::All);
+            const Vector3d wp = prev ? normalize(prev->m_position - m_position) : m_dir_to_prev_vertex;
+            const float pdf_w =
+                m_bsdf->evaluate_pdf(
+                    m_bsdf_data,
+                    adjoint,
+                    static_cast<Vector3f>(m_geometric_normal),
+                    m_shading_basis,
+                    static_cast<Vector3f>(normalize(next->m_position - m_position)),
+                    static_cast<Vector3f>(wp),
+                    ScatteringMode::All);
+
             return convert_density(pdf_w, *next);
         }
     };
@@ -194,8 +215,8 @@ namespace
             BDPTVertex* camera_vertices = new BDPTVertex[m_num_max_vertices - 1];
             BDPTVertex* light_vertices = new BDPTVertex[m_num_max_vertices];
 
-            size_t num_light_vertices = trace_light(sampling_context, shading_context, light_vertices);
-            size_t num_camera_vertices = trace_camera(sampling_context, shading_context, shading_point, camera_vertices);
+            const size_t num_light_vertices = trace_light(sampling_context, shading_context, light_vertices);
+            const size_t num_camera_vertices = trace_camera(sampling_context, shading_context, shading_point, camera_vertices);
 
             assert(num_camera_vertices <= m_num_max_vertices - 1);
             assert(num_light_vertices <= m_num_max_vertices);
@@ -205,7 +226,16 @@ namespace
                 for (size_t t = 2; t < num_camera_vertices + 2; t++)
                 {
                     if (s + t <= m_num_max_vertices)
-                        connect(shading_context, shading_point, light_vertices, camera_vertices, s, t, radiance);
+                    {
+                        connect(
+                            shading_context,
+                            shading_point,
+                            light_vertices,
+                            camera_vertices,
+                            static_cast<int>(s),
+                            static_cast<int>(t),
+                            radiance);
+                    }
                 }
             }
 
@@ -230,7 +260,7 @@ namespace
 
             Spectrum result(0.0f);
 
-            // do the visibility test
+            // Do the visibility test.
             if (cos1 > 0.0 && cos2 > 0.0)
             {
                 shading_context.get_tracer().trace_between_simple(
@@ -241,8 +271,8 @@ namespace
                     VisibilityFlags::ShadowRay,
                     shading_point.get_ray().m_depth,
                     result);
-                double geometry_term = cos1 * cos2 / dist2;
-                result *= (float)geometry_term;
+                const double geometry_term = cos1 * cos2 / dist2;
+                result *= static_cast<float>(geometry_term);
             }
 
             return result;
@@ -253,15 +283,15 @@ namespace
         float compute_mis_weight(
             BDPTVertex*                 light_vertices,
             BDPTVertex*                 camera_vertices,
-            const size_t                s,
-            const size_t                t)
+            const int                   s,
+            const int                   t)
         {
-            float sum_ri = 0.0f;  // The sum of the ratios of path densities for adjacent sampling strategies.
+            float sum_ri = 0.0f;  // the sum of the ratios of path densities for adjacent sampling strategies
 
-            BDPTVertex* qs      = s > 0 ? &light_vertices[s - 1]  : nullptr;  // The light connection vertex.
-            BDPTVertex* qs_prev = s > 1 ? &light_vertices[s - 2]  : nullptr;  // The predecessor of the light connection vertex.
-            BDPTVertex* pt      = t > 1 ? &camera_vertices[t - 2] : nullptr;  // The camera connection vertex.
-            BDPTVertex* pt_prev = t > 2 ? &camera_vertices[t - 3] : nullptr;  // The predecessor of the camera connection vertex.
+            BDPTVertex* qs      = s > 0 ? &light_vertices[s - 1]  : nullptr;  // the light connection vertex
+            BDPTVertex* qs_prev = s > 1 ? &light_vertices[s - 2]  : nullptr;  // the predecessor of the light connection vertex
+            BDPTVertex* pt      = t > 1 ? &camera_vertices[t - 2] : nullptr;  // the camera connection vertex
+            BDPTVertex* pt_prev = t > 2 ? &camera_vertices[t - 3] : nullptr;  // the predecessor of the camera connection vertex
 
             // Consider hypothetical connection strategies along the camera subpath.
             float ri = 1.0f;
@@ -307,8 +337,8 @@ namespace
             const ShadingPoint&         shading_point,
             BDPTVertex*                 light_vertices,
             BDPTVertex*                 camera_vertices,
-            const size_t                s,
-            const size_t                t,
+            const int                   s,
+            const int                   t,
             ShadingComponents&          radiance)
         {
             assert(t >= 2);
@@ -353,14 +383,16 @@ namespace
                 const BDPTVertex& light_vertex = light_vertices[s - 1];
                 const BDPTVertex& camera_vertex = camera_vertices[t - 2];
 
-                if (light_vertex.m_bsdf == nullptr || camera_vertex.m_bsdf == nullptr ||
-                    light_vertex.m_bsdf_data == nullptr || camera_vertex.m_bsdf == nullptr)
+                if (light_vertex.m_bsdf == nullptr ||
+                    camera_vertex.m_bsdf == nullptr ||
+                    light_vertex.m_bsdf_data == nullptr ||
+                    camera_vertex.m_bsdf_data == nullptr)
                     return;
 
                 DirectShadingComponents camera_eval_bsdf;
                 camera_vertex.m_bsdf->evaluate(
                     camera_vertex.m_bsdf_data,
-                    false,   // Adjoint
+                    false,   // not adjoint
                     false,
                     static_cast<Vector3f>(camera_vertex.m_geometric_normal),
                     camera_vertex.m_shading_basis,
@@ -372,7 +404,7 @@ namespace
                 DirectShadingComponents light_eval_bsdf;
                 light_vertex.m_bsdf->evaluate(
                     light_vertex.m_bsdf_data,
-                    true,   // Adjoint
+                    true,   // adjoint
                     false,
                     static_cast<Vector3f>(light_vertex.m_geometric_normal),
                     light_vertex.m_shading_basis,
@@ -644,7 +676,7 @@ namespace
 
             void on_hit(const PathVertex& vertex)
             {
-                // Create BDPT Vertex.
+                // Create BDPT vertex.
                 BDPTVertex& bdpt_vertex = m_vertices[*m_num_vertices];
                 bdpt_vertex.m_beta = vertex.m_throughput * m_initial_beta;
                 bdpt_vertex.m_bsdf = vertex.m_bsdf;
@@ -677,7 +709,7 @@ namespace
                     }
                 }
 
-                (*m_num_vertices)++;
+                ++(*m_num_vertices);
             }
 
             void on_scatter(PathVertex& vertex)
