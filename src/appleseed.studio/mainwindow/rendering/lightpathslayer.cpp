@@ -60,7 +60,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -90,8 +89,8 @@ namespace {
     struct OpenGLRasterizer
       : public ObjectRasterizer
     {
-        vector<float>   m_buffer;
-        size_t          m_prim_count;
+        std::vector<float>  m_buffer;
+        size_t              m_prim_count;
 
         void begin_object(const size_t triangle_count_hint) override
         {
@@ -163,7 +162,7 @@ void LightPathsLayer::set_light_paths(const LightPathArray& light_paths)
     {
         // Sort paths by descending radiance at the camera.
         const auto& light_path_recorder = m_project.get_light_path_recorder();
-        sort(
+        std::sort(
             &m_light_paths[0],
             &m_light_paths[0] + m_light_paths.size(),
             [&light_path_recorder](const LightPath& lhs, const LightPath& rhs)
@@ -238,7 +237,7 @@ void LightPathsLayer::load_light_paths_data()
         const size_t total_gl_vertex_count = 2 * (light_path_recorder.get_vertex_count() - 2) + 2;
 
         GLsizei total_index_count = 0;
-        vector<float> buffer;
+        std::vector<float> buffer;
         buffer.reserve(total_gl_vertex_count * LightPathVertexFloatStride);
         for (size_t light_path_idx = 0; light_path_idx < m_light_paths.size(); light_path_idx++)
         {
@@ -282,7 +281,7 @@ void LightPathsLayer::load_light_paths_data()
 }
 
 namespace {
-    const string shader_kind_to_string(const GLint shader_kind)
+    const char* shader_kind_to_string(const GLint shader_kind)
     {
         switch (shader_kind) {
             case GL_VERTEX_SHADER:
@@ -313,9 +312,9 @@ namespace {
 
             GLint shader_kind;
             f->glGetShaderiv(shader, GL_SHADER_TYPE, &shader_kind);
-            string shader_kind_string = shader_kind_to_string(shader_kind);
+            const char* shader_kind_string = shader_kind_to_string(shader_kind);
 
-            RENDERER_LOG_ERROR("opengl: %s shader compilation failed:\n%s", shader_kind_string.c_str(), info_log);
+            RENDERER_LOG_ERROR("opengl: %s shader compilation failed:\n%s", shader_kind_string, info_log);
         }
     }
 
@@ -533,7 +532,7 @@ void LightPathsLayer::dump_selected_light_path() const
             LightPathVertex v;
             light_path_recorder.get_light_path_vertex(i, v);
 
-            const string entity_name =
+            const std::string entity_name =
                 v.m_entity != nullptr
                     ? foundation::format("\"{0}\"", v.m_entity->get_path().c_str())
                     : "n/a";

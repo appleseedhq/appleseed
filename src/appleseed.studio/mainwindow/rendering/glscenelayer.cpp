@@ -61,7 +61,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -97,8 +96,8 @@ namespace
     struct OpenGLRasterizer
       : public ObjectRasterizer
     {
-        vector<float>   m_buffer;
-        size_t          m_prim_count;
+        std::vector<float>  m_buffer;
+        size_t              m_prim_count;
 
         void begin_object(const size_t triangle_count_hint) override
         {
@@ -182,8 +181,7 @@ void GLSceneLayer::load_object_instance(
     const Matrix4f model_matrix = assembly_transform_matrix * object_transform_matrix;
 
     // Object vertex buffer data has already been loaded; just add an instance
-    const string obj_name = string(object->get_name());
-    size_t buf_idx = m_scene_object_index_map.at(obj_name);
+    size_t buf_idx = m_scene_object_index_map.at(object->get_name());
 
     const GLuint object_instances_vbo = m_scene_object_instance_vbos[buf_idx];
     const GLuint object_vao = m_scene_object_vaos[buf_idx];
@@ -223,8 +221,8 @@ void GLSceneLayer::load_assembly_instance(
 
 void GLSceneLayer::load_object_data(const Object& object)
 {
-    const string obj_name = string(object.get_name());
-    RENDERER_LOG_DEBUG("opengl: uploading mesh data for object \"%s\"...", obj_name.c_str());
+    const char* obj_name = object.get_name();
+    RENDERER_LOG_DEBUG("opengl: uploading mesh data for object \"%s\"...", obj_name);
 
     if (m_scene_object_index_map.count(obj_name) == 0)
     {
@@ -327,8 +325,7 @@ void GLSceneLayer::load_scene_data()
                 continue;
             }
 
-            const string obj_name = string(object->get_name());
-            const size_t buf_idx = m_scene_object_index_map[obj_name];
+            const size_t buf_idx = m_scene_object_index_map[object->get_name()];
             m_scene_object_instance_counts[buf_idx] += 1;
         }
     }
@@ -372,7 +369,7 @@ void GLSceneLayer::load_scene_data()
 
 namespace
 {
-    std::string shader_kind_to_string(const GLint shader_kind)
+    const char* shader_kind_to_string(const GLint shader_kind)
     {
         switch (shader_kind)
         {
@@ -404,9 +401,9 @@ namespace
 
             GLint shader_kind;
             f->glGetShaderiv(shader, GL_SHADER_TYPE, &shader_kind);
-            const std::string shader_kind_string = shader_kind_to_string(shader_kind);
+            const char* shader_kind_string = shader_kind_to_string(shader_kind);
 
-            RENDERER_LOG_ERROR("opengl: %s shader compilation failed:\n%s", shader_kind_string.c_str(), info_log);
+            RENDERER_LOG_ERROR("opengl: %s shader compilation failed:\n%s", shader_kind_string, info_log);
         }
     }
 
