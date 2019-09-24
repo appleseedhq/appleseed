@@ -779,6 +779,7 @@ bool AssemblyLeafVisitor::visit(
                 object.intersect(instance_local_ray, result);
 
                 // Keep track of the closest hit.
+                // todo: result is not in the same space as the shading point ray.
                 if (result.m_hit && result.m_distance < m_shading_point.m_ray.m_tmax)
                 {
                     m_shading_point.m_ray.m_tmax = result.m_distance;
@@ -790,9 +791,17 @@ bool AssemblyLeafVisitor::visit(
                     m_shading_point.m_object_instance_index = object_instance_index_pair.second;
                     m_shading_point.m_primitive_index = 0;
                     m_shading_point.m_primitive_pa = result.m_material_slot;
-                    m_shading_point.m_geometric_normal = object_instance_transform.normal_to_parent(result.m_geometric_normal);
-                    m_shading_point.m_original_shading_normal = object_instance_transform.normal_to_parent(result.m_shading_normal);
+                    m_shading_point.m_geometric_normal = 
+                        assembly_instance_transform.normal_to_parent(
+                            object_instance_transform.normal_to_parent(
+                                result.m_geometric_normal));
+                    m_shading_point.m_original_shading_normal =
+                        assembly_instance_transform.normal_to_parent(
+                            object_instance_transform.normal_to_parent(
+                                result.m_shading_normal));
                     m_shading_point.m_uv = result.m_uv;
+                    // HasGeometricNormal and HasOriginalShadingNormal shading point members aren't set
+                    // so that the shading point can compute the hit side by itself.
                 }
             }
         }
