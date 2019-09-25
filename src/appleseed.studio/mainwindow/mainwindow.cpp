@@ -1908,7 +1908,7 @@ void MainWindow::slot_clear_render_region()
 
     if (m_rendering_manager.is_rendering())
         m_rendering_manager.schedule(std::move(clear_render_region_action));
-    else clear_render_region_action.get()->operator()(*m_project_manager.get_project());
+    else clear_render_region_action->operator()(*m_project_manager.get_project());
 
     m_rendering_manager.reinitialize_rendering();
 }
@@ -1920,7 +1920,7 @@ void MainWindow::slot_set_render_region(const QRect& rect)
 
     if (!m_rendering_manager.is_rendering())
     {
-        set_render_region_action.get()->operator()(*m_project_manager.get_project());
+        set_render_region_action->operator()(*m_project_manager.get_project());
 
         if (m_application_settings.get_path_optional<bool>(SETTINGS_RENDER_REGION_TRIGGERS_RENDERING))
             start_rendering(InteractiveRendering);

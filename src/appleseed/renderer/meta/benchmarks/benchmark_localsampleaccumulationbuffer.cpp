@@ -44,9 +44,9 @@ BENCHMARK_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
 {
     struct Fixture
     {
-        Tile                            m_color_tile;
-        AccumulatorTile                 m_level;
-        AABB2u                          m_rect;
+        Tile                m_color_tile;
+        AccumulatorTile     m_level;
+        AABB2u              m_rect;
 
         Fixture()
           : m_color_tile(64, 64, 4, PixelFormatHalf)

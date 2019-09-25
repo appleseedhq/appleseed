@@ -154,10 +154,9 @@ namespace detail
     template <typename T>
     void typed_entity_map_insert(renderer::TypedEntityMap<T>* map, foundation::auto_release_ptr<T> entity)
     {
-        if (map->get_by_name(entity.get()->get_name()) != nullptr)
+        if (map->get_by_name(entity->get_name()) != nullptr)
             throw foundation::Exception(foundation::format("Entity {0} already exists", entity->get_name()).c_str());
-        else
-            map->insert(entity);
+        else map->insert(entity);
     }
 }
 

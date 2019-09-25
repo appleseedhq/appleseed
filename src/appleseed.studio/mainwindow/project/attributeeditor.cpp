@@ -100,7 +100,7 @@ void AttributeEditor::edit(
 void AttributeEditor::refresh() const
 {
     if (m_entity_editor.get() && m_value_provider)
-        m_entity_editor.get()->rebuild_form(m_value_provider->get_values());
+        m_entity_editor->rebuild_form(m_value_provider->get_values());
 }
 
 }   // namespace studio
