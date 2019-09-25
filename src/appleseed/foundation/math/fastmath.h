@@ -30,6 +30,7 @@
 #pragma once
 
 // appleseed.foundation headers.
+#include "foundation/math/scalar.h"
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
@@ -64,9 +65,9 @@ namespace foundation
 //   foundation::fast_cos()
 //   foundation::fast_cos_full()
 //
-// were borrowed from https://code.google.com/p/fastapprox/ with minor,
-// non-functional changes. The original copyright notice for this code
-// follows:
+// were borrowed from https://code.google.com/p/fastapprox/ (alternative
+// link: https://github.com/whackashoe/fastapprox) with minor, non-
+// functional changes. The original copyright notice for this code follows:
 //
 // *=====================================================================*
 // *                   Copyright (C) 2011 Paul Mineiro                   *
@@ -152,10 +153,17 @@ float fast_cos(const float x);
 float fast_cos_full(const float x);
 float fast_cos_full_positive(const float x);    // x >= 0.0f
 
+// Fast arc cosine approximation.
+// Reference:
+//   Cg 3.1 Toolkit Documentation
+//   https://developer.download.nvidia.com/cg/acos.html
+float fast_acos(const float x);
+
 // Fast reciprocal approximation.
 float fast_rcp(const float x);
 
 // Fast square root approximation.
+// todo: improve precision, it is quite poor at the moment.
 float fast_sqrt(const float x);
 
 // Fast reciprocal square root approximations.
@@ -333,8 +341,23 @@ inline float fast_cos_full(const float x)
 inline float fast_cos_full_positive(const float x)
 {
     assert(x >= 0.0f);
-
     return fast_sin_full_positive(x + HalfPi<float>());
+}
+
+inline float fast_acos(const float x)
+{
+    const float negate = float(x < 0.0f);
+    const float abs_x = std::abs(x);
+    float ret = -0.0187293f;
+    ret *= abs_x;
+    ret += 0.0742610f;
+    ret *= abs_x;
+    ret -= 0.2121144f;
+    ret *= abs_x;
+    ret += 1.5707288f;
+    ret *= std::sqrt(1.0f - abs_x);
+    ret -= 2.0f * negate * ret;
+    return negate * foundation::Pi<float>() + ret;
 }
 
 inline float fast_sqrt(const float x)
