@@ -31,7 +31,6 @@
 #include "appleseed/color/as_colorimetry.h"
 
 // Common color component transfer functions quantities
-
 #define ADOBE_RGB_1998_GAMMA    2.19921875
 #define REC709_GAMMA            2.4
 #define REC1886_GAMMA           2.4
@@ -61,6 +60,7 @@ float sRGB_EOTF(float value)
     {
         linear_out = 0;
     }
+
     return linear_out;
 }
 

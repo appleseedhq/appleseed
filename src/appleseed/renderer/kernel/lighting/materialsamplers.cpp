@@ -88,6 +88,7 @@ const ShadingPoint& BSDFSampler::trace_full(
         m_shading_point.get_ray().m_time,
         VisibilityFlags::ShadowRay,
         m_shading_point.get_ray().m_depth + 1);
+
     ray.copy_media_from(m_shading_point.get_ray());
 
     const ShadingPoint& shading_point =
@@ -111,6 +112,7 @@ void BSDFSampler::trace_simple(
         m_shading_point.get_ray().m_time,
         VisibilityFlags::ShadowRay,
         m_shading_point.get_ray().m_depth + 1);
+
     ray.copy_media_from(m_shading_point.get_ray());
 
     shading_context.get_tracer().trace_simple(
@@ -226,6 +228,7 @@ const ShadingPoint& VolumeSampler::trace_full(
         m_volume_ray.m_time,
         VisibilityFlags::ShadowRay,
         m_volume_ray.m_depth + 1);
+
     ray.copy_media_from(m_volume_ray);
 
     const ShadingPoint& shading_point =
@@ -248,6 +251,7 @@ void VolumeSampler::trace_simple(
         m_volume_ray.m_time,
         VisibilityFlags::ShadowRay,
         m_volume_ray.m_depth + 1);
+
     ray.copy_media_from(m_volume_ray);
 
     shading_context.get_tracer().trace_simple(
