@@ -128,7 +128,7 @@ namespace
                 return 1.0f;
 
             // Build the outgoing vector.
-            const float sin_theta = sqrt(1.0f - square(cos_theta));
+            const float sin_theta = std::sqrt(1.0f - square(cos_theta));
             const Vector3f wo(sin_theta, cos_theta, 0.0f);
 
             float R = 0.0f;

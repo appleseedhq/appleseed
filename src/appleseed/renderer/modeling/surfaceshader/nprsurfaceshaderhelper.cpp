@@ -214,8 +214,8 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
         for (size_t i = 0; i < num_samples; ++i)
         {
             const double angle = static_cast<double>(i) * rad_angle_step;
-            const double x = sin(angle);
-            const double y = cos(angle);
+            const double x = std::sin(angle);
+            const double y = std::cos(angle);
 
             const Vector3d pp =
                 (radius * x * basis.get_tangent_u()) +

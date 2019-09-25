@@ -401,7 +401,7 @@ TEST_SUITE(Foundation_Math_AABB)
             Vector3d(4.0, 5.0, 6.0));
 
         const double square_diameter = 5.0 * 5.0 + 7.0 * 7.0 + 9.0 * 9.0;
-        const double radius = sqrt(square_diameter / 4.0);
+        const double radius = std::sqrt(square_diameter / 4.0);
 
         EXPECT_FEQ(radius, bbox.radius());
     }

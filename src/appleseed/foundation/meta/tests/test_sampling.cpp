@@ -255,7 +255,7 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
     template <typename T>
     Vector<T, 3> sample_cone_uniform_30deg(const Vector<T, 2>& s)
     {
-        return sample_cone_uniform(s, cos(deg_to_rad(30.0)));
+        return sample_cone_uniform(s, std::cos(deg_to_rad(30.0)));
     }
 
     template <typename T>

@@ -118,7 +118,7 @@ namespace
 
     const float IntegralThreshold = 0.999f;
     const float ScaleFactor = 1.0f / IntegralThreshold;
-    const float RmaxFactor = sqrt(-2.0f * log(1.0f - IntegralThreshold));
+    const float RmaxFactor = std::sqrt(-2.0f * log(1.0f - IntegralThreshold));
 
     class GaussianBSSRDF
       : public SeparableBSSRDF
@@ -226,7 +226,7 @@ namespace
             //
 
             const float k = values->m_precomputed.m_k[channel];
-            const float umax = 1.0f - exp(-k * square(values->m_base_values.m_max_disk_radius));
+            const float umax = 1.0f - std::exp(-k * square(values->m_base_values.m_max_disk_radius));
 
             return sample_disk_gaussian(u * umax, k);
         }

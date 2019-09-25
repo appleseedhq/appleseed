@@ -580,12 +580,12 @@ float Camera::map_to_shutter_curve_impl_linear(const float sample) const
     if (sample < impl->m_inverse_cdf_open_point)
     {
         // Shutter is opening.
-        return sqrt(impl->m_shutter_curve_linear_open_multiplier * sample);
+        return std::sqrt(impl->m_shutter_curve_linear_open_multiplier * sample);
     }
     else if (sample > impl->m_inverse_cdf_close_point)
     {
         // Shutter is closing.
-        return 1.0f - sqrt(impl->m_shutter_curve_linear_close_multiplier * (sample - 1.0f));
+        return 1.0f - std::sqrt(impl->m_shutter_curve_linear_close_multiplier * (sample - 1.0f));
     }
     else
     {

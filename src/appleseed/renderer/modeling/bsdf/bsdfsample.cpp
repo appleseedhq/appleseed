@@ -129,7 +129,7 @@ void BSDFSample::apply_pdf_differentials_heuristic()
     assert(m_incoming.has_derivatives());
     assert(m_probability > 0.0f);
 
-    const float pdf_spread = 1.0f / (8.0f * sqrt(m_probability));
+    const float pdf_spread = 1.0f / (8.0f * std::sqrt(m_probability));
 
     const float rx_spread = norm(m_incoming.get_dx());
     const float ry_spread = norm(m_incoming.get_dy());

@@ -113,10 +113,10 @@ namespace
             const double outer_half_angle = deg_to_rad(m_params.get_required<double>("outer_angle", 30.0) / 2.0);
             const double tilt_angle = deg_to_rad(m_params.get_optional<double>("tilt_angle", 0.0));
 
-            m_cos_inner_half_angle = cos(inner_half_angle);
-            m_cos_outer_half_angle = cos(outer_half_angle);
-            m_rcp_screen_half_size = 1.0 / tan(outer_half_angle);
-            m_up = Vector3d(sin(tilt_angle), cos(tilt_angle), 0.0);
+            m_cos_inner_half_angle = std::cos(inner_half_angle);
+            m_cos_outer_half_angle = std::cos(outer_half_angle);
+            m_rcp_screen_half_size = 1.0 / std::tan(outer_half_angle);
+            m_up = Vector3d(sin(tilt_angle), std::cos(tilt_angle), 0.0);
 
             return true;
         }
@@ -221,7 +221,7 @@ namespace
             m_inputs.evaluate(shading_context.get_texture_cache(), SourceInputs(uv), &values);
 
             radiance = values.m_intensity;
-            radiance *= values.m_intensity_multiplier * pow(2.0f, values.m_exposure * values.m_exposure_multiplier);
+            radiance *= values.m_intensity_multiplier * std::pow(2.0f, values.m_exposure * values.m_exposure_multiplier);
 
             if (cos_theta < m_cos_inner_half_angle)
             {

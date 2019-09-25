@@ -189,7 +189,7 @@ namespace
 
         // Compute the position of the point on the disk.
         const float phi = TwoPi<float>() * u[1];
-        const Vector2f disk_point(disk_radius * cos(phi), disk_radius * sin(phi));
+        const Vector2f disk_point(disk_radius * std::cos(phi), disk_radius * std::sin(phi));
         const float disk_point_prob = bssrdf.evaluate_profile_pdf(bssrdf_data, disk_radius);
         assert(disk_point_prob > 0.0f);
 
@@ -206,7 +206,7 @@ namespace
 
         // Compute the height of the point on the hemisphere above the sampling disk.
         assert(disk_radius <= max_disk_radius);
-        const float h = sqrt(square(max_disk_radius) - square(disk_radius));
+        const float h = std::sqrt(square(max_disk_radius) - square(disk_radius));
         const Vector3d hn = static_cast<double>(h) * projection_basis.get_normal();
 
         // Compute sphere entry and exit points.

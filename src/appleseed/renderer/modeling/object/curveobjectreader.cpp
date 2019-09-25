@@ -205,7 +205,7 @@ namespace
                 for (size_t p = 0; p < ControlPointCount; ++p)
                 {
                     // http://math.stackexchange.com/questions/87230/picking-random-points-in-the-volume-of-sphere-with-uniform-probability
-                    const GScalar r = pow(GScalar(1.0) - rand2<GScalar>(rng), GScalar(1.0) / 3);
+                    const GScalar r = std::pow(GScalar(1.0) - rand2<GScalar>(rng), GScalar(1.0) / 3);
                     const GVector3 d = sample_sphere_uniform(rand_vector2<GVector2>(rng));
                     push_vertex(r * d);
                     push_vertex_width(curve_width);

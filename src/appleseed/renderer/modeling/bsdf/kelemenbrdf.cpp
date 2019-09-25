@@ -552,7 +552,7 @@ namespace
             {
                 // Compute an outgoing direction V in the XY plane.
                 const float cos_theta = static_cast<float>(i) / (AlbedoTableSize - 1);
-                const float sin_theta = sqrt(1.0f - cos_theta * cos_theta);
+                const float sin_theta = std::sqrt(1.0f - cos_theta * cos_theta);
                 const Vector3f V(sin_theta, cos_theta, 0.0f);
 
                 // Compute the albedo for this outgoing direction.
@@ -626,7 +626,7 @@ namespace
             for (size_t i = 0; i < AlbedoTableSize; ++i)
             {
                 const float cos_theta = static_cast<float>(i) / (AlbedoTableSize - 1);
-                const float sin_theta = sqrt(1.0f - cos_theta * cos_theta);
+                const float sin_theta = std::sqrt(1.0f - cos_theta * cos_theta);
 
                 Spectrum sample = a_spec[i];
                 sample *= cos_theta * sin_theta;
@@ -700,7 +700,7 @@ namespace
             for (size_t i = 0; i < AlbedoTableSize; ++i)
             {
                 const float cos_angle = static_cast<float>(i) / (AlbedoTableSize - 1);
-                const float angle = acos(cos_angle);
+                const float angle = std::acos(cos_angle);
                 const float albedo = average_value(a_spec[i]);
                 tabulated_albedos[i] = Vector2f(angle, albedo);
             }
@@ -711,7 +711,7 @@ namespace
             for (size_t i = 0; i < PointCount; ++i)
             {
                 const float cos_angle = static_cast<float>(i) / (PointCount - 1);
-                const float angle = acos(cos_angle);
+                const float angle = std::acos(cos_angle);
 
                 Spectrum albedo_sample;
                 evaluate_a_spec(a_spec, cos_angle, albedo_sample);

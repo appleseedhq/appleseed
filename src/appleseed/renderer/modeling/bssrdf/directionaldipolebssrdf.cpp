@@ -132,7 +132,7 @@ namespace
                     const float r = values->m_reflectance[i];
 
                     const float alpha =
-                        1.0f - exp(r * (-5.09406f + r * (2.61188f - 4.31805f * r)));
+                        1.0f - std::exp(r * (-5.09406f + r * (2.61188f - 4.31805f * r)));
 
                     const float sigma_t = 1.0f / values->m_mfp[i];
 
@@ -243,7 +243,7 @@ namespace
                 return;
             }
             const Vector3f ni_star =
-                r2 > 0.0f ? cross(xoxi / sqrt(r2), v / norm_v) : ni;                    // we assume that if r2 > 0, then sqrt(r2) is also > 0
+                r2 > 0.0f ? cross(xoxi / std::sqrt(r2), v / norm_v) : ni;               // we assume that if r2 > 0, then sqrt(r2) is also > 0
             assert(is_normalized(ni_star));
 
             // Compute direction of real ray source.
@@ -273,7 +273,7 @@ namespace
 
                 // Compute extrapolation distance ([1] equation 21).
                 const float D = 1.0f / (3.0f * sigma_t_prime);                          // diffusion coefficient
-                const float de = 2.131f * D / sqrt(alpha_prime);                        // distance to extrapolated boundary
+                const float de = 2.131f * D / std::sqrt(alpha_prime);                   // distance to extrapolated boundary
                 //const float de = 2.121f * D / alpha_prime;                            // [2] equation 18
 
                 // Compute corrected distance to real source.
@@ -283,7 +283,7 @@ namespace
                     mu0 > 0.0f
                         ? D * mu0 * (D * mu0 - 2.0f * de * cos_beta)                    // frontlit
                         : 1.0f / square(3.0f * sigma_t);                                // backlit
-                const float dr = sqrt(r2 + zr2);                                        // distance to real ray source
+                const float dr = std::sqrt(r2 + zr2);                                   // distance to real ray source
 
                 // Compute position of and distance to virtual source.
                 const Vector3f xv = xi + (2.0f * A * de) * ni_star;                     // position of the virtual ray source
@@ -315,7 +315,7 @@ namespace
             const float r2 = square(r);
             const float sigma_tr_r = sigma_tr * r;
 
-            const float t0 = RcpFourPiSquare<float>() * exp(-sigma_tr_r) / (r2 * r);
+            const float t0 = RcpFourPiSquare<float>() * std::exp(-sigma_tr_r) / (r2 * r);
             const float t1 = r2 / D + 3.0f * (1.0f + sigma_tr_r) * dot_w_x;
             const float t2 = 3.0f * D * (1.0f + sigma_tr_r) * dot_w_n;
             const float t3 = (1.0f + sigma_tr_r + 3.0f * D * (3.0f * (1.0f + sigma_tr_r) + square(sigma_tr_r)) / r2 * dot_w_x) * dot_x_n;

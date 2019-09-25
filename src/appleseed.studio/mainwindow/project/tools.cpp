@@ -271,7 +271,7 @@ LineEditDoubleSliderAdaptor::LineEditDoubleSliderAdaptor(
 void LineEditDoubleSliderAdaptor::slot_set_line_edit_value(const double value)
 {
     // Format integer values such as 2 as "2.0" instead of "2".
-    const bool is_integer = floor(value) == value;
+    const bool is_integer = std::floor(value) == value;
     const QString format_string = is_integer ? "%1.0" : "%1";
     const QString new_line_edit_value = format_string.arg(value);
 

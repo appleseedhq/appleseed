@@ -462,7 +462,7 @@ namespace
                     // Limit display rate.
                     if (elapsed < m_target_elapsed)
                     {
-                        const double ms = ceil(1000.0 * (m_target_elapsed - elapsed));
+                        const double ms = std::ceil(1000.0 * (m_target_elapsed - elapsed));
                         sleep(truncate<uint32>(ms), m_abort_switch);
                     }
                 }

@@ -243,8 +243,8 @@ namespace
             const Vector3d dir = normalize(point);
 
             // Convert that direction to spherical coordinates.
-            const double phi = atan2(dir.z, dir.x);
-            const double theta = acos(dir.y);
+            const double phi = std::atan2(dir.z, dir.x);
+            const double theta = std::acos(dir.y);
 
             // Convert the spherical coordinates to normalized device coordinates.
             return Vector2d(

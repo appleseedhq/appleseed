@@ -167,7 +167,7 @@ namespace
                 value = max(value, 0.0f);
 
                 // Exponential scaling.
-                if (m_gamma > 1.0f) value = pow(value, m_rcp_gamma);
+                if (m_gamma > 1.0f) value = std::pow(value, m_rcp_gamma);
 
                 // Normalize to the maximum value.
                 if (m_max_value > 0.0f)

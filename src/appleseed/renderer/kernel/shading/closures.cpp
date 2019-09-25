@@ -1660,7 +1660,7 @@ namespace
             values->m_width = max(p->contour_width, 0.0f);
 
             values->m_occlusion_threshold = max(p->occlusion_threshold, 0.0f);
-            values->m_cos_crease_threshold = cos(deg_to_rad(p->creases_threshold));
+            values->m_cos_crease_threshold = std::cos(deg_to_rad(p->creases_threshold));
 
             values->m_features = features;
             values->m_quality = static_cast<size_t>(clamp(p->quality, 1, 4));
@@ -1685,7 +1685,7 @@ void CompositeClosure::compute_closure_shading_basis(
     const float normal_square_norm = square_norm(normal);
     if APPLESEED_LIKELY(normal_square_norm != 0.0f)
     {
-        const float rcp_normal_norm = 1.0f / sqrt(normal_square_norm);
+        const float rcp_normal_norm = 1.0f / std::sqrt(normal_square_norm);
         m_bases[m_closure_count] =
             Basis3f(
                 normal * rcp_normal_norm,
@@ -1709,8 +1709,8 @@ void CompositeClosure::compute_closure_shading_basis(
         const float normal_square_norm = square_norm(normal);
         if APPLESEED_LIKELY(normal_square_norm != 0.0f)
         {
-            const float rcp_normal_norm = 1.0f / sqrt(normal_square_norm);
-            const float rcp_tangent_norm = 1.0f / sqrt(tangent_square_norm);
+            const float rcp_normal_norm = 1.0f / std::sqrt(normal_square_norm);
+            const float rcp_tangent_norm = 1.0f / std::sqrt(tangent_square_norm);
             m_bases[m_closure_count] =
                 Basis3f(
                     normal * rcp_normal_norm,

@@ -99,7 +99,7 @@ namespace
             if (dist2 == 0.0)
                 return 0.0;
             const double rcp_dist2 = 1.0 / dist2;
-            pdf *= max(dot(vertex.m_geometric_normal, w * sqrt(rcp_dist2)), 0.0);
+            pdf *= max(dot(vertex.m_geometric_normal, w * std::sqrt(rcp_dist2)), 0.0);
             return pdf * rcp_dist2;
         }
     };

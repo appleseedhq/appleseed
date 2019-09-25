@@ -530,7 +530,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const float albedo = 1.0f * i / (ValueCount - 1);
             const float estimated_value = compute_rcp_diffusion_length(albedo);
-            const float x = tanh(estimated_value / max(albedo, 0.01f));
+            const float x = std::tanh(estimated_value / max(albedo, 0.01f));
             EXPECT_FEQ_EPS(estimated_value, x, 1.0e-2f);
         }
     }
@@ -617,7 +617,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             else
             {
                 current_cosine = sample_cosine_dwivedi(rcp(mu), rand_float2(rng));
-                const float sine = sqrt(1.0f - square(current_cosine));
+                const float sine = std::sqrt(1.0f - square(current_cosine));
                 Vector2f xz = sine * sample_circle_uniform(rand_float2(rng));
                 current_direction.x = xz[0];
                 current_direction.y = -current_cosine;

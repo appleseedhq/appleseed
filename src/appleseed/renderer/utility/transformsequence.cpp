@@ -398,13 +398,13 @@ namespace
 
         double f(const double theta) const
         {
-            return m_sx.f(theta) * cos(theta) * m_p.x - m_sy.f(theta) * sin(theta) * m_p.y;
+            return m_sx.f(theta) * std::cos(theta) * m_p.x - m_sy.f(theta) * std::sin(theta) * m_p.y;
         }
 
         double d(const double theta) const
         {
-            return (m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y) * cos(theta) -
-                   (m_sx.f(theta) * m_p.x + m_sy.d(theta) * m_p.y) * sin(theta);
+            return (m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y) * std::cos(theta) -
+                   (m_sx.f(theta) * m_p.x + m_sy.d(theta) * m_p.y) * std::sin(theta);
         }
 
         double dd(const double theta) const
@@ -413,7 +413,7 @@ namespace
             const double b = m_sx.f(theta) * m_p.x + m_sy.d(theta) * m_p.y;
             const double ap = -m_sy.d(theta) * m_p.y;
             const double bp = m_sx.d(theta) * m_p.x;
-            return (ap - b) * cos(theta) - (bp + a) * sin(theta);
+            return (ap - b) * std::cos(theta) - (bp + a) * std::sin(theta);
         }
     };
 
@@ -432,13 +432,13 @@ namespace
 
         double f(const double theta) const
         {
-            return m_sx.f(theta) * sin(theta) * m_p.x + m_sy.f(theta) * cos(theta) * m_p.y;
+            return m_sx.f(theta) * std::sin(theta) * m_p.x + m_sy.f(theta) * std::cos(theta) * m_p.y;
         }
 
         double d(const double theta) const
         {
-            return (m_sx.f(theta) * m_p.x + m_sy.d(theta) * m_p.y) * cos(theta) +
-                   (m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y) * sin(theta);
+            return (m_sx.f(theta) * m_p.x + m_sy.d(theta) * m_p.y) * std::cos(theta) +
+                   (m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y) * std::sin(theta);
         }
 
         double dd(const double theta) const
@@ -447,7 +447,7 @@ namespace
             const double b = m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y;
             const double ap = m_sx.d(theta) * m_p.x;
             const double bp = -m_sy.d(theta) * m_p.y;
-            return (ap + b) * cos(theta) + (bp - a) * sin(theta);
+            return (ap + b) * std::cos(theta) + (bp - a) * std::sin(theta);
         }
     };
 
@@ -560,7 +560,7 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
     {
         const Vector3d v = perp / perp_norm;
         const double sin_a = clamp(perp_norm, -1.0, 1.0);
-        const double cos_a = sqrt(1.0 - sin_a * sin_a);
+        const double cos_a = std::sqrt(1.0 - sin_a * sin_a);
         axis_to_z.set_local_to_parent(Matrix4d::make_rotation(v, cos_a, +sin_a));
         axis_to_z.set_parent_to_local(Matrix4d::make_rotation(v, cos_a, -sin_a));
     }

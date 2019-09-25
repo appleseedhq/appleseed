@@ -207,7 +207,7 @@ namespace
 
             const float r = m_radius * s;
             const float theta = TwoPi<float>() * t;
-            return GVector3(r * cos(theta), r * sin(theta), 0.0f);
+            return GVector3(r * std::cos(theta), r * std::sin(theta), 0.0f);
         }
 
         GVector2 evaluate_tex_coords(const float s, const float t) const
@@ -336,13 +336,13 @@ namespace
 
             const float theta = TwoPi<float>() * s;
             const float phi = TwoPi<float>() * t;
-            const float cos_phi = cos(phi);
+            const float cos_phi = std::cos(phi);
             const float r = m_circle_radius + m_tube_radius * cos_phi;
 
             return GVector3(
-                r * cos(theta),
-                r * sin(theta),
-                m_tube_radius * sin(phi));
+                r * std::cos(theta),
+                r * std::sin(theta),
+                m_tube_radius * std::sin(phi));
         }
 
         GVector2 evaluate_tex_coords(const float s, const float t) const

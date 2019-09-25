@@ -309,27 +309,27 @@ namespace
         assert(cos_omega >= -1.0f && cos_omega <= 1.0f);
         assert(cos_sigma >= 0.0f && cos_sigma <= 1.0f);
 
-        const float sin_omega = sqrt(1.0f - cos_omega * cos_omega);
+        const float sin_omega = std::sqrt(1.0f - cos_omega * cos_omega);
 
         const float sin_sigma2 = 1.0f - (cos_sigma * cos_sigma);
-        const float sin_sigma = sqrt(sin_sigma2);
+        const float sin_sigma = std::sqrt(sin_sigma2);
 
         const float sin_gamma = cos_sigma / sin_omega;
         const float cos_gamma2 = 1.0f - (sin_gamma * sin_gamma);
-        const float cos_gamma = sqrt(cos_gamma2);
+        const float cos_gamma = std::sqrt(cos_gamma2);
 
         const float g = -2.0f * sin_omega * cos_sigma * cos_gamma
                     + HalfPi<float>()
-                    - asin(sin_gamma)
+                    - std::asin(sin_gamma)
                     + sin_gamma * cos_gamma;
 
         const float h =
             cos_omega * (
-                cos_gamma * sqrt(sin_sigma2 - cos_gamma2)
-                + sin_sigma2 * asin(cos_gamma / sin_sigma));
+                cos_gamma * std::sqrt(sin_sigma2 - cos_gamma2)
+                + sin_sigma2 * std::asin(cos_gamma / sin_sigma));
 
-        const float omega = acos(cos_omega);
-        const float sigma = acos(cos_sigma);
+        const float omega = std::acos(cos_omega);
+        const float sigma = std::acos(cos_sigma);
 
         float contribution;
         if (omega < (HalfPi<float>() - sigma))
@@ -388,7 +388,7 @@ float LightTree::compute_node_probability(
     //
     const Vector3d outcoming_light_direction = normalize(bbox.center() - surface_point);
     const float sin_sigma2 = min(1.0f, (r2 / distance2));
-    const float cos_sigma = sqrt(1.0f - sin_sigma2);
+    const float cos_sigma = std::sqrt(1.0f - sin_sigma2);
 
     const Vector3d& incoming_light_direction = shading_point.get_ray().m_dir;
 

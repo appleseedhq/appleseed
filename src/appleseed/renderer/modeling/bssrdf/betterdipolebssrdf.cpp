@@ -133,8 +133,8 @@ namespace
                 const float zv = -zr - 4.0f * A * D;
 
                 // See the note in the implementation of the standard dipole.
-                const float dr = sqrt(square_radius + zr * zr);
-                const float dv = sqrt(square_radius + zv * zv);
+                const float dr = std::sqrt(square_radius + zr * zr);
+                const float dv = std::sqrt(square_radius + zv * zv);
 
                 const float rcp_dr = 1.0f / dr;
                 const float rcp_dv = 1.0f / dv;
@@ -143,8 +143,8 @@ namespace
                 const float cphi_over_D = cphi / D;
                 const float kr = ce * zr * (sigma_tr_dr + 1.0f) * square(rcp_dr) + cphi_over_D;
                 const float kv = ce * zv * (sigma_tr_dv + 1.0f) * square(rcp_dv) + cphi_over_D;
-                const float er = exp(-sigma_tr_dr) * rcp_dr;
-                const float ev = exp(-sigma_tr_dv) * rcp_dv;
+                const float er = std::exp(-sigma_tr_dr) * rcp_dr;
+                const float ev = std::exp(-sigma_tr_dv) * rcp_dv;
                 value[i] = square(alpha_prime) * RcpFourPi<float>() * (kr * er - kv * ev);
             }
         }

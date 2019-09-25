@@ -227,7 +227,7 @@ namespace
     {
         if (x < T(0.0) || x > T(1.0))
         {
-            const T y = fmod(x, T(1.0));
+            const T y = std::fmod(x, T(1.0));
             return y < T(0.0) ? y + T(1.0) : y;
         }
         else return x;

@@ -146,7 +146,7 @@ namespace
             else
             {
                 // Compute the Fresnel reflection factor.
-                const float cos_theta_t = sqrt(cos_theta_t2);
+                const float cos_theta_t = std::sqrt(cos_theta_t2);
                 float fresnel_reflection;
                 fresnel_reflectance_dielectric(
                     fresnel_reflection,
@@ -257,7 +257,7 @@ namespace
 
                 const float a = 1.0f - (values->m_transmittance[i] * values->m_transmittance_multiplier);
                 const float optical_depth = a * d;
-                absorption[i] = exp(-optical_depth);
+                absorption[i] = std::exp(-optical_depth);
             }
         }
 

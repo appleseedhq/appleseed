@@ -1262,7 +1262,7 @@ namespace
             try
             {
                 const float v = params.get<float>("v");
-                const float mfp = sqrt(v * 16.0f) / 7.0f;
+                const float mfp = std::sqrt(v * 16.0f) / 7.0f;
                 params.insert("mfp", mfp);
                 params.remove_path("v");
             }
@@ -2119,7 +2119,7 @@ namespace
                                 const uint64 pixel_count = frame->get_crop_window().volume();
                                 const uint64 max_average_spp =
                                     static_cast<uint64>(
-                                        ceil(
+                                        std::ceil(
                                             static_cast<double>(max_samples) / pixel_count));
                                 pfr.strings().insert("max_average_spp", max_average_spp);
                             }

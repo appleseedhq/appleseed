@@ -169,8 +169,8 @@ namespace
                 {
                     const float phi = s[0] * TwoPi<float>();
 
-                    cos_phi = cos(phi);
-                    sin_phi = sin(phi);
+                    cos_phi = std::cos(phi);
+                    sin_phi = std::sin(phi);
 
                     exp = values->m_nu;
                 }
@@ -178,8 +178,8 @@ namespace
                 {
                     const float phi = sample_anisotropic_glossy(sval.m_k, s[0]);
 
-                    cos_phi = cos(phi);
-                    sin_phi = sin(phi);
+                    cos_phi = std::cos(phi);
+                    sin_phi = std::sin(phi);
 
                     const float exp_u = values->m_nu * cos_phi * cos_phi;
                     const float exp_v = values->m_nv * sin_phi * sin_phi;
@@ -187,8 +187,8 @@ namespace
                     exp = exp_u + exp_v;
                 }
 
-                const float cos_theta = pow(1.0f - s[1], 1.0f / (exp + 1.0f));
-                const float sin_theta = sqrt(1.0f - cos_theta * cos_theta);
+                const float cos_theta = std::pow(1.0f - s[1], 1.0f / (exp + 1.0f));
+                const float sin_theta = std::sqrt(1.0f - cos_theta * cos_theta);
 
                 // Compute the halfway vector in world space.
                 h = sample.m_shading_basis.transform_to_parent(
@@ -227,7 +227,7 @@ namespace
             if (ScatteringMode::has_glossy(modes) && glossy_weight > 0.0f)
             {
                 // Evaluate the glossy component of the BRDF (equation 4).
-                const float num = sval.m_kg * pow(cos_hn, exp);
+                const float num = sval.m_kg * std::pow(cos_hn, exp);
                 const float den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
                 fresnel_reflectance_dielectric_schlick(
                     sample.m_value.m_glossy,
@@ -321,7 +321,7 @@ namespace
                 const float exp_num_v = values->m_nv * cos_hv * cos_hv;
                 const float exp_den = 1.0f - cos_hn * cos_hn;
                 const float exp = (exp_num_u + exp_num_v) / abs(exp_den);
-                const float num = cos_hn == 1.0f ? sval.m_kg : sval.m_kg * pow(cos_hn, exp);
+                const float num = cos_hn == 1.0f ? sval.m_kg : sval.m_kg * std::pow(cos_hn, exp);
                 const float den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
                 fresnel_reflectance_dielectric_schlick(
                     value.m_glossy,
@@ -398,7 +398,7 @@ namespace
                 const float exp_num_v = values->m_nv * cos_hv * cos_hv;
                 const float exp_den = 1.0f - cos_hn * cos_hn;
                 const float exp = (exp_num_u + exp_num_v) / abs(exp_den);
-                const float num = cos_hn == 1.0f ? sval.m_kg : sval.m_kg * pow(cos_hn, exp);
+                const float num = cos_hn == 1.0f ? sval.m_kg : sval.m_kg * std::pow(cos_hn, exp);
 
                 // Evaluate the PDF of the glossy component (equation 8).
                 pdf_glossy = num / cos_oh;      // omit division by 4 since num = pdf(h) / 4
@@ -478,12 +478,12 @@ namespace
             sval.m_isotropic = feq(nu, nv, 1.0e-6f);
 
             // Precompute constant factor of glossy component (equations 4 and 6).
-            sval.m_kg = sqrt((nu + 1.0f) * (nv + 1.0f)) / (8.0f * Pi<float>());
+            sval.m_kg = std::sqrt((nu + 1.0f) * (nv + 1.0f)) / (8.0f * Pi<float>());
 
             if (!sval.m_isotropic)
             {
                 // Precompute constant factor needed during hemisphere sampling.
-                sval.m_k = sqrt((nu + 1.0f) / (nv + 1.0f));
+                sval.m_k = std::sqrt((nu + 1.0f) / (nv + 1.0f));
             }
             else
                 sval.m_k = 0.0f;
@@ -494,26 +494,26 @@ namespace
             if (s < 0.25f)
             {
                 // First quadrant.
-                const float b = tan(HalfPi<float>() * (4.0f * s));
-                return atan(k * b);
+                const float b = std::tan(HalfPi<float>() * (4.0f * s));
+                return std::atan(k * b);
             }
             else if (s < 0.5f)
             {
                 // Second quadrant.
-                const float b = tan(HalfPi<float>() * (4.0f * s - 1.0f));
-                return atan(k * b) + HalfPi<float>();
+                const float b = std::tan(HalfPi<float>() * (4.0f * s - 1.0f));
+                return std::atan(k * b) + HalfPi<float>();
             }
             else if (s < 0.75f)
             {
                 // Third quadrant.
-                const float b = tan(HalfPi<float>() * (4.0f * s - 2.0f));
-                return atan(k * b) + Pi<float>();
+                const float b = std::tan(HalfPi<float>() * (4.0f * s - 2.0f));
+                return std::atan(k * b) + Pi<float>();
             }
             else
             {
                 // Fourth quadrant.
-                const float b = tan(HalfPi<float>() * (4.0f * s - 3.0f));
-                return atan(k * b) + Pi<float>() + HalfPi<float>();
+                const float b = std::tan(HalfPi<float>() * (4.0f * s - 3.0f));
+                return std::atan(k * b) + Pi<float>() + HalfPi<float>();
             }
         }
     };

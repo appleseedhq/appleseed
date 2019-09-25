@@ -249,7 +249,7 @@ namespace
         {
             const float sigma2 = square(roughness);
             const float theta_r = min(acos(cos_on), HalfPi<float>());
-            const float theta_i = acos(cos_in);
+            const float theta_i = std::acos(cos_in);
             const float alpha = max(theta_r, theta_i);
             const float beta = min(theta_r, theta_i);
 
@@ -268,8 +268,8 @@ namespace
                   0.45f
                 * sigma2_009
                 * (delta_cos_phi >= 0.0f
-                      ? sin(alpha)
-                      : sin(alpha) - pow_int<3>(2.0f * beta * RcpPi<float>()));
+                      ? std::sin(alpha)
+                      : std::sin(alpha) - pow_int<3>(2.0f * beta * RcpPi<float>()));
             assert(C2 >= 0.0f);
 
             // Compute C3 coefficient.
@@ -285,8 +285,8 @@ namespace
                 reflectance_multiplier *
                 RcpPi<float>() * (
                       C1
-                    + delta_cos_phi * C2 * tan(beta)
-                    + (1.0f - abs(delta_cos_phi)) * C3 * tan(0.5f * (alpha + beta)));
+                    + delta_cos_phi * C2 * std::tan(beta)
+                    + (1.0f - abs(delta_cos_phi)) * C3 * std::tan(0.5f * (alpha + beta)));
 
             // Add interreflection component.
             Spectrum ir = reflectance;

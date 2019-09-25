@@ -605,7 +605,7 @@ namespace
                     for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
                     {
                         const float a = log(max(values->m_volume_transmittance[i], 0.01f));
-                        absorption[i] = exp(a * d);
+                        absorption[i] = std::exp(a * d);
                     }
                 }
             }
@@ -624,7 +624,7 @@ namespace
 
                     const float a = values->m_volume_absorption[i];
                     const float optical_depth = a * d;
-                    absorption[i] = exp(-optical_depth);
+                    absorption[i] = std::exp(-optical_depth);
                 }
             }
         }

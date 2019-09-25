@@ -482,7 +482,7 @@ namespace
 
         static float albedo_from_reflectance_anisotropic(const float r, const float g)
         {
-            const float s = 4.09712f + 4.20863f * r - sqrt(9.59271f + r * (41.6808f + 17.7126f * r));
+            const float s = 4.09712f + 4.20863f * r - std::sqrt(9.59271f + r * (41.6808f + 17.7126f * r));
             const float s2 = s * s;
             return (1.0f - s2) / (1.0f - g * s2);
         }
@@ -495,7 +495,7 @@ namespace
             assert(abs(cosine) <= 1.0f);
             const Basis3f basis(normal);
             const Vector2f tangent = sample_circle_uniform(s);
-            const float sine = sqrt(max(1.0f - cosine * cosine, 0.0f));
+            const float sine = std::sqrt(max(1.0f - cosine * cosine, 0.0f));
             return
                 basis.get_tangent_u() * tangent.x * sine +
                 basis.get_tangent_v() * tangent.y * sine +
@@ -540,7 +540,7 @@ namespace
                     const float x = -distance * extinction[i];
                     assert(FP<float>::is_finite(x));
 
-                    transmission[i] = exp(x);
+                    transmission[i] = std::exp(x);
 
                     // One-sample estimator (Veach: 9.2.4 eq. 9.15).
                     mis_base += transmission[i] * channel_pdf[i];
@@ -553,7 +553,7 @@ namespace
                     const float x = -distance * extinction[i];
                     assert(FP<float>::is_finite(x));
 
-                    transmission[i] = exp(x) * extinction[i];
+                    transmission[i] = std::exp(x) * extinction[i];
 
                     // One-sample estimator (Veach: 9.2.4 eq. 9.15).
                     mis_base += transmission[i] * channel_pdf[i];
@@ -578,7 +578,7 @@ namespace
                     const float x = -distance * extinction[i];
                     assert(FP<float>::is_finite(x));
 
-                    transmission[i] = exp(x);
+                    transmission[i] = std::exp(x);
 
                     // One-sample estimator (Veach: 9.2.4 eq. 9.15).
                     mis_base += transmission[i];
@@ -591,7 +591,7 @@ namespace
                     const float x = -distance * extinction[i];
                     assert(FP<float>::is_finite(x));
 
-                    transmission[i] = exp(x) * extinction[i];
+                    transmission[i] = std::exp(x) * extinction[i];
 
                     // One-sample estimator (Veach: 9.2.4 eq. 9.15).
                     mis_base += transmission[i];

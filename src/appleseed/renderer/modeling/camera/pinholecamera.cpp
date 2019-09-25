@@ -209,7 +209,7 @@ namespace
             // Compute the emitted importance.
             const Vector3d film_point = ndc_to_camera(ndc);
             const double square_dist_film_lens = square_norm(film_point);
-            const double dist_film_lens = sqrt(square_dist_film_lens);
+            const double dist_film_lens = std::sqrt(square_dist_film_lens);
             const double cos_theta = m_focal_length / dist_film_lens;
             const double solid_angle = m_pixel_area * cos_theta / square_dist_film_lens;
             importance = 1.0f / static_cast<float>(square_norm(outgoing) * solid_angle);
