@@ -112,7 +112,7 @@ namespace
             m_cos_inner_half_angle = std::cos(inner_half_angle);
             m_cos_outer_half_angle = std::cos(outer_half_angle);
             m_rcp_screen_half_size = 1.0 / std::tan(outer_half_angle);
-            m_up = Vector3d(sin(tilt_angle), std::cos(tilt_angle), 0.0);
+            m_up = Vector3d(std::sin(tilt_angle), std::cos(tilt_angle), 0.0);
 
             m_decay_start = m_params.get_optional<float>("decay_start", 0.0f);
             m_decay_exponent = m_params.get_optional<float>("decay_exponent", 2.0f);

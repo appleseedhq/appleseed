@@ -234,14 +234,14 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
                 if (other_shading_point.hit_surface() &&
                     values->m_features & static_cast<unsigned int>(NPRContourFeatures::AllDifferenceFeatures))
                 {
-                    const double abs_x = abs(x);
+                    const double abs_x = std::abs(x);
                     const double Eps = 1e-10;
 
                     if (feq(abs_x, 0.0, Eps) || feq(abs_x, 1.0, Eps))
                     {
                         if (values->m_features & static_cast<unsigned int>(NPRContourFeatures::OcclusionEdges))
                         {
-                            const float d = static_cast<float>(abs(shading_point.get_distance() - other_shading_point.get_distance()));
+                            const float d = static_cast<float>(std::abs(shading_point.get_distance() - other_shading_point.get_distance()));
 
                             if (d > values->m_occlusion_threshold)
                                 diff_contour_found = true;
@@ -269,7 +269,7 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
     {
         // Compute the edge strength.
         const float half_samples = total_samples * 0.5f;
-        const float alpha = 1.0f - (fabs(discontinuity_samples - half_samples) / half_samples);
+        const float alpha = 1.0f - (std::fabs(discontinuity_samples - half_samples) / half_samples);
 
         return Color4f(values->m_color, alpha * values->m_opacity);
     }

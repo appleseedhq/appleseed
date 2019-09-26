@@ -357,7 +357,7 @@ void DisneyMaterialLayer::evaluate_expressions(
     values.m_specular =
         lerp(
             values.m_specular,
-            max(impl->m_specular.evaluate(shading_point, texture_system)[0], 0.0f),
+            std::max(impl->m_specular.evaluate(shading_point, texture_system)[0], 0.0f),
             mask);
 
     values.m_specular_tint =
@@ -722,7 +722,7 @@ void DisneyMaterial::add_layer(Dictionary layer_values)
     {
         int layer_number = 0;
         for (const_each<Impl::DisneyMaterialLayerContainer> i = impl->m_layers; i; ++i)
-            layer_number = max(layer_number, i->get_layer_number());
+            layer_number = std::max(layer_number, i->get_layer_number());
         layer_values.insert("layer_number", layer_number);
     }
 

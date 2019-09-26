@@ -54,8 +54,8 @@ TEST_SUITE(Foundation_Math_FastMath)
     {
         return
             ref == T(0.0)
-                ? abs(value)
-                : abs((ref - value) / ref);
+                ? std::abs(value)
+                : std::abs((ref - value) / ref);
     }
 
     template <typename T, typename Function>
@@ -245,13 +245,13 @@ TEST_SUITE(Foundation_Math_FastMath)
 
     float scalar_std_log2(const float x)
     {
-        return log(x) / log(2.0f);
+        return std::log(x) / std::log(2.0f);
     }
 
     void vector_std_log2(float x[4])
     {
         for (size_t i = 0; i < 4; ++i)
-            x[i] = log(x[i]) / log(2.0f);
+            x[i] = std::log(x[i]) / std::log(2.0f);
     }
 
     TEST_CASE(ScalarFastLog2)
@@ -438,7 +438,7 @@ TEST_SUITE(Foundation_Math_FastMath)
     void vector_std_log(float x[4])
     {
         for (size_t i = 0; i < 4; ++i)
-            x[i] = log(x[i]);
+            x[i] = std::log(x[i]);
     }
 
     TEST_CASE(ScalarFastLog)

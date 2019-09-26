@@ -148,7 +148,7 @@ namespace
 
             // Compute the Sun's solid angle.
             // Reference: https://en.wikipedia.org/wiki/Solid_angle#Sun_and_Moon
-            m_sun_solid_angle = TwoPi<float>() * (1.0f - std::cos(atan(SunRadius / m_values.m_distance)));
+            m_sun_solid_angle = TwoPi<float>() * (1.0f - std::cos(std::atan(SunRadius / m_values.m_distance)));
 
             // If the Sun light is bound to an environment EDF, let it override the Sun's direction and turbidity.
             const EnvironmentEDF* env_edf = dynamic_cast<EnvironmentEDF*>(m_inputs.get_entity("environment_edf"));

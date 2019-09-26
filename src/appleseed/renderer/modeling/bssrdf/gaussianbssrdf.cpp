@@ -118,7 +118,7 @@ namespace
 
     const float IntegralThreshold = 0.999f;
     const float ScaleFactor = 1.0f / IntegralThreshold;
-    const float RmaxFactor = std::sqrt(-2.0f * log(1.0f - IntegralThreshold));
+    const float RmaxFactor = std::sqrt(-2.0f * std::log(1.0f - IntegralThreshold));
 
     class GaussianBSSRDF
       : public SeparableBSSRDF
@@ -193,7 +193,7 @@ namespace
 
                 // The remapping from radius to v comes from Cycles.
                 const float sqrt_v = radius * 0.25f;
-                max_sqrt_v = max(max_sqrt_v, sqrt_v);
+                max_sqrt_v = std::max(max_sqrt_v, sqrt_v);
 
                 // Precompute 1/(2v).
                 const float v = square(sqrt_v);

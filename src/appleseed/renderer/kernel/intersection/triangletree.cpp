@@ -794,7 +794,7 @@ std::vector<GAABB3> TriangleTree::compute_motion_bboxes(
                 m_node_bboxes.push_back(swizzle(AABB3d(*i)));
         }
 
-        const size_t bbox_count = max(left_bboxes.size(), right_bboxes.size());
+        const size_t bbox_count = std::max(left_bboxes.size(), right_bboxes.size());
         std::vector<GAABB3> bboxes(bbox_count);
 
         for (size_t i = 0; i < bbox_count; ++i)

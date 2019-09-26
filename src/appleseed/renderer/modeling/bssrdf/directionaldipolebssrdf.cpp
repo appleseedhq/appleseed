@@ -294,7 +294,7 @@ namespace
                 // Evaluate the BSSRDF.
                 const float sdr = sd_prime(cphi_eta, ce_eta, D, sigma_tr, dot_wr_xoxi, dot_wr_no, dot_xoxi_no, dr);
                 const float sdv = sd_prime(cphi_eta, ce_eta, D, sigma_tr, dot(wv, xoxv), dot_wv_no, dot_xoxv_no, dv);
-                value[i] = max(sdr - sdv, 0.0f);
+                value[i] = std::max(sdr - sdv, 0.0f);
             }
 
             // todo: add reduced intensity component here (S_sigma_E term).

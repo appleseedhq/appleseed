@@ -104,7 +104,7 @@ float reduced_extinction_coefficient(
     assert(alpha_prime >= 0.0f);
     assert(alpha_prime < 1.0f);
 
-    return 1.0f / (sqrt(3.0f * (1.0f - alpha_prime)) * dmfp);
+    return 1.0f / (std::sqrt(3.0f * (1.0f - alpha_prime)) * dmfp);
 }
 
 float effective_extinction_coefficient(
@@ -159,7 +159,7 @@ float normalized_diffusion_s_mfp(
     const float     a)
 {
     // Equation 5.
-    const float x = abs(a - 0.8f);
+    const float x = std::abs(a - 0.8f);
     return 1.85f - a + 7.0f * (x * x * x);
 }
 

@@ -154,7 +154,7 @@ namespace
     {
         const QFontMetrics metrics(widget->font());
         const int text_width = metrics.boundingRect(text).width();
-        const int final_width = max(text_width + margin, min_width);
+        const int final_width = std::max(text_width + margin, min_width);
 
         widget->setMinimumWidth(final_width);
         widget->setMaximumWidth(final_width);

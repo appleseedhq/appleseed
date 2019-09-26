@@ -584,8 +584,8 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
         const TrajectoryX tx(sx, sy, corner2d);
         const TrajectoryY ty(sx, sy, corner2d);
 
-        const double a = min(angle, 0.0);
-        const double b = max(angle, 0.0);
+        const double a = std::min(angle, 0.0);
+        const double b = std::max(angle, 0.0);
 
         // Find all the rotation angles at which this corner is an extremum and update the motion bounding box.
         RootHandler root_handler(tx, ty, sz, axis_to_z, corner, motion_bbox);

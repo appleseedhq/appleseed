@@ -216,7 +216,7 @@ Frame::Frame(
 
     // Copy and store AOVs.
     const AOVFactoryRegistrar aov_registrar;
-    for (size_t i = 0, e = min(aovs.size(), MaxAOVCount); i < e; ++i)
+    for (size_t i = 0, e = std::min(aovs.size(), MaxAOVCount); i < e; ++i)
     {
         const AOV* original_aov = aovs.get_by_index(i);
 

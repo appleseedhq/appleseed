@@ -220,7 +220,7 @@ namespace
             do
             {
                 f = rand1(rng, -params.m_length_fuzziness, +params.m_length_fuzziness);
-                length = max(params.m_curve_length * (GScalar(1.0) + f), GScalar(0.0));
+                length = std::max(params.m_curve_length * (GScalar(1.0) + f), GScalar(0.0));
             } while (length <= 0.0);
 
             for (size_t p = 1; p < ControlPointCount; ++p)

@@ -99,7 +99,7 @@ namespace
                     frame.ref_image()->get_pixel(x, y, ref_color);
 
                     const float error = std::sqrt(square_distance(image_color, ref_color));
-                    max_error = max(max_error, error);
+                    max_error = std::max(max_error, error);
 
                     m_image->set_pixel(x, y, &error, 1);
                 }

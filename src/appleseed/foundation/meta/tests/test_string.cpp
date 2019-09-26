@@ -771,7 +771,7 @@ TEST_SUITE(Foundation_Utility_String)
         {
             const double mantissa = rand_double1(rng, -1.0, 1.0);
             const int exponent = rand_int1(rng, -300, 300);
-            const double value = std:: ldexp(mantissa, exponent);
+            const double value = std::ldexp(mantissa, exponent);
 
             char str[1000];
             sprintf(str, "%.16e", value);

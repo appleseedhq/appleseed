@@ -141,7 +141,7 @@ namespace
                 R += sample<GGXMDF>(s, wo, alpha);
             }
 
-            return min(R / static_cast<float>(sample_count), 1.0f);
+            return std::min(R / static_cast<float>(sample_count), 1.0f);
         }
 
         template <typename MDF>

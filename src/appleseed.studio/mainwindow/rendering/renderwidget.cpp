@@ -175,8 +175,8 @@ namespace
         const uint8*    pixel,
         const size_t    pixel_size)
     {
-        const int w = static_cast<int>(min(bracket_extent, dest_width));
-        const int h = static_cast<int>(min(bracket_extent, dest_height));
+        const int w = static_cast<int>(std::min(bracket_extent, dest_width));
+        const int h = static_cast<int>(std::min(bracket_extent, dest_height));
 
         const size_t right = (dest_width - 1) * pixel_size;
         const size_t bottom = (dest_height - 1) * dest_stride;

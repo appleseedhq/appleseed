@@ -275,7 +275,7 @@ namespace
         {
             const float clamped_turbidity = clamp(turbidity, 1.0f, 10.0f) - 1.0f;
             const size_t turbidity_low = truncate<size_t>(clamped_turbidity);
-            const size_t turbidity_high = min(turbidity_low + 1, size_t(9));
+            const size_t turbidity_high = std::min(turbidity_low + 1, size_t(9));
             const float turbidity_interp = clamped_turbidity - turbidity_low;
 
             // Compute solar elevation.

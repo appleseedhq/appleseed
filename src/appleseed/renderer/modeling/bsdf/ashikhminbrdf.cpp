@@ -203,10 +203,10 @@ namespace
 
             // Compute dot products.
             const Vector3f& shading_normal = sample.m_shading_basis.get_normal();
-            const float cos_in = abs(dot(incoming, shading_normal));
-            const float cos_on = abs(dot(sample.m_outgoing.get_value(), shading_normal));
-            const float cos_oh = min(abs(dot(sample.m_outgoing.get_value(), h)), 1.0f);
-            const float cos_hn = abs(dot(h, shading_normal));
+            const float cos_in = std::abs(dot(incoming, shading_normal));
+            const float cos_on = std::abs(dot(sample.m_outgoing.get_value(), shading_normal));
+            const float cos_oh = std::min(std::abs(dot(sample.m_outgoing.get_value(), h)), 1.0f);
+            const float cos_hn = std::abs(dot(h, shading_normal));
 
             float pdf_diffuse = 0.0f, pdf_glossy = 0.0f;
 
@@ -292,12 +292,12 @@ namespace
 
             // Compute dot products.
             const Vector3f& shading_normal = shading_basis.get_normal();
-            const float cos_in = abs(dot(incoming, shading_normal));
-            const float cos_on = abs(dot(outgoing, shading_normal));
-            const float cos_oh = abs(dot(outgoing, h));
-            const float cos_hn = abs(dot(h, shading_normal));
-            const float cos_hu = abs(dot(h, shading_basis.get_tangent_u()));
-            const float cos_hv = abs(dot(h, shading_basis.get_tangent_v()));
+            const float cos_in = std::abs(dot(incoming, shading_normal));
+            const float cos_on = std::abs(dot(outgoing, shading_normal));
+            const float cos_oh = std::abs(dot(outgoing, h));
+            const float cos_hn = std::abs(dot(h, shading_normal));
+            const float cos_hu = std::abs(dot(h, shading_basis.get_tangent_u()));
+            const float cos_hv = std::abs(dot(h, shading_basis.get_tangent_v()));
 
             float pdf_diffuse = 0.0f, pdf_glossy = 0.0f;
 
@@ -320,7 +320,7 @@ namespace
                 const float exp_num_u = values->m_nu * cos_hu * cos_hu;
                 const float exp_num_v = values->m_nv * cos_hv * cos_hv;
                 const float exp_den = 1.0f - cos_hn * cos_hn;
-                const float exp = (exp_num_u + exp_num_v) / abs(exp_den);
+                const float exp = (exp_num_u + exp_num_v) / std::abs(exp_den);
                 const float num = cos_hn == 1.0f ? sval.m_kg : sval.m_kg * std::pow(cos_hn, exp);
                 const float den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
                 fresnel_reflectance_dielectric_schlick(
@@ -382,7 +382,7 @@ namespace
             if (ScatteringMode::has_diffuse(modes))
             {
                 // Evaluate the PDF of the diffuse component.
-                const float cos_in = abs(dot(incoming, shading_basis.get_normal()));
+                const float cos_in = std::abs(dot(incoming, shading_basis.get_normal()));
                 pdf_diffuse = cos_in * RcpPi<float>();
                 assert(pdf_diffuse >= 0.0f);
             }
@@ -390,14 +390,14 @@ namespace
             if (ScatteringMode::has_glossy(modes))
             {
                 // Evaluate the PDF for the halfway vector (equation 6).
-                const float cos_oh = abs(dot(outgoing, h));
-                const float cos_hn = abs(dot(h, shading_basis.get_normal()));
+                const float cos_oh = std::abs(dot(outgoing, h));
+                const float cos_hn = std::abs(dot(h, shading_basis.get_normal()));
                 const float cos_hu = dot(h, shading_basis.get_tangent_u());
                 const float cos_hv = dot(h, shading_basis.get_tangent_v());
                 const float exp_num_u = values->m_nu * cos_hu * cos_hu;
                 const float exp_num_v = values->m_nv * cos_hv * cos_hv;
                 const float exp_den = 1.0f - cos_hn * cos_hn;
-                const float exp = (exp_num_u + exp_num_v) / abs(exp_den);
+                const float exp = (exp_num_u + exp_num_v) / std::abs(exp_den);
                 const float num = cos_hn == 1.0f ? sval.m_kg : sval.m_kg * std::pow(cos_hn, exp);
 
                 // Evaluate the PDF of the glossy component (equation 8).

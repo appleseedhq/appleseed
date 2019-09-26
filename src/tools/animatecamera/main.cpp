@@ -219,7 +219,7 @@ namespace
         {
             const size_t part_count = g_cl.m_part_count.value();
             const size_t frames_per_part =
-                static_cast<size_t>(ceil(static_cast<double>(frames.size()) / part_count));
+                static_cast<size_t>(std::ceil(static_cast<double>(frames.size()) / part_count));
 
             for (size_t part = 1, frame_begin = 0; frame_begin < frames.size(); ++part)
             {
@@ -477,7 +477,7 @@ namespace
             // Retrieve the scene's bounding box.
             const AABB3d scene_bbox(project->get_scene()->compute_bbox());
             const Vector3d extent = scene_bbox.extent();
-            const double max_radius = 0.5 * max(extent.x, extent.z);
+            const double max_radius = 0.5 * std::max(extent.x, extent.z);
             const double max_height = 0.5 * extent.y;
 
             // Precompute some stuff.

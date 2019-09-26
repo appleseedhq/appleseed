@@ -665,7 +665,7 @@ namespace
 
                     if (m_ref_image)
                     {
-                        const double avg_lum_delta = abs(m_ref_image_avg_lum - avg_lum);
+                        const double avg_lum_delta = std::abs(m_ref_image_avg_lum - avg_lum);
                         output += " (";
                         output += pretty_percent(avg_lum_delta, m_ref_image_avg_lum, 3);
                         output += " error)";

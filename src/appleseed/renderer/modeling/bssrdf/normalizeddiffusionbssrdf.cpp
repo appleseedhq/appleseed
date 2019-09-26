@@ -144,7 +144,7 @@ namespace
             {
                 const float l = values->m_mfp[i];
                 const float s = values->m_precomputed.m_s[i];
-                max_radius = max(max_radius, normalized_diffusion_max_radius(l, s));
+                max_radius = std::max(max_radius, normalized_diffusion_max_radius(l, s));
             }
             values->m_base_values.m_max_disk_radius = max_radius;
         }

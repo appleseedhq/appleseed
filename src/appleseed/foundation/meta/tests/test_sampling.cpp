@@ -261,7 +261,7 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
     template <typename T>
     T sample_cone_uniform_30deg_pdf(const Vector<T, 3>& dir)
     {
-        return sample_cone_uniform_pdf(cos(deg_to_rad(30.0)));
+        return sample_cone_uniform_pdf(std::cos(deg_to_rad(30.0)));
     }
 
     template <typename SamplingFunction>
@@ -270,7 +270,7 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
         SamplingFunction&        sampling_function,
         const size_t             point_count)
     {
-        const size_t grid_size = truncate<size_t>(ceil(sqrt(static_cast<double>(point_count))));
+        const size_t grid_size = truncate<size_t>(std::ceil(std::sqrt(static_cast<double>(point_count))));
         const double AlmostOne = shift(1.0, -1);
 
         std::vector<Vector2d> points;

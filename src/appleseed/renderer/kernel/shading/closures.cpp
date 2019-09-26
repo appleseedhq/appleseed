@@ -202,8 +202,8 @@ namespace
             values->m_rd_multiplier = 1.0f;
             values->m_rg.set(Color3f(p->glossy_reflectance), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_rg_multiplier = 1.0f;
-            values->m_nu = max(p->exponent_u, 0.01f);
-            values->m_nv = max(p->exponent_v, 0.01f);
+            values->m_nu = std::max(p->exponent_u, 0.01f);
+            values->m_nv = std::max(p->exponent_v, 0.01f);
             values->m_fr_multiplier = p->fresnel_multiplier;
         }
     };
@@ -292,8 +292,8 @@ namespace
                     p->N,
                     arena);
 
-            values->m_exponent = max(p->exponent, 0.001f);
-            values->m_ior = max(p->ior, 0.001f);
+            values->m_exponent = std::max(p->exponent, 0.001f);
+            values->m_ior = std::max(p->ior, 0.001f);
         }
     };
 
@@ -466,13 +466,13 @@ namespace
             values->m_base_color.set(Color3f(p->base_color), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_subsurface = saturate(p->subsurface);
             values->m_metallic = saturate(p->metallic);
-            values->m_specular = max(p->specular, 0.0f);
+            values->m_specular = std::max(p->specular, 0.0f);
             values->m_specular_tint = saturate(p->specular_tint);
             values->m_anisotropic = clamp(p->anisotropic, -1.0f, 1.0f);
             values->m_roughness = clamp(p->roughness, 0.0001f, 1.0f);
             values->m_sheen = saturate(p->sheen);
             values->m_sheen_tint = saturate(p->sheen_tint);
-            values->m_clearcoat = max(p->clearcoat, 0.0f);
+            values->m_clearcoat = std::max(p->clearcoat, 0.0f);
             values->m_clearcoat_gloss = clamp(p->clearcoat_gloss, 0.0001f, 1.0f);
         }
     };
@@ -610,9 +610,9 @@ namespace
             values->m_surface_transmittance_multiplier = 1.0f;
             values->m_reflection_tint.set(Color3f(p->reflection_tint), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_refraction_tint.set(Color3f(p->refraction_tint), g_std_lighting_conditions, Spectrum::Reflectance);
-            values->m_roughness = max(p->roughness, 0.0001f);
+            values->m_roughness = std::max(p->roughness, 0.0001f);
             values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
-            values->m_ior = max(p->ior, 0.001f);
+            values->m_ior = std::max(p->ior, 0.001f);
             values->m_volume_transmittance.set(Color3f(p->volume_transmittance), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_volume_transmittance_distance = p->volume_transmittance_distance;
             values->m_energy_compensation = saturate(p->energy_compensation);
@@ -690,7 +690,7 @@ namespace
             const float roughness = saturate(p->roughness);
             const float fresnel_weight = saturate(p->fresnel_weight);
 
-            const float ior = max(p->ior, 0.001f);
+            const float ior = std::max(p->ior, 0.001f);
 
             GlossyBRDFInputValues* values =
                 composite_closure.add_closure<GlossyBRDFInputValues>(
@@ -874,7 +874,7 @@ namespace
             values->m_normal_reflectance.set(Color3f(p->normal_reflectance), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_edge_tint.set(Color3f(p->edge_tint), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_reflectance_multiplier = 1.0f;
-            values->m_roughness = max(p->roughness, 0.0f);
+            values->m_roughness = std::max(p->roughness, 0.0f);
             values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
             values->m_energy_compensation = saturate(p->energy_compensation);
         }
@@ -940,7 +940,7 @@ namespace
             const Color3f reflectance = Color3f(p->reflectance);
             values->m_reflectance.set(reflectance, g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_reflectance_multiplier = 1.0f;
-            values->m_roughness = max(p->roughness, 0.0f);
+            values->m_roughness = std::max(p->roughness, 0.0f);
 
             const float w = luminance(weight) * luminance(reflectance);
             composite_closure.override_closure_scalar_weight(w);
@@ -1006,8 +1006,8 @@ namespace
             values->m_rd_multiplier = 1.0f;
             values->m_rg.set(1.0f);
             values->m_rg_multiplier = 1.0f;
-            values->m_nu = max(p->exponent, 0.01f);
-            values->m_nv = max(p->exponent, 0.01f);
+            values->m_nu = std::max(p->exponent, 0.01f);
+            values->m_nv = std::max(p->exponent, 0.01f);
             values->m_fr_multiplier = 1.0f;
         }
     };
@@ -1080,13 +1080,13 @@ namespace
 
             values->m_specular_reflectance.set(Color3f(p->specular_reflectance), g_std_lighting_conditions,
             Spectrum::Reflectance);
-            values->m_specular_reflectance_multiplier = max(p->specular_reflectance_multiplier, 0.0f);
+            values->m_specular_reflectance_multiplier = std::max(p->specular_reflectance_multiplier, 0.0f);
             values->m_roughness = clamp(p->roughness, 0.0001f, 1.0f);
-            values->m_ior = max(p->ior, 0.001f);
+            values->m_ior = std::max(p->ior, 0.001f);
             values->m_diffuse_reflectance.set(Color3f(p->diffuse_reflectance), g_std_lighting_conditions,
             Spectrum::Reflectance);
-            values->m_diffuse_reflectance_multiplier = max(p->diffuse_reflectance_multiplier, 0.0f);
-            values->m_internal_scattering = max(p->internal_scattering, 0.0f);
+            values->m_diffuse_reflectance_multiplier = std::max(p->diffuse_reflectance_multiplier, 0.0f);
+            values->m_internal_scattering = std::max(p->internal_scattering, 0.0f);
         }
     };
 
@@ -1149,7 +1149,7 @@ namespace
             values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = 0.0f;
             values->m_anisotropy = 0.0f;
-            values->m_ior = max(p->ior, 0.001f);
+            values->m_ior = std::max(p->ior, 0.001f);
             values->m_energy_compensation = 0.0f;
         }
     };
@@ -1657,9 +1657,9 @@ namespace
 
             values->m_color = Color3f(p->contour_color);
             values->m_opacity = saturate(p->contour_opacity);
-            values->m_width = max(p->contour_width, 0.0f);
+            values->m_width = std::max(p->contour_width, 0.0f);
 
-            values->m_occlusion_threshold = max(p->occlusion_threshold, 0.0f);
+            values->m_occlusion_threshold = std::max(p->occlusion_threshold, 0.0f);
             values->m_cos_crease_threshold = std::cos(deg_to_rad(p->creases_threshold));
 
             values->m_features = features;

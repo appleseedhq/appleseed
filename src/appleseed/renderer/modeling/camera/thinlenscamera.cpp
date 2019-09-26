@@ -136,7 +136,7 @@ namespace
           , m_source(source)
           , m_width(width)
           , m_height(height)
-          , m_range(sqrt(1.0 + static_cast<double>(m_height * m_height) / (m_width * m_width)))
+          , m_range(std::sqrt(1.0 + static_cast<double>(m_height * m_height) / (m_width * m_width)))
         {
         }
 

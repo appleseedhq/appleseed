@@ -62,9 +62,9 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
                     for (int x = 0; x < 3; ++x)
                     {
                         float* values = m_grid.voxel(x, y, z);
-                        values[0] = static_cast<float>(1 - abs(x - 1));
-                        values[1] = static_cast<float>(1 - abs(y - 1));
-                        values[2] = static_cast<float>(1 - abs(z - 1));
+                        values[0] = static_cast<float>(1 - std::abs(x - 1));
+                        values[1] = static_cast<float>(1 - std::abs(y - 1));
+                        values[2] = static_cast<float>(1 - std::abs(z - 1));
                         values[3] = 1.0f;
                     }
                 }

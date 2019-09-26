@@ -242,7 +242,7 @@ TEST_SUITE(Foundation_Math_BSP_Intersector)
                 double distance;
 
                 if (intersect(ray, ray_info, box, distance))
-                    m_closest_hit = min(m_closest_hit, distance);
+                    m_closest_hit = std::min(m_closest_hit, distance);
             }
 
             return m_closest_hit;

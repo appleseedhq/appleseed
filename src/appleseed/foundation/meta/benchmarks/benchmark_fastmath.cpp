@@ -194,7 +194,7 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
         memcpy(m_output, m_values, N * sizeof(float));
 
         for (size_t i = 0; i < N; ++i)
-            m_output[i] = log(m_output[i]);
+            m_output[i] = std::log(m_output[i]);
     }
 
     BENCHMARK_CASE_F(ScalarFastLog, Fixture)

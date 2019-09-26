@@ -99,8 +99,8 @@ LocalSampleAccumulationBuffer::LocalSampleAccumulationBuffer(
         if (level_width <= MinSize && level_height <= MinSize)
             break;
 
-        level_width = max(level_width / 2, MinSize);
-        level_height = max(level_height / 2, MinSize);
+        level_width = std::max(level_width / 2, MinSize);
+        level_height = std::max(level_height / 2, MinSize);
     }
 
     m_remaining_pixels = new boost::atomic<int32>[m_levels.size()];
@@ -322,8 +322,8 @@ void LocalSampleAccumulationBuffer::develop_to_tile(
     if (image_width % level_width == 0 && is_pow2(m))
     {
         const size_t s = log2_int(m);
-        const size_t prefix_end = min(next_multiple(rect.min.x, m), rect.max.x + 1);
-        const size_t suffix_begin = max(prev_multiple(rect.max.x + 1, m), prefix_end);
+        const size_t prefix_end = std::min(next_multiple(rect.min.x, m), rect.max.x + 1);
+        const size_t suffix_begin = std::max(prev_multiple(rect.max.x + 1, m), prefix_end);
 
         for (size_t iy = rect.min.y; iy <= rect.max.y; ++iy)
         {

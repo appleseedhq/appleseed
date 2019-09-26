@@ -111,8 +111,8 @@ namespace
             return 0.0f;
 
         return
-            MDF::G1(v, m, alpha_x, alpha_y) * abs(dot(v, m)) *
-            MDF::D(m, alpha_x, alpha_y) / abs(cos_theta_v);
+            MDF::G1(v, m, alpha_x, alpha_y) * std::abs(dot(v, m)) *
+            MDF::D(m, alpha_x, alpha_y) / std::abs(cos_theta_v);
     }
 }
 
@@ -126,7 +126,7 @@ float BlinnMDF::D(
     const float         alpha_x,
     const float         alpha_y)
 {
-    return (alpha_x + 2.0f) * RcpTwoPi<float>() * std::pow(abs(m.y), alpha_x);
+    return (alpha_x + 2.0f) * RcpTwoPi<float>() * std::pow(std::abs(m.y), alpha_x);
 }
 
 float BlinnMDF::G(
@@ -151,7 +151,7 @@ float BlinnMDF::G1(
     if (cos_vm == 0.0f)
         return 0.0f;
 
-    return std::min(1.0f, 2.0f * abs(m.y * v.y / cos_vm));
+    return std::min(1.0f, 2.0f * std::abs(m.y * v.y / cos_vm));
 }
 
 Vector3f BlinnMDF::sample(
@@ -248,7 +248,7 @@ float BeckmannMDF::lambda(
             alpha_x,
             alpha_y);
 
-    const float tan_theta = abs(sin_theta / cos_theta);
+    const float tan_theta = std::abs(sin_theta / cos_theta);
     const float a = 1.0f / (alpha * tan_theta);
 
     if (a < 1.6f)
@@ -327,7 +327,7 @@ Vector2f BeckmannMDF::sample_slope(
     // exp(-ierf(x)^2) ~= 1 - x * x
     // solve y = 1 + b + K * (1 - b * b).
 
-    const float c = erf(cot_theta);
+    const float c = std::erf(cot_theta);
 
     const float K = tan_theta / SqrtPi<float>();
     const float y_approx = s[0] * (1.0f + c + K * (1 - c * c));
@@ -340,7 +340,7 @@ Vector2f BeckmannMDF::sample_slope(
 
     // Check if we are close enough already.
     // This also avoids NaNs as we get close to the root.
-    if (abs(value) > threshold)
+    if (std::abs(value) > threshold)
     {
         // Newton step 1.
         b -= value / (1.0f - inv_erf * tan_theta);
@@ -570,8 +570,8 @@ float GGXMDF::pdf(
         return 0.0f;
 
     return
-        G1(v, m, alpha) * abs(dot(v, m)) *
-        D(m, alpha) / abs(cos_theta_v);
+        G1(v, m, alpha) * std::abs(dot(v, m)) *
+        D(m, alpha) / std::abs(cos_theta_v);
 }
 
 //
@@ -622,11 +622,11 @@ float WardMDF::G1(
     if (dot(v, m) <= 0.0f)
         return 0.0f;
 
-    const float cos_vm = abs(dot(v, m));
+    const float cos_vm = std::abs(dot(v, m));
     if (cos_vm == 0.0f)
         return 0.0f;
 
-    return std::min(1.0f, 2.0f * abs(m.y * v.y) / cos_vm);
+    return std::min(1.0f, 2.0f * std::abs(m.y * v.y) / cos_vm);
 }
 
 Vector3f WardMDF::sample(
@@ -813,7 +813,7 @@ float StdMDF::lambda(
     const float         alpha_y,
     const float         gamma)
 {
-    const float cos_theta = abs(v.y);
+    const float cos_theta = std::abs(v.y);
     if (cos_theta == 0.0f)
         return 0.0f;
 
@@ -881,10 +881,10 @@ Vector3f StdMDF::sample(
             Pi<float>() * std::floor(2.0f * s[0] + 0.5f);
 
         // [1] Equation 20.
-        const float cos_phi_2 = square(cos(phi));
+        const float cos_phi_2 = square(std::cos(phi));
         const float sin_phi_2 = 1.0f - cos_phi_2;
         const float A = ((cos_phi_2 / square(alpha_x)) + (sin_phi_2 / square(alpha_y))) / (gamma - 1.0f);
-        theta = std::atan(sqrt(b / A));
+        theta = std::atan(std::sqrt(b / A));
     }
 
     return Vector3f::make_unit_vector(theta, phi);

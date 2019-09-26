@@ -196,7 +196,7 @@ inline T mis_cutoff(const T q1, const T q2, const T q3, const T alpha)
     assert(alpha >= T(0.0));
     assert(alpha <= T(1.0));
 
-    const T cutoff = max(q1, q2, q3) * alpha;
+    const T cutoff = std::max(q1, q2, q3) * alpha;
 
     if (q1 < cutoff)
          return T(0.0);

@@ -85,7 +85,7 @@ float HenyeyPhaseFunction::sample(const Vector3f& outgoing, const Vector2f& s, V
     const float t = 2.0f * s[0] - 1.0f;
 
     float cosine;
-    if (abs(m_g) < 1.0e-5f)
+    if (std::abs(m_g) < 1.0e-5f)
     {
         cosine = t; // isotropic
     }

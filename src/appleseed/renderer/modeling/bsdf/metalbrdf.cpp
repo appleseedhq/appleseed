@@ -127,7 +127,7 @@ namespace
             InputValues* values = static_cast<InputValues*>(data);
             new (&values->m_precomputed) InputValues::Precomputed();
 
-            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_min_roughness);
+            values->m_roughness = std::max(values->m_roughness, shading_point.get_ray().m_min_roughness);
 
             artist_friendly_fresnel_conductor_reparameterization(
                 values->m_normal_reflectance,

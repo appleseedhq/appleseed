@@ -169,7 +169,7 @@ namespace
         Color4f second_color(second[0], second[1], second[2], second[3]);
         second_color *= rcp_second_weight;
 
-        const float rgb = abs(main_color.r) + abs(main_color.g) + abs(main_color.b);
+        const float rgb = std::abs(main_color.r) + std::abs(main_color.g) + std::abs(main_color.b);
 
         if (rgb == 0.0f)
             return 0.0f;
@@ -177,9 +177,9 @@ namespace
         // Compute variance.
         return
             fast_rcp_sqrt(rgb) * (
-                abs(main_color.r - second_color.r) +
-                abs(main_color.g - second_color.g) +
-                abs(main_color.b - second_color.b));
+                std::abs(main_color.r - second_color.r) +
+                std::abs(main_color.g - second_color.g) +
+                std::abs(main_color.b - second_color.b));
     }
 
     // Compute the variance of the tile `main` for pixels in the bounding box `bb`.
@@ -203,7 +203,7 @@ namespace
                 const float* main_ptr = main->pixel(x, y);
                 const float* second_ptr = second->pixel(x, y);
 
-                error = max(error, compute_weighted_pixel_variance(main_ptr, second_ptr));
+                error = std::max(error, compute_weighted_pixel_variance(main_ptr, second_ptr));
             }
         }
 
@@ -363,7 +363,7 @@ namespace
             {
                 const size_t batch_size =
                     m_params.m_max_samples > 0
-                        ? min(m_params.m_min_samples, m_params.m_max_samples)
+                        ? std::min(m_params.m_min_samples, m_params.m_max_samples)
                         : m_params.m_min_samples;
 
                 std::deque<PixelBlock> blocks = rendering_blocks;
@@ -414,7 +414,7 @@ namespace
                 assert(pb.m_spp <= m_params.m_max_samples || m_params.m_max_samples == 0);
                 const size_t batch_size =
                     m_params.m_max_samples > 0
-                        ? min(m_params.m_batch_size, m_params.m_max_samples - pb.m_spp)
+                        ? std::min(m_params.m_batch_size, m_params.m_max_samples - pb.m_spp)
                         : m_params.m_batch_size;
 
                 if (batch_size == 0)

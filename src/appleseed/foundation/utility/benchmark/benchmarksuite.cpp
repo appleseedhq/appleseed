@@ -151,7 +151,7 @@ struct BenchmarkSuite::Impl
         const size_t MaxMeasurementCount = 1000000;
         const double MaxTargetTotalTime = 0.1;          // seconds
         return
-            static_cast<size_t>(ceil(
+            static_cast<size_t>(std::ceil(
                 std::min(MaxMeasurementCount * measurement_time, MaxTargetTotalTime) / measurement_time));
     }
 

@@ -87,7 +87,7 @@ TEST_SUITE(ImageTools)
         Color<T, N> result;
 
         for (size_t i = 0; i < N; ++i)
-            result[i] = abs(lhs[i] - rhs[i]);
+            result[i] = std::abs(lhs[i] - rhs[i]);
 
         return result;
     }
@@ -354,7 +354,7 @@ TEST_SUITE(ImageTools)
                     }
 
                     // Convert to 8-bit integer.
-                    val = min(val * 256.0f, 255.0f);
+                    val = std::min(val * 256.0f, 255.0f);
                     output_color[c] = truncate<uint8>(val);
                 }
 

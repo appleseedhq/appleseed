@@ -190,7 +190,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
             result.m_min_G1 = std::min(result.m_min_G1, G1);
             result.m_max_G1 = std::max(result.m_max_G1, G1);
 
-            const float cos_thetha_o_4 = abs(4.0f * v.y);
+            const float cos_thetha_o_4 = std::abs(4.0f * v.y);
 
             float integral = 0.0f;
 

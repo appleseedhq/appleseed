@@ -184,7 +184,7 @@ namespace
             m_inputs.evaluate_uniforms(&values);
 
             // Construct the Microfacet Distribution Function.
-            m_mdf.reset(new MDFType(max(values.m_roughness, 1.0e-6f)));
+            m_mdf.reset(new MDFType(std::max(values.m_roughness, 1.0e-6f)));
 
             // Precompute the specular albedo curve.
             Spectrum rs(values.m_rs);
@@ -224,7 +224,7 @@ namespace
         {
             InputValues* values = static_cast<InputValues*>(data);
 
-            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_min_roughness);
+            values->m_roughness = std::max(values->m_roughness, shading_point.get_ray().m_min_roughness);
         }
 
         void sample(
@@ -240,7 +240,7 @@ namespace
             // Define aliases to match notations in the paper.
             const Vector3f& V = sample.m_outgoing.get_value();
             const Vector3f& N = sample.m_shading_basis.get_normal();
-            const float dot_VN = abs(dot(V, N));
+            const float dot_VN = std::abs(dot(V, N));
 
             // Compute specular albedo for outgoing angle.
             Spectrum specular_albedo_V;
@@ -283,8 +283,8 @@ namespace
                 H = normalize(incoming + V);
 
                 dot_LN = wi.y;
-                dot_HN = abs(dot(H, N));
-                dot_HV = abs(dot(H, V));
+                dot_HN = std::abs(dot(H, N));
+                dot_HV = std::abs(dot(H, V));
             }
             else
             {
@@ -300,7 +300,7 @@ namespace
 
                 dot_LN = dot(incoming, N);
                 dot_HN = local_H.y;
-                dot_HV = abs(dot_HV);
+                dot_HV = std::abs(dot_HV);
 
                 // No reflection below the shading surface.
                 if (dot_LN < 0.0f)
@@ -371,15 +371,15 @@ namespace
             const Vector3f& V = outgoing;
             const Vector3f& L = incoming;
             const Vector3f& N = shading_basis.get_normal();
-            const float dot_VN = abs(dot(V, N));
-            const float dot_LN = abs(dot(L, N));
+            const float dot_VN = std::abs(dot(V, N));
+            const float dot_LN = std::abs(dot(L, N));
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute the halfway vector.
             const Vector3f H = normalize(L + V);
-            const float dot_HN = abs(dot(H, N));
-            const float dot_HL = min(dot(H, L), 1.0f);
+            const float dot_HN = std::abs(dot(H, N));
+            const float dot_HL = std::min(dot(H, L), 1.0f);
 
             // Compute the specular albedo for the outgoing angle.
             Spectrum specular_albedo_V;
@@ -456,14 +456,14 @@ namespace
             const Vector3f& V = outgoing;
             const Vector3f& L = incoming;
             const Vector3f& N = shading_basis.get_normal();
-            const float dot_VN = abs(dot(V, N));
-            const float dot_LN = abs(dot(L, N));
+            const float dot_VN = std::abs(dot(V, N));
+            const float dot_LN = std::abs(dot(L, N));
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute the halfway vector.
             const Vector3f H = normalize(L + V);
-            const float dot_HN = abs(dot(H, N));
+            const float dot_HN = std::abs(dot(H, N));
             const float dot_HL = dot(H, L);
 
             // Compute the specular albedo for the outgoing angle.

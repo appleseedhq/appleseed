@@ -387,7 +387,7 @@ float LightTree::compute_node_probability(
     //      https://www.microsoft.com/en-us/research/wp-content/uploads/1996/03/arealights.pdf
     //
     const Vector3d outcoming_light_direction = normalize(bbox.center() - surface_point);
-    const float sin_sigma2 = min(1.0f, (r2 / distance2));
+    const float sin_sigma2 = std::min(1.0f, (r2 / distance2));
     const float cos_sigma = std::sqrt(1.0f - sin_sigma2);
 
     const Vector3d& incoming_light_direction = shading_point.get_ray().m_dir;
