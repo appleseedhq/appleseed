@@ -362,7 +362,6 @@ struct MasterRenderer::Impl
                 m_resource_search_paths,
                 m_tile_callback_factory,
                 abort_switch);
-
         if (!success || abort_switch.is_aborted())
         {
             recorder.on_render_end(m_project);
@@ -403,6 +402,10 @@ struct MasterRenderer::Impl
             recorder.on_render_end(m_project);
             return IRendererController::AbortRendering;
         }
+
+        // Print settings of key entities.
+        m_project.get_frame()->print_settings();
+        m_project.get_scene()->get_active_camera()->print_settings();
 
         // Perform pre-render actions.
         if (!m_render_device->on_render_begin(recorder, &abort_switch) ||
@@ -458,10 +461,6 @@ struct MasterRenderer::Impl
                 combined_renderer_controller.on_frame_end();
                 return IRendererController::AbortRendering;
             }
-
-            // Print settings of key entities.
-            m_project.get_frame()->print_settings();
-            m_project.get_scene()->get_active_camera()->print_settings();
 
             // Render the frame.
             const IRendererController::Status status = m_render_device->render_frame(
