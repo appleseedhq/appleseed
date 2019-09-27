@@ -45,7 +45,6 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 
@@ -87,7 +86,6 @@ namespace
             m_inputs.declare("radiance", InputFormatSpectralIlluminance);
             m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("exposure", InputFormatFloat, "0.0");
-            m_inputs.declare("exposure_multiplier", InputFormatFloat, "1.0");
         }
 
         void release() override
@@ -100,16 +98,20 @@ namespace
             return Model;
         }
 
-        bool on_frame_begin(
+        bool on_render_begin(
             const Project&          project,
             const BaseGroup*        parent,
-            OnFrameBeginRecorder&   recorder,
+            OnRenderBeginRecorder&  recorder,
             IAbortSwitch*           abort_switch) override
         {
-            if (!EnvironmentEDF::on_frame_begin(project, parent, recorder, abort_switch))
+            if (!EnvironmentEDF::on_render_begin(project, parent, recorder, abort_switch))
                 return false;
 
             check_non_zero_emission("radiance", "radiance_multiplier");
+
+            InputValues values;
+            get_inputs().evaluate_uniforms(&values);
+            m_exposure_multiplier = std::pow(2.0f, values.m_exposure);
 
             return true;
         }
@@ -174,8 +176,9 @@ namespace
             Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
             float       m_radiance_multiplier;  // emitted radiance multiplier
             float       m_exposure;             // emitted radiance multiplier in f-stops
-            float       m_exposure_multiplier;  // emitted radiance exposure multiplier
         };
+
+        float m_exposure_multiplier;
 
         void lookup_envmap(
             const ShadingContext&   shading_context,
@@ -193,7 +196,7 @@ namespace
             if (is_finite(values.m_radiance))
             {
                 value = values.m_radiance;
-                value *= values.m_radiance_multiplier * std::pow(2.0f, values.m_exposure * values.m_exposure_multiplier);
+                value *= values.m_radiance_multiplier * m_exposure_multiplier;
             }
             else value.set(0.0f);
         }
@@ -256,18 +259,6 @@ DictionaryArray MirrorBallMapEnvironmentEDFFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "exposure")
             .insert("label", "Exposure")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary()
-                    .insert("texture_instance", "Texture Instances"))
-            .insert("use", "required")
-            .insert("default", "0.0")
-            .insert("help", "Environment exposure"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "exposure_multiplier")
-            .insert("label", "Exposure Multiplier")
             .insert("type", "numeric")
             .insert("min",
                 Dictionary()
@@ -277,9 +268,9 @@ DictionaryArray MirrorBallMapEnvironmentEDFFactory::get_input_metadata() const
                 Dictionary()
                     .insert("value", "64.0")
                     .insert("type", "soft"))
-            .insert("default", "1.0")
             .insert("use", "optional")
-            .insert("help", "Environment exposure multiplier"));
+            .insert("default", "0.0")
+            .insert("help", "Environment exposure"));
 
     return metadata;
 }

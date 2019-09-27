@@ -37,6 +37,8 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/edf/diffuseedf.h"
 #include "renderer/modeling/edf/edf.h"
+#include "renderer/modeling/input/scalarsource.h"
+#include "renderer/modeling/input/source.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -61,6 +63,28 @@ namespace
 {
     const char* Model = "osl_edf";
 
+    struct DummyNonUniformSource
+      : public Source
+    {
+        DummyNonUniformSource()
+          : Source(false)
+        {
+        }
+
+        uint64 compute_signature() const override
+        {
+            return 0;
+        }
+
+        Hints get_hints() const override
+        {
+            Hints hints;
+            hints.m_width = 1;
+            hints.m_height = 1;
+            return hints;
+        }
+    };
+
     class OSLEDF
       : public EDF
     {
@@ -69,6 +93,9 @@ namespace
           : EDF("osl_edf", ParamArray())
         {
             m_diffuse_edf = DiffuseEDFFactory().create("osl_diff_edf", ParamArray());
+            m_diffuse_edf->get_inputs().find("radiance").bind(new DummyNonUniformSource());
+            m_diffuse_edf->get_inputs().find("radiance_multiplier").bind(new DummyNonUniformSource());
+            m_diffuse_edf->get_inputs().find("exposure").bind(new ScalarSource(0.0f));
         }
 
         void release() override
@@ -93,6 +120,30 @@ namespace
                 shading_context.get_arena());
 
             return c;
+        }
+
+        bool on_render_begin(
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnRenderBeginRecorder&  recorder,
+            IAbortSwitch*           abort_switch) override
+        {
+            if (!EDF::on_render_begin(project, parent, recorder, abort_switch))
+                return false;
+
+            return m_diffuse_edf->on_render_begin(project, parent, recorder, abort_switch);
+        }
+
+        bool on_frame_begin(
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) override
+        {
+            if (!EDF::on_frame_begin(project, parent, recorder, abort_switch))
+                return false;
+
+            return m_diffuse_edf->on_frame_begin(project, parent, recorder, abort_switch);
         }
 
         void sample(

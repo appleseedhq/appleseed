@@ -39,7 +39,6 @@
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 
 // Standard headers.
@@ -89,16 +88,20 @@ namespace
             return Model;
         }
 
-        bool on_frame_begin(
+        bool on_render_begin(
             const Project&          project,
             const BaseGroup*        parent,
-            OnFrameBeginRecorder&   recorder,
+            OnRenderBeginRecorder&  recorder,
             IAbortSwitch*           abort_switch) override
         {
-            if (!EDF::on_frame_begin(project, parent, recorder, abort_switch))
+            if (!EDF::on_render_begin(project, parent, recorder, abort_switch))
                 return false;
 
             check_non_zero_emission("radiance", "radiance_multiplier");
+
+            InputValues values;
+            get_inputs().evaluate_uniforms(&values);
+            m_exposure_multiplier = std::pow(2.0f, values.m_exposure);
 
             m_cos_half_angle = std::cos(deg_to_rad(m_params.get_required<float>("angle", 90.0f) / 2.0f));
 
@@ -122,7 +125,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= values->m_radiance_multiplier * std::pow(2.0f, values->m_exposure);
+            value *= values->m_radiance_multiplier * m_exposure_multiplier;
 
             probability = sample_cone_uniform_pdf(m_cos_half_angle);
             assert(probability > 0.0f);
@@ -148,7 +151,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= values->m_radiance_multiplier * std::pow(2.0f, values->m_exposure);
+            value *= values->m_radiance_multiplier * m_exposure_multiplier;
         }
 
         void evaluate(
@@ -173,7 +176,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= values->m_radiance_multiplier * std::pow(2.0f, values->m_exposure);
+            value *= values->m_radiance_multiplier * m_exposure_multiplier;
 
             probability = sample_cone_uniform_pdf(m_cos_half_angle);
             assert(probability > 0.0f);
@@ -204,6 +207,7 @@ namespace
       private:
         typedef ConeEDFInputValues InputValues;
 
+        float m_exposure_multiplier;
         float m_cos_half_angle;
     };
 }
@@ -262,8 +266,6 @@ DictionaryArray ConeEDFFactory::get_input_metadata() const
             .insert("name", "exposure")
             .insert("label", "Exposure")
             .insert("type", "numeric")
-            .insert("use", "optional")
-            .insert("default", "0.0")
             .insert("min",
                 Dictionary()
                     .insert("value", "-64.0")
@@ -272,6 +274,8 @@ DictionaryArray ConeEDFFactory::get_input_metadata() const
                 Dictionary()
                     .insert("value", "64.0")
                     .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "0.0")
             .insert("help", "Exposure"));
 
     metadata.push_back(

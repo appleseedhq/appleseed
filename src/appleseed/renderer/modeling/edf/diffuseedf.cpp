@@ -39,7 +39,6 @@
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 
 // Standard headers.
@@ -88,16 +87,20 @@ namespace
             return Model;
         }
 
-        bool on_frame_begin(
+        bool on_render_begin(
             const Project&          project,
             const BaseGroup*        parent,
-            OnFrameBeginRecorder&   recorder,
+            OnRenderBeginRecorder&  recorder,
             IAbortSwitch*           abort_switch) override
         {
-            if (!EDF::on_frame_begin(project, parent, recorder, abort_switch))
+            if (!EDF::on_render_begin(project, parent, recorder, abort_switch))
                 return false;
 
             check_non_zero_emission("radiance", "radiance_multiplier");
+
+            InputValues values;
+            get_inputs().evaluate_uniforms(&values);
+            m_exposure_multiplier = std::pow(2.0f, values.m_exposure);
 
             return true;
         }
@@ -119,7 +122,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= values->m_radiance_multiplier * std::pow(2.0f, values->m_exposure);
+            value *= values->m_radiance_multiplier * m_exposure_multiplier;
 
             probability = wo.y * RcpPi<float>();
             assert(probability > 0.0f);
@@ -146,7 +149,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= values->m_radiance_multiplier * std::pow(2.0f, values->m_exposure);
+            value *= values->m_radiance_multiplier * m_exposure_multiplier;
         }
 
         void evaluate(
@@ -172,7 +175,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= values->m_radiance_multiplier * std::pow(2.0f, values->m_exposure);
+            value *= values->m_radiance_multiplier * m_exposure_multiplier;
 
             probability = cos_on * RcpPi<float>();
             assert(probability > 0.0f);
@@ -203,6 +206,8 @@ namespace
 
       private:
         typedef DiffuseEDFInputValues InputValues;
+
+        float m_exposure_multiplier;
     };
 }
 
@@ -261,8 +266,6 @@ DictionaryArray DiffuseEDFFactory::get_input_metadata() const
             .insert("name", "exposure")
             .insert("label", "Exposure")
             .insert("type", "numeric")
-            .insert("use", "optional")
-            .insert("default", "0.0")
             .insert("min",
                 Dictionary()
                     .insert("value", "-64.0")
@@ -271,6 +274,8 @@ DictionaryArray DiffuseEDFFactory::get_input_metadata() const
                 Dictionary()
                     .insert("value", "64.0")
                     .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "0.0")
             .insert("help", "Exposure"));
 
     add_common_input_metadata(metadata);

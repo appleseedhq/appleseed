@@ -115,6 +115,27 @@ namespace
             return "osl_bsdf";
         }
 
+        bool on_render_begin(
+            const Project&              project,
+            const BaseGroup*            parent,
+            OnRenderBeginRecorder&      recorder,
+            IAbortSwitch*               abort_switch) override
+        {
+            if (!BSDF::on_render_begin(project, parent, recorder, abort_switch))
+                return false;
+
+            for (int i = 0; i < NumClosuresIDs; ++i)
+            {
+                if (BSDF* bsdf = m_all_bsdfs[i])
+                {
+                    if (!bsdf->on_render_begin(project, parent, recorder, abort_switch))
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
         bool on_frame_begin(
             const Project&              project,
             const BaseGroup*            parent,
