@@ -38,11 +38,13 @@
 #include "renderer/modeling/input/sourceinputs.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/minmax.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/arena.h"
 
 // Standard headers.
 #include <cmath>
+#include <limits>
 #include <string>
 
 using namespace foundation;
@@ -162,22 +164,14 @@ float EDF::get_max_contribution(
     const Source*           multiplier,
     const Source*           exposure) const
 {
-    const float max_contribution_input = get_max_contribution_spectrum(input);
+    const float max_input = get_max_contribution_spectrum(input);
+    const float max_multiplier = get_max_contribution_scalar(multiplier);
+    const float max_exposure = get_max_contribution_scalar(exposure);
 
-    if (max_contribution_input == std::numeric_limits<float>::max())
-        return std::numeric_limits<float>::max();
-
-    const float max_contribution_multiplier = get_max_contribution_scalar(multiplier);
-
-    if (max_contribution_multiplier == std::numeric_limits<float>::max())
-        return std::numeric_limits<float>::max();
-
-    const float max_contribution_exposure = get_max_contribution_scalar(exposure);
-
-    if (max_contribution_exposure == std::numeric_limits<float>::max())
-        return std::numeric_limits<float>::max();
-
-    return max_contribution_input * max_contribution_multiplier * std::pow(2.0f, max_contribution_exposure);
+    return
+        max(max_input, max_multiplier, max_exposure) < std::numeric_limits<float>::max()
+            ? max_input * max_multiplier * std::pow(2.0f, max_exposure)
+            : std::numeric_limits<float>::max();
 }
 
 float EDF::get_max_contribution(

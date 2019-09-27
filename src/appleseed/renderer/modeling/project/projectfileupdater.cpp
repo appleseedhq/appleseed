@@ -112,8 +112,9 @@ namespace
       : public NonCopyable
     {
       public:
-        Updater(Project& project, const size_t from_revision)
+        Updater(Project& project, EventCounters& event_counters, const size_t from_revision)
           : m_project(project)
+          , m_event_counters(event_counters)
           , m_from_revision(from_revision)
           , m_to_revision(from_revision + 1)
         {
@@ -134,6 +135,7 @@ namespace
 
       protected:
         Project&                m_project;
+        EventCounters&          m_event_counters;
         const size_t            m_from_revision;
         const size_t            m_to_revision;
 
@@ -224,8 +226,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_0(Project& project)
-          : Updater(project, 0)
+        UpdateFromRevision_0(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 0)
         {
         }
 
@@ -244,8 +246,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_1(Project& project)
-          : Updater(project, 1)
+        UpdateFromRevision_1(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 1)
         {
         }
 
@@ -264,8 +266,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_2(Project& project)
-          : Updater(project, 2)
+        UpdateFromRevision_2(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 2)
         {
         }
 
@@ -285,9 +287,9 @@ namespace
 
         void introduce_pixel_renderers()
         {
-            for (each<ConfigurationContainer> i = m_project.configurations(); i; ++i)
+            for (Configuration& configuration : m_project.configurations())
             {
-                Dictionary& root = i->get_parameters();
+                Dictionary& root = configuration.get_parameters();
 
                 if (!root.dictionaries().exist("generic_tile_renderer"))
                     continue;
@@ -325,16 +327,16 @@ namespace
         {
             Frame* frame = m_project.get_frame();
 
-            for (each<ConfigurationContainer> i = m_project.configurations(); i; ++i)
+            for (Configuration& configuration : m_project.configurations())
             {
-                Dictionary& root = i->get_parameters();
+                Dictionary& root = configuration.get_parameters();
 
                 if (!root.dictionaries().exist("generic_tile_renderer"))
                     continue;
 
                 Dictionary& gtr = root.dictionary("generic_tile_renderer");
 
-                if (frame && strcmp(i->get_name(), "final") == 0)
+                if (frame && strcmp(configuration.get_name(), "final") == 0)
                 {
                     copy_if_exist(frame->get_parameters(), gtr, "filter");
                     copy_if_exist(frame->get_parameters(), gtr, "filter_size");
@@ -355,8 +357,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_3(Project& project)
-          : Updater(project, 3)
+        UpdateFromRevision_3(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 3)
         {
         }
 
@@ -364,8 +366,8 @@ namespace
         {
             if (Scene* scene = m_project.get_scene())
             {
-                for (each<EnvironmentEDFContainer> i = scene->environment_edfs(); i; ++i)
-                    rename_exitance_inputs(*i);
+                for (EnvironmentEDF& edf : scene->environment_edfs())
+                    rename_exitance_inputs(edf);
 
                 rename_exitance_inputs(scene->assemblies());
             }
@@ -374,20 +376,20 @@ namespace
       private:
         static void rename_exitance_inputs(AssemblyContainer& assemblies)
         {
-            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            for (Assembly& assembly : assemblies)
             {
-                rename_exitance_inputs(*i);
-                rename_exitance_inputs(i->assemblies());
+                rename_exitance_inputs(assembly);
+                rename_exitance_inputs(assembly.assemblies());
             }
         }
 
         static void rename_exitance_inputs(Assembly& assembly)
         {
-            for (each<EDFContainer> i = assembly.edfs(); i; ++i)
-                rename_exitance_inputs(*i);
+            for (EDF& edf : assembly.edfs())
+                rename_exitance_inputs(edf);
 
-            for (each<LightContainer> i = assembly.lights(); i; ++i)
-                rename_exitance_inputs(*i);
+            for (Light& light : assembly.lights())
+                rename_exitance_inputs(light);
         }
 
         static void rename_exitance_inputs(EDF& edf)
@@ -448,16 +450,16 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_4(Project& project)
-          : Updater(project, 4)
+        UpdateFromRevision_4(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 4)
         {
         }
 
         void update() override
         {
-            for (each<ConfigurationContainer> i = m_project.configurations(); i; ++i)
+            for (Configuration& configuration : m_project.configurations())
             {
-                ParamArray& root = i->get_parameters();
+                ParamArray& root = configuration.get_parameters();
                 move_if_exist(root, "texture_store.max_size", "texture_cache_size");
             }
         }
@@ -472,8 +474,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_5(Project& project)
-          : Updater(project, 5)
+        UpdateFromRevision_5(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 5)
         {
         }
 
@@ -501,21 +503,19 @@ namespace
             const float m_e;
         };
 
-        static void update_assemblies(const AssemblyContainer& assemblies)
+        void update_assemblies(const AssemblyContainer& assemblies)
         {
-            for (const_each<AssemblyContainer> i = assemblies; i; ++i)
+            for (const Assembly& assembly : assemblies)
             {
-                update_bsdfs(*i, i->bsdfs());
-                update_assemblies(i->assemblies());
+                update_bsdfs(assembly, assembly.bsdfs());
+                update_assemblies(assembly.assemblies());
             }
         }
 
-        static void update_bsdfs(const Assembly& assembly, BSDFContainer& bsdfs)
+        void update_bsdfs(const Assembly& assembly, BSDFContainer& bsdfs)
         {
-            for (each<BSDFContainer> i = bsdfs; i; ++i)
+            for (BSDF& bsdf : bsdfs)
             {
-                BSDF& bsdf = *i;
-
                 if (strcmp(bsdf.get_model(), "microfacet_brdf"))
                     continue;
 
@@ -534,9 +534,10 @@ namespace
                     if (!mdf_param_to_glossiness(mdf, mdf_param_value, glossiness))
                     {
                         RENDERER_LOG_ERROR(
-                            "while updating bsdf \"%s\", failed to convert mdf parameter %f.",
+                            "while updating bsdf \"%s\": failed to convert mdf parameter %f.",
                             bsdf.get_path().c_str(),
                             mdf_param_value);
+                        m_event_counters.signal_error();
                         continue;
                     }
 
@@ -557,10 +558,11 @@ namespace
                         if (!mdf_param_to_glossiness(mdf, mdf_param_value, glossiness))
                         {
                             RENDERER_LOG_ERROR(
-                                "while updating bsdf \"%s\", failed to convert mdf parameter %f in color entity \"%s\".",
+                                "while updating bsdf \"%s\": failed to convert mdf parameter %f in color entity \"%s\".",
                                 bsdf.get_path().c_str(),
                                 mdf_param_value,
                                 color->get_path().c_str());
+                            m_event_counters.signal_error();
                             continue;
                         }
 
@@ -613,10 +615,10 @@ namespace
 
         static ColorEntity* find_color_entity(const Assembly& assembly, const std::string& name)
         {
-            for (each<ColorContainer> i = assembly.colors(); i; ++i)
+            for (ColorEntity& color : assembly.colors())
             {
-                if (i->get_name() == name)
-                    return &*i;
+                if (color.get_name() == name)
+                    return &color;
             }
 
             Assembly* parent_assembly = dynamic_cast<Assembly*>(assembly.get_parent());
@@ -632,10 +634,10 @@ namespace
 
         static ColorEntity* find_color_entity(const Scene& scene, const std::string& name)
         {
-            for (each<ColorContainer> i = scene.colors(); i; ++i)
+            for (ColorEntity& color : scene.colors())
             {
-                if (i->get_name() == name)
-                    return &*i;
+                if (color.get_name() == name)
+                    return &color;
             }
 
             return nullptr;
@@ -665,15 +667,14 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_6(Project& project)
-          : Updater(project, 6)
+        UpdateFromRevision_6(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 6)
         {
         }
 
         void update() override
         {
-            // Here, we used to update render layer rules
-            // but render layers were removed in appleseed 1.7.0-beta.
+            // We used to update render layer rules here, but render layers were removed in appleseed 1.7.0-beta.
         }
     };
 
@@ -686,8 +687,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_7(Project& project)
-          : Updater(project, 7)
+        UpdateFromRevision_7(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 7)
         {
         }
 
@@ -701,8 +702,8 @@ namespace
         template <typename Collection>
         static void update_collection(Collection& collection)
         {
-            for (each<Collection> i = collection; i; ++i)
-                update_entity(*i);
+            for (auto& item : collection)
+                update_entity(item);
         }
 
         static void update_entity(Assembly& assembly)
@@ -745,8 +746,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_8(Project& project)
-          : Updater(project, 8)
+        UpdateFromRevision_8(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 8)
         {
         }
 
@@ -759,17 +760,17 @@ namespace
       private:
         static void rename_radiance_inputs(AssemblyContainer& assemblies)
         {
-            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            for (Assembly& assembly : assemblies)
             {
-                rename_radiance_inputs(*i);
-                rename_radiance_inputs(i->assemblies());
+                rename_radiance_inputs(assembly);
+                rename_radiance_inputs(assembly.assemblies());
             }
         }
 
         static void rename_radiance_inputs(Assembly& assembly)
         {
-            for (each<LightContainer> i = assembly.lights(); i; ++i)
-                rename_radiance_inputs(*i);
+            for (Light& light : assembly.lights())
+                rename_radiance_inputs(light);
         }
 
         static void rename_radiance_inputs(Light& light)
@@ -797,8 +798,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_9(Project& project)
-          : Updater(project, 9)
+        UpdateFromRevision_9(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 9)
         {
         }
 
@@ -832,8 +833,8 @@ namespace
 
         static void visit(AssemblyContainer& assemblies)
         {
-            for (each<AssemblyContainer> i = assemblies; i; ++i)
-                visit(*i);
+            for (Assembly& assembly : assemblies)
+                visit(assembly);
         }
 
         static void visit(Assembly& assembly)
@@ -869,7 +870,6 @@ namespace
                         auto_release_ptr<BSDF> bsdf_owner = assembly.bsdfs().remove(mat1.m_bsdf);
 
                         // Update mat1's BSDF.
-                        // todo: make sure the BSDF is not used in another material.
                         update_bsdf(mat1);
                         assert(assembly.bsdfs().get_by_name(bsdf_owner->get_name()) == nullptr);
 
@@ -907,7 +907,6 @@ namespace
                     auto_release_ptr<BSDF> bsdf_owner = assembly.bsdfs().remove(i->m_bsdf);
 
                     // Update the material's BSDF.
-                    // todo: make sure the BSDF is not used in another material.
                     update_bsdf(*i);
 
                     // Insert the material's BSDF back into the assembly.
@@ -921,10 +920,8 @@ namespace
 
         static void collect_refractive_materials(Assembly& assembly, std::vector<MaterialInfo>& materials)
         {
-            for (each<MaterialContainer> i = assembly.materials(); i; ++i)
+            for (Material& material : assembly.materials())
             {
-                Material& material = *i;
-
                 if (strcmp(material.get_model(), "generic_material"))
                     continue;
 
@@ -1013,10 +1010,10 @@ namespace
             const char*                 old_material_name,
             const char*                 new_material_name)
         {
-            for (each<ObjectInstanceContainer> i = object_instances; i; ++i)
+            for (ObjectInstance& object_instance : object_instances)
             {
-                update_material_mappings(i->get_front_material_mappings(), old_material_name, new_material_name);
-                update_material_mappings(i->get_back_material_mappings(), old_material_name, new_material_name);
+                update_material_mappings(object_instance.get_front_material_mappings(), old_material_name, new_material_name);
+                update_material_mappings(object_instance.get_back_material_mappings(), old_material_name, new_material_name);
             }
         }
 
@@ -1025,10 +1022,10 @@ namespace
             const char*                 old_material_name,
             const char*                 new_material_name)
         {
-            for (const_each<StringDictionary> i = mappings; i; ++i)
+            for (const StringDictionary::const_iterator& i : mappings)
             {
-                if (strcmp(i->value(), old_material_name) == 0)
-                    mappings.set(i->key(), new_material_name);
+                if (strcmp(i.value(), old_material_name) == 0)
+                    mappings.set(i.key(), new_material_name);
             }
         }
 
@@ -1057,8 +1054,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_10(Project& project)
-          : Updater(project, 10)
+        UpdateFromRevision_10(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 10)
         {
         }
 
@@ -1071,17 +1068,17 @@ namespace
       private:
         static void update_bssrdf_ior_inputs(AssemblyContainer& assemblies)
         {
-            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            for (Assembly& assembly : assemblies)
             {
-                update_bssrdf_ior_inputs(*i);
-                update_bssrdf_ior_inputs(i->assemblies());
+                update_bssrdf_ior_inputs(assembly);
+                update_bssrdf_ior_inputs(assembly.assemblies());
             }
         }
 
         static void update_bssrdf_ior_inputs(Assembly& assembly)
         {
-            for (each<BSSRDFContainer> i = assembly.bssrdfs(); i; ++i)
-                update_bssrdf_ior_inputs(*i);
+            for (BSSRDF& bssrdf : assembly.bssrdfs())
+                update_bssrdf_ior_inputs(bssrdf);
         }
 
         static void update_bssrdf_ior_inputs(BSSRDF& bssrdf)
@@ -1100,8 +1097,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_11(Project& project)
-          : Updater(project, 11)
+        UpdateFromRevision_11(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 11)
         {
         }
 
@@ -1114,17 +1111,17 @@ namespace
       private:
         static void update_bssrdf_mfp_inputs(AssemblyContainer& assemblies)
         {
-            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            for (Assembly& assembly : assemblies)
             {
-                update_bssrdf_mfp_inputs(*i);
-                update_bssrdf_mfp_inputs(i->assemblies());
+                update_bssrdf_mfp_inputs(assembly);
+                update_bssrdf_mfp_inputs(assembly.assemblies());
             }
         }
 
         static void update_bssrdf_mfp_inputs(Assembly& assembly)
         {
-            for (each<BSSRDFContainer> i = assembly.bssrdfs(); i; ++i)
-                update_bssrdf_mfp_inputs(*i);
+            for (BSSRDF& bssrdf : assembly.bssrdfs())
+                update_bssrdf_mfp_inputs(bssrdf);
         }
 
         static void update_bssrdf_mfp_inputs(BSSRDF& bssrdf)
@@ -1143,8 +1140,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_12(Project& project)
-          : Updater(project, 12)
+        UpdateFromRevision_12(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 12)
         {
         }
 
@@ -1188,8 +1185,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_13(Project& project)
-          : Updater(project, 13)
+        UpdateFromRevision_13(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 13)
         {
         }
 
@@ -1205,17 +1202,17 @@ namespace
       private:
         static void update_bsdfs_inputs(AssemblyContainer& assemblies)
         {
-            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            for (Assembly& assembly : assemblies)
             {
-                update_bsdfs_inputs(*i);
-                update_bsdfs_inputs(i->assemblies());
+                update_bsdfs_inputs(assembly);
+                update_bsdfs_inputs(assembly.assemblies());
             }
         }
 
         static void update_bsdfs_inputs(Assembly& assembly)
         {
-            for (each<BSDFContainer> i = assembly.bsdfs(); i; ++i)
-                update_bsdf_inputs(*i);
+            for (BSDF& bsdf : assembly.bsdfs())
+                update_bsdf_inputs(bsdf);
         }
 
         static void update_bsdf_inputs(BSDF& bsdf)
@@ -1237,25 +1234,25 @@ namespace
             }
         }
 
-        static void update_gaussian_bssrdfs(AssemblyContainer& assemblies)
+        void update_gaussian_bssrdfs(AssemblyContainer& assemblies)
         {
-            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            for (Assembly& assembly : assemblies)
             {
-                update_gaussian_bssrdfs(*i);
-                update_gaussian_bssrdfs(i->assemblies());
+                update_gaussian_bssrdfs(assembly);
+                update_gaussian_bssrdfs(assembly.assemblies());
             }
         }
 
-        static void update_gaussian_bssrdfs(Assembly& assembly)
+        void update_gaussian_bssrdfs(Assembly& assembly)
         {
-            for (each<BSSRDFContainer> i = assembly.bssrdfs(); i; ++i)
+            for (BSSRDF& bssrdf : assembly.bssrdfs())
             {
-                if (strcmp(i->get_model(), GaussianBSSRDFFactory().get_model()) == 0)
-                    update_gaussian_bssrdf(*i);
+                if (strcmp(bssrdf.get_model(), GaussianBSSRDFFactory().get_model()) == 0)
+                    update_gaussian_bssrdf(bssrdf);
             }
         }
 
-        static void update_gaussian_bssrdf(BSSRDF& bssrdf)
+        void update_gaussian_bssrdf(BSSRDF& bssrdf)
         {
             ParamArray& params = bssrdf.get_parameters();
 
@@ -1270,7 +1267,8 @@ namespace
             {
                 RENDERER_LOG_ERROR(
                     "while updating gaussian bssrdf \"%s\": failed to convert v parameter.",
-                    bssrdf.get_name());
+                    bssrdf.get_path().c_str());
+                m_event_counters.signal_error();
             }
         }
     };
@@ -1284,8 +1282,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_14(Project& project)
-          : Updater(project, 14)
+        UpdateFromRevision_14(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 14)
         {
         }
 
@@ -1298,20 +1296,20 @@ namespace
       private:
         static void update_entities(AssemblyContainer& assemblies)
         {
-            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            for (Assembly& assembly : assemblies)
             {
-                update_entities(*i);
-                update_entities(i->assemblies());
+                update_entities(assembly);
+                update_entities(assembly.assemblies());
             }
         }
 
         static void update_entities(Assembly& assembly)
         {
-            for (each<BSDFContainer> i = assembly.bsdfs(); i; ++i)
-                update_bsdf_inputs(*i);
+            for (BSDF& bsdf : assembly.bsdfs())
+                update_bsdf_inputs(bsdf);
 
-            for (each<MaterialContainer> i = assembly.materials(); i; ++i)
-                update_material_inputs(*i);
+            for (Material& material : assembly.materials())
+                update_material_inputs(material);
         }
 
         static void update_bsdf_inputs(BSDF& bsdf)
@@ -1336,9 +1334,9 @@ namespace
             if (strcmp(material.get_model(), "disney_material") == 0)
             {
                 ParamArray& params = material.get_parameters();
-                for (each<DictionaryDictionary> i = params.dictionaries(); i; ++i)
+                for (DictionaryDictionary::iterator& i : params.dictionaries())
                 {
-                    Dictionary& layer_params = i->value();
+                    Dictionary& layer_params = i.value();
                     if (!layer_params.strings().exist("roughness"))
                         layer_params.insert("roughness", 0.5f);
                 }
@@ -1355,8 +1353,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_15(Project& project)
-          : Updater(project, 15)
+        UpdateFromRevision_15(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 15)
         {
         }
 
@@ -1369,17 +1367,17 @@ namespace
       private:
         static void update_physical_surface_shader_inputs(AssemblyContainer& assemblies)
         {
-            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            for (Assembly& assembly : assemblies)
             {
-                update_physical_surface_shader_inputs(*i);
-                update_physical_surface_shader_inputs(i->assemblies());
+                update_physical_surface_shader_inputs(assembly);
+                update_physical_surface_shader_inputs(assembly.assemblies());
             }
         }
 
         static void update_physical_surface_shader_inputs(Assembly& assembly)
         {
-            for (each<SurfaceShaderContainer> i = assembly.surface_shaders(); i; ++i)
-                update_physical_surface_shader_inputs(*i);
+            for (SurfaceShader& surface_shader : assembly.surface_shaders())
+                update_physical_surface_shader_inputs(surface_shader);
         }
 
         static void update_physical_surface_shader_inputs(SurfaceShader& surface_shader)
@@ -1408,15 +1406,15 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_16(Project& project)
-          : Updater(project, 16)
+        UpdateFromRevision_16(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 16)
         {
         }
 
         void update() override
         {
-            for (each<ConfigurationContainer> i = m_project.configurations(); i; ++i)
-                update(*i);
+            for (Configuration& configuration : m_project.configurations())
+                update(configuration);
         }
 
       private:
@@ -1452,15 +1450,15 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_17(Project& project)
-          : Updater(project, 17)
+        UpdateFromRevision_17(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 17)
         {
         }
 
         void update() override
         {
-            for (each<ConfigurationContainer> i = m_project.configurations(); i; ++i)
-                update(*i);
+            for (Configuration& configuration : m_project.configurations())
+                update(configuration);
         }
 
       private:
@@ -1516,8 +1514,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_18(Project& project)
-          : Updater(project, 18)
+        UpdateFromRevision_18(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 18)
         {
         }
 
@@ -1548,8 +1546,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_19(Project& project)
-          : Updater(project, 19)
+        UpdateFromRevision_19(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 19)
         {
         }
 
@@ -1562,20 +1560,20 @@ namespace
       private:
         static void update_material_and_object_inputs(AssemblyContainer& assemblies)
         {
-            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            for (Assembly& assembly : assemblies)
             {
-                update_material_and_object_inputs(*i);
-                update_material_and_object_inputs(i->assemblies());
+                update_material_and_object_inputs(assembly);
+                update_material_and_object_inputs(assembly.assemblies());
             }
         }
 
         static void update_material_and_object_inputs(Assembly& assembly)
         {
-            for (each<MaterialContainer> i = assembly.materials(); i; ++i)
-                remove_shade_alpha_cutouts(*i);
+            for (Material& material : assembly.materials())
+                remove_shade_alpha_cutouts(material);
 
-            for (each<ObjectContainer> i = assembly.objects(); i; ++i)
-                remove_shade_alpha_cutouts(*i);
+            for (Object& object : assembly.objects())
+                remove_shade_alpha_cutouts(object);
         }
 
         template <typename EntityType>
@@ -1595,8 +1593,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_20(Project& project)
-          : Updater(project, 20)
+        UpdateFromRevision_20(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 20)
         {
         }
 
@@ -1609,17 +1607,17 @@ namespace
       private:
         static void update_physical_surface_shader_inputs(AssemblyContainer& assemblies)
         {
-            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            for (Assembly& assembly : assemblies)
             {
-                update_physical_surface_shader_inputs(*i);
-                update_physical_surface_shader_inputs(i->assemblies());
+                update_physical_surface_shader_inputs(assembly);
+                update_physical_surface_shader_inputs(assembly.assemblies());
             }
         }
 
         static void update_physical_surface_shader_inputs(Assembly& assembly)
         {
-            for (each<SurfaceShaderContainer> i = assembly.surface_shaders(); i; ++i)
-                update_physical_surface_shader_inputs(*i);
+            for (SurfaceShader& surface_shader : assembly.surface_shaders())
+                update_physical_surface_shader_inputs(surface_shader);
         }
 
         static void update_physical_surface_shader_inputs(SurfaceShader& surface_shader)
@@ -1642,8 +1640,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_21(Project& project)
-          : Updater(project, 21)
+        UpdateFromRevision_21(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 21)
         {
         }
 
@@ -1651,9 +1649,9 @@ namespace
         {
             if (Scene* scene = m_project.get_scene())
             {
-                for (each<CameraContainer> i = scene->cameras(); i; ++i)
+                for (Camera& camera : scene->cameras())
                 {
-                    Dictionary& camera_params = i->get_parameters();
+                    Dictionary& camera_params = camera.get_parameters();
 
                     copy_if_exist_no_overwrite(
                         camera_params,
@@ -1678,8 +1676,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_22(Project& project)
-          : Updater(project, 22)
+        UpdateFromRevision_22(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 22)
         {
         }
 
@@ -1687,9 +1685,9 @@ namespace
         {
             if (Scene* scene = m_project.get_scene())
             {
-                for (each<CameraContainer> i = scene->cameras(); i; ++i)
+                for (Camera& camera : scene->cameras())
                 {
-                    Dictionary& camera_params = i->get_parameters();
+                    Dictionary& camera_params = camera.get_parameters();
 
                     if (camera_params.strings().exist("autofocus_target"))
                         camera_params.strings().insert("autofocus_enabled", true);
@@ -1712,15 +1710,15 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_23(Project& project)
-          : Updater(project, 23)
+        UpdateFromRevision_23(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 23)
         {
         }
 
         void update() override
         {
-            for (each<ConfigurationContainer> i = m_project.configurations(); i; ++i)
-                update(*i);
+            for (Configuration& configuration : m_project.configurations())
+                update(configuration);
         }
 
       private:
@@ -1764,8 +1762,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_24(Project& project)
-          : Updater(project, 24)
+        UpdateFromRevision_24(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 24)
         {
         }
 
@@ -1773,9 +1771,9 @@ namespace
         {
             if (Scene* scene = m_project.get_scene())
             {
-                for (each<CameraContainer> i = scene->cameras(); i; ++i)
+                for (Camera& camera : scene->cameras())
                 {
-                    ParamArray& camera_params = i->get_parameters();
+                    ParamArray& camera_params = camera.get_parameters();
                     move_if_exist(camera_params, "shutter_open_begin_time", "shutter_open_time");
                     move_if_exist(camera_params, "shutter_close_begin_time", "shutter_close_start_time");
                     move_if_exist(camera_params, "shutter_close_end_time", "shutter_close_time");
@@ -1793,8 +1791,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_25(Project& project)
-          : Updater(project, 25)
+        UpdateFromRevision_25(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 25)
         {
         }
 
@@ -1837,8 +1835,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_26(Project& project)
-          : Updater(project, 26)
+        UpdateFromRevision_26(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 26)
         {
         }
 
@@ -1908,8 +1906,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_27(Project& project)
-          : Updater(project, 27)
+        UpdateFromRevision_27(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 27)
         {
         }
 
@@ -1922,10 +1920,10 @@ namespace
       private:
         static void update_assembly_inputs(AssemblyContainer& assemblies)
         {
-            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            for (Assembly& assembly : assemblies)
             {
-                update_assembly_inputs(*i);
-                update_assembly_inputs(i->assemblies());
+                update_assembly_inputs(assembly);
+                update_assembly_inputs(assembly.assemblies());
             }
         }
 
@@ -1944,8 +1942,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_28(Project& project)
-          : Updater(project, 28)
+        UpdateFromRevision_28(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 28)
         {
         }
 
@@ -1983,8 +1981,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_29(Project& project)
-          : Updater(project, 29)
+        UpdateFromRevision_29(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 29)
         {
         }
 
@@ -1998,7 +1996,7 @@ namespace
         }
 
       private:
-        static void update_frame_filter(Frame& frame)
+        void update_frame_filter(Frame& frame)
         {
             const char* DefaultFilterName = "blackman-harris";
 
@@ -2017,6 +2015,7 @@ namespace
                     "with the introduction of filter importance sampling, some reconstruction filters were removed; "
                     "migrating this project to use the default reconstruction filter instead (%s).",
                     DefaultFilterName);
+                m_event_counters.signal_warning();
 
                 params.insert_path("filter", DefaultFilterName);
             }
@@ -2039,6 +2038,7 @@ namespace
                             RENDERER_LOG_WARNING(
                                 "with the introduction of filter importance sampling, the option to disable pixel decorrelation was removed; "
                                 "migrating this project to use pixel decorrelation instead.");
+                            m_event_counters.signal_warning();
                         }
 
                         d.strings().remove("decorrelate_pixels");
@@ -2064,6 +2064,7 @@ namespace
                         RENDERER_LOG_WARNING(
                             "with the introduction of a new adaptive tile renderer, the adaptive pixel renderer was removed; "
                             "migrating this project to use the uniform pixel renderer instead.");
+                        m_event_counters.signal_warning();
 
                         root.strings().set("pixel_renderer", "uniform");
                     }
@@ -2081,8 +2082,8 @@ namespace
       : public Updater
     {
       public:
-        explicit UpdateFromRevision_30(Project& project)
-          : Updater(project, 30)
+        UpdateFromRevision_30(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 30)
         {
         }
 
@@ -2129,7 +2130,7 @@ namespace
             }
         }
 
-        static void update_assemblies(const AssemblyContainer& assemblies)
+        void update_assemblies(const AssemblyContainer& assemblies)
         {
             for (const auto& assembly : assemblies)
             {
@@ -2138,7 +2139,7 @@ namespace
             }
         }
 
-        static void update_bsdfs(BSDFContainer& bsdfs)
+        void update_bsdfs(BSDFContainer& bsdfs)
         {
             for (auto& bsdf : bsdfs)
             {
@@ -2153,7 +2154,7 @@ namespace
             }
         }
 
-        static void update_microfacet_params(BSDF& bsdf)
+        void update_microfacet_params(BSDF& bsdf)
         {
             ParamArray& params = bsdf.get_parameters();
 
@@ -2164,14 +2165,114 @@ namespace
                 if (mdf != "ggx")
                 {
                     RENDERER_LOG_WARNING(
-                        "the %s microfacet distribution used by BSDF \"%s\" was removed; "
-                        "the GGX distribution will be used instead.",
-                        mdf.c_str(),
-                        bsdf.get_name());
+                        "while updating bsdf \"%s\": the \"%s\" microfacet distribution was removed; "
+                        "the ggx distribution will be used instead.",
+                        bsdf.get_path().c_str(),
+                        mdf.c_str());
+                    m_event_counters.signal_warning();
                 }
             }
 
             params.strings().remove("highlight_falloff");
+        }
+    };
+
+
+    //
+    // Update from revision 31 to revision 32.
+    //
+
+    class UpdateFromRevision_31
+      : public Updater
+    {
+      public:
+        UpdateFromRevision_31(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 31)
+        {
+        }
+
+        void update() override
+        {
+            if (Scene* scene = m_project.get_scene())
+            {
+                for (EnvironmentEDF& edf : scene->environment_edfs())
+                    remove_exposure_multiplier_input(edf);
+
+                remove_exposure_multiplier_input(scene->assemblies());
+            }
+        }
+
+      private:
+        void remove_exposure_multiplier_input(AssemblyContainer& assemblies)
+        {
+            for (Assembly& assembly : assemblies)
+            {
+                remove_exposure_multiplier_input(assembly);
+                remove_exposure_multiplier_input(assembly.assemblies());
+            }
+        }
+
+        void remove_exposure_multiplier_input(Assembly& assembly)
+        {
+            for (Light& light : assembly.lights())
+                remove_exposure_multiplier_input(light);
+        }
+
+        void remove_exposure_multiplier_input(Light& light)
+        {
+            if (strcmp(light.get_model(), SpotLightFactory().get_model()) == 0)
+                do_remove_exposure_multiplier_input(light);
+        }
+
+        void remove_exposure_multiplier_input(EnvironmentEDF& edf)
+        {
+            if (strcmp(edf.get_model(), LatLongMapEnvironmentEDFFactory().get_model()) == 0 ||
+                strcmp(edf.get_model(), MirrorBallMapEnvironmentEDFFactory().get_model()) == 0)
+                do_remove_exposure_multiplier_input(edf);
+        }
+
+        void do_remove_exposure_multiplier_input(Entity& entity)
+        {
+            ParamArray& params = entity.get_parameters();
+
+            if (!params.strings().exist("exposure_multiplier"))
+                return;
+
+            double exposure_multiplier;
+            try
+            {
+                exposure_multiplier = params.get<double>("exposure_multiplier");
+            }
+            catch (const ExceptionStringConversionError&)
+            {
+                RENDERER_LOG_WARNING(
+                    "while updating entity \"%s\": non-scalar exposure multipliers are no longer supported; "
+                    "an exposure multiplier of 1 will be assumed.",
+                    entity.get_path().c_str());
+                m_event_counters.signal_warning();
+                exposure_multiplier = 1.0;
+            }
+
+            params.strings().remove("exposure_multiplier");
+
+            if (exposure_multiplier == 1.0 || !params.strings().exist("exposure"))
+                return;
+
+            double exposure;
+            try
+            {
+                exposure = params.get<double>("exposure");
+            }
+            catch (const ExceptionStringConversionError&)
+            {
+                RENDERER_LOG_ERROR(
+                    "while updating entity \"%s\": non-scalar exposures are not supported.",
+                    entity.get_path().c_str());
+                m_event_counters.signal_error();
+                return;
+            }
+
+            params.set("exposure", exposure * exposure_multiplier);
         }
     };
 }
@@ -2192,16 +2293,16 @@ void ProjectFileUpdater::update(
 {
     size_t format_revision = project.get_format_revision();
 
-#define CASE_UPDATE_FROM_REVISION(from)             \
-    case from:                                      \
-    {                                               \
-        if (format_revision >= to_revision)         \
-            break;                                  \
-                                                    \
-        UpdateFromRevision_##from updater(project); \
-        updater.update();                           \
-                                                    \
-        format_revision = from + 1;                 \
+#define CASE_UPDATE_FROM_REVISION(from)                             \
+    case from:                                                      \
+    {                                                               \
+        if (format_revision >= to_revision)                         \
+            break;                                                  \
+                                                                    \
+        UpdateFromRevision_##from updater(project, event_counters); \
+        updater.update();                                           \
+                                                                    \
+        format_revision = from + 1;                                 \
     }
 
     switch (format_revision)
@@ -2237,6 +2338,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(28);
       CASE_UPDATE_FROM_REVISION(29);
       CASE_UPDATE_FROM_REVISION(30);
+      CASE_UPDATE_FROM_REVISION(31);
 
       case ProjectFormatRevision:
         // Project is up-to-date.
