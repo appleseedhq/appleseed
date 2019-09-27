@@ -138,9 +138,7 @@
             <object name="right_wall" model="mesh_object">
                 <parameter name="filename" value="right_wall.obj" />
             </object>
-            <object name="sphere" model="sphere_object">
-                <parameter name="radius" value="0.1" />
-            </object>
+            <object name="sphere" model="sphere_object" />
             <object_instance name="back_wall_inst" object="back_wall.back_wall">
                 <transform>
                     <matrix>
@@ -199,9 +197,9 @@
             <object_instance name="sphere_inst" object="sphere">
                 <transform>
                     <matrix>
-                        1.00000000000000000 0.00000000000000000 0.00000000000000000 0.27000000000000002
-                        0.00000000000000000 1.00000000000000000 0.00000000000000000 0.27000000000000002
-                        0.00000000000000000 0.00000000000000000 1.00000000000000000 0.27000000000000002
+                        0.10000000000000001 0.00000000000000000 0.00000000000000000 0.27000000000000002
+                        0.00000000000000000 0.10000000000000001 0.00000000000000000 0.27000000000000002
+                        0.00000000000000000 0.00000000000000000 0.10000000000000001 0.27000000000000002
                         0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
                     </matrix>
                 </transform>

@@ -566,6 +566,7 @@ namespace
         // Compute the ray origin in assembly instance space.
         if (parent_sp &&
             parent_sp->get_assembly_instance().get_uid() == assembly_instance.get_uid() &&
+            parent_sp->get_primitive_type() == ShadingPoint::PrimitiveType::PrimitiveTriangle &&
             parent_sp->get_object_instance().get_ray_bias_method() == ObjectInstance::RayBiasMethodNone)
         {
             // The caller provided the previous intersection, and we are about
@@ -639,14 +640,14 @@ bool AssemblyLeafVisitor::visit(
             assembly_instance_transform_seq->evaluate(ray.m_time.m_absolute, scratch);
 
         // Transform the ray to assembly instance space.
-        ShadingPoint local_shading_point;
+        ShadingPoint asm_inst_shading_point;
         compute_assembly_instance_ray(
             assembly_instance,
             assembly_instance_transform,
             m_parent_shading_point,
             ray,
-            local_shading_point.m_ray);
-        const RayInfo3d local_ray_info(local_shading_point.m_ray);
+            asm_inst_shading_point.m_ray);
+        const RayInfo3d asm_inst_ray_info(asm_inst_shading_point.m_ray);
 
 #ifdef APPLESEED_WITH_EMBREE
 
@@ -657,7 +658,7 @@ bool AssemblyLeafVisitor::visit(
                     item.m_assembly_uid,
                     m_tree.m_embree_scenes);
 
-            embree_scene.intersect(local_shading_point);
+            embree_scene.intersect(asm_inst_shading_point);
         }
         else
 
@@ -673,14 +674,14 @@ bool AssemblyLeafVisitor::visit(
             {
                 // Check the intersection between the ray and the triangle tree.
                 TriangleTreeIntersector intersector;
-                TriangleLeafVisitor visitor(*triangle_tree, local_shading_point);
+                TriangleLeafVisitor visitor(*triangle_tree, asm_inst_shading_point);
                 if (triangle_tree->get_moving_triangle_count() > 0)
                 {
                     intersector.intersect_motion(
                         *triangle_tree,
-                        local_shading_point.m_ray,
-                        local_ray_info,
-                        local_shading_point.m_ray.m_time.m_normalized,
+                        asm_inst_shading_point.m_ray,
+                        asm_inst_ray_info,
+                        asm_inst_shading_point.m_ray.m_time.m_normalized,
                         visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                         , m_triangle_tree_stats
@@ -691,8 +692,8 @@ bool AssemblyLeafVisitor::visit(
                 {
                     intersector.intersect_no_motion(
                         *triangle_tree,
-                        local_shading_point.m_ray,
-                        local_ray_info,
+                        asm_inst_shading_point.m_ray,
+                        asm_inst_ray_info,
                         visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                         , m_triangle_tree_stats
@@ -712,11 +713,11 @@ bool AssemblyLeafVisitor::visit(
         if (curve_tree)
         {
             // Check the intersection between the ray and the curve tree.
-            const GRay3 ray(local_shading_point.m_ray);
-            const GRayInfo3 ray_info(local_ray_info);
+            const GRay3 ray(asm_inst_shading_point.m_ray);
+            const GRayInfo3 ray_info(asm_inst_ray_info);
             CurveMatrixType xfm_matrix;
             make_curve_projection_transform(xfm_matrix, ray);
-            CurveLeafVisitor visitor(*curve_tree, xfm_matrix, local_shading_point);
+            CurveLeafVisitor visitor(*curve_tree, xfm_matrix, asm_inst_shading_point);
             CurveTreeIntersector intersector;
             intersector.intersect_no_motion(
                 *curve_tree,
@@ -730,17 +731,17 @@ bool AssemblyLeafVisitor::visit(
         }
 
         // Keep track of the closest hit.
-        if (local_shading_point.hit_surface() && local_shading_point.m_ray.m_tmax < m_shading_point.m_ray.m_tmax)
+        if (asm_inst_shading_point.hit_surface() && asm_inst_shading_point.m_ray.m_tmax < m_shading_point.m_ray.m_tmax)
         {
-            m_shading_point.m_ray.m_tmax = local_shading_point.m_ray.m_tmax;
-            m_shading_point.m_primitive_type = local_shading_point.m_primitive_type;
-            m_shading_point.m_bary = local_shading_point.m_bary;
+            m_shading_point.m_ray.m_tmax = asm_inst_shading_point.m_ray.m_tmax;
+            m_shading_point.m_primitive_type = asm_inst_shading_point.m_primitive_type;
+            m_shading_point.m_bary = asm_inst_shading_point.m_bary;
             m_shading_point.m_assembly_instance = item.m_assembly_instance;
             m_shading_point.m_assembly_instance_transform = assembly_instance_transform;
             m_shading_point.m_assembly_instance_transform_seq = assembly_instance_transform_seq;
-            m_shading_point.m_object_instance_index = local_shading_point.m_object_instance_index;
-            m_shading_point.m_primitive_index = local_shading_point.m_primitive_index;
-            m_shading_point.m_triangle_support_plane = local_shading_point.m_triangle_support_plane;
+            m_shading_point.m_object_instance_index = asm_inst_shading_point.m_object_instance_index;
+            m_shading_point.m_primitive_index = asm_inst_shading_point.m_primitive_index;
+            m_shading_point.m_triangle_support_plane = asm_inst_shading_point.m_triangle_support_plane;
         }
 
         // Check the intersection between the ray and procedural objects.
@@ -759,24 +760,51 @@ bool AssemblyLeafVisitor::visit(
                 if (!(object_instance->get_vis_flags() & ray.m_flags))
                     continue;
 
-                // Transform the ray to object instance space.
                 // todo: transform ray differentials.
                 const Transformd& object_instance_transform = object_instance->get_transform();
-                ShadingRay instance_local_ray;
-                instance_local_ray.m_org = object_instance_transform.point_to_local(local_shading_point.m_ray.m_org);
-                instance_local_ray.m_dir = object_instance_transform.vector_to_local(local_shading_point.m_ray.m_dir);
-                instance_local_ray.m_has_differentials = false;
-                instance_local_ray.m_tmin = local_shading_point.m_ray.m_tmin;
-                instance_local_ray.m_tmax = local_shading_point.m_ray.m_tmax;
-                instance_local_ray.m_time = local_shading_point.m_ray.m_time;
-                instance_local_ray.m_flags = local_shading_point.m_ray.m_flags;
-                instance_local_ray.m_depth = local_shading_point.m_ray.m_depth;
-                instance_local_ray.m_medium_count = local_shading_point.m_ray.m_medium_count;
+
+                // Transform the ray direction from world space to object instance space.
+                ShadingRay obj_inst_ray;
+                obj_inst_ray.m_dir =
+                    object_instance_transform.vector_to_local(
+                        assembly_instance_transform.vector_to_local(ray.m_dir));
+
+                // Compute the ray origin in object space.
+                if (m_parent_shading_point &&
+                    m_parent_shading_point->get_primitive_type() == ShadingPoint::PrimitiveType::PrimitiveProceduralSurface &&
+                    m_parent_shading_point->get_assembly_instance().get_uid() == assembly_instance.get_uid() &&
+                    m_parent_shading_point->get_object_instance().get_uid() == object_instance->get_uid() &&
+                    m_parent_shading_point->get_object_instance().get_ray_bias_method() == ObjectInstance::RayBiasMethodNone)
+                {
+                    // The caller provided the previous intersection, and we are about
+                    // to intersect the object instance that contains the previous
+                    // intersection. Use the properly offset intersection point as the
+                    // origin of the child ray.
+                    obj_inst_ray.m_org = m_parent_shading_point->get_offset_point(obj_inst_ray.m_dir);
+                }
+                else
+                {
+                    // The caller didn't provide the previous intersection, or we are
+                    // about to intersect an object instance that does not contain
+                    // the previous intersection: simply transform the ray origin to
+                    // object space.
+                    obj_inst_ray.m_org =
+                        object_instance_transform.point_to_local(
+                            assembly_instance_transform.point_to_local(ray.m_org));
+                }
+
+                obj_inst_ray.m_has_differentials = false;
+                obj_inst_ray.m_tmin = asm_inst_shading_point.m_ray.m_tmin;
+                obj_inst_ray.m_tmax = asm_inst_shading_point.m_ray.m_tmax;
+                obj_inst_ray.m_time = asm_inst_shading_point.m_ray.m_time;
+                obj_inst_ray.m_flags = asm_inst_shading_point.m_ray.m_flags;
+                obj_inst_ray.m_depth = asm_inst_shading_point.m_ray.m_depth;
+                obj_inst_ray.m_medium_count = asm_inst_shading_point.m_ray.m_medium_count;
 
                 // Ask the procedural object to intersect itself against the ray.
                 const ProceduralObject& object = static_cast<const ProceduralObject&>(object_instance->get_object());
                 ProceduralObject::IntersectionResult result;
-                object.intersect(instance_local_ray, result);
+                object.intersect(obj_inst_ray, result);
 
                 // Keep track of the closest hit.
                 // todo: result is not in the same space as the shading point ray.
@@ -854,14 +882,14 @@ bool AssemblyLeafProbeVisitor::visit(
             item.m_transform_sequence.evaluate(ray.m_time.m_absolute, scratch);
 
         // Transform the ray to assembly instance space.
-        ShadingRay local_ray;
+        ShadingRay asm_inst_ray;
         compute_assembly_instance_ray(
             assembly_instance,
             assembly_instance_transform,
             m_parent_shading_point,
             ray,
-            local_ray);
-        const RayInfo3d local_ray_info(local_ray);
+            asm_inst_ray);
+        const RayInfo3d asm_inst_ray_info(asm_inst_ray);
 
 #ifdef APPLESEED_WITH_EMBREE
 
@@ -872,7 +900,7 @@ bool AssemblyLeafProbeVisitor::visit(
                     item.m_assembly_uid,
                     m_tree.m_embree_scenes);
 
-            if (embree_scene.occlude(local_ray))
+            if (embree_scene.occlude(asm_inst_ray))
             {
                 m_hit = true;
                 return false;
@@ -892,14 +920,14 @@ bool AssemblyLeafProbeVisitor::visit(
             {
                 // Check the intersection between the ray and the triangle tree.
                 TriangleTreeProbeIntersector intersector;
-                TriangleLeafProbeVisitor visitor(*triangle_tree, local_ray.m_time.m_normalized, local_ray.m_flags);
+                TriangleLeafProbeVisitor visitor(*triangle_tree, asm_inst_ray.m_time.m_normalized, asm_inst_ray.m_flags);
                 if (triangle_tree->get_moving_triangle_count() > 0)
                 {
                     intersector.intersect_motion(
                         *triangle_tree,
-                        local_ray,
-                        local_ray_info,
-                        local_ray.m_time.m_normalized,
+                        asm_inst_ray,
+                        asm_inst_ray_info,
+                        asm_inst_ray.m_time.m_normalized,
                         visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                         , m_triangle_tree_stats
@@ -910,8 +938,8 @@ bool AssemblyLeafProbeVisitor::visit(
                 {
                     intersector.intersect_no_motion(
                         *triangle_tree,
-                        local_ray,
-                        local_ray_info,
+                        asm_inst_ray,
+                        asm_inst_ray_info,
                         visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                         , m_triangle_tree_stats
@@ -937,8 +965,8 @@ bool AssemblyLeafProbeVisitor::visit(
         if (curve_tree)
         {
             // Check intersection between ray and curve tree.
-            const GRay3 ray(local_ray);
-            const GRayInfo3 ray_info(local_ray_info);
+            const GRay3 ray(asm_inst_ray);
+            const GRayInfo3 ray_info(asm_inst_ray_info);
             CurveMatrixType xfm_matrix;
             make_curve_projection_transform(xfm_matrix, ray);
             CurveLeafProbeVisitor visitor(*curve_tree, xfm_matrix);
@@ -977,23 +1005,50 @@ bool AssemblyLeafProbeVisitor::visit(
                 if (!(object_instance->get_vis_flags() & ray.m_flags))
                     continue;
 
-                // Transform the ray to object instance space.
                 // todo: transform ray differentials.
                 const Transformd& object_instance_transform = object_instance->get_transform();
-                ShadingRay instance_local_ray;
-                instance_local_ray.m_org = object_instance_transform.point_to_local(local_ray.m_org);
-                instance_local_ray.m_dir = object_instance_transform.vector_to_local(local_ray.m_dir);
-                instance_local_ray.m_has_differentials = false;
-                instance_local_ray.m_tmin = local_ray.m_tmin;
-                instance_local_ray.m_tmax = local_ray.m_tmax;
-                instance_local_ray.m_time = local_ray.m_time;
-                instance_local_ray.m_flags = local_ray.m_flags;
-                instance_local_ray.m_depth = local_ray.m_depth;
-                instance_local_ray.m_medium_count = local_ray.m_medium_count;
+
+                // Transform the ray direction from world space to object instance space.
+                ShadingRay obj_inst_ray;
+                obj_inst_ray.m_dir =
+                    object_instance_transform.vector_to_local(
+                        assembly_instance_transform.vector_to_local(ray.m_dir));
+
+                // Compute the ray origin in object space.
+                if (m_parent_shading_point &&
+                    m_parent_shading_point->get_primitive_type() == ShadingPoint::PrimitiveType::PrimitiveProceduralSurface &&
+                    m_parent_shading_point->get_assembly_instance().get_uid() == assembly_instance.get_uid() &&
+                    m_parent_shading_point->get_object_instance().get_uid() == object_instance->get_uid() &&
+                    m_parent_shading_point->get_object_instance().get_ray_bias_method() == ObjectInstance::RayBiasMethodNone)
+                {
+                    // The caller provided the previous intersection, and we are about
+                    // to intersect the object instance that contains the previous
+                    // intersection. Use the properly offset intersection point as the
+                    // origin of the child ray.
+                    obj_inst_ray.m_org = m_parent_shading_point->get_offset_point(obj_inst_ray.m_dir);
+                }
+                else
+                {
+                    // The caller didn't provide the previous intersection, or we are
+                    // about to intersect an object instance that does not contain
+                    // the previous intersection: simply transform the ray origin to
+                    // object space.
+                    obj_inst_ray.m_org =
+                        object_instance_transform.point_to_local(
+                            assembly_instance_transform.point_to_local(ray.m_org));
+                }
+
+                obj_inst_ray.m_has_differentials = false;
+                obj_inst_ray.m_tmin = asm_inst_ray.m_tmin;
+                obj_inst_ray.m_tmax = asm_inst_ray.m_tmax;
+                obj_inst_ray.m_time = asm_inst_ray.m_time;
+                obj_inst_ray.m_flags = asm_inst_ray.m_flags;
+                obj_inst_ray.m_depth = asm_inst_ray.m_depth;
+                obj_inst_ray.m_medium_count = asm_inst_ray.m_medium_count;
 
                 // Ask the procedural object to intersect itself against the ray.
                 const ProceduralObject& object = static_cast<const ProceduralObject&>(object_instance->get_object());
-                if (object.intersect(instance_local_ray))
+                if (object.intersect(obj_inst_ray))
                 {
                     m_hit = true;
                     return false;

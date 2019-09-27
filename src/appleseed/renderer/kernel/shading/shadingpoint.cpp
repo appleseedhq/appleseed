@@ -32,12 +32,14 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/intersector.h"
+#include "renderer/kernel/intersection/refining.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/sourceinputs.h"
 #include "renderer/modeling/material/ibasismodifier.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/object/proceduralobject.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #include "renderer/utility/triangle.h"
@@ -371,59 +373,88 @@ void ShadingPoint::refine_and_offset() const
 
     // Compute the location of the intersection point in assembly instance space.
     ShadingRay::RayType asm_inst_ray = m_assembly_instance_transform.to_local(m_ray);
-    asm_inst_ray.m_org += asm_inst_ray.m_tmax * asm_inst_ray.m_dir;
 
     switch (m_primitive_type)
     {
       case PrimitiveTriangle:
         {
+            // Offset the ray origin to the hit point.
+            asm_inst_ray.m_org += asm_inst_ray.m_tmax * asm_inst_ray.m_dir;
+
+            const TriangleSupportPlaneType& triangle_support_plane = m_triangle_support_plane;
+
+            const auto intersection_handling = [&triangle_support_plane](const Vector3d& p, const Vector3d& n) {
+                return triangle_support_plane.intersect(p, n);
+            };
+
             // Refine the location of the intersection point.
             asm_inst_ray.m_org =
-                Intersector::refine(
-                    m_triangle_support_plane,
+                refine(
                     asm_inst_ray.m_org,
-                    asm_inst_ray.m_dir);
+                    asm_inst_ray.m_dir,
+                    intersection_handling);
 
             // Compute the geometric normal to the hit triangle in assembly instance space.
             // Note that it doesn't need to be normalized at this point.
-            m_asm_inst_geo_normal = Vector3d(compute_triangle_normal(m_v0, m_v1, m_v2));
-            m_asm_inst_geo_normal = m_object_instance->get_transform().normal_to_parent(m_asm_inst_geo_normal);
-            m_asm_inst_geo_normal = faceforward(m_asm_inst_geo_normal, asm_inst_ray.m_dir);
+            m_refine_space_geo_normal = Vector3d(compute_triangle_normal(m_v0, m_v1, m_v2));
+            m_refine_space_geo_normal = m_object_instance->get_transform().normal_to_parent(m_refine_space_geo_normal);
+            m_refine_space_geo_normal = faceforward(m_refine_space_geo_normal, asm_inst_ray.m_dir);
 
             // Compute the offset points in assembly instance space.
 #ifdef RENDERER_ADAPTIVE_OFFSET
-            Intersector::adaptive_offset(
-                m_triangle_support_plane,
+            adaptive_offset(
                 asm_inst_ray.m_org,
-                m_asm_inst_geo_normal,
-                m_asm_inst_front_point,
-                m_asm_inst_back_point);
+                m_refine_space_geo_normal,
+                m_refine_space_front_point,
+                m_refine_space_back_point,
+                intersection_handling);
 #else
-            Intersector::fixed_offset(
+            fixed_offset(
                 local_ray.m_org,
-                m_asm_geo_normal,
-                m_front_point,
-                m_back_point);
+                m_refine_space_geo_normal,
+                m_refine_space_front_point,
+                m_refine_space_back_point);
 #endif
         }
         break;
 
       case PrimitiveProceduralSurface:
-        // TODO: do we need to refine & offset here as well?
-        m_asm_inst_front_point = m_asm_inst_back_point = asm_inst_ray.m_org;
+          {
+#ifdef RENDERER_ADAPTIVE_OFFSET
+              // Compute the location of the intersection point in object space.
+              ShadingRay::RayType obj_inst_ray = m_object_instance->get_transform().to_local(asm_inst_ray);
+
+              // Offset the ray origin to the hit point.
+              obj_inst_ray.m_org += obj_inst_ray.m_tmax * obj_inst_ray.m_dir;
+
+              const ProceduralObject& object = static_cast<const ProceduralObject&>(get_object());
+
+              // Compute the offset points and geometric normal in object space.
+              object.refine_and_offset(
+                  obj_inst_ray,
+                  m_refine_space_front_point,
+                  m_refine_space_back_point,
+                  m_refine_space_geo_normal);
+#else
+              assert(false);
+#endif              
+          }
         break;
 
       case PrimitiveCurve1:
       case PrimitiveCurve3:
         {
+            // Offset the ray origin to the hit point.
+            asm_inst_ray.m_org += asm_inst_ray.m_tmax * asm_inst_ray.m_dir;
+
             assert(is_curve_primitive());
 
-            m_asm_inst_geo_normal = normalize(-asm_inst_ray.m_dir);
+            m_refine_space_geo_normal = normalize(-asm_inst_ray.m_dir);
 
             // todo: this does not look correct, considering the flat ribbon nature of curves.
             const double Eps = 1.0e-6;
-            m_asm_inst_front_point = asm_inst_ray.m_org + Eps * m_asm_inst_geo_normal;
-            m_asm_inst_back_point = asm_inst_ray.m_org - Eps * m_asm_inst_geo_normal;
+            m_refine_space_front_point = asm_inst_ray.m_org + Eps * m_refine_space_geo_normal;
+            m_refine_space_back_point = asm_inst_ray.m_org - Eps * m_refine_space_geo_normal;
         }
         break;
 
@@ -431,9 +462,9 @@ void ShadingPoint::refine_and_offset() const
     }
 
     // Check that refined values are not NaN.
-    assert(m_asm_inst_back_point == m_asm_inst_back_point);
-    assert(m_asm_inst_front_point == m_asm_inst_front_point);
-    assert(m_asm_inst_geo_normal == m_asm_inst_geo_normal);
+    assert(m_refine_space_back_point == m_refine_space_back_point);
+    assert(m_refine_space_front_point == m_refine_space_front_point);
+    assert(m_refine_space_geo_normal == m_refine_space_geo_normal);
 
     // The refined intersection points are now available.
     m_members |= ShadingPoint::HasRefinedPoints;
@@ -1245,9 +1276,9 @@ void PoisonImpl<renderer::ShadingPoint>::do_poison(renderer::ShadingPoint& point
     always_poison(point.m_alpha);
     always_poison(point.m_color);
 
-    always_poison(point.m_asm_inst_geo_normal);
-    always_poison(point.m_asm_inst_front_point);
-    always_poison(point.m_asm_inst_back_point);
+    always_poison(point.m_refine_space_geo_normal);
+    always_poison(point.m_refine_space_front_point);
+    always_poison(point.m_refine_space_back_point);
 
     always_poison(point.m_obj_transform_info.m_assembly_instance_transform);
     always_poison(point.m_obj_transform_info.m_object_instance_transform);

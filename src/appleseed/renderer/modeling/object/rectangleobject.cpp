@@ -30,10 +30,12 @@
 #include "rectangleobject.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/intersection/refining.h"
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection/rayparallelogram.h"
+#include "foundation/math/intersection/rayplane.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -204,6 +206,35 @@ bool RectangleObject::intersect(const ShadingRay& ray) const
         impl->m_normal);
 }
 
+void RectangleObject::refine_and_offset(
+    const Ray3d&        obj_inst_ray,
+    Vector3d&           obj_inst_front_point,
+    Vector3d&           obj_inst_back_point,
+    Vector3d&           obj_inst_geo_normal) const
+{
+    const Vector3d& corner = impl->m_corner;
+    const Vector3d& n = impl->m_normal;
+
+    const auto intersection_handling = [&corner, &n](const Vector3d& p, const Vector3d& dir) {
+        const Ray3d ray(p, dir);
+        return foundation::intersect(ray, corner, n);
+    };
+
+    const Vector3d refined_intersection_point =
+        refine(
+            obj_inst_ray.m_org,
+            obj_inst_ray.m_dir,
+            intersection_handling);
+
+    obj_inst_geo_normal = faceforward(n, obj_inst_ray.m_dir);
+
+    adaptive_offset(
+        refined_intersection_point,
+        obj_inst_geo_normal,
+        obj_inst_front_point,
+        obj_inst_back_point,
+        intersection_handling);
+}
 
 //
 // RectangleObjectFactory class implementation.

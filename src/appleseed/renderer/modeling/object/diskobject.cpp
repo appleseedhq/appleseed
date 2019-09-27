@@ -30,6 +30,7 @@
 #include "diskobject.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/intersection/refining.h"
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
@@ -165,6 +166,33 @@ bool DiskObject::intersect(const ShadingRay& ray) const
     return intersect_disk(
         ray,
         impl->m_radius);
+}
+
+void DiskObject::refine_and_offset(
+    const Ray3d&        obj_inst_ray,
+    Vector3d&           obj_inst_front_point,
+    Vector3d&           obj_inst_back_point,
+    Vector3d&           obj_inst_geo_normal) const
+{
+    const auto intersection_handling = [](const Vector3d& p, const Vector3d& dir) {
+        assert(is_normalized(dir));
+        return -p.y / dir.y;
+    };
+
+    const Vector3d refined_intersection_point =
+        refine(
+            obj_inst_ray.m_org,
+            obj_inst_ray.m_dir,
+            intersection_handling);
+
+    obj_inst_geo_normal = faceforward(Vector3d(0.0, 1.0, 0.0), obj_inst_ray.m_dir);
+
+    adaptive_offset(
+        refined_intersection_point,
+        obj_inst_geo_normal,
+        obj_inst_front_point,
+        obj_inst_back_point,
+        intersection_handling);
 }
 
 
