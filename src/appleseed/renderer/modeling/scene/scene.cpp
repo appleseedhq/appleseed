@@ -362,7 +362,7 @@ bool Scene::on_render_begin(
     m_render_data.m_safe_diameter = m_render_data.m_diameter * GScalar(1.01);
     m_has_render_data = true;
 
-    if (!BaseGroup::on_render_begin(project, parent,recorder,  abort_switch))
+    if (!BaseGroup::on_render_begin(project, parent, recorder, abort_switch))
         return false;
 
     bool success = true;
@@ -373,6 +373,8 @@ bool Scene::on_render_begin(
         success = success && impl->m_environment->on_render_begin(project, this, recorder, abort_switch);
     success = success && invoke_on_render_begin(cameras(), project, this, recorder, abort_switch);
 
+    m_camera = project.get_uncached_active_camera();
+
     return success;
 }
 
@@ -380,6 +382,7 @@ void Scene::on_render_end(
     const Project&          project,
     const BaseGroup*        parent)
 {
+    m_camera = nullptr;
     m_has_render_data = false;
 
     Entity::on_render_end(project, parent);
@@ -407,18 +410,7 @@ bool Scene::on_frame_begin(
     // Call on_frame_begin() on cameras last because some of them cast rays to sense depth in their autofocus mechanism.
     success = success && invoke_on_frame_begin(cameras(), project, this, recorder, abort_switch);
 
-    m_camera = project.get_uncached_active_camera();
-
     return success;
-}
-
-void Scene::on_frame_end(
-    const Project&          project,
-    const BaseGroup*        parent)
-{
-    m_camera = nullptr;
-
-    Entity::on_frame_end(project, parent);
 }
 
 #ifdef APPLESEED_WITH_EMBREE
@@ -429,6 +421,7 @@ const EmbreeDevice& Scene::get_embree_device() const
 }
 
 #endif
+
 
 //
 // SceneFactory class implementation.

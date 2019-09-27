@@ -134,10 +134,6 @@ class APPLESEED_DLLSYMBOL Scene
         OnFrameBeginRecorder&       recorder,
         foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
-    void on_frame_end(
-        const Project&              project,
-        const BaseGroup*            parent) override;
-
 #ifdef APPLESEED_WITH_EMBREE
 
     const EmbreeDevice& get_embree_device() const;
