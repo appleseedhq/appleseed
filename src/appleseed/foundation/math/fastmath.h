@@ -208,8 +208,8 @@ void faster_exp(float x[4]);
 inline float fast_pow2(const float p)
 {
     // Underflow of exponential is common practice in numerical routines, so handle it here.
-    const float offset = (p < 0) ? 1.0f : 0.0f;
-    const float clipp = (p < -126) ? -126.0f : p;
+    const float offset = p < 0.0f ? 1.0f : 0.0f;
+    const float clipp = p < -126.0f ? -126.0f : p;
     const int w = static_cast<int>(clipp);
     const float z = clipp - w + offset;
     const union { uint32 i; float f; } v =
@@ -223,7 +223,7 @@ inline float fast_pow2(const float p)
 inline float faster_pow2(const float p)
 {
     // Underflow of exponential is common practice in numerical routines, so handle it here.
-    const float clipp = (p < -126) ? -126.0f : p;
+    const float clipp = p < -126.0f ? -126.0f : p;
     const union { uint32 i; float f; } v =
     {
         static_cast<uint32>((1 << 23) * (clipp + 126.94269504f))

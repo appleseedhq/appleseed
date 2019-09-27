@@ -234,9 +234,9 @@ TEST_SUITE(Foundation_Math_FastMath)
             "unit tests/outputs/test_fastmath_pow2.gnuplot",
             functions,
             countof(functions),
-            0.0f,
-            1.0f,
-            1000);
+            -2.0f,
+            +10.0f,
+            10000);
     }
 
     //
@@ -586,9 +586,9 @@ TEST_SUITE(Foundation_Math_FastMath)
             "unit tests/outputs/test_fastmath_exp.gnuplot",
             functions,
             countof(functions),
-            0.0f,
-            1.0f,
-            1000);
+            -2.0f,
+            +10.0f,
+            10000);
     }
 
     // 
